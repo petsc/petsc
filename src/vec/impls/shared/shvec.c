@@ -115,7 +115,7 @@ static int Petsc_Shared_size   = 100000000;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.  
 */
-static int Petsc_DeleteShared(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
+static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 
@@ -141,7 +141,8 @@ PetscErrorCode PetscSharedMemorySetSize(int s)
 #define __FUNCT__ "PetscSharedInitialize"
 PetscErrorCode PetscSharedInitialize(MPI_Comm comm)
 {
-  int     rank,ierr,flag;
+  PetscErrorCode ierr;
+  int     rank,flag;
   size_t  len;
   char    filename[PETSC_MAX_PATH_LEN];
   usptr_t **arena;
@@ -241,7 +242,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecCreate_Shared"
 PetscErrorCode VecCreate_Shared(Vec vv)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(vv->comm,&size);CHKERRQ(ierr);

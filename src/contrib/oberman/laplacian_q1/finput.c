@@ -10,13 +10,14 @@ static char help[] ="Generation of a rectangular 2d quadrilateral grid.\n\
 
 double x_min,x_max,y_min,y_max;
 int    n_x, n_y; 
-static int InputGrid(AOData *aodata);
+static PetscErrorCode InputGrid(AOData *aodata);
 
 #undef  __FUNCT__
 #define __FUNCT__ "main"
 int main( int argc, char **argv )
 {
-  int      size, ierr;
+  PetscErrorCode ierr;
+  int      size;
   char     filename[513] = "gridfile";
   AOData   aodata;
 
@@ -67,7 +68,8 @@ int main( int argc, char **argv )
 #define __FUNCT__ "InputGrid"
 int InputGrid (AOData *aodata)
 {
-  int i, j, ierr;
+  PetscErrorCode ierr;
+  int i, j;
   int *indices;
   const int n_cells    = n_x * n_y;
   const int n_vertices = (n_x + 1) * (n_y + 1);

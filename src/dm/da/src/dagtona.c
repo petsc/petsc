@@ -31,7 +31,8 @@
 @*/
 PetscErrorCode DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 {
-  PetscErrorCode ierr,N;
+  PetscErrorCode ierr;
+  int N;
   IS  from,to;
   Vec tmplocal,global;
   AO  ao;
@@ -79,7 +80,8 @@ PetscErrorCode DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 @*/
 PetscErrorCode DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
 {
-  PetscErrorCode ierr,M,m = da->Nlocal,start;
+  PetscErrorCode ierr;
+  int M,m = da->Nlocal,start;
   IS  from,to;
   Vec tmplocal,global;
   AO  ao;

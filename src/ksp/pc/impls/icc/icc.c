@@ -309,7 +309,7 @@ PetscErrorCode PCICCSetZeroPivot(PC pc,PetscReal zero)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetup_ICC"
-static int PCSetup_ICC(PC pc)
+static PetscErrorCode PCSetup_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
   IS     perm,cperm;
@@ -332,7 +332,7 @@ static int PCSetup_ICC(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_ICC"
-static int PCDestroy_ICC(PC pc)
+static PetscErrorCode PCDestroy_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
@@ -346,7 +346,7 @@ static int PCDestroy_ICC(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_ICC"
-static int PCApply_ICC(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
@@ -358,7 +358,7 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplySymmetricLeft_ICC"
-static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -370,7 +370,7 @@ static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplySymmetricRight_ICC"
-static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PC_ICC *icc = (PC_ICC*)pc->data;
@@ -382,7 +382,7 @@ static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGetFactoredMatrix_ICC"
-static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
+static PetscErrorCode PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
 
@@ -393,7 +393,7 @@ static int PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_ICC"
-static int PCSetFromOptions_ICC(PC pc)
+static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 {
   PC_ICC     *icc = (PC_ICC*)pc->data;
   char       tname[256];
@@ -427,7 +427,7 @@ static int PCSetFromOptions_ICC(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_ICC"
-static int PCView_ICC(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 {
   PC_ICC     *icc = (PC_ICC*)pc->data;
   PetscErrorCode ierr;

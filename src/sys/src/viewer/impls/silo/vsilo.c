@@ -9,7 +9,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_Silo"
-static int PetscViewerDestroy_Silo(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_Silo(PetscViewer viewer)
 {
   Viewer_Silo    *silo = (Viewer_Silo *) viewer->data;
   int            rank;

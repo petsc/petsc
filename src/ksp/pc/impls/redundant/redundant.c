@@ -15,7 +15,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_Redundant"
-static int PCView_Redundant(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
@@ -51,7 +51,7 @@ static int PCView_Redundant(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_Redundant"
-static int PCSetUp_Redundant(PC pc)
+static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red  = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
@@ -123,7 +123,7 @@ static int PCSetUp_Redundant(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_Redundant"
-static int PCApply_Redundant(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 {
   PC_Redundant      *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
@@ -145,7 +145,7 @@ static int PCApply_Redundant(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_Redundant"
-static int PCDestroy_Redundant(PC pc)
+static PetscErrorCode PCDestroy_Redundant(PC pc)
 {
   PC_Redundant *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
@@ -165,7 +165,7 @@ static int PCDestroy_Redundant(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_Redundant"
-static int PCSetFromOptions_Redundant(PC pc)
+static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

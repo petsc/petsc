@@ -4,12 +4,12 @@
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
-PetscErrorCode DRAWHG_COOKIE = 0;
+PetscCookie DRAWHG_COOKIE = 0;
 
 struct _p_DrawHG {
   PETSCHEADER(int) 
-  int           (*destroy)(PetscDrawSP);
-  int           (*view)(PetscDrawSP,PetscViewer);
+  PetscErrorCode (*destroy)(PetscDrawSP);
+  PetscErrorCode (*view)(PetscDrawSP,PetscViewer);
   PetscDraw     win;
   PetscDrawAxis axis;
   PetscReal     xmin,xmax;
@@ -279,7 +279,8 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
   PetscReal  xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
   char       title[256];
   char       xlabel[256];
-  int        numBins,numBinsOld,numValues,initSize,i,p,ierr,bcolor,color;
+  int        numBins,numBinsOld,numValues,initSize,i,p,bcolor,color;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -419,7 +420,8 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
 PetscErrorCode PetscDrawHGPrint(PetscDrawHG hist)
 {
   PetscReal xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
-  int       numBins,numBinsOld,numValues,initSize,i,p,ierr;
+  PetscErrorCode ierr;
+  int       numBins,numBinsOld,numValues,initSize,i,p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);

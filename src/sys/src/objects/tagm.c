@@ -32,10 +32,9 @@ EXTERN_C_BEGIN
   it was MPI_Comm *comm.  
 
     Note: this is declared extern "C" because it is passed to the system routine signal()
-          which is an extern "C" routine. The Solaris 2.7 OS compilers require that this be
-          extern "C".
+          which is an extern "C" routine. 
 */
-PetscErrorCode Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
+int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 

@@ -13,7 +13,7 @@ typedef struct  {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_String" 
-static int PetscViewerDestroy_String(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
   PetscErrorCode     ierr;

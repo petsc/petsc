@@ -69,7 +69,7 @@ typedef struct matvec_info {
   int n, m, n_global, m_global;
   int *local2global;
   gs_ADT gs_handle;
-  int (*matvec)(struct matvec_info*,REAL*,REAL*);
+  PetscErrorCode (*matvec)(struct matvec_info*,REAL*,REAL*);
   void *grid_data;
 } mv_info;
 
@@ -141,7 +141,7 @@ Output:
 Return:
 Description:
 **************************************xyt.c***********************************/
-PetscErrorCode 
+int
 XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
 	   int *local2global,  /* global column mapping       */
 	   int n,              /* local num rows              */
@@ -1376,7 +1376,7 @@ mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
   mvi->local2global=(int*)bss_malloc((m+1)*INT_LEN);
   ivec_copy(mvi->local2global,local2global,m);
   mvi->local2global[m] = INT_MAX;
-  mvi->matvec=(int (*)(mv_info*,REAL*,REAL*))matvec;
+  mvi->matvec=(PetscErrorCode (*)(mv_info*,REAL*,REAL*))matvec;
   mvi->grid_data=grid_data;
 
   /* set xyt communication handle to perform restricted matvec */

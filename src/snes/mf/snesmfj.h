@@ -19,10 +19,10 @@
     of the parameter for finite difference based matrix-free computations
 */
 struct _MFOps {
-  int (*compute)(MatSNESMFCtx,Vec,Vec,PetscScalar *);
-  int (*view)(MatSNESMFCtx,PetscViewer);
-  int (*destroy)(MatSNESMFCtx);
-  int (*setfromoptions)(MatSNESMFCtx);
+  PetscErrorCode (*compute)(MatSNESMFCtx,Vec,Vec,PetscScalar *);
+  PetscErrorCode (*view)(MatSNESMFCtx,PetscViewer);
+  PetscErrorCode (*destroy)(MatSNESMFCtx);
+  PetscErrorCode (*setfromoptions)(MatSNESMFCtx);
 };
 
 struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
@@ -39,11 +39,11 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   int              recomputeperiod;        /* how often the h is recomputed; default to 1 */
   int              count;                  /* used by recomputeperiod */
   void             *checkhctx;             /* optional context used by MatSNESMFSetCheckh() */
-  int              (*checkh)(Vec,Vec,PetscScalar*,void*);
+  PetscErrorCode (*checkh)(Vec,Vec,PetscScalar*,void*);
   /*
         The next three are used only if user called MatSNESMFSetFunction()
   */
-  int              (*func)(SNES,Vec,Vec,void*);  /* function used for matrix free */
+  PetscErrorCode (*func)(SNES,Vec,Vec,void*);  /* function used for matrix free */
   void             *funcctx;                     /* the context for the function */
   Vec              funcvec;                      /* location to store func(u) */
   Vec              current_f;                    /* location of F(u); used with F(u+h) */
@@ -52,8 +52,8 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   PetscTruth       usesnes;                      /* if false indicates that one should (*func) 
                                                     instead of SNES even if snes is present */
 
-  int              (*funci)(int,Vec,PetscScalar*,void*);  /* Evaluates func_[i]() */
-  int              (*funcisetbase)(Vec,void*);            /* Sets base for future evaluations of func_[i]() */
+  PetscErrorCode (*funci)(int,Vec,PetscScalar*,void*);  /* Evaluates func_[i]() */
+  PetscErrorCode (*funcisetbase)(Vec,void*);            /* Sets base for future evaluations of func_[i]() */
 
   PetscScalar      vscale,vshift;
 };

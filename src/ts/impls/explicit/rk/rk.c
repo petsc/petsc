@@ -71,7 +71,7 @@ PetscErrorCode TSRKSetTolerance(TS ts,PetscReal aabs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUp_Rk"
-static int TSSetUp_Rk(TS ts)
+static PetscErrorCode TSSetUp_Rk(TS ts)
 {
   TS_Rk	*rk = (TS_Rk*)ts->data;
   int	ierr;
@@ -247,7 +247,8 @@ static int TSSetUp_Rk(TS ts)
 PetscErrorCode TSRkqs(TS ts,PetscReal t,PetscReal h)
 {
   TS_Rk		*rk = (TS_Rk*)ts->data;
-  int		ierr,j,l;
+  PetscErrorCode ierr;
+  int		j,l;
   PetscReal	tmp_t=t;
   PetscScalar	null=0.0,hh=h;
 
@@ -314,7 +315,7 @@ PetscErrorCode TSRkqs(TS ts,PetscReal t,PetscReal h)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Rk"
-static int TSStep_Rk(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_Rk(TS ts,int *steps,PetscReal *ptime)
 {
   TS_Rk		*rk = (TS_Rk*)ts->data;
   int		ierr;
@@ -410,10 +411,11 @@ static int TSStep_Rk(TS ts,int *steps,PetscReal *ptime)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSDestroy_Rk"
-static int TSDestroy_Rk(TS ts)
+static PetscErrorCode TSDestroy_Rk(TS ts)
 {
   TS_Rk *rk = (TS_Rk*)ts->data;
-  int   i,ierr;
+  PetscErrorCode ierr;
+  int   i;
 
   /* REMEMBER TO DESTROY ALL */
   
@@ -432,7 +434,7 @@ static int TSDestroy_Rk(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_Rk"
-static int TSSetFromOptions_Rk(TS ts)
+static PetscErrorCode TSSetFromOptions_Rk(TS ts)
 {
   TS_Rk *rk = (TS_Rk*)ts->data;
   PetscErrorCode ierr;
@@ -446,7 +448,7 @@ static int TSSetFromOptions_Rk(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSView_Rk"
-static int TSView_Rk(TS ts,PetscViewer viewer)
+static PetscErrorCode TSView_Rk(TS ts,PetscViewer viewer)
 {
    TS_Rk *rk = (TS_Rk*)ts->data;
    PetscErrorCode ierr;

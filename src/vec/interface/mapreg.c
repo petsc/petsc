@@ -29,7 +29,7 @@ PetscTruth PetscMapRegisterAllCalled          = PETSC_FALSE;
 @*/
 PetscErrorCode PetscMapSetType(PetscMap map, const PetscMapType method)
 {
-  int      (*r)(PetscMap);
+  PetscErrorCode (*r)(PetscMap);
   PetscTruth match;
   PetscErrorCode ierr;
 
@@ -89,7 +89,7 @@ PetscErrorCode PetscMapGetType(PetscMap map, PetscMapType *type)
   PetscMapRegisterDynamic - Adds a new map component implementation
 
   Synopsis:
-  PetscMapRegisterDynamic(char *name, char *path, char *func_name, int (*create_func)(PetscMap))
+  PetscMapRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(PetscMap))
 
   Not Collective
 
@@ -129,7 +129,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapRegister"
-PetscErrorCode PetscMapRegister(const char sname[], const char path[], const char name[], int (*function)(PetscMap))
+PetscErrorCode PetscMapRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscMap))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;

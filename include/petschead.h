@@ -8,9 +8,6 @@
 #include "petsc.h"  
 PETSC_EXTERN_CXX_BEGIN
 
-
-EXTERN PetscErrorCode PetscRegisterCookie(int*);
-
 /*
    All major PETSc data structures have a common core; this is defined 
    below by PETSCHEADER. 
@@ -39,17 +36,17 @@ EXTERN PetscErrorCode PetscRegisterCookie(int*);
 */
 
 typedef struct {
-   int (*getcomm)(PetscObject,MPI_Comm *);
-   int (*view)(PetscObject,PetscViewer);
-   int (*reference)(PetscObject);
-   int (*destroy)(PetscObject);
-   int (*compose)(PetscObject,const char[],PetscObject);
-   int (*query)(PetscObject,const char[],PetscObject *);
-   int (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
-   int (*queryfunction)(PetscObject,const char[],void (**)(void));
-   int (*composelanguage)(PetscObject,PetscLanguage,void *);
-   int (*querylanguage)(PetscObject,PetscLanguage,void **);
-   int (*publish)(PetscObject);
+   PetscErrorCode (*getcomm)(PetscObject,MPI_Comm *);
+   PetscErrorCode (*view)(PetscObject,PetscViewer);
+   PetscErrorCode (*reference)(PetscObject);
+   PetscErrorCode (*destroy)(PetscObject);
+   PetscErrorCode (*compose)(PetscObject,const char[],PetscObject);
+   PetscErrorCode (*query)(PetscObject,const char[],PetscObject *);
+   PetscErrorCode (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
+   PetscErrorCode (*queryfunction)(PetscObject,const char[],void (**)(void));
+   PetscErrorCode (*composelanguage)(PetscObject,PetscLanguage,void *);
+   PetscErrorCode (*querylanguage)(PetscObject,PetscLanguage,void **);
+   PetscErrorCode (*publish)(PetscObject);
 } PetscOps;
 
 #define PETSCHEADER(ObjectOps)                                  \
@@ -89,11 +86,11 @@ typedef struct {
 
 #define  PETSCFREEDHEADER -1
 
-EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,int,int,const char[],MPI_Comm,int (*)(PetscObject),int (*)(PetscObject,PetscViewer));
+EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject,int,int,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
 EXTERN PetscErrorCode PetscHeaderDestroy_Private(PetscObject);
 
-typedef int (*PetscObjectFunction)(PetscObject); /* force cast in next macro to NEVER use extern "C" style */
-typedef int (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
+typedef PetscErrorCode (*PetscObjectFunction)(PetscObject); /* force cast in next macro to NEVER use extern "C" style */
+typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
 
 /*
     PetscHeaderCreate - Creates a PETSc object
@@ -112,7 +109,7 @@ typedef int (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 .   h - the newly created object
 */ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)                      \
-  { int _ierr;                                                                          \
+  { PetscErrorCode _ierr;                                                                          \
     _ierr = PetscNew(struct tp,&(h));CHKERRQ(_ierr);                                      \
     _ierr = PetscMemzero(h,sizeof(struct tp));CHKERRQ(_ierr);                           \
     _ierr = PetscNew(PetscOps,&((h)->bops));CHKERRQ(_ierr);                               \
@@ -125,7 +122,7 @@ typedef int (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
   }
 
 #define PetscHeaderDestroy(h)                                             \
-  { int _ierr;                                                            \
+  { PetscErrorCode _ierr;                                                            \
     _ierr = PetscHeaderDestroy_Private((PetscObject)(h));CHKERRQ(_ierr);\
   }                 
 
@@ -254,7 +251,7 @@ valid
    Sometimes object must live on same communicator to inter-operate
 */
 #define PetscCheckSameComm(a,arga,b,argb) \
-  {int _6_ierr,__flag; _6_ierr = MPI_Comm_compare(((PetscObject)a)->comm,((PetscObject)b)->comm,&__flag);\
+  {PetscErrorCode _6_ierr,__flag; _6_ierr = MPI_Comm_compare(((PetscObject)a)->comm,((PetscObject)b)->comm,&__flag);\
   CHKERRQ(_6_ierr); \
   if (__flag != MPI_CONGRUENT && __flag != MPI_IDENT) \
   SETERRQ2(PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d",arga,argb);}

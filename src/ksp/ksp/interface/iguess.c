@@ -55,7 +55,8 @@ PetscErrorCode KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 #define __FUNCT__ "KSPGuessFormB"
 PetscErrorCode KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
-  int         i,ierr;
+  PetscErrorCode ierr;
+  int         i;
   PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -74,7 +75,8 @@ PetscErrorCode KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 #define __FUNCT__ "KSPGuessFormX"
 PetscErrorCode KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 {
-  int i,ierr;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -94,7 +96,8 @@ PetscErrorCode  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
   PetscReal    normax,norm;
   PetscScalar  tmp;
   MatStructure pflag;
-  int          curl = itg->curl,i,ierr;
+  PetscErrorCode ierr;
+  int          curl = itg->curl,i;
   Mat          Amat,Pmat;
 
   PetscFunctionBegin;

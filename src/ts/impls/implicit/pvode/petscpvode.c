@@ -162,17 +162,17 @@ void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
   */
   ierr = VecPlaceArray(tmpx,N_VGetData(y));
   if (ierr) {
-    (*PetscErrorPrintf)("TSFunction_PVode:Could not place array. Error code %d",ierr);
+    (*PetscErrorPrintf)("TSFunction_PVode:Could not place array. Error code %d",(int)ierr);
   }
   ierr = VecPlaceArray(tmpy,N_VGetData(ydot));
   if (ierr) {
-    (*PetscErrorPrintf)("TSFunction_PVode:Could not place array. Error code %d",ierr);
+    (*PetscErrorPrintf)("TSFunction_PVode:Could not place array. Error code %d",(int)ierr);
   }
 
   /* now compute the right hand side function */
   ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy);
   if (ierr) {
-    (*PetscErrorPrintf)("TSFunction_PVode:Could not compute RHS function. Error code %d",ierr);
+    (*PetscErrorPrintf)("TSFunction_PVode:Could not compute RHS function. Error code %d",(int)ierr);
   }
 }
 

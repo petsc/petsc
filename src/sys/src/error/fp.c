@@ -36,7 +36,8 @@ struct { int code_no; char *name; } error_codes[] = {
 #define __FUNCT__ "PetscDefaultFPTrap" 
 sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,char *addr)
 {
-  int err_ind = -1,j,ierr;
+  PetscErrorCode ierr;
+  int err_ind = -1,j;
 
   PetscFunctionBegin;
   for (j = 0 ; error_codes[j].code_no ; j++) {
@@ -126,7 +127,8 @@ struct { int code_no; char *name; } error_codes[] = {
 #define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
 {
-  int err_ind,j,ierr,code = scp->si_code;
+  int err_ind,j,code = scp->si_code;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   err_ind = -1 ;

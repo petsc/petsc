@@ -6,9 +6,9 @@
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/utils/freespace.h"
 
-static int logkey_matapplypapt          = 0;
-static int logkey_matapplypapt_symbolic = 0;
-static int logkey_matapplypapt_numeric  = 0;
+static PetscEvent logkey_matapplypapt          = 0;
+static PetscEvent logkey_matapplypapt_symbolic = 0;
+static PetscEvent logkey_matapplypapt_numeric  = 0;
 
 /*
      MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices

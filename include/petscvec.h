@@ -30,7 +30,7 @@ typedef struct _p_PetscMap*         PetscMap;
 #define PetscMapType char*
 
 /* Logging support */
-extern int MAP_COOKIE;
+extern PetscCookie MAP_COOKIE;
 
 EXTERN PetscErrorCode PetscMapCreate(MPI_Comm,PetscMap*);
 EXTERN PetscErrorCode PetscMapCreateMPI(MPI_Comm,int,int,PetscMap*);
@@ -50,7 +50,7 @@ extern PetscFList PetscMapList;
 extern PetscTruth PetscMapRegisterAllCalled;
 EXTERN PetscErrorCode PetscMapSetType(PetscMap, const PetscMapType);
 EXTERN PetscErrorCode PetscMapGetType(PetscMap, PetscMapType *);
-EXTERN PetscErrorCode PetscMapRegister(const char[],const char[],const char[],int(*)(PetscMap));
+EXTERN PetscErrorCode PetscMapRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscMap));
 EXTERN PetscErrorCode PetscMapRegisterAll(const char []);
 EXTERN PetscErrorCode PetscMapRegisterDestroy(void);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
@@ -101,12 +101,12 @@ E*/
 
 /* Logging support */
 #define    VEC_FILE_COOKIE 1211214
-extern int VEC_COOKIE;
-extern int VEC_SCATTER_COOKIE;
-extern int VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot, VEC_NormBarrier;
-extern int VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin;
-extern int VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
-extern int VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
+extern PetscCookie VEC_COOKIE, VEC_SCATTER_COOKIE;
+extern PetscEvent    VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
+extern PetscEvent    VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
+extern PetscEvent    VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
+extern PetscEvent    VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
+extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier;
 
 EXTERN PetscErrorCode VecInitializePackage(char *);
 
@@ -313,7 +313,7 @@ extern PetscFList VecList;
 extern PetscTruth VecRegisterAllCalled;
 EXTERN PetscErrorCode VecSetType(Vec, const VecType);
 EXTERN PetscErrorCode VecGetType(Vec, VecType *);
-EXTERN PetscErrorCode VecRegister(const char[],const char[],const char[],int(*)(Vec));
+EXTERN PetscErrorCode VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));
 EXTERN PetscErrorCode VecRegisterAll(const char []);
 EXTERN PetscErrorCode VecRegisterDestroy(void);
 
@@ -321,7 +321,7 @@ EXTERN PetscErrorCode VecRegisterDestroy(void);
   VecRegisterDynamic - Adds a new vector component implementation
 
   Synopsis:
-  VecRegisterDynamic(char *name, char *path, char *func_name, int (*create_func)(Vec))
+  VecRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(Vec))
 
   Not Collective
 

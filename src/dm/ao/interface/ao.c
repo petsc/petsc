@@ -4,9 +4,8 @@
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 /* Logging support */
-int AO_COOKIE = 0;
-int AODATA_COOKIE = 0;
-int AOEvents[AO_MAX_EVENTS] = {0};
+PetscCookie AO_COOKIE = 0, AODATA_COOKIE = 0;
+PetscEvent  AO_PetscToApplication = 0, AO_ApplicationToPetsc = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOView" 
@@ -113,7 +112,8 @@ PetscErrorCode AODestroy(AO ao)
 @*/
 PetscErrorCode AOPetscToApplicationIS(AO ao,IS is)
 {
-  int        n,*ia,ierr;
+  PetscErrorCode ierr;
+  int        n,*ia;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -161,7 +161,8 @@ PetscErrorCode AOPetscToApplicationIS(AO ao,IS is)
 @*/
 PetscErrorCode AOApplicationToPetscIS(AO ao,IS is)
 {
-  int        n,*ia,ierr;
+  PetscErrorCode ierr;
+  int        n,*ia;
   PetscTruth flag;
 
   PetscFunctionBegin;

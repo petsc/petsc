@@ -5,8 +5,8 @@ PetscTruth SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList SNESList              = PETSC_NULL;
 
 /* Logging support */
-PetscCookieCode SNES_COOKIE = 0;
-PetscLogCode    SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_JacobianEval = 0;
+PetscCookie SNES_COOKIE = 0;
+PetscEvent    SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_JacobianEval = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESView"
@@ -102,7 +102,7 @@ PetscErrorCode SNESView(SNES snes,PetscViewer viewer)
 */
 #define MAXSETFROMOPTIONS 5
 static int numberofsetfromoptions;
-static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
+static PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESAddOptionsChecker"
@@ -118,7 +118,7 @@ static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
 .seealso: SNESSetFromOptions()
 @*/
-PetscErrorCode SNESAddOptionsChecker(int (*snescheck)(SNES))
+PetscErrorCode SNESAddOptionsChecker(PetscErrorCode (*snescheck)(SNES))
 {
   PetscFunctionBegin;
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
@@ -544,7 +544,7 @@ PetscErrorCode SNESGetKSP(SNES snes,KSP *ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESPublish_Petsc"
-static int SNESPublish_Petsc(PetscObject obj)
+static PetscErrorCode SNESPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   SNES          v = (SNES) obj;
@@ -694,7 +694,7 @@ $      f'(x) x = -f(x),
 
 .seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian()
 @*/
-PetscErrorCode SNESSetFunction(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
+PetscErrorCode SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -888,7 +888,7 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .seealso: KSPSetOperators(), SNESSetFunction()
 @*/
-PetscErrorCode SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -934,7 +934,7 @@ PetscErrorCode SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,M
 
 .seealso: SNESSetJacobian(), SNESComputeJacobian()
 @*/
-PetscErrorCode SNESGetJacobian(SNES snes,Mat *A,Mat *B,void **ctx,int (**func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+PetscErrorCode SNESGetJacobian(SNES snes,Mat *A,Mat *B,void **ctx,PetscErrorCode (**func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1072,7 +1072,8 @@ PetscErrorCode SNESSetUp(SNES snes,Vec x)
 @*/
 PetscErrorCode SNESDestroy(SNES snes)
 {
-  int i,ierr;
+  int i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1297,7 +1298,7 @@ _    -snes_cancelmonitors - cancels all monitors that have
 
 .seealso: SNESDefaultMonitor(), SNESClearMonitor()
 @*/
-PetscErrorCode SNESSetMonitor(SNES snes,int (*func)(SNES,int,PetscReal,void*),void *mctx,int (*monitordestroy)(void*))
+PetscErrorCode SNESSetMonitor(SNES snes,PetscErrorCode (*func)(SNES,int,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1358,7 +1359,7 @@ PetscErrorCode SNESClearMonitor(SNES snes)
           (may be PETSC_NULL)
 
    Calling sequence of func:
-$     int func (SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
+$     PetscErrorCode func (SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
 
 +    snes - the SNES context
 .    cctx - [optional] convergence context
@@ -1373,7 +1374,7 @@ $     int func (SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConver
 
 .seealso: SNESConverged_LS(), SNESConverged_TR()
 @*/
-PetscErrorCode SNESSetConvergenceTest(SNES snes,int (*func)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx)
+PetscErrorCode SNESSetConvergenceTest(SNES snes,PetscErrorCode (*func)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1519,7 +1520,7 @@ PetscErrorCode SNESGetConvergenceHistory(SNES snes,PetscReal *a[],int *its[],int
 .keywords: SNES, Rhs, boundary conditions
 .seealso SNESDefaultRhsBC(), SNESSetSolutionBC(), SNESSetUpdate()
 @*/
-PetscErrorCode SNESSetRhsBC(SNES snes, int (*func)(SNES, Vec, void *))
+PetscErrorCode SNESSetRhsBC(SNES snes, PetscErrorCode (*func)(SNES, Vec, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_COOKIE,1);
@@ -1573,7 +1574,7 @@ PetscErrorCode SNESDefaultRhsBC(SNES snes, Vec rhs, void *ctx)
 .keywords: SNES, solution, boundary conditions
 .seealso SNESDefaultSolutionBC(), SNESSetRhsBC(), SNESSetUpdate()
 @*/
-PetscErrorCode SNESSetSolutionBC(SNES snes, int (*func)(SNES, Vec, void *))
+PetscErrorCode SNESSetSolutionBC(SNES snes, PetscErrorCode (*func)(SNES, Vec, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_COOKIE,1);
@@ -1626,7 +1627,7 @@ PetscErrorCode SNESDefaultSolutionBC(SNES snes, Vec sol, void *ctx)
 .keywords: SNES, update
 .seealso SNESDefaultUpdate(), SNESSetRhsBC(), SNESSetSolutionBC()
 @*/
-PetscErrorCode SNESSetUpdate(SNES snes, int (*func)(SNES, int))
+PetscErrorCode SNESSetUpdate(SNES snes, PetscErrorCode (*func)(SNES, int))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_COOKIE,1);
@@ -1983,7 +1984,7 @@ PetscErrorCode SNESGetSolutionUpdate(SNES snes,Vec *x)
 
 .seealso: SNESSetFunction(), SNESGetSolution()
 @*/
-PetscErrorCode SNESGetFunction(SNES snes,Vec *r,void **ctx,int (**func)(SNES,Vec,Vec,void*))
+PetscErrorCode SNESGetFunction(SNES snes,Vec *r,void **ctx,PetscErrorCode (**func)(SNES,Vec,Vec,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -2100,7 +2101,7 @@ PetscErrorCode SNESGetOptionsPrefix(SNES snes,char *prefix[])
 
   Level: advanced
 @*/
-PetscErrorCode SNESRegister(const char sname[],const char path[],const char name[],int (*function)(SNES))
+PetscErrorCode SNESRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(SNES))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;

@@ -41,7 +41,8 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 #define __FUNCT__ "VecView_MPI_ASCII"
 PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
-  int               i,rank,len,work = xin->n,n,j,size,ierr,cnt,tag = ((PetscObject)viewer)->tag;
+  PetscErrorCode ierr;
+  int               i,rank,len,work = xin->n,n,j,size,cnt,tag = ((PetscObject)viewer)->tag;
   MPI_Status        status;
   PetscScalar       *values,*xarray;
   char              *name;
@@ -176,7 +177,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_MPI_Binary"
 PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
-  int         rank,ierr,len,work = xin->n,n,j,size,fdes,tag = ((PetscObject)viewer)->tag;
+  PetscErrorCode ierr;
+  int         rank,len,work = xin->n,n,j,size,fdes,tag = ((PetscObject)viewer)->tag;
   MPI_Status  status;
   PetscScalar *values,*xarray;
   FILE        *file;
@@ -224,7 +226,8 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_MPI_Draw_LG"
 PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
-  int         i,rank,size,N = xin->N,*lens,ierr;
+  PetscErrorCode ierr;
+  int         i,rank,size,N = xin->N,*lens;
   PetscDraw   draw;
   PetscReal   *xx,*yy;
   PetscDrawLG lg;
@@ -292,7 +295,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecView_MPI_Draw"
 PetscErrorCode VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 {
-  int           i,rank,size,ierr,start,end,tag = ((PetscObject)viewer)->tag;
+  PetscErrorCode ierr;
+  int           i,rank,size,start,end,tag = ((PetscObject)viewer)->tag;
   MPI_Status    status;
   PetscReal     coors[4],ymin,ymax,xmin,xmax,tmp;
   PetscDraw     draw;
@@ -369,7 +373,8 @@ EXTERN_C_END
 #define __FUNCT__ "VecView_MPI_Socket"
 PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 {
-  int         i,rank,size,N = xin->N,*lens,ierr;
+  PetscErrorCode ierr;
+  int         i,rank,size,N = xin->N,*lens;
   PetscScalar *xx,*xarray;
 
   PetscFunctionBegin;
@@ -398,7 +403,8 @@ PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 {
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-  int         i,rank,size,N = xin->N,*lens,ierr;
+  PetscErrorCode ierr;
+  int         i,rank,size,N = xin->N,*lens;
   PetscScalar *xx,*xarray;
 
   PetscFunctionBegin;
@@ -434,7 +440,8 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 {
 #if defined(PETSC_HAVE_PNETCDF)
-  int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart;
+  PetscErrorCode ierr;
+  int         n = xin->n,ncid,xdim,xdim_num=1,xin_id,xstart;
   MPI_Comm    comm = xin->comm;  
   PetscScalar *xarray;
 
@@ -468,7 +475,8 @@ PetscErrorCode VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
 {
 #if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
-  int         rank, ierr, len, i, j, k, size, cur, bs, n, N;
+  PetscErrorCode ierr;
+  int         rank,  len, i, j, k, size, cur, bs, n, N;
   int         tag = ((PetscObject)viewer)->tag;
   MPI_Status  status;
   PetscScalar *x;
@@ -525,7 +533,8 @@ PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
 PetscErrorCode VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 {
 #if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
-  PetscErrorCode ierr, bs, dims[1];
+  PetscErrorCode ierr;
+  PetscErrorCode  bs, dims[1];
 
   bs = xin->bs > 0 ? xin->bs : 1;
   dims[0] = xin->N / bs;
@@ -596,7 +605,8 @@ PetscErrorCode VecGetSize_MPI(Vec xin,int *N)
 PetscErrorCode VecSetValues_MPI(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertMode addv)
 {
   int           rank = xin->stash.rank, *owners = xin->map->range,start = owners[rank];
-  int           end = owners[rank+1],i,row,ierr;
+  PetscErrorCode ierr;
+  int           end = owners[rank+1],i,row;
   PetscScalar   *xx;
 
   PetscFunctionBegin;
@@ -644,7 +654,8 @@ PetscErrorCode VecSetValues_MPI(Vec xin,int ni,const int ix[],const PetscScalar 
 PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const PetscScalar yin[],InsertMode addv)
 {
   int           rank = xin->stash.rank,*owners = xin->map->range,start = owners[rank];
-  int           end = owners[rank+1],i,row,bs = xin->bs,j,ierr;
+  PetscErrorCode ierr;
+  int           end = owners[rank+1],i,row,bs = xin->bs,j;
   PetscScalar   *xx,*y = (PetscScalar*)yin;
 
   PetscFunctionBegin;
@@ -702,7 +713,8 @@ to make sure we never malloc an empty one.
 #define __FUNCT__ "VecAssemblyBegin_MPI"
 PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
 {
-  int         *owners = xin->map->range,*bowners,ierr,size,i,bs,nstash,reallocs;
+  PetscErrorCode ierr;
+  int         *owners = xin->map->range,*bowners,size,i,bs,nstash,reallocs;
   InsertMode  addv;
   MPI_Comm    comm = xin->comm;
 

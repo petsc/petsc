@@ -149,7 +149,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   PetscScalar        *av;
   double             cputotal,facops;
 #if defined(PETSC_USE_COMPLEX)
-  int                nz_row,*aj_tmp;
+  int                nz_row,*aj_tmp,fierr;
   PetscScalar        *av_tmp;
 #else
   int                *ivec1,*ivec2,j;
@@ -405,9 +405,9 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   } else {
     IVfill(20, lu->stats, 0);
     rootchv = FrontMtx_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, 0.0, 
-            chvmanager, &ierr, lu->cpus,lu->stats,lu->options.msglvl,lu->options.msgFile); 
+            chvmanager, &fierr, lu->cpus,lu->stats,lu->options.msglvl,lu->options.msgFile); 
     if (rootchv) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"\n matrix found to be singular");    
-    if (ierr >= 0) SETERRQ1(PETSC_ERR_LIB,"\n error encountered at front %d", ierr);
+    if (fierr >= 0) SETERRQ1(PETSC_ERR_LIB,"\n error encountered at front %d", fierr);
     
     if(lu->options.FrontMtxInfo){
       ierr = PetscPrintf(PETSC_COMM_SELF,"\n %8d pivots, %8d pivot tests, %8d delayed rows and columns\n",lu->stats[0], lu->stats[1], lu->stats[2]);CHKERRQ(ierr);
@@ -629,7 +629,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_AIJSpooles"
 PetscErrorCode MatCreate_AIJSpooles(Mat A) 
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJSpooles or MPIAIJSpooles */

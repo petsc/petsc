@@ -15,7 +15,7 @@
 #include "petscsys.h"        /*I "petscsys.h" I*/
 #include <stdlib.h>
 
-int PETSC_RANDOM_COOKIE = 0;
+PetscCookie PETSC_RANDOM_COOKIE = 0;
 
 /* Private data */
 struct _p_PetscRandom {
@@ -239,7 +239,8 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
-  int      rank,ierr;
+  PetscErrorCode ierr;
+  int      rank;
 
   PetscFunctionBegin;
   PetscLogInfo(0,"PetscRandomCreate: using rand(). not as efficinet as dran48\n");

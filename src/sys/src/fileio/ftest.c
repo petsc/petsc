@@ -35,7 +35,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
-static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) {
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) {
   int m;
   
   PetscFunctionBegin;
@@ -56,7 +56,7 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
-static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) {
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) {
   uid_t  uid;
   gid_t *gid = PETSC_NULL;
   int    numGroups;
@@ -116,7 +116,7 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFileStat"
-static int PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode,PetscTruth *exists) {
+static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode,PetscTruth *exists) {
   struct stat statbuf;
   PetscErrorCode ierr;
 

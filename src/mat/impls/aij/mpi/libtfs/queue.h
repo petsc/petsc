@@ -98,7 +98,7 @@ Return: integer number of elements
 Description: This function returns the number of elements in the queue.
 Usage: n = len_queue(queue);
 **********************************queue.h*************************************/
-EXTERN PetscErrorCode len_queue(queue_ADT queue);
+EXTERN int len_queue(queue_ADT queue);
 
 
 

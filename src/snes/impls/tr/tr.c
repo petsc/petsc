@@ -46,11 +46,12 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPCon
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_TR"
-static int SNESSolve_TR(SNES snes)
+static PetscErrorCode SNESSolve_TR(SNES snes)
 {
   SNES_TR             *neP = (SNES_TR*)snes->data;
   Vec                 X,F,Y,G,TMP,Ytmp;
-  int                 maxits,i,ierr,lits,breakout = 0;
+  PetscErrorCode ierr;
+  int                 maxits,i,lits,breakout = 0;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,nrm,ynorm,norm1;
   PetscScalar         mone = -1.0,cnorm;
@@ -193,7 +194,7 @@ static int SNESSolve_TR(SNES snes)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetUp_TR"
-static int SNESSetUp_TR(SNES snes)
+static PetscErrorCode SNESSetUp_TR(SNES snes)
 {
   PetscErrorCode ierr;
 
@@ -207,7 +208,7 @@ static int SNESSetUp_TR(SNES snes)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "SNESDestroy_TR"
-static int SNESDestroy_TR(SNES snes)
+static PetscErrorCode SNESDestroy_TR(SNES snes)
 {
   PetscErrorCode ierr;
 
@@ -222,7 +223,7 @@ static int SNESDestroy_TR(SNES snes)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFromOptions_TR"
-static int SNESSetFromOptions_TR(SNES snes)
+static PetscErrorCode SNESSetFromOptions_TR(SNES snes)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
   PetscErrorCode ierr;
@@ -243,7 +244,7 @@ static int SNESSetFromOptions_TR(SNES snes)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESView_TR"
-static int SNESView_TR(SNES snes,PetscViewer viewer)
+static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
 {
   SNES_TR *tr = (SNES_TR *)snes->data;
   PetscErrorCode ierr;

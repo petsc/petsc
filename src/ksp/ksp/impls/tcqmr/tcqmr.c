@@ -10,7 +10,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_TCQMR"
-static int KSPSolve_TCQMR(KSP ksp)
+static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
 {
   PetscReal   rnorm0,rnorm,dp1,Gamma;
   PetscScalar theta,ep,cl1,sl1,cl,sl,sprod,tau_n1,f; 
@@ -145,7 +145,7 @@ static int KSPSolve_TCQMR(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_TCQMR"
-static int KSPSetUp_TCQMR(KSP ksp)
+static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 {
   PetscErrorCode ierr;
 

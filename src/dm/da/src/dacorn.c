@@ -102,7 +102,8 @@ PetscErrorCode DAGetCoordinates(DA da,Vec *c)
 PetscErrorCode DAGetCoordinateDA(DA da,DA *cda)
 {
   DAStencilType  st;
-  int            size,ierr;
+  PetscErrorCode ierr;
+  int            size;
 
   PetscFunctionBegin;
   if (da->da_coordinates) {

@@ -22,7 +22,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_PBJacobi_2"
-static int PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -45,7 +45,7 @@ static int PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_PBJacobi_3"
-static int PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -69,7 +69,7 @@ static int PCApply_PBJacobi_3(PC pc,Vec x,Vec y)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_PBJacobi_4"
-static int PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -94,7 +94,7 @@ static int PCApply_PBJacobi_4(PC pc,Vec x,Vec y)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_PBJacobi_5"
-static int PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -122,7 +122,7 @@ static int PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
 EXTERN PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_PBJacobi"
-static int PCSetUp_PBJacobi(PC pc)
+static PetscErrorCode PCSetUp_PBJacobi(PC pc)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -169,7 +169,7 @@ static int PCSetUp_PBJacobi(PC pc)
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_PBJacobi"
-static int PCDestroy_PBJacobi(PC pc)
+static PetscErrorCode PCDestroy_PBJacobi(PC pc)
 {
   PC_PBJacobi *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;

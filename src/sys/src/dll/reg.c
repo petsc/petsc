@@ -9,7 +9,8 @@
 #define __FUNCT__ "PetscFListGetPathAndFunction"
 PetscErrorCode PetscFListGetPathAndFunction(const char name[],char *path[],char *function[])
 {
-  char work[PETSC_MAX_PATH_LEN],*lfunction,ierr;
+  PetscErrorCode ierr;
+  char work[PETSC_MAX_PATH_LEN],*lfunction;
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(work,name,256);CHKERRQ(ierr);
@@ -41,7 +42,8 @@ PetscDLLibraryList DLLibrariesLoaded = 0;
 PetscErrorCode PetscInitialize_DynamicLibraries(void)
 {
   char       *libname[32],libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
-  int        nmax,i,ierr;
+  PetscErrorCode ierr;
+  int        nmax,i;
   PetscTruth found;
 
   PetscFunctionBegin;
@@ -537,7 +539,8 @@ PetscErrorCode PetscFListView(PetscFList list,PetscViewer viewer)
 @*/
 PetscErrorCode PetscFListGet(PetscFList list,char ***array,int *n)
 {
-  int        count = 0,ierr;
+  PetscErrorCode ierr;
+  int        count = 0;
   PetscFList klist = list;
 
   PetscFunctionBegin;

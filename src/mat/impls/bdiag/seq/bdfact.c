@@ -63,7 +63,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
   int          k,d,d2,dgk,elim_row,elim_col,bs = a->bs,knb,knb2,bs2 = bs*bs;
-  int          dnum,nd = a->nd,mblock = a->mblock,nblock = a->nblock,ierr;
+  PetscErrorCode ierr;
+  int          dnum,nd = a->nd,mblock = a->mblock,nblock = a->nblock;
   int          *diag = a->diag, m = A->m,mainbd = a->mainbd,*dgptr,len,i;
   PetscScalar  **dv = a->diagv,*dd = dv[mainbd],*v_work;
   PetscScalar  *multiplier;
@@ -128,7 +129,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
-  int          k,d,d2,dgk,elim_row,elim_col,dnum,nd = a->nd,i,len,ierr;
+  PetscErrorCode ierr;
+  int          k,d,d2,dgk,elim_row,elim_col,dnum,nd = a->nd,i,len;
   int          *diag = a->diag,n = A->n,m = A->m,mainbd = a->mainbd,*dgptr;
   PetscScalar  **dv = a->diagv,*dd = dv[mainbd],mult;
 

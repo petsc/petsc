@@ -9,7 +9,8 @@
 PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS is[],int ov)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-  int         row,i,j,k,l,m,n,*idx,ierr,*nidx,isz,val,ival;
+  PetscErrorCode ierr;
+  int         row,i,j,k,l,m,n,*idx,*nidx,isz,val,ival;
   int         start,end,*ai,*aj,bs,*nidx2;
   PetscBT     table;
 
@@ -74,7 +75,8 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS is[],int ov)
 PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data,*c;
-  int          *smap,i,k,kstart,kend,ierr,oldcols = a->nbs,*lens;
+  PetscErrorCode ierr;
+  int          *smap,i,k,kstart,kend,oldcols = a->nbs,*lens;
   int          row,mat_i,*mat_j,tcol,*mat_ilen;
   int          *irow,*icol,nrows,ncols,*ssmap,bs=a->bs,bs2=a->bs2;
   int          *aj = a->j,*ai = a->i;
@@ -160,7 +162,8 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse s
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   IS          is1,is2;
-  int         *vary,*iary,*irow,*icol,nrows,ncols,i,ierr,bs=a->bs,count;
+  PetscErrorCode ierr;
+  int         *vary,*iary,*irow,*icol,nrows,ncols,i,bs=a->bs,count;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
@@ -203,7 +206,8 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse s
 #define __FUNCT__ "MatGetSubMatrices_SeqBAIJ"
 PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
-  PetscErrorCode ierr,i;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
@@ -229,7 +233,8 @@ PetscErrorCode MatMult_SeqBAIJ_1(Mat A,Vec xx,Vec zz)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *x,*z,sum;
   MatScalar       *v;
-  int             mbs=a->mbs,i,*idx,*ii,n,ierr;
+  PetscErrorCode ierr;
+  int             mbs=a->mbs,i,*idx,*ii,n;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -874,7 +879,8 @@ PetscErrorCode MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar    *x,*z,*xb,*work,*workt,*y;
   MatScalar      *v;
-  int            mbs=a->mbs,i,*idx,*ii,bs=a->bs,j,n,bs2=a->bs2,ierr;
+  PetscErrorCode ierr;
+  int            mbs=a->mbs,i,*idx,*ii,bs=a->bs,j,n,bs2=a->bs2;
   int            ncols,k;
 
   PetscFunctionBegin;
@@ -925,7 +931,8 @@ PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
   PetscScalar     *x,*z,*xb,x1,x2,x3,x4,x5,x6,x7;
   MatScalar       *v;
   int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval;
-  int             bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
+  PetscErrorCode ierr;
+  int             bs=a->bs,j,n,bs2=a->bs2,*ib;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
@@ -1092,7 +1099,8 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar     *xg,*zg,*zb,*x,*z,*xb,x1,x2,x3,x4,x5;
   MatScalar       *v;
-  int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval,bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
+  PetscErrorCode ierr;
+  int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval,bs=a->bs,j,n,bs2=a->bs2,*ib;
 
   PetscFunctionBegin;
   if (yy != zz) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }

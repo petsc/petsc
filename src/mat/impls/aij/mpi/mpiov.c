@@ -5,9 +5,9 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "petscbt.h"
 
-static int MatIncreaseOverlap_MPIAIJ_Once(Mat,int,IS *);
-static int MatIncreaseOverlap_MPIAIJ_Local(Mat,int,char **,int*,int**);
-static int MatIncreaseOverlap_MPIAIJ_Receive(Mat,int,int **,int**,int*);
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat,int,IS *);
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat,int,char **,int*,int**);
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat,int,int **,int**,int*);
 EXTERN PetscErrorCode MatGetRow_MPIAIJ(Mat,int,int*,int**,PetscScalar**);
 EXTERN PetscErrorCode MatRestoreRow_MPIAIJ(Mat,int,int*,int**,PetscScalar**);
 
@@ -15,7 +15,8 @@ EXTERN PetscErrorCode MatRestoreRow_MPIAIJ(Mat,int,int*,int**,PetscScalar**);
 #define __FUNCT__ "MatIncreaseOverlap_MPIAIJ"
 PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,int imax,IS is[],int ov)
 {
-  int i,ierr;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   if (ov < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
@@ -50,11 +51,12 @@ PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C,int imax,IS is[],int ov)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Once"
-static int MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS is[])
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS is[])
 {
   Mat_MPIAIJ  *c = (Mat_MPIAIJ*)C->data;
   int         **idx,*n,*w1,*w2,*w3,*w4,*rtable,**data,len,*idx_i;
-  int         size,rank,m,i,j,k,ierr,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
+  PetscErrorCode ierr;
+  int         size,rank,m,i,j,k,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
   int         *ctr,*pa,*tmp,nrqr,*isz,*isz1,**xdata,**rbuf2;
   int         *onodes1,*olengths1,tag1,tag2,*onodes2,*olengths2;
   PetscBT     *table;
@@ -360,7 +362,7 @@ static int MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS is[])
                to each index set;
       data   - pointer to the solutions
 */
-static int MatIncreaseOverlap_MPIAIJ_Local(Mat C,int imax,PetscBT *table,int *isz,int **data)
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat C,int imax,PetscBT *table,int *isz,int **data)
 {
   Mat_MPIAIJ *c = (Mat_MPIAIJ*)C->data;
   Mat        A = c->A,B = c->B;
@@ -424,15 +426,16 @@ rather then all previous rows as it is now where a single large chunck of
 memory is used.
 
 */
-static int MatIncreaseOverlap_MPIAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xdata,int * isz1)
+static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xdata,int * isz1)
 {
   Mat_MPIAIJ  *c = (Mat_MPIAIJ*)C->data;
   Mat         A = c->A,B = c->B;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)B->data;
+  PetscErrorCode ierr;
   int         rstart,cstart,*ai,*aj,*bi,*bj,*garray,i,j,k;
   int         row,total_sz,ct,ct1,ct2,ct3,mem_estimate,oct2,l,start,end;
   int         val,max1,max2,rank,m,no_malloc =0,*tmp,new_estimate,ctr;
-  int         *rbuf_i,kmax,rbuf_0,ierr;
+  int         *rbuf_i,kmax,rbuf_0;
   PetscBT     xtable;
 
   PetscFunctionBegin;
@@ -722,7 +725,8 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
 #define __FUNCT__ "MatGetSubMatrices_MPIAIJ" 
 PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
-  int         nmax,nstages_local,nstages,i,pos,max_no,ierr,nrow,ncol;
+  PetscErrorCode ierr;
+  int         nmax,nstages_local,nstages,i,pos,max_no,nrow,ncol;
   PetscTruth  rowflag,colflag,wantallmatrix = PETSC_FALSE,twantallmatrix;
 
   PetscFunctionBegin;
@@ -775,7 +779,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],c
   Mat         A = c->A;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)c->B->data,*mat;
   int         **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
-  int         **sbuf1,**sbuf2,rank,m,i,j,k,l,ct1,ct2,ierr,**rbuf1,row,proc;
+  PetscErrorCode ierr;
+  int         **sbuf1,**sbuf2,rank,m,i,j,k,l,ct1,ct2,**rbuf1,row,proc;
   int         nrqs,msz,**ptr,idex,*req_size,*ctr,*pa,*tmp,tcol,nrqr;
   int         **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2,**rmap;
   int         **cmap,**lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;

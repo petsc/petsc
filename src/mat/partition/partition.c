@@ -2,14 +2,14 @@
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
 /* Logging support */
-int MAT_PARTITIONING_COOKIE = 0;
+PetscCookie MAT_PARTITIONING_COOKIE = 0;
 
 /*
    Simplest partitioning, keeps the current partitioning.
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningApply_Current" 
-static int MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
+static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
   int m,rank,size;
@@ -28,9 +28,10 @@ static int MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningApply_Square" 
-static int MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
+static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
 {
-  int   cell,ierr,n,N,p,rstart,rend,*color,size;
+  PetscErrorCode ierr;
+  int   cell,n,N,p,rstart,rend,*color,size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(part->comm,&size);CHKERRQ(ierr);
@@ -97,7 +98,7 @@ PetscTruth MatPartitioningRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningRegister" 
-PetscErrorCode MatPartitioningRegister(const char sname[],const char path[],const char name[],int (*function)(MatPartitioning))
+PetscErrorCode MatPartitioningRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(MatPartitioning))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
@@ -525,8 +526,8 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part,const MatPartitioning
 
   if (!r) {SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);}
 
-  part->ops->destroy      = (int (*)(MatPartitioning)) 0;
-  part->ops->view         = (int (*)(MatPartitioning,PetscViewer)) 0;
+  part->ops->destroy      = (PetscErrorCode (*)(MatPartitioning)) 0;
+  part->ops->view         = (PetscErrorCode (*)(MatPartitioning,PetscViewer)) 0;
   ierr = (*r)(part);CHKERRQ(ierr);
 
   ierr = PetscStrfree(part->type_name);CHKERRQ(ierr);

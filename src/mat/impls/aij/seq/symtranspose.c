@@ -13,8 +13,8 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
-static int logkey_matgetsymtranspose    = 0;
-static int logkey_mattranspose          = 0;
+static PetscEvent logkey_matgetsymtranspose    = 0;
+static PetscEvent logkey_mattranspose          = 0;
 
 
 #undef __FUNCT__

@@ -58,7 +58,8 @@ PetscErrorCode PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Petsc
 PetscErrorCode PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 {
   PetscReal xl = 0.0,yl = 0.0,xr = 1.0,yr = 1.0,value;
-  int       i,c = PETSC_DRAW_BASIC_COLORS,rank,ierr;
+  PetscErrorCode ierr;
+  int       i,c = PETSC_DRAW_BASIC_COLORS,rank;
   char      string[32];
   MPI_Comm  comm;
 
@@ -92,9 +93,10 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawTensorContour_Zoom" 
-static int PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
+static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 {
-  int     i,ierr;
+  PetscErrorCode ierr;
+  int     i;
   ZoomCtx *ctx = (ZoomCtx*)dctx;
 
   PetscFunctionBegin;
@@ -139,7 +141,8 @@ static int PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 @*/
 PetscErrorCode PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
 {
-  int           N = m*n,ierr;
+  PetscErrorCode ierr;
+  int           N = m*n;
   PetscTruth    isnull;
   PetscDraw     popup;
   MPI_Comm      comm;
@@ -196,7 +199,7 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal 
     ctx.y = (PetscReal *)yi;
   }
 
-  ierr = PetscDrawZoom(win,(int (*)(PetscDraw,void *))PetscDrawTensorContour_Zoom,&ctx);CHKERRQ(ierr);
+  ierr = PetscDrawZoom(win,(PetscErrorCode (*)(PetscDraw,void *))PetscDrawTensorContour_Zoom,&ctx);CHKERRQ(ierr);
     
   if (!xin) {ierr = PetscFree(ctx.x);CHKERRQ(ierr);}
   if (!yin) {ierr = PetscFree(ctx.y);CHKERRQ(ierr);}
@@ -235,7 +238,8 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal 
 @*/
 PetscErrorCode PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,PetscReal *v)
 {
-  int           c1,c2,c3,c4,i,j,ierr;
+  PetscErrorCode ierr;
+  int           c1,c2,c3,c4,i,j;
   PetscReal     x1,x2,x3,x4,y_1,y2,y3,y4,scale;
 
   PetscFunctionBegin;

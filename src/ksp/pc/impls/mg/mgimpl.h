@@ -24,7 +24,7 @@ struct _MG
   Vec       b;                            /* Right hand side */ 
   Vec       x;                            /* Solution */
   Vec       r;                            /* Residual */
-  int       (*residual)(Mat,Vec,Vec,Vec);
+  PetscErrorCode (*residual)(Mat,Vec,Vec,Vec);
   Mat       A;                            /* matrix used in forming residual*/ 
   KSP      smoothd;                      /* pre smoother */
   KSP      smoothu;                      /* post smoother */
@@ -33,8 +33,8 @@ struct _MG
   int       default_smoothu;              /* number of smooths per level if not over-ridden */
   int       default_smoothd;              /*  with calls to KSPSetTolerances() */
   PetscReal rtol,atol,dtol,ttol;          /* tolerances for when running with PCApplyRichardson_MG */
-  int       eventsetup;                   /* if logging times for each level */
-  int       eventsolve;      
+  PetscEvent eventsetup;                   /* if logging times for each level */
+  PetscEvent eventsolve;      
 };
 
 

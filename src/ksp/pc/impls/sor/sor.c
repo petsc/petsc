@@ -12,7 +12,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_SOR"
-static int PCDestroy_SOR(PC pc)
+static PetscErrorCode PCDestroy_SOR(PC pc)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;
@@ -24,7 +24,7 @@ static int PCDestroy_SOR(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_SOR"
-static int PCApply_SOR(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;
@@ -37,7 +37,7 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_SOR"
-static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
+static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
   PetscErrorCode ierr;

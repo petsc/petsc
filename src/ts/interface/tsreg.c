@@ -44,7 +44,7 @@ PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
 @*/
 PetscErrorCode TSSetType(TS ts, const TSType type)
 {
-  int      (*r)(TS);
+  PetscErrorCode (*r)(TS);
   PetscTruth match;
   PetscErrorCode ierr;
 
@@ -116,7 +116,7 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
 
   Level: advanced
 @*/
-PetscErrorCode TSRegister(const char sname[], const char path[], const char name[], int (*function)(TS))
+PetscErrorCode TSRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(TS))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;

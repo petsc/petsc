@@ -30,9 +30,9 @@
 #include "src/ksp/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
-static int    GMRESGetNewVectors(KSP,int);
-static int    GMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal*);
-static int    BuildGmresSoln(PetscScalar*,Vec,Vec,KSP,int);
+static PetscErrorCode    GMRESGetNewVectors(KSP,int);
+static PetscErrorCode    GMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal*);
+static PetscErrorCode    BuildGmresSoln(PetscScalar*,Vec,Vec,KSP,int);
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_GMRES"
@@ -257,7 +257,8 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
 PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
 {
   KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
-  int       i,ierr;
+  PetscErrorCode ierr;
+  int       i;
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrix */
@@ -306,7 +307,7 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "BuildGmresSoln"
-static int BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
+static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
 {
   PetscScalar tt,zero = 0.0,one = 1.0;
   PetscErrorCode ierr;
@@ -353,7 +354,7 @@ static int BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "GMRESUpdateHessenberg"
-static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
+static PetscErrorCode GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
   PetscScalar *hh,*cc,*ss,tt;
   int         j;
@@ -421,10 +422,11 @@ static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res
  */
 #undef __FUNCT__  
 #define __FUNCT__ "GMRESGetNewVectors" 
-static int GMRESGetNewVectors(KSP ksp,int it)
+static PetscErrorCode GMRESGetNewVectors(KSP ksp,int it)
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
-  int       nwork = gmres->nwork_alloc,k,nalloc,ierr;
+  PetscErrorCode ierr;
+  int       nwork = gmres->nwork_alloc,k,nalloc;
 
   PetscFunctionBegin;
   nalloc = gmres->delta_allocate;
@@ -578,7 +580,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
     if (flg) {
       PetscViewers viewers;
       ierr = PetscViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(int (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(PetscErrorCode (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -625,7 +627,7 @@ PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp,int max_k)
 }
 EXTERN_C_END
 
-typedef int (*FCN)(KSP,int); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN)(KSP,int); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetOrthogonalization_GMRES" 

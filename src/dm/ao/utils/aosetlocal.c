@@ -29,7 +29,7 @@
 
 .seealso: AODataKeyParition(), AODataSegmentPartition()
 @*/
-int AODataPartitionAndSetupLocal(AOData ao,const char keyname[],const char segmentname[],IS *iskey,IS *issegment,ISLocalToGlobalMapping *ltog)
+PetscErrorCode AODataPartitionAndSetupLocal(AOData ao,const char keyname[],const char segmentname[],IS *iskey,IS *issegment,ISLocalToGlobalMapping *ltog)
 {
   ISLocalToGlobalMapping ltogkey;
   PetscErrorCode ierr;

@@ -19,7 +19,8 @@ typedef struct {
 #define __FUNCT__ "AOView_Basic" 
 PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
 {
-  int        rank,ierr,i;
+  PetscErrorCode ierr;
+  int        rank,i;
   AO_Basic   *aodebug = (AO_Basic*)ao->data;
   PetscTruth iascii;
 
@@ -321,7 +322,8 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int 
 @*/
 PetscErrorCode AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 {
-  int       *mypetsc = 0,*myapp,ierr,napp,npetsc;
+  PetscErrorCode ierr;
+  int       *mypetsc = 0,*myapp,napp,npetsc;
   MPI_Comm  comm;
 
   PetscFunctionBegin;

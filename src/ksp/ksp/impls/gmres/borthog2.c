@@ -34,7 +34,8 @@
 PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,int it)
 {
   KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
-  int         j,ierr;
+  PetscErrorCode ierr;
+  int         j;
   PetscScalar *hh,*hes,shh[500],*lhh;
   PetscReal   hnrm, wnrm;
   PetscTruth  refine = (PetscTruth)(gmres->cgstype == KSP_GMRES_CGS_REFINE_ALWAYS);

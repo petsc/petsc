@@ -346,7 +346,7 @@ Public License instead of this License.
 */
 #include "petsc.h"
 
-static int SPARSEKIT2qsplit(PetscScalar *a,int *ind,int *n,int *ncut)
+static PetscErrorCode SPARSEKIT2qsplit(PetscScalar *a,int *ind,int *n,int *ncut)
 {
     /* System generated locals */
     int i__1;

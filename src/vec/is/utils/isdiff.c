@@ -31,7 +31,8 @@
 @*/
 PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
 {
-  int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
+  PetscErrorCode ierr;
+  int      i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
   PetscBT  mask;
   MPI_Comm comm;
 
@@ -120,7 +121,8 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
 @*/
 PetscErrorCode ISSum(IS is1,IS is2,IS *isout)
 {
-  int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
+  PetscErrorCode ierr;
+  int      i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
   PetscBT  mask;
   MPI_Comm comm;
 

@@ -92,7 +92,7 @@ EXTERN_C_END
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_Jacobi"
-static int PCSetUp_Jacobi(PC pc)
+static PetscErrorCode PCSetUp_Jacobi(PC pc)
 {
   PC_Jacobi     *jac = (PC_Jacobi*)pc->data;
   Vec           diag,diagsqrt;
@@ -177,7 +177,7 @@ static int PCSetUp_Jacobi(PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_Jacobi_Symmetric"
-static int PCSetUp_Jacobi_Symmetric(PC pc)
+static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
 {
   PetscErrorCode ierr;
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
@@ -200,7 +200,7 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_Jacobi_NonSymmetric"
-static int PCSetUp_Jacobi_NonSymmetric(PC pc)
+static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
 {
   PetscErrorCode ierr;
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
@@ -227,7 +227,7 @@ static int PCSetUp_Jacobi_NonSymmetric(PC pc)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_Jacobi"
-static int PCApply_Jacobi(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
   PetscErrorCode ierr;
@@ -255,7 +255,7 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplySymmetricLeftOrRight_Jacobi"
-static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
@@ -279,7 +279,7 @@ static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_Jacobi"
-static int PCDestroy_Jacobi(PC pc)
+static PetscErrorCode PCDestroy_Jacobi(PC pc)
 {
   PC_Jacobi *jac = (PC_Jacobi*)pc->data;
   PetscErrorCode ierr;
@@ -297,7 +297,7 @@ static int PCDestroy_Jacobi(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_Jacobi"
-static int PCSetFromOptions_Jacobi(PC pc)
+static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 {
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
   PetscErrorCode ierr;

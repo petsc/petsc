@@ -79,7 +79,8 @@ PetscErrorCode DACreateGlobalVector(DA da,Vec* g)
 @*/
 PetscErrorCode DACreateNaturalVector(DA da,Vec* g)
 {
-  int cnt,ierr;
+  PetscErrorCode ierr;
+  int cnt;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

@@ -154,7 +154,8 @@ PetscErrorCode PetscByteSwapDouble(double *buff,int n)
 @*/
 PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 {
-  int               maxblock = 65536,wsize,err,m = n,ierr;
+  PetscErrorCode ierr;
+  int               maxblock = 65536,wsize,err,m = n;
   static PetscTruth longintset = PETSC_FALSE,longintfile = PETSC_FALSE;
   PetscTruth        flg;
   char              *pp = (char*)p;
@@ -595,7 +596,8 @@ PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,int n,Pe
 @*/
 PetscErrorCode PetscSynchronizedBinarySeek(MPI_Comm comm,int fd,int size,PetscBinarySeekType whence,int *offset)
 {
-  PetscErrorCode ierr,rank;
+  PetscErrorCode ierr;
+  int rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

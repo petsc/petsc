@@ -6,7 +6,7 @@
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 
 /* Logging support */
-int MAT_FDCOLORING_COOKIE = 0;
+PetscCookie MAT_FDCOLORING_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringSetF"
@@ -19,7 +19,7 @@ PetscErrorCode MatFDColoringSetF(MatFDColoring fd,Vec F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringView_Draw_Zoom"
-static int MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
+static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   MatFDColoring fd = (MatFDColoring)Aa;
   PetscErrorCode ierr;
@@ -41,7 +41,7 @@ static int MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringView_Draw"
-static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
+static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscTruth  isnull;
@@ -95,7 +95,8 @@ static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 @*/
 PetscErrorCode MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 {
-  int               i,j,ierr;
+  PetscErrorCode ierr;
+  int               i,j;
   PetscTruth        isdraw,iascii;
   PetscViewerFormat format;
 
@@ -267,7 +268,7 @@ PetscErrorCode MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 
 .keywords: Mat, Jacobian, finite differences, set, function
 @*/
-PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
+PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd,PetscErrorCode (*f)(void),void *fctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
@@ -429,7 +430,8 @@ PetscErrorCode MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *
 @*/
 PetscErrorCode MatFDColoringDestroy(MatFDColoring c)
 {
-  int i,ierr;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   if (--c->refct > 0) PetscFunctionReturn(0);
@@ -518,8 +520,9 @@ EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring coloring,in
 @*/
 PetscErrorCode MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           (*f)(void*,Vec,Vec,void*) = (int (*)(void*,Vec,Vec,void *))coloring->f;
-  int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
+  PetscErrorCode (*f)(void*,Vec,Vec,void*) = (PetscErrorCode (*)(void*,Vec,Vec,void *))coloring->f;
+  PetscErrorCode ierr;
+  int           k,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
   PetscScalar   dx,mone = -1.0,*y,*xx,*w3_array;
   PetscScalar   *vscale_array;
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 
@@ -718,8 +721,9 @@ PetscErrorCode MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructu
 @*/
 PetscErrorCode MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           (*f)(void*,PetscReal,Vec,Vec,void*)=(int (*)(void*,PetscReal,Vec,Vec,void *))coloring->f;
-  int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow;
+  PetscErrorCode (*f)(void*,PetscReal,Vec,Vec,void*)=(PetscErrorCode (*)(void*,PetscReal,Vec,Vec,void *))coloring->f;
+  PetscErrorCode ierr;
+  int           k,N,start,end,l,row,col,srow,**vscaleforrow;
   PetscScalar   dx,mone = -1.0,*y,*xx,*w3_array;
   PetscScalar   *vscale_array;
   PetscReal     epsilon = coloring->error_rel,umin = coloring->umin; 

@@ -176,7 +176,8 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
 PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
 {
   Mat_Spooles     *lu = (Mat_Spooles*)(*F)->spptr;
-  int             rank,size,ierr,lookahead=0;
+  PetscErrorCode  ierr;
+  int             rank,size,lookahead=0,sierr;
   ChvManager      *chvmanager ;
   Chv             *rootchv ;
   Graph           *graph ;
@@ -484,7 +485,7 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
                lu->firsttag, lasttag, tagbound); 
   }
   rootchv = FrontMtx_MPI_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, droptol,
-                     chvmanager, lu->ownersIV, lookahead, &ierr, lu->cpus, 
+                     chvmanager, lu->ownersIV, lookahead, &sierr, lu->cpus, 
                      lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag,lu->comm_spooles);
   ChvManager_free(chvmanager);
   lu->firsttag = lasttag;
@@ -517,7 +518,7 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
       PatchAndGoInfo_free(lu->frontmtx->patchinfo);
     }
   }
-  if ( ierr >= 0 ) SETERRQ2(1,"\n proc %d : factorization error at front %d", rank, ierr);
+  if ( sierr >= 0 ) SETERRQ2(1,"\n proc %d : factorization error at front %d", rank, sierr);
  
   /*  post-process the factorization and split 
       the factor matrices into submatrices */

@@ -8,9 +8,10 @@ static char help[] = "Tests timing PetscSortInt().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         ierr,i,n = 1000,*values,event;
+  int         i,n = 1000,*values,event;
   PetscRandom rand;
   PetscScalar value;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

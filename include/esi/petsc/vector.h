@@ -145,7 +145,7 @@ template<>
 };
 
 }}
-EXTERN int VecESIWrap(Vec,esi::Vector<double,int>**);
+EXTERN PetscErrorCode VecESIWrap(Vec,esi::Vector<double,int>**);
 
 #endif
 

@@ -31,7 +31,8 @@
 @*/
 PetscErrorCode VecStrideScale(Vec v,int start,PetscScalar *scale)
 {
-  int         i,n,ierr,bs;
+  PetscErrorCode ierr;
+  int         i,n,bs;
   PetscScalar *x,xscale = *scale;
 
   PetscFunctionBegin;
@@ -92,7 +93,8 @@ PetscErrorCode VecStrideScale(Vec v,int start,PetscScalar *scale)
 @*/
 PetscErrorCode VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
 {
-  int         i,n,ierr,bs;
+  PetscErrorCode ierr;
+  int         i,n,bs;
   PetscScalar *x;
   PetscReal   tnorm;
   MPI_Comm    comm;
@@ -180,7 +182,8 @@ PetscErrorCode VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
 @*/
 PetscErrorCode VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
 {
-  int         i,n,ierr,bs;
+  PetscErrorCode ierr;
+  int         i,n,bs;
   PetscScalar *x;
   PetscReal   max,tmp;
   MPI_Comm    comm;
@@ -261,7 +264,8 @@ PetscErrorCode VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
 @*/
 PetscErrorCode VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
 {
-  int         i,n,ierr,bs;
+  PetscErrorCode ierr;
+  int         i,n,bs;
   PetscScalar *x;
   PetscReal   min,tmp;
   MPI_Comm    comm;
@@ -331,7 +335,8 @@ PetscErrorCode VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
 @*/
 PetscErrorCode VecStrideScaleAll(Vec v,PetscScalar *scales)
 {
-  int         i,j,n,ierr,bs;
+  PetscErrorCode ierr;
+  int         i,j,n,bs;
   PetscScalar *x;
 
   PetscFunctionBegin;
@@ -388,7 +393,8 @@ PetscErrorCode VecStrideScaleAll(Vec v,PetscScalar *scales)
 @*/
 PetscErrorCode VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
 {
-  int         i,j,n,ierr,bs;
+  PetscErrorCode ierr;
+  int         i,j,n,bs;
   PetscScalar *x;
   PetscReal   tnorm[128];
   MPI_Comm    comm;
@@ -483,7 +489,8 @@ PetscErrorCode VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
 @*/
 PetscErrorCode VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
 {
-  int         i,j,n,ierr,bs;
+  PetscErrorCode ierr;
+  int         i,j,n,bs;
   PetscScalar *x;
   PetscReal   max[128],tmp;
   MPI_Comm    comm;
@@ -562,7 +569,8 @@ PetscErrorCode VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
 @*/
 PetscErrorCode VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
 {
-  int         i,n,ierr,bs,j;
+  PetscErrorCode ierr;
+  int         i,n,bs,j;
   PetscScalar *x;
   PetscReal   min[128],tmp;
   MPI_Comm    comm;
@@ -646,7 +654,8 @@ PetscErrorCode VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
 @*/
 PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 {
-  int          i,n,ierr,bs,j,k,*bss,nv,jj,nvc;
+  PetscErrorCode ierr;
+  int          i,n,bs,j,k,*bss,nv,jj,nvc;
   PetscScalar  *x,**y;
 
   PetscFunctionBegin;
@@ -748,7 +757,8 @@ PetscErrorCode VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
 @*/
 PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 {
-  int          i,n,ierr,bs,j,jj,k,*bss,nv,nvc;
+  PetscErrorCode ierr;
+  int          i,n,bs,j,jj,k,*bss,nv,nvc;
   PetscScalar  *x,**y;
 
   PetscFunctionBegin;
@@ -854,7 +864,8 @@ PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 @*/
 PetscErrorCode VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 {
-  int          i,n,ierr,bs,ns;
+  PetscErrorCode ierr;
+  int          i,n,bs,ns;
   PetscScalar  *x,*y;
 
   PetscFunctionBegin;
@@ -932,7 +943,8 @@ PetscErrorCode VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 @*/
 PetscErrorCode VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 {
-  int          i,n,ierr,bs,ns;
+  PetscErrorCode ierr;
+  int          i,n,bs,ns;
   PetscScalar  *x,*y;
 
   PetscFunctionBegin;
@@ -983,7 +995,8 @@ PetscErrorCode VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 #define __FUNCT__ "VecReciprocal_Default"
 PetscErrorCode VecReciprocal_Default(Vec v)
 {
-  int         i,n,ierr;
+  PetscErrorCode ierr;
+  int         i,n;
   PetscScalar *x;
 
   PetscFunctionBegin;
@@ -1053,7 +1066,8 @@ PetscErrorCode VecSqrt(Vec v)
 @*/
 PetscErrorCode VecSum(Vec v,PetscScalar *sum)
 {
-  int         i,n,ierr;
+  PetscErrorCode ierr;
+  int         i,n;
   PetscScalar *x,lsum = 0.0;
 
   PetscFunctionBegin;
@@ -1091,7 +1105,8 @@ PetscErrorCode VecSum(Vec v,PetscScalar *sum)
 @*/
 PetscErrorCode VecShift(const PetscScalar *shift,Vec v)
 {
-  int         i,n,ierr;
+  PetscErrorCode ierr;
+  int         i,n;
   PetscScalar *x,lsum = *shift;
 
   PetscFunctionBegin;
@@ -1123,7 +1138,8 @@ PetscErrorCode VecShift(const PetscScalar *shift,Vec v)
 @*/
 PetscErrorCode VecAbs(Vec v)
 {
-  int         i,n,ierr;
+  PetscErrorCode ierr;
+  int         i,n;
   PetscScalar *x;
 
   PetscFunctionBegin;
@@ -1206,7 +1222,8 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscTruth inv)
 PetscErrorCode VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
 {
   PetscScalar  *v1,*v2;
-  int          n1,n2,ierr;
+  PetscErrorCode ierr;
+  int          n1,n2;
   PetscTruth   flg1;
 
   PetscFunctionBegin;

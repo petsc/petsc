@@ -26,7 +26,7 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningApply_Parmetis" 
-static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
+static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
   PetscErrorCode ierr;

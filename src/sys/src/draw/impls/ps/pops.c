@@ -54,7 +54,7 @@ static PetscTruth rgbfilled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawPoint_PS" 
-static int PetscDrawPoint_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c)
+static PetscErrorCode PetscDrawPoint_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c)
 {
   PetscReal     xx,yy;
   PetscErrorCode ierr;
@@ -69,7 +69,7 @@ static int PetscDrawPoint_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLine_PS" 
-static int PetscDrawLine_PS(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c)
+static PetscErrorCode PetscDrawLine_PS(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
   PetscReal     x1,y_1,x2,y2;
@@ -85,7 +85,7 @@ static int PetscDrawLine_PS(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal x
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringSetSize_PS" 
-static int PetscDrawStringSetSize_PS(PetscDraw draw,PetscReal x,PetscReal  y)
+static PetscErrorCode PetscDrawStringSetSize_PS(PetscDraw draw,PetscReal x,PetscReal  y)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
   PetscErrorCode ierr;
@@ -100,7 +100,7 @@ static int PetscDrawStringSetSize_PS(PetscDraw draw,PetscReal x,PetscReal  y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringGetSize_PS" 
-static int PetscDrawStringGetSize_PS(PetscDraw draw,PetscReal *x,PetscReal  *y)
+static PetscErrorCode PetscDrawStringGetSize_PS(PetscDraw draw,PetscReal *x,PetscReal  *y)
 {
   PetscReal   w = 9,h = 9;
 
@@ -112,7 +112,7 @@ static int PetscDrawStringGetSize_PS(PetscDraw draw,PetscReal *x,PetscReal  *y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawString_PS" 
-static int PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
+static PetscErrorCode PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
   PetscReal     x1,y_1;
@@ -128,7 +128,7 @@ static int PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,cons
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringVertical_PS" 
-static int PetscDrawStringVertical_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
+static PetscErrorCode PetscDrawStringVertical_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,const char chrs[])
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
   PetscReal     x1,y_1;
@@ -142,11 +142,11 @@ static int PetscDrawStringVertical_PS(PetscDraw draw,PetscReal x,PetscReal  y,in
   PetscFunctionReturn(0);
 }
 
-static int PetscDrawInterpolatedTriangle_PS(PetscDraw_PS*,PetscReal,PetscReal,int,PetscReal,PetscReal,int,PetscReal,PetscReal,int);
+static PetscErrorCode PetscDrawInterpolatedTriangle_PS(PetscDraw_PS*,PetscReal,PetscReal,int,PetscReal,PetscReal,int,PetscReal,PetscReal,int);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawTriangle_PS" 
-static int PetscDrawTriangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
+static PetscErrorCode PetscDrawTriangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
                           PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
@@ -172,7 +172,7 @@ static int PetscDrawTriangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscR
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawRectangle_PS" 
-static int PetscDrawRectangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
+static PetscErrorCode PetscDrawRectangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscReal X2,
                           PetscReal Y2,int c1,int c2,int c3,int c4)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
@@ -196,7 +196,7 @@ static int PetscDrawRectangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawDestroy_PS" 
-static int PetscDrawDestroy_PS(PetscDraw draw)
+static PetscErrorCode PetscDrawDestroy_PS(PetscDraw draw)
 {
   PetscDraw_PS *ps = (PetscDraw_PS*)draw->data;
   PetscErrorCode ierr;
@@ -219,7 +219,7 @@ static int PetscDrawDestroy_PS(PetscDraw draw)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSynchronizedFlush_PS" 
-static int PetscDrawSynchronizedFlush_PS(PetscDraw draw)
+static PetscErrorCode PetscDrawSynchronizedFlush_PS(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
@@ -231,7 +231,7 @@ static int PetscDrawSynchronizedFlush_PS(PetscDraw draw)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSynchronizedClear_PS" 
-static int PetscDrawSynchronizedClear_PS(PetscDraw draw)
+static PetscErrorCode PetscDrawSynchronizedClear_PS(PetscDraw draw)
 {
   PetscErrorCode ierr;
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
@@ -450,7 +450,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawInterpolatedTriangle_PS" 
-static int PetscDrawInterpolatedTriangle_PS(PetscDraw_PS* ps,PetscReal x1,PetscReal y_1,int t1,
+static PetscErrorCode PetscDrawInterpolatedTriangle_PS(PetscDraw_PS* ps,PetscReal x1,PetscReal y_1,int t1,
                                 PetscReal x2,PetscReal y2,int t2,PetscReal x3,PetscReal y3,int t3)
 {
   PetscReal rfrac,lfrac;

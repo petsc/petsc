@@ -21,45 +21,45 @@ struct _p_SNES {
   Vec   vec_sol,vec_sol_always;                 /* pointer to solution */
   Vec   vec_sol_update_always;                  /* pointer to solution update */
 
-  int   (*computefunction)(SNES,Vec,Vec,void*); /* function routine */
+  PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*); /* function routine */
   Vec   vec_func,vec_func_always;               /* pointer to function */
   Vec   afine;                                  /* If non-null solve F(x) = afine */
   void  *funP;                                  /* user-defined function context */
 
-  int   (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
   Mat   jacobian;                               /* Jacobian matrix */
   Mat   jacobian_pre;                           /* preconditioner matrix */
   void  *jacP;                                  /* user-defined Jacobian context */
   KSP  ksp;                                   /* linear solver context */
 
-  int   (*computescaling)(Vec,Vec,void*);       /* scaling routine */
+  PetscErrorCode (*computescaling)(Vec,Vec,void*);       /* scaling routine */
   Vec   scaling;                                /* scaling vector */
   void  *scaP;                                  /* scaling context */
 
   /* ------------------------Boundary conditions-----------------------------------*/
-  int (*applyrhsbc)(SNES, Vec, void *);         /* Applies boundary conditions to the rhs */
-  int (*applysolbc)(SNES, Vec, void *);         /* Applies boundary conditions to the solution */
+  PetscErrorCode (*applyrhsbc)(SNES, Vec, void *);         /* Applies boundary conditions to the rhs */
+  PetscErrorCode (*applysolbc)(SNES, Vec, void *);         /* Applies boundary conditions to the solution */
 
   /* ------------------------Time stepping hooks-----------------------------------*/
-  int (*update)(SNES, int);                     /* General purpose function for update */
+  PetscErrorCode (*update)(SNES, int);                     /* General purpose function for update */
 
   /* ---------------- PETSc-provided (or user-provided) stuff ---------------------*/
 
-  int   (*monitor[MAXSNESMONITORS])(SNES,int,PetscReal,void*); /* monitor routine */
-  int   (*monitordestroy[MAXSNESMONITORS])(void*);          /* monitor context destroy routine */
+  PetscErrorCode (*monitor[MAXSNESMONITORS])(SNES,int,PetscReal,void*); /* monitor routine */
+  PetscErrorCode (*monitordestroy[MAXSNESMONITORS])(void*);          /* monitor context destroy routine */
   void  *monitorcontext[MAXSNESMONITORS];                   /* monitor context */
   int   numbermonitors;                                     /* number of monitors */
-  int   (*converged)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);      /* convergence routine */
+  PetscErrorCode (*converged)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);      /* convergence routine */
   void  *cnvP;	                                            /* convergence context */
   SNESConvergedReason reason;
 
   /* --- Routines and data that are unique to each particular solver --- */
 
-  int   (*setup)(SNES);             /* routine to set up the nonlinear solver */
+  PetscErrorCode (*setup)(SNES);             /* routine to set up the nonlinear solver */
   int   setupcalled;                /* true if setup has been called */
-  int   (*solve)(SNES);             /* actual nonlinear solver */
-  int   (*setfromoptions)(SNES);    /* sets options from database */
-  int   (*printhelp)(SNES,char*);   /* prints help info */
+  PetscErrorCode (*solve)(SNES);             /* actual nonlinear solver */
+  PetscErrorCode (*setfromoptions)(SNES);    /* sets options from database */
+  PetscErrorCode (*printhelp)(SNES,char*);   /* prints help info */
   void  *data;                      /* implementation-specific data */
 
   /* --------------------------  Parameters -------------------------------------- */
@@ -102,8 +102,8 @@ struct _p_SNES {
 
   Vec         *vwork;            /* more work vectors for Jacobian approx */
   int         nvwork;
-  int        (*destroy)(SNES);
-  int        (*view)(SNES,PetscViewer);
+  PetscErrorCode (*destroy)(SNES);
+  PetscErrorCode (*view)(SNES,PetscViewer);
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
@@ -128,7 +128,7 @@ typedef struct {
     }}
 
 #define SNESMonitor(snes,it,rnorm) \
-        { int _ierr,_i,_im = snes->numbermonitors; \
+        { PetscErrorCode _ierr; int _i,_im = snes->numbermonitors; \
           for (_i=0; _i<_im; _i++) {\
             _ierr = (*snes->monitor[_i])(snes,it,rnorm,snes->monitorcontext[_i]);CHKERRQ(_ierr); \
 	  } \

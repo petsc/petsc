@@ -10,7 +10,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS                 perm = b->row;
-  int                *perm_ptr,ierr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscErrorCode ierr;
+  int                *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   int                *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar          *u,*d,*rtmp,*rtmp_ptr;

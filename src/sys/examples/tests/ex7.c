@@ -11,7 +11,8 @@ static char help[] = "Tests PetscSetCommWorld().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int size,ierr;
+  PetscErrorCode ierr;
+  int size;
 
   MPI_Init(&argc,&argv);
 

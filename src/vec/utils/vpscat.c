@@ -14,7 +14,8 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 {
   VecScatter_MPI_General *to=(VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General*)ctx->fromdata;
-  int                    i,rank,ierr;
+  PetscErrorCode ierr;
+  int                    i,rank;
   PetscViewerFormat      format;
   PetscTruth             iascii;
 
@@ -90,7 +91,8 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from)
 {
   int n = gen_to->n,n_nonmatching = 0,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
-  int *nto_slots,*nfrom_slots,j = 0,ierr;
+  PetscErrorCode ierr;
+  int *nto_slots,*nfrom_slots,j = 0;
   
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
@@ -130,7 +132,8 @@ PetscErrorCode VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
-  int                    len,ny,ierr;
+  PetscErrorCode ierr;
+  int                    len,ny;
 
   PetscFunctionBegin;
   out->postrecvs = in->postrecvs;
@@ -253,7 +256,8 @@ PetscErrorCode VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode 
   PetscScalar            *xv,*yv,*val,*rvalues,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    tag = ctx->tag,i,j,*indices,*rstarts,*sstarts,*rprocs,*sprocs;
-  int                    nrecvs,nsends,iend,ierr;
+  PetscErrorCode ierr;
+  int                    nrecvs,nsends,iend;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -482,7 +486,8 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General*)in->todata;
   VecScatter_MPI_General *in_from = (VecScatter_MPI_General*)in->fromdata,*out_to,*out_from;
-  int                    len,ny,bs = in_from->bs,ierr;
+  PetscErrorCode ierr;
+  int                    len,ny,bs = in_from->bs;
 
   PetscFunctionBegin;
   out->postrecvs = in->postrecvs;
@@ -641,7 +646,8 @@ PetscErrorCode VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMo
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,ierr,len;
+  int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,len;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1193,7 +1199,8 @@ PetscErrorCode VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMod
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscScalar            *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,ierr,len;
+  int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,len;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1842,7 +1849,8 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to   = (VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-  int                    i,ierr;
+  PetscErrorCode ierr;
+  int                    i;
 
   PetscFunctionBegin;
   if (gen_to->use_readyreceiver) {
@@ -1906,10 +1914,11 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
 PetscErrorCode VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,int bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
+  PetscErrorCode ierr;
   int                    *source,*lens,rank,*owners;
   int                    size,*lowner,*start,lengthy;
   int                    *nprocs,i,j,n,idx,nsends,nrecvs;
-  int                    *owner,*starts,count,tag,slen,ierr;
+  int                    *owner,*starts,count,tag,slen;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len,*indx,nprocslocal;
   MPI_Comm               comm;
   MPI_Request            *send_waits,*recv_waits;
@@ -2448,9 +2457,10 @@ PetscErrorCode VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin
 #define __FUNCT__ "VecScatterCreate_PtoP"
 PetscErrorCode VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,VecScatter ctx)
 {
+  PetscErrorCode ierr;
   int         *lens,rank,*owners = xin->map->range,size;
   int         *nprocs,i,j,n,idx,nsends,nrecvs,*local_inidx,*local_inidy;
-  int         *owner,*starts,count,tag,slen,ierr;
+  int         *owner,*starts,count,tag,slen;
   int         *rvalues,*svalues,base,imdex,nmax,*values;
   MPI_Comm    comm;
   MPI_Request *send_waits,*recv_waits;

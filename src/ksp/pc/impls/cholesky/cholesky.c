@@ -47,7 +47,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_Cholesky"
-static int PCSetFromOptions_Cholesky(PC pc)
+static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
 {
   PC_Cholesky *lu = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
@@ -95,7 +95,7 @@ static int PCSetFromOptions_Cholesky(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_Cholesky"
-static int PCView_Cholesky(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 {
   PC_Cholesky *lu = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
@@ -129,7 +129,7 @@ static int PCView_Cholesky(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGetFactoredMatrix_Cholesky"
-static int PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
+static PetscErrorCode PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   
@@ -141,7 +141,7 @@ static int PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_Cholesky"
-static int PCSetUp_Cholesky(PC pc)
+static PetscErrorCode PCSetUp_Cholesky(PC pc)
 {
   PetscErrorCode ierr;
   PetscTruth flg;
@@ -222,7 +222,7 @@ static int PCSetUp_Cholesky(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_Cholesky"
-static int PCDestroy_Cholesky(PC pc)
+static PetscErrorCode PCDestroy_Cholesky(PC pc)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
@@ -238,7 +238,7 @@ static int PCDestroy_Cholesky(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_Cholesky"
-static int PCApply_Cholesky(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
@@ -251,7 +251,7 @@ static int PCApply_Cholesky(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyTranspose_Cholesky"
-static int PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;

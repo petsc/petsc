@@ -6,11 +6,11 @@
 
 typedef struct _PFOps *PFOps;
 struct _PFOps {
-  int          (*apply)(void*,int,PetscScalar*,PetscScalar*);
-  int          (*applyvec)(void*,Vec,Vec);
-  int          (*destroy)(void*);
-  int          (*view)(void*,PetscViewer);
-  int          (*setfromoptions)(PF);
+  PetscErrorCode (*apply)(void*,int,PetscScalar*,PetscScalar*);
+  PetscErrorCode (*applyvec)(void*,Vec,Vec);
+  PetscErrorCode (*destroy)(void*);
+  PetscErrorCode (*view)(void*,PetscViewer);
+  PetscErrorCode (*setfromoptions)(PF);
 };
 
 struct _p_PF {

@@ -169,7 +169,8 @@ PetscErrorCode DAGetLocalVector(DA da,Vec* g)
 @*/
 PetscErrorCode DARestoreLocalVector(DA da,Vec* g)
 {
-  PetscErrorCode ierr,i,j;
+  PetscErrorCode ierr;
+  int i,j;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -225,7 +226,8 @@ PetscErrorCode DARestoreLocalVector(DA da,Vec* g)
 @*/
 PetscErrorCode DAGetGlobalVector(DA da,Vec* g)
 {
-  PetscErrorCode ierr,i;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -272,7 +274,8 @@ PetscErrorCode DAGetGlobalVector(DA da,Vec* g)
 @*/
 PetscErrorCode DARestoreGlobalVector(DA da,Vec* g)
 {
-  PetscErrorCode ierr,i,j;
+  PetscErrorCode ierr;
+  int i,j;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

@@ -5,7 +5,7 @@
 #include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
-int MAT_NULLSPACE_COOKIE = 0;
+PetscCookie MAT_NULLSPACE_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceCreate"
@@ -120,7 +120,8 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace sp)
 PetscErrorCode MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 {
   PetscScalar sum;
-  int         j,n = sp->n,N,ierr;
+  PetscErrorCode ierr;
+  int         j,n = sp->n,N;
   Vec         l = vec;
 
   PetscFunctionBegin;
@@ -171,7 +172,8 @@ PetscErrorCode MatNullSpaceTest(MatNullSpace sp,Mat mat)
 {
   PetscScalar  sum;
   PetscReal    nrm;
-  int          j,n = sp->n,N,ierr,m;
+  int          j,n = sp->n,N,m;
+  PetscErrorCode ierr;
   Vec          l,r;
   MPI_Comm     comm = sp->comm;
   PetscTruth   flg1,flg2;

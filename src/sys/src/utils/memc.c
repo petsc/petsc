@@ -132,7 +132,8 @@ PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 PetscErrorCode PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtype)
 {
   char *aa = (char *)a,*bb = (char *)b;
-  int  dsize,ierr;
+  int  dsize;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (dtype != PETSC_LOGICAL) {

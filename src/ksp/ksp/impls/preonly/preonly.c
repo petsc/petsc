@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_PREONLY"
-static int KSPSetUp_PREONLY(KSP ksp)
+static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -11,7 +11,7 @@ static int KSPSetUp_PREONLY(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_PREONLY"
-static int  KSPSolve_PREONLY(KSP ksp)
+static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 {
   PetscErrorCode ierr;
   Vec        X,B;

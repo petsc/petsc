@@ -264,7 +264,7 @@ PetscErrorCode EventPerfLogEnsureSize(EventPerfLog eventLog, int size)
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(), PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           EventLogActivate(), EventLogDeactivate()
 @*/
-PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], int cookie, PetscEvent *event) 
+PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], PetscCookie cookie, PetscEvent *event) 
 {
   EventRegInfo *eventInfo;
   char         *str;
@@ -393,7 +393,7 @@ PetscErrorCode EventPerfLogDeactivate(EventPerfLog eventLog, PetscEvent event)
 
 .seealso: EventPerfLogDeactivateClass(), EventPerfLogActivate(), EventPerfLogDeactivate()
 @*/
-PetscErrorCode EventPerfLogActivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, int cookie) 
+PetscErrorCode EventPerfLogActivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, PetscCookie cookie) 
 { 
   int e;
 
@@ -422,7 +422,7 @@ PetscErrorCode EventPerfLogActivateClass(EventPerfLog eventLog, EventRegLog even
 
 .seealso: EventPerfLogDeactivateClass(), EventPerfLogDeactivate(), EventPerfLogActivate()
 @*/
-PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, int cookie) 
+PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog eventRegLog, PetscCookie cookie) 
 {
   int e;
 

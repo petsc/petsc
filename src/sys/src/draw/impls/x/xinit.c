@@ -203,7 +203,8 @@ PetscErrorCode XiQuickWindow(PetscDraw_X* w,char* host,char* name,int x,int y,in
 PetscErrorCode XiQuickWindowFromWindow(PetscDraw_X* w,char *host,Window win)
 {
   Window            root;
-  int               d,ierr;
+  PetscErrorCode ierr;
+  int               d;
   unsigned int      ud;
   XWindowAttributes attributes;
 

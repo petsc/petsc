@@ -44,7 +44,8 @@ EXTERN PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat,int,const IS[],const 
 #define __FUNCT__ "MatGetSubMatrices_MPIDense" 
 PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
-  int           nmax,nstages_local,nstages,i,pos,max_no,ierr;
+  PetscErrorCode ierr;
+  int           nmax,nstages_local,nstages,i,pos,max_no;
 
   PetscFunctionBegin;
   /* Allocate memory to hold all the submatrices */
@@ -77,9 +78,10 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,const IS isrow[]
   Mat_MPIDense  *c = (Mat_MPIDense*)C->data;
   Mat           A = c->A;
   Mat_SeqDense  *a = (Mat_SeqDense*)A->data,*mat;
+  PetscErrorCode ierr;
   int           N = C->N,rstart = c->rstart,count;
   int           **irow,**icol,*nrow,*ncol,*w1,*w3,*w4,*rtable,start,end,size;
-  int           **sbuf1,rank,m,i,j,k,l,ct1,ierr,**rbuf1,row,proc;
+  int           **sbuf1,rank,m,i,j,k,l,ct1,**rbuf1,row,proc;
   int           nrqs,msz,**ptr,idex,*ctr,*pa,*tmp,bsz,nrqr;
   int           is_no,jmax,*irow_i,**rmap,*rmap_i;
   int           len,ctr_j,*sbuf1_j,*rbuf1_i;

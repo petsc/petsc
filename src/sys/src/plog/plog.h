@@ -44,8 +44,8 @@
 #define ACTIONEND   3
 typedef struct _Action {
   int            action;        /* The type of execution */
-  int            event;         /* The event number */
-  int            cookie;        /* The event class id */
+  PetscEvent     event;         /* The event number */
+  PetscCookie    cookie;        /* The event class id */
   PetscLogDouble time;          /* The time of occurence */
   PetscLogDouble flops;         /* The cumlative flops */
   PetscLogDouble mem;           /* The current memory usage */
@@ -106,24 +106,23 @@ EXTERN PetscErrorCode EventPerfLogEnsureSize(EventPerfLog, int);
 EXTERN PetscErrorCode EventPerfInfoClear(EventPerfInfo *);
 EXTERN PetscErrorCode EventPerfInfoCopy(EventPerfInfo *, EventPerfInfo *);
 /* Registration functions */
-EXTERN PetscErrorCode EventRegLogRegister(EventRegLog, const char [], int, int *);
+EXTERN PetscErrorCode EventRegLogRegister(EventRegLog, const char [], PetscCookie, PetscEvent *);
 /* Query functions */
-EXTERN PetscErrorCode EventPerfLogSetVisible(EventPerfLog, int, PetscTruth);
-EXTERN PetscErrorCode EventPerfLogGetVisible(EventPerfLog, int, PetscTruth *);
-EXTERN PetscErrorCode EventRegLogGetEvent(EventRegLog, int, int *);
+EXTERN PetscErrorCode EventPerfLogSetVisible(EventPerfLog, PetscEvent, PetscTruth);
+EXTERN PetscErrorCode EventPerfLogGetVisible(EventPerfLog, PetscEvent, PetscTruth *);
 /* Activaton functions */
-EXTERN PetscErrorCode EventPerfLogActivate(EventPerfLog, int);
-EXTERN PetscErrorCode EventPerfLogDeactivate(EventPerfLog, int);
-EXTERN PetscErrorCode EventPerfLogActivateClass(EventPerfLog, EventRegLog, int);
-EXTERN PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog, EventRegLog, int);
+EXTERN PetscErrorCode EventPerfLogActivate(EventPerfLog, PetscEvent);
+EXTERN PetscErrorCode EventPerfLogDeactivate(EventPerfLog, PetscEvent);
+EXTERN PetscErrorCode EventPerfLogActivateClass(EventPerfLog, EventRegLog, PetscCookie);
+EXTERN PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog, EventRegLog, PetscCookie);
 
 /* Logging functions */
-EXTERN PetscErrorCode PetscLogEventBeginDefault(int, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventEndDefault(int, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventBeginComplete(int, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventEndComplete(int, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventBeginTrace(int, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventEndTrace(int, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventBeginDefault(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventEndDefault(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventBeginComplete(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventEndComplete(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventBeginTrace(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventEndTrace(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
 
 /* Creation and destruction functions */
 EXTERN PetscErrorCode ClassRegLogCreate(ClassRegLog *);
@@ -135,9 +134,9 @@ EXTERN PetscErrorCode ClassRegInfoDestroy(ClassRegInfo *);
 EXTERN PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog, int);
 EXTERN PetscErrorCode ClassPerfInfoClear(ClassPerfInfo *);
 /* Registration functions */
-EXTERN PetscErrorCode ClassRegLogRegister(ClassRegLog, const char [], int *);
+EXTERN PetscErrorCode ClassRegLogRegister(ClassRegLog, const char [], PetscCookie *);
 /* Query functions */
-EXTERN PetscErrorCode ClassRegLogGetClass(ClassRegLog, int, int *);
+EXTERN PetscErrorCode ClassRegLogGetClass(ClassRegLog, PetscCookie, int *);
 /* Logging functions */
 EXTERN PetscErrorCode PetscLogObjCreateDefault(PetscObject);
 EXTERN PetscErrorCode PetscLogObjDestroyDefault(PetscObject);

@@ -81,7 +81,8 @@ PetscErrorCode PetscStackCreate(void)
 #define __FUNCT__ "PetscStackView"
 PetscErrorCode PetscStackView(PetscViewer viewer)
 {
-  int  i,ierr;
+  PetscErrorCode ierr;
+  int  i;
   FILE *file;
 
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;

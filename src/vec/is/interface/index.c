@@ -4,7 +4,7 @@
 #include "src/vec/is/isimpl.h"      /*I "petscis.h" I*/
 
 /* Logging support */
-PetscCookieCode IS_COOKIE = 0;
+PetscCookie IS_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity" 

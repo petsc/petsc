@@ -66,7 +66,7 @@ typedef struct matvec_info {
   int n, m, n_global, m_global;
   int *local2global;
   gs_ADT gs_handle;
-  int (*matvec)(struct matvec_info*,REAL*,REAL*);
+  PetscErrorCode (*matvec)(struct matvec_info*,REAL*,REAL*);
   void *grid_data;
 } mv_info;
 
@@ -92,7 +92,7 @@ static int do_xxt_factor(xxt_ADT xxt_handle);
 static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data);
 #ifdef MLSRC
 void ML_XXT_solve(xxt_ADT xxt_handle, int lx, double *x, int lb, double *b);
-PetscErrorCode  ML_XXT_factor(xxt_ADT xxt_handle, int *local2global, int n, int m,
+int  ML_XXT_factor(xxt_ADT xxt_handle, int *local2global, int n, int m,
 		   void *matvec, void *grid_data, int grid_tag, ML *my_ml);
 #endif
 
@@ -137,7 +137,7 @@ Output:
 Return:
 Description:
 **************************************xxt.c***********************************/
-PetscErrorCode 
+int
 XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
 	   int *local2global,  /* global column mapping       */
 	   int n,              /* local num rows              */
@@ -1281,7 +1281,7 @@ mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
   mvi->local2global=(int*)bss_malloc((m+1)*INT_LEN);
   ivec_copy(mvi->local2global,local2global,m);
   mvi->local2global[m] = INT_MAX;
-  mvi->matvec=(int (*)(mv_info*,REAL*,REAL*))matvec;
+  mvi->matvec=(PetscErrorCode (*)(mv_info*,REAL*,REAL*))matvec;
   mvi->grid_data=grid_data;
 
   /* set xxt communication handle to perform restricted matvec */

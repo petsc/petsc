@@ -161,7 +161,8 @@ int AppPartitionGetOwnedSize(AppPartition *part, int *m)
 #define offset(I,J) ((I)*typ_col+(J)*typ_sd+(((I)==(part->nsdx-1))?((J)*(part->nely)):0))
 int AppPartitionCreateLocalToGlobalMapping(AppPartition *part, ISLocalToGlobalMapping *mapping)
 {
-  int i, j, I, J, ierr, *indices, *p, typ_sd, typ_col;
+  PetscErrorCode ierr;
+  int i, j, I, J,  *indices, *p, typ_sd, typ_col;
 
   PetscFunctionBegin;
 
@@ -250,7 +251,8 @@ int AppPartitionCreateLocalToGlobalMapping(AppPartition *part, ISLocalToGlobalMa
 #define __FUNCT__ "AppPartitionGetBoundaryNodesAndCoords"
 int AppPartitionGetBoundaryNodesAndCoords(AppPartition *part, int *n, int **boundary, double **coords)
 {
-  int i, j, I, J, ierr, *pb;
+  PetscErrorCode ierr;
+  int i, j, I, J,  *pb;
   double *pc, offsetx, offsety;
   PetscTruth flg;
 

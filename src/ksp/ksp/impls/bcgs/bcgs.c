@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_BCGS"
-static int KSPSetUp_BCGS(KSP ksp)
+static PetscErrorCode KSPSetUp_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -17,9 +17,10 @@ static int KSPSetUp_BCGS(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_BCGS"
-static int  KSPSolve_BCGS(KSP ksp)
+static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
 {
-  int         i,ierr;
+  PetscErrorCode ierr;
+  int         i;
   PetscScalar rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
   Vec         X,B,V,P,R,RP,T,S;
   PetscReal   dp = 0.0;

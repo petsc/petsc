@@ -76,7 +76,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_LU"
-static int PCSetFromOptions_LU(PC pc)
+static PetscErrorCode PCSetFromOptions_LU(PC pc)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
   PetscErrorCode ierr;
@@ -134,7 +134,7 @@ static int PCSetFromOptions_LU(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_LU"
-static int PCView_LU(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
   PetscErrorCode ierr;
@@ -170,7 +170,7 @@ static int PCView_LU(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGetFactoredMatrix_LU"
-static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
+static PetscErrorCode PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
@@ -182,7 +182,7 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_LU"
-static int PCSetUp_LU(PC pc)
+static PetscErrorCode PCSetUp_LU(PC pc)
 {
   PetscErrorCode ierr;
   PetscTruth flg;
@@ -239,7 +239,7 @@ static int PCSetUp_LU(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_LU"
-static int PCDestroy_LU(PC pc)
+static PetscErrorCode PCDestroy_LU(PC pc)
 {
   PC_LU *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
@@ -255,7 +255,7 @@ static int PCDestroy_LU(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_LU"
-static int PCApply_LU(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
@@ -268,7 +268,7 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyTranspose_LU"
-static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;

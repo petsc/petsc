@@ -5,7 +5,7 @@
       Interface 
         Subroutine ISGetIndicesF90(i,array,ierr)
           integer, pointer :: array(:)
-          integer  ierr
+          PetscErrorCode  ierr
           IS       i
         End Subroutine
       End Interface
@@ -14,7 +14,7 @@
       Interface 
         Subroutine ISRestoreIndicesF90(i,array,ierr)
           integer, pointer :: array(:)
-          integer ierr
+          PetscErrorCode ierr
           IS      i
         End Subroutine
       End Interface
@@ -24,7 +24,7 @@
       Interface 
         Subroutine ISBlockGetIndicesF90(i,array,ierr)
           integer, pointer :: array(:)
-          integer  ierr
+          PetscErrorCode  ierr
           IS       i
         End Subroutine
       End Interface
@@ -33,7 +33,7 @@
       Interface 
         Subroutine ISBlockRestoreIndicesF90(i,array,ierr)
           integer, pointer :: array(:)
-          integer ierr
+          PetscErrorCode ierr
           IS      i
         End Subroutine
       End Interface
@@ -42,7 +42,8 @@
       Interface 
         Subroutine ISColoringGetISF90(ic,n,isa,ierr)
           IS, pointer :: isa(:)
-          integer     n,ierr
+          integer     n
+          PetscErrorCode ierr
           ISColoring  ic
         End Subroutine
       End Interface
@@ -50,7 +51,7 @@
       Interface 
         Subroutine ISColoringRestoreISF90(ic,isa,ierr)
           IS, pointer :: isa(:)
-          integer     ierr
+          PetscErrorCode     ierr
           ISColoring  ic
         End Subroutine
       End Interface

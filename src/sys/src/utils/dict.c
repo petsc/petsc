@@ -1,7 +1,7 @@
 
 #include "petscsys.h"
 
-int DICT_COOKIE = 0;
+PetscCookie DICT_COOKIE = 0;
 
 typedef struct _p_DictNode {
   char               *key;

@@ -13,7 +13,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ       *sbaij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(sbaij->B->data);  
-  int                Nbs = sbaij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray,*sgarray;
+  PetscErrorCode ierr;
+  int                Nbs = sbaij->Nbs,i,j,*indices,*aj = B->j,ec = 0,*garray,*sgarray;
   int                bs = sbaij->bs,*stmp,mbs=sbaij->mbs, vec_size,nt;
   IS                 from,to;
   Vec                gvec;
@@ -172,7 +173,8 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 {
   Mat_MPISBAIJ       *baij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
-  int                i,j,*aj = B->j,ierr,ec = 0,*garray;
+  PetscErrorCode ierr;
+  int                i,j,*aj = B->j,ec = 0,*garray;
   int                bs = baij->bs,*stmp;
   IS                 from,to;
   Vec                gvec;

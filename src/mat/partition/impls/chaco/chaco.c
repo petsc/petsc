@@ -63,9 +63,10 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningApply_Chaco"
-static int MatPartitioningApply_Chaco(MatPartitioning part, IS *partitioning)
+static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *partitioning)
 {
-    PetscErrorCode ierr, *parttab, *locals, i, size, rank;
+    PetscErrorCode ierr;
+    int  *parttab, *locals, i, size, rank;
     Mat mat = part->adj, matMPI, matSeq;
     int nb_locals;              
     Mat_MPIAdj *adj;
@@ -213,7 +214,8 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
 {
 
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
-    PetscErrorCode ierr, rank;
+    PetscErrorCode ierr;
+    int  rank;
     PetscTruth iascii;
 
     PetscFunctionBegin;
@@ -424,7 +426,8 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part, int num)
 #define __FUNCT__ "MatPartitioningSetFromOptions_Chaco"
 PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
 {
-    PetscErrorCode ierr, i;
+    PetscErrorCode ierr;
+    int  i;
     PetscReal r;
     PetscTruth flag;
     const char *global[] =

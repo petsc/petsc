@@ -5,12 +5,12 @@
 #include "petsc.h"
 
 struct _PetscViewerOps {
-   int   (*destroy)(PetscViewer);
-   int   (*view)(PetscViewer,PetscViewer);
-   int   (*flush)(PetscViewer); 
-   int   (*getsingleton)(PetscViewer,PetscViewer*);
-   int   (*restoresingleton)(PetscViewer,PetscViewer*);
-   int   (*setfromoptions)(PetscViewer);
+   PetscErrorCode (*destroy)(PetscViewer);
+   PetscErrorCode (*view)(PetscViewer,PetscViewer);
+   PetscErrorCode (*flush)(PetscViewer); 
+   PetscErrorCode (*getsingleton)(PetscViewer,PetscViewer*);
+   PetscErrorCode (*restoresingleton)(PetscViewer,PetscViewer*);
+   PetscErrorCode (*setfromoptions)(PetscViewer);
 };
 
 /*

@@ -24,7 +24,8 @@ struct _p_PetscViewers {
 @*/
 PetscErrorCode PetscViewersDestroy(PetscViewers v)
 {
-  int         i,ierr;
+  int         i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<v->n; i++) {

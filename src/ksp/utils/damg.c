@@ -232,7 +232,8 @@ PetscErrorCode DMMGSetUp(DMMG *dmmg)
 @*/
 PetscErrorCode DMMGSolve(DMMG *dmmg)
 {
-  int        i,ierr,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr;
+  int        i,nlevels = dmmg[0]->nlevels;
   PetscTruth gridseq,vecmonitor,flg;
 
   PetscFunctionBegin;
@@ -318,7 +319,7 @@ PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,int nlevels)
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
     ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-nlevels);CHKERRQ(ierr);
-    ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
   /* use fgmres on outer iteration by default */
@@ -348,7 +349,7 @@ PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,int nlevels)
         ierr = PetscObjectGetComm((PetscObject)lksp,&comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
         ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-i);CHKERRQ(ierr);
-        ierr = KSPSetMonitor(lksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+        ierr = KSPSetMonitor(lksp,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
       }
       /* If using a matrix free multiply and did not provide an explicit matrix to build
          the preconditioner then must use no preconditioner 
@@ -394,7 +395,7 @@ PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,int nlevels)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve()
 
 @*/
-PetscErrorCode DMMGSetKSP(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
+PetscErrorCode DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat))
 {
   PetscErrorCode ierr;
   int size,i,nlevels = dmmg[0]->nlevels;

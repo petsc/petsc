@@ -29,7 +29,7 @@ typedef struct {
     int    max_k;             /* maximum number of Krylov directions to find 
                                  before restarting */
 
-    int   (*orthog)(KSP,int); /* orthogonalization function to use */
+    PetscErrorCode (*orthog)(KSP,int); /* orthogonalization function to use */
     KSPGMRESCGSRefinementType cgstype;
     
     Vec   *vecs;              /* holds the work vectors */
@@ -73,8 +73,8 @@ typedef struct {
 
     /* we need a function for interacting with the pcfamily */
    
-    int    (*modifypc)(KSP,int,int,PetscReal,void*);  /* function to modify the preconditioner*/
-    int    (*modifydestroy)(void*);
+    PetscErrorCode (*modifypc)(KSP,int,int,PetscReal,void*);  /* function to modify the preconditioner*/
+    PetscErrorCode (*modifydestroy)(void*);
     void   *modifyctx;
 } KSP_FGMRES;
 

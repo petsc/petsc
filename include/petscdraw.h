@@ -6,7 +6,7 @@
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
 
-extern int PETSC_DRAW_COOKIE;
+extern PetscCookie PETSC_DRAW_COOKIE;
 
 /*E
     PetscDrawType - String with the name of a PetscDraw 
@@ -36,13 +36,13 @@ extern PetscFList PetscDrawList;
 EXTERN PetscErrorCode PetscDrawRegisterAll(const char *);
 EXTERN PetscErrorCode PetscDrawRegisterDestroy(void);
 
-EXTERN PetscErrorCode PetscDrawRegister(const char*,const char*,const char*,int(*)(PetscDraw));
+EXTERN PetscErrorCode PetscDrawRegister(const char*,const char*,const char*,PetscErrorCode(*)(PetscDraw));
 
 /*MC
    PetscDrawRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   int PetscDrawRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PetscDraw))
+   int PetscDrawRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PetscDraw))
 
    Not Collective
 
@@ -203,7 +203,7 @@ typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT,BUTTON_LEFT_SHI
 EXTERN PetscErrorCode PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
 EXTERN PetscErrorCode PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
 
-EXTERN PetscErrorCode PetscDrawZoom(PetscDraw,int (*)(PetscDraw,void *),void *);
+EXTERN PetscErrorCode PetscDrawZoom(PetscDraw,PetscErrorCode (*)(PetscDraw,void *),void *);
 
 /*S
      PetscDrawViewPorts - Subwindows in a PetscDraw object
@@ -234,7 +234,7 @@ EXTERN PetscErrorCode PetscDrawViewPortsSet(PetscDrawViewPorts*,int);
 S*/
 typedef struct _p_DrawAxis* PetscDrawAxis;
 
-extern int DRAWAXIS_COOKIE;
+extern PetscCookie DRAWAXIS_COOKIE;
 
 EXTERN PetscErrorCode PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
 EXTERN PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis);
@@ -255,7 +255,7 @@ EXTERN PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis,const char[],const ch
 S*/
 typedef struct _p_DrawLG*   PetscDrawLG;
 
-extern int DRAWLG_COOKIE;
+extern PetscCookie DRAWLG_COOKIE;
 
 EXTERN PetscErrorCode PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
 EXTERN PetscErrorCode PetscDrawLGDestroy(PetscDrawLG);
@@ -281,7 +281,7 @@ EXTERN PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,Petsc
 S*/
 typedef struct _p_DrawSP*   PetscDrawSP;
 
-extern int DRAWSP_COOKIE;
+extern PetscCookie DRAWSP_COOKIE;
 
 EXTERN PetscErrorCode PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
 EXTERN PetscErrorCode PetscDrawSPDestroy(PetscDrawSP);
@@ -306,7 +306,7 @@ EXTERN PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP);
 S*/
 typedef struct _p_DrawHG*   PetscDrawHG;
 
-extern int DRAWHG_COOKIE;
+extern PetscCookie DRAWHG_COOKIE;
 
 EXTERN PetscErrorCode PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
 EXTERN PetscErrorCode PetscDrawHGDestroy(PetscDrawHG);

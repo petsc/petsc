@@ -13,7 +13,7 @@
 #include "petscsys.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-typedef int (*PipelineFunction)(int,PetscObject);
+typedef PetscErrorCode (*PipelineFunction)(int,PetscObject);
 
 struct _p_VecPipeline {
   PETSCHEADER(int)
@@ -25,12 +25,12 @@ struct _p_VecPipeline {
   PetscObject            aux_data;
   PetscObject            custom_pipe_data;
   int                    setupcalled;
-  int                    (*setup)(VecPipeline,PetscObject,PetscObject*);
+  PetscErrorCode (*setup)(VecPipeline,PetscObject,PetscObject*);
 };
 
 #undef __FUNCT__
 #define __FUNCT__ "VecPipelineCreateUpDown"
-static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **to,VecScatter_MPI_General **from)
+static PetscErrorCode VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **to,VecScatter_MPI_General **from)
 {
   VecScatter_MPI_General *gen_to,*gen_from,*pipe_to,*pipe_from;
   PetscErrorCode ierr;
@@ -97,10 +97,11 @@ PetscErrorCode VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPi
 
 #undef __FUNCT__
 #define __FUNCT__ "VecPipelineSetupSelect"
-static int VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScatter_MPI_General *pipe,
-                                  int (*test)(int,PetscObject),PetscObject pipe_data)
+static PetscErrorCode VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScatter_MPI_General *pipe,
+                                  PetscErrorCode (*test)(int,PetscObject),PetscObject pipe_data)
 {
-  PetscErrorCode ierr,i;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   pipe->n = 0;
@@ -300,7 +301,8 @@ PetscErrorCode VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,Pipe
 {
   VecScatter             scat = ctx->scatter;
   VecScatter_MPI_General *gen_from,*gen_to;
-  int                    nsends=0,nrecvs,ierr;
+  PetscErrorCode ierr;
+  int                    nsends=0,nrecvs;
   
   PetscFunctionBegin;
   if (smode & SCATTER_REVERSE){
@@ -333,7 +335,7 @@ PetscErrorCode VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,Pipe
 
 #undef __FUNCT__
 #define __FUNCT__ "VecPipelineDestroy_MPI_General"
-static int VecPipelineDestroy_MPI_General(VecScatter_MPI_General *gen)
+static PetscErrorCode VecPipelineDestroy_MPI_General(VecScatter_MPI_General *gen)
 {
   PetscErrorCode ierr;
 
@@ -500,7 +502,8 @@ PetscErrorCode ProcColorDown(int proc,PetscObject pipe_info)
 PetscErrorCode PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_colored_info *info;
-  int                    size,i,ierr;
+  PetscErrorCode ierr;
+  int                    size,i;
 
   PetscFunctionBegin;
   ierr = PetscNew(Pipeline_colored_info,&info);CHKERRQ(ierr);
@@ -519,7 +522,8 @@ PetscErrorCode PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject 
 {
   Pipeline_colored_info *info;
   Mat                    mat = (Mat) x;
-  int                    size,ierr;
+  PetscErrorCode ierr;
+  int                    size;
 
   PetscFunctionBegin;
   ierr = PetscNew(Pipeline_colored_info,&info);CHKERRQ(ierr);

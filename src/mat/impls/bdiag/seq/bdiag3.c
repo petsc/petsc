@@ -175,7 +175,8 @@ PetscErrorCode MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,PetscS
 PetscErrorCode MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len,ierr;
+  PetscErrorCode ierr;
+  int          d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len;
   PetscScalar  *dv;
 
   PetscFunctionBegin;
@@ -329,7 +330,8 @@ PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
 { 
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data,*anew;
   Mat          tmat;
-  int          i,j,k,d,ierr,nd = a->nd,*diag = a->diag,*diagnew;
+  PetscErrorCode ierr;
+  int          i,j,k,d,nd = a->nd,*diag = a->diag,*diagnew;
   int          bs = a->bs,kshift,shifto,shiftn;
   PetscScalar  *dwork,*dvnew;
 
@@ -400,7 +402,8 @@ PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
 PetscErrorCode MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          i,ict,fd,*col_lens,*cval,*col,ierr,nz;
+  PetscErrorCode ierr;
+  int          i,ict,fd,*col_lens,*cval,*col,nz;
   PetscScalar  *anonz,*val;
 
   PetscFunctionBegin;
@@ -626,7 +629,7 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqBDiag_Draw"
-static int MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
+static PetscErrorCode MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
 {
   PetscDraw     draw;
   PetscReal     xl,yl,xr,yr,w,h;

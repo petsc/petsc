@@ -152,7 +152,7 @@ PetscErrorCode MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat 
   /* I really don't like needing to know the tag: MatMPISBAIJSetPreallocation_C */
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
   if (f) {
-    lu->MatPreallocate = (int (*)(Mat,int,int,int*,int,int*))f;
+    lu->MatPreallocate = (PetscErrorCode (*)(Mat,int,int,int*,int,int*))f;
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
                                              "MatMPISBAIJSetPreallocation_MPISBAIJSpooles",
                                              MatMPISBAIJSetPreallocation_MPISBAIJSpooles);CHKERRQ(ierr);

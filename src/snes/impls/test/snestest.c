@@ -78,7 +78,7 @@ PetscErrorCode SNESDestroy_Test(SNES snes)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFromOptions_Test"
-static int SNESSetFromOptions_Test(SNES snes)
+static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
 {
   SNES_Test  *ls = (SNES_Test *)snes->data;
   PetscErrorCode ierr;

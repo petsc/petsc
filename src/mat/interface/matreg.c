@@ -144,7 +144,7 @@ PetscErrorCode MatGetType(Mat mat,MatType *type)
 
   Level: advanced
 @*/
-PetscErrorCode MatRegister(const char sname[],const char path[],const char name[],int (*function)(Mat))
+PetscErrorCode MatRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];

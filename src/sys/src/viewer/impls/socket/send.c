@@ -58,7 +58,7 @@ EXTERN_C_END
 /*--------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_Socket" 
-static int PetscViewerDestroy_Socket(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   PetscErrorCode     ierr;

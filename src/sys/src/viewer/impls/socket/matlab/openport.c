@@ -97,7 +97,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 /* and control c we may not be able to close the correct listener. */
 static int listenport;
 /*-----------------------------------------------------------------*/
-extern int establish(u_short);
+extern PetscErrorCode establish(u_short);
 #undef __FUNCT__  
 #define __FUNCT__ "SOCKConnect_Private"
 PetscErrorCode SOCKConnect_Private(int portnumber)

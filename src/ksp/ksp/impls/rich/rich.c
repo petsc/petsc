@@ -21,7 +21,8 @@ PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 #define __FUNCT__ "KSPSolve_Richardson"
 PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 {
-  int             i,maxit,ierr;
+  PetscErrorCode ierr;
+  int             i,maxit;
   MatStructure    pflag;
   PetscReal       rnorm = 0.0;
   PetscScalar     scale,mone = -1.0;

@@ -7,21 +7,21 @@
 
 typedef struct _PCOps *PCOps;
 struct _PCOps {
-  int          (*setup)(PC);
-  int          (*apply)(PC,Vec,Vec);
-  int          (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
-  int          (*applyBA)(PC,int,Vec,Vec,Vec);
-  int          (*applytranspose)(PC,Vec,Vec);
-  int          (*applyBAtranspose)(PC,int,Vec,Vec,Vec);
-  int          (*setfromoptions)(PC);
-  int          (*presolve)(PC,KSP,Vec,Vec);
-  int          (*postsolve)(PC,KSP,Vec,Vec);  
-  int          (*getfactoredmatrix)(PC,Mat*);
-  int          (*applysymmetricleft)(PC,Vec,Vec);
-  int          (*applysymmetricright)(PC,Vec,Vec);
-  int          (*setuponblocks)(PC);
-  int          (*destroy)(PC);
-  int          (*view)(PC,PetscViewer);
+  PetscErrorCode (*setup)(PC);
+  PetscErrorCode (*apply)(PC,Vec,Vec);
+  PetscErrorCode (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
+  PetscErrorCode (*applyBA)(PC,int,Vec,Vec,Vec);
+  PetscErrorCode (*applytranspose)(PC,Vec,Vec);
+  PetscErrorCode (*applyBAtranspose)(PC,int,Vec,Vec,Vec);
+  PetscErrorCode (*setfromoptions)(PC);
+  PetscErrorCode (*presolve)(PC,KSP,Vec,Vec);
+  PetscErrorCode (*postsolve)(PC,KSP,Vec,Vec);  
+  PetscErrorCode (*getfactoredmatrix)(PC,Mat*);
+  PetscErrorCode (*applysymmetricleft)(PC,Vec,Vec);
+  PetscErrorCode (*applysymmetricright)(PC,Vec,Vec);
+  PetscErrorCode (*setuponblocks)(PC);
+  PetscErrorCode (*destroy)(PC);
+  PetscErrorCode (*view)(PC,PetscViewer);
 };
 
 /*
@@ -34,7 +34,7 @@ struct _p_PC {
   Mat           mat,pmat;
   Vec           diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
   PetscTruth    diagonalscale;
-  int           (*modifysubmatrices)(PC,int,const IS[],const IS[],Mat[],void*); /* user provided routine */
+  PetscErrorCode (*modifysubmatrices)(PC,int,const IS[],const IS[],Mat[],void*); /* user provided routine */
   void          *modifysubmatricesP; /* context for user routine */
   void          *data;
 };

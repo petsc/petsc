@@ -8,8 +8,8 @@
 #include "vecimpl.h"  
 
 typedef struct {
-  int         (*destroy)(Mat);
-  int         (*mult)(Mat,Vec,Vec);
+  PetscErrorCode (*destroy)(Mat);
+  PetscErrorCode (*mult)(Mat,Vec,Vec);
   PetscTruth  scale,shift;
   PetscScalar vscale,vshift;
   void        *ctx;
@@ -427,10 +427,10 @@ PetscErrorCode MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
     ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {
        Mat_Shell *shell = (Mat_Shell*)mat->data;
-       shell->destroy                 = (int (*)(Mat)) f;
-    } else mat->ops->destroy            = (int (*)(Mat)) f;
+       shell->destroy                 = (PetscErrorCode (*)(Mat)) f;
+    } else mat->ops->destroy            = (PetscErrorCode (*)(Mat)) f;
   } 
-  else if (op == MATOP_VIEW) mat->ops->view  = (int (*)(Mat,PetscViewer)) f;
+  else if (op == MATOP_VIEW) mat->ops->view  = (PetscErrorCode (*)(Mat,PetscViewer)) f;
   else                       (((void(**)(void))mat->ops)[op]) = f;
 
   PetscFunctionReturn(0);

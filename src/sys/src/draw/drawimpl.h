@@ -8,37 +8,37 @@
 #include "petsc.h"
 
 struct _PetscDrawOps {
-  int (*setdoublebuffer)(PetscDraw);
-  int (*flush)(PetscDraw);
-  int (*line)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
-  int (*linesetwidth)(PetscDraw,PetscReal);
-  int (*linegetwidth)(PetscDraw,PetscReal*);
-  int (*point)(PetscDraw,PetscReal,PetscReal,int);
-  int (*pointsetsize)(PetscDraw,PetscReal);
-  int (*string)(PetscDraw,PetscReal,PetscReal,int,const char[]);
-  int (*stringvertical)(PetscDraw,PetscReal,PetscReal,int,const char[]);
-  int (*stringsetsize)(PetscDraw,PetscReal,PetscReal);
-  int (*stringgetsize)(PetscDraw,PetscReal*,PetscReal*);
-  int (*setviewport)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
-  int (*clear)(PetscDraw);
-  int (*synchronizedflush)(PetscDraw);
-  int (*rectangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
-  int (*triangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int);
-  int (*ellipse)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
-  int (*getmousebutton)(PetscDraw,PetscDrawButton*,PetscReal *,PetscReal *,PetscReal*,PetscReal*);
-  int (*pause)(PetscDraw);
-  int (*synchronizedclear)(PetscDraw);
-  int (*beginpage)(PetscDraw);
-  int (*endpage)(PetscDraw);
-  int (*getpopup)(PetscDraw,PetscDraw*);
-  int (*settitle)(PetscDraw,const char[]);
-  int (*checkresizedwindow)(PetscDraw);
-  int (*resizewindow)(PetscDraw,int,int);
-  int (*destroy)(PetscDraw);
-  int (*view)(PetscDraw,PetscViewer);
-  int (*getsingleton)(PetscDraw,PetscDraw*);
-  int (*restoresingleton)(PetscDraw,PetscDraw*);
-  int (*setcoordinates)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
+  PetscErrorCode (*setdoublebuffer)(PetscDraw);
+  PetscErrorCode (*flush)(PetscDraw);
+  PetscErrorCode (*line)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
+  PetscErrorCode (*linesetwidth)(PetscDraw,PetscReal);
+  PetscErrorCode (*linegetwidth)(PetscDraw,PetscReal*);
+  PetscErrorCode (*point)(PetscDraw,PetscReal,PetscReal,int);
+  PetscErrorCode (*pointsetsize)(PetscDraw,PetscReal);
+  PetscErrorCode (*string)(PetscDraw,PetscReal,PetscReal,int,const char[]);
+  PetscErrorCode (*stringvertical)(PetscDraw,PetscReal,PetscReal,int,const char[]);
+  PetscErrorCode (*stringsetsize)(PetscDraw,PetscReal,PetscReal);
+  PetscErrorCode (*stringgetsize)(PetscDraw,PetscReal*,PetscReal*);
+  PetscErrorCode (*setviewport)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
+  PetscErrorCode (*clear)(PetscDraw);
+  PetscErrorCode (*synchronizedflush)(PetscDraw);
+  PetscErrorCode (*rectangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
+  PetscErrorCode (*triangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int);
+  PetscErrorCode (*ellipse)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
+  PetscErrorCode (*getmousebutton)(PetscDraw,PetscDrawButton*,PetscReal *,PetscReal *,PetscReal*,PetscReal*);
+  PetscErrorCode (*pause)(PetscDraw);
+  PetscErrorCode (*synchronizedclear)(PetscDraw);
+  PetscErrorCode (*beginpage)(PetscDraw);
+  PetscErrorCode (*endpage)(PetscDraw);
+  PetscErrorCode (*getpopup)(PetscDraw,PetscDraw*);
+  PetscErrorCode (*settitle)(PetscDraw,const char[]);
+  PetscErrorCode (*checkresizedwindow)(PetscDraw);
+  PetscErrorCode (*resizewindow)(PetscDraw,int,int);
+  PetscErrorCode (*destroy)(PetscDraw);
+  PetscErrorCode (*view)(PetscDraw,PetscViewer);
+  PetscErrorCode (*getsingleton)(PetscDraw,PetscDraw*);
+  PetscErrorCode (*restoresingleton)(PetscDraw,PetscDraw*);
+  PetscErrorCode (*setcoordinates)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
 };
 
 struct _p_PetscDraw {

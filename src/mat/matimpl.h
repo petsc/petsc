@@ -15,7 +15,7 @@
 */
 typedef struct _MatOps *MatOps;
 struct _MatOps {
-  int       (*setvalues)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
+  PetscErrorCode (*setvalues)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
             (*getrow)(Mat,int,int *,int*[],PetscScalar*[]),
             (*restorerow)(Mat,int,int *,int *[],PetscScalar *[]),
             (*mult)(Mat,Vec,Vec),
@@ -203,7 +203,7 @@ struct _p_Mat {
 };
 
 #define MatPreallocated(A) {int _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}
-extern int MatAXPY_Basic(const PetscScalar*,Mat,Mat,MatStructure);
+extern PetscErrorCode MatAXPY_Basic(const PetscScalar*,Mat,Mat,MatStructure);
 
 /*
     Object for partitioning graphs
@@ -211,10 +211,10 @@ extern int MatAXPY_Basic(const PetscScalar*,Mat,Mat,MatStructure);
 
 typedef struct _MatPartitioningOps *MatPartitioningOps;
 struct _MatPartitioningOps {
-  int         (*apply)(MatPartitioning,IS*);
-  int         (*setfromoptions)(MatPartitioning);
-  int         (*destroy)(MatPartitioning);
-  int         (*view)(MatPartitioning,PetscViewer);
+  PetscErrorCode (*apply)(MatPartitioning,IS*);
+  PetscErrorCode (*setfromoptions)(MatPartitioning);
+  PetscErrorCode (*destroy)(MatPartitioning);
+  PetscErrorCode (*view)(MatPartitioning,PetscViewer);
 };
 
 struct _p_MatPartitioning {
@@ -282,7 +282,7 @@ struct  _p_MatFDColoring{
   PetscReal  umin;             /* minimum allowable u'dx value */
   int        freq;             /* frequency at which new Jacobian is computed */
   Vec        w1,w2,w3;         /* work vectors used in computing Jacobian */
-  int        (*f)(void);       /* function that defines Jacobian */
+  PetscErrorCode (*f)(void);       /* function that defines Jacobian */
   void       *fctx;            /* optional user-defined context for use by the function f */
   int        **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
   Vec        vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */

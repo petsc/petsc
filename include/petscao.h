@@ -23,12 +23,8 @@ S*/
 typedef struct _p_AO* AO;
 
 /* Logging support */
-extern int AO_COOKIE;
-extern int AODATA_COOKIE;
-enum {AO_PetscToApplication, AO_ApplicationToPetsc, AO_MAX_EVENTS};
-extern int AOEvents[AO_MAX_EVENTS];
-#define AOLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(AOEvents[e],o1,o2,o3,o4)
-#define AOLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(AOEvents[e],o1,o2,o3,o4)
+extern PetscCookie AO_COOKIE, AODATA_COOKIE;
+extern PetscEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
 EXTERN PetscErrorCode DMInitializePackage(const char[]);
 
@@ -41,7 +37,7 @@ EXTERN PetscErrorCode AOCreateMappingIS(IS,IS,AO*);
 EXTERN PetscErrorCode AOView(AO,PetscViewer);
 EXTERN PetscErrorCode AODestroy(AO);
 
-EXTERN PetscErrorCode AORegister_Private(const char [], const char [], const char [], int (*)(AO));
+EXTERN PetscErrorCode AORegister_Private(const char [], const char [], const char [], PetscErrorCode (*)(AO));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define AORegister(a,b,c,d) AORegister_Private(a,b,c,0)
 #else

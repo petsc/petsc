@@ -33,7 +33,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningApply_Scotch"
-static int MatPartitioningApply_Scotch(MatPartitioning part, IS * partitioning)
+static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * partitioning)
 {
     PetscErrorCode ierr;
     int  *parttab, *locals = PETSC_NULL, rank, i, size;
@@ -306,7 +306,8 @@ static int MatPartitioningApply_Scotch(MatPartitioning part, IS * partitioning)
 PetscErrorCode MatPartitioningView_Scotch(MatPartitioning part, PetscViewer viewer)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    PetscErrorCode ierr, rank;
+    PetscErrorCode ierr;
+    int  rank;
     PetscTruth iascii;
 
     PetscFunctionBegin;

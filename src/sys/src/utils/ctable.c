@@ -43,7 +43,8 @@ PetscErrorCode PetscTableCreate(const int n,PetscTable *rta)
  */
 PetscErrorCode PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
 {
-  int        i,ierr;
+  PetscErrorCode ierr;
+  int        i;
   PetscTable ta;
 
   PetscFunctionBegin;
@@ -109,7 +110,8 @@ PetscErrorCode PetscTableIsEmpty(const PetscTable ta,int *flag)
  */
 PetscErrorCode PetscTableAdd(PetscTable ta,const int key,const int data)
 {  
-  int       ii = 0,hash = HASHT(ta,key),ierr;
+  PetscErrorCode ierr;
+  int       ii = 0,hash = HASHT(ta,key);
   const int tsize = ta->tablesize,tcount = ta->count; 
   
   PetscFunctionBegin;

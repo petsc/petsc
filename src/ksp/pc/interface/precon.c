@@ -4,9 +4,9 @@
 #include "src/ksp/pc/pcimpl.h"            /*I "petscksp.h" I*/
 
 /* Logging support */
-PetscCookieCode PC_COOKIE = 0;
-PetscLogCode    PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
-PetscLogCode    PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
+PetscCookie PC_COOKIE = 0;
+PetscEvent    PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
+PetscEvent    PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGetDefaultType_Private"
@@ -19,7 +19,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
   PetscFunctionBegin;
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   if (pc->pmat) {
-    int (*f)(Mat,PetscTruth*,MatReuse,Mat*);
+    PetscErrorCode (*f)(Mat,PetscTruth*,MatReuse,Mat*);
     ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
     if (size == 1) {
       ierr = MatHasOperation(pc->pmat,MATOP_ICCFACTOR_SYMBOLIC,&flg1);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ PetscErrorCode PCDiagonalScaleRight(PC pc,Vec in,Vec out)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCPublish_Petsc"
-static int PCPublish_Petsc(PetscObject obj)
+static PetscErrorCode PCPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   PC          v = (PC) obj;
@@ -887,7 +887,7 @@ $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
 .seealso: PCModifySubMatrices()
 @*/
-PetscErrorCode PCSetModifySubMatrices(PC pc,int(*func)(PC,int,const IS[],const IS[],Mat[],void*),void *ctx)
+PetscErrorCode PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,int,const IS[],const IS[],Mat[],void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -1417,7 +1417,7 @@ PetscErrorCode PCView(PC pc,PetscViewer viewer)
 
   Level: advanced
 @*/
-PetscErrorCode PCRegister(const char sname[],const char path[],const char name[],int (*function)(PC))
+PetscErrorCode PCRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PC))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];

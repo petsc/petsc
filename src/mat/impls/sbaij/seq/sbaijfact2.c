@@ -126,7 +126,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
-  int             nz,*vj,k,ierr,*r,idx,k1;
+  PetscErrorCode ierr;
+  int             nz,*vj,k,*r,idx,k1;
   int             bs=a->bs,bs2 = a->bs2;
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*xk,*xj,*b,*xk_tmp,*t;
@@ -191,8 +192,9 @@ PetscErrorCode MatSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx) 
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode ierr;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
-  int             nz,*vj,k,ierr;
+  int             nz,*vj,k;
   int             bs=a->bs,bs2 = a->bs2;
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*xk,*xj,*b,*xk_tmp;
@@ -253,7 +255,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
-  int             nz,*vj,k,ierr,*r,idx;  
+  PetscErrorCode ierr;
+  int             nz,*vj,k,*r,idx;  
   MatScalar       *aa=a->a,*v,*d;
   PetscScalar     *x,*b,x0,x1,x2,x3,x4,x5,x6,*t,*tp;
 
@@ -352,10 +355,11 @@ PetscErrorCode MatSolve_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx) 
 { 
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode ierr;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
   MatScalar       *aa=a->a,*v,*d;
   PetscScalar     *x,*xp,*b,x0,x1,x2,x3,x4,x5,x6;
-  int             nz,*vj,k,ierr;
+  int             nz,*vj,k;
 
   PetscFunctionBegin;
   
@@ -432,7 +436,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_6(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
-  int             nz,*vj,k,ierr,*r,idx;  
+  PetscErrorCode ierr;
+  int             nz,*vj,k,*r,idx;  
   MatScalar       *aa=a->a,*v,*d;
   PetscScalar     *x,*b,x0,x1,x2,x3,x4,x5,*t,*tp;
 
@@ -529,7 +534,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
   MatScalar       *aa=a->a,*v,*d;
   PetscScalar     *x,*xp,*b,x0,x1,x2,x3,x4,x5;
-  int             nz,*vj,k,ierr;
+  PetscErrorCode ierr;
+  int             nz,*vj,k;
 
   PetscFunctionBegin;
   
@@ -603,7 +609,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_5(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
-  int             nz,*vj,k,ierr,*r,idx;  
+  PetscErrorCode ierr;
+  int             nz,*vj,k,*r,idx;  
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*b,x0,x1,x2,x3,x4,*t,*tp;
 
@@ -696,7 +703,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*xp,*b,x0,x1,x2,x3,x4;
-  int             nz,*vj,k,ierr;
+  PetscErrorCode ierr;
+  int             nz,*vj,k;
 
   PetscFunctionBegin;
   
@@ -767,7 +775,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
-  int             nz,*vj,k,ierr,*r,idx;  
+  PetscErrorCode ierr;
+  int             nz,*vj,k,*r,idx;  
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*b,x0,x1,x2,x3,*t,*tp;
 
@@ -859,7 +868,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*xp,*b,x0,x1,x2,x3;
-  int             nz,*vj,k,ierr;
+  PetscErrorCode ierr;
+  int             nz,*vj,k;
 
   PetscFunctionBegin;
   
@@ -927,7 +937,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
-  int             nz,*vj,k,ierr,*r,idx;  
+  PetscErrorCode ierr;
+  int             nz,*vj,k,*r,idx;  
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*b,x0,x1,x2,*t,*tp;
 
@@ -1014,7 +1025,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*xp,*b,x0,x1,x2;
-  int             nz,*vj,k,ierr;
+  PetscErrorCode ierr;
+  int             nz,*vj,k;
 
   PetscFunctionBegin;
   
@@ -1079,7 +1091,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_2(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ *)A->data;
   IS              isrow=a->row;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
-  int             nz,*vj,k,k2,ierr,*r,idx;
+  PetscErrorCode ierr;
+  int             nz,*vj,k,k2,*r,idx;
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*b,x0,x1,*t;
 
@@ -1150,7 +1163,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
   MatScalar       *aa=a->a,*v,*diag;
   PetscScalar     *x,*b,x0,x1;
-  int             nz,*vj,k,k2,ierr;
+  PetscErrorCode ierr;
+  int             nz,*vj,k,k2;
 
   PetscFunctionBegin;
   
@@ -1207,7 +1221,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ *)A->data;
   IS              isrow=a->row;
-  int             mbs=a->mbs,*ai=a->i,*aj=a->j,ierr,*rip;
+  PetscErrorCode ierr;
+  int             mbs=a->mbs,*ai=a->i,*aj=a->j,*rip;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,xk,*t;
   int             nz,*vj,k;
@@ -1320,7 +1335,8 @@ PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
 PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
-  int             mbs=a->mbs,*ai=a->i,*aj=a->j,ierr;
+  PetscErrorCode ierr;
+  int             mbs=a->mbs,*ai=a->i,*aj=a->j;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,xk;
   int             nz,*vj,k;
@@ -1362,7 +1378,8 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B) 
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;  
-  int         *rip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
+  PetscErrorCode ierr;
+  int         *rip,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
   int         m,realloc = 0,*levtmp;
   int         *prowl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd,*jl;

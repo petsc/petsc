@@ -171,8 +171,8 @@ int main(int argc,char **argv)
 	ierr = MGGetSmoother(pc,j,&ksp);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp,&mpc);CHKERRQ(ierr);
 	ierr = PCSetType(mpc,PCSHELL);CHKERRQ(ierr);
-	ierr = PCShellSetApply(mpc,(int (*)(void*,Vec,Vec))myPCApply,dmmg[j]);CHKERRQ(ierr);
-	ierr = PCShellSetView(mpc,(int (*)(void*,PetscViewer))myPCView);CHKERRQ(ierr);
+	ierr = PCShellSetApply(mpc,(PetscErrorCode (*)(void*,Vec,Vec))myPCApply,dmmg[j]);CHKERRQ(ierr);
+	ierr = PCShellSetView(mpc,(PetscErrorCode (*)(void*,PetscViewer))myPCView);CHKERRQ(ierr);
       }
     }
   }

@@ -26,7 +26,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatOrdering_Natural"
 PetscErrorCode MatOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
-  int        n,ierr,i,*ii;
+  PetscErrorCode ierr;
+  int        n,i,*ii;
   PetscTruth done;
   MPI_Comm   comm;
 
@@ -96,7 +97,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrderingRegister" 
-PetscErrorCode MatOrderingRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,const MatOrderingType,IS*,IS*))
+PetscErrorCode MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,const MatOrderingType,IS*,IS*))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
@@ -180,7 +181,7 @@ PetscErrorCode MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *c
 {
   PetscErrorCode ierr;
   int mmat,nmat,mis,m;
-  int         (*r)(Mat,const MatOrderingType,IS*,IS*);
+  PetscErrorCode (*r)(Mat,const MatOrderingType,IS*,IS*);
   PetscTruth  flg,isseqdense,ismpidense;
 
   PetscFunctionBegin;

@@ -8,7 +8,8 @@
 #define do_not_use_ethernet
 PetscErrorCode Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_Op op,MPI_Comm comm)
 {
-  int        i,rank,size,ierr;
+  PetscErrorCode ierr;
+  int        i,rank,size;
   MPI_Status status;
 
 
@@ -79,7 +80,8 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   Vec_MPI      *x = (Vec_MPI*)xin->data;
   PetscReal    sum,work = 0.0;
   PetscScalar  *xx = x->array;
-  int          n = xin->n,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n;
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {

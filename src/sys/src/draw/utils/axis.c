@@ -4,14 +4,14 @@
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
-int DRAWAXIS_COOKIE = 0;
+PetscCookie DRAWAXIS_COOKIE = 0;
 
 struct _p_DrawAxis {
     PETSCHEADER(int)
     PetscReal  xlow,ylow,xhigh,yhigh;     /* User - coord limits */
-    int        (*ylabelstr)(PetscReal,PetscReal,char **),/* routines to generate labels */ 
+    PetscErrorCode (*ylabelstr)(PetscReal,PetscReal,char **),/* routines to generate labels */ 
                (*xlabelstr)(PetscReal,PetscReal,char **);
-    int        (*xticks)(PetscReal,PetscReal,int,int*,PetscReal*,int),
+    PetscErrorCode (*xticks)(PetscReal,PetscReal,int,int*,PetscReal*,int),
                (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);  
                                           /* location and size of ticks */
     PetscDraw  win;
@@ -24,12 +24,12 @@ struct _p_DrawAxis {
 
 EXTERN PetscErrorCode    PetscADefTicks(PetscReal,PetscReal,int,int*,PetscReal*,int);
 EXTERN PetscErrorCode    PetscADefLabel(PetscReal,PetscReal,char**);
-static int    PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
-static int    PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
+static PetscErrorCode    PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
+static PetscErrorCode    PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRint" 
-static int PetscRint(PetscReal x,PetscReal *result)
+static PetscErrorCode PetscRint(PetscReal x,PetscReal *result)
 {
   PetscFunctionBegin;
   if (x > 0) *result = floor(x + 0.5);
@@ -247,12 +247,13 @@ PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscRea
 @*/
 PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
 {
-  int       i,ierr,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank;
+  int       i,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank;
   size_t    len;
   PetscReal tickloc[MAXSEGS],sep,h,w,tw,th,xl,xr,yl,yr;
   char      *p;
   PetscDraw draw = axis->win;
-  
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
   ierr = MPI_Comm_rank(axis->comm,&rank);CHKERRQ(ierr);
@@ -340,7 +341,7 @@ PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
 /*
     Removes all zeros but one from .0000 
 */
-static int PetscStripAllZeros(char *buf)
+static PetscErrorCode PetscStripAllZeros(char *buf)
 {
   PetscErrorCode ierr;
   size_t         i,n;
@@ -361,7 +362,7 @@ static int PetscStripAllZeros(char *buf)
 /*
     Removes trailing zeros
 */
-static int PetscStripTrailingZeros(char *buf)
+static PetscErrorCode PetscStripTrailingZeros(char *buf)
 {
   PetscErrorCode ierr;
   char           *found;
@@ -392,7 +393,7 @@ static int PetscStripTrailingZeros(char *buf)
 /*
     Removes leading 0 from 0.22 or -0.22
 */
-static int PetscStripInitialZero(char *buf)
+static PetscErrorCode PetscStripInitialZero(char *buf)
 {
   PetscErrorCode ierr;
   size_t         i,n;
@@ -416,7 +417,7 @@ static int PetscStripInitialZero(char *buf)
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
-static int PetscStripZeros(char *buf)
+static PetscErrorCode PetscStripZeros(char *buf)
 {
   PetscErrorCode ierr;
   size_t         i,j,n;
@@ -439,7 +440,7 @@ static int PetscStripZeros(char *buf)
 /*
       Removes the plus in something like 1.1e+2
 */
-static int PetscStripZerosPlus(char *buf)
+static PetscErrorCode PetscStripZerosPlus(char *buf)
 {
   PetscErrorCode ierr;
   size_t         i,j,n;
@@ -542,7 +543,8 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
 /* Finds "nice" locations for the ticks */
 PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * tickloc,int  maxtick)
 {
-  int       i,power,ierr;
+  PetscErrorCode ierr;
+  int       i,power;
   PetscReal x,base;
 
   PetscFunctionBegin;
@@ -581,7 +583,7 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscExp10" 
-static int PetscExp10(PetscReal d,PetscReal *result)
+static PetscErrorCode PetscExp10(PetscReal d,PetscReal *result)
 {
   PetscFunctionBegin;
   *result = pow(10.0,d);
@@ -590,7 +592,7 @@ static int PetscExp10(PetscReal d,PetscReal *result)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMod" 
-static int PetscMod(PetscReal x,PetscReal y,PetscReal *result)
+static PetscErrorCode PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 {
   int     i;
 
@@ -604,7 +606,7 @@ static int PetscMod(PetscReal x,PetscReal y,PetscReal *result)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCopysign" 
-static int PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
+static PetscErrorCode PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
 {
   PetscFunctionBegin;
   if (b >= 0) *result = a;
@@ -618,7 +620,7 @@ static int PetscCopysign(PetscReal a,PetscReal b,PetscReal *result)
     Given a value "in" and a "base", return a nice value.
     based on "sign", extend up (+1) or down (-1)
  */
-static int PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *result)
+static PetscErrorCode PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *result)
 {
   PetscReal  etmp,s,s2,m;
   PetscErrorCode ierr;
@@ -637,11 +639,12 @@ static int PetscAGetNice(PetscReal in,PetscReal base,int sign,PetscReal *result)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscAGetBase" 
-static int PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal*Base,int*power)
+static PetscErrorCode PetscAGetBase(PetscReal vmin,PetscReal vmax,int num,PetscReal*Base,int*power)
 {
   PetscReal        base,ftemp,e10;
   static PetscReal base_try[5] = {10.0,5.0,2.0,1.0,0.5};
-  int              i,ierr;
+  PetscErrorCode ierr;
+  int              i;
 
   PetscFunctionBegin;
   /* labels of the form n * BASE */

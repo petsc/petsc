@@ -132,7 +132,8 @@ PetscErrorCode SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
 PetscErrorCode SNESSolve_LS(SNES snes)
 {
   SNES_LS      *neP = (SNES_LS*)snes->data;
-  int          maxits,i,ierr,lits,lsfail;
+  PetscErrorCode ierr;
+  int          maxits,i,lits,lsfail;
   MatStructure flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal    fnorm,gnorm,xnorm,ynorm;
   Vec          Y,X,F,G,W,TMP;
@@ -816,9 +817,9 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
 .seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), SNESNoLineSearch(), SNESNoLineSearchNoNorms(), 
           SNESSetLineSearchCheck(), SNESSetLineSearchParams(), SNESGetLineSearchParams()
 @*/
-PetscErrorCode SNESSetLineSearch(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*),void *lsctx)
+PetscErrorCode SNESSetLineSearch(SNES snes,PetscErrorCode (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*),void *lsctx)
 {
-  PetscErrorCode ierr,(*f)(SNES,int (*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*),void*);
+  PetscErrorCode ierr,(*f)(SNES,PetscErrorCode (*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*),void*);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearch_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -828,7 +829,7 @@ PetscErrorCode SNESSetLineSearch(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Ve
   PetscFunctionReturn(0);
 }
 
-typedef int (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*); /* force argument to next function to not be extern C*/
 /* -------------------------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -894,9 +895,9 @@ EXTERN_C_END
 
 .seealso: SNESSetLineSearch()
 @*/
-PetscErrorCode SNESSetLineSearchCheck(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),void *checkctx)
+PetscErrorCode SNESSetLineSearchCheck(SNES snes,PetscErrorCode (*func)(SNES,void*,Vec,PetscTruth*),void *checkctx)
 {
-  PetscErrorCode ierr,(*f)(SNES,int (*)(SNES,void*,Vec,PetscTruth*),void*);
+  PetscErrorCode ierr,(*f)(SNES,PetscErrorCode (*)(SNES,void*,Vec,PetscTruth*),void*);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESSetLineSearchCheck_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -906,7 +907,7 @@ PetscErrorCode SNESSetLineSearchCheck(SNES snes,int (*func)(SNES,void*,Vec,Petsc
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-typedef int (*FCN)(SNES,void*,Vec,PetscTruth*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN)(SNES,void*,Vec,PetscTruth*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetLineSearchCheck_LS"
@@ -929,7 +930,7 @@ EXTERN_C_END
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESPrintHelp_LS"
-static int SNESPrintHelp_LS(SNES snes,char *p)
+static PetscErrorCode SNESPrintHelp_LS(SNES snes,char *p)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
 
@@ -953,7 +954,7 @@ static int SNESPrintHelp_LS(SNES snes,char *p)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESView_LS"
-static int SNESView_LS(SNES snes,PetscViewer viewer)
+static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
 {
   SNES_LS    *ls = (SNES_LS *)snes->data;
   const char *cstr;
@@ -985,7 +986,7 @@ static int SNESView_LS(SNES snes,PetscViewer viewer)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFromOptions_LS"
-static int SNESSetFromOptions_LS(SNES snes)
+static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
 {
   SNES_LS    *ls = (SNES_LS *)snes->data;
   const char *lses[] = {"basic","basicnonorms","quadratic","cubic"};

@@ -173,7 +173,7 @@ PetscErrorCode PetscOptionsEnd_Private(void)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCreate_Private"
-static int PetscOptionsCreate_Private(const char opt[],const char text[],const char man[],PetscOptionsAMS *amsopt)
+static PetscErrorCode PetscOptionsCreate_Private(const char opt[],const char text[],const char man[],PetscOptionsAMS *amsopt)
 {
   PetscErrorCode ierr;
   static int      mancount = 0;
@@ -914,7 +914,8 @@ PetscErrorCode PetscOptionsLogical(const char opt[],const char text[],const char
 @*/
 PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal *value,int *n,PetscTruth *set)
 {
-  PetscErrorCode ierr,i;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_AMS)

@@ -14,7 +14,8 @@ has an order N integer array but is fast to acess.
 PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
-  int        n = aij->B->n,i,ierr;
+  PetscErrorCode ierr;
+  int        n = aij->B->n,i;
 
   PetscFunctionBegin;
 #if defined (PETSC_USE_CTABLE)
@@ -345,7 +346,8 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ  *a=(Mat_SeqAIJ *)aij->A->data,*b= (Mat_SeqAIJ *)aij->B->data;
-  int         i,j,rstart,ncols,n,ierr,flg;
+  PetscErrorCode ierr;
+  int         i,j,rstart,ncols,n,flg;
   int         *row,*col,other_disassembled;
   PetscScalar *val;
   InsertMode  addv = mat->insertmode;
@@ -421,7 +423,8 @@ PetscErrorCode MatZeroEntries_MPIAIJ(Mat A)
 PetscErrorCode MatZeroRows_MPIAIJ(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIAIJ     *l = (Mat_MPIAIJ*)A->data;
-  int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
+  PetscErrorCode ierr;
+  int            i,N,*rows,*owners = l->rowners,size = l->size;
   int            *nprocs,j,idx,nsends,row;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
@@ -628,7 +631,8 @@ PetscErrorCode MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth tol,PetscTruth
   Mat_MPIAIJ *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
   Mat        Adia = Aij->A, Bdia, Aoff,Boff,*Aoffs,*Boffs;
   IS         Me,Notme;
-  int        M,N,first,last,*notme,ntids,i, ierr;
+  PetscErrorCode ierr;
+  int        M,N,first,last,*notme,ntids,i;
 
   PetscFunctionBegin;
 
@@ -751,7 +755,8 @@ PetscErrorCode MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ*       A = (Mat_SeqAIJ*)aij->A->data;
   Mat_SeqAIJ*       B = (Mat_SeqAIJ*)aij->B->data;
-  int               nz,fd,ierr,header[4],rank,size,*row_lengths,*range,rlen,i,tag = ((PetscObject)viewer)->tag;
+  PetscErrorCode ierr;
+  int               nz,fd,header[4],rank,size,*row_lengths,*range,rlen,i,tag = ((PetscObject)viewer)->tag;
   int               nzmax,*column_indices,j,k,col,*garray = aij->garray,cnt,cstart = aij->cstart,rnz;
   PetscScalar       *column_values;
 
@@ -1194,7 +1199,8 @@ PetscErrorCode MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,PetscScalar 
 {
   Mat_MPIAIJ   *mat = (Mat_MPIAIJ*)matin->data;
   PetscScalar  *vworkA,*vworkB,**pvA,**pvB,*v_p;
-  int          i,ierr,*cworkA,*cworkB,**pcA,**pcB,cstart = mat->cstart;
+  PetscErrorCode ierr;
+  int          i,*cworkA,*cworkB,**pcA,**pcB,cstart = mat->cstart;
   int          nztot,nzA,nzB,lrow,rstart = mat->rstart,rend = mat->rend;
   int          *cmap,*idx_p;
 
@@ -1872,7 +1878,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_AIJ"
 PetscErrorCode MatCreate_AIJ(Mat A) 
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATAIJ);CHKERRQ(ierr);
@@ -1962,7 +1969,8 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
   PetscScalar  *vals,*svals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
-  int          i,nz,ierr,j,rstart,rend,fd;
+  PetscErrorCode ierr;
+  int          i,nz,j,rstart,rend,fd;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
   int          *ourlens,*sndcounts = 0,*procsnz = 0,*offlens,jj,*mycols,*smycols;
   int          tag = ((PetscObject)viewer)->tag,cend,cstart,n;
@@ -2575,7 +2583,8 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B,int d_nz,const int d_nnz[],int o_
 @*/
 PetscErrorCode MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,const int d_nnz[],int o_nz,const int o_nnz[],Mat *A)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);

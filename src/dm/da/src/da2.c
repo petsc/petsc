@@ -17,7 +17,8 @@ PetscErrorCode DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
 #define __FUNCT__ "DAView_2d"
 PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
 {
-  int        rank,ierr;
+  PetscErrorCode ierr;
+  int        rank;
   PetscTruth iascii,isdraw;
 
   PetscFunctionBegin;
@@ -239,7 +240,8 @@ PetscErrorCode DAPublish_Petsc(PetscObject obj)
 PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M,int N,int m,int n,int dof,int s,int *lx,int *ly,DA *inra)
 {
-  int           rank,size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,ierr,start,end;
+  PetscErrorCode ierr;
+  int           rank,size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end;
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
   int           s_x,s_y; /* s proportionalized to w */
@@ -852,7 +854,8 @@ PetscErrorCode DAPrintHelp(DA da)
 @*/
 PetscErrorCode DARefine(DA da,MPI_Comm comm,DA *daref)
 {
-  int M,N,P,ierr;
+  PetscErrorCode ierr;
+  int M,N,P;
   DA  da2;
 
   PetscFunctionBegin;
@@ -978,7 +981,7 @@ PetscErrorCode DAGetRefinementFactor(DA da, int *refine_x, int *refine_y,int *re
 
 .seealso: DAGetMatrix(), DASetBlockFills()
 @*/
-PetscErrorCode DASetGetMatrix(DA da,int (*f)(DA,const MatType,Mat*))
+PetscErrorCode DASetGetMatrix(DA da,PetscErrorCode (*f)(DA,const MatType,Mat*))
 {
   PetscFunctionBegin;
   da->ops->getmatrix = f;
@@ -994,7 +997,8 @@ PetscErrorCode DASetGetMatrix(DA da,int (*f)(DA,const MatType,Mat*))
 #define __FUNCT__ "DASplitComm2d"
 PetscErrorCode DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 {
-  PetscErrorCode ierr,m,n = 0,csize,size,rank,x = 0,y = 0;
+  PetscErrorCode ierr;
+  int m,n = 0,csize,size,rank,x = 0,y = 0;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -1082,7 +1086,7 @@ PetscErrorCode DASetLocalFunction(DA da,DALocalFunction1 lf)
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction()
 @*/
-PetscErrorCode DASetLocalFunctioni(DA da,int (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
+PetscErrorCode DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -1123,7 +1127,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetLocalAdicFunctioni_Private"
-PetscErrorCode DASetLocalAdicFunctioni_Private(DA da,int (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
+PetscErrorCode DASetLocalAdicFunctioni_Private(DA da,PetscErrorCode (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -1153,7 +1157,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetLocalAdicMFFunctioni_Private"
-PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,int (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
+PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,PetscErrorCode (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -1471,9 +1475,9 @@ PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   ierr = PetscADIncrementTotalGradSize(iscoloring->n);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
-  ierr = DALogEventBegin(DA_LocalADFunction,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DA_LocalADFunction,0,0,0,0);CHKERRQ(ierr);
   ierr = (*da->adic_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
-  ierr = DALogEventEnd(DA_LocalADFunction,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DA_LocalADFunction,0,0,0,0);CHKERRQ(ierr);
 
   /* stick the values into the matrix */
   ierr = MatSetValuesAdic(J,(PetscScalar**)ad_fstart);CHKERRQ(ierr);
@@ -1623,13 +1627,14 @@ PetscErrorCode DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
 */
 PetscErrorCode DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 {
-  int             i,ierr,Nc,N;
+  PetscErrorCode ierr;
+  int             i,Nc,N;
   ISColoringValue *color;
   DALocalInfo     info;
   PetscScalar     *u,*g_u,*g_f,*f,*p_u;
   ISColoring      iscoloring;
-  void            (*lf)(int*,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*) = 
-                  (void (*)(int*,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*))*da->adifor_lf;
+  void            (*lf)(int*,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,PetscErrorCode*) = 
+                  (void (*)(int*,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,PetscErrorCode*))*da->adifor_lf;
 
   PetscFunctionBegin;
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
@@ -1737,8 +1742,8 @@ PetscErrorCode DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
   PetscScalar *au,*av,*af,*awork;
   Vec         work;
   DALocalInfo info;
-  void        (*lf)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,int*) = 
-              (void (*)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,int*))*da->adiformf_lf;
+  void        (*lf)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*) = 
+              (void (*)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))*da->adiformf_lf;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);

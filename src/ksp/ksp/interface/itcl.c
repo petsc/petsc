@@ -29,7 +29,7 @@ PetscErrorCode (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP) = {0};
 
 .seealso: KSPSetFromOptions()
 @*/
-PetscErrorCode KSPAddOptionsChecker(int (*kspcheck)(KSP))
+PetscErrorCode KSPAddOptionsChecker(PetscErrorCode (*kspcheck)(KSP))
 {
   PetscFunctionBegin;
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {

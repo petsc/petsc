@@ -201,7 +201,7 @@ PetscErrorCode PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawRegister" 
-PetscErrorCode PetscDrawRegister(const char *sname,const char *path,const char *name,int (*function)(PetscDraw))
+PetscErrorCode PetscDrawRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscDraw))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];

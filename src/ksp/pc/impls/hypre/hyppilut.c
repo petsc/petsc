@@ -21,9 +21,9 @@ typedef struct {
   HYPRE_IJMatrix     ij;
   HYPRE_IJVector     b,x;
 
-  int (*destroy)(HYPRE_Solver);
-  int (*solve)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
-  int (*setup)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
+  PetscErrorCode (*destroy)(HYPRE_Solver);
+  PetscErrorCode (*solve)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
+  PetscErrorCode (*setup)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
   
   MPI_Comm          comm_hypre;
 
@@ -65,12 +65,13 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_HYPRE"
-static int PCSetUp_HYPRE(PC pc)
+static PetscErrorCode PCSetUp_HYPRE(PC pc)
 {
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
   HYPRE_ParCSRMatrix hmat;
   HYPRE_ParVector    bv,xv;
+  int                hierr;
 
   PetscFunctionBegin;
   if (!jac->ij) { /* create the matrix the first time through */ 
@@ -87,8 +88,8 @@ static int PCSetUp_HYPRE(PC pc)
   ierr = HYPRE_IJMatrixGetObject(jac->ij,(void**)&hmat);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->b,(void**)&bv);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&xv);CHKERRQ(ierr);
-  ierr = (*jac->setup)(jac->hsolver,hmat,bv,xv);
-  if (ierr) SETERRQ1(1,"Error in HYPRE setup, error code %d",ierr);
+  hierr = (*jac->setup)(jac->hsolver,hmat,bv,xv);
+  if (hierr) SETERRQ1(1,"Error in HYPRE setup, error code %d",hierr);
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +106,7 @@ static int PCSetUp_HYPRE(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_HYPRE"
-static int PCApply_HYPRE(PC pc,Vec b,Vec x)
+static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
 {
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -114,6 +115,7 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
   HYPRE_ParVector    jbv,jxv;
   PetscScalar        *sbv,*sxv; 
   PetscScalar        zero=0.0;
+  int                hierr;
 
 
   PetscFunctionBegin;
@@ -126,9 +128,9 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
   ierr = HYPRE_IJMatrixGetObject(jac->ij,(void**)&hmat);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->b,(void**)&jbv);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&jxv);CHKERRQ(ierr);
-  ierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
+  hierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
   /* error code of 1 in boomerAMG merely means convergence not achieved */
-  if (ierr && (ierr != 1 || jac->solve != HYPRE_BoomerAMGSolve)) SETERRQ1(1,"Error in HYPRE solver, error code %d",ierr);
+  if (hierr && (hierr != 1 || jac->solve != HYPRE_BoomerAMGSolve)) SETERRQ1(1,"Error in HYPRE solver, error code %d",hierr);
   
 
   HYPREReplacePointer(jac->b,sbv,bv);
@@ -141,7 +143,7 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_HYPRE"
-static int PCDestroy_HYPRE(PC pc)
+static PetscErrorCode PCDestroy_HYPRE(PC pc)
 {
   PC_HYPRE *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -159,7 +161,7 @@ static int PCDestroy_HYPRE(PC pc)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_HYPRE_Pilut"
-static int PCSetFromOptions_HYPRE_Pilut(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -185,7 +187,7 @@ static int PCSetFromOptions_HYPRE_Pilut(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_HYPRE_Pilut"
-static int PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -217,7 +219,7 @@ static int PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_HYPRE_Euclid"
-static int PCSetFromOptions_HYPRE_Euclid(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -256,7 +258,7 @@ static int PCSetFromOptions_HYPRE_Euclid(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_HYPRE_Euclid"
-static int PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -282,7 +284,7 @@ static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Sei
                                             "","","Gaussian-elimination"};
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_HYPRE_BoomerAMG"
-static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -433,7 +435,7 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_HYPRE_BoomerAMG"
-static int PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -467,10 +469,11 @@ static int PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_HYPRE_ParaSails"
-static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
-  int        indx,ierr;
+  PetscErrorCode ierr;
+  int        indx;
   PetscTruth flag;
   const char *symtlist[] = {"nonsymmetric","SPD","nonsymmetric,SPD"};
 
@@ -516,7 +519,7 @@ static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_HYPRE_ParaSails"
-static int PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -550,7 +553,7 @@ static int PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCHYPRESetType_HYPRE"
-static int PCHYPRESetType_HYPRE(PC pc,const char name[])
+static PetscErrorCode PCHYPRESetType_HYPRE(PC pc,const char name[])
 {
   PC_HYPRE   *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
@@ -620,9 +623,10 @@ static int PCHYPRESetType_HYPRE(PC pc,const char name[])
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_HYPRE"
-static int PCSetFromOptions_HYPRE(PC pc)
+static PetscErrorCode PCSetFromOptions_HYPRE(PC pc)
 {
-  int        indx,ierr;
+  PetscErrorCode ierr;
+  int        indx;
   const char *type[] = {"pilut","parasails","boomeramg","euclid"};
   PetscTruth flg;
 

@@ -127,7 +127,8 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
 PetscErrorCode VecAXPY_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  int          one = 1,ierr;
+  PetscErrorCode ierr;
+  int          one = 1;
   PetscScalar  *yarray;
 
   PetscFunctionBegin;
@@ -143,7 +144,8 @@ PetscErrorCode VecAXPY_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 PetscErrorCode VecAXPBY_Seq(const PetscScalar *alpha,const PetscScalar *beta,Vec xin,Vec yin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  int          n = xin->n,i,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n,i;
   PetscScalar  *xx = x->array,*yy ,a = *alpha,b = *beta;
 
   PetscFunctionBegin;

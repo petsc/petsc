@@ -4,7 +4,7 @@
    matrices (not complex matrices that are symmetric).
 */
 #include "src/ksp/ksp/impls/cg/cgctx.h"
-static int LINPACKcgtql1(int*,PetscReal *,PetscReal *,int *);
+static PetscErrorCode LINPACKcgtql1(int*,PetscReal *,PetscReal *,int *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeEigenvalues_CG"
@@ -13,7 +13,8 @@ PetscErrorCode KSPComputeEigenvalues_CG(KSP ksp,int nmax,PetscReal *r,PetscReal 
   KSP_CG      *cgP = (KSP_CG*)ksp->data;
   PetscScalar *d,*e;
   PetscReal   *ee;
-  int          j,n = ksp->its,ierr;
+  PetscErrorCode ierr;
+  int          j,n = ksp->its;
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
@@ -80,7 +81,7 @@ static PetscReal LINPACKcgpthy(PetscReal*,PetscReal*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "LINPACKcgtql1"
-static int LINPACKcgtql1(int *n,PetscReal *d,PetscReal *e,int *ierr)
+static PetscErrorCode LINPACKcgtql1(int *n,PetscReal *d,PetscReal *e,int *ierr)
 {
     /* System generated locals */
     int    i__1,i__2;

@@ -7,12 +7,12 @@
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
-PetscErrorCode DRAWLG_COOKIE = 0;
+PetscCookie DRAWLG_COOKIE = 0;
 
 struct _p_DrawLG {
   PETSCHEADER(int) 
-  int           (*destroy)(PetscDrawLG);
-  int           (*view)(PetscDrawLG,PetscViewer);
+  PetscErrorCode (*destroy)(PetscDrawLG);
+  PetscErrorCode (*view)(PetscDrawLG,PetscViewer);
   int           len,loc;
   PetscDraw     win;
   PetscDrawAxis axis;
@@ -199,7 +199,8 @@ PetscErrorCode PetscDrawLGDestroy(PetscDrawLG lg)
 @*/
 PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
 {
-  int i,ierr;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
@@ -276,7 +277,8 @@ PetscErrorCode PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 @*/
 PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 {
-  int       i,j,k,ierr;
+  PetscErrorCode ierr;
+  int       i,j,k;
   PetscReal *x,*y;
 
   PetscFunctionBegin;
@@ -333,7 +335,8 @@ PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscRea
 PetscErrorCode PetscDrawLGDraw(PetscDrawLG lg)
 {
   PetscReal xmin=lg->xmin,xmax=lg->xmax,ymin=lg->ymin,ymax=lg->ymax;
-  int       i,j,dim = lg->dim,nopts = lg->nopts,rank,ierr;
+  PetscErrorCode ierr;
+  int       i,j,dim = lg->dim,nopts = lg->nopts,rank;
   PetscDraw draw = lg->win;
 
   PetscFunctionBegin;
@@ -513,7 +516,8 @@ PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 {
   PetscDrawLG sp = (PetscDrawLG)spin;
   PetscReal   xmin,xmax,ymin,ymax;
-  int         i,j,dim,nopts,rank,ierr;
+  PetscErrorCode ierr;
+  int         i,j,dim,nopts,rank;
   PetscDraw   draw = lg->win;
 
   PetscFunctionBegin;

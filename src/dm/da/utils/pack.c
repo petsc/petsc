@@ -18,12 +18,12 @@ struct VecPackLink {
 
 typedef struct _VecPackOps *VecPackOps;
 struct _VecPackOps {
-  int  (*view)(VecPack,PetscViewer);
-  int  (*createglobalvector)(VecPack,Vec*);
-  int  (*getcoloring)(VecPack,ISColoringType,ISColoring*);
-  int  (*getmatrix)(VecPack,MatType,Mat*);
-  int  (*getinterpolation)(VecPack,VecPack,Mat*,Vec*);
-  int  (*refine)(VecPack,MPI_Comm,VecPack*);
+  PetscErrorCode (*view)(VecPack,PetscViewer);
+  PetscErrorCode (*createglobalvector)(VecPack,Vec*);
+  PetscErrorCode (*getcoloring)(VecPack,ISColoringType,ISColoring*);
+  PetscErrorCode (*getmatrix)(VecPack,MatType,Mat*);
+  PetscErrorCode (*getinterpolation)(VecPack,VecPack,Mat*,Vec*);
+  PetscErrorCode (*refine)(VecPack,MPI_Comm,VecPack*);
 };
 
 struct _p_VecPack {

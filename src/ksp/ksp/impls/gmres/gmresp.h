@@ -21,7 +21,7 @@ typedef struct {
   PetscReal haptol;
   int       max_k;
 
-  int                       (*orthog)(KSP,int); /* Functions to use (special to gmres) */
+  PetscErrorCode (*orthog)(KSP,int); /* Functions to use (special to gmres) */
   KSPGMRESCGSRefinementType cgstype;
     
   Vec   *vecs;  /* holds the work vectors */

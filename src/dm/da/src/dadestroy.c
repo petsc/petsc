@@ -5,8 +5,8 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 /* Logging support */
-PetscCookieCode DA_COOKIE = 0;
-PetscLogCode    DAEvents[DA_MAX_EVENTS] = {0};
+PetscCookie DA_COOKIE = 0;
+PetscEvent  DA_GlobalToLocal = 0, DA_LocalToGlobal = 0, DA_LocalADFunction = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "DADestroy"
@@ -26,7 +26,8 @@ PetscLogCode    DAEvents[DA_MAX_EVENTS] = {0};
 @*/
 PetscErrorCode DADestroy(DA da)
 {
-  PetscErrorCode ierr,i,cnt = 0;
+  PetscErrorCode ierr;
+  PetscErrorCode i,cnt = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

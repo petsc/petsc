@@ -79,7 +79,8 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DA                 da,dac,dag;
-  int                rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
+  PetscErrorCode ierr;
+  int                rank,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
   PetscReal          coors[4],ymin,ymax,xmin,xmax;
   PetscDraw          draw,popup;
   PetscTruth         isnull,useports;

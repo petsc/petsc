@@ -146,11 +146,11 @@
 #endif
 
 EXTERN_C_BEGIN
-static void (PETSC_STDCALL *f2)(int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),int*,int*,const CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4));
+static void (PETSC_STDCALL *f2)(int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),int*,int*,const CHAR PETSC_MIXED_LEN(len4),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4));
 EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static int ourerrorhandler(int line,const char *fun,const char *file,const char *dir,int n,int p,const char *mess,void *ctx)
+static PetscErrorCode ourerrorhandler(int line,const char *fun,const char *file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
   PetscErrorCode ierr = 0;
   size_t len1,len2,len3,len4;
@@ -225,7 +225,7 @@ void petscignoreerrorhandler_(int *line,const char *fun,const char *file,const c
   *ierr = PetscIgnoreErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),int*,int*,const CHAR PETSC_MIXED_LEN(len4),void*,int* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,int *ierr)
+void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,const CHAR PETSC_MIXED_LEN(len1),const CHAR PETSC_MIXED_LEN(len2),const CHAR PETSC_MIXED_LEN(len3),int*,int*,const CHAR PETSC_MIXED_LEN(len4),void*,PetscErrorCode* PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len3) PETSC_END_LEN(len4)),void *ctx,PetscErrorCode *ierr)
 {
   if ((void(*)(void))handler == (void(*)(void))petsctracebackerrorhandler_) {
     *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler,0);

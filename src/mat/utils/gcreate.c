@@ -4,7 +4,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPublish_Base"
-static int MatPublish_Base(PetscObject obj)
+static PetscErrorCode MatPublish_Base(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   Mat mat = (Mat)obj;

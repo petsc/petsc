@@ -20,9 +20,10 @@
    Assumes 0 origin for v, number of elements = right+1 (right is index of
    right-most member). 
 */
-static int PetscSortInt_Private(int *v,int right)
+static PetscErrorCode PetscSortInt_Private(int *v,int right)
 {
-  int i,vl,last,tmp,ierr;
+  PetscErrorCode ierr;
+  int i,vl,last,tmp;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -62,7 +63,8 @@ static int PetscSortInt_Private(int *v,int right)
 @*/
 PetscErrorCode PetscSortInt(int n,int i[])
 {
-  PetscErrorCode ierr,j,k,tmp,ik;
+  PetscErrorCode ierr;
+  int j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -92,9 +94,10 @@ PetscErrorCode PetscSortInt(int n,int i[])
    Assumes 0 origin for v, number of elements = right+1 (right is index of
    right-most member). 
 */
-static int PetscSortIntWithArray_Private(int *v,int *V,int right)
+static PetscErrorCode PetscSortIntWithArray_Private(int *v,int *V,int right)
 {
-  int i,vl,last,tmp,ierr;
+  PetscErrorCode ierr;
+  int i,vl,last,tmp;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -136,7 +139,8 @@ static int PetscSortIntWithArray_Private(int *v,int *V,int right)
 @*/
 PetscErrorCode PetscSortIntWithArray(int n,int i[],int I[])
 {
-  PetscErrorCode ierr,j,k,tmp,ik;
+  PetscErrorCode ierr;
+  int j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {

@@ -26,12 +26,12 @@ typedef struct {
 
   /* A few inheritance details */
   int size;
-  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  int (*MatView)(Mat,PetscViewer);
-  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  int (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
-  int (*MatDestroy)(Mat);
-  int (*MatPreallocate)(Mat,int,int,int*,int,int*);
+  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*MatView)(Mat,PetscViewer);
+  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  PetscErrorCode (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatDestroy)(Mat);
+  PetscErrorCode (*MatPreallocate)(Mat,int,int,int*,int,int*);
 
   /* Clean up flag for destructor */
   PetscTruth CleanUpDSCPACK;
@@ -91,7 +91,8 @@ PetscErrorCode  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
    for columns owned by this processor
  */ 
 {  
-  int            i, j, k, iold,inew, jj, kk,ierr, bs2=bs*bs,
+  PetscErrorCode ierr;
+  int            i, j, k, iold,inew, jj, kk, bs2=bs*bs,
                  *idx, *NewColNum,
                  MyANonz_last, max_struct=0, struct_size;
   RealNumberType *MyANonz;             
@@ -708,7 +709,7 @@ PetscErrorCode MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat) {
       /* I really don't like needing to know the tag: MatMPIBAIJSetPreallocation_C */
     ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
     if (f) {
-      lu->MatPreallocate = (int (*)(Mat,int,int,int*,int,int*))f;
+      lu->MatPreallocate = (PetscErrorCode (*)(Mat,int,int,int*,int,int*))f;
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocation_C",
                                                "MatMPIBAIJSetPreallocation_MPIDSCPACK",
                                                MatMPIBAIJSetPreallocation_MPIDSCPACK);CHKERRQ(ierr);
@@ -773,7 +774,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_DSCPACK"
 PetscErrorCode MatCreate_DSCPACK(Mat A) 
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqBAIJ or MPIBAIJ */

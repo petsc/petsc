@@ -34,13 +34,13 @@
 #endif
 
 EXTERN_C_BEGIN
-static int (PETSC_STDCALL *theirmat)(DMMG*,Mat*,int*);
+static void (PETSC_STDCALL *theirmat)(DMMG*,Mat*,PetscErrorCode*);
 EXTERN_C_END
 
-static int ourrhs(DMMG dmmg,Vec vec)
+static PetscErrorCode ourrhs(DMMG dmmg,Vec vec)
 {
   PetscErrorCode ierr = 0;
-  (*(int (PETSC_STDCALL *)(DMMG*,Vec*,int*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&dmmg,&vec,&ierr);
+  (*(void (PETSC_STDCALL *)(DMMG*,Vec*,PetscErrorCode*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&dmmg,&vec,&ierr);
   return ierr;
 }
 
@@ -48,7 +48,7 @@ static int ourrhs(DMMG dmmg,Vec vec)
    Since DMMGSetKSP() immediately calls the matrix functions for each level we do not need to store
   the mat() function inside the DMMG object
 */
-static int ourmat(DMMG dmmg,Mat mat)
+static PetscErrorCode ourmat(DMMG dmmg,Mat mat)
 {
   PetscErrorCode ierr = 0;
   (*theirmat)(&dmmg,&mat,&ierr);
@@ -57,31 +57,31 @@ static int ourmat(DMMG dmmg,Mat mat)
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dmmggetx_(DMMG **dmmg,Vec *x,int *ierr)
+void PETSC_STDCALL dmmggetx_(DMMG **dmmg,Vec *x,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *x    = DMMGGetx(*dmmg);
 }
 
-void PETSC_STDCALL dmmggetj_(DMMG **dmmg,Mat *x,int *ierr)
+void PETSC_STDCALL dmmggetj_(DMMG **dmmg,Mat *x,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *x    = DMMGGetJ(*dmmg);
 }
 
-void PETSC_STDCALL dmmggetB_(DMMG **dmmg,Mat *x,int *ierr)
+void PETSC_STDCALL dmmggetB_(DMMG **dmmg,Mat *x,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *x    = DMMGGetB(*dmmg);
 }
 
-void PETSC_STDCALL dmmggetksp_(DMMG **dmmg,KSP *x,int *ierr)
+void PETSC_STDCALL dmmggetksp_(DMMG **dmmg,KSP *x,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *x    = DMMGGetKSP(*dmmg);
 }
 
-void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,int *x,int *ierr)
+void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,int *x,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *x    = DMMGGetLevels(*dmmg);
@@ -89,7 +89,7 @@ void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,int *x,int *ierr)
 
 /* ----------------------------------------------------------------------------------------------------------*/
 
-void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(DMMG*,Vec*,int*),int (PETSC_STDCALL *mat)(DMMG*,Mat*,int*),int *ierr)
+void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,void (PETSC_STDCALL *rhs)(DMMG*,Vec*,PetscErrorCode*),void (PETSC_STDCALL *mat)(DMMG*,Mat*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   int i;
   theirmat = mat;
@@ -104,13 +104,13 @@ void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(DMMG*,Vec*,i
 
 /* ----------------------------------------------------------------------------------------------------------*/
 
-void PETSC_STDCALL dmmggetda_(DMMG *dmmg,DA *da,int *ierr)
+void PETSC_STDCALL dmmggetda_(DMMG *dmmg,DA *da,PetscErrorCode *ierr)
 {
   *da   = (DA)(*dmmg)->dm;
   *ierr = 0;
 }
 
-void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,int *ierr)
+void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,PetscErrorCode *ierr)
 {
   int i;
   *ierr = DMMGSetDM(*dmmg,*dm);if (*ierr) return;
@@ -120,27 +120,27 @@ void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,int *ierr)
   }
 }
 
-void PETSC_STDCALL dmmgview_(DMMG **dmmg,PetscViewer *viewer,int *ierr)
+void PETSC_STDCALL dmmgview_(DMMG **dmmg,PetscViewer *viewer,PetscErrorCode *ierr)
 {
   *ierr = DMMGView(*dmmg,*viewer);
 }
 
-void PETSC_STDCALL dmmgsolve_(DMMG **dmmg,int *ierr)
+void PETSC_STDCALL dmmgsolve_(DMMG **dmmg,PetscErrorCode *ierr)
 {
   *ierr = DMMGSolve(*dmmg);
 }
 
-void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,void *user,DMMG **dmmg,int *ierr)
+void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,void *user,DMMG **dmmg,PetscErrorCode *ierr)
 {
   *ierr = DMMGCreate((MPI_Comm)PetscToPointerComm(*comm),*nlevels,user,dmmg);
 }
 
-void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,int *ierr)
+void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,PetscErrorCode *ierr)
 {
   *ierr = DMMGDestroy(*dmmg);
 }
 
-void PETSC_STDCALL dmmgsetup_(DMMG **dmmg,int *ierr)
+void PETSC_STDCALL dmmgsetup_(DMMG **dmmg,PetscErrorCode *ierr)
 {
   *ierr = DMMGSetUp(*dmmg);
 }

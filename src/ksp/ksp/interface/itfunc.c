@@ -566,7 +566,8 @@ PetscErrorCode KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 @*/
 PetscErrorCode KSPDestroy(KSP ksp)
 {
-  int i,ierr;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1107,7 +1108,7 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
 .seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPClearMonitor()
 @*/
-PetscErrorCode KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int (*monitordestroy)(void*))
+PetscErrorCode KSPSetMonitor(KSP ksp,PetscErrorCode (*monitor)(KSP,int,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1306,7 +1307,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-PetscErrorCode KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,PetscReal,KSPConvergedReason*,void*),void *cctx)
+PetscErrorCode KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,int,PetscReal,KSPConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1421,7 +1422,8 @@ PetscErrorCode KSPBuildSolution(KSP ksp,Vec v,Vec *V)
 @*/
 PetscErrorCode KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 {
-  int flag = 0,ierr;
+  PetscErrorCode ierr;
+  int flag = 0;
   Vec w = v,tt = t;
 
   PetscFunctionBegin;

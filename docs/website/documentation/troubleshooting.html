@@ -362,8 +362,8 @@ defines OMAKE to gnumake. </li>
         <li><font color="#ff0000"><strong>Symptom: </strong></font>on
 DEC alpha or Paragon <br>
 /usr/lib/cmplrs/cc/cfe: Error: mal.c, line 16: 'free' undefined,
-reoccurrences will not be         reported int (*PetscFree)(void
-*,int,char*) = (int (*)(void*,int,char*))free;
+reoccurrences will not be         reported PetscErrorCode (*PetscFree)(void
+*,int,char*) = (PetscErrorCode (*)(void*,int,char*))free;
           <p><font color="#ff0000"><strong>Problem: </strong></font>The
 include files on your machine are out         of sync with the ones we
 used for developing PETSc. </p>

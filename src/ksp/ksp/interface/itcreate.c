@@ -5,8 +5,8 @@
 #include "petscsys.h"
 
 /* Logging support */
-PetscCookieCode KSP_COOKIE = 0;
-PetscLogCode    KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
+PetscCookie KSP_COOKIE = 0;
+PetscEvent    KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
 
 
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
@@ -141,7 +141,7 @@ PetscErrorCode KSPSetNormType(KSP ksp,KSPNormType normtype)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPPublish_Petsc"
-static int KSPPublish_Petsc(PetscObject obj)
+static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   KSP          v = (KSP) obj;
@@ -660,7 +660,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
   Level: advanced
 @*/
-PetscErrorCode KSPRegister(const char sname[],const char path[],const char name[],int (*function)(KSP))
+PetscErrorCode KSPRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(KSP))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];

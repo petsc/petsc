@@ -17,7 +17,8 @@
 PetscErrorCode MGMCycle_Private(MG *mglevels,PetscTruth *converged)
 {
   MG          mg = *mglevels,mgc;
-  int         cycles = mg->cycles,ierr;
+  PetscErrorCode ierr;
+  int         cycles = mg->cycles;
   PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
@@ -66,10 +67,11 @@ PetscErrorCode MGMCycle_Private(MG *mglevels,PetscTruth *converged)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MGCreate_Private"
-static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **result)
+static PetscErrorCode MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **result)
 {
   MG   *mg;
-  int  i,ierr,size;
+  PetscErrorCode ierr;
+  int  i,size;
   char *prefix;
   PC   ipc;
 
@@ -125,10 +127,11 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_MG"
-static int PCDestroy_MG(PC pc)
+static PetscErrorCode PCDestroy_MG(PC pc)
 {
   MG  *mg = (MG*)pc->data;
-  int i,n = mg[0]->levels,ierr;
+  PetscErrorCode ierr;
+  int i,n = mg[0]->levels;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
@@ -157,11 +160,12 @@ EXTERN PetscErrorCode MGKCycle_Private(MG*);
 */ 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_MG"
-static int PCApply_MG(PC pc,Vec b,Vec x)
+static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 {
   MG          *mg = (MG*)pc->data;
   PetscScalar zero = 0.0;
-  int         levels = mg[0]->levels,ierr;
+  PetscErrorCode ierr;
+  int         levels = mg[0]->levels;
 
   PetscFunctionBegin;
   mg[levels-1]->b = b; 
@@ -184,7 +188,7 @@ static int PCApply_MG(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_MG"
-static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
+static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
   MG         *mg = (MG*)pc->data;
   PetscErrorCode ierr;
@@ -218,7 +222,7 @@ static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_MG"
-static int PCSetFromOptions_MG(PC pc)
+static PetscErrorCode PCSetFromOptions_MG(PC pc)
 {
   PetscErrorCode ierr;
   int indx,m,levels = 1;
@@ -286,7 +290,7 @@ static int PCSetFromOptions_MG(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_MG"
-static int PCView_MG(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 {
   MG         *mg = (MG*)pc->data;
   PetscErrorCode ierr;
@@ -329,7 +333,7 @@ static int PCView_MG(PC pc,PetscViewer viewer)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_MG"
-static int PCSetUp_MG(PC pc)
+static PetscErrorCode PCSetUp_MG(PC pc)
 {
   MG          *mg = (MG*)pc->data;
   PetscErrorCode ierr;
@@ -349,7 +353,7 @@ static int PCSetUp_MG(PC pc)
           ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothd,&comm);CHKERRQ(ierr);
           ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
           ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
-          ierr = KSPSetMonitor(mg[i]->smoothd,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+          ierr = KSPSetMonitor(mg[i]->smoothd,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
         }
         ierr = KSPSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
       }
@@ -360,7 +364,7 @@ static int PCSetUp_MG(PC pc)
           ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothu,&comm);CHKERRQ(ierr);
           ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
           ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
-          ierr = KSPSetMonitor(mg[i]->smoothu,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+          ierr = KSPSetMonitor(mg[i]->smoothu,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
         }
         ierr = KSPSetFromOptions(mg[i]->smoothu);CHKERRQ(ierr);
       }
@@ -402,7 +406,7 @@ static int PCSetUp_MG(PC pc)
       ierr = PetscObjectGetComm((PetscObject)mg[0]->smoothd,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
       ierr = PetscViewerASCIISetTab(ascii,n);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(mg[0]->smoothd,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(mg[0]->smoothd,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
     ierr = KSPSetFromOptions(mg[0]->smoothd);CHKERRQ(ierr);
   }
@@ -665,7 +669,8 @@ PetscErrorCode MGCheck(PC pc)
 PetscErrorCode MGSetNumberSmoothDown(PC pc,int n)
 { 
   MG  *mg;
-  int i,levels,ierr;
+  PetscErrorCode ierr;
+  int i,levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -711,7 +716,8 @@ PetscErrorCode MGSetNumberSmoothDown(PC pc,int n)
 PetscErrorCode  MGSetNumberSmoothUp(PC pc,int n)
 { 
   MG  *mg;
-  int i,levels,ierr;
+  PetscErrorCode ierr;
+  int i,levels;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);

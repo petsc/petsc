@@ -8,11 +8,11 @@
 #include "mex.h"      /* Matlab include file */
 
 typedef struct {
-  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  int (*MatView)(Mat,PetscViewer);
-  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  int (*MatILUDTFactor)(Mat,MatFactorInfo*,IS,IS,Mat*);
-  int (*MatDestroy)(Mat);
+  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*MatView)(Mat,PetscViewer);
+  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatILUDTFactor)(Mat,MatFactorInfo*,IS,IS,Mat*);
+  PetscErrorCode (*MatDestroy)(Mat);
 } Mat_Matlab;
 
 

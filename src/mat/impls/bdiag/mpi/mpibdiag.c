@@ -95,8 +95,9 @@ PetscErrorCode MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag *mlocal;
+  PetscErrorCode ierr;
   int          i,n,*row,*col;
-  int          *tmp1,*tmp2,ierr,len,ict,Mblock,Nblock,flg,j,rstart,ncols;
+  int          *tmp1,*tmp2,len,ict,Mblock,Nblock,flg,j,rstart,ncols;
   PetscScalar  *val;
   InsertMode   addv = mat->insertmode;
 
@@ -190,7 +191,8 @@ PetscErrorCode MatZeroEntries_MPIBDiag(Mat A)
 PetscErrorCode MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIBDiag   *l = (Mat_MPIBDiag*)A->data;
-  int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
+  PetscErrorCode ierr;
+  int            i,N,*rows,*owners = l->rowners,size = l->size;
   int            *nprocs,j,idx,nsends;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
@@ -446,7 +448,7 @@ PetscErrorCode MatDestroy_MPIBDiag(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIBDiag_Binary"
-static int MatView_MPIBDiag_Binary(Mat mat,PetscViewer viewer)
+static PetscErrorCode MatView_MPIBDiag_Binary(Mat mat,PetscViewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   PetscErrorCode ierr;
@@ -460,7 +462,7 @@ static int MatView_MPIBDiag_Binary(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIBDiag_ASCIIorDraw"
-static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
+static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
 {
   Mat_MPIBDiag      *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag      *dmat = (Mat_SeqBDiag*)mbd->A->data;
@@ -626,7 +628,8 @@ PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op)
 PetscErrorCode MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
-  int          lrow,ierr;
+  PetscErrorCode ierr;
+  int          lrow;
 
   PetscFunctionBegin;
   if (row < mat->rstart || row >= mat->rend) SETERRQ(PETSC_ERR_SUP,"only for local rows")
@@ -637,11 +640,11 @@ PetscErrorCode MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScala
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPIBDiag"
-PetscErrorCode MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
-                                  PetscScalar **v)
+PetscErrorCode MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
-  int          lrow,ierr;
+  PetscErrorCode ierr;
+  int          lrow;
 
   PetscFunctionBegin;
   lrow = row - mat->rstart;
@@ -1027,7 +1030,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_BDiag"
 PetscErrorCode MatCreate_BDiag(Mat A) 
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATBDIAG);CHKERRQ(ierr);
@@ -1158,7 +1162,8 @@ $     diag = i/bs - j/bs  (integer division)
 @*/
 PetscErrorCode MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,const int diag[],PetscScalar *diagv[],Mat *A)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,m,M,N,A);CHKERRQ(ierr);
@@ -1242,7 +1247,8 @@ PetscErrorCode MatLoad_MPIBDiag(PetscViewer viewer,const MatType type,Mat *newma
   PetscScalar  *vals,*svals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
-  int          bs,i,nz,ierr,j,rstart,rend,fd,*rowners,maxnz,*cols;
+  PetscErrorCode ierr;
+  int          bs,i,nz,j,rstart,rend,fd,*rowners,maxnz,*cols;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,Mbs;
   int          *ourlens,*sndcounts = 0,*procsnz = 0,jj,*mycols,*smycols;
   int          tag = ((PetscObject)viewer)->tag,extra_rows;

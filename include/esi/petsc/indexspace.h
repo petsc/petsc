@@ -144,7 +144,7 @@ class IndexSpace<int>: public virtual esi::IndexSpace<int>, public esi::petsc::O
 
 }}
 
-extern int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace<int>*&v);
+EXTERN PetscErrorCode ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace<int>*&v);
 #endif
 
 

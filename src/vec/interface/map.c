@@ -5,7 +5,7 @@
 #include "vecimpl.h"    /*I "petscvec.h" I*/
 
 /* Logging support */
-PetscErrorCode MAP_COOKIE = 0;
+PetscCookie MAP_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapSetTypeFromOptions_Private"
@@ -23,7 +23,7 @@ PetscErrorCode MAP_COOKIE = 0;
 .keywords: PetscMap, set, options, database, type
 .seealso: PetscMapSetFromOptions(), PetscMapSetType()
 */
-static int PetscMapSetTypeFromOptions_Private(PetscMap map)
+static PetscErrorCode PetscMapSetTypeFromOptions_Private(PetscMap map)
 {
   PetscTruth opt;
   const char *defaultType;

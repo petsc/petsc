@@ -10,7 +10,8 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const in
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          kk,ldiag,row,newnz,*bdlen_new;
-  int          j,k, *diag_new,ierr;
+  PetscErrorCode ierr;
+  int          j,k, *diag_new;
   PetscTruth   roworiented = a->roworiented,dfound;
   PetscScalar  value,**diagv_new;
 
@@ -98,7 +99,8 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const in
 PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode is)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          kk,ldiag,shift,row,newnz,*bdlen_new,ierr;
+  PetscErrorCode ierr;
+  int          kk,ldiag,shift,row,newnz,*bdlen_new;
   int          j,k,bs = a->bs,*diag_new,idx=0;
   PetscTruth   roworiented = a->roworiented,dfound;
   PetscScalar  value,**diagv_new;

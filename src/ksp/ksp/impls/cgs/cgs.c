@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_CGS"
-static int KSPSetUp_CGS(KSP ksp)
+static PetscErrorCode KSPSetUp_CGS(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -20,9 +20,10 @@ static int KSPSetUp_CGS(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_CGS"
-static int  KSPSolve_CGS(KSP ksp)
+static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 {
-  int          i,ierr;
+  PetscErrorCode ierr;
+  int          i;
   PetscScalar  rho,rhoold,a,s,b,tmp,one = 1.0; 
   Vec          X,B,V,P,R,RP,T,Q,U,AUQ;
   PetscReal    dp = 0.0;

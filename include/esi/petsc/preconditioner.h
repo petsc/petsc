@@ -149,7 +149,7 @@ class Preconditioner<double,int> : public virtual esi::Preconditioner<double,int
 }}
 
 
-EXTERN int PCESISetPreconditioner(PC,esi::Preconditioner<double,int>*);
+EXTERN PetscErrorCode PCESISetPreconditioner(PC,esi::Preconditioner<double,int>*);
 
 #endif
 

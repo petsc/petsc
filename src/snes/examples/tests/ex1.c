@@ -71,7 +71,8 @@ int main(int argc,char **argv)
   Vec            x,r;                 /* solution, residual vectors */
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
-  int            i,ierr,its,N,size,hist_its[50]; 
+  PetscErrorCode ierr;
+  int            i,its,N,size,hist_its[50]; 
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
   PetscTruth     matrix_free,flg,fd_coloring;
@@ -161,7 +162,7 @@ int main(int argc,char **argv)
        to compute the actual Jacobians via finite differences.
     */
     ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
     /*
         Tell SNES to use the routine SNESDefaultComputeJacobianColor()

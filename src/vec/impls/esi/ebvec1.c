@@ -220,7 +220,8 @@ PetscErrorCode VecPointwiseMult_ESI(Vec xin,Vec yin,Vec zin)
 #define __FUNCT__ "VecPointwiseDivide_ESI"
 PetscErrorCode VecPointwiseDivide_ESI(Vec xin,Vec yin,Vec win)
 {
-  int          n = xin->n,i,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n,i;
   PetscScalar  *xx,*yy,*ww;
 
   PetscFunctionBegin;

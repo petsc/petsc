@@ -6,7 +6,7 @@
       Interface 
         Subroutine MatGetArrayF90(v,array,ierr)
           PetscScalar, pointer :: array(:,:)
-          integer ierr
+          PetscErrorCode ierr
           Mat     v
         End Subroutine
       End Interface
@@ -15,7 +15,7 @@
       Interface 
         Subroutine MatRestoreArrayF90(v,array,ierr)
           PetscScalar, pointer :: array(:,:)
-          integer ierr
+          PetscErrorCode ierr
           Mat     v
         End Subroutine
       End Interface

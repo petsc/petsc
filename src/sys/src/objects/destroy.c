@@ -162,7 +162,8 @@ PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
 @*/
 PetscErrorCode PetscObjectRegisterDestroyAll(void)
 {
-  PetscErrorCode ierr,i;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   for (i=0; i<PetscObjectRegisterDestroy_Count; i++) {

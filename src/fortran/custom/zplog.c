@@ -34,8 +34,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petsclogprintsummary_(MPI_Comm *comm,CHAR filename PETSC_MIXED_LEN(len),
-                                      int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogprintsummary_(MPI_Comm *comm,CHAR filename PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;
@@ -55,8 +54,7 @@ void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_
   FREECHAR(name,t1);
 #endif
 }
-void PETSC_STDCALL petsclogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len),
-               int *cookie,int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogeventregister_(PetscEvent *e,CHAR string PETSC_MIXED_LEN(len),int *cookie,int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
@@ -65,8 +63,7 @@ void PETSC_STDCALL petsclogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len
   FREECHAR(string,t1);
 #endif
 }
-void PETSC_STDCALL petsclogclassregister_(int *e,CHAR string PETSC_MIXED_LEN(len),
-               int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogclassregister_(PetscCookie *e,CHAR string PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t1;
@@ -95,11 +92,11 @@ void PETSC_STDCALL petsclogbegin_(int *ierr){
 #endif
 }
 
-void PETSC_STDCALL petsclogeventbegin_(int *e,int *_ierr){
+void PETSC_STDCALL petsclogeventbegin_(PetscEvent *e,int *_ierr){
   *_ierr = PetscLogEventBegin(*e,0,0,0,0);
 }
 
-void PETSC_STDCALL petsclogeventend_(int *e,int *_ierr){
+void PETSC_STDCALL petsclogeventend_(PetscEvent *e,int *_ierr){
   *_ierr = PetscLogEventEnd(*e,0,0,0,0);
 }
 
@@ -114,8 +111,7 @@ void PETSC_STDCALL petsclogstagepop_(int *ierr)
 #endif
 }
 
-void PETSC_STDCALL petsclogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(len),
-                                          int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;

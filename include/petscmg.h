@@ -51,7 +51,7 @@ EXTERN PetscErrorCode MGSetR(PC,int,Vec);
 
 EXTERN PetscErrorCode MGSetRestriction(PC,int,Mat);
 EXTERN PetscErrorCode MGSetInterpolate(PC,int,Mat);
-EXTERN PetscErrorCode MGSetResidual(PC,int,int (*)(Mat,Vec,Vec,Vec),Mat);
+EXTERN PetscErrorCode MGSetResidual(PC,int,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 EXTERN PetscErrorCode MGDefaultResidual(Mat,Vec,Vec,Vec);
 
 

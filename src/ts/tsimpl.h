@@ -17,7 +17,7 @@
 #define MAXTSMONITORS 5 
 
 struct _TSOps {
-  int (*rhsmatrix)(TS, PetscReal, Mat *, Mat *, MatStructure *, void *),
+  PetscErrorCode (*rhsmatrix)(TS, PetscReal, Mat *, Mat *, MatStructure *, void *),
       (*rhsfunction)(TS, PetscReal, Vec, Vec, void *),
       (*rhsjacobian)(TS, PetscReal, Vec, Mat *, Mat *, MatStructure *, void *),
       (*applymatrixbc)(TS, Mat, Mat, void *),
@@ -43,8 +43,8 @@ struct _p_TS {
   Vec           vec_sol, vec_sol_always;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
-  int  (*monitor[MAXTSMONITORS])(TS,int,PetscReal,Vec,void*); /* returns control to user after */
-  int  (*mdestroy[MAXTSMONITORS])(void*);                
+  PetscErrorCode (*monitor[MAXTSMONITORS])(TS,int,PetscReal,Vec,void*); /* returns control to user after */
+  PetscErrorCode (*mdestroy[MAXTSMONITORS])(void*);                
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   int  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
 

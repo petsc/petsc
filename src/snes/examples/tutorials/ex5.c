@@ -163,7 +163,7 @@ int main(int argc,char **argv)
     ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)

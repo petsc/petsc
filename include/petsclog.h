@@ -12,20 +12,20 @@ PETSC_EXTERN_CXX_BEGIN
   from the lowest one, PETSC_COOKIE.
 */
 #define PETSC_COOKIE 1211211
-extern int PETSC_LARGEST_COOKIE;
+extern PetscCookie PETSC_LARGEST_COOKIE;
 #define PETSC_EVENT  1311311
-extern int PETSC_LARGEST_EVENT;
+extern PetscEvent PETSC_LARGEST_EVENT;
 
 /* Events for the Petsc standard library */
-extern int PETSC_Barrier;
+extern PetscEvent PETSC_Barrier;
 
 /* Global flop counter */
 extern PetscLogDouble _TotalFlops;
 
 /* General logging of information; different from event logging */
 EXTERN PetscErrorCode        PetscLogInfo(void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-EXTERN PetscErrorCode        PetscLogInfoDeactivateClass(int);
-EXTERN PetscErrorCode        PetscLogInfoActivateClass(int);
+EXTERN PetscErrorCode        PetscLogInfoDeactivateClass(PetscCookie);
+EXTERN PetscErrorCode        PetscLogInfoActivateClass(PetscCookie);
 extern PetscTruth PetscLogPrintInfo;  /* if true, indicates PetscLogInfo() is turned on */
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
@@ -67,8 +67,8 @@ extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_END(e)
 #endif
 
-EXTERN PetscErrorCode (*_PetscLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-EXTERN PetscErrorCode (*_PetscLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN PetscErrorCode (*_PetscLogPLB)(PetscEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN PetscErrorCode (*_PetscLogPLE)(PetscEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
 EXTERN PetscErrorCode (*_PetscLogPHC)(PetscObject);
 EXTERN PetscErrorCode (*_PetscLogPHD)(PetscObject);
 
@@ -92,8 +92,8 @@ EXTERN PetscErrorCode PetscLogObjects(PetscTruth);
 /* General functions */
 EXTERN PetscErrorCode PetscLogGetRGBColor(const char*[]);
 EXTERN PetscErrorCode PetscLogDestroy(void);
-EXTERN PetscErrorCode PetscLogSet(int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
-                   int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
+EXTERN PetscErrorCode PetscLogSet(PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
+                   PetscErrorCode (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
 EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
 /* Output functions */
 EXTERN PetscErrorCode PetscLogPrintSummary(MPI_Comm, const char[]);
@@ -110,14 +110,14 @@ EXTERN PetscErrorCode PetscLogStageSetVisible(int, PetscTruth);
 EXTERN PetscErrorCode PetscLogStageGetVisible(int, PetscTruth *);
 EXTERN PetscErrorCode PetscLogStageGetId(const char [], int *);
 /* Event functions */
-EXTERN PetscErrorCode PetscLogEventRegister(int*, const char[], int);
-EXTERN PetscErrorCode PetscLogEventActivate(int);
-EXTERN PetscErrorCode PetscLogEventDeactivate(int);
-EXTERN PetscErrorCode PetscLogEventSetActiveAll(int, PetscTruth);
-EXTERN PetscErrorCode PetscLogEventActivateClass(int);
-EXTERN PetscErrorCode PetscLogEventDeactivateClass(int);
+EXTERN PetscErrorCode PetscLogEventRegister(PetscEvent*, const char[], PetscCookie);
+EXTERN PetscErrorCode PetscLogEventActivate(PetscEvent);
+EXTERN PetscErrorCode PetscLogEventDeactivate(PetscEvent);
+EXTERN PetscErrorCode PetscLogEventSetActiveAll(PetscEvent, PetscTruth);
+EXTERN PetscErrorCode PetscLogEventActivateClass(PetscCookie);
+EXTERN PetscErrorCode PetscLogEventDeactivateClass(PetscCookie);
 /* Class functions */
-EXTERN PetscErrorCode PetscLogClassRegister(int*, const char []);
+EXTERN PetscErrorCode PetscLogClassRegister(PetscCookie*, const char []);
 
 /* Global counters */
 extern PetscLogDouble irecv_ct,  isend_ct,  recv_ct,  send_ct;
@@ -162,20 +162,17 @@ typedef struct _ClassPerfInfo {
 /* The structures for logging registration */
 typedef struct _ClassRegInfo {
   char            *name;   /* The class name */
-  PetscCookieCode cookie; /* The integer identifying this class */
+  PetscCookie cookie; /* The integer identifying this class */
 } ClassRegInfo;
 
 typedef struct _EventRegInfo {
   char            *name;   /* The name of this event */
-  PetscCookieCode cookie; /* The class id for this event (should maybe give class ID instead) */
+  PetscCookie cookie; /* The class id for this event (should maybe give class ID instead) */
 #if defined (PETSC_HAVE_MPE)
   int             mpe_id_begin; /* MPE IDs that define the event */
   int             mpe_id_end;
 #endif
 } EventRegInfo;
-
-/* The structure for logging events */
-typedef int PetscEvent;
 
 typedef struct _EventRegLog *EventRegLog;
 struct _EventRegLog {

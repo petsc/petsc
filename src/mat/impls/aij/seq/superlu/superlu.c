@@ -29,11 +29,11 @@ typedef struct {
   MatStructure      flg;
 
   /* A few function pointers for inheritance */
-  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  int (*MatView)(Mat,PetscViewer);
-  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  int (*MatDestroy)(Mat);
+  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*MatView)(Mat,PetscViewer);
+  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatDestroy)(Mat);
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
   PetscTruth CleanUpSuperLU;
@@ -129,7 +129,8 @@ PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
 #else
   PetscScalar   *nullVals,*workVals;
 #endif
-  int           row,newRow,col,newCol,block,b,ierr;
+  int           row,newRow,col,newCol,block,b;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
@@ -351,7 +352,8 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 {
   Mat          B;
   Mat_SuperLU  *lu;
-  int          ierr,m=A->m,n=A->n,indx;  
+  PetscErrorCode ierr;
+  int          m=A->m,n=A->n,indx;  
   PetscTruth   flg;
   const char   *colperm[]={"NATURAL","MMD_ATA","MMD_AT_PLUS_A","COLAMD"}; /* MY_PERMC - not supported by the petsc interface yet */
   const char   *iterrefine[]={"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};

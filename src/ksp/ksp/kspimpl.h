@@ -7,20 +7,20 @@
 typedef struct _KSPOps *KSPOps;
 
 struct _KSPOps {
-  int  (*buildsolution)(KSP,Vec,Vec*);       /* Returns a pointer to the solution, or
+  PetscErrorCode (*buildsolution)(KSP,Vec,Vec*);       /* Returns a pointer to the solution, or
                                                 calculates the solution in a 
 				                user-provided area. */
-  int  (*buildresidual)(KSP,Vec,Vec,Vec*);   /* Returns a pointer to the residual, or
+  PetscErrorCode (*buildresidual)(KSP,Vec,Vec,Vec*);   /* Returns a pointer to the residual, or
 				                calculates the residual in a 
 				                user-provided area.  */
-  int  (*solve)(KSP);                        /* actual solver */
-  int  (*setup)(KSP);
-  int  (*setfromoptions)(KSP);
-  int  (*publishoptions)(KSP);
-  int  (*computeextremesingularvalues)(KSP,PetscReal*,PetscReal*);
-  int  (*computeeigenvalues)(KSP,int,PetscReal*,PetscReal*,int *);
-  int  (*destroy)(KSP);
-  int  (*view)(KSP,PetscViewer);
+  PetscErrorCode (*solve)(KSP);                        /* actual solver */
+  PetscErrorCode (*setup)(KSP);
+  PetscErrorCode (*setfromoptions)(KSP);
+  PetscErrorCode (*publishoptions)(KSP);
+  PetscErrorCode (*computeextremesingularvalues)(KSP,PetscReal*,PetscReal*);
+  PetscErrorCode (*computeeigenvalues)(KSP,int,PetscReal*,PetscReal*,int *);
+  PetscErrorCode (*destroy)(KSP);
+  PetscErrorCode (*view)(KSP,PetscViewer);
 };
 
 /*
@@ -59,12 +59,12 @@ struct _p_KSP {
   PetscTruth    res_hist_reset;       /* reset history to size zero for each new solve */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
-  int  (*monitor[MAXKSPMONITORS])(KSP,int,PetscReal,void*); /* returns control to user after */
-  int  (*monitordestroy[MAXKSPMONITORS])(void*);         /* */
+  PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP,int,PetscReal,void*); /* returns control to user after */
+  PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void*);         /* */
   void *monitorcontext[MAXKSPMONITORS];                  /* residual calculation, allows user */
   int  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
 
-  int        (*converged)(KSP,int,PetscReal,KSPConvergedReason*,void*);
+  PetscErrorCode (*converged)(KSP,int,PetscReal,KSPConvergedReason*,void*);
   void       *cnvP; 
 
   PC         pc;
@@ -100,7 +100,7 @@ struct _p_KSP {
      ksp->res_hist[ksp->res_hist_len++] = norm;}
 
 #define KSPMonitor(ksp,it,rnorm) \
-        { int _ierr,_i,_im = ksp->numbermonitors; \
+        { PetscErrorCode _ierr; int _i,_im = ksp->numbermonitors; \
           for (_i=0; _i<_im; _i++) {\
             _ierr = (*ksp->monitor[_i])(ksp,it,rnorm,ksp->monitorcontext[_i]);CHKERRQ(_ierr); \
 	  } \

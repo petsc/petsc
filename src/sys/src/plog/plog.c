@@ -19,8 +19,8 @@
 #include "src/sys/src/plog/ptime.h"
 #include "plog.h"
 
-int PETSC_LARGEST_COOKIE = PETSC_COOKIE;
-int PETSC_LARGEST_EVENT  = PETSC_EVENT;
+PetscCookie PETSC_LARGEST_COOKIE = PETSC_COOKIE;
+PetscEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 
 #if defined(PETSC_USE_LOG)
 
@@ -56,8 +56,8 @@ PetscLogDouble allreduce_ct    = 0.0; /* The number of reductions */
 /* Logging functions */
 PetscErrorCode (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
 PetscErrorCode (*_PetscLogPHD)(PetscObject) = PETSC_NULL;
-PetscErrorCode (*_PetscLogPLB)(int, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
-PetscErrorCode (*_PetscLogPLE)(int, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode (*_PetscLogPLB)(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode (*_PetscLogPLE)(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
 
 /* Tracing event logging variables */
 FILE          *tracefile       = PETSC_NULL;
@@ -124,8 +124,8 @@ PetscErrorCode PetscLogDestroy(void)
 
 .seealso: PetscLogDump(), PetscLogBegin(), PetscLogAllBegin(), PetscLogTraceBegin()
 @*/
-PetscErrorCode PetscLogSet(int (*b)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
-            int (*e)(int, int, PetscObject, PetscObject, PetscObject, PetscObject))
+PetscErrorCode PetscLogSet(PetscErrorCode (*b)(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject),
+            PetscErrorCode (*e)(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject))
 {
   PetscFunctionBegin;
   _PetscLogPLB = b;
@@ -379,8 +379,7 @@ PetscErrorCode PetscLogStageRegister(int *stage, const char sname[])
   ierr = EventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents);CHKERRQ(ierr);
   for(event = 0; event < stageLog->eventLog->numEvents; event++) {
     ierr = EventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event],
-                             &stageLog->stageInfo[*stage].eventLog->eventInfo[event]);
-    CHKERRQ(ierr);
+                             &stageLog->stageInfo[*stage].eventLog->eventInfo[event]);CHKERRQ(ierr);
   }
   ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -652,7 +651,7 @@ PetscErrorCode PetscLogStageGetId(const char name[], int *stage)
           PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           PetscLogEventActivate(), PetscLogEventDeactivate()
 @*/
-PetscErrorCode PetscLogEventRegister(PetscLogCode *event, const char name[],PetscCookieCode cookie) 
+PetscErrorCode PetscLogEventRegister(PetscEvent *event, const char name[],PetscCookie cookie) 
 {
   StageLog stageLog;
   int      stage;
@@ -696,7 +695,7 @@ PetscErrorCode PetscLogEventRegister(PetscLogCode *event, const char name[],Pets
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventDeactivate()
 @*/
-PetscErrorCode PetscLogEventActivate(PetscLogCode event)
+PetscErrorCode PetscLogEventActivate(PetscEvent event)
 {
   StageLog stageLog;
   int      stage;
@@ -736,7 +735,7 @@ PetscErrorCode PetscLogEventActivate(PetscLogCode event)
 .keywords: log, event, deactivate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate()
 @*/
-PetscErrorCode PetscLogEventDeactivate(PetscLogCode event)
+PetscErrorCode PetscLogEventDeactivate(PetscEvent event)
 {
   StageLog stageLog;
   int      stage;
@@ -765,7 +764,7 @@ PetscErrorCode PetscLogEventDeactivate(PetscLogCode event)
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate(),PlogEventDeactivate()
 @*/
-PetscErrorCode PetscLogEventSetActiveAll(PetscLogCode event, PetscTruth isActive)
+PetscErrorCode PetscLogEventSetActiveAll(PetscEvent event, PetscTruth isActive)
 {
   StageLog stageLog;
   int      stage;
@@ -798,7 +797,7 @@ PetscErrorCode PetscLogEventSetActiveAll(PetscLogCode event, PetscTruth isActive
 .keywords: log, event, activate, class
 .seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-PetscErrorCode PetscLogEventActivateClass(PetscCookieCode cookie) 
+PetscErrorCode PetscLogEventActivateClass(PetscCookie cookie) 
 {
   StageLog stageLog;
   int      stage;
@@ -826,7 +825,7 @@ PetscErrorCode PetscLogEventActivateClass(PetscCookieCode cookie)
 .keywords: log, event, deactivate, class
 .seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-PetscErrorCode PetscLogEventDeactivateClass(PetscCookieCode cookie)
+PetscErrorCode PetscLogEventDeactivateClass(PetscCookie cookie)
 {
   StageLog stageLog;
   int      stage;
@@ -1012,7 +1011,7 @@ M*/
 .keywords: log, class, register
 .seealso: ClassLogRegister()
 @*/
-PetscErrorCode PetscLogClassRegister(PetscCookieCode *oclass, const char name[])
+PetscErrorCode PetscLogClassRegister(PetscCookie *oclass, const char name[])
 {
   StageLog stageLog;
   int      stage;
@@ -1096,7 +1095,7 @@ PetscErrorCode PetscLogDump(const char sname[])
   ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "Actions accomplished %d\n", numActions);
   for(action = 0; action < numActions; action++) {
     ierr = PetscFPrintf(PETSC_COMM_WORLD, fd, "%g %d %d %d %d %d %d %g %g %g\n",
-                        actions[action].time, actions[action].action, actions[action].event, actions[action].cookie, actions[action].id1,
+                        actions[action].time, actions[action].action, (int)actions[action].event, (int)actions[action].cookie, actions[action].id1,
                         actions[action].id2, actions[action].id3, actions[action].flops, actions[action].mem, actions[action].maxmem);
   }
   /* Output objects */

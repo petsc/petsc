@@ -200,7 +200,8 @@ EXTERN PetscErrorCode DAGetNatural_Private(DA,int*,IS*);
 */
 PetscErrorCode DAGlobalToNatural_Create(DA da)
 {
-  PetscErrorCode ierr,m,start,Nlocal;
+  PetscErrorCode ierr;
+  int  m,start,Nlocal;
   IS  from,to;
   Vec global;
 

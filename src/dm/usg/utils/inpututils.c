@@ -72,7 +72,8 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
 {
   PetscDraw       popup;                           /* help window */
   PetscDrawButton button;                          /* mouse button pressed */
-  int             cn, ierr,*cell;
+  PetscErrorCode ierr;
+  int             cn, *cell;
   PetscReal       *vertex,cx,cy;
   char            title[120];
 
@@ -229,7 +230,8 @@ PetscErrorCode AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal c
 #define __FUNCT__ "AOData2dGridComputeNeighbors"
 PetscErrorCode AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 {
-  int  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e,ierr;
+  PetscErrorCode ierr;
+  int  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e;
 
   PetscFunctionBegin;
   agrid->edge_max = 2*agrid->vertex_n;
@@ -337,7 +339,8 @@ PetscErrorCode AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 #define __FUNCT__ "AOData2dGridComputeVertexBoundary"
 PetscErrorCode AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 {
-  int  i,j,*count,*cell_vertex = agrid->cell_vertex,ierr;
+  PetscErrorCode ierr;
+  int  i,j,*count,*cell_vertex = agrid->cell_vertex;
 
   PetscFunctionBegin;
   /*
@@ -385,7 +388,8 @@ PetscErrorCode AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 */
 PetscErrorCode AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
 {
-  int       i, *cell = agrid->cell_vertex, *edge = agrid->edge_vertex,ierr;
+  PetscErrorCode ierr;
+  int       i, *cell = agrid->cell_vertex, *edge = agrid->edge_vertex;
   char      str[5];
   PetscReal *vertex = agrid->vertex,xx,yy,xmin,xmax,ymin,ymax,h,w;
 

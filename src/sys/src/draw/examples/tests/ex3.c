@@ -10,11 +10,12 @@ int main(int argc,char **argv)
   PetscDraw          draw;
   PetscDrawLG        lg;
   PetscDrawAxis      axis;
-  int                n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,nports = 1;
+  int                n = 20,i,x = 0,y = 0,width = 300,height = 300,nports = 1;
   PetscTruth         flg;
   const char         *xlabel,*ylabel,*toplabel;
   PetscReal          xd,yd;
   PetscDrawViewPorts *ports;
+  PetscErrorCode     ierr;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 

@@ -21,7 +21,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_Composite_Multiplicative"
-static int PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -56,7 +56,7 @@ alpha I + R
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_Composite_Special"
-static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -77,7 +77,7 @@ static int PCApply_Composite_Special(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_Composite_Additive"
-static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -99,7 +99,7 @@ static int PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_Composite"
-static int PCSetUp_Composite(PC pc)
+static PetscErrorCode PCSetUp_Composite(PC pc)
 {
   PetscErrorCode ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
@@ -119,7 +119,7 @@ static int PCSetUp_Composite(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_Composite"
-static int PCDestroy_Composite(PC pc)
+static PetscErrorCode PCDestroy_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscErrorCode ierr;
@@ -139,7 +139,7 @@ static int PCDestroy_Composite(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_Composite"
-static int PCSetFromOptions_Composite(PC pc)
+static PetscErrorCode PCSetFromOptions_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscErrorCode ierr;
@@ -177,7 +177,7 @@ static int PCSetFromOptions_Composite(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_Composite"
-static int PCView_Composite(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscErrorCode ierr;

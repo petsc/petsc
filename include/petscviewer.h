@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-extern PetscCookieCode PETSC_VIEWER_COOKIE;
+extern PetscCookie PETSC_VIEWER_COOKIE;
 
 /*S
      PetscViewer - Abstract PETSc object that helps view (in ASCII, binary, graphically etc)
@@ -59,13 +59,13 @@ extern PetscFList PetscViewerList;
 EXTERN PetscErrorCode PetscViewerRegisterAll(const char *);
 EXTERN PetscErrorCode PetscViewerRegisterDestroy(void);
 
-EXTERN PetscErrorCode PetscViewerRegister(const char*,const char*,const char*,int(*)(PetscViewer));
+EXTERN PetscErrorCode PetscViewerRegister(const char*,const char*,const char*,PetscErrorCode (*)(PetscViewer));
 
 /*MC
    PetscViewerRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   int PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PetscViewer))
+   int PetscViewerRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PetscViewer))
 
    Not Collective
 

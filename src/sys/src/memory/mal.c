@@ -133,8 +133,8 @@ PetscTruth petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation 
 
 @*/
-PetscErrorCode PetscSetMalloc(int (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
-                   int (*ifree)(void*,int,const char[],const char[],const char[]))
+PetscErrorCode PetscSetMalloc(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
+                   PetscErrorCode (*ifree)(void*,int,const char[],const char[],const char[]))
 {
   PetscFunctionBegin;
   if (petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree)) SETERRQ(PETSC_ERR_SUP,"cannot call multiple times");

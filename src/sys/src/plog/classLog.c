@@ -225,7 +225,7 @@ PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog classLog, int size)
 .keywords: log, class, register
 .seealso: PetscLogClassRegister()
 @*/
-PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], int *cookie)
+PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], PetscCookie *cookie)
 {
   ClassRegInfo *classInfo;
   char         *str;
@@ -251,7 +251,7 @@ PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], int
     classLog->classInfo[c].cookie = *cookie;
     /* Need to check here for montonicity and insert if necessary */
   } else {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid suggested cookie %d", *cookie);
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid suggested cookie %d", (int)*cookie);
   }
   *cookie = classLog->classInfo[c].cookie;
   PetscFunctionReturn(0);
@@ -277,7 +277,7 @@ PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], int
 .keywords: log, class, register
 .seealso: PetscLogClassRegister(), PetscLogObjCreateDefault(), PetscLogObjDestroyDefault()
 @*/
-PetscErrorCode ClassRegLogGetClass(ClassRegLog classLog, int cookie, int *oclass)
+PetscErrorCode ClassRegLogGetClass(ClassRegLog classLog, PetscCookie cookie, int *oclass)
 {
   int c;
 

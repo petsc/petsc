@@ -45,10 +45,10 @@
 #define petscdrawgetpopup_        petscdrawgetpopup
 #endif
 
-typedef void (PETSC_STDCALL *FCN)(PetscDraw*,void*,int*); /* force argument to next function to not be extern C*/
+typedef void (PETSC_STDCALL *FCN)(PetscDraw*,void*,PetscErrorCode*); /* force argument to next function to not be extern C*/
 static FCN f1;
 
-static int ourdrawzoom(PetscDraw draw,void *ctx)
+static PetscErrorCode ourdrawzoom(PetscDraw draw,void *ctx)
 {
   PetscErrorCode ierr = 0;
 

@@ -4,9 +4,9 @@
 #define LGMRES_DELTA_DIRECTIONS 10
 #define LGMRES_DEFAULT_MAXK     30
 #define LGMRES_DEFAULT_AUGDIM   2 /*default number of augmentation vectors */ 
-static int    LGMRESGetNewVectors(KSP,int);
-static int    LGMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal *);
-static int    BuildLgmresSoln(PetscScalar*,Vec,Vec,KSP,int);
+static PetscErrorCode    LGMRESGetNewVectors(KSP,int);
+static PetscErrorCode    LGMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal *);
+static PetscErrorCode    BuildLgmresSoln(PetscScalar*,Vec,Vec,KSP,int);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGMRESSetAugDim"
@@ -461,7 +461,8 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
 PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES*)ksp->data;
-  int        i,ierr;
+  PetscErrorCode ierr;
+  int        i;
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */
@@ -509,7 +510,7 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "BuildLgmresSoln"
-static int BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
+static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 {
   PetscScalar  tt,zero = 0.0,one = 1.0;
   PetscErrorCode ierr;
@@ -623,7 +624,7 @@ static int BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "LGMRESUpdateHessenberg"
-static int LGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
+static PetscErrorCode LGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
   PetscScalar   *hh,*cc,*ss,tt;
   int           j;
@@ -709,12 +710,13 @@ static int LGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *re
 */
 #undef __FUNCT__  
 #define __FUNCT__ "LGMRESGetNewVectors" 
-static int LGMRESGetNewVectors(KSP ksp,int it)
+static PetscErrorCode LGMRESGetNewVectors(KSP ksp,int it)
 {
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
   int        nwork = lgmres->nwork_alloc; /* number of work vector chunks allocated */
   int        nalloc;                      /* number to allocate */
-  int        k,ierr;
+  PetscErrorCode ierr;
+  int        k;
  
   PetscFunctionBegin;
   nalloc = lgmres->delta_allocate; /* number of vectors to allocate 
@@ -876,7 +878,7 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp)
     if (flg) {
       PetscViewers viewers;
       ierr = PetscViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(int (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(PetscErrorCode (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
     }
 
 /* LGMRES_MOD - specify number of augmented vectors and whether the space should be a constant size*/
@@ -938,7 +940,7 @@ EXTERN_C_BEGIN
 EXTERN PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP,double);
 EXTERN PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
 EXTERN PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,int);
-EXTERN PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,int (*)(KSP,int));
+EXTERN PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,int));
 EXTERN PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP,KSPGMRESCGSRefinementType);
 EXTERN_C_END
 

@@ -104,7 +104,7 @@ Output:
 Return: 
 Description: 
 *********************************bit_mask.c***********************************/
-PetscErrorCode ct_bits(register char *ptr, int n)
+int ct_bits(register char *ptr, int n)
 {
   register int i, tmp=0;
 

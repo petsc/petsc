@@ -57,7 +57,8 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b;
   IS           iscolf,isicol,isirow;
   PetscTruth   reorder;
-  int          *c,*r,*ic,ierr,i,n = A->m;
+  PetscErrorCode ierr;
+  int          *c,*r,*ic,i,n = A->m,sierr;
   int          *old_i = a->i,*old_j = a->j,*new_i,*old_i2 = 0,*old_j2 = 0,*new_j;
   int          *ordcol,*iwk,*iperm,*jw;
   int          jmax,lfill,job,*o_i,*o_j;
@@ -143,15 +144,15 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
   ierr = PetscMalloc(2*n*sizeof(int),&jw);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscScalar),&w);CHKERRQ(ierr);
 
-  SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,(PetscReal)info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&ierr); 
-  if (ierr) {
-    switch (ierr) {
+  SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,(PetscReal)info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&sierr); 
+  if (sierr) {
+    switch (sierr) {
       case -3: SETERRQ2(1,"ilutp(), matrix U overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
       case -2: SETERRQ2(1,"ilutp(), matrix L overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
       case -5: SETERRQ(1,"ilutp(), zero row encountered");
       case -1: SETERRQ(1,"ilutp(), input matrix may be wrong");
       case -4: SETERRQ1(1,"ilutp(), illegal info->fill value %d",jmax);
-      default: SETERRQ1(1,"ilutp(), zero pivot detected on row %d",ierr);
+      default: SETERRQ1(1,"ilutp(), zero pivot detected on row %d",sierr);
     }
   }
 
@@ -267,7 +268,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         isicol;
-  int        *r,*ic,ierr,i,n = A->m,*ai = a->i,*aj = a->j;
+  PetscErrorCode ierr;
+  int        *r,*ic,i,n = A->m,*ai = a->i,*aj = a->j;
   int        *ainew,*ajnew,jmax,*fill,*ajtmp,nz;
   int        *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
   PetscReal  f;
@@ -431,7 +433,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   Mat          C = *B;
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ *)C->data;
   IS           isrow = b->row,isicol = b->icol;
-  int          *r,*ic,ierr,i,j,n = A->m,*ai = b->i,*aj = b->j;
+  PetscErrorCode ierr;
+  int          *r,*ic,i,j,n = A->m,*ai = b->i,*aj = b->j;
   int          *ajtmpold,*ajtmp,nz,row,*ics;
   int          *diag_offset = b->diag,diag,*pj,ndamp = 0, nshift=0;
   PetscScalar  *rtmp,*v,*pc,multiplier,*pv,*rtmps;
@@ -605,7 +608,8 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   IS           iscol = a->col,isrow = a->row;
-  int          *r,*c,ierr,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
+  PetscErrorCode ierr;
+  int          *r,*c,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
   int          nz,*rout,*cout;
   PetscScalar  *x,*b,*tmp,*tmps,*aa = a->a,sum,*v;
 
@@ -655,7 +659,8 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
-  int          n = A->m,*ai = a->i,*aj = a->j,*adiag = a->diag,ierr;
+  PetscErrorCode ierr;
+  int          n = A->m,*ai = a->i,*aj = a->j,*adiag = a->diag;
   PetscScalar  *x,*b,*aa = a->a;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
   int          adiag_i,i,*vi,nz,ai_i;
@@ -706,7 +711,8 @@ PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   IS           iscol = a->col,isrow = a->row;
-  int          *r,*c,ierr,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
+  PetscErrorCode ierr;
+  int          *r,*c,i, n = A->m,*vi,*ai = a->i,*aj = a->j;
   int          nz,*rout,*cout;
   PetscScalar  *x,*b,*tmp,*aa = a->a,sum,*v;
 
@@ -757,7 +763,8 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   IS           iscol = a->col,isrow = a->row;
-  int          *r,*c,ierr,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
+  PetscErrorCode ierr;
+  int          *r,*c,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
   int          nz,*rout,*cout,*diag = a->diag;
   PetscScalar  *x,*b,*tmp,*aa = a->a,*v,s1;
 
@@ -814,7 +821,8 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   IS           iscol = a->col,isrow = a->row;
-  int          *r,*c,ierr,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
+  PetscErrorCode ierr;
+  int          *r,*c,i,n = A->m,*vi,*ai = a->i,*aj = a->j;
   int          nz,*rout,*cout,*diag = a->diag;
   PetscScalar  *x,*b,*tmp,*aa = a->a,*v;
 
@@ -872,7 +880,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         isicol;
-  int        *r,*ic,ierr,prow,n = A->m,*ai = a->i,*aj = a->j;
+  PetscErrorCode ierr;
+  int        *r,*ic,prow,n = A->m,*ai = a->i,*aj = a->j;
   int        *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
   int        *dloc,idx,row,m,fm,nzf,nzi,len, realloc = 0,dcount = 0;
   int        incrlev,nnz,i,levels,diagonal_fill;

@@ -174,9 +174,9 @@ typedef struct gather_scatter_id {
 
 /* to be made public */
 #if defined(not_used)
-static int  gs_dump_ngh(gs_id *id, int loc_num, int *num, int *ngh_list);
+static PetscErrorCode  gs_dump_ngh(gs_id *id, int loc_num, int *num, int *ngh_list);
 static void gsi_via_int_list(gs_id *gs);
-static int in_sub_tree(int *ptr3, int p_mask_size, int *buf2, int buf_size);
+static PetscErrorCode in_sub_tree(int *ptr3, int p_mask_size, int *buf2, int buf_size);
 #endif
 
 /* PRIVATE - and definitely not exported */

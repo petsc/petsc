@@ -235,7 +235,7 @@ PetscErrorCode PetscViewer_AMS_Destroy(MPI_Comm comm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_AMS" 
-static int PetscViewerDestroy_AMS(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_AMS(PetscViewer viewer)
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS*)viewer->data;
   PetscErrorCode  ierr;
