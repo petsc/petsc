@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.45 1998/12/03 03:58:15 bsmith Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.46 1998/12/09 15:51:42 balay Exp bsmith $";
 #endif
 
 /* 
@@ -185,12 +185,14 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     }
   }
 #elif (SIZEOF_INT == 8 && SIZEOF_SHORT == 8)
+  if (type == PETSC_INT){
     if (longintfile) {
       m *= sizeof(int);
     } else {
       SETERRQ(1,1,"Can only process data file generated on Cray vector machine;\n\
       if this data WAS then run program with -binary_longints option");
     }
+  }
 #else
   if (type == PETSC_INT) {
     if (longintfile) {
