@@ -25,11 +25,28 @@ if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
   endif
 endif
 
-set ARCH=${1}
+if (${#argv} == 1) then 
+  set ARCH=${1}
+else
+  set ARCH=`${nPETSC_DIR}/bin/configarch`
+endif
+if (${#argv} > 1) then 
+  set CONFIGURE_ARGS="${argv[2-]}"
+else 
+  set CONFIGURE_ARGS=""
+endif
+
+set MACH=`hostname`
+rm -f $nPETSC_DIR/build.log
+echo "Build on $MACH $ARCH  `date` " > $nPETSC_DIR/build.log
+rm -f $nPETSC_DIR/buildout.tar
+
+cd $nPETSC_DIR
+make PETSC_ARCH=linux PETSC_DIR=$nPETSC_DIR update >>& $nPETSC_DIR/build.log
+
 set DATAFILESPATH=/home/petsc/datafiles
 set NICE=''
 set TEST='testexamples_'
-set MACH=`hostname`
 set BOPT=g
 # possibly overwrite the values above
 if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}) then
@@ -37,35 +54,24 @@ if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}) then
 endif
 
 setenv PETSC_DIR $nPETSC_DIR
+set PETSC_ARCH=${ARCH}
 if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}.py) then
-  set PETSC_ARCH=${ARCH}
   set CONFIGURE='yes'
   set CONFIGURE_FILE=$PETSC_ARCH
-  set CONFIGURE_ARGS="${argv[2-]}"
-else if (${#argv} == 1 && -f ${nPETSC_DIR}/bmake/${ARCH}) then
+else if (${#argv} == 1 && -f ${nPETSC_DIR}/bmake/${ARCH}/variables && ! -f ${nPETSC_DIR}/bmake/${ARCH}/configure.py) then
+  # this is a non-configure PETSC_ARCH
   set CONFIGURE='no'
-  set PETSC_ARCH=${ARCH}
 else
   set CONFIGURE='yes'
   set CONFIGURE_FILE='configure'
-  set CONFIGURE_ARGS="${argv}"
-  set PETSC_ARCH=`${nPETSC_DIR}/bin/configarch`
 endif
 echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DIR
 
 
-rm -f $nPETSC_DIR/build.log
-echo "Build on $MACH $PETSC_ARCH $BOPT `date` " > $nPETSC_DIR/build.log
-rm -f $nPETSC_DIR/buildout.tar
-
-cd $nPETSC_DIR
-
-make PETSC_ARCH=linux PETSC_DIR=$nPETSC_DIR update >>& $nPETSC_DIR/build.log
-
 # Run Configure
 if ("${CONFIGURE}" == "yes") then
   ./config/${CONFIGURE_FILE}.py -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& build.log
-  echo '****************************************************' >>& $nPETSC_DIR/maint/build_$PETSC_ARCH.$BOPT.$MACH.log
+  echo '****************************************************' >>& $nPETSC_DIR/build.log
   set EJOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/ejobs`
   set JOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/jobs`
   tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
