@@ -61,7 +61,7 @@ class Linker(config.compile.processor.Processor):
     if not hasattr(self, '_flags'):
       flagsName = self.flagsName[:]
       if self.name == self.compiler.name:
-        flagsName.extend(self.compiler.flagsName[:-1])
+        flagsName.append(self.compiler.flagsName[0])
       if hasattr(self, 'configCompilers'):
         flags = ' '.join([getattr(self.configCompilers, name) for name in flagsName])
       else:
