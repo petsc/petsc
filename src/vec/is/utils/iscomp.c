@@ -40,17 +40,24 @@ PetscErrorCode ISEqual(IS is1,IS is2,PetscTruth *flg)
   PetscTruth     flag;
   MPI_Comm       comm;
   PetscErrorCode ierr;
+  PetscMPIInt    mflg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1,IS_COOKIE,1);
   PetscValidHeaderSpecific(is2,IS_COOKIE,2);
   PetscValidIntPointer(flg,3);
-  PetscCheckSameComm(is1,1,is2,2);
 
   if (is1 == is2) {
     *flg = PETSC_TRUE;
     PetscFunctionReturn(0);
   }  
+
+  ierr = MPI_Comm_compare(((PetscObject)is1)->comm,((PetscObject)is2)->comm,&mflg);CHKERRQ(ierr);
+  if (mflg != MPI_CONGRUENT && mflg != MPI_IDENT) {
+    *flg = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+
   ierr = ISGetSize(is1,&sz1);CHKERRQ(ierr);
   ierr = ISGetSize(is2,&sz2);CHKERRQ(ierr);
   if (sz1 != sz2) { 

@@ -1826,6 +1826,11 @@ PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
      PreLoadEnd();
 .ve
 
+   Notes: Flags available within the macro. 
++   PreLoadStage - PETSC_TRUE if it is actually doing the preload portion
+.   PreLoadIt - 0 for the first computation (with preloading turned off it is only 0) 1 for the second
+-   PreLoadMax - number of times it will do the computation, only one when preloading is turned on
+
    Level: intermediate
 
 .seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadEnd(), PreLoadStage()
