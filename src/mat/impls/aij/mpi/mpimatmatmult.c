@@ -48,7 +48,7 @@ PetscErrorCode PetscObjectContainerDestroy_Mat_MatMatMultMPI(void *ptr)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
+EXTERN PetscErrorCode MatDestroy_AIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_MatMatMult"
 PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
@@ -61,11 +61,12 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
     ierr = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr);
+    A->ops->destroy = mult->MatDestroy;  
   } else {
     SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
   }
   ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
-  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
@@ -106,6 +107,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscObjectContainerSetPointer(container,mult);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
+  mult->MatDestroy = (*C)->ops->destroy;
 
   (*C)->ops->destroy  = MatDestroy_MPIAIJ_MatMatMult; 
   PetscFunctionReturn(0);

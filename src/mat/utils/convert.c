@@ -36,7 +36,7 @@ PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,Mat *newmat)
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (*newmat == mat) {
+  if (newmat == &mat) {
     ierr = MatDestroy(mat);CHKERRQ(ierr);
   }
   *newmat = M;

@@ -40,10 +40,11 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
     ierr = MatGetLocalMat(P,scall,&mult->B_loc);CHKERRQ(ierr);
 
     /* attach the container 'Mat_MatMatMultMPI' to P */
-    P->ops->destroy  = MatDestroy_MPIAIJ_MatMatMult;
     ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
     ierr = PetscObjectContainerSetPointer(container,mult);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)P,"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
+    mult->MatDestroy = P->ops->destroy;
+    P->ops->destroy  = MatDestroy_MPIAIJ_MatMatMult;
     ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
   
     /* now, compute symbolic local P^T*A*P */
