@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.122 1999/06/30 23:50:31 balay Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.123 1999/09/02 14:53:11 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -372,25 +372,20 @@ EXTERN_C_END
 #define __FUNC__ "VecView_MPI_Socket"
 int VecView_MPI_Socket(Vec xin, Viewer viewer )
 {
-#if !defined(PETSC_USE_COMPLEX)
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,size, N = x->N,*lens,ierr;
-  double      *xx;
-#endif
+  Scalar      *xx;
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_ERR_SUP,0,"Complex not done");
-#else
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
   if (!rank) {
-    xx = (double *) PetscMalloc( (N+1)*sizeof(double) );CHKPTRQ(xx);
+    xx   = (Scalar*) PetscMalloc( (N+1)*sizeof(Scalar) );CHKPTRQ(xx);
     lens = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(lens);
     for (i=0; i<size; i++ ) {
       lens[i] = xin->map->range[i+1] - xin->map->range[i];
     }
-    ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,xx,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(x->array,x->n,MPIU_SCALAR,xx,lens,xin->map->range,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
     ierr = PetscFree(lens);CHKERRQ(ierr);
     ierr = ViewerSocketPutScalar_Private(viewer,N,1,xx);CHKERRQ(ierr);
     ierr = PetscFree(xx);CHKERRQ(ierr);
@@ -398,7 +393,6 @@ int VecView_MPI_Socket(Vec xin, Viewer viewer )
     ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-#endif
 }
 
 #undef __FUNC__  
