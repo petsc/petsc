@@ -339,7 +339,7 @@ class Configure(config.base.Configure):
         if not Configure.isGNU('mpif90') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpif90'
         if Configure.isGNU('mpif77') and self.framework.argDB['with-gnu-compilers']:
-          yield 'mpif7'
+          yield 'mpif77'
         if not Configure.isGNU('mpif77') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
           yield 'mpif77'
         if not Configure.isGNU('mpxlf') and (not self.framework.argDB['with-vendor-compilers'] == '0'):
