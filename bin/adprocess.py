@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.4 2001/07/17 19:25:25 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.5 2001/07/17 19:28:31 bsmith Exp bsmith $ 
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -43,8 +43,10 @@ def setupfunctionC(filename):
 #
 #        if this is the AppCtx then replace double and Scalar with passive
 #
-                        if line[0:9] == "} AppCtx;":
-                                print "found it"
+                        reg = re.compile('[ ]*}[ ]*AppCtx[ ]*;')
+                        fl = reg.search(line)
+                        if fl:
+                                print "Extracting AppCtx structure"
                                 reg = re.compile('Scalar ')
                                 struct = reg.sub('PassiveScalar ',struct)
                                 reg = re.compile('double ')
@@ -64,7 +66,7 @@ def getfunctionC(g,filename,functionname):
 	while line:
                 if len(line) >= 5 + len(functionname): 
                    if line[0:5+len(functionname)] == "int "+functionname+"(":
-                        print 'Extracting ', functionname
+                        print 'Extracting function', functionname
 			while line:
 				g.write(line)
                                 if line[0] == "}":
