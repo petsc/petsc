@@ -1,5 +1,5 @@
 C
-C "$Id: sif.F,v 1.4 1997/08/04 22:39:27 bsmith Exp bsmith $";
+C "$Id: sif.F,v 1.1 1997/09/10 16:51:04 bsmith Exp bsmith $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -70,10 +70,13 @@ C  See the Fortran section of the PETSc users manual for details.
       TS                ts
       Vec               local, global
       Mat               A
+      ISColoring        coloring
+      MatFDColoring     fd
+
       integer           flg, ierr
       integer           time_steps, steps
       double precision  dt, ftime, duration
-
+      
       double precision  tda
 
 
@@ -183,8 +186,13 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix data structure; set Jacobian evaluation routine;
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call MatCreate(comm,M,M,A,ierr)
-      call SetCRoutineFromFortran(ts,A,A,ierr)
+      call DAGetColoring(da,coloring,A,ierr)
+      call MatFDColoringCreate(A,coloring,fd,ierr)
+      call ISColoringDestroy(coloring,ierr)
+      call MatFDColoringSetFunction(fd,RHSFunction,PETSC_NULL,ierr)
+
+C      call MatCreate(comm,M,M,A,ierr)
+      call SetCRoutineFromFortran(ts,A,A,fd,ierr)
 
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -228,6 +236,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call VecDestroy(solution,ierr)
       call VecDestroy(local,ierr)
       call VecDestroy(global,ierr)
+      call MatFDColoringDestroy(fd,ierr)
       call DADestroy(da,ierr)
       call MatDestroy(A,ierr)
 
@@ -400,7 +409,7 @@ C
 C   Output Parameter:
 C      globalout - value of function
 C
-      subroutine RHSFunction(ts,t,globalin,globalout,dummy)
+      subroutine RHSFunction(ts,t,globalin,globalout,dummy,ierr)
       implicit none
 #include "sif.h"
 
