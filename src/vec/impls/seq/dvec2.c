@@ -35,6 +35,7 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
   if (!ptr) { /* so that viewers may be used from debuggers */
     ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
   }
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
 
   if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == FILE_VIEWER) ||
                                        (vobj->type == FILES_VIEWER)))  {

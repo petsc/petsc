@@ -22,6 +22,7 @@ typedef struct _DrawCtx* DrawCtx;
 #define DRAW_BLUE   6
 
 extern int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,DrawCtx*);
+extern int DrawOpenNull(MPI_Comm,DrawCtx *);
 extern int DrawDestroy(DrawCtx);
 
 extern int DrawLine(DrawCtx,double,double,double,double,int,int);

@@ -1,49 +1,97 @@
 
+
 /* cannot have vcid because included in other files */
 
-static int VeiPrange(Vec v,int *low,int* high) 
+static int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {
-  DvPVector *x = (DvPVector *) v->data;
+  Vec_MPI *x = (Vec_MPI *) v->data;
   *low  = x->ownership[x->mytid];
   *high = x->ownership[x->mytid+1];
   return 0;
 }
 
-static int VeiPDestroyVector(PetscObject obj )
+static int VecDestroy_MPI(PetscObject obj )
 {
   Vec       v = (Vec ) obj;
-  DvPVector *x = (DvPVector *) v->data;
+  Vec_MPI *x = (Vec_MPI *) v->data;
 #if defined(PETSC_LOG)
-  PETSCLOGSTATE(obj,"Rows %d",x->N);
+  PLogObjectState(obj,"Rows %d",x->N);
 #endif  
   if (x->stash.array) FREE(x->stash.array);
   FREE(v->data);
+  PLogObjectDestroy(v);
   PETSCHEADERDESTROY(v);
   return 0;
 }
 
-static int VeiDVPview( PetscObject obj, Viewer ptr )
+static int VecView_MPI( PetscObject obj, Viewer ptr )
 {
   Vec         xin = (Vec) obj;
-  DvPVector   *x = (DvPVector *) xin->data;
+  Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,mytid,numtid,ierr;
   MPI_Status  status;
   PetscObject vobj = (PetscObject) ptr;
 
   MPI_Comm_rank(x->comm,&mytid); 
 
-  if (!ptr) {
-    MPE_Seq_begin(x->comm,1);
-      printf("Processor [%d] \n",mytid);
+  if (!ptr) { /* so that viewers may be used from debuggers */
+    ptr = STDOUT_VIEWER; vobj = (PetscObject) ptr;
+  }
+
+  if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
+
+  if (vobj->cookie == VIEWER_COOKIE) {
+    FILE *fd = ViewerFileGetPointer_Private(ptr);
+    if (vobj->type == FILE_VIEWER) {
+      MPE_Seq_begin(x->comm,1);
+      fprintf(fd,"Processor [%d] \n",mytid);
       for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
-        printf("%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+        fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
 #else
-        printf("%g \n",x->array[i]);
+        fprintf(fd,"%g \n",x->array[i]);
 #endif
       }
-      fflush(stdout);
-    MPE_Seq_end(x->comm,1);
+      fflush(fd);
+      MPE_Seq_end(x->comm,1);
+    }
+    else if (vobj->type == FILES_VIEWER) {
+      int        len, work = x->n,n,j,numtids;
+      Scalar     *values;
+      /* determine maximum message to arrive */
+      MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,x->comm);
+      MPI_Comm_size(x->comm,&numtids);
+
+      if (!mytid) {
+        values = (Scalar *) MALLOC( len*sizeof(Scalar) ); CHKPTR(values);
+        fprintf(fd,"Processor [%d]\n",mytid);
+        for ( i=0; i<x->n; i++ ) {
+#if defined(PETSC_COMPLEX)
+          fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
+#else
+          fprintf(fd,"%g \n",x->array[i]);
+#endif
+        }
+        /* receive and print messages */
+        for ( j=1; j<numtids; j++ ) {
+          MPI_Recv(values,len,MPI_SCALAR,j,47,x->comm,&status);
+          MPI_Get_count(&status,MPI_SCALAR,&n);          
+          fprintf(fd,"Processor [%d]\n",j);
+          for ( i=0; i<n; i++ ) {
+#if defined(PETSC_COMPLEX)
+            fprintf(fd,"%g + %g i\n",real(values[i]),imag(values[i]));
+#else
+            fprintf(fd,"%g\n",values[i]);
+#endif
+          }          
+        }
+        FREE(values);
+      }
+      else {
+        /* send values */
+        MPI_Send(x->array,x->n,MPI_SCALAR,0,47,x->comm);
+      }
+    }
   }
   else if (vobj->cookie == DRAW_COOKIE) {
     DrawCtx win = (DrawCtx) ptr;
@@ -138,9 +186,9 @@ static int VeiDVPview( PetscObject obj, Viewer ptr )
   return 0;
 }
 
-static int VeiPgsize(Vec xin,int *N)
+static int VecGetSize_MPI(Vec xin,int *N)
 {
-  DvPVector  *x = (DvPVector *)xin->data;
+  Vec_MPI  *x = (Vec_MPI *)xin->data;
   *N = x->N;
   return 0;
 }
@@ -148,10 +196,10 @@ static int VeiPgsize(Vec xin,int *N)
       Uses a slow search to determine if item is already cached. 
    Could keep cache list sorted at all times.
 */
-static int VeiPDVinsertvalues(Vec xin, int ni, int *ix, Scalar* y,
+static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
                                    InsertMode addv )
 {
-  DvPVector  *x = (DvPVector *)xin->data;
+  Vec_MPI  *x = (Vec_MPI *)xin->data;
   int        mytid = x->mytid, *owners = x->ownership, start = owners[mytid];
   int        end = owners[mytid+1], i, j, alreadycached;
   Scalar     *xx = x->array;
@@ -210,9 +258,9 @@ static int VeiPDVinsertvalues(Vec xin, int ni, int *ix, Scalar* y,
    Since nsends or nreceives may be zero we add 1 in certain mallocs
 to make sure we never malloc an empty one.      
 */
-static int VeiDVPBeginAssembly(Vec xin)
+static int VecBeginAssembly_MPI(Vec xin)
 {
-  DvPVector   *x = (DvPVector *)xin->data;
+  Vec_MPI   *x = (Vec_MPI *)xin->data;
   int         mytid = x->mytid, *owners = x->ownership, numtids = x->numtids;
   int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
   int         *owner,*starts,count,tag = 22;
@@ -308,9 +356,9 @@ static int VeiDVPBeginAssembly(Vec xin)
   return 0;
 }
 
-static int VeiDVPEndAssembly(Vec vec)
+static int VecEndAssembly_MPI(Vec vec)
 {
-  DvPVector   *x = (DvPVector *)vec->data;
+  Vec_MPI   *x = (Vec_MPI *)vec->data;
   MPI_Status  *send_status,recv_status;
   int         imdex,base,nrecvs = x->nrecvs, count = nrecvs, i, n;
   Scalar      *values;
