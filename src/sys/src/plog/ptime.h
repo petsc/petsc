@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.56 1998/12/17 21:55:53 balay Exp balay $ */
+/* $Id: ptime.h,v 1.57 1999/03/31 23:30:06 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -96,7 +96,7 @@
     Defines the interface to the IBM rs6000 high accuracy clock. The 
   routine used is defined in petsc/src/sys/src/time/rs6000_time.s
 */ 
-#elif defined(PARCH_rs6000)
+#elif defined(USE_IBM_ASM_CLOCK)
 #include <sys/time.h>
 struct my_timestruc_t {
   unsigned long tv_sec;/* seconds*/
@@ -123,7 +123,7 @@ extern rs6000_time(struct my_timestruc_t *);
     Dec Alpha has a very fast system clock accessible through getclock()
     the Clock is not accessible from gcc/g++
 */
-#elif defined(PARCH_alpha) && !defined (__cplusplus)
+#elif defined(USE_GETCLOCK)
 #include <sys/types.h>
 #include <sys/time.h>
 
