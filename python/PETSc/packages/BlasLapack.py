@@ -27,7 +27,7 @@ class Configure(config.base.Configure):
       else:
         lib = os.path.basename(lib)
       libFlag.append(self.libraries.getLibArgument(lib))
-    return 'BLAS/LAPACK: '+' '.join(dirs)+' '+' '.join(libFlag)+'\n'
+    return 'BLAS/LAPACK: '+' '.join(libFlag)+'\n'
 
   def configureHelp(self, help):
     import nargs
