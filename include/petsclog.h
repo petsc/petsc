@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.110 1997/08/07 14:43:40 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.111 1997/08/13 22:27:41 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -374,6 +374,8 @@ extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
 #define MPEBEGIN    1000 
 extern int PLogMPEBegin();
 extern int PLogMPEDump(char *);
+extern int PLogEventMPEActivate(int);
+extern int PLogEventMPEDeactivate(int);
 #else
 #define PLogEventMPEActivate(a)   0
 #define PLogEventMPEDeactivate(a) 0
