@@ -16,7 +16,7 @@ include ${PETSC_DIR}/bmake/common/test
 all: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
 	-@${OMAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}
-	@egrep -i "( error | error:)" make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
+	-@egrep -i "( error | error:)" make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
            echo "********************************************************************"; \
            echo "  Error during compile, check make_log_${PETSC_ARCH}"; \
            echo "  Send it and configure.log to petsc-maint@mcs.anl.gov";\

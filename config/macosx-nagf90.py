@@ -2,7 +2,7 @@
 
 configure_options = [
   '--download-mpich=1',
-  '--with-f90=f95 -w',
+  '--with-fc=f95 -w',
   '--with-cc=gcc',
   # c++ doesn't work yet
   '--with-cxx=0'
