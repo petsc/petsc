@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.147 1997/01/05 15:34:11 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.148 1997/01/06 20:31:55 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -12,8 +12,8 @@
 #include "mpi.h"
 
 #if defined(PETSC_COMPLEX)
-#if defined(PARCH_t3d)
-#include "/usr/include/mpp/CC/complex.h"
+#if defined(HAVE_NONSTANDARD_COMPLEX_H)
+#include HAVE_NONSTANDARD_COMPLEX_H
 #else
 #include <complex.h>
 #endif
