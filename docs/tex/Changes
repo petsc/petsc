@@ -141,3 +141,10 @@ to do what you need.
 
     DAGetInfo() has a new final argument, the stencil type. See the manual page, to 
     change your current code to work you only need add an extra PETSC_NULL as a final argument.
+
+  TS
+
+   Removed     TSSetRHSJacobianDefault - you can now call 
+        TSSetRHSJacobian(... TSDefaultJacobianColor,....) directly from Fortran
+
+   Changed TSDefaultJacobianSlow() to TSDefaultJacobian()
