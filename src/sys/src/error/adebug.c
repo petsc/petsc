@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.36 1996/02/08 18:26:06 bsmith Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.37 1996/03/05 01:13:11 balay Exp curfman $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -21,8 +21,8 @@ static int   Xterm     = 1;
 
    Input Parameters:
 .  debugger - name of debugger, which should be in your path,
-              usually either "dbx", "gdb" or "xxgdb" or "xdb" on the HP-UX
-              or xldb on an IBM rs6000.
+              usually "dbx", "gdb", or "xxgdb".  Also, HP-UX
+              supports "xdb", and IBM rs6000 supports "xldb".
 
 .   xterm - flag to indicate debugger window, set to one of:
 $     1 to indicate debugger should be started in a new xterm
