@@ -20,10 +20,12 @@ class Configure(config.base.Configure):
     '''Return the proper link line argument for the given filename library
        - If the path is empty, return it unchanged
        - If the path ends in ".lib" return it unchanged
+       - If the path ends in ".so" return it unchanged       
        - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
        - If the filename is "lib"<name>, return -l<name>
        - If the path is absolute, return it unchanged
        - If the filename is <dir>/<name>.so, it remains unchanged
+       - If starts with - then return unchanged
        - Otherwise return -l<library>'''
     if not library:
       return ''
@@ -45,6 +47,8 @@ class Configure(config.base.Configure):
     if os.path.splitext(library)[1] == '.so':
       return library
     if os.path.isabs(library):
+      return library
+    if library[0] == '-':
       return library
     return '-l'+library
 
