@@ -1,5 +1,5 @@
 !
-!  "$Id: ex16f90.F,v 1.7 1998/04/15 18:02:37 balay Exp balay $";
+!  "$Id: ex16f90.F,v 1.8 1998/04/21 18:30:37 balay Exp balay $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
@@ -46,7 +46,7 @@
 !
       do 10, i=0,m-1
         do 20, j=0,n-1
-          v = 1.d0/(i+j+1)
+          v = 10.d0/(i+j+1)
           call MatSetValues(A,1,i,1,j,v,INSERT_VALUES,ierr)
  20     continue
  10   continue
@@ -65,7 +65,8 @@
 !
       call MatGetArrayF90(A,array,ierr) 
       call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
-      print*, array
+      write(6,100) array
+ 100  format(2F6.2)
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
       call MatRestoreArrayF90(A,array,ierr)   
