@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.26 1995/05/19 00:45:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.27 1995/06/08 03:07:27 bsmith Exp curfman $";
 #endif
 /*
     Command line interface for KSP
@@ -68,6 +68,9 @@ int KSPSetFromOptions(KSP ctx)
   if (OptionsHasName(ctx->prefix,"-ksp_preres")) {
     KSPSetUsePreconditionedResidual(ctx);
   }
+  if (OptionsHasName(ctx->prefix,"-ksp_right_pc")) {
+    KSPSetRightPreconditioner(ctx);
+  }
   if (OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart)) {
     KSPGMRESSetRestart(ctx,restart);
   }
@@ -114,6 +117,7 @@ int KSPPrintHelp(KSP ctx)
     fprintf(stderr," %sksp_max_it maxit: maximum iterations, defaults to %d\n",
                      p,ctx->max_it);
     fprintf(stderr," %sksp_preres: use precond. resid. in converg. test\n",p);
+    fprintf(stderr," %sksp_right_pc: use right preconditioner instead of left",p);
     fprintf(stderr," %sksp_monitor: use residual convergence monitor)\n",p);
     fprintf(stderr," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
     fprintf(stderr," %sksp_gmres_restart num: gmres restart, defaults to 10)\n",p);

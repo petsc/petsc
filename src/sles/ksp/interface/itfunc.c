@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.23 1995/05/18 22:44:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.24 1995/06/08 03:07:27 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -99,6 +99,9 @@ int KSPSetMaxIterations(KSP itP, int maxits)
 
     Input Parameter:
 .   itP - Iterative context obtained from KSPCreate()
+
+   Options Database Key:
+$  -ksp_right_pc
 
     Notes:
     Left preconditioning is used by default.  Symmetric preconditioning is
@@ -293,7 +296,8 @@ int KSPSetCalculateResidual(KSP itP,PetscTruth flag)
    Notes:
    Currently only CG, CHEBYCHEV, and RICHARDSON use this with left
    preconditioning.  All other methods always used the preconditioned
-   residual.  With right preconditioning this flag is ignored.
+   residual.  With right preconditioning this flag is ignored, since 
+   the preconditioned residual and true residual are the same.
 
    Options Database Key:
 $  -ksp_preres
