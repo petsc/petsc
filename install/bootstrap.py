@@ -138,12 +138,9 @@ class CursesInstall (BootstrapInstall):
     stdscr.addstr(my+1,2,'Type key to pick selection')
     stdscr.refresh()
     ch = -1
-    print choices
-#    while not ch in choices:
-    ch = stdscr.getch()
-    print ch
+    while not ch in choices:
+      ch = stdscr.getch()
     ch = choices.index(ch)
-
     return ch
   SelectFromList = staticmethod(SelectFromList)
 
