@@ -1,5 +1,5 @@
 
-CC       = gcc  -DPARCH_freebsd
+CC       = gcc  -DPARCH_freebsd -fPIC
 FC       = f77
 AR       = ar
 RM       = rm -f *.c.*
