@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.74 1996/02/23 15:50:46 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.75 1996/02/24 01:18:53 balay Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -435,14 +435,14 @@ static double  EventsType[10][PLOG_USER_EVENT_HIGH][3];
 
  Input Parameters:
 .  stage - the stage from 0 to 9 inclusive
-.  name - the name to associate with that stage
+.  sname - the name to associate with that stage
 
 .seealso: PLogStagePush(), PLogStagePop()
 @*/
-int PLogStageRegister(int stage, char *name)
+int PLogStageRegister(int stage, char *sname)
 {
   if (stage < 0 || stage > 10) SETERRQ(1,"PLogStageRegister:Out of range");
-  EventsStageName[stage] = name;
+  EventsStageName[stage] = sname;
   return 0;
 }
 
@@ -887,7 +887,7 @@ $      with PETSC_LOG)
 
 .seealso: PLogBegin(), PLogPrint()
 @*/
-int PLogDump(char* name)
+int PLogDump(char* sname)
 {
   int    i,rank;
   FILE   *fd;
@@ -898,7 +898,7 @@ int PLogDump(char* name)
   _TotalTime -= BaseTime;
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  if (name) sprintf(file,"%s.%d",name,rank);
+  if (sname) sprintf(file,"%s.%d",sname,rank);
   else  sprintf(file,"Log.%d",rank);
   fd = fopen(file,"w"); if (!fd) SETERRQ(1,"PlogDump:cannot open file");
 
