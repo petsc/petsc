@@ -9,7 +9,7 @@ set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set M =(snake            eagle      ryan              elvis         doc         ptera               maverick   )
   set B =(O                O_complex  g                 g_c++         O_c++       Opg                 O          )
-  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha               sun4_uni   )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_local   alpha               sun4_uni   )
   set J1=(1                1          1                 1             1           1                   4          )
   set J2=(0                2          2                 2             2           2                   3          )
   set J3=(0                3          3                 3             3           3                   0          )
@@ -19,7 +19,7 @@ endif
 if ($day == Mon) then
   set M =(snake            eagle      puck              elvis         doc         ptera                maverick    )
   set B =(g                Opg_c++    O_c++             g             O           g                    Opg         )
-  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha_nolog          sun4_local  )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_local   alpha_nolog          sun4_local  )
   set J1=(0                1          1                 1             1           1                    1           )
   set J2=(1                2          2                 2             2           2                    2           )
   set J3=(0                3          3                 3             3           3                    3           )
@@ -29,7 +29,7 @@ endif
 if ($day == Tue) then
   set M =(snake            eagle      puck              elvis         doc         ptera                maverick    )
   set B =(O                g          O_complex         O             g           O                    Opg_c++     )
-  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha                sun4_local  )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_local   alpha                sun4_local  )
   set J1=(0                1          1                 1             1           1                    1           )
   set J2=(2                2          2                 2             2           2                    2           )
   set J3=(0                3          3                 3             3           3                    3           )
@@ -39,7 +39,7 @@ endif
 if ($day == Wed) then
   set M =(snake            eagle      ryan              elvis         doc         ptera                maverick    )
   set B =(g                g_c++      Opg               O_complex     Opg_complex g                    Opg_c++     )
-  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha_nolog          sun4_uni    )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_local   alpha_nolog          sun4_uni    )
   set J1=(3                1          1                 1             1           1                    4           )
   set J2=(0                2          2                 2             2           2                    3           )
   set J3=(0                3          3                 3             3           3                    0           )
@@ -49,7 +49,7 @@ endif
 if ($day == Thu) then
   set M =(snake            eagle      puck              elvis         doc         ptera                maverick    )
   set B =(Opg              g_complex  g_c++             O_c++         g_c++       g                    Opg_complex )
-  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha                sun4_local  )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_local   alpha                sun4_local  )
   set J1=(0                1          1                 1             1           1                    1           )
   set J2=(0                2          2                 2             2           2                    2           )
   set J3=(3                3          3                 3             3           3                    3           )
@@ -59,7 +59,7 @@ endif
 if ($day == Fri) then
   set M =(snake            eagle      puck              elvis         doc         ptera                maverick    )
   set B =(g                O_c++      g_complex         g_complex     g           Opg                  Opg         )
-  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha                sun4_local  )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_local   alpha                sun4_local  )
   set J1=(0                1          1                 1             1           1                    1           )
   set J2=(2                2          2                 2             2           2                    2           )
   set J3=(0                3          3                 3             3           3                    3           )
@@ -69,7 +69,7 @@ endif
 if ($day == Sat) then
   set M =(snake            eagle      ryan              elvis         doc         ptera                maverick    )
   set B =(O                O          O                 Opg_complex   g_complex   g                    g_complex   )
-  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_p4   alpha                sun4_uni    )
+  set A =(hpux             sun4_local IRIX              freebsd_local rs6000_local   alpha                sun4_uni    )
   set J1=(1                1          1                 1             1           1                    4           )
   set J2=(0                2          2                 2             2           2                    3           )
   set J3=(0                3          3                 3             3           3                    5           )
