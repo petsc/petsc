@@ -61,7 +61,8 @@ EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		 ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
 		 ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
 		 ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
-		 ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c
+		 ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c \
+		 ex53.c
 EXAMPLESF      = ex36.F
 
 ex1: ex1.o  chkopts
@@ -267,9 +268,14 @@ ex50: ex50.o chkopts
 ex51: ex51.o chkopts
 	-$(CLINKER) -o ex51 ex51.o $(PETSC_LIB)
 	$(RM) ex51.o
+
 ex52: ex52.o chkopts
 	-$(CLINKER) -o ex52 ex52.o $(PETSC_LIB)
 	$(RM) ex52.o
+
+ex53: ex53.o chkopts
+	-$(CLINKER) -o ex53 ex53.o $(PETSC_LIB)
+	$(RM) ex53.o
 
 
 
