@@ -12,6 +12,7 @@ set shadowdir=`echo $petscdir | sed s%/home/bsmith/petsc%$shadowdir%`
 if (! -e $shadowdir) then
   echo "mkdir $shadowdir"
   mkdir $shadowdir
+  chmod g+ws $shadowdir
 endif
 
 set allfiles=$petscdir/*
