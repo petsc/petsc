@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.105 1998/04/13 17:28:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.106 1998/04/24 22:10:42 curfman Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -26,6 +26,10 @@ int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
     Input Parameter:
 .   kspcheck - function that checks for options
 
+    Level: developer
+
+.keywords: KSP, add, options, checker
+
 .seealso: KSPSetFromOptions()
 @*/
 int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
@@ -39,8 +43,6 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
   PetscFunctionReturn(0);
 }
 
-  
-
 #undef __FUNC__  
 #define __FUNC__ "KSPSetOptionsPrefix"
 /*@C
@@ -52,6 +54,8 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
    Input Parameters:
 +  ksp - the Krylov context
 -  prefix - the prefix string to prepend to all KSP option requests
+
+   Level: advanced
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -96,10 +100,11 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 +  ksp - the Krylov context
 -  prefix - the prefix string to prepend to all KSP option requests
 
+   Level: advanced
+
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
-   The first character of all runtime options is AUTOMATICALLY the
-   hyphen.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
 
 .keywords: KSP, append, options, prefix, database
 
