@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.58 2000/05/04 16:25:06 bsmith Exp balay $*/
+/*$Id: iscoloring.c,v 1.59 2000/05/05 22:14:51 balay Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -167,7 +167,7 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
 
   /* generate the lists of nodes for each color */
   mcolors = (int*)PetscMalloc((nc+1)*sizeof(int));CHKPTRQ(colors);
-  ierr = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
+  ierr    = PetscMemzero(mcolors,nc*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     mcolors[colors[i]]++;
   }
