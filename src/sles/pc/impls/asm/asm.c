@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.9 1996/01/17 21:50:45 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.10 1996/01/18 15:29:55 balay Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -66,7 +66,7 @@ static int PCSetUp_ASM(PC pc)
        Extend the "overlapping" regions by a number of steps 
     */
     if (osm->overlap) {
-      ;
+      ierr = MatIncreaseOverlap(pc->pmat,n_local,osm->is,osm->overlap); CHKERRQ(ierr);
     }
 
     /* create the local work vectors and scatter contexts */
@@ -209,7 +209,7 @@ int PCASMSetSubdomains(PC pc, int n, IS *is)
   Input Parameters:
 .   m, n - the number of mesh points in x and y direction
 .   M, N - the number of subdomains in the x and y direction
-.   dof - degrees of freedome per node
+.   dof - degrees of freedom per node
 .   overlap - overlap in mesh lines
 
   Output Paramters:
