@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: PetscTime.c,v 1.5 1996/03/12 23:09:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: PetscTime.c,v 1.6 1996/03/19 21:30:13 bsmith Exp balay $";
 #endif
 
 #include "stdio.h"
@@ -30,6 +30,11 @@ int main( int argc, char **argv)
 
     fprintf(stderr,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
   }
+  PetscTime(x);
+  PetscSleep(10);
+  PetscTime(y); 
+  fprintf(stderr,"%-15s : %e sec - Slept for 10 sec \n","PetscTime",(y-x));
+
   PetscFinalize();
   return 0;
 }
