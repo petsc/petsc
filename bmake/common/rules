@@ -5,13 +5,32 @@ LIBNAME  = $(LDIR)/$(LIBBASE).a
 SOURCE   = $(SOURCEC) $(SOURCEF)
 OBJS     = $(OBJSC) $(OBJSF)
 
+include $(ITOOLSDIR)/bmake/$(PARCH).site
+include $(ITOOLSDIR)/bmake/$(PARCH).$(BOPT)
+
 $(LIBNAME)($(OBJS)): $(LINCLUDE)
 
-examples: $(EXAMPLES)
-tests:    $(TESTS)
+examples: 
+	@-if [ "$(EXAMPLES)" != "" ] ; then \
+          (for ex in $(EXAMPLES) foo ; do \
+          $(MAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) $$ex; done;) fi
 
-libc: $(LIBNAME)($(OBJSC))
-libf: $(LIBNAME)($(OBJSF))
+runexamples: 
+	@-if [ "$(EXAMPLES)" != "" ] ; then \
+          (for ex in $(EXAMPLES) echo ; do \
+          $$ex; done;) fi
+
+tests:
+	@-if [ "$(TESTS)" != "" ] ; then \
+	(for ex in $(TESTS) foo ; do \
+	$(MAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) $$ex; done;) fi
+
+runtests: 
+	@-if [ "$(TESTS)" != "" ] ; then \
+          (for ex in $(TESTS) echo ; do \
+          $$ex; done;) fi
+
+foo:
 
 lib: $(SOURCE)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
@@ -33,9 +52,6 @@ libfast: $(SOURCEC) $(SOURCEF)
           $(AR) clq $(LIBNAME) $(OBJS); \
 	  $(RM) $(OBJS); \
         fi
-
-deletelibs:
-	@-if [ -w $(LIBNAME) ] ; then $(RM) $(LIBNAME) ; fi
 
 lint:
 	lint -cvhu -DLINT $(CFLAGS) $(SOURCE)
@@ -60,7 +76,7 @@ manpages:
                  $(SOURCEC) $(SOURCEH); fi 
 
 clean:
-	-/bin/rm -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES)
+	-/bin/rm -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS)
 
 #############
 cleantree: clean 
@@ -96,15 +112,42 @@ C2f77libtree: C2f77lib
 libtree: lib
 	@-if [ "$(DIRS)" != "" ]; then \
         for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo Compiling in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT)\
+        (cd $$dir ; echo Compiling in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT) \
         PARCH=$(PARCH) libtree) ;fi; \
         done ; fi
 
 libfasttree: libfast
 	@-if [ "$(DIRS)" != "" ]; then \
         for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo Compiling in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT)\
+        (cd $$dir ; echo Compiling in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT) \
         PARCH=$(PARCH) libfasttree) ;fi; \
         done ; fi
 
+examplestree: examples
+	@-if [ "$(DIRS)" != "" ]; then \
+        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
+        (cd $$dir ; echo Compiling examples in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT) \
+        PARCH=$(PARCH) examplestree) ;fi; \
+        done ; fi
+
+teststree: tests
+	@-if [ "$(DIRS)" != "" ]; then \
+	for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
+	(cd $$dir ; echo Compiling tests in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT) \
+	PARCH=$(PARCH) teststree) ;fi; \
+	done ; fi
+
+runexamplestree: runexamples
+	@-if [ "$(DIRS)" != "" ]; then \
+        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
+        (cd $$dir ; echo Examples in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT) \
+        PARCH=$(PARCH) runexamplestree) ;fi; \
+        done ; fi
+
+runteststree: runtests
+	@-if [ "$(DIRS)" != "" ]; then \
+	for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
+	(cd $$dir ; echo Tests in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT) \
+	PARCH=$(PARCH) runteststree) ;fi; \
+	done ; fi
 
