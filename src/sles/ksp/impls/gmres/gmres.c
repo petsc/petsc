@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.138 2000/03/02 22:48:53 bsmith Exp curfman $*/
+/*$Id: gmres.c,v 1.139 2000/03/09 14:19:35 curfman Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -33,7 +33,7 @@
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
 static int    GMRESGetNewVectors(KSP,int);
-static int    GMRESUpdateHessenberg(KSP,int,PetscTruth hapend,PetscReal *);
+static int    GMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal*);
 static int    BuildGmresSoln(Scalar*,Vec,Vec,KSP,int);
 
 #undef __FUNC__
@@ -203,8 +203,9 @@ int GMREScycle(int *itcount,KSP ksp)
     hapbnd  = gmres->epsabs * PetscAbsScalar(*HH(it,it) / *RS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt > hapbnd) {
-        tmp = 1.0/tt; ierr = VecScale(&tmp,VEC_VV(it+1));CHKERRQ(ierr);
+      tmp = 1.0/tt; ierr = VecScale(&tmp,VEC_VV(it+1));CHKERRQ(ierr);
     } else {
+      PLogInfo(ksp,"Detected happy breakdown, current hapbnd = %g tt = %g\n",hapbnd,tt);
       hapend = PETSC_TRUE;
     }
     ierr = GMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
@@ -220,7 +221,7 @@ int GMREScycle(int *itcount,KSP ksp)
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
       if (!ksp->reason) {
-        SETERRQ(0,0,"You reached the happy break down,but convergence was not indicated.");
+        SETERRQ1(0,0,"You reached the happy break down, but convergence was not indicated. Residual norm = %",res);
       }
       break;
     }
@@ -356,7 +357,12 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
     }
     PetscFunctionReturn(0);
   }
-  nrs[it] = *RS(it) / *HH(it,it);
+  if (*HH(it,it) == 0.0) SETERRQ1(1,1,"HH(it,it) is identically zero; RS(it) = %g",*RS(it));
+  if (*HH(it,it) != 0.0) {
+    nrs[it] = *RS(it) / *HH(it,it);
+  } else {
+    nrs[it] = 0.0;
+  }
   for (ii=1; ii<=it; ii++) {
     k   = it - ii;
     tt  = *RS(k);
