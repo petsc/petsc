@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.28 1997/01/12 02:42:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.29 1997/07/04 16:09:02 bsmith Exp balay $";
 #endif
 
 /*
@@ -322,7 +322,7 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 @*/
 int MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
 {
-  *comm = PetscToPointerComm(fcomm);
+  *comm = (MPI_Comm)PetscToPointerComm(fcomm);
   return 0;
 }
 

@@ -39,7 +39,7 @@ X11_LIB        = -lX11
 #  add  -DUSES_INT_MPI_COMM to the line MPI_INCLUDE below.
 #
 MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_p4/libmpi.a 
-MPI_INCLUDE    = -I/home/petsc/mpich/include
+MPI_INCLUDE    = -I/home/petsc/mpich/include -DUSES_INT_MPI_COMM
 MPIRUN         = /home/petsc/mpich/bin/mpirun
 # MPI_LIB        = /usr/local/mpi/lib/alpha/ch_p4/libmpi.a 
 # MPI_INCLUDE    = -I/usr/local/mpi/include
