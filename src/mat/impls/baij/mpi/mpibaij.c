@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.93 1998/01/10 05:11:47 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.94 1998/01/12 17:10:22 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -843,7 +843,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyEnd(baij->B,mode); CHKERRQ(ierr);
   
   ierr = OptionsHasName(PETSC_NULL,"-use_hash",&flg); CHKERRQ(ierr);
-  if (flg && !baij->ht) {
+  if (flg && !baij->ht && mode== MAT_FINAL_ASSEMBLY) {
     double fact = 1.39;
     CreateHashTable(mat,fact);
     mat->ops.setvalues        = MatSetValues_MPIBAIJ_HT;

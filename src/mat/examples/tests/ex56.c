@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.12 1997/12/04 00:27:15 balay Exp balay $";
+static char vcid[] = "$Id: ex56.c,v 1.13 1997/12/06 00:08:25 balay Exp balay $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked,MatZeroRows for \n\
 rectangular MatBAIJ matrix";
@@ -45,20 +45,20 @@ int main(int argc,char **args)
 
   ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES); CHKERRA(ierr);
 
+
+
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+
+
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRA(ierr);
+  ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES); CHKERRA(ierr);
+
   /* Do another MatSetValues to test the case when only one local block is specified */
   for (i=0; i<3; i++) {
     for (j =0; j<3 ; j++ )  y[i][j] = (Scalar)(10 + i*eval + j);
   }
   ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRA(ierr);
-
-
-  ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY); CHKERRA(ierr);
-
-
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRA(ierr);
-  ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRA(ierr);
-
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
