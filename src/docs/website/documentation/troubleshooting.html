@@ -69,6 +69,37 @@ recent version.of the troubleshooting guide</a>.</p>
 </body>
       <hr>
       <ol type="1" start="1">
+        <li><font color="#ff0000"><strong>Symptom</strong>: </font>
+          When building a PETSc application (or example) using BOPT=O_complex or any optimized build
+under linux using the Version 8.0 of the Intel C/C++ compiler
+before patch 066, typically using PETSC_ARCH=linux_intel, the following message may be encountered:
+          <p><font face="Terminal">/home/petsc/petsc-2.1.6/lib/libO_complex/linux_intel/libpetscfortran.a(zksp.o):
+In function `kspview_': zksp.o(.text+0x156):
+undefined reference to `PETSC_VIEWER_SOCKET_(int)'
+</font></p>
+          <p>In make_log_linux_intel_O_complex, there is another clue as to the problem:</p>
+          <p><font face="Terminal">libfast in: /home/petsc/petsc-2.1.6/src/sys/src/viewer/impls/socket
+send.c(100): error: Unsupported feature: Gnu statement expressions in C++
+    sa.sin_port = htons((u_short) portnum);
+                  ^
+
+send.c(100): error: expected a ")"
+    sa.sin_port = htons((u_short) portnum);
+                  ^
+
+send.c(100): error: expected a ";"
+    sa.sin_port = htons((u_short) portnum);
+                  ^
+
+compilation aborted for send.c (code 2)
+ar: send.o: No such file or directory
+</font></p>
+        <p><font color="#ff0000"><strong>Problem</strong>:</font> The Intel compiler (Version 8.0, before patch 066) has attempted to include
+GNU style inlined assembly instructions from a linux header file, which it does not interpret properly.</p>
+        <p><font color="#ff0000"><strong>Cure</strong>:</font> There are two solutions.  The most appropriate solution is
+to obtain and install patch 066 or later for Version 8.0 of the Intel C/C++ compiler.  If this is not practical, then you
+can remove references to -use_masm from the $PETSC_DIR/bmake/$PETSC_ARCH/variables file (typically PETSC_ARCH=linux_intel),
+and in petscconf.h from the same directory, replace the line: #define PETSC_HAVE_SSE "iclsse.h" with #define PETSC_HAVE_SSE "gccsse.h"</p>
         <li><font color="#ff0000"><strong>Symptom</strong>: </font><br>
           <font face="Terminal">alder&gt; make BOPT=g <br>
 ex21 cc -Dsun4 -g -o ex21 ex21.o affine3d.o
