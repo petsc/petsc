@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.171 1996/05/03 19:26:39 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.172 1996/06/26 18:11:42 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1347,7 +1347,8 @@ extern int MatUseDXML_SeqAIJ(Mat);
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
-   allocation.  For additional details, see the users' manual chapter on
+   allocation.  For large problems you MUST preallocate memory or you 
+   will get TERRIBLE performance, see the users' manual chapter on
    matrices and the file $(PETSC_DIR)/Performance.
 
    By default, this format uses inodes (identical nodes) when possible, to 

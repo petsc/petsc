@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.143 1996/05/07 20:43:35 balay Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.144 1996/06/26 18:11:34 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1437,8 +1437,9 @@ $
    Now d_nz should indicate the number of nonzeros per row in the d matrix,
    and o_nz should indicate the number of nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects d_nz >> o_nz.   For additional details, see the users manual
-   chapter on matrices and the file $(PETSC_DIR)/Performance.
+   one expects d_nz >> o_nz. For large problems you MUST preallocate memory
+   or you will get TERRIBLE performance, see the users' manual chapter on
+   matrices and the file $(PETSC_DIR)/Performance.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
