@@ -391,9 +391,18 @@ password initially 2faWquno
 ASCI Blue Mountain at LANL:
   machine:  bluemoutain.acl.lanl.gov (front-end)
   account:  lmcinnes
-  password: senmento   (we only a restricted list of password choices)
+  password: senmento   (we have a restricted list of password choices)
   info:     http://www.lanl.gov/projects/asci/bluemtn/bluemtn.html
             including details about job submission, etc.
+
+----------------------------------------------------------------------
+
+Yet another Origin2000 (Univ of Utah):
+  machines:
+     raptor.chpc.utah.edu is the interactive/graphics machine (32 cpus, 4.0 gB memory)
+     rapture.chpc.utah.edu  is the batch/compute machine (28 cpus, 3.5 gB memory)
+  account: usilcm
+  password : petsc-passwd
 
 ----------------------------------------------------------------------
 
