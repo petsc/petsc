@@ -14,8 +14,8 @@ set day=`date | cut -f1 -d" "`
 if ($day == Sun || $day == Wed || $day == Fri) then
     set M=(snake    merlin      )
     set B=(O        O_complex   )
-    set A=(hpux     run4        )
-    set J=(fortran  fortran     )
+    set A=(hpux     sun4        )
+    set J=(fortran  nofortran   )
 else if ($day == Mon || $day == Sat) then
     set M=(ptera      ryan      )
     set B=(O_complex  O         )
