@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.112 2001/01/15 21:47:16 bsmith Exp balay $*/
+/*$Id: cg.c,v 1.113 2001/01/16 18:19:30 balay Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -9,7 +9,7 @@
         KSPCreate_XXX()          - Creates the Krylov context
         KSPSetFromOptions_XXX()  - Sets runtime options
         KSPSolve_XXX()           - Runs the Krylov method
-        KSPDestroy_XXX(0         - Destroys the Krylov context, freeing all 
+        KSPDestroy_XXX()         - Destroys the Krylov context, freeing all 
                                    memory it needed
     Here the "_XXX" denotes a particular implementation, in this case 
     we use _CG (e.g. KSPCreate_CG, KSPDestroy_CG). These routines are 
@@ -114,9 +114,13 @@ int  KSPSolve_CG(KSP ksp,int *its)
   KSP_CG       *cg;
   Mat          Amat,Pmat;
   MatStructure pflag;
+  PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
-  cg = (KSP_CG*)ksp->data;
+  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+
+  cg      = (KSP_CG*)ksp->data;
   eigs    = ksp->calc_sings;
   pres    = ksp->use_pres;
   maxit   = ksp->max_it;
@@ -145,9 +149,9 @@ int  KSPSolve_CG(KSP ksp,int *its)
   ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr);         /*     z <- Br         */
   if (!ksp->avoidnorms) {
     if (pres) {
-        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- z'*z       */
+      ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- z'*z       */
     } else {
-        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
+      ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
     }
   }
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
@@ -189,8 +193,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
        if (!ksp->avoidnorms) {
          ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);/*    dp <- z'*z       */
        }
-     }
-     else if (!ksp->avoidnorms) {
+     } else if (!ksp->avoidnorms) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
      ksp->rnorm = dp;
