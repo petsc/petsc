@@ -7,11 +7,11 @@ CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(IPETSCDIR)/pinclude\
            -I../../../mat/impls/row/seq \
            -I../../../mat/impls/bdiag/seq -I../../../mat\
            -D__DIR__='"pc/impls/bjacobi"'
-SOURCEC  = bjacobi.c bjaijmpi.c
+SOURCEC  = bjacobi.c bjimplmpi.c
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = bjacobi.h
-OBJSC    = bjacobi.o bjaijmpi.o
+OBJSC    = bjacobi.o bjimplmpi.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscsles
