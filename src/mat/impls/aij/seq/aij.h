@@ -17,9 +17,8 @@ typedef struct {
 
 /*  
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
-  format), compatible with Fortran.  The i[] and j[] arrays start at 1,
-  or 0, depending on the value of shift.  For example, in Fortran 
-  j[i[k]+p+shift] is the pth column in row k.  Note that the diagonal
+  format).  The i[] and j[] arrays start at 0. For example,
+  j[i[k]+p] is the pth column in row k.  Note that the diagonal
   matrix elements are stored with the rest of the nonzeros (not separately).
 */
 
