@@ -86,11 +86,14 @@ class Configure(config.base.Configure):
     '''Check that the given compiler is functional, and if not raise an exception'''
     self.pushLanguage(language)
     if not self.checkCompile():
+      self.popLanguage()
       raise RuntimeError('Cannot compile '+language+' with '+self.getCompiler()+'.')
     if not self.checkLink():
+      self.popLanguage()
       raise RuntimeError('Cannot compile/link '+language+' with '+self.getCompiler()+'.')
     if not self.framework.argDB['with-batch']:
       if not self.checkRun():
+        self.popLanguage()
         raise RuntimeError('Cannot run executables created with '+language+'.')
     self.popLanguage()
     return
