@@ -733,6 +733,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_DSCPACK"
 int MatCreate_DSCPACK(Mat A) {
   int ierr,size;
+  Mat A_diag;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqBAIJ or MPIBAIJ */
@@ -742,7 +743,9 @@ int MatCreate_DSCPACK(Mat A) {
   if (size == 1) {
     ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
+    ierr   = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
+    A_diag = ((Mat_MPIBAIJ *)A->data)->A;
+    ierr   = MatConvert_Base_DSCPACK(A_diag,MATDSCPACK,&A_diag);CHKERRQ(ierr);
   }
   ierr = MatConvert_Base_DSCPACK(A,MATDSCPACK,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

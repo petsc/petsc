@@ -4,6 +4,7 @@
 */
 
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
+#include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPISBAIJSpooles"
@@ -185,13 +186,16 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_MPISBAIJSpooles"
 int MatCreate_MPISBAIJSpooles(Mat A) {
   int ierr;
+  Mat A_diag;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of MPISBAIJ */
   /*   and MPISBAIJSpooles types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPISBAIJSPOOLES);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,&A);CHKERRQ(ierr);
+  ierr   = PetscObjectChangeTypeName((PetscObject)A,MATMPISBAIJSPOOLES);CHKERRQ(ierr);
+  ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+  A_diag = ((Mat_MPISBAIJ *)A->data)->A;
+  ierr   = MatConvert(A_diag,MATSEQSBAIJSPOOLES,&A_diag);CHKERRQ(ierr);
+  ierr   = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

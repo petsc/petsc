@@ -580,9 +580,11 @@ int MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
     ierr  = MPI_Allgatherv(lens+a->rstart,sendcount,MPI_INT,lens,recvcounts,displs,MPI_INT,A->comm);CHKERRQ(ierr);
 
     /* ---------------------------------------------------------------
-         Create the sequential matrix
+         Create the sequential matrix of the same type as the local block diagonal
     */
-    ierr  = MatCreateSeqAIJ(PETSC_COMM_SELF,A->M,A->N,0,lens,&B);CHKERRQ(ierr);
+    ierr  = MatCreate(PETSC_COMM_SELF,A->M,A->N,PETSC_DETERMINE,PETSC_DETERMINE,&B);CHKERRQ(ierr);
+    ierr  = MatSetType(B,a->A->type_name);CHKERRQ(ierr);
+    ierr  = MatSeqAIJSetPreallocation(B,0,lens);CHKERRQ(ierr);
     ierr  = PetscMalloc(sizeof(Mat),Bin);CHKERRQ(ierr);
     **Bin = B;
     b = (Mat_SeqAIJ *)B->data;
@@ -1229,7 +1231,9 @@ int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS isc
     }
   } else {
     for (i=0; i<ismax; i++) {
-      ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,nrow[i],ncol[i],0,lens[i],submats+i);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_SELF,nrow[i],ncol[i],PETSC_DETERMINE,PETSC_DETERMINE,submats+i);CHKERRQ(ierr);
+      ierr = MatSetType(submats[i],A->type_name);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(submats[i],0,lens[i]);CHKERRQ(ierr);
     }
   }
 

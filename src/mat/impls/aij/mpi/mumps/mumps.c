@@ -800,8 +800,9 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_AIJMUMPS"
 int MatCreate_AIJMUMPS(Mat A) {
-  int           ierr,size;
-  MPI_Comm      comm;
+  int      ierr,size;
+  Mat      A_diag;
+  MPI_Comm comm;
   
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ or MPIAIJ */
@@ -812,7 +813,9 @@ int MatCreate_AIJMUMPS(Mat A) {
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+    ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+    A_diag = ((Mat_MPIAIJ *)A->data)->A;
+    ierr   = MatConvert_AIJ_AIJMUMPS(A_diag,MATAIJMUMPS,&A_diag);CHKERRQ(ierr);
   }
   ierr = MatConvert_AIJ_AIJMUMPS(A,MATAIJMUMPS,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -945,6 +948,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SBAIJMUMPS"
 int MatCreate_SBAIJMUMPS(Mat A) {
   int ierr,size;
+  Mat A_diag;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqSBAIJ or MPISBAIJ */
@@ -954,7 +958,9 @@ int MatCreate_SBAIJMUMPS(Mat A) {
   if (size == 1) {
     ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+    ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+    A_diag = ((Mat_MPISBAIJ *)A->data)->A;
+    ierr   = MatConvert_SBAIJ_SBAIJMUMPS(A_diag,MATSBAIJMUMPS,&A_diag);CHKERRQ(ierr);
   }
   ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

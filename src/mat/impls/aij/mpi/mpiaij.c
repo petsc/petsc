@@ -2183,7 +2183,9 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
       olens[i] = olen;
       dlens[i] = dlen;
     }
-    ierr = MatCreateMPIAIJ(comm,m,nlocal,PETSC_DECIDE,n,0,dlens,0,olens,&M);CHKERRQ(ierr);
+    ierr = MatCreate(comm,m,nlocal,PETSC_DECIDE,n,&M);CHKERRQ(ierr);
+    ierr = MatSetType(M,mat->type_name);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(M,0,dlens,0,olens);CHKERRQ(ierr);
     ierr = PetscFree(dlens);CHKERRQ(ierr);
   } else {
     int ml,nl;

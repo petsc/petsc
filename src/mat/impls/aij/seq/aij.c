@@ -1537,7 +1537,9 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
       ierr = MatZeroEntries(*B);CHKERRQ(ierr);
       C = *B;
     } else {  
-      ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
+      ierr = MatCreate(A->comm,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE,&C);CHKERRQ(ierr);
+      ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(C,0,lens);CHKERRQ(ierr);
     }
     c = (Mat_SeqAIJ*)C->data;
 
@@ -1589,7 +1591,9 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
       ierr = PetscMemzero(c->ilen,(*B)->m*sizeof(int));CHKERRQ(ierr);
       C = *B;
     } else {  
-      ierr = MatCreateSeqAIJ(A->comm,nrows,ncols,0,lens,&C);CHKERRQ(ierr);
+      ierr = MatCreate(A->comm,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE,&C);CHKERRQ(ierr);
+      ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
+      ierr = MatSeqAIJSetPreallocation(C,0,lens);CHKERRQ(ierr);
     }
     c = (Mat_SeqAIJ *)(C->data);
     for (i=0; i<nrows; i++) {

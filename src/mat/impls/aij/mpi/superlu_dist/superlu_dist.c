@@ -685,6 +685,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SuperLU_DIST"
 int MatCreate_SuperLU_DIST(Mat A) {
   int ierr,size;
+  Mat A_diag;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ or MPIAIJ */
@@ -694,7 +695,9 @@ int MatCreate_SuperLU_DIST(Mat A) {
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+    ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+    A_diag = ((Mat_MPIAIJ *)A->data)->A;
+    ierr   = MatConvert_Base_SuperLU_DIST(A_diag,MATSUPERLU_DIST,&A_diag);CHKERRQ(ierr);
   }
   ierr = MatConvert_Base_SuperLU_DIST(A,MATSUPERLU_DIST,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
