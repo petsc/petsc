@@ -92,7 +92,7 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
   /* int    verbose    */  /* verbose == 0 specifies that SPAI is silent
                               verbose == 1 prints timing and matrix statistics */
 
-  ispai->M = bspai(ispai->B,
+  ierr = bspai(ispai->B,&ispai->M,
 		   stdout,
 		   ispai->epsilon,
 		   ispai->nbsteps,
@@ -100,9 +100,7 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
 		   ispai->maxnew,
 		   ispai->block_size,
 		   ispai->cache_size,
-		   ispai->verbose);
-
-  if (!ispai->M) SETERRQ(1,"Unable to create SPAI preconditioner");
+	       ispai->verbose); CHKERRQ(ierr);
 
   ierr = ConvertMatrixToMat(pc->comm,ispai->M,&ispai->PM);CHKERRQ(ierr);
 
