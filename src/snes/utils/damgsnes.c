@@ -1,5 +1,5 @@
 
-/*$Id: damgsnes.c,v 1.2 2000/07/13 03:53:36 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.3 2000/07/15 03:19:48 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -13,7 +13,7 @@
 int DAMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DAMG       *damg = (DAMG*)ptr;
-  int        ierr,i,nlevels = damg[0]->nlevels,ntrue,Xsize;
+  int        ierr,i,nlevels = damg[0]->nlevels;
   SLES       sles,lsles;
   PC         pc;
   PetscTruth ismg;
@@ -22,15 +22,6 @@ int DAMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *p
   PetscFunctionBegin;
   if (!damg) SETERRQ(1,1,"Passing null as user context which should contain DAMG");
 
-  /* Determine the finest level. This is a little tacky, uses length of vector passed in
-     compared to saved values. */
-  ierr = VecGetSize(X,&Xsize);CHKERRQ(ierr);
-  for (i=0; i<nlevels; i++) {
-    if (Xsize == damg[i]->Xsize) {
-      ntrue = i;
-      break;
-    }
-  }
   if (DAMGGetFine(damg)->computejacobian == SNESDefaultComputeJacobianColor) pptr = DAMGGetFine(damg)->fdcoloring;
   else pptr = DAMGGetFine(damg);
 
@@ -72,10 +63,11 @@ int DAMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *p
 int DAMGSolveSNES(DAMG *damg,int level)
 {
   int  ierr,i,nlevels = damg[0]->nlevels,its;
-  SNES snes;
 
   PetscFunctionBegin;
+  damg[0]->nlevels = level+1;
   ierr = SNESSolve(damg[level]->snes,damg[level]->x,&its);CHKERRQ(ierr);
+  damg[0]->nlevels = nlevels;
   PetscFunctionReturn(0);
 }
 
@@ -144,8 +136,33 @@ int DAMGSetSNES(DAMG *damg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="DAMGSetInitialGuess"></a>*/"DAMGSetInitialGuess"
+/*@C
+    DAMGSetInitialGuess - Sets the function that computes an initial guess, if not given
+         uses 0.
 
+    Collective on DAMG and SNES
 
+    Input Parameter:
++   damg - the context
+-   guess - the function
+
+    Level: advanced
+
+.seealso DAMGCreate(), DAMGDestroy, DAMGSetCoarseDA(), DAMGSetSLES()
+
+@*/
+int DAMGSetInitialGuess(DAMG *damg,int (*guess)(SNES,Vec,void*))
+{
+  int i,nlevels = damg[0]->nlevels;
+
+  PetscFunctionBegin;
+  for (i=0; i<nlevels; i++) {
+    damg[i]->initialguess = guess;
+  }
+  PetscFunctionReturn(0);
+}
 
 
 

@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.14 2000/07/14 18:16:43 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.15 2000/07/15 03:19:57 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -232,11 +232,20 @@ int DAMGSolve(DAMG *damg)
   PetscFunctionBegin;
   ierr = OptionsHasName(0,"-damg_grid_sequence",&gridseq);CHKERRQ(ierr);
   if (gridseq) {
+    if (damg[0]->initialguess) {
+      ierr = (*damg[0]->initialguess)(damg[0]->snes,damg[0]->x,damg[0]);CHKERRQ(ierr);
+    }
     for (i=0; i<nlevels-1; i++) {
       ierr = (*damg[i]->solve)(damg,i);CHKERRQ(ierr);
       ierr = MatInterpolate(damg[i+1]->R,damg[i]->x,damg[i+1]->x);CHKERRQ(ierr);
-      ierr = SLESGetKSP(damg[i+1]->sles,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+      if (damg[i+1]->sles) {
+        ierr = SLESGetKSP(damg[i+1]->sles,&ksp);CHKERRQ(ierr);
+        ierr = KSPSetInitialGuessNonzero(ksp);CHKERRQ(ierr);
+      }
+    }
+  } else {
+    if (damg[nlevels-1]->initialguess) {
+      ierr = (*damg[nlevels-1]->initialguess)(damg[nlevels-1]->snes,damg[nlevels-1]->x,damg[nlevels-1]);CHKERRQ(ierr);
     }
   }
   ierr = (*DAMGGetFine(damg)->solve)(damg,nlevels-1);CHKERRQ(ierr);
