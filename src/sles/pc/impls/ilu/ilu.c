@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.85 1997/02/11 19:44:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.86 1997/02/22 02:24:18 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -39,6 +39,9 @@ static int (*setups[])(PC) = {0,
 
    Options Database Key:
 $  -pc_ilu_use_drop_tolerance <dt,dtcount>
+
+   Note:
+   This routine is NOT currently supported!
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/

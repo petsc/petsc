@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.238 1997/04/03 01:38:43 curfman Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.239 1997/04/03 17:08:06 balay Exp curfman $";
 #endif
 
 /*
@@ -1883,22 +1883,32 @@ int MatCompress(Mat mat)
 
    Input Parameters:
 .  mat - the matrix 
-.  option - the option, one of the following:
-$    MAT_ROW_ORIENTED
-$    MAT_COLUMN_ORIENTED,
-$    MAT_ROWS_SORTED,
-$    MAT_ROWS_UNSORTED,
-$    MAT_COLUMNS_SORTED,
-$    MAT_COLUMNS_UNSORTED,
-$    MAT_NO_NEW_NONZERO_LOCATIONS, 
-$    MAT_YES_NEW_NONZERO_LOCATIONS, 
-$    MAT_SYMMETRIC,
-$    MAT_STRUCTURALLY_SYMMETRIC,
-$    MAT_NO_NEW_DIAGONALS,
-$    MAT_YES_NEW_DIAGONALS,
-$    MAT_IGNORE_OFF_PROC_ENTRIES
-$    MAT_NEW_NONZERO_LOCATION_ERROR
-$    and possibly others.  
+.  option - the option, one of those listed below (and possibly others),
+             e.g., MAT_ROWS_SORTED, MAT_NEW_NONZERO_LOCATION_ERROR
+
+   Options Describing Matrix Structure:
+$    MAT_SYMMETRIC - symmetric in terms of both structure and value
+$    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure
+
+   Options For Use with MatSetValues():
+   Insert a logically dense subblock, which can be
+
+$    MAT_ROW_ORIENTED - row-oriented
+$    MAT_COLUMN_ORIENTED - column-oriented
+$    MAT_ROWS_SORTED - sorted by row
+$    MAT_ROWS_UNSORTED - not sorted by row
+$    MAT_COLUMNS_SORTED - sorted by column
+$    MAT_COLUMNS_UNSORTED - not sorted by column
+
+   When (re)assembling a matrix, we can restrict the input for
+   efficiency/debugging purposes.
+
+$    MAT_NO_NEW_NONZERO_LOCATIONS - no new nonzero locations
+$    MAT_YES_NEW_NONZERO_LOCATIONS - allow new nonzero locations
+$    MAT_NO_NEW_DIAGONALS - no new diagonals (for block diagonal format only)
+$    MAT_YES_NEW_DIAGONALS - allow new diagonals (for block diagonal format only)
+$    MAT_IGNORE_OFF_PROC_ENTRIES - drop off-processor entries
+$    MAT_NEW_NONZERO_LOCATION_ERROR - generate error for new matrix entry
 
    Notes:
    Some options are relevant only for particular matrix types and
@@ -1914,13 +1924,19 @@ $    and possibly others.
    Thus, if memory has not alredy been allocated for this particular 
    data, then the insertion is ignored. For dense matrices, in which
    the entire array is allocated, no entries are ever ignored. 
- 
+
    MAT_NEW_NONZERO_LOCATION_ERROR indicates any add or insertion 
    that will generate a new entry in the nonzero structure generates 
-   an error. Supported for AIJ and BAIJ formats.
+   an error. (Currently supported for AIJ and BAIJ formats only).
+   This is a useful flag when using SAME_NONZERO_PATTERN in calling
+   SLESSetOperators() to ensure that the nonzero pattern truely does 
+   remain unchanged.
 
    MAT_IGNORE_OFF_PROC_ENTRIES indicates entries destined for 
-   other processors are dropped, rather than stashed.
+   other processors should be dropped, rather than stashed.
+   This is useful if you know that the "owning" processor is also 
+   always generating the correct matrix entries, so that PETSc need
+   not transfer duplicate entries generated on another processor.
    
 .keywords: matrix, option, row-oriented, column-oriented, sorted, nonzero
 @*/
