@@ -352,10 +352,6 @@ updatewebdocs:
 	-/bin/cp -r /mcs/tmp/petscdocs/* ${PETSC_DIR}/docs
 	-/bin/rm -rf /mcs/tmp/petscdocs
 
-# Builds all the documentation - should be done every night
-alldoc: allmanualpages
-	cd docs/tex/manual; ${OMAKE} manual.pdf
-
 chk_loc:
 	@if [ ${LOC}foo = foo ] ; then \
 	  echo "*********************** ERROR ************************" ; \
@@ -366,9 +362,10 @@ deletemanualpages: chk_loc
 	find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \;
 	${RM} ${LOC}/docs/manualpages/manualpages.cit
 
-# Builds all versions of the man pages
-allmanualpages: chk_loc deletemanualpages chk_concepts_dir
+# Builds all the documentation - should be done every night
+alldoc: chk_loc deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
+	cd docs/tex/manual; ${OMAKE} manual.pdf
 	-${OMAKE} ACTION=manualpages tree_basic  LOC=${LOC}
 	-maint/wwwindex.py ${PETSC_DIR} ${LOC}
 	-${OMAKE} ACTION=manexamples tree  LOC=${LOC}

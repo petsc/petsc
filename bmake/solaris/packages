@@ -75,7 +75,7 @@ PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #MATLAB_INCLUDE    = -I${MATLAB_ROOT}/extern/include
 MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
-MATLAB_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lmi -lut
+MATLAB_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lut
 PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location where adiC is installed

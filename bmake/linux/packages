@@ -87,14 +87,14 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #  Location of Trilinos
 #
-TRILINOS_INCLUDE    = -I/home/alice/software/Trilinos/src/petra_esi -I/home/alice/software/Trilinos/src/petra
-PETSC_HAVE_TRILINOS = -DPETSC_HAVE_TRILINOS
-TRILINOS_LIB        = -L/home/alice/software/Trilinos/lib/LINUX.MPI -lpetraesi -lpetra -lmachdep
+#TRILINOS_INCLUDE    = -I/home/alice/software/Trilinos/src/petra_esi -I/home/alice/software/Trilinos/src/petra
+#PETSC_HAVE_TRILINOS = -DPETSC_HAVE_TRILINOS
+#TRILINOS_LIB        = -L/home/alice/software/Trilinos/lib/LINUX.MPI -lpetraesi -lpetra -lmachdep
 #
 #  Location of CCA include files
 #
-CCA_INCLUDE    = -I/home/alice/cca/cca-spec/cxx/include/
-PETSC_HAVE_CCA = -DPETSC_HAVE_CCA
+#CCA_INCLUDE    = -I/home/alice/cca/cca-spec/cxx/include/
+#PETSC_HAVE_CCA = -DPETSC_HAVE_CCA
 #
 #
 #  Location of hypre

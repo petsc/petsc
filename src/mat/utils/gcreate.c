@@ -78,6 +78,10 @@ static int MatPublish_Base(PetscObject obj)
 
    Level: beginner
 
+   User manual sections:
++   sec_matcreate
+-   chapter_matrices
+
 .keywords: matrix, create
 
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 

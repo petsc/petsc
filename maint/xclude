@@ -81,7 +81,6 @@ petsc-dist/src/da/examples/tests/scripts
 petsc-dist/src/snes/examples/tests/umin/ex4.c
 petsc-dist/src/snes/examples/tests/umin/ex5.c
 petsc-dist/src/snes/examples/tests/umin/pdgl2fg.f
-petsc-dist/src/snes/interface/noise
 petsc-dist/src/snes/impls/trdl
 petsc-dist/src/mat/examples/matrices
 petsc-dist/surplus
