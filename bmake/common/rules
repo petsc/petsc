@@ -39,9 +39,9 @@ examples:
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
           (for ex in $(EXAMPLES) foo ; do \
           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-          > trash 2>&1; egrep -i 'Error|warning =' trash >> /dev/null ; \
+          > trashz 2>&1; egrep -i 'Error|warning =' trashz >> /dev/null ; \
           if [ "$$?" != 1 ]; then \
-          cat trash ; fi; $(RM) trash;\
+          cat trashz ; fi; $(RM) trashz;\
           done;) fi
 
 foo:
@@ -127,7 +127,8 @@ wwwpages:
 
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS) \
-               PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out
+               PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
+               trashz
 
 testexamples: examples runexamples clean
 
