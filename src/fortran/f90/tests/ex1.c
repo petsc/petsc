@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.61 2000/08/17 04:51:19 bsmith Exp $*/
+/*$Id: ex1.c,v 1.2 2000/08/23 18:38:37 balay Exp balay $*/
 
 #include <stdio.h>
 #include "src/fortran/f90/zf90.h"
@@ -17,6 +17,8 @@ typedef struct {
   int c;
 } abc;
 
+EXTERN_C_BEGIN
+
 extern void fortran_routine_(abc *x);
 
 void c_routine_(abc *x)
@@ -30,3 +32,5 @@ void c_routine_(abc *x)
   x->c = 222;
   fortran_routine_(x); 
 }
+
+EXTERN_C_END
