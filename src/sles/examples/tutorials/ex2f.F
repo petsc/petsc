@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.13 1996/02/13 23:30:12 bsmith Exp bsmith $";
+C    "$Id: ex7.F,v 1.14 1996/03/19 21:27:49 bsmith Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -9,10 +9,10 @@ C    "$Id: ex7.F,v 1.13 1996/02/13 23:30:12 bsmith Exp bsmith $";
 C
 C  This example demonstrates basic use of the SLES Fortran interface.
 C
+      double precision norm
       integer          i, j, II, JJ, ierr, m, n
       integer          rank, size, its, Istart, Iend,flg
       Scalar           v, zero, one, none
-      Scalar           norm
       Vec              x, u, b
       Mat              A 
       SLES             sles
