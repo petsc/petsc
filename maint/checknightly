@@ -1,6 +1,5 @@
-#! /usr/local/tcl/bin/tclsh
-# $Id: checknightly,v 1.33 1998/03/25 16:11:17 balay Exp balay $ 
-
+#!/usr/bin/env tclsh
+# $Id: checknightly,v 1.34 1998/04/01 00:39:39 balay Exp balay $ 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
 # Checks if the remote jobs are done in the past 2days, and 

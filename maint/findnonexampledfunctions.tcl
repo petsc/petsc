@@ -1,5 +1,5 @@
-#! /usr/local/tcl/bin/tclsh
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+#!/usr/bin/env tclsh
+# $Id: findnonexampledfunctions.tcl,v 1.4 1997/09/10 19:43:03 balay Exp balay $ 
 
 
 ##################################################

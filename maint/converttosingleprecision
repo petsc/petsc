@@ -1,6 +1,5 @@
-#! /usr/local/tcl/bin/tclsh 
-# $Id: converttosingleprecision,v 1.7 1997/09/10 19:41:12 balay Exp balay $ 
-
+#!/usr/bin/env tclsh
+# $Id: converttosingleprecision,v 1.8 1998/04/01 00:01:52 balay Exp balay $ 
 #
 #   For a source file, takes a list of function names
 # and replaces then with functionname_Single

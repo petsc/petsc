@@ -1,5 +1,5 @@
-#! /usr/local/tcl/bin/tclsh
-# $Id: htmlkeywords.tcl,v 1.7 1998/01/03 22:36:29 bsmith Exp balay $ 
+#!/usr/bin/env tclsh
+# $Id: htmlkeywords.tcl,v 1.8 1998/01/05 14:47:45 balay Exp balay $ 
 
 ################################################
 # This program scans the WWW man pages         #

@@ -1,6 +1,5 @@
-#! /usr/local/tcl/bin/tclsh
-#!/gnuwin32/b18/tcl/bin/tclsh76.exe
-# $Id: makecpp.tcl,v 1.9 1998/03/19 20:02:36 balay Exp balay $ 
+#!/usr/bin/env tclsh
+# $Id: makecpp.tcl,v 1.10 1998/03/19 20:03:47 balay Exp balay $ 
 
 
 proc movefilesin { dir } {

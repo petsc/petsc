@@ -1,5 +1,5 @@
-#! /usr/local/tcl/bin/tclsh
-# $Id: examplesindex.tcl,v 1.26 1998/01/05 14:56:37 balay Exp balay $ 
+#!/usr/bin/env tclsh
+# $Id: examplesindex.tcl,v 1.27 1998/03/23 23:42:23 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
