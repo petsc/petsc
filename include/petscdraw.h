@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.47 1997/08/13 22:27:41 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.48 1997/09/26 02:22:17 bsmith Exp bsmith $ */
 /*
   Interface to the graphics
 */
@@ -21,6 +21,7 @@ typedef struct _p_Draw* Draw;
 */
 #define DRAW_BASIC_COLORS 32
 
+#define DRAW_ROTATE          -1         /* will rotate through the colors, start with 2 */
 #define DRAW_WHITE            0
 #define DRAW_BLACK            1
 #define DRAW_RED              2
@@ -152,6 +153,22 @@ extern int DrawSPSetDimension(DrawSP,int);
 extern int DrawSPGetAxis(DrawSP,DrawAxis *);
 extern int DrawSPGetDraw(DrawSP,Draw *);
 extern int DrawSPSetLimits(DrawSP,double,double,double,double); 
+
+/*
+    Routines to draw histograms
+*/
+typedef struct _p_DrawHist*   DrawHist;
+
+extern int DrawHistCreate(Draw, int, DrawHist *);
+extern int DrawHistDestroy(DrawHist);
+extern int DrawHistAddValue(DrawHist, double);
+extern int DrawHistDraw(DrawHist);
+extern int DrawHistReset(DrawHist);
+extern int DrawHistGetAxis(DrawHist, DrawAxis *);
+extern int DrawHistGetDraw(DrawHist, Draw *);
+extern int DrawHistSetLimits(DrawHist, double, double, int, int);
+extern int DrawHistSetNumberBins(DrawHist, int);
+extern int DrawHistSetColor(DrawHist,int);
 
 /*
     Viewer routines that allow you to access underlying Draw objects
