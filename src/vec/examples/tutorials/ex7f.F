@@ -1,5 +1,5 @@
 !
-!    "$Id: ex7f.F,v 1.18 2000/09/13 15:09:43 balay Exp bsmith $";
+!    "$Id: ex7f.F,v 1.19 2001/01/15 21:45:20 bsmith Exp balay $";
 !
        subroutine ex7f(vec,comm)
 
@@ -27,7 +27,7 @@
 !
 !  Now call C routine from Fortran, passing in the vector, communicator
 !
-       call ex7c(vec,comm)
+       call ex7c(vec,comm,ierr)
 !
 !     IO from the fortran routines may cause all kinds of
 !     grief while linking. *_SYS_LIB in base_variables is supporsed

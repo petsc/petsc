@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.30 2001/01/17 22:21:32 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.31 2001/01/23 20:54:12 balay Exp balay $*/
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
 Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\
@@ -18,7 +18,7 @@ and from Fortran to C\n\n";
 #define ex7c_ ex7c
 #endif
 EXTERN_C_BEGIN
-EXTERN void ex7f_(Vec *,int*);
+EXTERN void PETSC_STDCALL ex7f_(Vec *,int*);
 EXTERN_C_END
 
 #undef __FUNC__
@@ -57,23 +57,20 @@ int main(int argc,char **args)
 EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "ex7c_"
-int ex7c_(Vec *fvec,int *fcomm)
+void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,int* ierr)
 {
   MPI_Comm comm;
-  int ierr,size;
+  int size;
 
   /*
     Translate Fortran integer pointer back to C and
     Fortran Communicator back to C communicator
   */
-  ierr = MPIFortranCommToCComm(*fcomm,&comm);
+  *ierr = MPIFortranCommToCComm(*fcomm,&comm);
   
-  /*
-    Some PETSc/MPI operations on Vec/Communicator objects 
-  */
-  ierr = VecGetSize(*fvec,&size);CHKERRQ(ierr);
-  MPI_Barrier(comm);
-  
-  return 0;
+  /* Some PETSc/MPI operations on Vec/Communicator objects */
+  *ierr = VecGetSize(*fvec,&size);
+  *ierr = MPI_Barrier(comm);
+
 }
 EXTERN_C_END
