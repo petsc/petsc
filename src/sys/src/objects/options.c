@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.245 2001/03/09 17:20:59 balay Exp balay $*/
+/*$Id: options.c,v 1.246 2001/03/23 23:20:38 balay Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -788,6 +788,7 @@ int PetscOptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth
   PetscTruth flag;
 
   PetscFunctionBegin;
+  PetscValidIntPointer(ivalue);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {if (flg) *flg = PETSC_FALSE; *ivalue = 0;}
@@ -835,6 +836,7 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
   int        ierr;
 
   PetscFunctionBegin;
+  PetscValidIntPointer(ivalue);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (flg) *flg = PETSC_TRUE;
@@ -905,6 +907,7 @@ int PetscOptionsGetDouble(const char pre[],const char name[],double *dvalue,Pets
   PetscTruth flag;
 
   PetscFunctionBegin;
+  PetscValidDoublePointer(dvalue);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {if (flg) *flg = PETSC_FALSE; *dvalue = 0.0;}
@@ -949,6 +952,7 @@ int PetscOptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,Pets
   int        ierr;
   
   PetscFunctionBegin;
+  PetscValidScalarPointer(dvalue);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {
@@ -1007,19 +1011,17 @@ int PetscOptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,Pets
 @*/
 int PetscOptionsGetDoubleArray(const char pre[],const char name[],double dvalue[],int *nmax,PetscTruth *flg)
 {
-  char       *value,*cpy;
+  char       *value;
   int        n = 0,ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
+  PetscValidDoublePointer(dvalue);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
 
   if (flg) *flg = PETSC_TRUE;
-  /* make a copy of the values, otherwise we destroy the old values */
-  ierr  = PetscStrallocpy(value,&cpy);CHKERRQ(ierr);
-  value = cpy;
 
   ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
   while (n < *nmax) {
@@ -1029,7 +1031,6 @@ int PetscOptionsGetDoubleArray(const char pre[],const char name[],double dvalue[
     n++;
   }
   *nmax = n;
-  ierr = PetscFree(cpy);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
@@ -1061,19 +1062,17 @@ int PetscOptionsGetDoubleArray(const char pre[],const char name[],double dvalue[
 @*/
 int PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax,PetscTruth *flg)
 {
-  char       *value,*cpy;
+  char       *value;
   int        n = 0,ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
+  PetscValidIntPointer(dvalue);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
 
   if (flg) *flg = PETSC_TRUE;
-  /* make a copy of the values, otherwise we destroy the old values */
-  ierr  = PetscStrallocpy(value,&cpy);CHKERRQ(ierr);
-  value = cpy;
 
   ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
   while (n < *nmax) {
@@ -1084,7 +1083,6 @@ int PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int 
     n++;
   }
   *nmax = n;
-  ierr = PetscFree(cpy);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
@@ -1128,6 +1126,7 @@ int PetscOptionsGetString(const char pre[],const char name[],char string[],int l
   PetscTruth flag;
 
   PetscFunctionBegin;
+  PetscValidCharPointer(string);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
   if (!flag) {
     if (flg) *flg = PETSC_FALSE;
@@ -1178,20 +1177,17 @@ int PetscOptionsGetString(const char pre[],const char name[],char string[],int l
 @*/
 int PetscOptionsGetStringArray(const char pre[],const char name[],char **strings,int *nmax,PetscTruth *flg)
 {
-  char       *value,*cpy;
+  char       *value;
   int        len,n,ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
+  PetscValidPointer(strings);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
   if (!flag)  {*nmax = 0; if (flg) *flg = PETSC_FALSE; PetscFunctionReturn(0);}
   if (!value) {*nmax = 0; if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
   if (!*nmax) {if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
   if (flg) *flg = PETSC_TRUE;
-
-  /* make a copy of the values, otherwise we destroy the old values */
-  ierr  = PetscStrallocpy(value,&cpy);CHKERRQ(ierr);
-  value = cpy;
 
   ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
   n = 0;
@@ -1204,7 +1200,6 @@ int PetscOptionsGetStringArray(const char pre[],const char name[],char **strings
     n++;
   }
   *nmax = n;
-  ierr = PetscFree(cpy);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 
