@@ -4,6 +4,7 @@ import bs
 import compile
 import fileset
 import link
+import nargs
 import target
 import transform
 
@@ -310,6 +311,7 @@ class UsingPython(UsingCompiler):
     UsingCompiler.__init__(self, usingSIDL)
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
+    return
 
   def setupIncludeDirectories(self):
     includeDir = bs.argDB['PYTHON_INCLUDE']
@@ -418,8 +420,8 @@ class UsingJava (UsingCompiler):
   '''This class handles all interaction specific to the Java language'''
   def __init__(self, usingSIDL):
     UsingCompiler.__init__(self, usingSIDL)
-    bs.argDB.setType('JAVA_INCLUDE', nargs.ArgDir(0,"List of Java JNI include directories"))
-    bs.argDB.setTester('JAVA_RUNTIME_LIB', nargs.ArgDir(0,"Location of JAVA JNI libraries"))
+    bs.argDB.setType('JAVA_INCLUDE', nargs.ArgDir(0, 'List of Java JNI include directories'))
+    bs.argDB.setType('JAVA_RUNTIME_LIB', nargs.ArgDir(0, 'Location of JAVA JNI libraries'))
     self.setupIncludeDirectories()
 
   def setupIncludeDirectories(self):
@@ -497,11 +499,11 @@ class Defaults:
     return getattr(self, 'using'+lang.replace('+', 'x'))
 
   def addLanguage(self, lang):
+    lang = lang.replace('+', 'x')
     try:
-      self.getUsing(lang.replace('+', 'x'))
+      self.getUsing(lang)
     except AttributeError:
-      lang = lang.replace('+', 'x')
-      opt  = globals()['Using'+lang](self.usingSIDL)
+      opt = globals()['Using'+lang](self.usingSIDL)
       setattr(self, 'using'+lang, opt)
       self.compileExt.extend(opt.getCompileSuffixes())
     return
@@ -509,10 +511,12 @@ class Defaults:
   def addClientLanguage(self, lang):
     self.usingSIDL.clientLanguages.append(lang)
     self.addLanguage(lang)
+    return
 
   def addServerLanguage(self, lang):
     self.usingSIDL.serverLanguages.append(lang)
     self.addLanguage(lang)
+    return
 
   def isImpl(self, source):
     if os.path.splitext(source)[1] == '.pyc':      return 0
