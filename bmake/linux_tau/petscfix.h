@@ -15,36 +15,12 @@
 
 #include "petsc.h"
 
-/*
-  This prototype lets us resolve the datastructure 'rusage' only in
-  the source files using getrusage, and not in other source files.
-*/
-typedef struct rusage* s_rusage;
 
-/* -----------------------Windows NT with gcc --------------------------*/
+
 #if defined(__cplusplus)
+
 extern "C" {
-#include <unistd.h>
-/* The following are suspicious. Not sure if they really exist */
-extern int    readlink(const char *, char *, int);
-#if !defined (htons)
-#define htons __htons
-#endif
+  
 }
-
-#else
-
-#include <unistd.h>
-/* The following are suspicious. Not sure if they really exist */
-extern int    readlink(const char *, char *, int);
 #endif
 #endif
-
-
-
-
-
-
-
-
-

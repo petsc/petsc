@@ -104,6 +104,7 @@ lib: chklib_dir ${SOURCE}
 #  Does not work for some machines with .F fortran files.
 #
 # Builds library - fast version
+
 libfast: chklib_dir ${SOURCEC} ${SOURCEF}
 	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
 	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} specialfastlib;  \
@@ -144,7 +145,7 @@ package:
 	@-for dir in ${${PACKAGE}_DIRS} ; do \
            r=`egrep requirespackage $$dir/makefile`; \
            if [ "$$?" = 0 ]; then \
- 	     HCONF=`grep PETSC_ ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h | cut -d" " -f2`; \
+	     HCONF=`grep PETSC_ ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h | cut -d" " -f2`; \
              HPCONF=`echo ${PCONF} | sed s/-D//g`; \
              f=0; \
              for l in $${HPCONF} foo $${HCONF}; do \
@@ -377,7 +378,7 @@ fortranstubs:
         fi
 
 .c.a .cpp.a .cc.a .C.a: 
-	-${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $<
+	-filename=$<; ${PETSC_COMPILE_SINGLE}
 	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
 	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
 	-${RM} $*.o $*.lo

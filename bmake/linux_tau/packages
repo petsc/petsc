@@ -1,0 +1,40 @@
+# $Id: packages,v 1.63 2001/10/10 18:50:03 balay Exp $ 
+
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
+# for information on retrieving them.
+#
+BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux -lflapack -lfblas
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
+MPI_LIB        = ${MPI_HOME}/lib/libmpich.a
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
+
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software
+#
+X11_INCLUDE    =
+X11_LIB        = -L/usr/X11R6/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# TAU Instrumentation package (Just update the path to the TAU Makefile)
+#
+include /sandbox/balay/tau-2.11.18/include/Makefile
+PDT_PARSE            = ${PDTDIR}/${PDTARCHDIR}/bin/cxxparse
+TAU_INSTR            = ${TAUROOT}/${CONFIG_ARCH}/bin/tau_instrumentor
+TAU_LIB              = -L${TAUROOT}/${CONFIG_ARCH}/lib -ltau-mpi-pdt -lTauMpi-mpi-pdt -lstdc++
+PETSC_COMPILE_SINGLE = ${TAU_COMPILE_SINGLE}
+PETSC_COMPILE        = ${TAU_COMPILE}
