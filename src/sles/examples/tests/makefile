@@ -14,7 +14,7 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex3 runex3_2 runex3_3\
                 runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
                 runex8 runex8_2
-EXAMPLES_2    = ex10 ex11 ex6
+EXAMPLES_2    = ex10 ex11 ex6 ex8_3
 RUNEXAMPLES_2 = runex11
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c\
                 ex6.c
@@ -189,6 +189,12 @@ runex8_2:
            if (diff output/ex8_2.out ex8_2.tmp) then true; \
            else echo "Possible problem with ex8_2, diffs above"; fi; \
            $(RM) -f ex8_2.tmp
+runex8_3:
+	-@$(MPIRUN) -np 2 ex8 -pc_method icc -mat_mpirowbs -ksp_rtol .000001 >\
+           ex8_3.tmp 2>&1;   \
+           if (diff output/ex8_3.out ex8_3.tmp) then true; \
+           else echo "Possible problem with ex8_3, diffs above"; fi; \
+           $(RM) -f ex8_3.tmp
 runex10:
 	-@$(MPIRUN) ex10 -ksp_smonitor > ex10_1.tmp 2>&1; \
            if (diff output/ex10_1.out ex10_1.tmp) then true; \
