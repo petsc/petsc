@@ -48,6 +48,13 @@
 
 [ACTIVE_FUNCTIONS]
 
+[INACTIVE_FUNCTIONS]
+	erf
+	HorizVelocity 
+	VertVelocity 
+	Pressure 
+	CalcJunk	
+
 [INACTIVE_VARIABLES]
 
 [INACTIVE_TYPES]
