@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.50 2001/03/23 23:22:26 balay Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.51 2001/04/09 15:14:43 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2240,7 +2240,8 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   double       *work,*svalues,*rvalues;
   int          ierr,i,bs,mbs,*bi,*bj,brow,j,ncols,krow,kcol,col,row,Mbs,bcol;
   int          rank,size,*rowners_bs,dest,count,source;
-  Scalar       *ba,*va;
+  Scalar       *va;
+  MatScalar    *ba;
   MPI_Status   stat;
 
   PetscFunctionBegin;
