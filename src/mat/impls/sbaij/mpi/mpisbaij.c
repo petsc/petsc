@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.17 2000/09/06 19:45:38 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.18 2000/09/08 14:15:12 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -80,7 +80,7 @@ static int CreateColmap_MPISBAIJ_Private(Mat mat)
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 #define CHUNKSIZE  10
@@ -429,7 +429,7 @@ int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,M
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 #define HASH_KEY 0.6180339887
@@ -442,7 +442,7 @@ int MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatSc
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 #undef __FUNC__  
@@ -451,7 +451,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *i
 { 
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 #undef __FUNC__  
@@ -549,7 +549,7 @@ int MatCreateHashTable_MPISBAIJ_Private(Mat mat,PetscReal factor)
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 #undef __FUNC__  
@@ -925,7 +925,7 @@ int MatMultTranspose_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. Call MatMult().");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 #undef __FUNC__  
@@ -934,7 +934,7 @@ int MatMultTransposeAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. Call MatMultAdd().");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 /*
@@ -1222,7 +1222,7 @@ int MatTranspose_MPISBAIJ(Mat A,Mat *matout)
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"Matrix is symmetric. MatTranspose() should not be called");
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
 
 #undef __FUNC__  
@@ -2182,5 +2182,5 @@ int MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 {
   PetscFunctionBegin;
   SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
-  PetscFunctionReturn(0);
+  /* PetscFunctionReturn(0); */
 }
