@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.18 1995/07/21 21:44:58 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.19 1995/07/27 03:00:58 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -7,10 +7,10 @@ static char vcid[] = "$Id: tr.c,v 1.18 1995/07/21 21:44:58 curfman Exp curfman $
 #include "pviewer.h"
 
 /*
-      This convergence test determines if the two norm of the 
+   This convergence test determines if the two norm of the 
    solution lies outside the trust region, if so it halts.
 */
-int TRConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
+int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
 {
   SNES    snes = (SNES) ctx;
   SNES_TR *neP = (SNES_TR*)snes->data;
@@ -21,7 +21,7 @@ int TRConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   KSPGetTolerances(ksp,&rtol,&atol,&dtol,&mkit);
 
   if ( n == 0 ) {
-    neP->ttol   = MAX(rtol*rnorm,atol);
+    neP->ttol   = PETSCMAX(rtol*rnorm,atol);
     neP->rnorm0 = rnorm;
   }
   if ( rnorm <= neP->ttol )      return 1;
@@ -85,7 +85,7 @@ static int SNESSolve_TR(SNES snes,int *its)
   /* Set the stopping criteria to use the More' trick. */
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-  ierr = KSPSetConvergenceTest(ksp,TRConverged_Private,(void *) snes);
+  ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void *)snes);
   CHKERRQ(ierr);
  
   for ( i=0; i<maxits; i++ ) {
