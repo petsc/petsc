@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.198 2000/05/05 22:16:08 balay Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.199 2000/05/10 16:40:56 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -82,7 +82,7 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
 
   PetscFunctionBegin;
 #if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableCreate(baij->nbs/5,&baij->colmap);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(baij->nbs,&baij->colmap);CHKERRQ(ierr); 
   for (i=0; i<nbs; i++){
     ierr = PetscTableAdd(baij->colmap,baij->garray[i]+1,i*bs+1);CHKERRQ(ierr);
   }
@@ -1040,6 +1040,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)mat->data;
   int          ierr,format,bs = baij->bs,size = baij->size,rank = baij->rank;
   PetscTruth   isascii,isdraw;
+  Viewer       sviewer;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
@@ -1126,12 +1127,11 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the Draw object
     */
+    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      Viewer sviewer;
-      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       ierr = MatView(((Mat_MPIBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
-      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     }
+    ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1701,7 +1701,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   IS             istmp;
   
   PetscFunctionBegin;
-  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   
   /*  first count number of contributors to each processor */
@@ -1957,8 +1957,8 @@ static struct _MatOps MatOps_Values = {
   0,
   MatSetValuesBlocked_MPIBAIJ,
   0,
-  0,
-  0,
+  MatDestroy_MPIBAIJ,
+  MatView_MPIBAIJ,
   MatGetMaps_Petsc};
 
 
@@ -2106,9 +2106,6 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,int *
   B->data = (void*)(b = PetscNew(Mat_MPIBAIJ));CHKPTRQ(b);
   ierr    = PetscMemzero(b,sizeof(Mat_MPIBAIJ));CHKERRQ(ierr);
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-
-  B->ops->destroy    = MatDestroy_MPIBAIJ;
-  B->ops->view       = MatView_MPIBAIJ;
   B->mapping    = 0;
   B->factor     = 0;
   B->assembled  = PETSC_FALSE;
@@ -2276,8 +2273,6 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   PLogObjectCreate(mat);
   mat->data         = (void*)(a = PetscNew(Mat_MPIBAIJ));CHKPTRQ(a);
   ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  mat->ops->destroy = MatDestroy_MPIBAIJ;
-  mat->ops->view    = MatView_MPIBAIJ;
   mat->factor       = matin->factor;
   mat->assembled    = PETSC_TRUE;
   mat->insertmode   = NOT_SET_VALUES;
