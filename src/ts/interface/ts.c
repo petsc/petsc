@@ -1858,61 +1858,6 @@ int TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   TSRegisterDynamic - Adds a method to the timestepping solver package.
-
-   Synopsis:
-   int TSRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(TS))
-
-   Not collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined solver
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Notes:
-   TSRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   TSRegisterDynamic("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
-              "MySolverCreate",MySolverCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     TSSetType(ts,"my_solver")
-   or at runtime via the option
-$     -ts_type my_solver
-
-   Level: advanced
-
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT},
-   and others of the form ${any_environmental_variable} occuring in pathname will be 
-   replaced with appropriate values.
-
-.keywords: TS, register
-
-.seealso: TSRegisterAll(), TSRegisterDestroy()
-M*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSRegister"
-int TSRegister(const char sname[], const char path[], const char name[], int (*function)(TS))
-{
-  char fullname[256];
-  int  ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&TSList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "TSVecViewMonitor"
 /*@C
