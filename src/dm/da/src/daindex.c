@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daindex.c,v 1.10 1997/02/05 22:04:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.11 1997/02/22 02:29:24 bsmith Exp curfman $";
 #endif
  
 /*
@@ -28,7 +28,7 @@ static char vcid[] = "$Id: daindex.c,v 1.10 1997/02/05 22:04:53 bsmith Exp bsmit
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DAGlobalToLocal(), DALocalToLocal(),DAGetAO()  
+          DAGlobalToLocal(), DALocalToLocal(), DAGetAO(), DAGetGlobalIndicesF90()
 @*/
 int DAGetGlobalIndices(DA da, int *n,int **idx)
 {
@@ -68,3 +68,27 @@ int DAGetAO(DA da, AO *ao)
   *ao = da->ao;
   return 0;
 }
+
+/*MC
+    DAGetGlobalIndicesF90 - Returns a Fortran90 pointer to the list of 
+    global indices (global node number of all local nodes, including
+    ghost nodes).
+
+    Input Parameter:
+.   da - the distributed array
+
+    Output Parameters:
+.   n - the number of local elements, including ghost nodes (or PETSC_NULL)
+.   idx - the Fortran90 pointer to the global indices
+.   ierr - error code
+
+    Synopsis:
+    DAGetGlobalIndicesF90(DA da,integer n,{Scalar, pointer :: idx(:)},integer ierr)
+
+    Notes:
+    Currently only supported using the NAG F90 compiler.
+
+.keywords: distributed array, get, global, indices, local-to-global, f90
+
+.seealso: DAGetGlobalIndices()
+M*/

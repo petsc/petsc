@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.108 1997/04/03 20:04:08 balay Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.109 1997/04/04 19:51:38 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1250,9 +1250,9 @@ int VecDestroyVecs_Default( Vec *v, int m )
     Example of Usage: 
 $    Scalar, pointer :: xx_v(:)
 $    ....
-$    VecGetArrayF90(x,xx_v,ierr)
+$    call VecGetArrayF90(x,xx_v,ierr)
 $    a = xx_v(3)
-$    VecRestoreArrayF90(x,xx_v,ierr)
+$    call VecRestoreArrayF90(x,xx_v,ierr)
 
     Notes:
     Currently only supported using the NAG F90 compiler.
@@ -1279,9 +1279,9 @@ M*/
     Example of Usage: 
 $    Scalar, pointer :: xx_v(:)
 $    ....
-$    VecGetArrayF90(x,xx_v,ierr)
+$    call VecGetArrayF90(x,xx_v,ierr)
 $    a = xx_v(3)
-$    VecRestoreArrayF90(x,xx_v,ierr)
+$    call VecRestoreArrayF90(x,xx_v,ierr)
    
     Notes:
     Currently only supported using the NAG F90 compiler.
