@@ -33,7 +33,7 @@ set day(Fri) Thu
 set day(Sat) Fri
 set today [exec date +%a ]
 
-set files {linux.log t3d.log}
+set files {build_linux.log build_t3d.log}
 foreach file $files {
     if { [file exists $file ] == 0 } {
         set mesg "$file: File does not exist"
