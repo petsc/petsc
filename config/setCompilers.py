@@ -650,7 +650,7 @@ class Configure(config.base.Configure):
       self.framework.argDB['LD_SHARED'] = ''
       language = self.framework.normalizeLanguage(self.language[-1])
       linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
-      yield (self.AR, [self.AR_FLAGS], self.AR_LIB_SUFFIX)
+      yield (self.AR, [], self.AR_LIB_SUFFIX)
       raise RuntimeError('Archiver failed static link check')
     if 'with-shared-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-shared-ld'], [], 'so')
@@ -663,7 +663,7 @@ class Configure(config.base.Configure):
     self.framework.argDB['LD_SHARED'] = ''
     language = self.framework.normalizeLanguage(self.language[-1])
     linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
-    yield (self.AR, [self.AR_FLAGS], self.AR_LIB_SUFFIX)
+    yield (self.AR, [], self.AR_LIB_SUFFIX)
     raise RuntimeError('Archiver failed static link check')
 
   def checkSharedLinker(self):
