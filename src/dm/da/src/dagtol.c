@@ -43,8 +43,8 @@ PetscErrorCode DAGlobalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
-  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,4);
   ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gtol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -171,8 +171,8 @@ PetscErrorCode DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
-  PetscValidHeaderSpecific(l,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,4);
   ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gtol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
