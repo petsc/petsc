@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.3 1996/01/22 03:05:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.4 1996/01/22 19:16:32 bsmith Exp curfman $";
 #endif
 
 /*
@@ -105,7 +105,7 @@ int SYRandomDestroy(SYRandom r)
 }
 
 /*@
-   SYRandomGetValue - Generates a random number.  You must first call
+   SYRandomGetValue - Generates a random number.  Call this after first calling
    SYRandomCreate().
 
    Intput Parameter:
@@ -129,7 +129,7 @@ int SYRandomGetValue(SYRandom r,Scalar *val)
 {
   PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
 #if defined(PETSC_COMPLEX)
-  complex  tmp(drand48(),drand48());
+  complex tmp(drand48(),drand48());
   *val = tmp;
 #else
   *val = drand48();

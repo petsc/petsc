@@ -88,7 +88,7 @@ ex15: ex15.o  chkopts
 
 ex16: ex16.o  chkopts
 	-$(FLINKER) -o ex16 ex16.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-	$(RM) ex12.o
+	$(RM) ex16.o
 
 ex17: ex17.o  chkopts
 	-$(CLINKER) -o ex17 ex17.o  $(PETSC_LIB)

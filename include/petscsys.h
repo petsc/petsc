@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.11 1996/01/22 01:13:28 curfman Exp curfman $ */
+/* $Id: sys.h,v 1.12 1996/01/22 03:05:44 curfman Exp curfman $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -21,7 +21,7 @@ typedef enum { RANDOM_DEFAULT } SYRandomType;
 
 typedef struct _SYRandom*   SYRandom;
 
-extern int  SYRandomCreate(SYRandomType,SYRandom*);
+extern int  SYRandomCreate(MPI_Comm,SYRandomType,SYRandom*);
 extern int  SYRandomGetValue(SYRandom,Scalar*);
 extern int  SYRandomDestroy(SYRandom);
 
