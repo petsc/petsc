@@ -564,9 +564,13 @@ int VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   result[0] = PetscRealPart(sr->gvalues[sr->numopsend++]);
   if (ntype == NORM_2) {
     result[0] = sqrt(result[0]);
+    x->normcurrent = result[0];
+    x->normvalid = PETSC_TRUE;
   } else if (ntype == NORM_1_AND_2) {
     result[1] = PetscRealPart(sr->gvalues[sr->numopsend++]);
     result[1] = sqrt(result[1]);
+    x->normcurrent = result[1];
+    x->normvalid = PETSC_TRUE;
   }
 
   if (sr->numopsend == sr->numopsbegin) {

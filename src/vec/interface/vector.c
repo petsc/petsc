@@ -8,7 +8,7 @@
 /* Logging support */
 int VEC_COOKIE;
 int VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot, VEC_NormBarrier;
-int VEC_Norm, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin;
+int VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin;
 int VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
 int VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
 
@@ -381,13 +381,15 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
-  /*  if (type == NORM_2 && x->normvalid) {
+  if ((type == NORM_2) && (x->normvalid)) {
     *val = x->normcurrent;
-    } else { */
+    PetscFunctionReturn(0);
+  } 
+  else {
     ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
     ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
     ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
-    /*  }*/
+  }
   /*
      The next block is for incremental debugging
   */
@@ -402,6 +404,51 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
     x->normcurrent = *val;
     x->normvalid   = PETSC_TRUE;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecNormalize"
+/*@
+   VecNormalize - Normalizes a vector by 2-norm. 
+
+   Collective on Vec
+
+   Input Parameters:
++  x - the vector
+
+   Output Parameter:
+.  x - the normalized vector
+-  val - the vector norm before normalization
+
+   Level: intermediate
+
+   Concepts: vector^normalizing
+   Concepts: normalizing^vector
+
+@*/
+int VecNormalize (Vec x,PetscReal *val)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidScalarPointer(val);
+  PetscValidType(x);
+  ierr = PetscLogEventBegin(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,val); CHKERRQ(ierr);
+  if (*val == 0.0) {
+    PetscLogInfo(x,"Vector of zero norm can not be normalized; Returning only the zero norm");
+    PetscFunctionReturn(0);
+  }
+  else {
+    PetscScalar tmp;
+    tmp = 1.0/(*val);
+    ierr = VecScale(&tmp,x);CHKERRQ(ierr);
+    x->normcurrent = 1.0;
+    x->normvalid = PETSC_TRUE;
+  }
+  ierr = PetscLogEventEnd(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -568,6 +615,8 @@ int VecScale (const PetscScalar *alpha,Vec x)
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->scale)(alpha,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
+  /*x->normvalid = PETSC_FALSE;*/
+  if (x->normvalid) x->normcurrent = PetscAbs(*alpha)*x->normcurrent;
   PetscFunctionReturn(0);
 }
 
@@ -1252,6 +1301,7 @@ int VecSetValues(Vec x,int ni,const int ix[],const PetscScalar y[],InsertMode io
   ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->setvalues)(x,ni,ix,y,iora);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  x->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1308,6 +1358,7 @@ int VecSetValuesBlocked(Vec x,int ni,const int ix[],const PetscScalar y[],Insert
   ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->setvaluesblocked)(x,ni,ix,y,iora);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  x->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1486,6 +1537,7 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const PetscScalar y[],InsertMo
     ierr = (*x->ops->setvalueslocal)(x,ni,ix,y,iora);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
+  x->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1550,6 +1602,7 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const PetscScalar y[],I
   if (ni > 128) {
     ierr = PetscFree(lix);CHKERRQ(ierr);
   }
+  x->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1666,6 +1719,7 @@ int VecAssemblyEnd(Vec vec)
     ierr = VecView(vec,PETSC_VIEWER_AMS_(vec->comm));CHKERRQ(ierr);
   }
 #endif
+  vec->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -1812,6 +1866,7 @@ int  VecMAXPY(int nv,const PetscScalar *alpha,Vec y,Vec *x)
   ierr = PetscLogEventBegin(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
   ierr = (*y->ops->maxpy)(nv,alpha,y,x);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_MAXPY,*x,y,0,0);CHKERRQ(ierr);
+  y->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 } 
 
@@ -1948,7 +2003,8 @@ int VecRestoreArrays(const Vec x[],int n,PetscScalar **a[])
 
   for(i=0;i<n;++i) {
     ierr = VecRestoreArray(x[i],&q[i]);CHKERRQ(ierr);
-  }
+    x[i]->normvalid = PETSC_FALSE;
+ }
   ierr = PetscFree(q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2007,6 +2063,7 @@ int VecRestoreArray(Vec x,PetscScalar *a[])
   if (x->ops->restorearray) {
     ierr = (*x->ops->restorearray)(x,a);CHKERRQ(ierr);
   }
+  x->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2377,6 +2434,7 @@ int VecPlaceArray(Vec vec,const PetscScalar array[])
   PetscValidType(vec);
   if (vec->ops->placearray) {
     ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
+    vec->normvalid = PETSC_FALSE;
   } else {
     SETERRQ(1,"Cannot place array in this type of vector");
   }
@@ -2408,6 +2466,7 @@ int VecResetArray(Vec vec)
   PetscValidType(vec);
   if (vec->ops->resetarray) {
     ierr = (*vec->ops->resetarray)(vec);CHKERRQ(ierr);
+    vec->normvalid = PETSC_FALSE;
   } else {
     SETERRQ(1,"Cannot reset array in this type of vector");
   }
@@ -2450,7 +2509,8 @@ int VecReplaceArray(Vec vec,const PetscScalar array[])
   PetscValidType(vec);
   if (vec->ops->replacearray) {
     ierr = (*vec->ops->replacearray)(vec,array);CHKERRQ(ierr);
-  } else {
+    vec->normvalid = PETSC_FALSE;
+ } else {
     SETERRQ(1,"Cannot replace array in this type of vector");
   }
   PetscFunctionReturn(0);
@@ -2648,6 +2708,7 @@ int VecLoadIntoVector(PetscViewer viewer,Vec vec)
     SETERRQ(1,"Vector does not support load");
   }
   ierr = (*vec->ops->loadintovector)(viewer,vec);CHKERRQ(ierr);
+  vec->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2680,6 +2741,7 @@ int VecReciprocal(Vec vec)
     SETERRQ(1,"Vector does not support reciprocal operation");
   }
   ierr = (*vec->ops->reciprocal)(vec);CHKERRQ(ierr);
+  vec->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -3019,6 +3081,7 @@ int VecConjugate(Vec x)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
   ierr = (*x->ops->conjugate)(x);CHKERRQ(ierr);
+  x->normvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 #else
   return(0);
