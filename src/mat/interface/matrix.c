@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.156 1996/03/25 18:47:57 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.157 1996/03/26 04:46:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -214,8 +214,12 @@ int MatView(Mat mat,Viewer viewer)
 @*/
 int MatDestroy(Mat mat)
 {
+  int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  return (*mat->destroy)((PetscObject)mat);
+  ierr = (*mat->destroy)((PetscObject)mat); CHKERRQ(ierr);
+  PLogObjectDestroy(mat);
+  PetscHeaderDestroy(mat);
+  return 0;
 }
 /*@
    MatValid - Checks whether a matrix object is valid.
