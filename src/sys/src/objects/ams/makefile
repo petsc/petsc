@@ -12,7 +12,7 @@ OBJSC	  = pams.o aoptions.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
-DIRS	  = java
+DIRS	  = 
 LOCDIR	  = src/sys/src/objects/ams/
 
 include ${PETSC_DIR}/bmake/common/base
