@@ -9,22 +9,23 @@ import os
 class UsingCxx (base.Base):
   def __init__(self, sourceDB, project, usingSIDL, usingC = None):
     base.Base.__init__(self)
-    self.sourceDB  = sourceDB
-    self.project   = project
-    self.usingSIDL = usingSIDL
-    self.usingC    = usingC
-    self.linker    = None
+    self.sourceDB    = sourceDB
+    self.project     = project
+    self.usingSIDL   = usingSIDL
+    self.usingC      = usingC
+    self.linker      = None
+    self.linkerFlags = None
+    self.configBase  = config.base.Configure(self)
+    self.configBase.setLanguage(self.language)
     if self.usingC is None:
       import build.templates.usingC
-      self.usingC = build.templates.usingC.UsingC(self.sourceDB, self.project, self.usingSIDL)
-    self.language  = 'Cxx'
+      self.usingC    = build.templates.usingC.UsingC(self.sourceDB, self.project, self.usingSIDL)
+    self.language    = 'Cxx'
     self.setup()
     # Driver may need many outside includes and libraries
     self.programIncludeDirs = {}
     self.programLibraryTags = {}
     self.programLibraries   = {}
-    self.configBase = config.base.Configure(self)
-    self.configBase.setLanguage(self.language)
     return
 
   def __getstate__(self):

@@ -22,6 +22,11 @@ class Compiler (build.processor.Compiler):
       raise RuntimeError('I only know how to deal with Intel F90 right now. Shoot me.')
     return
 
+  def getOptimizationFlags(self, source = None):
+    if self.argDB['FFLAGS']:
+      return [self.argDB['FFLAGS']]
+    return []
+
   def getWarningFlags(self, source = None):
     '''Return a list of the compiler warning flags. The default is empty.'''
     if self.warningFlags is None:

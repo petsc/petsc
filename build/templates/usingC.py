@@ -4,14 +4,17 @@ import os
 
 class UsingC (base.Base):
   def __init__(self, sourceDB, project, usingSIDL):
+    import config.base
+
     base.Base.__init__(self)
-    self.language  = 'C'
-    self.sourceDB   = sourceDB
-    self.project    = project
-    self.usingSIDL  = usingSIDL
-    self.language   = 'C'
-    self.linker     = None
-    self.configBase = config.base.Configure(self)
+    self.language    = 'C'
+    self.sourceDB    = sourceDB
+    self.project     = project
+    self.usingSIDL   = usingSIDL
+    self.language    = 'C'
+    self.linker      = None
+    self.linkerFlags = None
+    self.configBase  = config.base.Configure(self)
     self.configBase.setLanguage(self.language)
     return
 

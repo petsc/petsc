@@ -77,6 +77,18 @@ class Configure(config.base.Configure):
       if self.getExecutables(preprocessors, resultName = 'CPP'):
         self.framework.argDB['CPP'] = self.CPP
         self.addSubstitution('CPP', self.CPP)
+        self.addSubstitution('CPPFLAGS', self.framework.argDB['CPPFLAGS'])
+    return
+
+  def checkCFlags(self):
+    '''Try to turn on debugging if no flags are given'''
+    if not self.framework.argDB['CFLAGS']:
+      self.pushLanguage('C')
+      flag = '-g'
+      if self.checkCompilerFlag(flag):
+        self.framework.argDB['CFLAGS'] = self.framework.argDB['CFLAGS']+' '+flag
+      self.popLanguage()
+    self.addSubstitution('CFLAGS', self.framework.argDB['CFLAGS'])
     return
 
   def checkCRestrict(self):
@@ -145,6 +157,17 @@ class Configure(config.base.Configure):
         self.addSubstitution('CXXCPP', self.CXXCPP)
     return
 
+  def checkCxxFlags(self):
+    '''Try to turn on debugging if no flags are given'''
+    if not self.framework.argDB['CXXFLAGS']:
+      self.pushLanguage('C++')
+      flag = '-g'
+      if self.checkCompilerFlag(flag):
+        self.framework.argDB['CXXFLAGS'] = self.framework.argDB['CXXFLAGS']+' '+flag
+      self.popLanguage()
+    self.addSubstitution('CXXFLAGS', self.framework.argDB['CXXFLAGS'])
+    return
+
   def checkCxxNamespace(self):
     '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
     if not self.framework.argDB.has_key('CXX'): return
@@ -166,6 +189,18 @@ class Configure(config.base.Configure):
     if self.getExecutables(compilers, resultName = 'FC'):
       self.framework.argDB['FC'] = self.FC
       self.addSubstitution('FC', self.FC)
+      self.addSubstitution('FFLAGS', self.framework.argDB['FFLAGS'])
+    return
+
+  def checkFortranFlags(self):
+    '''Try to turn on debugging if no flags are given'''
+    if not self.framework.argDB['FFLAGS']:
+      self.pushLanguage('F77')
+      flag = '-g'
+      if self.checkCompilerFlag(flag):
+        self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS']+' '+flag
+      self.popLanguage()
+    self.addSubstitution('FFLAGS', self.framework.argDB['FFLAGS'])
     return
 
   def mangleFortranFunction(self, name):
@@ -399,39 +434,45 @@ class Configure(config.base.Configure):
     self.addSubstitution('FLIBS', self.flibs)
     return
 
+  def checkLinkerFlags(self):
+    '''Just substitutes the flags right now'''
+    self.addSubstitution('LDFLAGS', self.framework.argDB['LDFLAGS'])
+    return
+
   def checkSharedLinkerFlag(self):
     '''Determine what flags are necessary for dynamic library creation'''
-    flag                 = '-shared'
-    (output, status) = self.outputLink('', '')
-    if status or output.find('unrecognized option') >= 0:
-      flag                 = '-dylib'
-      (output, status) = self.outputLink('', '')
-      if status or output.find('unrecognized option') >= 0:
+    flag = '-shared'
+    if not self.checkLinkerFlag(flag):
+      flag = '-dylib'
+      if not self.checkLinkerFlag(flag):
         flag = ''
     self.addSubstitution('SHARED_LIBRARY_FLAG', flag)
     return
 
   def checkSharedLinkerPaths(self):
     '''Determine whether the linker accepts the -rpath'''
-    flag                 = '-Wl,-rpath,'
-    (output, status) = self.outputLink('', '')
-    if status or output.find('unknown flag') >= 0:
+    flag = '-Wl,-rpath,'
+    if not self.checkLinkerFlag(flag):
       flag = ''
     self.addSubstitution('RPATH', flag)
     return
 
   def configure(self):
     self.executeTest(self.checkCCompiler)
+    self.executeTest(self.checkCFlags)
     self.executeTest(self.checkCRestrict)
     self.executeTest(self.checkCFormatting)
     self.executeTest(self.checkCxxCompiler)
+    self.executeTest(self.checkCxxFlags)
     self.executeTest(self.checkCxxNamespace)
     self.executeTest(self.checkFortranCompiler)
     if 'FC' in self.framework.argDB:
+      self.executeTest(self.checkFortranFlags)
       self.executeTest(self.checkFortranNameMangling)
     self.executeTest(self.checkFortranLibraries)
     self.executeTest(self.checkFortran90Compiler)
     self.executeTest(self.checkFortran90Interface)
+    self.executeTest(self.checkLinkerFlags)
     self.executeTest(self.checkSharedLinkerFlag)
     self.executeTest(self.checkSharedLinkerPaths)
     return

@@ -154,16 +154,19 @@ class Configure:
       self.compilerName   = 'CC'
       self.compilerSource = 'conftest.c'
       self.compilerObj    = 'conftest.o'
+      self.compilerFlags  = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']
     elif language in ['C++', 'Cxx']:
       self.checkCxxCompilerSetup()
       self.compilerName   = 'CXX'
       self.compilerSource = 'conftest.cc'
       self.compilerObj    = 'conftest.o'
+      self.compilerFlags  = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
     elif language == 'F77':
       self.checkF77CompilerSetup()
       self.compilerName   = 'FC'
       self.compilerSource = 'conftest.f'
       self.compilerObj    = 'conftest.o'
+      self.compilerFlags  = self.framework.argDB['FFLAGS']
     else:
       raise RuntimeError('Unknown language: '+language)
     self.compiler = self.framework.argDB[self.compilerName]
@@ -238,14 +241,11 @@ class Configure:
     language = self.language[-1]
     self.getCompiler()
     if language == 'C':
-      self.compilerFlags   = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']
-      self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+      self.compilerCmd = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
     elif language in ['C++', 'Cxx']:
-      self.compilerFlags   = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
-      self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+      self.compilerCmd = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
     elif language == 'F77':
-      self.compilerFlags  = self.framework.argDB['FFLAGS']
-      self.compilerCmd    = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+      self.compilerCmd = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
     else:
       raise RuntimeError('Unknown language: '+language)
     return self.compilerCmd
@@ -397,6 +397,15 @@ class Configure:
     output = self.filterCompileOutput(output)
     return not (returnCode or len(output))
 
+  def checkCompilerFlag(self, flag):
+    '''Determine whether the compiler accepts the given flag'''
+    self.getCompiler()
+    self.compilerFlags += ' '+flag
+    (output, status) = self.outputCompile('', '')
+    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0:
+      return 0
+    return 1
+
   def filterLinkOutput(self, output):
     return self.framework.filterLinkOutput(output)
 
@@ -440,6 +449,15 @@ class Configure:
     (output, returnCode) = self.outputLink(includes, body, cleanup)
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
+
+  def checkLinkerFlag(self, flag):
+    '''Determine whether the linker accepts the given flag'''
+    self.getLinker()
+    self.linkerFlags += ' '+flag
+    (output, status) = self.outputLink('', '')
+    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0:
+      return 0
+    return 1
 
   def outputRun(self, includes, body, cleanup = 1):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)

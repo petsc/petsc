@@ -31,6 +31,11 @@ class Compiler (build.processor.Compiler):
         raise RuntimeError('The g++ you specified ('+compiler+') is version '+version+'; please install a g++ of at least version 3 or fix your path. Get gcc/g++ at http://gcc.gnu.com')
     return
 
+  def getOptimizationFlags(self, source = None):
+    if self.argDB['CXXFLAGS']:
+      return [self.argDB['CXXFLAGS']]
+    return []
+
   def getWarningFlags(self, source = None):
     '''Return a list of the compiler warning flags. The default is most of the GCC warnings.'''
     if self.warningFlags is None:

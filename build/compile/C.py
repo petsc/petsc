@@ -19,6 +19,11 @@ class Compiler (build.processor.Compiler):
       self.processor = self.argDB['CC']
     return
 
+  def getOptimizationFlags(self, source = None):
+    if self.argDB['CFLAGS']:
+      return [self.argDB['CFLAGS']]
+    return []
+
   def getWarningFlags(self, source = None):
     '''Return a list of the compiler warning flags. The default is most of the GCC warnings.'''
     if self.warningFlags is None:

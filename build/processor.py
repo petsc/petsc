@@ -186,8 +186,8 @@ class Compiler(Processor):
     return []
 
   def getOptimizationFlags(self, source = None):
-    '''Return a list of the compiler optimization flags. The default is -g.'''
-    return ['-g']
+    '''Return a list of the compiler optimization flags. The default is empty.'''
+    return []
 
   def getWarningFlags(self, source = None):
     '''Return a list of the compiler warning flags. The default is empty.'''
@@ -449,8 +449,8 @@ class SharedLinker(Linker):
       self.debugPrint('Did not check shared library '+source, 3, 'link')
 
   def getOptimizationFlags(self, source):
-    '''Return a list of the linker optimization flags. The default is -g.'''
-    return ['-g']
+    '''Return a list of the linker optimization flags. The default is empty.'''
+    return []
 
   def getLinkerFlags(self, source):
     '''Return a list of the linker specific flags. The default is the flags for shared linking plus the base class flags.'''
