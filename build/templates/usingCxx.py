@@ -39,7 +39,7 @@ class UsingCxx (base.Base):
 
   def __setstate__(self, d):
     '''Recreate the include directories and extra libraries'''
-    self.__dict__.update(d)
+    base.Base.__setstate__(self, d)
     self.setup()
     return
 
