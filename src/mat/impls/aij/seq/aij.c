@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.335 1999/11/24 21:53:47 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.336 2000/01/08 01:21:16 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -750,6 +750,8 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
   else if (op == MAT_NEW_NONZERO_ALLOCATION_ERR)   a->nonew             = -2;
   else if (op == MAT_YES_NEW_NONZERO_LOCATIONS)    a->nonew             = 0;
   else if (op == MAT_IGNORE_ZERO_ENTRIES)          a->ignorezeroentries = PETSC_TRUE;
+  else if (op == MAT_USE_INODES)                   a->inode.use         = PETSC_TRUE;
+  else if (op == MAT_DO_NOT_USE_INODES)            a->inode.use         = PETSC_FALSE;
   else if (op == MAT_ROWS_SORTED || 
            op == MAT_ROWS_UNSORTED ||
            op == MAT_SYMMETRIC ||
@@ -2289,6 +2291,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
   b->diag              = 0;
   b->solve_work        = 0;
   b->spptr             = 0;
+  b->inode.use         = PETSC_TRUE;
   b->inode.node_count  = 0;
   b->inode.size        = 0;
   b->inode.limit       = 5;
@@ -2397,7 +2400,8 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     for (i=0; i<m; i++) {
       c->diag[i] = a->diag[i];
     }
-  } else c->diag          = 0;
+  } else c->diag        = 0;
+  c->inode.use          = a->inode.use;
   c->inode.limit        = a->inode.limit;
   c->inode.max_limit    = a->inode.max_limit;
   if (a->inode.size){
@@ -2572,7 +2576,19 @@ int MatCreateSeqAIJWithArrays(MPI_Comm comm,int m,int n,int* i,int*j,Scalar *a,M
   }
 #endif    
 
-  ierr = MatAssemblyEnd_SeqAIJ(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  /* changes indices to start at 0 */
+  if (i[0]) {
+    aij->indexshift = 0;
+    for (ii=0; ii<m; ii++) {
+      i[ii]--;
+    }
+    for (ii=0; ii<i[m]; ii++) {
+      j[ii]--;
+    }
+  }
+
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

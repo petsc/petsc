@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.195 2000/01/05 04:42:50 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.196 2000/01/19 22:00:37 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -504,14 +504,14 @@ static int MatView_SeqBAIJ_Draw_Zoom(Draw draw,void *Aa)
 {
   Mat          A = (Mat) Aa;
   Mat_SeqBAIJ  *a=(Mat_SeqBAIJ*)A->data;
-  int          row,ierr,i,j,k,l,mbs=a->mbs,color,bs=a->bs,bs2=a->bs2,rank;
+  int          row,ierr,i,j,k,l,mbs=a->mbs,color,bs=a->bs,bs2=a->bs2;
   PetscReal    xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   MatScalar    *aa;
-  MPI_Comm     comm;
   Viewer       viewer;
 
   PetscFunctionBegin; 
 
+  /* still need to add support for contour plot of nonzeros; see MatView_SeqAIJ_Draw_Zoom()*/
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr); 
 
   ierr = DrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
