@@ -1072,21 +1072,22 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
   if (levels > 0){
     ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
     b    = (Mat_SeqSBAIJ*)(*fact)->data;
-  } else { /* in-place icc(0) */
+  } else { /* in-place icc(0): initializations below are copied from MatICCFactorSymbolic_SeqSBAIJ() */
     (*fact)         = a->sbaijMat;
     (*fact)->factor = FACTOR_CHOLESKY;  
     b               = (Mat_SeqSBAIJ*)(*fact)->data;    
     b->row          = perm;
     b->icol         = perm; 
-    b->factor_damping = info->damping;
+    b->factor_damping   = info->damping;
+    b->factor_zeropivot = info->zeropivot;
+    ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+    ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr            = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-    ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-    ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+    (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering;
   }
   b->factor_levels = levels;  
 
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
-  (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering;
  
   PetscFunctionReturn(0); 
 }
