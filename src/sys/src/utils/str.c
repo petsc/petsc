@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.43 2000/04/12 04:21:38 bsmith Exp balay $*/
+/*$Id: str.c,v 1.44 2000/05/05 22:14:11 balay Exp balay $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -260,7 +260,7 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
   int        ierr,i = 0,l,l1,l2,l3;
   char       *work,*par,*epar,env[256];
   char       *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LDIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}",0};
-  char       *r[] = {PETSC_ARCH_NAME,PETSC_BOPT,PETSC_DIR,PETSC_LDIR,0,0,0,0};
+  char       *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LDIR,0,0,0,0};
   PetscTruth flag;
 
   PetscFunctionBegin;
