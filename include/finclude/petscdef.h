@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.27 2001/06/21 21:20:08 bsmith Exp balay $;
+!  $Id: petscdef.h,v 1.28 2001/08/07 03:05:33 balay Exp balay $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -48,9 +48,11 @@
 #endif
 
 #if defined (PETSC_MISSING_FORTRANSTAR)
+#define PetscFortranFloat real
 #define PetscFortranDouble double precision
 #define PetscFortranComplex complex (KIND=SELECTED_REAL_KIND(14))
 #else
+#define PetscFortranFloat real*4
 #define PetscFortranDouble real*8
 #define PetscFortranComplex complex*16
 #endif
@@ -58,8 +60,12 @@
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
+#if defined(PETSC_USE_SINGLE)
+#define PETSC_SCALAR PETSC_FLOAT
+#else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif     
+#endif
 !
 !     Macro for templating between real and complex
 !
@@ -77,11 +83,22 @@
 #endif
 #define MPIU_SCALAR MPI_DOUBLE_COMPLEX
 #else
+#if defined (PETSC_USE_SINGLE)
+#define PetscScalar PetscFortranFloat
+#else
 #define PetscScalar PetscFortranDouble
+#endif
 #define PetscRealPart(a) a
 #define PetscConj(a) a
 #define MPIU_SCALAR MPI_DOUBLE_PRECISION
 #endif
+
+#if defined (PETSC_USE_SINGLE)
+#define PetscReal PetscFortranFloat
+#else
+#define PetscReal PetscFortranDouble
+#endif
+
 !
 !    Allows the matrix Fortran Kernels to work with single precision
 !    matrix data structures

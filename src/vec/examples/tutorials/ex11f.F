@@ -1,5 +1,5 @@
 !
-! "$Id: ex11f.F,v 1.9 2001/01/15 21:45:20 bsmith Exp balay $";
+! "$Id: ex11f.F,v 1.10 2001/08/07 03:02:34 balay Exp balay $";
 !
 !
 ! Program usage:  mpirun ex1 [-help] [all PETSc options] 
@@ -27,8 +27,8 @@
 #include "include/finclude/petscvec.h"
 !
 
-      Vec      x
-      double precision  norm
+      Vec               x
+      PetscReal         norm
       integer           n,ierr,flg,rank
       PetscScalar       one
 
