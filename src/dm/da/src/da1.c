@@ -1,8 +1,10 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.14 1995/08/30 01:27:41 curfman Exp $";
+#endif
 
 /* 
-   This file was created by Peter Mell   6/30/95    
-
    Code for manipulating distributed regular 1d arrays in parallel.
+   This file was created by Peter Mell   6/30/95    
 */
 
 #include "daimpl.h"     /*I  "da.h"   I*/

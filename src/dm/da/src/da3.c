@@ -1,7 +1,11 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.14 1995/08/30 01:27:41 curfman Exp $";
+#endif
 
-/* File created by Peter Mell  7/14/95 */
-
-/*  Code for manipulating distributed regular 3d arrays in parallel  */
+/*
+   Code for manipulating distributed regular 3d arrays in parallel.
+   File created by Peter Mell  7/14/95
+ */
 
 #include "daimpl.h"     /*I   "da.h"    I*/
 #include "pinclude/pviewer.h"
@@ -300,8 +304,8 @@ $      DA_XYZPERIODIC, DA_XZPERIODIC,
 $      DA_YZPERIODIC
 .  stencil_type - Type of stencil (DA_STENCIL_STAR or DA_STENCIL_BOX)
 .  M,N,P - global dimension in each direction of the array
-.  m,n - corresponding number of processors in each dimension 
-         (or PETSC_DECIDE to have calculated)
+.  m,n,p - corresponding number of processors in each dimension 
+           (or PETSC_DECIDE to have calculated)
 .  w - number of degress of freedom per node
 .  s - stencil width
 

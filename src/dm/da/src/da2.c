@@ -1,11 +1,12 @@
- 
-/* Peter Mell changed this file on 7/10/95 */
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.14 1995/08/30 01:27:41 curfman Exp $";
+#endif
  
 /*
-
-    Code for manipulating distributed regular arrays in parallel.
-
+  Code for manipulating distributed regular arrays in parallel.
+  Peter Mell changed this file on 7/10/95.
 */
+
 #include "daimpl.h"    /*I   "da.h"   I*/
 #include "pinclude/pviewer.h"
 #include "draw.h"
@@ -695,6 +696,15 @@ $       data to the first processor to print.
 $    ViewerFileOpen() - output to a specified file
 $    DrawOpenX() - output nonzero matrix structure to 
 $         an X window display
+
+   Default output format:
+$ (for 3d arrays):
+$   Processor [proc] M  N  P  m  n  p  w  s
+$   where
+$      M,N,P - global dimension in each direction of the array
+$      m,n,p - corresponding number of procs in each dimension 
+$      w - number of degress of freedom per node
+$      s - stencil width
 
 .keywords: distributed array, view, visualize
 
