@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.40 1998/05/07 22:12:23 balay Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.41 1998/05/07 22:13:44 balay Exp bsmith $";
 #endif
 
 /* 
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: sysio.c,v 1.40 1998/05/07 22:12:23 balay Exp balay $"
 #endif
 #include "src/inline/bitarray.h"
 
-#if defined(HAVE_SWAPPED_BYTES)
+#if !defined(WORDS_BIGENDIAN)
 #undef __FUNC__  
 #define __FUNC__ "PetscByteSwapInt"
 /*
@@ -146,7 +146,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 {
   int  maxblock, wsize, err, m = n;
   char *pp = (char *) p;
-#if defined(HAVE_SWAPPED_BYTES) || defined(HAVE_64BIT_INT)
+#if !defined(WORDS_BIGENDIAN) || (SIZEOF_INT == 8)
   void *ptmp = p; 
 #endif
 
@@ -154,7 +154,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   if (!n) PetscFunctionReturn(0);
 
   maxblock = 65536;
-#if defined(HAVE_64BIT_INT)
+#if (SIZEOF_INT == 8)
   if (type == PETSC_INT){
     /* 
        integers on the Cray T#d are 64 bits so we read the 
@@ -184,14 +184,14 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     m  -= err;
     pp += err;
   }
-#if defined(HAVE_SWAPPED_BYTES)
+#if !defined(WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
   else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
   else if (type == PETSC_DOUBLE) PetscByteSwapDouble((double*)ptmp,n);
   else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
 #endif
 
-#if defined(HAVE_64BIT_INT)
+#if (SIZEOF_INT == 8)
   if (type == PETSC_INT){
     /* 
        integers on the Cray T#d are 64 bits so we read the 
@@ -247,7 +247,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 {
   int  err, maxblock, wsize,m = n;
   char *pp = (char *) p;
-#if defined(HAVE_SWAPPED_BYTES) || defined(HAVE_64BIT_INT)
+#if !defined(WORDS_BIGENDIAN) || (SIZEOF_INT == 8)
   void *ptmp = p; 
 #endif
 
@@ -256,14 +256,14 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
   maxblock = 65536;
 
-#if defined(HAVE_SWAPPED_BYTES)
+#if !defined(WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
   else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
   else if (type == PETSC_DOUBLE) PetscByteSwapDouble((double*)ptmp,n);
   else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
 #endif
 
-#if defined(HAVE_64BIT_INT)
+#if (SIZEOF_INT == 8)
   if (type == PETSC_INT){
     /* 
       integers on the Cray T3d/e are 64 bits so we copy the big
@@ -299,7 +299,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
     pp += wsize;
   }
 
-#if defined(HAVE_SWAPPED_BYTES)
+#if !defined(WORDS_BIGENDIAN)
   if (!istemp) {
     if      (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
     else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
@@ -307,7 +307,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   }
 #endif
 
-#if defined(HAVE_64BIT_INT)
+#if (SIZEOF_INT == 8)
   if (type == PETSC_INT){
     PetscFree(ptmp);
   }

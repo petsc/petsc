@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: receive.c,v 1.7 1997/07/09 21:39:52 balay Exp bsmith $";
+static char vcid[] = "$Id: receive.c,v 1.8 1998/04/03 21:00:37 bsmith Exp bsmith $";
 #endif
 /*
  
@@ -61,7 +61,7 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 #include <unistd.h>
 #endif
 
-#if defined(HAVE_SWAPPED_BYTES)
+#if !defined(WORDS_BIGENDIAN)
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
@@ -141,7 +141,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 
   int  maxblock, wsize, err;
   char *pp = (char *) p;
-#if defined(HAVE_SWAPPED_BYTES)
+#if !defined(WORDS_BIGENDIAN)
   int  ntmp = n; 
   void *ptmp = p; 
 #endif
@@ -161,7 +161,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     n  -= err;
     pp += err;
   }
-#if defined(HAVE_SWAPPED_BYTES)
+#if !defined(WORDS_BIGENDIAN)
   if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
   else if (type == PETSC_SCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp);
   else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);

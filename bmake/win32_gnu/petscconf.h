@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.13 1998/05/05 19:58:55 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.14 1998/05/18 18:58:51 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -16,7 +16,6 @@
 #define HAVE_GETDOMAINNAME  
 #define HAVE_UNISTD_H
 #define HAVE_SYS_TIME_H 
-#define HAVE_SWAPPED_BYTES
 #define HAVE_UNAME
 #define HAVE_MALLOC_H
 #define HAVE_STDLIB_H
@@ -35,5 +34,7 @@
 #define HAVE_SYS_RESOURCE_H
 
 #define HAVE_GET_USER_NAME
+#define SIZEOF_VOIDP 4
+#define SIZEOF_INT 4
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.12 1998/04/26 20:05:32 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.13 1998/05/05 19:54:49 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -27,9 +27,14 @@
 #define HAVE_DOUBLE_ALIGN
 #define HAVE_DOUBLE_ALIGN_MALLOC
 
+#define SIZEOF_VOIDP 4
+#define SIZEOF_INT 4
+
 #define HAVE_MEMALIGN
 
 #define USE_DBX_DEBUGGER
 #define HAVE_SYS_RESOURCE_H
+
+#define WORDS_BIGENDIAN 1
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.110 1998/05/05 14:01:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.111 1998/05/08 16:12:48 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -29,7 +29,7 @@ int  PetscTrFreeDefault( void *, int, char *,char *,char *);
   of malloced memory. This will only work on flat memory models and 
   even then is suspicious.
 */
-#if defined(HAVE_64BITS)
+#if (SIZEOF_VOIDP == 8)
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEEEEEEEEEE;
 #else
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
@@ -42,7 +42,7 @@ int PetscSetUseTrMalloc_Private(void)
   int ierr;
 
   PetscFunctionBegin;
-#if defined(HAVE_64BITS)
+#if (SIZEOF_VOIDP == 8)
   PetscLow     = (void *) 0xEEEEEEEEEEEEEEEE;
 #else
   PetscLow     = (void *) 0xEEEEEEEE;
@@ -70,7 +70,7 @@ int PetscSetUseTrMalloc_Private(void)
 
 #define HEADER_DOUBLES      8
 
-#if defined(HAVE_64BITS)
+#if (SIZEOF_VOIDP == 8)
 #define TR_ALIGN_BYTES      8
 #define TR_ALIGN_MASK       0x7
 #else

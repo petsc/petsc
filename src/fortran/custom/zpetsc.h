@@ -73,7 +73,7 @@ Fortran.
      PetscFromPointerComm - From C to Fortran
 
 */
-#if defined(HAVE_64BITS) && !defined(USES_INT_MPI_COMM)
+#if (SIZEOF_VOIDP == 8) && !defined(USES_INT_MPI_COMM)
 /*
     Here we assume that only MPICH uses pointers for 
   MPI_Comms on 64 bit machines.
