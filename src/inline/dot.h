@@ -1,27 +1,51 @@
-/* $Id: dot.h,v 1.6 1997/09/18 16:06:38 balay Exp bsmith $ */
+/* $Id: dot.h,v 1.7 1997/10/19 03:21:57 bsmith Exp balay $ */
 
 #ifndef DOT
 
-#if defined(USE_FORTRAN_KERNELS)
-
+#if defined(USE_FORTRAN_KERNEL_MDOT)
 #if defined(HAVE_FORTRAN_CAPS)
 #define fortranmdot4_      FORTRANMDOT4
 #define fortranmdot3_      FORTRANMDOT3
 #define fortranmdot2_      FORTRANMDOT2
 #define fortranmdot1_      FORTRANMDOT1
-#define fortrannormsqr_    FORTRANNORMSQR
-#define fortranmultaij_    FORTRANMULTAIJ
-#define fortranmultaddaij_ FORTRANMULTADDAIJ
-#define fortransolveaij_   FORTRANSOLVEAIJ
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define fortranmdot4_      fortranmdot4
 #define fortranmdot3_      fortranmdot3
 #define fortranmdot2_      fortranmdot2
 #define fortranmdot1_      fortranmdot1
+#endif
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_NORMSQR)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortrannormsqr_    FORTRANNORMSQR
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define fortrannormsqr_    fortrannormsqr
+#endif
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_MULTAIJ)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortranmultaij_    FORTRANMULTAIJ
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaij_    fortranmultaij
+#endif
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_MULTADDAIJ)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortranmultaddaij_ FORTRANMULTADDAIJ
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaddaij_ fortranmultaddaij
+#endif
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_SOLVEAIJ)
+#if defined(HAVE_FORTRAN_CAPS)
+#define fortransolveaij_   FORTRANSOLVEAIJ
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define fortransolveaij_   fortransolveaij
+#endif
 #endif
 
 #if defined(__cplusplus)
