@@ -165,7 +165,9 @@ class Configure(config.base.Configure):
           self.checkCompiler('C')
           if self.framework.argDB['with-64-bit-pointers']:
             if Configure.isGNU(self.CC):
-              raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
+              self.pushLanguage('C')
+              self.addCompilerFlag('-m64')
+              self.popLanguage()
             else:
               if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
                 self.pushLanguage('C')
@@ -300,7 +302,9 @@ class Configure(config.base.Configure):
             self.checkCompiler('Cxx')
             if self.framework.argDB['with-64-bit-pointers']:
               if Configure.isGNU(self.CC):
-                raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
+                self.pushLanguage('C++')
+                self.addCompilerFlag('-m64')
+                self.popLanguage()
               else:
                 if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
                   self.pushLanguage('C++')
@@ -431,7 +435,9 @@ class Configure(config.base.Configure):
           self.checkCompiler('FC')
           if self.framework.argDB['with-64-bit-pointers']:
             if Configure.isGNU(self.CC):
-              raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
+              self.pushLanguage('FC')
+              self.addCompilerFlag('-m64')
+              self.popLanguage()
             else:
               if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
                 self.pushLanguage('FC')
