@@ -242,7 +242,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
 {
   FILE     *fp;
-  int      ierr, i, j, k, ijkx, ijkcx, iter, ni, nj, nk, ni1, nj1, nk1;
+  int      ierr, i, j, k, ijkx, ijkcx, ijkxi, iter, ni, nj, nk, ni1, nj1, nk1;
   char     filename[64];
 
   /* Since we call MonitorDumpGeneral() from the routine ComputeFunction(), packing and
@@ -254,20 +254,36 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   */
 
   if (app->size != 1) SETERRQ(1,1,"Currently supports uniprocessor use only!")
-  ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-  sprintf(filename,"euler.%d.out",iter);
+    /* ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+  sprintf(filename,"euler.%d.out",iter); */
+  sprintf(filename,"euler.out"); 
   fp = fopen(filename,"w"); 
   fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p\n");
   ni  = app->ni;  nj  = app->nj;  nk = app->nk;
   ni1 = app->ni1; nj1 = app->nj1; nk1 = app->nk1;
-  for (k=0; k<nk; k++) {
-    for (j=0; j<nj; j++) {
-      for (i=0; i<ni; i++) {
-        ijkx  = k*nj1*ni1 + j*ni1 + i;
-        ijkcx = k*nj*ni + j*ni + i;
-        fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
-          app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],app->ru[ijkx],app->rv[ijkx],
-          app->rw[ijkx],app->r[ijkx],app->e[ijkx],app->p[ijkx]);
+  if (app->reorder) {
+    for (k=0; k<nk; k++) {
+      for (j=0; j<nj; j++) {
+        for (i=0; i<ni; i++) {
+          ijkx  = k*nj1*ni1 + j*ni1 + i;
+          ijkcx = k*nj*ni + j*ni + i;
+          fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
+            app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],app->ru[ijkx],app->rv[ijkx],
+            app->rw[ijkx],app->r[ijkx],app->e[ijkx],app->p[ijkx]);
+        }
+      }
+    }
+  } else {
+    for (k=0; k<nk; k++) {
+      for (j=0; j<nj; j++) {
+        for (i=0; i<ni; i++) {
+          ijkx  = k*nj1*ni1 + j*ni1 + i;
+          ijkxi = ijkx * 5;
+          ijkcx = k*nj*ni + j*ni + i;
+          fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
+            app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],app->xx[ijkxi+1],app->xx[ijkxi+2],
+            app->xx[ijkxi+3],app->xx[ijkxi],app->xx[ijkxi+4],app->p[ijkx]);
+        }
       }
     }
   }
