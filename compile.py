@@ -185,11 +185,27 @@ class Compile (action.Action):
         os.remove(object)
     return set
 
+  def rebuild(self, source):
+    if self.rebuildAll: return 1
+    library = self.getLibraryName(source)
+    if library:
+      if not os.path.exists(library):
+        if self.sourceDB.has_key(library): del self.sourceDB[library]
+        (dir, file) = os.path.split(library)
+        if not os.path.exists(dir):
+          os.makedirs(dir)
+        return 1
+      elif not self.sourceDB.has_key(library):
+        return 1
+    return 0
+
   def setExecute(self, set):
     if set.tag == self.tag:
       transform.Transform.setExecute(self, set)
     elif set.tag == 'old '+self.tag:
-      if self.rebuildAll: transform.Transform.setExecute(self, set)
+      redo = fileset.FileSet()
+      redo.extend(filter(self.rebuild, set))
+      if len(redo) > 0: transform.Transform.setExecute(self, redo)
     else:
       if isinstance(self.products, fileset.FileSet):
         self.products = [self.products]
@@ -199,7 +215,9 @@ class Compile (action.Action):
     if set.tag == self.tag:
       self.func(set)
     elif set.tag == 'old '+self.tag:
-      if self.rebuildAll: self.func(set)
+      redo = fileset.FileSet()
+      redo.extend(filter(self.rebuild, set))
+      if len(redo) > 0: self.func(redo)
     else:
       if isinstance(self.products, fileset.FileSet):
         self.products = [self.products]
@@ -235,8 +253,8 @@ class CompileC (Compile):
       print('\''+command+'\': '+output)
 
 class CompilePythonC (CompileC):
-  def __init__(self, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
-    CompileC.__init__(self, None, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
+  def __init__(self, sourceDB, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
+    CompileC.__init__(self, sourceDB, None, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
     self.products = []
 
   def getLibraryName(self, source = None):

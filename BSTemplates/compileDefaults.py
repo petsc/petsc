@@ -253,7 +253,7 @@ class UsingPython(UsingCompiler):
     return compile.TagC(self.usingSIDL.sourceDB, root = rootDir)
 
   def getCompiler(self, library):
-    return compile.CompilePythonC()
+    return compile.CompilePythonC(self.usingSIDL.sourceDB)
 
   def getClientLibrary(self, project, lang, isArchive = 1, root = None):
     '''Need to return empty fileset for Python client library'''
