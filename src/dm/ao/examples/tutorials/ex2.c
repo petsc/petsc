@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.9 1998/04/30 13:08:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.10 1998/05/13 14:21:45 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -126,11 +126,11 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  PLogEventRegister(&READ_EVENT,             "Read Data       ","red");
+  PLogEventRegister(&READ_EVENT,             "Read Data","red");
   PLogEventRegister(&PARTITION_ELEMENT_EVENT,"Partition elemen","blue");
-  PLogEventRegister(&MOVE_ELEMENT_EVENT,     "Move elements   ","green");
+  PLogEventRegister(&MOVE_ELEMENT_EVENT,     "Move elements","green");
   PLogEventRegister(&PARTITION_VERTEX_EVENT, "Partition vertic","orange");
-  PLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices   ","yellow");
+  PLogEventRegister(&MOVE_VERTEX_EVENT,      "Move vertices","yellow");
 
   PLogEventBegin(READ_EVENT,0,0,0,0);
   ierr = DataRead(&gdata); CHKERRA(ierr);

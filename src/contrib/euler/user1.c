@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.76 1998/05/16 17:46:37 curfman Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.77 1998/05/31 14:55:25 curfman Exp balay $";
 #endif
 
 /***************************************************************************
@@ -173,8 +173,8 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-log_summary",&logging); CHKERRA(ierr);
   if (logging) total_stages = 2;
   ierr = PLogEventRegister(&init1,"DA, Scatter Init","Red:"); CHKERRA(ierr);
-  ierr = PLogEventRegister(&init2,"Mesh Setup      ","Red:"); CHKERRA(ierr);
-  ierr = PLogEventRegister(&init3,"Julianne Init   ","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&init2,"Mesh Setup","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&init3,"Julianne Init","Red:"); CHKERRA(ierr);
 
   for ( stage=0; stage<total_stages; stage++ ) {
   
@@ -196,10 +196,10 @@ int main(int argc,char **argv)
   ierr = UserCreateEuler(comm,solve_with_julianne,log_stage_0,&app); CHKERRA(ierr);
   PLogEventEnd(init1,0,0,0,0);
 
-  ierr = PLogEventRegister(&(app->event_pack),"PackWork        ","Red:"); CHKERRA(ierr);
-  ierr = PLogEventRegister(&(app->event_unpack),"UnpackWork      ","Red:"); CHKERRA(ierr);
-  ierr = PLogEventRegister(&(app->event_localf),"Local fct eval  ","Red:"); CHKERRA(ierr);
-  ierr = PLogEventRegister(&app->event_monitor,"Monitoring      ","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&(app->event_pack),"PackWork","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&(app->event_unpack),"UnpackWork","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&(app->event_localf),"Local fct eval","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&app->event_monitor,"Monitoring","Red:"); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Read the mesh

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.23 1997/07/09 21:01:53 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.24 1997/10/19 03:31:04 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
       - The user can also optionally log floating point operations
         with the routine PLogFlops().
   */
-  ierr = PLogEventRegister(&USER_EVENT,"User event      ","Red:"); CHKERRA(ierr);
+  ierr = PLogEventRegister(&USER_EVENT,"User event","Red:"); CHKERRA(ierr);
   PLogEventBegin(USER_EVENT,0,0,0,0);
     icount = 0;
     for (i=0; i<imax; i++) icount++;

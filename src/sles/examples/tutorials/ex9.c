@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.28 1997/10/27 13:53:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.29 1997/11/28 16:20:38 bsmith Exp balay $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -67,7 +67,7 @@ int main(int argc,char **args)
      Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
-  ierr = PLogEventRegister(&CHECK_ERROR,"Check Error     ","Red:");CHKERRA(ierr);
+  ierr = PLogEventRegister(&CHECK_ERROR,"Check Error","Red:");CHKERRA(ierr);
 
   /* - - - - - - - - - - - - Stage 0: - - - - - - - - - - - - - -
                         Preliminary Setup

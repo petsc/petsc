@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.8 1998/04/15 18:02:25 balay Exp balay $";
+!    "$Id: ex3f.F,v 1.9 1998/04/21 18:34:23 balay Exp balay $";
 !
 !   Description: Demonstrates how users can augment the PETSc profiling by
 !                nserting their own event logging.
@@ -50,15 +50,15 @@
 !      - The user can also optionally log floating point operations
 !        with the routine PLogFlops().
 !
-      call PLogEventRegister(USER_EVENT1,'User event 1   ','Red:',ierr)
-      call PLogEventRegister(USER_EVENT2,'User event 2   ','Red:',ierr)
-      call PLogEventRegister(USER_EVENT3,'User event 3   ','Red:',ierr)
-      call PLogEventRegister(USER_EVENT4,'User event 4   ','Red:',ierr)
-      call PLogEventRegister(USER_EVENT5,'User event 5   ','Red:',ierr)
-      call PLogEventRegister(USER_EVENT6,'User event 6   ','Red:',ierr)
-      call PLogEventRegister(USER_EVENT7,'User event 7   ','Red:',ierr)
-      call PLogEventRegister(USER_EVENT8,'User event 8   ','Red:',ierr)
-      call PLogEventRegister(USER_EVENT9,'User event 9   ','Red:',ierr)
+      call PLogEventRegister(USER_EVENT1,'User event 1','Red:',ierr)
+      call PLogEventRegister(USER_EVENT2,'User event 2','Red:',ierr)
+      call PLogEventRegister(USER_EVENT3,'User event 3','Red:',ierr)
+      call PLogEventRegister(USER_EVENT4,'User event 4','Red:',ierr)
+      call PLogEventRegister(USER_EVENT5,'User event 5','Red:',ierr)
+      call PLogEventRegister(USER_EVENT6,'User event 6','Red:',ierr)
+      call PLogEventRegister(USER_EVENT7,'User event 7','Red:',ierr)
+      call PLogEventRegister(USER_EVENT8,'User event 8','Red:',ierr)
+      call PLogEventRegister(USER_EVENT9,'User event 9','Red:',ierr)
       call PLogEventBegin(USER_EVENT1,PETSC_NULL_OBJECT,                &
      &     PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,PETSC_NULL_OBJECT)
       call PLogFlops(imax)

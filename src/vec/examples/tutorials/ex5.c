@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.29 1997/11/28 16:18:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.30 1998/03/16 18:53:58 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -26,7 +26,7 @@ int main(int argc,char **args)
 
   /* PART 1:  Generate vector, then write it in binary format */
 
-  ierr = PLogEventRegister(&VECTOR_GENERATE,"Generate Vector ","Red:");CHKERRA(ierr);
+  ierr = PLogEventRegister(&VECTOR_GENERATE,"Generate Vector","Red:");CHKERRA(ierr);
   PLogEventBegin(VECTOR_GENERATE,0,0,0,0);
   /* Generate vector */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&u); CHKERRA(ierr);
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   PetscSleep(10);
 
   /* Read new vector in binary format */
-  ierr = PLogEventRegister(&VECTOR_READ,"Read Vector     ","Green:");CHKERRA(ierr);
+  ierr = PLogEventRegister(&VECTOR_READ,"Read Vector","Green:");CHKERRA(ierr);
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
   ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"vector.dat",BINARY_RDONLY,&viewer);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.188 1998/06/02 21:57:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.189 1998/06/03 00:31:45 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1525,7 +1525,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
         if (mict) rct = mact/mict; else rct = 0.0;
         mp = mp/2.0;
         rp = rp/((PLogDouble) size);
-        PetscFPrintf(comm,fd,"%s %7d %3.1f  %5.4e %5.1f  %3.2e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
+        PetscFPrintf(comm,fd,"%-16s %7d %3.1f  %5.4e %5.1f  %3.2e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
                     PLogEventName[i],(int)mact,rct,maxt,rat,maxf,ratf,
                     mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps,flopr/1.e6);
       }

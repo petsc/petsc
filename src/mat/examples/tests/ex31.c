@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex31.c,v 1.5 1997/10/27 13:53:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex31.c,v 1.6 1997/10/28 14:23:30 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   /* PART 1:  Generate matrix, then write it in binary format */
 
-  ierr = PLogEventRegister(&MATRIX_GENERATE,"Generate Matrix ",PETSC_NULL);CHKERRA(ierr);
+  ierr = PLogEventRegister(&MATRIX_GENERATE,"Generate Matrix",PETSC_NULL);CHKERRA(ierr);
   PLogEventBegin(MATRIX_GENERATE,0,0,0,0);
 
   /* Generate matrix */
@@ -59,7 +59,7 @@ int main(int argc,char **args)
   /* All processors wait until test matrix has been dumped */
   MPI_Barrier(PETSC_COMM_WORLD);
 
-  ierr = PLogEventRegister(&MATRIX_READ,"Read Matrix     ",PETSC_NULL);CHKERRA(ierr);
+  ierr = PLogEventRegister(&MATRIX_READ,"Read Matrix",PETSC_NULL);CHKERRA(ierr);
   PLogEventBegin(MATRIX_READ,0,0,0,0);
   PetscPrintf(PETSC_COMM_WORLD,"reading matrix in binary from matrix.dat ...\n"); 
   ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"matrix.dat",BINARY_RDONLY,&viewer); 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PLogEvent.c,v 1.10 1998/01/27 18:57:23 balay Exp balay $";
+static char vcid[] = "$Id: PLogEvent.c,v 1.11 1998/03/31 23:34:04 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -10,7 +10,7 @@ int main( int argc, char **argv)
   int        e1, flg,ierr;
 
   PetscInitialize(&argc, &argv,0,0);
-  PLogEventRegister(&e1,"*DummyEvent     ", "red:");
+  PLogEventRegister(&e1,"*DummyEvent", "red:");
   /* To take care of the paging effects */
   ierr = PetscGetTime(&x); CHKERRA(ierr);
   PLogEventBegin(e1,&x,0,0,0);
