@@ -1,7 +1,7 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS        =  $(PETSC_INCLUDE) $(COPT) $(PCONF) -I$(PETSC_DIR)/include
+CFLAGS        =  $(PETSC_INCLUDE) $(COPT) $(PCONF)
 FFLAGS        =  
 SOURCEC       = 
 SOURCEF       =
