@@ -1,4 +1,4 @@
-/* $Id: petscadic.h,v 1.1 1997/03/28 04:13:57 bsmith Exp bsmith $ */
+/* $Id: petscadic.h,v 1.2 1997/04/02 22:42:49 bsmith Exp bsmith $ */
 
 /*
         EXPERIMENTAL CODE - Use at your own risk.
@@ -22,8 +22,12 @@ typedef struct _PetscADICFunction *PetscADICFunction;
 extern int PetscADICFunctionCreate(Vec,Vec,int (*)(Vec,Vec),int (*)(void **),PetscADICFunction*);
 extern int PetscADICFunctionInitialize(PetscADICFunction);
 extern int PetscADICFunctionEvaluateGradient(PetscADICFunction,Vec,Vec,Mat);
-extern int PetscADICFunctionApplyGradient(PetscADICFunction,Vec,Vec,Vec);
+extern int PetscADICFunctionApplyGradientInitialize(PetscADICFunction,Vec,Mat*);
+extern int PetscADICFunctionApplyGradientReset(Mat,Vec);
 extern int PetscADICFunctionDestroy(PetscADICFunction);
+
+extern int PetscADICFunctionSetFunction(PetscADICFunction,int (*)(Vec,Vec),int (*)(void **));
+extern int PetscADICFunctionEvaluateGradientFD(PetscADICFunction,Vec,Vec,Mat);
 
 #endif
 
