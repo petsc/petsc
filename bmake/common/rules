@@ -65,6 +65,14 @@ chkopts:
 	@if [ ! -d $(LDIR) ]; then \
 	  echo Libraries not built for this BOPT: $(BOPT); false ; fi
 
+#
+# We divide the PETSc example programs into several categories:
+#   examples_1: primary group for installation testing
+#   examples_2: secondary examples, many have x-displays
+#   examples_3: Fortran examples
+#   examples_4: mpiuni examples (for PETSc uniprocessor installation)
+#   examples_5: programs that require complex numbers
+#
 # Compiles examples_1: primary group for installation testing
 examples_1: chkopts
 	@-if [ "$(EXAMPLES_1)" != "" ] ; then \
@@ -77,7 +85,7 @@ examples_1: chkopts
 	  cat trashz ; fi; $(RM) trashz;\
 	  done;) fi
 
-# Runs examples that have already been compiled
+# Runs examples_1 that have already been compiled
 runexamples_1:
 	@-if [ "$(RUNEXAMPLES_1)" != "" ] ; then \
 	  (for ex in $(RUNEXAMPLES_1) foo ; do \
@@ -96,7 +104,7 @@ examples_2: chkopts
 	  cat trashz ; fi; $(RM) trashz;\
 	  done;) fi
 
-# Runs examples that have already been compiled
+# Runs examples_2 that have already been compiled
 runexamples_2:
 	@-if [ "$(RUNEXAMPLES_2)" != "" ] ; then \
 	  (for ex in $(RUNEXAMPLES_2) foo ; do \
@@ -115,14 +123,14 @@ examples_3: chkopts
 	  cat trashz ; fi; $(RM) trashz;\
 	  done;) fi
 
-# Runs examples that have already been compiled
+# Runs examples_3 that have already been compiled
 runexamples_3:
 	@-if [ "$(RUNEXAMPLES_3)" != "" ] ; then \
 	  (for ex in $(RUNEXAMPLES_3) foo ; do \
 	  $(OMAKE) -f makefile $$ex; \
 	  done;) fi
 
-# Compiles examples_4: mpiuni examples
+# Compiles examples_4: mpiuni examples (for PETSc uniprocessor installation)
 examples_4: chkopts
 	@-if [ "$(EXAMPLES_4)" != "" ] ; then \
 	  (for ex in $(EXAMPLES_4) foo ; do \
@@ -134,14 +142,33 @@ examples_4: chkopts
 	  cat trashz ; fi; $(RM) trashz;\
 	  done;) fi
 
-# Runs examples that have already been compiled
+# Runs examples_4 that have already been compiled
 runexamples_4:
 	@-if [ "$(RUNEXAMPLES_4)" != "" ] ; then \
 	  (for ex in $(RUNEXAMPLES_4) foo ; do \
 	  $(OMAKE) -f makefile $$ex; \
 	  done;) fi
 
-# Does nothing, obviously, need for some rules that require actions.
+# Compiles examples_5: programs that require complex numbers
+examples_5: chkopts
+	@-if [ "$(EXAMPLES_5)" != "" ] ; then \
+	  (for ex in $(EXAMPLES_5) foo ; do \
+	  $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
+	  > trashz 2>&1; \
+	  grep -v clog trashz | grep -v "information sections" | \
+	  egrep -i '(Error|warning|Can)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; $(RM) trashz;\
+	  done;) fi
+
+# Runs examples_5 that have already been compiled
+runexamples_5:
+	@-if [ "$(RUNEXAMPLES_5)" != "" ] ; then \
+	  (for ex in $(RUNEXAMPLES_5) foo ; do \
+	  $(OMAKE) -f makefile $$ex; \
+	  done;) fi
+
+# Does nothing, obviously; need for some rules that require actions.
 foo:
 
 # Builds library
@@ -174,7 +201,7 @@ libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 # Removes garbage files
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) \
-	       $(EXAMPLES_3) $(EXAMPLES_4) $(TESTS) \
+	       $(EXAMPLES_3) $(EXAMPLES_4) $(EXAMPLES_5) $(TESTS) \
 	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus
@@ -185,10 +212,12 @@ testexamples_1: examples_1 runexamples_1 clean
 testexamples_2: examples_2 runexamples_2 clean
 testexamples_3: examples_3 runexamples_3 clean
 testexamples_4: examples_4 runexamples_4 clean
+testexamples_5: examples_5 runexamples_5 clean
 buildexamples_1: examples_1 clean
 buildexamples_2: examples_2 clean
 buildexamples_3: examples_3 clean
 buildexamples_4: examples_4 clean
+buildexamples_5: examples_5 clean
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
