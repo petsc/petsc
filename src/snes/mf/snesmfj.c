@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.118 2001/03/28 19:42:19 balay Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.119 2001/04/10 19:36:54 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -67,7 +67,7 @@ int MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
    MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.
 
    Synopsis:
-   MatSNESMFRegisterDynamicchar *name_solver,char *path,char *name_create,int (*routine_create)(MatSNESMF))
+   int MatSNESMFRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(MatSNESMF))
 
    Not Collective
 
@@ -352,7 +352,7 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
 
 .seealso: MatDestroy(), MatSNESMFSetFunctionError(), MatSNESMFDefaultSetUmin()
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(), MatCreateMF(),
-          MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic), MatSNESMFFormJacobian()
+          MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic), MatSNESMFComputeJacobian()
  
 @*/
 int MatCreateSNESMF(SNES snes,Vec x,Mat *J)
@@ -416,7 +416,7 @@ int MatCreateSNESMF(SNES snes,Vec x,Mat *J)
 
 .seealso: MatDestroy(), MatSNESMFSetFunctionError(), MatSNESMFDefaultSetUmin()
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(), MatCreateSNESMF(),
-          MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic),, MatSNESMFFormJacobian()
+          MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic),, MatSNESMFComputeJacobian()
  
 @*/
 int MatCreateMF(Vec x,Mat *J)
@@ -851,8 +851,8 @@ int MatSNESMFResetHHistory(Mat J)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFFormJacobian"
-int MatSNESMFFormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+#define __FUNCT__ "MatSNESMFComputeJacobian"
+int MatSNESMFComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   int ierr;
   PetscFunctionBegin;
