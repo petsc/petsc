@@ -420,6 +420,14 @@ Yet another Origin2000 (Univ of Utah):
   password : petsc-passwd
 
 ----------------------------------------------------------------------
+MAUI SP2
+machine: typhoon.sp2.mhpcc.edu
+account: barrys
+passwd:  petsc-passwd
+
+info : Scheduler llsubmit etc.
+
+----------------------------------------------------------------------
 
 Remote Nightly builds:
   On Cray t3d it is at h4p.nersc.gov       username bsmith
