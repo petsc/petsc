@@ -11,9 +11,9 @@
 # -----------------------------------------------------------------------
 
 # Argonne Quad machine
-   PETSC_DIR = /ccsthome/petsc/petsc
+  PETSC_DIR = /ccsthome/petsc/petsc
 # Argonne tmp directories
-#   PETSC_DIR = /tmp/petsc
+#    PETSC_DIR = /tmp/petsc
 # Argonne network
 #   PETSC_DIR = /home/curfman/petsc
 # Argonne SPx
@@ -89,8 +89,8 @@ ALL: ex1
 #
 # Define C source code:
 #
-  OBJSC     = user1.o bc.o misc.o mfj.o regmpimat.o monitor.o vrml.o da3.o utils.o noise.o
-  SOURCEC   = user1.c bc.c misc.c mfj.c regmpimat.c monitor.c vrml.c da3.c utils.c noise.c
+  OBJSC     = user1.o bc.o misc.o mfj.o regmpimat.o monitor.o vrml.o utils.o noise.o
+  SOURCEC   = user1.c bc.c misc.c mfj.c regmpimat.c monitor.c vrml.c utils.c noise.c
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #

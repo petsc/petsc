@@ -55,11 +55,17 @@ int UnpackWork(Euler *app,Scalar *v0,Scalar *v1,Scalar *v2,Scalar *v3,
   int    pos[5], *ltog, nloc, nc = app->nc;
 
   if (!app->reorder) {
+    PLogEventBegin(app->event_unpack,0,0,0,0);
     if (app->bctype != IMPLICIT) SETERRQ(1,0,"Supports implicit BCs only");
     ierr = VecRestoreArray(localX,&xl); CHKERRQ(ierr);
     ierr = DALocalToGlobal(app->da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
+    PLogEventEnd(app->event_unpack,0,0,0,0);
     return 0;
   } 
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+             CAN ELIMINATE THE FOLLOWING CODE
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* Note: Due to grid point reordering with DAs, we must always work
      with the local grid points for the vector X, then transform them to
@@ -231,7 +237,8 @@ int PackWork(Euler *app,Vec X,Vec localX,
   int    gxe = app->gxe, gye = app->gye, gze = app->gze;
   int    gxsf1 = app->gxsf1, gysf1 = app->gysf1, gzsf1 = app->gzsf1;
   Scalar *x;
-  
+
+  PLogEventBegin(app->event_pack,0,0,0,0);  
   /* Get ghost points */
   ierr = DAGlobalToLocalBegin(app->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(app->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
@@ -240,8 +247,13 @@ int PackWork(Euler *app,Vec X,Vec localX,
 
   if (!app->reorder) {
     if (app->bctype != IMPLICIT) SETERRQ(1,0,"Supports implicit BCs only");
+    PLogEventEnd(app->event_pack,0,0,0,0);  
     return 0;
   }
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+             CAN ELIMINATE THE FOLLOWING CODE
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* Set Fortran work arrays, including ghost points */
   if (app->bctype == IMPLICIT) {  /* Set interior and boundary grid points */
@@ -333,6 +345,10 @@ int PackWorkComponent(Euler *app,Vec X,Vec localX,Scalar *v0,Scalar **xout)
     if (app->bctype != IMPLICIT) SETERRQ(1,0,"Supports implicit BCs only");
     return 0;
   }
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+             CAN ELIMINATE THE FOLLOWING CODE
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* Set Fortran work arrays, including ghost points */
   if (app->bctype == IMPLICIT) {   /* Set interior and boundary grid points */

@@ -45,7 +45,7 @@ Runtime options include:\n\
   -post                      : Print post-processing info (currently uniproc version only)\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
-  -implicit                  : use fully implicit formulation of boundary conditions\n\
+  -explicit                  : use explicit formulation of boundary conditions\n\
   -cfl_advance               : use advancing CFL number\n\
   -cfl_max_incr              : maximum ratio for advancing CFL number at any given step\n\
   -cfl_max_decr              : maximum ratio for decreasing CFL number at any given step\n\
@@ -64,8 +64,8 @@ static char help3[] = "Options for VRML viewing:\n\
   -vrmlnolod                 : Do not use LOD for VRML output\n\
   -dump_freq                 : Frequency for dumping output (default is every 10 iterations)\n\
   -dump_vrml_layers [num]    : Dump pressure contours for [num] layers\n\
-  -dump_vrml_cut_y           : Dump pressure contours, slicing in y-direction (around the wing),\n\
-                               instead of the default slices in the z-direction (through the wing)\n\
+  -dump_vrml_cut_z           : Dump pressure contours, slicing in z-direction (through the wing)\n\
+                               instead of the default slices in the y-direction (around the wing),\n\
   -dump_vrml_different_files : Dump VRML output into a file (corresponding to iteration number)\n\
                                rather than the default of dumping continually into a single file\n\
   -dump_general              : Dump various fields into files (euler.[iteration].out) for\n\
@@ -106,12 +106,12 @@ int main(int argc,char **argv)
   int      len, its, ierr, flg, stage;
 
   /* Set Defaults */
-  int      post_process = 0;      /* flag indicating post-processing */
   int      total_stages = 1;      /* number of times to run nonlinear solver */
   int      log_stage_0 = 0;       /* are we doing dummy solve for logging stage 0? */
   int      maxsnes;               /* maximum number of SNES iterations */
   double   rtol = 1.e-10;         /* SNES relative convergence tolerance */
   double   time1, tsolve;         /* time for solution process */
+  Scalar   c_lift, c_drag, c_lift2, c_drag2;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize PETSc and print help information
@@ -290,7 +290,7 @@ int main(int argc,char **argv)
   /* ierr = KSPGMRESSetOrthogonalization(app->ksp,
          KSPGMRESUnmodifiedGramSchmidtOrthogonalization); CHKERRA(ierr); */
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,rtol,
-                                1.e-13,1000,100000); CHKERRA(ierr);
+                                1.e-13,3000,100000); CHKERRA(ierr);
 
   /* If using ILU(0) preconditioner and matrix-free version, then use in-place factorization */
   if (app->matrix_free) {
@@ -390,8 +390,7 @@ int main(int argc,char **argv)
 
   /* - - - - - Dump fields for later viewing with VRML - - - - - */
 
-  ierr = OptionsHasName(PETSC_NULL,"-post",&post_process); CHKERRA(ierr);
-  if (post_process) {
+  if (app->post_process) {
 
     /* First pack local vector; then compute pressure and dump to file */
     ierr = PackWork(app,app->X,app->localX,
@@ -400,11 +399,17 @@ int main(int argc,char **argv)
 
     /* Calculate physical quantities of interest */
     if (app->size == 1) {
+      int pprint = 1;
       ierr = pvar_(app->xx,app->p,
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc); CHKERRA(ierr);
+         app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint,
+         &c_lift,&c_drag,&c_lift2,&c_drag2); CHKERRA(ierr);
     }
 
+    /* Dump all fields for general viewing */
+    ierr = MonitorDumpGeneral(snes,app->X,app); CHKERRA(ierr);
+
+    /* Dump for VRML viewing */
     ierr = MonitorDumpVRML(snes,app->X,app->F,app); CHKERRA(ierr);
   }
 
@@ -563,10 +568,7 @@ int UserSetJacobian(SNES snes,Euler *app)
    ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&app->eps_mf_default,&flg); CHKERRQ(ierr);
    ierr = UserSetMatrixFreeParameters(snes,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0); CHKERRQ(ierr);
-   if (app->mf_adaptive) PetscPrintf(comm,
-     "Using matrix-free KSP method, ADAPTIVE snes_mf_err, mf_tol=%g: linear system matrix:\n",app->mf_tol);
-   else
-     PetscPrintf(comm,"Using matrix-free KSP method, NO ADAPTIVE snes_mf_err: linear system matrix:\n");
+   PetscPrintf(comm,"Using matrix-free KSP method: linear system matrix:\n");
    ierr = MatView(app->Jmf,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
    ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
@@ -588,7 +590,6 @@ int UserDestroyEuler(Euler *app)
   if (app->J) {ierr = MatDestroy(app->J); CHKERRQ(ierr);}
   if (app->matrix_free) {ierr = MatDestroy(app->Jmf); CHKERRQ(ierr);}
   if (app->Fvrml) {ierr = VecDestroy(app->Fvrml); CHKERRQ(ierr);}
-  if (app->F_low) {ierr = VecDestroy(app->F_low); CHKERRQ(ierr);}
   ierr = VecDestroy(app->X); CHKERRQ(ierr);
   ierr = VecDestroy(app->Xbc); CHKERRQ(ierr);
   ierr = VecDestroy(app->F); CHKERRQ(ierr);
@@ -599,7 +600,7 @@ int UserDestroyEuler(Euler *app)
   ierr = VecScatterDestroy(app->Xbcscatter); CHKERRQ(ierr);
   PetscFree(app->label);
   if (app->is1) PetscFree(app->is1);
-  if (app->bctype != IMPLICIT || app->dump_vrml || app->dump_general) {
+  if (app->bctype != IMPLICIT || app->dump_vrml || app->dump_general || app->post_process) {
     ierr = VecScatterDestroy(app->Pbcscatter); CHKERRQ(ierr);
     ierr = DADestroy(app->da1); CHKERRQ(ierr);
     ierr = VecDestroy(app->Pbc); CHKERRQ(ierr);
@@ -1060,39 +1061,7 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
   /* Not quite right because we should be timing the jpressure call too */
   PLogEventBegin(app->event_localf,0,0,0,0);
 
-  /* Flag for controlling "frozen" limiters:
-        matrix_free_mult = 0: not in the midst of a matrix-free multiply
-        matrix_free_mult = 1: matrix-free mult: using frozen limiter
-        matrix_free_mult = 2: matrix-free mult: compute new limiter for
-                              first matrix-vector mult of a new linear solve
-  */
-
-  /* This assumes we are doing plain Newton with nothing else fancy.  Need to
-     revise if we use line search, etc.!! */
-  fcount = 1;
-  /*
-  mfm_tmp = app->matrix_free_mult;
-  if (app->matrix_free && !app->matrix_free_mult) {
-    if (!app->F_low) {printf("creating F_low\n"); ierr = VecDuplicate(F,&app->F_low); CHKERRQ(ierr);}
-    fcount = 2;
-  }
-  */
-
-  for (ii=0; ii<fcount; ii++) {
-    Fvec = F;
-    /*
-    if (ii == 0) {
-      if (!app->matrix_free) {
-        Fvec = F;
-      } else {
-        Fvec = app->F_low;
-        if (!app->matrix_free_mult) app->matrix_free_mult = 2;
-      }
-    } else if (ii == 1) {
-      Fvec = F;
-    } else SETERRQ(1,0,"Unsupported function type");
-    */
-    /* printf("ii = %d, mfm=%d\n",ii,app->matrix_free_mult); */
+  Fvec = F;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         Compute nonlinear function in Julianne work arrays
@@ -1217,10 +1186,6 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     ierr = UnpackWork(app,app->dr,app->dru,app->drv,app->drw,app->de,app->dxx,app->localDX,Fvec); CHKERRQ(ierr);
   }
 
-  /* Reset flag */
-  /* app->matrix_free_mult = mfm_tmp; */
-  }
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
           Optional output for debugging and visualizing solution 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -1283,7 +1248,7 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
 
   /* Destroy pressure scatters for boundary conditions, since we needed
      them only to computate the initial guess */
-  if (app->bctype == IMPLICIT && !app->dump_vrml && !app->dump_general) {
+  if (app->bctype == IMPLICIT && !app->dump_vrml && !app->dump_general && !app->post_process) {
     ierr = VecScatterDestroy(app->Pbcscatter); CHKERRQ(ierr);
     ierr = DADestroy(app->da1); CHKERRQ(ierr);
     ierr = VecDestroy(app->Pbc); CHKERRQ(ierr);
@@ -1296,9 +1261,6 @@ int InitialGuess(SNES snes,Euler *app,Vec X)
 
   return 0;
 }
-
-int DACreate3d_Lois(MPI_Comm,DAPeriodicType,DAStencilType, 
-               int,int,int,int,int,int,int,int,DA *);
 
 #undef __FUNC__
 #define __FUNC__ "UserCreateEuler"
@@ -1356,7 +1318,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 4; app->itl = 8; app->itu = 38; app->ile = 23;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.0e-6;
-      app->cfl_snes_it    = 1;
+      app->cfl_snes_it    = 2;
       app->ksp_max_it     = 25;       /* max number of KSP iterations */
       app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
       break;
@@ -1366,7 +1328,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.52e-5;
-      app->cfl_snes_it    = 1;
+      app->cfl_snes_it    = 4;
       app->ksp_max_it     = 50; 
       app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
       break;
@@ -1376,7 +1338,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.42e-5;
-      app->cfl_snes_it    = 1;
+      app->cfl_snes_it    = 4;
       app->ksp_max_it     = 100; 
       app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
       break;
@@ -1401,11 +1363,10 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->cfl_begin_advancement = 0;        /* flag - indicates CFL advancement has begun */
   app->cfl_max_incr          = 2.0;      /* maximum CFL increase at any given step */
   app->cfl_max_decr          = 0.1;      /* maximum CFL decrease at any given step */
-  app->f_reduction           = 0.3;      /* fnorm reduction ratio before beginning to advance CFL */
+  app->f_reduction           = 0.01;     /* fnorm reduction ratio before beginning to advance CFL */
   app->cfl_advance           = CONSTANT; /* flag - by default we don't advance CFL */
   app->ts_type               = LOCAL_TS; /* type of timestepping */
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
-  app->mf_adaptive           = 0;        /* by default, we do not adapt mf param */
   app->fstagnate_ratio       = .01;      /* stagnation detection parameter */
   app->ksp_rtol_max          = 1.0e-2;   /* maximum KSP relative convergence tolerance */
 
@@ -1428,6 +1389,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->lin_rtol              = 0;
   app->lin_its               = 0;
   app->last_its              = 0;
+  app->post_process          = 0;
 
   /* Override default with runtime options */
   ierr = OptionsGetDouble(PETSC_NULL,"-ksp_rtol_max",&app->ksp_rtol_max,&flg); CHKERRQ(ierr);
@@ -1444,7 +1406,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   ierr = OptionsHasName(PETSC_NULL,"-global_timestep",&flg); CHKERRQ(ierr);
   if (flg) app->ts_type = GLOBAL_TS;
-  ierr = OptionsHasName(PETSC_NULL,"-mf_adaptive",&app->mf_adaptive); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-mf_tol",&app->mf_tol,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-use_jratio",&app->use_jratio); CHKERRQ(ierr);
@@ -1460,6 +1421,9 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = OptionsGetInt(PETSC_NULL,"-jfreq",&app->jfreq,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-no_output",&app->no_output); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_assemble_last",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-post",&app->post_process); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-pvar",&app->pvar); CHKERRQ(ierr);
+
   if (flg) app->mat_assemble_direct = 0;
   if (app->mat_assemble_direct) PetscPrintf(comm,"Problem %d (%dx%dx%d grid), assembling PETSc matrix directly: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
   else PetscPrintf(comm,"Problem %d (%dx%dx%d grid), ssembling PETSc matrix via translation of Eagle format: angle of attack = %g, eps_jac = %g\n",problem,ni1,nj1,nk1,app->angle,app->eps_jac);
@@ -1481,8 +1445,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->J                = 0;
   app->Jmf              = 0;
   app->Fvrml            = 0;
-  app->F_low            = 0;
-  app->reorder          = 1;
+  app->reorder          = 0;
   nc = app->nc;
 
   if (app->dump_vrml) dump_angle_vrml(app->angle);
@@ -1496,8 +1459,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     PetscPrintf(comm,"Pseudo-transiant variant: Regular use of dt\n");
     app->sctype = DT_DIV;
   }
-  ierr = OptionsHasName(PETSC_NULL,"-implicit",&flg); CHKERRQ(ierr);
-  if (flg == 1) {
+  ierr = OptionsHasName(PETSC_NULL,"-explicit",&flg); CHKERRQ(ierr);
+  if (!flg) {
     app->bctype = IMPLICIT;
     app->ktip++; app->itl++; app->itu++; app->ile++;
     app->mx = app->ni1, app->my = app->nj1, app->mz = app->nk1;
@@ -1519,13 +1482,12 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     }
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-no_reorder",&flg); CHKERRQ(ierr);
-  if (flg) {
-    if (app->bctype != IMPLICIT) SETERRQ(1,0,"Must use implicit BCs for no reordering!")
-    app->reorder = 0;
-    PetscPrintf(comm,"Not reording variables for internal computation\n");
-  } else {
+  ierr = OptionsHasName(PETSC_NULL,"-reorder",&app->reorder); CHKERRQ(ierr);
+  if (app->reorder) {
     PetscPrintf(comm,"Reording variables for internal computation\n");
+  } else {
+    if (app->bctype != IMPLICIT) SETERRQ(1,0,"Must use implicit BCs for no reordering!")
+    PetscPrintf(comm,"Not reording variables for internal computation\n");
   }
 
   /* Monitoring information */

@@ -36,11 +36,12 @@ typedef struct {
 
   /* ----------------- General parameters and flags ------------------- */
 
-    int    first_time_resid;     /* flag - first time computing residual */
-    int    bc_test;              /* flag - test boundary condition scatters */
-    int    no_output;            /* flag - indicates no runtime output (use when timing code) */
+    int    first_time_resid;     /* flag: 1: first time computing residual */
+    int    bc_test;              /* flag: 1: test boundary condition scatters */
+    int    no_output;            /* flag: 1: no runtime output (use when timing code) */
+    int    use_vecsetvalues;     /* flag: 1: use of VecSetValues() */
+    int    reorder;              /* flag: 1: reorder variables for application code */
     int    iter;                 /* nonlinear iteration number */
-    int    use_vecsetvalues;     /* flag - 1 indicates use of VecSetValues() */
     Scalar fstagnate_ratio;      /* stagnation detection */
 
   /* ------------- Control of computing Jacobian (preconditioner matrix) ------------ */
@@ -58,7 +59,6 @@ typedef struct {
 
     int    matrix_free;          /* flag - using matrix-free method */
     int    matrix_free_mult;     /* flag - currently in the midst of a matrix-free mult */
-    int    mf_adaptive;          /* flag - are we doing adaptive CFL advancement? */
     Scalar eps_mf_default;       /* default differencing parameter for FD mat-vec product approx */
     Scalar fnorm_init, fnorm_last;  /* || F || - initial and last iterations */
 
@@ -182,13 +182,11 @@ typedef struct {
     int    problem;                        /* test problem number */
     Scalar mf_tol;                         /* tolerance for adaptive switching of mf differencing param */
     TimeStepType ts_type;                  /* type of timestepping */
-    Vec    F_low;
-    int    reorder;
     Scalar *xx, *dxx, *xx_bc;
     Vec    localXBC;
     int    fort_ao;
     int    sles_tot;
-    int    event_pack, event_unpack, event_localf;
+    int    event_pack, event_unpack, event_localf; /* events for performance monitoring */
     int    post_process, pvar;
     } Euler;
 
@@ -289,6 +287,7 @@ int UnpackWorkComponent(Euler*,Scalar*,Vec);
 int PackWork(Euler*,Vec,Vec,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar**);
 int PackWorkComponent(Euler*,Vec,Vec,Scalar*,Scalar**);
 int MatViewDFVec_MPIAIJ(Mat,DFVec,Viewer);
+int MatViewDFVec_MPIBAIJ(Mat,DFVec,Viewer);
 int GridTest(Euler*);
 
 /* Monitoring routines */
@@ -400,7 +399,8 @@ extern int buildbdmat_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
 extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,Scalar*,Scalar*);
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
+                      Scalar*,Scalar*,Scalar*,Scalar*);
 /*
 extern int rscale_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,

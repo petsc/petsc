@@ -31,26 +31,13 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
   Euler    *app = (Euler *)dummy;
-  Scalar   ksprtol, negone = -1.0, mfeps, cfl1;
+  Scalar   ksprtol, negone = -1.0, mfeps, cfl1, c_lift = 0.0, c_drag = 0.0, c_lift2 = 0.0, c_drag2 = 0.0;
   Vec      DX, X;
   Viewer   view1;
   char     filename[64];
   int      ierr, lits;
 
   PetscObjectGetComm((PetscObject)snes,&comm);
-
-  /* Are we adaptively setting mfeps? */
-  if (app->matrix_free && app->mf_adaptive) {
-    /* mfeps = fnorm * 1.e-3; */
-    if (fnorm < app->mf_tol) {
-      if (app->problem == 1)      mfeps = 1.e-7;
-      else if (app->problem == 2) mfeps = 5.e-5;
-      else if (app->problem == 3) mfeps = 5.e-4;
-      else SETERRQ(1,0,"Unknown problem number");
-      ierr = UserSetMatrixFreeParameters(snes,mfeps,PETSC_DEFAULT); CHKERRQ(ierr);
-      if (!app->no_output) PetscPrintf(comm,"fnorm=%g, app->mf_tol=%g, next mf_eps=%g\n",fnorm,app->mf_tol,mfeps);
-    }
-  }
 
   /* Print the vector F (intended for debugging) */
   if (app->print_vecs) {
@@ -60,14 +47,16 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
     ierr = DFVecView(app->F,view1); CHKERRQ(ierr);
     ierr = ViewerDestroy(view1); CHKERRQ(ierr);
+  }
 
-    if (app->F_low) {
-      sprintf(filename,"resl.%d.out",its);
-      ierr = ViewerFileOpenASCII(app->comm,filename,&view1); CHKERRQ(ierr);
-      ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-      ierr = DFVecView(app->F_low,view1); CHKERRQ(ierr);
-      ierr = ViewerDestroy(view1); CHKERRQ(ierr);
-    }
+  /* Calculate physical quantities of interest */
+  /* if (app->pvar && !(its%5)) { */
+  if (app->pvar) {
+    int pprint = 0;
+    ierr = pvar_(app->xx,app->p,
+       app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+       app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint,
+       &c_lift,&c_drag,&c_lift2,&c_drag2); CHKERRA(ierr);
   }
 
   app->flog[its]  = log10(fnorm);
@@ -87,8 +76,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       if (app->rank == 0) {
         app->fp = fopen("fnorm.m","w"); 
         fprintf(app->fp,"zsnes = [\n");
-	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e\n",
-                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8.4e  %8.4e\n",
+                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
+                app->lin_rtol[its],c_lift,c_drag,c_lift2,c_drag2);
       }
     }
     app->sles_tot += app->lin_its[its];
@@ -107,8 +97,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       /* PetscPrintf(comm,"iter = %d, Function norm %g, lin_rtol=%g, lin_its = %d\n",
                   its,fnorm,app->lin_rtol[its],app->lin_its[its]); */
       if (app->rank == 0) {
-	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e\n",
-                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8.4e  %8.4e\n",
+                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
+                app->lin_rtol[its],c_lift,c_drag,c_lift2,c_drag2);
         fflush(app->fp);
       }
     }
@@ -225,15 +216,6 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     }
   }
 
-    /* Calculate physical quantities of interest */
-  if (app->pvar && !(its%5)) {
-    if (app->size == 1) {
-      int pprint = 0;
-      ierr = pvar_(app->xx,app->p,
-         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint); CHKERRA(ierr);
-    }
-  }
 
   app->iter = its+1;
   return 0;
@@ -252,7 +234,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
 {
   FILE     *fp;
-  int      ierr, i, j, k, ijkx, ijkcx, ijkxi, iter, ni, nj, nk, ni1, nj1, nk1;
+  int      ierr, i, j, k, ijkx, ijkcx, ijkxi, ni, nj, nk, ni1, nj1, nk1;
   char     filename[64];
   Vec      P_uni, X_uni;
   Scalar   *xx, *pp;
@@ -369,10 +351,9 @@ int MonitorDumpGeneralJulianne(Euler *app)
  */
 int ComputeMach(Euler *app,Scalar *x,Scalar *smach)
 {
-  int    ierr, i, j, k, ijkx, ijkxi;
-  int    ni1 = app->ni1, nj1 = app->nj1, nk1 = app->nk1;
+  int    i, j, k, ijkx, ijkxi, ni1 = app->ni1, nj1 = app->nj1;
   int    kstart = 0, kend = app->ktip+1, istart = app->itl, iend = app->itu+1;
-  Scalar sfluid, ssound, r, ru, rw, gm1, gamma;
+  Scalar sfluid, ssound, r, ru, rw, gm1, gamma1;
 
   if (app->reorder) SETERRQ(1,0,"Reordering not currently supported");
   if (app->bctype == EXPLICIT) SETERRQ(1,0,"Explicit BC not currently supported");
@@ -388,8 +369,8 @@ int ComputeMach(Euler *app,Scalar *x,Scalar *smach)
   kstart = app->zs;
   kend   = app->ze;
 
-  gamma = 1.4;
-  gm1   = gamma - 1.0;
+  gamma1 = 1.4;
+  gm1   = gamma1 - 1.0;
   j     = 0;  /* wing surface is j=0 */
   for (k=kstart; k<kend; k++) {
     for (i=istart; i<iend; i++) {
@@ -593,7 +574,6 @@ int DumpField(Euler *app,Draw Win,Scalar *field)
   if (wing) {
     wxs = app->itl; wxe = app->itu; wzs = 0; wze = app->ktip;
     ierr = DrawMeshCreate( &mesh, x, y, z, ni, nj, nk, wxs, wxe, 0, 1, wzs, wze, 1, 1, 1, 1, field, 32 ); CHKERRQ(ierr);
-    /*    ierr = DrawMeshCreate( &mesh, x, y, z, ni, nj, nk, 9, 39, 0, 1, 0, 5, 1, 1, 1, 1, field, 32 ); CHKERRQ(ierr); */
   } else {
     ierr = DrawMeshCreateSimple( &mesh, x, y, z, ni, nj, nk, 1, field, 32 ); CHKERRQ(ierr);
   }
