@@ -82,6 +82,8 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   Better user interface 
   ---------------------
 
+  Fix MGXXX functions to be PCMGXXXX functions
+
   (Priority 1) Allow setting precision of printed numbers in ASCII viewers.
 
   (Priority 1) add DAVecGatherAll and DAVecGather

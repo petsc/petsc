@@ -765,8 +765,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
 
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscStackPush("SNES user function");
-  ierr = (*snes->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
+  ierr = (*snes->computefunction)(snes,x,y,snes->funP);
   PetscStackPop;
+  if (ierr) {
+    PetscErrorCode pierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(pierr);
+    CHKERRQ(ierr);
+  }
   if (snes->afine) {
     PetscScalar mone = -1.0;
     ierr = VecAXPY(&mone,snes->afine,y);CHKERRQ(ierr);
@@ -1745,7 +1749,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec x)
   if (snes->conv_hist_reset) snes->conv_hist_len = 0;
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
-  ierr = (*(snes)->solve)(snes);CHKERRQ(ierr);
+  ierr = (*(snes)->solve)(snes);
+  if (ierr) {
+    PetscErrorCode pierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(pierr);
+    CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_(snes->comm));CHKERRQ(ierr); }
