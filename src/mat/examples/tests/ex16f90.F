@@ -1,5 +1,5 @@
 !
-!  "$Id: ex16f90.F,v 1.9 1998/06/22 16:22:02 balay Exp balay $";
+!  "$Id: ex16f90.F,v 1.10 1998/06/22 18:07:56 balay Exp balay $";
 !
 !
 !  Tests MatGetArray() on a dense matrix
@@ -65,7 +65,7 @@
 !
       call MatGetArrayF90(A,array,ierr) 
       call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
-      write(6,100) array
+      write(6,100) PetscReal(array)
  100  format(2F6.2)
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
