@@ -1,4 +1,4 @@
-/*$Id: minres.c,v 1.5 2000/05/04 16:28:54 bsmith Exp bsmith $*/
+/*$Id: minres.c,v 1.6 2000/09/14 14:40:54 bsmith Exp bsmith $*/
 /*                       
     This code implements the MINRES (Minimum Residual) method. 
     Reference: Paige & Saunders, 1975.
@@ -7,6 +7,10 @@
 
 */
 #include "src/sles/ksp/kspimpl.h"
+
+typedef struct {
+  double haptol;
+} KSP_MINRES;
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_MINRES"
@@ -42,6 +46,7 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   Vec          X,B,R,Z,U,V,W,UOLD,VOLD,WOLD,WOOLD;
   Mat          Amat,Pmat;
   MatStructure pflag;
+  KSP_MINRES   *minres = (KSP_MINRES*)ksp->data;
 
   PetscFunctionBegin;
   maxit   = ksp->max_it;
@@ -76,6 +81,11 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
   ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /*     z  <- B*r       */
 
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
+  if (PetscAbsScalar(dp) < minres->haptol) {
+    PLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",dp,minres->haptol);
+    dp = 0.0;
+  }
+
 #if !defined(PETSC_USE_COMPLEX)
   if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
 #endif
@@ -116,8 +126,13 @@ int  KSPSolve_MINRES(KSP ksp,int *its)
      betaold = beta;
 
      ierr = VecDot(R,Z,&dp);CHKERRQ(ierr); 
+     if (PetscAbsScalar(dp) < minres->haptol) {
+       PLogInfo(ksp,"KSPSolve_MINRES:Detected happy breakdown %g tolerance %g\n",dp,minres->haptol);
+       dp = 0.0;
+     }
+
 #if !defined(PETSC_USE_COMPLEX)
-     if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
+     if (dp < 0.0) SETERRQ1(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner R'Z = %g",dp);
 #endif
      beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
 
@@ -180,10 +195,15 @@ EXTERN_C_BEGIN
 #define __FUNC__ "KSPCreate_MINRES"
 int KSPCreate_MINRES(KSP ksp)
 {
+  KSP_MINRES *minres;
+
   PetscFunctionBegin;
 
-  ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = PETSC_TRUE;
+  ksp->pc_side   = PC_LEFT;
+  ksp->calc_res  = PETSC_TRUE;
+  minres         = PetscNew(KSP_MINRES);CHKPTRQ(minres);
+  minres->haptol = 1.e-18;
+  ksp->data      = (void*)minres;
 
   /*
        Sets the functions that are associated with this data structure 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.168 2000/08/17 04:52:35 bsmith Exp balay $ 
+# $Id: makefile,v 1.169 2000/08/17 19:38:22 balay Exp bsmith $ 
 
 CFLAGS	  = 
 FFLAGS    =
@@ -105,6 +105,9 @@ ex22: ex22.o  chkopts
 	-${CLINKER} -o ex22 ex22.o  ${PETSC_SLES_LIB}
 	${RM} ex22.o
 
+ex24: ex24.o  chkopts
+	-${CLINKER} -o ex24 ex24.o  ${PETSC_SLES_LIB}
+	${RM} ex24.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -pc_type jacobi -ksp_smonitor -ksp_gmres_irorthog > ex1_1.tmp 2>&1;	  \
@@ -301,11 +304,32 @@ runex22_2:
 	   if (diff output/ex22_2.out ex22_2.tmp) then true; \
 	   else echo "Possible problem with ex22_2, diffs above"; fi; \
 	   ${RM} -f ex22_2.tmp
+runex24:
+	-@${MPIRUN} -np 1 ex24 -pc_type icc -mat_sbaij > ex24_1.tmp 2>&1; \
+           if (diff output/ex24_1.out ex24_1.tmp) then true; \
+           else echo "Possible problem with ex24_1, diffs above"; fi; \
+           ${RM} -f ex24_1.tmp
+runex24_2:
+	-@${MPIRUN} -np 1 ex24 -pc_type icc -pc_icc_levels 2  -mat_sbaij > ex24_2.tmp 2>&1; \
+           if (diff output/ex24_2.out ex24_2.tmp) then true; \
+           else echo "Possible problem with ex24_2, diffs above"; fi; \
+           ${RM} -f ex24_2.tmp
+runex24_3:
+	-@${MPIRUN} -np 2 ex24 -pc_type bjacobi -sub_pc_type icc  -mat_sbaij > ex24_3.tmp 2>&1; \
+           if (diff output/ex24_3.out ex24_3.tmp) then true; \
+           else echo "Possible problem with ex24_3, diffs above"; fi; \
+           ${RM} -f ex24_3.tmp
+runex24_4:
+	-@${MPIRUN} -np 2 ex24 -pc_type bjacobi -sub_pc_type icc -sub_pc_icc_levels 1 -mat_sbaij > ex24_4.tmp 2>&1; \
+           if (diff output/ex24_4.out ex24_4.tmp) then true; \
+           else echo "Possible problem with ex24_4, diffs above"; fi; \
+           ${RM} -f ex24_4.tmp   
 
 
 TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
                   ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
-		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc ex19.rm 
+		  runex4 runex4_3 runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc ex19.rm \
+                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm
 TESTEXAMPLES_2  = ex10.PETSc ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_3  = ex12.PETSc ex12.rm
 TESTEXAMPLES_9  = ex12.PETSc ex12.rm

@@ -1,9 +1,13 @@
-/*$Id: symmlq.c,v 1.6 2000/09/08 17:48:28 bsmith Exp bsmith $*/
+/*$Id: symmlq.c,v 1.7 2000/09/14 14:40:26 bsmith Exp bsmith $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
 */
 #include "src/sles/ksp/kspimpl.h"
+
+typedef struct {
+  double haptol;
+} KSP_SYMMLQ;
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_SYMMLQ"
@@ -38,6 +42,7 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
   Vec          X,B,R,Z,U,V,W,UOLD,VOLD,Wbar;
   Mat          Amat,Pmat;
   MatStructure pflag;
+  KSP_SYMMLQ   *symmlq = (KSP_SYMMLQ*)ksp->data;
 
   PetscFunctionBegin;
   maxit   = ksp->max_it;
@@ -69,6 +74,11 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
 
   ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /* z  <- B*r       */
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);             /* dp = r'*z;      */
+  if (PetscAbsScalar(dp) < symmlq->haptol) {
+    PLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",dp,symmlq->haptol);
+    dp = 0.0;
+  }
+
 #if !defined(PETSC_USE_COMPLEX)
   if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
 #endif
@@ -129,6 +139,11 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
     ierr = VecAXPY(&mbeta,UOLD,Z);CHKERRQ(ierr);   /*  z <- z - beta * u_old; */
     betaold = beta;                                /* beta_k                  */
     ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);          /* dp <- r'*z;             */
+    if (PetscAbsScalar(dp) < symmlq->haptol) {
+      PLogInfo(ksp,"KSPSolve_SYMMLQ:Detected happy breakdown %g tolerance %g\n",dp,symmlq->haptol);
+      dp = 0.0;
+    }
+
 #if !defined(PETSC_USE_COMPLEX)
      if (dp < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Indefinite preconditioner");
 #endif
@@ -184,10 +199,16 @@ EXTERN_C_BEGIN
 #define __FUNC__ "KSPCreate_SYMMLQ"
 int KSPCreate_SYMMLQ(KSP ksp)
 {
+  KSP_SYMMLQ *symmlq;
+
   PetscFunctionBegin;
 
   ksp->pc_side                   = PC_LEFT;
   ksp->calc_res                  = PETSC_TRUE;
+
+  symmlq         = PetscNew(KSP_SYMMLQ);CHKPTRQ(symmlq);
+  symmlq->haptol = 1.e-18;
+  ksp->data      = (void*)symmlq;
 
   /*
        Sets the functions that are associated with this data structure 
