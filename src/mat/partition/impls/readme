@@ -1,0 +1,57 @@
+
+PETSc Interfaces to Partitioning Libraries
+------------------------------------------
+
+Subdirectories chaco, jostle, party and scotch in src/mat/partition/impls
+contain code to iterface PETSc to several external libraries for sparse 
+matrix partitioning, as described in the following document:
+
+   "Integration in PETSc of several graph partitioning packages and study
+   of performance improvement in several applications", G. Anciaux, 
+   MSc thesis, Computer Science Faculty, Technical University Valencia 
+   (UPV), Spain.
+
+The implementation of these interfaces is very similar to that of pmetis
+(an interface to ParMetis developed by PETSc authors). The new interfaces
+have been tested with the following versions of the libraries (please note
+that they might not work correctly with other versions):
+
+ - Chaco 2.2       http://www.cs.sandia.gov/CRF/chac.html
+ - Jostle 3.0      http://www.gre.ac.uk/~c.walshaw/jostle/
+ - Scotch 3.4      http://www.labri.fr/Perso/~pelegrin/scotch/
+ - Party 1.99      http://www.uni-paderborn.de/fachbereich/AG/monien/-
+                   RESEARCH/PART/party.html
+
+To use any of these, you must first get and install the corresponding package,
+then configure and recompile PETSc (for details on how to install optional
+packages see PETSc's intallation instructions).
+
+All these interfaces have specific options that can be adjusted by the user.
+For instance, run your program with
+ -mat_partitioning_type chaco -help
+for a list of options available for Chaco. For a detailed explanation of these
+options, please check the documentation of the corresponding library. Some
+general comments:
+
+- From the versions listed above, only Joste 3.0 is available as a parallel
+  library. The rest are sequential and, therefore, using them for large 
+  problems may result in a significant performance bottleneck.
+- Some of the partitioning methods follow a multilevel scheme. The user can
+  control this process by adjusting the coarse level.
+- Some libraries allow the use of a global method in combination with a local
+  method. The local method is usually a Kernighan-Lin refinement step applied
+  to the result of the global method.
+- All options can be set either in the command-line or procedurally, and have
+  reasonable default values.
+
+The use of partitioning techniques can represent a significant improvement in 
+parallel efficiency, especially in the case of unstructured mesh computations
+with complex geometries. But be warned that in some cases the cost associated 
+to computing the partitioning is non-negligible.
+
+Note: if PETSc is configured with more than one of these partitioning libraries
+there may be conflicts due to symbols defined twice (e.g. Jostle and Chaco).
+
+Jose E. Roman (jroman@dsic.upv.es)
+Feb 2004
+

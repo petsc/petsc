@@ -294,49 +294,38 @@ getmpirun:
 
 etags_sourcec:
 	-@if [ "${SOURCEC}" != "" ]; then \
-		echo Making etags_sourcec ; \
 		etags -a -f ${TAGSFILE} ${SOURCEC} ; fi
 etags_sourcej:
 	-@if [ "${SOURCEJ}" != "" ]; then \
-		echo Making etags_sourcej ; \
 		etags -a -f ${TAGSFILE} ${SOURCEJ} ; fi
 etags_sourceh:
 	-@if [ "${SOURCEH}" != "" ]; then \
-		echo Making etags_sourceh ; \
 		etags -a -f ${TAGSFILE} ${SOURCEH}; fi
 etags_sourcef:
 	-@if [ "${SOURCEF}" != "" ]; then \
-		echo Making etags_sourcef ; \
 		etags -a -f ${TAGSFILE} ${SOURCEF}; fi
 etags_docs:
 	-@if [ "${DOCS}" != "" ]; then \
-		echo Making etags_docs ; \
 		etags -a -f ${TAGSFILE} ${DOCS}; fi
 etags_bmakefiles:
 	-@if [ "${BMAKEFILES}" != "" ]; then \
-		echo Making etags_bmakefiles ; \
 		etags -a -f ${TAGSFILE} ${BMAKEFILES}; fi
 etags_examplesc:
 	-@if [ "${EXAMPLESC}" != "" ]; then \
-		echo Making etags_examplesc ; \
 		etags -a -f ${TAGSFILE} ${EXAMPLESC}; fi
 etags_examplesch:
 	-@if [ "${EXAMPLESCH}" != "" ]; then \
-		echo Making etags_examplesch ; \
 		etags -a -f ${TAGSFILE} ${EXAMPLESCH}; fi
 etags_examplesf:
 	-@if [ "${EXAMPLESF}" != "" ]; then \
-		echo Making etags_examplesf ; \
 		etags -a -f ${TAGSFILE} ${EXAMPLESF}; fi
 etags_examplesfh:
 	-@if [ "${EXAMPLESFH}" != "" ]; then \
-		echo Making etags_examplesfh ; \
 		etags -a -f ${TAGSFILE} ${EXAMPLESFH}; fi
 etags_makefile:
 	-@etags -a -f ${TAGSFILE} makefile
 etags_scripts:
 	-@if [ "${SCRIPTS}" != "" ]; then \
-		echo Making etags_scripts ; \
 		etags -a -f ${TAGSFILE} ${SCRIPTS}; fi
 
 # --------------------------------------------------------------------

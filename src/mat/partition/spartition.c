@@ -7,6 +7,10 @@ EXTERN_C_BEGIN
 EXTERN int MatPartitioningCreate_Current(MatPartitioning);
 EXTERN int MatPartitioningCreate_Square(MatPartitioning);
 EXTERN int MatPartitioningCreate_Parmetis(MatPartitioning);
+EXTERN int MatPartitioningCreate_Chaco(MatPartitioning);
+EXTERN int MatPartitioningCreate_Jostle(MatPartitioning);
+EXTERN int MatPartitioningCreate_Party(MatPartitioning);
+EXTERN int MatPartitioningCreate_Scotch(MatPartitioning);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -42,6 +46,18 @@ int MatPartitioningRegisterAll(const char path[])
   ierr = MatPartitioningRegisterDynamic("square",path,"MatPartitioningCreate_Square",MatPartitioningCreate_Square);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)
   ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_PARMETIS,path,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_CHACO)
+  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_CHACO,path,"MatPartitioningCreate_Chaco",MatPartitioningCreate_Chaco);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_JOSTLE)
+  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_JOSTLE,path,"MatPartitioningCreate_Jostle",MatPartitioningCreate_Jostle);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_PARTY)
+  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_PARTY,path,"MatPartitioningCreate_Party",MatPartitioningCreate_Party);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SCOTCH)
+  ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_SCOTCH,path,"MatPartitioningCreate_Scotch",MatPartitioningCreate_Scotch);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

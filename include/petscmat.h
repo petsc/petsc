@@ -1006,6 +1006,11 @@ E*/
 #define MatPartitioningType char*
 #define MAT_PARTITIONING_CURRENT  "current"
 #define MAT_PARTITIONING_PARMETIS "parmetis"
+#define MAT_PARTITIONING_CHACO    "chaco"
+#define MAT_PARTITIONING_JOSTLE   "jostle"
+#define MAT_PARTITIONING_PARTY    "party"
+#define MAT_PARTITIONING_SCOTCH   "scotch"
+
 
 EXTERN int MatPartitioningCreate(MPI_Comm,MatPartitioning*);
 EXTERN int MatPartitioningSetType(MatPartitioning,const MatPartitioningType);
@@ -1070,6 +1075,48 @@ EXTERN int MatPartitioningSetFromOptions(MatPartitioning);
 EXTERN int MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
 
 EXTERN int MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
+
+EXTERN int MatPartitioningJostleSetCoarseLevel(MatPartitioning,PetscReal);
+EXTERN int MatPartitioningJostleSetCoarseSequential(MatPartitioning);
+
+typedef enum { MP_CHACO_MULTILEVEL_KL, MP_CHACO_SPECTRAL, MP_CHACO_LINEAR, 
+    MP_CHACO_RANDOM, MP_CHACO_SCATTERED } MPChacoGlobalType;
+EXTERN int MatPartitioningChacoSetGlobal(MatPartitioning, MPChacoGlobalType);
+typedef enum { MP_CHACO_KERNIGHAN_LIN, MP_CHACO_NONE } MPChacoLocalType;
+EXTERN int MatPartitioningChacoSetLocal(MatPartitioning, MPChacoLocalType);
+EXTERN int MatPartitioningChacoSetCoarseLevel(MatPartitioning,PetscReal);
+typedef enum { MP_CHACO_LANCZOS, MP_CHACO_RQI_SYMMLQ } MPChacoEigenType;
+EXTERN int MatPartitioningChacoSetEigenSolver(MatPartitioning,MPChacoEigenType);
+EXTERN int MatPartitioningChacoSetEigenTol(MatPartitioning, PetscReal);
+EXTERN int MatPartitioningChacoSetEigenNumber(MatPartitioning, int);
+
+#define MP_PARTY_OPT "opt"
+#define MP_PARTY_LIN "lin"
+#define MP_PARTY_SCA "sca"
+#define MP_PARTY_RAN "ran"
+#define MP_PARTY_GBF "gbf"
+#define MP_PARTY_GCF "gcf"
+#define MP_PARTY_BUB "bub"
+#define MP_PARTY_DEF "def"
+EXTERN int MatPartitioningPartySetGlobal(MatPartitioning, const char*);
+#define MP_PARTY_HELPFUL_SETS "hs"
+#define MP_PARTY_KERNIGHAN_LIN "kl"
+#define MP_PARTY_NONE "no"
+EXTERN int MatPartitioningPartySetLocal(MatPartitioning, const char*);
+EXTERN int MatPartitioningPartySetCoarseLevel(MatPartitioning,PetscReal);
+EXTERN int MatPartitioningPartySetBipart(MatPartitioning,PetscTruth);
+EXTERN int MatPartitioningPartySetMatchOptimization(MatPartitioning,PetscTruth);
+
+typedef enum { MP_SCOTCH_GREEDY, MP_SCOTCH_GPS, MP_SCOTCH_GR_GPS } MPScotchGlobalType;
+EXTERN int MatPartitioningScotchSetArch(MatPartitioning,const char*);
+EXTERN int MatPartitioningScotchSetMultilevel(MatPartitioning);
+EXTERN int MatPartitioningScotchSetGlobal(MatPartitioning,MPScotchGlobalType);
+EXTERN int MatPartitioningScotchSetCoarseLevel(MatPartitioning,PetscReal);
+EXTERN int MatPartitioningScotchSetHostList(MatPartitioning,const char*);
+typedef enum { MP_SCOTCH_KERNIGHAN_LIN, MP_SCOTCH_NONE } MPScotchLocalType;
+EXTERN int MatPartitioningScotchSetLocal(MatPartitioning,MPScotchLocalType);
+EXTERN int MatPartitioningScotchSetMapping(MatPartitioning);
+EXTERN int MatPartitioningScotchSetStrategy(MatPartitioning,char*);
 
 /*
     If you add entries here you must also add them to finclude/petscmat.h
