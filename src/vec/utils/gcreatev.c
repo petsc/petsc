@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreatev.c,v 1.19 1995/07/05 17:22:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.20 1995/08/22 16:28:38 bsmith Exp bsmith $";
 #endif
 
 
@@ -22,7 +22,7 @@ static char vcid[] = "$Id: gcreatev.c,v 1.19 1995/07/05 17:22:58 bsmith Exp bsmi
 .   V - location to stash resulting vector
 
     Options Database Key:
-$   -mpi_objects : use MPI vectors, even for the uniprocessor case
+$   -vec_mpi : use MPI vectors, even for the uniprocessor case
 
     Notes:
     Use VecDuplicate() or VecGetVecs() to form additional vectors
@@ -37,9 +37,9 @@ int VecCreate(MPI_Comm comm,int n,Vec *V)
   int numtid;
   MPI_Comm_size(comm,&numtid);
   if (OptionsHasName(0,"-help")) {
-    MPIU_printf(comm,"VecCreate() option: -mpi_objects\n");
+    MPIU_printf(comm,"VecCreate() option: -vec_mpi\n");
   }
-  if (numtid > 1 || OptionsHasName(0,"-mpi_objects")) {
+  if (numtid > 1 || OptionsHasName(0,"-vec_mpi")) {
     return VecCreateMPI(comm,PETSC_DECIDE,n,V);
   }
   return VecCreateSequential(comm,n,V);

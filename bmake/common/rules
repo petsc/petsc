@@ -1,6 +1,6 @@
 #
 # LDIR (defined from $IPETSCDIR) determines the libraries that are linked.
-# PDIR (defined from $PETSC_DIR) determines where the libraries are built.
+# PDIR (defined from $IPETSCDIR) determines where the libraries are built.
 # LDIR and PDIR will usually be identical.
 # LIBNAME - library name
 # SOURCE - source files
@@ -56,18 +56,11 @@ include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
 # (This line MUST be present for certain machines (e.g., Cray T3D))
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
 
-# Checks that PETSC_DIR variable is set and creates library directory
+# Checks that IPETSCDIR variable is set and creates library directory
 # if it does not exist
 chkpetsc_dir: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
           echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
-	@if [ Holder = Holder$(PETSC_DIR) ] ; then \
-          echo "You must set the variable PETSC_DIR to the PETSc directory.1";\
-          false ;\
-          elif [ ! -d $(PETSC_DIR)/ ] ; then \
-          echo "You must set the variable PETSC_DIR to the PETSc directory.2";\
-          false ;\
-          fi
 	-@if [ ! -d $(PDIR) ]; then \
           echo Making directory $(PDIR) for library; mkdir -p $(PDIR) ; fi
 
@@ -222,25 +215,25 @@ fortranstubs:
 # Builds man pages (xman version)
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	doctext -mpath $(PETSC_DIR)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
+	doctext -mpath $(IPETSCDIR)/docs/man/man$(MANSEC) -ext $(MANSEC)  \
                 readme $(SOURCEC) $(SOURCEH); \
-                chmod g+w $(PETSC_DIR)/docs/man/man$(MANSEC)/*; fi 
+                chmod g+w $(IPETSCDIR)/docs/man/man$(MANSEC)/*; fi 
 
 # Builds man pages (LaTeX version)
 latexpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	doc2lt  \
           $(SOURCEC) $(SOURCEH) >> \
-                    $(PETSC_DIR)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
+                    $(IPETSCDIR)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
 
 # Builds man pages (HTML version)
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	doctext -html -index $(PETSC_DIR)/docs/www/www.cit \
-                -mpath $(PETSC_DIR)/docs/www/man$(MANSEC) -ext $(MANSEC)\
+	doctext -html -index $(IPETSCDIR)/docs/www/www.cit \
+                -mpath $(IPETSCDIR)/docs/www/man$(MANSEC) -ext $(MANSEC)\
                 -indexdir www/man$(MANSEC)  \
                  $(SOURCEC) $(SOURCEH); \
-                chmod g+w $(PETSC_DIR)/docs/www/man$(MANSEC)/*; fi 
+                chmod g+w $(IPETSCDIR)/docs/www/man$(MANSEC)/*; fi 
 
 
 
