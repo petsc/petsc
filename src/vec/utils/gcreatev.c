@@ -138,7 +138,7 @@ int VecRegister(const char sname[],const char path[],const char name[],int (*fun
 
     Notes:
     See "petsc/include/petscvec.h" for available vector types (for instance,
-    VECSEQ, VECMPI, or VEC_SHARED).
+    VECSEQ, VECMPI, or VECSHARED).
 
      Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
     of the same type as an existing vector.

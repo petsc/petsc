@@ -49,9 +49,9 @@ int VecESIWrap(Vec xin,esi::Vector<double,int> **v)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)xin,0,&tesi);CHKERRQ(ierr);
   if (tesi) {
-    ierr = VecSetType(xin,VEC_ESI);CHKERRQ(ierr);
+    ierr = VecSetType(xin,VECESI);CHKERRQ(ierr);
   }
-  ierr = PetscTypeCompare((PetscObject)xin,VEC_ESI,&tesi);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)xin,VECESI,&tesi);CHKERRQ(ierr);
   if (tesi) {
     int                    n,N;
     esi::IndexSpace<int>   *map;
@@ -418,10 +418,10 @@ int VecCreate_PetscESI(Vec V)
 
   PetscFunctionBegin;
   V->ops->destroy = 0;  /* since this is called from VecSetType() we have to make sure it doesn't get destroyed twice */
-  ierr = VecSetType(V,VEC_ESI);CHKERRQ(ierr);
+  ierr = VecSetType(V,VECESI);CHKERRQ(ierr);
   ierr = VecCreate(V->comm,V->n,V->N,&v);CHKERRQ(ierr);
   if (V->bs > 1) {ierr = VecSetBlockSize(v,V->bs);CHKERRQ(ierr);}
-  ierr = VecSetType(v,VEC_MPI);CHKERRQ(ierr);
+  ierr = VecSetType(v,VECMPI);CHKERRQ(ierr);
   ve   = new esi::petsc::Vector<double,int>(v);
   ierr = VecESISetVector(V,ve);CHKERRQ(ierr);
   ierr = ve->deleteReference();CHKERRQ(ierr);
@@ -481,7 +481,7 @@ int VecESISetFromOptions(Vec V)
   PetscTruth   flg;
  
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)V,VEC_ESI,&flg);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)V,VECESI,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscOptionsGetString(V->prefix,"-vec_esi_type",string,1024,&flg);CHKERRQ(ierr);
     if (flg) {
