@@ -1,6 +1,6 @@
 
 
-C    "$Id: ex1f.F,v 1.2 1996/10/13 14:55:25 balay Exp balay $";
+C    "$Id: ex1f.F,v 1.3 1996/12/09 15:54:18 balay Exp bsmith $";
 C
 C   Description: Demonstrates how users can augment the PETSc profiling by
 C                nserting their own event logging.
@@ -32,7 +32,9 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                   Variable declarations
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
-      integer USER_EVENT,imax,ierr
+      integer USER_EVENT1,USER_EVENT2,USER_EVENT3,USER_EVENT4
+      integer USER_EVENT8,USER_EVENT9
+      integer USER_EVENT5,USER_EVENT6,USER_EVENT7,imax,ierr
       parameter (imax = 10000)
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,12 +51,68 @@ C        the event via PLogEventBegin() and PLogEventEnd().
 C      - The user can also optionally log floating point operations
 C        with the routine PLogFlops().
 C
-      call PLogEventRegister(USER_EVENT,'User event      ','Red:',ierr)
-      call PLogEventBegin(USER_EVENT,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+      call PLogEventRegister(USER_EVENT1,'User event 1   ','Red:',ierr)
+      call PLogEventRegister(USER_EVENT2,'User event 2   ','Red:',ierr)
+      call PLogEventRegister(USER_EVENT3,'User event 3   ','Red:',ierr)
+      call PLogEventRegister(USER_EVENT4,'User event 4   ','Red:',ierr)
+      call PLogEventRegister(USER_EVENT5,'User event 5   ','Red:',ierr)
+      call PLogEventRegister(USER_EVENT6,'User event 6   ','Red:',ierr)
+      call PLogEventRegister(USER_EVENT7,'User event 7   ','Red:',ierr)
+      call PLogEventRegister(USER_EVENT8,'User event 8   ','Red:',ierr)
+      call PLogEventRegister(USER_EVENT9,'User event 9   ','Red:',ierr)
+      call PLogEventBegin(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PLogFlops(imax)
       call PetscSleep(1)
-      call PLogEventEnd(USER_EVENT,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+      call PLogEventEnd(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogEventBegin(USER_EVENT2,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogFlops(imax)
+      call PetscSleep(1)
+      call PLogEventEnd(USER_EVENT2,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogEventBegin(USER_EVENT3,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogFlops(imax)
+      call PetscSleep(1)
+      call PLogEventEnd(USER_EVENT3,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogEventBegin(USER_EVENT4,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogFlops(imax)
+      call PetscSleep(1)
+      call PLogEventEnd(USER_EVENT4,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogEventBegin(USER_EVENT5,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogFlops(imax)
+      call PetscSleep(1)
+      call PLogEventEnd(USER_EVENT5,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogEventBegin(USER_EVENT6,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogFlops(imax)
+      call PetscSleep(1)
+      call PLogEventEnd(USER_EVENT6,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogEventBegin(USER_EVENT7,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogFlops(imax)
+      call PetscSleep(1)
+      call PLogEventEnd(USER_EVENT7,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogEventBegin(USER_EVENT8,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogFlops(imax)
+      call PetscSleep(1)
+      call PLogEventEnd(USER_EVENT8,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogEventBegin(USER_EVENT9,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+     * PETSC_NULL)
+      call PLogFlops(imax)
+      call PetscSleep(1)
+      call PLogEventEnd(USER_EVENT9,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
 C
 C    We disable the logging of an event.
@@ -63,22 +121,22 @@ C        events is handled separately.
 C      - Note that the user can activate/deactive both user-defined
 C        events and predefined PETSc events.
 C
-      call PLogEventMPEDeactivate(USER_EVENT,ierr)
-      call PLogEventDeactivate(USER_EVENT,ierr)
-      call PLogEventBegin(USER_EVENT,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+      call PLogEventMPEDeactivate(USER_EVENT1,ierr)
+      call PLogEventDeactivate(USER_EVENT1,ierr)
+      call PLogEventBegin(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PetscSleep(1)
-      call PLogEventEnd(USER_EVENT,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+      call PLogEventEnd(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
 C
 C    We next enable the logging of an event
 C
-      call PLogEventMPEActivate(USER_EVENT,ierr)
-      call PLogEventActivate(USER_EVENT,ierr)
-      call PLogEventBegin(USER_EVENT,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+      call PLogEventMPEActivate(USER_EVENT1,ierr)
+      call PLogEventActivate(USER_EVENT1,ierr)
+      call PLogEventBegin(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
       call PetscSleep(1)
-      call PLogEventEnd(USER_EVENT,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+      call PLogEventEnd(USER_EVENT1,PETSC_NULL,PETSC_NULL,PETSC_NULL,
      * PETSC_NULL)
 
       call PetscFinalize(ierr)

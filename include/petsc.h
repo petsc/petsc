@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.149 1997/01/07 17:13:16 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.150 1997/01/27 18:19:37 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -6,7 +6,7 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.16, Released Dec. 10, 1996."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.17, Released ???. ??, 1997."
 
 #include <stdio.h>
 #include "mpi.h"
@@ -100,7 +100,7 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
   from the lowest one, PETSC_COOKIE. If you increase these you must 
   increase the field sizes in petsc/src/plog/src/plog.c
 */
-#define PETSC_COOKIE                1211211
+#define PETSC_COOKIE                    1211211
 #define LARGEST_PETSC_COOKIE_PREDEFINED PETSC_COOKIE + 30
 #define LARGEST_PETSC_COOKIE_ALLOWED    PETSC_COOKIE + 50
 extern int LARGEST_PETSC_COOKIE;
@@ -171,8 +171,8 @@ extern int PetscMPIDump(FILE *);
   to a Fortran routine, where (like all PETSc objects in 
   Fortran) it is treated as an integer.
 */
-extern int PetscCObjectToFortranObject(void *a,int *b);
-extern int PetscFortranObjectToCObject(int a,void *b);
+extern int  PetscCObjectToFortranObject(void *a,int *b);
+extern int  PetscFortranObjectToCObject(int a,void *b);
 
 extern FILE *PetscFOpen(MPI_Comm,char *,char *);
 extern int  PetscFClose(MPI_Comm,FILE*);

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.71 1997/01/22 18:41:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.72 1997/01/24 04:53:58 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -59,20 +59,18 @@ int PetscSetUseTrMalloc_Private(int usenan)
 
 /* HEADER_DOUBLES is the number of doubles in a PetscTrSpace header */
 /* We have to be careful about alignment rules here */
-#if defined(HAVE_64BITS)
-#define TR_ALIGN_BYTES      8
-#define TR_ALIGN_MASK       0x7
+
 #define TR_FILENAME_LEN     16
 #define TR_FUNCTIONNAME_LEN 32
 #define TR_DIRNAME_LEN      224
-#define HEADER_DOUBLES      12
+#define HEADER_DOUBLES      38
+
+#if defined(HAVE_64BITS)
+#define TR_ALIGN_BYTES      8
+#define TR_ALIGN_MASK       0x7
 #else
 #define TR_ALIGN_BYTES      4
 #define TR_ALIGN_MASK       0x3
-#define TR_FILENAME_LEN     12
-#define TR_FUNCTIONNAME_LEN 32
-#define TR_DIRNAME_LEN      224
-#define HEADER_DOUBLES      9
 #endif
 
 #define COOKIE_VALUE   0xf0e0d0c9
@@ -246,6 +244,7 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   inew = (char *) malloc( (unsigned)(nsize+sizeof(TrSPACE)+sizeof(unsigned long)));
   if (!inew) return 0;
 
+  
   /*
    Keep track of range of memory locations we have malloced in 
   */
@@ -254,7 +253,6 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   if (PetscHigh < (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)))
       PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long));
 #endif
-
 
   head = (TRSPACE *)inew;
   inew  += sizeof(TrSPACE);
@@ -363,6 +361,7 @@ int PetscTrFreeDefault( void *aa, int line, char *function, char *file, char *di
   ahead = a;
   a     = a - sizeof(TrSPACE);
   head  = (TRSPACE *)a;
+
   if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
     fprintf( stderr, "Block at address %p is corrupted; cannot free;\n\

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.67 1997/01/22 18:42:34 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.68 1997/01/27 18:16:16 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -73,7 +73,8 @@ struct _MatOps {
             (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring),
             (*coloringpatch)(Mat,int,int *,ISColoring*),
             (*setunfactored)(Mat),
-            (*permute)(Mat,IS,IS,Mat*);
+            (*permute)(Mat,IS,IS,Mat*),
+            (*setvaluesblocked)(Mat,int,int *,int,int *,Scalar *,InsertMode);
 };
 
 #define FACTOR_LU       1

@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.10 1996/09/30 20:58:00 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.11 1997/01/22 18:46:23 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -10,7 +10,7 @@
 typedef struct _TS* TS;
 #define TS_COOKIE PETSC_COOKIE+18
 
-typedef enum { TS_EULER, TS_BEULER, TS_PSEUDO} TSType;
+typedef enum { TS_EULER, TS_BEULER, TS_PSEUDO, TS_NEW} TSType;
 typedef enum { TS_LINEAR, TS_NONLINEAR} TSProblemType;
 
 extern int TSCreate(MPI_Comm,TSProblemType,TS*);
@@ -53,8 +53,10 @@ extern int TSPseudoIncrementDtFromInitialDt(TS);
 
 extern int TSComputeRHSFunction(TS,double,Vec,Vec);
 
+extern int TSRegister(TSType,TSType*,char*,int (*)(TS));
 extern int TSRegisterAll();
-extern int TSRegister(int,char*,int (*)(TS));
+extern int TSRegisterDestroy();
+extern int TSRegisterAllCalled;
 
 extern int TSGetSNES(TS,SNES*);
 extern int TSGetSLES(TS,SLES*);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.72 1997/01/06 20:43:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.73 1997/01/27 18:18:47 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -496,14 +496,18 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 extern int SNESCreate_EQ_LS(SNES);
 int SNESRegisterAll()
 {
-  SNESRegister((int)SNES_EQ_LS,         "ls",      SNESCreate_EQ_LS);
+  SNESRegisterAllCalled = 1;
+
+  SNESRegister(SNES_EQ_LS,         0,"ls",      SNESCreate_EQ_LS);
   return 0;
 }
 
 extern int KSPCreate_GMRES(KSP);
 int KSPRegisterAll()
 {
-   KSPRegister(KSPGMRES      , "gmres",      KSPCreate_GMRES); 
+  KSPRegisterAllCalled = 1;
+
+  KSPRegister(KSPGMRES      , 0,"gmres",      KSPCreate_GMRES); 
   return 0;
 }
 
@@ -511,8 +515,10 @@ extern int PCCreate_BJacobi(PC);
 extern int PCCreate_ILU(PC);
 int PCRegisterAll()
 {
-  PCRegister(PCBJACOBI      , "bjacobi",    PCCreate_BJacobi);
-  PCRegister(PCILU          , "ilu",        PCCreate_ILU);
+  PCRegisterAllCalled = 1;
+
+  PCRegister(PCBJACOBI      ,0, "bjacobi",    PCCreate_BJacobi);
+  PCRegister(PCILU          ,0, "ilu",        PCCreate_ILU);
   return 0;
 }
 
@@ -537,11 +543,9 @@ extern int MatOrder_Natural(Mat,MatReordering,IS*,IS*);
 int MatReorderingRegisterAll()
 {
   int           ierr;
-  MatReordering name;
-  static int  called = 0;
-  if (called) return 0; else called = 1;
 
-  ierr = MatReorderingRegister(&name,"natural",MatOrder_Natural);CHKERRQ(ierr);
+  MatReorderingRegisterAllCalled = 1;
+  ierr = MatReorderingRegister(ORDER_NATURAL,0,"natural",MatOrder_Natural);CHKERRQ(ierr);
   return 0;
 }
  ----------------------------------------------------------------------*/

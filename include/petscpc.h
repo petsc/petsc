@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.63 1997/01/12 20:20:48 curfman Exp curfman $ */
+/* $Id: pc.h,v 1.64 1997/01/12 20:34:21 curfman Exp bsmith $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -9,7 +9,7 @@
 #include "mat.h"
 
 typedef enum { PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
-               PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS } PCType;
+               PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS, PCNEW } PCType;
 
 typedef struct _PC* PC;
 #define PC_COOKIE    PETSC_COOKIE+9
@@ -31,9 +31,12 @@ extern int    PCApplyTrans(PC,Vec,Vec);
 extern int    PCApplyBAorABTrans(PC,PCSide,Vec,Vec,Vec);
 extern int    PCApplyRichardson(PC,Vec,Vec,Vec,int);
 extern int    PCApplyRichardsonExists(PC,PetscTruth*);
-extern int    PCRegisterAll();
+
+extern int    PCRegister(PCType,PCType*,char *,int (*)(PC));
 extern int    PCRegisterDestroy();
-extern int    PCRegister(PCType,char *,int (*)(PC));
+extern int    PCRegisterAll();
+extern int    PCRegisterAllCalled;
+
 extern int    PCDestroy(PC);
 extern int    PCSetFromOptions(PC);
 extern int    PCGetType(PC,PCType*,char**);
@@ -58,7 +61,7 @@ extern int PCNullSpaceCreate(MPI_Comm,int,int,Vec *,PCNullSpace*);
 extern int PCNullSpaceDestroy(PCNullSpace);
 extern int PCNullSpaceRemove(PCNullSpace,Vec);
 
-/* options specific to particular preconditioners */
+/* ------------- options specific to particular preconditioners --------- */
 extern int PCSORSetSymmetric(PC, MatSORType);
 extern int PCSORSetOmega(PC, double);
 extern int PCEisenstatSetOmega(PC, double);

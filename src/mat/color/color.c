@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.10 1997/01/01 03:38:31 bsmith Exp balay $";
+static char vcid[] = "$Id: color.c,v 1.11 1997/01/06 20:25:36 balay Exp bsmith $";
 #endif
  
 /*
@@ -194,6 +194,7 @@ int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
 #include "sys.h"
 
 static NRList *__MatColoringList = 0;
+int MatColoringRegisterAllCalled = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "MatColoringRegister"
@@ -202,28 +203,29 @@ static NRList *__MatColoringList = 0;
    matrix package. 
 
    Input Parameters:
+.  name - name of coloring (for example COLORING_SL) or COLORING_NEW
 .  sname -  corresponding string for name
 .  order - routine that does coloring
 
    Output Parameters:
-.  name - number associated with the coloring (for example COLORING_SL)
+.  oname - number associated with the coloring (for example COLORING_SL)
 
 .keywords: matrix, coloring, register
 
 .seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
 @*/
-int  MatColoringRegister(MatColoring *name,char *sname,int (*color)(Mat,MatColoring,ISColoring*))
+int MatColoringRegister(MatColoring name,MatColoring *oname,char *sname,int (*color)(Mat,MatColoring,ISColoring*))
 {
   int         ierr;
   static int  numberregistered = 0;
 
   if (!__MatColoringList) {
     ierr = NRCreate(&__MatColoringList); CHKERRQ(ierr);
-    ierr = MatColoringRegisterAll(); CHKERRQ(ierr);
   }
 
-  *name = (MatColoring) numberregistered++;
-  ierr = NRRegister(__MatColoringList,(int)*name,sname,(int (*)(void*))color);CHKERRQ(ierr);
+  if (name == COLORING_NEW) name = COLORING_NEW + numberregistered++;
+  if (oname) *oname = name;
+  ierr = NRRegister(__MatColoringList,(int)name,sname,(int (*)(void*))color);CHKERRQ(ierr);
   return 0;
 }
 
@@ -242,6 +244,7 @@ int MatColoringRegisterDestroy()
     NRDestroy( __MatColoringList );
     __MatColoringList = 0;
   }
+  MatColoringRegisterAllCalled = 0;
   return 0;
 }
 
@@ -341,7 +344,7 @@ int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
-  if (!__MatColoringList) {
+  if (!MatColoringRegisterAllCalled) {
     ierr = MatColoringRegisterAll();CHKERRQ(ierr);
   }
 

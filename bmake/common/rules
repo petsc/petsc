@@ -20,7 +20,7 @@ CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS)
 # and all lower level PETSc components (such as vectors and matrices).
 # The order of listing these libraries is important!
 #
-PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes -lpetscec -lpetscsles -lpetscksp \
+PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes  -lpetscsles -lpetscksp \
 		-lpetscmat -lpetscvec -lpetscsys $(X11_LIB) \
 		$(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
@@ -30,22 +30,31 @@ PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes -lpetscec -lpetscsles -lpetscksp \
 # of listing these libraries is important!
 #
 SLES_LIB    =	-L$(LDIR) -lpetscsles -lpetscksp \
-		-lpetscmat -lpetscvec \
-		-lpetscsys $(BS_LIB) $(LAPACK_LIB) \
+		-lpetscmat -lpetscvec -lpetscsys $(BS_LIB) $(LAPACK_LIB) \
                  $(BLAS_LIB) $(X11_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 #
 #   Library if you are using the GVec component of PETSc
 #
 GVEC_LIB   = -L$(LDIR) -lpetscgvec  -lpetscts -lpetscsnes  -lpetscsles -lpetscksp \
-		-lpetscmat  -lpetscvec \
-		-lpetscsys $(X11_LIB) \
+		-lpetscmat  -lpetscvec -lpetscsys $(X11_LIB) \
+		$(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
+		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
+#
+#   All PETSc libraries
+#
+GVEC_LIB   = -L$(LDIR) -lpetscgvec  -lpetscts -lpetscsnes -lpetscec -lpetscsles \
+                -lpetscksp -lpetscmat  -lpetscvec -lpetscsys $(X11_LIB) \
 		$(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 #
 # Link if you are using the PETSc Fortran interface.
 #
 PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscfortran
+#
+# Link if you are using code from the contributed part of PETSc
+#
+PETSC_CONTRIB = -L$(LDIR) -lpetsccontrib
 #
 # These include files set customized site, optimization, and version options.
 # Do NOT remove any of these include files.  You should generally have to edit

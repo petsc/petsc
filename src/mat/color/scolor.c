@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: scolor.c,v 1.4 1996/12/17 16:45:13 balay Exp balay $";
+static char vcid[] = "$Id: scolor.c,v 1.5 1997/01/06 20:25:36 balay Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -21,12 +21,11 @@ extern int MatFDColoringID_Minpack(Mat,MatColoring,ISColoring*);
   modify it to incorporate a call to MatColoringRegister() for 
   the new method, after the current list.
 
-  Restricting the choices:
-  To prevent all of the methods from being registered and thus 
-  save memory, copy this routine and modify it to register a zero,
-  instead of the function name, for those methods you do not wish to
-  register. Make sure you keep the list of methods in the same order.
-  Make sure that the replacement routine is linked before libpetscmat.a.
+  Restricting the choices: To prevent all of the methods from being
+  registered and thus save memory, copy this routine and modify it to
+  register a zero, instead of the function name, for those methods you
+  do not wish to register.  Make sure that the replacement routine is
+  linked before libpetscmat.a.
 
 .keywords: matrix, coloring, register, all
 
@@ -35,17 +34,12 @@ extern int MatFDColoringID_Minpack(Mat,MatColoring,ISColoring*);
 int MatColoringRegisterAll()
 {
   int         ierr;
-  MatColoring name;
-  static int  called = 0;
-  if (called) return 0; else called = 1;
 
-  /*
-       Do not change the order of these, just add new ones to the end
-  */
-  ierr = MatColoringRegister(&name,"natural",MatColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegister(&name,"sl",MatFDColoringSL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(&name,"lf",MatFDColoringLF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(&name,"id",MatFDColoringID_Minpack);CHKERRQ(ierr);
+  MatColoringRegisterAllCalled = 1;  
+  ierr = MatColoringRegister(COLORING_NATURAL,0,"natural",MatColoring_Natural);CHKERRQ(ierr);
+  ierr = MatColoringRegister(COLORING_SL,     0,"sl",MatFDColoringSL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(COLORING_LF,     0,"lf",MatFDColoringLF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(COLORING_ID,     0,"id",MatFDColoringID_Minpack);CHKERRQ(ierr);
 
   return 0;
 }

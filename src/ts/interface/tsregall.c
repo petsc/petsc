@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tsregall.c,v 1.3 1996/12/16 20:59:07 balay Exp balay $";
+static char vcid[] = "$Id: tsregall.c,v 1.4 1997/01/06 20:28:06 balay Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
@@ -16,20 +16,14 @@ extern int TSCreate_Pseudo(TS);
 
   Adding new methods:
   To add a new method to the registry
-$   1.  Copy this routine and modify it to incorporate
-$       a call to TSRegister() for the new method.  
-$   2.  Modify the file "PETSCDIR/include/ts.h"
-$       by appending the method's identifier as an
-$       enumerator of the TSType enumeration.
-$       As long as the enumerator is appended to
-$       the existing list, only the TSRegisterAll()
-$       routine requires recompilation.
+$     Copy this routine and modify it to incorporate
+$     a call to TSRegister() for the new method.  
 
   Restricting the choices:
   To prevent all of the methods from being registered and thus 
   save memory, copy this routine and modify it to register only 
   those methods you desire.  Make sure that the replacement routine 
-  is linked before libpetscsnes.a.
+  is linked before libpetscts.a.
 
 .keywords: TS, timestepper, register, all
 
@@ -37,8 +31,10 @@ $       routine requires recompilation.
 @*/
 int TSRegisterAll()
 {
-  TSRegister((int)TS_EULER,         "euler",      TSCreate_Euler);
-  TSRegister((int)TS_BEULER,        "beuler",     TSCreate_BEuler);
-  TSRegister((int)TS_PSEUDO,        "pseudo",     TSCreate_Pseudo);
+  TSRegisterAllCalled = 1;
+
+  TSRegister(TS_EULER,         0,"euler",      TSCreate_Euler);
+  TSRegister(TS_BEULER,        0,"beuler",     TSCreate_BEuler);
+  TSRegister(TS_PSEUDO,        0,"pseudo",     TSCreate_Pseudo);
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.28 1996/12/17 17:16:57 balay Exp balay $";
+static char vcid[] = "$Id: shellpc.c,v 1.29 1997/01/06 20:23:41 balay Exp bsmith $";
 #endif
 
 /*
@@ -81,7 +81,7 @@ static int PCView_Shell(PetscObject obj,Viewer viewer)
 
 */
 #undef __FUNC__  
-#define __FUNC__ "PCCreate_Shel"
+#define __FUNC__ "PCCreate_Shell"
 int PCCreate_Shell(PC pc)
 {
   PC_Shell *shell;

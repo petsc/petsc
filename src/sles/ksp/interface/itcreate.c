@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.93 1997/01/01 03:35:54 bsmith Exp balay $";
+static char vcid[] = "$Id: itcreate.c,v 1.94 1997/01/06 20:22:18 balay Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -11,6 +11,8 @@ static char vcid[] = "$Id: itcreate.c,v 1.93 1997/01/01 03:35:54 bsmith Exp bala
 #include "sys.h"
 #include "viewer.h"       /*I "viewer.h" I*/
 #include "pinclude/pviewer.h"
+
+int KSPRegisterAllCalled = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "KSPView"
@@ -182,7 +184,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
     ksp->data = 0;
   }
   /* Get the function pointers for the iterative method requested */
-  if (!__KSPList) {KSPRegisterAll();}
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(); CHKERRQ(ierr);}
   if (!__KSPList) SETERRQ(1,0,"Could not get list of KSP types"); 
   r =  (int (*)(KSP))NRFindRoutine( __KSPList, (int)itmethod, (char *)0 );
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
@@ -198,20 +200,27 @@ int KSPSetType(KSP ksp,KSPType itmethod)
    an iterative name (KSPType) and a function pointer.
 
    Input Parameters:
-.  name   - for instance KSPCG, KSPGMRES, ...
+.  name   - for instance KSPCG, KSPGMRES, ... or KSPNEW for a new method
 .  sname  - corresponding string for name
 .  create - routine to create method context
+
+   Output Parameter:
+.  oname - type for new method
 
 .keywords: KSP, register
 
 .seealso: KSPRegisterAll(), KSPRegisterDestroy()
 @*/
-int  KSPRegister(KSPType name, char *sname, int  (*create)(KSP))
+int  KSPRegister(KSPType name, KSPType *oname,char *sname, int  (*create)(KSP))
 {
   int ierr;
-  int (*dummy)(void *) = (int (*)(void *)) create;
+  static int numberregistered = 0;
+
+  if (name == KSPNEW) name = KSPNEW + numberregistered++;
+
+  if (oname) *oname = name;
   if (!__KSPList) {ierr = NRCreate(&__KSPList); CHKERRQ(ierr);}
-  return NRRegister( __KSPList, (int) name, sname, dummy );
+  return NRRegister( __KSPList, (int) name, sname, (int (*)(void*))create );
 }
 
 #undef __FUNC__  
@@ -230,6 +239,7 @@ int KSPRegisterDestroy()
     NRDestroy( __KSPList );
     __KSPList = 0;
   }
+  KSPRegisterAllCalled = 0;
   return 0;
 }
 

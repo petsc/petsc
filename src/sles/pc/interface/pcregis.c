@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.29 1997/01/06 20:23:25 balay Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.30 1997/01/27 18:15:59 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -25,14 +25,8 @@ extern int PCCreate_BGS(PC);
 
   Adding new methods:
   To add a new method to the registry
-$   1.  Copy this routine and modify it to incorporate
-$       a call to PCRegister() for the new method.  
-$   2.  Modify the file "PETSCDIR/include/pc.h"
-$       by appending the method's identifier as an
-$       enumerator of the PCType enumeration.
-$       As long as the enumerator is appended to
-$       the existing list, only the PCRegisterAll()
-$       routine requires recompilation.
+$     Copy this routine and modify it to incorporate
+$     a call to PCRegister() for the new method.  
 
   Restricting the choices:
   To prevent all of the methods from being registered and thus 
@@ -47,18 +41,20 @@ $       routine requires recompilation.
 @*/
 int PCRegisterAll()
 {
-  PCRegister(PCNONE         , "none",       PCCreate_None);
-  PCRegister(PCJACOBI       , "jacobi",     PCCreate_Jacobi);
-  PCRegister(PCBJACOBI      , "bjacobi",    PCCreate_BJacobi);
-  PCRegister(PCSOR          , "sor",        PCCreate_SOR);
-  PCRegister(PCLU           , "lu",         PCCreate_LU);
-  PCRegister(PCSHELL        , "shell",      PCCreate_Shell);
-  PCRegister(PCMG           , "mg",         PCCreate_MG);
-  PCRegister(PCEISENSTAT    , "eisenstat",  PCCreate_Eisenstat);
-  PCRegister(PCILU          , "ilu",        PCCreate_ILU);
-  PCRegister(PCICC          , "icc",        PCCreate_ICC);
-  PCRegister(PCASM          , "asm",        PCCreate_ASM);
-  PCRegister(PCBGS          , "bgs",        PCCreate_BGS);
+  PCRegisterAllCalled = 1;
+
+  PCRegister(PCNONE         ,0, "none",       PCCreate_None);
+  PCRegister(PCJACOBI       ,0, "jacobi",     PCCreate_Jacobi);
+  PCRegister(PCBJACOBI      ,0, "bjacobi",    PCCreate_BJacobi);
+  PCRegister(PCSOR          ,0, "sor",        PCCreate_SOR);
+  PCRegister(PCLU           ,0, "lu",         PCCreate_LU);
+  PCRegister(PCSHELL        ,0, "shell",      PCCreate_Shell);
+  PCRegister(PCMG           ,0, "mg",         PCCreate_MG);
+  PCRegister(PCEISENSTAT    ,0, "eisenstat",  PCCreate_Eisenstat);
+  PCRegister(PCILU          ,0, "ilu",        PCCreate_ILU);
+  PCRegister(PCICC          ,0, "icc",        PCCreate_ICC);
+  PCRegister(PCASM          ,0, "asm",        PCCreate_ASM);
+  PCRegister(PCBGS          ,0, "bgs",        PCCreate_BGS);
   return 0;
 }
 

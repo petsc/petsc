@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.47 1996/11/19 16:34:06 bsmith Exp curfman $ */
+/* $Id: ksp.h,v 1.48 1997/01/12 20:34:31 curfman Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -14,7 +14,7 @@
 typedef struct _KSP*     KSP;
 
 typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, KSPTCQMR, KSPBCGS, 
-               KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG} KSPType;
+               KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPPREONLY, KSPQCG, KSPNEW} KSPType;
 
 extern int KSPCreate(MPI_Comm,KSP *);
 extern int KSPSetType(KSP,KSPType);
@@ -24,7 +24,8 @@ extern int KSPDestroy(KSP);
 
 extern int KSPRegisterAll();
 extern int KSPRegisterDestroy();
-extern int KSPRegister(KSPType,char *,int (*)(KSP));
+extern int KSPRegister(KSPType,KSPType*,char *,int (*)(KSP));
+extern int KSPRegisterAllCalled;
 
 extern int KSPGetType(KSP, KSPType *,char **);
 extern int KSPSetPreconditionerSide(KSP,PCSide);
@@ -68,14 +69,15 @@ extern int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
 extern int KSPGMRESIROrthogonalization(KSP,int);
 
 extern int KSPSetFromOptions(KSP);
-extern int KSPAddOptionsChecker(int (*)(KSP) );
+extern int KSPAddOptionsChecker(int (*)(KSP));
 
 extern int KSPSingularValueMonitor(KSP,int,double, void * );
-extern int KSPCGDefaultConverged(KSP,int,double, void *);
 extern int KSPDefaultMonitor(KSP,int,double, void *);
 extern int KSPTrueMonitor(KSP,int,double, void *);
 extern int KSPDefaultSMonitor(KSP,int,double, void *);
+
 extern int KSPDefaultConverged(KSP,int,double, void *);
+extern int KSPCGDefaultConverged(KSP,int,double, void *);
 
 extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
 extern int KSPUnwindPreconditioner(KSP,Vec,Vec);

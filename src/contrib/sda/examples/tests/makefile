@@ -17,8 +17,6 @@ EXAMPLES_3    = ex2
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
-PETSC_CONTRIB = -L$(LDIR) -lpetsccontrib
-
 ex1: ex1.o  chkopts
 	-$(CLINKER) -o ex1 ex1.o $(PETSC_CONTRIB)  $(SLES_LIB)
 	$(RM) -f ex1.o

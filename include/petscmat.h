@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.123 1997/01/22 18:46:23 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.124 1997/01/27 18:19:37 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -14,9 +14,9 @@ typedef struct _Mat*           Mat;
 /*
    The default matrix data storage formats and routines to create them.
 */
-typedef enum { MATSAME=-1,  MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ, MATSHELL, 
-               MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,
-               MATMPIDENSE, MATSEQBAIJ,  MATMPIBAIJ,  MATMPICSN} MatType;
+typedef enum { MATSAME=-1,  MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,   MATSHELL, 
+               MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG, MATMPIDENSE, MATSEQBAIJ,
+               MATMPIBAIJ,  MATMPICSN} MatType;
 
 extern int MatCreate(MPI_Comm,int,int,Mat*);
 extern int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
@@ -34,11 +34,11 @@ extern int MatDestroy(Mat);
 extern int MatCreateShell(MPI_Comm,int,int,int,int,void *,Mat*);
 extern int MatShellGetContext(Mat,void **);
 
-  
 extern int MatPrintHelp(Mat);
 
 /* ------------------------------------------------------------*/
 extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
+
 typedef enum {MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0} MatAssemblyType;
 extern int MatAssemblyBegin(Mat,MatAssemblyType);
 extern int MatAssemblyEnd(Mat,MatAssemblyType);
@@ -58,6 +58,7 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*,char**);
 extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,int*);
+
 extern int MatGetValues(Mat,int,int*,int,int*,Scalar*);
 extern int MatGetRow(Mat,int,int *,int **,Scalar**);
 extern int MatRestoreRow(Mat,int,int *,int **,Scalar**);
@@ -138,8 +139,6 @@ extern int MatSetLocalToGlobalMapping(Mat, int,int *);
 extern int MatZeroRowsLocal(Mat,IS,Scalar*);
 extern int MatSetValuesLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
-
-
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 
@@ -148,15 +147,15 @@ extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
   done through the SLES, KSP and PC interfaces.
 */
 
-typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
-              ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_FLOW,
-              ORDER_APPLICATION_1,ORDER_APPLICATION_2} MatReordering;
+typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,ORDER_RCM=3,
+              ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_FLOW,ORDER_NEW} MatReordering;
 extern int MatGetReordering(Mat,MatReordering,IS*,IS*);
 extern int MatGetReorderingTypeFromOptions(char *,MatReordering*);
-extern int MatReorderingRegister(MatReordering *,char*,int (*)(Mat,MatReordering,IS*,IS*));
-extern int MatReorderingRegisterAll();
-extern int MatReorderingRegisterDestroy();
+extern int MatReorderingRegister(MatReordering,MatReordering*,char*,int(*)(Mat,MatReordering,IS*,IS*));
 extern int MatReorderingGetName(MatReordering,char **);
+extern int MatReorderingRegisterDestroy();
+extern int MatReorderingRegisterAll();
+extern int MatReorderingRegisterAllCalled;
 
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
 
@@ -172,7 +171,6 @@ extern int MatIncompleteCholeskyFactorSymbolic(Mat,IS,double,int,Mat*);
 extern int MatLUFactorNumeric(Mat,Mat*);
 extern int MatILUDTFactor(Mat,double,int,IS,IS,Mat *);
 
-
 extern int MatSolve(Mat,Vec,Vec);
 extern int MatForwardSolve(Mat,Vec,Vec);
 extern int MatBackwardSolve(Mat,Vec,Vec);
@@ -185,22 +183,26 @@ extern int MatSetUnfactored(Mat);
 typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_FORWARD_SWEEP=4,SOR_LOCAL_BACKWARD_SWEEP=8,
               SOR_LOCAL_SYMMETRIC_SWEEP=12,SOR_ZERO_INITIAL_GUESS=16,
-              SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128
-              } MatSORType;
+              SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128} MatSORType;
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
 /* 
     These routines are for efficiently computing Jacobians via finite differences.
 */
 typedef enum {COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID,
-              COLORING_APPLICATION_1,COLORING_APPLICATION_2} MatColoring;
+              COLORING_NEW} MatColoring;
 extern int MatGetColoring(Mat,MatColoring,ISColoring*);
 extern int MatGetColoringTypeFromOptions(char *,MatColoring*);
-extern int MatColoringRegister(MatColoring *,char*,int (*)(Mat,MatColoring,ISColoring *));
+extern int MatColoringRegister(MatColoring,MatColoring*,char*,int(*)(Mat,MatColoring,ISColoring *));
 extern int MatColoringRegisterAll();
+extern int MatColoringRegisterAllCalled;
 extern int MatColoringRegisterDestroy();
 extern int MatColoringPatch(Mat,int,int *,ISColoring*);
 
+/*
+    Data structures used to compute Jacobian vector products 
+  efficiently using finite differences.
+*/
 #define MAT_FDCOLORING_COOKIE PETSC_COOKIE + 22
 
 typedef struct _MatFDColoring *MatFDColoring;
@@ -254,29 +256,28 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_INCOMPLETECHOLESKYFACTOR_SYMBOLIC=34,
                MATOP_GET_ARRAY=35,
                MATOP_RESTORE_ARRAY=36,
-               MATOP_CONVERT=37,
 
-               MATOP_CONVERT_SAME_TYPE=40,
-               MATOP_FORWARD_SOLVE=41,
-               MATOP_BACKWARD_SOLVE=42,
-               MATOP_ILUFACTOR=43,
-               MATOP_INCOMPLETECHOLESKYFACTOR=44,
-               MATOP_AXPY=45,
-               MATOP_GET_SUBMATRICES=46,
-               MATOP_INCREASE_OVERLAP=47,
-               MATOP_GET_VALUES=48,
-               MATOP_COPY=49,
-               MATOP_PRINT_HELP=50,
-               MATOP_SCALE=51,
-               MATOP_SHIFT=52,
-               MATOP_DIAGONAL_SHIFT=53,
-               MATOP_ILUDT_FACTOR=54,
-               MATOP_GET_BLOCK_SIZE=55,
-               MATOP_GET_ROW_IJ=56,
-               MATOP_RESTORE_ROW_IJ=57,
-               MATOP_GET_COLUMN_IJ=58,
-               MATOP_RESTORE_COLUMN_IJ=59,
-               MATOP_FDCOLORING_CREATE=60,
+               MATOP_CONVERT_SAME_TYPE=39,
+               MATOP_FORWARD_SOLVE=40,
+               MATOP_BACKWARD_SOLVE=41,
+               MATOP_ILUFACTOR=42,
+               MATOP_INCOMPLETECHOLESKYFACTOR=43,
+               MATOP_AXPY=44,
+               MATOP_GET_SUBMATRICES=45,
+               MATOP_INCREASE_OVERLAP=46,
+               MATOP_GET_VALUES=47,
+               MATOP_COPY=48,
+               MATOP_PRINT_HELP=49,
+               MATOP_SCALE=50,
+               MATOP_SHIFT=51,
+               MATOP_DIAGONAL_SHIFT=52,
+               MATOP_ILUDT_FACTOR=53,
+               MATOP_GET_BLOCK_SIZE=54,
+               MATOP_GET_ROW_IJ=55,
+               MATOP_RESTORE_ROW_IJ=56,
+               MATOP_GET_COLUMN_IJ=57,
+               MATOP_RESTORE_COLUMN_IJ=58,
+               MATOP_FDCOLORING_CREATE=59,
                MATOP_DESTROY=250,
                MATOP_VIEW=251
              } MatOperation;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.14 1996/12/16 20:46:26 balay Exp balay $";
+static char vcid[] = "$Id: snesregi.c,v 1.15 1997/01/06 20:29:45 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -17,14 +17,8 @@ extern int SNESCreate_Test(SNES);
 
   Adding new methods:
   To add a new method to the registry
-$   1.  Copy this routine and modify it to incorporate
-$       a call to SNESRegister() for the new method.  
-$   2.  Modify the file "PETSCDIR/include/snes.h"
-$       by appending the method's identifier as an
-$       enumerator of the SNESType enumeration.
-$       As long as the enumerator is appended to
-$       the existing list, only the SNESRegisterAll()
-$       routine requires recompilation.
+$     Copy this routine and modify it to incorporate
+$     a call to SNESRegister() for the new method.  
 
   Restricting the choices:
   To prevent all of the methods from being registered and thus 
@@ -38,10 +32,11 @@ $       routine requires recompilation.
 @*/
 int SNESRegisterAll()
 {
-  SNESRegister((int)SNES_EQ_LS,         "ls",      SNESCreate_EQ_LS);
-  SNESRegister((int)SNES_EQ_TR,         "tr",      SNESCreate_EQ_TR);
-  SNESRegister((int)SNES_EQ_TEST,       "test",    SNESCreate_Test);
-  SNESRegister((int)SNES_UM_TR,         "umtr",    SNESCreate_UM_TR);
-  SNESRegister((int)SNES_UM_LS,         "umls",    SNESCreate_UM_LS);
+  SNESRegisterAllCalled = 1;
+  SNESRegister(SNES_EQ_LS,         0,"ls",      SNESCreate_EQ_LS);
+  SNESRegister(SNES_EQ_TR,         0,"tr",      SNESCreate_EQ_TR);
+  SNESRegister(SNES_EQ_TEST,       0,"test",    SNESCreate_Test);
+  SNESRegister(SNES_UM_TR,         0,"umtr",    SNESCreate_UM_TR);
+  SNESRegister(SNES_UM_LS,         0,"umls",    SNESCreate_UM_LS);
   return 0;
 }

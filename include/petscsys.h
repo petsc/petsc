@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.22 1996/09/12 16:28:47 bsmith Exp curfman $ */
+/* $Id: sys.h,v 1.23 1996/10/22 18:55:24 curfman Exp bsmith $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -15,8 +15,8 @@ extern char *PetscGetDate();
 
 extern int  PetscSortInt(int,int*);
 extern int  PetscSortIntWithPermutation(int,int*,int*);
-extern int  PetscSortDoubleWithPermutation(int,double*,int*);
 extern int  PetscSortDouble(int,double*);
+extern int  PetscSortDoubleWithPermutation(int,double*,int*);
 
 extern int  PetscSetDisplay();
 extern int  PetscGetDisplay(char *,int);

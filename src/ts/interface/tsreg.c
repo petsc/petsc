@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.14 1997/01/01 03:39:55 bsmith Exp balay $";
+static char vcid[] = "$Id: tsreg.c,v 1.15 1997/01/06 20:28:06 balay Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: tsreg.c,v 1.14 1997/01/01 03:39:55 bsmith Exp balay $
 #include <math.h>
 
 static NRList *__TSList = 0;
+int TSRegisterAllCalled = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "TSSetType"
@@ -67,26 +68,34 @@ int TSSetType(TS ts,TSType method)
    a function pointer and a nonlinear solver name of the type TSType.
 
    Input Parameters:
-.  name - for instance TS_EQ_NLS, TS_EQ_NTR, ...
+.  name - for instance TS_BEULER, or TS_NEW for a new method
 .  sname - corfunPonding string for name
 .  create - routine to create method context
+
+   Output Parameter:
+.   oname - type associated with this new method
 
 .keywords: TS, nonlinear, register
 
 .seealso: TSRegisterAll(), TSRegisterDestroy()
 @*/
-int TSRegister(int name, char *sname, int (*create)(TS))
+int TSRegister(TSType name,TSType *oname, char *sname, int (*create)(TS))
 {
   int ierr;
+  static int numberregistered = 0;
+
+  if (name == TS_NEW) name = TS_NEW + numberregistered++;
+
+  if (oname) *oname = name;
   if (!__TSList) {ierr = NRCreate(&__TSList); CHKERRQ(ierr);}
-  NRRegister( __TSList, name, sname, (int (*)(void*))create );
+  NRRegister( __TSList, (int) name, sname, (int (*)(void*))create );
   return 0;
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "TSRegisterDestroy"
 /*@C
-   TSRegisterDestroy - Frees the list of nonlinear solvers that were
+   TSRegisterDestroy - Frees the list of timesteppers that were
    registered by TSRegister().
 
 .keywords: TS, nonlinear, register, destroy
@@ -99,6 +108,7 @@ int TSRegisterDestroy()
     NRDestroy( __TSList );
     __TSList = 0;
   }
+  TSRegisterAllCalled = 0;
   return 0;
 }
 
@@ -119,7 +129,7 @@ int TSRegisterDestroy()
 int TSGetType(TS ts, TSType *method,char **name)
 {
   int ierr;
-  if (!__TSList) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
   if (method) *method = (TSType) ts->type;
   if (name)  *name = NRFindName( __TSList, (int) ts->type );
   return 0;

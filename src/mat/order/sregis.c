@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sregis.c,v 1.15 1996/12/17 16:53:28 balay Exp balay $";
+static char vcid[] = "$Id: sregis.c,v 1.16 1997/01/06 20:25:07 balay Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"     /*I       "mat.h"   I*/
@@ -23,12 +23,10 @@ extern int MatOrder_Flow(Mat,MatReordering,IS*,IS*);
   modify it to incorporate a call to MatReorderRegister() for 
   the new method, after the current list.
 
-  Restricting the choices:
-  To prevent all of the methods from being registered and thus 
-  save memory, copy this routine and modify it to register a zero,
-  instead of the function name, for those methods you do not wish to
-  register. Make sure you keep the list of methods in the same order.
-  Make sure that the replacement routine is linked before libpetscmat.a.
+  Restricting the choices: To prevent all of the methods from being
+  registered and thus save memory, copy this routine and comment out
+  those orderigs you do not wish to include.  Make sure that the
+  replacement routine is linked before libpetscmat.a.
 
 .keywords: matrix, reordering, register, all
 
@@ -37,20 +35,15 @@ extern int MatOrder_Flow(Mat,MatReordering,IS*,IS*);
 int MatReorderingRegisterAll()
 {
   int           ierr;
-  MatReordering name;
-  static int  called = 0;
-  if (called) return 0; else called = 1;
+  MatReorderingRegisterAllCalled = 1;
 
-  /*
-       Do not change the order of these, just add ones to the end 
-  */
-  ierr = MatReorderingRegister(&name,"natural",MatOrder_Natural);CHKERRQ(ierr);
-  ierr = MatReorderingRegister(&name,"nd"     ,MatOrder_ND);CHKERRQ(ierr);
-  ierr = MatReorderingRegister(&name,"1wd"    ,MatOrder_1WD);CHKERRQ(ierr);
-  ierr = MatReorderingRegister(&name,"rcm"    ,MatOrder_RCM);CHKERRQ(ierr);
-  ierr = MatReorderingRegister(&name,"qmd"    ,MatOrder_QMD);CHKERRQ(ierr);
-  ierr = MatReorderingRegister(&name,"rl"     ,MatOrder_RowLength);CHKERRQ(ierr);
-  ierr = MatReorderingRegister(&name,"flow"   ,MatOrder_Flow);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(ORDER_NATURAL,  0,"natural",MatOrder_Natural);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(ORDER_ND,       0,"nd"     ,MatOrder_ND);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(ORDER_1WD,      0,"1wd"    ,MatOrder_1WD);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(ORDER_RCM,      0,"rcm"    ,MatOrder_RCM);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(ORDER_QMD,      0,"qmd"    ,MatOrder_QMD);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(ORDER_ROWLENGTH,0,"rl"     ,MatOrder_RowLength);CHKERRQ(ierr);
+  ierr = MatReorderingRegister(ORDER_FLOW,     0,"flow"   ,MatOrder_Flow);CHKERRQ(ierr);
   return 0;
 }
 

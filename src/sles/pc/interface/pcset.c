@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.49 1997/01/01 03:36:49 bsmith Exp balay $";
+static char vcid[] = "$Id: pcset.c,v 1.50 1997/01/06 20:23:25 balay Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -14,6 +14,7 @@ static char vcid[] = "$Id: pcset.c,v 1.49 1997/01/01 03:36:49 bsmith Exp balay $
 
 static NRList *__PCList = 0;
 
+int  PCRegisterAllCalled = 0;
 #undef __FUNC__  
 #define __FUNC__ "PCSetType"
 /*@
@@ -59,7 +60,7 @@ int PCSetType(PC ctx,PCType type)
     ctx->setupcalled = 0;
   }
   /* Get the function pointers for the method requested */
-  if (!__PCList) {PCRegisterAll();}
+  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
   if (!__PCList) {SETERRQ(1,0,"Could not get list of methods");}
   r =  (int (*)(PC))NRFindRoutine( __PCList, (int)type, (char *)0 );
   if (!r) {SETERRQ(1,0,"Unknown type");}
@@ -78,17 +79,25 @@ int PCSetType(PC ctx,PCType type)
    package,  given a preconditioner name (PCType) and a function pointer.
 
    Input Parameters:
-.  name - for instance PCJACOBI, ...
+.  name - either a predefined name such as PCJACOBI, or PCNEW
 .  sname -  corresponding string for name
 .  create - routine to create method context
+
+   Output Parameter:
+.  oname - type associated with this new preconditioner
 
 .keywords: PC, register
 
 .seealso: PCRegisterAll(), PCRegisterDestroy()
 @*/
-int  PCRegister(PCType name,char *sname,int (*create)(PC))
+int  PCRegister(PCType name,PCType *oname,char *sname,int (*create)(PC))
 {
   int ierr;
+  static int numberregistered = 0;
+
+  if (name == PCNEW) name = PCNEW + numberregistered++;
+
+  if (oname) *oname = name;
   if (!__PCList) {ierr = NRCreate(&__PCList); CHKERRQ(ierr);}
   return NRRegister( __PCList, (int) name, sname, (int (*)(void*)) create );
 }
@@ -109,6 +118,7 @@ int PCRegisterDestroy()
     NRDestroy( __PCList );
     __PCList = 0;
   }
+  PCRegisterAllCalled = 0;
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.112 1997/01/21 21:39:07 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.113 1997/01/22 01:39:53 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -10,6 +10,8 @@ static char vcid[] = "$Id: snes.c,v 1.112 1997/01/21 21:39:07 curfman Exp curfma
 
 extern int SNESGetTypeFromOptions_Private(SNES,SNESType*,int*);
 extern int SNESPrintTypes_Private(MPI_Comm,char*,char*);
+
+int SNESRegisterAllCalled = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "SNESView"
@@ -1594,12 +1596,13 @@ $    SNES_UM_LS - Newton's method with line search
 @*/
 int SNESSetType(SNES snes,SNESType method)
 {
+  int ierr;
   int (*r)(SNES);
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->type == (int) method) return 0;
 
   /* Get the function pointers for the iterative method requested */
-  if (!__SNESList) {SNESRegisterAll();}
+  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(); CHKERRQ(ierr);}
   if (!__SNESList) {SETERRQ(1,0,"Could not get methods");}
   r =  (int (*)(SNES))NRFindRoutine( __SNESList, (int)method, (char *)0 );
   if (!r) {SETERRQ(1,0,"Unknown method");}
@@ -1616,19 +1619,27 @@ int SNESSetType(SNES snes,SNESType method)
    a function pointer and a nonlinear solver name of the type SNESType.
 
    Input Parameters:
-.  name - for instance SNES_EQ_LS, SNES_EQ_TR, ...
+.  name - for instance SNES_EQ_LS, SNES_EQ_TR, or SNES_NEW to indicate a new solver
 .  sname - corresponding string for name
 .  create - routine to create method context
+
+   Output Parameter:
+.   oname - type associated with this new solver
 
 .keywords: SNES, nonlinear, register
 
 .seealso: SNESRegisterAll(), SNESRegisterDestroy()
 @*/
-int SNESRegister(int name, char *sname, int (*create)(SNES))
+int SNESRegister(SNESType name,SNESType *oname, char *sname, int (*create)(SNES))
 {
   int ierr;
+  static int numberregistered = 0;
+
+  if (name == SNES_NEW) name = SNES_NEW + numberregistered++;
+
+  if (oname) *oname = name;
   if (!__SNESList) {ierr = NRCreate(&__SNESList); CHKERRQ(ierr);}
-  NRRegister( __SNESList, name, sname, (int (*)(void*))create );
+  NRRegister( __SNESList, (int) name, sname, (int (*)(void*))create );
   return 0;
 }
 
@@ -1649,6 +1660,7 @@ int SNESRegisterDestroy()
     NRDestroy( __SNESList );
     __SNESList = 0;
   }
+  SNESRegisterAllCalled = 0;
   return 0;
 }
 

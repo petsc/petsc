@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.16 1997/01/06 20:22:18 balay Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.17 1997/01/27 18:15:21 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -25,14 +25,8 @@ extern int KSPCreate_QCG(KSP);
 
   Adding new methods:
   To add a new method to the registry
-$   1.  Copy this routine and modify it to incorporate
-$       a call to KSPRegister() for the new method.  
-$   2.  Modify the file "PETSCDIR/include/ksp.h"
-$       by appending the method's identifier as an
-$       enumerator of the KSPType enumeration.
-$       As long as the enumerator is appended to
-$       the existing list, only the KSPRegisterAll()
-$       routine requires recompilation.
+$     Copy this routine and modify it to incorporate
+$     a call to KSPRegister() for the new method.  
 
   Restricting the choices:
   To prevent all of the methods from being registered and thus 
@@ -48,17 +42,18 @@ $       routine requires recompilation.
 @*/
 int KSPRegisterAll()
 {
-  KSPRegister(KSPCG         , "cg",         KSPCreate_CG);
-  KSPRegister(KSPRICHARDSON , "richardson", KSPCreate_Richardson);
-  KSPRegister(KSPCHEBYCHEV  , "chebychev",  KSPCreate_Chebychev);
-  KSPRegister(KSPGMRES      , "gmres",      KSPCreate_GMRES);
-  KSPRegister(KSPTCQMR      , "tcqmr",      KSPCreate_TCQMR);
-  KSPRegister(KSPBCGS       , "bcgs",       KSPCreate_BCGS);
-  KSPRegister(KSPCGS        , "cgs",        KSPCreate_CGS);
-  KSPRegister(KSPTFQMR      , "tfqmr",      KSPCreate_TFQMR);
-  KSPRegister(KSPCR         , "cr",         KSPCreate_CR); 
-  KSPRegister(KSPLSQR       , "lsqr",       KSPCreate_LSQR);
-  KSPRegister(KSPPREONLY    , "preonly",    KSPCreate_PREONLY);
-  KSPRegister(KSPQCG        , "qcg",        KSPCreate_QCG);
+  KSPRegisterAllCalled = 1;
+  KSPRegister(KSPCG         , 0,"cg",         KSPCreate_CG);
+  KSPRegister(KSPRICHARDSON , 0,"richardson", KSPCreate_Richardson);
+  KSPRegister(KSPCHEBYCHEV  , 0,"chebychev",  KSPCreate_Chebychev);
+  KSPRegister(KSPGMRES      , 0,"gmres",      KSPCreate_GMRES);
+  KSPRegister(KSPTCQMR      , 0,"tcqmr",      KSPCreate_TCQMR);
+  KSPRegister(KSPBCGS       , 0,"bcgs",       KSPCreate_BCGS);
+  KSPRegister(KSPCGS        , 0,"cgs",        KSPCreate_CGS);
+  KSPRegister(KSPTFQMR      , 0,"tfqmr",      KSPCreate_TFQMR);
+  KSPRegister(KSPCR         , 0,"cr",         KSPCreate_CR); 
+  KSPRegister(KSPLSQR       , 0,"lsqr",       KSPCreate_LSQR);
+  KSPRegister(KSPPREONLY    , 0,"preonly",    KSPCreate_PREONLY);
+  KSPRegister(KSPQCG        , 0,"qcg",        KSPCreate_QCG);
   return 0;
 }

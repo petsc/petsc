@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.220 1997/01/23 15:48:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.221 1997/01/27 18:16:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -259,6 +259,55 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
   }
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
   ierr = (*mat->ops.setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
+  PLogEventEnd(MAT_SetValues,mat,0,0,0);  
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatSetValuesBlocked"
+/*@ 
+   MatSetValuesBlocked - Inserts or adds a block of values into a matrix.
+
+   Input Parameters:
+.  mat - the matrix
+.  v - a logically two-dimensional array of values
+.  m, indexm - the number of rows and their global indices 
+.  n, indexn - the number of columns and their global indices
+.  addv - either ADD_VALUES or INSERT_VALUES, where
+$     ADD_VALUES - adds values to any existing entries
+$     INSERT_VALUES - replaces existing entries with new values
+
+   Notes:
+   By default the values, v, are row-oriented and unsorted.
+   See MatSetOptions() for other options.
+
+   Calls to MatSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES 
+   options cannot be mixed without intervening calls to the assembly
+   routines.
+
+   MatSetValuesBlocked() uses 0-based row and column numbers in Fortran 
+   as well as in C.
+
+.keywords: matrix, insert, add, set, values
+
+.seealso: MatSetOptions(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues()
+@*/
+int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
+{
+  int ierr;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!m || !n) return 0; /* no values to insert */
+  PetscValidIntPointer(idxm);
+  PetscValidIntPointer(idxn);
+  PetscValidScalarPointer(v);
+  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+
+  if (mat->assembled) {
+    mat->was_assembled = PETSC_TRUE; 
+    mat->assembled     = PETSC_FALSE;
+  }
+  PLogEventBegin(MAT_SetValues,mat,0,0,0);
+  ierr = (*mat->ops.setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   return 0;
 }

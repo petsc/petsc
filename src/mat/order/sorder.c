@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.36 1997/01/06 20:25:07 balay Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.37 1997/01/22 18:43:27 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: sorder.c,v 1.36 1997/01/06 20:25:07 balay Exp bsmith 
 #include "sys.h"
 
 static NRList *__MatReorderingList = 0;
+int  MatReorderingRegisterAllCalled = 0;
 
 extern int MatOrder_Flow_SeqAIJ(Mat,MatReordering,IS *,IS *);
 
@@ -110,28 +111,31 @@ int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
    matrix package. 
 
    Input Parameters:
+.  name - name of ordering (if built-in) else ORDER_NEW
 .  sname -  corresponding string for name
 .  order - routine that does reordering
 
    Output Parameters:
-.  name - number associated with the reordering (for example ORDER_ND)
+.  out - number associated with the reordering 
 
 .keywords: matrix, reordering, register
 
 .seealso: MatReorderingRegisterDestroy(), MatReorderingRegisterAll()
 @*/
-int  MatReorderingRegister(MatReordering *name,char *sname,int (*order)(Mat,MatReordering,IS*,IS*))
+int  MatReorderingRegister(MatReordering name,MatReordering *out,char *sname,int (*order)(Mat,MatReordering,IS*,IS*))
 {
   int         ierr;
   static int  numberregistered = 0;
 
+  if (name == ORDER_NEW) {
+    name = (MatReordering) (ORDER_NEW + numberregistered++);
+  }
+  if (out) *out = name;
+
   if (!__MatReorderingList) {
     ierr = NRCreate(&__MatReorderingList); CHKERRQ(ierr);
-    ierr = MatReorderingRegisterAll(); CHKERRQ(ierr);
   }
-
-  *name = (MatReordering) numberregistered++;
-  ierr = NRRegister(__MatReorderingList,(int)*name,sname,(int (*)(void*))order);CHKERRQ(ierr);
+  ierr = NRRegister(__MatReorderingList,(int)name,sname,(int (*)(void*))order);CHKERRQ(ierr);
   return 0;
 }
 
@@ -150,6 +154,7 @@ int MatReorderingRegisterDestroy()
     NRDestroy( __MatReorderingList );
     __MatReorderingList = 0;
   }
+  MatReorderingRegisterAllCalled = 0;
   return 0;
 }
 
@@ -185,7 +190,7 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
   
   ierr = OptionsGetString(prefix,"-mat_order", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
-    if (!__MatReorderingList) MatReorderingRegisterAll();
+    if (!MatReorderingRegisterAll) {ierr = MatReorderingRegisterAll();CHKERRQ(ierr);}
     *type = (MatReordering)NRFindID( __MatReorderingList, sbuf );
   }
   return 0;

@@ -1,5 +1,7 @@
-/* $Id: viewer.h,v 1.38 1997/01/06 20:44:46 bsmith Exp bsmith $ */
-
+/* $Id: viewer.h,v 1.39 1997/01/22 18:46:23 bsmith Exp bsmith $ */
+/*
+     Viewers are objects where other objects can be looked at or stored.
+*/
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.81 1997/01/23 15:51:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.82 1997/01/27 18:16:09 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -249,7 +249,7 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
 #define __FUNC__ "PCSetUp_ILU"
 static int PCSetUp_ILU(PC pc)
 {
-  int         ierr;
+  int         ierr,flg;
   double      f;
   PC_ILU      *ilu = (PC_ILU *) pc->data;
 
@@ -306,6 +306,11 @@ static int PCSetUp_ILU(PC pc)
       ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
       if (ilu->row) PLogObjectParent(pc,ilu->row);
       if (ilu->col) PLogObjectParent(pc,ilu->col);
+      /*  Remove zeros along diagonal?     */
+      ierr = OptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = MatReorderForNonzeroDiagonal(pc->pmat,1.e-10,ilu->row,ilu->col);CHKERRQ(ierr);
+      }
       if (setups[pc->pmat->type]) {
         ierr = (*setups[pc->pmat->type])(pc);
       }
@@ -320,10 +325,14 @@ static int PCSetUp_ILU(PC pc)
       if (!ilu->reusereordering) {
         /* compute a new ordering for the ILU */
         ISDestroy(ilu->row); ISDestroy(ilu->col);
-        ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);
-               CHKERRQ(ierr);
+        ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
         if (ilu->row) PLogObjectParent(pc,ilu->row);
         if (ilu->col) PLogObjectParent(pc,ilu->col);
+        /*  Remove zeros along diagonal?     */
+        ierr = OptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
+        if (flg) {
+          ierr = MatReorderForNonzeroDiagonal(pc->pmat,1.e-10,ilu->row,ilu->col);CHKERRQ(ierr);
+        }
       }
       ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,2.0,ilu->levels,
