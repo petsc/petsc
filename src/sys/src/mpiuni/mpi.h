@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.44 1997/04/08 01:35:53 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.45 1997/04/24 18:08:46 bsmith Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -298,7 +298,8 @@ typedef char*   MPI_Errhandler;
             PetscMemcpy( recvbuf, sendbuf, (sendcount) * (sendtype) )
 #define MPI_Sendrecv_replace( buf, count,  datatype, dest, sendtag, \
               source, recvtag, comm, status) MPI_SUCCESS
-#define MPI_Type_contiguous(count,  oldtype, newtype) MPI_SUCCESS
+#define MPI_Type_contiguous(count,  oldtype, newtype) \
+                    ( *(newtype) = (count)*(oldtype), MPI_SUCCESS )
 #define MPI_Type_vector(count, blocklength, stride, oldtype,  newtype) \
     MPI_SUCCESS
 #define MPI_Type_hvector(count, blocklength, stride, oldtype,  newtype) \
