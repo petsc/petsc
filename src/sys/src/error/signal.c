@@ -79,16 +79,22 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 
   PetscFunctionBegin;
   SIGNAME[0]       = "Unknown signal";
+#if !defined(PETSC_MISSING_SIGHUP)
   SIGNAME[SIGHUP]  = "Hang up";
+#endif
   SIGNAME[SIGINT]  = "INT";
 #if !defined(PETSC_MISSING_SIGQUIT)
   SIGNAME[SIGQUIT] = "Quit";
 #endif
   SIGNAME[SIGILL]  = "Illegal instruction";
+#if !defined(PETSC_MISSING_SIGTRAP)
   SIGNAME[SIGTRAP] = "TRAP";
+#endif
   SIGNAME[SIGABRT] = "Abort";
   SIGNAME[SIGFPE]  = "FPE:\nPETSC ERROR: Floating Point Exception,probably divide by zero";
+#if !defined(PETSC_MISSING_SIGKILL)
   SIGNAME[SIGKILL] = "Kill";
+#endif
 #if !defined(PETSC_MISSING_SIGBUS)
   SIGNAME[SIGBUS]  = "BUS: \nPETSC ERROR: Bus Error, possibly illegal memory access";
 #endif
@@ -96,15 +102,31 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 #if !defined(PETSC_MISSING_SIGSYS)
   SIGNAME[SIGSYS]  = "SYS";
 #endif
+#if !defined(PETSC_MISSING_SIGUSR1)
   SIGNAME[SIGUSR1] = "User1";
+#endif
+#if !defined(PETSC_MISSING_SIGPIPE)
   SIGNAME[SIGPIPE] = "Pipe";
+#endif
+#if !defined(PETSC_MISSING_SIGALARM)
   SIGNAME[SIGALRM] = "Alarm";
+#endif
   SIGNAME[SIGTERM] = "Term";
+#if !defined(PETSC_MISSING_SIGURG)
   SIGNAME[SIGURG]  = "URG";
+#endif
+#if !defined(PETSC_MISSING_SIGSTOP)
   SIGNAME[SIGSTOP] = "STOP";
+#endif
+#if !defined(PETSC_MISSING_SIGTSTP)
   SIGNAME[SIGTSTP] = "TSTP";
+#endif
+#if !defined(PETSC_MISSING_SIGCONT)
   SIGNAME[SIGCONT] = "CONT";
+#endif
+#if !defined(PETSC_MISSING_SIGCHLD)
   SIGNAME[SIGCHLD] = "CHLD";
+#endif
 
   signal(sig,SIG_DFL);
   if (sig >= 0 && sig <= 20) {
@@ -167,7 +189,9 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGILL,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
     signal(SIGFPE,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
     signal(SIGSEGV, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#if !defined(PETSC_MISSING_SIGUSR1)
     signal(SIGUSR1, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
 #if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
