@@ -1148,7 +1148,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijforwardzero_(&m,&omega,x,a->i,a->j,idiag,a->a,(void*)b);
+      fortranrelaxaijforwardzero_(&m,&omega,x,a->i,a->j,diag,idiag,a->a,(void*)b);
 #else
       for (i=0; i<m; i++) {
         n    = diag[i] - a->i[i];
@@ -1171,7 +1171,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijbackwardzero_(&m,&omega,x,a->i,a->j,idiag,a->a,(void*)xb);
+      fortranrelaxaijbackwardzero_(&m,&omega,x,a->i,a->j,diag,idiag,a->a,(void*)xb);
 #else
       for (i=m-1; i>=0; i--) {
         n    = a->i[i+1] - diag[i] - 1;

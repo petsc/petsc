@@ -82,7 +82,7 @@ int MatGetDiagonal_DAAD(Mat A,Vec dd)
   ierr = VecRestoreArray(a->localu,&avu);CHKERRQ(ierr);
 
   PetscADResetIndep();
-  PetscADIncrementTotalGradSize(1);
+  ierr = PetscADIncrementTotalGradSize(1);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
   ierr = VecGetArray(dd,&d);CHKERRQ(ierr);
@@ -159,7 +159,7 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
   ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
 
   PetscADResetIndep();
-  PetscADIncrementTotalGradSize(1);
+  ierr = PetscADIncrementTotalGradSize(1);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
   ierr = VecGetArray(dd,&d);CHKERRQ(ierr);

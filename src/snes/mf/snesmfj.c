@@ -91,7 +91,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFRegister"
-int MatSNESMFRegister(char *sname,char *path,char *name,int (*function)(MatSNESMFCtx))
+int MatSNESMFRegister(const char sname[],const char path[],const char name[],int (*function)(MatSNESMFCtx))
 {
   int ierr;
   char fullname[256];
