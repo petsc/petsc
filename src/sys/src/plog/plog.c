@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.236 2000/04/18 03:32:10 bsmith Exp balay $*/
+/*$Id: plog.c,v 1.237 2000/05/05 22:14:18 balay Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -162,16 +162,16 @@ PetscTruth PLogEventFlags[] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC
                         PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,  /* 25 -49 */
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,
-                        PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
+                        PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE, /* 50 - 74 */
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,PETSC_TRUE,
-                        PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,
-                        PETSC_FALSE,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE,
+                        PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,
+                        PETSC_TRUE,PETSC_FALSE,PETSC_TRUE,PETSC_FALSE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE, /* 75 - 99 */
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
-                        PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,PETSC_FALSE,PETSC_TRUE,
+                        PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
                         PETSC_TRUE,PETSC_FALSE,PETSC_FALSE,PETSC_TRUE,PETSC_TRUE, /* 100 - 124 */ 
@@ -285,10 +285,10 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "MatGetRow       ",
                          "MatGetPartitioni",
                          "VecReduceArith. ",
-                         "VecReduceCommun.",
-                         "VecScatterBarrie",
-                         "VecScatterCommun",
-                         "VecNorm         ",
+                         "MatFDColoringApp",
+                         "VecView         ",
+                         "                ",
+                         "                ",
                          "VecMax          ",
                          "VecMin          ",
                          "VecTDot         ",
@@ -302,21 +302,21 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "VecAssemblyBegin",
                          "VecAssemblyEnd  ",
                          "VecMTDot        ",
-                         "VecMDot         ",
+                         "                ",
                          "VecMAXPY        ",
                          "VecPointwiseMult",
                          "VecSetValues    ",
                          "VecLoad         ",
-                         "VecView         ",
+                         "VecScatterBarrie",
                          "VecScatterBegin ",
                          "VecScatterEnd   ",
                          "VecSetRandom    ",
                          "VecNormBarrier  ",
-                         "VecNormComm     ",
+                         "VecNorm         ",
                          "VecDotBarrier   ",
-                         "VecDotComm      ",
+                         "VecDot          ",
                          "VecMDotBarrier  ",
-                         "VecMDotComm     ",
+                         "VecMDot         ",
                          "SLESSolve       ",
                          "SLESSetUp       ",
                          "KSPGMRESOrthog  ",
@@ -335,8 +335,8 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "SNESGradientEval",
                          "SNESHessianEval ",
                          "VecReduceBarrier",
-                         "VecReduceComOnly",
-                         "VecDot           ",
+                         "VecReduceCommuni",
+                         "               ",
                          "TSStep          ",
                          "TSPseudoCmptTStp",
                          "TSFunctionEval  ",
@@ -2167,7 +2167,7 @@ M*/
    Usage:
 .vb
      PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
-       MPI_Allreduce()
+       Code
      PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,comm);
 .ve
 
@@ -2177,9 +2177,9 @@ M*/
 
    Additional Notes:
    Synchronization events always come in pairs; for example, VEC_NormBarrier and 
-   VEC_NormComm = VEC_NormBarrier + 1
+   VEC_Norm = VEC_NormBarrier + 1
 
-   Level: advanced
+   Level: developer
 
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
           PLogEventBarrierEnd()
@@ -2202,7 +2202,7 @@ M*/
     Usage:
 .vb
      PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
-       MPI_Allreduce()
+       Code
      PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,comm);
 .ve
 
@@ -2212,9 +2212,9 @@ M*/
 
    Additional Notes:
    Synchronization events always come in pairs; for example, VEC_NormBarrier and 
-   VEC_NormComm = VEC_NormBarrier + 1
+   VEC_Norm = VEC_NormBarrier + 1
 
-   Level: advanced
+   Level: developer
 
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
           PLogEventBarrierBegin()
