@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.66 1995/08/17 20:42:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.67 1995/08/18 13:42:21 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -545,7 +545,6 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   else if ((vobj->cookie == VIEWER_COOKIE && vobj->type == FILES_VIEWER) || 
             vobj->cookie == DRAW_COOKIE) {
     int numtids = aij->numtids, mytid = aij->mytid;
-    /* FILE *fd = ViewerFileGetPointer_Private(viewer); */
     if (numtids == 1) {
       ierr = MatView(aij->A,viewer); CHKERRQ(ierr);
     }
