@@ -29,7 +29,7 @@ X11_LIB        =
 #  be an integer.
 #
 MPI_LIB        = /mpp/lib/libmpi.a
-MPI_INCLUDE    = -I/usr/include/mpp -DUSES_INT_MPI_COMM
+MPI_INCLUDE    =  -DUSES_INT_MPI_COMM -I/usr/include/mpp
 MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 # the -I/usr/include above is to insure that the C++ compiler with 
