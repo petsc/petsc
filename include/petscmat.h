@@ -257,6 +257,7 @@ EXTERN int        MatLoadRegisterDestroy(void);
 extern PetscTruth MatLoadRegisterAllCalled;
 extern PetscFList MatLoadList;
 EXTERN int        MatLoad(PetscViewer,MatType,Mat*);
+EXTERN int        MatFileMerge(MPI_Comm,char*,char*);
 
 EXTERN int MatGetRowIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
 EXTERN int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
