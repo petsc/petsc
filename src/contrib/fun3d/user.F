@@ -1,4 +1,4 @@
-!  $Id: user.F,v 1.28 2000/09/17 18:41:41 bsmith Exp kaushik $
+!  $Id: user.F,v 1.29 2000/09/20 15:11:09 kaushik Exp kaushik $
 !---------------------------------------------------------------
 ! The following subroutines are from node2t.f in the original
 ! code - D. K. Kaushik (1/17/97)
@@ -306,8 +306,8 @@
 !   + write tecplot header
 !
       write(13,'(a)') 'TITLE="' // title // '"'
-      write(13,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",     &
-     &     "U     ","V     ","W     ","P/Pinf"'  
+      write(13,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",',     &
+     &     '"U     ","V     ","W     ","P/Pinf"'  
 !
 !   + do a zone-title, so we can keep track of things
 !   + start with solid-wall boundary surfaces
@@ -1008,7 +1008,6 @@
       Scalar qvec(4,nvertices) 
       Scalar grad(3,4,nvertices) 
       Scalar resvec(4,nnodes)
-      Scalar resd(4,nnodes)
       Scalar xyz(3,nvertices)
       Scalar xyzn(4,nedge)
       integer evec(2,nedge)
@@ -1055,8 +1054,9 @@
 #undef res(a,b)
 #define res(a,b) resd(a,b)
 #else
-       integer nedgeAllThr,part_thr(nnodes),nedge_thr(max_threads),         &
-     &     edge_thr(2,nedgeAllThr),xyzn_thr(4,nedgeAllThr)
+       integer nedgeAllThr,part_thr(nnodes),nedge_thr(0:max_threads),         &
+     &     edge_thr(2,nedgeAllThr)
+       Scalar xyzn_thr(4,nedgeAllThr)
 #undef eptr(a,b)
 #define eptr(a,b) edge_thr(b,a)
 #undef xn(i)
@@ -1111,7 +1111,7 @@
 !$omp  do 
 #else
 !     tot_threads = omp_get_num_threads()
-!     my_thread_id = omp_get_thread_num()
+      my_thread_id = omp_get_thread_num()
 !     chunk = nnodes/tot_threads
 !     first_node = my_thread_id*chunk+1
 !     if (my_thread_id .eq. (size-1)) then
@@ -1120,10 +1120,10 @@
 !        last_node = (my_thread_id+1)*chunk
 !     endif
       first_edge = nedge_thr(my_thread_id)
-      last_edge = nedge_thr(my_thread_id)-1
+      last_edge = nedge_thr(my_thread_id+1)-1
 
-!     print *, 'On thread ', my_thread_id,', first node = ',first_node,
-!    &         ', last_node = ',last_node, ' chunk = ',chunk
+!      print *, 'On thread ', my_thread_id,', first_edge = ',first_edge,        &
+!     &         ', last_edge = ',last_edge
 #endif
 #else
 #endif       
@@ -1357,7 +1357,6 @@
 #if defined(_OPENMP) && defined(HAVE_REDUNDANT_WORK)
 !$omp enddo
 #endif
-  
 !     c68 = 6./8.
 !     c18 = 1./8.
       c68 = 0.75d0
@@ -2391,8 +2390,9 @@
 #if defined(HAVE_REDUNDANT_WORK)     
        Scalar resd(4,nnodes)       
 #else
-       integer nedgeAllThr,part_thr(nnodes),nedge_thr(max_threads),         &
-     &         edge_thr(2,nedgeAllThr),xyzn_thr(4,nedgeAllThr)
+       integer nedgeAllThr,part_thr(nnodes),nedge_thr(0:max_threads),         &
+     &         edge_thr(2,nedgeAllThr)
+       Scalar xyzn_thr(4,nedgeAllThr)
 #endif
 #endif  
 !
