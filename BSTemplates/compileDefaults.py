@@ -89,7 +89,7 @@ class UsingC (UsingCompiler):
 
   def getCompileSuffixes(self):
     '''The suffix for C files'''
-    return ['.h', '.c']
+    return ['.c', '.h']
 
   def getTagger(self, rootDir):
     return compile.TagC(root = rootDir)
@@ -123,7 +123,7 @@ class UsingCxx (UsingCompiler):
 
   def getCompileSuffixes(self):
     '''The suffix for C++ files'''
-    return ['.hh', '.cc']
+    return ['.cc', '.hh']
 
   def getTagger(self, rootDir):
     return compile.TagCxx(root = rootDir)
