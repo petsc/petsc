@@ -7,8 +7,16 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  Add link to MPI manual pages from Main PETSc mainual pages pate; also to system dependent?
-  how to run mpi? + link to AMS manual pages.
+> Some suggestions on the truncated SNES.
+> 
+> If KSP does not  use true residual to check convergence the EW context fails
+> since I think the nonlinear residual is not accoringly scaled by SNESSolve.
+> This can be solved if the user opts for ksp_right_pc. I don't know if you
+> want to mention this in the EW documentation since the default is left_pc.
+> Another  problem occurs if the KSP associated with the Jacobian is set to
+> nonzero initial quess. Again the method fails since the forcing term is also
+> not scaled.
+
 
   for certain manual pages, including VecNorm() etc add a Performance Issues: section that
 describes what effects performance for that routine. For examplle, memory bandwidth, parallel
@@ -1170,3 +1178,4 @@ X  Make KSPGetConvergedReason() and new converged tests for KSP like SNES ones.
 X  Add Tony Coaola's ILUDT stuff to PETSc, see src/contrib/tonycoaloailu
 
 X add MatSolveTrans_SeqBAIj_....
+
