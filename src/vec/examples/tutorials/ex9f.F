@@ -1,126 +1,128 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.10 1997/09/22 15:16:05 balay Exp $";
-#endif
+!
+!     "$Id: ex9f.F,v 1.1 1998/07/14 17:45:28 bsmith Exp bsmith $";
+!
+! Description: Illustrates the use of VecCreateGhost()
+!
+!/*T
+!   Concepts: Vectors^Assembling vectors; Ghost padding
+!   Routines: VecCreateGhost(); VecGetSize(); VecSet(); VecSetValues();
+!   Routines: VecView(); VecDestroy(); PetscSynchronizedPrintf();
+!   Routines: VecGhostGetLocalForm(); VecGhostUpdateEnd();
+!   Routines: VecGhostRestoreLocalForm(); VecGhostUpdateBegin();
+!   Routines: PetscSynchronizedFlush();
+!   Processors: n
+!
+!   Comment: Ghost padding is one way to handle local calculations that
+!      involve values from other processors. VecCreateGhost() provides
+!      a way to create vectors with extra room at the end of the vector 
+!      array to contain the needed ghost values from other processors, 
+!      vector computations are otherwise unaffected.
+!T*/
 
-static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
+      program ex9f
+      implicit none
 
-/*T
-   Concepts: Vectors^Assembling vectors; Ghost padding
-   Routines: VecCreateGhost(); VecGetSize(); VecSet(); VecSetValues();
-   Routines: VecView(); VecDestroy(); PetscSynchronizedPrintf();
-   Routines: VecGhostGetLocalRepresentation(); VecGhostUpdateEnd();
-   Routines: VecGhostRestoreLocalRepresentation(); VecGhostUpdateBegin();
-   Routines: PetscSynchronizedFlush();
-   Processors: n
+!
+!  The following include statements are required for Fortran programs
+!  that use PETSc vectors:
+!     petsc.h  - base PETSc routines
+!     vec.h    - vectors
+!
 
-   Comment: Ghost padding is one way to handle local calculations that
-      involve values from other processors. VecCreateGhost() provides
-      a way to create vectors with extra room at the end of the vector 
-      array to contain the needed ghost values from other processors, 
-      vector computations are otherwise unaffected.
-T*/
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
 
-/* 
-  Include "vec.h" so that we can use vectors.  Note that this file
-  automatically includes:
-     petsc.h  - base PETSc routines   is.h     - index sets
-     sys.h    - system routines       viewer.h - viewers
-*/
-#include "vec.h"
-#include <math.h>
+      integer    rank,nlocal,nghost,ifrom(2),size,ierr,i,rstart,rend
+      integer    flag
+      Scalar     value,tarray(20)
+      Vec        lx,gx,gxs
 
-int main(int argc,char **argv)
-{
-  int        rank,nlocal = 6,nghost = 2,ifrom[2],size,ierr,i,rstart,rend,flag;
-  Scalar     value,*array,*tarray=0;
-  Vec        lx,gx,gxs;
+      nlocal = 6
+      nghost = 2
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
-  MPI_Comm_size(PETSC_COMM_WORLD,&size); 
-  if (size != 2) SETERRA(1,1,"Must run example with two processors\n");
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr) 
+      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr) 
 
-  /*
-     Construct a two dimensional graph connecting nlocal degrees of 
-     freedom per processor. From this we will generate the global
-     indices of needed ghost values
+      if (size .ne. 2) then
+       SETERRA(1,1,'Must run with two processors')
+      endif
 
-     For simplicity we generate the entire graph on each processor:
-     in real application the graph would stored in parallel, but this
-     example is only to demonstrate the management of ghost padding
-     with VecCreateGhost().
+!
+!     Construct a two dimensional graph connecting nlocal degrees of 
+!     freedom per processor. From this we will generate the global
+!     indices of needed ghost values
+!
+!     For simplicity we generate the entire graph on each processor:
+!     in real application the graph would stored in parallel, but this
+!     example is only to demonstrate the management of ghost padding
+!     with VecCreateGhost().
+!
+!     In this example we consider the vector as representing 
+!     degrees of freedom in a one dimensional grid with periodic 
+!     boundary conditions.
+!
+!        ----Processor  1---------  ----Processor 2 --------
+!         0    1   2   3   4    5    6    7   8   9   10   11
+!                               |----| 
+!         |-------------------------------------------------|
+!
 
-     In this example we consider the vector as representing 
-     degrees of freedom in a one dimensional grid with periodic 
-     boundary conditions.
 
-        ----Processor  1---------  ----Processor 2 --------
-         0    1   2   3   4    5    6    7   8   9   10   11
-                               |----| 
-         |-------------------------------------------------|
+      if (rank .eq. 0) then
+        ifrom(1) = 11
+        ifrom(2) = 6
+      else
+        ifrom(1) = 0
+        ifrom(2) = 5
+      endif
 
-  */
+!     Create the vector with two slots for ghost points. Note that both 
+!     the local vector (lx) and the global vector (gx) share the same 
+!     array for storing vector values.
 
-  if (rank == 0) {
-    ifrom[0] = 11; ifrom[1] = 6; 
-  } else {
-    ifrom[0] = 0;  ifrom[1] = 5; 
-  }
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-allocate',flag,ierr)
+      if (flag .ne. 0) then
+        call VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,            &
+     &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)
+      else 
+        call VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,        &
+     &       nghost,ifrom,gxs,ierr)
+      endif
 
-  /*
-     Create the vector with two slots for ghost points. Note that both 
-     the local vector (lx) and the global vector (gx) share the same 
-     array for storing vector values.
-  */
-  ierr = OptionsHasName(PETSC_NULL,"-allocate",&flag); CHKERRA(ierr);
-  if (flag) {
-    tarray = (Scalar *) PetscMalloc( (nlocal+nghost)*sizeof(Scalar));CHKPTRA(tarray);
-    ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRA(ierr);
-  } else {
-    ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRA(ierr);
-  }
 
-  /*
-      Test VecDuplicate()
-  */
-  ierr = VecDuplicate(gxs,&gx); CHKERRA(ierr);
-  ierr = VecDestroy(gxs); CHKERRA(ierr);
+!      Test VecDuplicate
 
-  /*
-     Access the local representation
-  */
-  ierr = VecGhostGetLocalRepresentation(gx,&lx); CHKERRA(ierr);
+       call VecDuplicate(gxs,gx,ierr) 
+       call VecDestroy(gxs,ierr) 
 
-  /*
-     Set the values from 0 to 12 into the "global" vector 
-  */
-  ierr = VecGetOwnershipRange(gx,&rstart,&rend);CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) {
-    value = (Scalar) i;
-    ierr  = VecSetValues(gx,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
-  }
-  ierr = VecAssemblyBegin(gx); CHKERRA(ierr);
-  ierr = VecAssemblyEnd(gx); CHKERRA(ierr);
+!      Access the local Form
 
-  ierr = VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD); CHKERRA(ierr);
-  ierr = VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD); CHKERRA(ierr);
+       call VecGhostGetLocalForm(gx,lx,ierr) 
 
-  /*
-     Print out each vector, including the ghost padding region. 
-  */
-  ierr = VecGetArray(lx,&array);CHKERRA(ierr);
-  for ( i=0; i<nlocal+nghost; i++ ) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %g\n",i,PetscReal(array[i]));
-  }
-  ierr = VecRestoreArray(lx,&array);CHKERRA(ierr);
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+!     Set the values from 0 to 12 into the "global" vector 
 
-  ierr = VecGhostRestoreLocalRepresentation(gx,&lx);CHKERRA(ierr); 
-  ierr = VecDestroy(gx);CHKERRA(ierr);
-  if (flag) {PetscFree(tarray); }
-  PetscFinalize();
-  return 0;
-}
+       call VecGetOwnershipRange(gx,rstart,rend,ierr)
+
+       do 10, i=rstart,rend-1
+         value = i
+         call VecSetValues(gx,1,i,value,INSERT_VALUES,ierr) 
+ 10    continue
+
+       call VecAssemblyBegin(gx,ierr) 
+       call VecAssemblyEnd(gx,ierr) 
+
+       call VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD,ierr) 
+       call VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD,ierr) 
+
+!     Print out each vector, including the ghost padding region. 
+
+       call VecView(lx,VIEWER_STDOUT_SELF,ierr)
+
+       call VecGhostRestoreLocalForm(gx,lx,ierr) 
+       call VecDestroy(gx,ierr)
+       call PetscFinalize(ierr)
+       end
  
 
 
