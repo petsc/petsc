@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.17 1999/03/31 18:41:37 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.18 1999/11/05 14:45:32 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -11,10 +11,10 @@
 */
 
 typedef struct {
-  int              sorted;       /* if true, rows are sorted by increasing columns */
-  int              roworiented;  /* if true, row-oriented input, default */
+  PetscTruth       sorted;       /* if true, rows are sorted by increasing columns */
+  PetscTruth       roworiented;  /* if true, row-oriented input, default */
   int              nonew;        /* 1 don't add new nonzeros, -1 generate error on new */
-  int              singlemalloc; /* if true a, i, and j have been obtained with
+  PetscTruth       singlemalloc; /* if true a, i, and j have been obtained with
                                         one big malloc */
   int              m,n;          /* rows, columns */
   int              bs,bs2;       /* block size, square of block size */
@@ -33,12 +33,14 @@ typedef struct {
                                     as more values are set then were preallocated */
   Scalar           *mult_work;   /* work array for matrix vector product*/
   Scalar           *saved_values; 
+
+  PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
 } Mat_SeqBAIJ;
 
 extern int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
 extern int MatConvert_SeqBAIJ(Mat,MatType,Mat *);
 extern int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption, Mat*);
-extern int MatMarkDiag_SeqBAIJ(Mat);
+extern int MatMarkDiagonal_SeqBAIJ(Mat);
 
 extern int MatSolveTrans_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,Mat*);
