@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.24 1997/11/11 15:06:33 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.25 1997/11/28 16:22:00 bsmith Exp curfman $ 
 
 ALL: ex1
 
@@ -94,13 +94,13 @@ ex7: ex7.o  chkopts
 	-$(CLINKER) -o ex7 ex7.o $(PETSC_LIB)
 	$(RM) ex7.o
 
-ex8: ex8.o  chkopts
-	-$(CLINKER) -o ex8 ex8.o $(PETSC_LIB)
-	$(RM) ex8.o
+ex8: ex8.o common8and9.o chkopts
+	-$(CLINKER) -o ex8 ex8.o common8and9.o $(PETSC_LIB)
+	$(RM) ex8.o common8and9.o
 
-ex9: ex9.o  chkopts
-	-$(CLINKER) -o ex9 ex9.o $(PETSC_LIB)
-	$(RM) ex9.o
+ex9: ex9.o common8and9.o chkopts
+	-$(CLINKER) -o ex9 ex9.o common8and9.o $(PETSC_LIB)
+	$(RM) ex9.o common8and9.o
 
 runex1:
 	-@$(MPIRUN) -np 1 ex1 -snes_smonitor > ex1_1.tmp 2>&1;   \
