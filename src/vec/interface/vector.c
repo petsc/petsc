@@ -110,10 +110,6 @@ PetscErrorCode VecSetFromOptions(Vec vec)
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
-  ierr = VecESISetFromOptions(vec);CHKERRQ(ierr);
-#endif
-
   ierr = VecViewFromOptions(vec, vec->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

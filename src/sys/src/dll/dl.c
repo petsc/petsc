@@ -281,26 +281,6 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **hand
     }
   }
 
-  /* Look for CCA components in the library */
-#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX)
-  char **(*gcl)(void) = (char **(*)(void)) dlsym(*handle,"getESIFactoryList");
-  if (gcl) {
-    char       **list = (*gcl)(),*sname,*rname;
-    int        i = 0;
-    PetscToken *token;
-
-    while (list[i]) {
-      PetscLogInfo(0,"ESI factory function and name: %s from %s\n",list[i],libname);
-      ierr = PetscTokenCreate(list[i],' ',&token);CHKERRQ(ierr);
-      ierr = PetscTokenFind(token,&rname);CHKERRQ(ierr);
-      ierr = PetscTokenFind(token,&sname);CHKERRQ(ierr);
-      ierr = PetscFListAdd(&CCAList,sname,rname,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
-      i++;
-    }
-  }
-#endif
-
   ierr = PetscFree(par2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

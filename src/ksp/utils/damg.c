@@ -259,9 +259,6 @@ PetscErrorCode DMMGSolve(DMMG *dmmg)
   } else {
     if (dmmg[nlevels-1]->initialguess) {
       ierr = (*dmmg[nlevels-1]->initialguess)(dmmg[nlevels-1]->snes,dmmg[nlevels-1]->x,dmmg[nlevels-1]);CHKERRQ(ierr);
-      if (dmmg[nlevels-1]->ksp) {
-        ierr = KSPSetInitialGuessNonzero(dmmg[nlevels-1]->ksp,PETSC_TRUE);CHKERRQ(ierr);
-      }
     }
   }
   ierr = (*DMMGGetFine(dmmg)->solve)(dmmg,nlevels-1);CHKERRQ(ierr);

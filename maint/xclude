@@ -60,7 +60,6 @@ petsc-dist/src/contrib/ksp
 petsc-dist/include/ec.h
 petsc-dist/src/contrib/pfull
 petsc-dist/src/contrib/agglom
-petsc-dist/src/contrib/esi
 petsc-dist/bin/configure.in.old
 petsc-dist/bin/petscconf.h.in.sav
 petsc-dist/bin/confmake

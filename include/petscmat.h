@@ -51,8 +51,6 @@ E*/
 #define MATSBAIJ           "sbaij"
 #define MATDAAD            "daad"
 #define MATMFFD            "mffd"
-#define MATESI             "esi"
-#define MATPETSCESI        "petscesi"
 #define MATNORMAL          "normal"
 #define MATSEQAIJSPOOLES   "seqaijspooles"
 #define MATMPIAIJSPOOLES   "mpiaijspooles"
@@ -1294,9 +1292,6 @@ EXTERN PetscErrorCode MatMAIJRedimension(Mat,PetscInt,Mat*);
 EXTERN PetscErrorCode MatMAIJGetAIJ(Mat,Mat*);
 
 EXTERN PetscErrorCode MatComputeExplicitOperator(Mat,Mat*);
-
-EXTERN PetscErrorCode MatESISetType(Mat,const char*);
-EXTERN PetscErrorCode MatESISetFromOptions(Mat);
 
 EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat,Vec);
 
