@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.22 1996/02/16 20:04:25 balay Exp bsmith $ */
+/* $Id: is.h,v 1.23 1996/03/19 21:30:28 bsmith Exp bsmith $ */
 
 /*
       An index set is essentially a subset of the integers. They are used
@@ -8,7 +8,7 @@
 #define __IS_PACKAGE
 #include "petsc.h"
 
-typedef enum {IS_SEQ=0, IS_STRIDE_SEQ=2} IndexSetType;
+typedef enum {IS_SEQ=0, IS_STRIDE_SEQ=2} ISType;
 
 #define IS_COOKIE PETSC_COOKIE+2
 
