@@ -1,6 +1,9 @@
-/* $Id: vecimpl.h,v 1.27 1996/04/07 22:46:49 curfman Exp bsmith $ */
+
+/* $Id: matimpl.h,v 1.60 1996/07/11 04:05:13 balay Exp $ */
+
 /* 
    This private file should not be included in users' code.
+   Defines the fields shared by all vector implementations.
 */
 
 #ifndef __VECIMPL 
@@ -47,8 +50,16 @@ struct _Vec {
   int           N, n;                    /* global, local vector size */
 };
 
-typedef enum { VEC_SCATTER_GENERAL, VEC_SCATTER_STRIDE, VEC_SCATTER_MPI,
-               VEC_SCATTER_MPITOALL} VecScatterType;
+/* Default obtain and release vectors; can be used by any implementation */
+extern int     VecGetVecs_Default(Vec, int, Vec **);
+extern int     VecDestroyVecs_Private(Vec *,int);
+
+/* --------------------------------------------------------------------*/
+/*                                                                     */
+/* Defines the data structures used in the Vec Scatter operations      */
+
+typedef enum { VEC_SCATTER_SEQ_GENERAL, VEC_SCATTER_SEQ_VEC, 
+               VEC_SCATTER_MPI_GENERAL, VEC_SCATTER_MPI_TOALL} VecScatterType;
 
 /* 
    These scatters are for the purely local case.
@@ -56,13 +67,16 @@ typedef enum { VEC_SCATTER_GENERAL, VEC_SCATTER_STRIDE, VEC_SCATTER_MPI,
 
 typedef struct {
   VecScatterType type;
-  int            n, *slots;             /* number of components and their locations */
-} VecScatter_General;
+  int            n;         /* number of components to scatter */
+  int            *slots;    /* locations of components */
+} VecScatter_Seq_General;
 
 typedef struct {
   VecScatterType type;
-  int             n, first, step;           
-} VecScatter_Stride;
+  int            n;
+  int            first;
+  int            step;           
+} VecScatter_Seq_Stride;
 
 /*
    This scatter is for a global vector copied (completely) to each processor
@@ -70,12 +84,12 @@ typedef struct {
 
 typedef struct {
   VecScatterType type;
-  int            *count;              /* elements of vector on each processor */
+  int            *count;        /* elements of vector on each processor */
   Scalar         *work, *work2;        
-} VecScatter_MPIToAll;
+} VecScatter_MPI_ToAll;
 
 /*
-   This is the parallel scatter
+   This is the general parallel scatter
 */
 typedef struct { 
   VecScatterType     type;
@@ -89,13 +103,13 @@ typedef struct {
   Scalar             *values;  /* buffer for all sends or receives */
                                /* note that we pack/unpack ourselves;
                                    we do not use MPI packing */
-  VecScatter_General local;    /* any part that happens to be local */
+  VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status         *sstatus;
   int                local_is_matching; 
-                               /* Indicates that the slots[] of the in and out local
-                                  "scatters" are identical, this is used to avoid 
-                                  an unnecessary copy when the input and output vectors
-                                  are identical */
+                               /* Indicates that the slots[] of the in and out
+                                  local "scatters" are identical, this is used
+                                  to avoid  an unnecessary copy when the input
+                                  and output vectors are identical */
 } VecScatter_MPI;
 
 struct _VecScatter {
@@ -103,14 +117,9 @@ struct _VecScatter {
   int     inuse;           /* prevents corruption from mixing two scatters */
   int     (*scatterbegin)(Vec,Vec,InsertMode,int,VecScatter);
   int     (*scatterend)(Vec,Vec,InsertMode,int,VecScatter);
-  int     (*pipelinebegin)(Vec,Vec,InsertMode,PipelineMode,VecScatter);
-  int     (*pipelineend)(Vec,Vec,InsertMode,PipelineMode,VecScatter);
   int     (*copy)(VecScatter,VecScatter);
   void    *fromdata,*todata;
 };
 
-/* Default obtain and release vectors; can be used by any implementation */
-extern int     Veiobtain_vectors(Vec, int, Vec **);
-extern int     Veirelease_vectors(Vec *,int);
 
 #endif
