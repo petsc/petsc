@@ -65,6 +65,21 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	-@chmod ug+w ../../manual.html www.cit ../../*.gif
 	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html manual_html.html
 
+#
+# This is the split version; some users prefer this
+manual/manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
+	rm -f www.cit
+	cat ../../www/www.cit | sed 's/+man+../+man+www/g' > www.cit 
+	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
+	       -mapref ../../www/petsc.cit -nobottomnav
+	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
+	       -mapref ../../www/petsc.cit -nobottomnav
+	-@chmod g+w manual.hux latex.err 
+	-@chmod -R ug+w manual
+	-mv manual ../..
+	-@chmod ug+w ../../manual www.cit 
+	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html
+
 clean:
 	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
                           *.ilg *.idx *.ind sindex.tex findex.tex *.aus
