@@ -570,3 +570,8 @@ Sandy Carney <carney@cray.com>
 (612) 683-3674
 ----------------------------------------------------------------------
 llnl Gzavf3zh
+----------------------------------------------------------------------
+Find ALL files checked out by user balay 
+find /home/bsmith/petsc -name man -prune -o -name manual -prune -o \
+-name output -prune -o -type f -user balay -perm -600 -print
+----------------------------------------------------------------------
