@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.98 1997/06/12 22:10:00 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.99 1997/07/09 20:49:43 balay Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -304,7 +304,7 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
 .keywords: vector, sequential, create, BLAS
 
 .seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
-          VecCreateMPIGhost(), VecCreateSeq()
+          VecCreateGhost(), VecCreateSeq()
 @*/
 int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 {
@@ -357,7 +357,7 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 
 .keywords: vector, sequential, create, BLAS
 
-.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPIGhost()
+.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/
 int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 {

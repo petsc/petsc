@@ -1,18 +1,18 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.5 1997/04/10 00:00:39 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.6 1997/07/09 20:50:03 balay Exp balay $";
 #endif
 
-static char help[] = "Demonstrates use of VecCreateMPIGhost().\n\n";
+static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
 /*T
    Concepts: Vectors^Assembling vectors; Ghost padding
-   Routines: VecCreateMPIGhost(); VecGetSize(); VecSet(); VecSetValues();
+   Routines: VecCreateGhost(); VecGetSize(); VecSet(); VecSetValues();
    Routines: VecView(); VecDestroy(); PetscSynchronizedPrintf();
    Routines: PetscSynchronizedFlush();
    Processors: n
 
    Comment: Ghost padding is a good way to handle local calculations that
-      involve values from other processors. VecCreateMPIGhost() provides
+      involve values from other processors. VecCreateGhost() provides
       a way to create vectors with extra room at the end of the vector 
       array to contain the needed ghost values from other processors, 
       vector computations are otherwise unaffected.
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
      For simplicity we generate the entire graph on each processor:
      in real application the graph would stored in parallel, but this
      example is only to demonstrate the management of ghost padding
-     with VecCreateMPIGhost().
+     with VecCreateGhost().
 
      In this example we consider the vector as representing 
      degrees of freedom in a one dimensional grid with periodic 

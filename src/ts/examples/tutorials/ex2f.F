@@ -1,11 +1,11 @@
 C
-C "$Id: ex2f.F,v 1.8 1997/07/10 15:50:39 balay Exp balay $";
+C "$Id: ex2f.F,v 1.9 1997/07/11 20:13:29 balay Exp balay $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
 C   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
 C   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSSetMonitor();
-C   Routines: PetscPrintF();
+C   Routines: PetscPrintf();
 C   Processors: n
 CT*/
 C

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.81 1997/06/19 22:34:45 balay Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.82 1997/07/09 20:49:48 balay Exp balay $";
 #endif
 
 /*
@@ -81,7 +81,7 @@ static struct _VeOps DvOps = { VecDuplicate_MPI,
 #undef __FUNC__  
 #define __FUNC__ "VecCreateMPI_Private"
 /*
-    VecCreateMPI_Private - Basic create routine called by VecCreateMPI(), VecCreateMPIGhost()
+    VecCreateMPI_Private - Basic create routine called by VecCreateMPI(), VecCreateGhost()
   and VecDuplicate_MPI() to reduce code duplication.
 */
 static int VecCreateMPI_Private(MPI_Comm comm,int n,int nghost,int N,int size,int rank,int *owners,Vec *vv)
@@ -153,7 +153,7 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int nghost,int N,int size,in
 
 .keywords: vector, create, MPI
 
-.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPIGhost()
+.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
 @*/ 
 int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {
