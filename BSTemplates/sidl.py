@@ -193,13 +193,18 @@ class CompileDefaults (Defaults):
         if self.extraLibraries.has_key(package):
           libraries.extend(self.extraLibraries[package])
 
+        # Allow bootstrap
+        linker = link.LinkSharedLibrary(extraLibraries = self.babelLib)
+        if self.project == 'bs':
+          linker.doLibraryCheck = 0
+
         targets.append(target.Target(None,
                                      [compile.TagC(root = rootDir),
                                       compile.TagCxx(root = rootDir),
                                       cAction,
                                       cxxAction,
                                       link.TagLibrary(),
-                                      link.LinkSharedLibrary(extraLibraries = libraries)]))
+                                      linker]))
     targets.append(transform.Update())
     return targets
 
@@ -227,11 +232,16 @@ class CompileDefaults (Defaults):
         action.includeDirs.append(bs.argDB['PYTHON_INCLUDE'])
         action = (babel.PythonModuleFixup(library, sourceDir), action)
 
+      # Allow bootstrap
+      linker = link.LinkSharedLibrary(extraLibraries = self.babelLib)
+      if self.project == 'bs':
+        linker.doLibraryCheck = 0
+
       targets.append(target.Target(None,
                                    [tagger,
                                     action,
                                     link.TagLibrary(),
-                                    link.LinkSharedLibrary(extraLibraries = self.babelLib)]))
+                                    linker]))
     targets.append(transform.Update())
     return targets
 

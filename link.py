@@ -24,12 +24,14 @@ class LinkSharedLibrary (action.Action):
     self.sharedLibs     = fileset.FileSet()
     self.products       = [self.sharedLibs]
     self.buildProducts  = 0
+    self.doLibraryCheck = 1
 
   def getSharedName(self, libName):
     (base, ext) = os.path.splitext(libName)
     return base+'.so'
 
   def checkLibrary(self, source):
+    if not self.doLibraryCheck: return
     try:
       import BS.LinkCheckerI.Checker
       import BS.LinkError
@@ -39,8 +41,8 @@ class LinkSharedLibrary (action.Action):
       except BS.LinkError.Exception, e:
         raise RuntimeError(e.getMessage())
     except ImportError:
-      # If BS is not yet built or unavilable
-      self.debugPrint('Did not check shared library '+source, 4, 'link')
+      # If BS is not yet built or unavailable
+      self.debugPrint('Did not check shared library '+source, 3, 'link')
 
   def link(self, source):
     linkDir = os.path.join(self.tmpDir, 'link')
