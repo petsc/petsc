@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.67 2001/03/22 20:27:58 bsmith Exp balay $ 
+# $Id: base.site,v 1.68 2001/03/27 22:17:30 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -35,7 +35,7 @@ MPIRUN         = /usr/sbin/npri -w /bin/mpirun
 #
 # The following lines can be used with MPIUNI
 #
-#MPI_LIB         =${LDIR}/libmpiuni.a
+#MPI_LIB         =${INSTALL_LIB_DIR}/libmpiuni.a
 #MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 #MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #

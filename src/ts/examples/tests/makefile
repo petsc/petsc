@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.36 2000/08/17 19:50:18 balay Exp bsmith $ 
+# $Id: makefile,v 1.37 2001/03/22 20:32:34 bsmith Exp balay $ 
 
 CFLAGS	        = 
 FFLAGS	        = 
@@ -19,19 +19,19 @@ ex1f: ex1f.o  chkopts
 	${RM} ex1f.o
 
 ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o -L${LDIR} -lpetscts ${PETSC_TS_LIB}
+	-${CLINKER} -o ex2 ex2.o -L${PETSC_LIB_DIR} -lpetscts ${PETSC_TS_LIB}
 	${RM} ex2.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o -L${LDIR} -lpetscts 
+	-${CLINKER} -o ex3 ex3.o -L${PETSC_LIB_DIR} -lpetscts 
 	${RM} ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o -L${LDIR} -lpetscts ${PETSC_TS_LIB}
+	-${CLINKER} -o ex4 ex4.o -L${PETSC_LIB_DIR} -lpetscts ${PETSC_TS_LIB}
 	${RM} ex4.o
 
 ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o -L${LDIR} -lpetscts ${PETSC_TS_LIB}
+	-${CLINKER} -o ex5 ex5.o -L${PETSC_LIB_DIR} -lpetscts ${PETSC_TS_LIB}
 	${RM} ex5.o
 
 ex6: ex6.o  chkopts

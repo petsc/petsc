@@ -1,4 +1,4 @@
-# $Id: base,v 1.23 2000/03/27 18:44:12 balay Exp balay $ 
+# $Id: base,v 1.24 2000/03/27 20:25:13 balay Exp balay $ 
 #
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 include ${PETSC_DIR}/bmake/common
@@ -9,17 +9,17 @@ libf: ${LIBNAME}(${OBJSF})
 
 #############
 shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
+	-@echo making shared libraries in ${INSTALL_LIB_DIR} ;\
+	cd ${INSTALL_LIB_DIR}; \
 	${RM} -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \
 	for LIBNAME in ${SHLIBS} ; \
 	do \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
+          if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.a ]; then \
 	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	    if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
 	    else \
 	      flag="true"; \
 	    fi; \

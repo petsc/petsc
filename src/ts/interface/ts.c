@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.38 2001/04/04 17:13:14 bsmith Exp balay $ */
+/* $Id: ts.c,v 1.39 2001/04/04 18:04:08 balay Exp balay $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNCT__  
@@ -1424,7 +1424,7 @@ $     -ts_type my_solver
 
    Level: advanced
 
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT},
+   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT},
    and others of the form ${any_environmental_variable} occuring in pathname will be 
    replaced with appropriate values.
 

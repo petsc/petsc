@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.10 2000/08/17 04:50:45 bsmith Exp balay $ 
+# $Id: makefile,v 1.11 2000/08/24 16:06:32 balay Exp balay $ 
 
 ALL: lib 
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = -DPETSC_LDIR='"${LDIR}"'
+CPPFLAGS  = -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"'
 SOURCEC	  = cookie.c  gcomm.c   gtype.c   olist.c   pcomm.c  pname.c  tagm.c \
             destroy.c gcookie.c inherit.c options.c pgname.c prefix.c init.c \
 	    pinit.c ptype.c

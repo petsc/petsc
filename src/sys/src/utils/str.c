@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.49 2001/03/23 23:20:45 balay Exp bsmith $*/
+/*$Id: str.c,v 1.50 2001/03/26 19:22:19 bsmith Exp balay $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -511,7 +511,7 @@ int PetscStrstr(const char a[],const char b[],char **tmp)
 -   len - the length of b
 
    Notes:
-      Replaces   ${PETSC_ARCH},${BOPT},${PETSC_DIR},${PETSC_LDIR},${DISPLAY},
+      Replaces   ${PETSC_ARCH},${BOPT},${PETSC_DIR},${PETSC_LIB_DIR},${DISPLAY},
       ${HOMEDIRECTORY},${WORKINGDIRECTORY},${USERNAME} with appropriate values
       as well as any environmental variables.
    
@@ -522,8 +522,8 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char *b,int len)
 {
   int        ierr,i = 0,l,l1,l2,l3;
   char       *work,*par,*epar,env[256];
-  char       *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LDIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
-  char       *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LDIR,0,0,0,0,0};
+  char       *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
+  char       *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
   PetscTruth flag;
 
   PetscFunctionBegin;

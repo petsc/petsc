@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 2001/03/27 22:16:50 balay Exp balay $ 
+# $Id: base.site,v 1.2 2001/04/05 19:39:20 balay Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -14,7 +14,7 @@ PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_MKL_ONLY
 #PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
 #
 # Location of MPI (Message Passing Interface) software  
-# WMPI (http://dsg.dei.uc.pt/~fafe/w32mpi/) use the following lines
+# WMPI - from www.criticalsoftware.com
 #
 MPI_HOME        = C:/software/wmpi
 MPI_INCLUDE    = -I$(MPI_HOME)/include

@@ -1,4 +1,4 @@
-# $Id: base,v 1.67 2000/04/09 03:08:30 bsmith Exp balay $ 
+# $Id: base,v 1.68 2000/09/07 17:52:29 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -16,17 +16,17 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 
 #############
 shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
+	-@echo making shared libraries in ${INSTALL_LIB_DIR} ;\
+	cd ${INSTALL_LIB_DIR}; \
 	${RM} -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \
 	for LIBNAME in ${SHLIBS} ; \
 	do \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
+          if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.a ]; then \
 	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	    if [ -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
 	    else \
 	      flag="true"; \
 	    fi; \

@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.68 2001/03/23 21:56:20 bsmith Exp balay $*/
+/*$Id: dl.c,v 1.69 2001/03/23 23:20:29 balay Exp balay $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -122,7 +122,7 @@ int PetscDLLibraryGetInfo(void *handle,char *type,char **mess)
    Notes:
    [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
    occuring in directoryname and filename will be replaced with appropriate values.
 @*/
 int PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)

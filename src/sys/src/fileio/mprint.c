@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.58 2001/03/09 15:43:10 balay Exp balay $*/
+/*$Id: mprint.c,v 1.59 2001/03/23 23:20:30 balay Exp balay $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -502,7 +502,7 @@ int PetscErrorPrintfDefault(const char format[],...)
 ---------------------------\n");
     fprintf(fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
 #if !defined (PARCH_win32)
-    fprintf(fd,"Libraries linked from %s\n",PETSC_LDIR);
+    fprintf(fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
 #endif
     fprintf(fd,"--------------------------------------------\
 ---------------------------\n");

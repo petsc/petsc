@@ -1,4 +1,4 @@
-/*$Id: nt_time.c,v 1.23 2001/03/23 23:20:44 balay Exp bsmith $*/
+/*$Id: nt_time.c,v 1.24 2001/04/04 16:48:08 bsmith Exp balay $*/
 
 #include <petsc.h>
 #if defined (PARCH_win32_gnu) || defined (PARCH_win32)
@@ -17,7 +17,7 @@ PetscLogDouble nt_time(void)
   
   DWORD                 dwStartHigh,dwCurHigh;
   PetscLogDouble        dTime,dHigh;
-  PetscLogDouble        time;
+  PetscLogDouble        ptime;
   
   
   PetscFunctionBegin;
@@ -39,8 +39,8 @@ PetscLogDouble nt_time(void)
   /* Use the following with older versions of the Borland compiler
   dTime = dHigh*(double)FACTOR + (double)CurTime.u.LowPart - (double)StartTime.u.LowPart;
   */
-  time  = (double)SecInTick*dTime;
+  ptime = (double)SecInTick*dTime;
 
-  PetscFunctionReturn(time);
+  PetscFunctionReturn(ptime);
 }
 #endif

@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.10 2000/05/10 16:39:17 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.11 2000/08/17 04:50:42 bsmith Exp balay $ 
 
 ALL: lib 
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = -DPETSC_LDIR='"${LDIR}"' -DPETSC_DIR='"${PETSC_DIR}"'
+CPPFLAGS  = -DPETSC_LIB_DIR='"${PETSC_LIB_DIR}"' -DPETSC_DIR='"${PETSC_DIR}"'
 SOURCEC	  = ffpath.c ftest.c ghome.c mpiuopen.c rpath.c \
             fpath.c fwd.c grpath.c mprint.c sysio.c fretrieve.c smatlab.c
 SOURCEF	  =

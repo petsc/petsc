@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.13 2000/09/13 15:18:15 balay Exp balay $ 
+# $Id: base.site,v 1.14 2001/03/27 22:17:30 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -27,7 +27,7 @@ MPIRUN         = /home/petsc/mpich/lib/alpha/ch_shmem/mpirun
 #
 # The following lines can be used with MPIUNI
 #
-#MPI_LIB         = ${LDIR}/libmpiuni.a
+#MPI_LIB         = ${INSTALL_LIB_DIR}/libmpiuni.a
 #MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 #MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #

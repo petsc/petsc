@@ -1,4 +1,4 @@
-# $Id: common_win32,v 1.10 2001/04/05 19:31:47 balay Exp balay $ 
+# $Id: common_win32,v 1.11 2001/04/05 20:42:06 balay Exp balay $ 
 #
 #  Sets the rule used to remove collections of libraries (different under NT and 95!)
 #
@@ -14,12 +14,12 @@ CP               = copy /y
 #
 # Variables from base\common_variables
 #
-!IF "$(LDIR)" == ""
-LDIR	       = $(PETSC_DIR)\lib\lib$(BOPT)\$(PETSC_ARCH)
+!IF "$(INSTALL_LIB_DIR)" == ""
+INSTALL_LIB_DIR = $(PETSC_DIR)\lib\lib$(BOPT)\$(PETSC_ARCH)
 !ENDIF
 
 PETSC_LIB_DIR  = $(PETSC_DIR)\lib\lib$(BOPT)\$(PETSC_ARCH)
-LIBNAME        = $(LDIR)\$(LIBBASE).lib
+LIBNAME        = $(INSTALL_LIB_DIR)\$(LIBBASE).lib
 SOURCE	       = $(SOURCEC) $(SOURCEF)
 OBJS	       = $(OBJSC) $(OBJSF)
 PETSC_INCLUDE  = /I$(PETSC_DIR) /I$(PETSC_DIR)\include $(MPI_INCLUDE) \
@@ -117,9 +117,9 @@ chklib_dir:
 	@return
 chkopts:chklib_dir
 !ELSE
-chklib_dir: $(LDIR) 
-$(LDIR) :
-	@echo checking $(LDIR)
+chklib_dir: $(INSTALL_LIB_DIR) 
+$(INSTALL_LIB_DIR) :
+	@echo checking $(INSTALL_LIB_DIR)
 	@if not exist "$(PETSC_DIR)\lib\$(NULL)" \
 	mkdir "$(PETSC_DIR)\lib"
 	@if not exist "$(PETSC_DIR)\lib\lib$(BOPT)\$(NULL)" \
@@ -127,7 +127,7 @@ $(LDIR) :
 	@if not exist "$(PETSC_DIR)\lib\lib$(BOPT)\$(PETSC_ARCH)\$(NULL)" \
 	mkdir "$(PETSC_DIR)\lib\lib$(BOPT)\$(PETSC_ARCH)"
 chkopts: 
-#	@if not exist "$(LDIR)" \
+#	@if not exist "$(INSTALL_LIB_DIR)" \
 #	echo Libraries not built for this BOPT: $(BOPT)
 !ENDIF
 

@@ -41,7 +41,7 @@ C_SYS_LIB  = @LIBS@ @FC_LIB@
 #FLINKER = ${C_FLINKER} ${FOPTFLAGS} ${C_FLINKER_SL_PATH}
 # where C_CLINKER_SL_PATH is defined in the architecture-specific base files.
 # A typical definition might be
-# C_CLINKER_SL_PATH = ${CLINKER_SLFLAG}${LDIR}:${DYLIBPATH}
+# C_CLINKER_SL_PATH = ${CLINKER_SLFLAG}${INSTALL_LIB_DIR}:${DYLIBPATH}
 # but might also be
 # C_CLINKER_SL_PATH = 
 # ---------------------------- BOPT=g options ----------------------------

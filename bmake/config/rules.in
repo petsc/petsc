@@ -45,8 +45,8 @@ libf: $(LIBNAME)($(OBJSF))
 # on creating shared libraries.  Eventually, we should use libtool or a 
 # similar approach.
 shared: chkopts_basic
-	-@ echo making shared libraries in $(LDIR) ;\
-	cd $(LDIR); \
+	-@ echo making shared libraries in $(INSTALL_LIB_DIR) ;\
+	cd $(INSTALL_LIB_DIR); \
 	$(RM) -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \

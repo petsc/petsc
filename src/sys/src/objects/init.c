@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.70 2001/01/17 19:44:24 balay Exp balay $*/
+/*$Id: init.c,v 1.71 2001/03/23 23:20:38 balay Exp balay $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -411,7 +411,7 @@ int PetscOptionsCheckInitial(void)
     ierr = (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html for problems.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n");CHKERRQ(ierr);
 #if !defined(PARCH_win32)
-    ierr = (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LDIR);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LIB_DIR);CHKERRQ(ierr);
 #endif
     ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");CHKERRQ(ierr);
