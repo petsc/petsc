@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.28 2001/03/22 20:31:46 bsmith Exp balay $*/
+/*$Id: damg.c,v 1.29 2001/03/23 23:24:05 balay Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -35,27 +35,17 @@
 @*/
 int DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
 {
-  int        ierr,i,array[3],narray = 3,ratiox = 2, ratioy = 2, ratioz = 2;
+  int        ierr,i;
   DMMG       *p;
-  PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetIntArray(0,"-dmmg_ratio",array,&narray,&flg);CHKERRQ(ierr);
-  if (flg) {
-    if (narray > 0) ratiox = array[0];
-    if (narray > 1) ratioy = array[1]; else ratioy = ratiox;
-    if (narray > 2) ratioz = array[2]; else ratioz = ratioy;
-  }
+  ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
     ierr             = PetscNew(struct _p_DMMG,&p[i]);CHKERRQ(ierr);
     ierr             = PetscMemzero(p[i],sizeof(struct _p_DMMG));CHKERRQ(ierr);
     p[i]->nlevels    = nlevels - i;
-    p[i]->ratiox     = ratiox;
-    p[i]->ratioy     = ratioy;
-    p[i]->ratioz     = ratioz;
     p[i]->comm       = comm;
     p[i]->user       = user;
     p[i]->matrixfree = PETSC_FALSE;
