@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.87 2000/11/17 21:40:13 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.88 2000/11/19 00:40:43 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -110,7 +110,6 @@ void PETSC_STDCALL matcreateseqaijwitharrays_(MPI_Comm *comm,int *m,int *n,int *
 {
   *ierr = MatCreateSeqAIJWithArrays((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,a,mat);
 }
-
 
 #include "src/mat/impls/adj/mpi/mpiadj.h"
 void PETSC_STDCALL matcreatempiadj_(MPI_Comm *comm,int *m,int *n,int *i,int *j,int *values,Mat *A,int *ierr)
@@ -248,22 +247,7 @@ void PETSC_STDCALL matcopy_(Mat *A,Mat *B,MatStructure *str,int *ierr)
 
 void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,int *ierr)
 {
-  MatInfo info;
-  *ierr = MatGetInfo(*mat,*flag,&info);
-  finfo[0]  = info.rows_global;
-  finfo[1]  = info.columns_global;
-  finfo[2]  = info.rows_local;
-  finfo[3]  = info.columns_global;
-  finfo[4]  = info.block_size;
-  finfo[5]  = info.nz_allocated;
-  finfo[6]  = info.nz_used;
-  finfo[7]  = info.nz_unneeded;
-  finfo[8]  = info.memory;
-  finfo[9]  = info.assemblies;
-  finfo[10] = info.mallocs;
-  finfo[11] = info.fill_ratio_given;
-  finfo[12] = info.fill_ratio_needed;
-  finfo[13] = info.factor_mallocs;
+  *ierr = MatGetInfo(*mat,*flag,(MatInfo*)finfo);
 }
 
 void PETSC_STDCALL matgetarray_(Mat *mat,Scalar *fa,long *ia,int *ierr)
@@ -456,9 +440,9 @@ void PETSC_STDCALL matcreatempibaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *M
    This C routine then calls the corresponding Fortran routine that was
    set by the user.
 */
-void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,void *ctx,Mat *mat,int *ierr)
+void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,void **ctx,Mat *mat,int *ierr)
 {
-  *ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,ctx,mat);
+  *ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,*ctx,mat);
   if (*ierr) return;
   ((PetscObject)*mat)->fortran_func_pointers = (void**)PetscMalloc(sizeof(void *));
   if (!((PetscObject)*mat)->fortran_func_pointers) {*ierr = 1; return;}
@@ -531,8 +515,7 @@ void PETSC_STDCALL matfdcoloringsetfunctionsnes_(MatFDColoring *fd,void (PETSC_S
     Fortran provides the array to hold the submatrix objects,while in C that 
     array is allocated by the MatGetSubmatrices()
 */
-void PETSC_STDCALL matgetsubmatrices_(Mat *mat,int *n,IS *isrow,IS *iscol,MatReuse *scall,
-                        Mat *smat,int *ierr)
+void PETSC_STDCALL matgetsubmatrices_(Mat *mat,int *n,IS *isrow,IS *iscol,MatReuse *scall,Mat *smat,int *ierr)
 {
   Mat *lsmat;
   int i;
@@ -566,4 +549,7 @@ void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,Scalar *diag,int *ierr)
 }
 
 EXTERN_C_END
+
+
+
 
