@@ -116,7 +116,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcpy(char s[],const char t[])
     SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
   }
   if (t) {strcpy(s,t);}
-  else {s[0] = 0;}
+  else if (s) {s[0] = 0;}
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +147,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcpy(char s[],const char t[])
 PetscErrorCode PETSC_DLLEXPORT PetscStrncpy(char s[],const char t[],size_t n)
 {
   PetscFunctionBegin;
-  strncpy(s,t,n);
+  if (t && !s) {
+    SETERRQ(PETSC_ERR_ARG_NULL,"Trying to copy string into null pointer");
+  }
+  if (t) {strncpy(s,t,n);}
+  else if (s) {s[0] = 0;}
   PetscFunctionReturn(0);
 }
 
