@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.27 1996/08/08 14:40:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.28 1996/09/12 16:25:18 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -71,6 +71,10 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
    By Barry Smith on March 27, 1994. 
    Eispack routine to determine eigenvalues of symmetric 
    tridiagonal matrix 
+
+  Note that this routine always uses real numbers (not complex) even if the underlying 
+  matrix is Hermitian. This is because the Lanczo process applied to Hermitian matrices
+  always produces a real, symmetric tridiagonal matrix.
 */
 
 static double c_b10 = 1.;
@@ -158,14 +162,14 @@ static int ccgtql1_private(int *n, double *d, double *e, int *ierr)
     i__1 = *n;
     for (l = 1; l <= i__1; ++l) {
         j = 0;
-        h = (d__1 = d[l], PetscAbsScalar(d__1)) + (d__2 = e[l], PetscAbsScalar(d__2));
+        h = (d__1 = d[l], PetscAbsDouble(d__1)) + (d__2 = e[l], PetscAbsDouble(d__2));
         if (tst1 < h) {
             tst1 = h;
         }
 /*     .......... LOOK FOR SMALL SUB-DIAGONAL ELEMENT .......... */
         i__2 = *n;
         for (m = l; m <= i__2; ++m) {
-            tst2 = tst1 + (d__1 = e[m], PetscAbsScalar(d__1));
+            tst2 = tst1 + (d__1 = e[m], PetscAbsDouble(d__1));
             if (tst2 == tst1) {
                 goto L120;
             }
@@ -236,7 +240,7 @@ L145:
         p = -s * s2 * c3 * el1 * e[l] / dl1;
         e[l] = s * p;
         d[l] = c * p;
-        tst2 = tst1 + (d__1 = e[l], PetscAbsScalar(d__1));
+        tst2 = tst1 + (d__1 = e[l], PetscAbsDouble(d__1));
         if (tst2 > tst1) {
             goto L130;
         }
@@ -286,13 +290,13 @@ static double cgpthy_private(double *a, double *b)
 
 
 /* Computing MAX */
-    d__1 = PetscAbsScalar(*a), d__2 = PetscAbsScalar(*b);
+    d__1 = PetscAbsDouble(*a), d__2 = PetscAbsDouble(*b);
     p = PetscMax(d__1,d__2);
     if (p == 0.) {
         goto L20;
     }
 /* Computing MIN */
-    d__2 = PetscAbsScalar(*a), d__3 = PetscAbsScalar(*b);
+    d__2 = PetscAbsDouble(*a), d__3 = PetscAbsDouble(*b);
 /* Computing 2nd power */
     d__1 = PetscMin(d__2,d__3) / p;
     r = d__1 * d__1;
