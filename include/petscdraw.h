@@ -1,4 +1,4 @@
-/* $Id: petscdraw.h,v 1.72 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscdraw.h,v 1.73 2000/06/07 17:41:41 balay Exp balay $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -9,9 +9,10 @@
 #define DRAW_COOKIE PETSC_COOKIE+6
 
 /* types of draw contexts */
-#define DRAW_X    "x"
-#define DRAW_NULL "null"
-#define DRAW_PS   "ps"
+#define DRAW_X     "x"
+#define DRAW_NULL  "null"
+#define DRAW_PS    "ps"
+#define DRAW_WIN32 "win32"
  
 typedef struct _p_Draw* Draw;
 
