@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types','WindowsX'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
-                 'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
+                 'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
                  'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','erf','dlerror']
     libraries1 = [(['socket', 'nsl'], 'socket')]
     self.setCompilers = self.framework.require('config.setCompilers',      self)
@@ -153,6 +153,13 @@ class Configure(config.base.Configure):
     self.addMakeMacro('PETSC_SCALAR',self.clanguage.scalartype)
     # double or float
     self.addMakeMacro('PETSC_PRECISION',self.clanguage.precision)
+    
+
+#-----------------------------------------------------------------------------------------------------
+
+    if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket'):
+      self.addMakeMacro('PETSC_USE_SOCKET_VIEWER','1')
+
 
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for external packages

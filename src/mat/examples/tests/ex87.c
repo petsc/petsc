@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = MatGetSubMatrices(SBAIJ,n,iss,iss,MAT_INITIAL_MATRIX,&subSBAIJ);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   if (!rank) {
     ierr = MatView(subBAIJ[0],PETSC_VIEWER_SOCKET_SELF);CHKERRQ(ierr);
     ierr = MatView(subSBAIJ[0],PETSC_VIEWER_SOCKET_SELF);CHKERRQ(ierr);

@@ -435,7 +435,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   } else if (issocket) {
     PetscMPIInt rank,size,*sizes,Ntotal,*displs, NN = (PetscMPIInt)N;
     PetscInt    *array;
@@ -520,7 +520,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   } else if (issocket) {
     PetscMPIInt rank,size,*sizes,*displs, Ntotal,NN = (PetscMPIInt)N;
     PetscReal   *array;
@@ -618,7 +618,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],Pets
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   } else if (issocket) {
     PetscMPIInt size,rank,*sizes,Ntotal,*displs,NN = (PetscMPIInt)N;
     PetscScalar *array;

@@ -381,7 +381,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 }
 EXTERN_C_END
 
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Socket"
 PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
@@ -588,7 +588,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #endif
   if (iascii){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   } else if (issocket) {
     ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
 #endif

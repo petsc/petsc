@@ -298,7 +298,6 @@ EXTERN_C_END
 #define __FUNCT__ "VecView_Seq"
 PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 {
-  Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
   PetscTruth     isdraw,iascii,issocket,isbinary;
 #if defined(PETSC_HAVE_MATHEMATICA)
@@ -330,8 +329,9 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (iascii){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   } else if (issocket) {
+    Vec_Seq        *x = (Vec_Seq *)xin->data;
     ierr = PetscViewerSocketPutScalar(viewer,xin->n,1,x->array);CHKERRQ(ierr);
 #endif
   } else if (isbinary) {

@@ -32,12 +32,12 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = MatView(A,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
 #endif
   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
   ierr = VecSet(&one,x);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = VecView(x,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
 #endif
   

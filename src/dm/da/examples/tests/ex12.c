@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   
     /* View Wave */ 
   /* Set Up Display to Show Heat Graph */
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
     ierr = VecView(global,PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
 #endif
   }

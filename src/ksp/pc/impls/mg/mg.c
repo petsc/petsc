@@ -524,7 +524,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   ierr = KSPSetUp(mg[0]->smoothd);CHKERRQ(ierr);
   if (mg[0]->eventsetup) {ierr = PetscLogEventEnd(mg[0]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
 
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   /*
      Dump the interpolation/restriction matrices to matlab plus the 
    Jacobian/stiffness on each level. This allows Matlab users to 

@@ -1,4 +1,4 @@
-#requirespackage  'PETSC_HAVE_SOCKET'
+#requirespackage  'PETSC_USE_SOCKET_VIEWER'
 #
 #
 ALL: lib

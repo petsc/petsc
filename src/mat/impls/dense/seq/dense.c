@@ -995,7 +995,6 @@ PetscErrorCode MatView_SeqDense_Draw(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatView_SeqDense"
 PetscErrorCode MatView_SeqDense(Mat A,PetscViewer viewer)
 {
-  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
   PetscTruth     issocket,iascii,isbinary,isdraw;
 
@@ -1007,8 +1006,9 @@ PetscErrorCode MatView_SeqDense(Mat A,PetscViewer viewer)
 
   if (iascii) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SOCKET)
+#if defined(PETSC_USE_SOCKET_VIEWER)
   } else if (issocket) {
+    Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
     if (a->lda>A->m) SETERRQ(PETSC_ERR_SUP,"Case can not handle LDA");
     ierr = PetscViewerSocketPutScalar(viewer,A->m,A->n,a->v);CHKERRQ(ierr);
 #endif
