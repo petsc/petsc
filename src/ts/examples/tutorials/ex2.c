@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.35 2001/01/22 23:07:45 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.36 2001/01/23 20:57:37 balay Exp bsmith $*/
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -154,7 +154,7 @@ int main(int argc,char **argv)
   if (flg) {
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianFD,&appctx);CHKERRQ(ierr);
   } else {
-    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx);CHKERRQ(ierr); 
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
