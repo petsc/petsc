@@ -1,5 +1,5 @@
 c
-c  "$Id: xmod.F,v 1.30 1997/10/16 22:09:21 keyes Exp curfman $";
+c  "$Id: xmod.F,v 1.31 1997/10/17 19:46:34 curfman Exp curfman $";
 c
 c  This file contains routines that are used only within the PETSc
 c  solver.  Most are interface routines to pass between the PETSc
@@ -28,7 +28,7 @@ c
      &        Agxm, Agym, Agzm,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01,
      &        Agzef01, Andof, Aggrid, Abcswitch, Amodel,
-     &        Abump, Ank1)
+     &        Abump, Ank1, Amm_xs, Amm_xe)
 
 #include "param.h"
 
@@ -42,7 +42,7 @@ c
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
      &        Agxm, Agym, Agzm, ierr, Ano_output, Andof, Aggrid,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01, Agzef01,
-     &        Agxefm1, Agyefm1, Agzefm1
+     &        Agxefm1, Agyefm1, Agzefm1, Amm_xs, Amm_xe
 
       double precision Abump
 
@@ -101,7 +101,7 @@ c  in param.h: Common block, pgrid, for local grid data:
            return
          endif
       else if (problem .eq. 5) then
-         OPEN (2,FILE='m6c_duct',STATUS='OLD')
+         OPEN (2,FILE='m6c_bump',STATUS='OLD')
          ni = 49
          nj = 9
          nk = 9
@@ -114,7 +114,7 @@ c  in param.h: Common block, pgrid, for local grid data:
            return
          endif
       else if (problem .eq. 6) then
-         OPEN (2,FILE='m6f_duct',STATUS='OLD')
+         OPEN (2,FILE='m6f_bump',STATUS='OLD')
          ni = 97
          nj = 17
          nk = 17
@@ -251,9 +251,17 @@ c       Using local grid
         czn = gzef01
       endif
 
+c  Starting and ending boundaries for Euler model in x-direction
+c  Note: we shift the starting index by 1 to account for conventional
+c  1-based Fortran indexing.
+c     Full potential: i < mm_xsf, i > mm_xef
+c     Euler:          mm_xsf <= i <= mm_xef
+      mm_xsf   = Amm_xs + 1
+      mm_xef   = Amm_xe 
+
       if (rank .eq. 0) then 
         write(6,*) 'Problem is ',problem,', ndof = ',ndof
-        if (problem .eq. 5) write(6,*) 'Bump = ',bump
+        if (problem .ge. 5) write(6,*) 'Bump = ',bump
         write(6,*) 'Iteration for BC impermeability switch is',bcswitch
       endif
       if (printg .eq. 1) then
@@ -290,6 +298,12 @@ c       Using local grid
      & i4,': gysfw,gysf1w,gysf2w,gyefw:',4(i4))
  190  format('Fort ghosts (interior): rank ',
      & i4,': gzsfw,gzsf1w,gzsf2w,gzefw:',4(i4))
+
+c Multi-model info:
+      write(6,200) rank,mm_xsf,mm_xef
+ 200  format('Multi-model Euler boundaries: rank ',
+     & i4,': mm_xsf,mm_xef:',2(i4))
+
 #ifdef PARCH_rs6000
       call FLUSH_(6)
 #else

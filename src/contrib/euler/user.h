@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.35 1997/10/19 21:49:27 keyes Exp curfman $ */
+/* $Id: user.h,v 1.36 1997/10/19 23:24:50 curfman Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -217,7 +217,7 @@ typedef struct {
 
     /* duct problem */
     Scalar bump;                              /* flow parameter - max bump height */
-    mm_xse, mm_xfe;                           /* Euler region is mm_xse <= x < mm_xfe for
+    int    mm_xs, mm_xe;                      /* Euler region is mm_xs <= x < mm_xe for
                                                  all j,k; everything else uses FP model */
     } Euler;
 
@@ -394,7 +394,7 @@ extern int parsetup_(int*,int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,i
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,MMType*,Scalar*,int*);
+                      int*,int*,MMType*,Scalar*,int*,int*,int*);
 extern int buildmat_(int*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);

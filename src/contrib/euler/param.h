@@ -1,5 +1,5 @@
 c
-c  $Id: param.h,v 1.18 1997/10/16 19:01:12 curfman Exp curfman $;
+c  $Id: param.h,v 1.19 1997/10/17 19:46:53 curfman Exp curfman $;
 c
 c PETSc include files needed by Fortran routines
 c   petsc.h - basic PETSc interface
@@ -120,10 +120,14 @@ c   Common block for local ghost parameters
 
 c   Type of multi-model
         integer model
+
+c   Boundaries for Euler part of multi-model:
+        integer mm_xsf, mm_xef
+
         integer nk_boundary, nk1_boundary
 
 c   Common block for multi-model data
-       common /multimodel/ model
+       common /multimodel/ model, mm_xsf, mm_xef
 
 c   Duct problem parameters
        double precision bump

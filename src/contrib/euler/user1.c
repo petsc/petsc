@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.68 1997/10/17 22:12:29 keyes Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.69 1997/10/19 19:50:13 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -507,10 +507,12 @@ int UserDestroyEuler(Euler *app)
   PetscFree(app);
 
   /* If fp or multimodel */
-  ierr = VecDestroy(app->den); CHKERRQ(ierr);
-  ierr = VecDestroy(app->xvel); CHKERRQ(ierr);
-  ierr = VecDestroy(app->yvel); CHKERRQ(ierr);
-  ierr = VecDestroy(app->zvel); CHKERRQ(ierr);
+  if (app->mmtype != MMEULER) {
+    ierr = VecDestroy(app->den); CHKERRQ(ierr);
+    ierr = VecDestroy(app->xvel); CHKERRQ(ierr);
+    ierr = VecDestroy(app->yvel); CHKERRQ(ierr);
+    ierr = VecDestroy(app->zvel); CHKERRQ(ierr);
+  }
 
   return 0;
 }
@@ -599,7 +601,7 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
     }
   }
 
-  if (app->mmtype != MMFP && app->mmtype != MMHYBRID_F) {
+  if (app->mmtype == MMEULER || app->mmtype == MMHYBRID_E || app->mmtype == MMHYBRID_EF1) {
     /* As long as we're not doing just the full potential model, we must
        compute the Euler components */
 
@@ -650,8 +652,11 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
     }
 #endif
 
-  }
-  if (app->mmtype != MMEULER && app->mmtype != MMHYBRID_E) {
+  } else if (app->mmtype == MMFP || app->mmtype == MMHYBRID_F) {
+      /* No Euler computations needed here */
+  } else SETERRQ(1,0,"Unsupported model type");
+
+  if (app->mmtype == MMFP || app->mmtype == MMHYBRID_F || app->mmtype == MMHYBRID_EF1) {
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
           Full potential code
@@ -671,7 +676,9 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
     /* Build Fvec(X) directly, without using VecSetValues() */
     ierr = rbuild_direct_fp_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr); 
 
-  }
+  } else if (app->mmtype == MMEULER || app->mmtype == MMHYBRID_E) {
+     /* no FP computations needed here */
+  } else SETERRQ(1,0,"Unsupported model type");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
           Optional output for debugging and visualizing solution 
@@ -810,6 +817,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 20;   /* max number of KSP iterations */
       app->f_reduction    = 0.3;  /* fnorm reduction before beginning to advance CFL */
+      app->mm_xs          = 0;
+      app->mm_xe          = 0;
       break;
     case 2:
       /* from m6f: Fortran: itl=19, itu=79, ile=49, ktip=11 */
@@ -820,6 +829,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 20; 
       app->f_reduction    = 0.3;
+      app->mm_xs          = 0;
+      app->mm_xe          = 0;
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
@@ -830,6 +841,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 30;
       app->f_reduction    = 0.3; 
+      app->mm_xs          = 0;
+      app->mm_xe          = 0;
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -851,6 +864,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 20;   /* max number of KSP iterations */
       app->f_reduction    = 0.3;  /* fnorm reduction before beginning to advance CFL */
+      app->mm_xs          = 13;   /* Euler region: mm_xs <= i < mm_xe */
+      app->mm_xe          = 39;   /* FP regions: i < mm_xs, i >= mm_xe */
 
       /* Options for duct problem */
       app->bump = 0.10;     /* default max bump height relative to channel height */
@@ -869,6 +884,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 20;   /* max number of KSP iterations */
       app->f_reduction    = 0.3;  /* fnorm reduction before beginning to advance CFL */
+      app->mm_xs          = 25;
+      app->mm_xe          = 75;
 
       /* Options for duct problem */
       app->bump = 0.10;     /* default max bump height relative to channel height */
@@ -966,6 +983,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     PetscPrintf(app->comm,"Running 2-dimensional problem only\n");
   }
 
+  ierr = OptionsGetInt(PETSC_NULL,"-mm_xs",&app->mm_xs,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mm_xe",&app->mm_xe,&flg); CHKERRQ(ierr);
 
 #if defined(ACTIVATE_OLD_ASSEMBLY)
    /* 
@@ -1005,7 +1024,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = MMGetNumberOfComponents(app->multimodel,&app->ndof); CHKERRQ(ierr);
   ndof = app->ndof;
   ierr = MMGetType(app->multimodel,&app->mmtype,&mmname); CHKERRQ(ierr);
-  PetscPrintf(app->comm,"Multi-model: %s, enum=%d, ndof=%d\n",mmname,app->mmtype,ndof); 
+  PetscPrintf(app->comm,"Multi-model: %s, enum=%d, ndof=%d, mm_xs=%d, mm_xe=%d\n",
+      mmname,app->mmtype,ndof,app->mm_xs,app->mm_xe); 
 
   /* Set type of formulation */
   ierr = OptionsHasName(PETSC_NULL,"-dt_mult",&flg); CHKERRQ(ierr);
@@ -1205,7 +1225,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
             &app->xef01, &app->yef01, &app->zef01,
             &app->gxef01, &app->gyef01, &app->gzef01,
             &ndof, &app->global_grid, &app->bcswitch, 
-            &app->mmtype,&app->bump,&nk1); CHKERRQ(ierr);
+            &app->mmtype,&app->bump,&nk1,&app->mm_xs,&app->mm_xe); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Allocate local Fortran work space
