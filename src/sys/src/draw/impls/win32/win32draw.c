@@ -40,7 +40,7 @@ unsigned char GreenMap[] = {255,0,0,255,255,0,0,255,139,165,130,42,182,127,190,2
 unsigned char BlueMap[]  = {255,0,0,0,255,255,225,212,34,0,238,42,193,80,190,0,0,173,205,143,105,50,235,0,128,96,255,230,120,216,50,245};
 
 /* Foward declarations of functions included in this code module: */
-LRESULT CALLBACK  WndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK  PetscWndProc(HWND, UINT, WPARAM, LPARAM);
 static PetscErrorCode TranslateColor_Win32(PetscDraw,int);
 static PetscErrorCode AverageColorRectangle_Win32(PetscDraw,int,int,int,int);
 static PetscErrorCode AverageColorTriangle_Win32(PetscDraw,int,int,int);
@@ -608,7 +608,7 @@ void PopMessageLoopThread_Win32(PetscDraw popdraw)
   /* initialize window class parameters */
   myclass.cbSize        = sizeof(WNDCLASSEX);
   myclass.style         = CS_OWNDC;
-  myclass.lpfnWndProc   = (WNDPROC)WndProc;
+  myclass.lpfnWndProc   = (WNDPROC)PetscWndProc;
   myclass.cbClsExtra    = 0;
   myclass.cbWndExtra    = 0;
   myclass.hInstance     = NULL;
@@ -702,7 +702,7 @@ void MessageLoopThread_Win32(PetscDraw draw)
   /* initialize window class parameters */
   wclass.cbSize         = sizeof(WNDCLASSEX);
   wclass.style          = CS_SAVEBITS | CS_HREDRAW | CS_VREDRAW;
-  wclass.lpfnWndProc    = (WNDPROC)WndProc;
+  wclass.lpfnWndProc    = (WNDPROC)PetscWndProc;
   wclass.cbClsExtra     = 0;
   wclass.cbWndExtra     = 0;
   wclass.hInstance      = NULL;
@@ -907,12 +907,12 @@ PetscErrorCode PetscDrawCreate_Win32(PetscDraw draw)
 EXTERN_C_END
 
 
-/* FUNCTION: WndProc(HWND, unsigned, WORD, LONG)
+/* FUNCTION: PetscWndProc(HWND, unsigned, WORD, LONG)
    PURPOSE:  Processes messages for the main window.
    WM_COMMAND  - process the application menu
    WM_PAINT    - Paint the main window
    WM_DESTROY  - post a quit message and return */
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK PetscWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   int         wmId, wmEvent;
   
