@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.144 2000/05/04 16:26:08 bsmith Exp balay $*/
+/*$Id: itfunc.c,v 1.145 2000/05/05 22:17:27 balay Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -1185,7 +1185,6 @@ int KSPGetConvergenceContext(KSP ksp,void **ctx)
        VecDestroy().
 
    Notes:
-   This routine must be called after SLESSolve().
    This routine can be used in one of two ways
 .vb
       KSPBuildSolution(ksp,PETSC_NULL,&V);
