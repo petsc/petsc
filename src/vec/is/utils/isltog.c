@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.46 2000/06/26 03:50:54 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.47 2000/06/26 19:47:21 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -403,25 +403,30 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMa
     Output Parameter:
 +   nproc - number of processors that are connected to this one
 .   proc - neighboring processors
-.   indices - indices of local nodes shared with neighbor (sorted by global numbering)
+.   numproc - number of indices for each subdomain (processor)
+-   indices - indices of local nodes shared with neighbor (sorted by global numbering)
 
     Level: advanced
 
 .keywords: IS, local-to-global mapping, neighbors
 
-.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate()
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
+          ISLocalToGlobalMappingRestoreInfo()
 @*/
 int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int **procs,int **numprocs,int ***indices)
 {
   int         i,n = mapping->n,ierr,Ng,ng = PETSC_DECIDE,max = 0,*lindices = mapping->indices;
   int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,*work,nmax,nrecvs,*recvs,proc;
   int         tag,cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
-  int         node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs;
+  int         node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
   MPI_Request *recv_waits,*send_waits;
   MPI_Status  recv_status,*send_status,*recv_statuses;
   MPI_Comm    comm = mapping->comm;
+  PetscTruth  debug = PETSC_FALSE;
 
   PetscFunctionBegin;
+  ierr = OptionsHasName(PETSC_NULL,"-islocaltoglobalmappinggetinfo_debug",&debug);CHKERRQ(ierr);
+
   /*
     Notes on ISLocalToGlobalMappingGetInfo
 
@@ -548,23 +553,23 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
     }
   }
 
-  /* -----------------------------------  */
-  starts[0]    = 0;
-  for (i=1; i<ng; i++) {
-    if (nownedsenders[i-1] > 1) starts[i] = starts[i-1] + nownedsenders[i-1];
-    else starts[i] = starts[i-1];
-  }
-  for (i=0; i<ng; i++) {
-    if (nownedsenders[i] > 1) {
-      ierr = PetscSynchronizedPrintf(comm,"[%d] global node %d local owner processors: ",rank,i+rstart);CHKERRQ(ierr);
-      for (j=0; j<nownedsenders[i]; j++) {
-        ierr = PetscSynchronizedPrintf(comm,"%d ",ownedsenders[starts[i]+j]);CHKERRQ(ierr);
-      }
-      ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
+  if (debug) { /* -----------------------------------  */
+    starts[0]    = 0;
+    for (i=1; i<ng; i++) {
+      if (nownedsenders[i-1] > 1) starts[i] = starts[i-1] + nownedsenders[i-1];
+      else starts[i] = starts[i-1];
     }
-  }
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  /* -----------------------------------  */
+    for (i=0; i<ng; i++) {
+      if (nownedsenders[i] > 1) {
+        ierr = PetscSynchronizedPrintf(comm,"[%d] global node %d local owner processors: ",rank,i+rstart);CHKERRQ(ierr);
+        for (j=0; j<nownedsenders[i]; j++) {
+          ierr = PetscSynchronizedPrintf(comm,"%d ",ownedsenders[starts[i]+j]);CHKERRQ(ierr);
+        }
+        ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  }/* -----------------------------------  */
 
   /* wait on original sends */
   if (nsends) {
@@ -657,21 +662,21 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   ierr = PetscFree(recv_waits);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
 
-  /* -----------------------------------  */
-  cnt = 0;
-  for (i=0; i<nrecvs2; i++) {
-    nt = recvs2[cnt++];
-    for (j=0; j<nt; j++) {
-      ierr = PetscSynchronizedPrintf(comm,"[%d] local node %d number of subdomains %d: ",rank,recvs2[cnt],recvs2[cnt+1]);CHKERRQ(ierr);
-      for (k=0; k<recvs2[cnt+1]; k++) {
-        ierr = PetscSynchronizedPrintf(comm,"%d ",recvs2[cnt+2+k]);CHKERRQ(ierr);
+  if (debug) { /* -----------------------------------  */
+    cnt = 0;
+    for (i=0; i<nrecvs2; i++) {
+      nt = recvs2[cnt++];
+      for (j=0; j<nt; j++) {
+        ierr = PetscSynchronizedPrintf(comm,"[%d] local node %d number of subdomains %d: ",rank,recvs2[cnt],recvs2[cnt+1]);CHKERRQ(ierr);
+        for (k=0; k<recvs2[cnt+1]; k++) {
+          ierr = PetscSynchronizedPrintf(comm,"%d ",recvs2[cnt+2+k]);CHKERRQ(ierr);
+        }
+        cnt += 2 + recvs2[cnt+1];
+        ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
       }
-      cnt += 2 + recvs2[cnt+1];
-      ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
     }
-  }
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  /* -----------------------------------  */
+    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  } /* -----------------------------------  */
 
   /* count number subdomains for each local node */
   nprocs = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(nprocs);
@@ -716,21 +721,30 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
     }
   }
   ierr = PetscFree(bprocs);CHKERRQ(ierr);
+  ierr = PetscFree(recvs2);CHKERRQ(ierr);
 
-  /* -----------------------------------  */
+  /* sort the node indexing by their global numbers */
   nt = *nproc;
   for (i=0; i<nt; i++) {
-    ierr = PetscSynchronizedPrintf(comm,"[%d] subdomain %d number of indices %d: ",rank,(*procs)[i],(*numprocs)[i]);CHKERRQ(ierr);
+    tmp = (int*)PetscMalloc(((*numprocs)[i])*sizeof(int));CHKPTRQ(tmp);
     for (j=0; j<(*numprocs)[i]; j++) {
-      ierr = PetscSynchronizedPrintf(comm,"%d ",(*indices)[i][j]);CHKERRQ(ierr);
+      tmp[j] = lindices[(*indices)[i][j]];
     }
-    ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
+    ierr = PetscSortIntWithArray((*numprocs)[i],tmp,(*indices)[i]);CHKERRQ(ierr); 
+    ierr = PetscFree(tmp);CHKERRQ(ierr);
   }
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  /* -----------------------------------  */
 
-
-  ierr = PetscFree(recvs2);CHKERRQ(ierr);
+  if (debug) { /* -----------------------------------  */
+    nt = *nproc;
+    for (i=0; i<nt; i++) {
+      ierr = PetscSynchronizedPrintf(comm,"[%d] subdomain %d number of indices %d: ",rank,(*procs)[i],(*numprocs)[i]);CHKERRQ(ierr);
+      for (j=0; j<(*numprocs)[i]; j++) {
+        ierr = PetscSynchronizedPrintf(comm,"%d ",(*indices)[i][j]);CHKERRQ(ierr);
+      }
+      ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
+    }
+    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  } /* -----------------------------------  */
 
   /* wait on sends */
   if (nsends2) {
@@ -738,7 +752,6 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
     ierr        = MPI_Waitall(nsends2,send_waits,send_status);CHKERRQ(ierr);
     ierr        = PetscFree(send_status);CHKERRQ(ierr);
   }
-
 
   ierr = PetscFree(starts3);CHKERRQ(ierr);
   ierr = PetscFree(dest);CHKERRQ(ierr);
@@ -757,7 +770,42 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingRestoreInfo"
+/*@C
+    ISLocalToGlobalMappingRestoreInfo - Frees the memory allocated by ISLocalToGlobalMappingGetInfo()
 
+    Collective on ISLocalToGlobalMapping
+
+    Input Parameters:
+.   mapping - the mapping from local to global indexing
+
+    Output Parameter:
++   nproc - number of processors that are connected to this one
+.   proc - neighboring processors
+.   numproc - number of indices for each processor
+-   indices - indices of local nodes shared with neighbor (sorted by global numbering)
+
+    Level: advanced
+
+.keywords: IS, local-to-global mapping, neighbors
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
+          ISLocalToGlobalMappingGetInfo()
+@*/
+int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,int *nproc,int **procs,int **numprocs,int ***indices)
+{
+  int ierr,i;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(*procs);CHKERRQ(ierr);
+  ierr = PetscFree(*numprocs);CHKERRQ(ierr);
+  for (i=0; i<*nproc; i++) {
+    ierr = PetscFree((*indices)[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(*indices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 
