@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.20 2001/04/30 14:46:30 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.21 2001/05/01 17:50:42 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjoint.\n\n";
 
@@ -23,7 +23,7 @@ static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjo
             FU = (fw fu flambda)
 
        In this example the PDE is 
-                             Uxx = 2, 
+                             Uxx - u^2 = 2, 
                             u(0) = w(0), thus this is the free parameter
                             u(1) = 0
        the function we wish to minimize is 
@@ -40,9 +40,9 @@ static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjo
 
 
 extern int FormFunction(SNES,Vec,Vec,void*);
+extern int PDEFormFunctionLocal(DALocalInfo*,Scalar*,Scalar*,PassiveScalar*);
 
 typedef struct {
-  ISColoring iscoloring;  /* coloring of grid used for computing Jacobian of PDE */
   Mat        J;           /* Jacobian of PDE system */
 } AppCtx;
 
@@ -55,6 +55,7 @@ int main(int argc,char **argv)
   DMMG       *dmmg;
   VecPack    packer;
   AppCtx     *appctx;
+  ISColoring iscoloring;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -71,6 +72,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-dmmg_snes_mffd",0);CHKERRQ(ierr);
   /* ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr);   
 
@@ -84,7 +86,6 @@ int main(int argc,char **argv)
 
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetUseMatrixFree(dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
   ierr = VecPackDestroy(packer);CHKERRQ(ierr);
 
@@ -94,8 +95,12 @@ int main(int argc,char **argv)
     packer = (VecPack)dmmg[i]->dm;
     ierr   = VecPackGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
     ierr   = PetscNew(AppCtx,&appctx);CHKERRQ(ierr);
-    ierr   = DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,&appctx->iscoloring,&appctx->J);CHKERRQ(ierr);
-    ierr   = MatSetColoring(appctx->J,appctx->iscoloring);CHKERRQ(ierr);
+    ierr   = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
+    ierr   = DAGetMatrix(da,MATMPIAIJ,&appctx->J);CHKERRQ(ierr);
+    ierr   = MatSetColoring(appctx->J,iscoloring);CHKERRQ(ierr);
+    ierr   = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr   = DASetLocalFunction(da,(DALocalFunction1)PDEFormFunctionLocal);CHKERRQ(ierr);
+    ierr   = DASetLocalAdicFunction(da,ad_PDEFormFunctionLocal);CHKERRQ(ierr);
     dmmg[i]->user = (void*)appctx;
   }
 
@@ -106,7 +111,7 @@ int main(int argc,char **argv)
   for (i=0; i<nlevels; i++) {
     appctx = (AppCtx*)dmmg[i]->user;
     ierr   = MatDestroy(appctx->J);CHKERRQ(ierr);
-    ierr   = ISColoringDestroy(appctx->iscoloring);CHKERRQ(ierr);
+    ierr   = PetscFree(appctx);CHKERRQ(ierr);  
   }
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
@@ -125,7 +130,7 @@ int main(int argc,char **argv)
 #define __FUNCT__ "PDEFormFunctionLocal"
 int PDEFormFunctionLocal(DALocalInfo *info,Scalar *u,Scalar *fu,PassiveScalar *w)
 {
-  int     ierr,xs = info->xs,xm = info->xm,i,mx = info->mx;
+  int     xs = info->xs,xm = info->xm,i,mx = info->mx;
   Scalar  d,h;
 
   d    = mx-1.0;
@@ -144,6 +149,9 @@ int PDEFormFunctionLocal(DALocalInfo *info,Scalar *u,Scalar *fu,PassiveScalar *w
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
+      This is the function that is usually passed to the SNESSetJacobian() or DMMGSetSNES() and
+    defines the nonlinear set of equations that are to be solved.
+
      This local function acts on the ghosted version of U (accessed via VecPackGetLocalVectors() and
    VecPackScatter()) BUT the global, nonghosted version of FU (via VecPackAccess()).
 
@@ -159,7 +167,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   int        ierr,xs,xm,i,N,nredundant;
   Scalar     *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
   Vec        vu,vlambda,vfu,vflambda,vglambda;
-  DA         da,dadummy;
+  DA         da;
   VecPack    packer = (VecPack)dmmg->dm;
   AppCtx     *appctx = (AppCtx*)dmmg->user;
   PetscTruth skipadic;
@@ -180,10 +188,10 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = VecPackGetAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
   /* G() */
-  ierr = DAFormFunction1(da,(DALocalFunction1)PDEFormFunctionLocal,vu,vfu,w);CHKERRQ(ierr);
-  if (!skipadic) {
+  ierr = DAFormFunction1(da,vu,vfu,w);CHKERRQ(ierr);
+  if (!skipadic) { 
     /* lambda^T G_u() */
-    ierr = DAFormJacobian1(da,appctx->iscoloring,(DALocalFunction1)ad_PDEFormFunctionLocal,vu,appctx->J,w);CHKERRQ(ierr);
+    ierr = DAComputeJacobian1WithAdic(da,vu,appctx->J,w);CHKERRQ(ierr);  
     ierr = MatMultTranspose(appctx->J,vglambda,vflambda);CHKERRQ(ierr); 
   }
 
@@ -221,7 +229,6 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vlambda,(void**)&lambda);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vflambda,(void**)&flambda);CHKERRQ(ierr);
-
 
   ierr = VecPackRestoreLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
   ierr = VecPackRestoreAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
