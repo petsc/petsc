@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.31 1997/12/01 01:51:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.32 1997/12/09 20:20:04 bsmith Exp balay $";
 #endif
 
 /*
@@ -159,13 +159,13 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
 #else
   int i;
 #endif
-  int  flag,argc = 0,dummy_tag;
+  int  j,flag,argc = 0,dummy_tag;
   char **args = 0,*t1, name[256];
 
   *__ierr = 1;
-
+  PetscMemzero(name,256);
   if (PetscInitializedCalled) {*__ierr = 0; return;}
-
+  
   *__ierr = PetscInitializeOptions(); 
   if (*__ierr) return;
   i = 0;
@@ -179,6 +179,13 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   getarg_( &i, name, 256, &flg);
 #else
   getarg_( &i, name, 256);
+  /* Eliminate spaces at the end of the string */
+  for ( j=254; j>=0; j-- ) {
+    if (name[j] != ' ') {
+      name[j+1] = 0;
+      break;
+    }
+  }
 #endif
   OptionsSetProgramName(name);
 
