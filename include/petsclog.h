@@ -153,13 +153,11 @@ typedef struct _ClassPerfInfo {
 /* The structures for logging registration */
 typedef struct _ClassRegInfo {
   char *name;   /* The class name */
-  char *color;  /* The color of this class */
   int   cookie; /* The integer identifying this class */
 } ClassRegInfo;
 
 typedef struct _EventRegInfo {
   char *name;   /* The name of this event */
-  char *color;  /* The color of this event */
   int   cookie; /* The class id for this event (should maybe give class ID instead) */
 } EventRegInfo;
 
@@ -198,7 +196,6 @@ struct _ClassPerfLog {
 /* The structures for logging in stages */
 typedef struct _StageInfo {
   char        *name;       /* The stage name */
-  char        *color;      /* The color of this stage */
   PerfInfo     perfInfo;   /* The stage performance information */
   EventPerfLog eventLog;   /* The event information for this stage */
   ClassPerfLog classLog;   /* The class information for this stage */

@@ -25,7 +25,7 @@ int ClassRegLogCreate(ClassRegLog *classLog) {
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _ClassRegLog, l);                                                                CHKERRQ(ierr);
+  ierr = PetscNew(struct _ClassRegLog, &l);                                                               CHKERRQ(ierr);
   l->numClasses = 0;
   l->maxClasses = 100;
   ierr = PetscMalloc(l->maxClasses * sizeof(ClassRegInfo), &l->classInfo);                                CHKERRQ(ierr);
@@ -83,9 +83,6 @@ int ClassRegInfoDestroy(ClassRegInfo *c) {
   if (c->name != PETSC_NULL) {
     ierr = PetscFree(c->name);                                                                            CHKERRQ(ierr);
   }
-  if (c->color != PETSC_NULL) {
-    ierr = PetscFree(c->color);                                                                           CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -109,7 +106,7 @@ int ClassPerfLogCreate(ClassPerfLog *classLog) {
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _ClassPerfLog, l);                                                               CHKERRQ(ierr);
+  ierr = PetscNew(struct _ClassPerfLog, &l);                                                              CHKERRQ(ierr);
   l->numClasses = 0;
   l->maxClasses = 100;
   ierr = PetscMalloc(l->maxClasses * sizeof(ClassPerfInfo), &l->classInfo);                               CHKERRQ(ierr);
@@ -181,7 +178,6 @@ int ClassRegLogRegister(ClassRegLog classLog, const char cname[], int *cookie) {
   }
   ierr = PetscStrallocpy(cname, &str);                                                                    CHKERRQ(ierr);
   classLog->classInfo[c].name     = str;
-  classLog->classInfo[c].color    = PETSC_NULL;
   if (*cookie == PETSC_DECIDE) {
     classLog->classInfo[c].cookie = ++PETSC_LARGEST_COOKIE;
   } else if (*cookie >= 0) {

@@ -32,7 +32,7 @@ int EventRegLogCreate(EventRegLog *eventLog) {
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _EventRegLog, l);                                                                CHKERRQ(ierr);
+  ierr = PetscNew(struct _EventRegLog, &l);                                                               CHKERRQ(ierr);
   l->numEvents   = 0;
   l->maxEvents   = 100;
   ierr = PetscMalloc(l->maxEvents * sizeof(EventRegInfo), &l->eventInfo);                                 CHKERRQ(ierr);
@@ -84,7 +84,7 @@ int EventPerfLogCreate(EventPerfLog *eventLog) {
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _EventPerfLog, l);                                                               CHKERRQ(ierr);
+  ierr = PetscNew(struct _EventPerfLog, &l);                                                              CHKERRQ(ierr);
   l->numEvents   = 0;
   l->maxEvents   = 100;
   ierr = PetscMalloc(l->maxEvents * sizeof(PerfInfo), &l->eventInfo);                                     CHKERRQ(ierr);
@@ -194,7 +194,6 @@ int EventRegLogRegister(EventRegLog eventLog, const char ename[], const char col
     ierr = PetscStrallocpy(color, &cstr);                                                                 CHKERRQ(ierr);
   }
   eventLog->eventInfo[e].name   = str;
-  eventLog->eventInfo[e].color  = cstr;
   eventLog->eventInfo[e].cookie = cookie;
 #if defined(PETSC_HAVE_MPE)
   if (UseMPE) {

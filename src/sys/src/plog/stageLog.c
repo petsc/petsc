@@ -100,7 +100,6 @@ int StageLogRegister(StageLog stageLog, const char sname[], int *stage) {
   /* Setup stage */
   ierr = PetscStrallocpy(sname, &str);                                                                    CHKERRQ(ierr);
   stageLog->stageInfo[s].name                   = str;
-  stageLog->stageInfo[s].color                  = PETSC_NULL;
   stageLog->stageInfo[s].perfInfo.active        = PETSC_FALSE;
   stageLog->stageInfo[s].perfInfo.visible       = PETSC_TRUE;
   stageLog->stageInfo[s].perfInfo.count         = 0;
