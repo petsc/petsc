@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import importer
 import install.base
 import install.build
 import install.retrieval
