@@ -44,6 +44,8 @@ UT account:
 ICASE/NASA paragon: crabcake.larc.nasa.gov
 ICASE/NASA SP: poseidon.larc.nasa.gov
 
+SGI Power Challenge (IRIX64): machine: inca.usi.utah.edu; login: usilcm
+
 Location of email sent to petsc-maint:
   
   Location of old petsc-maint mail is
