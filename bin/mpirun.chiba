@@ -322,6 +322,7 @@ fi
 
 rm -rf $rundir/$programbase $rundir/parseargs.py $rundir/urlget.py
 rm -rf $rundir/*/$programbase $rundir/*/parseargs.py $rundir/*/urlget.py $rundir/*/PI*
+# decide if we should make an output directoyr (was there output?)
 cp -rf $rundir ./output.$$ 
 
 
