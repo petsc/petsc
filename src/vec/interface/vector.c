@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.163 1999/02/02 03:50:22 curfman Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.164 1999/03/05 00:12:58 balay Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: vector.c,v 1.163 1999/02/02 03:50:22 curfman Exp bala
 
    Level: advanced
 
-.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlocked()
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlocked(), VecGetBlockSize()
 
 .keywords: block size, vectors
 @*/
@@ -37,6 +37,37 @@ int VecSetBlockSize(Vec v,int bs)
   if (v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Local vector length not divisible by blocksize %d %d",v->n,bs);
   
   v->bs = bs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecGetBlockSize"
+/*@
+   VecGetBlockSize - Gets the blocksize for the vector, i.e. what is used for VecSetValuesBlocked()
+   and VecSetValuesBlockedLocal().
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Output Parameter:
+.  bs - the blocksize
+
+   Notes:
+   All vectors obtained by VecDuplicate() inherit the same blocksize.
+
+   Level: advanced
+
+.seealso: VecSetValuesBlocked(), VecSetLocalToGlobalMappingBlocked(), VecSetBlockSize()
+
+.keywords: block size, vectors
+@*/
+int VecGetBlockSize(Vec v,int *bs)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE); 
+  *bs = v->bs;
   PetscFunctionReturn(0);
 }
 
