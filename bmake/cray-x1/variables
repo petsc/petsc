@@ -1,0 +1,74 @@
+# $Id: variables,v 1.33 2001/08/22 17:58:22 balay Exp $ 
+#
+#     See the file bmake/variables.defs for a complete explanation of all these fields
+#
+AR		   = ar
+AR_FLAGS	   = cr
+RM		   = rm -f
+RANLIB		   = true
+OMAKE		   = make  --no-print-directory
+SHELL		   = /bin/sh
+SED		   = sed
+MKDIR              = mkdir -p
+LIB_SUFFIX         = a
+DIFF               = diff
+# ######################### C and Fortran compiler ########################
+#
+C_CC		   = cc
+C_FC		   = ftn -F
+C_CLINKER_SLFLAG   = -L
+C_FLINKER_SLFLAG   = -L
+C_CLINKER	   = ftn
+C_FLINKER	   = ftn
+C_CCV		   = echo "unknown"
+C_FCV              = echo "unknown"
+C_SYS_LIB         =
+# ---------------------------- BOPT - g options ----------------------------
+G_COPTFLAGS	   = -g 
+G_FOPTFLAGS	   = -g 
+# ----------------------------- BOPT - O options -----------------------------
+O_COPTFLAGS	   = -O3
+O_FOPTFLAGS	   = -O3
+# ########################## C++ compiler ##################################
+#
+CXX_CC		   = CC
+CXX_FC		   = ftn -F
+CXX_CLINKER_SLFLAG = -L
+CXX_FLINKER_SLFLAG = -L
+CXX_CLINKER	   = CC
+CXX_FLINKER	   = ftn
+CXX_CCV		   = echo "unknown"
+CXX_SYS_LIB	   =
+# ------------------------- BOPT - g_c++ options ------------------------------
+GCXX_COPTFLAGS	   = -g
+GCXX_FOPTFLAGS	   = -g
+# ------------------------- BOPT - O_c++ options ------------------------------
+OCXX_COPTFLAGS	   = -O3
+OCXX_FOPTFLAGS	   = -O3
+# -------------------------- BOPT - g_complex options ------------------------
+GCOMP_COPTFLAGS	   = -g 
+GCOMP_FOPTFLAGS	   = -g
+# --------------------------- BOPT - O_complex options -------------------------
+OCOMP_COPTFLAGS	   = -O3
+OCOMP_FOPTFLAGS	   = -O3
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS	   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                 -DPETSC_USE_STACK -DPETSC_USE_FORTRAN_KERNELS
+O_PETSCFLAGS	   = -DPETSC_USE_DEBUG -DPETSC_USE_BOPT_O  -DPETSC_USE_LOG -DPETSC_USE_FORTRAN_KERNELS
+GCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                   -DPETSC_USE_STACK  -DPETSC_USE_FORTRAN_KERNELS
+OCXX_PETSCFLAGS	   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG -DPETSC_USE_BOPT_O  -DPETSC_USE_FORTRAN_KERNELS
+GCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
+                   -DPETSC_USE_STACK -DPETSC_USE_COMPLEX -D_NON_TEMPLATE_COMPLEX
+OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
+		   -DPETSC_USE_COMPLEX -DPETSC_USE_FORTRAN_KERNELS -D_NON_TEMPLATE_COMPLEX
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+
+PARCH		   = x1
+
