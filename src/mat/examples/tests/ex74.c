@@ -20,9 +20,10 @@ int main(int argc,char **args)
   PetscScalar  *vr1,*vr2,*vr1_wk,*vr2_wk;
   IS           perm, isrow, iscol;
   PetscRandom  rand;
-  PetscTruth   getrow=PETSC_FALSE;
+  PetscTruth   getrow=PETSC_FALSE, doIcc=PETSC_TRUE;
   MatInfo      minfo1,minfo2;
   MatFactorInfo   factinfo;
+  MatType         type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -33,7 +34,14 @@ int main(int argc,char **args)
 
   n = mbs*bs;
   ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A);CHKERRQ(ierr);
-  ierr=MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &sA);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,n,n,PETSC_NULL,PETSC_NULL,&sA);CHKERRQ(ierr);
+  ierr = MatSetType(sA,MATSBAIJ);CHKERRQ(ierr);
+  /* -mat_type <seqsbaij_derived type>, e.g., seqsbaijspooles, sbaijmumps */
+  ierr = MatSetFromOptions(sA);CHKERRQ(ierr);
+  ierr = MatGetType(sA,&type);CHKERRQ(ierr);
+  if (type != MATSEQSBAIJ) doIcc = PETSC_FALSE;
+  /* printf(" mattype: %s\n",type); */
+  ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,PETSC_NULL);CHKERRQ(ierr);;
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&I,&J);CHKERRQ(ierr);
@@ -153,7 +161,7 @@ int main(int argc,char **args)
   if (norm1<-tol || norm1>tol){ 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);CHKERRQ(ierr);
   }
-  
+
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
   ierr = MatGetInfo(A,MAT_LOCAL,&minfo1);CHKERRQ(ierr);
   ierr = MatGetInfo(sA,MAT_LOCAL,&minfo2);CHKERRQ(ierr);
@@ -310,6 +318,8 @@ int main(int argc,char **args)
     if (lf==-1) {  /* Cholesky factor */
       factinfo.fill = 5.0;   
       ierr = MatCholeskyFactorSymbolic(sA,perm,&factinfo,&sC);CHKERRQ(ierr); 
+    } else if (!doIcc){
+      break;
     } else {       /* incomplete Cholesky factor */
       factinfo.fill   = 5.0;
       factinfo.levels = lf;

@@ -67,7 +67,7 @@ int PetscObjectName(PetscObject obj)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectPublish"
 /*@C 
-   PetscObjectPublish - Publishs an object for the ALICE Memory Snooper
+   PetscObjectPublish - Publish an object for the ALICE Memory Snooper
 
    Collective on PetscObject
 

@@ -630,11 +630,13 @@ EXTERN_C_END
 #define __FUNCT__ "MatDuplicate_MPIAIJSpooles"
 int MatDuplicate_MPIAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
   int         ierr;
-  Mat_Spooles *lu=(Mat_Spooles *)A->spptr;
+  Mat_Spooles *lu=(Mat_Spooles *)A->spptr,*spooles;
 
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(Mat_Spooles),&spooles);CHKERRQ(ierr); 
+  ierr = PetscMemcpy(spooles,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
+  (*M)->spptr = spooles;
   PetscFunctionReturn(0);
 }
 

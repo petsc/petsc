@@ -70,7 +70,7 @@ EXTERN int MatAssemblyEnd_SeqAIJSpooles(Mat,MatAssemblyType);
 EXTERN int MatQRFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN int MatLUFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN int MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
-EXTERN int MatDuplicate_SeqAIJSpooles(Mat,MatDuplicateOption,Mat*);
+EXTERN int MatDuplicate_Spooles(Mat,MatDuplicateOption,Mat*);
 
 EXTERN int MatDuplicate_MPIAIJSpooles(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatDestroy_MPIAIJSpooles(Mat);
@@ -79,7 +79,6 @@ EXTERN int MatFactorNumeric_MPIAIJSpooles(Mat,Mat*);
 EXTERN int MatAssemblyEnd_MPIAIJSpooles(Mat,MatAssemblyType);
 EXTERN int MatLUFactorSymbolic_MPIAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 
-EXTERN int MatDuplicate_SeqSBAIJSpooles(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatDestroy_SeqSBAIJSpooles(Mat);
 EXTERN int MatGetInertia_SeqSBAIJSpooles(Mat,int*,int*,int*);
 EXTERN int MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
