@@ -29,7 +29,7 @@ static PetscTruth Xterm = PETSC_TRUE;
 
    Input Parameters:
 +  debugger - name of debugger, which should be in your path,
-              usually "dbx", "gdb", or "xxgdb".  Also, HP-UX
+              usually "dbx", "gdb", "idb" or "xxgdb".  Also, HP-UX
               supports "xdb", and IBM rs6000 supports "xldb".
 
 -  xterm - flag to indicate debugger window, set to either 1 (to indicate
@@ -80,6 +80,8 @@ int PetscSetDefaultDebugger(void)
   ierr = PetscSetDebugger("dbx",PETSC_TRUE);CHKERRQ(ierr);
 #elif defined(PETSC_USE_XDB_DEBUGGER) 
   ierr = PetscSetDebugger("xdb",PETSC_TRUE);CHKERRQ(ierr);
+#elif defined(PETSC_USE_IDB_DEBUGGER) 
+  ierr = PetscSetDebugger("idb",PETSC_TRUE);CHKERRQ(ierr);
 #else  /* Default is gdb */
   ierr = PetscSetDebugger("gdb",PETSC_TRUE);CHKERRQ(ierr);
 #endif
@@ -133,6 +135,7 @@ int PetscSetDebuggerFromString(char *string)
   ierr = PetscCheckDebugger_Private("dbx",      string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("xldb",     string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("gdb",      string, &debugger);                                          CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("idb",      string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("xxgdb",    string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("ups",      string, &debugger);                                          CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("workshop", string, &debugger);                                          CHKERRQ(ierr);
@@ -194,8 +197,8 @@ int PetscAttachDebugger(void)
   else       { child = (int)getppid(); }
 
   if (child) { /* I am the parent, will run the debugger */
-    char       *args[9],pid[9];
-    PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb,isworkshop;
+    char       *args[10],pid[10];
+    PetscTruth isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop;
 
     ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
     /*
@@ -212,6 +215,7 @@ int PetscAttachDebugger(void)
     ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
+    ierr = PetscStrcmp(Debugger,"idb",&isidb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"workshop",&isworkshop);CHKERRQ(ierr);
     if (isxxgdb || isups) {
       args[1] = program; args[2] = pid; args[3] = "-display";
@@ -240,6 +244,13 @@ int PetscAttachDebugger(void)
     } else if (!Xterm) {
       args[1] = program; args[2] = pid; args[3] = 0;
       args[0] = Debugger;
+      if (isidb) {
+        args[1] = "-pid";
+        args[2] = pid;
+        args[3] = "-gdb";
+        args[4] = program;
+        args[5] = 0;
+      }
 #if defined(PETSC_USE_P_FOR_DEBUGGER)
       if (isdbx) {
         args[1] = "-p";
@@ -280,6 +291,13 @@ int PetscAttachDebugger(void)
         args[0] = "xterm";  args[1] = "-e"; 
         args[2] = Debugger; args[3] = program; 
         args[4] = pid;      args[5] = 0;
+        if (isidb) {
+          args[3] = "-gdb";
+          args[4] = pid;
+          args[5] = "-gdb";
+          args[6] = program;
+          args[7] = 0;
+        }
 #if defined(PETSC_USE_P_FOR_DEBUGGER)
         if (isdbx) {
           args[3] = "-p";
@@ -314,6 +332,13 @@ int PetscAttachDebugger(void)
         args[2] = display;  args[3] = "-e";
         args[4] = Debugger; args[5] = program;
         args[6] = pid;      args[7] = 0;
+        if (isidb) {
+          args[5] = "-pid";
+          args[6] = pid;
+          args[7] = "-gdb";
+          args[8] = program;
+          args[9] = 0;
+        }
 #if defined(PETSC_USE_P_FOR_DEBUGGER)
         if (isdbx) {
           args[5] = "-p";
