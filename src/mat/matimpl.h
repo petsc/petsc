@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.22 1995/07/12 03:10:02 bsmith Exp curfman $ */
+/* $Id: matimpl.h,v 1.23 1995/07/13 15:16:05 curfman Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -36,7 +36,8 @@ struct _MatOps {
             (*convert)(Mat,MatType,Mat *),
             (*getsubmatrix)(Mat,IS,IS,Mat*),
             (*getsubmatrixinplace)(Mat,IS,IS),
-            (*copyprivate)(Mat,Mat *);
+            (*copyprivate)(Mat,Mat *),
+            (*forwardsolve)(Mat,Vec,Vec),(*backwardsolve)(Mat,Vec,Vec);
 };
 
 #define FACTOR_LU       1
