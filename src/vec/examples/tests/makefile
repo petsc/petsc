@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.84 1998/08/26 19:33:56 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.85 1999/01/09 00:17:36 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -149,7 +149,7 @@ ex26: ex26.o chkopts
 	${RM} -f ex26.o 
 
 runex1:
-	-@${MPIRUN} -np 1  ex1 
+	-@${MPIRUN} -np 1  ex1 ; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
 	-@${MPIRUN} -np 2 ex1 > ex1_2.tmp 2>&1;\

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmaij.c,v 1.38 1997/10/19 03:25:26 bsmith Exp balay $";
+static char vcid[] = "$Id: mmaij.c,v 1.39 1999/01/08 21:11:21 balay Exp balay $";
 #endif
 
 
@@ -48,7 +48,8 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
     gid--; lid--;
     garray[lid] = gid; 
   }
-  qsort( garray, ec, sizeof(int), intcomparc ); /* sort, and rebuild */ 
+  ierr = PetscSortInt(ec,garray); CHKERRQ(ierr); /* sort, and rebuild */
+  /* qsort( garray, ec, sizeof(int), intcomparc ); */
   TableRemoveAll( gid1_lid1 );
   for ( i=0; i<ec; i++ ) {
     ierr = TableAdd( gid1_lid1, garray[i] + 1, i + 1 ); CHKERRQ(ierr); 

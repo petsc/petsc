@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.235 1998/12/21 01:06:07 bsmith Exp $ */
+/* $Id: ctable.h,v 1.2 1999/01/08 16:27:26 balay Exp balay $ */
 /* Contributed by - Mark Adams */
 
 #if !defined(__CTABLE_H)
@@ -15,8 +15,6 @@ typedef struct TABLE_TAG
 }*Table,Table_struct;
 
 #define HASHT(ta,x) ((53*x)%ta->tablesize)
-
-extern int intcomparc(const void *a, const void *b);
 
 extern int TableCreate( Table *ta, const int size );
 extern int TableCreateCopy( Table *rta, const Table intable );

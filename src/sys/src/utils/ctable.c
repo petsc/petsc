@@ -1,14 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fuser.c,v 1.20 1998/12/17 21:56:10 balay Exp $";
+static char vcid[] = "$Id: ctable.c,v 1.2 1999/01/08 16:27:18 balay Exp balay $";
 #endif
 /* Contributed by - Mark Adams */
 
 #include "petsc.h"
 #include "src/sys/ctable.h" 
-
-int intcomparc(const void *a, const void *b){
-  return (*(int*)a < *(int*)b) ? -1 : (*(int*)a == *(int*)b) ? 0 : 1 ;
-}
 
 #undef __FUNC__  
 #define __FUNC__ "TableCreate"
