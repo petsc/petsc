@@ -4,6 +4,28 @@ class Base (maker.Maker):
   def __init__(self, argDB, base = ''):
     maker.Maker.__init__(self, argDB)
     self.base = base
+    self.checkPython()
+    self.checkNumeric()
+    return
+
+  def checkPython(self):
+    import sys
+
+    if not hasattr(sys, 'version_info') or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
+      raise RuntimeError('BuildSystem requires Python version 2.2 or higher. Get Python at http://www.python.org')
+    return
+
+  def checkNumeric(self):
+    import distutils
+    import os
+
+    try:
+      import Numeric
+    except ImportError, e:
+      raise RuntimeError('BuildSystem requires Numeric Python (http://www.pfdubois.com/numpy) to be installed: '+str(e))
+    header = os.path.join(distutils.sysconfig.get_python_inc(), 'Numeric', 'arrayobject.h')
+    if not os.path.exists(header):
+      raise RuntimeError('The include files from the Numeric are misplaced: Cannot find '+header)
     return
 
   def checkBootstrap(self):
