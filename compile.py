@@ -330,7 +330,7 @@ class CompileJava (Compile):
     retval = Compile.execute(self)
     # Need to update JAR files since they do not get linked
     library = self.getLibraryName()
-    bs.sourceDB.updateSource(library)
+    if os.path.exists(library): bs.sourceDB.updateSource(library)
     return retval
 
 class TagEtags (transform.GenericTag):

@@ -61,7 +61,7 @@ class SIDLPackageDict (dict, SIDLConstants):
 
 class UsingSIDL (SIDLConstants):
   '''This class handles all interaction specific to the SIDL language'''
-  def __init__(self, project, packages, repositoryDir = None, serverBaseDir = None):
+  def __init__(self, project, packages, repositoryDir = None, serverBaseDir = None, bootstrapPackages = []):
     self.project  = project
     self.packages = packages
     # The directory where XML is stored
@@ -82,6 +82,7 @@ class UsingSIDL (SIDLConstants):
     self.internalClientLanguages = SIDLPackageDict(self)
     # Packages which must be compiled before the clients
     self.bootstrapPackages = SIDLPackageList(self)
+    self.bootstrapPackages.extend(bootstrapPackages)
     # Flags for the SIDL compiler
     self.compilerFlags  = ''
     self.includeDirs    = SIDLPackageDict(self)
@@ -206,7 +207,8 @@ class UsingCompiler:
   def getServerLinkTarget(self, project, package, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
     libraries.extend(self.usingSIDL.extraLibraries[package])
-    libraries.extend(self.getClientLibrary(project, self.getLanguage()))
+    if not self.getLanguage() in self.usingSIDL.internalClientLanguages[package]:
+      libraries.extend(self.getClientLibrary(project, self.getLanguage()))
     libraries.extend(self.extraLibraries[package])
     linker    = link.LinkSharedLibrary(extraLibraries = libraries)
     linker.doLibraryCheck = doLibraryCheck
@@ -483,10 +485,10 @@ class Defaults:
   implRE     = re.compile(r'^(.*)_Impl$')
   libraryRE  = re.compile(r'^(.*)lib(.*).so$')
 
-  def __init__(self, project, sources = None):
+  def __init__(self, project, sources = None, bootstrapPackages = []):
     self.project    = project
     self.sources    = sources
-    self.usingSIDL  = UsingSIDL(project, self.getPackages())
+    self.usingSIDL  = UsingSIDL(project, self.getPackages(), bootstrapPackages = bootstrapPackages)
     self.compileExt = []
     # Add C for the IOR
     self.addLanguage('C')
@@ -601,18 +603,20 @@ class Defaults:
                                         transform.SetFilter('old sidl')])
 
 class CompileDefaults (Defaults):
-  def __init__(self, project, sidlSources, etagsFile = None):
-    Defaults.__init__(self, project, sidlSources)
+  def __init__(self, project, sidlSources, etagsFile = None, bootstrapPackages = []):
+    Defaults.__init__(self, project, sidlSources, bootstrapPackages = bootstrapPackages)
     self.etagsFile = etagsFile
 
   def getClientCompileTargets(self, doCompile = 1, doLink = 1):
-    targets  = []
+    targets        = []
+    doLibraryCheck = not self.project == 'bs' and not self.project == 'sidlruntime'
+
     for lang in self.usingSIDL.clientLanguages:
       compiler = []
       linker   = []
       try:
         if doCompile: compiler = self.getUsing(lang).getClientCompileTarget(self.project)
-        if doLink:    linker   = self.getUsing(lang).getClientLinkTarget(self.project, not self.project == 'bs')
+        if doLink:    linker   = self.getUsing(lang).getClientLinkTarget(self.project, doLibraryCheck)
       except AttributeError:
         raise RuntimeError('Unknown client language: '+lang)
 
@@ -624,6 +628,7 @@ class CompileDefaults (Defaults):
   def getServerCompileTargets(self, doCompile = 1, doLink = 1):
     targets          = []
     bootstrapTargets = []
+    doLibraryCheck   = not self.project == 'bs' and not self.project == 'sidlruntime'
 
     for lang in self.usingSIDL.serverLanguages:
       for package in self.getPackages():
@@ -631,7 +636,7 @@ class CompileDefaults (Defaults):
         linker   = []
         try:
           if doCompile: compiler = self.getUsing(lang).getServerCompileTarget(self.project, package)
-          if doLink:    linker   = self.getUsing(lang).getServerLinkTarget(self.project, package, not self.project == 'bs')
+          if doLink:    linker   = self.getUsing(lang).getServerLinkTarget(self.project, package, doLibraryCheck)
           t = target.Target(None, compiler + linker + [transform.Update()])
         except AttributeError:
           raise RuntimeError('Unknown server language: '+lang)
