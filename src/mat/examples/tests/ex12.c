@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.8 1999/02/15 21:55:33 balay Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.9 1999/02/17 17:43:29 balay Exp balay $";
 #endif
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\n";
@@ -52,7 +52,9 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(A); CHKERRA(ierr);
 
-  /* Now Create a rectangular matrix with five point stencil (app) */
+  /* Now Create a rectangular matrix with five point stencil (app) 
+   n+size is used so that this dimension is always divisible by size.
+   This way, we can always use bs = size for any number of procs */
   ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*(n+size),&A); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
