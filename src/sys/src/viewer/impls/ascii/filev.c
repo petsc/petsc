@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.72 1998/05/11 18:09:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.73 1998/07/23 13:44:52 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -65,18 +65,19 @@ static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
    VIEWER_STDOUT_ - Creates a window viewer shared by all processors 
                     in a communicator.
 
+   Collective on MPI_Comm
+
    Input Parameter:
 .  comm - the MPI communicator to share the window viewer
-
-   Collective on MPI_Comm
 
    Notes: 
    Unlike almost all other PETSc routines, this does not return 
    an error code. Usually used in the form
 $      XXXView(XXX object,VIEWER_STDOUT_(comm));
 
-.seealso: VIEWER_DRAWX_, ViewerFileOpenASCII()
-C@*/
+.seealso: VIEWER_DRAWX_(), ViewerFileOpenASCII()
+
+@*/
 Viewer VIEWER_STDOUT_(MPI_Comm comm)
 {
   int    ierr,flag;
@@ -131,10 +132,10 @@ static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
    VIEWER_STDERR_ - Creates a window viewer shared by all processors 
                     in a communicator.
 
+   Collective on MPI_Comm
+
    Input Parameter:
 .  comm - the MPI communicator to share the window viewer
-
-   Collective on MPI_Comm
 
    Note: 
    Unlike almost all other PETSc routines, this does not return 
@@ -142,7 +143,7 @@ static int Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 $      XXXView(XXX object,VIEWER_STDERR_(comm));
 
 .seealso: VIEWER_DRAWX_, ViewerFileOpenASCII(), 
-C@*/
+@*/
 Viewer VIEWER_STDERR_(MPI_Comm comm)
 {
   int    ierr,flag;
@@ -217,10 +218,10 @@ int ViewerFlush_File(Viewer v)
 /*@C
     ViewerASCIIGetPointer - Extracts the file pointer from an ASCII viewer.
 
+    Not Collective
+
 +   viewer - viewer context, obtained from ViewerFileOpenASCII()
 -   fd - file pointer
-
-    Not Collective
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -259,11 +260,11 @@ int ViewerGetFormat(Viewer viewer,int *format)
 /*@C
    ViewerFileOpenASCII - Opens an ASCII file as a viewer.
 
+   Collective on MPI_Comm
+
    Input Parameters:
 +  comm - the communicator
 -  name - the file name
-
-   Collective on MPI_Comm
 
    Output Parameter:
 .  lab - the viewer to use with the specified file
@@ -327,12 +328,12 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 /*@C
    ViewerSetFormat - Sets the format for viewers.
 
+   Collective on Viewer
+
    Input Parameters:
 +  v - the viewer
 .  format - the format
 -  char - optional object name
-
-   Collective on Viewer
 
    Notes:
    Available formats include
@@ -380,12 +381,12 @@ int ViewerSetFormat(Viewer v,int format,char *name)
 /*@C
    ViewerPushFormat - Sets the format for file viewers.
 
+   Collective on Viewer
+
    Input Parameters:
 +  v - the viewer
 .  format - the format
 -  char - optional object name
-
-   Collective on Viewer
 
    Notes:
    Available formats include
@@ -438,10 +439,10 @@ int ViewerPushFormat(Viewer v,int format,char *name)
 /*@C
    ViewerPopFormat - Resets the format for file viewers.
 
+   Collective on Viewer
+
    Input Parameters:
 .  v - the viewer
-
-   Collective on Viewer
 
 .keywords: Viewer, file, set, format, push, pop
 
