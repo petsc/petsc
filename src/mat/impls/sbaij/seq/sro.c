@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.11 2000/09/12 21:07:23 hzhang Exp hzhang $*/
+/*$Id: sro.c,v 1.12 2000/09/13 15:43:06 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -37,9 +37,10 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 int MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ     *a=(Mat_SeqSBAIJ *)A->data;
-  int             *r,ierr,i,mbs=a->mbs,*ai=a->i,*aj=a->j,*rip,*riip;
-  MatScalar       *aa=a->a;
-  Scalar          ak;
+  int             *r,ierr,i,mbs=a->mbs,*rip,*riip;
+  int             *ai=a->inew,*aj=a->jnew;
+  /* MatScalar       *aa=a->a; */
+  /* Scalar          ak;       */
   int             *nzr,nz,jmin,jmax,j,k,ajk;
   IS              iperm;  /* inverse of perm */
 
@@ -55,8 +56,20 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISRestoreIndices(iperm,&riip);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);
   
-  /* Phase 1: find row in which to store each nonzero (r)
-	      initialize count of nonzeros to be stored in each row (nzr) */
+  ai = (int*)PetscMalloc((mbs+1)*sizeof(int));CHKPTRQ(ai);
+  aj = (int*)PetscMalloc((a->i[mbs])*sizeof(int));CHKPTRQ(aj);
+  ierr  = PetscMemcpy(ai,a->i,(mbs+1)*sizeof(int));CHKERRQ(ierr);
+  ierr  = PetscMemcpy(aj,a->j,(a->i[mbs])*sizeof(int));CHKERRQ(ierr);
+  /*
+  printf("ainew= %d %d %d\n",ai[0],ai[mbs-1],ai[mbs]);
+  printf("ajnew=%d %d\n",aj[0],aj[a->i[mbs]-1]);
+  */
+  /* 
+     Phase 1: Find row index r in which to store each nonzero. 
+	      Initialize count of nonzeros to be stored in each row (nzr).
+              At the end of this phase, a nonzero a(*,*)=a(r(),aj())
+              s.t. a(perm(r),perm(aj)) will fall into upper triangle part.
+  */
 
   nzr = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(nzr); 
   r   = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKPTRQ(r);
@@ -70,10 +83,10 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
     /* printf("nz = %d, j=%d\n",nz,j); */
     while (nz--){
       /*  --- find row (=r[j]) and column (=aj[j]) in which to store a[j] ...*/
-      k = aj[j];
+      k = aj[j];                          /* col. index */
       /* printf("nz = %d, k=%d\n", nz,k); */
-
-      if (rip[k] < rip[i]) aj[j] = i;    
+      /* for entry that will be permuted into lower triangle, swap row and col. index */
+      if (rip[k] < rip[i]) aj[j] = i; 
       else k = i; 
       
       r[j] = k; j++;
@@ -81,14 +94,18 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
     } 
   } 
 
-  /* Phase 2: find new ai and permutation to apply to (aj,a)
-              determine pointers (r) to delimit rows in permuted (aj,a) */
+  /* Phase 2: Find new ai and permutation to apply to (aj,a).
+              Determine pointers (r) to delimit rows in permuted (aj,a).
+              Note: r is different from r used in phase 1.
+              At the end of this phase, (aj[j],a[j]) will be stored in
+              (aj[r(j)],a[r(j)]).
+  */
     for (i=0; i<mbs; i++){
       ai[i+1] = ai[i] + nzr[i]; 
       nzr[i]    = ai[i+1];
     }
                                                      
-  /* determine where each (aj[j], a[j]) is stored in permuted (aj,a)
+  /* determine where each (aj[j], a[j]) is stored in new (aj,a)
      for each nonzero element (in reverse order) */
   jmin = ai[0]; jmax = ai[mbs];
   nz = jmax - jmin;
@@ -107,7 +124,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
     while (r[j] != j){ 
       k = r[j]; r[j] = r[k]; r[k] = k;
       ajk = aj[k]; aj[k] = aj[j]; aj[j] = ajk;
-      ak = aa[k]; aa[k] = aa[j]; aa[j] = ak;
+      /* ak = aa[k]; aa[k] = aa[j]; aa[j] = ak; */
     }
   }
 
@@ -119,7 +136,8 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr= ISRestoreIndices(perm,&rip);CHKERRA(ierr);
 
   ierr = PetscFree(nzr);CHKERRA(ierr); 
-  ierr = PetscFree(r);CHKERRA(ierr); 
+  /* ierr = PetscFree(r);CHKERRA(ierr); */
+  a->a2anew = r;
   
   PetscFunctionReturn(0);
 }
