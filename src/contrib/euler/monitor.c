@@ -360,6 +360,9 @@ int MonitorDumpVRML(SNES snes,Vec X,Vec F,Euler *app)
         output pressure field
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  /* temporarily force pressure printing */
+  app->dump_vrml_pressure = 1;
+
   if (app->dump_vrml_pressure) {
 
     /* Since we call MonitorDumpVRML() from the routine ComputeFunction(), we've already
@@ -496,14 +499,20 @@ int DumpField(Euler *app,Draw Win,Scalar *field)
   void           *hue_ctx;                /* hue context */
   int            evenhue = 0;             /* flag - indicating even hues */
   int            coord_dim;               /* dimension for slicing VRML output */
-  int            ycut = 0;                /* cut VRML output in y-planes */
+  int            zcut = 0;                /* cut VRML output in z-planes */
   int            layers;                  /* number of data layers to output */
   int            coord_slice;             /* current coordinate plane slice */
-  int            flg, ierr, j, k;
+  int            flg, ierr, j, k, wing;
   int            ni = app->ni, nj = app->nj, nk = app->nk;
   Scalar         *x = app->xc, *y = app->yc, *z = app->zc;
 
-  ierr = DrawMeshCreateSimple( &mesh, x, y, z, ni, nj, nk, 1, field, 32 ); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-wing",&wing); CHKERRQ(ierr);
+  if (wing) {
+    ierr = DrawMeshCreate( &mesh, x, y, z, ni, nj, nk, 9, 39, 0, 1, 0, 5, 1, 1, 1, 1, field, 32 ); CHKERRQ(ierr);
+  } else {
+    ierr = DrawMeshCreateSimple( &mesh, x, y, z, ni, nj, nk, 1, field, 32 ); CHKERRQ(ierr);
+  }
+
   ierr = OptionsHasName(PETSC_NULL,"-vrmlevenhue",&evenhue); CHKERRQ(ierr);
   if (evenhue) {
     hue_ctx = VRMLFindHue_setup( mesh, 32 );
@@ -515,13 +524,18 @@ int DumpField(Euler *app,Draw Win,Scalar *field)
     color_fcn = VRMLGetHue;
     huedestroy = VRMLGetHue_destroy;
   }
-  ierr = OptionsHasName(PETSC_NULL,"-dump_vrml_cut_y",&ycut); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-dump_vrml_cut_z",&zcut); CHKERRQ(ierr);
   layers = nk;
+
+  /* temporarily use just 1 layer and y cut by default */
+  layers = 1;
   ierr = OptionsGetInt(PETSC_NULL,"-dump_vrml_layers",&layers,&flg); CHKERRQ(ierr);
 
-  if (!ycut) {   /* Dump data, striped by planes in the z-direction */
+
+  if (zcut) {   /* Dump data, striped by planes in the z-direction */
     layers = PetscMin(layers,nk);
     coord_dim = 2;
+    printf("Dumping in z direction: coord_dim = %d\n",coord_dim);
     for (k=0; k<layers; k+=1) {
       coord_slice = k;
       ierr = DrawTensorMapSurfaceContour( Win, mesh, 
@@ -535,6 +549,7 @@ int DumpField(Euler *app,Draw Win,Scalar *field)
   else {   /* Dump data, striped by planes in the y-direction */
     coord_dim = 1;
     layers = PetscMin(layers,nj);
+    printf("Dumping in y direction: coord_dim = %d\n",coord_dim);
     for (j=0; j<layers; j+=1) {
       coord_slice = j;
       ierr = DrawTensorMapSurfaceContour( Win, mesh, 

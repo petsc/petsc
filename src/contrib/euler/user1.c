@@ -365,13 +365,6 @@ int main(int argc,char **argv)
      Do post-processing
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* Calculate physical quantities of interest */
-  ierr = OptionsHasName(PETSC_NULL,"-post",&post_process); CHKERRA(ierr);
-  if (post_process) {
-    ierr = pvar_(app->xx,app->p,
-       app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-       app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc); CHKERRA(ierr);
-  }
 
   /* Dump field variables for viewing with TECPLOT */
   ierr = OptionsHasName(PETSC_NULL,"-tecplot",&flg); CHKERRA(ierr);
@@ -391,9 +384,30 @@ int main(int argc,char **argv)
     }
   }
   if (app->rank == 0) {
-    fprintf(app->fp," ];\n\% Total SLES iterations = %d, Total time = %g sec\n",app->sles_tot,app->ftime[its]);
+    fprintf(app->fp," ];\n%% Total SLES iterations = %d, Total time = %g sec\n",app->sles_tot,app->ftime[its]);
     fclose(app->fp);
   }
+
+  /* - - - - - Dump fields for later viewing with VRML - - - - - */
+
+  ierr = OptionsHasName(PETSC_NULL,"-post",&post_process); CHKERRA(ierr);
+  if (post_process) {
+
+    /* First pack local vector; then compute pressure and dump to file */
+    ierr = PackWork(app,app->X,app->localX,
+                    app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRA(ierr);
+    ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
+
+    /* Calculate physical quantities of interest */
+    if (app->size == 1) {
+      ierr = pvar_(app->xx,app->p,
+         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+         app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc); CHKERRA(ierr);
+    }
+
+    ierr = MonitorDumpVRML(snes,app->X,app->F,app); CHKERRA(ierr);
+  }
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free data structures 
