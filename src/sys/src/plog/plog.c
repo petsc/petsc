@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.66 1996/02/05 21:03:44 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.67 1996/02/05 21:08:10 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -10,6 +10,13 @@ static char vcid[] = "$Id: plog.c,v 1.66 1996/02/05 21:03:44 bsmith Exp balay $"
 #include <stdarg.h>
 #include <sys/types.h>
 #include "sys.h"
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
+#include <malloc.h>
+#endif
+#include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 #include "pinclude/ptime.h"
 
@@ -86,7 +93,6 @@ static Objects *objects = 0;
 
 static int     nobjects = 0, nevents = 0, objectsspace = CHUNCK;
 static int     ObjectsDestroyed = 0, eventsspace = CHUNCK;
-static int     maxobjectsspace = CHUNCK, maxeventsspace = CHUNCK;
 static double  ObjectsType[20][4];
 
 static int     EventsStage = 0;    /* which log sessions are we using */
@@ -219,10 +225,9 @@ int phc(PetscObject obj)
     Events *tmp;
     double end,start;
     PetscTime(start);
-    tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
+    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
-    PetscFree(events);
-    maxeventsspace = 2*eventsspace+CHUNCK;
+    free(events);
     events = tmp; eventsspace += CHUNCK;
     PetscTime(end); BaseTime += (end - start);
   }
@@ -230,10 +235,9 @@ int phc(PetscObject obj)
     Objects *tmp;
     double end,start;
     PetscTime(start);
-    tmp = (Objects *) PetscMalloc((objectsspace+CHUNCK)*sizeof(Objects));CHKPTRQ(tmp);
+    tmp = (Objects *) malloc((objectsspace+CHUNCK)*sizeof(Objects));CHKPTRQ(tmp);
     PetscMemcpy(tmp,objects,objectsspace*sizeof(Objects));
-    PetscFree(objects);
-    maxobjectsspace = 2*objectsspace+CHUNCK;
+    free(objects);
     objects = tmp; objectsspace += CHUNCK;
     PetscTime(end); BaseTime += (end - start);
   }
@@ -245,10 +249,6 @@ int phc(PetscObject obj)
   events[nevents].id3     = -1;
   events[nevents].flops   = _TotalFlops;
   TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
-  events[nevents].mem -= (eventsspace*sizeof(Events) +
-                          objectsspace*sizeof(Objects));
-  events[nevents].maxmem -= (maxeventsspace*sizeof(Events) +
-                          maxobjectsspace*sizeof(Objects));
   events[nevents++].event = CREATE;
   objects[nobjects].parent= -1;
   objects[nobjects].obj   = obj;
@@ -268,11 +268,10 @@ int phd(PetscObject obj)
     Events *tmp;
     double end,start;
     PetscTime(start);
-    tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
+    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
-    PetscFree(events);
+    free(events);
     events = tmp; eventsspace += CHUNCK;
-    maxeventsspace = 2*eventsspace+CHUNCK;
     PetscTime(end); BaseTime += (end - start);
   }
   PetscTime(events[nevents].time); events[nevents].time -= BaseTime;
@@ -283,10 +282,6 @@ int phd(PetscObject obj)
   events[nevents].id2       = -1;
   events[nevents].flops   = _TotalFlops;
   TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
-  events[nevents].mem -= (eventsspace*sizeof(Events) +
-                          objectsspace*sizeof(Objects));
-  events[nevents].maxmem -= (maxeventsspace*sizeof(Events) +
-                          maxobjectsspace*sizeof(Objects));
   events[nevents++].id3     = -1;
   if (obj->parent) {objects[obj->id].parent   = obj->parent->id;}
   else {objects[obj->id].parent   = -1;}
@@ -319,10 +314,9 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
     Events *tmp;
     double end,start;
     PetscTime(start);
-    tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
+    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
-    PetscFree(events);
-    maxeventsspace = 2*eventsspace+CHUNCK;
+    free(events);
     events = tmp; eventsspace += CHUNCK;
     PetscTime(end); BaseTime += (end - start);
   }
@@ -335,10 +329,6 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   events[nevents].cookie = 0;
   events[nevents].flops   = _TotalFlops;
   TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
-  events[nevents].mem -= (eventsspace*sizeof(Events) +
-                          objectsspace*sizeof(Objects));
-  events[nevents].maxmem -= (maxeventsspace*sizeof(Events) +
-                          maxobjectsspace*sizeof(Objects));
   events[nevents++].event= ACTIONBEGIN;
   if (t != 1) return 0;
   EventsType[EventsStage][event][COUNT]++;
@@ -356,10 +346,9 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
     Events *tmp;
     double end,start;
     PetscTime(start);
-    tmp = (Events *) PetscMalloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
+    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
-    PetscFree(events);
-    maxeventsspace = 2*eventsspace+CHUNCK;
+    free(events);
     events = tmp; eventsspace += CHUNCK;
     PetscTime(end); BaseTime += (end - start);
   }
@@ -372,10 +361,6 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   events[nevents].cookie = 0;
   events[nevents].flops   = _TotalFlops;
   TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
-  events[nevents].mem -= (eventsspace*sizeof(Events) +
-                          objectsspace*sizeof(Objects));
-  events[nevents].maxmem -= (maxeventsspace*sizeof(Events) +
-                          maxobjectsspace*sizeof(Objects));
   events[nevents++].event= ACTIONEND;
   if (t != 1) return 0;
   EventsType[EventsStage][event][TIME] += ltime;
@@ -433,8 +418,8 @@ $      with PETSC_LOG)
 @*/
 int PLogAllBegin()
 {
-  objects = (Objects*) PetscMalloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
-  events  = (Events*) PetscMalloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
+  objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
+  events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PHC    = phc;
   _PHD    = phd;
   _PLB    = plball;
@@ -474,8 +459,8 @@ $     PetscFinalize();
 int PLogDestroy()
 {
   /* Destroying phase */
-  if (objects) {PetscFree(objects); objects = 0;}
-  if (events)  {PetscFree(events); events = 0;}
+  if (objects) {free(objects); objects = 0;}
+  if (events)  {free(events); events = 0;}
   _PHC             = 0;
   _PHD             = 0;
 
@@ -506,8 +491,8 @@ $      to screen (for code compiled with PETSC_LOG)
 @*/
 int PLogBegin()
 {
-  objects = (Objects*) PetscMalloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
-  events  = (Events*) PetscMalloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
+  objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
+  events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
   _PHC    = phc;
   _PHD    = phd;
   _PLB    = plb;
