@@ -20,7 +20,7 @@ static char vcid[] = "$Id: mathematica.c,v 1.9 2000/01/26 15:46:22 baggag Exp $"
 #define snprintf _snprintf
 #endif
 
-PetscViewer  VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
+PetscViewer  PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
 #ifdef PETSC_HAVE_MATHEMATICA
 static void *mathematicaEnv                   = PETSC_NULL;
 #endif
@@ -78,8 +78,8 @@ int PetscViewerInitializeMathematicaWorld_Private()
   int ierr;
 
   PetscFunctionBegin;
-  if (VIEWER_MATHEMATICA_WORLD_PRIVATE) PetscFunctionReturn(0);
-  ierr = PetscViewerMathematicaOpen(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_NULL, PETSC_NULL, &VIEWER_MATHEMATICA_WORLD_PRIVATE);
+  if (PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) PetscFunctionReturn(0);
+  ierr = PetscViewerMathematicaOpen(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_NULL, PETSC_NULL, &PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE);
   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -112,8 +112,8 @@ int PetscViewerDestroyMathematica_Private(void)
   int ierr;
 
   PetscFunctionBegin;
-  if (VIEWER_MATHEMATICA_WORLD_PRIVATE) {
-    ierr = PetscViewerDestroy(VIEWER_MATHEMATICA_WORLD_PRIVATE);                                          CHKERRQ(ierr);
+  if (PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE) {
+    ierr = PetscViewerDestroy(PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE);                                    CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -779,10 +779,11 @@ int PetscViewerMathematicaPutVector(PetscViewer viewer, Vec v) {
       MLPutRealList(link, array, size);
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
+  ierr = VecRestoreArray(v, &array);                                                                      CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #endif
   PetscFunctionBegin;
