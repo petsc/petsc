@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.10 2000/01/11 21:01:03 bsmith Exp balay $*/
+/*$Id: ex16.c,v 1.11 2000/05/05 22:16:17 balay Exp balay $*/
 
 static char help[] = "Tests MatGetArray().\n\n";
 
@@ -25,7 +25,7 @@ int main(int argc,char **args)
   */
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
-      v = 1.0/(i+j+1); ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
+      v = 9.0/(i+j+1); ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
