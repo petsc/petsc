@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.3 1995/08/29 21:52:28 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.4 1995/08/30 03:30:40 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -125,7 +125,7 @@ int main(int argc,char **argv)
 /*
     Form initial guess for nonlinear solver
  */
-int FormInitialGuess(SNES snes,Vec xvec,void *ptr)
+int FormInitialGuess(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
@@ -140,7 +140,7 @@ int FormInitialGuess(SNES snes,Vec xvec,void *ptr)
 
   /* Compute the boundary values once only */
   ierr = BoundaryValues(user); CHKERRQ(ierr);
-  ierr = VecGetArray(xvec,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   for (j=1; j<=ny; j++) {
     alphaj = j*hy;
     for (i=1; i<=nx; i++) {
@@ -151,7 +151,8 @@ int FormInitialGuess(SNES snes,Vec xvec,void *ptr)
       x[k] = (yline+xline)*p5;
     }
   }
-  ierr = VecRestoreArray(xvec,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+  ierr = VecView(X,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -179,21 +180,21 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
     Evaluate function f(x) and/or gradient g(x)
  */
 
-int FunctionGradient(SNES snes,Vec xvec,Scalar *f,Vec gvec,FctGradFlag fg,
+int FunctionGradient(SNES snes,Vec X,Scalar *f,Vec gvec,FctGradFlag fg,
                      AppCtx *user)
 {
   int    ierr, nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
   int    ind, i, j, k;
   double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy;
-  Scalar *bottom, *top, *left, *right, *x, val, v, vb, vl, vr, vt;
-  Scalar dvdx, dvdy, fl, fu, zero = 0.0, area;
+  Scalar *bottom, *top, *left, *right, *x, val, dvdx, dvdy, fl, fu, area;
+  Scalar v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, zero=0.0;
 
   bottom = user->work;
   top    = &user->work[nx+2];
   left   = &user->work[2*nx+4];
   right  = &user->work[2*nx+ny+6];
 
-  ierr = VecGetArray(xvec,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   if (fg & FunctionEval) {
     *f = zero;
   }
@@ -289,7 +290,7 @@ int FunctionGradient(SNES snes,Vec xvec,Scalar *f,Vec gvec,FctGradFlag fg,
       }
     }
   }
-  ierr = VecRestoreArray(xvec,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   area = p5*hx*hy;
   if (fg & FunctionEval) {   /* Scale the function */
     *f *= area;
@@ -304,7 +305,7 @@ int FunctionGradient(SNES snes,Vec xvec,Scalar *f,Vec gvec,FctGradFlag fg,
 /*
    FormHessian - Forms Hessian matrix by computing a column at a time.
  */
-int FormHessian(SNES snes,Vec xvec,Mat *H,Mat *PrecH,MatStructure *flag,
+int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
                 void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
@@ -315,7 +316,7 @@ int FormHessian(SNES snes,Vec xvec,Mat *H,Mat *PrecH,MatStructure *flag,
 
   ndim = user->ndim;
   ierr = VecSet(&zero,user->s); CHKERRQ(ierr);
-  user->xvec = xvec; /* Set location of vector */
+  user->xvec = X; /* Set location of vector */
 
   for (j=0; j<ndim; j++) {   /* loop over columns */
 
@@ -355,12 +356,14 @@ int FormHessian(SNES snes,Vec xvec,Mat *H,Mat *PrecH,MatStructure *flag,
 /*
    FormHessian - Forms Hessian matrix by computing a column at a time.
  */
-int MatrixFreeHessian(SNES snes,Vec xvec,Mat *H,Mat *PrecH,MatStructure *flag,
+int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
                       void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
 
-  user->xvec = xvec; /* Set location of vector */
+  /* Sets location of vector for use in computing matrix-vector products
+     of the form H(X)*y  */
+  user->xvec = X;   
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -373,10 +376,10 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   int    nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
   int    i, j, k, ierr, ind;
   double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy;
-  Scalar dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu, zero = 0.0;
-  Scalar area, v, vb, vl, vr, vt, z, zb, zl, zr, zt;
+  Scalar dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu, z, zb, zl, zr, zt, area;
   Scalar *bottom, *top, *left, *right, *s, *x, val;
   Scalar dvdx, dvdxhx, dvdy, dvdyhy, dzdx, dzdxhx;
+  Scalar v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, zero=0.0;
 
   bottom = user->work;
   top    = &user->work[nx+2];
