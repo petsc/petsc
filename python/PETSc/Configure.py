@@ -94,7 +94,7 @@ class Configure(config.base.Configure):
   def configurePIC(self):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
-    langauges = ['C']
+    languages = ['C']
     if 'CXX' in self.framework.argDB:
       languages.append('C++')
     if 'FC' in self.framework.argDB:
