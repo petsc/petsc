@@ -46,7 +46,7 @@ etags:
 	etags -a -f TAGS src/*/impls/*/*/*.c src/*/utils/*.c
 	etags -a -f TAGS docs/tex/manual.tex src/sys/error/*.c
 	etags -a -f TAGS include/*.h pinclude/*.h
-	etags -a -f TAGS src/*/impls/*.c
+	etags -a -f TAGS src/*/impls/*.c src/sys/*.c
 	chmod g+w TAGS
 
 runexamples:
