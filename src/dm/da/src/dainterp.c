@@ -513,7 +513,7 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 
 .keywords: interpolation, restriction, multigrid 
 
-.seealso: DARefine()
+.seealso: DARefine(), DAGetInjection()
 @*/
 int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 {
@@ -558,6 +558,130 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
   }
   if (scale) {
     ierr = DMGetInterpolationScale((DM)dac,(DM)daf,*A,scale);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetInjection_2D"
+int DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
+{
+  int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
+  int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
+  int            row,col,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
+  int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
+  int            size_c,size_f,rank_f,*cols;
+  PetscScalar    x,y;
+  DAPeriodicType pt;
+  Vec            vecf,vecc;
+  IS             isf;
+
+  PetscFunctionBegin;
+
+  ierr = DAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(daf,0,&mx,&my,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  if (DAXPeriodic(pt)){
+    ratioi = mx/Mx;
+    if (ratioi*Mx != mx) SETERRQ2(1,"Ratio between levels: mx/Mx  must be integer: mx %d Mx %d",mx,Mx);
+  } else {
+    ratioi = (mx-1)/(Mx-1);
+    if (ratioi*(Mx-1) != mx-1) SETERRQ2(1,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %d Mx %d",mx,Mx);
+  }
+  if (DAYPeriodic(pt)){
+    ratioj = my/My;
+    if (ratioj*My != my) SETERRQ2(1,"Ratio between levels: my/My  must be integer: my %d My %d",my,My);
+  } else {
+    ratioj = (my-1)/(My-1);
+    if (ratioj*(My-1) != my-1) SETERRQ2(1,"Ratio between levels: (my - 1)/(My - 1) must be integer: my %d My %d",my,My);
+  }
+
+
+  ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+
+  ierr = DAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+
+
+  /* loop over local fine grid nodes setting interpolation for those*/
+  nc = 0;
+  ierr = PetscMalloc(n_f*m_f*sizeof(int),&cols);CHKERRQ(ierr);
+  for (j=j_start; j<j_start+n_f; j++) {
+    for (i=i_start; i<i_start+m_f; i++) {
+
+      i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
+      j_c = (j/ratioj);    /* coarse grid node below fine grid node */
+
+      if (i_c*ratioi == i && j_c*ratioj == j) { 
+	/* convert to local "natural" numbering and then to PETSc global numbering */
+	row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
+        cols[nc++] = row; 
+      }
+    }
+  }
+
+  ierr = ISCreateBlock(daf->comm,dof,nc,cols,&isf);CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
+  ierr = DARestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
+  ierr = DARestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
+  ierr = ISDestroy(isf);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetInjection"
+/*@C
+   DAGetInjection - Gets an injection matrix that maps between 
+   grids associated with two DAs.
+
+   Collective on DA
+
+   Input Parameters:
++  dac - the coarse grid DA
+-  daf - the fine grid DA
+
+   Output Parameters:
+.  inject - the injection scatter
+
+   Level: intermediate
+
+.keywords: interpolation, restriction, multigrid, injection 
+
+.seealso: DARefine(), DAGetInterpolation()
+@*/
+int DAGetInjection(DA dac,DA daf,VecScatter *inject)
+{
+  int            ierr,dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
+  DAPeriodicType wrapc,wrapf;
+  DAStencilType  stc,stf;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dac,DA_COOKIE);
+  PetscValidHeaderSpecific(daf,DA_COOKIE);
+
+  ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
+  ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(1,"Dimensions of DA do not match %d %d",dimc,dimf);CHKERRQ(ierr);
+  /* if (mc != mf) SETERRQ2(1,"Processor dimensions of DA in X %d %d do not match",mc,mf);CHKERRQ(ierr);
+     if (nc != nf) SETERRQ2(1,"Processor dimensions of DA in Y %d %d do not match",nc,nf);CHKERRQ(ierr);
+     if (pc != pf) SETERRQ2(1,"Processor dimensions of DA in Z %d %d do not match",pc,pf);CHKERRQ(ierr); */
+  if (dofc != doff) SETERRQ2(1,"DOF of DA do not match %d %d",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(1,"Stencil width of DA do not match %d %d",sc,sf);CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(1,"Periodic type different in two DAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(1,"Stencil type different in two DAs");CHKERRQ(ierr);
+  if (Mc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in x direction");
+  if (dimc > 1 && Nc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in y direction");
+  if (dimc > 2 && Pc < 2) SETERRQ(1,"Coarse grid requires at least 2 points in z direction");
+
+  if (dimc == 2){
+    ierr = DAGetInjection_2D(dac,daf,inject);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,"No support for this DA dimension %d",dimc);
   }
   PetscFunctionReturn(0);
 } 

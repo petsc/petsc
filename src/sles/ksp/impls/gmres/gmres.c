@@ -189,11 +189,10 @@ int GMREScycle(int *itcount,KSP ksp)
       break;
     }
   }
-  KSPLogResidualHistory(ksp,res);
 
-  /*
-     Monitor if we know that we will not return for a restart */
+  /* Monitor if we know that we will not return for a restart */
   if (ksp->reason || ksp->its >= max_it) {
+    KSPLogResidualHistory(ksp,res);
     KSPMonitor(ksp,ksp->its,res);
   }
 

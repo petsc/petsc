@@ -14,6 +14,8 @@
 /*   PRIVATELY OWNED RIGHTS.                                          */
 /*                                                                    */
 /**********************************************************************/
+#include "ad_grad.h"
+
 #if !defined(AD_DERIV_H)
 #define AD_DERIV_H
 
@@ -28,8 +30,10 @@ extern "C" {
 #define ad_GRAD_PTR 0
 #endif
 
-#if !defined(ad_GRAD_MAX) 
-#define ad_GRAD_MAX 54
+/* since ad_GRAD_MAX is set dynamically by the application (that automatically includes 
+   this file) this is here so that the regular library compile can compile this file */
+#if !defined(ad_GRAD_MAX)
+#define ad_GRAD_MAX 64
 #endif
 
 #define AD_INIT_MAP()
@@ -47,10 +51,6 @@ typedef struct {
 
 /* _FLOAT_INITIALIZER_ is currently incorrect */
 #define _FLOAT_INITIALIZER_(x) { x, 0.0 }
-
-extern void ad_AD_Init(void);
-extern void ad_AD_Final(void);
-#include "ad_grad.h"
 
 #define nullFunc(x) 0
 

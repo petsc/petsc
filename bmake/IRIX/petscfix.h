@@ -35,7 +35,7 @@ extern int gettimeofday(struct timeval *,...);
 #else
 #endif
 
-/* SGI MPI does not have f2c funcitons */
+/* SGI MPI does not have f2c functions */
 
 /*  #define MPI_Comm_f2c(a)  (a) */
 /*  #define MPI_Comm_c2f(a)  (a) */

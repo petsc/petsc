@@ -22,6 +22,7 @@ struct _DMOps {
   int  (*getmatrix)(DM,MatType,Mat*);
   int  (*getinterpolation)(DM,DM,Mat*,Vec*);
   int  (*refine)(DM,MPI_Comm,DM*);
+  int  (*getinjection)(DM,DM,VecScatter*);
 };
 
 struct _p_DM {
@@ -36,6 +37,7 @@ struct _DAOps {
   int  (*getmatrix)(DA,MatType,Mat*);
   int  (*getinterpolation)(DA,DA,Mat*,Vec*);
   int  (*refine)(DA,MPI_Comm,DA*);
+  int  (*getinjection)(DA,DA,VecScatter*);
 };
 
 struct _p_DA {

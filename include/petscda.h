@@ -193,6 +193,7 @@ EXTERN int DAGetColoring(DA,ISColoringType,ISColoring *);
 EXTERN int DAGetMatrix(DA,MatType,Mat *);
 EXTERN int DASetGetMatrix(DA,int (*)(DA,MatType,Mat *));
 EXTERN int DAGetInterpolation(DA,DA,Mat*,Vec*);
+EXTERN int DAGetInjection(DA,DA,VecScatter*);
 
 EXTERN int DAGetAdicArray(DA,PetscTruth,void**,void**,int*);
 EXTERN int DARestoreAdicArray(DA,PetscTruth,void**,void**,int*);
@@ -260,8 +261,11 @@ EXTERN int DMCreateGlobalVector(DM,Vec*);
 EXTERN int DMGetColoring(DM,ISColoringType,ISColoring*);
 EXTERN int DMGetMatrix(DM,MatType,Mat*);
 EXTERN int DMGetInterpolation(DM,DM,Mat*,Vec*);
+EXTERN int DMGetInjection(DM,DM,VecScatter*);
 EXTERN int DMRefine(DM,MPI_Comm,DM*);
 EXTERN int DMGetInterpolationScale(DM,DM,Mat,Vec*);
+
+typedef struct NLF_DAAD* NLF;
 
 /*S
      DMMG -  Data structure to easily manage multi-level non-linear solvers on grids managed by DM
@@ -282,27 +286,35 @@ struct _p_DMMG {
   MPI_Comm   comm;
   int        (*solve)(DMMG*,int);
   void       *user;         
-  PetscTruth galerkin;             /* for A_c = R*A*R^T */
+  PetscTruth galerkin;                  /* for A_c = R*A*R^T */
 
   /* SLES only */
   SLES       sles;             
   int        (*rhs)(DMMG,Vec);
-  PetscTruth matricesset;              /* User had called DMMGSetSLES() and the matrices have been computed */
+  PetscTruth matricesset;               /* User had called DMMGSetSLES() and the matrices have been computed */
 
   /* SNES only */
   Mat           B;
-  Vec           Rscale;                /* scaling to restriction before computing Jacobian */
+  Vec           Rscale;                 /* scaling to restriction before computing Jacobian */
   int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
   int           (*computefunction)(SNES,Vec,Vec,void*);  
 
-  PetscTruth    updatejacobian;        /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
-  int           updatejacobianperiod;  /* how often, inside a SNES, the Jacobian is recomputed */
+  PetscTruth    updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
+  int           updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
 
-  MatFDColoring    fdcoloring;            /* only used with FD coloring for Jacobian */  
-  SNES             snes;                  
-  int              (*initialguess)(SNES,Vec,void*);
-  Vec              w,work1,work2;         /* global vectors */
-  Vec              lwork1;
+  MatFDColoring fdcoloring;             /* only used with FD coloring for Jacobian */  
+  SNES          snes;                  
+  int           (*initialguess)(SNES,Vec,void*);
+  Vec           w,work1,work2;         /* global vectors */
+  Vec           lwork1;
+
+  /* FAS only */
+  NLF           nlf;                   /* FAS smoother object */
+  VecScatter    inject;                /* inject from this level to the next coarsest */
+  PetscTruth    monitor,monitorall;
+  int           presmooth,postsmooth,coarsesmooth;
+  PetscReal     rtol,atol,rrtol;       /* convergence tolerance */   
+  
 };
 
 EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);

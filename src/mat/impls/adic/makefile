@@ -7,10 +7,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = matadic.c
+SOURCEC  = matadic.c nladic.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = matadic.o
+OBJSC    = matadic.o nladic.o
 OBJSF    = 
 LIBBASE  = libpetscsnes
 DIRS     = 

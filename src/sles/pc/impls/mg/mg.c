@@ -163,9 +163,9 @@ EXTERN int MGKCycle_Private(MG*);
 #define __FUNCT__ "PCApply_MG"
 static int PCApply_MG(PC pc,Vec b,Vec x)
 {
-  MG     *mg = (MG*)pc->data;
+  MG          *mg = (MG*)pc->data;
   PetscScalar zero = 0.0;
-  int    levels = mg[0]->levels,ierr;
+  int         levels = mg[0]->levels,ierr;
 
   PetscFunctionBegin;
   mg[levels-1]->b = b; 

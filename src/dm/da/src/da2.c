@@ -283,6 +283,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->ops->getcoloring        = DAGetColoring;
   da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
+  da->ops->getinjection       = DAGetInjection;
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 2;
   da->interptype = DA_Q1;

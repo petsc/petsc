@@ -7,12 +7,12 @@
   {hovland,norris}@mcs.anl.gov.
 */
 
+#include "ad_grad_macro_axpys.h"
 
 #if !defined(AD_GRAD_H)
 #define AD_GRAD_H
 
 #include <string.h>
-#include "ad_grad_macro_axpys.h"
 
 extern int ad_grad_size;
 extern int ad_total_grad_size;   /*only used when generating MPI programs*/

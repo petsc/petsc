@@ -722,7 +722,7 @@ int DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 -    ghosted - do you want arrays for the ghosted or nonghosted patch?
 
      Output Parameters:
-+    ptr - array data structured to be passed to ad_FormFunctionLocal()
++    iptr - array data structured to be passed to ad_FormFunctionLocal()
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 

@@ -598,7 +598,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
     count++;
   }
   if (count >= 10000) {
-    SETERRQ(PETSC_ERR_LIB, "Lambda was decreased more than 10,000 times, so something is probably wrong with the funciton evaluation");
+    SETERRQ(PETSC_ERR_LIB, "Lambda was decreased more than 10,000 times, so something is probably wrong with the function evaluation");
   }
   theend1:
   /* Optional user-defined check for line search step validity */

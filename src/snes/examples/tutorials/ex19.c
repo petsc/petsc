@@ -400,31 +400,31 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
 
   /* Test whether we are on the right edge of the global array */
   if (i == info->mx-1) {
-    if (c == 0) *f     = x[j][i].u;
-    else if (c == 1) *f     = x[j][i].v;
+    if (c == 0)      *f = x[j][i].u;
+    else if (c == 1) *f = x[j][i].v;
     else if (c == 2) *f = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx; 
-    else *f  = x[j][i].temp - (PetscReal)(grashof>0);
+    else             *f = x[j][i].temp - (PetscReal)(grashof>0);
 
   /* Test whether we are on the left edge of the global array */
   } else if (i == 0) {
-    if (c == 0) *f     = x[j][i].u;
-    else if (c == 1) *f     = x[j][i].v;
+    if (c == 0)      *f = x[j][i].u;
+    else if (c == 1) *f = x[j][i].v;
     else if (c == 2) *f = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx; 
-    else *f  = x[j][i].temp;
+    else             *f = x[j][i].temp;
 
   /* Test whether we are on the top edge of the global array */
   } else if (j == info->my-1) {
-    if (c == 0) *f     = x[j][i].u - lid;
-    else if (c == 1) *f     = x[j][i].v;
+    if (c == 0)      *f = x[j][i].u - lid;
+    else if (c == 1) *f = x[j][i].v;
     else if (c == 2) *f = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy; 
-    else *f  = x[j][i].temp-x[j-1][i].temp;
+    else             *f = x[j][i].temp-x[j-1][i].temp;
 
   /* Test whether we are on the bottom edge of the global array */
   } else if (j == 0) {
-    if (c == 0) *f     = x[j][i].u;
-    else if (c == 1) *f     = x[j][i].v;
+    if (c == 0)      *f = x[j][i].u;
+    else if (c == 1) *f = x[j][i].v;
     else if (c == 2) *f = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy; 
-    else *f  = x[j][i].temp-x[j+1][i].temp;
+    else             *f = x[j][i].temp - x[j+1][i].temp;
 
   /* Compute over the interior points */
   } else {

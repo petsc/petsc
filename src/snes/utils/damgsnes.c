@@ -356,6 +356,136 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+extern int NLFCreate_DAAD(NLF*);
+extern int NLFRelax_DAAD(NLF,MatSORType,int,Vec);
+extern int NLFDAADSetDA_DAAD(NLF,DA);
+extern int NLFDAADSetCtx_DAAD(NLF,void*);
+extern int NLFDAADSetResidual_DAAD(NLF,Vec);
+EXTERN_C_END
+
+#include "src/sles/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
+/*
+          This is pre-beta FAS code. It's design should not be taken seriously!
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSolveFAS"
+int DMMGSolveFAS(DMMG *dmmg,int level)
+{
+  int         ierr,i,j,k;
+  PetscReal   norm;
+  PetscScalar zero = 0.0,mone = -1.0,one = 1.0;
+  MG          *mg;
+  PC          pc;
+  SLES        sles;
+  PetscTruth  monitor = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  ierr = VecSet(&zero,dmmg[level]->r);CHKERRQ(ierr);
+  for (j=1; j<=level; j++) {
+    if (!dmmg[j]->inject) {
+      ierr = DMGetInjection(dmmg[j-1]->dm,dmmg[j]->dm,&dmmg[j]->inject);CHKERRQ(ierr);
+    }
+  }
+
+  ierr = SNESGetSLES(dmmg[level]->snes,&sles);CHKERRQ(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  mg   = ((MG*)pc->data);
+
+  for (i=0; i<100; i++) {
+
+    for (j=level; j>0; j--) {
+
+      /* Relax residual_fine - F(x_fine) = 0 */
+      for (k=0; k<dmmg[j]->presmooth; k++) {
+	ierr = NLFRelax_DAAD(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
+      }
+
+      /* R*(residual_fine - F(x_fine)) */
+      ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
+      ierr = VecAYPX(&mone,dmmg[j]->r,dmmg[j]->w);CHKERRQ(ierr);
+
+      if (j == level || dmmg[j]->monitorall) {
+        /* norm( residual_fine - f(x_fine) ) */
+        ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
+        if (j == level) {
+	  if (norm < dmmg[level]->atol) goto theend; 
+          if (i == 0) {
+            dmmg[level]->rrtol = norm*dmmg[level]->rtol;
+          } else {
+            if (norm < dmmg[level]->rrtol) goto theend;
+	  }
+        }
+      }
+
+      if (dmmg[j]->monitorall) {
+        for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
+      }
+      ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
+      
+      /* F(R*x_fine) */
+      ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
+
+      /* residual_coarse = F(R*x_fine) + R*(residual_fine - F(x_fine)) */
+      ierr = VecAYPX(&one,dmmg[j-1]->w,dmmg[j-1]->r);CHKERRQ(ierr);
+
+      /* save R*x_fine into b (needed when interpolating compute x back up */
+      ierr = VecCopy(dmmg[j-1]->x,dmmg[j-1]->b);CHKERRQ(ierr);
+    }
+
+    for (j=0; j<dmmg[0]->presmooth; j++) {
+      ierr = NLFRelax_DAAD(dmmg[0]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[0]->x);CHKERRQ(ierr);
+    }
+    if (dmmg[0]->monitorall){ 
+      ierr = DMMGFormFunction(0,dmmg[0]->x,dmmg[0]->w,dmmg[0]);CHKERRQ(ierr);
+      ierr = VecAXPY(&mone,dmmg[0]->r,dmmg[0]->w);CHKERRQ(ierr);
+      ierr = VecNorm(dmmg[0]->w,NORM_2,&norm);CHKERRQ(ierr);
+      for (k=0; k<level+1; k++) {ierr = PetscPrintf(dmmg[0]->comm,"  ");CHKERRQ(ierr);}
+      ierr = PetscPrintf(dmmg[0]->comm,"FAS coarse grid function norm %g\n",norm);CHKERRQ(ierr);
+    }
+
+    for (j=1; j<=level; j++) {
+      /* x_fine = x_fine + R'*(x_coarse - R*x_fine) */
+      ierr = VecAXPY(&mone,dmmg[j-1]->b,dmmg[j-1]->x);CHKERRQ(ierr);
+      ierr = MatInterpolateAdd(mg[j]->restrct,dmmg[j-1]->x,dmmg[j]->x,dmmg[j]->x);CHKERRQ(ierr);
+
+      if (dmmg[j]->monitorall) {
+        /* norm( F(x_fine) - residual_fine ) */
+	ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
+	ierr = VecAXPY(&mone,dmmg[j]->r,dmmg[j]->w);CHKERRQ(ierr);
+        ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
+        for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
+      }
+
+      /* Relax residual_fine - F(x_fine)  = 0 */
+      for (k=0; k<dmmg[j]->postsmooth; k++) {
+	ierr = NLFRelax_DAAD(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
+      }
+
+      if (dmmg[j]->monitorall) {
+        /* norm( F(x_fine) - residual_fine ) */
+	ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
+	ierr = VecAXPY(&mone,dmmg[j]->r,dmmg[j]->w);CHKERRQ(ierr);
+        ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
+        for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
+      }
+    }
+
+    if (dmmg[level]->monitor){
+      ierr = DMMGFormFunction(0,dmmg[level]->x,dmmg[level]->w,dmmg[level]);CHKERRQ(ierr);
+      ierr = VecNorm(dmmg[level]->w,NORM_2,&norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(dmmg[level]->comm,"%d FAS function norm %g\n",i,norm);CHKERRQ(ierr);
+    }
+  }
+  theend:
+  PetscFunctionReturn(0);
+}
+
 /* ===========================================================================================================*/
 
 #undef __FUNCT__  
@@ -528,6 +658,49 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     dmmg[i]->updatejacobianperiod = period;
   }
 
+  { 
+    PetscTruth flg;
+    ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fas",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscOptionsHasName(0,"-fas_view",&flg);CHKERRQ(ierr);
+      for (i=0; i<nlevels; i++) {
+	ierr = NLFCreate_DAAD(&dmmg[i]->nlf);CHKERRQ(ierr);
+	ierr = NLFDAADSetDA_DAAD(dmmg[i]->nlf,(DA)dmmg[i]->dm);CHKERRQ(ierr);
+	ierr = NLFDAADSetCtx_DAAD(dmmg[i]->nlf,dmmg[i]->user);CHKERRQ(ierr);
+	ierr = NLFDAADSetResidual_DAAD(dmmg[i]->nlf,dmmg[i]->r);CHKERRQ(ierr);
+        ierr = VecDuplicate(dmmg[i]->b,&dmmg[i]->w);CHKERRQ(ierr);
+
+        dmmg[i]->monitor    = PETSC_FALSE;
+        ierr = PetscOptionsHasName(0,"-dmmg_fas_monitor",&dmmg[i]->monitor);CHKERRQ(ierr);
+        dmmg[i]->monitorall = PETSC_FALSE;
+        ierr = PetscOptionsHasName(0,"-dmmg_fas_monitor_all",&dmmg[i]->monitorall);CHKERRQ(ierr);
+        dmmg[i]->presmooth  = 2;
+        ierr = PetscOptionsGetInt(0,"-dmmg_fas_presmooth",&dmmg[i]->presmooth,0);CHKERRQ(ierr);
+        dmmg[i]->postsmooth = 2;
+        ierr = PetscOptionsGetInt(0,"-dmmg_fas_postsmooth",&dmmg[i]->postsmooth,0);CHKERRQ(ierr);
+        dmmg[i]->coarsesmooth = 2;
+        ierr = PetscOptionsGetInt(0,"-dmmg_fas_coarsesmooth",&dmmg[i]->coarsesmooth,0);CHKERRQ(ierr);
+
+        dmmg[i]->rtol = 1.e-8;
+        ierr = PetscOptionsGetReal(0,"-dmmg_fas_rtol",&dmmg[i]->rtol,0);CHKERRQ(ierr);
+        dmmg[i]->atol = 1.e-50;
+        ierr = PetscOptionsGetReal(0,"-dmmg_fas_atol",&dmmg[i]->atol,0);CHKERRQ(ierr);
+
+        if (flg) {
+          if (i == 0) {
+            ierr = PetscPrintf(dmmg[i]->comm,"FAS Solver Parameters\n");CHKERRQ(ierr);
+            ierr = PetscPrintf(dmmg[i]->comm,"  rtol %g atol %g\n",dmmg[i]->rtol,dmmg[i]->atol);CHKERRQ(ierr);
+	    ierr = PetscPrintf(dmmg[i]->comm,"             coarsesmooths %d\n",dmmg[i]->coarsesmooth);CHKERRQ(ierr);
+          } else {
+	    ierr = PetscPrintf(dmmg[i]->comm,"  level %d   presmooths    %d\n",i,dmmg[i]->presmooth);CHKERRQ(ierr);
+	    ierr = PetscPrintf(dmmg[i]->comm,"             postsmooths   %d\n",i,dmmg[i]->postsmooth);CHKERRQ(ierr);
+          }
+        }
+	dmmg[i]->solve = DMMGSolveFAS;
+      }
+    }
+  }
+   
   PetscFunctionReturn(0);
 }
 
@@ -670,19 +843,12 @@ int DMMGSetSNESLocali_Private(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStenci
   int ierr,i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
-CHKMEMQ;
   for (i=0; i<nlevels; i++) {
-CHKMEMQ;
     ierr = DASetLocalFunctioni((DA)dmmg[i]->dm,functioni);CHKERRQ(ierr);
-CHKMEMQ;
     ierr = DASetLocalAdicFunctioni((DA)dmmg[i]->dm,adi);CHKERRQ(ierr);
-CHKMEMQ;
     ierr = DASetLocalAdicMFFunctioni((DA)dmmg[i]->dm,adimf);CHKERRQ(ierr);
-CHKMEMQ;
     ierr = MatSNESMFSetFunctioni(dmmg[i]->J,DMMGFunctioni);CHKERRQ(ierr);
-CHKMEMQ;
     ierr = MatSNESMFSetFunctioniBase(dmmg[i]->J,DMMGFunctioniBase);CHKERRQ(ierr);    
-CHKMEMQ;
     ierr = DACreateLocalVector((DA)dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

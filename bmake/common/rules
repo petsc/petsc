@@ -267,6 +267,15 @@ getlinklibs:
 getincludedirs:
 	-@echo  ${PETSC_INCLUDE}
 
+getmpilinklibs:
+	-@echo  ${MPI_LIB}
+
+getmpiincludedirs:
+	-@echo  ${MPI_INCLUDE}
+
+getmpirun:
+	-@echo  ${MPIRUN}
+
 etags_sourcec:
 	-@if [ "${SOURCEC}" != "" ]; then \
 		etags -a -f ${TAGSFILE} ${SOURCEC} ; fi
@@ -361,7 +370,8 @@ fortranstubs:
                 echo "typedef struct {double value;double  grad[1];} mfDERIV_TYPE;"  >> $*.ad.c ;\
 	        sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp >> $*.ad.c ;\
 	        echo "#include \"$<\"" >> $*.ad.c ;\
-	        echo ${CC} -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+		${RM} ad_deriv.h ; \
+	        echo ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 	        ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
               else \
 	        echo ${PETSC_COMPILE_SINGLE} $<; \

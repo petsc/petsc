@@ -58,7 +58,7 @@ int MatMult_DAAD(Mat A,Vec xx,Vec yy)
 #include "src/dm/da/daimpl.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetDiagonal_DAD"
+#define __FUNCT__ "MatGetDiagonal_DAAD"
 int MatGetDiagonal_DAAD(Mat A,Vec dd)
 {
   Mat_DAAD      *a = (Mat_DAAD*)A->data;
@@ -93,7 +93,7 @@ int MatGetDiagonal_DAAD(Mat A,Vec dd)
     for (stencil.j = info.ys; stencil.j<info.ys+info.ym; stencil.j++) {
       for (stencil.i = info.xs; stencil.i<info.xs+info.xm; stencil.i++) {
 	for (stencil.c = 0; stencil.c<info.dof; stencil.c++) {
-	  gI   = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.xm + (stencil.k - info.gzs)*info.dof*info.xm*info.ym;
+	  gI   = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.gxm + (stencil.k - info.gzs)*info.dof*info.gxm*info.gym;
           ad_vustart[1+2*gI] = 1.0;
 	  ierr = (*a->da->adicmf_lfi)(&info,&stencil,ad_vu,ad_f,a->ctx);CHKERRQ(ierr);
 	  d[nI] = ad_f[1];
@@ -123,7 +123,10 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
   void*         *ad_vu;
 
   PetscFunctionBegin;
+  if (omega != 1.0) SETERRQ(PETSC_ERR_ARG_WRONG,"Currently only support omega of 1.0");
+  if (fshift)       SETERRQ(PETSC_ERR_ARG_WRONG,"Currently do not support fshift");
   if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
+
   if (!a->diagonal) {
     ierr = DACreateGlobalVector(a->da,&a->diagonal);CHKERRQ(ierr);
   }
@@ -171,7 +174,7 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
           for (stencil.i = info.xs; stencil.i<info.xs+info.xm; stencil.i++) {
             for (stencil.c = 0; stencil.c<info.dof; stencil.c++) {
               ierr = (*a->da->adicmf_lfi)(&info,&stencil,ad_vu,ad_f,a->ctx);CHKERRQ(ierr);
-              gI   = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.xm + (stencil.k - info.gzs)*info.dof*info.xm*info.ym;
+              gI   = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.gxm + (stencil.k - info.gzs)*info.dof*info.gxm*info.gym;
               ad_vustart[1+2*gI] += (b[nI] - ad_f[1])/d[nI];
               nI++;
             }
@@ -186,7 +189,7 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
           for (stencil.i = info.xs+info.xm-1; stencil.i>=info.xs; stencil.i--) {
             for (stencil.c = info.dof-1; stencil.c>=0; stencil.c--) {
               ierr = (*a->da->adicmf_lfi)(&info,&stencil,ad_vu,ad_f,a->ctx);CHKERRQ(ierr);
-              gI   = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.xm + (stencil.k - info.gzs)*info.dof*info.xm*info.ym;
+              gI   = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.gxm + (stencil.k - info.gzs)*info.dof*info.gxm*info.gym;
               ad_vustart[1+2*gI] += (b[nI] - ad_f[1])/d[nI];
               nI--;
             }
