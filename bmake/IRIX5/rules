@@ -46,16 +46,6 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
-
-#.SUFFIXES: $(SUFFIXES) .a .so
-#.a.so:
-#	$(LD) -elf -no_library_replacement -shared -rdata_shared -all  $<  -o $@
-
-#shared: libmpiuni.so libpetsccontrib.so  libpetscksp.so libpetscmat.so libpetscsles.so libpetscsnes.so libpetscsys.so libpetscts.so libpetscvec.so
-
-SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
-	libpetscsnes libpetscsys libpetscts libpetscvec
-
 shared: chkopts
 	-@echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \

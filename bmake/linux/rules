@@ -32,13 +32,6 @@ libf: $(OBJSF)
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	$(RM) $*.f $*.c
 
-
-
-
-
-SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
-	libpetscsnes libpetscsys libpetscts libpetscvec
-
 shared: chkopts
 	-@echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \

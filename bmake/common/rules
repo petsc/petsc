@@ -256,3 +256,6 @@ wwwpages:
 	egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	if [ "$$?" != 1 ]; then \
 	cat trashz ; fi; $(RM) trashz;
+
+SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
+	libpetscsnes libpetscsys libpetscts libpetscvec
