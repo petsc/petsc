@@ -251,112 +251,14 @@ c       Using local grid
       end
 
 c -------------------------------------------------------------------
-c
-      integer function localfortfct(first_time_resid,fff,
-     &                xx,p,xx_bc,p_bc,sadai,sadaj,sadak,
-     &                aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                dxx,br,bl,be,f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
-c
-c localfortfct - Evaluates local Fortran function (using implicit BCs).
-c                We use a single routine to interface between the C routine
-c                ComputeFunction() and the various Fortran work routines 
-c                to facilitate use of automatic differentiation.
-c
-#include "param.h"
-#include "varbls.h"
-#include "dvarbls.h"
-#include "avctrs.h"
-#include "sada.h"
-#include "bc.h"
-#include "ibcwork.h"
-#include "es.h"
-#include "sigma.h"
-#include "fv.h"
 
-      integer first_time_resid,ierr,resid,residbc,jpressure
-  
-      localfortfct = 0
-
-C  Compute pressures 
-      if (first_time_resid .eq. 0) then 
-        ierr = jpressure(xx, p)
-        if (ierr .ne. 0) then
-           write(6,*)  'localfortfct:rank,jpressure',
-     &                  rank,ierr
-           localfortfct = -1
-           return
-        endif
-      endif
-
-C  If using implicit BC's, compute function components for boundary points 
-      ierr = residbc(xx, fff, p, xx_bc, p_bc, sadai, sadaj, sadak,
-     &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz)
-      if (ierr .ne. 0) then
-         write(6,*)  'local_fortran_fct:rank,residbc',
-     &                rank,ierr
-         localfortfct = -1
-         return
-      endif
-
-C  Compute function components for interior grid points
-      ierr = resid(xx, p, dxx, br, bl, be,
-     &         sadai, sadaj, sadak,
-     &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz, 
-     &         f1, g1, h1, sp, sm, sp1, sp2, sm1, sm2)
-      if (ierr .ne. 0) then
-         write(6,*)  'local_fortran_fct:rank,resid',
-     &                rank,ierr
-         localfortfct = -1
-         return
-      endif
-
-      return
-      end
-
-c -------------------------------------------------------------------
-c
-      integer function jpressure(xx,p)
-c
-c jpress - Updates the pressure terms after a Newton step.
-c
-#include "param.h"
-#include "varbls.h"
-#include "consts.h"
-
-c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
-c      COMMON /CONST2/ PINIT
-      double precision  rqdq
-      integer i,j,k
-
-      jpressure = 0
-      do 15 k=gzsf1,gzefp1
-      do 15 j=gysf1,gyefp1
-      do 15 i=gxsf1,gxefp1
-c      do 15 k=gzsf2,gzef01
-c      do 15 j=gysf2,gyef01
-c      do 15 i=gxsf2,gxef01
-c      DO 15 K=2,NK
-c      DO 15 J=2,NJ
-c      DO 15 I=2,NI
-
-c Update pressure through equation of state
-      RQDQ=(RU(I,J,K)**2+RV(I,J,K)**2+
-     1 RW(I,J,K)**2)/R(I,J,K)
-      P(I,J,K)=GM1*(E(I,J,K)-p5*RQDQ)
-   15 CONTINUE
-
-      RETURN
-      END
-
-c -------------------------------------------------------------------
-c
       integer function jmonitor(xl2,cfl_new,work,xx,p,dxx,
      &                          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                          tcl,tcd,nsup)
 c
 c jmonitor - Writes miscellaneous output information.  Called by
 c            the MonitorEuler().
-c
+
 #include "param.h"
 #include "varbls.h"
 #include "dvarbls.h"
@@ -489,9 +391,9 @@ c          DO 42 I=ITL+1,ITU
 c -------------------------------------------------------------------
 c
       subroutine printjul(xx,p,base)
-c
+
 c printjul - Prints grid points (interior only)
-c
+
 #include "param.h"
 #include "varbls.h"
 
@@ -520,9 +422,9 @@ c
 c -------------------------------------------------------------------
 c
       subroutine printgjul(xx,p,base)
-c
+
 c printjul - Prints grid points (exterior/interior and ghost points)
-c
+
 #include "param.h"
 #include "varbls.h"
 
@@ -552,9 +454,9 @@ c
 c -------------------------------------------------------------------
 c
       subroutine printbjul(xx,p,base)
-c
+
 c printjul - Prints boundary grid points
-c
+
 #include "param.h"
 #include "varbls.h"
 
@@ -581,11 +483,12 @@ c
 
       return
       end
+
 c -------------------------------------------------------------------
 c
-c   readmesh - Reads mesh and wing parameters
+c  readmesh - Reads mesh and wing parameters.
 c
-c  By deault, we use these global arrays only temporarily for parallel
+c  By default, we use these global arrays only temporarily for parallel
 c  case.  Each processor reads all input data, and then later copies
 c  only its local piece and frees the global mesh.  The input file for
 c  a particular mesh size is opened in the routine parsetup().

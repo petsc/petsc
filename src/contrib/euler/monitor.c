@@ -61,8 +61,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     app->nsup[0]       = 0;
     app->c_lift[0]     = 0;
     app->c_drag[0]     = 0;
-    /*
-    if (!app->no_output) { */
+    if (!app->no_output) {
       if (app->cfl_advance == ADVANCE)
         PetscPrintf(comm,"iter=%d, fnorm=%g, fnorm reduction ratio=%g, CFL_init=%g\n",
            its,fnorm,app->f_reduction,app->cfl);
@@ -88,7 +87,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
                 app->lin_rtol[its],app->c_lift[its],app->c_drag[its],app->nsup[its]);
-	/*      } */
+        }
     }
     app->sles_tot += app->lin_its[its];
   } else {
@@ -126,7 +125,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
           /* if (!app->no_output) PetscPrintf(comm,"ratio1=%g, ratio_clipped=%g, cfl1=%g, new cfl=%g\n",
                                            ratio1,ratio,cfl1,app->cfl); */
         } else {
-          if (!app->no_output) PetscPrintf(comm,"Hold CFL\n");
+          /* if (!app->no_output) PetscPrintf(comm,"Hold CFL\n"); */
         }
       }
     }
@@ -161,17 +160,17 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRQ(ierr);
 
     /* temporarily allow this output */
+    /*
       if (app->rank == 0) {
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
                 app->lin_rtol[its],app->c_lift[its],app->c_drag[its],app->nsup[its]);
         fflush(app->fp);
       }
-
-   /*
+    */
     if (!app->no_output) {
-      PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d, lin_rtol = %g, lin_rtol1(next) = %g\n",
-                  its,fnorm,app->lin_its[its],app->lin_rtol[its]);
+      PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d\n",
+                  its,fnorm,app->lin_its[its]);
       if (app->rank == 0) {
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
@@ -179,7 +178,6 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         fflush(app->fp);
       }
     }
-    */
 
     app->sles_tot += app->lin_its[its];
 

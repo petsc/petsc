@@ -1,12 +1,12 @@
 C
-C This file contains routines that are used in both the Julianne solver 
-C and the PETSc solver.
+C This file contains routines that are used by both the Julianne 
+C and PETSc solvers.
 C
-c ************************************************************************
-c Commented in lower case by D. E. Keyes, 11 March 94
-c
-c To run, do :
-c x.nd < nd.in > nd.out &
+c ----------------------------------------------------------------
+c Commented in lower case by D.E. Keyes, 11 March 94.
+c Additional comments added by L.C. McInnes.
+c Upper case comments were part of the original Whitfield version 
+c of code.
 c
 c Be sure to compile with double precision switched on in the FORTRAN
 c compiler, or else the numerical differencing parameter will be too
@@ -28,19 +28,18 @@ c is obtained through the equation of state.  Each grid point of the
 c structured, unstaggered grid hosts five principal unknowns, plus
 c pressure and geometric data.
 c
-c A more advanced nonlinear solver will advance CFL to high values (e.g.,
-c in the thousands or beyond), which causes this method to approach
-c the standard Newton method asymptotically.  However, it appears that boundary
-c conditions are updated explicitly after each solve -- another area we
-c wish to address.
-C************************************************************************
-      integer function JULIANNE( time_init, jsolve, app, cfl_init,
+c ----------------------------------------------------------------
+
+      integer function JULIANNE(time_init, jsolve, app, cfl_init,
      &                    rtol, eps, b1, b2, b3, b4, b5, b6, d, dt,
      &                    xx, p, dxx,
      &                    br, bl, be, sadai, sadaj, sadak,
      &                    aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz,
      &                    x, y, z, f1, g1, h1,
      &                    sp, sm, sp1, sp2, sm1, sm2, beta1, ifreq1)
+
+c Julianne - Main interface routine between the PETSc driver and the
+c            application code.
 
 #include "param.h"
 #include "matrixb.h"
@@ -132,8 +131,6 @@ c      READ (2,250) X,Y,Z
 c      close(2)
 c  200 FORMAT (4I3)
 c  250 FORMAT (8F10.5)
-
-c      call printgrids(x,y,z)
 
 c Set parallel parameters to use in these loops:
 c    for i=itl+1,itu    ->  for i=itlp1,itup
@@ -287,33 +284,12 @@ c   3 CONTINUE
       return
       END
 
-C************************************************************************
-
-      subroutine printgrids(x,y,z)
-
-#include "param.h"
-#include "coord.h"
-#include "wing.h"
-
-      integer i,j,k,id
-
-      j=2
-      DO 8 K=1,NK1
-      DO 8 I=1,NI1
-      IF (K.GT.KTIP .or.
-     &    I.LE.ITL.OR.I.GT.ITU) then
-         ID=NI+1-I
-         write(6,*) 'k,i,id,x(i,j,k),x(id,j,k)',
-     &       k,i,id,x(i,j,k),x(id,j,k)
-      endif
- 8    continue
-      return
-      end
-
-C************************************************************************
+c ----------------------------------------------------------------
 
       SUBROUTINE IC(xx,p)
-c IC reads case data and initializes the flow field to plug flow
+
+c IC - Reads case data and initializes the flow field to plug flow
+
 #include "param.h"
 #include "varbls.h"
 #include "consts.h"
@@ -343,8 +319,8 @@ c IFREQ determines how often the flux Jacobians are updated
       IF (ORDER.EQ.3.) PSI=1./3.
       IF (LIMIT.GT.1) PSI=0.
       IF (LIMIT.GT.1) ORDER=2.
-C   LIMIT=0 (NO LIMITERS), LIMIT=1 (MINMOD), LIMIT=2 (SUPERBEE)
-C   LIMIT=3 (VAN LEER)
+C   LIMIT=0 (NO LIMITERS, 1st order), LIMIT=1 (MINMOD), LIMIT=2 (SUPERBEE)
+C   LIMIT=3 (VAN LEER), LIMIT=4 (VAN ALBADA), LIMIT=5 (NO LIMITERS)
   100 FORMAT (8E10.0)
   200 FORMAT (I5,2E10.0,2i5)
       if (rank .eq. 0) then
@@ -387,15 +363,16 @@ c      DO 2 I=1,NI1
       RETURN
       END
 
-C************************************************************************
+c ----------------------------------------------------------------
 
       integer function bcpart_j1(xx,p,xx_bc,p_bc,
      &                   sadai,sadaj,sadak,
      &                   aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
-c
-c Applies boundary conditions for j=1 plane
-c
+c bcpart_j1 - Explicitly applies boundary conditions for the
+c             j=1 plane; other boundary conditions are handled
+c             in the routine BC().  
+
 #include "param.h"
 #include "varbls.h"
 #include "consts.h"
@@ -483,12 +460,15 @@ c  100 format(i3,i3,i3,6e16.8)
       RETURN
       END
 
-C************************************************************************
+c ----------------------------------------------------------------
 
       integer function BC(xx,p,sadai,sadaj,sadak,
      &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
-c
-c Apply boundary conditions
+
+c BC - Explicitly applies boundary conditions for all but the
+c      j=1 plane; other boundary conditions are handled in the
+c      routine bcpart_j1().  
+
 #include "param.h"
 #include "varbls.h"
 #include "consts.h"
@@ -624,17 +604,17 @@ c    8   CONTINUE
       RETURN
       END
 
-C************************************************************************
+c ----------------------------------------------------------------
 
       SUBROUTINE EIGENV(dt,xx,p,sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                  tstype)
-c
+
 c Forms diagonal blocks for eigendecomposition.
 c
 c Parallel version: Forms local dt(), using ghost points for 
 c AIX, AIY, SADAI, etc.
-c
+
 #include "param.h"
 #include "dt.h"
 #include "varbls.h"
@@ -705,7 +685,7 @@ C For simplicity, we just change the DT array to be the global min.
       RETURN
       END
 
-C************************************************************************
+c ----------------------------------------------------------------
 
       SUBROUTINE METRIC(sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,x,y,z)
@@ -783,182 +763,149 @@ c      DO 4 K=1,NK
       RETURN
       END
 
-C************************************************************************
-
-      SUBROUTINE RLVECS(QER,QEL,I1,J1,K1,IB,JB,KB,AX,AY,AZ,SADA,
-     &                   xx,p,br,bl,be)
-#include "param.h"
-#include "varbls.h"
-#include "consts.h"
-#include "es.h"
-
-C   RLVECS COMPUTES THE RIGHT AND LEFT EIGENVECTORS (STORED IN BR AND
-C   BL, RESPECTIVELY) AND THE PLUS AND MINUS EIGENVALUES (STORED IN
-C   A PORTION OF BE), ALL WITH ROE AVERGING.
-c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
-c      COMMON /CONST2/ PINIT
-c      COMMON /ES/ BR(5,5,NI,NJ,NK),BL(5,5,NI,NJ,NK),BE(2,5,NI,NJ,NK)
+c ----------------------------------------------------------------
+c  The following limiters (Minmod, Superbee, Van Leer) are 
+c  nondifferentiable.  The file resid.F contains the related 
+c  routines VAlbada() and dummy(), which compute SP() using 
+c  the Van Albada limiter and no limiter, respectively; these
+c  routines are differentiable.
+c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c
-c   Note: sada must have same dimensions as sadai,sadaj,sadak in sada.h
-      double precision  SADA(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
-c   Note: ax,ay,az must have same dimensions as arrays in avctrs.h
-      double precision  ax(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
-      double precision  ay(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
-      double precision  az(gxsf1:gxef01,gysf1:gyef01,gzsf1:gzef01)
+      SUBROUTINE MINMOD (dir,PSI,sp,sm,sp1,sp2,sm1,sm2)
 
-      double precision  AXT(D_NI),AYT(D_NI),AZT(D_NI)
-      double precision  Q1(D_NI),Q2(D_NI),Q3(D_NI),Q4(D_NI),Q6(D_NI),
-     +                 RQRQ(D_NI),TT(D_NI),RC(D_NI),C(D_NI)
-      double precision  qer(5),qel(5)
-      double precision  a,b,c1,c2,c3,phi,rr2,e1,e4,e5,csad,hroe
-      double precision  rl,rul,rvl,rwl,el,rr,rur,rvr,rwr,er,ra
-      double precision  rra1,ur,vr,wr,ul,vl,wl,pr,pl,hr,hl
-      integer i,j,k,I1,J1,K1,IB,JB,KB,kpk1,jpj1,ipi1
+c     MINMOD - The minmod flux limiter (note SIGN, MAX, MIN, ABS) 
+c              Computes SP().
 
-      if (xsf1 .ne. 1) then
-c        ib = gxsf1w
-        ib = gxsf1
-      endif
-      if (ysf1 .ne. 1) then
-        jb = gysf1
-c        jb = gysf1w
-      endif
-      if (zsf1 .ne. 1) then
-        kb = gzsf1
-c        kb = gzsf1w
-      endif
+#include "param.h"
+#include "sigma.h"
+c      COMMON /SIGMA/ SP(5,NI),SM(5,NI)
+c      COMMON /SIGMA/ SP1(5,NI),SP2(5,NI),SM1(5,NI),SM2(5,NI)
+      double precision  b,c1,c2,aa,bb,t1,tm,psi
+      integer i,l,dir,istart,iend
 
-      DO 2 K=KB,gzefw
-c      DO 2 K=KB,NK
-      KPK1=K+K1
-      DO 2 J=JB,gyefw
-c      DO 2 J=JB,NJ
-      JPJ1=J+J1
-      DO 10 I=IB,gxefw
-c      DO 10 I=IB,NI
-      AXT(I)=zero
-      AYT(I)=zero
-      AZT(I)=zero
-      IF (SADA(I,J,K).EQ.0.) GO TO 10
-      AXT(I)=AX(I,J,K)/SADA(I,J,K)
-      AYT(I)=AY(I,J,K)/SADA(I,J,K)
-      AZT(I)=AZ(I,J,K)/SADA(I,J,K)
+      if (dir .eq. 1) then
+        istart = gxsf2w
+        iend   = xefm1
+c        iend   = ni-1
+      endif
+      if (dir .eq. 2) then
+        istart = gysf2w
+        iend   = yefm1
+c        iend   = nj-1
+      endif
+      if (dir .eq. 3) then
+        istart = gzsf2w
+        iend   = zefm1
+c        iend   = nk-1
+      endif
+      B=(3.-PSI)/(one-PSI)
+      C1=0.25*(one-PSI)
+      C2=0.25*(one+PSI)
+      DO 10 L=1,5
+      DO 10 I=istart,iend
+      AA=SIGN(one,SM1(L,I))
+      BB=AA*B*SM2(L,I)
+      T1=C1*AA*MAX(zero,MIN(ABS(SM1(L,I)),BB))
+      AA=SIGN(one,SM2(L,I))
+      BB=AA*B*SM1(L,I)
+      TM=T1+C2*AA*MAX(zero,MIN(ABS(SM2(L,I)),BB))
+      AA=SIGN(one,SP1(L,I))
+      BB=AA*B*SP2(L,I)
+      T1=C1*AA*MAX(zero,MIN(ABS(SP1(L,I)),BB))
+      AA=SIGN(one,SP2(L,I))
+      BB=AA*B*SP1(L,I)
+      SP(L,I)=T1+C2*AA*MAX(zero,MIN(ABS(SP2(L,I)),BB))-TM
    10 CONTINUE
-      DO 22 I=IB,gxefw
-c      DO 22 I=IB,NI
-      IPI1=I+I1
-      rl=r(i,j,k)+qel(1)
-      rul=ru(i,j,k)+qel(2)
-      rvl=rv(i,j,k)+qel(3)
-      rwl=rw(i,j,k)+qel(4)
-      el=e(i,j,k)+qel(5)
-      rr=r(ipi1,jpj1,kpk1)+qer(1)
-      rur=ru(ipi1,jpj1,kpk1)+qer(2)
-      rvr=rv(ipi1,jpj1,kpk1)+qer(3)
-      rwr=rw(ipi1,jpj1,kpk1)+qer(4)
-      er=e(ipi1,jpj1,kpk1)+qer(5)
-      RA=SQRT(rl/rr)
-      RRA1=1./(1.+RA)
-      ur=rur/rr
-      vr=rvr/rr
-      wr=rwr/rr
-      ul=rul/rl
-      vl=rvl/rl
-      wl=rwl/rl
-      Q1(I)=rr*RA
-      Q2(I)=(ur+ul*RA)*RRA1
-      Q3(I)=(vr+vl*RA)*RRA1
-      Q4(I)=(wr+wl*RA)*RRA1
-      pr=gm1*(er-p5*rr*(ur**2+vr**2+wr**2))
-      pl=gm1*(el-p5*rl*(ul**2+vl**2+wl**2))
-      hl=p5*(ul**2+vl**2+wl**2)+gam*rgm1*pl/rl
-      hr=p5*(ur**2+vr**2+wr**2)+gam*rgm1*pr/rr
-      HROE=(hr+hl*ra)*rra1
-      RQRQ(I)=Q2(I)**2+Q3(I)**2+Q4(I)**2
-      C(I)=SQRT((HROE-p5*RQRQ(I))*GM1)
-      Q6(I)=one/Q1(I)
-      TT(I)=Q2(I)*AXT(I)+Q3(I)*AYT(I)+Q4(I)*AZT(I)
-      RC(I)=Q1(I)*C(I)
-      CSAD=C(I)*SADA(I,J,K)
-      E1=TT(I)*SADA(I,J,K)
-      E4=E1+CSAD
-      E5=E1-CSAD
-      BE(1,1,I,J,K)=p5*(E1+ABS(E1))
-      BE(1,2,I,J,K)=BE(1,1,I,J,K)
-      BE(1,3,I,J,K)=BE(1,1,I,J,K)
-      BE(1,4,I,J,K)=p5*(E4+ABS(E4))
-      BE(1,5,I,J,K)=p5*(E5+ABS(E5))
-      BE(2,1,I,J,K)=p5*(E1-ABS(E1))
-      BE(2,2,I,J,K)=BE(2,1,I,J,K)
-      BE(2,3,I,J,K)=BE(2,1,I,J,K)
-      BE(2,4,I,J,K)=p5*(E4-ABS(E4))
-      BE(2,5,I,J,K)=p5*(E5-ABS(E5))
-   22 CONTINUE
-      RR2=one/SQRT(two)
-      DO 23 I=IB,gxefw
-c      DO 23 I=IB,NI
-      A=Q1(I)*RR2/C(I)
-      C1=p5*RQRQ(I)
-      C2=C(I)*C(I)*RGM1
-      BR(1,1,I,J,K)=AXT(I)
-      BR(1,2,I,J,K)=AYT(I)
-      BR(1,3,I,J,K)=AZT(I)
-      BR(1,4,I,J,K)=A
-      BR(1,5,I,J,K)=A
-      BR(2,1,I,J,K)=Q2(I)*AXT(I)
-      BR(2,2,I,J,K)=Q2(I)*AYT(I)-Q1(I)*AZT(I)
-      BR(2,3,I,J,K)=Q2(I)*AZT(I)+Q1(I)*AYT(I)
-      BR(2,4,I,J,K)=A*(Q2(I)+C(I)*AXT(I))
-      BR(2,5,I,J,K)=A*(Q2(I)-C(I)*AXT(I))
-      BR(3,1,I,J,K)=Q3(I)*AXT(I)+Q1(I)*AZT(I)
-      BR(3,2,I,J,K)=Q3(I)*AYT(I)
-      BR(3,3,I,J,K)=Q3(I)*AZT(I)-Q1(I)*AXT(I)
-      BR(3,4,I,J,K)=A*(Q3(I)+C(I)*AYT(I))
-      BR(3,5,I,J,K)=A*(Q3(I)-C(I)*AYT(I))
-      BR(4,1,I,J,K)=Q4(I)*AXT(I)-Q1(I)*AYT(I)
-      BR(4,2,I,J,K)=Q4(I)*AYT(I)+Q1(I)*AXT(I)
-      BR(4,3,I,J,K)=Q4(I)*AZT(I)
-      BR(4,4,I,J,K)=A*(Q4(I)+C(I)*AZT(I))
-      BR(4,5,I,J,K)=A*(Q4(I)-C(I)*AZT(I))
-      BR(5,1,I,J,K)=C1*AXT(I)+Q1(I)*(Q3(I)*AZT(I)-Q4(I)*AYT(I))
-      BR(5,2,I,J,K)=C1*AYT(I)+Q1(I)*(Q4(I)*AXT(I)-Q2(I)*AZT(I))
-      BR(5,3,I,J,K)=C1*AZT(I)+Q1(I)*(Q2(I)*AYT(I)-Q3(I)*AXT(I))
-      BR(5,4,I,J,K)=A*(C1+C2+C(I)*TT(I))
-      BR(5,5,I,J,K)=A*(C1+C2-C(I)*TT(I))
-   23 CONTINUE
-      DO 2 I=IB,gxefw
-c      DO 2 I=IB,NI
-      PHI=p5*GM1*RQRQ(I)
-      C2=C(I)*C(I)
-      B=RR2/RC(I)
-      C1=one-PHI/C2
-      C3=GM1/C2
-      BL(1,1,I,J,K)=AXT(I)*C1+Q6(I)*(Q4(I)*AYT(I)-Q3(I)*AZT(I))
-      BL(1,2,I,J,K)=AXT(I)*Q2(I)*C3
-      BL(1,3,I,J,K)=AXT(I)*Q3(I)*C3+AZT(I)*Q6(I)
-      BL(1,4,I,J,K)=AXT(I)*Q4(I)*C3-AYT(I)*Q6(I)
-      BL(1,5,I,J,K)=-AXT(I)*C3
-      BL(2,1,I,J,K)=AYT(I)*C1+Q6(I)*(Q2(I)*AZT(I)-Q4(I)*AXT(I))
-      BL(2,2,I,J,K)=AYT(I)*Q2(I)*C3-AZT(I)*Q6(I)
-      BL(2,3,I,J,K)=AYT(I)*Q3(I)*C3
-      BL(2,4,I,J,K)=AYT(I)*Q4(I)*C3+AXT(I)*Q6(I)
-      BL(2,5,I,J,K)=-AYT(I)*C3
-      BL(3,1,I,J,K)=AZT(I)*C1+Q6(I)*(Q3(I)*AXT(I)-Q2(I)*AYT(I))
-      BL(3,2,I,J,K)=AZT(I)*Q2(I)*C3+AYT(I)*Q6(I)
-      BL(3,3,I,J,K)=AZT(I)*Q3(I)*C3-AXT(I)*Q6(I)
-      BL(3,4,I,J,K)=AZT(I)*Q4(I)*C3
-      BL(3,5,I,J,K)=-AZT(I)*C3
-      BL(4,1,I,J,K)=B*(PHI-C(I)*TT(I))
-      BL(4,2,I,J,K)=B*(C(I)*AXT(I)-Q2(I)*GM1)
-      BL(4,3,I,J,K)=B*(C(I)*AYT(I)-Q3(I)*GM1)
-      BL(4,4,I,J,K)=B*(C(I)*AZT(I)-Q4(I)*GM1)
-      BL(4,5,I,J,K)=B*GM1
-      BL(5,1,I,J,K)=B*(PHI+C(I)*TT(I))
-      BL(5,2,I,J,K)=-B*(C(I)*AXT(I)+Q2(I)*GM1)
-      BL(5,3,I,J,K)=-B*(C(I)*AYT(I)+Q3(I)*GM1)
-      BL(5,4,I,J,K)=-B*(C(I)*AZT(I)+Q4(I)*GM1)
-      BL(5,5,I,J,K)=B*GM1
-    2 CONTINUE
       RETURN
       END
+
+c ----------------------------------------------------------------
+
+      SUBROUTINE SUPBEE (dir,PSI,sp,sm,sp1,sp2,sm1,sm2)
+
+c     SUPBEE - The superbee limiter (note SIGN, MAX, MIN)
+c              Computes SP().
+
+#include "param.h"
+#include "sigma.h"
+c      COMMON /SIGMA/ SP(5,NI),SM(5,NI)
+c      COMMON /SIGMA/ SP1(5,NI),SP2(5,NI),SM1(5,NI),SM2(5,NI)
+      double precision  aa,bb,cc,tm,psi
+      integer i,l,istart,iend,dir
+
+      if (dir .eq. 1) then
+        istart = gxsf2w
+        iend   = xefm1
+c        iend   = ni-1
+      endif
+      if (dir .eq. 2) then
+        istart = gysf2w
+        iend   = yefm1
+c        iend   = nj-1
+      endif
+      if (dir .eq. 3) then
+        istart = gzsf2w
+        iend   = zefm1
+c        iend   = nk-1
+      endif
+
+      DO 10 I=istart,iend
+      DO 10 L=1,5
+      AA=SIGN(one,SM2(L,I))
+      BB=AA*SM1(L,I)
+      CC=ABS(SM2(L,I))
+      TM=AA*MAX(zero,MIN(two*CC,BB),MIN(CC,two*BB))
+      AA=SIGN(one,SP2(L,I))
+      BB=AA*SP1(L,I)
+      CC=ABS(SP2(L,I))
+      SP(L,I)=p5*(AA*MAX(zero,MIN(two*CC,BB),MIN(CC,two*BB))-TM)
+   10 CONTINUE
+      RETURN
+      END
+
+c ----------------------------------------------------------------
+
+      SUBROUTINE VL (dir,PSI,sp,sm,sp1,sp2,sm1,sm2)
+
+c     VL - The Van Leer limiter (note ABS)
+c          Computes the flux, SP().
+
+#include "param.h"
+#include "sigma.h"
+c      COMMON /SIGMA/ SP(5,NI),SM(5,NI)
+c      COMMON /SIGMA/ SP1(5,NI),SP2(5,NI),SM1(5,NI),SM2(5,NI)
+      double precision  eps,xy,xpy,tp,tm,psi
+      integer i,l,istart,iend,dir
+
+      if (dir .eq. 1) then
+        istart = gxsf2w
+        iend   = xefm1
+c        iend   = ni-1
+      endif
+      if (dir .eq. 2) then
+        istart = gysf2w
+        iend   = yefm1
+c        iend   = nj-1
+      endif
+      if (dir .eq. 3) then
+        istart = gzsf2w
+        iend   = zefm1
+c        iend   = nk-1
+      endif
+
+      EPS=1.d-12
+c      EPS=PetscDoubleExp(1.0,-12)
+      DO 10 L=1,5
+      DO 10 I=istart,iend
+      XY=SM1(L,I)*SM2(L,I)
+      XPY=SM1(L,I)+SM2(L,I)
+      TM=(XY+ABS(XY))/(XPY+EPS)
+      XY=SP1(L,I)*SP2(L,I)
+      XPY=SP1(L,I)+SP2(L,I)
+      TP=(XY+ABS(XY))/(XPY+EPS)
+      SP(L,I)=p5*(TP-TM)
+   10 CONTINUE
+      RETURN
+      END
+
 

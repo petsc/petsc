@@ -13,13 +13,18 @@
 /*
    IMPLICIT ==> fully implicit treatment of boundary conditions
    EXPLICIT ==> explicit treatment of boundary conditions
-*/
+   This version of code supports only IMPLICIT BCs.
+ */
 typedef enum {EXPLICIT=0, IMPLICIT_SIZE=1, IMPLICIT=2} BCType;
 
+/* Are we advancing CFL? */
 typedef enum {CONSTANT=0, ADVANCE=1} CFLAdvanceType;
 
+/* Options for scaling the system for pseudo-transient 
+   continuation; we use DT_DIV. */
 typedef enum {DT_MULT=0, DT_DIV=1} ScaleType;
 
+/* Are we using global or local timestepping? Global is the default. */
 typedef enum {LOCAL_TS=0, GLOBAL_TS=1} TimeStepType;
 
 /* Application data structure for 3D Euler code */
@@ -189,7 +194,7 @@ typedef struct {
     Scalar *f1, *g1, *h1;
     Scalar *sp, *sm, *sp1, *sm1, *sp2, *sm2;
     int refine;
-    int dim2, nktot;
+    int dim2, nktot;                         /* 2-dimensional problem variant */
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -339,19 +344,16 @@ extern int jform2_(Scalar*,Scalar*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*);
-extern int resid_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,
+extern int resid_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*);
+                      Scalar*,Scalar*,Scalar*);
 extern int rbuild_direct_(Scalar*,ScaleType*,Scalar*,Scalar*);
 extern int rbuild_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,int*,int*);
-extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*);
+extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int bcpart_j1_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-
 extern int parsetup_(int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,

@@ -298,20 +298,22 @@ int UserSetGrid(Euler *app)
     xin = app->xc;
     yin = app->yc;
     zin = app->zc;
-  } else {
-    ierr = VecCreateMPI(MPI_COMM_WORLD,0,glenb,&vc_global); CHKERRQ(ierr);
-  }
 
-  if (app->dim2) {
-    for (k=0; k<app->nk1; k++) {
-      for (j=0; j<my_g; j++) {
-        for (i=0; i<mx_g; i++) {
-          xin[k*mx_g*my_g + j*mx_g + i] = xin[mx_g*my_g + j*mx_g + i];
-          yin[k*mx_g*my_g + j*mx_g + i] = yin[mx_g*my_g + j*mx_g + i];
-          zin[k*mx_g*my_g + j*mx_g + i] = zin[mx_g*my_g + j*mx_g + i] + k*1.0-0.5;
+    /* Create a 2-dimensional variant, where we need 3 planes of mesh points, with
+       identical x and y coordinates. */
+    if (app->dim2) {
+      for (k=0; k<app->nk1; k++) {
+        for (j=0; j<my_g; j++) {
+          for (i=0; i<mx_g; i++) {
+            xin[k*mx_g*my_g + j*mx_g + i] = xin[mx_g*my_g + j*mx_g + i];
+            yin[k*mx_g*my_g + j*mx_g + i] = yin[mx_g*my_g + j*mx_g + i];
+            zin[k*mx_g*my_g + j*mx_g + i] = zin[mx_g*my_g + j*mx_g + i] + k*1.0-0.5;
+          }
         }
       }
     }
+  } else {
+    ierr = VecCreateMPI(MPI_COMM_WORLD,0,glenb,&vc_global); CHKERRQ(ierr);
   }
 
   return 0;

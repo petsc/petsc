@@ -29,7 +29,6 @@
 #   PETSC_DIR = /u/ddscf/bsmith/petsc
 # SP2 - NASA
 #   PETSC_DIR = /u/mcinnes/work/petsc
-
 #
 # Compiler flags:  Set variable CFLAGS
 #
@@ -86,14 +85,14 @@ ALL: ex1
 # common blocks with lots of memory and are needed only by the original Julianne
 # solver.  This saves some memory for the PETSc version of code.
 #
-  SOURCEF_COMMON   = xnd.F xmod2.F pvar.F
+  SOURCEF_COMMON   = xnd.F resid.F jac.F pvar.F
   SOURCEF_JULIANNE = xjul.F
-  SOURCEF_PETSC    = xmod.F implbc.F mat.F obselete.F 
+  SOURCEF_PETSC    = xmod.F mat.F obselete.F 
   SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_JULIANNE)
 
-  OBJSF_COMMON     = xnd.o xmod2.o pvar.o
+  OBJSF_COMMON     = xnd.o resid.o jac.o pvar.o
   OBJSF_JULIANNE   = xjul.o
-  OBJSF_PETSC      = xmod.o implbc.o mat.o obselete.o
+  OBJSF_PETSC      = xmod.o mat.o obselete.o
 #  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
   OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
 
