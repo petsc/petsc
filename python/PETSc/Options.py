@@ -236,9 +236,9 @@ class Options(config.base.Configure):
           flags = "lslpp -L xlfcmp | grep xlfcmp | awk '{print $2}'"
         elif re.match(r'alphaev[0-9]', self.framework.host_cpu) and compiler.endswith('fort'):
           flags = compiler+' -version'
-        elif re.match(r'i[3-9]86', self.framework.host_cpu) and compiler.endswith('f90'):
-          flags = compiler+' -V'
         elif re.match(r'i[3-9]86', self.framework.host_cpu) and compiler.endswith('pgf90'):
+          flags = compiler+' -V'
+        elif re.match(r'i[3-9]86', self.framework.host_cpu) and compiler.endswith('f90'):
           flags = compiler+' -V'
         elif re.match(r'mips', self.framework.host_cpu) and compiler.endswith('f90'):
           flags = compiler+' -version'
@@ -246,10 +246,15 @@ class Options(config.base.Configure):
           flags = compiler+' --version'
       (output, error, status) = config.base.Configure.executeShellCommand(flags, log = self.framework.log)
       if not status:
-        if compiler.find('win32fe'):
+        if compiler.find('win32fe') > -1:
           version = '\\n'.join(output.split('\n')[0:2])
         else:
-          version = output.split('\n')[0]
+          #PGI/Windows writes an empty '\r\n' on the first line of output
+          if output.count('\n') > 1 and output.split('\n')[0] == '\r':
+            version = output.split('\r\n')[1]
+          else:
+            version = output.split('\n')[0]
+          
     except RuntimeError, e:
       self.framework.log.write('Could not determine compiler version: '+str(e))
     return version
