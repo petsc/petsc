@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.9 1997/07/10 15:50:06 balay Exp bsmith $";
+C "$Id: ex1f.F,v 1.10 1997/08/07 14:41:29 bsmith Exp balay $";
 C
 C       Formatted test for TS routines.
 C
@@ -268,9 +268,6 @@ C
       double precision h,nrm_2,nrm_max,nox
       common /tsctx/ localwork,csolution,da,viewer1,viewer2,M,h,nrm_2,
      &               nrm_max,nox
-
-      double precision    PETSC_PI
-      parameter (PETSC_PI = 3.14159265358979)
 
 C   determine starting point of each processor 
 

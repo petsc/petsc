@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.27 1997/04/10 00:07:10 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.28 1997/07/09 21:01:00 balay Exp balay $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -8,8 +8,6 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 #include "da.h"
 #include "sys.h"
 #include <math.h>
-
-#define PETSC_PI 3.14159265
 
 int main(int argc,char **argv)
 {

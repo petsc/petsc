@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.18 1997/03/26 01:37:07 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.19 1997/07/09 20:58:35 balay Exp balay $";
 #endif
 /*
        Formatted test for TS routines.
@@ -18,7 +18,6 @@ static char help[] = "Solves 1D heat equation.\n\n";
 
 #define PETSC_NEAR(a,b,c) (!(PetscAbsDouble((a)-(b)) > (c)*PetscMax(PetscAbsDouble(a),PetscAbsDouble(b))))
 
-#define PETSC_PI 3.14159265358979
 typedef struct {
   Vec    localwork,solution;    /* location for local work (with ghost points) vector */
   DA     da;                    /* manages ghost point communication */
