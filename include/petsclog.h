@@ -124,7 +124,7 @@ extern PetscLogDouble irecv_ct,  isend_ct,  recv_ct,  send_ct;
 extern PetscLogDouble irecv_len, isend_len, recv_len, send_len;
 extern PetscLogDouble allreduce_ct;
 extern PetscLogDouble wait_ct, wait_any_ct, wait_all_ct, sum_of_waits_ct;
-extern int            PETSC_DUMMY, PETSC_DUMMY_SIZE;
+extern int            PETSC_DUMMY, PETSC_DUMMY_SIZE, PETSC_DUMMY_COUNT;
 
 /* We must make these structures available if we are to access the event
    activation flags in the PetscLogEventBegin/End() macros. If we forced a
@@ -302,14 +302,14 @@ EXTERN PetscErrorCode StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 
 #define MPI_Irecv(buf,count, datatype,source,tag,comm,request) \
 (\
-  PETSC_DUMMY = MPI_Irecv(buf,count, datatype,source,tag,comm,request),\
-  irecv_ct++,TypeSize(irecv_len,count,datatype),PETSC_DUMMY\
+  PETSC_DUMMY_COUNT = count,PETSC_DUMMY = MPI_Irecv(buf,PETSC_DUMMY_COUNT, datatype,source,tag,comm,request),\
+  irecv_ct++,TypeSize(irecv_len,PETSC_DUMMY_COUNT,datatype),PETSC_DUMMY\
 )
 
 #define MPI_Isend(buf,count, datatype,dest,tag,comm,request) \
 (\
-  PETSC_DUMMY = MPI_Isend(buf,count, datatype,dest,tag,comm,request),\
-  isend_ct++,  TypeSize(isend_len,count,datatype),PETSC_DUMMY\
+  PETSC_DUMMY_COUNT = count,PETSC_DUMMY = MPI_Isend(buf,PETSC_DUMMY_COUNT, datatype,dest,tag,comm,request),\
+  isend_ct++,  TypeSize(isend_len,PETSC_DUMMY_COUNT,datatype),PETSC_DUMMY\
 )
 
 #define MPI_Startall_irecv(count,number,requests) \
@@ -332,14 +332,14 @@ EXTERN PetscErrorCode StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 
 #define MPI_Recv(buf,count, datatype,source,tag,comm,status) \
 (\
-  PETSC_DUMMY = MPI_Recv(buf,count, datatype,source,tag,comm,status),\
-  recv_ct++,TypeSize(recv_len,count,datatype),PETSC_DUMMY\
+  PETSC_DUMMY_COUNT = count,PETSC_DUMMY = MPI_Recv(buf,PETSC_DUMMY_COUNT, datatype,source,tag,comm,status),\
+  recv_ct++,TypeSize(recv_len,PETSC_DUMMY_COUNT,datatype),PETSC_DUMMY\
 )
 
 #define MPI_Send(buf,count, datatype,dest,tag,comm) \
 (\
-  PETSC_DUMMY = MPI_Send(buf,count, datatype,dest,tag,comm),\
-  send_ct++, TypeSize(send_len,count,datatype),PETSC_DUMMY\
+  PETSC_DUMMY_COUNT = count,PETSC_DUMMY = MPI_Send(buf,PETSC_DUMMY_COUNT, datatype,dest,tag,comm),\
+  send_ct++, TypeSize(send_len,PETSC_DUMMY_COUNT,datatype),PETSC_DUMMY\
 )
 
 #define MPI_Wait(request,status) \
@@ -356,8 +356,8 @@ EXTERN PetscErrorCode StageLogGetEventPerfLog(StageLog, int, EventPerfLog *);
 
 #define MPI_Waitall(count,array_of_requests,array_of_statuses) \
 (\
-  wait_all_ct++,sum_of_waits_ct += (PetscLogDouble) (count),\
-  MPI_Waitall(count,array_of_requests,array_of_statuses)\
+  PETSC_DUMMY_COUNT= count,wait_all_ct++,sum_of_waits_ct += (PetscLogDouble) (PETSC_DUMMY_COUNT),\
+  MPI_Waitall(PETSC_DUMMY_COUNT,array_of_requests,array_of_statuses)\
 )
 
 #define MPI_Allreduce(sendbuf, recvbuf,count,datatype,op,comm) \
