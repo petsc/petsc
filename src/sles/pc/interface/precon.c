@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.56 1996/01/01 01:02:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.57 1996/01/09 01:25:53 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -198,7 +198,10 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 
    Input Parameters:
 .  pc - the preconditioner context
-.  right - indicates right or left preconditioner
+.  side - indicates preconditioner side, one of
+$    KSP_RIGHT_PC,
+$    KSP_LEFT_PC,
+$    KSP_SYMMETRIC_PC
 .  x - input vector
 .  work - work vector
 
@@ -209,17 +212,27 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 
 .seealso: PCApply(), PCApplyTrans(), PCApplyBAorABTrans()
 @*/
-int PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work)
+int PCApplyBAorAB(PC pc,KSPPrecondSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if (pc->applyBA)  return (*pc->applyBA)(pc,right,x,y,work);
-  if (right) {
+  if (pc->applyBA)  return (*pc->applyBA)(pc,side,x,y,work);
+  if (side == KSP_RIGHT_PC) {
     ierr = PCApply(pc,x,work); CHKERRQ(ierr);
     return MatMult(pc->mat,work,y); 
   }
-  ierr = MatMult(pc->mat,x,work); CHKERRQ(ierr);
-  return PCApply(pc,work,y);
+  else if (side == KSP_LEFT_PC) {
+    ierr = MatMult(pc->mat,x,work); CHKERRQ(ierr);
+    return PCApply(pc,work,y);
+  }
+  else if (side == KSP_SYMMETRIC_PC) {
+    /* There's an extra copy here; maybe should provide 2 work vectors instead? */
+    ierr = PCApplySymmRight(pc,x,work); CHKERRQ(ierr);
+    ierr = MatMult(pc->mat,work,y); CHKERRQ(ierr);
+    ierr = VecCopy(y,work); CHKERRQ(ierr);
+    return PCApplySymmLeft(pc,work,y);
+  }
+  else SETERRQ(1,"PCApplyBAorAB: Preconditioner side must be right, left, or symmetric");
 }
 /*@ 
    PCApplyBAorABTrans - Applies the transpose of the preconditioner

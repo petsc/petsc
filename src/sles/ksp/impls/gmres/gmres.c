@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.49 1995/12/21 18:30:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.50 1996/01/01 01:01:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -64,12 +64,15 @@ static char vcid[] = "$Id: gmres.c,v 1.49 1995/12/21 18:30:10 bsmith Exp bsmith 
 static int    GMRESGetNewVectors( KSP ,int );
 static int    GMRESUpdateHessenberg( KSP , int,double * );
 static int    BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
+
 static int    KSPSetUp_GMRES(KSP itP )
 {
   unsigned  int size, hh, hes, rs, cc;
   int       ierr,  max_k, k;
   KSP_GMRES *gmresP = (KSP_GMRES *)itP->data;
 
+  if (itP->pc_side == KSP_SYMMETRIC_PC)
+    {SETERRQ(2,"KSPSetUp_GMRES:no symmetric preconditioning for KSPGMRES");}
   if ((ierr = KSPCheckDef( itP ))) return ierr;
   max_k         = gmresP->max_k;
   hh            = (max_k + 2) * (max_k + 1);
@@ -132,14 +135,14 @@ static int GMRESResidual(  KSP itP,int restart )
   ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   /* compute initial residual: f - M*x */
   /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
-  if (itP->right_pre) {
+  if (itP->pc_side == KSP_RIGHT_PC) {
     /* we want a * binv * b * x, or just a * x for the first step */
     /* a*x into temp */
     ierr = MatMult(Amat,VEC_SOLN,VEC_TEMP ); CHKERRQ(ierr);
   }
   else {
     /* else we do binv * a * x */
-    ierr = PCApplyBAorAB(itP->B,itP->right_pre,VEC_SOLN,VEC_TEMP,
+    ierr = PCApplyBAorAB(itP->B,itP->pc_side,VEC_SOLN,VEC_TEMP,
                          VEC_TEMP_MATOP ); CHKERRQ(ierr);
   }
   /* This is an extra copy for the right-inverse case */
@@ -214,7 +217,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 	/* get more vectors */
 	ierr = GMRESGetNewVectors(  itP, it+1 );CHKERRQ(-ierr);
 	}
-    ierr = PCApplyBAorAB(itP->B,itP->right_pre,VEC_VV(it),VEC_VV(1+it),
+    ierr = PCApplyBAorAB(itP->B,itP->pc_side,VEC_VV(it),VEC_VV(1+it),
                          VEC_TEMP_MATOP); CHKERRQ(-ierr);
 
     /* update hessenberg matrix and do Gram-Schmidt */
@@ -275,11 +278,11 @@ static int KSPSolve_GMRES(KSP itP,int *outits )
   restart = 0;
   itcount = 0;
   /* Save binv*f */
-  if (!itP->right_pre) {
+  if (itP->pc_side == KSP_LEFT_PC) {
     /* inv(b)*f */
     ierr = PCApply(itP->B, VEC_RHS, VEC_BINVF ); CHKERRQ(ierr);
   }
-  else {
+  else if (itP->pc_side == KSP_RIGHT_PC) {
     ierr = VecCopy( VEC_RHS, VEC_BINVF ); CHKERRQ(ierr);
   }
   /* Compute the initial (preconditioned) residual */
@@ -383,7 +386,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
 
   /* If we preconditioned on the right, we need to solve for the correction to
      the unpreconditioned problem */
-  if (itP->right_pre) {
+  if (itP->pc_side == KSP_RIGHT_PC) {
     if (vdest != vs) {
       ierr = PCApply(itP->B, VEC_TEMP, vdest ); CHKERRQ(ierr);
       ierr = VecAXPY( &one, vs, vdest ); CHKERRQ(ierr);
@@ -393,7 +396,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
       ierr = VecAXPY(&one,VEC_TEMP_MATOP,vdest); CHKERRQ(ierr);
     }
   }
-  else {
+  else if (itP->pc_side == KSP_LEFT_PC) {
     if (vdest != vs) {
       ierr = VecCopy( VEC_TEMP, vdest ); CHKERRQ(ierr);
       ierr = VecAXPY( &one, vs, vdest ); CHKERRQ(ierr);
@@ -525,7 +528,7 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
   *result = ptr; return 0;
 }
 
-/*
+/*@C
   KSPGMRESSetOrthogRoutine - Sets the orthogonalization routine used by GMRES.
 
   Input Parameters:
@@ -542,7 +545,7 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
   The routine KSPGMRESIROrthog is an interative refinement version of 
   KSPGMRESUnmodifiedOrthog.  It may be more numerically stable than
   KSPGMRESUnmodifiedOrthog on parallel systems.  
-*/
+@*/
 int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);

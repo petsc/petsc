@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.30 1995/12/21 18:34:37 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.31 1996/01/01 01:05:46 bsmith Exp curfman $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -27,9 +27,10 @@ extern int KSPRegisterAll();
 extern int KSPRegisterDestroy();
 extern int KSPRegister(KSPType,char *,int (*)(KSP));
 
+typedef enum { KSP_RIGHT_PC, KSP_LEFT_PC, KSP_SYMMETRIC_PC } KSPPrecondSide;
 extern int KSPGetType(KSP, KSPType *,char **);
-extern int KSPSetRightPreconditioner(KSP);
-extern int KSPGetPreconditionerSide(KSP,int *);
+extern int KSPSetPreconditionerSide(KSP,KSPPrecondSide);
+extern int KSPGetPreconditionerSide(KSP,KSPPrecondSide*);
 extern int KSPGetTolerances(KSP,double*,double*,double*,int*);
 extern int KSPSetTolerances(KSP,double,double,double,int);
 extern int KSPSetCalculateResidual(KSP,PetscTruth);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.14 1995/08/14 17:06:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.15 1995/11/04 23:28:36 bsmith Exp curfman $";
 #endif
 
 #include "kspimpl.h"   /*I "ksp.h" I*/
@@ -28,35 +28,38 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   Scalar        one = -1.0;
   MatStructure  pflag;
   Mat           Amat, Pmat;
+  int           ierr;
 
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
-  if (itP->right_pre) {
-    if (vbinvf) VecCopy(vb,vbinvf);
+  if (itP->pc_side == KSP_SYMMETRIC_PC)
+    SETERRQ(1,"KSPResidual: KSP_SYMMETRIC_PC not yet supported.");
+  if (itP->pc_side == KSP_RIGHT_PC) {
+    if (vbinvf) {ierr = VecCopy(vb,vbinvf); CHKERRQ(ierr);}
     vbinvf = vb;
   }
   else {
-    PCApply(itP->B,vb,vbinvf);
+    ierr = PCApply(itP->B,vb,vbinvf); CHKERRQ(ierr);
   }
   if (!itP->guess_zero) {
     /* compute initial residual: f - M*x */
     /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
-    if (itP->right_pre) {
-        /* we want a * binv * b * x, or just a * x for the first step */
-        /* a*x into temp */
-        MatMult(Amat, vsoln, vt1 );
+    if (itP->pc_side == KSP_RIGHT_PC) {
+      /* we want a * binv * b * x, or just a * x for the first step */
+      /* a*x into temp */
+      ierr = MatMult(Amat,vsoln,vt1); CHKERRQ(ierr);
     }
     else {
-        /* else we do binv * a * x */
-        PCApplyBAorAB(itP->B,itP->right_pre, vsoln, vt1, vt2 );
+      /* else we do binv * a * x */
+      ierr = PCApplyBAorAB(itP->B,itP->pc_side, vsoln, vt1, vt2 ); CHKERRQ(ierr);
     }
     /* This is an extra copy for the right-inverse case */
-    VecCopy( vbinvf, vres ); 
-    VecAXPY(&one, vt1, vres );
+    ierr = VecCopy( vbinvf, vres ); CHKERRQ(ierr);
+    ierr = VecAXPY(&one, vt1, vres ); CHKERRQ(ierr);
           /* inv(b)(f - a*x) into dest */
   }
   else {
-    VecCopy( vbinvf, vres );
+    ierr = VecCopy( vbinvf, vres ); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -73,20 +76,24 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 .  vsoln - contains solution on output  
 
    Notes:
-   If preconditioning on the right, this routine solves for the 
-   correction to the unpreconditioned problem.  If preconditioning
-   on the left, nothing is done.
+   If preconditioning either symmetrically or on the right, this routine solves
+   for the correction to the unpreconditioned problem.  If preconditioning on
+   the left, nothing is done.
 
 .keywords: KSP, unwind, preconditioner
 
-.seealso: KSPSetRightPreconditioner()
+.seealso: KSPSetPreconditionerSide()
 @*/
 int KSPUnwindPre(KSP itP,Vec vsoln,Vec vt1)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->right_pre) {
+  if (itP->pc_side == KSP_RIGHT_PC) {
     ierr = PCApply(itP->B,vsoln,vt1); CHKERRQ(ierr);
+    ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
+  }
+  else if (itP->pc_side == KSP_SYMMETRIC_PC) {
+    ierr = PCApplySymmRight(itP->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }
   return 0;
