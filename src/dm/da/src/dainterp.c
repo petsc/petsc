@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.8 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: dainterp.c,v 1.9 2000/05/05 22:19:22 balay Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -8,7 +8,7 @@
 #include "petscmg.h"
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetInterpolation"
+#define __FUNC__ /*<a name="DAGetInterpolationScale"></a>*/"DAGetInterpolationScale"
 int DAGetInterpolationScale(DA dac,DA daf,Mat mat,Vec *scale)
 {
   int    ierr;
@@ -26,10 +26,10 @@ int DAGetInterpolationScale(DA dac,DA daf,Mat mat,Vec *scale)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetInterpolation_1D_dof"
+#define __FUNC__ /*<a name="DAGetInterpolation_1D_dof"></a>*/"DAGetInterpolation_1D_dof"
 int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 {
-  int      ierr,i,i_start,m_f,Mx,*idx;
+  int      ierr,i,i_start,m_f,Mx,*idx_f;
   int      m_ghost,*idx_c,m_ghost_c,k,ll;
   int      row,col,i_start_ghost,mx,m_c,nc,ratio;
   int      i_c,i_start_c,i_start_ghost_c,cols[2],dof;
@@ -44,7 +44,7 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 
   ierr = DAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
@@ -56,9 +56,8 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
-    /* convert to local "natural" numbering and 
-       then to PETSc global numbering */
-    row    = idx[dof*(i-i_start_ghost)];
+    /* convert to local "natural" numbering and then to PETSc global numbering */
+    row    = idx_f[dof*(i-i_start_ghost)];
 
     i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
 
@@ -99,10 +98,10 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetInterpolation_2D_dof"
+#define __FUNC__ /*<a name="DAGetInterpolation_2D_dof"></a>*/"DAGetInterpolation_2D_dof"
 int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 {
-  int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx,dof,k;
+  int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,k;
   int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,l,*dnz,*onz;
   int      row,col,i_start_ghost,j_start_ghost,cols[4],mx,m_c,my,nc,ratio;
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
@@ -118,7 +117,7 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 
   ierr = DAGetCorners(daf,&i_start,&j_start,0,&m_f,&n_f,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DAGetCorners(dac,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
@@ -128,7 +127,7 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
-      row    = idx[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
+      row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
 
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratio);    /* coarse grid node below fine grid node */
@@ -169,7 +168,7 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
-      row    = idx[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
+      row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
 
       i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratio);    /* coarse grid node below fine grid node */
@@ -223,10 +222,10 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetInterpolation_3D_dof"
+#define __FUNC__ /*<a name="DAGetInterpolation_3D_dof"></a>*/"DAGetInterpolation_3D_dof"
 int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 {
-  int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx,dof,k,l;
+  int      ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,k,l;
   int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,Mz,mz;
   int      row,col,i_start_ghost,j_start_ghost,cols[8],mx,m_c,my,nc,ratio;
   int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
@@ -245,7 +244,7 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 
   ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
 
   ierr = DAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
@@ -258,7 +257,7 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
-        row = idx[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
+        row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
         i_c = (i/ratio);
         j_c = (j/ratio);
         l_c = (l/ratio);
@@ -309,7 +308,7 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
         /* convert to local "natural" numbering and then to PETSc global numbering */
-        row = idx[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
+        row = idx_f[dof*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
 
         i_c = (i/ratio);
         j_c = (j/ratio);
@@ -385,7 +384,7 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"DAGetInterpolation"
+#define __FUNC__ /*<a name="DAGetInterpolation"></a>*/"DAGetInterpolation"
 /*@C
    DAGetInterpolation - Gets and interpolation matrix that maps between 
    grids associated with two DAs.
