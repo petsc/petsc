@@ -19,13 +19,18 @@ INCLUDEDIRS = -I$(IPETSCDIR) -I$(IPETSCDIR)/include $(MPI_INCLUDE) \
 # stencils, grids, and all lower level PETSc components (such as vectors 
 # and matrices).  The order of listing these libraries is important!
 #
-PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
+ALL_PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
                 -lpetscsnes  -lpetscsles -lpetscksp \
                 -lpetscmat  -lpetscvec -lpetscdraw \
                 -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
                 $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
-
+#
+PETSC_LIB   = -L$(LDIR) -lpetscsnes  -lpetscsles -lpetscksp \
+                -lpetscmat  -lpetscvec -lpetscdraw \
+                -lpetscsys \
+                $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
+                $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 #
 # Defines all libraries needed for using linear solvers and all lower
 # level PETSc components (such as vectors and matrices).  The order
