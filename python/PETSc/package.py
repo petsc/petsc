@@ -81,7 +81,7 @@ class Package(config.base.Configure):
     if self.download:
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Download and install '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<dir,or list of libraries>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' libraries or a list of libraries'))    
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<dir,or list of libraries>',nargs.ArgLibrary(None,None,'Indicate the directory of the '+self.name+' libraries or a list of libraries'))    
     return
 
   def generateLibList(self,dir):
