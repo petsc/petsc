@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.34 1998/12/03 03:56:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.35 1998/12/17 22:08:11 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -345,6 +345,13 @@ int ISPartitioningCount(IS part,int count[])
 
     Notes: 
     ISAllGather() is clearly not scalable for large index sets.
+
+    Notes: the IS created on each processor should be created with a common
+      communicator (e.g. PETSC_COMM_WORLD). If they were created with 
+      PETSC_COMM_SELF this routine will not work as expected, since 
+      each process will generate its own new IS that consists only of
+      itself.
+
 @*/
 int ISAllGather(IS is,IS *isout)
 {
