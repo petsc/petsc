@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.38 1996/04/03 19:32:03 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.39 1996/04/03 19:35:33 curfman Exp balay $";
 #endif
 
 #include <math.h>
@@ -447,7 +447,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
         "Relative width of interval of uncertainty is at most rtol (%g)\n",neP->rtol);
       *info = 2;
     }
-    if ((*f <= ftest1) && (PetscAbsScalar(dg) <= neP->gtol*(-dginit))) {
+    if ((*f <= ftest1) && (PetscAbsDouble(dg) <= neP->gtol*(-dginit))) {
       PLogInfo(snes,
         "Line search success: Sufficient decrease and directional deriv conditions hold\n");
       *info = 1;
@@ -488,9 +488,9 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
    /* Force a sufficient decrease in the interval of uncertainty */
    if (neP->bracket) {
-     if (PetscAbsScalar(sty - stx) >= p66 * width1) *step = stx + p5*(sty - stx);
+     if (PetscAbsDouble(sty - stx) >= p66 * width1) *step = stx + p5*(sty - stx);
        width1 = width;
-       width = PetscAbsScalar(sty - stx);
+       width = PetscAbsDouble(sty - stx);
      }
    }
 
