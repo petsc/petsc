@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.166 2000/09/28 21:14:14 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.167 2001/01/15 21:47:55 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -186,6 +186,11 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = VecCopy(Y,snes->vec_sol_update_always);CHKERRQ(ierr);
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);CHKERRQ(ierr);
     PetscLogInfo(snes,"SNESSolve_EQ_LS: fnorm=%g, gnorm=%g, ynorm=%g, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
+
+    TMP = F; F = G; snes->vec_func_always = F; G = TMP;
+    TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
+    fnorm = gnorm;
+
     if (lsfail) {
       PetscTruth ismin;
       snes->nfailures++;
@@ -194,10 +199,6 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
       if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
       break;
     } 
-
-    TMP = F; F = G; snes->vec_func_always = F; G = TMP;
-    TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
-    fnorm = gnorm;
 
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
