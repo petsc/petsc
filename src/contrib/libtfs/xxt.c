@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
+/*$Id: xxt.c,v 1.2 2001/04/10 19:37:38 bsmith Exp balay $*/
 /*************************************xxt.c************************************
 Module Name: xxt
 Module Info:
@@ -287,7 +287,7 @@ XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
 {
 #if   NXSRC&&TIMING
   double dclock(),    time=0.0;
-#elif MPISRC&&TIMING
+#elifdef MPISRC&&TIMING
   double MPI_Wtime(), time=0.0; 
 #endif
 #ifdef INFO
@@ -305,7 +305,7 @@ XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
 
 #if   NXSRC&&TIMING
   time = dclock();
-#elif MPISRC&&TIMING
+#elifdef MPISRC&&TIMING
   time = MPI_Wtime();
 #endif
 
@@ -314,9 +314,9 @@ XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
     {rvec_copy(x,b,xxt_handle->mvi->n);}
   do_xxt_solve(xxt_handle,x);
 
-#if   NXSRC&&TIMING
+#ifdef   NXSRC&&TIMING
   time = dclock() - time;
-#elif MPISRC&&TIMING
+#elifdef MPISRC&&TIMING
   time = MPI_Wtime() - time;
 #endif
 

@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
+/*$Id: const.h,v 1.2 2001/04/10 19:37:38 bsmith Exp balay $*/
 /**********************************const.h*************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -95,7 +95,7 @@ File Description:
 #endif
 
 
-#if MPISRC&&r8
+#if defined MPISRC&&r8
 #define REAL_TYPE	MPI_DOUBLE
 #elif MPISRC
 #define REAL_TYPE	MPI_FLOAT

@@ -1,4 +1,4 @@
-/*$Id: gs.c,v 1.2 2001/03/29 16:18:29 bsmith Exp balay $*/
+/*$Id: gs.c,v 1.3 2001/04/02 13:49:41 balay Exp balay $*/
 /***********************************gs.c***************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -1332,7 +1332,7 @@ set_pairwise(gs_id *gs)
     {error_msg_fatal("oops ... bad paiwise list in set_pairwise!");}
 #endif
 
-#if MPISRC  
+#if defined MPISRC  
   gs->msg_ids_out = (MPI_Request *)  perm_malloc(sizeof(MPI_Request)*(nprs+1));
   gs->msg_ids_out[nprs] = MPI_REQUEST_NULL;
   gs->msg_ids_in = (MPI_Request *)  perm_malloc(sizeof(MPI_Request)*(nprs+1));
@@ -2351,7 +2351,7 @@ gs_gop_tree_exists(gs_id *gs, REAL *vals)
   work = gs->tree_work;
   size = gs->tree_nel;
 
-#if   BLAS||CBLAS
+#if defined  BLAS||CBLAS
   *work = 0.0;
   copy(size,work,0,buf,1);
 #else
@@ -2687,7 +2687,7 @@ gs_gop_tree_max_abs(gs_id *gs, REAL *vals)
   work = gs->tree_work;
   size = gs->tree_nel;
 
-#if   BLAS||CBLAS
+#if defined BLAS||CBLAS
   *work = 0.0;
   copy(size,work,0,buf,1);
 #else
@@ -3023,7 +3023,7 @@ gs_gop_tree_max(gs_id *gs, REAL *vals)
   work = gs->tree_work;
   size = gs->tree_nel;
 
-#if   BLAS||CBLAS
+#if defined BLAS||CBLAS
   *work = -REAL_MAX;
   copy(size,work,0,buf,1);
 #else
@@ -3035,11 +3035,11 @@ gs_gop_tree_max(gs_id *gs, REAL *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-#if   NXSRC&&r8
+#if defined(NXSRC) && defined(r8)
   gdhigh(buf,size,work);
   while (*in >= 0)
     {*(vals + *in++) = *(buf + *out++);}
-#elif MPISRC
+#elif defined MPISRC
   MPI_Allreduce(buf,work,size,REAL_TYPE,MPI_MAX,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
@@ -3359,7 +3359,7 @@ gs_gop_tree_min_abs(gs_id *gs, REAL *vals)
   work = gs->tree_work;
   size = gs->tree_nel;
 
-#if   BLAS||CBLAS
+#if defined  BLAS||CBLAS
   *work = REAL_MAX;
   copy(size,work,0,buf,1);
 #else
@@ -3689,7 +3689,7 @@ gs_gop_tree_min(gs_id *gs, REAL *vals)
   work = gs->tree_work;
   size = gs->tree_nel;
 
-#if   BLAS||CBLAS
+#if defined  BLAS||CBLAS
   *work = REAL_MAX;
   copy(size,work,0,buf,1);
 #else
@@ -3701,11 +3701,11 @@ gs_gop_tree_min(gs_id *gs, REAL *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-#if   NXSRC&&r8
+#if defined(NXSRC) && defined(r8)
   gdlow(buf,size,work);
   while (*in >= 0)
     {*(vals + *in++) = *(buf + *out++);}
-#elif MPISRC
+#elif defined MPISRC
   MPI_Allreduce(buf,work,size,REAL_TYPE,MPI_MIN,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
@@ -4072,7 +4072,7 @@ gs_gop_tree_times(gs_id *gs, REAL *vals)
   work = gs->tree_work;
   size = gs->tree_nel;
 
-#if   BLAS||CBLAS
+#if defined  BLAS||CBLAS
   *work = 1.0;
   copy(size,work,0,buf,1);
 #else
@@ -4084,11 +4084,11 @@ gs_gop_tree_times(gs_id *gs, REAL *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-#if  NXSRC&&r8
+#if defined(NXSRC) && defined(r8)
   gdprod(buf,size,work);
   while (*in >= 0)
     {*(vals + *in++) = *(buf + *out++);}
-#elif MPISRC
+#elif defined MPISRC
   MPI_Allreduce(buf,work,size,REAL_TYPE,MPI_PROD,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
@@ -4483,7 +4483,7 @@ gs_gop_tree_plus(gs_id *gs, REAL *vals)
   work = gs->tree_work;
   size = gs->tree_nel;
 
-#if   BLAS||CBLAS
+#if defined  BLAS||CBLAS
   *work = 0.0;
   copy(size,work,0,buf,1);
 #else
@@ -4495,13 +4495,13 @@ gs_gop_tree_plus(gs_id *gs, REAL *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-#if NXSRC&&r8
+#if defined(NXSRC) && defined(r8)
   gdsum(buf,size,work); 
 
   /* grop(buf,work,size,op);  */
   while (*in >= 0)
     {*(vals + *in++) = *(buf + *out++);}
-#elif MPISRC
+#elif defined MPISRC
   MPI_Allreduce(buf,work,size,REAL_TYPE,MPI_SUM,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
@@ -5212,7 +5212,7 @@ gs_gop_vec_pairwise_plus(register gs_id *gs, register REAL *in_vals,
       msgwait(*ids_in++);
       while (*iptr >= 0)
 	{
-#if BLAS||CBLAS
+#if defined BLAS||CBLAS
 	  axpy(step,1.0,in2,1,dptr1 + *iptr*step,1);
 #else
 	  rvec_add(dptr1 + *iptr*step,in2,step);
@@ -5309,7 +5309,7 @@ gs_gop_vec_pairwise_plus(register gs_id *gs, register REAL *in_vals,
       MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
 	{
-#if BLAS||CBLAS
+#if defined BLAS||CBLAS
 	  axpy(step,1.0,in2,1,dptr1 + *iptr*step,1);
 #else
 	  rvec_add(dptr1 + *iptr*step,in2,step);
@@ -5373,7 +5373,7 @@ gs_gop_vec_tree_plus(register gs_id *gs, register REAL *vals, register int step)
   size = gs->tree_nel*step;
 
   /* zero out collection buffer */
-#if   BLAS||CBLAS
+#if defined  BLAS||CBLAS
   *work = 0.0;
   copy(size,work,0,buf,1);
 #else
@@ -5384,7 +5384,7 @@ gs_gop_vec_tree_plus(register gs_id *gs, register REAL *vals, register int step)
   /* copy over my contributions */
   while (*in >= 0)
     { 
-#if   BLAS||CBLAS
+#if defined  BLAS||CBLAS
       copy(step,vals + *in++*step,1,buf + *out++*step,1);
 #else
       rvec_copy(buf + *out++*step,vals + *in++*step,step);
@@ -5402,7 +5402,7 @@ gs_gop_vec_tree_plus(register gs_id *gs, register REAL *vals, register int step)
   /* get the portion of the results I need */
   while (*in >= 0)
     {
-#if   BLAS||CBLAS
+#if defined  BLAS||CBLAS
       copy(step,buf + *out++*step,1,vals + *in++*step,1);
 #else
       rvec_copy(vals + *in++*step,buf + *out++*step,step);
@@ -5787,7 +5787,7 @@ gs_gop_tree_plus_hc(gs_id *gs, REAL *vals, int dim)
   work = gs->tree_work;
   size = gs->tree_nel;
 
-#if   BLAS||CBLAS
+#if defined  BLAS||CBLAS
   *work = 0.0;
   copy(size,work,0,buf,1);
 #else

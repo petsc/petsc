@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
+/*$Id: xyt.c,v 1.2 2001/04/10 19:37:38 bsmith Exp balay $*/
 /*************************************xyt.c************************************
 Module Name: xyt
 Module Info:
@@ -294,7 +294,7 @@ XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
 {
 #if   NXSRC&&TIMING
   double dclock(),    time=0.0;
-#elif MPISRC&&TIMING
+#elifdef MPISRC&&TIMING
   double MPI_Wtime(), time=0.0; 
 #endif
 #ifdef INFO
@@ -312,7 +312,7 @@ XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
 
 #if   NXSRC&&TIMING
   time = dclock();
-#elif MPISRC&&TIMING
+#elifdef MPISRC&&TIMING
   time = MPI_Wtime();
 #endif
 
@@ -323,7 +323,7 @@ XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
 
 #if   NXSRC&&TIMING
   time = dclock() - time;
-#elif MPISRC&&TIMING
+#elifdef MPISRC&&TIMING
   time = MPI_Wtime() - time;
 #endif
 
