@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.19 2000/10/17 17:03:25 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.20 2000/10/18 15:07:28 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -197,7 +197,7 @@ int main(int argc,char **args)
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatNorm(), A_fnorm - sA_fnorm = %16.14e\n",rank,r1);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
-#ifdef CONT  
+
   /* Test MatGetOwnershipRange() */ 
   ierr = MatGetOwnershipRange(sA,&rstart,&rend);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&i2,&j2);CHKERRA(ierr);
@@ -220,7 +220,7 @@ int main(int argc,char **args)
     */
     ierr = MatRestoreRow(sA,i,&ncols,&cols,&vr);CHKERRA(ierr);
   } 
-#endif
+
   /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
   ierr = MatDiagonalScale(A,x,x);CHKERRA(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRA(ierr);
@@ -236,7 +236,7 @@ int main(int argc,char **args)
   
   ierr = MatScale(&alpha,A);CHKERRA(ierr);
   ierr = MatScale(&alpha,sA);CHKERRA(ierr);
-#ifdef CONT
+
   /* Test MatGetRowMax() */
   ierr = MatGetRowMax(A,s1);CHKERRA(ierr);  
   ierr = MatGetRowMax(sA,s2);CHKERRA(ierr);
@@ -247,7 +247,7 @@ int main(int argc,char **args)
   if (r1<-tol || r1>tol) { 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRowMax() \n");CHKERRA(ierr);
   } 
-#endif  
+
   /* Test MatMult(), MatMultAdd() */
   for (i=0; i<10; i++) {
     ierr = VecSetRandom(rctx,x);CHKERRA(ierr);
