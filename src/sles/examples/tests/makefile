@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.154 1998/06/13 05:12:53 balay Exp bsmith $ 
+# $Id: makefile,v 1.155 1998/06/18 15:43:16 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -310,7 +310,7 @@ runex13:
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   ${RM} -f ex13_1.tmp
 runex16:
-	-@${MPIRUN} -np 1 ex16 -f ${PETSC_DIR}/src/mat/examples/matbinary.ex \
+	-@${MPIRUN} -np 1 ex16 -optionsleft_off -f ${PETSC_DIR}/src/mat/examples/matbinary.ex \
 	   -a_pc_type bgs -a_pc_bgs_blocks 5 -a_sub_pc_type ilu \
 	   -b_pc_type bjacobi -b_pc_bjacobi_blocks 5 -b_ksp_max_it 10 \
 	   -b_sub_pc_type bgs -b_sub_pc_bgs_blocks 2  > ex16_1.tmp 2>&1; \
