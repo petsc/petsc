@@ -1,4 +1,5 @@
 
+# We build the entire manual as well as the intro part at the same time.
 manual.dvi: manual.tex part1.tex routines.red
 	latex manual
 	bibtex manual
@@ -13,11 +14,19 @@ manual.dvi: manual.tex part1.tex routines.red
 	latex manual
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
                     *.idx findex.tex sindex.tex
+# Now make the intro part, changing the figure numbers
+	cat manual.aux | sed 's/fig:2}{{1.2}/fig:2}{{2}/g' \
+	     | sed 's/fig:1}{{1.1}/fig:1}{{1}/g' > intro.aux
+	latex intro
+	-@chmod g+w intro.dvi intro.aux intro.log
 
 manual.ps: 
 	dvips manual
 	mv manual.ps ..
 	-@chmod g+w ../manual.ps
+# Now make the intro part
+	dvips intro
+	-@chmod g+w intro.ps
 
 manual.html: manual.tex part1.tex
 	tohtml -mapman ../www/www.cit manual.tex -notopnames \
@@ -29,18 +38,6 @@ manual.html: manual.tex part1.tex
 	cat tmp.html | sed 's/H1/H2/g' | sed 's/H0/H1/g'> manual.html
 	-mv manual.html ..
 	rm -f  *.xbm latex.err findex.tex sindex.tex tmp.html
-
-intro.dvi: intro.tex part1.tex
-	latex manual
-	bibtex manual
-	latex manual
-	mv manual.aux intro.aux
-	latex intro
-	-@chmod g+w intro.dvi intro.aux intro.bbl intro.blg intro.log
-
-intro.ps: 
-	dvips intro
-	-@chmod g+w intro.ps
 
 onepager.ps: onepager.tex
 	latex onepager
