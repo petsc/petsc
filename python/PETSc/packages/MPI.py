@@ -18,7 +18,7 @@ class Configure(config.base.Configure):
 
   def configureHelp(self, help):
     help.addOption('MPI', '-with-mpi', 'Use MPI')
-    help.addOption('MPI', '-with-dir=<root dir>', 'Specify the root directory of the MPI installation')
+    help.addOption('MPI', '-with-mpi-dir=<root dir>', 'Specify the root directory of the MPI installation')
     help.addOption('MPI', '-with-mpi-include=<dir>', 'The directory containing mpi.h')
     help.addOption('MPI', '-with-mpi-lib=<lib>', 'The MPI library')
     help.addOption('MPI', '-with-mpirun=<prog>', 'The utility used to launch MPI jobs')

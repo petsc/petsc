@@ -1,5 +1,4 @@
 import config.base
-import bs.nargs
 
 import commands
 import os
@@ -24,17 +23,17 @@ class Configure(config.base.Configure):
     self.headers     = self.framework.require('config.headers',   self)
     self.functions   = self.framework.require('config.functions', self)
     self.libraries   = self.framework.require('config.libraries', self)
-    self.blas        = self.framework.require('config.packages.BLAS',   self)
-    self.lapack      = self.framework.require('config.packages.LAPACK', self)
-    self.mpi         = self.framework.require('config.packages.MPI',    self)
-    self.adic        = self.framework.require('config.packages.ADIC',        self)
-    self.matlab      = self.framework.require('config.packages.Matlab',      self)
-    self.mathematica = self.framework.require('config.packages.Mathematica', self)
-    self.triangle    = self.framework.require('config.packages.Triangle',    self)
-    self.parmetis    = self.framework.require('config.packages.ParMetis',    self)
-    self.plapack     = self.framework.require('config.packages.PLAPACK',     self)
-    self.pvode       = self.framework.require('config.packages.PVODE',       self)
-    self.blocksolve  = self.framework.require('config.packages.BlockSolve',  self)
+    self.blas        = self.framework.require('PETSc.packages.BLAS',   self)
+    self.lapack      = self.framework.require('PETSc.packages.LAPACK', self)
+    self.mpi         = self.framework.require('PETSc.packages.MPI',    self)
+    self.adic        = self.framework.require('PETSc.packages.ADIC',        self)
+    self.matlab      = self.framework.require('PETSc.packages.Matlab',      self)
+    self.mathematica = self.framework.require('PETSc.packages.Mathematica', self)
+    self.triangle    = self.framework.require('PETSc.packages.Triangle',    self)
+    self.parmetis    = self.framework.require('PETSc.packages.ParMetis',    self)
+    self.plapack     = self.framework.require('PETSc.packages.PLAPACK',     self)
+    self.pvode       = self.framework.require('PETSc.packages.PVODE',       self)
+    self.blocksolve  = self.framework.require('PETSc.packages.BlockSolve',  self)
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
@@ -58,13 +57,15 @@ class Configure(config.base.Configure):
     return
 
   def configureHelp(self, help):
+    import nargs
+
     help.addOption('PETSc', 'PETSC_DIR', 'The root directory of the PETSc installation')
     help.addOption('PETSc', 'PETSC_ARCH', 'The machine architecture')
     help.addOption('PETSc', '-with-bopt=<g,O,...>', 'Specify the build option, e.g. g for debuggin, O for optimized, etc.')
-    help.addOption('PETSc', '-enable-debug', 'Activate debugging code in PETSc', bs.nargs.ArgBool)
-    help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', bs.nargs.ArgBool)
-    help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', bs.nargs.ArgBool)
-    help.addOption('PETSc', '-enable-shared', 'Build dynamic libraries for PETSc', bs.nargs.ArgBool)
+    help.addOption('PETSc', '-enable-debug', 'Activate debugging code in PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-shared', 'Build dynamic libraries for PETSc', nargs.ArgBool)
 
     self.framework.argDB['with-bopt']     = 'g'
     self.framework.argDB['enable-debug']  = 1
