@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vnake.c,v 1.5 1999/03/07 14:14:25 curfman Exp balay $";
+static char vcid[] = "$Id: vnake.c,v 1.6 1999/04/14 18:14:26 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: vnake.c,v 1.5 1999/03/07 14:14:25 curfman Exp balay $
 .  V - the vector
 
    Notes:
-   You MUST call eitehr VecSetFromOptions() or VecSetType() after this call before the
+   You MUST call either VecSetFromOptions() or VecSetType() after this call before the
    vector may be used.
 
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
