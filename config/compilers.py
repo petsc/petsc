@@ -73,7 +73,7 @@ class Configure(config.base.Configure):
       import commands
 
       (status, output) = commands.getstatusoutput(compiler+' --help')
-      if not status and output.find('www.gnu.org') >= 0:
+      if not status and (output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0):
         return 1
     except Exception:
       pass
