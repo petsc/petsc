@@ -63,7 +63,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-debug=<bool>',          nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
     help.addArgument('PETSc', '-with-log=<bool>',            nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-with-stack=<bool>',          nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
-    help.addArgument('PETSc', '-with-ctable=<bool>',         nargs.ArgBool(None, 1, 'Use CTABLE hashing for some search function - to conserve memory'))
+    help.addArgument('PETSc', '-with-ctable=<bool>',         nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-dynamic=<bool>',        nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
     help.addArgument('PETSc', '-with-shared=<bool>',         nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
     help.addArgument('PETSc', '-with-etags=<bool>',          nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
