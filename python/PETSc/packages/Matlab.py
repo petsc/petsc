@@ -3,7 +3,6 @@ from __future__ import generators
 import user
 import config.base
 import os
-import commands
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
