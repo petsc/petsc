@@ -1,10 +1,12 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.7 1995/10/12 04:18:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.8 1995/10/12 20:05:46 curfman Exp curfman $";
 #endif
 
 static char help[] = 
-"Reads a PETSc matrix in from a file and solves linear system with it.\n";
+"Reads a PETSc matrix in from a file and solves linear system with it.\n\
+Input arguments are:\n\
+  -f <input_file> : file to load.  Use mat.ex.binary for 5X5 5-pt. stencil\n\n";
 
 #include "draw.h"
 #include "mat.h"
@@ -27,7 +29,7 @@ int main(int argc,char **args)
 
 /*   Read in matrix and RHS   */
   OptionsGetString(0,"-f",file,127);
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd); CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A); CHKERRA(ierr);
 
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
@@ -41,7 +43,7 @@ int main(int argc,char **args)
 
 /*   Solve system    */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A, ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   time = MPI_Wtime();
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
