@@ -1238,7 +1238,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   PetscTruth     perm_identity;
   PetscInt       reallocs=0,*rip,i,*ai=a->i,*aj=a->j,am=A->m,*ui;
   PetscInt       jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
-  PetscInt       nlnk,*lnk,*lnk_lvl,ncols,ncols_upper,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
+  PetscInt       nlnk,*lnk,*lnk_lvl=PETSC_NULL;
+  PetscInt       ncols,ncols_upper,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
   PetscReal      fill=info->fill,levels=info->levels;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   FreeSpaceList  free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
