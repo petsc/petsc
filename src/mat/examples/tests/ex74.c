@@ -1,8 +1,10 @@
-/*$Id: ex74.c,v 1.4 2000/07/07 20:52:04 balay Exp balay $*/
+/*$Id: ex74.c,v 1.5 2000/07/07 20:52:23 balay Exp hzhang $*/
 
 static char help[] = "Tests the vatious routines in MatSBAIJ format.\n";
 
 #include "petscmat.h"
+
+extern int MatReorderingSeqSBAIJ(Mat,IS);
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -287,6 +289,7 @@ int main(int argc,char **args)
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[n-2]; ip_ptr[n-2] = i; 
     i = ip_ptr[0]; ip_ptr[0] = ip_ptr[n-1]; ip_ptr[n-1] = i; 
     ISRestoreIndices(ip,&ip_ptr);
+
     ierr = MatReorderingSeqSBAIJ(sA, ip); CHKERRA(ierr);  
     /* ierr = ISView(ip, VIEWER_STDOUT_SELF); CHKERRA(ierr); 
        ierr = MatView(sA,VIEWER_DRAW_SELF); CHKERRA(ierr); */
