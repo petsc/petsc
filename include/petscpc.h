@@ -56,6 +56,31 @@ E*/
 #define PCCHOLESKY  "cholesky"
 #define PCRAMG      "ramg"
 #define PCPBJACOBI  "pbjacobi"
+#define PCMULTILEVEL "multilevel"
+#define PCSCHUR      "schur"
+
+#ifdef PETSC_USE_NEW_LOGGING
+/* Logging support */
+extern int PC_COOKIE;
+extern int PCNULLSPACE_COOKIE;
+enum {PC_ApplyCoarse, PC_ModifySubMatrices, PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyMultiple, PC_ApplySymmetricLeft,
+      PC_ApplySymmetricRight, PC_MLSetUpInit, PC_MLSetUpConstrained, PC_MLSetUpConstrainedBd, PC_MLSetUpParallel,
+      PC_MLReducePartitionMesh, PC_MLReducePartitionRowCol, PC_MLReduceFactor, PC_MLReduceBdGrad, PC_MLReduceBdGradExtract,
+      PC_MLReduceBdGradRowPartLocalToGlobal, PC_MLReduceShrinkMesh, PC_MLApplySymmetricLeftParallel,
+      PC_MLApplySymmetricRightParallel, PC_MLQRFactorization, PC_MLApplyQR, PC_MLCreateBdGrad, PC_MAX_EVENTS};
+extern int PCEvents[PC_MAX_EVENTS];
+#define PCLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(PCEvents[e],o1,o2,o3,o4)
+#define PCLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(PCEvents[e],o1,o2,o3,o4)
+
+#else
+
+enum {PC_MLSetUpInit=PETSC_LOG_USER_EVENT_LOW_STATIC, PC_MLSetUpConstrained, PC_MLSetUpConstrainedBd, PC_MLSetUpParallel,
+      PC_MLReducePartitionMesh, PC_MLReducePartitionRowCol, PC_MLReduceFactor, PC_MLReduceBdGrad, PC_MLReduceBdGradExtract,
+      PC_MLReduceBdGradRowPartLocalToGlobal, PC_MLReduceShrinkMesh, PC_MLApplySymmetricLeftParallel,
+      PC_MLApplySymmetricRightParallel, PC_MLQRFactorization, PC_MLApplyQR, PC_MLCreateBdGrad};
+#define PCLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(e,o1,o2,o3,o4)
+#define PCLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(e,o1,o2,o3,o4)
+#endif
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right
@@ -230,8 +255,16 @@ EXTERN int PCRedundantSetScatter(PC,VecScatter,VecScatter);
 EXTERN int PCRedundantGetOperators(PC,Mat*,Mat*);
 EXTERN int PCRedundantGetPC(PC,PC*);
 EXTERN int MatGetOrderingList(PetscFList *list);
-#endif
 
+EXTERN int PCMultiLevelSetFields(PC, int, int);
+EXTERN int PCMultiLevelSetNonlinearIterate(PC, Vec);
+EXTERN int PCMultiLevelSetGradientOperator(PC, int, int, PetscScalar);
+EXTERN int PCMultiLevelApplyGradient(PC, Vec, Vec);
+EXTERN int PCMultiLevelApplyGradientTrans(PC, Vec, Vec);
+EXTERN int PCMultiLevelBuildSolution(PC, Vec);
+EXTERN int PCMultiLevelGetMultiplier(PC, Vec, Vec);
 
+EXTERN int PCSchurSetGradientOperator(PC, int, int);
+EXTERN int PCSchurGetIterationNumber(PC, int *, int *);
 
-
+#endif /* __PETSCPC_H */
