@@ -1,8 +1,8 @@
 
 C
-C  "$Id: fmult.F,v 1.1 1997/09/17 21:22:19 bsmith Exp bsmith $";
+C  "$Id: fmult.F,v 1.2 1997/09/17 23:13:43 bsmith Exp curfman $";
 C
-C    Fortran kernel for sparse matrix vector product in AIJ format
+C    Fortran kernel for sparse matrix-vector product in the AIJ matrix format
 C
 C
       subroutine FortranMultAIJ(n,x,ii,jj,a,y)
