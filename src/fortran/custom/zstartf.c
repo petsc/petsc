@@ -47,7 +47,7 @@ void PetscInitializeFortran(void)
 extern "C" {
 #endif
 
-void petscinitializefortran_()
+void petscinitializefortran_(void)
 {
   PetscInitializeFortran();
 }

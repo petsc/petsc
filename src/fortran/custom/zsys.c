@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.42 1998/01/14 02:34:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.43 1998/03/06 00:06:09 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -315,7 +315,7 @@ static PtrToIdx PtrArray[MAX_PTRS];
 static PtrToIdx *avail=0;
 static int      DoInit = 1;
 
-static void PetscInitPointer()
+static void PetscInitPointer(void)
 {
   int  i;
 

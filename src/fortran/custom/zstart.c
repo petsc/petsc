@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.36 1998/03/20 22:42:42 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.37 1998/03/23 22:23:11 balay Exp balay $";
 #endif
 
 /*
@@ -145,8 +145,8 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;   
 }
 
-extern int PetscInitializeOptions();
-extern int PetscInitialize_DynamicLibraries();
+extern int PetscInitializeOptions(void);
+extern int PetscInitialize_DynamicLibraries(void);
 extern int OptionsSetProgramName(char *);
 
 #if defined(__cplusplus)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.70 1997/11/28 16:20:34 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.71 1998/03/24 20:59:43 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -20,7 +20,7 @@ diagonal data structure.  Input arguments are:\n\
 extern int GetElasticityMatrix(int,Mat*);
 extern int Elastic20Stiff(double**);
 extern int AddElement(Mat,int,int,double**,int,int);
-extern int paulsetup20();
+extern int paulsetup20(void);
 extern int paulintegrate20(double K[60][60]);
 
 int main(int argc,char **args)
