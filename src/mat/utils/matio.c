@@ -93,14 +93,7 @@ $    int    *number nonzeros in each row
 $    int    *column indices of all nonzeros (starting index is zero)
 $    PetscScalar *values of all nonzeros
 
-   Note for Cray users, the int's stored in the binary file are 32 bit
-integers; not 64 as they are represented in the memory, so if you
-write your own routines to read/write these binary files from the Cray
-you need to adjust the integer sizes that you read in, see
-PetscReadBinary() and PetscWriteBinary() to see how this may be
-done.
-
-   In addition, PETSc automatically does the byte swapping for
+   PETSc automatically does the byte swapping for
 machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
 linux, Windows and the paragon; thus if you write your own binary
 read/write routines you have to swap the bytes; see PetscReadBinary()
@@ -113,12 +106,12 @@ and PetscWriteBinary() to see how this may be done.
  @*/  
 PetscErrorCode MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
 {
-  Mat         factory;
+  Mat            factory;
   PetscErrorCode ierr;
-  PetscTruth  isbinary,flg;
-  MPI_Comm    comm;
+  PetscTruth     isbinary,flg;
+  MPI_Comm       comm;
   PetscErrorCode (*r)(PetscViewer,const MatType,Mat*);
-  char        mtype[256],*prefix;
+  char           mtype[256],*prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);

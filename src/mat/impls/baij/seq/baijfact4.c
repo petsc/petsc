@@ -72,7 +72,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
     diag = diag_offset[i] - bi[i];
     /* invert diagonal block */
     w = pv + bs2*diag; 
-    Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);
+    ierr = Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
