@@ -24,7 +24,7 @@ class Configure(config.base.Configure):
 
   def checkCRestrict(self):
     '''Check for the C restrict keyword'''
-    self.restrictKeyword = ''
+    self.restrictKeyword = ' '
     self.pushLanguage('C')
     # Try the official restrict keyword, then gcc's __restrict__, then
     # SGI's __restrict.  __restrict has slightly different semantics than
@@ -32,7 +32,7 @@ class Configure(config.base.Configure):
     # overlap even with non __restrict pointers), but I think it should be
     # okay under the circumstances where restrict is normally used.
     for kw in ['restrict', ' __restrict__', '__restrict']:
-      if self.checkCompile('', 'float * '+kw+' x;'):
+      if self.checkCompile('', 'floater * '+kw+' x;'):
         self.restrictKeyword = kw
         self.logPrint('Set C restrict keyword to '+self.restrictKeyword, 4, 'compilers')
         break
