@@ -55,7 +55,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Common block data:
       implicit none
       double precision hi1,hi2,hi3,hi4,h,d1p1,d2p2,d3p2
-      integer npar,ierr
+      integer npar
       integer xs,xm,xe,gxs,gxm,gxe
       parameter (npar=11)
       double precision rpar(npar)
