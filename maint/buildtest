@@ -14,7 +14,14 @@ set APPEND='>>&'
 
 source /sandbox/petsc/petsc-test/bmake/$1/buildtest
 set EJOBS=`grep PETSC_HAVE_ /sandbox/petsc/petsc-test/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
-#echo Testing packages ${EJOBS}
+
+if ("${BOPT}" == "g_complex") then
+  set EJOBS=""
+endif
+if ("${BOPT}" == "O_complex") then
+  set EJOBS=""
+endif
+echo Testing packages ${EJOBS}
 #
 set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
 rsync $RSYNCSSH -C -r --exclude=BitKeeper /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR

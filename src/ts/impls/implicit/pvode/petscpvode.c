@@ -96,6 +96,8 @@ int TSPSolve_PVode(integer N,real tn,N_Vector y,N_Vector fy,N_Vector vtemp,
       Solve the Px=r and put the result in xx 
   */
   ierr = PCApply(pc,rr,xx);CHKERRQ(ierr);
+  cvode->linear_solves++;
+
 
   PetscFunctionReturn(0);
 }
@@ -169,6 +171,7 @@ int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
     if (ts->ptime >= tout) break;
     ierr = VecGetArray(ts->vec_sol,&cvode->y->data);CHKERRQ(ierr);
     flag = CVode(cvode->mem,tout,cvode->y,&t,ONE_STEP);
+    cvode->nonlinear_solves += cvode->iopt[NNI];
     ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
     if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,"PVODE failed");	
 
@@ -489,8 +492,8 @@ int TSPVodeGetIterations_PVode(TS ts,int *nonlin,int *lin)
   TS_PVode *cvode = (TS_PVode*)ts->data;
   
   PetscFunctionBegin;
-  if (nonlin) *nonlin = cvode->iopt[NNI];
-  if (lin)    *lin    = cvode->iopt[SPGMR_NLI];
+  if (nonlin) *nonlin = cvode->nonlinear_solves;
+  if (lin)    *lin    = cvode->linear_solves;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -524,6 +527,9 @@ EXTERN_C_END
 -   lin    - number of linear iterations
 
    Level: advanced
+
+   Notes:
+    These return the number since the creation of the TS object
 
 .keywords: non-linear iterations, linear iterations
 

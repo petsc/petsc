@@ -23,6 +23,8 @@ X11_LIB        = -L/usr/X11R6/lib -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # SuperLU-DIST
+# Note: compiler superlu_dist with the option -DPRNTlevel=0 to prevent it from 
+# printing information about factorization to the screen
 #
 SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
 SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux_gm.a

@@ -22,6 +22,6 @@ include ${PETSC_DIR}/bmake/common/test
 
 bib2html:
 	${RM} /mcs/www-unix/petsc/petscapps.html /mcs/www-unix/petsc/petscapps-bib.html
-	/home/gropp/public_html/bib2html -group tex/doctext/petsc.group -listfile /mcs/www-unix/petsc/petscapps.html -listconfig tex/doctext/petscapps.cfg tex/petscapps.bib -nospecials > /mcs/www-unix/petsc/petscapps-bib.html
+	/home/gropp/public_html/bib/bib2html -group tex/doctext/petsc.group -listfile /mcs/www-unix/petsc/petscapps.html -listconfig tex/doctext/petscapp.cfg tex/petscapp.bib -nospecials > /mcs/www-unix/petsc/petscapps-bib.html
 	chmod g+w /mcs/www-unix/petsc/petscapps.html /mcs/www-unix/petsc/petscapps-bib.html
 

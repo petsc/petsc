@@ -159,9 +159,7 @@ static int PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
   int         ierr;
-  PetscTruth  isascii,isstring;
-  PetscViewer sviewer;
-
+  PetscTruth  isascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -257,8 +255,7 @@ static int PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
   int         ierr;
-  PetscTruth  isascii,isstring;
-  PetscViewer sviewer;
+  PetscTruth  isascii;
   char        *symt;
 
   PetscFunctionBegin;
@@ -359,7 +356,6 @@ static int PCHYPRESetType_HYPRE(PC pc,char *name)
 #define __FUNCT__ "PCSetFromOptions_HYPRE"
 static int PCSetFromOptions_HYPRE(PC pc)
 {
-  PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
   int        ierr;
   char       buff[32],*type[] = {"pilut","parasails","boomerAMG","euclid"};
   PetscTruth flg;
