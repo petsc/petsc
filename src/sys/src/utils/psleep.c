@@ -1,11 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: psleep.c,v 1.6 1997/03/03 17:53:50 balay Exp balay $";
+static char vcid[] = "$Id: psleep.c,v 1.7 1997/03/31 21:37:59 balay Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
-#include "src/sys/src/files.h"
+
+#if defined (PARCH_nt)
+#include <stdlib.h>
+#endif
 
 #if defined(__cplusplus)
 extern "C" {
