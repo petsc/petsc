@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.1 2001/03/22 18:59:11 balay Exp balay $"
+"$Id: petscconf.h,v 1.2 2001/03/23 23:18:37 balay Exp buschelm $"
 "Defines the configuration for this machine"
 #endif
 
@@ -44,5 +44,10 @@
 #define PETSC_HAVE_U_GETCWD
 #define PETSC_HAVE_U_SLEEP
 #define PETSC_HAVE_IARG_COUNT_PROGNAME
+
+#ifdef PETSC_USE_MAT_SINGLE
+#  define PETSC_MEMALIGN 16
+#  define PETSC_HAVE_ICL_SSE
+#endif
 
 #endif
