@@ -493,6 +493,10 @@ class Framework(base.Base):
       os.remove(f)
     return
 
+  def cpWebsite(self,filenames):
+    self.executeShellCommand('scp '+filenames+' '+self.project.getWebDirectory())
+    return
+
   def setupProject(self):
     '''Hook for user operations before project activation'''
     return

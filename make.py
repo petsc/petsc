@@ -40,9 +40,9 @@ class PetscMake(build.framework.Framework):
 
   def t_updateWebsite(self):
     build.framework.Framework.t_updateWebsite(self)
-    self.executeShellCommand('scp docs/website/index.html '+self.project.getWebDirectory()+'/index.html')
-    self.executeShellCommand('scp install/bootstrap.py '+self.project.getWebDirectory()+'/bootstrap.sh')
-    self.executeShellCommand('scp docs/tutorials/*.ppt '+self.project.getWebDirectory())
+    self.cpWebsite('docs/website/index.html')
+    self.cpWebsite('install/bootstrap.sh')
+    self.cpWebsite('docs/tutorials/*.ppt')
        
 if __name__ ==  '__main__':
   import sys
