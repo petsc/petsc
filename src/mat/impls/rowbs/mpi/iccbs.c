@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.30 1998/10/19 22:18:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.31 1999/01/12 23:15:29 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -31,7 +31,19 @@ static char vcid[] = "$Id: iccbs.c,v 1.30 1998/10/19 22:18:01 bsmith Exp bsmith 
 #include "src/pc/pcimpl.h"            /*I "pc.h" I*/
 #include "src/pc/impls/icc/icc.h"
 #include "src/ksp/kspimpl.h"
-#include "mpirowbs.h"
+#include "src/mat/impls/rowbs/mpi/mpirowbs.h"
+
+/* BlockSolve implementation interface */
+
+typedef struct {
+  int    blocksize;    /* number of systems to solve */
+  int    pre_option;   /* preconditioner, one of PRE_DIAG,
+                          PRE_STICCG, PRE_SSOR, PRE_BJACOBI */
+  double rtol;
+  int    max_it;
+  double rnorm;
+  int    guess_zero;
+} PCiBS;
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy_ICC_MPIRowbs"
@@ -140,25 +152,15 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
   icc->implctx        = (void *) (iccbs = PetscNew(PCiBS)); CHKPTRQ(iccbs);
   PLogObjectMemory(pc,sizeof(PCiBS));
 
-  if (icc->bs_iter) { /* Set BlockSolve iterative solver defaults */
-    SETERRQ(PETSC_ERR_SUP,0,"BS iterative solvers not currently supported");
-/*    iccbs->blocksize  = 1;
-    iccbs->pre_option = PRE_STICCG;
-    iccbs->rtol       = 1.e-5;
-    iccbs->max_it     = 10000;
-    iccbs->rnorm      = 0.0;
-    iccbs->guess_zero = 1; */
-  } else {
-    iccbs->blocksize  = 0;
-    iccbs->pre_option = 0;
-    iccbs->rtol       = 0;
-    iccbs->max_it     = 0;
-    iccbs->rnorm      = 0.0;
-    iccbs->guess_zero = 0;
-    if (Amat->type == MATMPIROWBS) {
-      pc->presolve    = PCPreSolve_MPIRowbs;
-      pc->postsolve   = PCPostSolve_MPIRowbs;
-    }
+  iccbs->blocksize  = 0;
+  iccbs->pre_option = 0;
+  iccbs->rtol       = 0;
+  iccbs->max_it     = 0;
+  iccbs->rnorm      = 0.0;
+  iccbs->guess_zero = 0;
+  if (Amat->type == MATMPIROWBS) {
+    pc->presolve    = PCPreSolve_MPIRowbs;
+    pc->postsolve   = PCPostSolve_MPIRowbs;
   }
   PetscFunctionReturn(0);
 }
