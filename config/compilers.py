@@ -359,11 +359,12 @@ class Configure(config.base.Configure):
             flibs.append(arg)
           continue
         # Check for ???
-        if arg == '-u':
-          lib = arg+' '+argIter.next()
-          #print 'Found u library: '+lib
-          flibs.append(lib)
-          continue
+##        This breaks for the Intel Fortran compiler
+##        if arg == '-u':
+##          lib = arg+' '+argIter.next()
+##          #print 'Found u library: '+lib
+##          flibs.append(lib)
+##          continue
         # Check for ???
         # Should probably try to ensure unique directory options here too.
         # This probably only applies to Solaris systems, and then will only
