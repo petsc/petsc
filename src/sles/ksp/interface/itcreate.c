@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.101 1997/07/09 20:50:16 balay Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.102 1997/08/22 15:11:05 bsmith Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -138,7 +138,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   /* this violates our rule about seperating abstract from implementations*/
   return KSPSetType(*ksp,KSPGMRES);
 }
-
+ 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetType"
 /*@
