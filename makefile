@@ -133,7 +133,7 @@ etags:
 	etags -a -f TAGS bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS bmake/t3d/t3d* bmake/paragon/paragon*
 	etags -a -f TAGS docs/tex/routin.tex  docs/tex/manual.tex
-	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex
+	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex 
 	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c
 	etags -a -f TAGS src/*/examples/*.F
 	chmod g+w TAGS
