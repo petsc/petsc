@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.48 1999/03/24 19:18:12 balay Exp bsmith $ 
+# $Id: base.site,v 1.49 1999/04/02 21:35:47 bsmith Exp bsmith $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -90,7 +90,7 @@ PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-#PCONF         = -DHAVE_MPE -DHAVE_PVODE -DHAVE_SPAI -DHAVE_PARMETIS -DHAVE_BLOCKSOLVE
-PCONF         = -DHAVE_MPE -DHAVE_PVODE -DHAVE_SPAI -DHAVE_PARMETIS
+#PCONF         = -DHAVE_MPE -DHAVE_PVODE -DHAVE_PARMETIS -DHAVE_BLOCKSOLVE
+PCONF         = -DHAVE_MPE -DHAVE_PVODE -DHAVE_PARMETIS
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB}
 
