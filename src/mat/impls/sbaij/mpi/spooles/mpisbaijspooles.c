@@ -179,7 +179,6 @@ EXTERN_C_END
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes Spooles solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATMPISBAIJSPOOLES).
-  This matrix type is only supported for double precision real.
 
   This matrix inherits from MATMPISBAIJ.  As a result, MatMPISBAIJSetPreallocation is 
   supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 

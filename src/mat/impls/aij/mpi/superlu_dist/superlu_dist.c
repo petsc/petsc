@@ -661,7 +661,6 @@ PetscErrorCode MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SuperLU_DIST solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU_DIST).
-  This matrix type is only supported for double precision real.
 
   This matrix inherits from MATSEQAIJ when constructed with a single process communicator,
   and from MATMPIAIJ otherwise.  As a result, for single process communicators, 

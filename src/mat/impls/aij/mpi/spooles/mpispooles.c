@@ -637,7 +637,6 @@ EXTERN_C_END
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SPOOLES solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATMPIAIJSPOOLES).
-  This matrix type is only supported for double precision real.
 
   This matrix inherits from MATMPIAIJ.  As a result, MatMPIAIJSetPreallocation is 
   supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 

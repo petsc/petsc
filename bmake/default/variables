@@ -1,6 +1,0 @@
-RM                 = rm -f
-SHELL              = /bin/sh
-SED                = /bin/sed
-OMAKE              = gmake --no-print-directory
-MKDIR              = mkdir -p
-

@@ -784,7 +784,6 @@ EXTERN_C_END
   on how to declare the existence of external packages),
   a matrix type can be constructed which invokes MUMPS solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATAIJMUMPS).
-  This matrix type is only supported for double precision real.
 
   If created with a single process communicator, this matrix type inherits from MATSEQAIJ.
   Otherwise, this matrix type inherits from MATMPIAIJ.  Hence for single process communicators,
@@ -968,7 +967,6 @@ PetscErrorCode MatDuplicate_MUMPS(Mat A, MatDuplicateOption op, Mat *M) {
   on how to declare the existence of external packages),
   a matrix type can be constructed which invokes MUMPS solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJMUMPS).
-  This matrix type is only supported for double precision real.
 
   If created with a single process communicator, this matrix type inherits from MATSEQSBAIJ.
   Otherwise, this matrix type inherits from MATMPISBAIJ.  Hence for single process communicators,
