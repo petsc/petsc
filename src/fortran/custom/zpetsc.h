@@ -82,9 +82,13 @@ extern int   MPIR_FromPointer(void*);
 #define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
 
 #elif defined(LAM_MPI)
-#include "MPISYS.h"
-#define PetscToPointerComm(a)        GETHDL(*(MPI_Fint *)(&a))
+extern void		**lam_F_types;
+extern int		lam_F_typefind (void *);
+#define GETHDL(x)	(((x) >= 0) ? lam_F_types[(x)] : 0)
+
+#define PetscToPointerComm(a)        GETHDL(*(int *)(&a))
 #define PetscFromPointerComm(a)      lam_F_typefind(a)
+/* ; if(lam_F_typefind(a) == -1) abort();*/
 
 #else
 #define PetscToPointerComm(a)        (a)
