@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.99 1997/11/05 14:49:33 bsmith Exp balay $ 
+# $Id: buildtest,v 1.100 1997/11/12 15:59:25 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -19,7 +19,7 @@ set TMP=/tmp/petsc
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set M =(snake  maverick   violet     elvis         clyde       ptera        maverick   quad        maple       yukon        )
+  set M =(snake  maverick   violet     snowy         clyde       ptera        maverick   quad        maple       yukon        )
   set B =(O      O_complex  g          g_c++         O_c++       Opg          O          O_c++       g           g_complex    )
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha        sun4_uni   rs6000      solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared       shared     shared      shared      shared       )
@@ -32,7 +32,7 @@ if ($day == Sun) then
   set H=($PETSC  $TMP       $TMP       $TMP          $SP         $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif
 if ($day == Mon) then
-  set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        maple       yukon        )
+  set M =(snake  maverick   violet     snowy         spnode013   ptera       maverick    quad        maple       yukon        )
   set B =(g      Opg_c++    O_c++      g             O           g           Opg         O           Opg_complex O_complex    )
   set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha_nolog sun4        rs6000      solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
@@ -45,7 +45,7 @@ if ($day == Mon) then
   set H=($PETSC  $TMP       $TMP       $TMP          $TMP        $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif  
 if ($day == Tue) then
-  set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        maple       yukon        )
+  set M =(snake  maverick   violet     snowy         spnode013   ptera       maverick    quad        maple       yukon        )
   set B =(O      g          O_complex  O             g           O           Opg_c++     g           O_c++       g_c++        )
   set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha       sun4        rs6000      solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
@@ -58,7 +58,7 @@ if ($day == Tue) then
   set H=($PETSC  $TMP       $TMP       $TMP          $TMP        $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif
 if ($day == Wed) then
-  set M =(snake  maverick   violet     elvis         clyde       ptera       maverick    quad        maple       yukon        )
+  set M =(snake  maverick   violet     snowy         clyde       ptera       maverick    quad        maple       yukon        )
   set B =(g      g_c++      O          g_complex     Opg_complex Opg         Opg_c++     Opg_complex O           g            )
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha_uni   sun4_uni    rs6000      solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
@@ -71,7 +71,7 @@ if ($day == Wed) then
   set H=($PETSC  $TMP       $TMP       $TMP          $SP         $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif
 if ($day == Thu) then
-  set M =(snake  maverick   violet     elvis         clyde       ptera       maverick    quad        maple       yukon        )
+  set M =(snake  maverick   violet     snowy         clyde       ptera       maverick    quad        maple       yukon        )
   set B =(O      g_complex  g_c++      O_c++         g_c++       g           Opg_complex g_c++       g           O            )
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha       sun4        rs6000      solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
@@ -84,7 +84,7 @@ if ($day == Thu) then
   set H=($PETSC  $TMP       $TMP       $TMP          $SP         $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif  
 if ($day == Fri) then
-  set M =(snake  maverick   violet     elvis         clyde       ptera       maverick    quad        maple       yukon        )
+  set M =(snake  maverick   violet     snowy         clyde       ptera       maverick    quad        maple       yukon        )
   set B =(g      O_c++      g_complex  O_complex     g_complex   O           Opg         g_complex   g_c++       O            )
   set A =(hpux   sun4       IRIX       freebsd       rs6000      alpha_uni   sun4        rs6000      solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
@@ -97,7 +97,7 @@ if ($day == Fri) then
   set H=($PETSC  $TMP       $TMP       $TMP          $SP         $LOIS       $TMP        $CCST       $TMP        $TMP         )
 endif
 if ($day == Sat) then
-  set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        maple       yukon        )
+  set M =(snake  maverick   violet     snowy         spnode013   ptera       maverick    quad        maple       yukon        )
   set B =(O      O          O          Opg_complex   O           Opg         g_complex   Opg         O_complex   O_c++        )
   set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha_nolog sun4_uni    rs6000      solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      shared      shared      shared      shared       )
