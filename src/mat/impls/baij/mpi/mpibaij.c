@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.193 2000/04/16 16:46:05 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.194 2000/04/17 04:10:50 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1812,9 +1812,9 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
       SETERRQ(PETSC_ERR_SUP,0,"MatZeroRows() on rectangular matrices cannot be used with the Mat options \n\
 MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
     }
-    for (i = 0; i < slen; i++) {
+    for (i=0; i<slen; i++) {
       row  = lrows[i] + rstart_bs;
-      ierr = MatSetValues_MPIBAIJ(A,1,&row,1,&row,diag,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
