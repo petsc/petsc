@@ -77,7 +77,6 @@ fi
 #
 #
 #
-URLGET=""
 if [ "$URLGET" != "" ]; then
   $URLGET $*
   exit
