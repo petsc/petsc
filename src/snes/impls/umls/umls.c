@@ -1,17 +1,24 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.1 1995/07/24 15:12:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.1 1995/07/24 15:57:51 curfman Exp curfman $";
 #endif
 
 #include <math.h>
 #include "umls.h"
 #include "pviewer.h"
 
-void mcstep1_(double*,double*,double*,double*,double*,double*,double*,
-              double*,double*,int*,double*,double*,int*);
 #if defined(FORTRANCAPS)
-#define mcstep1_  MCSTEP
-#elif !defined(FORTRANUNDERSCORE)
+#define mcstep1_  MCSTEP1
+#elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define mcstep1_  mcstep1
+#endif
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+extern int mcstep1_(double*,double*,double*,double*,double*,double*,double*,
+              double*,double*,int*,double*,double*,int*);
+#if defined(__cplusplus)
+};
 #endif
 
 /*
@@ -244,13 +251,6 @@ int SNESConverged_UMLS(SNES snes,double xnorm,double gnorm,double f,
   return 0;
 }
 /* ---------------------------------------------------------- */
-
-#if defined(FORTRANCAPS)
-#define mstep1_	MSTEP1
-#elif !defined(FORTRANUNDERSCORE)
-#define mstep1_	mstep1
-#endif
-
 /* @ SNESMoreLineSearch - This routine performs a line search algorithm,
      taken from More and Thuente, "Line search algorithms with 
      guaranteed sufficient decrease", Argonne National Laboratory", 
@@ -480,8 +480,8 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
       dgym = dgy - dgtest;
 
       /* Update the interval of uncertainty and compute the new step */
-      mcstep1_( &stx, &fxm, &dgxm, &sty, &fym, &dgym, step, &fm, &dgm, 
-                &bracket, &(neP->stepmin), &(neP->stepmax), &infoc );
+      ierr = mcstep1_(&stx,&fxm,&dgxm,&sty,&fym,&dgym,step,&fm,&dgm,&bracket,
+                      &(neP->stepmin),&(neP->stepmax),&infoc); CHKERRQ(ierr);
 
       fx  = fxm + stx * dgtest;	/* Reset the function and */
       fy  = fym + sty * dgtest;	/* gradient values */
@@ -489,8 +489,8 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
       dgy = dgym + dgtest; 
     } else {
       /* Update the interval of uncertainty and compute the new step */
-      mcstep1_( &stx, &fx, &dgx, &sty, &fy, &dgy, step, f, &dg,
-                &bracket, &(neP->stepmin), &(neP->stepmax), &infoc );
+      ierr = mcstep1_(&stx,&fx,&dgx,&sty,&fy,&dgy,step,f,&dg,&bracket,
+               &(neP->stepmin),&(neP->stepmax),&infoc); CHKERRQ(ierr);
     }
 
    /* Force a sufficient decrease in the interval of uncertainty */

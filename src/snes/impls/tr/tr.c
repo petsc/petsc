@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.17 1995/07/20 15:35:04 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.18 1995/07/21 21:44:58 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -58,7 +58,6 @@ static int SNESSolve_TR(SNES snes,int *its)
   double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
   double       *history, ynorm;
   Scalar       one = 1.0,cnorm;
-  double       epsmch = 1.0e-14;   /* This must be fixed */
   KSP          ksp;
   SLES         sles;
 
@@ -91,7 +90,6 @@ static int SNESSolve_TR(SNES snes,int *its)
  
   for ( i=0; i<maxits; i++ ) {
      snes->iter = i+1;
-
      ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,
                                              &flg); CHKERRQ(ierr);
      ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,
@@ -136,7 +134,16 @@ static int SNESSolve_TR(SNES snes,int *its)
        if (rho > neP->sigma) break;
        PLogInfo((PetscObject)snes,"Trying again in smaller region\n");
        /* check to see if progress is hopeless */
-       if (neP->delta < xnorm * epsmch)	return -1;
+       neP->itflag = 0;
+       if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
+         /* We're not progressing, so return with the current iterate */
+         if (X != snes->vec_sol) {
+           VecCopy(X,snes->vec_sol);
+           snes->vec_sol_always = snes->vec_sol;
+           snes->vec_func_always = snes->vec_func; 
+         }
+       }
+       snes->nfailures++;
      }
      fnorm = gnorm;
      snes->norm = fnorm;
@@ -148,18 +155,24 @@ static int SNESSolve_TR(SNES snes,int *its)
        {(*snes->monitor)(snes,i+1,fnorm,snes->monP); CHKERRQ(ierr);}
 
      /* Test for convergence */
+     neP->itflag = 1;
      if ((*snes->converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
        /* Verify solution is in corect location */
        if (X != snes->vec_sol) {
-         VecCopy(X, snes->vec_sol );
+         VecCopy(X,snes->vec_sol);
          snes->vec_sol_always = snes->vec_sol;
          snes->vec_func_always = snes->vec_func; 
        }
        break;
      } 
    }
-   if (i == maxits) *its = i-1; else *its = i + 1;
-   return 0;
+  if (i == maxits) {
+    PLogInfo((PetscObject)snes,
+      "Maximum number of iterations has been reached: %d\n",maxits);
+    i--;
+  }
+  *its = i+1;
+  return 0;
 }
 /*------------------------------------------------------------*/
 static int SNESSetUp_TR( SNES snes )
@@ -198,16 +211,16 @@ static int SNESSetFromOptions_TR(SNES snes)
 static int SNESPrintHelp_TR(SNES snes)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
-  char    *prefix = "-";
-  if (snes->prefix) prefix = snes->prefix;
-  MPIU_fprintf(snes->comm,stdout," method tr:\n");
-  MPIU_fprintf(snes->comm,stdout,"   %smu mu (default %g)\n",prefix,ctx->mu);
-  MPIU_fprintf(snes->comm,stdout,"   %seta eta (default %g)\n",prefix,ctx->eta);
-  MPIU_fprintf(snes->comm,stdout,"   %ssigma sigma (default %g)\n",prefix,ctx->sigma);
-  MPIU_fprintf(snes->comm,stdout,"   %sdelta0 delta0 (default %g)\n",prefix,ctx->delta0);
-  MPIU_fprintf(snes->comm,stdout,"   %sdelta1 delta1 (default %g)\n",prefix,ctx->delta1);
-  MPIU_fprintf(snes->comm,stdout,"   %sdelta2 delta2 (default %g)\n",prefix,ctx->delta2);
-  MPIU_fprintf(snes->comm,stdout,"   %sdelta3 delta3 (default %g)\n",prefix,ctx->delta3);
+  char    *p;
+  if (snes->prefix) p = snes->prefix; else p = "-";
+  MPIU_fprintf(snes->comm,stdout," method tr (system of nonlinear equations):\n");
+  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_mu mu (default %g)\n",p,ctx->mu);
+  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_eta eta (default %g)\n",p,ctx->eta);
+  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_sigma sigma (default %g)\n",p,ctx->sigma);
+  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_delta0 delta0 (default %g)\n",p,ctx->delta0);
+  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_delta1 delta1 (default %g)\n",p,ctx->delta1);
+  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_delta2 delta2 (default %g)\n",p,ctx->delta2);
+  MPIU_fprintf(snes->comm,stdout,"   %ssnes_trust_region_delta3 delta3 (default %g)\n",p,ctx->delta3);
   return 0;
 }
 
@@ -225,6 +238,71 @@ static int SNESView_TR(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+/* ---------------------------------------------------------------- */
+/*@ 
+   SNESTrustRegionDefaultConverged - Default test for monitoring the 
+   convergence of the trust region method SNES_EQ_TR for solving systems 
+   of nonlinear equations.
+
+   Input Parameters:
+.  snes - the SNES context
+.  xnorm - 2-norm of current iterate
+.  pnorm - 2-norm of current step 
+.  fnorm - 2-norm of function
+.  dummy - unused context
+
+   Returns:
+$  1  if  ( delta < xnorm*deltatol ),
+$  2  if  ( fnorm < atol ),
+$  3  if  ( pnorm < xtol*xnorm ),
+$ -2  if  ( nfct > maxf ),
+$ -1  if  ( delta < xnorm*epsmch ),
+$  0  otherwise,
+
+   where
+$    delta    - trust region paramenter
+$    deltatol - trust region size tolerance,
+$               set with SNESSetTrustRegionTolerance()
+$    maxf - maximum number of function evaluations,
+$           set with SNESSetMaxFunctionEvaluations()
+$    nfct - number of function evaluations,
+$    atol - absolute function norm tolerance,
+$           set with SNESSetAbsoluteTolerance()
+$    xtol - relative function norm tolerance,
+$           set with SNESSetRelativeTolerance()
+
+.keywords: SNES, nonlinear, default, converged, convergence
+
+.seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
+@*/
+int SNESTrustRegionDefaultConverged(SNES snes,double xnorm,double pnorm,
+                         double fnorm,void *dummy)
+{
+  SNES_TR *neP = (SNES_TR *)snes->data;
+  double  epsmch = 1.0e-14;   /* This must be fixed */
+  int     info;
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
+    "SNESDefaultConverged:For SNES_NONLINEAR_EQUATIONS method only");
+
+  if (neP->delta < xnorm * snes->deltatol) {
+    PLogInfo((PetscObject)snes,
+      "SNES: Converged due to trust region param %g < %g * %g\n",neP->delta,
+       xnorm, snes->deltatol);
+    return 1;
+  }
+  if (neP->itflag) {
+    info = SNESDefaultConverged(snes,xnorm,pnorm,fnorm,dummy);
+    if (info) return info;
+  } 
+  if (neP->delta < xnorm * epsmch) {
+    PLogInfo((PetscObject)snes,
+      "SNES: Converged due to trust region param %g < %g * %g\n",neP->delta,
+       xnorm, epsmch);
+    return -1;
+  }
+  return 0;
+}
+/* ------------------------------------------------------------ */
 int SNESCreate_TR(SNES snes )
 {
   SNES_TR *neP;
@@ -235,7 +313,7 @@ int SNESCreate_TR(SNES snes )
   snes->setup		= SNESSetUp_TR;
   snes->solve		= SNESSolve_TR;
   snes->destroy		= SNESDestroy_TR;
-  snes->converged	= SNESDefaultConverged;
+  snes->converged	= SNESTrustRegionDefaultConverged;
   snes->printhelp       = SNESPrintHelp_TR;
   snes->setfromoptions  = SNESSetFromOptions_TR;
   snes->view            = SNESView_TR;
@@ -251,5 +329,7 @@ int SNESCreate_TR(SNES snes )
   neP->delta3		= 2.0;
   neP->sigma		= 0.0001;
   neP->itflag		= 0;
+  neP->rnorm0		= 0;
+  neP->ttol		= 0;
   return 0;
 }

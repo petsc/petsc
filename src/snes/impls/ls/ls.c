@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.33 1995/07/20 15:34:54 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.34 1995/07/22 19:46:43 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -87,7 +87,11 @@ int SNESSolve_LS(SNES snes,int *outits)
            break;
        }
   }
-  if (i == maxits) i--;
+  if (i == maxits) {
+    PLogInfo((PetscObject)snes,
+      "Maximum number of iterations has been reached: %d\n",maxits);
+    i--;
+  }
   *outits = i+1;
   return 0;
 }
@@ -109,97 +113,6 @@ int SNESDestroy_LS(PetscObject obj)
   PETSCFREE(snes->data);
   return 0;
 }
-/*@ 
-   SNESDefaultMonitor - Default SNES monitoring routine.  Prints the 
-   residual norm at each iteration.
-
-   Input Parameters:
-.  snes - the SNES context
-.  its - iteration number
-.  fnorm - 2-norm residual value (may be estimated)
-.  dummy - unused context
-
-   Notes:
-   f is either the residual or its negative, depending on the user's
-   preference, as set with SNESSetFunction().
-
-.keywords: SNES, nonlinear, default, monitor, residual, norm
-
-.seealso: SNESSetMonitor()
-@*/
-int SNESDefaultMonitor(SNES snes,int its,double fnorm,void *dummy)
-{
-  MPIU_printf(snes->comm, "iter = %d, Function norm %g \n",its,fnorm);
-  return 0;
-}
-
-int SNESDefaultSMonitor(SNES snes,int its, double fnorm,void *dummy)
-{
-  if (fnorm > 1.e-9 || fnorm == 0.0) {
-    MPIU_printf(snes->comm, "iter = %d, Function norm %g \n",its,fnorm);
-  }
-  else if (fnorm > 1.e-11){
-    MPIU_printf(snes->comm, "iter = %d, Function norm %5.3e \n",its,fnorm);
-  }
-  else {
-    MPIU_printf(snes->comm, "iter = %d, Function norm < 1.e-11\n",its);
-  }
-  return 0;
-}
-
-/*@ 
-   SNESDefaultConverged - Default test for monitoring the convergence 
-   of the SNES solvers.
-
-   Input Parameters:
-.  snes - the SNES context
-.  xnorm - 2-norm of current iterate
-.  pnorm - 2-norm of current step 
-.  fnorm - 2-norm of residual
-.  dummy - unused context
-
-   Returns:
-$  2  if  ( fnorm < atol ),
-$  3  if  ( pnorm < xtol*xnorm ),
-$ -2  if  ( nres > max_res ),
-$  0  otherwise,
-
-   where
-$    atol    - absolute residual norm tolerance,
-$              set with SNESSetAbsoluteTolerance()
-$    max_res - maximum number of residual evaluations,
-$              set with SNESSetMaxResidualEvaluations()
-$    nres    - number of residual evaluations
-$    xtol    - relative residual norm tolerance,
-$              set with SNESSetRelativeTolerance()
-
-.keywords: SNES, nonlinear, default, converged, convergence
-
-.seealso: SNESSetConvergenceTest()
-@*/
-int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
-                         void *dummy)
-{
-  if (fnorm < snes->atol) {
-    PLogInfo((PetscObject)snes,
-      "Converged due to absolute residual norm %g < %g\n",fnorm,snes->atol);
-    return 2;
-  }
-  if (pnorm < snes->xtol*(xnorm)) {
-    PLogInfo((PetscObject)snes,
-      "Converged due to small update length  %g < %g*%g\n",
-       pnorm,snes->xtol,xnorm);
-    return 3;
-  }
-  if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo((PetscObject)snes,
-      "Exceeded maximum number of function evaluations: %d > %d\n",
-       snes->nfuncs, snes->max_funcs );
-    return -2;
-  }  
-  return 0;
-}
-
 /* ------------------------------------------------------------ */
 /*ARGSUSED*/
 /*@
@@ -399,6 +312,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 0;
 }
+/* ------------------------------------------------------------------ */
 /*@
    SNESQuadraticLineSearch - This routine performs a cubic line search.
 
@@ -558,18 +472,20 @@ int SNESSetLineSearchRoutine(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
     ((SNES_LS *)(snes->data))->LineSearch = func;
   return 0;
 }
-
+/* ------------------------------------------------------------------ */
 static int SNESPrintHelp_LS(SNES snes)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
-  MPIU_fprintf(snes->comm,stdout," method ls:\n");
-  MPIU_fprintf(snes->comm,stdout,"   -snes_line_search [basic,quadratic,cubic]\n");
-  MPIU_fprintf(snes->comm,stdout,"   -snes_line_search_alpha alpha (default %g)\n",ls->alpha);
-  MPIU_fprintf(snes->comm,stdout,"   -snes_line_search_maxstep max (default %g)\n",ls->maxstep);
-  MPIU_fprintf(snes->comm,stdout,"   -snes_line_search_steptol tol (default %g)\n",ls->steptol);
+  char    *p;
+  if (snes->prefix) p = snes->prefix; else p = "-";
+  MPIU_printf(snes->comm," method ls (system of nonlinear equations):\n");
+  MPIU_printf(snes->comm,"   %ssnes_line_search [basic,quadratic,cubic]\n",p);
+  MPIU_printf(snes->comm,"   %ssnes_line_search_alpha alpha (default %g)\n",p,ls->alpha);
+  MPIU_printf(snes->comm,"   %ssnes_line_search_maxstep max (default %g)\n",p,ls->maxstep);
+  MPIU_printf(snes->comm,"   %ssnes_line_search_steptol tol (default %g)\n",p,ls->steptol);
   return 0;
 }
-
+/* ------------------------------------------------------------------ */
 static int SNESView_LS(PetscObject obj,Viewer viewer)
 {
   SNES    snes = (SNES)obj;
@@ -590,7 +506,7 @@ static int SNESView_LS(PetscObject obj,Viewer viewer)
      ls->alpha,ls->maxstep,ls->steptol);
   return 0;
 }
-
+/* ------------------------------------------------------------------ */
 static int SNESSetFromOptions_LS(SNES snes)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
@@ -620,7 +536,6 @@ static int SNESSetFromOptions_LS(SNES snes)
   }
   return 0;
 }
-
 /* ------------------------------------------------------------ */
 int SNESCreate_LS(SNES  snes )
 {

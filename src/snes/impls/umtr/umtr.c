@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.3 1995/07/22 20:33:54 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.4 1995/07/26 22:37:00 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -37,8 +37,8 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   SNES_UMTR    *neP = (SNES_UMTR *) snes->data;
   int          maxits, i, history_len, nlconv, ierr;
   int          qits, newton;
-  double       gnorm, xnorm, max_val, *history, ftrial, delta;
-  double       zero = 0.0, f, two = 2.0, four = 4.0;
+  double       *gnorm, xnorm, max_val, *history, ftrial, delta;
+  double       zero = 0.0, *f, two = 2.0, four = 4.0;
   Scalar       one = 1.0;
   Vec          X, G, Y, S, Xtrial;
   MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
@@ -56,17 +56,17 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   Xtrial	= snes->work[1]; 
   Y		= snes->work[2]; 
   delta	= neP->delta;                    /* trust region radius */
+  f		= &(snes->fc);		/* function to minimize */
+  gnorm		= &(snes->norm);	/* gradient norm */
 
   ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);/* X <- X_0 */
   VecNorm(X,&xnorm);                                    /* xnorm = || X || */
-  ierr = SNESComputeMinimizationFunction(snes,X,&f); CHKERRQ(ierr); /* f(X) */
-  snes->fc = f;
+  ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
-  VecNorm(G,&gnorm);                                    /* gnorm = || G || */
-  if (history && history_len > 0) history[0] = gnorm;
-  snes->norm = gnorm;
+  VecNorm(G,gnorm);                                     /* gnorm = || G || */
+  if (history && history_len > 0) history[0] = *gnorm;
   if (snes->monitor)
-    {(*snes->monitor)(snes,0,gnorm,snes->monP); CHKERRQ(ierr);}
+    {(*snes->monitor)(snes,0,*gnorm,snes->monP); CHKERRQ(ierr);}
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
@@ -90,7 +90,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
         else delta = neP->delta0;
         /* Compute L-1 matrix norm */
         ierr = MatNorm(snes->jacobian,NORM_1,&max_val); CHKERRQ(ierr);
-        delta = MAX(delta,gnorm/max_val);
+        delta = MAX(delta,*gnorm/max_val);
       } else { 
         delta = neP->delta0;
       }
@@ -110,7 +110,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
       ierr = SNESComputeMinimizationFunction(snes,Xtrial,&ftrial); CHKERRQ(ierr);
 
       /* Compute the function reduction and the step size */
-      neP->actred = f - ftrial;
+      neP->actred = *f - ftrial;
       neP->prered = -qcgP->quadratic;
 
       /* Adjust delta for the first Newton step */
@@ -146,24 +146,22 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
       }
 
       neP->delta = delta;
-      if ((*snes->converged)(snes,xnorm,gnorm,ftrial,snes->cnvP)) nlconv = 1;
+      if ((*snes->converged)(snes,xnorm,*gnorm,ftrial,snes->cnvP)) nlconv = 1;
     } while (!neP->success && !nlconv);
 
     /* Question:  If (!neP->success && break), then last step was rejected, 
        but convergence was detected.  Should this update really happen? */
-    f = ftrial;
-    snes->fc = f;
+    *f = ftrial;
     VecCopy(Xtrial,X);
     snes->vec_sol_always = X;
     /* Note:  At last iteration, the gradient evaluation is unnecessary */
     ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);
-    VecNorm(G,&gnorm);
-    if (history && history_len > i+1) history[i+1] = gnorm;
+    VecNorm(G,gnorm);
+    if (history && history_len > i+1) history[i+1] = *gnorm;
     snes->vec_func_always = G;
-    snes->norm = gnorm;
 
     if (snes->monitor) 
-     {(*snes->monitor)(snes,i+1,gnorm,snes->monP); CHKERRQ(ierr);}
+     {(*snes->monitor)(snes,i+1,*gnorm,snes->monP); CHKERRQ(ierr);}
   }
   /* Verify solution is in corect location */
   if (X != snes->vec_sol) {

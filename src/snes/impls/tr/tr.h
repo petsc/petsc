@@ -1,16 +1,16 @@
-/* $Id: tr.h,v 1.4 1995/07/11 03:03:27 curfman Exp curfman $ */
+/* $Id: tr.h,v 1.5 1995/07/22 19:47:21 curfman Exp curfman $ */
 
 /*
-   Context for a Newton trust region method (system of nonlinear equations)
+   Context for a Newton trust region method for solving a system 
+   of nonlinear equations
  */
 
-#ifndef __EQTR_H
-#define __EQTR_H
+#ifndef __SNES_EQTR_H
+#define __SNES_EQTR_H
 #include "snesimpl.h"
 
 typedef struct {
   /* ---- Parameters used by the trust region method  ---- */
-  double deltatol;
   double mu;		/* used to compute trust region parameter */
   double eta;		/* used to compute trust region parameter */
   double delta;		/* trust region parameter */

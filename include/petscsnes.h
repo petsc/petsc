@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.26 1995/07/17 20:43:13 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.27 1995/07/20 15:34:44 curfman Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -7,7 +7,8 @@
 typedef struct _SNES* SNES;
 #define SNES_COOKIE PETSC_COOKIE+13
 
-typedef enum { SNES_EQ_NLS,
+typedef enum { SNES_UNKNOWN_METHOD=-1,
+               SNES_EQ_NLS,
                SNES_EQ_NTR,
                SNES_EQ_NTR_DOG_LEG,
                SNES_EQ_NTR2_LIN,
@@ -22,9 +23,10 @@ typedef enum { SNES_EQ_NLS,
 #define SNES_NTR_DOG_LEG SNES_EQ_NTR_DOG_LEG
 #define SNES_NTEST       SNES_EQ_NTEST
 
-typedef enum { SNES_EQ, SNES_UM } SNESType;
+typedef enum { SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION } 
+        SNESType;
 
-extern int SNESCreate(MPI_Comm,SNES*);
+extern int SNESCreate(MPI_Comm,SNESType,SNES*);
 extern int SNESSetMethod(SNES,SNESMethod);
 extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *);
 extern int SNESSetSolution(SNES,Vec,int(*)(SNES,Vec,void*),void *);
@@ -49,14 +51,17 @@ extern int SNESPrintHelp(SNES);
 extern int SNESView(SNES,Viewer);
 extern int SNESSetFromOptions(SNES);
 extern int SNESGetMethodName(SNESMethod,char **);
+extern int SNESGetMethodFromContext(SNES,SNESMethod*);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESDefaultSMonitor(SNES,int,double,void *);
 extern int SNESDefaultConverged(SNES,double,double,double,void*);
+extern int SNESDefaultTrustRegionConverged(SNES,double,double,double,void*);
 
 extern int SNESSetSolutionTolerance(SNES,double);
 extern int SNESSetAbsoluteTolerance(SNES,double);
 extern int SNESSetRelativeTolerance(SNES,double);
 extern int SNESSetTruncationTolerance(SNES,double);
+extern int SNESSetTrustRegionTolerance(SNES,double);
 extern int SNESSetMaxIterations(SNES,int);
 extern int SNESSetMaxFunctionEvaluations(SNES,int);
 extern int SNESGetIterationNumber(SNES,int*);
@@ -77,17 +82,12 @@ extern int SNESDefaultMatrixFreeComputeJacobian(SNES,Vec,Mat*,Mat*,
 extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
 
 extern int SNESComputeFunction(SNES,Vec,Vec);
-extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 extern int SNESDestroy(SNES);
 
 
-/* Unconstrained minimization routines ... Some of these may change! */
-
-/* temporarily define this */
-#define KSPQCG 2000
+/* Unconstrained minimization routines */
 
 extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
-extern int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
 extern int SNESGetGradient(SNES,Vec*);
 extern int SNESGetGradientNorm(SNES,Scalar*);
@@ -96,6 +96,11 @@ extern int SNESSetMinimizationFunction(SNES,int(*)(SNES,Vec,double*,void*),void*
 extern int SNESComputeMinimizationFunction(SNES,Vec,double*);
 extern int SNESGetMinimizationFunction(SNES,double*);
 extern int SNESSetMinFunctionTolerance(SNES,double);
+extern int SNESGetLineSearchDampingParameter(SNES,double*);
+
+/* Should these 2 routines be private? */
+extern int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*);
+extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
 #endif
 
