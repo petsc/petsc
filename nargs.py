@@ -1,4 +1,3 @@
-import os
 try:
   import readline
 except ImportError: pass
@@ -203,6 +202,7 @@ class ArgDir(Arg):
 
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    import os
     # Should check whether it is a well-formed path
     if self.mustExist and not os.path.isdir(value):
       raise TypeError('Invalid directory: '+str(value))
@@ -236,6 +236,7 @@ class ArgLibrary(Arg):
 
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    import os
     # Should check whether it is a well-formed path and an archive or shared object
     if self.mustExist and not os.path.isfile(value):
       raise TypeError('Invalid library: '+str(value))

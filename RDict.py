@@ -1,9 +1,6 @@
 #!/usr/bin/env python
-#
-#   RDict - A remote dictionary server
-#
-# This is necessary for us to create Project objects on load
-import project
+'''RDict - A remote dictionary server'''
+import project # This is necessary for us to create Project objects on load
 import nargs
 
 import cPickle

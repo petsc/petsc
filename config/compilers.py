@@ -11,30 +11,26 @@ class Configure(config.base.Configure):
     return
 
   def configureHelp(self, help):
-    help.addOption('Compilers', '-with-cpp=<prog>', 'Specify the C preprocessor')
-    help.addOption('Compilers', '-with-cc=<prog>', 'Specify the C compiler')
-    help.addOption('Compilers', '-with-cxx=<prog>', 'Specify the C++ compiler')
-    help.addOption('Compilers', '-with-fc=<prog>', 'Specify the Fortran compiler')
-    #help.addOption('Compilers', '-with-f90=<prog>', 'Specify the Fortran 90 compiler')
-    help.addOption('Compilers', '-with-f90-header=<file>', 'Specify the C header for the F90 interface')
-    help.addOption('Compilers', '-with-f90-source=<file>', 'Specify the C source for the F90 interface')
+    import nargs
 
-    help.addOption('Compilers', '-CPP=<prog>', 'Specify the C preprocessor')
-    help.addOption('Compilers', '-CPPFLAGS=<string>', 'Specify the C preprocessor options')
-    help.addOption('Compilers', '-CXXPP=<prog>', 'Specify the C++ preprocessor')
-    help.addOption('Compilers', '-CC=<prog>', 'Specify the C compiler')
-    help.addOption('Compilers', '-CFLAGS=<string>', 'Specify the C compiler options')
-    help.addOption('Compilers', '-CXX=<prog>', 'Specify the C++ compiler')
-    help.addOption('Compilers', '-CXXFLAGS=<string>', 'Specify the C++ compiler options')
-    help.addOption('Compilers', '-FC=<prog>', 'Specify the Fortran compiler')
-    help.addOption('Compilers', '-FFLAGS=<string>', 'Specify the Fortran compiler options')
-    help.addOption('Compilers', '-LDFLAGS=<string>', 'Specify the linker options')
+    help.addArgument('Compilers', '-with-cpp=<prog>', nargs.Arg(None, None, 'Specify the C preprocessor'))
+    help.addArgument('Compilers', '-with-cc=<prog>',  nargs.Arg(None, None, 'Specify the C compiler'))
+    help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
+    help.addArgument('Compilers', '-with-fc=<prog>',  nargs.Arg(None, None, 'Specify the Fortran compiler'))
+    #help.addArgument('Compilers', '-with-f90=<prog>',       nargs.Arg(None, None, 'Specify the Fortran 90 compiler'))
+    help.addArgument('Compilers', '-with-f90-header=<file>', nargs.Arg(None, None, 'Specify the C header for the F90 interface'))
+    help.addArgument('Compilers', '-with-f90-source=<file>', nargs.Arg(None, None, 'Specify the C source for the F90 interface'))
 
-    self.framework.argDB['CPPFLAGS'] = ''
-    self.framework.argDB['CFLAGS']   = ''
-    self.framework.argDB['CXXFLAGS'] = ''
-    self.framework.argDB['FFLAGS']   = ''
-    self.framework.argDB['LDFLAGS']  = ''
+    help.addArgument('Compilers', '-CPP=<prog>',        nargs.Arg(None, None, 'Specify the C preprocessor'))
+    help.addArgument('Compilers', '-CPPFLAGS=<string>', nargs.Arg(None, '',   'Specify the C preprocessor options'))
+    help.addArgument('Compilers', '-CXXPP=<prog>',      nargs.Arg(None, None, 'Specify the C++ preprocessor'))
+    help.addArgument('Compilers', '-CC=<prog>',         nargs.Arg(None, None, 'Specify the C compiler'))
+    help.addArgument('Compilers', '-CFLAGS=<string>',   nargs.Arg(None, '',   'Specify the C compiler options'))
+    help.addArgument('Compilers', '-CXX=<prog>',        nargs.Arg(None, None, 'Specify the C++ compiler'))
+    help.addArgument('Compilers', '-CXXFLAGS=<string>', nargs.Arg(None, '',   'Specify the C++ compiler options'))
+    help.addArgument('Compilers', '-FC=<prog>',         nargs.Arg(None, None, 'Specify the Fortran compiler'))
+    help.addArgument('Compilers', '-FFLAGS=<string>',   nargs.Arg(None, '',   'Specify the Fortran compiler options'))
+    help.addArgument('Compilers', '-LDFLAGS=<string>',  nargs.Arg(None, '',   'Specify the linker options'))
     return
 
   def checkCCompiler(self):
@@ -52,7 +48,7 @@ class Configure(config.base.Configure):
       self.addSubstitution('CC', self.CC)
       # Check for GCC
       self.isGCC = 0
-      if self.framework.argDB['CC'].endsWith('gcc'):
+      if self.framework.argDB['CC'].endswith('gcc'):
         self.isGCC = 1
       else:
         try:
@@ -68,7 +64,7 @@ class Configure(config.base.Configure):
         preprocessors = self.framework.argDB['CPP']
       else:
         preprocessors = [self.framework.argDB['CC']+' -E']
-      if not isinstance(preprocessors, list):  = [preprocessors]
+      if not isinstance(preprocessors, list): preprocessors = [preprocessors]
       if self.getExecutables(preprocessors, resultName = 'CPP'):
         self.framework.argDB['CPP'] = self.CPP
         self.addSubstitution('CPP', self.CPP)
@@ -147,7 +143,7 @@ class Configure(config.base.Configure):
     else:
       compilers = ['g77', 'f77', 'pgf77']
     if not isinstance(compilers, list): compilers = [compilers]
-    if self.getExecutables(cmpilers, resultName = 'FC'):
+    if self.getExecutables(compilers, resultName = 'FC'):
       self.framework.argDB['FC'] = self.FC
       self.addSubstitution('FC', self.FC)
     return

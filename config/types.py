@@ -11,11 +11,8 @@ class Configure(config.base.Configure):
     return
 
   def configureHelp(self, help):
-    import nargs
-
-    #help.addOption('Types', '-enable-complex', 'Complex arithmetic flag', nargs.ArgBool)
-
-    #self.framework.argDB['enable-complex'] = 0
+    #import nargs
+    #help.addArgument('Types', '-enable-complex', nargs.ArgBool(None, 0, 'Complex arithmetic flag'))
     return
 
   def check(self, typeName, defaultType = None):
