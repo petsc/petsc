@@ -51,7 +51,7 @@ extern int TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 EXTERN int TSInitializePackage(char *);
 
-EXTERN int TSCreate(MPI_Comm,TSProblemType,TS*);
+EXTERN int TSCreate(MPI_Comm,TS*);
 EXTERN int TSSerialize(MPI_Comm, TS *, PetscViewer, PetscTruth);
 EXTERN int TSDestroy(TS);
 
