@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.98 1998/04/24 22:10:46 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.99 1998/04/25 03:08:53 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -754,9 +754,7 @@ int KSPGetPC(KSP ksp, PC *B)
              monitor routine (use PETSC_NULL if no context is desired)
 
    Calling Sequence of monitor:
-.vb
-   monitor (KSP ksp, int it, double rnorm, void *mctx)
-.ve
+$     monitor (KSP ksp, int it, double rnorm, void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
@@ -901,9 +899,7 @@ int KSPSetResidualHistory(KSP ksp, double *a, int na)
               null)
 
    Calling sequence of converge:
-.vb
-   converge (KSP ksp, int it, double rnorm, void *mctx)
-.ve
+$     converge (KSP ksp, int it, double rnorm, void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number

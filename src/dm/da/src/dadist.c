@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadist.c,v 1.14 1998/04/13 17:58:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: dadist.c,v 1.15 1998/04/27 15:58:33 curfman Exp curfman $";
 #endif
  
 /*
@@ -34,10 +34,10 @@ int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
 .  g - the distributed global vector
 
    Note:
-   This is a regular PETSc vector that should be destroyed with 
-   a call to VecDestroy().
+   The output parameter, g, is a regular PETSc vector that should be destroyed
+   with a call to VecDestroy() when usage is finished.
 
-.keywords: distributed array, get, global, distributed, vector
+.keywords: distributed array, create, global, distributed, vector
 
 .seealso: DACreateLocalVector(), VecDuplicate(), VecDuplicateVecs(),
           DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
