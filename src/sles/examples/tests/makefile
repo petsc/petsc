@@ -265,7 +265,7 @@ runex6_3:
 	   else echo "Possible problem with ex6_3, diffs above"; fi; \
 	   $(RM) -f ex6_3.tmp
 runex6_4:
-	-@$(MPIRUN) ex6 -pc_type bgs -pc_bgs_blocks 5 \
+	-@$(MPIRUN) ex6 -pc_type bgs -pc_bgs_blocks 5 -sub_pc_type lu\
 	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco1 \
 	   -ksp_gmres_restart 100  -ksp_smonitor  > ex6_4.tmp 2>&1; \
 	   if (diff output/ex6_4.out ex6_4.tmp) then true; \
@@ -273,7 +273,7 @@ runex6_4:
 	   $(RM) -f ex6_4.tmp
 runex6_5:
 	-@$(MPIRUN) ex6 -pc_type bgs -pc_bgs_blocks 5 -mat_aij_oneindex \
-	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco1 \
+	    -sub_pc_type lu -f $(PETSC_DIR)/src/mat/examples/matrices/arco1 \
 	   -ksp_gmres_restart 100  -ksp_smonitor  > ex6_5.tmp 2>&1; \
 	   if (diff output/ex6_4.out ex6_5.tmp) then true; \
 	   else echo "Possible problem with ex6_5, diffs above"; fi; \
