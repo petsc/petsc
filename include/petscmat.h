@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.85 1996/01/01 01:05:46 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.86 1996/01/02 18:41:38 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -27,7 +27,7 @@ extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*);
 
 extern int MatDestroy(Mat);
 
-extern int MatShellCreate(MPI_Comm,int,int,void *,Mat*);
+extern int MatCreateShell(MPI_Comm,int,int,void *,Mat*);
 extern int MatShellGetContext(Mat,void **);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
 extern int MatShellSetDestroy(Mat,int (*)(void*));
@@ -73,7 +73,7 @@ extern int MatGetInfo(Mat,MatInfoType,int*,int*,int*);
 extern int MatValidMatrix(Mat);
 extern int MatGetDiagonal(Mat,Vec);
 extern int MatTranspose(Mat,Mat*);
-extern int MatScale(Mat,Vec,Vec);
+extern int MatDiagonalScale(Mat,Vec,Vec);
 extern int MatEqual(Mat,Mat);
 
 extern int MatNorm(Mat,NormType,double *);
@@ -93,6 +93,9 @@ extern int MatIncreaseOverlap(Mat,int,IS *,int);
 
 extern int MatAXPY(Scalar *,Mat,Mat);
 extern int MatCompress(Mat);
+
+extern int MatScale(Scalar *,Mat);
+extern int MatShift(Scalar *,Mat);
 
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);

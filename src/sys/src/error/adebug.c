@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.33 1995/11/20 04:46:40 bsmith Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.34 1995/11/20 17:16:34 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -85,7 +85,7 @@ int PetscAttachDebugger()
     kill(child,SIGSTOP);
 #endif
     sprintf(pid,"%d",child); 
-    if (!PetscStrcmp(Debugger,"xxgdb")) {
+    if (!PetscStrcmp(Debugger,"xxgdb") || !PetscStrcmp(Debugger,"ups")) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = Display; args[5] = 0;
       fprintf(stderr,"PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);

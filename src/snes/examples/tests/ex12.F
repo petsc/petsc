@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.21 1996/01/11 20:15:19 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.22 1996/01/12 22:09:58 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -73,7 +73,8 @@ C Create nonlinear solver
       call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
 
 C Set various routines
-      call SNESSetSolution(snes,x,FormInitialGuess,0,ierr)
+      call FormInitialGuess(snes,x,ierr)
+      call SNESSetSolution(snes,x,ierr)
       call SNESSetFunction(snes,r,FormFunction,ctx,ierr)
       call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
 
@@ -170,10 +171,14 @@ C The element xx(ib) is the ibth element in the vector indicated by ctx(3)
 
 C --------------------  Form initial approximation ----------------- 
 
-      subroutine FormInitialGuess(snes,x,dummy,ierr)
-      integer          snes,x,dummy(*),ierr
-      double precision five 
+      subroutine FormInitialGuess(snes,x,ierr)
 #include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/snes.h"
+      integer          ierr
+      Vec              x
+      SNES             snes
+      double precision five 
 
       five = 5.d-1
       call VecSet(five,x,ierr)

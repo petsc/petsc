@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.27 1996/01/12 22:09:53 bsmith Exp balay $";
+static char vcid[] = "$Id: umtr.c,v 1.28 1996/01/12 23:02:53 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -58,7 +58,6 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   f		= &(snes->fc);		/* function to minimize */
   gnorm		= &(snes->norm);	/* gradient norm */
 
-  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);/* X <- X_0 */
   ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);              /* xnorm = || X || */
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */

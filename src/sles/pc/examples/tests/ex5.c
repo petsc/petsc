@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.35 1996/01/02 20:15:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.36 1996/01/12 22:06:44 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -89,8 +89,7 @@ int main(int Argc, char **Args)
   /* zero is finest level */
   for ( i=0; i<levels-1; i++ ) {
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0); CHKERRA(ierr);
-    ierr = MatShellCreate(MPI_COMM_WORLD,N[i],N[i+1],(void *)0,&mat[i]); 
-           CHKERRA(ierr);
+    ierr = MatCreateShell(MPI_COMM_WORLD,N[i],N[i+1],(void *)0,&mat[i]);CHKERRA(ierr);
     ierr = MatShellSetMult(mat[i],restrct); CHKERRA(ierr);
     ierr = MatShellSetMultTransAdd(mat[i],interpolate); CHKERRA(ierr);
     ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
@@ -133,8 +132,7 @@ int main(int Argc, char **Args)
   ierr = MGSetR(pcmg,0,x); CHKERRA(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
-  ierr = MatShellCreate(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat); 
-  CHKERRA(ierr);
+  ierr = MatCreateShell(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
   ierr = MatShellSetMult(fmat,amult); CHKERRA(ierr);
   ierr = SLESSetOperators(slesmg,fmat,fmat,ALLMAT_DIFFERENT_NONZERO_PATTERN); 
   CHKERRA(ierr);

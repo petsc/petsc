@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.20 1996/01/11 20:15:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.21 1996/01/12 22:09:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -11,7 +11,7 @@ static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
-     FormInitialGuess(SNES,Vec,void*),
+     FormInitialGuess(SNES,Vec),
      Monitor(SNES,int,double,void *);
 
 typedef struct {
@@ -61,7 +61,8 @@ int main( int argc, char **argv )
   ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
+  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
+  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,B,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr);
@@ -109,7 +110,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 }
 /* --------------------  Form initial approximation ----------------- */
 
-int FormInitialGuess(SNES snes,Vec x,void *dummy)
+int FormInitialGuess(SNES snes,Vec x)
 {
   int    ierr;
   Scalar pfive = .50;

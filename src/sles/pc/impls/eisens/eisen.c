@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.39 1996/01/12 22:06:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.40 1996/01/12 22:31:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -192,7 +192,7 @@ int PCCreate_Eisenstat(PC pc)
   eis->b            = 0;
   eis->diag         = 0;
   eis->usediag      = 0;
-  ierr = MatShellCreate(pc->comm,0,0,(void*) pc,&eis->shell); CHKERRQ(ierr);
+  ierr = MatCreateShell(pc->comm,0,0,(void*) pc,&eis->shell); CHKERRQ(ierr);
   PLogObjectParent(pc,eis->shell);
   ierr = MatShellSetMult(eis->shell, PCMult_Eisenstat); CHKERRQ(ierr);
   return 0;

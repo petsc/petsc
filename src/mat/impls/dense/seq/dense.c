@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.86 1996/01/02 20:15:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.87 1996/01/12 22:06:59 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -591,7 +591,7 @@ static int MatGetDiagonal_SeqDense(Mat A,Vec v)
   return 0;
 }
 
-static int MatScale_SeqDense(Mat A,Vec ll,Vec rr)
+static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *l,*r,x,*v;
@@ -599,7 +599,7 @@ static int MatScale_SeqDense(Mat A,Vec ll,Vec rr)
 
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
-    if (m != mat->m) SETERRQ(1,"MatScale_SeqDense:Left scaling vec wrong size");
+    if (m != mat->m) SETERRQ(1,"MatDiagonalScale_SeqDense:Left scaling vec wrong size");
     PLogFlops(n*m);
     for ( i=0; i<m; i++ ) {
       x = l[i];
@@ -609,7 +609,7 @@ static int MatScale_SeqDense(Mat A,Vec ll,Vec rr)
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
-    if (n != mat->n) SETERRQ(1,"MatScale_SeqDense:Right scaling vec wrong size");
+    if (n != mat->n) SETERRQ(1,"MatDiagonalScale_SeqDense:Right scaling vec wrong size");
     PLogFlops(n*m);
     for ( i=0; i<n; i++ ) {
       x = r[i];
@@ -808,7 +808,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
        MatRelax_SeqDense,
        MatTranspose_SeqDense,
        MatGetInfo_SeqDense,MatEqual_SeqDense,
-       MatGetDiagonal_SeqDense,MatScale_SeqDense,MatNorm_SeqDense,
+       MatGetDiagonal_SeqDense,MatDiagonalScale_SeqDense,MatNorm_SeqDense,
        0,0,
        0, MatSetOption_SeqDense,MatZeroEntries_SeqDense,MatZeroRows_SeqDense,0,
        MatLUFactorSymbolic_SeqDense,MatLUFactorNumeric_SeqDense,

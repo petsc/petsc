@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.47 1996/01/02 18:42:43 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.48 1996/01/17 23:17:10 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -22,7 +22,7 @@ struct _MatOps {
             (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),
             (*transpose)(Mat,Mat*),
             (*getinfo)(Mat,MatInfoType,int*,int*,int*),(*equal)(Mat,Mat),
-            (*getdiagonal)(Mat,Vec),(*scale)(Mat,Vec,Vec),
+            (*getdiagonal)(Mat,Vec),(*diagonalscale)(Mat,Vec,Vec),
             (*norm)(Mat,NormType,double*),
             (*assemblybegin)(Mat,MatAssemblyType),
             (*assemblyend)(Mat,MatAssemblyType),(*compress)(Mat),
@@ -50,8 +50,8 @@ struct _MatOps {
             (*increaseoverlap)(Mat,int,IS *,int),
             (*getvalues)(Mat,int,int*,int,int*,Scalar*),
             (*copy)(Mat,Mat),
-            (*printhelp)(Mat);
-            (*scale)(Scalar *,Mat);
+            (*printhelp)(Mat),
+            (*scale)(Scalar *,Mat),
             (*shift)(Scalar *,Mat);
 };
 

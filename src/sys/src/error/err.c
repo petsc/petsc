@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.35 1995/12/21 18:30:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.36 1996/01/12 22:06:00 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -97,13 +97,12 @@ $    PetscAbortErrorHandler()
 int PetscDefaultErrorHandler(int line,char *dir,char *file,int number,
                              char *message,void *ctx)
 {
-  static int out_of_memory = 0, no_support = 0;
   int        tid,flg;
 
   MPI_Comm_rank(MPI_COMM_WORLD,&tid);
-  if (number == PETSC_ERR_MEM && !out_of_memory) {
-    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s %d\n",tid,file,line);
-    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s %d\n",tid,dir,file,line);
+  if (number == PETSC_ERR_MEM) {
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",tid,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",tid,dir,file,line);
     fprintf(stderr,"[%d]PETSC ERROR: Out of memory. This could be due to\n",tid);
     fprintf(stderr,"[%d]PETSC ERROR: allocating too large an object or\n",tid);
     fprintf(stderr,"[%d]PETSC ERROR: bleeding by not properly destroying\n",tid);
@@ -115,23 +114,24 @@ int PetscDefaultErrorHandler(int line,char *dir,char *file,int number,
     else {
       fprintf(stderr,"[%d]PETSC ERROR: Try running with -trdump. \n",tid);
     }
-    out_of_memory++;
+    number = 1;
   }
-  else if (number == PETSC_ERR_SUP && !no_support) {
-    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s %d\n",tid,file,line);
-    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s %d\n",tid,dir,file,line);
+  else if (number == PETSC_ERR_SUP) {
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",tid,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",tid,dir,file,line);
     fprintf(stderr,"[%d]PETSC ERROR: %s: No support for this operation\n",tid,message);
-    fprintf(stderr,"[%d]PETSC ERROR: for this matrix type!\n",tid);
+    fprintf(stderr,"[%d]PETSC ERROR: for this object type!\n",tid);
+    number = 1;
   }
   else {
     fprintf(stderr,"[%d]PETSC ERROR: ",tid);
     if (!dir) {
-      if (!message) fprintf(stderr,"%s %d %d\n",file,line,number);
-      else fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
+      if (!message) fprintf(stderr,"%s line # %d\n",file,line);
+      else fprintf(stderr,"%s line # %d %s\n",file,line,message);
     }
     else   {
-      if (!message) fprintf(stderr,"%s%s %d %d\n",dir,file,line,number);
-      else fprintf(stderr,"%s%s %d %s %d\n",dir,file,line,message,number);
+      if (!message) fprintf(stderr,"%s%s line # %d\n",dir,file,line);
+      else fprintf(stderr,"%s%s line # %d %s\n",dir,file,line,message);
     }
   }
   return number;

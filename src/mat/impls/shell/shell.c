@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.22 1995/11/03 03:00:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.23 1995/12/21 18:31:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -91,7 +91,7 @@ static struct _MatOps MatOps = {0,0,
        0,0,0,0 };
 
 /*@C
-   MatShellCreate - Creates a new matrix class for use with a user-defined
+   MatCreateShell - Creates a new matrix class for use with a user-defined
    private data storage format. 
 
    Input Parameters:
@@ -109,14 +109,14 @@ static struct _MatOps MatOps = {0,0,
    use the shell type if you plan to define a complete matrix class.
 
   Usage:
-$   MatShellCreate(m,n,ctx,&mat);
+$   MatCreateShell(m,n,ctx,&mat);
 $   MatShellSetMult(mat,mult);
 
 .keywords: matrix, shell, create
 
 .seealso: MatShellSetMult(), MatShellSetMultTransAdd()
 @*/
-int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
+int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 {
   Mat       newmat;
   Mat_Shell *shell;
@@ -142,7 +142,7 @@ int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 
    Input Parameters:
 .  mat - the matrix associated with this operation, created 
-         with MatShellCreate()
+         with MatCreateShell()
 .  mult - the user-defined routine
 
    Calling sequence of mult:
@@ -153,7 +153,7 @@ int MatShellCreate(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 
 .keywords: matrix, multiply, shell, set
 
-.seealso: MatShellCreate(), MatShellSetMultTransAdd()
+.seealso: MatCreateShell(), MatShellSetMultTransAdd()
 @*/
 int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 {
@@ -168,7 +168,7 @@ int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 
    Input Parameters:
 .  mat - the matrix associated with this operation, created 
-         with MatShellCreate()
+         with MatCreateShell()
 .  mult - the user-defined routine
 
    Calling sequence of mult:
@@ -179,7 +179,7 @@ int MatShellSetMult(Mat mat,int (*mult)(void*,Vec,Vec))
 
 .keywords: matrix, multiply, transpose
 
-.seealso: MatShellCreate(), MatShellSetMult()
+.seealso: MatCreateShell(), MatShellSetMult()
 @*/
 int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 {
@@ -195,7 +195,7 @@ int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 
    Input Parameters:
 .  mat - the matrix associated with this operation, created 
-         with MatShellCreate()
+         with MatCreateShell()
 .  destroy - the user-defined routine
 
    Calling sequence of mult:
@@ -204,7 +204,7 @@ int MatShellSetMultTransAdd(Mat mat,int (*mult)(void*,Vec,Vec,Vec))
 
 .keywords: matrix, destroy, shell, set
 
-.seealso: MatShellCreate()
+.seealso: MatCreateShell()
 @*/
 int MatShellSetDestroy(Mat mat,int (*destroy)(void*))
 {

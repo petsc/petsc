@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.5 1995/10/01 21:53:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.6 1995/11/01 23:20:55 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -28,7 +28,7 @@ static char vcid[] = "$Id: snesut.c,v 1.5 1995/10/01 21:53:26 bsmith Exp bsmith 
 int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 {
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS)
-    MPIU_printf(snes->comm, "iter = %d, Function norm %g \n",its,fgnorm);
+    MPIU_printf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
     MPIU_printf(snes->comm,
      "iter = %d, Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.38 1996/01/12 23:03:03 balay Exp balay $";
+static char vcid[] = "$Id: tr.c,v 1.39 1996/01/16 22:00:15 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -73,7 +73,6 @@ static int SNESSolve_TR(SNES snes,int *its)
   G		= snes->work[1];
   Ytmp          = snes->work[2];
 
-  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);        /* X <- X_0 */
   ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);               /* xnorm = || X || */
    
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);          /* F(X) */

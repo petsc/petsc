@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.35 1995/11/09 22:26:45 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.36 1996/01/02 21:31:11 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -206,8 +206,8 @@ static int VecView_MPI_Draw(Vec xin, Draw win )
     DrawLine(win,(double)start-1,tmp,(double)start,real(x->array[0]),DRAW_RED);
 #endif
   }
-  DrawSyncFlush(win);
-  DrawPause(win);
+  ierr = DrawSyncFlush(win); CHKERRQ(ierr);
+  ierr = DrawPause(win); CHKERRQ(ierr);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.30 1996/01/12 22:09:58 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.31 1996/01/13 00:16:29 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -15,7 +15,7 @@ with a user-provided preconditioner.  Input arguments are:\n\
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
-     FormInitialGuess(SNES,Vec,void*),
+     FormInitialGuess(SNES,Vec),
      MatrixFreePreconditioner(void *ctx,Vec x,Vec y);
 
 int main( int argc, char **argv )
@@ -53,7 +53,8 @@ int main( int argc, char **argv )
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
+  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
+  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0); CHKERRA(ierr);
 
@@ -106,7 +107,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecRestoreArray((Vec)dummy,&FF); CHKERRQ(ierr);
   return 0;
 }/* --------------------  Form initial approximation ----------------- */
-int FormInitialGuess(SNES snes,Vec x,void *dummy)
+int FormInitialGuess(SNES snes,Vec x)
 {
   int    ierr;
   Scalar pfive = .50;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.39 1996/01/12 22:08:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.40 1996/01/12 22:32:02 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -272,6 +272,8 @@ static int DrawPause_X(Draw draw)
     MPI_Comm_rank(draw->comm,&rank);
     if (rank) return 0;
     ierr = DrawGetMouseButton(draw,&button,0,0,0,0); CHKERRQ(ierr);
+    if (button == BUTTON_RIGHT) SETERRQ(1,"DrawPause_X:User request exit");
+    if (button == BUTTON_CENTER) draw->pause = 0;
   }
   return 0;
 }
@@ -364,6 +366,8 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
       display = (char *) PetscMalloc( 128*sizeof(char) ); CHKPTRQ(display);
       MPIU_Set_display(comm,display,128);
     }
+    if (x < 0 || y < 0) SETERRQ(1,"DrawOpenX:Negative corner of window");
+    if (w <= 0 || h <= 0) SETERRQ(1,"DrawOpenX:Negative width or hight of window");
     ierr = XiQuickWindow(Xwin,display,title,x,y,w,h,256); CHKERRQ(ierr);
     if (display != string) PetscFree(display);
     MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.37 1996/01/12 19:45:52 balay Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.38 1996/01/15 21:54:05 balay Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: snes.c,v 1.37 1996/01/12 19:45:52 balay Exp balay $";
 #include "pinclude/pviewer.h"
 #include <math.h>
 
-extern int SNESGetTypeFromOptions_Private(SNES,SNESType*);
+extern int SNESGetTypeFromOptions_Private(SNES,SNESType*,int*);
 extern int SNESPrintTypes_Private(char*,char*);
 
 /*@ 
@@ -105,8 +105,9 @@ int SNESSetFromOptions(SNES snes)
 
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   if (snes->setup_called)SETERRQ(1,"SNESSetFromOptions:Must call prior to SNESSetUp!");
-  if (SNESGetTypeFromOptions_Private(snes,&method)) {
-    SNESSetType(snes,method);
+  ierr = SNESGetTypeFromOptions_Private(snes,&method,&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = SNESSetType(snes,method); CHKERRQ(ierr);
   }
   else if (!snes->set_method_called) {
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -132,7 +133,7 @@ int SNESSetFromOptions(SNES snes)
   ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg);  CHKERRQ(ierr);
   if (flg) { SNESSetMinFunctionTolerance(snes,tmp); }
   ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its, &flg); CHKERRQ(ierr);
-  ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs, &flg);CHKERRQ(ierr);
   ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv", &flg);  CHKERRQ(ierr);
   if (flg) { snes->ksp_ewconv = 1; }
   ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version, \
@@ -1086,36 +1087,21 @@ int SNESSetMinFunctionTolerance(SNES snes,double ftol)
 /* ---------- Routines to set various aspects of nonlinear solver --------- */
 
 /*@C
-   SNESSetSolution - Sets the initial guess routine and solution vector
-   for use by the SNES routines.
+   SNESSetSolution - Sets the solution vector for use by the SNES routines.
 
    Input Parameters:
 .  snes - the SNES context
 .  x - the solution vector
-.  func - optional routine to compute an initial guess (may be null)
-.  ctx - optional user-defined context for private data for the 
-         initial guess routine (may be null)
 
-   Calling sequence of func:
-   int guess(SNES, Vec x, void *ctx)
-
-.  x - input vector
-.  ctx - optional user-defined initial guess context 
-
-   Note:
-   If no initial guess routine is indicated, an initial guess of zero 
-   will be used.
 
 .keywords: SNES, nonlinear, set, solution, initial guess
 
 .seealso: SNESGetSolution(), SNESSetJacobian(), SNESSetFunction()
 @*/
-int SNESSetSolution(SNES snes,Vec x,int (*func)(SNES,Vec,void*),void *ctx)
+int SNESSetSolution(SNES snes,Vec x)
 {
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   snes->vec_sol             = snes->vec_sol_always = x;
-  snes->computeinitialguess = func;
-  snes->gusP                = ctx;
   return 0;
 }
 
@@ -1253,6 +1239,8 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
 int SNESSolve(SNES snes,int *its)
 {
   int ierr, flg;
+
+  if (!snes->setup_called) {ierr = SNESSetUp(snes); CHKERRQ(ierr);}
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
@@ -1263,25 +1251,6 @@ int SNESSolve(SNES snes,int *its)
 }
 
 /* --------- Internal routines for SNES Package --------- */
-
-/*
-   SNESComputeInitialGuess - Manages computation of initial approximation.
- */
-int SNESComputeInitialGuess( SNES snes,Vec  x )
-{
-  int    ierr;
-  Scalar zero = 0.0;
-  if (snes->computeinitialguess) {
-    ierr = (*snes->computeinitialguess)(snes, x, snes->gusP); CHKERRQ(ierr);
-  }
-  else {
-    ierr = VecSet(&zero,x); CHKERRQ(ierr);
-  }
-  return 0;
-}
-
-/* ------------------------------------------------------------------ */
-
 static NRList *__SNESList = 0;
 
 /*@
@@ -1376,15 +1345,14 @@ int SNESRegisterDestroy()
    Options Database Key:
 $  -snes_type  method
 */
-int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method)
+int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method,int *flg)
 {
-  int ierr, flg;
+  int ierr;
   char sbuf[50];
-  ierr = OptionsGetString(ctx->prefix,"-snes_type", sbuf, 50, &flg); CHKERRQ(ierr);
-  if (flg) {
-    if (!__SNESList) SNESRegisterAll();
+  ierr = OptionsGetString(ctx->prefix,"-snes_type", sbuf, 50, flg); CHKERRQ(ierr);
+  if (*flg) {
+    if (!__SNESList) {ierr = SNESRegisterAll(); CHKERRQ(ierr);}
     *method = (SNESType)NRFindID( __SNESList, sbuf );
-    return 1;
   }
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.40 1996/01/12 03:56:30 bsmith Exp balay $ */
+/* $Id: snes.h,v 1.41 1996/01/12 17:33:54 balay Exp bsmith $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -25,7 +25,7 @@ extern int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
 extern int SNESDestroy(SNES);
 extern int SNESSetType(SNES,SNESType);
 extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *);
-extern int SNESSetSolution(SNES,Vec,int(*)(SNES,Vec,void*),void *);
+extern int SNESSetSolution(SNES,Vec);
 extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESGetJacobian(SNES,Mat*,Mat*,void **);
@@ -76,8 +76,6 @@ extern int SNES_KSP_SetConvergenceTestEW(SNES);
 #define SNESLGMonitorDestroy KSPLGMonitorDestroy
 #define SNESLGMonitor        ((int (*)(SNES,int,double,void*))KSPLGMonitor)
 #endif
-
-extern int SNESComputeInitialGuess(SNES,Vec);
 
 extern int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);

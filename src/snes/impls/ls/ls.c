@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.55 1996/01/12 22:09:42 bsmith Exp balay $";
+static char vcid[] = "$Id: ls.c,v 1.56 1996/01/12 23:03:12 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -41,7 +41,6 @@ int SNESSolve_LS(SNES snes,int *outits)
   G		= snes->work[1];
   W		= snes->work[2];
 
-  ierr = SNESComputeInitialGuess(snes,X); CHKERRQ(ierr);        /* X <- X_0        */
   ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);               /* xnorm = || X || */
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);          /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm); CHKERRQ(ierr);	        /* fnorm <- ||F||  */
@@ -262,7 +261,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       PLogInfo((PetscObject)snes,
          "SNESCubicLineSearch:Unable to find good step length! %d \n",count);
       PLogInfo((PetscObject)snes, 
-         "SNESCubicLineSearch:f %g fnew %g ynorm %g lambda %g\n",fnorm,*gnorm,*ynorm,lambda);
+         "SNESCubicLineSearch:f %g fnew %g ynorm %g lambda %g initial slope %g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       *flag = -1; break;
     }

@@ -27,7 +27,14 @@ C
 
       common   /petscfortran/  PETSC_NULL,
      *         STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,STDOUT_VIEWER_WORLD
-
+C
+C     Macro for templateing between real and complex
+C
+#if defined(PETSC_COMPLEX)
+#define Scalar  double complex
+#else
+#define Scalar  double precision
+#endif
 C
 C     Macros for error checking
 C
@@ -39,7 +46,8 @@ C
 #define CHKERRA(n)     
 #endif
 C
-C     Prototypes for some functions which return a value.
+C     Prototypes for functions which return a value.
+C
       external PetscGetTime
       double precision PetscGetTime
       external PetscGetFlops

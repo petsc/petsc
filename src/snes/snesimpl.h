@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.29 1996/01/11 20:14:53 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.30 1996/01/12 03:55:32 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -14,10 +14,8 @@ struct _SNES {
   /*  ----------------- User provided stuff ------------------------*/
   void  *user;		            /* user context */
 
-  int   (*computeinitialguess)(SNES,Vec,void*); /* initial guess routine */
   Vec   vec_sol,vec_sol_always;     /* pointer to solution */
   Vec   vec_sol_update_always;      /* pointer to solution update */
-  void  *gusP;                      /* user initial guess context */
 
   int   (*computefunction)(SNES,Vec,Vec,void*);  /* function routine */
   Vec   vec_func,vec_func_always;   /* Pointer to function or gradient */

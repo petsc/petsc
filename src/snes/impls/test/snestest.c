@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.21 1996/01/12 03:56:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.22 1996/01/12 22:09:51 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -37,9 +37,8 @@ int SNESSolve_Test(SNES snes,int *its)
   }
 
   for ( i=0; i<3; i++ ) {
-    if (i == 0) {ierr = SNESComputeInitialGuess(snes,x); CHKERRQ(ierr);}
-    else if (i == 1) {ierr = VecSet(&mone,x); CHKERRQ(ierr);}
-    else {ierr = VecSet(&one,x); CHKERRQ(ierr);}
+    if (i == 1) {ierr = VecSet(&mone,x); CHKERRQ(ierr);}
+    else if (i == 2) {ierr = VecSet(&one,x); CHKERRQ(ierr);}
  
     /* compute both versions of Jacobian */
     ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);

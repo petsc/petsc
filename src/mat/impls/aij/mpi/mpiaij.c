@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.109 1996/01/12 22:07:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.110 1996/01/12 22:31:24 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -511,6 +511,16 @@ static int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   if (!a->assembled) SETERRQ(1,"MatGetDiag_MPIAIJ:must assemble matrix");
   return MatGetDiagonal(a->A,v);
+}
+
+static int MatScale_MPIAIJ(Scalar *aa,Mat A)
+{
+  Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
+  int        ierr;
+  if (!a->assembled) SETERRQ(1,"MatScale_MPIAIJ:must assemble matrix");
+  ierr = MatScale(aa,a->A); CHKERRQ(ierr);
+  ierr = MatScale(aa,a->B); CHKERRQ(ierr);
+  return 0;
 }
 
 static int MatDestroy_MPIAIJ(PetscObject obj)
@@ -1313,7 +1323,8 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        0,0,MatConvert_MPIAIJ,0,0,MatConvertSameType_MPIAIJ,0,0,
        0,0,0,
        0,0,MatGetValues_MPIAIJ,0,
-       MatPrintHelp_MPIAIJ};
+       MatPrintHelp_MPIAIJ,
+       MatScale_MPIAIJ};
 
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format

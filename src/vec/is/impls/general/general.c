@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.37 1995/11/01 23:14:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.38 1995/11/02 04:05:44 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -128,72 +128,6 @@ int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
   Nindex->isperm  = 0;
   *is = Nindex; return 0;
 }
-
-/*@C
-   ISAddStrideSeq - Adds additional entries to a sequential 
-                    index set by a stride.
-
-   Input Parameters:
-.  n - the length of the new piece of the index set
-.  first - the first additional entry
-.  step - the step between entries
-.  is - the index set
-
-.keywords: IS, sequential, index set, create, adding to
-
-.seealso: ISCreateStrideSeq(), ISCreate()
-@*/
-int ISAddStrideSeq(IS *is,int n,int first,int step)
-{
-  int        N, *old,size,min,max,*idx,i;
-  IS         Newis;
-  IS_General *sub;
-  if (*is) PETSCVALIDHEADERSPECIFIC(*is,IS_COOKIE);
-
-  PetscHeaderCreate(Newis, _IS,IS_COOKIE,IS_SEQ,MPI_COMM_SELF); 
-  PLogObjectCreate(Newis);
-
-  if (*is) {
-    ISGetSize(*is,&N);
-    ISGetIndices(*is,&old);
-  }
-  else {
-    N = 0;
-  }
-
-  size = sizeof(IS_General) + n*sizeof(int) + N*sizeof(int);
-  sub            = (IS_General *) PetscMalloc(size); CHKPTRQ(sub);
-  PLogObjectMemory(Newis,size + sizeof(struct _IS));
-  sub->idx = idx = (int *) (sub+1);
-  sub->sorted    = 1;
-
-  PetscMemcpy(sub->idx,old,N*sizeof(int));
-  if (*is) {
-    PLogObjectParent(Newis,*is);ISRestoreIndices(*is,&old); ISDestroy(*is);
-  }
-  for ( i=0; i<n; i++ ) {idx[N+i] = first + i*step;}
-
-  sub->n         = n + N;
-  for ( i=1; i<N+n; i++ ) {
-    if (idx[i] < idx[i-1]) {sub->sorted = 0; break;}
-  }
-  if (n+N) {min = max = idx[0];} else {min = max = 0;}
-  for ( i=1; i<n+N; i++ ) {
-    if (idx[i] < min) min = idx[i];
-    if (idx[i] > max) max = idx[i];
-  }
-
-  Newis->min     = min;
-  Newis->max     = max;
-  Newis->data    = (void *) sub;
-  PetscMemcpy(&Newis->ops,&myops,sizeof(myops));
-  Newis->destroy = ISDestroy_General;
-  Newis->view    = ISView_General;
-  Newis->isperm  = 0;
-  *is = Newis; 
-  return 0;
-}
-
 
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.17 1996/01/09 03:33:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.18 1996/01/12 22:10:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -93,7 +93,8 @@ int main(int argc,char **argv)
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x,FormInitialGuess,(void *)&user); CHKERRA(ierr);
+  ierr = FormInitialGuess(snes,x,&user); CHKERRA(ierr);
+  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
          (void *)&user); CHKERRA(ierr);
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
@@ -101,11 +102,9 @@ int main(int argc,char **argv)
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
   OptionsHasName(PETSC_NULL,"-snes_mf",&flg);
   if (flg) {
-    ierr = MatShellCreate(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H);
-           CHKERRA(ierr);
+    ierr = MatCreateShell(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H);CHKERRA(ierr);
     ierr = MatShellSetMult(H,HessianProduct); CHKERRA(ierr);
-    ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); 
-           CHKERRA(ierr);
+    ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
 
     /* Set null preconditioner.  Alternatively, set user-provided 
        preconditioner or explicitly form preconditioning matrix */
