@@ -1,4 +1,4 @@
-! $Id: ex22f.F,v 1.2 2001/03/30 15:53:24 bsmith Exp balay $
+! $Id: ex22f.F,v 1.3 2001/03/30 17:03:04 balay Exp bsmith $
 !
 !   Laplacian in 3D. Modeled by the partial differential equation
 !
@@ -32,7 +32,7 @@
       DMMG             dmmg
       integer          ierr
       double precision norm
-      DA               da;
+      DA               da
       external         ComputeRHS,ComputeJacobian
 
       call  PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -74,7 +74,7 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+     &               PETSC_NULL_INTEGER,ierr)
       h    = 1.d0/((mx-1)*(my-1)*(mz-1))
 
       call VecSet(h,b,ierr)
@@ -104,7 +104,7 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+     &               PETSC_NULL_INTEGER,ierr)
 
       Hx = 1.d0 / (mx-1)
       Hy = 1.d0 / (my-1)

@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.21 2001/04/19 20:29:34 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.22 2001/04/20 03:56:36 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -193,7 +193,6 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   SLES        sles;
   PetscViewer ascii;
   MPI_Comm    comm;
-  KSP         ksp;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
@@ -219,10 +218,6 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     }
 
     ierr = SNESGetSLES(dmmg[i]->snes,&sles);CHKERRQ(ierr);
-
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp,KSPFGMRES);CHKERRQ(ierr);
-
     ierr = DMMGSetUpLevel(dmmg,sles,i+1);CHKERRQ(ierr);
     
     /*

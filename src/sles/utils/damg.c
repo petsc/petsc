@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.31 2001/04/03 03:03:19 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.32 2001/04/10 19:36:47 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -191,7 +191,7 @@ int DMMGSetUp(DMMG *dmmg)
     ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->b);CHKERRQ(ierr);
     ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->r);CHKERRQ(ierr);
     if (!dmmg[i]->matrixfree) {
-      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GLOBAL,MATMPIAIJ,PETSC_NULL,&dmmg[i]->J);CHKERRQ(ierr);
+      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_LOCAL,MATMPIAIJ,PETSC_NULL,&dmmg[i]->J);CHKERRQ(ierr);
     } 
     dmmg[i]->B = dmmg[i]->J;
   }
@@ -308,6 +308,10 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
     ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
+  /* use fgmres on outer iteration by default */
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPFGMRES);CHKERRQ(ierr);
+
   ierr  = SLESGetPC(sles,&pc);CHKERRQ(ierr);
   ierr  = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr  = PetscMalloc(nlevels*sizeof(MPI_Comm),&comms);CHKERRQ(ierr);
@@ -316,6 +320,7 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
   }
   ierr  = MGSetLevels(pc,nlevels,comms);CHKERRQ(ierr);
   ierr  = PetscFree(comms);CHKERRQ(ierr); 
+  ierr =  MGSetType(pc,MGFULL);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
@@ -373,7 +378,7 @@ int DMMGSetUpLevel(DMMG *dmmg,SLES sles,int nlevels)
 @*/
 int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
 {
-  int        ierr,i,nlevels = dmmg[0]->nlevels;
+  int  ierr,i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
