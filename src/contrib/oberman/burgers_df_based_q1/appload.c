@@ -122,10 +122,7 @@ int AppCtxSetLocal(AppCtx *appctx)
 
  /*    Get the coords corresponding to each cell */
  ierr = AODataSegmentGetIS(ao, "cell", "coords", grid->cell_global , (void **)&grid->cell_coords);CHKERRQ(ierr);
-   if(appctx->view.show_griddata ){  
-     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], cell_coords\n",    rank);CHKERRQ(ierr);   
-     PetscDoubleView(grid->cell_n*8, grid->cell_coords, VIEWER_STDOUT_SELF);
-   }
+
   /*      Make local to global mapping of cells and vertices  */
  /* Don't want to carry around table which contains the info for all nodes */
   ierr = ISLocalToGlobalMappingCreateIS(grid->cell_global,&cell_ltog);CHKERRQ(ierr);
