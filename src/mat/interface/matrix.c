@@ -2383,6 +2383,14 @@ int MatCopy(Mat A,Mat B,MatStructure str)
   } else { /* generic conversion */
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
   }
+  if (A->mapping) {
+    if (B->mapping) {ierr = ISLocalToGlobalMappingDestroy(B->mapping);CHKERRQ(ierr);}
+    ierr = MatSetLocalToGlobalMapping(B,A->mapping);CHKERRQ(ierr);
+  }
+  if (A->bmapping) {
+    if (B->bmapping) {ierr = ISLocalToGlobalMappingDestroy(B->bmapping);CHKERRQ(ierr);}
+    ierr = MatSetLocalToGlobalMappingBlock(B,A->mapping);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_Copy,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2540,6 +2548,12 @@ int MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
     SETERRQ(PETSC_ERR_SUP,"Not written for this matrix type");
   }
   ierr = (*mat->ops->duplicate)(mat,op,M);CHKERRQ(ierr);
+  if (mat->mapping) {
+    ierr = MatSetLocalToGlobalMapping(*M,mat->mapping);CHKERRQ(ierr);
+  }
+  if (mat->bmapping) {
+    ierr = MatSetLocalToGlobalMappingBlock(*M,mat->mapping);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
