@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.93 1996/03/08 05:47:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.94 1996/03/10 17:28:06 bsmith Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -385,7 +385,7 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
 
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqDense: view must have one processor");
-  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqDense:Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
@@ -458,7 +458,7 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
   int          ict, j, n = a->n, m = a->m, i, fd, *col_lens, ierr, nz = m*n;
   Scalar       *v, *anonz;
 
-  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   col_lens = (int *) PetscMalloc( (4+nz)*sizeof(int) ); CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
   col_lens[1] = m;

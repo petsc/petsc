@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.91 1996/03/08 05:47:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.92 1996/03/10 17:28:29 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -947,7 +947,7 @@ static int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
   int          i, ict, fd, *col_lens, *cval, *col, ierr, nz;
   Scalar       *anonz, *val;
 
-  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
 
   /* For MATSEQBDIAG format, maxnz = nz */
   col_lens    = (int *) PetscMalloc( (4+a->m)*sizeof(int) ); CHKPTRQ(col_lens);
@@ -1609,7 +1609,7 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   PetscObjectGetComm((PetscObject)viewer,&comm);
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqBDiag: view must have one processor");
-  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBDiag:Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];

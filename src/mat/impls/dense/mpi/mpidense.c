@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.31 1996/03/08 05:47:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.32 1996/03/10 17:28:08 bsmith Exp curfman $";
 #endif
 
 /*
@@ -960,7 +960,7 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIDenseorMPIRow:not matrix object");
   }
