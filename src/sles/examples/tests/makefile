@@ -170,4 +170,8 @@ ex9: ex9.o
 	-$(CLINKER) -o ex9 ex9.o  $(SYSLIB)
 	$(RM) ex9.o
 
+ex10: ex10.o 
+	-$(CLINKER) -o ex10 ex10.o  $(SYSLIB)
+	$(RM) ex10.o
+
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
