@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.101 1998/04/26 02:53:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.102 1998/05/08 16:12:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -101,7 +101,10 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecMax_MPI,VecMin_MPI,
             VecSetRandom_Seq,
             VecSetOption_MPI,
-            VecSetValuesBlocked_MPI};
+            VecSetValuesBlocked_MPI,
+            VecDestroy_MPI,
+            VecView_MPI,
+            VecPlaceArray_Seq};
 
 #undef __FUNC__  
 #define __FUNC__ "VecCreateMPI_Private"
@@ -125,8 +128,6 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   s              = (Vec_MPI *) PetscMalloc(mem); CHKPTRQ(s);
   PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
   v->data        = (void *) s;
-  v->ops->destroy= VecDestroy_MPI;
-  v->ops->view   = VecView_MPI;
   s->n           = n;
   s->nghost      = nghost;
   s->N           = N;

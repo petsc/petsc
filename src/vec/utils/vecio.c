@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.39 1998/04/13 17:26:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.40 1998/04/27 14:31:28 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -87,9 +87,9 @@ int VecLoad(Viewer viewer,Vec *newvec)
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT); CHKERRQ(ierr);
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec); CHKERRQ(ierr);
-    v = (Vec_MPI*) vec->data;
+    ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
     ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,avec,v->n,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
 
     if (size > 1) {
@@ -99,11 +99,11 @@ int VecLoad(Viewer viewer,Vec *newvec)
       for ( i=1; i<size; i++ ) {
         n = PetscMax(n,v->ownership[i] - v->ownership[i-1]);
       }
-      avec = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(avec);
+      avec     = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(avec);
       requests = (MPI_Request *) PetscMalloc((size-1)*sizeof(MPI_Request));CHKPTRQ(requests);
       statuses = (MPI_Status *) PetscMalloc((size-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
       for ( i=1; i<size; i++ ) {
-        n = v->ownership[i+1]-v->ownership[i];
+        n    = v->ownership[i+1]-v->ownership[i];
         ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
         ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,vec->tag,vec->comm,requests+i-1);CHKERRQ(ierr);
       }

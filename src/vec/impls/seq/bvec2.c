@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.121 1998/05/18 22:56:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.122 1998/05/19 02:02:18 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -356,8 +356,8 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecMin_Seq,
             VecSetRandom_Seq,0,
             VecSetValuesBlocked_Seq,
-            0,
-            0,
+            VecDestroy_Seq,
+            VecView_Seq,
             VecPlaceArray_Seq};
 
 #undef __FUNC__  
@@ -399,8 +399,6 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _p_Vec)+n*sizeof(Scalar));
   PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
-  v->ops->destroy    = VecDestroy_Seq;
-  v->ops->view       = VecView_Seq;
   s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
   v->data            = (void *) s;
   s->n               = n;
