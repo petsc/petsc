@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.139 1999/06/30 23:50:17 balay Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.140 1999/07/22 04:14:26 balay Exp balay $";
 #endif
 
 /*
@@ -1398,7 +1398,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   }
 #endif   
   ierr = (*inctx->begin)(x,y,addv,mode,inctx);CHKERRQ(ierr);
-  if (inctx->beginandendtogether) {
+  if (inctx->beginandendtogether && inctx->end) {
     inctx->inuse = 0;
     ierr = (*inctx->end)(x,y,addv,mode,inctx);CHKERRQ(ierr);
   }
