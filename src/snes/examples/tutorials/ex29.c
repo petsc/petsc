@@ -6,7 +6,7 @@
 /* turning this on causes instability?!? */
 #undef UPWINDING 
 
-static char help[] = "XXXXX with multigrid and timestepping 2d.\n\
+static char help[] = "XXXXX with multigrid and timestepping in 2 dimensions.\n\
   \n\
 -da_grid_x 6 -dmmg_nlevels 3 -da_grid_y 6 -mg_coarse_pc_type lu -mg_coarse_pc_lu_damping -mg_levels_pc_ilu_damping -mat_aij_no_inode \n\
   -viscosity <nu>\n\
@@ -195,7 +195,7 @@ int main(int argc,char **argv)
       ierr = AttachNullSpace(pc,DMMGGetx(dmmg));CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCMG,&mg);CHKERRQ(ierr);
       if (mg) {
-	for (i=0; i<param.mglevels; i++) {
+        for (i=0; i<param.mglevels; i++) {
 	  ierr = MGGetSmoother(pc,i,&subsles);CHKERRQ(ierr);
 	  ierr = SLESGetPC(subsles,&subpc);CHKERRQ(ierr);
 	  ierr = AttachNullSpace(subpc,dmmg[i]->x);CHKERRQ(ierr);
@@ -260,9 +260,9 @@ int Gnuplot(DA da, Vec X, double time)
 
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
-      fprintf(f, "%d %d %g %g %g %g %g %g\n", i, j, 0., 0., x[j][i].U, x[j][i].F, x[j][i].phi, x[j][i].psi);
+      ierr = PetscFPrintf(PETSC_COMM_WORLD,f, "%d %d %g %g %g %g %g %g\n", i, j, 0., 0., x[j][i].U, x[j][i].F, x[j][i].phi, x[j][i].psi);CHKERRQ(ierr);
     }
-    fprintf(f, "\n");
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,f, "\n");CHKERRQ(ierr);
   }
   ierr = DAVecRestoreArray(da,X,(void**)&x);CHKERRQ(ierr);
   fclose(f);
@@ -375,7 +375,7 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
   int      ierr,i,j,mx,my,xs,ys,xm,ym;
   int      xints,xinte,yints,yinte;
   Field    **x;
-  double   norm[4];
+  double   norm[4] = {0,0,0,0};
   double   gnorm[4];
   MPI_Comm comm;
 
@@ -397,9 +397,7 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
   ierr = DAVecRestoreArray(da,X,(void**)&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(norm, gnorm, 4, MPI_DOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
-  fprintf(stderr, "%g\t%g\t%g\t%g\t%g\n", t,
-	  gnorm[0], gnorm[1], gnorm[2], gnorm[3]);
-  fflush(stderr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,stderr, "%g\t%g\t%g\t%g\t%g\n", t,gnorm[0], gnorm[1], gnorm[2], gnorm[3]);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -460,7 +458,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       vy =   D_x(x,phi,i,j);
       avx = PetscAbsScalar(vx); vxp = p5*(vx+avx); vxm = p5*(vx-avx);
       avy = PetscAbsScalar(vy); vyp = p5*(vy+avy); vym = p5*(vy-avy);
-#ifdef UPWINDING
+#ifndef UPWINDING
       vxp = vxm = p5*vx;
       vyp = vym = p5*vy;
 #endif
@@ -469,7 +467,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       By = - D_x(x,psi,i,j) + By_eq;
       aBx = PetscAbsScalar(Bx); Bxp = p5*(Bx+aBx); Bxm = p5*(Bx-aBx);
       aBy = PetscAbsScalar(By); Byp = p5*(By+aBy); Bym = p5*(By-aBy);
-#ifdef UPWINDING
+#ifndef UPWINDING
       Bxp = Bxm = p5*Bx;
       Byp = Bym = p5*By;
 #endif
