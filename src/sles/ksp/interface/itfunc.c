@@ -193,6 +193,8 @@ int KSPSetUp(KSP ksp)
 
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
   ksp->setupcalled = 1;
+  ierr = PCSetVector(ksp->B,ksp->vec_rhs);CHKERRQ(ierr);
+
   ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
 
   /* scale the matrix if requested */
@@ -228,6 +230,7 @@ int KSPSetUp(KSP ksp)
     }
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
+  ierr = PCSetUp(ksp->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -306,6 +309,7 @@ int KSPSolve(KSP ksp)
   }
 
   ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
+  ierr = PCPreSolve(ksp->B,ksp);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
     Mat mat;
@@ -328,6 +332,9 @@ int KSPSolve(KSP ksp)
 
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
+
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
   ksp->transpose_solve = PETSC_FALSE;
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
@@ -357,6 +364,7 @@ int KSPSolve(KSP ksp)
       ksp->dscalefix2 = PETSC_TRUE;
     }
   }
+  ierr = PCPostSolve(ksp->B,ksp);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
@@ -541,6 +549,8 @@ int KSPDestroy(KSP ksp)
       ierr = (*ksp->monitordestroy[i])(ksp->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
+  ierr = PCDestroy(ksp->B);CHKERRQ(ierr);
+  if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   PetscLogObjectDestroy(ksp);
   PetscHeaderDestroy(ksp);
   PetscFunctionReturn(0);
@@ -1025,7 +1035,9 @@ int KSPSetPC(KSP ksp,PC B)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscValidHeaderSpecific(B,PC_COOKIE);
   PetscCheckSameComm(ksp,B);
+  if (ksp->B) {ierr = PCDestroy(ksp->B);CHKERRQ(ierr);}
   ksp->B = B;
+  ierr = PetscObjectReference((PetscObject)ksp->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
