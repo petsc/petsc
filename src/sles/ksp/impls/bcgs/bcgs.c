@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.61 1999/09/02 14:53:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.62 1999/09/20 15:04:54 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -76,7 +76,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   for (i=0; i<maxit; i++) {
 
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
-    if (rho == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, rho = r . rp = 0");}
+    if (rho == 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, rho = r . rp = 0");
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P);CHKERRQ(ierr);      /*   p <- r + p beta    */
@@ -92,7 +92,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
-      if (d1 != 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, da = s . s = 0");}
+      if (d1 != 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown, da = s . s = 0");
       ierr = VecAXPY(&alpha,P,X);CHKERRQ(ierr);   /*   x <- x + a p       */
       ierr = PetscAMSTakeAccess(ksp);CHKERRQ(ierr);
       ksp->its++;
