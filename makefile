@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.329 2001/01/04 22:07:39 balay Exp balay $ 
+# $Id: makefile,v 1.330 2001/01/04 22:34:53 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -301,8 +301,8 @@ deletemanualpages:
 
 # Builds all versions of the man pages
 allmanualpages: deletemanualpages
-	-${OMAKE} ACTION=manualpages_buildcite ttree
-	-${OMAKE} ACTION=manualpages ttree
+	-${OMAKE} ACTION=manualpages_buildcite tree_basic
+	-${OMAKE} ACTION=manualpages tree_basic
 	-maint/wwwindex.py ${PETSC_DIR}
 	-${OMAKE} ACTION=manexamples tree
 	-${OMAKE} manconcepts
@@ -314,7 +314,7 @@ allmanualpages: deletemanualpages
 allfortranstubs:
 	-@include/foldinclude/generateincludes
 	-@${RM} -f src/fortran/auto/*.c
-	-${OMAKE} ACTION=fortranstubs ttree
+	-${OMAKE} ACTION=fortranstubs tree_basic
 	-@cd src/fortran/auto; ${OMAKE} fixfortran
 	chmod g+w src/fortran/auto/*.c
 
