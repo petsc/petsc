@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.66 1996/01/22 19:59:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.67 1996/01/26 14:20:06 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -126,7 +126,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
   int        ierr,flag,flg;
   static int PetscInitializedCalled = 0;
 
-  if (PetscInitializedCalled) SETERRQ(1," PetscInitialize:CANNOT call twice");
+  if (PetscInitializedCalled) return 0;
   PetscInitializedCalled = 1;
 
   MPI_Initialized(&flag);
@@ -635,6 +635,7 @@ static int OptionsDestroy_Private()
   options = 0;
   return 0;
 }
+
 /*@C
    OptionsSetValue - Sets an option name-value pair in the options 
    database, overriding whatever is already present.
