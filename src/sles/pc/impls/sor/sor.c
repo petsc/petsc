@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.50 1996/03/19 21:25:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.51 1996/03/20 02:16:53 curfman Exp curfman $";
 #endif
 
 /*
@@ -57,13 +57,13 @@ static int PCSetFromOptions_SOR(PC pc)
 static int PCPrintHelp_SOR(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCSOR preconditioner:\n");
-  PetscPrintf(pc->comm," %spc_sor_omega omega: relaxation factor (0 < omega < 2)\n",p);
+  PetscPrintf(pc->comm," %spc_sor_omega <omega>: relaxation factor (0 < omega < 2)\n",p);
   PetscPrintf(pc->comm," %spc_sor_symmetric: use SSOR\n",p);
   PetscPrintf(pc->comm," %spc_sor_backward: use backward sweep instead of forward\n",p);
   PetscPrintf(pc->comm," %spc_sor_local_symmetric: use SSOR on each processor\n",p);
   PetscPrintf(pc->comm," %spc_sor_local_backward: use backward sweep locally\n",p);
   PetscPrintf(pc->comm," %spc_sor_local_forward: use forward sweep locally\n",p);
-  PetscPrintf(pc->comm," %spc_sor_its its: number of inner SOR iterations to use\n",p);
+  PetscPrintf(pc->comm," %spc_sor_its <its>: number of inner SOR iterations to use\n",p);
   return 0;
 }
 
@@ -166,7 +166,7 @@ int PCSORSetSymmetric(PC pc, MatSORType flag)
 .  omega - relaxation coefficient (0 < omega < 2). 
 
    Options Database Key:
-$  -pc_sor_omega  omega
+$  -pc_sor_omega <omega>
 
 .keywords: PC, SOR, SSOR, set, relaxation, omega
 
@@ -190,7 +190,7 @@ int PCSORSetOmega(PC pc, double omega)
 .  its - number of iterations to use
 
    Options Database Key:
-$  -pc_sor_its  its
+$  -pc_sor_its <its>
 
 .keywords: PC, SOR, SSOR, set, iterations
 

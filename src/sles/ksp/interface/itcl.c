@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.61 1996/03/20 06:06:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.62 1996/03/23 18:32:49 bsmith Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -129,24 +129,28 @@ int KSPPrintHelp(KSP ksp)
     PetscValidHeaderSpecific(ksp,KSP_COOKIE);
     PetscPrintf(ksp->comm,"KSP Options -------------------------------------\n");
     KSPPrintTypes_Private(ksp->comm,p,"ksp_type");
-    PetscPrintf(ksp->comm," %sksp_rtol tol: relative tolerance, defaults to %g\n",
+    PetscPrintf(ksp->comm," %sksp_rtol <tol>: relative tolerance, defaults to %g\n",
                      p,ksp->rtol);
-    PetscPrintf(ksp->comm," %sksp_atol tol: absolute tolerance, defaults to %g\n",
+    PetscPrintf(ksp->comm," %sksp_atol <tol>: absolute tolerance, defaults to %g\n",
                      p,ksp->atol);
-    PetscPrintf(ksp->comm," %sksp_divtol tol: divergence tolerance, defaults to %g\n",
+    PetscPrintf(ksp->comm," %sksp_divtol <tol>: divergence tolerance, defaults to %g\n",
                      p,ksp->divtol);
-    PetscPrintf(ksp->comm," %sksp_max_it maxit: maximum iterations, defaults to %d\n",
+    PetscPrintf(ksp->comm," %sksp_max_it <maxit>: maximum iterations, defaults to %d\n",
                      p,ksp->max_it);
     PetscPrintf(ksp->comm," %sksp_preres: use precond. resid. in converg. test\n",p);
     PetscPrintf(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
     PetscPrintf(ksp->comm," %sksp_monitor: at each iteration print residual norm to stdout\n",p);
     PetscPrintf(ksp->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
-    PetscPrintf(ksp->comm," %sksp_gmres_restart num: gmres restart, defaults to 30\n",p);
-    PetscPrintf(ksp->comm," %sksp_gmres_unmodifiedgramschmidt\n",p);
     PetscPrintf(ksp->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
+    PetscPrintf(ksp->comm," GMRES options:\n");
+    PetscPrintf(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative GMRES orthogonalization\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_gmres_irorthog: use iterative refinement in GMRES orthogonalization\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_gmres_preallocate: preallocate GMRES work vectors\n",p);
 #if defined(PETSC_COMPLEX)
-    PetscPrintf(ksp->comm," %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
-    PetscPrintf(ksp->comm," %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
+    PetscPrintf(ksp->comm," CG options:\n");
+    PetscPrintf(ksp->comm,"   %sksp_cg_Hermitian: use CG for complex, Hermitian matrix (default)\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_cg_symmetric: use CG for complex, symmetric matrix\n",p);
 #endif
   }
   return 1;
@@ -167,7 +171,6 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   return PetscObjectSetPrefix((PetscObject)ksp, prefix);
 }
-
  
 /*@C
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 

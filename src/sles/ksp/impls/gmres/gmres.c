@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.60 1996/03/21 22:54:18 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.61 1996/03/23 18:33:06 bsmith Exp curfman $";
 #endif
 
 /*
@@ -478,14 +478,14 @@ static int GMRESGetNewVectors( KSP ksp,int it )
 .   max_k - the number of directions
 
     Options Database Key:
-$   -ksp_gmres_restart  max_k
+$   -ksp_gmres_restart <max_k>
 
     Note:
     The default value of max_k = 30.
 
 .keywords: GMRES, set, restart
 
-.seealso: KSPGMRESSetUseUnmodifiedGramSchmidt()
+.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
 @*/
 int KSPGMRESSetRestart(KSP ksp,int max_k )
 {
@@ -530,19 +530,24 @@ static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 
   Input Parameters:
 .   ksp   - iterative context obtained from KSPCreate
-.   fcn   - Orthogonalization function.  
+.   fcn   - Orthogonalization function
 
   Notes:
-  The functions KSPGMRESModifiedGramSchmidtOrthogonalization and 
-  KSPGMRESUnmodifiedGramSchmidtOrthogonalization are predefined.
-  The default is KSPGMRESModifiedGramSchmidtOrthogonalization; 
-  The KSPGMRESUnmodifiedGramSchmidtOrthogonalization is 
-  NOT recommended; however, for some problems, particularly when using 
-  parallel distributed vectors, this may be significantly faster.
+  Several orthogonalization routines are predefined.
+$    KSPGMRESModifiedGramSchmidtOrthogonalization() - default.
 
-  The routine KSPGMRESIROrthogonalization is an interative refinement
-  version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization. It may be
-  more numerically stable.
+$    KSPGMRESUnmodifiedGramSchmidtOrthogonalization() - 
+       NOT recommended; however, for some problems, particularly
+       when using parallel distributed vectors, this may be
+       significantly faster.
+
+$    KSPGMRESIROrthogonalization() - interative refinement
+       version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization(),
+       which may be more numerically stable.
+
+.keywords: GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
+
+.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreallocateVectors()
 @*/
 int KSPGMRESSetOrthogonalization( KSP ksp,int (*fcn)(KSP,int) )
 {
@@ -610,13 +615,19 @@ int KSPCreate_GMRES(KSP ksp)
 }
 
 /*@
-     KSPGMRESSetPreAllocateVectors - Causes GMRES to preallocate all its
-         needed work vectors at initial setup rather then the default which 
-         is to allocate them in chunks when needed.
+    KSPGMRESSetPreAllocateVectors - Causes GMRES to preallocate all its
+    needed work vectors at initial setup rather then than default which 
+    is to allocate them in chunks when needed.
 
-  Input Paramter:
-.    ksp - the Krylov subspace context
+    Input Paramter:
+.   ksp   - iterative context obtained from KSPCreate
 
+    Options Database Key:
+$   -ksp_gmres_preallocate
+
+.keywords: GMRES, preallocate, vectors
+
+.seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization()
 @*/
 int KSPGMRESSetPreAllocateVectors(KSP ksp)
 {
