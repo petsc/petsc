@@ -216,9 +216,11 @@ int PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap
     if not, set flag to 1
   */
   if (XMatchVisualInfo(display,screen,24,StaticColor,&vinfo) ||
-      XMatchVisualInfo(display,screen,24,TrueColor,&vinfo) ||
+      XMatchVisualInfo(display,screen,24,TrueColor,&vinfo)   ||
       XMatchVisualInfo(display,screen,16,StaticColor,&vinfo) ||
-      XMatchVisualInfo(display,screen,16,TrueColor,&vinfo)) {
+      XMatchVisualInfo(display,screen,16,TrueColor,&vinfo)   ||
+      XMatchVisualInfo(display,screen,15,StaticColor,&vinfo) ||                 
+      XMatchVisualInfo(display,screen,15,TrueColor,&vinfo)) {
     sharedcolormap = PETSC_TRUE;
   }
 
