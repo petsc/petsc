@@ -168,6 +168,9 @@ class Logger(args.ArgumentProcessor):
           f.write(msg[0:self.linewidth])
           f.write(''.join([' '] * (self.linewidth - len(msg))))
         else:
+          if not debugSection is None:
+            f.write(str(debugSection))
+            f.write(': ')
           f.write(msg)
         if hasattr(f, 'flush'):
           f.flush()
