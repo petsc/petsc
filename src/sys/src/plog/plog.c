@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.83 1996/03/08 15:41:21 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.84 1996/03/11 23:39:20 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -729,7 +729,8 @@ extern int  *MPEFlag,UseMPE;
     (MPE is additional utilities which come with the MPICH distibution)
     the user can use another command line option -log_mpe. This 
     creates a logfile "mpe.log", which can be visualised using the utility
-    upshot/nupshot which comes along with MPICH distibution.
+    upshot/nupshot which comes along with MPICH distibution. The color
+    argument is used by this utility in forming the display of this event.
 
     Example of Usage:
 $     int USER_EVENT;
