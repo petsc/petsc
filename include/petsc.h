@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.218 1998/05/18 15:41:38 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.219 1998/05/18 18:45:30 bsmith Exp curfman $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -46,7 +46,7 @@
 */
 #include "petscmath.h"
 /*
-    This shouuld be in petscmath.h?
+    This should be in petscmath.h?
 */
 #if defined(USE_POINTER_CONVERSION)
 #define PetscFortranAddr   int
