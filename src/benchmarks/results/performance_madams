@@ -1,22 +1,73 @@
 
+  Mark,
+
+   We have determined the reasons for your low performance. There are two 
+main causes.
+
+1) You ran the code on the SP1 without the mpirun option -nopoll. The IBM
+   switch has two modes, one where essentially an interupt is generated upon
+   receiving a message and one where the OS polls the switch to check for 
+   messages. The -nopoll option  always seems to generate smaller times and
+   more consistency between runs on the SP1. (On the SP2, on the other hand,
+   it is faster not to use the nopoll option :-()
+2) There is an interesting effect on all these machines due to the paging-
+   in of the executable. As you know in Unix, when you start a program running
+   the entire executable is not loaded into physical memory, rather when a
+   new routine is called, the pages that contain the routine are loaded into 
+   memory the first time this routine is executed. When timing routines that 
+   take seconds or fractions of seconds, this IO time is extremely significant.
+   The problem gets dramatically worse when, say 32, compute nodes all request
+   some pages of the executable from the same file server. One essentially gets
+   meaningless timing results. We have a strategy to deal with this we call
+   "preloading of the executable" essentially we first run the EXACT code that
+   we will run on the large problem on a smaller set of data, then we run it on 
+   the problem of interest. There is a section of the users manual where we
+   discuss this. I also include below the program we used to generate the timings
+   below.
+
+  A few notes:
+* The PowerChallenge has a 2 megabyte external cache and the Origin2000
+  has a 4 megabyte external cache. This explains the super-linear speed-up you see 
+  below on those machines.
+* Note the much better performance with the -nopoll option on the SP1
+* Our SP2 machine is running, the only thing missing is a scheduler, which is 
+  why external users (like you) don't have accounts yet. I've asked support to 
+  give you an account ASAP, I hope you can get the account Tuesday to confirm these
+  numbers.
+* Once we get additional memory cards in our SP2 (in a few months) we'll see another
+  jump of 20 to 30 percent (we hope :-)).
+* Note also the impressive numbers on the T3E. I myself, was stunned and amazed :-)
+* The 16 processor performance with BAIJ on the SP2, T3E, and SGI machines are 
+  remarkably similar!
+
+  If you have any additional questions or concerns please let us know.
+
+  Barry and Satish
+
+
+       Flop rates with effiency given in () for MatMult() on your matrix
+  using the "natural" partitioning.
 
 -------------------------------------------------------------------------------------
 Machine   Quad               Bonnie         Mcurie         Sif             Modi4
-ARCH      (SP)               (SP1)           (T3E)   (PowerChallenge)   (Origin2000)
+ARCH      (SP2)              (SP1)           (T3E)   (PowerChallenge)   (Origin2000)
 -nopoll:                   YES     NO
 -------------------------------------------------------------------------------------
 ***********Using BAIJ format with BlockSize 3 ********************
- 1        87            35         35          81             26             56
- 2       161(0.925)     65(0.929)  37(0.520)  154(0.951)      50(0.960)      94(0.840)
- 4       300(0.862)    120(0.857)  68(0.490)  295(0.910)      96(0.934)     205(0.915)
- 8       548(0.787)    218(0.779) 134(0.478)  559(0.863)     413(1.985)     665(1.485)
-16       920(0.661)    368(0.657) 274(0.489) 1014(0.780)      NA           1028(1.147)
+ 1        87            35         35          81             26          56
+ 2       161(.93)     65(.93)    37(.52)   154(.95)      50(.96)        94(.84)
+ 4       300(.86)    120(.86)    68(.49)   295(.91)      96(.93)       205(.92)
+ 8       548(.79)    218(.78)   134(.48)   559(.86)     413(1.99)      665(1.49)
+16       920(.66)    368(.66)   274(.49)  1014(.78)      NA           1028(1.15)
 ***********Using AIJ format with Inodes *************************
- 1        78            30                     64            26              26
- 2       146(0.934)     55(0.917)             121(0.945)     48(0.925)       57(1.095)
- 4       278(0.890)    102(0.850)             244(0.953)     93(0.875)      197(1.895)
- 8       518(0.830)    186(0.775)             419(0.818)    248(1.195)      440(2.115)
-16       835(0.669)    317(0.660)             724(0.707)     NA            1075(2.584)
+ 1        78            30                     64            26           26
+ 2       146(.93)     55(.92)              121(.95)     48(.93)       57(1.10)
+ 4       278(.89)    102(.85)              244(.95)     93(.88)      197(1.90)
+ 8       518(.83)    186(.78)              419(.82)    248(1.20)     440(2.12)
+16       835(.67)    317(.66)              724(.71)     NA          1075(2.58)
+
+
+
 
 
 
