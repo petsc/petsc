@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.49 1998/07/12 03:45:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.50 1998/10/19 22:17:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -177,6 +177,27 @@ void  mpi_init__(int *ierr)
 void  MPI_INIT(int *ierr)
 {
   MPI_was_initialized = 1;
+  *ierr = MPI_SUCCESS;
+}
+
+/******mpi_finalize*******/
+void  mpi_finalize(int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void  mpi_finalize_(int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void  mpi_finalize__(int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void  MPI_FINALIZE(int *ierr)
+{
   *ierr = MPI_SUCCESS;
 }
 

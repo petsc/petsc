@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.13 1999/03/19 21:23:37 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.14 1999/03/28 22:54:34 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -144,16 +144,14 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from); CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to); CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmp_vec,to,&scatter); CHKERRQ(ierr);
-  ierr = VecScatterBegin(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);
-  CHKERRA(ierr);
-  ierr = VecScatterEnd(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);
-  CHKERRA(ierr);
+  ierr = VecScatterBegin(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
+  ierr = VecScatterEnd(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
 
   ierr = VecGetArray(tmp_vec,&tmp); CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
-    time,tmp[0],tmp[1],tmp[2]);
+    time,PetscReal(tmp[0]),PetscReal(tmp[1]),PetscReal(tmp[2]));
   PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
-    time,tmp[0]-solx(time),tmp[1]-soly(time),tmp[2]-solz(time));
+    time,PetscReal(tmp[0]-solx(time)),PetscReal(tmp[1]-soly(time)),PetscReal(tmp[2]-solz(time)));
   ierr = VecRestoreArray(tmp_vec,&tmp);
   PetscFree(idx);
   return 0;
