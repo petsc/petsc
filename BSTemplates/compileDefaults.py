@@ -6,7 +6,6 @@ import nargs
 import BSTemplates.sidlDefaults as sidlDefaults
 
 import distutils.sysconfig
-import string
 import os
 import sys
 
@@ -179,7 +178,7 @@ class UsingPython(UsingCompiler):
         # if .so was not built then need to strip .a off of end
         if lib[-2:] == '.a': lib = lib[0:-2]
         # may be stuff after .so like .0, so cannot use splitext()
-        lib = string.split(lib,'.so')[0]+'.so'
+        lib = lib.split('.so')[0]+'.so'
         bs.argDB['PYTHON_LIB'] = lib
     except: pass
     # This is not quite right
