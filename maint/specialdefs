@@ -16,8 +16,12 @@ discovered).
                         and routine name that has an _ in it. This happens
                         on Linux and Freebsd using f2c.
 
-   USES_VOID_VOID_VOID_VOID_TSEARCH - rs6000 (older), hpux, IRIX, and IRIX64
+   USES_V_V_V_V_TSEARCH - rs6000 (older), hpux, IRIX, and IRIX64
 
-   USES_VOID_VOID_CONST_VOID_CONST_VOID_TSEARCH - Prototyping for the 
+   USES_V_V_CNST_V_CNST_V_TSEARCH - Prototyping for the 
         arguments in the tsearch routine. Solaris and later versions of 
         AIX, (4.1 for example).
+
+   USES_TEMPLATED_COMPLEX - The complex data types in complex.h are
+        defined using templates, thus complex becomes complex<double>
+
