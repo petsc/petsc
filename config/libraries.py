@@ -91,8 +91,9 @@ class Configure(config.base.Configure):
     self.pushLanguage(self.language[-1])
     if self.checkLink(includes, body):
       found = 1
+      self.framework.argDB['LIBS'] = oldLibs
       for lib in libName:
-        self.framework.argDB['LIBS'] = oldLibs+' '+self.getLibArgument(lib)
+        self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
         strippedlib = os.path.splitext(os.path.basename(lib))[0]
         self.addDefine(self.getDefineName(strippedlib), 1)
     else:
