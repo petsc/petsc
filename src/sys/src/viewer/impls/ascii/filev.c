@@ -390,6 +390,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...
     tab = ascii->tab;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
+    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-ascii->tab,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }
