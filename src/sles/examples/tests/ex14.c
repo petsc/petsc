@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.9 1998/03/23 21:22:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex14.c,v 1.10 1998/04/16 03:51:52 curfman Exp curfman $";
 #endif
 
-/* Program usage:  mpirun ex14 [-help] [all PETSc options] */
+/* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined\n\
 Newton method that uses SLES to solve the linearized Newton sytems.  This solver\n\
