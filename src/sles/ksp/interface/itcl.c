@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.88 1997/03/20 19:04:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.89 1997/03/26 01:34:39 bsmith Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -311,9 +311,9 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 .  prefix - the prefix string to prepend to all KSP option requests
 
    Notes:
-   The first character of all runtime options is automatically the
-   hyphen (-);  thus, the hyphen must NOT be given at the beginning
-   of the prefix name.
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the
+   hyphen.
 
 .keywords: KSP, append, options, prefix, database
 
