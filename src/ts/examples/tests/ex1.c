@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.11 1996/09/27 02:43:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.12 1996/09/28 23:11:55 curfman Exp curfman $";
 #endif
 /*
        Formatted test for TS routines.
@@ -126,7 +126,7 @@ int main(int argc,char **argv)
     problem   = nonlinear;
   }
     
-  /* make time step context */
+  /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts); CHKERRA(ierr);
   ierr = TSSetMonitor(ts,Monitor,&appctx); CHKERRA(ierr);
 
@@ -276,7 +276,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max); CHKERRQ(ierr);
 
   if (!appctx->nox) {
-    PetscPrintf(comm,"Time-step %d time %g norm of error %g %g\n",step,time,norm_2,norm_max);
+    PetscPrintf(comm,"timestep %d time %g norm of error %g %g\n",step,time,norm_2,norm_max);
   }
 
   appctx->norm_2   += norm_2;
