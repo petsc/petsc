@@ -19,8 +19,8 @@ BLASLAPACK_LIB = -L/u/ac/balay/software/fblaslapack/linux64 -lflapack -lfblas
 #MPI_INCLUDE    = -I${MPI_HOME}/include
 #MPIRUN         =  /home/balay/bin/mpirun
 #
-MPI_HOME       = /u/ac/balay/software/mpich-1.2.2.3/linux64
-MPI_LIB        = -L${MPI_HOME}/lib -lmpich
+MPI_HOME       = /u/ac/balay/software/mpich-1.2.5/linux64
+MPI_LIB        = ${CLINKER_SLFLAG}${MPI_HOME}/lib/shared -L${MPI_HOME}/lib/shared -lmpich -lpmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun
 #

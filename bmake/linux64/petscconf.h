@@ -42,7 +42,6 @@
 #define PETSC_SIZEOF_LONG 8
 #define PETSC_SIZEOF_LONG_LONG 8
 
-#define PETSC_USE_DYNAMIC_LIBRARIES 1
 #define PETSC_HAVE_RTLD_GLOBAL 1
 
 #define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))
