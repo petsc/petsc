@@ -1,5 +1,5 @@
- #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.96 1998/07/23 21:39:21 bsmith Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: lu.c,v 1.97 1998/07/23 22:47:23 bsmith Exp balay $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
