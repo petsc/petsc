@@ -90,6 +90,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,const IS isrow[],const IS i
   MPI_Status    *r_status1,*r_status2,*s_status1,*s_status2;
   MPI_Comm      comm;
   PetscScalar   **rbuf2,**sbuf2;
+  PetscTruth    sorted;
 
   PetscFunctionBegin;
   comm   = C->comm;
@@ -103,10 +104,10 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,const IS isrow[],const IS i
 
     /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
-    ierr = ISSorted(isrow[i],(PetscTruth*)&j);CHKERRQ(ierr);
-    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
-    ierr = ISSorted(iscol[i],(PetscTruth*)&j);CHKERRQ(ierr);
-    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
+    ierr = ISSorted(isrow[i],&sorted);CHKERRQ(ierr);
+    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
+    ierr = ISSorted(iscol[i],&sorted);CHKERRQ(ierr);
+    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
   }
 
   len    =  2*ismax*(sizeof(int *)+sizeof(int)) + (m+1)*sizeof(int);
@@ -308,7 +309,9 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,const IS isrow[],const IS i
     }
   } else {
     for (i=0; i<ismax; i++) {
-      ierr = MatCreateSeqDense(PETSC_COMM_SELF,nrow[i],ncol[i],PETSC_NULL,submats+i);CHKERRQ(ierr);
+      ierr = MatCreate(PETSC_COMM_SELF,nrow[i],ncol[i],nrow[i],ncol[i],submats+i);CHKERRQ(ierr);
+      ierr = MatSetType(submats[i],A->type_name);CHKERRQ(ierr);
+      ierr = MatSeqDenseSetPreallocation(submats[i],PETSC_NULL);CHKERRQ(ierr);
     }
   }
   

@@ -114,7 +114,9 @@ int MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   Mat          newi;
 
   PetscFunctionBegin;
-  ierr = MatCreateSeqDense(A->comm,A->m,A->n,PETSC_NULL,&newi);CHKERRQ(ierr);
+  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&newi);CHKERRQ(ierr);
+  ierr = MatSetType(newi,A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(newi,PETSC_NULL);CHKERRQ(ierr);
   if (cpvalues == MAT_COPY_VALUES) {
     l = (Mat_SeqDense*)newi->data;
     if (lda>A->m) {
@@ -664,7 +666,9 @@ int MatLoad_SeqDense(PetscViewer viewer,const MatType type,Mat *A)
   M = header[1]; N = header[2]; nz = header[3];
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
-    ierr = MatCreateSeqDense(comm,M,N,PETSC_NULL,A);CHKERRQ(ierr);
+    ierr = MatCreate(comm,M,N,M,N,A);CHKERRQ(ierr);
+    ierr = MatSetType(*A,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(*A,PETSC_NULL);CHKERRQ(ierr);
     B    = *A;
     a    = (Mat_SeqDense*)B->data;
     v    = a->v;
@@ -687,8 +691,10 @@ int MatLoad_SeqDense(PetscViewer viewer,const MatType type,Mat *A)
     ierr = PetscMalloc((M+1)*sizeof(int),&rowlengths);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
 
-    /* create our matrix */
-    ierr = MatCreateSeqDense(comm,M,N,PETSC_NULL,A);CHKERRQ(ierr);
+    /* create our matrix */   
+    ierr = MatCreate(comm,M,N,M,N,A);CHKERRQ(ierr);
+    ierr = MatSetType(*A,MATSEQDENSE);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(*A,PETSC_NULL);CHKERRQ(ierr);
     B = *A;
     a = (Mat_SeqDense*)B->data;
     v = a->v;
@@ -1033,7 +1039,9 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
     Mat_SeqDense *tmatd;
     PetscScalar  *v2;
 
-    ierr  = MatCreateSeqDense(A->comm,A->n,A->m,PETSC_NULL,&tmat);CHKERRQ(ierr);
+    ierr  = MatCreate(A->comm,A->n,A->m,A->n,A->m,&tmat);CHKERRQ(ierr);
+    ierr  = MatSetType(tmat,A->type_name);CHKERRQ(ierr);
+    ierr  = MatSeqDenseSetPreallocation(tmat,PETSC_NULL);CHKERRQ(ierr);
     tmatd = (Mat_SeqDense*)tmat->data;
     v = mat->v; v2 = tmatd->v;
     for (j=0; j<n; j++) {
@@ -1324,7 +1332,9 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
     newmat = *B;
   } else {
     /* Create and fill new matrix */
-    ierr = MatCreateSeqDense(A->comm,nrows,ncols,PETSC_NULL,&newmat);CHKERRQ(ierr);
+    ierr = MatCreate(A->comm,nrows,ncols,nrows,ncols,&newmat);CHKERRQ(ierr);
+    ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
   }
 
   /* Now extract the data pointers and do the copy,column at a time */

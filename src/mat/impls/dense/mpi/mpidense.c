@@ -24,7 +24,9 @@ int MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *B)
 
   ierr = PetscObjectGetComm((PetscObject)(mdn->A),&comm);CHKERRQ(ierr);
   ierr = MatGetArray(mdn->A,&array);CHKERRQ(ierr);
-  ierr = MatCreateSeqDense(comm,m,m,array+m*rstart,B);CHKERRQ(ierr);
+  ierr = MatCreate(comm,m,m,m,m,B);CHKERRQ(ierr);
+  ierr = MatSetType(*B,mdn->A->type_name);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(*B,array+m*rstart);CHKERRQ(ierr);
   ierr = MatRestoreArray(mdn->A,&array);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -982,7 +984,9 @@ int MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
    allocates the local dense storage space.  We should add error checking. */
 
   a    = (Mat_MPIDense*)mat->data;
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,mat->m,mat->N,data,&a->A);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,mat->m,mat->N,mat->m,mat->N,&a->A);CHKERRQ(ierr);
+  ierr = MatSetType(a->A,MATSEQDENSE);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(a->A,data);CHKERRQ(ierr);
   PetscLogObjectParent(mat,a->A);
   PetscFunctionReturn(0);
 }
