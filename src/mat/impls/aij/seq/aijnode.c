@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.99 1999/05/04 20:31:42 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.100 1999/05/12 03:29:04 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -73,7 +73,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
   nslim_row = A->inode.node_count;
   m         = A->m;
   n         = A->n;
-  if (m != n) SETERRA(1,0,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be symmetric");
+  if (m != n) SETERRA(1,0,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be square");
   
   /* Use the row_inode as column_inode */
   nslim_col = nslim_row;
