@@ -393,15 +393,22 @@ extern int MatSeqAIJPtAP(Mat,Mat,Mat*);
 @*/
 int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
 {
-  int        ierr,i,nlevels = dmmg[0]->nlevels;
+  int        ierr,size,i,nlevels = dmmg[0]->nlevels;
   PetscTruth galerkin;
+  MatType    type;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
   galerkin = dmmg[0]->galerkin;  
 
   if (galerkin) {
-    ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATMPIAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(dmmg[nlevels-1]->comm,&size);CHKERRQ(ierr);
+    if (size == 1) {
+      type = MATSEQAIJ;
+    } else {
+      type = MATMPIAIJ;
+    }
+    ierr = DMGetMatrix(dmmg[nlevels-1]->dm,type,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
     ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->B);CHKERRQ(ierr);
     for (i=nlevels-2; i>-1; i--) {
       ierr = MatSeqAIJPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
@@ -413,7 +420,13 @@ int DMMGSetSLES(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
     for (i=0; i<nlevels; i++) {
 
       if (!dmmg[i]->B && !galerkin) {
-        ierr = DMGetMatrix(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->B);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(dmmg[i]->comm,&size);CHKERRQ(ierr);
+        if (size == 1) {
+          type = MATSEQAIJ;
+        } else {
+          type = MATMPIAIJ;
+        }
+        ierr = DMGetMatrix(dmmg[i]->dm,type,&dmmg[i]->B);CHKERRQ(ierr);
       } 
       if (!dmmg[i]->J) {
         dmmg[i]->J = dmmg[i]->B;

@@ -167,6 +167,9 @@ int MatCreate_SeqSBAIJSpooles(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of SeqSBAIJ */
+  /*   and SeqSBAIJSpooles types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

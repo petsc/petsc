@@ -148,6 +148,9 @@ int MatCreate_MPISBAIJSpooles(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of MPISBAIJ */
+  /*   and MPISBAIJSpooles types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPISBAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

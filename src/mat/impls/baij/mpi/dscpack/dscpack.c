@@ -734,12 +734,13 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_DSCPACK"
 int MatCreate_DSCPACK(Mat A) {
-  int                     ierr,size;
-  MPI_Comm                comm;
+  int ierr,size;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  /* Change type name before calling MatSetType to force proper construction of SeqBAIJ or MPIBAIJ */
+  /*   and DSCPACK types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATDSCPACK);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
   } else {

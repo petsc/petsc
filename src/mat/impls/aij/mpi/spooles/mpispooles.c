@@ -665,6 +665,8 @@ int MatCreate_MPIAIJSpooles(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of MPIAIJ and MPIAIJSpooles types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

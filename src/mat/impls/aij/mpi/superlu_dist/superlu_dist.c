@@ -697,12 +697,13 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SuperLU_DIST"
 int MatCreate_SuperLU_DIST(Mat A) {
-  int                     ierr,size;
-  MPI_Comm                comm;
+  int ierr,size;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  /* Change type name before calling MatSetType to force proper construction of SeqAIJ or MPIAIJ */
+  /*   and SuperLU_DIST types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSUPERLU_DIST);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {

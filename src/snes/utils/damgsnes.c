@@ -522,7 +522,7 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
 @*/
 int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
-  int         ierr,i,nlevels = dmmg[0]->nlevels,period = 1;
+  int         ierr,size,i,nlevels = dmmg[0]->nlevels,period = 1;
   PetscTruth  snesmonitor,mffdoperator,mffd,fdjacobian;
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth  mfadoperator,mfad,adjacobian;
@@ -530,6 +530,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   SLES        sles;
   PetscViewer ascii;
   MPI_Comm    comm;
+  MatType     type;
 
   PetscFunctionBegin;
   if (!dmmg)     SETERRQ(1,"Passing null as DMMG");
@@ -588,7 +589,13 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     }
     
     if (!dmmg[i]->B) {
-      ierr = DMGetMatrix(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->B);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(dmmg[i]->comm,&size);CHKERRQ(ierr);
+      if (size==1) {
+        type = MATSEQAIJ;
+      } else {
+        type = MATMPIAIJ;
+      }
+      ierr = DMGetMatrix(dmmg[i]->dm,type,&dmmg[i]->B);CHKERRQ(ierr);
     } 
     if (!dmmg[i]->J) {
       dmmg[i]->J = dmmg[i]->B;

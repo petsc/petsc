@@ -540,11 +540,12 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_LUSOL"
-int MatCreate_LUSOL(Mat A)
-{
+int MatCreate_LUSOL(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of SeqAIJ and LUSOL types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATLUSOL);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_LUSOL(A,MATLUSOL,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

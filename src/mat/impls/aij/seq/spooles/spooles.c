@@ -572,9 +572,11 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJSpooles"
 int MatCreate_SeqAIJSpooles(Mat A) {
-  int         ierr;
+  int ierr;
 
   PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of SeqAIJ and SeqAIJSpooles types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -468,6 +468,8 @@ int MatCreate_SuperLU(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of SeqAIJ and SUPERLU types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSUPERLU);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SuperLU(A,MATSUPERLU,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

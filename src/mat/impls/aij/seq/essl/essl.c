@@ -242,6 +242,8 @@ int MatCreate_Essl(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of SeqAIJ and Essl types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATESSL);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);
   ierr = MatConvert_SeqAIJ_Essl(A,MATESSL,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -229,6 +229,7 @@ int main(int argc,char **argv)
     /*
       Output stuff to Matlab socket.
     */
+#if defined(PETSC_HAVE_MATLAB)
     ierr = SNESGetFunction(snes, &res, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
     ierr = VecView(res, PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr); 
     ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);  
@@ -239,7 +240,8 @@ int main(int argc,char **argv)
     ierr = PetscViewerSocketPutReal(PETSC_VIEWER_SOCKET_WORLD,1,1,&(param.scaled_depth));CHKERRQ(ierr);
     ierr = PetscViewerSocketPutInt(PETSC_VIEWER_SOCKET_WORLD,1,&(param.icorner));CHKERRQ(ierr); 
     ierr = PetscViewerSocketPutInt(PETSC_VIEWER_SOCKET_WORLD,1,&(param.jcorner));CHKERRQ(ierr);  
-    
+#endif
+
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.

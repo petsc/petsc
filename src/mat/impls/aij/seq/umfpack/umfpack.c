@@ -382,6 +382,8 @@ int MatCreate_UMFPACK(Mat A) {
   int                ierr;
 
   PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of SeqAIJ and UMFPACK types */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATUMFPACK);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_UMFPACK(A,MATUMFPACK,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
