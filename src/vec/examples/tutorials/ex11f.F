@@ -1,5 +1,5 @@
 !
-! "$Id: ex11f.F,v 1.1 1998/07/23 22:46:13 bsmith Exp bsmith $";
+! "$Id: ex11f.F,v 1.2 1999/01/12 23:13:48 bsmith Exp balay $";
 !
 !
 ! Program usage:  mpirun ex1 [-help] [all PETSc options] 
@@ -14,7 +14,7 @@
       program ex11f
       implicit none
 
- !
+!
 !  The following include statements are required for Fortran programs
 !  that use PETSc vectors:
 !     petsc.h  - base PETSc routines
