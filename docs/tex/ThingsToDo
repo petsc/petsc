@@ -44,11 +44,11 @@ Additional Capabilities that PETSc Needs:
 
    - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix.
 
-   * Make MatGetSubMatrices() for Seq and MPI AIJ.
+   X Make MatGetSubMatrices() for Seq and MPI AIJ.
 
-   * Make MatIncreaseOverlap() for Seq and MPI AIJ.
+   X Make MatIncreaseOverlap() for Seq and MPI AIJ.
 
-   * Do overlapping additive Schwarz for Seq and MPI AIJ.
+   X Do overlapping additive Schwarz for Seq and MPI AIJ.
 
    X Fix SNES so that the right-hand-side of the Newton systems is not
      ever scaled by -1.0, but instead this is taken care of in the
@@ -132,12 +132,15 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
+   - Provide MPIU_MAXSUM and use it to replace use of MAT_SUM + MAT_MAX everywhere.
+
    - Add matrix viewers to show element magnitude by coloring (requested by Andreas).
 
    - Add nonsymmetric matrix reorderings for use in LU (requested by Andreas)
 
-   - Add viewer for matrix graph - possibly interface to external software?
-     (requested by Andreas)
+   * Add viewer for matrix graph - possibly interface to external software?
+     (requested by Andreas) Allow one to view a reordered matrix, perhaps 
+    by providing a MatReOrder(Mat,IS,IS,Mat*)?
 
    - Reorganize multigrid code. (requested by Andreas).
 
