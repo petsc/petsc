@@ -1,10 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.57 1999/03/15 02:56:43 curfman Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.58 1999/03/15 22:20:00 balay Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
-This example employs a user-defined monitoring routine.  This code also demonstrates\n\
-use of the macro __FUNC__ to define routine names for use in error handling.\n\n";
+This example employs a user-defined monitoring routine and optionally a user-defined\n\
+routine to check candidate iterates produced by line search routines.  This code also\n\
+demonstrates use of the macro __FUNC__ to define routine names for use in error handling.\n\
+The command line options include:\n\
+  -check_iterates : activate checking of iterates\n\
+  -check_tol <tol>: set tolerance for iterate checking\n\n";
 
 /*T
    Concepts: SNES^Solving a system of nonlinear equations (basic parallel example);
@@ -12,7 +16,8 @@ use of the macro __FUNC__ to define routine names for use in error handling.\n\n
    Concepts: Error Handling^Using the macro __FUNC__ to define routine names;
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESSolve();
    Routines: SNESGetTolerances(); SNESSetFromOptions(); SNESSetMonitor();
-   Routines: SNESGetSolution(); ViewerDrawOpen(); PetscObjectSetName();
+   Routines: SNESGetSolution(); SNESSetLineSearchCheck(); 
+   Routines: ViewerDrawOpen(); PetscObjectSetName();
    Routines: DACreate1d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
    Routines: DAGetCorners(); DAGetGhostCorners();
    Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd();
