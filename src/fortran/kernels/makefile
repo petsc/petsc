@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.15 2000/08/17 04:53:45 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.16 2001/03/13 04:15:29 bsmith Exp bsmith $ 
 
 # This directory contains some computational kernels written in
 # Fortran77.  These are mainly intended to provide high performance for
@@ -14,11 +14,11 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  = 
 SOURCEF  = fmaxpy.F fmdot.F fnorm.F fmult.F fmultadd.F fsolve.F fsolvebaij.F \
-           sgemv.F
+           sgemv.F frelax.F
 SOURCEH  = 
 OBJSC    = 
 OBJSF    = fmaxpy.o fmdot.o fnorm.o fmult.o fmultadd.o fsolve.o fsolvebaij.o \
-           sgemv.o
+           sgemv.o frelax.o
 LIBBASE  = libpetsc
 MANSEC   = Sys
 LOCDIR   = src/fortran/kernels/

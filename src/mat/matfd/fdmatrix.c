@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.90 2001/08/06 21:16:12 bsmith Exp balay $*/
+/*$Id: fdmatrix.c,v 1.91 2001/08/07 03:03:22 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -406,8 +406,8 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
     SETERRQ(PETSC_ERR_SUP,"Code not yet written for this matrix type");
   }
 
-  c->error_rel         = 1.e-8;
-  c->umin              = 1.e-6;
+  c->error_rel         = PETSC_SQRT_MACHINE_EPSILON;
+  c->umin              = 100.0*PETSC_SQRT_MACHINE_EPSILON;
   c->freq              = 1;
   c->usersetsrecompute = PETSC_FALSE;
   c->recompute         = PETSC_FALSE;

@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.57 2001/06/21 21:18:34 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.58 2001/08/06 21:17:05 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -63,7 +63,6 @@ struct _p_SNES {
   PetscReal   rtol;               /* relative tolerance */
   PetscReal   atol;               /* absolute tolerance */
   PetscReal   xtol;               /* relative tolerance in solution */
-  PetscReal   trunctol;           /* truncation tolerance */
 
   /* ------------------------ Default work-area management ---------------------- */
 

@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.214 2001/06/21 21:17:38 bsmith Exp balay $*/
+/*$Id: precon.c,v 1.215 2001/08/07 03:03:26 balay Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -694,6 +694,9 @@ int PCApplyRichardsonExists(PC pc,PetscTruth *exists)
 +  pc  - the preconditioner context
 .  x   - the initial guess 
 .  w   - one work vector
+.  rtol - relative decrease in residual norm convergence criteria
+.  atol - absolute residual norm convergence criteria
+.  dtol - divergence residual norm increase criteria
 -  its - the number of iterations to apply.
 
    Output Parameter:
@@ -703,13 +706,16 @@ int PCApplyRichardsonExists(PC pc,PetscTruth *exists)
    Most preconditioners do not support this function. Use the command
    PCApplyRichardsonExists() to determine if one does.
 
+   Except for the multigrid PC this routine ignores the convergence tolerances
+   and always runs for the number of iterations
+ 
    Level: developer
 
 .keywords: PC, apply, Richardson
 
 .seealso: PCApplyRichardsonExists()
 @*/
-int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
+int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
   int ierr;
 
@@ -724,7 +730,7 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  ierr = (*pc->ops->applyrichardson)(pc,x,y,w,its);CHKERRQ(ierr);
+  ierr = (*pc->ops->applyrichardson)(pc,x,y,w,rtol,atol,dtol,its);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

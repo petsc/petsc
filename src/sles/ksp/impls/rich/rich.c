@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.102 2001/08/06 21:16:46 bsmith Exp balay $*/
+/*$Id: rich.c,v 1.103 2001/08/07 03:03:53 balay Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -47,7 +47,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   ierr = PCApplyRichardsonExists(ksp->B,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
     *its = maxit;
-    ierr = PCApplyRichardson(ksp->B,b,x,r,maxit);CHKERRQ(ierr);
+    ierr = PCApplyRichardson(ksp->B,b,x,r,ksp->rtol,ksp->atol,ksp->divtol,maxit);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_ITS; /* what should we really put here? */
     PetscFunctionReturn(0);
   }

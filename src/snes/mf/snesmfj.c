@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.128 2001/08/06 21:17:13 bsmith Exp balay $*/
+/*$Id: snesmfj.c,v 1.129 2001/08/07 03:04:10 balay Exp bsmith $*/
 
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 #include "src/mat/matimpl.h"
@@ -337,7 +337,7 @@ int MatGetDiagonal_MFFD(Mat mat,Vec a)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   PetscScalar  h,*aa,*ww,v;
-  PetscReal    epsilon = 1.e-8,umin = 1.e-6;
+  PetscReal    epsilon = PETSC_SQRT_MACHINE_EPSILON,umin = 100.0*PETSC_SQRT_MACHINE_EPSILON;
   Vec          w,U;
   int          i,ierr,rstart,rend;
 
@@ -534,7 +534,7 @@ int MatCreate_MFFD(Mat A)
   PetscLogObjectCreate(mfctx);
   mfctx->sp              = 0;
   mfctx->snes            = 0;
-  mfctx->error_rel       = 1.e-8; /* assumes PetscReal precision */
+  mfctx->error_rel       = PETSC_SQRT_MACHINE_EPSILON;
   mfctx->recomputeperiod = 1;
   mfctx->count           = 0;
   mfctx->currenth        = 0.0;

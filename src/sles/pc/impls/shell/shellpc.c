@@ -1,4 +1,4 @@
-/*$Id: shellpc.c,v 1.75 2001/04/10 19:36:09 bsmith Exp bsmith $*/
+/*$Id: shellpc.c,v 1.76 2001/06/20 03:32:48 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -14,7 +14,7 @@ typedef struct {
   int  (*apply)(void *,Vec,Vec);
   int  (*view)(void *,PetscViewer);
   int  (*applytranspose)(void *,Vec,Vec);
-  int  (*applyrich)(void *,Vec,Vec,Vec,int);
+  int  (*applyrich)(void *,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
   char *name;
 } PC_Shell;
 
@@ -63,14 +63,14 @@ static int PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_Shell"
-static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
+static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int it)
 {
   int      ierr;
   PC_Shell *shell;
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  ierr  = (*shell->applyrich)(shell->ctxrich,x,y,w,it);CHKERRQ(ierr);
+  ierr  = (*shell->applyrich)(shell->ctxrich,x,y,w,rtol,atol,dtol,it);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +197,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApplyRichardson_Shell"
-int PCShellSetApplyRichardson_Shell(PC pc,int (*apply)(void*,Vec,Vec,Vec,int),void *ptr)
+int PCShellSetApplyRichardson_Shell(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void *ptr)
 {
   PC_Shell *shell;
 

@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.125 2001/08/10 18:49:43 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.126 2001/08/10 19:53:04 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -15,22 +15,40 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MGMCycle_Private"
-int MGMCycle_Private(MG *mglevels)
+int MGMCycle_Private(MG *mglevels,PetscTruth *converged)
 {
-  MG     mg = *mglevels,mgc = *(mglevels - 1);
-  int    cycles = mg->cycles,ierr,its;
+  MG          mg = *mglevels,mgc = *(mglevels - 1);
+  int         cycles = mg->cycles,ierr,its;
   PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
+  if (converged) *converged = PETSC_FALSE;
+
   if (!mg->level) {  /* coarse grid */
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
   } else {
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
     ierr = (*mg->residual)(mg->A,mg->b,mg->x,mg->r);CHKERRQ(ierr);
+
+    /* if on finest level and have convergence criteria set */
+    if (mg->level == mg->levels-1 && mg->ttol) {
+      PetscReal rnorm;
+      ierr = VecNorm(mg->r,NORM_2,&rnorm);CHKERRQ(ierr);
+      if (rnorm <= mg->ttol) {
+        *converged = PETSC_TRUE;
+        if (rnorm < mg->atol) {
+          PetscLogInfo(0,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",rnorm,mg->atol);
+        } else {
+          PetscLogInfo(0,"Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",rnorm,mg->ttol);
+        }
+        PetscFunctionReturn(0);
+      }
+    }
+
     ierr = MatRestrict(mg->restrct,mg->r,mgc->b);CHKERRQ(ierr);
     ierr = VecSet(&zero,mgc->x);CHKERRQ(ierr);
     while (cycles--) {
-      ierr = MGMCycle_Private(mglevels-1);CHKERRQ(ierr); 
+      ierr = MGMCycle_Private(mglevels-1,converged);CHKERRQ(ierr); 
     }
     ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
     ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
@@ -95,6 +113,10 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **
     mg[i]->smoothu         = mg[i]->smoothd;
     mg[i]->default_smoothu = 10000;
     mg[i]->default_smoothd = 10000;
+    mg[i]->rtol = 0.0;
+    mg[i]->atol = 0.0;
+    mg[i]->dtol = 0.0;
+    mg[i]->ttol = 0.0;
   }
   *result = mg;
   PetscFunctionReturn(0);
@@ -145,7 +167,7 @@ static int PCApply_MG(PC pc,Vec b,Vec x)
   mg[levels-1]->x = x;
   if (mg[0]->am == MGMULTIPLICATIVE) {
     ierr = VecSet(&zero,x);CHKERRQ(ierr);
-    ierr = MGMCycle_Private(mg+levels-1);CHKERRQ(ierr);
+    ierr = MGMCycle_Private(mg+levels-1,PETSC_NULL);CHKERRQ(ierr);
   } 
   else if (mg[0]->am == MGADDITIVE) {
     ierr = MGACycle_Private(mg);CHKERRQ(ierr);
@@ -161,16 +183,33 @@ static int PCApply_MG(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_MG"
-static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,int its)
+static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
-  MG  *mg = (MG*)pc->data;
-  int ierr,levels = mg[0]->levels;
+  MG         *mg = (MG*)pc->data;
+  int        ierr,levels = mg[0]->levels;
+  PetscTruth converged = PETSC_FALSE;
 
   PetscFunctionBegin;
-  mg[levels-1]->b = b; 
-  mg[levels-1]->x = x;
-  while (its--) {
-    ierr = MGMCycle_Private(mg+levels-1);CHKERRQ(ierr);
+  mg[levels-1]->b    = b; 
+  mg[levels-1]->x    = x;
+
+  mg[levels-1]->rtol = rtol;
+  mg[levels-1]->atol = atol;
+  mg[levels-1]->dtol = dtol;
+  if (rtol) {
+    /* compute initial residual norm for relative convergence test */
+    PetscReal rnorm;
+    ierr               = (*mg[levels-1]->residual)(mg[levels-1]->A,b,x,w);CHKERRQ(ierr);
+    ierr               = VecNorm(w,NORM_2,&rnorm);CHKERRQ(ierr);
+    mg[levels-1]->ttol = PetscMax(rtol*rnorm,atol);
+  } else if (atol) {
+    mg[levels-1]->ttol = atol;
+  } else {
+    mg[levels-1]->ttol = 0.0;
+  }
+
+  while (its-- && !converged) {
+    ierr = MGMCycle_Private(mg+levels-1,&converged);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

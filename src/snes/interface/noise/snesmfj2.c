@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.33 2001/08/06 21:17:10 bsmith Exp balay $*/
+/*$Id: snesmfj2.c,v 1.34 2001/08/07 03:04:09 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -234,7 +234,7 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   PetscLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->sp   = 0;
   mfctx->snes = snes;
-  mfctx->error_rel        = 1.e-8; /* assumes PetscReal precision */
+  mfctx->error_rel        = PETSC_SQRT_MACHINE_EPSILON;
   mfctx->umin             = 1.e-6;
   mfctx->h                = 0.0;
   mfctx->need_h           = 1;

@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.176 2001/08/06 21:18:33 bsmith Exp balay $*/
+/*$Id: da2.c,v 1.177 2001/08/07 03:04:39 balay Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1557,7 +1557,7 @@ int DAFormFunctioni1(DA da,int i,Vec vu,PetscScalar *vfu,void *w)
 int DAGetDiagonal_MFFD(DA da,Vec U,Vec a)
 {
   PetscScalar  h,*aa,*ww,v;
-  PetscReal    epsilon = 1.e-8,umin = 1.e-6;
+  PetscReal    epsilon = PETSC_SQRT_MACHINE_EPSILON,umin = 100.0*PETSC_SQRT_MACHINE_EPSILON;
   int          ierr,gI,nI;
   MatStencil   stencil;
   DALocalInfo  info;

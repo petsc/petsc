@@ -1,10 +1,10 @@
-/*$Id: fmg.c,v 1.24 2001/03/23 23:23:10 balay Exp balay $*/
+/*$Id: fmg.c,v 1.25 2001/08/07 03:03:36 balay Exp bsmith $*/
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
 #include "src/sles/pc/impls/mg/mgimpl.h"
 
-EXTERN int MGMCycle_Private(MG *);
+EXTERN int MGMCycle_Private(MG *,PetscTruth*);
 
 /*
        MGFCycle_Private - Given an MG structure created with MGCreate() runs 
@@ -35,10 +35,10 @@ int MGFCycle_Private(MG *mg)
   /* work our way up through the levels */
   ierr = VecSet(&zero,mg[0]->x);CHKERRQ(ierr);
   for (i=0; i<l-1; i++) {
-    ierr = MGMCycle_Private(&mg[i]);CHKERRQ(ierr);
+    ierr = MGMCycle_Private(&mg[i],PETSC_NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr); 
   }
-  ierr = MGMCycle_Private(&mg[l-1]);CHKERRQ(ierr);
+  ierr = MGMCycle_Private(&mg[l-1],PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

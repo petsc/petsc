@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.5 2001/08/07 03:04:27 balay Exp bsmith $*/
+/*$Id: ex7.c,v 1.6 2001/08/07 21:31:30 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,da);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-
+  ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

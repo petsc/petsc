@@ -1,5 +1,5 @@
 
-/*$Id: aij.c,v 1.379 2001/08/07 03:02:47 balay Exp balay $*/
+/*$Id: aij.c,v 1.380 2001/08/10 15:27:36 balay Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1150,6 +1150,9 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+#if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
+      fortranrelaxaijforwardzero_(&m,&omega,x,a->i,a->j,diag,a->a,b);
+#else
       for (i=0; i<m; i++) {
         d    = fshift + a->a[diag[i]+shift];
         n    = diag[i] - a->i[i];
@@ -1160,6 +1163,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
         x[i] = omega*(sum/d);
       }
+#endif
       xb = x;
     } else xb = b;
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
@@ -1170,6 +1174,9 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
       PetscLogFlops(m);
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+#if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
+      fortranrelaxaijbackwardzero_(&m,&omega,x,a->i,a->j,diag,a->a,xb);
+#else
       for (i=m-1; i>=0; i--) {
         d    = fshift + a->a[diag[i] + shift];
         n    = a->i[i+1] - diag[i] - 1;
@@ -1180,11 +1187,15 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
         x[i] = omega*(sum/d);
       }
+#endif
     }
     its--;
   }
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+#if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
+      fortranrelaxaijforward_(&m,&omega,x,a->i,a->j,diag,a->a,b);
+#else
       for (i=0; i<m; i++) {
         d    = fshift + a->a[diag[i]+shift];
         n    = a->i[i+1] - a->i[i]; 
@@ -1195,8 +1206,12 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
         x[i] = (1. - omega)*x[i] + omega*(sum + a->a[diag[i]+shift]*x[i])/d;
       }
+#endif
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+#if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
+      fortranrelaxaijbackward_(&m,&omega,x,a->i,a->j,diag,a->a,b);
+#else
       for (i=m-1; i>=0; i--) {
         d    = fshift + a->a[diag[i] + shift];
         n    = a->i[i+1] - a->i[i]; 
@@ -1207,6 +1222,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
         x[i] = (1. - omega)*x[i] + omega*(sum + a->a[diag[i]+shift]*x[i])/d;
       }
+#endif
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);

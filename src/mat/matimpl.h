@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.124 2001/07/20 21:19:19 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.125 2001/08/06 21:15:05 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -162,7 +162,7 @@ struct _p_Mat {
   PetscMap               rmap,cmap;
   void                   *data;            /* implementation-specific data */
   int                    factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
-  PetscReal                 lupivotthreshold; /* threshold for pivoting */
+  PetscReal              lupivotthreshold; /* threshold for pivoting */
   PetscTruth             assembled;        /* is the matrix assembled? */
   PetscTruth             was_assembled;    /* new values inserted into assembled mat */
   int                    num_ass;          /* number of times matrix has been assembled */

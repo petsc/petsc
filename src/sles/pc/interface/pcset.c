@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.116 2001/04/10 19:36:06 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.117 2001/07/17 20:48:09 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -81,7 +81,7 @@ int PCSetType(PC pc,PCType type)
   pc->ops->view                = (int (*)(PC,PetscViewer)) 0;
   pc->ops->apply               = (int (*)(PC,Vec,Vec)) 0;
   pc->ops->setup               = (int (*)(PC)) 0;
-  pc->ops->applyrichardson     = (int (*)(PC,Vec,Vec,Vec,int)) 0;
+  pc->ops->applyrichardson     = (int (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int)) 0;
   pc->ops->applyBA             = (int (*)(PC,int,Vec,Vec,Vec)) 0;
   pc->ops->setfromoptions      = (int (*)(PC)) 0;
   pc->ops->applytranspose      = (int (*)(PC,Vec,Vec)) 0;

@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.30 2001/01/15 21:46:44 bsmith Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.31 2001/03/22 20:30:53 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -10,7 +10,7 @@ typedef struct _PCOps *PCOps;
 struct _PCOps {
   int          (*setup)(PC);
   int          (*apply)(PC,Vec,Vec);
-  int          (*applyrichardson)(PC,Vec,Vec,Vec,int);
+  int          (*applyrichardson)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
   int          (*applyBA)(PC,int,Vec,Vec,Vec);
   int          (*applytranspose)(PC,Vec,Vec);
   int          (*applyBAtranspose)(PC,int,Vec,Vec,Vec);

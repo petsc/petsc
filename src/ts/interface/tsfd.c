@@ -1,4 +1,4 @@
-/*$Id: tsfd.c,v 1.23 2001/08/06 21:18:08 bsmith Exp balay $*/
+/*$Id: tsfd.c,v 1.24 2001/08/07 03:04:21 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/ts/tsimpl.h"        /*I  "petscts.h"  I*/
@@ -87,12 +87,12 @@ int TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat *B,MatStru
 */
 int TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  Vec       jj1,jj2,xx2;
-  int       i,ierr,N,start,end,j;
-  PetscScalar    dx,mone = -1.0,*y,scale,*xx,wscale;
-  PetscReal amax,epsilon = 1.e-8; /* assumes double precision */
-  PetscReal dx_min = 1.e-16,dx_par = 1.e-1;
-  MPI_Comm  comm;
+  Vec         jj1,jj2,xx2;
+  int         i,ierr,N,start,end,j;
+  PetscScalar dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscReal   amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal   dx_min = 1.e-16,dx_par = 1.e-1;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.120 2001/08/02 20:29:38 balay Exp bsmith $ */
+/* $Id: petscpc.h,v 1.121 2001/08/06 21:16:19 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -77,7 +77,7 @@ EXTERN int PCApplySymmetricRight(PC,Vec,Vec);
 EXTERN int PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
 EXTERN int PCApplyTranspose(PC,Vec,Vec);
 EXTERN int PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
-EXTERN int PCApplyRichardson(PC,Vec,Vec,Vec,int);
+EXTERN int PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
 EXTERN int PCApplyRichardsonExists(PC,PetscTruth*);
 
 EXTERN int        PCRegisterDestroy(void);

@@ -1,23 +1,22 @@
 !
-!  "$Id: fsolve.F,v 1.13 2001/08/07 03:05:24 balay Exp $";
+!  "$Id: frelax.F,v 1.1 2001/08/11 03:21:47 bsmith Exp bsmith $";
 !
-!    Fortran kernel for sparse triangular solve in the AIJ matrix format
-! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
-! with MatSolve_SeqAIJ_NaturalOrdering()
+!    Fortran kernels for SOR relaxations
 !
 #include "include/finclude/petscdef.h"
 !
-      subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
+      subroutine FortranRelaxAIJForwardZero(n,omega,x,ai,aj,adiag,aa,b)
       implicit none
       PetscScalar      x(0:*),aa(0:*),b(0:*)
+      PetscReal        omega
       integer          n,ai(0:*),aj(0:*),adiag(0:*)
 
       integer          i,j,jstart,jend
       PetscScalar      sum
 !     
-!     Forward Solve
+!     Forward Solve with zero initial guess
 !
-      x(0) = b(0)
+      x(0) = omega*b(0) / aa(adiag(0))
       do 20 i=1,n-1
          jstart = ai(i)
          jend   = adiag(i) - 1
@@ -25,20 +24,87 @@
          do 30 j=jstart,jend
             sum  = sum -  aa(j) * x(aj(j))
  30      continue
-         x(i) = sum
+         x(i) = omega*sum / aa(adiag(i))
  20   continue
       
+!     return
+      end
 !
-!     Backward solve the upper triangular
+!-------------------------------------------------------------------
+!      
+      subroutine FortranRelaxAIJBackwardZero(n,omega,x,ai,aj,adiag,aa,b)
+      implicit none
+      PetscScalar      x(0:*),aa(0:*),b(0:*)
+      PetscReal        omega
+      integer          n,ai(0:*),aj(0:*),adiag(0:*)
+
+      integer          i,j,jstart,jend
+      PetscScalar      sum
+!
+!     Backward solve with zero initial guess
 !
       do 40 i=n-1,0,-1
          jstart  = adiag(i) + 1
          jend    = ai(i+1) - 1
-         sum     = x(i)
+         sum     = b(i)
          do 50 j=jstart,jend
             sum = sum - aa(j)* x(aj(j)) 
  50      continue
-         x(i)    = sum * aa(adiag(i))
+         x(i)    = omega*sum / aa(adiag(i))
+ 40   continue
+      return
+      end
+      
+!-------------------------------------------------------------------
+!      
+      subroutine FortranRelaxAIJForward(n,omega,x,ai,aj,adiag,aa,b)
+      implicit none
+      PetscScalar      x(0:*),aa(0:*),b(0:*)
+      PetscReal        omega
+      integer          n,ai(0:*),aj(0:*),adiag(0:*)
+
+      integer          i,j,jstart,jend
+      PetscScalar      sum
+!
+!     Forward solve with non-zero initial guess
+!
+      do 40 i=0,n-1
+         sum    = b(i)
+
+         jstart = ai(i)
+         jend    = ai(i+1) - 1
+         do 50 j=jstart,jend
+            sum = sum - aa(j)* x(aj(j)) 
+ 50      continue
+         x(i)    = (1.0 - omega)*x(i) +                                 &
+     &              omega*(sum + aa(adiag(i))*x(i))/ aa(adiag(i))
+ 40   continue
+      return
+      end
+      
+!-------------------------------------------------------------------
+!      
+      subroutine FortranRelaxAIJBackward(n,omega,x,ai,aj,adiag,aa,b)
+      implicit none
+      PetscScalar      x(0:*),aa(0:*),b(0:*)
+      PetscReal        omega
+      integer          n,ai(0:*),aj(0:*),adiag(0:*)
+
+      integer          i,j,jstart,jend
+      PetscScalar      sum
+!
+!     Backward solve with non-zero initial guess
+!
+      do 40 i=n-1,0,-1
+         sum    = b(i)
+
+         jstart = ai(i)
+         jend   = ai(i+1) - 1
+         do 50 j=jstart,jend
+            sum = sum - aa(j)* x(aj(j)) 
+ 50      continue
+         x(i)    = (1.0 - omega)*x(i) +                                 &
+     &              omega*(sum + aa(adiag(i))*x(i)) / aa(adiag(i))
  40   continue
       return
       end

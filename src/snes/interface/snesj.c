@@ -1,4 +1,4 @@
-/*$Id: snesj.c,v 1.72 2001/08/06 21:17:07 bsmith Exp balay $*/
+/*$Id: snesj.c,v 1.73 2001/08/07 03:04:08 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
@@ -20,7 +20,8 @@
 
    Options Database Key:
 +  -snes_fd - Activates SNESDefaultComputeJacobian()
--  -snes_test_err - Square root of function error tolerance, default 1.e-8
+-  -snes_test_err - Square root of function error tolerance, default square root of machine
+                    epsilon (1.e-8 in double, 3.e-4 in single)
 
    Notes:
    This routine is slow and expensive, and is not currently optimized
@@ -40,13 +41,13 @@
 @*/
 int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  Vec       j1a,j2a,x2;
-  int       i,ierr,N,start,end,j;
-  PetscScalar    dx,mone = -1.0,*y,scale,*xx,wscale;
-  PetscReal amax,epsilon = 1.e-8; /* assumes PetscReal precision */
-  PetscReal dx_min = 1.e-16,dx_par = 1.e-1;
-  MPI_Comm  comm;
-  int      (*eval_fct)(SNES,Vec,Vec)=0;
+  Vec         j1a,j2a,x2;
+  int         i,ierr,N,start,end,j;
+  PetscScalar dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscReal   amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal   dx_min = 1.e-16,dx_par = 1.e-1;
+  MPI_Comm    comm;
+  int         (*eval_fct)(SNES,Vec,Vec)=0;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetReal(snes->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);

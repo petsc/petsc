@@ -1,4 +1,4 @@
-/*$Id: sor.c,v 1.101 2001/04/10 19:36:08 bsmith Exp bsmith $*/
+/*$Id: sor.c,v 1.102 2001/08/06 21:16:23 bsmith Exp bsmith $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
@@ -37,12 +37,13 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_SOR"
-static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,int its)
+static int PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int its)
 {
   PC_SOR *jac = (PC_SOR*)pc->data;
   int    ierr;
 
   PetscFunctionBegin;
+  PetscLogInfo(pc,"PCApplyRichardson_SOR: Warning, convergence critera ignored, using %d iterations\n",its);
   ierr = MatRelax(pc->mat,b,jac->omega,(MatSORType)jac->sym,0.0,its,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

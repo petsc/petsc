@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.233 2001/08/06 21:17:07 bsmith Exp balay $*/
+/*$Id: snes.c,v 1.234 2001/08/07 03:04:08 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -98,8 +98,8 @@ int SNESView(SNES snes,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%d, maximum function evaluations=%d\n",snes->max_its,snes->max_funcs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%g, absolute=%g, truncation=%g, solution=%g\n",
-                 snes->rtol,snes->atol,snes->trunctol,snes->xtol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%g, absolute=%g, solution=%g\n",
+                 snes->rtol,snes->atol,snes->xtol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",snes->linear_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%d\n",snes->nfuncs);CHKERRQ(ierr);
     if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
@@ -605,7 +605,6 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
     snes->atol		  = 1.e-50;
   }
   snes->xtol		  = 1.e-8;
-  snes->trunctol	  = 1.e-12; /* no longer used */
   snes->nfuncs            = 0;
   snes->nfailures         = 0;
   snes->linear_its        = 0;

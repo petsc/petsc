@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.294 2001/08/07 03:05:29 balay Exp balay $ */
+/* $Id: petsc.h,v 1.295 2001/08/10 16:08:39 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -524,6 +524,10 @@ EXTERN int PetscScalarView(int,PetscScalar[],PetscViewer);
 
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
 #define PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ
+#endif
+
+#if !defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
+#define PETSC_USE_FORTRAN_KERNEL_RELAXAIJ
 #endif
 
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
