@@ -1,8 +1,7 @@
 PETSC_DIR = ../../../..
 ALL: lib 
 
-CFLAGS   =  $(PETSC_INCLUDE) $(CONF) $(PCONF)  \
-           -I../.. -D__DIR__='"ksp/impls/cg/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../..
 FFLAGS   =
 SOURCEC  = cg.c cgeig.c
 SOURCEF  =
