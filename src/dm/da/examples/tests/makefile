@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.49 1999/03/19 21:24:17 bsmith Exp balay $ 
+# $Id: makefile,v 1.50 1999/04/01 17:12:04 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -13,6 +13,8 @@ TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
 TESTEXAMPLES_5  =
 TESTEXAMPLES_13 = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm \
 		  ex11.PETSc ex11.rm clean
+TESTEXAMPLES_14 = ex12.PETSc runex12 ex12.rm
+
 BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex4.PETSc ex4.rm clean
 BUILDEXAMPLES_2 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex5.PETSc\
 		  ex5.rm ex6.PETSc ex6.rm ex7.PETSc ex7.rm clean
@@ -111,6 +113,12 @@ runex5:
 	-@${MPIRUN} -np 3 ex5 -time 50
 runex6:
 	-@${MPIRUN} -np 6 ex6 -test_order
+runex12:
+	echo "path([getenv('PETSC_DIR') '/src/sys/src/viewer/impls/socket/matlab'],path); ex12(2) ; exit" | ${MATLAB} -display maverick > ex12_1.tmp 2>&1;	  \
+	   if (diff output/ex12_1.out ex12_1.tmp) then true; \
+	   else echo "Possible problem with ex12_1, diffs above"; fi; \
+	   ${RM} -f ex12_1.tmp
+
 # ex13 uses the output of ex14
 runex13:
 	-@${MPIRUN} -np 3 ex13
