@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.122 2001/05/17 15:10:49 bsmith Exp balay $ 
+# $Id: makefile,v 1.123 2001/05/31 21:28:44 balay Exp balay $ 
 
 ALL: lib
 
@@ -21,7 +21,8 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c \
         tsf.c tsregf.c vectorf.c dagetarrayf.c \
         vinvf.c vscatf.c zerodiagf.c duplf.c gr1f.c dapff.c \
 	cmeshf.c optionsf.c snesmfjdeff.c combf.c redundantf.c iterativf.c \
-	matnullf.c sbaijf.c mpisbaijf.c iccf.c choleskyf.c damgsnesf.c aijf.c
+	matnullf.c sbaijf.c mpisbaijf.c iccf.c choleskyf.c damgsnesf.c aijf.c \
+	baijf.c jacobif.c pff.c regf.c wpf.c
 
 SOURCEF	 = 
 SOURCEH	 = 
@@ -42,7 +43,8 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgtypef.o \
         tsf.o tsregf.o vectorf.o dagetarrayf.o \
         vinvf.o vscatf.o zerodiagf.o duplf.o gr1f.o dapff.o \
 	cmeshf.o optionsf.o snesmfjdeff.o combf.o redundantf.o iterativf.o \
-	matnullf.o sbaijf.o mpisbaijf.o iccf.o choleskyf.o damgsnesf.o aijf.o
+	matnullf.o sbaijf.o mpisbaijf.o iccf.o choleskyf.o damgsnesf.o aijf.o \
+	baijf.o jacobif.o pff.o regf.o wpf.o
 
 
 OBJSF	 =

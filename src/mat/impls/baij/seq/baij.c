@@ -1,10 +1,10 @@
-/*$Id: baij.c,v 1.224 2001/03/23 23:22:07 balay Exp bsmith $*/
+/*$Id: baij.c,v 1.225 2001/04/10 19:35:34 bsmith Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
-#include "petscsys.h"
+#include "petscsys.h"                     /*I "petscmat.h" I*/
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
