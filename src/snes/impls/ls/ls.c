@@ -198,11 +198,13 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
 
     if (lsfail) {
       PetscTruth ismin;
-      snes->nfailures++;
-      snes->reason = SNES_DIVERGED_LS_FAILURE;
-      ierr = SNESLSCheckLocalMin_Private(snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
-      if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
-      break;
+
+      if (++snes->numFailures >= snes->maxFailures) {
+        snes->reason = SNES_DIVERGED_LS_FAILURE;
+        ierr = SNESLSCheckLocalMin_Private(snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
+        if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
+        break;
+      }
     } 
 
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);

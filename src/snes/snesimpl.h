@@ -88,7 +88,8 @@ struct _p_SNES {
   int        conv_hist_len;      /* size of convergence history array */
   int        conv_hist_max;      /* actual amount of data in conv_history */
   PetscTruth conv_hist_reset;    /* reset counter for each new SNES solve */
-  int        nfailures;          /* number of unsuccessful step attempts */
+  int        numFailures;        /* number of unsuccessful step attempts */
+  int        maxFailures;        /* maximum number of unsuccessful step attempts */
 
   /* ------------------  Data for unconstrained minimization  ------------------ */
   /* unconstrained minimization info ... For now we share everything else

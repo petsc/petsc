@@ -181,6 +181,7 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES))
 .  -snes_rtol <rtol> - relative decrease in tolerance norm from initial
 .  -snes_max_it <max_it> - maximum number of iterations
 .  -snes_max_funcs <max_funcs> - maximum number of function evaluations
+.  -snes_max_fail <max_fail> - maximum number of failures
 .  -snes_trtol <trtol> - trust region tolerance
 .  -snes_no_convergence_test - skip convergence test in nonlinear or minimization 
                                solver; hence iterations will continue until max_it
@@ -249,6 +250,7 @@ int SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsReal("-snes_rtol","Stop if decrease in function norm less then","SNESSetTolerances",snes->rtol,&snes->rtol,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_it","Maximum iterations","SNESSetTolerances",snes->max_its,&snes->max_its,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_funcs","Maximum function evaluations","SNESSetTolerances",snes->max_funcs,&snes->max_funcs,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-snes_max_fail","Maximum failures","SNESSetTolerances",snes->maxFailures,&snes->maxFailures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_fmin","Minimization function tolerance","SNESSetMinimizationFunctionTolerance",snes->fmin,&snes->fmin,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetParametersEW",&snes->ksp_ewconv);CHKERRQ(ierr);
@@ -499,7 +501,58 @@ int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidIntPointer(nfails);
-  *nfails = snes->nfailures;
+  *nfails = snes->numFailures;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetMaximumUnsuccessfulSteps"
+/*@
+   SNESSetMaximumUnsuccessfulSteps - Sets the maximum number of unsuccessful steps
+   attempted by the nonlinear solver before it gives up.
+
+   Not Collective
+
+   Input Parameters:
++  snes     - SNES context
+-  maxFails - maximum of unsuccessful steps
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
+@*/
+int SNESSetMaximumUnsuccessfulSteps(SNES snes, int maxFails)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  snes->maxFailures = maxFails;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetMaximumUnsuccessfulSteps"
+/*@
+   SNESGetMaximumUnsuccessfulSteps - Gets the maximum number of unsuccessful steps
+   attempted by the nonlinear solver before it gives up.
+
+   Not Collective
+
+   Input Parameter:
+.  snes     - SNES context
+
+   Output Parameter:
+.  maxFails - maximum of unsuccessful steps
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
+@*/
+int SNESGetMaximumUnsuccessfulSteps(SNES snes, int *maxFails)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidIntPointer(maxFails);
+  *maxFails = snes->maxFailures;
   PetscFunctionReturn(0);
 }
 
@@ -654,7 +707,8 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   }
   snes->xtol		  = 1.e-8;
   snes->nfuncs            = 0;
-  snes->nfailures         = 0;
+  snes->numFailures       = 0;
+  snes->maxFailures       = 1;
   snes->linear_its        = 0;
   snes->numbermonitors    = 0;
   snes->data              = 0;
@@ -2183,7 +2237,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   else {snes->vec_sol = snes->vec_sol_always = x;}
   if (snes->conv_hist_reset == PETSC_TRUE) snes->conv_hist_len = 0;
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
-  snes->nfuncs = 0; snes->linear_its = 0; snes->nfailures = 0;
+  snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
   ierr = (*(snes)->solve)(snes,its);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
