@@ -48,6 +48,7 @@ class Configure(config.base.Configure):
     (status2,output2) = commands.getstatusoutput('bk changes -L -v | grep -v "Pseudo-terminal"')
     if output1 or output2:
       self.framework.log.write('Cannot pull latest source code, you have changed files or bk change sets\n')
+      self.framework.log.write(output1+'\n'+output2+'\n')
       return
 
     self.framework.log.write('Downloading latest source with bk\n')
