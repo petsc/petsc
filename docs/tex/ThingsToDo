@@ -7,6 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Make PetscFree() be always "wrapped" so returns an int error code on 
+  all machines.
+
   Add -ams_publish_notify to attempt to attach to server when starting up
 
   Add -ams_publish tests to nightly build.
