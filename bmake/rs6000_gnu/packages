@@ -10,9 +10,7 @@
 #
 #FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a \
  #                -bI:/usr/lpp/xlf/lib/lowsys.exp
-
-#FC_LIB         = -lbsd -lc /usr/lib/libxlf.a /usr/lib/libxlfutil.a
-FC_LIB = -lbsd -lc /usr/lib/libxlf.a /usr/lib/libxlf90.a /usr/lib/libxlfutil.a -bI:/usr/lpp/xlf/lib/lowsys.exp /usr/local/gcc-2.5.8/lib/gcc-lib/rs6000/2.5.8/libgcc.a
+FC_LIB = -lbsd -lc /usr/local/gcc-2.5.8/lib/gcc-lib/rs6000/2.5.8/libgcc.a /usr/lib/libxlf.a /usr/lib/libxlf90.a /usr/lib/libxlfutil.a -bI:/usr/lpp/xlf/lib/lowsys.exp 
 
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
