@@ -514,6 +514,7 @@ class Configure(config.base.Configure):
       self.addPrototype('#define MPI_Comm_c2f(a) (a)')
     return
 
+
   def configure(self):
     if not self.framework.argDB['with-mpi']:
       self.configureMPIUNI()
