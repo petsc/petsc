@@ -298,13 +298,15 @@ class Configure(config.base.Configure):
       if dir.startswith('mpich') and os.path.isdir(os.path.join(packages, dir)):
         mpichDir = dir
     if mpichDir is None:
+      self.framework.log.write('Did not located already downloaded MPICH\n')
       raise RuntimeError('Error locating MPICH directory')
     return os.path.join(packages, mpichDir)
 
   def downLoadMPICH(self):
-    self.framework.log.write('Downloading MPICH')
+    self.framework.log.write('Downloading MPICH\n')
     try:
       mpichDir = self.getDir()
+      self.framework.log.write('MPICH already downloaded, no need to ftp\n')
     except RuntimeError:
       import urllib
 
@@ -349,6 +351,7 @@ class Configure(config.base.Configure):
     except:
       oldargs = ''
     if not oldargs == args:
+      self.framework.log.write('Have to rebuild MPICH oldargs = '+oldargs+' new args '+args+'\n')
       try:
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:

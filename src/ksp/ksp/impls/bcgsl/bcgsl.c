@@ -89,7 +89,6 @@ static int  KSPSolve_BCGSL(KSP ksp)
     ierr = PetscMalloc(ldMZ*sizeof(PetscScalar), &AYtc);CHKERRQ(ierr);
     ierr = PetscMalloc(ldMZ*ldMZ*sizeof(PetscScalar), &MZa);CHKERRQ(ierr);
     ierr = PetscMalloc(ldMZ*ldMZ*sizeof(PetscScalar), &MZb);CHKERRQ(ierr);
-    ierr = PetscMalloc(ldMZ*ldMZ*sizeof(PetscScalar), &MZb);CHKERRQ(ierr);
   }
 
   /* Prime the iterative solver */

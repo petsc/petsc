@@ -20,10 +20,10 @@ int main(int argc,char **args)
   Mat                   U,V;                /* matrix */
   PetscViewer           fd;               /* viewer */
   char                  file[PETSC_MAX_PATH_LEN];     /* input file name */
-  int                   ierr;
+  PetscErrorCode        ierr;
   PetscTruth            flg;
   Vec                   x,y,work1,work2;
-  int                   i,N,n,M,m;
+  PetscInt              i,N,n,M,m;
   PetscScalar           *xx;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -95,12 +95,13 @@ int main(int argc,char **args)
      U and V are stored as PETSc MPIDENSE (parallel) dense matrices with their rows partitioned the
      same way as x and y are partitioned
 */
-int LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,int nwork)
+PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscInt nwork)
 {
-  Mat         Ulocal = ((Mat_MPIDense*)U->data)->A;
-  Mat         Vlocal = ((Mat_MPIDense*)V->data)->A;
-  int         ierr,Nsave = x->N;
-  PetscScalar *w1,*w2;
+  Mat            Ulocal = ((Mat_MPIDense*)U->data)->A;
+  Mat            Vlocal = ((Mat_MPIDense*)V->data)->A;
+  PetscInt       Nsave = x->N;
+  PetscErrorCode ierr;
+  PetscScalar    *w1,*w2;
 
   PetscFunctionBegin;
 
