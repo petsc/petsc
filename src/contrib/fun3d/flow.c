@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.68 2001/01/23 20:58:30 balay Exp bsmith $";*/
+/* "$Id: flow.c,v 1.69 2001/01/29 18:51:58 bsmith Exp balay $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -2143,7 +2143,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "f77CLINK"
-void f77CLINK(CINFO *p1,CRUNGE *p2,CGMCOM *p3)
+void PETSC_STDCALL f77CLINK(CINFO *p1,CRUNGE *p2,CGMCOM *p3)
 {
    c_info  = p1;
    c_runge = p2;
