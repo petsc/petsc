@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.241 2001/07/17 18:10:11 buschelm Exp bsmith $*/
+/*$Id: baij.c,v 1.242 2001/07/20 20:53:30 bsmith Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -213,16 +213,22 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
     break;
   case MAT_USE_SINGLE_PRECISION_SOLVES:
     if (a->bs==4) {
-      PetscTruth sse_enabled=PETSC_FALSE;
+      PetscTruth sse_enabled_local,sse_enabled_global;
       int        ierr;
-      ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
+
+      sse_enabled_local  = PETSC_FALSE;
+      sse_enabled_global = PETSC_FALSE;
+
+      ierr = PetscSSEIsEnabled(A->comm,&sse_enabled_local,&sse_enabled_global);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SSE)
-      if (sse_enabled) {
+      if (sse_enabled_local) {
           a->single_precision_solves = PETSC_TRUE;
           A->ops->solve              = MatSolve_SeqBAIJ_Update;
           A->ops->solvetranspose     = MatSolveTranspose_SeqBAIJ_Update;
           PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES set\n");
           break;
+      } else {
+        PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
       }
 #else
       PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");

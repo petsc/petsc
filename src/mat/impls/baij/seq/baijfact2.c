@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.66 2001/07/17 18:10:07 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.67 2001/07/20 21:03:59 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2932,12 +2932,14 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
   Mat_SeqBAIJ *a  = (Mat_SeqBAIJ *)A->data;
   IS          row = a->row, col = a->col;
   PetscTruth  row_identity, col_identity;
-  PetscTruth  sse_enabled,use_single,use_natural;
+  PetscTruth  sse_enabled_local, sse_enabled_global;
+  PetscTruth  use_single, use_natural;
   int         ierr;
 
   PetscFunctionBegin;
 
-  sse_enabled = use_single = use_natural = PETSC_FALSE;
+  use_single  = PETSC_FALSE;
+  use_natural = PETSC_FALSE;
 
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
@@ -2982,8 +2984,8 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
     }
     break; 
   case 4:
-    ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
-    if (sse_enabled) {
+    ierr = PetscSSEIsEnabled(A->comm,&sse_enabled_local,&sse_enabled_global);CHKERRQ(ierr);
+    if (sse_enabled_local) {
       PetscTruth single_prec,flg;
       single_prec = flg = PETSC_FALSE;
       ierr = PetscOptionsGetLogical(PETSC_NULL,"-mat_single_precision_solves",&single_prec,&flg);CHKERRQ(ierr);
