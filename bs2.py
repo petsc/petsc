@@ -10,6 +10,9 @@ echo = 2
 class Maker:
   def __init__(self):
     self.setupTmpDir()
+    self.debugLevel       = echo
+    self.debugIndentLevel = 0
+    self.debugIndent      = '  '
 
   def setupTmpDir(self):
     try:
@@ -31,13 +34,19 @@ class Maker:
     if status: raise RuntimeError('Could not execute \''+command+'\': '+output)
 
   def executeShellCommand(self, command, checkCommand = None):
-    if echo: print command
+    self.debugPrint(command)
     (status, output) = commands.getstatusoutput(command)
     if checkCommand:
       checkCommand(command, status, output)
     else:
       self.defaultCheckCommand(command, status, output)
     return output
+
+  def debugPrint(self, msg, level = 1):
+    if self.debugLevel > level:
+      for i in range(self.debugIndentLevel):
+        write(sys.stdout, self.debugIndent)
+      print msg
 
 class FileGroup (Maker):
   def __init__(self, data = [], func = None, children = []):
@@ -129,18 +138,18 @@ class FileCompare (Transform):
     files = self.sources.getFiles()
     for source in files:
       if (not os.path.exists(source)):
-        if echo: print source+' does not exist'
+        self.debugPrint(source+' does not exist')
         self.products.append(source)
       else:
         if (self.compare(target, source)):
-          if echo: print target+' is older than '+source
+          self.debugPrint(target+' is older than '+source)
           self.products.append(source)
     if (self.returnAll and len(self.products)):
       self.products = self.sources
     return self.products
 
   def execute(self):
-    if echo > 1: print 'FileCompare: Comparing '+str(self.targets.getFiles())+' to '+str(self.sources.getFiles())
+    self.debugPrint('FileCompare: Comparing '+str(self.targets.getFiles())+' to '+str(self.sources.getFiles()), 2)
     self.products = FileGroup()
     files = self.targets.getFiles()
     if (not files):
@@ -189,7 +198,7 @@ class NewerThanLibraryObject (FileCompare):
     if (output[0:8] != 'no entry'):
       objectTime = time.mktime(time.strptime(output[25:42], "%b %d %H:%M %Y"))
     else:
-      if echo: print 'No entry for object '+object+' in '+library
+      self.debugPrint('No entry for object '+object+' in '+library)
       objectTime = 0
     return objectTime
 
@@ -214,7 +223,7 @@ class Action (Transform):
 
   def doFunction(self):
     files = filter(self.fileFilter, self.sources.getFiles())
-    if echo: print 'Applying '+str(self.program)+' to '+str(files)
+    self.debugPrint('Applying '+str(self.program)+' to '+str(files))
     if (self.allAtOnce):
       self.program(FileGroup(files))
     else:
@@ -466,7 +475,7 @@ class Target (Transform):
   def executeTransform(self, sources, transform):
     if isinstance(transform, Transform):
       files = sources.getFiles()
-      if echo > 1: print 'Executing transform '+str(transform)+' with '+str(files)
+      self.debugPrint('Executing transform '+str(transform)+' with '+str(files), 2)
       transform.sources.extend(sources)
       products = transform.execute()
     elif isinstance(transform, types.ListType):
