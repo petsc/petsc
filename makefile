@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.273 1999/03/18 22:16:37 balay Exp balay $ 
+# $Id: makefile,v 1.274 1999/03/19 14:11:44 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -68,37 +68,21 @@ build_c:
 	-@echo "========================================="
 
 #
-# Builds PETSc Fortran interface libary
+# Builds PETSc Fortran source
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
 
 build_fortran:
-	-@echo "BEGINNING TO COMPILE FORTRAN INTERFACE LIBRARY"
+	-@echo "BEGINNING TO COMPILE FORTRAN SOURCE"
 	-@echo "========================================="
 	-@cd src/fortran/custom; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf clean > trashz 2>&1; \
-	  grep -v clog trashz | grep -v "information sections" | \
-	  egrep -i '(Error|warning|Can)' >> /dev/null;\
-	  if [ "$$?" != 1 ]; then \
-	  cat trashz ; fi; ${RM} trashz
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf clean 
 	${RANLIB} ${PDIR}/libpetscfortran.a
-	-@chmod g+w  ${PDIR}/*.a
-	-@echo "Completed compiling Fortran interface library"
-	-@echo "========================================="
-
-#
-# Builds PETSc Fortran kernels; some numerical kernels have
-# a Fortran version that may give better performance on certain 
-# machines. These always provide better performance for complex numbers.
-#
-build_fortrankernels: chkpetsc_dir 
-	-@echo "BEGINNING TO COMPILE FORTRAN KERNELS LIBRARY"
-	-@echo "========================================="
 	-@cd src/fortran/kernels; \
 	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} libf clean
 	${RANLIB} ${PDIR}/libpetsc.a
 	-@chmod g+w  ${PDIR}/*.a
-	-@echo "Completed compiling Fortran kernels library"
+	-@echo "Completed compiling Fortran source"
 	-@echo "========================================="
 
 petscblas: info chkpetsc_dir
