@@ -33,7 +33,10 @@ class Template(base.Base):
     if hasattr(self, '_'+name):
       return getattr(self, '_'+name)
     cls = 'Using'+name[5:]
-    obj = getattr(__import__('build.templates.'+name, globals(), locals(), [cls]), cls)(self.sourceDB, self.project, self.usingSIDL)
+    try:
+      obj = getattr(__import__('build.templates.'+name, globals(), locals(), [cls]), cls)(self.sourceDB, self.project, self.usingSIDL)
+    except:
+      obj = getattr(__import__(name, globals(), locals(), [cls]), cls)(self.sourceDB, self.project, self.usingSIDL)
     setattr(self, '_'+name, obj)
     return obj
 
