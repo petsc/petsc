@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.2 1997/04/17 12:55:50 curfman Exp curfman $";
+C "$Id: ex2f.F,v 1.3 1997/04/19 15:37:19 curfman Exp curfman $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -64,11 +64,11 @@ C
 C  Variables:
 C     ts         - timestepping solver
 C     A          - Jacobian matrix context
-C     local      -
-C     global     -
-C     ftime      -
-C     duration   - 
-C     time_steps -
+C     local      - local vector
+C     global     - global vector
+C     ftime      - final time
+C     duration   - total duration
+C     time_steps - number of timesteps
 C
 C  Note:  "Double" -> "double precision" except for machines such
 C          as the Cray T3d, where "Double" -> "real"
@@ -91,7 +91,7 @@ C  Note: Any user-defined Fortran routines (such as RHSFunction)
 C  MUST be declared as external.
 
       external Monitor, RHSFunction
-      external InitialConditions, RHSJacobian
+      external InitialConditions, RHSJacobian, RHSJacobianFD
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                 Beginning of program
@@ -164,7 +164,12 @@ C  Set the solution method to be backward Euler.
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call MatCreate(comm,M,M,A,ierr)
-      call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
+      if (flg .eq. 1) then
+         call TSSetRHSJacobian(ts,A,A,RHSJacobianFD,PETSC_NULL,ierr)
+      else
+         call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL,ierr)
+      endif
       call TSSetType(ts,TS_BEULER,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -297,7 +302,7 @@ C  Input/output parameters:
 
 C  Local variables:
       Double  localptr(1)
-      integer i, mybase, myend, ierr, idx
+      integer i, mybase, myend, idx
 
 C  Determine starting and ending point of each processors range of
 C  grid values.  Note that we shift by 1 to convert from the 0-based
@@ -353,7 +358,7 @@ C  Input/output parameters:
 
 C  Local variables:
       integer  ierr
-      Double   n2, nmax
+      Double   en2, en2h, enmax
       Double   mone
       Draw     draw
 
@@ -377,23 +382,31 @@ C  Compute the exact solution at this time-step, then compute the
 C  2-norm and max-norm of the error.  Note that the solution vector
 C  is passed via the user-defined common block.
       call ExactSolution(time,ierr)
-      call VecAXPY(mone,global,solution,ierr)
-      call VecNorm(solution,NORM_2,n2,ierr)
-C  Scale the 2-norm by the grid spacing
-      n_2 = dsqrt(h*n2)
-      call VecNorm(solution,NORM_MAX,nmax,ierr)
-
-C  Print only from processor 0
-      if (rank .eq. 0) write(6,100) step,time,n2,nmax
- 100  format('Timestep = ',i5,', time = ',f8.3,
-     &       ' sec, error [2-norm] = ',e9.3,
-     &       ', error [max-norm] = ',e9.3)
 
 C  Print debugging information if desired
       if (debug .eq. 1) then
         if (rank .eq. 0) write(6,*) 'Computed solution vector'
         call VecView(global,VIEWER_STDOUT_WORLD,ierr)
         if (rank .eq. 0) write(6,*) 'Exact solution vector'
+        call VecView(solution,VIEWER_STDOUT_WORLD,ierr)
+      endif
+
+C  Compute the 2-norm and max-norm of the error
+      call VecAXPY(mone,global,solution,ierr)
+      call VecNorm(solution,NORM_2,en2,ierr)
+C  Scale the 2-norm by the grid spacing
+      en2s = dsqrt(h)*en2
+      call VecNorm(solution,NORM_MAX,enmax,ierr)
+
+C  Print only from processor 0
+      if (rank .eq. 0) write(6,100) step,time,en2s,enmax
+ 100  format('Timestep = ',i5,', time = ',f8.3,
+     &       ' sec, error [2-norm] = ',e9.3,
+     &       ', error [max-norm] = ',e9.3)
+
+C  Print debugging information if desired
+      if (debug .eq. 1) then
+        if (rank .eq. 0) write(6,*) 'Error vector'
         call VecView(solution,VIEWER_STDOUT_WORLD,ierr)
       endif
 
