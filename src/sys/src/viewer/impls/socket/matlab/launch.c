@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: launch.c,v 1.6 1999/01/12 23:17:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: launch.c,v 1.7 1999/06/30 22:48:50 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = launch(programname,number processors); 
@@ -34,15 +34,13 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   if (!mxIsString(prhs[0])) ERROR("First arg must be string.");
 
   if (nrhs == 1) np = 1;  
-  else np = (int) *mxGetPr(prhs[1]);
+  else           np = (int) *mxGetPr(prhs[1]);
 
   /* attempt a fork */
   child = fork();
-  if (child < 0) ERROR("Unable to fork.");
-
-  if (child) {
-    ; /* I am parent, simply return */
-  } else {
+  if (child < 0) {
+    ERROR("Unable to fork.");
+  } else if (!child) {  /* I am child, start up MPI program */
     mxGetString(prhs[0],program,1000);
     sprintf(executable,"mpirun -np %d %s",np,program);
     printf("About to execute %s\n",executable);
