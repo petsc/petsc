@@ -38,16 +38,19 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
   ierr = PetscOptionsBegin(A->comm,A->prefix,"Spooles Options","Mat");CHKERRQ(ierr); 
 
     ierr = PetscOptionsReal("-mat_spooles_tau","tau (used for pivoting; \n\
-           all entries in L and U have magnitude no more than tau)","None",options->tau,&options->tau,PETSC_NULL);CHKERRQ(ierr);
+           all entries in L and U have magnitude no more than tau)","None",
+                            options->tau,&options->tau,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsInt("-mat_spooles_seed","random number seed, used for ordering","None",options->seed,&options->seed,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_spooles_seed","random number seed, used for ordering","None",
+                           options->seed,&options->seed,PETSC_NULL);CHKERRQ(ierr);
 
     if (PetscLogPrintInfo) {
       options->msglvl = 1;
     } else {
       options->msglvl = 0;
     }
-    ierr = PetscOptionsInt("-mat_spooles_msglvl","msglvl","None",options->msglvl,&options->msglvl,0);CHKERRQ(ierr); 
+    ierr = PetscOptionsInt("-mat_spooles_msglvl","msglvl","None",
+                           options->msglvl,&options->msglvl,0);CHKERRQ(ierr); 
     if (options->msglvl > 0) {
         options->msgFile = fopen("spooles.msgFile", "a");
         PetscPrintf(PETSC_COMM_SELF,"\n Spooles' output is written into the file 'spooles.msgFile' \n\n");

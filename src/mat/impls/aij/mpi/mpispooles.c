@@ -24,7 +24,6 @@ int MatDestroy_MPIAIJ_Spooles(Mat A)
   
   PetscFunctionBegin;
  
-  /* allInOneMPI doesn't free following spaces, should I do it? */
   FrontMtx_free(lu->frontmtx) ;        
   IV_free(lu->newToOldIV) ;            
   IV_free(lu->oldToNewIV) ; 
@@ -86,7 +85,7 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
     fflush(lu->options.msgFile) ;
   }
   
-  /* STEP 13: permute and redistribute Y if necessary */
+  /* permute and redistribute Y if necessary */
   DenseMtx_permuteRows(lu->mtxY, lu->oldToNewIV) ;
   if ( lu->options.msglvl > 2 ) {
     fprintf(lu->options.msgFile, "\n\n rhs matrix in new ordering") ;
@@ -123,9 +122,9 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
     fflush(lu->options.msgFile) ;
   }
 
-  if ( lu->nmycol > 0 ) IVcopy(lu->nmycol, lu->rowindX, IV_entries(lu->ownedColumnsIV)) ; /* must be done for each solve */
+  if ( lu->nmycol > 0 ) IVcopy(lu->nmycol,lu->rowindX,IV_entries(lu->ownedColumnsIV)); /* must do for each solve */
   
-  /* STEP 15: solve the linear system */
+  /* solve the linear system */
   solvemanager = SubMtxManager_new() ;
   SubMtxManager_init(solvemanager, NO_LOCK, 0) ;
   FrontMtx_MPI_solve(lu->frontmtx, lu->mtxX, lu->mtxY, solvemanager, lu->solvemap, lu->cpus, 
@@ -145,7 +144,7 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
   }
   
   /* scatter local solution mtxX into mpi vector x */ 
-  if( !lu->scat ){
+  if( !lu->scat ){ /* create followings once for each numfactorization */
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lu->nmycol,lu->entX,&lu->vec_spooles);CHKERRQ(ierr); /* vec_spooles <- mtxX */ 
     ierr = ISCreateStride(PETSC_COMM_SELF,lu->nmycol,0,1,&lu->iden);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->nmycol,lu->rowindX,&lu->is_petsc);CHKERRQ(ierr);  
@@ -169,7 +168,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   Graph           *graph ;
   IVL             *adjIVL;
   DV              *cumopsDV ;
-  double          droptol=0.0,*opcounts,  minops, cutoff, *val;
+  double          droptol=0.0,*opcounts,minops,cutoff,*val;
   InpMtx          *newA ;
   PetscScalar     *av, *bv; 
   int             *ai, *aj, *bi,*bj, nz, *ajj, *bjj, *garray,
@@ -252,25 +251,27 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     (*F)->ops->destroy = MatDestroy_MPIAIJ_Spooles;  
     (*F)->assembled    = PETSC_TRUE;
 
-    lu->scat = PETSC_NULL;  /* used by MatSolve() */
+    /* to be used by MatSolve() */
+    lu->mtxY = DenseMtx_new() ;  
+    lu->mtxX = DenseMtx_new() ;
+    lu->scat = PETSC_NULL;  
 
     IVzero(20, lu->stats) ; 
     DVzero(20, lu->cpus) ;
     
+    /* get input parameters */
     ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
 
     /*
-      -------------------------------------------------------
-      STEP 2 : find a low-fill ordering
+      find a low-fill ordering
       (1) create the Graph object
       (2) order the graph using multiple minimum degree
       (3) find out who has the best ordering w.r.t. op count,
           and broadcast that front tree object
-          -------------------------------------------------------
     */
     graph = Graph_new() ;
     adjIVL = InpMtx_MPI_fullAdjacency(lu->mtxA, lu->stats, 
-                                  lu->options.msglvl, lu->options.msgFile, MPI_COMM_WORLD) ;
+              lu->options.msglvl, lu->options.msgFile, MPI_COMM_WORLD) ;
     nedges = IVL_tsize(adjIVL) ;
     Graph_init2(graph, 0, M, 0, nedges, M, nedges, adjIVL, NULL, NULL) ;
     if ( lu->options.msglvl > 2 ) {
@@ -318,7 +319,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
       fflush(lu->options.msgFile) ;
     }
   
-    /* STEP 3: get the permutations, permute the front tree, permute the matrix */
+    /* get the permutations, permute the front tree, permute the matrix */
     lu->oldToNewIV = ETree_oldToNewVtxPerm(lu->frontETree) ;
     lu->newToOldIV = ETree_newToOldVtxPerm(lu->frontETree) ;
 
@@ -331,7 +332,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
 
-    /* STEP 4: generate the owners map IV object and the map from vertices to owners */
+    /* generate the owners map IV object and the map from vertices to owners */
     cutoff   = 1./(2*size) ;
     cumopsDV = DV_new() ;
     DV_init(cumopsDV, size, NULL) ;
@@ -350,7 +351,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
       fflush(lu->options.msgFile) ;
     }
 
-    /* STEP 5: redistribute the matrix */
+    /* redistribute the matrix */
     lu->firsttag = 0 ;
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
                         lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
@@ -365,7 +366,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
       fflush(lu->options.msgFile) ;
     }
  
-    /* STEP 6: compute the symbolic factorization */
+    /* compute the symbolic factorization */
     lu->symbfacIVL = SymbFac_MPI_initFromInpMtx(lu->frontETree, lu->ownersIV, lu->mtxA,
                      lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
     lu->firsttag += lu->frontETree->nfront ;
@@ -378,10 +379,6 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     lu->mtxmanager = SubMtxManager_new() ;
     SubMtxManager_init(lu->mtxmanager, NO_LOCK, 0) ;
     lu->frontmtx = FrontMtx_new() ;
-
-    /* to be used by MatSolve() */
-    lu->mtxY = DenseMtx_new() ;  
-    lu->mtxX = DenseMtx_new() ;
 
   } else { /* new num factorization using previously computed symbolic factor */
     if (lu->options.pivotingflag) {                  /* different FrontMtx is required */
@@ -400,8 +397,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
 
-    /* STEP 5: redistribute the matrix */
-    /* lu->firsttag = 0 ;  */   /* do I need this? */
+    /* redistribute the matrix */
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
                         lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
     lu->firsttag++ ;
@@ -432,7 +428,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     }   
   }
 
-  /* STEP 8: numerical factorization */
+  /* numerical factorization */
   chvmanager = ChvManager_new() ;
   ChvManager_init(chvmanager, NO_LOCK, 0) ;  
   rootchv = FrontMtx_MPI_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, droptol,
@@ -469,11 +465,10 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
       PatchAndGoInfo_free(lu->frontmtx->patchinfo) ;
     }
   }
-
   if ( ierr >= 0 ) SETERRQ2(1,"\n proc %d : factorization error at front %d", rank, ierr) ;
  
-  /*  STEP 9: post-process the factorization and split 
-              the factor matrices into submatrices */
+  /*  post-process the factorization and split 
+      the factor matrices into submatrices */
   FrontMtx_MPI_postProcess(lu->frontmtx, lu->ownersIV, lu->stats, lu->options.msglvl,
                          lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   lu->firsttag += 5*size ;
@@ -483,7 +478,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     fflush(lu->options.msgFile) ;
   }
   
-  /* STEP 10: create the solve map object */
+  /* create the solve map object */
   lu->solvemap = SolveMap_new() ;
   SolveMap_ddMap(lu->solvemap, lu->frontmtx->symmetryflag, 
                FrontMtx_upperBlockIVL(lu->frontmtx),
@@ -495,7 +490,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     fflush(lu->options.msgFile) ;
   }
 
-  /* STEP 11: redistribute the submatrices of the factors */
+  /* redistribute the submatrices of the factors */
   FrontMtx_MPI_split(lu->frontmtx, lu->solvemap, 
                    lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, MPI_COMM_WORLD) ;
   if ( lu->options.msglvl > 2 ) {
@@ -504,7 +499,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     fflush(lu->options.msgFile) ;
   }
 
-  /* STEP 14: create a solution DenseMtx object */  
+  /* create a solution DenseMtx object */  
   lu->ownedColumnsIV = FrontMtx_ownedColumnsIV(lu->frontmtx, rank, lu->ownersIV,
                                          lu->options.msglvl, lu->options.msgFile) ;
   lu->nmycol = IV_size(lu->ownedColumnsIV) ;

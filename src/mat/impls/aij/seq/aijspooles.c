@@ -23,8 +23,8 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   (*F)->ops->lufactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
   (*F)->factor                = FACTOR_LU;  
 
-  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
-  (*F)->spptr       = (void*)lu; 
+  ierr                      = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
+  (*F)->spptr               = (void*)lu; 
   lu->options.symflag       = SPOOLES_NONSYMMETRIC;
   lu->options.pivotingflag  = SPOOLES_PIVOTING;
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
@@ -41,8 +41,7 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 int MatUseSpooles_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Spooles;
-  
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Spooles;  
   PetscFunctionReturn(0);
 }
 

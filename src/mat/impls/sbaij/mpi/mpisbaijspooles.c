@@ -27,8 +27,8 @@ int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
   (*F)->ops->choleskyfactornumeric = MatFactorNumeric_MPIAIJ_Spooles;
   (*F)->factor                     = FACTOR_CHOLESKY;  
 
-  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
-  (*F)->spptr      = (void*)lu;
+  ierr                     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
+  (*F)->spptr              = (void*)lu;
   lu->options.symflag      = SPOOLES_SYMMETRIC;
   lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
   lu->flg                  = DIFFERENT_NONZERO_PATTERN;
