@@ -1,15 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: ec.c,v 1.3 1997/02/11 19:46:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: ec.c,v 1.4 1997/02/22 02:30:37 bsmith Exp bsmith $";
 #endif
 
 /*
    This is where the eigenvalue computation operations are defined
 */
 
-#include "petsc.h"
 #include "src/ec/ecimpl.h"        /*I "ec.h" I*/
 #include "pinclude/pviewer.h"
-#include "draw.h"
+
 
 #undef __FUNC__  
 #define __FUNC__ "ECDestroy" /* ADIC Ignore */
@@ -451,7 +450,7 @@ int ECSolve(EC ec)
       DrawSP    drawsp;
 
       ierr = ECGetEigenvalues(ec,&n,&rpart,&ipart); CHKERRQ(ierr);
-      ierr = ViewerDrawOpenX(MPI_COMM_SELF,0,"Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,
+      ierr = ViewerDrawOpenX(PETSC_COMM_SELF,0,"Eigenvalues",PETSC_DECIDE,PETSC_DECIDE,
                              300,300,&viewer); CHKERRQ(ierr);
       ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
       ierr = DrawSPCreate(draw,1,&drawsp); CHKERRQ(ierr);

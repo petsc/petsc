@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.132 1997/05/03 21:12:39 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.133 1997/05/20 03:18:17 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -140,6 +140,7 @@ extern int MatShift(Scalar *,Mat);
 extern int MatSetLocalToGlobalMapping(Mat, int,int *);
 extern int MatZeroRowsLocal(Mat,IS,Scalar*);
 extern int MatSetValuesLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
+extern int MatSetValuesBlockedLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
