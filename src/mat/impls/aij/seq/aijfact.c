@@ -420,6 +420,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
 /* ----------------------------------------------------------- */
 EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
 
+#include "src/ksp/pc/impls/factor/factor.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
 PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
@@ -430,17 +431,18 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscErrorCode ierr;
   PetscInt       *r,*ic,i,j,n=A->m,*ai=b->i,*aj=b->j;
   PetscInt       *ajtmpold,*ajtmp,nz,row,*ics;
-  PetscInt       *diag_offset = b->diag,diag,*pj,nshift=0;
+  PetscInt       *diag_offset = b->diag,diag,*pj;
   PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
   PetscReal      zeropivot,rs,d,shift_nonzero;
-  PetscReal      row_shift,shift_fraction,shift_amount,shift_lo=0.,shift_hi=1.,shift_top=0.;
-  PetscTruth     lushift,shift_pd;
+  PetscReal      row_shift,shift_top=0.;
+  PetscTruth     shift_pd;
+  Shift_Ctx      sctx;
+  PetscInt       newshift;
 
   PetscFunctionBegin;
   shift_nonzero  = info->shiftnz;
   shift_pd       = info->shiftpd;
   zeropivot      = info->zeropivot;
-  shift_fraction = info->shift_fraction; 
 
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -472,10 +474,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
     }
   }
 
-  /* shift_fraction = b->lu_shift_fraction; */
-  shift_amount   = 0;
+  sctx.shift_amount = 0;
+  sctx.shift_top    = shift_top;
+  sctx.nshift       = 0;
+  sctx.nshift_max   = 5;
+  sctx.shift_lo     = 0.;
+  sctx.shift_hi     = 1.;
   do {
-    lushift = PETSC_FALSE;
+    sctx.lushift = PETSC_FALSE;
     for (i=0; i<n; i++){
       nz    = ai[i+1] - ai[i];
       ajtmp = aj + ai[i];
@@ -488,7 +494,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       for (j=0; j<nz; j++) {
         rtmp[ics[ajtmpold[j]]] = v[j];
       }
-      rtmp[ics[r[i]]] += shift_amount; /* shift the diagonal of the matrix */
+      rtmp[ics[r[i]]] += sctx.shift_amount; /* shift the diagonal of the matrix */
 
       row = *ajtmp++;
       while  (row < i) {
@@ -515,48 +521,30 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
         pv[j] = rtmps[pj[j]];
         if (j != diag) rs += PetscAbsScalar(pv[j]);
       }
-      /* shift the diagonals when zero pivot is detected */
-#define MAX_NSHIFT 5
-      if (PetscAbsScalar(pv[diag]) <= zeropivot*rs && shift_nonzero){
-        /* force |diag(*B)| > zeropivot*rs */
-        if (!nshift){
-          shift_amount = shift_nonzero;
-        } else {
-          shift_amount *= 2.0;
-        }
-        lushift = PETSC_TRUE;
-        nshift++;
-        break;
-      } else if (PetscRealPart(pv[diag]) <= zeropivot*rs && shift_pd){ 
-        /* force *B to be diagonally dominant */
-	if (nshift>MAX_NSHIFT) {
-	  SETERRQ(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner");
-	} else if (nshift==MAX_NSHIFT) {
-	  shift_fraction = shift_hi;
-	  lushift        = PETSC_FALSE;
-	} else {
-	  shift_lo = shift_fraction; shift_fraction = (shift_hi+shift_lo)/2.;
-	  lushift  = PETSC_TRUE;
-	}
-	shift_amount = shift_fraction * shift_top;
-        nshift++; 
-        break;
-      } else if (PetscAbsScalar(pv[diag]) <= zeropivot*rs){
-        SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",i,PetscAbsScalar(pv[diag]),zeropivot,rs);
+
+      sctx.rs  = rs;
+      sctx.pv  = pv[diag];
+      newshift = 0;
+      ierr = PCLUFactorCheckShift(A,info,B,&sctx,&newshift);CHKERRQ(ierr); 
+      if (newshift == 1){
+        break;    
+      } else if (newshift == -1){
+        SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",i,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
       }
     } 
-    if (shift_pd && !lushift && shift_fraction>0 && nshift<MAX_NSHIFT) {
+
+    if (shift_pd && !sctx.lushift && info->shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
       /*
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
        */
-      shift_hi       = shift_fraction;
-      shift_fraction = (shift_hi+shift_lo)/2.;
-      shift_amount   = shift_fraction * shift_top;
-      lushift        = PETSC_TRUE;
-      nshift++;
+      sctx.shift_hi       = info->shift_fraction;
+      info->shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
+      sctx.shift_amount   = info->shift_fraction * sctx.shift_top;
+      sctx.lushift        = PETSC_TRUE;
+      sctx.nshift++;
     }
-  } while (lushift);
+  } while (sctx.lushift);
 
   /* invert diagonal entries for simplier triangular solves */
   for (i=0; i<n; i++) {
@@ -570,12 +558,12 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   C->assembled = PETSC_TRUE;
   PetscLogFlops(C->n);
-  if (nshift){
+  if (sctx.nshift){
     if (shift_nonzero) {
-      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nonzero tries %D, shift_amount %g\n",nshift,shift_amount);
+      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nonzero tries %D, shift_amount %g\n",sctx.nshift,sctx.shift_amount);
     } else if (shift_pd) {
-      b->lu_shift_fraction = shift_fraction;
-      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %D\n",shift_fraction,shift_top,nshift);
+      b->lu_shift_fraction = info->shift_fraction;
+      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %D\n",info->shift_fraction,shift_top,sctx.nshift);
     }
   }
   PetscFunctionReturn(0);
