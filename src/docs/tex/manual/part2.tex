@@ -1776,19 +1776,17 @@ expensive, since no memory allocations or copies will be needed.
 Of course, one can also explicitly set selected matrix elements to zero
 by calling MatSetValues().
 
-% CANNOT BE USED SINCE NOT GOOD FOR BLOCKSOLVE
-%By default, if new entries are made in locations where no nonzeros 
-%previously existed, space will be allocated for the new entries. 
-%To prevent the allocation of additional memory and simply discard those 
-%new entries, one can use the option \findex{MatSetOption()}
-%\begin{tabbing}
-%  MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
-%\end{tabbing}
-%Once the matrix has been assembled, one can factor it numerically
-%without repeating the ordering or the symbolic factorization. 
-%This option can save some computational time, although it
-%does require that the factorization is not done in-place.
-
+By default, if new entries are made in locations where no nonzeros 
+previously existed, space will be allocated for the new entries. 
+To prevent the allocation of additional memory and simply discard those 
+new entries, one can use the option \findex{MatSetOption()}
+\begin{tabbing}
+  MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
+\end{tabbing}
+Once the matrix has been assembled, one can factor it numerically
+without repeating the ordering or the symbolic factorization. 
+This option can save some computational time, although it
+does require that the factorization is not done in-place.
 
 In the numerical solution of elliptic partial differential equations,
 it can be cumbersome to deal with Dirichlet boundary 
@@ -1816,18 +1814,17 @@ even removes the diagonal entry. If the pointer is not null, it uses that
 given value at the pointer location 
 in the diagonal entry of the eliminated rows. 
 
-% CANNOT BE USED SINCE NOT GOOD FOR BLOCKSOLVE
-%One nice feature of this approach is that when solving a nonlinear problem 
-%such that at each iteration the Dirichlet boundary conditions are in the 
-%same positions and the matrix retains the same nonzero structure, the user 
-%can call MatZeroRows() in the first iteration. Then, before generating 
-%the matrix in the second iteration the user should call
-%\begin{tabbing}
-%  MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
-%\end{tabbing}
-%From that point, \findex{MatSetOption()}
-%no new values will be inserted into those (boundary) rows of 
-%the matrix. \findex{MAT_NO_NEW_NONZERO_LOCATIONS} 
+One nice feature of this approach is that when solving a nonlinear problem 
+such that at each iteration the Dirichlet boundary conditions are in the 
+same positions and the matrix retains the same nonzero structure, the user 
+can call MatZeroRows() in the first iteration. Then, before generating 
+the matrix in the second iteration the user should call
+\begin{tabbing}
+  MatSetOption(Mat A,MAT_NO_NEW_NONZERO_LOCATIONS);
+\end{tabbing}
+From that point, \findex{MatSetOption()}
+no new values will be inserted into those (boundary) rows of 
+the matrix. \findex{MAT_NO_NEW_NONZERO_LOCATIONS} 
 
 Another matrix routine of interest is \findex{MatConvert()}
 \begin{tabbing}
