@@ -48,7 +48,7 @@ class Options:
       elif bopt == 'O':
         flags = '-O -Wall -Wshadow -fomit-frame-pointer'
     # Alpha
-    if re.match(r'alphaev[0-9]', self.configure.host_cpu):
+    elif re.match(r'alphaev[0-9]', self.configure.host_cpu):
       # Compaq C++
       if compiler == 'cxx':
         if bopt == 'O':
@@ -61,7 +61,7 @@ class Options:
           flags = '-woff 1164 -woff 1552 -woff 1174 -g'
         elif bopt == 'O':
           flags = '-woff 1164 -woff 1552 -woff 1174 -O2 -OPT:Olimit=6500'
-    return 
+    return flags
 
   def getFortranFlags(self, compiler, bopt):
     flags = ''

@@ -15,8 +15,9 @@ class Configure(config.base.Configure):
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
-                 'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'readlink',
-                 'realpath', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'uname']
+                 'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
+                 'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
+                 'uname']
     libraries = [('dl', 'dlopen')]
     self.compilers   = self.framework.require('config.compilers', self)
     self.types       = self.framework.require('config.types',     self)
@@ -252,11 +253,14 @@ class Configure(config.base.Configure):
     return
 
   def configureDynamicLibraries(self):
-    '''Checks for --enable-dynamic, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
+    '''Checks whether dynamic libraries should be used, for which you must
+      - Specify --enable-dynamic
+      - Find dlfcn.h and libdl
+    Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    useDynamic = self.framework.argDB['enable-dynamic']
-    self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic and self.libraries.haveLib('dl'))
-    if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
+    useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
+    self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic)
+    if useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
       self.addDefine('HAVE_RTLD_GLOBAL', 1)
     # This is really bad
     flag = '-L'
@@ -329,7 +333,15 @@ class Configure(config.base.Configure):
     self.framework.getExecutable('sed',  getFullPath = 1)
     self.framework.getExecutable('diff', getFullPath = 1)
     self.framework.getExecutable('ar',   getFullPath = 1)
-    self.framework.getExecutable('make')
+    self.framework.getExecutable('make', getFullPath = 1)
+    try:
+      import commands
+      (status, output) = commands.getstatusoutput('strings '+self.framework.make)
+      flags            = ''
+      if not status and output.find('GNU Make') >= 0:
+        flags += ' --no-print-directory'
+      self.framework.addSubstitution('MAKE_FLAGS', flags.strip())
+    except Exception, e: print 'Make check failed: '+str(e)
     self.framework.addSubstitution('AR_FLAGS', 'cr')
     self.framework.getExecutable('ranlib')
     self.framework.addSubstitution('SET_MAKE', '')
@@ -369,6 +381,16 @@ class Configure(config.base.Configure):
       self.addDefine('MISSING_SIGQUIT', 1)
     return
 
+  def configureMemorySize(self):
+    '''Try to determine how to measure the memory usage'''
+    # Should also check for using procfs and kbytes for size
+    if self.functions.defines.has_key(self.functions.getDefineName('sbreak')):
+      self.addDefine('USE_SBREAK_FOR_SIZE', 1)
+    elif not (self.headers.getDefineName('sys/resource.h') in self.headers.defines and
+              self.functions.getDefineName('getrusage') in self.functions.defines):
+        self.addDefine('HAVE_NO_GETRUSAGE', 1)
+    return
+
   def configureX(self):
     '''Uses AC_PATH_XTRA, and sets PETSC_HAVE_X11'''
     if not self.framework.argDB.has_key('no_x'):
@@ -386,7 +408,7 @@ class Configure(config.base.Configure):
     return
 
   def configureFPTrap(self):
-    '''Checking the handling of flaoting point traps'''
+    '''Checking the handling of floating point traps'''
     if self.headers.check('sigfpe.h'):
       if self.functions.check('handle_sigfpes', libraries = 'fpe'):
         self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
@@ -401,6 +423,16 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
     return
 
+  def configureLibrarySuffix(self):
+    '''(Belongs in config.libraries) Determine the suffix used for libraries'''
+    # This is exactly like the libtool check
+    if self.archBase.find('win') >= 0 and not self.compilers.CC == 'gcc':
+      suffix = '.lib'
+    else:
+      suffix = '.a'
+    self.libraries.addSubstitution('LIB_SUFFIX', suffix)
+    return
+
   def configureIRIX(self):
     '''IRIX specific stuff'''
     if self.archBase == 'irix6.5':
@@ -411,6 +443,12 @@ class Configure(config.base.Configure):
     '''Linux specific stuff'''
     if self.archBase == 'linux':
       self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
+    return
+
+  def configureMacOSX(self):
+    '''Mac specific stuff'''
+    if self.archBase.startswith('darwin'):
+      self.framework.addDefine('MISSING_PROTOTYPES_EXTERN_C', 'void *memalign(size_t, size_t)')
     return
 
   def configureMachineInfo(self):
@@ -453,10 +491,13 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
+    self.executeTest(self.configureMemorySize)
     self.executeTest(self.configureX)
     self.executeTest(self.configureFPTrap)
+    self.executeTest(self.configureLibrarySuffix)
     self.executeTest(self.configureIRIX)
     self.executeTest(self.configureLinux)
+    self.executeTest(self.configureMacOSX)
     self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureMisc)
     self.executeTest(self.configureMPIUNI)
