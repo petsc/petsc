@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.28 1997/12/01 01:55:07 bsmith Exp balay $";
+static char vcid[] = "$Id: baijov.c,v 1.29 1998/08/03 14:59:10 balay Exp bsmith $";
 #endif
 
 /*
@@ -207,6 +207,9 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C, int imax, IS *is)
     len   = n[i];
     for (j=0; j<len; j++) {
       row  = idx_i[j];
+      if (row < 0) {
+        SETERRQ(1,1,"Index set cannot have negative entries");
+      }
       proc = rtable[row];
       w4[proc]++;
     }
