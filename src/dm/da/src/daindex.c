@@ -67,7 +67,7 @@ int DAGetGlobalIndices(DA da,int *n,int **idx)
 /*@C
    DAGetAO - Gets the application ordering context for a distributed array.
 
-   Not Collective, but AO is parallel if DA is parallel
+   Collective on DA
 
    Input Parameter:
 .  da - the distributed array
@@ -93,6 +93,54 @@ int DAGetAO(DA da,AO *ao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
+
+  /* 
+     Build the natural ordering to PETSc ordering mappings.
+  */
+  if (!da->ao) {
+    IS  ispetsc,isnatural;
+    int ierr,i,j,k,*lidx,lict = 0,Nlocal;
+
+    Nlocal = (da->xe-da->xs);
+    if (da->dim == 2) {
+      Nlocal *= (da->ye-da->ys);
+    } else if (da->dim == 3) {
+      Nlocal *= (da->ze-da->zs);
+    } else if (da->dim != 1) SETERRQ1(1,"DA has invalid dimension %d",da->dim);
+
+    ierr = ISCreateStride(da->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
+    ierr = PetscMalloc(Nlocal*sizeof(int),&lidx);CHKERRQ(ierr);
+
+    if (da->dim == 1) {
+       for (i=da->xs; i<da->xe; i++) {
+	 /*  global number in natural ordering */
+	 lidx[lict++] = i;
+       }
+    } else if (da->dim == 2) {
+      for (j=da->ys; j<da->ye; j++) {
+	for (i=da->xs; i<da->xe; i++) {
+	  /*  global number in natural ordering */
+	  lidx[lict++] = i + j*da->M*da->w;
+	}
+      }
+    } else if (da->dim == 3) {
+      for (k=da->zs; k<da->ze; k++) {
+	for (j=da->ys; j<da->ye; j++) {
+	  for (i=da->xs; i<da->xe; i++) {
+	    lidx[lict++] = i + j*da->M*da->w + k*da->M*da->N*da->w;
+	  }
+	}
+      }
+    }
+
+    ierr = ISCreateGeneral(da->comm,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
+    ierr = PetscFree(lidx);CHKERRQ(ierr);
+
+    ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao);CHKERRQ(ierr);
+    PetscLogObjectParent(da,da->ao);
+    ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
+    ierr = ISDestroy(isnatural);CHKERRQ(ierr);
+  }
   *ao = da->ao;
   PetscFunctionReturn(0);
 }

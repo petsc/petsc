@@ -5,6 +5,7 @@
 */
 
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+extern int DALocalToLocalCreate(DA);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetScatter"
@@ -12,7 +13,7 @@
    DAGetScatter - Gets the local-to-global, local-to-global, and 
    local-to-local vector scatter contexts for a distributed array.
 
-   Not Collective, but VecScatter is parallel if DA is parallel
+   Collective on DA
 
    Input Parameter:
 .  da - the distributed array
@@ -35,11 +36,18 @@
 @*/
 int DAGetScatter(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (ltog) *ltog = da->ltog;
   if (gtol) *gtol = da->gtol;
-  if (ltol) *ltol = da->ltol;
+  if (ltol) {
+    if (!da->ltol) {
+      ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
+    }
+    *ltol = da->ltol;
+  }
   PetscFunctionReturn(0);
 }
  

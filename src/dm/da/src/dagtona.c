@@ -36,17 +36,16 @@ int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
   int ierr,m;
   IS  from,to;
   Vec tmplocal;
+  AO  ao;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (!da->ao) {
-    SETERRQ(1,"Cannot use -da_noao with this function");
-  }
+  ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
   ierr = VecGetSize(da->global,&m);CHKERRQ(ierr);
   ierr = ISCreateStride(da->comm,m,0,1,&to);CHKERRQ(ierr);
-  ierr = AOPetscToApplicationIS(da->ao,to);CHKERRQ(ierr);
+  ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
   ierr = ISCreateStride(da->comm,m,0,1,&from);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,m,&tmplocal);CHKERRQ(ierr);
   ierr = VecScatterCreate(da->global,from,tmplocal,to,scatter);CHKERRQ(ierr);
@@ -82,19 +81,18 @@ int DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
   int ierr,M,m,start;
   IS  from,to;
   Vec tmplocal;
+  AO  ao;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (!da->ao) {
-    SETERRQ(1,"Cannot use -da_noao with this function");
-  }
+  ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
   ierr = VecGetSize(da->global,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(da->global,&m);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(da->global,&start,PETSC_NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(da->comm,m,start,1,&from);CHKERRQ(ierr);
-  ierr = AOPetscToApplicationIS(da->ao,from);CHKERRQ(ierr);
+  ierr = AOPetscToApplicationIS(ao,from);CHKERRQ(ierr);
   ierr = ISCreateStride(da->comm,m,start,1,&to);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,M,&tmplocal);CHKERRQ(ierr);
   ierr = VecScatterCreate(tmplocal,from,da->global,to,scatter);CHKERRQ(ierr);

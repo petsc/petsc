@@ -6,6 +6,8 @@
 
 #include "src/contrib/sda/src/sda.h"    /*I   "da.h"   I*/
 
+extern int DALocalToLocalCreate(DA);
+
 struct _SDA {
   DA  da;
   Vec gvec,lvec;
@@ -56,13 +58,14 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
   ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->gvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(array);CHKERRQ(ierr);
   ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->lvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(array);CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
+  ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
   ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scat1);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
@@ -125,10 +128,10 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
   ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->gvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(array);CHKERRQ(ierr);
   ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->lvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(array);CHKERRQ(ierr);
 
   /* free global vector never needed by user */
@@ -136,6 +139,7 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = VecDestroy(vec);CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
+  ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
   ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scat1);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);
@@ -198,10 +202,10 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
   ierr = VecGetArray((*sda)->gvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->gvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(array);CHKERRQ(ierr);
   ierr = VecGetArray((*sda)->lvec,&array);CHKERRQ(ierr);
-  ierr = VecRestoreArray((*sda)->lvec,&array);CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(array);CHKERRQ(ierr);
 
   /* free global vector never needed by user */
@@ -209,6 +213,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   ierr = VecDestroy(vec);CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
+  ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
   ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scat1);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scat2);CHKERRQ(ierr);

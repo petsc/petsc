@@ -183,14 +183,11 @@ EXTERN int DAPublish_Petsc(PetscObject);
 +  -da_view - Calls DAView() at the conclusion of DACreate3d()
 .  -da_grid_x <nx> - number of grid points in x direction, if M < 0
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
-.  -da_grid_z <nz> - number of grid points in z direction, if P < 0
--  -da_noao - do not compute natural to PETSc ordering object
+-  -da_grid_z <nz> - number of grid points in z direction, if P < 0
 
    Level: beginner
 
    Notes:
-   If you are having problems with running out of memory than run with the option -da_noao
-
    The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
    standard 7-pt stencil, while DA_STENCIL_BOX with width 1 denotes
    the standard 27-pt stencil.
@@ -1732,62 +1729,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   ierr = VecSetLocalToGlobalMappingBlock(da->global,da->ltogmapb);CHKERRQ(ierr);
   PetscLogObjectParent(da,da->ltogmap);
 
-
-
-  /* construct the local to local scatter context */
-  /* 
-      We simply remap the values in the from part of 
-    global to local to read from an array with the ghost values 
-    rather then from the plan array.
-  */
-  ierr = VecScatterCopy(gtol,&da->ltol);CHKERRQ(ierr);
-  PetscLogObjectParent(da,da->ltol);
-  left   = xs - Xs; 
-  bottom = ys - Ys; top = bottom + y;
-  down   = zs - Zs; up  = down + z;
-  count  = x*(top-bottom)*(up-down);
-  ierr = PetscMalloc(count*sizeof(int),&idx);CHKERRQ(ierr);
-  count  = 0;
-  for (i=down; i<up; i++) {
-    for (j=bottom; j<top; j++) {
-      for (k=0; k<x; k++) {
-        idx[count++] = (left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys) + k;
-      }
-    }
-  }
-  ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscFree(idx);CHKERRQ(ierr);
-
-
-  /* 
-     Build the natural ordering to PETSc ordering mappings.
-  */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_noao",&flg1);CHKERRQ(ierr);
-  if (!flg1) {
-    IS  ispetsc,isnatural;
-    int *lidx,lict = 0;
-    int Nlocal = (da->xe-da->xs)*(da->ye-da->ys)*(da->ze-da->zs);
-
-    ierr = ISCreateStride(comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
-
-    ierr = PetscMalloc(Nlocal*sizeof(int),&lidx);CHKERRQ(ierr);
-    for (k=zs; k<ze; k++) {
-      for (j=ys; j<ye; j++) {
-        for (i=xs; i<xe; i++) {
-          lidx[lict++] = i + j*M*dof + k*M*N*dof;
-        }
-      }
-    }
-    ierr = ISCreateGeneral(comm,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
-    ierr = PetscFree(lidx);CHKERRQ(ierr);
-
-    ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao);CHKERRQ(ierr);
-    PetscLogObjectParent(da,da->ao);
-    ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
-    ierr = ISDestroy(isnatural);CHKERRQ(ierr);
-  } else {
-    da->ao = PETSC_NULL;
-  }
+  da->ltol = PETSC_NULL;
+  da->ao   = PETSC_NULL;
 
   if (!flx) {
     ierr = PetscMalloc(m*sizeof(int),&flx);CHKERRQ(ierr);
