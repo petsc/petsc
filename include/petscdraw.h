@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.23 1995/11/23 04:29:28 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.24 1995/12/08 04:54:34 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -58,6 +58,7 @@ extern int DrawSetDoubleBuffer(Draw);
 extern int DrawFlush(Draw);
 extern int DrawSyncFlush(Draw);
 extern int DrawClear(Draw);
+extern int DrawSyncClear(Draw);
 extern int DrawPause(Draw);
 extern int DrawGetPause(Draw,int*);
 
