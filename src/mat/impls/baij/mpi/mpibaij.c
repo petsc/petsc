@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.22 1996/08/15 12:48:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibaij.c,v 1.23 1996/08/22 19:53:50 curfman Exp curfman $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -757,7 +757,8 @@ static int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *) matin->data;
   Mat         A = a->A, B = a->B;
-  int         ierr, isend[3], irecv[3];
+  int         ierr;
+  double      isend[5], irecv[5];
 
   info->rows_global    = (double)a->M;
   info->columns_global = (double)a->N;

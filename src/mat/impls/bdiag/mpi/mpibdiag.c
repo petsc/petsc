@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.92 1996/08/15 12:47:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.93 1996/08/22 19:53:58 curfman Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -445,7 +445,7 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mat->A->data;
   int          ierr;
-  double       isend[3], irecv[3];
+  double       isend[5], irecv[5];
 
   info->rows_global    = (double)mat->M;
   info->columns_global = (double)mat->N;

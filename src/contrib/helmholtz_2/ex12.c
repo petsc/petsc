@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex22.c,v 1.5 1996/08/20 05:10:22 curfman Exp curfman $";
+static char vcid[] = "$Id: ex22.c,v 1.6 1996/08/20 15:19:33 curfman Exp curfman $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -467,7 +467,7 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
 
    Notes:
    Due to grid point reordering with DAs, we must always work
-   with the local grid points, then transform them to the new
+   with the local grid points, and then transform them to the new
    global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
