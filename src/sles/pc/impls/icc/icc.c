@@ -37,6 +37,21 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCICCSetShift_ICC"
+int PCICCSetShift_ICC(PC pc,PetscTruth shift)
+{
+  PC_ICC *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_ICC*)pc->data;
+  dir->info.lu_shift = shift;
+  if (shift) dir->info.lu_shift_fraction = 0.0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCICCSetSetZeroPivot_ICC"
 int PCICCSetZeroPivot_ICC(PC pc,PetscReal z)
 {
@@ -223,6 +238,43 @@ int PCICCSetDamping(PC pc,PetscReal damping)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCICCSetShift"
+/*@
+   PCICCSetShift - specify whether to use Manteuffel shifting of ICC.
+   If an ICC factorisation breaks down because of nonpositive pivots,
+   adding sufficient identity to the diagonal will remedy this.
+   
+   Manteuffel shifting for ICC uses a different algorithm than the ILU case.
+   Here we base the shift on the lack of diagonal dominance when a negative
+   pivot occurs.
+
+   Input parameters:
++  pc - the preconditioner context
+-  shifting - PETSC_TRUE to set shift else PETSC_FALSE
+
+   Options Database Key:
+.  -pc_icc_shift - Activate PCICCSetShift()
+
+   Level: intermediate
+
+.keywords: PC, indefinite, factorization, incomplete, ICC
+
+.seealso: PCILUSetShift()
+@*/
+int PCICCSetShift(PC pc,PetscTruth shift)
+{
+  int ierr,(*f)(PC,PetscTruth);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,shift);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetZeroPivot"
 /*@
@@ -365,6 +417,10 @@ static int PCSetFromOptions_ICC(PC pc)
       ierr = PCICCSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_icc_damping","Damping added to diagonal","PCICCSetDamping",icc->info.damping,&icc->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_icc_shift","Manteuffel shift applied to diagonal","PCICCSetShift",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCICCSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsReal("-pc_icc_zeropivot","Pivot is considered zero if less than","PCICCSetSetZeroPivot",icc->info.zeropivot,&icc->info.zeropivot,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -414,10 +470,12 @@ int PCCreate_ICC(PC pc)
   icc->info.fill          = 1.0;
   icc->implctx            = 0;
 
-  icc->info.dtcol         = PETSC_DEFAULT;
-  icc->info.damping       = 0.0;
-  icc->info.zeropivot     = 1.e-12;
-  pc->data	          = (void*)icc;
+  icc->info.dtcol              = PETSC_DEFAULT;
+  icc->info.damping            = 0.0;
+  icc->info.lu_shift           = PETSC_FALSE;
+  icc->info.lu_shift_fraction  = 0.0;
+  icc->info.zeropivot          = 1.e-12;
+  pc->data	               = (void*)icc;
 
   pc->ops->apply	       = PCApply_ICC;
   pc->ops->setup               = PCSetup_ICC;
@@ -434,6 +492,8 @@ int PCCreate_ICC(PC pc)
                     PCICCSetFill_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetDamping_C","PCICCSetDamping_ICC",
                     PCICCSetDamping_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetShift_C","PCICCSetShift_ICC",
+                    PCICCSetShift_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetMatOrdering_C","PCICCSetMatOrdering_ICC",
                     PCICCSetMatOrdering_ICC);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1172,8 +1172,9 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
   int                *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   int                k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz,ndamp = 0;
   MatScalar          *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
-  PetscReal          damping=b->factor_damping, zeropivot=b->factor_zeropivot;
-  PetscTruth         damp;
+  PetscReal          damping=b->factor_damping, zeropivot=b->factor_zeropivot,shift_amount;
+  PetscTruth         damp,chshift;
+  int                nshift=0;
 
   PetscFunctionBegin;
   /* initialization */
@@ -1189,8 +1190,10 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
   ierr = PetscMalloc(2*mbs*sizeof(int),&il);CHKERRQ(ierr);
   jl   = il + mbs;
 
+  shift_amount = 0;
   do {
     damp = PETSC_FALSE;
+    chshift = PETSC_FALSE;
     for (i=0; i<mbs; i++) {
       rtmp[i] = 0.0; jl[i] = mbs; il[0] = 0;
     }
@@ -1206,7 +1209,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
         *bval++       = 0.0; /* for in-place factorization */
       } 
       /* damp the diagonal of the matrix */
-      if (ndamp) rtmp[k] += damping; 
+      if (ndamp||nshift) rtmp[k] += damping+shift_amount; 
     
       /* modify k-th row by adding in those rows i with U(i,k) != 0 */
       dk = rtmp[k];
@@ -1236,7 +1239,23 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
         i = nexti;         
       }
 
-      /* check for zero pivot and save diagoanl element */
+      /* check for zero pivot and save diagonal element */
+      if (PetscRealPart(dk) < zeropivot && b->factor_shift){
+	PetscReal rs = -PetscRealPart(dk);
+	jmin      = bi[k]+1; 
+	nz        = bi[k+1] - jmin; 
+	if (nz){
+	  bcol = bj + jmin;
+	  bval = ba + jmin;
+	  while (nz--){
+	    rs += PetscAbsScalar(rtmp[*bcol++]);
+	  }
+	}
+	shift_amount = rs;
+	chshift  = PETSC_TRUE;
+	nshift++;
+	break;
+      }
       if (PetscRealPart(dk) < zeropivot){
         if (damping == (PetscReal) PETSC_DECIDE) damping = -PetscRealPart(dk)/(k+1);
         if (damping > 0.0) {      
@@ -1269,7 +1288,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
         jl[k] = jl[i]; jl[i] = k;
       }        
     } /* end of for (k = 0; k<mbs; k++) */
-  } while (damp);
+  } while (damp||chshift);
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = PetscFree(il);CHKERRQ(ierr);
   
