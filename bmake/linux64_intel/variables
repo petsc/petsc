@@ -14,8 +14,8 @@ LIB_SUFFIX         = a
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = ecc -FPIC
-C_FC		   = efc -w -FPIC
+C_CC		   = ecc -KPIC
+C_FC		   = efc -w -KPIC
 C_CLINKER_SLFLAG   = -Qoption,link,-rpath,
 C_FLINKER_SLFLAG   = -Qoption,link,-rpath,
 C_CLINKER	   = ecc -i_dynamic
@@ -31,8 +31,8 @@ O_COPTFLAGS	   = -O2
 O_FOPTFLAGS	   = -O2
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = ecc -Kc++ -Kc++eh -FPIC
-CXX_FC		   = efc -w -FPIC
+CXX_CC		   = ecc -Kc++ -Kc++eh -KPIC
+CXX_FC		   = efc -w -KPIC
 CXX_CLINKER_SLFLAG = -Qoption,link,-rpath,
 CXX_FLINKER_SLFLAG = -Qoption,link,-rpath,
 CXX_CLINKER	   = ecc -Kc++ -i_dynamic
