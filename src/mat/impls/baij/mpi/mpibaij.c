@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.79 1997/08/22 15:14:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.80 1997/09/09 17:01:54 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -558,21 +557,23 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
 }
 #include <math.h>
 #define HASH_KEY 0.6180339887
-#define HASH1(size,key) ((int)((size)*fmod(((key)*HASH_KEY),1))+1)
+#define HASH1(size,key) ((int)((size)*fmod(((key)*HASH_KEY),1)))
+#define HASH2(size,key) ((int)((size)*fmod(((key+0.5)*HASH_KEY),1)))
 
-int CreateHashTable(Mat mat)
+
+int CreateHashTable(Mat mat,double factor)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Mat         A = baij->A, B=baij->B;
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data, *b=(Mat_SeqBAIJ *)B->data;
-  int         i,j,k,nz=a->nz+b->nz,h1,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  int         size=(int)(1.5*nz),ct=0,max=0;
+  int         i,j,k,nz=a->nz+b->nz,h1,h2,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  int         size=(int)(factor*nz),ct=0,max1=0,max2=0;
   /* Scalar      *aa=a->a,*ba=b->a; */
   double      key;
   static double *HT;
   static      int flag=1;
-
-  
+  extern int PetscGlobalRank;
+  flag = 1;
   /* Allocate Memory for Hash Table */
   if (flag) {
     HT = (double*)PetscMalloc(size*sizeof(double));
@@ -585,6 +586,7 @@ int CreateHashTable(Mat mat)
     for ( j=ai[i]; j<ai[i+1]; j++ ) {
       key = i*baij->n+aj[j]+1;
       h1  = HASH1(size,key);
+      h2  = HASH2(size,key);
 
       for ( k=1; k<size; k++ ){
         if (HT[(h1*k)%size] == 0.0) {
@@ -592,10 +594,9 @@ int CreateHashTable(Mat mat)
           break;
         } else ct++;
       }
-      if (k> max) max =k;
+      if (k> max1) max1 =k;
     }
   }
-   printf("***max1 = %d\n",max);
   /* Loop Over B */
   for ( i=0; i<b->n; i++ ) {
     for ( j=bi[i]; j<bi[i+1]; j++ ) {
@@ -607,16 +608,17 @@ int CreateHashTable(Mat mat)
           break;
         } else ct++;
       }
-      if (k> max) max =k;
+      if (k> max2) max2 =k;
     }
   }
 
-  printf("***max2 = %d\n",max);
   /* Print Summary */
   for ( i=0,key=0.0,j=0; i<size; i++) 
     if (HT[i]) {j++;}
 
-  printf("Size %d Average Buckets %d no of Keys %d\n",size,ct,j);
+  printf("[%d] fact = %3.2f max1 = %5d max2 = %5d Size %5d - Searches %5d Avg %5.2f Keys %5d\n", 
+         PetscGlobalRank,factor,max1,max2,size,ct+j,((float)ct+j)/j,j);
+  PetscFree(HT);
   return 0;
 }
 
@@ -690,7 +692,10 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyEnd(baij->B,mode); CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-use_hash",&flg); CHKERRQ(ierr);
-  if (flg) CreateHashTable(mat);
+  if (flg) {
+    double fact;
+    for ( fact=1.2; fact<2.0; fact +=0.05) CreateHashTable(mat,fact);
+  }
   if (baij->rowvalues) {PetscFree(baij->rowvalues); baij->rowvalues = 0;}
   return 0;
 }
@@ -986,7 +991,8 @@ int MatScale_MPIBAIJ(Scalar *aa,Mat A)
 int MatGetSize_MPIBAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ *) matin->data;
-  *m = mat->M; *n = mat->N;
+  if (m) *m = mat->M; 
+  if (n) *n = mat->N;
   return 0;
 }
 
