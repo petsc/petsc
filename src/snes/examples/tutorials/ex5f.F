@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.63 2001/05/02 19:42:25 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.64 2001/05/03 16:21:06 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -389,7 +389,7 @@
 
 !  Compute function over the locally owned part of the grid
 
-      call FormFunctionLocal(info,lx_v(lx_i),lf_v(lf_i),ierr)
+      call FormFunctionLocal(info,lx_v(lx_i),lf_v(lf_i),info,ierr)
 
 !  Restore vectors
 
@@ -425,7 +425,7 @@
 !
 !     Process adifor: FormFunctionLocal
 !
-      subroutine FormFunctionLocal(info,x,f,ierr)
+      subroutine FormFunctionLocal(info,x,f,dummy,ierr)
 
       implicit none
 
@@ -436,6 +436,7 @@
       Scalar x(gxs:gxe,gys:gye)
       Scalar f(xs:xe,ys:ye)
       integer     ierr
+      PetscObject dummy
 
 !  Local variables:
       Scalar   two,one,hx,hy,hxdhy,hydhx,sc
@@ -475,7 +476,7 @@
  10      continue
  20   continue
 
-      print*,'local function',f
+!      print*,'local function',f
 
       return
       end
@@ -659,9 +660,9 @@
 
       call dagetlocalinfo(da,info,ierr)
 
-      call g_formfunctionlocal(36, info, x, g_x, 36, f, g_f,               &
-     &36, ierr)
-      print*,'ad function',f
+!      call g_formfunctionlocal(36, info, x, g_x, 36, f, g_f,               &
+!     &36, ierr)
+!      print*,'ad function',f
 
 !  Set parameters
 
