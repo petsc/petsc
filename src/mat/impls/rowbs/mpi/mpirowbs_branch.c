@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.37 1995/06/14 17:24:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.38 1995/06/20 01:48:04 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -898,7 +898,7 @@ static int MatGetSize_MPIRowbs(Mat mat,int *m,int *n)
 static int MatGetLocalSize_MPIRowbs(Mat mat,int *m,int *n)
 {
   Mat_MPIRowbs *mrow = (Mat_MPIRowbs *) mat->data;
-  *m = mrow->m; *n = mrow->n;
+  *m = mrow->m; *n = mrow->N;
   return 0;
 }
 
@@ -1046,10 +1046,8 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->alpha	    = 1.0;
   mrow->ierr	    = 0;
   mrow->failures    = 0;
-  if (!mrow->diag) {ierr = VecCreateMPI(mat->comm,mrow->m,mrow->M,
-                            &(mrow->diag)); CHKERRQ(ierr);}
-  if (!mrow->xwork) {ierr = VecDuplicate(mrow->diag,&(mrow->xwork)); 
-                            CHKERRQ(ierr);}
+  ierr = VecCreateMPI(mat->comm,mrow->m,mrow->M,&(mrow->diag)); CHKERRQ(ierr);
+  ierr = VecDuplicate(mrow->diag,&(mrow->xwork));CHKERRQ(ierr);
   mrow->inv_diag = (Scalar *) PETSCMALLOC( (mrow->m+1)*sizeof(Scalar) );
   CHKPTRQ(mrow->inv_diag);
   if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}
@@ -1076,8 +1074,8 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   ierr = MatGetOwnershipRange(mat,&low,&high); CHKERRQ(ierr);
   offset = &low;
 
-  if (!mrow->bsmap) {mrow->bsmap = (void *) PETSCNEW(BSmapping); 
-                     CHKPTRQ(mrow->bsmap);}
+  mrow->bsmap = (void *) PETSCNEW(BSmapping);CHKPTRQ(mrow->bsmap);
+
   bsmap = mrow->bsmap;
   bsmap->vlocal2global	= (int *) PETSCMALLOC(sizeof(int)); 
 	CHKPTRQ(bsmap->vlocal2global);
