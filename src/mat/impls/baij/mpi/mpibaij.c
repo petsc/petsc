@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.123 1998/05/12 17:30:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.124 1998/05/15 13:22:00 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -605,7 +605,7 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
         if (idxn[j] >= baij->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
         if (idxn[j] >= bscstart && idxn[j] < bscend){
           col = idxn[j] - bscstart;
-          ierr = MatGetValues(baij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+          ierr = MatGetValues_SeqBAIJ(baij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
         } else {
           if (!baij->colmap) {
             ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
@@ -614,7 +614,7 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
              (baij->garray[(baij->colmap[idxn[j]/bs]-1)/bs] != idxn[j]/bs)) *(v+i*n+j) = 0.0;
           else {
             col  = (baij->colmap[idxn[j]/bs]-1) + idxn[j]%bs;
-            ierr = MatGetValues(baij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
+            ierr = MatGetValues_SeqBAIJ(baij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
           } 
         }
       }
@@ -1127,6 +1127,14 @@ int MatDestroy_MPIBAIJ(Mat mat)
   int         ierr;
 
   PetscFunctionBegin;
+  if (--mat->refct > 0) PetscFunctionReturn(0);
+
+  if (mat->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
+  }
+  if (mat->bmapping) {
+    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",baij->M,baij->N);
 #endif
