@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.setCompilers = self.framework.require('config.setCompilers', self)
+    self.libraries = self.framework.require('config.libraries', self)
     return
 
   def __str__(self):
@@ -368,7 +369,7 @@ class Configure(config.base.Configure):
     self.flibs = ldRunPath+self.flibs
 
     # on OS X, mixing g77 3.4 with gcc-3.3 requires using -lcc_dynamic
-    if self.flibs.find('-L/sw/lib/gcc/powerpc-apple-darwin') >= 0:
+    if self.flibs.count('-L/sw/lib/gcc/powerpc-apple-darwin') > 0:
       self.flibs.append('-lcc_dynamic')
 
     self.logPrint('Libraries needed to link against Fortran compiler'+str(self.flibs), 3, 'compilers')
