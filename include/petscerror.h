@@ -251,6 +251,7 @@ extern  PetscErrorCode __gierr;
 #define SETERRQ2(n,s,a1,a2) ;
 #define SETERRQ3(n,s,a1,a2,a3) ;
 #define SETERRQ4(n,s,a1,a2,a3,a4) ;
+#define SETERRQ5(n,s,a1,a2,a3,a4,a5) ;
 #define SETERRABORT(comm,n,s) ;
 
 #define CHKERRQ(n)     ;
