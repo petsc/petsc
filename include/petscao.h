@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.1 1996/06/25 19:10:32 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.2 1996/08/05 03:51:28 bsmith Exp balay $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -13,7 +13,7 @@ typedef enum {AO_DEBUG=0, AO_BASIC=1} AOType;
 
 #define AO_COOKIE PETSC_COOKIE+20
 
-typedef struct _AO* AO;
+typedef struct _p_AO* AO;
 
 extern int AOCreateDebug(MPI_Comm,int,int*,int*,AO*);
 extern int AOCreateDebugIS(MPI_Comm,IS,IS,AO*);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.60 1997/04/10 00:07:00 bsmith Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.61 1997/05/07 01:46:21 balay Exp balay $";
 #endif
 
 /* 
@@ -130,7 +130,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
   if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
 
-  PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
+  PetscHeaderCreate(da,_p_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _DA));
   da->dim   = 1;
