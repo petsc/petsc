@@ -93,6 +93,60 @@ class SourceDB (dict, logging.Logger):
       # Grep for #include, then put these files in a tuple, we can be recursive later in a fixpoint algorithm
       self[source] = (checksum, mtime, timestamp, tuple(newDep), updated)
 
+class DependencyAnalyzer (logging.Logger):
+  def __init__(self, sourceDB):
+    self.sourceDB  = sourceDB
+    self.includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
+
+  def resolveDependency(self, source, dep):
+    if dep in sourceDB: return dep
+    # Choose the entry in sourceDB whose base matches dep,
+    #   and who has the most path components in common with source
+    # This should be replaced by an appeal to cpp
+    matchNum   = 0
+    matchName  = dep
+    components = string.split(source, os.sep)
+    self.debugPrint('  Includes '+filename, 3, 'sourceDB')
+    for s in self.sourceDB:
+      if string.find(s, dep) >= 0:
+        self.debugPrint('    Checking '+s, 3, 'sourceDB')
+        comp = string.split(s, os.sep)
+        for i in range(len(comp)):
+          if not components[i] == comp[i]: break
+        if i > matchNum:
+          self.debugPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
+          matchName = s
+          matchNum  = i
+    if not matchName in sourceDB: raise RuntimeError('Invalid #include '+matchName+' in '+source)
+    return matchName
+
+  def getNeighbors(self, source):
+    file = open(source, 'r')
+    adj  = []
+    for line in file.readlines():
+      match = self.includeRE.match(line)
+      if match:
+        adj.append(self.resolveDependency(source, m.group('includeFile')))
+    return adj
+
+  def calculateDependencies(self):
+    '''Should this be a generator?
+    First assemble the DAG using #include relations
+    Then calculate the depdencies with all pairs shortest-path
+      - I think Floyd-Warshell and N-source Dijkstra are just as good
+    '''
+    # Assembling DAG
+    dag = {}
+    for source in self.sourceDB:
+      try:
+        dag[source] = self.getNeighbors(self, source)
+      except IOError, e:
+        if e.errno == errno.ENOENT:
+          del self[source]
+        else:
+          raise e
+    # Finding all-pairs shortest path
+
 if __name__ == '__main__':
   if os.path.exists(sys.argv[1]):
     dbFile   = open(sys.argv[1], 'r')
