@@ -337,7 +337,7 @@ BMAKEFILES = bmake/common/base bmake/common/test \
 DOCS	   = bmake/readme bmake/petscconf.defs
 SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
 	     maint/xclude maint/crontab  \
-	     maint/autoftp include/foldinclude/generateincludes
+	     maint/autoftp
 
 updatewebdocs:
 	-chmod -R ug+w /mcs/tmp/petsc-tmp
@@ -386,7 +386,6 @@ chk_concepts_dir: chk_loc
 	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 # Builds Fortran stub files
 allfortranstubs:
-	-@include/foldinclude/generateincludes ${PETSC_DIR}
 	-@${RM} -f src/fortran/auto/*.c
 	-${OMAKE} ACTION=fortranstubs tree_basic
 	-@cd src/fortran/auto; ${RM} makefile.src; echo SOURCEC = `find . -type f -name "*.c" -printf "%f "` > makefile.src

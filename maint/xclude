@@ -102,7 +102,6 @@ petsc-dist/src/contrib/orderings
 petsc-dist/src/contrib/helmholtz
 petsc-dist/src/contrib/helmholtz_2
 petsc-dist/src/da/examples/tests/scripts
-petsc-dist/include/foldinclude/generateincludes
 petsc-dist/src/snes/examples/tests/umin/ex4.c
 petsc-dist/src/snes/examples/tests/umin/ex5.c
 petsc-dist/src/snes/examples/tests/umin/pdgl2fg.f
