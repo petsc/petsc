@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.28 1995/08/02 04:14:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.29 1995/08/04 01:50:57 bsmith Exp curfman $";
 #endif
 
 /*
@@ -441,7 +441,7 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
   /* generate the Scatter context */
   PETSCHEADERCREATE(*ctx,_VecScatterCtx,VEC_SCATTER_COOKIE,0,sctx->comm);
   PLogObjectCreate(*ctx);
-  PLogObjectMemory(ctx,sizeof(struct _VecScatterCtx));
+  PLogObjectMemory(*ctx,sizeof(struct _VecScatterCtx));
   return (*sctx->copy)(sctx,*ctx);
 }
 
