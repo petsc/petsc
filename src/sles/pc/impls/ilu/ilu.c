@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.58 1996/03/04 05:15:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.59 1996/03/08 05:46:52 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -120,7 +120,7 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   MatReorderingGetName(ilu->ordering,&order);
   ViewerGetType(viewer,&vtype);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
-    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (ilu->levels == 1)
       MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",ilu->levels);
     else

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.29 1995/12/15 03:34:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: lg.c,v 1.30 1996/01/03 14:39:08 curfman Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -14,8 +14,8 @@ static char vcid[] = "$Id: lg.c,v 1.29 1995/12/15 03:34:07 bsmith Exp curfman $"
 struct _DrawLG {
   PETSCHEADER 
   int         len,loc;
-  Draw     win;
-  DrawAxis axis;
+  Draw        win;
+  DrawAxis    axis;
   double      xmin, xmax, ymin, ymax, *x, *y;
   int         nopts, dim;
   int         use_dots;
@@ -189,6 +189,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 {
   int    i, j, k;
   double *x,*y;
+
   if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {return 0;}
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex23.c,v 1.1 1996/03/14 22:57:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex23.c,v 1.2 1996/03/15 14:18:09 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   /* Open viewer for binary output */
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"input.dat",BINARY_CREATE,&view_out);
          CHKERRA(ierr);
-  ierr = ViewerFileGetDescriptor(view_out,&fd); CHKERRA(ierr);
+  ierr = ViewerBinaryGetDescriptor(view_out,&fd); CHKERRA(ierr);
 
   /* Write binary output */
   ierr = SYWrite(fd,&m,1,SYINT,0); CHKERRA(ierr);
@@ -50,7 +50,7 @@ int main(int argc,char **args)
   /* Open input binary viewer */
   ierr = ViewerFileOpenBinary(MPI_COMM_SELF,"input.dat",BINARY_RDONLY,&view_in); 
          CHKERRA(ierr);
-  ierr = ViewerFileGetDescriptor(view_in,&fd); CHKERRA(ierr);
+  ierr = ViewerBinaryGetDescriptor(view_in,&fd); CHKERRA(ierr);
 
   /* Create vector and get pointer to data space */
   ierr = VecCreate(MPI_COMM_SELF,m,&vec); CHKERRA(ierr);

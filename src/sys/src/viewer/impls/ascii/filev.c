@@ -1,17 +1,16 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.35 1996/02/14 15:41:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.36 1996/03/08 05:48:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
+#include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 #include <stdarg.h>
 
 struct _Viewer {
-  PETSCHEADER
-  int         (*flush)(Viewer);
-  FILE        *fd;
-  int         format;
-  char        *outputname;
+  VIEWERHEADER
+  FILE          *fd;
+  char          *outputname;
 };
 
 Viewer STDOUT_VIEWER_SELF, STDERR_VIEWER_SELF, STDOUT_VIEWER_WORLD;
@@ -53,7 +52,7 @@ int ViewerFlush_File(Viewer v)
 }
 
 /*@C
-    ViewerFileGetPointer - Extracts the file pointer from a viewer.
+    ViewerASCIIGetPointer - Extracts the file pointer from a viewer.
 
 .   viewer - viewer context
 .   fd - file pointer
@@ -65,7 +64,7 @@ int ViewerFlush_File(Viewer v)
 
 .seealso: ViewerFileOpenASCII()
 @*/
-int ViewerFileGetPointer(Viewer viewer, FILE **fd)
+int ViewerASCIIGetPointer(Viewer viewer, FILE **fd)
 {
   *fd = viewer->fd;
   return 0;
@@ -78,7 +77,7 @@ int ViewerFileGetOutputname_Private(Viewer viewer, char **name)
   return 0;
 }
 
-int ViewerFileGetFormat_Private(Viewer viewer,int *format)
+int ViewerGetFormat(Viewer viewer,int *format)
 {
   *format =  viewer->format;
   return 0;
@@ -113,7 +112,7 @@ $    MatView(matrix,viewer);
 .keywords: Viewer, file, open
 
 .seealso: MatView(), VecView(), ViewerDestroy(), ViewerFileOpenBinary(),
-          ViewerFileGetPointer()
+          ViewerASCIIGetPointer()
 @*/
 int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 {
@@ -133,7 +132,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
     v->fd        = fopen(name,"w"); 
     if (!v->fd) SETERRQ(1,"ViewerFileOpenASCII:Cannot open file");
   }
-  v->format        = FILE_FORMAT_DEFAULT;
+  v->format        = ASCII_FORMAT_DEFAULT;
   v->outputname    = 0;
 #if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
@@ -143,7 +142,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 }
 
 /*@C
-   ViewerFileSetFormat - Sets the format for file viewers.
+   ViewerSetFormat - Sets the format for file viewers.
 
    Input Parameters:
 .  v - the viewer
@@ -152,13 +151,15 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 
    Notes:
    Available formats include
-$    FILE_FORMAT_DEFAULT - default
-$    FILE_FORMAT_MATLAB - Matlab format
-$    FILE_FORMAT_IMPL - implementation-specific format
+$    ASCII_FORMAT_DEFAULT - default
+$    ASCII_FORMAT_MATLAB - Matlab format
+$    ASCII_FORMAT_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
-$    FILE_FORMAT_INFO - basic information about object
-$    FILE_FORMAT_INFO_DETAILED 
- 
+$    ASCII_FORMAT_INFO - basic information about object
+$    ASCII_FORMAT_INFO_DETAILED 
+$    BINARY_FORMAT_NATIVE - store the object to the binary file 
+$      in its native format, for example, dense matrices are stored
+$      as dense. 
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
 
@@ -166,12 +167,14 @@ $    FILE_FORMAT_INFO_DETAILED
 
 .seealso: ViewerFileOpenASCII(), MatView(), VecView()
 @*/
-int ViewerFileSetFormat(Viewer v,int format,char *name)
+int ViewerSetFormat(Viewer v,int format,char *name)
 {
   PETSCVALIDHEADERSPECIFIC(v,VIEWER_COOKIE);
   if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
     v->format     = format;
     v->outputname = name;
+  } else if (v->type == BINARY_FILE_VIEWER) {
+    v->format     = format;
   }
   return 0;
 }

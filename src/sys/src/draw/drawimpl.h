@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.9 1995/12/14 00:29:00 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.10 1996/03/08 05:48:06 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -42,9 +42,9 @@ struct _Draw {
 /*
      This is for the Draw version of the viewer
 */
+#include "pinclude/pviewer.h"
 struct _Viewer {
-  PETSCHEADER
-  int          (*flush)(Viewer);
+  VIEWERHEADER
   Draw         draw;
 };
 

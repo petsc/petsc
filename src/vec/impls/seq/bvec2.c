@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.66 1996/03/14 22:27:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.67 1996/03/15 03:20:20 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -62,7 +62,7 @@ static int VecView_Seq_File(Vec xin,Viewer viewer)
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      i, n = x->n,ierr;
   FILE     *fd;
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
   for (i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -135,7 +135,7 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      ierr,fdes,n = x->n;
 
-  ierr  = ViewerFileGetDescriptor(viewer,&fdes); CHKERRQ(ierr);
+  ierr  = ViewerBinaryGetDescriptor(viewer,&fdes); CHKERRQ(ierr);
   /* Write vector header */
   ierr = SYWrite(fdes,&xin->cookie,1,SYINT,0);CHKERRQ(ierr);
   ierr = SYWrite(fdes,&n,1,SYINT,0); CHKERRQ(ierr);

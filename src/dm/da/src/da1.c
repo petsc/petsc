@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.29 1996/03/06 01:41:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.30 1996/03/10 17:29:52 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -31,7 +31,7 @@ static int DAView_1d(PetscObject pobj,Viewer viewer)
 
   if (vtype == ASCII_FILE_VIEWER) {
     FILE *fd;
-    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(da->comm,1);
     fprintf(fd,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
                  da->m,da->w,da->s);

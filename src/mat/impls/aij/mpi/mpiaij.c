@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.132 1996/03/10 17:28:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.133 1996/03/14 22:26:39 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -562,11 +562,11 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILES_VIEWER || vtype == ASCII_FILE_VIEWER) { 
-    ierr = ViewerFileGetFormat_Private(viewer,&format);
-    if (format == FILE_FORMAT_INFO_DETAILED) {
+    ierr = ViewerGetFormat(viewer,&format);
+    if (format == ASCII_FORMAT_INFO_DETAILED) {
       int nz, nzalloc, mem, flg;
       MPI_Comm_rank(mat->comm,&rank);
-      ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+      ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
       ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg); CHKERRQ(ierr);
       MPIU_Seq_begin(mat->comm,1);
@@ -583,7 +583,7 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       ierr = VecScatterView(aij->Mvctx,viewer); CHKERRQ(ierr);
       return 0; 
     }
-    else if (format == FILE_FORMAT_INFO) {
+    else if (format == ASCII_FORMAT_INFO) {
       return 0;
     }
   }
@@ -596,7 +596,7 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
   }
 
   if (vtype == ASCII_FILE_VIEWER) {
-    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     MPIU_Seq_begin(mat->comm,1);
     fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
            aij->rank,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
@@ -1600,7 +1600,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIAIJ:not matrix object");
   }

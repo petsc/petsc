@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.56 1996/03/08 05:46:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.57 1996/03/10 17:27:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -567,7 +567,7 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
-    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
     if (gmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) 
       cstr = "Unmodified Gram-Schmidt Orthogonalization";

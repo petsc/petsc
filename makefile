@@ -141,7 +141,8 @@ etags:
 	etags -a -f TAGS src/contrib/*/*.c src/contrib/*/src/*.c 
 	etags -a -f TAGS src/contrib/*/examples/*.c src/contrib/*/src/*/*.c
 	etags -a -f TAGS src/contrib/*/src/*.h
-	etags -a -f TAGS include/*.h include/*include/*.h bmake/common
+	etags -a -f TAGS include/*.h include/pinclude/*.h bmake/common
+	etags -a -f TAGS include/FINCLUDE/*.h
 	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS makefile src/*/src/makefile
 	etags -a -f TAGS src/*/interface/makefile src/makefile 
@@ -177,7 +178,8 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/*.c src/contrib/*/src/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/*/*.c src/contrib/*/src/*.h
-	etags -a -f TAGS_NO_EXAMPLES include/*.h include/*include/*.h
+	etags -a -f TAGS_NO_EXAMPLES include/*.h include/pinclude/*.h
+	etags -a -f TAGS_NO_EXAMPLES include/FINCLUDE/*.h
 	etags -a -f TAGS_NO_EXAMPLES bmake/common
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS_NO_EXAMPLES makefile src/*/src/makefile 

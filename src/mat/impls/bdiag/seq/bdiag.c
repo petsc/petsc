@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.92 1996/03/10 17:28:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.93 1996/03/14 21:47:27 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -947,7 +947,7 @@ static int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
   int          i, ict, fd, *col_lens, *cval, *col, ierr, nz;
   Scalar       *anonz, *val;
 
-  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
 
   /* For MATSEQBDIAG format, maxnz = nz */
   col_lens    = (int *) PetscMalloc( (4+a->m)*sizeof(int) ); CHKPTRQ(col_lens);
@@ -992,10 +992,10 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   int          format, nz, nzalloc, mem, iprint;
   Scalar       *val, *dv, zero = 0.0;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
-  ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
-  if (format == FILE_FORMAT_INFO) {
+  ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+  if (format == ASCII_FORMAT_INFO) {
     int nline = PetscMin(10,a->nd), k, nk, np;
     fprintf(fd,"  block size=%d, number of diagonals=%d\n",nb,a->nd);
     nk = (a->nd-1)/nline + 1;
@@ -1007,7 +1007,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"\n");        
     }
   }
-  else if (format == FILE_FORMAT_MATLAB) {
+  else if (format == ASCII_FORMAT_MATLAB) {
     MatGetInfo(A,MAT_LOCAL,&nz,&nzalloc,&mem);
     fprintf(fd,"%% Size = %d %d \n",nr, a->n);
     fprintf(fd,"%% Nonzeros = %d \n",nz);
@@ -1028,7 +1028,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
     }
     fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
   } 
-  else if (format == FILE_FORMAT_IMPL) {
+  else if (format == ASCII_FORMAT_IMPL) {
     if (nb == 1) { /* diagonal format */
       for (i=0; i< a->nd; i++) {
         dv   = a->diagv[i];
@@ -1609,7 +1609,7 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   PetscObjectGetComm((PetscObject)viewer,&comm);
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqBDiag: view must have one processor");
-  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBDiag:Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];

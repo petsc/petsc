@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.43 1996/02/08 18:28:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.44 1996/03/10 17:29:38 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -240,7 +240,7 @@ static int SNESView_TR(PetscObject obj,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
-    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     MPIU_fprintf(snes->comm,fd,"    mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);
     MPIU_fprintf(snes->comm,fd,"    delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",
                  tr->delta0,tr->delta1,tr->delta2,tr->delta3);

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.45 1996/03/14 21:34:49 curfman Exp curfman $ */
+/* $Id: pdvec.c,v 1.46 1996/03/14 22:26:54 curfman Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -35,7 +35,7 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
   int         i,rank,ierr;
   FILE        *fd;
 
-  ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(ptr,&fd); CHKERRQ(ierr);
 
   MPI_Comm_rank(xin->comm,&rank); 
   MPIU_Seq_begin(xin->comm,1);
@@ -65,7 +65,7 @@ static int VecView_MPI_Files(Vec xin, Viewer ptr )
   FILE        *fd;
   Scalar      *values;
 
-  ierr = ViewerFileGetPointer(ptr,&fd); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(ptr,&fd); CHKERRQ(ierr);
   /* determine maximum message to arrive */
   MPI_Comm_rank(xin->comm,&rank);
   MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);
@@ -122,7 +122,7 @@ static int VecView_MPI_Binary(Vec xin, Viewer ptr )
   MPI_Status  status;
   Scalar      *values;
 
-  ierr = ViewerFileGetDescriptor(ptr,&fdes); CHKERRQ(ierr);
+  ierr = ViewerBinaryGetDescriptor(ptr,&fdes); CHKERRQ(ierr);
 
   /* determine maximum message to arrive */
   MPI_Comm_rank(xin->comm,&rank);

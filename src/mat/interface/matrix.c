@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.151 1996/03/17 22:10:46 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.152 1996/03/17 22:11:04 curfman Exp bsmith $";
 #endif
 
 /*
@@ -148,21 +148,21 @@ $    ViewerMatlabOpen() - output matrix to Matlab viewer.
 $         Currently only the sequential dense and AIJ
 $         matrix types support the Matlab viewer.
 
-   The user can call ViewerFileSetFormat() to specify the output
+   The user can call ViewerSetFormat() to specify the output
    format of ASCII printed objects (when using STDOUT_VIEWER_SELF,
    STDOUT_VIEWER_WORLD and ViewerFileOpenASCII).  Available formats include
-$    FILE_FORMAT_DEFAULT - default, prints matrix contents
-$    FILE_FORMAT_MATLAB - Matlab format
-$    FILE_FORMAT_IMPL - implementation-specific format
+$    ASCII_FORMAT_DEFAULT - default, prints matrix contents
+$    ASCII_FORMAT_MATLAB - Matlab format
+$    ASCII_FORMAT_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
-$    FILE_FORMAT_INFO - basic information about the matrix
+$    ASCII_FORMAT_INFO - basic information about the matrix
 $      size and structure (not the matrix entries)
-$    FILE_FORMAT_INFO_DETAILED - more detailed information about the 
+$    ASCII_FORMAT_INFO_DETAILED - more detailed information about the 
 $      matrix structure
 
 .keywords: matrix, view, visualize, output, print, write, draw
 
-.seealso: ViewerFileSetFormat(), ViewerFileOpenASCII(), ViewerDrawOpenX(), 
+.seealso: ViewerSetFormat(), ViewerFileOpenASCII(), ViewerDrawOpenX(), 
           ViewerMatlabOpen(), ViewerFileOpenBinary(), MatLoad()
 @*/
 int MatView(Mat mat,Viewer viewer)
@@ -182,9 +182,9 @@ int MatView(Mat mat,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
-    ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);  
-    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) {
+    ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);  
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
       MPIU_fprintf(comm,fd,"Matrix Object:\n");
       ierr = MatGetType(mat,PETSC_NULL,&cstr); CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
@@ -1247,7 +1247,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     if (flg) {
       Viewer viewer;
       ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-      ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO,0);CHKERRQ(ierr);
+      ierr = ViewerSetFormat(viewer,ASCII_FORMAT_INFO,0);CHKERRQ(ierr);
       ierr = MatView(mat,viewer); CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
@@ -1255,7 +1255,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     if (flg) {
       Viewer viewer;
       ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-      ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_INFO_DETAILED,0);CHKERRQ(ierr);
+      ierr = ViewerSetFormat(viewer,ASCII_FORMAT_INFO_DETAILED,0);CHKERRQ(ierr);
       ierr = MatView(mat,viewer); CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
@@ -1270,7 +1270,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     if (flg) {
       Viewer viewer;
       ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-      ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_MATLAB,"M");CHKERRQ(ierr);
+      ierr = ViewerSetFormat(viewer,ASCII_FORMAT_MATLAB,"M");CHKERRQ(ierr);
       ierr = MatView(mat,viewer); CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }

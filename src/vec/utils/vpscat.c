@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.42 1996/03/04 04:57:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.43 1996/03/10 17:26:40 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -29,7 +29,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   if (vtype != ASCII_FILE_VIEWER && vtype != ASCII_FILES_VIEWER) return 0;
 
   MPI_Comm_rank(ctx->comm,&rank);
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   MPIU_Seq_begin(ctx->comm,1);
   fprintf(fd,"[%d] Number sends %d below %d self %d\n",rank,to->n,to->nbelow,to->nself);
   for ( i=0; i<to->n; i++ ){

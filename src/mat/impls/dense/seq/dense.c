@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.94 1996/03/10 17:28:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.95 1996/03/14 21:46:48 curfman Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -385,36 +385,49 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
 
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,"MatLoad_SeqDense: view must have one processor");
-  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqDense:Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
 
-  /* read row lengths */
-  rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
-  ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
+  if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
+    ierr = MatCreateSeqDense(comm,M,N,PETSC_NULL,A); CHKERRQ(ierr);
+    B = *A;
+    a = (Mat_SeqDense *) B->data;
 
-  /* create our matrix */
-  ierr = MatCreateSeqDense(comm,M,N,PETSC_NULL,A); CHKERRQ(ierr);
-  B = *A;
-  a = (Mat_SeqDense *) B->data;
-  v = a->v;
+    /* read in nonzero values */
+    ierr = SYRead(fd,a->v,M*N,SYSCALAR); CHKERRQ(ierr);
 
-  /* read column indices and nonzeros */
-  cols = scols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cols);
-  ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
-  vals = svals = (Scalar *) PetscMalloc( nz*sizeof(Scalar) ); CHKPTRQ(vals);
-  ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatTranspose(B,PETSC_NULL); CHKERRQ(ierr);
+  } else {
+    /* read row lengths */
+    rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);
+    ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
 
-  /* insert into matrix */  
-  for ( i=0; i<M; i++ ) {
-    for ( j=0; j<rowlengths[i]; j++ ) v[i+M*scols[j]] = svals[j];
-    svals += rowlengths[i]; scols += rowlengths[i];
+    /* create our matrix */
+    ierr = MatCreateSeqDense(comm,M,N,PETSC_NULL,A); CHKERRQ(ierr);
+    B = *A;
+    a = (Mat_SeqDense *) B->data;
+    v = a->v;
+
+    /* read column indices and nonzeros */
+    cols = scols = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(cols);
+    ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
+    vals = svals = (Scalar *) PetscMalloc( nz*sizeof(Scalar) ); CHKPTRQ(vals);
+    ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
+
+    /* insert into matrix */  
+    for ( i=0; i<M; i++ ) {
+      for ( j=0; j<rowlengths[i]; j++ ) v[i+M*scols[j]] = svals[j];
+      svals += rowlengths[i]; scols += rowlengths[i];
+    }
+    PetscFree(vals); PetscFree(cols); PetscFree(rowlengths);   
+
+    ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
-  PetscFree(vals); PetscFree(cols); PetscFree(rowlengths);   
-
-  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
 
@@ -429,10 +442,10 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
   char         *outputname;
   Scalar       *v;
 
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
-  ierr = ViewerFileGetFormat_Private(viewer,&format);
-  if (format == FILE_FORMAT_INFO) {
+  ierr = ViewerGetFormat(viewer,&format);
+  if (format == ASCII_FORMAT_INFO) {
     ;  /* do nothing for now */
   } 
   else {
@@ -456,39 +469,64 @@ static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) A->data;
   int          ict, j, n = a->n, m = a->m, i, fd, *col_lens, ierr, nz = m*n;
-  Scalar       *v, *anonz;
+  int          format;
+  Scalar       *v, *anonz,*vals;
+  
+  ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
 
-  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
-  col_lens = (int *) PetscMalloc( (4+nz)*sizeof(int) ); CHKPTRQ(col_lens);
-  col_lens[0] = MAT_COOKIE;
-  col_lens[1] = m;
-  col_lens[2] = n;
-  col_lens[3] = nz;
+  ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+  if (format == BINARY_FORMAT_NATIVE) {
+    /* store the matrix as a dense matrix */
+    col_lens = (int *) PetscMalloc( 4*sizeof(int) ); CHKPTRQ(col_lens);
+    col_lens[0] = MAT_COOKIE;
+    col_lens[1] = m;
+    col_lens[2] = n;
+    col_lens[3] = MATRIX_BINARY_FORMAT_DENSE;
+    ierr = SYWrite(fd,col_lens,4,SYINT,1); CHKERRQ(ierr);
+    PetscFree(col_lens);
 
-  /* store lengths of each row and write (including header) to file */
-  for ( i=0; i<m; i++ ) col_lens[4+i] = n;
-  ierr = SYWrite(fd,col_lens,4+m,SYINT,1); CHKERRQ(ierr);
-
-  /* Possibly should write in smaller increments, not whole matrix at once? */
- /* store column indices (zero start index) */
-  ict = 0;
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) col_lens[ict++] = j;
-  }
-  ierr = SYWrite(fd,col_lens,nz,SYINT,0); CHKERRQ(ierr);
-  PetscFree(col_lens);
-
-  /* store nonzero values */
-  anonz = (Scalar *) PetscMalloc((nz)*sizeof(Scalar)); CHKPTRQ(anonz);
-  ict = 0;
-  for ( i=0; i<m; i++ ) {
-    v = a->v + i;
-    for ( j=0; j<n; j++ ) {
-      anonz[ict++] = *v; v += a->m;
+    /* write out matrix, by rows */
+    vals = (Scalar *) PetscMalloc(m*n*sizeof(Scalar)); CHKPTRQ(vals);
+    v    = a->v;
+    for ( i=0; i<m; i++ ) {
+      for ( j=0; j<n; j++ ) {
+        vals[i + j*m] = *v++;
+      }
     }
+    ierr = SYWrite(fd,vals,n*m,SYSCALAR,0); CHKERRQ(ierr);
+    PetscFree(vals);
+  } else {
+    col_lens = (int *) PetscMalloc( (4+nz)*sizeof(int) ); CHKPTRQ(col_lens);
+    col_lens[0] = MAT_COOKIE;
+    col_lens[1] = m;
+    col_lens[2] = n;
+    col_lens[3] = nz;
+
+    /* store lengths of each row and write (including header) to file */
+    for ( i=0; i<m; i++ ) col_lens[4+i] = n;
+    ierr = SYWrite(fd,col_lens,4+m,SYINT,1); CHKERRQ(ierr);
+
+    /* Possibly should write in smaller increments, not whole matrix at once? */
+    /* store column indices (zero start index) */
+    ict = 0;
+    for ( i=0; i<m; i++ ) {
+      for ( j=0; j<n; j++ ) col_lens[ict++] = j;
+    }
+    ierr = SYWrite(fd,col_lens,nz,SYINT,0); CHKERRQ(ierr);
+    PetscFree(col_lens);
+
+    /* store nonzero values */
+    anonz = (Scalar *) PetscMalloc((nz)*sizeof(Scalar)); CHKPTRQ(anonz);
+    ict = 0;
+    for ( i=0; i<m; i++ ) {
+      v = a->v + i;
+      for ( j=0; j<n; j++ ) {
+        anonz[ict++] = *v; v += a->m;
+      }
+    }
+    ierr = SYWrite(fd,anonz,nz,SYSCALAR,0); CHKERRQ(ierr);
+    PetscFree(anonz);
   }
-  ierr = SYWrite(fd,anonz,nz,SYSCALAR,0); CHKERRQ(ierr);
-  PetscFree(anonz);
   return 0;
 }
 
@@ -830,6 +868,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
        MatAXPY_SeqDense,0,0,
        MatGetValues_SeqDense,
        MatCopy_SeqDense};
+
 
 /*@C
    MatCreateSeqDense - Creates a sequential dense matrix that 

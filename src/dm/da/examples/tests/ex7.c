@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.2 1996/01/26 04:35:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.3 1996/02/08 18:28:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -78,7 +78,7 @@ int main(int argc,char **argv)
     MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     sprintf(filename,"local.%d",rank);
     ierr = ViewerFileOpenASCII(MPI_COMM_SELF,filename,&viewer);CHKERRA(ierr);
-    ierr = ViewerFileGetPointer(viewer,&file); CHKERRA(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&file); CHKERRA(ierr);
     ierr = VecView(local,viewer); CHKERRA(ierr);
     fprintf(file,"Vector with correct ghost points\n");
     ierr = VecView(local_copy,viewer); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.32 1996/03/10 17:28:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.33 1996/03/14 21:47:21 curfman Exp bsmith $";
 #endif
 
 /*
@@ -486,9 +486,9 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
   ViewerType   vtype;
 
   ViewerGetType(viewer,&vtype);
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
-  ierr = ViewerFileGetFormat_Private(viewer,&format);
-  if (format == FILE_FORMAT_INFO_DETAILED) {
+  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerGetFormat(viewer,&format);
+  if (format == ASCII_FORMAT_INFO_DETAILED) {
     int nz, nzalloc, mem, rank;
     MPI_Comm_rank(mat->comm,&rank);
     ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
@@ -500,7 +500,7 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
     ierr = VecScatterView(mdn->Mvctx,viewer); CHKERRQ(ierr);
     return 0; 
   }
-  else if (format == FILE_FORMAT_INFO) {
+  else if (format == ASCII_FORMAT_INFO) {
     return 0;
   }
   if (vtype == ASCII_FILE_VIEWER) {
@@ -947,6 +947,73 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
 
 #include "sysio.h"
 
+int MatLoad_MPIDense_DenseInFile(MPI_Comm comm,int fd,int M, int N, Mat *newmat)
+{
+  int        *rowners, i,size,rank,m,rstart,rend,ierr,nz,j;
+  Scalar     *array,*vals,*vals_ptr;
+  MPI_Status status;
+
+  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(comm,&size);
+
+  /* determine ownership of all rows */
+  m = M/size + ((M % size) > rank);
+  rowners = (int *) PetscMalloc((size+2)*sizeof(int)); CHKPTRQ(rowners);
+  MPI_Allgather(&m,1,MPI_INT,rowners+1,1,MPI_INT,comm);
+  rowners[0] = 0;
+  for ( i=2; i<=size; i++ ) {
+    rowners[i] += rowners[i-1];
+  }
+  rstart = rowners[rank]; 
+  rend   = rowners[rank+1]; 
+
+  ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,PETSC_NULL,newmat);CHKERRQ(ierr);
+  ierr = MatGetArray(*newmat,&array); CHKERRQ(ierr);
+
+  if (!rank) {
+    vals = (Scalar *) PetscMalloc( m*N*sizeof(Scalar) ); CHKPTRQ(vals);
+
+    /* read in my part of the matrix numerical values  */
+    ierr = SYRead(fd,vals,m*N,SYSCALAR); CHKERRQ(ierr);
+    
+    /* insert into matrix-by row (this is why cannot directly read into array */
+    vals_ptr = vals;
+    for ( i=0; i<m; i++ ) {
+      for ( j=0; j<N; j++ ) {
+        array[i + j*m] = *vals_ptr++;
+      }
+    }
+
+    /* read in other processors and ship out */
+    for ( i=1; i<size; i++ ) {
+      nz   = (rowners[i+1] - rowners[i])*N;
+      ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
+      MPI_Send(vals,nz,MPIU_SCALAR,i,(*newmat)->tag,comm);
+    }
+  }
+  else {
+    /* receive numeric values */
+    vals = (Scalar*) PetscMalloc( m*N*sizeof(Scalar) ); CHKPTRQ(vals);
+
+    /* receive message of values*/
+    MPI_Recv(vals,m*N,MPIU_SCALAR,0,(*newmat)->tag,comm,&status);
+
+    /* insert into matrix-by row (this is why cannot directly read into array */
+    vals_ptr = vals;
+    for ( i=0; i<m; i++ ) {
+      for ( j=0; j<N; j++ ) {
+        array[i + j*m] = *vals_ptr++;
+      }
+    }
+  }
+  PetscFree(rowners);
+  PetscFree(vals);
+  ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
+
+
 int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
@@ -960,13 +1027,21 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIDenseorMPIRow:not matrix object");
   }
 
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
-  M = header[1]; N = header[2];
+  M = header[1]; N = header[2]; nz = header[3];
+
+  /*
+       Handle case where matrix is stored on disk as a dense matrix 
+  */
+  if (nz == MATRIX_BINARY_FORMAT_DENSE) {
+    return MatLoad_MPIDense_DenseInFile(comm,fd,M,N,newmat);
+  }
+
   /* determine ownership of all rows */
   m = M/size + ((M % size) > rank);
   rowners = (int *) PetscMalloc((size+2)*sizeof(int)); CHKPTRQ(rowners);
@@ -1052,9 +1127,7 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
   for ( i=0; i<m; i++ ) {
     ourlens[i] -= offlens[i];
   }
-  if (type == MATMPIDENSE) {
-    ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,PETSC_NULL,newmat);CHKERRQ(ierr);
-  }
+  ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,PETSC_NULL,newmat);CHKERRQ(ierr);
   A = *newmat;
   for ( i=0; i<m; i++ ) {
     ourlens[i] += offlens[i];
@@ -1112,3 +1185,8 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
+
+
+
+
+

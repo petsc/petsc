@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.74 1996/03/10 17:28:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.75 1996/03/14 21:47:46 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -516,10 +516,10 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   ViewerType   vtype;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
-    ierr = ViewerFileGetFormat_Private(viewer,&format);
-    if (format == FILE_FORMAT_INFO || format == FILE_FORMAT_INFO_DETAILED) {
+    ierr = ViewerGetFormat(viewer,&format);
+    if (format == ASCII_FORMAT_INFO || format == ASCII_FORMAT_INFO_DETAILED) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
       MPIU_fprintf(mat->comm,fd,"  block size=%d, total number of diagonals=%d\n",
                    dmat->nb,mbd->gnd);
@@ -531,7 +531,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
           MPIU_fprintf(mat->comm,fd,"  %d",mbd->gdiag[i+nline*k]);
         MPIU_fprintf(mat->comm,fd,"\n");        
       }
-      if (format == FILE_FORMAT_INFO_DETAILED) {
+      if (format == ASCII_FORMAT_INFO_DETAILED) {
         int nz, nzalloc, mem, rank;
         MPI_Comm_rank(mat->comm,&rank);
         ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
@@ -987,7 +987,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
 
   MPI_Comm_size(comm,&size); MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = SYRead(fd,(char *)header,4,SYINT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_MPIBDiag:not matrix object");
   }

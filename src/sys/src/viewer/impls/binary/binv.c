@@ -1,19 +1,19 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.15 1996/03/08 05:48:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: binv.c,v 1.16 1996/03/14 22:26:48 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
+#include "pinclude/pviewer.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
 
 struct _Viewer {
-  PETSCHEADER
-  int         (*flush)(Viewer);
+  VIEWERHEADER
   int         fdes;            /* file descriptor */
 };
 
-int ViewerFileGetDescriptor(Viewer viewer,int *fdes)
+int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 {
   *fdes = viewer->fdes;
   return 0;
@@ -81,10 +81,14 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
     } else SETERRQ(1,"ViewerFileOpenBinary:Unknown file type");
   }
   else v->fdes = -1;
+  v->format    = 0;
 #if defined(PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
 #endif
   return 0;
 }
+
+
+
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.59 1996/03/07 20:42:34 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.60 1996/03/10 17:29:31 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -47,7 +47,7 @@ int SNESView(SNES snes,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
-    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     MPIU_fprintf(snes->comm,fd,"SNES Object:\n");
     SNESGetType(snes,PETSC_NULL,&method);
     MPIU_fprintf(snes->comm,fd,"  method: %s\n",method);

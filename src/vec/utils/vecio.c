@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.21 1996/03/10 17:26:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: vecio.c,v 1.22 1996/03/14 21:45:49 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -47,7 +47,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype != BINARY_FILE_VIEWER) SETERRQ(1,"VecLoad:Must be binary viewer");
   PLogEventBegin(VEC_Load,viewer,0,0,0);
-  ierr = ViewerFileGetDescriptor(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   
   PetscObjectGetComm((PetscObject)viewer,&comm);
   MPI_Comm_rank(comm,&rank);

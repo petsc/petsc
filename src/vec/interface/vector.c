@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.69 1996/03/08 05:45:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.70 1996/03/10 17:26:44 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -278,6 +278,31 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
   PLogEventEnd(VEC_AXPY,x,y,0,0);
   return 0;
 } 
+
+/*@
+   VecAXBY - Computes y = alpha x + beta y. 
+
+   Input Parameters:
+.  alpha,beta - the scalars
+.  x, y  - the vectors
+
+   Output Parameter:
+.  y - output vector
+
+.keywords: vector, saxpy
+
+.seealso: VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY()
+@*/
+int VecAXBY(Scalar *alpha,Scalar *beta,Vec x,Vec y)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);PETSCVALIDHEADERSPECIFIC(y,VEC_COOKIE);
+  PLogEventBegin(VEC_AXPY,x,y,0,0);
+  ierr = (*x->ops.axby)(alpha,beta,x,y); CHKERRQ(ierr);
+  PLogEventEnd(VEC_AXPY,x,y,0,0);
+  return 0;
+} 
+
 /*@
    VecAYPX - Computes y = x + alpha y.
 

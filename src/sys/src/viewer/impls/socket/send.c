@@ -1,6 +1,7 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.29 1995/11/09 22:31:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.30 1996/03/08 05:48:24 bsmith Exp bsmith $";
 #endif
+
 /* 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92

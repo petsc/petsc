@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.22 1996/03/04 05:15:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.23 1996/03/10 17:27:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -49,7 +49,7 @@ static int PCView_Shell(PetscObject obj,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {  
-    ierr = ViewerFileGetPointer(viewer,&fd); CHKERRQ(ierr);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (jac->name) MPIU_fprintf(pc->comm,fd,"    Shell: %s\n", jac->name);
   }
   return 0;

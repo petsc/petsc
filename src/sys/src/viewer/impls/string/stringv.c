@@ -1,8 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: stringv.c,v 1.1 1996/03/07 22:38:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.2 1996/03/08 05:48:30 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
+#include "pinclude/pviewer.h"
 #include <stdio.h>
 #include <stdarg.h>
 #if defined(HAVE_STDLIB_H)
@@ -11,7 +12,7 @@ static char vcid[] = "$Id: stringv.c,v 1.1 1996/03/07 22:38:37 bsmith Exp bsmith
 #include "pinclude/petscfix.h"
 
 struct _Viewer {
-  PETSCHEADER
+  VIEWERHEADER
   char         *string;   /* string where info is stored */
   char         *head;     /* pointer to begining of unused portion */
 };
@@ -59,7 +60,7 @@ int ViewerStringsprintf(Viewer v,char *format,...)
 .keywords: Viewer, file, open
 
 .seealso: MatView(), VecView(), ViewerDestroy(), ViewerFileOpenBinary(),
-          ViewerFileGetPointer(), SLESView(), MatView()
+          ViewerASCIIGetPointer(), SLESView(), MatView()
 @*/
 int ViewerStringOpen(MPI_Comm comm,char *string,int len, Viewer *lab)
 {

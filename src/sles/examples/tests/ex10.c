@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.52 1996/01/23 00:20:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.53 1996/02/08 18:27:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -174,7 +174,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = MatConvert(submat,type,newmat); CHKERRQ(ierr);
   ierr = MatDestroy(submat); CHKERRQ(ierr);
 
-  ierr = ViewerFileSetFormat(STDOUT_VIEWER_WORLD,FILE_FORMAT_INFO,0); CHKERRQ(ierr);
+  ierr = ViewerSetFormat(STDOUT_VIEWER_WORLD,ASCII_FORMAT_INFO,0); CHKERRQ(ierr);
   ierr = MatView(*newmat,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm); CHKERRQ(ierr);
   MPIU_printf(MPI_COMM_WORLD,"matrix 1 norm = %g\n",norm);
