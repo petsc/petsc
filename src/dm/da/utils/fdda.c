@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.65 2001/04/10 19:37:31 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.66 2001/04/16 03:16:27 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -6,7 +6,7 @@
 
 EXTERN int DAGetColoring1d_MPIAIJ(DA,ISColoringType,ISColoring *,Mat *);
 EXTERN int DAGetColoring2d_MPIAIJ(DA,ISColoringType,ISColoring *,Mat *);
-EXTERN int DAGetColoring2d_5pt_MPIAIJ(DA,ISColoringType,ISColoring *,Mat *);
+EXTERN int DAGetColoring2d_5pt_MPIAIJ(DA,ISColoringType,ISColoring *);
 EXTERN int DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *,Mat *);
 EXTERN int DAGetColoring3d_MPIBAIJ(DA,ISColoringType,ISColoring *,Mat *);
 
@@ -117,10 +117,6 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
   
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,&st);CHKERRQ(ierr);
-  if (st == DA_STENCIL_STAR && s == 1) {
-    ierr = DAGetColoring2d_5pt_MPIAIJ(da,ctype,coloring,J);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   nc     = w;
   col    = 2*s + 1;
   if (DAXPeriodic(wrap) && (m % col)){ 
@@ -138,7 +134,9 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
 
   /* create the coloring */
   if (coloring) {
-    if (ctype == IS_COLORING_GLOBAL) {
+    if (st == DA_STENCIL_STAR && s == 1) {
+      ierr = DAGetColoring2d_5pt_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
+    } else if (ctype == IS_COLORING_LOCAL) {
       ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=ys; j<ys+ny; j++) {
@@ -149,7 +147,7 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
         }
       }
       ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_LOCAL) {
+    } else if (ctype == IS_COLORING_GHOSTED) {
       ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
       ii = 0;
       for (j=gys; j<gys+gny; j++) {
@@ -160,6 +158,7 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
         }
       }
       ierr = ISColoringCreate(comm,nc*gnx*gny,colors,coloring);CHKERRQ(ierr);
+      ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
   }
 
@@ -299,7 +298,7 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
 
   /* create the coloring */
   if (coloring) {
-    if (ctype == IS_COLORING_GLOBAL) {
+    if (ctype == IS_COLORING_LOCAL) {
       ierr = PetscMalloc(nc*nx*ny*nz*sizeof(int),&colors);CHKERRQ(ierr);
       ii = 0;
       for (k=zs; k<zs+nz; k++) {
@@ -312,7 +311,7 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
         }
       }
       ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,coloring);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_LOCAL) {
+    } else if (ctype == IS_COLORING_GHOSTED) {
       ierr = PetscMalloc(nc*gnx*gny*gnz*sizeof(int),&colors);CHKERRQ(ierr);
       ii = 0;
       for (k=gzs; k<gzs+gnz; k++) {
@@ -325,6 +324,7 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
         }
       }
       ierr = ISColoringCreate(comm,nc*gnx*gny*gnz,colors,coloring);CHKERRQ(ierr);
+      ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
   }
 
@@ -464,7 +464,7 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
 
   /* create the coloring */
   if (coloring) {
-    if (ctype == IS_COLORING_GLOBAL) {
+    if (ctype == IS_COLORING_LOCAL) {
       ierr = PetscMalloc(nc*nx*sizeof(int),&colors);CHKERRQ(ierr);
       i1 = 0;
       for (i=xs; i<xs+nx; i++) {
@@ -473,7 +473,7 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
         }
       }
       ierr = ISColoringCreate(comm,nc*nx,colors,coloring);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_LOCAL) {
+    } else if (ctype == IS_COLORING_GHOSTED) {
       ierr = PetscMalloc(nc*gnx*sizeof(int),&colors);CHKERRQ(ierr);
       i1 = 0;
       for (i=gxs; i<gxs+gnx; i++) {
@@ -482,6 +482,7 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *
         }
       }
       ierr = ISColoringCreate(comm,nc*gnx,colors,coloring);CHKERRQ(ierr);
+      ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
   }
 
@@ -567,7 +568,7 @@ int DAGetColoring3d_MPIBAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat 
 
   /* create the coloring */
   if (coloring) {
-    if (ctype == IS_COLORING_GLOBAL) {
+    if (ctype == IS_COLORING_LOCAL) {
       ierr = PetscMalloc(nx*ny*nz*sizeof(int),&colors);CHKERRQ(ierr);
       ii   = 0;
       for (k=zs; k<zs+nz; k++) {
@@ -578,7 +579,7 @@ int DAGetColoring3d_MPIBAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat 
         }
       }
       ierr = ISColoringCreate(comm,nx*ny*nz,colors,coloring);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_LOCAL) {
+    } else if (ctype == IS_COLORING_GHOSTED) {
       ierr = PetscMalloc(gnx*gny*gnz*sizeof(int),&colors);CHKERRQ(ierr);
       ii   = 0;
       for (k=gzs; k<gzs+gnz; k++) {
@@ -589,6 +590,7 @@ int DAGetColoring3d_MPIBAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat 
         }
       }
       ierr = ISColoringCreate(comm,gnx*gny*gnz,colors,coloring);CHKERRQ(ierr);
+      ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
   }
 
@@ -722,16 +724,13 @@ int DAGetColoring3d_MPIBAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat 
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring2d_5pt_MPIAIJ" 
-int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,Mat *J)
+int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,w,s,*cols,k,nc,*rows,col,cnt,l,p;
   int                    lstart,lend,pstart,pend,*dnz,*onz,size;
   MPI_Comm               comm;
   Scalar                 *values;
-  DAPeriodicType         wrap;
-  ISLocalToGlobalMapping ltog;
-  DAStencilType          st;
 
   PetscFunctionBegin;
   /*     
@@ -739,142 +738,38 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring,M
          col - number of colors needed in one direction for single component problem
   
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,&st);CHKERRQ(ierr);
+  ierr   = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0,0);CHKERRQ(ierr);
   nc     = w;
   col    = 2*s + 1;
-  if (DAXPeriodic(wrap) && (m % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-  if (DAYPeriodic(wrap) && (n % col)){ 
-    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
-  }
-  ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr   = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0);CHKERRQ(ierr);
+  ierr   = DAGetGhostCorners(da,&gxs,&gys,0,&gnx,&gny,0);CHKERRQ(ierr);
+  ierr   = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* create the coloring */
-  if (coloring) {
-    if (ctype == IS_COLORING_GLOBAL) {
-      ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
-      ii = 0;
-      for (j=ys; j<ys+ny; j++) {
-        for (i=xs; i<xs+nx; i++) {
-          for (k=0; k<nc; k++) {
-            colors[ii++] = k + nc*((i % col) + col*(j % col));
-          }
-        }
-      }
-      ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
-    } else if (ctype == IS_COLORING_LOCAL) {
-      ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
-      ii = 0;
-      for (j=gys; j<gys+gny; j++) {
-        for (i=gxs; i<gxs+gnx; i++) {
-          for (k=0; k<nc; k++) {
-            colors[ii++] = k + nc*((i % col) + col*(j % col));
-          }
-        }
-      }
-      ierr = ISColoringCreate(comm,nc*gnx*gny,colors,coloring);CHKERRQ(ierr);
-    } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
-  }
-
-  /*
-      This code below is identical to the general case; should reorganize
-    the code to have less duplications
-  */
-  /* Create the matrix */
-  if (J) {
-    int bs = nc,dims[2],starts[2];
-    /* create empty Jacobian matrix */
-    ierr    = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
-
-    ierr = PetscMalloc(col*col*nc*nc*sizeof(Scalar),&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,col*col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
-    ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
-    ierr = PetscMalloc(col*col*nc*nc*sizeof(int),&cols);CHKERRQ(ierr);
-    ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-
-    /* determine the matrix preallocation information */
-    ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);CHKERRQ(ierr);
-    for (i=xs; i<xs+nx; i++) {
-
-      pstart = PetscMax(-s,-i);
-      pend   = PetscMin(s,m-i-1);
-
-      for (j=ys; j<ys+ny; j++) {
-        slot = i - gxs + gnx*(j - gys);
-
-        lstart = PetscMax(-s,-j); 
-        lend   = PetscMin(s,n-j-1);
-
-        cnt  = 0;
+  if (ctype == IS_COLORING_LOCAL) {
+    ierr = PetscMalloc(nc*nx*ny*sizeof(int),&colors);CHKERRQ(ierr);
+    ii = 0;
+    for (j=ys; j<ys+ny; j++) {
+      for (i=xs; i<xs+nx; i++) {
         for (k=0; k<nc; k++) {
-          for (l=lstart; l<lend+1; l++) {
-            for (p=pstart; p<pend+1; p++) {
-              if ((st == DA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
-                cols[cnt++]  = k + nc*(slot + gnx*l + p);
-              }
-            }
-          }
-          rows[k] = k + nc*(slot);
+          colors[ii++] = k + nc*((3*j+i) % 5);
         }
-        ierr = MatPreallocateSetLocal(ltog,nc,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
       }
     }
-    /* set matrix type and preallocation information */
-    if (size > 1) {
-      ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
-    } else {
-      ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
-    }
-    ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);  
-    ierr = MatSeqBAIJSetPreallocation(*J,bs,0,dnz);CHKERRQ(ierr);  
-    ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
-    ierr = MatMPIBAIJSetPreallocation(*J,bs,0,dnz,0,onz);CHKERRQ(ierr);  
-    ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-    ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
-    ierr = DAGetGhostCorners(da,&starts[0],&starts[1],PETSC_IGNORE,&dims[0],&dims[1],PETSC_IGNORE);CHKERRQ(ierr);
-    ierr = MatSetStencil(*J,2,dims,starts,nc);CHKERRQ(ierr);
-
-    /*
-      For each node in the grid: we get the neighbors in the local (on processor ordering
-    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
-    PETSc ordering.
-    */
-    for (i=xs; i<xs+nx; i++) {
-
-      pstart = PetscMax(-s,-i);
-      pend   = PetscMin(s,m-i-1);
-
-      for (j=ys; j<ys+ny; j++) {
-        slot = i - gxs + gnx*(j - gys);
-
-        lstart = PetscMax(-s,-j); 
-        lend   = PetscMin(s,n-j-1);
-
-        cnt  = 0;
+    ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
+  } else if (ctype == IS_COLORING_GHOSTED) {
+    ierr = PetscMalloc(nc*gnx*gny*sizeof(int),&colors);CHKERRQ(ierr);
+    ii = 0;
+    for (j=gys; j<gys+gny; j++) {
+      for (i=gxs; i<gxs+gnx; i++) {
         for (k=0; k<nc; k++) {
-          for (l=lstart; l<lend+1; l++) {
-            for (p=pstart; p<pend+1; p++) {
-              if ((st == DA_STENCIL_BOX) || (!l || !p)) {  /* entries on star have either l = 0 or p = 0 */
-                cols[cnt++]  = k + nc*(slot + gnx*l + p);
-              }
-            }
-          }
-          rows[k]      = k + nc*(slot);
+          colors[ii++] = k + nc*((3*j+i) % 5);
         }
-        ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree(values);CHKERRQ(ierr);
-    ierr = PetscFree(rows);CHKERRQ(ierr);
-    ierr = PetscFree(cols);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
-  }
+    ierr = ISColoringCreate(comm,nc*gnx*gny,colors,coloring);CHKERRQ(ierr);
+    ierr = ISColoringSetType(*coloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
+  } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
   PetscFunctionReturn(0);
 }
