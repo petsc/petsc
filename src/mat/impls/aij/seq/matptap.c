@@ -215,6 +215,7 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ"
 int MatApplyPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat *C) {
+  /* This routine requires testing -- I don't think it works. */
   int            ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqMAIJ    *pp=(Mat_SeqMAIJ*)PP->data;
@@ -491,5 +492,6 @@ int RegisterApplyPtAPRoutines_Private(Mat A) {
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatApplyPtAPNumeric_seqaij_seqaij",
                                            "MatApplyPtAPNumeric_SeqAIJ_SeqAIJ",
                                            MatApplyPtAPNumeric_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
+  ierr = RegisterMatMatMultRoutines_Private(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

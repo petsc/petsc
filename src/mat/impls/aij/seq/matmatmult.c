@@ -2,135 +2,163 @@
 /*
   Defines matrix-matrix product routines for pairs of SeqAIJ matrices
           C = A * B
-          C = P * A * P^T
 */
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/utils/freespace.h"
 
-static int logkey_matmatmult            = 0;
-static int logkey_matmatmult_symbolic   = 0;
-static int logkey_matmatmult_numeric    = 0;
+static int logkey_matmatmult          = 0;
+static int logkey_matmatmult_symbolic = 0;
+static int logkey_matmatmult_numeric  = 0;
 
-static int logkey_matapplypapt          = 0;
-static int logkey_matapplypapt_symbolic = 0;
-static int logkey_matapplypapt_numeric  = 0;
+/*@
+   MatMatMult - Performs Matrix-Matrix Multiplication C=A*B.
 
-/*
-     MatMatMult_Symbolic_SeqAIJ_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
-           C = A * B;
+   Collective on Mat
 
-     Note: C is assumed to be uncreated.
-           If this is not the case, Destroy C before calling this routine.
-*/
-#ifdef USE_INTSORT
-/* 
-This roution is modified by the one below for better performance.
-The changes are:
-   -- PetscSortInt() is replace by a linked list
-   -- malloc larger Initial FreeSpace 
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatMatMult_Symbolic_SeqAIJ_SeqAIJ"
-int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
-{
-  int            ierr;
-  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
-  int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
-  int            *ci,*cj,*denserow,*sparserow;
-  int            an=A->N,am=A->M,bn=B->N,bm=B->M;
-  int            i,j,k,anzi,brow,bnzj,cnzi;
-  MatScalar      *ca;
+   Input Parameters:
++  A - the left matrix
+-  B - the right matrix
+
+   Output Parameters:
+.  C - the product matrix
+
+   Notes:
+   C will be created and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for pairs of SeqAIJ matrices.
+
+   Level: intermediate
+
+.seealso: MatMatMultSymbolic(),MatMatMultNumeric()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult"
+int MatMatMult(Mat A,Mat B, Mat *C) {
+  /* Perhaps this "interface" routine should be moved into the interface directory.*/
+  /* To facilitate implementations with varying types, QueryFunction is used.*/
+  /* It is assumed that implementations will be composed as "MatMatMult_<type of A><type of B>". */
+  int ierr;
+  char funct[80];
+  int (*mult)(Mat,Mat,Mat*);
 
   PetscFunctionBegin;
-  /* some error checking which could be moved into interface layer */
-  if (aishift || bishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
-  if (an!=bm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",an,bm);
-  
-  /* Set up timers */
-  if (!logkey_matmatmult_symbolic) {
-    ierr = PetscLogEventRegister(&logkey_matmatmult_symbolic,"MatMatMult_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(logkey_matmatmult_symbolic,A,B,0,0);CHKERRQ(ierr);
+  PetscValidPointer(C);
 
-  /* Set up */
-  /* Allocate ci array, arrays for fill computation and */
-  /* free space for accumulating nonzero column info */
-  ierr = PetscMalloc(((am+1)+1)*sizeof(int),&ci);CHKERRQ(ierr);
-  ci[0] = 0;
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidType(A);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  ierr = PetscMalloc((2*bn+1)*sizeof(int),&denserow);CHKERRQ(ierr);
-  ierr = PetscMemzero(denserow,(2*bn+1)*sizeof(int));CHKERRQ(ierr);
-  sparserow = denserow + bn;
+  PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscValidType(B);
+  MatPreallocated(B);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  /* Initial FreeSpace size is nnz(B)=bi[bm] */
-  ierr          = GetMoreSpace(bi[bm],&free_space);CHKERRQ(ierr);
-  current_space = free_space;
+  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
 
-  /* Determine symbolic info for each row of the product: */
-  for (i=0;i<am;i++) {
-    anzi = ai[i+1] - ai[i];
-    cnzi = 0;
-    for (j=0;j<anzi;j++) {
-      brow = *aj++;
-      bnzj = bi[brow+1] - bi[brow];
-      bjj  = bj + bi[brow];
-      for (k=0;k<bnzj;k++) {
-        /* If column is not marked, mark it in compressed and uncompressed locations. */
-        /* For simplicity, leave uncompressed row unsorted until finished with row, */
-        /* and increment nonzero count for this row. */
-        if (!denserow[bjj[k]]) {
-          denserow[bjj[k]]  = -1;
-          sparserow[cnzi++] = bjj[k];
-        }
-      }
-    }
-
-    /* sort sparserow */
-    ierr = PetscSortInt(cnzi,sparserow);CHKERRQ(ierr);
-
-    /* If free space is not available, make more free space */
-    /* Double the amount of total space in the list */
-    if (current_space->local_remaining<cnzi) {
-      ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
-    }
-
-    /* Copy data into free space, and zero out denserow */
-    ierr = PetscMemcpy(current_space->array,sparserow,cnzi*sizeof(int));CHKERRQ(ierr);
-    current_space->array           += cnzi;
-    current_space->local_used      += cnzi;
-    current_space->local_remaining -= cnzi;
-    for (j=0;j<cnzi;j++) {
-      denserow[sparserow[j]] = 0;
-    }
-    ci[i+1] = ci[i] + cnzi;
-  }
-
-  /* Column indices are in the list of free space */
-  /* Allocate space for cj, initialize cj, and */
-  /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((ci[am]+1)*sizeof(int),&cj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscFree(denserow);CHKERRQ(ierr);
-    
-  /* Allocate space for ca */
-  ierr = PetscMalloc((ci[am]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
-  ierr = PetscMemzero(ca,(ci[am]+1)*sizeof(MatScalar));CHKERRQ(ierr);
-  
-  /* put together the new matrix */
-  ierr = MatCreateSeqAIJWithArrays(A->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
-
-  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
-  /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
-  c = (Mat_SeqAIJ *)((*C)->data);
-  c->freedata = PETSC_TRUE;
-  c->nonew    = 0;
-
-  ierr = PetscLogEventEnd(logkey_matmatmult_symbolic,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscStrcpy(funct,"MatMatMult_");CHKERRQ(ierr);
+  ierr = PetscStrcat(funct,A->type_name);CHKERRQ(ierr);
+  ierr = PetscStrcat(funct,B->type_name);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&mult);CHKERRQ(ierr);
+  if (!mult) SETERRQ2(PETSC_ERR_SUP,
+                         "C=A*B not implemented for A of type %s and B of type %s",
+                         A->type_name,B->type_name);
+  ierr = (*mult)(A,B,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif /*  USE_INTSORT */
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
+int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B, Mat *C) {
+  int ierr;
+  char symfunct[80],numfunct[80],types[80];
+  int (*symbolic)(Mat,Mat,Mat*),(*numeric)(Mat,Mat,Mat);
+
+  PetscFunctionBegin;
+  ierr = PetscStrcpy(types,A->type_name);CHKERRQ(ierr);
+  ierr = PetscStrcat(types,B->type_name);CHKERRQ(ierr);
+  ierr = PetscStrcpy(symfunct,"MatMatMultSymbolic_");CHKERRQ(ierr);
+  ierr = PetscStrcat(symfunct,types);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,symfunct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
+  if (!symbolic) SETERRQ2(PETSC_ERR_SUP,
+                         "C=A*B not implemented for A of type %s and B of type %s",
+                         A->type_name,B->type_name);
+  ierr = PetscStrcpy(numfunct,"MatMatMultNumeric_");CHKERRQ(ierr);
+  ierr = PetscStrcat(numfunct,types);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,numfunct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
+  if (!numeric) SETERRQ2(PETSC_ERR_SUP,
+                         "C=A*B not implemented for A of type %s and B of type %s",
+                         A->type_name,B->type_name);
+  ierr = PetscLogEventBegin(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
+  ierr = (*symbolic)(A,B,C);CHKERRQ(ierr);
+  ierr = (*numeric)(A,B,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatMatMultSymbolic - Performs construction, preallocation, and computes the ij structure
+   of the matrix-matrix product C=A*B.  Call this routine before calling MatMatMultNumeric().
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the left matrix
+-  B - the right matrix
+
+   Output Parameters:
+.  C - the matrix containing the ij structure of product matrix
+
+   Notes:
+   C will be created and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for SeqAIJ type matrices.
+
+   Level: intermediate
+
+.seealso: MatMatMult(),MatMatMultNumeric()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic"
+int MatMatMultSymbolic(Mat A,Mat B,Mat *C) {
+  /* Perhaps this "interface" routine should be moved into the interface directory.*/
+  /* To facilitate implementations with varying types, QueryFunction is used.*/
+  /* It is assumed that implementations will be composed as "MatMatMultSymbolic_<type of A><type of B>". */
+  int ierr;
+  char funct[80];
+  int (*symbolic)(Mat,Mat,Mat *);
+
+  PetscFunctionBegin;
+  PetscValidPointer(C);
+
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidType(A);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscValidType(B);
+  MatPreallocated(B);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
+
+  ierr = PetscStrcpy(funct,"MatMatMultSymbolic_");CHKERRQ(ierr);
+  ierr = PetscStrcat(funct,A->type_name);CHKERRQ(ierr);
+  ierr = PetscStrcat(funct,B->type_name);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
+  if (!symbolic) SETERRQ2(PETSC_ERR_SUP,
+                         "C=A*B not implemented for A of type %s and B of type %s",
+                         A->type_name,B->type_name);
+  ierr = (*symbolic)(A,B,C);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMult_Symbolic_SeqAIJ_SeqAIJ"
@@ -141,18 +169,12 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
   int            *ci,*cj,*lnk,idx0,idx,bcol;
-  int            an=A->N,am=A->M,bn=B->N,bm=B->M;
+  int            am=A->M,bn=B->N,bm=B->M;
   int            i,j,k,anzi,brow,bnzj,cnzi;
   MatScalar      *ca;
 
   PetscFunctionBegin;
-  /* some error checking which could be moved into interface layer */
-  if (an!=bm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",an,bm);
-  
-  /* Set up timers */
-  if (!logkey_matmatmult_symbolic) {
-    ierr = PetscLogEventRegister(&logkey_matmatmult_symbolic,"MatMatMult_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
-  }
+  /* Start timers */
   ierr = PetscLogEventBegin(logkey_matmatmult_symbolic,A,B,0,0);CHKERRQ(ierr);
 
   /* Set up */
@@ -240,11 +262,75 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   PetscFunctionReturn(0);
 }
 
-/*
-     MatMatMult_Numeric_SeqAIJ_SeqAIJ - Forms the numeric product of two SeqAIJ matrices
-           C=A*B;
-     Note: C must have been created by calling MatMatMult_Symbolic_SeqAIJ_SeqAIJ.
-*/
+/*@
+   MatMatMultNumeric - Performs the numeric matrix-matrix product.
+   Call this routine after first calling MatMatMultSymbolic().
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the left matrix
+-  B - the right matrix
+
+   Output Parameters:
+.  C - the product matrix, whose ij structure was defined from MatMatMultSymbolic().
+
+   Notes:
+   C must have been created with MatMatMultSymbolic.
+
+   This routine is currently only implemented for SeqAIJ type matrices.
+
+   Level: intermediate
+
+.seealso: MatMatMult(),MatMatMultSymbolic()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultNumeric"
+int MatMatMultNumeric(Mat A,Mat B,Mat C){
+  /* Perhaps this "interface" routine should be moved into the interface directory.*/
+  /* To facilitate implementations with varying types, QueryFunction is used.*/
+  /* It is assumed that implementations will be composed as "MatMatMultNumeric_<type of A><type of B>". */
+  int ierr;
+  char funct[80];
+  int (*numeric)(Mat,Mat,Mat);
+
+  PetscFunctionBegin;
+
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidType(A);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscValidType(B);
+  MatPreallocated(B);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  PetscValidHeaderSpecific(C,MAT_COOKIE);
+  PetscValidType(C);
+  MatPreallocated(C);
+  if (!C->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  if (B->N!=C->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->N,C->N);
+  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
+  if (A->M!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",A->M,C->M);
+
+  /* Query A for ApplyPtAP implementation based on types of P */
+  ierr = PetscStrcpy(funct,"MatMatMultNumeric_");CHKERRQ(ierr);
+  ierr = PetscStrcat(funct,A->type_name);CHKERRQ(ierr);
+  ierr = PetscStrcat(funct,B->type_name);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
+  if (!numeric) SETERRQ2(PETSC_ERR_SUP,
+                         "C=A*B not implemented for A of type %s and B of type %s",
+                         A->type_name,B->type_name);
+  ierr = (*numeric)(A,B,C);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMatMult_Numeric_SeqAIJ_SeqAIJ"
 int MatMatMult_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
@@ -254,21 +340,13 @@ int MatMatMult_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqAIJ *b = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJ *c = (Mat_SeqAIJ *)C->data;
   int        *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
-  int        an=A->N,am=A->M,bn=B->N,bm=B->M,cn=C->N,cm=C->M;
+  int        am=A->M,cn=C->N;
   int        i,j,k,anzi,bnzi,cnzi,brow;
   MatScalar  *aa=a->a,*ba=b->a,*baj,*ca=c->a,*temp;
 
   PetscFunctionBegin;  
 
-  /* This error checking should be unnecessary if the symbolic was performed */ 
-  if (am!=cm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",am,cm);
-  if (an!=bm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",an,bm);
-  if (bn!=cn) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",bn,cn);
-
-  /* Set up timers */
-  if (!logkey_matmatmult_numeric) {
-    ierr = PetscLogEventRegister(&logkey_matmatmult_numeric,"MatMatMult_Numeric",MAT_COOKIE);CHKERRQ(ierr);
-  }
+  /* Start timers */
   ierr = PetscLogEventBegin(logkey_matmatmult_numeric,A,B,C,0);CHKERRQ(ierr);
 
   /* Allocate temp accumulation space to avoid searching for nonzero columns in C */
@@ -310,267 +388,28 @@ int MatMatMult_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
-int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C) {
+#define __FUNCT__ "RegisterMatMatMultRoutines_Private"
+int RegisterMatMatMultRoutines_Private(Mat A) {
   int ierr;
 
   PetscFunctionBegin;
   if (!logkey_matmatmult) {
     ierr = PetscLogEventRegister(&logkey_matmatmult,"MatMatMult",MAT_COOKIE);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventBegin(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
-  ierr = MatMatMult_Symbolic_SeqAIJ_SeqAIJ(A,B,C);CHKERRQ(ierr);
-  ierr = MatMatMult_Numeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-/*
-     MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
-           C = P * A * P^T;
-
-     Note: C is assumed to be uncreated.
-           If this is not the case, Destroy C before calling this routine.
-*/
-#undef __FUNCT__
-#define __FUNCT__ "MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ"
-int MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
-  /* Note: This code is virtually identical to that of MatApplyPtAP_SeqAIJ_Symbolic */
-  /*        and MatMatMult_SeqAIJ_SeqAIJ_Symbolic.  Perhaps they could be merged nicely. */
-  int            ierr;
-  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
-  int            *ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pti,*ptj,*ptjj;
-  int            *ci,*cj,*paj,*padenserow,*pasparserow,*denserow,*sparserow;
-  int            an=A->N,am=A->M,pn=P->N,pm=P->M;
-  int            i,j,k,pnzi,arow,anzj,panzi,ptrow,ptnzj,cnzi;
-  MatScalar      *ca;
-
-  PetscFunctionBegin;
-
-  /* some error checking which could be moved into interface layer */
-  if (pn!=am) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",pn,am);
-  if (am!=an) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %d != %d",am, an);
-
-  /* Set up timers */
-  if (!logkey_matapplypapt_symbolic) {
-    ierr = PetscLogEventRegister(&logkey_matapplypapt_symbolic,"MatApplyPAPt_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMatMult_seqaijseqaij",
+                                           "MatMatMult_SeqAIJ_SeqAIJ",
+                                           MatMatMult_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
+  if (!logkey_matmatmult_symbolic) {
+    ierr = PetscLogEventRegister(&logkey_matmatmult_symbolic,"MatMatMult_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventBegin(logkey_matapplypapt_symbolic,A,P,0,0);CHKERRQ(ierr);
-
-  /* Create ij structure of P^T */
-  ierr = MatGetSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
-
-  /* Allocate ci array, arrays for fill computation and */
-  /* free space for accumulating nonzero column info */
-  ierr = PetscMalloc(((pm+1)*1)*sizeof(int),&ci);CHKERRQ(ierr);
-  ci[0] = 0;
-
-  ierr = PetscMalloc((2*an+2*pm+1)*sizeof(int),&padenserow);CHKERRQ(ierr);
-  ierr = PetscMemzero(padenserow,(2*an+2*pm+1)*sizeof(int));CHKERRQ(ierr);
-  pasparserow  = padenserow  + an;
-  denserow     = pasparserow + an;
-  sparserow    = denserow    + pm;
-
-  /* Set initial free space to be nnz(A) scaled by aspect ratio of Pt. */
-  /* This should be reasonable if sparsity of PAPt is similar to that of A. */
-  ierr          = GetMoreSpace((ai[am]/pn)*pm,&free_space);
-  current_space = free_space;
-
-  /* Determine fill for each row of C: */
-  for (i=0;i<pm;i++) {
-    pnzi  = pi[i+1] - pi[i];
-    panzi = 0;
-    /* Get symbolic sparse row of PA: */
-    for (j=0;j<pnzi;j++) {
-      arow = *pj++;
-      anzj = ai[arow+1] - ai[arow];
-      ajj  = aj + ai[arow];
-      for (k=0;k<anzj;k++) {
-        if (!padenserow[ajj[k]]) {
-          padenserow[ajj[k]]   = -1;
-          pasparserow[panzi++] = ajj[k];
-        }
-      }
-    }
-    /* Using symbolic row of PA, determine symbolic row of C: */
-    paj    = pasparserow;
-    cnzi   = 0;
-    for (j=0;j<panzi;j++) {
-      ptrow = *paj++;
-      ptnzj = pti[ptrow+1] - pti[ptrow];
-      ptjj  = ptj + pti[ptrow];
-      for (k=0;k<ptnzj;k++) {
-        if (!denserow[ptjj[k]]) {
-          denserow[ptjj[k]] = -1;
-          sparserow[cnzi++] = ptjj[k];
-        }
-      }
-    }
-
-    /* sort sparse representation */
-    ierr = PetscSortInt(cnzi,sparserow);CHKERRQ(ierr);
-
-    /* If free space is not available, make more free space */
-    /* Double the amount of total space in the list */
-    if (current_space->local_remaining<cnzi) {
-      ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
-    }
-
-    /* Copy data into free space, and zero out dense row */
-    ierr = PetscMemcpy(current_space->array,sparserow,cnzi*sizeof(int));CHKERRQ(ierr);
-    current_space->array           += cnzi;
-    current_space->local_used      += cnzi;
-    current_space->local_remaining -= cnzi;
-
-    for (j=0;j<panzi;j++) {
-      padenserow[pasparserow[j]] = 0;
-    }
-    for (j=0;j<cnzi;j++) {
-      denserow[sparserow[j]] = 0;
-    }
-    ci[i+1] = ci[i] + cnzi;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMatMultSymbolic_seqaijseqaij",
+                                           "MatMatMult_Symbolic_SeqAIJ_SeqAIJ",
+                                           MatMatMult_Symbolic_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
+  if (!logkey_matmatmult_numeric) {
+    ierr = PetscLogEventRegister(&logkey_matmatmult_numeric,"MatMatMult_Numeric",MAT_COOKIE);CHKERRQ(ierr);
   }
-  /* column indices are in the list of free space */
-  /* Allocate space for cj, initialize cj, and */
-  /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((ci[pm]+1)*sizeof(int),&cj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscFree(padenserow);CHKERRQ(ierr);
-    
-  /* Allocate space for ca */
-  ierr = PetscMalloc((ci[pm]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
-  ierr = PetscMemzero(ca,(ci[pm]+1)*sizeof(MatScalar));CHKERRQ(ierr);
-  
-  /* put together the new matrix */
-  ierr = MatCreateSeqAIJWithArrays(A->comm,pm,pm,ci,cj,ca,C);CHKERRQ(ierr);
-
-  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
-  /* Since these are PETSc arrays, change flags to free them as necessary. */
-  c = (Mat_SeqAIJ *)((*C)->data);
-  c->freedata = PETSC_TRUE;
-  c->nonew    = 0;
-
-  /* Clean up. */
-  ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
-
-  ierr = PetscLogEventEnd(logkey_matapplypapt_symbolic,A,P,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*
-     MatApplyPAPt_Numeric_SeqAIJ - Forms the numeric product of two SeqAIJ matrices
-           C = P * A * P^T;
-     Note: C must have been created by calling MatApplyPAPt_Symbolic_SeqAIJ.
-*/
-#undef __FUNCT__
-#define __FUNCT__ "MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ"
-int MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
-  int        ierr,flops=0;
-  Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
-  Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
-  Mat_SeqAIJ *c  = (Mat_SeqAIJ *) C->data;
-  int        *ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj=p->j,*paj,*pajdense,*ptj;
-  int        *ci=c->i,*cj=c->j;
-  int        an=A->N,am=A->M,pn=P->N,pm=P->M,cn=C->N,cm=C->M;
-  int        i,j,k,k1,k2,pnzi,anzj,panzj,arow,ptcol,ptnzj,cnzi;
-  MatScalar  *aa=a->a,*pa=p->a,*pta=p->a,*ptaj,*paa,*aaj,*ca=c->a,sum;
-
-  PetscFunctionBegin;
-
-  /* This error checking should be unnecessary if the symbolic was performed */ 
-  if (pm!=cm) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",pm,cm);
-  if (pn!=am) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",pn,am);
-  if (am!=an) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %d != %d",am, an);
-  if (pm!=cn) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",pm, cn);
-
-  /* Set up timers */
-  if (!logkey_matapplypapt_numeric) {
-    ierr = PetscLogEventRegister(&logkey_matapplypapt_numeric,"MatApplyPAPt_Numeric",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(logkey_matapplypapt_numeric,A,P,C,0);CHKERRQ(ierr);
-
-  ierr = PetscMalloc(an*(sizeof(MatScalar)+2*sizeof(int)),&paa);CHKERRQ(ierr);
-  ierr = PetscMemzero(paa,an*(sizeof(MatScalar)+2*sizeof(int)));CHKERRQ(ierr);
-  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
-
-  paj      = (int *)(paa + an);
-  pajdense = paj + an;
-
-  for (i=0;i<pm;i++) {
-    /* Form sparse row of P*A */
-    pnzi  = pi[i+1] - pi[i];
-    panzj = 0;
-    for (j=0;j<pnzi;j++) {
-      arow = *pj++;
-      anzj = ai[arow+1] - ai[arow];
-      ajj  = aj + ai[arow];
-      aaj  = aa + ai[arow];
-      for (k=0;k<anzj;k++) {
-        if (!pajdense[ajj[k]]) {
-          pajdense[ajj[k]] = -1;
-          paj[panzj++]     = ajj[k];
-        }
-        paa[ajj[k]] += (*pa)*aaj[k];
-      }
-      flops += 2*anzj;
-      pa++;
-    }
-
-    /* Sort the j index array for quick sparse axpy. */
-    ierr = PetscSortInt(panzj,paj);CHKERRQ(ierr);
-
-    /* Compute P*A*P^T using sparse inner products. */
-    /* Take advantage of pre-computed (i,j) of C for locations of non-zeros. */
-    cnzi = ci[i+1] - ci[i];
-    for (j=0;j<cnzi;j++) {
-      /* Form sparse inner product of current row of P*A with (*cj++) col of P^T. */
-      ptcol = *cj++;
-      ptnzj = pi[ptcol+1] - pi[ptcol];
-      ptj   = pjj + pi[ptcol];
-      ptaj  = pta + pi[ptcol];
-      sum   = 0.;
-      k1    = 0;
-      k2    = 0;
-      while ((k1<panzj) && (k2<ptnzj)) {
-        if (paj[k1]==ptj[k2]) {
-          sum += paa[paj[k1++]]*ptaj[k2++];
-        } else if (paj[k1] < ptj[k2]) {
-          k1++;
-        } else /* if (paj[k1] > ptj[k2]) */ {
-          k2++;
-        }
-      }
-      *ca++ = sum;
-    }
-
-    /* Zero the current row info for P*A */
-    for (j=0;j<panzj;j++) {
-      paa[paj[j]]      = 0.;
-      pajdense[paj[j]] = 0;
-    }
-  }
-
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_matapplypapt_numeric,A,P,C,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-  
-#undef __FUNCT__
-#define __FUNCT__ "MatApplyPAPt_SeqAIJ_SeqAIJ"
-int MatApplyPAPt_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
-  int ierr;
-
-  PetscFunctionBegin;
-  if (!logkey_matapplypapt) {
-    ierr = PetscLogEventRegister(&logkey_matapplypapt,"MatApplyPAPt",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(logkey_matapplypapt,A,P,0,0);CHKERRQ(ierr);
-  ierr = MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(A,P,C);CHKERRQ(ierr);
-  ierr = MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(A,P,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_matapplypapt,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMatMultNumeric_seqaijseqaij",
+                                           "MatMatMult_Numeric_SeqAIJ_SeqAIJ",
+                                           MatMatMult_Numeric_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

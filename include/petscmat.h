@@ -1040,6 +1040,9 @@ EXTERN int MatReorderingSeqSBAIJ(Mat A,IS isp);
 EXTERN int MatMPISBAIJSetHashTableFactor(Mat,PetscReal);
 EXTERN int MatSeqSBAIJSetColumnIndices(Mat,int *);
 
+EXTERN int MatMatMult(Mat A,Mat B, Mat *C);
+EXTERN int MatMatMultSymbolic(Mat A,Mat B,Mat *C);
+EXTERN int MatMatMultNumeric(Mat A,Mat B,Mat C);
 
 EXTERN int MatCreateMAIJ(Mat,int,Mat*);
 EXTERN int MatMAIJRedimension(Mat,int,Mat*);
