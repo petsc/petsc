@@ -1,4 +1,4 @@
-# $Id: base,v 1.40 1998/04/13 16:20:43 bsmith Exp balay $ 
+# $Id: base,v 1.41 1998/04/23 23:14:11 balay Exp balay $ 
 
 PARCH    = freebsd
 CC       = /usr/local/gcc-2.7.2/bin/gcc
@@ -14,7 +14,7 @@ CCV      = ${CC} --version
 # 
 FC       = f77 -Nn1000
 AR       = ar
-RM       = rm -f *.c.*
+RM       = rm -f
 #
 #  We've found that we have to use gnumake on FreeBSD since
 # the native make is non-standard. On your machine gmake may 
