@@ -13,7 +13,7 @@ Additional Capabilities that PETSc Needs:
 
    - Make configure fully functional in PETSc 2.0
 
-   - Increase user-definable events (needed by Tom Canfield).  Maybe now's
+   X Increase user-definable events (needed by Tom Canfield).  Maybe now's
      the time to expand base PETSc events as well?
 
    - Fix documentation for matrices in manual (also AIJ man pages).  
