@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.53 1997/02/22 02:29:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.54 1997/03/26 01:38:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -190,6 +190,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   int           n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
   int           *bases,*ldims,x_t,y_t,z_t,s_t,base,count,s_x,s_y,s_z; 
   int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim;
+  int           sn0, sn1, sn2, sn3, sn5, sn6, sn7, sn8, sn9, sn11, sn15;
+  int           sn17,sn18, sn19, sn20, sn21, sn23, sn24, sn25, sn26;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;
@@ -731,10 +733,16 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if (ze==P)   {n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;}
   }
 
-  /* If star stencil then delete some of the neighbors */
-  if (stencil_type == DA_STENCIL_STAR) { n0  = n1  = n2  = n3  = n5  = n6  = 
-                      n7  = n8  = n9  = n11 = n15 = n17 = n18 = n19 = 
-                      n20 = n21 = n23 = n24 = n25 = n26 = -1;}
+  /* If star stencil then delete the corner neighbors */
+  if (stencil_type == DA_STENCIL_STAR) { 
+     /* save information about corner neighbors */
+     sn0 = n0; sn1 = n1; sn2 = n2; sn3 = n3; sn5 = n5; sn6 = n6; sn7 = n7;
+     sn8 = n8; sn9 = n9; sn11 = n11; sn15 = n15; sn17 = n17; sn18 = n18;
+     sn19 = n19; sn20 = n20; sn21 = n21; sn23 = n23; sn24 = n24; sn25 = n25;
+     sn26 = n26;
+     n0  = n1  = n2  = n3  = n5  = n6  = n7  = n8  = n9  = n11 = 
+     n15 = n17 = n18 = n19 = n20 = n21 = n23 = n24 = n25 = n26 = -1;
+  }
 
 
   idx = (int *) PetscMalloc( (Xe-Xs)*(Ye-Ys)*(Ze-Zs)*sizeof(int) ); CHKPTRQ(idx);
@@ -985,6 +993,245 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   PLogObjectParent(da,global);
   PLogObjectParent(da,local);
 
+  if (stencil_type == DA_STENCIL_STAR) { 
+    /*
+        Recompute the local to global mappings, this time keeping the 
+      information about the cross corner processor numbers.
+    */
+    n0  = sn0;  n1  = sn1;  n2  = sn2;  n3  = sn3;  n5  = sn5;  n6  = sn6; n7 = sn7;
+    n8  = sn8;  n9  = sn9;  n11 = sn11; n15 = sn15; n17 = sn17; n18 = sn18;
+    n19 = sn19; n20 = sn20; n21 = sn21; n23 = sn23; n24 = sn24; n25 = sn25;
+    n26 = sn26;
+
+    nn = 0;
+
+    /* Bottom Level */
+    for ( k=0; k<s_z; k++) {  
+      for ( i=1; i<=s_y; i++ ) {
+        if (n0 >= 0) { /* left below */
+          x_t = lx[n0 % m]*w; 
+          y_t = ly[(n0 % (m*n))/m]; 
+          z_t = lz[n0 / (m*n)]; 
+          s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t - s_x - (s_z-k-1)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n1 >= 0) { /* directly below */
+          x_t = x;
+          y_t = ly[(n1 % (m*n))/m];
+          z_t = lz[n1 / (m*n)];
+          s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
+          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n2 >= 0) { /* right below */
+          x_t = lx[n2 % m]*w;
+          y_t = ly[(n2 % (m*n))/m];
+          z_t = lz[n2 / (m*n)];
+          s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+      }
+
+      for ( i=0; i<y; i++ ) {
+        if (n3 >= 0) { /* directly left */
+          x_t = lx[n3 % m]*w;
+          y_t = y;
+          z_t = lz[n3 / (m*n)];
+          s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+
+        if (n4 >= 0) { /* middle */
+          x_t = x;
+          y_t = y;
+          z_t = lz[n4 / (m*n)];
+          s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
+          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        }
+
+        if (n5 >= 0) { /* directly right */
+          x_t = lx[n5 % m]*w;
+          y_t = y;
+          z_t = lz[n5 / (m*n)];
+          s_t = bases[n5] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+      }
+
+      for ( i=1; i<=s_y; i++ ) {
+        if (n6 >= 0) { /* left above */
+          x_t = lx[n6 % m]*w;
+          y_t = ly[(n6 % (m*n))/m];
+          z_t = lz[n6 / (m*n)];
+          s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n7 >= 0) { /* directly above */
+          x_t = x;
+          y_t = ly[(n7 % (m*n))/m];
+          z_t = lz[n7 / (m*n)];
+          s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
+          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n8 >= 0) { /* right above */
+          x_t = lx[n8 % m]*w;
+          y_t = ly[(n8 % (m*n))/m];
+          z_t = lz[n8 / (m*n)];
+          s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+      }
+    }
+
+    /* Middle Level */
+    for ( k=0; k<z; k++) {  
+      for ( i=1; i<=s_y; i++ ) {
+        if (n9 >= 0) { /* left below */
+          x_t = lx[n9 % m]*w;
+          y_t = ly[(n9 % (m*n))/m];
+          z_t = z;
+          s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n10 >= 0) { /* directly below */
+          x_t = x;
+          y_t = ly[(n10 % (m*n))/m]; 
+          z_t = z;
+          s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
+          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n11 >= 0) { /* right below */
+          x_t = lx[n11 % m]*w;
+          y_t = ly[(n11 % (m*n))/m];
+          z_t = z;
+          s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+      }
+
+      for ( i=0; i<y; i++ ) {
+        if (n12 >= 0) { /* directly left */
+          x_t = lx[n12 % m]*w;
+          y_t = y;
+          z_t = z;
+          s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+
+        /* Interior */
+        s_t = bases[rank] + i*x + k*x*y;
+        for ( j=0; j<x; j++ ) { idx[nn++] = s_t++;}
+
+        if (n14 >= 0) { /* directly right */
+          x_t = lx[n14 % m]*w;
+          y_t = y;
+          z_t = z;
+          s_t = bases[n14] + i*x_t + k*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+      }
+
+      for ( i=1; i<=s_y; i++ ) {
+        if (n15 >= 0) { /* left above */
+          x_t = lx[n15 % m]*w; 
+          y_t = ly[(n15 % (m*n))/m];
+          z_t = z;
+          s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n16 >= 0) { /* directly above */
+          x_t = x;
+          y_t = ly[(n16 % (m*n))/m];
+          z_t = z;
+          s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
+          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n17 >= 0) { /* right above */
+          x_t = lx[n17 % m]*w;
+          y_t = ly[(n17 % (m*n))/m]; 
+          z_t = z;
+          s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+      } 
+    }
+ 
+    /* Upper Level */
+    for ( k=0; k<s_z; k++) {  
+      for ( i=1; i<=s_y; i++ ) {
+        if (n18 >= 0) { /* left below */
+          x_t = lx[n18 % m]*w;
+          y_t = ly[(n18 % (m*n))/m]; 
+          z_t = lz[n18 / (m*n)]; 
+          s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n19 >= 0) { /* directly below */
+          x_t = x;
+          y_t = ly[(n19 % (m*n))/m]; 
+          z_t = lz[n19 / (m*n)]; 
+          s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
+          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n20 >= 0) { /* right below */
+          x_t = lx[n20 % m]*w;
+          y_t = ly[(n20 % (m*n))/m];
+          z_t = lz[n20 / (m*n)];
+          s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+      }
+
+      for ( i=0; i<y; i++ ) {
+        if (n21 >= 0) { /* directly left */
+          x_t = lx[n21 % m]*w;
+          y_t = y;
+          z_t = lz[n21 / (m*n)];
+          s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+
+        if (n22 >= 0) { /* middle */
+          x_t = x;
+          y_t = y;
+          z_t = lz[n22 / (m*n)];
+          s_t = bases[n22] + i*x_t + k*x_t*y_t;
+          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        }
+
+        if (n23 >= 0) { /* directly right */
+          x_t = lx[n23 % m]*w;
+          y_t = y;
+          z_t = lz[n23 / (m*n)];
+          s_t = bases[n23] + i*x_t + k*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+      }
+
+      for ( i=1; i<=s_y; i++ ) {
+        if (n24 >= 0) { /* left above */
+          x_t = lx[n24 % m]*w;;
+          y_t = ly[(n24 % (m*n))/m]; 
+          z_t = lz[n24 / (m*n)]; 
+          s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n25 >= 0) { /* directly above */
+          x_t = x;
+          y_t = ly[(n25 % (m*n))/m];
+          z_t = lz[n25 / (m*n)];
+          s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
+          for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+        }
+        if (n26 >= 0) { /* right above */
+          x_t = lx[n26 % m]*w;
+          y_t = ly[(n26 % (m*n))/m]; 
+          z_t = lz[n26 / (m*n)];
+          s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
+          for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+        }
+      }
+    }  
+  }
   da->global = global; 
   da->local  = local; 
   da->gtol   = gtol;

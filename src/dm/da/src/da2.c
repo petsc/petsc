@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.75 1997/03/26 01:38:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.76 1997/04/10 00:07:00 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -148,6 +148,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count,flg1,flg2;
   int           s_x,s_y; /* s proportionalized to w */
   int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim,*flx = 0, *fly = 0;
+  int           sn0,sn2,sn6,sn8;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;
@@ -460,7 +461,11 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
 
-  if (stencil_type == DA_STENCIL_STAR) {n0 = n2 = n6 = n8 = -1;}
+  if (stencil_type == DA_STENCIL_STAR) {
+    /* save corner processor numbers */
+    sn0 = n0; sn2 = n2; sn6 = n6; sn8 = n8; 
+    n0 = n2 = n6 = n8 = -1;
+  }
 
   idx = (int *)PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(int));CHKPTRQ(idx);
   PLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(int));
@@ -534,6 +539,75 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PLogObjectParent(da,from);
   PLogObjectParent(da,gtol);
   ISDestroy(to); ISDestroy(from);
+
+  if (stencil_type == DA_STENCIL_STAR) {
+    /*
+        Recompute the local to global mappings, this time keeping the 
+      information about the cross corner processor numbers.
+    */
+    n0 = sn0; n2 = sn2; n6 = sn6; n8 = sn8;
+    nn = 0;
+    xbase = bases[rank];
+    for ( i=1; i<=s_y; i++ ) {
+      if (n0 >= 0) { /* left below */
+        x_t = lx[n0 % m]*w;
+        y_t = ly[(n0/m)];
+        s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
+        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      }
+      if (n1 >= 0) { /* directly below */
+        x_t = x;
+        y_t = ly[(n1/m)];
+        s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
+        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+      }
+      if (n2 >= 0) { /* right below */
+        x_t = lx[n2 % m]*w;
+        y_t = ly[(n2/m)];
+        s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
+        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      }
+    }
+
+    for ( i=0; i<y; i++ ) {
+      if (n3 >= 0) { /* directly left */
+        x_t = lx[n3 % m]*w;
+        y_t = y;
+        s_t = bases[n3] + (i+1)*x_t - s_x;
+        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      }
+
+      for ( j=0; j<x; j++ ) { idx[nn++] = xbase++; } /* interior */
+
+      if (n5 >= 0) { /* directly right */
+        x_t = lx[n5 % m]*w;
+        y_t = y;
+        s_t = bases[n5] + (i)*x_t;
+        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      }
+    }
+
+    for ( i=1; i<=s_y; i++ ) {
+      if (n6 >= 0) { /* left above */
+        x_t = lx[n6 % m]*w;
+        y_t = ly[(n6/m)];
+        s_t = bases[n6] + (i)*x_t - s_x;
+        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      }
+      if (n7 >= 0) { /* directly above */
+        x_t = x;
+        y_t = ly[(n7/m)];
+        s_t = bases[n7] + (i-1)*x_t;
+        for ( j=0; j<x_t; j++ ) { idx[nn++] = s_t++;}
+      }
+      if (n8 >= 0) { /* right above */
+        x_t = lx[n8 % m]*w;
+        y_t = ly[(n8/m)];
+        s_t = bases[n8] + (i-1)*x_t;
+        for ( j=0; j<s_x; j++ ) { idx[nn++] = s_t++;}
+      }
+    }
+  }
 
   da->M  = M;  da->N  = N;  da->m  = m;  da->n  = n;  da->w = w;  da->s = s;
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = 0; da->ze = 0;

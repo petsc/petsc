@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daindex.c,v 1.11 1997/02/22 02:29:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: daindex.c,v 1.12 1997/04/04 20:09:13 curfman Exp bsmith $";
 #endif
  
 /*
@@ -20,6 +20,11 @@ static char vcid[] = "$Id: daindex.c,v 1.11 1997/02/22 02:29:24 bsmith Exp curfm
    Output Parameters:
 .  n - the number of local elements, including ghost nodes (or PETSC_NULL)
 .  idx - the global indices
+
+   Note: 
+   For DA_STENCIL_STAR stencils the inactive corner ghost nodes are also included
+   in the list of local indices (even though those nodes are not updated 
+   during calls to DAXXXToXXX().
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
