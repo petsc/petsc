@@ -1,17 +1,19 @@
-# $Id: makefile,v 1.11 2001/01/23 20:52:25 balay Exp bsmith $ 
+# $Id: makefile,v 1.12 2001/02/09 19:23:42 bsmith Exp bsmith $ 
 
 #
 #requirespackage  'PETSC_HAVE_MATLAB'
 #requiresscalar real 
-#requireslanguage CONLY
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
 # in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If cmex fails 
 # in compiling these files and you are using the gcc compiler then try 
 # removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 #
-lib: matlabcodes
-libfast: matlabcodes
+lib:
+	 ${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH}
+libfast:
+	 ${OMAKE} BOPT=g matlabcodes PETSC_ARCH=${PETSC_ARCH}
+
 matlabcodes: receive openport closeport launch readinvecs
 
 CFLAGS    =
