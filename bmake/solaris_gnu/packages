@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.4 1998/04/07 18:48:55 balay Exp balay $ 
+# $Id: base.site,v 1.5 1998/04/08 18:31:35 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,7 +10,7 @@
 #  FC_LIB contains the libraries for a CLINKER to use for code containing
 #  FORTRAN code (such as I/O or special Fortran runtimes).  
 #
-FC_LIB         =-lf2c -lm
+FC_LIB         = /ccsthome/balay/egcs/solaris/lib/libf2c.a -lm
 #FC_LIB          = -lf2c -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath 
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
