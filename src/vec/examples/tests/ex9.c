@@ -1,6 +1,6 @@
 
-
-static char help[]= "Scatters from a parallel vector to a sequential vector.\n";
+static char help[]= 
+"This example scatters from a parallel vector to a sequential vector.\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -40,7 +40,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);
 
-  VecView(x,SYNC_STDOUT_VIEWER);
+  ierr = VecView(x,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
 
   ierr = VecSet(&mone,y); CHKERRA(ierr);
 
@@ -48,10 +48,14 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
   ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
-  VecScatterCtxDestroy(ctx);
+  ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
+  if (!mytid) {
+    printf("scattered vector\n"); 
+    ierr = VecView(y,STDOUT_VIEWER); CHKERRA(ierr);
+  }
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(y); CHKERRA(ierr);
 
   PetscFinalize(); 
   return 0;
