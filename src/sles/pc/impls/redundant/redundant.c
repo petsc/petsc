@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.2 1999/03/24 17:01:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: redundant.c,v 1.3 1999/03/26 18:41:21 bsmith Exp balay $";
 #endif
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
@@ -21,7 +21,7 @@ typedef struct {
 static int PCView_Redundant(PC pc,Viewer viewer)
 {
   PC_Redundant  *red = (PC_Redundant *) pc->data;
-  int           rank, ierr, i;
+  int           ierr;
   ViewerType    vtype;
 
   PetscFunctionBegin;
@@ -47,7 +47,6 @@ static int PCSetUp_Redundant(PC pc)
   PC_Redundant   *red  = (PC_Redundant *) pc->data;
   int            ierr,mstart,mlocal,m;
   IS             isl;
-  PC             subpc;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
 
