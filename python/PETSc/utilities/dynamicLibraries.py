@@ -32,7 +32,7 @@ class Configure(config.base.Configure):
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.useDynamic = 0
-    self.useDynamic = self.shared.useShared and self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h')
+    self.useDynamic = self.shared.useShared and self.framework.argDB['with-dynamic'] and not self.framework.host_os.startswith('darwin') and self.headers.check('dlfcn.h')
     if not self.libraries.add('dl', ['dlopen', 'dlsym']):
       if not self.libraries.check('', ['dlopen', 'dlsym']):
         self.logPrint('The dynamic linking functions dlopen() and dlsym() were not found')

@@ -6,8 +6,8 @@ configure_options = [
   '--with-fc=ifc',
   '--with-cxx=g++',
   '--with-scalar-type=complex',
-  '--with-blas-lapack-dir=/home/petsc/soft/linux-rh73-intel/fblaslapack',
-  '--with-mpi=0'
+  '--download-mpich=1',
+  '--download-f-blas-lapack=1'
   ]
 
 if __name__ == '__main__':
