@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.89 1997/02/05 23:30:18 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.90 1997/02/07 16:33:49 balay Exp bsmith $";
 #endif
 
 /*
@@ -414,10 +414,10 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
           bap  = ap +  bs2*i + bs*cidx + ridx;
           if (is == ADD_VALUES) *bap += value;  
           else                  *bap  = value; 
-          goto noinsert;
+          goto noinsert1;
         }
       } 
-      if (nonew) goto noinsert;
+      if (nonew) goto noinsert1;
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
@@ -462,7 +462,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
       if (N>=i) PetscMemzero(ap+bs2*i,bs2*sizeof(Scalar)); 
       rp[i]                      = bcol; 
       ap[bs2*i + bs*cidx + ridx] = value; 
-      noinsert:;
+      noinsert1:;
       low = i;
     }
     ailen[brow] = nrow;
@@ -540,10 +540,10 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
                   *bap++  = *value++; 
             }
           }
-          goto noinsert;
+          goto noinsert2;
         }
       } 
-      if (nonew) goto noinsert;
+      if (nonew) goto noinsert2;
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
@@ -597,7 +597,7 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
           for (jj=0; jj<bs; jj++ )
             *bap++  = *value++; 
       }
-      noinsert:;
+      noinsert2:;
       low = i;
     }
     ailen[row] = nrow;
