@@ -139,12 +139,9 @@ int main(int argc,char **argv)
 
        Process adiC: FormFunctionLocal FormFunctionLocali
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    CHKMEMQ;
     ierr = PetscOptionsGetLogical(PETSC_NULL,"-localfunction",&localfunction,PETSC_IGNORE);CHKERRQ(ierr);
-    CHKMEMQ;
     if (localfunction) {
       ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
-    CHKMEMQ;
       ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
     } else {
       ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);

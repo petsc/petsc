@@ -6,7 +6,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/sles/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                   ex12.c ex13.c ex15.c ex16.c ex17.c ex22.c ex23.c
+                   ex12.c ex13.c ex15.c ex16.c ex17.c ex22.c ex23.c ex25.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
 MANSEC           = SLES
 
@@ -417,6 +417,17 @@ runex23_2:
 	   else echo "Possible problem with ex23_2, diffs above"; fi; \
 	   ${RM} -f ex23_2.tmp
 
+runex25:
+	-@${MPIRUN} -np 1 ex25 > ex25_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
+	   else echo "Possible problem with ex25_1, diffs above"; fi; \
+	   ${RM} -f ex25_1.tmp
+
+runex25_2:
+	-@${MPIRUN} -np 2 ex25 > ex25_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
+	   else echo "Possible problem with ex25_2, diffs above"; fi; \
+	   ${RM} -f ex25_1.tmp
 
 TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
@@ -425,7 +436,7 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                    ex15.PETSc runex15 ex15.rm \
                    ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
-                   ex23.PETSc runex23 runex23_2 ex23.rm
+                   ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm 
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \

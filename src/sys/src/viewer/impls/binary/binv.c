@@ -1,7 +1,7 @@
 /*$Id: binv.c,v 1.99 2001/04/10 19:34:06 bsmith Exp $*/
 
-#include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
+#include "petscsys.h"
 #include <fcntl.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>

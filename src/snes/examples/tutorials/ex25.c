@@ -35,6 +35,7 @@ T*/
 #include "petscmg.h"
 
 extern int FormFunction(SNES,Vec,Vec,void*);
+extern int FormFunctionLocal(DALocalInfo*,double**,double**,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -62,9 +63,12 @@ int main(int argc,char **argv)
   ierr = DADestroy(da);CHKERRQ(ierr);
 
   /*
+       Process adiC: FormFunctionLocal FormFunctionLocali
+
      Create the nonlinear solver, and tell the DMMG structure to use it
   */
-  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
+  //  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,0);CHKERRQ(ierr);
 
   /*
       PreLoadBegin() means that the following section of code is run twice. The first time
@@ -146,5 +150,49 @@ int FormFunction(SNES snes,Vec T,Vec F,void* ptr)
   ierr = DAVecRestoreArray((DA)dmmg->dm,localT,(void**)&t);CHKERRQ(ierr);
   ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
+int FormFunctionLocal(DALocalInfo *info,double **t,double **f,void *ptr)
+{
+  int          ierr,i,j;
+  PetscScalar  hx,hy;
+  PetscScalar  gradup,graddown,gradleft,gradright,gradx,grady;
+  PetscScalar  coeffup,coeffdown,coeffleft,coeffright;
+  Vec          localT;
+
+  PetscFunctionBegin;
+  hx    = 1.0/(PetscReal)(info->mx-1);  hy    = 1.0/(PetscReal)(info->my-1);
+ 
+  /* Evaluate function */
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+
+      if (i == 0 || i == info->mx-1 || j == 0 || j == info->my-1) {
+
+        f[j][i] = t[j][i] - (1.0 - (2.0*hx*i - 1.0)*(2.0*hx*i - 1.0));
+      
+      } else {
+
+        gradup     = (t[j+1][i] - t[j][i])/hy;
+        graddown   = (t[j][i] - t[j-1][i])/hy;
+        gradright  = (t[j][i+1] - t[j][i])/hx;
+        gradleft   = (t[j][i] - t[j][i-1])/hx;
+
+        gradx      = .5*(t[j][i+1] - t[j][i-1])/hx;
+        grady      = .5*(t[j+1][i] - t[j-1][i])/hy;
+
+        coeffup    = 1.0/PetscSqrtScalar(1.0 + gradup*gradup + gradx*gradx); 
+        coeffdown  = 1.0/PetscSqrtScalar(1.0 + graddown*graddown + gradx*gradx); 
+
+        coeffleft  = 1.0/PetscSqrtScalar(1.0 + gradleft*gradleft + grady*grady); 
+        coeffright = 1.0/PetscSqrtScalar(1.0 + gradright*gradright + grady*grady); 
+
+        f[j][i] = (coeffup*gradup - coeffdown*graddown)*hx + (coeffright*gradright - coeffleft*gradleft)*hy; 
+    
+      }
+
+    }
+  }
   PetscFunctionReturn(0);
 } 

@@ -1,7 +1,7 @@
 /*$Id: ams.c,v 1.47 2001/04/10 19:34:07 bsmith Exp $*/
 
-#include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
+#include "petscsys.h"
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

@@ -1,19 +1,20 @@
 
 /*$Id: ex22.c,v 1.19 2001/08/07 21:30:54 bsmith Exp $*/
 /*
-Laplacian in 1D. Modeled by the partial differential equation
+ Partial differential equation
 
-   Laplacian u = 1,0 < x,y,z < 1,
-
+   d  (1 + e*sine(2*pi*k*x)) d u = 1, 0 < x < 1,
+   --                        ---
+   dx                        dx
 with boundary conditions
 
-   u = 1 for x = 0, x = 1, y = 0, y = 1, z = 0, z = 1.
+   u = 0 for x = 0, x = 1
 
    This uses multigrid to solve the linear system
 
 */
 
-static char help[] = "Solves 1D Laplacian using multigrid.\n\n";
+static char help[] = "Solves 1D variable coefficient Laplacian using multigrid.\n\n";
 
 #include "petscda.h"
 #include "petscsles.h"

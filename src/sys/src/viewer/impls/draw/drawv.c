@@ -1,6 +1,5 @@
 /*$Id: drawv.c,v 1.61 2001/04/22 17:22:00 buschelm Exp $*/
 
-#include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
 
 #undef __FUNCT__  
