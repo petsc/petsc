@@ -44,9 +44,9 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 # machine and -ldxml in the BLAS_LIB line above if you define 
 # HAVE_DXML below.
 #
-PCONF      =  -DHAVE_DXML -DHAVE_BLOCKSOLVE
+PCONF      =  -DHAVE_DXML
 #
-BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+#BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+#BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 
