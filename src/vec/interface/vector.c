@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.66 1996/01/26 21:34:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.67 1996/02/08 18:25:31 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -10,18 +10,24 @@ static char vcid[] = "$Id: vector.c,v 1.66 1996/01/26 21:34:52 curfman Exp bsmit
 #include "vecimpl.h"    /*I "vec.h" I*/
 
 /*@
-   VecValidVector - Returns 1 if this is a valid vector; otherwise returns 0.
+   VecValidVector - Checks whether a vector object is valid.
 
    Input Parameter:
 .  v - the object to check
 
+   Output Parameter:
+   flg - flag indicating vector status, either
+$     1 if vector is valid;
+$     0 otherwise.
+
 .keywords: vector, valid
 @*/
-int VecValidVector(Vec v)
+int VecValidVector(Vec v,int *flg)
 {
-  if (!v) return 0;
-  if (v->cookie != VEC_COOKIE) return 0;
-  return 1;
+  if (!v)                           *flg = 0;
+  else if (v->cookie != VEC_COOKIE) *flg = 0;
+  else                              *flg = 1;
+  return 0;
 }
 /*@
    VecDot - Computes the vector dot product.
@@ -521,7 +527,7 @@ int VecAssemblyBegin(Vec vec)
 }
 
 /*@
-   VecAssemblyEnd - Completes assembling the matrix.  This routine should
+   VecAssemblyEnd - Completes assembling the vector.  This routine should
    be called after all calls to VecSetValues() and after VecAssemblyBegin().
 
    Input Parameter:

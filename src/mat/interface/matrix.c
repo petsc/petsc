@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.142 1996/02/19 16:19:26 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.143 1996/02/21 02:42:18 curfman Exp curfman $";
 #endif
 
 /*
@@ -201,18 +201,24 @@ int MatDestroy(Mat mat)
   return (*mat->destroy)((PetscObject)mat);
 }
 /*@
-   MatValidMatrix - Returns 1 if this is a valid matrix; otherwise returns 0.
+   MatValidMatrix - Checks whether a matrix object is valid.
 
    Input Parameter:
 .  m - the matrix to check 
 
+   Output Parameter:
+   flg - flag indicating matrix status, either
+$     1 if matrix is valid;
+$     0 otherwise.
+
 .keywords: matrix, valid
 @*/
-int MatValidMatrix(Mat m)
+int MatValidMatrix(Mat m,int *flg)
 {
-  if (!m) return 0;
-  if (m->cookie != MAT_COOKIE) return 0;
-  return 1;
+  if (!m)                           *flg = 0;
+  else if (m->cookie != MAT_COOKIE) *flg = 0;
+  else                              *flg = 1;
+  return 0;
 }
 
 /*@ 
