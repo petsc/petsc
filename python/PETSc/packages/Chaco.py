@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
     help.addArgument('Chaco', '-with-chaco=<bool>',                nargs.ArgBool(None, 0, 'Activate Chaco'))
     help.addArgument('Chaco', '-with-chaco-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the Chaco installation'))
     help.addArgument('Chaco', '-with-chaco-lib=<lib>',             nargs.Arg(None, None, 'The Chaco library or list of libraries'))
-    help.addArgument('Chaco', '-download-chaco=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 2, 'Install MPICH to provide Chaco'))
+    help.addArgument('Chaco', '-download-chaco=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install Chaco'))
     return
 
   def checkLib(self, libraries):
