@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.44 1998/05/21 16:13:20 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.45 1998/05/21 16:18:30 balay Exp bsmith $";
 #endif
 
 /*
@@ -251,13 +251,15 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
        Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc 
      attribute.
   */
-  PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
-  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_SELF");return;}  *__ierr = PetscCommDup_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
+  *__ierr = PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
+  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_SELF");return;}
+  *__ierr = PetscCommDup_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
 
   *__ierr = ViewerInitialize_Private(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
-  PetscInitializeFortran();
+  *__ierr = PetscInitializeFortran();
+  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up Fortran common block");return;}
 
   if (PetscBeganMPI) {
     int size;
