@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.187 1997/11/13 19:33:14 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.188 1997/11/20 04:14:46 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -253,6 +253,19 @@ extern int  PetscErrorPrintf(char *,...);
 extern int  PetscSynchronizedPrintf(MPI_Comm,char *,...);
 extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
+
+/*
+    C code optimization is often enhanced by telling the compiler 
+  that certain pointer arguments to functions are not aliased to 
+  to other arguments. This is not yet ANSI C standard so we define 
+  the macro "restrict" to indicate that the variable is not aliased 
+  to any other argument.
+*/
+#if defined(PARCH_solaris) && !defined(__cplusplus)
+#define restrict _Restrict
+#else
+#define restrict
+#endif
 
 /*
    For incremental debugging
