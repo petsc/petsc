@@ -22,7 +22,6 @@ FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 #LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX.a $(FC_LIB)
 BLAS_LIB       = -L/home/bsmith/lapack -lblas_IRIX 
 LAPACK_LIB     = -L/home/bsmith/lapack/ -llapack_IRIX $(FC_LIB)
-FC_LIB         = 
 #
 # Location of X-windows software
 #
