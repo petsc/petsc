@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.67 1997/01/06 20:40:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.68 1997/01/15 02:13:15 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -285,6 +285,9 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   if (TrUseNan && sizeof(Scalar)*(nsize/sizeof(Scalar)) == nsize) {
     ierr = PetscInitializeNans((Scalar*) inew,nsize/sizeof(Scalar)); 
     if (ierr) return 0;
+  } else if (TrUseNan && sizeof(int)*(nsize/sizeof(int)) == nsize) {
+    ierr = PetscInitializeLargeInts((int*) inew,nsize/sizeof(int)); 
+    if (ierr) return 0;
   }
   return (void *)inew;
 }
@@ -465,6 +468,8 @@ int  PetscTrDebugLevel(int level )
 #if defined(PARCH_IRIX)
 static long nanval[2] = {0x7ff7ffff,0xffffffff }; /* Quiet nan */
 #elif defined(PARCH_sun4)
+#elif defined(PARCH_rs6000)
+#include <fpxcp.h>
 #else
 static long nanval[2] = {-1,-1}; /* Probably a bad floating point value */
 #endif
@@ -480,33 +485,63 @@ typedef union { long l[2]; double d; } NANDouble;
 
   Input parameters:
 . p   - pointer to data
-. n   - length of data (in doubles)
+. n   - length of data (in Scalars)
 
   Options Database:
 .  -trmalloc_nan
 
+   Notes: This is useful to track down where one is using unitialized
+     array values. Run the code with the -fp_trap option and it will 
+     stop if one of the "unitialized" values is used in a computation.
+
+.seealso: PetscInitializeLargeInts()
 @*/
 int PetscInitializeNans(Scalar *p,int n )
 {
-  Scalar     nval;
+  double     *pp,nval;
 
 #if defined(PARCH_sun4) 
-#if defined(PETSC_COMPLEX)
-  nval = signaling_nan() + signaling_nan()*PETSC_i;
-#else
   nval = signaling_nan();
-#endif
+#elif defined(PARCH_rs6000)
+  nval = FP_INV_SNAN;
 #else
   NANDouble  nd;
   nd.l[0] = nanval[0];
   nd.l[1] = nanval[1];
-#if defined(PETSC_COMPLEX)
-  nval = nd.d + nd.d*PETSC_i;
-#else
   nval = nd.d;
 #endif
+  pp = (double *) p;
+#if defined(PETSC_COMPLEX)
+  n *= 2;
 #endif
-  while (n--) *p++   = nval;
+  while (n--) *pp++   = nval;
   return 0;
 }
+
+/*@
+     PetscInitializeLargeInts - Intializes an array of integers
+          with very large values.
+
+  Input parameters:
+. p   - pointer to data
+. n   - length of data (in ints)
+
+  Options Database:
+.  -trmalloc_nan
+
+   Notes: This is useful to track down where one is using unitialized
+     array values. If integer indices are absurdly large then you 
+     know that you are using an integer array value before it was ever
+     set.
+
+.seealso: PetscInitializeNans()
+
+@*/
+int PetscInitializeLargeInts(int *p,int n )
+{
+  while (n--) *p++   = 1073741824;
+  return 0;
+}
+
+
 
