@@ -9,7 +9,6 @@
 #define __SNES_LS_H
 #include "src/snes/snesimpl.h"
 
-EXTERN_C_BEGIN
 typedef struct {
   int       (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*);
   void      *lsP;                              /* user-defined line-search context (optional) */
@@ -20,7 +19,6 @@ typedef struct {
   int       (*CheckStep)(SNES,void*,Vec,PetscTruth*); /* step-checking routine (optional) */
   void      *checkP;                           /* user-defined step-checking context (optional) */
 } SNES_LS;
-EXTERN_C_END
 
 #endif
 

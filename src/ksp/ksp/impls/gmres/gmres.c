@@ -611,10 +611,11 @@ int KSPGMRESSetRestart_GMRES(KSP ksp,int max_k)
 }
 EXTERN_C_END
 
+typedef int (*FCN)(KSP,int); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetOrthogonalization_GMRES" 
-int KSPGMRESSetOrthogonalization_GMRES(KSP ksp,int (*fcn)(KSP,int))
+int KSPGMRESSetOrthogonalization_GMRES(KSP ksp,FCN fcn)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

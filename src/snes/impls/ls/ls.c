@@ -299,7 +299,6 @@ int SNESDestroy_LS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESNoLineSearch"
 
@@ -356,9 +355,7 @@ int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscRe
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESNoLineSearchNoNorms"
 
@@ -435,9 +432,7 @@ int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCubicLineSearch"
 /*@C
@@ -626,9 +621,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESQuadraticLineSearch"
 /*@C
@@ -769,7 +762,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
+
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetLineSearch"
@@ -917,10 +910,11 @@ int SNESSetLineSearchCheck(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),voi
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+typedef int (*FCN)(SNES,void*,Vec,PetscTruth*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetLineSearchCheck_LS"
-int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),void *checkctx)
+int SNESSetLineSearchCheck_LS(SNES snes,FCN func,void *checkctx)
 {
   PetscFunctionBegin;
   ((SNES_LS *)(snes->data))->CheckStep = func;

@@ -707,10 +707,12 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
 EXTERN int KSPComputeExtremeSingularValues_FGMRES(KSP,PetscReal *,PetscReal *);
 EXTERN int KSPComputeEigenvalues_FGMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
+typedef int (*FCN1)(KSP,int,int,PetscReal,void*); /* force argument to next function to not be extern C*/
+typedef int (*FCN2)(void*);
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESSetModifyPC_FGMRES" 
-int KSPFGMRESSetModifyPC_FGMRES(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void *ctx,int (*d)(void*))
+int KSPFGMRESSetModifyPC_FGMRES(KSP ksp,FCN1 fcn,void *ctx,FCN2 d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

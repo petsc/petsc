@@ -91,6 +91,9 @@ typedef struct {
 EXTERN int PetscHeaderCreate_Private(PetscObject,int,int,const char[],MPI_Comm,int (*)(PetscObject),int (*)(PetscObject,PetscViewer));
 EXTERN int PetscHeaderDestroy_Private(PetscObject);
 
+typedef int (*PetscObjectFunction)(PetscObject); /* force cast in next macro to NEVER use extern "C" style */
+typedef int (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
+
 /*
     PetscHeaderCreate - Creates a PETSc object
 
@@ -116,8 +119,8 @@ EXTERN int PetscHeaderDestroy_Private(PetscObject);
     _ierr = PetscNew(pops,&((h)->ops));CHKERRQ(_ierr);                                    \
     _ierr = PetscMemzero((h)->ops,sizeof(pops));CHKERRQ(_ierr);                         \
     _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,             \
-                                 (int (*)(PetscObject))des,                             \
-                                 (int (*)(PetscObject,PetscViewer))vie);CHKERRQ(_ierr); \
+                                 (PetscObjectFunction)des,                             \
+                                 (PetscObjectViewerFunction)vie);CHKERRQ(_ierr);       \
   }
 
 #define PetscHeaderDestroy(h)                                             \
