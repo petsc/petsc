@@ -409,7 +409,7 @@ runex10_19:
 	done; 
 	-@if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
 	   else echo "Possible problem with ex10_19, diffs above"; fi; \
-	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmps
+	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
 
 runex10_20: # test ilu with shift
 	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -pc_factor_shift_nonzero 0.1 > ex10_20.tmp 2>&1; \

@@ -1583,7 +1583,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
     /* initialization */
     ierr  = PetscMalloc((am+1)*sizeof(PetscInt),&ui);CHKERRQ(ierr);
     ui[0] = 0; 
-    ierr  = PetscMalloc((2*am+1)*sizeof(PetscInt),&cols_lvl);CHKERRQ(ierr); 
 
     /* jl: linked list for storing indices of the pivot rows 
        il: il[i] points to the 1st nonzero entry of U(i,k:am-1) */
@@ -1609,13 +1608,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
       /* initialize lnk by the column indices of row rip[k] */
       nzk   = 0;
       ncols = ai[rip[k]+1] - ai[rip[k]]; 
-      cols  = cols_lvl + am;
-      for (j=0; j<ncols; j++){
-        i = *(aj + ai[rip[k]] + j); 
-        cols[j] = rip[i]; 
-        cols_lvl[j] = -1;  /* initialize level for nonzero entries */
-      }
-      ierr = PetscIncompleteLLAdd(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+      cols  = aj+ai[rip[k]];
+      ierr = PetscIncompleteLLInit(ncols,cols,am,rip,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
       nzk += nlnk;
 
       /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -1630,8 +1624,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
         ncols = jmax-jmin;
         i     = jmin - ui[prow];
         cols  = uj_ptr[prow] + i; /* points to the 2nd nzero entry in U(prow,k:am-1) */
-        for (j=0; j<ncols; j++) cols_lvl[j] = *(uj_lvl_ptr[prow] + i + j);
-        ierr = PetscIncompleteLLAddSorted(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr); 
+        j     = *(uj_lvl_ptr[prow] + i - 1);
+        cols_lvl = uj_lvl_ptr[prow]+i;
+        ierr = PetscICCLLAddSorted(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt,j);CHKERRQ(ierr);
         nzk += nlnk;
 
         /* update il and jl for prow */
@@ -1686,7 +1681,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
 
     ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
     ierr = PetscFree(jl);CHKERRQ(ierr);
-    ierr = PetscFree(cols_lvl);CHKERRQ(ierr);
 
     /* destroy list of free space and other temporary array(s) */
     ierr = PetscMalloc((ui[am]+1)*sizeof(PetscInt),&uj);CHKERRQ(ierr);
