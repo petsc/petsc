@@ -87,8 +87,8 @@ Matrix options:
 \item MAT\_NO\_NEW\_NONZERO\_LOCATIONS - additional inserts will not be allowed if they
       generate a new non-zero.
 \item MAT\_YES\_NEW\_NONZERO\_LOCATIONS - additional inserts will be allowed
-\item MAT\_SYMMETRIC\_MATRIX - matrix is known to be symmetric
-\item MAT\_STRUCTURALLY\_SYMMETRIC\_MATRIX - matrix is known to be symmetricin nonzero structure
+\item MAT\_SYMMETRIC\_MATRIX - matrix is symmetric
+\item MAT\_STRUCTURALLY\_SYMMETRIC\_MATRIX - matrix is symmetric in nonzero structure
 \end{itemize}
 Orderings:
 \begin{itemize}
@@ -277,7 +277,21 @@ Runtime Options:
 \noindent
 Data Structures:
 \begin{itemize}
-\item KSP - Krylov space sover context
+\item KSP - Krylov space solver context
+\end{itemize}
+Available Methods: 
+\begin{itemize}
+\item KSPCG - Conjugate Gradient
+\item KSPGMRES - Generalized Minimal Residual (GMRES)
+\item KSPBCGS - BiCGSTAB
+\item KSPCGS - Conjugate Gradient Squared
+\item KSPTFQMR - Transpose-Free Quasi-Minimal Residual (var. 1)
+\item KSPTCQMR - Transpose-Free Quasi-Minimal Residual (var. 2)
+\item KSPCR - Conjugate Residual
+\item KSPLSQR - Least Squares Method
+\item KSPRICHARDSON - Richardson's method
+\item KSPCHEBYCHEV - Chebyshev method
+\item KSPPREONLY - shell for no KSP method
 \end{itemize}
 Runtime Options:
 \begin{itemize}
@@ -311,9 +325,6 @@ Runtime Options:
 \item -ksp\_xmonitor
 \item -ksp\_xtruemonitor
 \end{itemize}
-KSPType: KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
-         KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPQCG,
-         KSPPREONLY
 
 \noindent {\#include ``ksp.h''}
 
