@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.30 1997/07/09 21:01:15 balay Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.31 1997/07/28 21:40:39 balay Exp balay $";
 #endif
 
 /* #include <signal.h> */
@@ -29,7 +29,10 @@ PLogDouble MPI_Wtime()
 */
 int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
 {
-  *flag = 1;
+  static int locflag = 0;
+
+  *flag   = locflag;
+  locflag = 1;
   *((int**)attribute_val) = MPIUNI_DUMMY;
   return MPI_SUCCESS;
 }

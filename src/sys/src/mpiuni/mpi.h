@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.51 1997/07/08 13:09:44 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.52 1997/07/28 21:41:02 balay Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -19,7 +19,7 @@ extern void   *MPIUNI_TMP;
 
 
 #define MPI_COMM_WORLD       1
-#define MPI_COMM_SELF        2
+#define MPI_COMM_SELF        MPI_COMM_WORLD
 #define MPI_COMM_NULL        0
 #define MPI_SUCCESS          0
 #define MPI_IDENT            0
@@ -424,9 +424,8 @@ extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *fla
                       *(result)=MPI_IDENT, \
                       MPI_SUCCESS )
 #define MPI_Comm_create(comm, group, newcomm)  \
-                      (MPIUNI_TMP = (void *) (comm), \
+                      (*(newcomm) =  (comm), \
                       MPIUNI_TMP = (void *) (group), \
-                      MPIUNI_TMP = (void *) (newcomm), \
                       MPI_SUCCESS )
 
 #define MPI_Comm_split(comm, color, key, newcomm) MPI_SUCCESS
