@@ -1,3 +1,5 @@
+petsc/bin/petscrun
+petsc/bin/petscrun.demo
 petsc/bin/demos
 petsc/bin/petscdemo
 petsc/docs/manual
