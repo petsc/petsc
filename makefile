@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.232 1998/04/21 01:24:13 balay Exp balay $ 
+# $Id: makefile,v 1.233 1998/04/22 21:50:03 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -313,8 +313,8 @@ etags_fexamples:
 
 #
 # To use the tags file from VI do the following:
-# 1. within vi invoke the command - :set tags=/home/bsmith/petsc/tags
-#    or add  the command to your ~/.exrc file - set tags=/home/bsmith/petsc/tags
+# 1. within vi invoke the command - :set tags=/home/bsmith/petsc/vitags
+#    or add  the command to your ~/.exrc file - set tags=/home/bsmith/petsc/vitags
 # 2. now to go to a tag do - :tag TAGNAME for eg - :tag MatCreate
 # 
 vitags:  
