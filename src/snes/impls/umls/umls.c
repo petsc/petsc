@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.6 1995/08/15 22:26:11 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.7 1995/08/17 01:22:26 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "umls.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 extern int SNESStep(SNES,double*,double*,double*,double*,
               double*,double*,double*,double*,double*);

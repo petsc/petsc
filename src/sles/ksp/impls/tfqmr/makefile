@@ -2,7 +2,7 @@ ALL: lib
 IPETSCDIR = ../../../..
 
 CFLAGS   = $(OPT) $(CONF) $(PETSC_INCLUDE) \
-           -I$(IPETSCDIR)/pinclude -I../../ -D__DIR__='"ksp/impls/tfqmr/"'
+           -I../../ -D__DIR__='"ksp/impls/tfqmr/"'
 SOURCEC  = tfqmr.c
 SOURCEF  =
 OBJSC    = tfqmr.o

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.39 1995/08/17 20:43:10 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.40 1995/08/22 19:35:09 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -593,7 +593,7 @@ static int MatRestoreRow_BDiag(Mat matin,int row,int *ncols,int **cols,
 }
 /* ----------------------------------------------------------------*/
 #include "draw.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 int MatView_BDiag(PetscObject obj,Viewer ptr)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.39 1995/08/22 16:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: lu.c,v 1.40 1995/08/22 19:32:28 curfman Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: lu.c,v 1.39 1995/08/22 16:30:26 bsmith Exp curfman $"
          a direct solver.
 */
 #include "pcimpl.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif

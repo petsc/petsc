@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.37 1995/08/14 17:04:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.38 1995/08/15 20:26:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -58,7 +58,7 @@ static char vcid[] = "$Id: gmres.c,v 1.37 1995/08/14 17:04:20 curfman Exp bsmith
 #include <math.h>
 #include <stdio.h>
 #include "gmresp.h"       /*I  "ksp.h"  I*/
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 #define GMRES_DELTA_DIRECTIONS 5
 #define GMRES_DEFAULT_MAXK 10
 int  BasicMultiMaxpy( Vec *,int,Scalar *,Vec);
@@ -187,7 +187,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   it = 0;
 
   /* dest . dest */
-  ierr = VecNorm(VEC_VV(0),&res_norm); CHKERRQ(ierr);
+  ierr = VecNorm(VEC_VV(0),&res_norm); CHKERRQ(-ierr);
   res    = res_norm;
   *RS(0) = res_norm;
 
@@ -197,7 +197,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
     return 0;
   }
   /* scale VEC_VV (the initial residual) */
-  tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(ierr);
+  tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(-ierr);
 
   if (!restart) {
     rtol      = itP->rtol * res_norm;
@@ -217,13 +217,13 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 	GMRESGetNewVectors(  itP, it+1 );
 	}
     ierr = PCApplyBAorAB(itP->B,itP->right_pre,VEC_VV(it),VEC_VV(it+1),
-                         VEC_TEMP_MATOP); CHKERRQ(ierr);
+                         VEC_TEMP_MATOP); CHKERRQ(-ierr);
 
     /* update hessenberg matrix and do Gram-Schmidt */
     (*gmresP->orthog)(  itP, it );
 
     /* vv(i+1) . vv(i+1) */
-    ierr = VecNorm(VEC_VV(it+1),&tt); CHKERRQ(ierr);
+    ierr = VecNorm(VEC_VV(it+1),&tt); CHKERRQ(-ierr);
     /* save the magnitude */
     *HH(it+1,it)    = tt;
     *HES(it+1,it)   = tt;
@@ -236,7 +236,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 #endif
     if (hapbnd > gmresP->haptol) hapbnd = gmresP->haptol;
     if (tt > hapbnd) {
-        tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it+1) ); CHKERRQ(ierr);
+        tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it+1) ); CHKERRQ(-ierr);
     }
     else {
         /* We SHOULD probably abort the gmres step
@@ -268,7 +268,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
   }
 
   /* Form the solution (or the solution so far) */
-  ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,itP,it-1); CHKERRQ(ierr);
+  ierr = BuildGmresSoln(RS(0),VEC_SOLN,VEC_SOLN,itP,it-1); CHKERRQ(-ierr);
 
   /* Return correct status (Failed on iteration test (failed to converge)) */
   return !converged;
@@ -298,6 +298,7 @@ static int KSPSolve_GMRES(KSP itP,int *outits )
   }
     
   while ((ierr = GMREScycle(  &its, itcount, restart, itP ))) {
+    if (ierr == -1) SETERRQ(1,0);
     restart = 1;
     itcount += its;
     if ((ierr = GMRESResidual(  itP, restart ))) return ierr;

@@ -3,7 +3,7 @@ IPETSCDIR = ../../../..
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../..  \
-          -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"snes/impls/umls/"'
+          $(CONF) -D__DIR__='"snes/impls/umls/"'
 SOURCEC  = umls.c search.c
 SOURCEF  = 
 SOURCEH  = umls.h

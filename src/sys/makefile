@@ -1,8 +1,7 @@
 IPETSCDIR = ../..
 
 ALL: lib 
-CFLAGS    = $(OPT) $(PETSC_INCLUDE) $(CONF) -D__DIR__='"sys/"' \
-            -I$(IPETSCDIR)/pinclude
+CFLAGS    = $(OPT) $(PETSC_INCLUDE) $(CONF) -D__DIR__='"sys/"' 
 SOURCEC   =
 SOURCEF   =
 SOURCEH   = nreg.h

@@ -7,7 +7,7 @@
 
 */
 #include "daimpl.h"    /*I   "da.h"   I*/
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 #include "draw.h"
 #include <math.h>
 

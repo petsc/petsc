@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.25 1995/08/21 18:13:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.26 1995/08/22 16:32:28 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_X11)
@@ -234,7 +234,7 @@ int DrawDestroy_X(PetscObject obj)
 
 extern int XiQuickWindowFromWindow(DrawCtx_X*,char*,Window,int);
 
-/*@
+/*@C
     DrawOpenX - Opens an X window for use with the Draw routines.
 
   Input Parameters:

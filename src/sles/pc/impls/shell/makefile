@@ -2,7 +2,7 @@ IPETSCDIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I$(IPETSCDIR)/pinclude \
+CFLAGS   = $(OPT) $(PETSC_INCLUDE)  \
            -I../..   $(CONF) -D__DIR__='"pc/impls/shell/"'
 SOURCEC  = shellpc.c 
 SOURCEF  =

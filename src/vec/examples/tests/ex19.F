@@ -1,6 +1,6 @@
 
-#include "finclude/petsc.h"
-#include "finclude/vec.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
 
        integer          n, ierr
        double precision one, two, three, dot, norm

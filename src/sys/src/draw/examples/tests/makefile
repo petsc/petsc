@@ -1,7 +1,8 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS        = $(OPT) $(PETSC_INCLUDE) $(CONF) 
+CFLAGS        = $(OPT) $(PETSC_INCLUDE) $(CONF)
+FFLAGS        = -I$(IPETSCDIR) $(MPI_INCLUDE) $(BASEOPTF)
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       =
@@ -11,7 +12,8 @@ LIBBASE       = libpetscdraw
 
 RUNEXAMPLES_2 = runex1 runex2 runex3 runex4
 EXAMPLES_2    = ex1 ex2 ex3 ex4
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.F
+EXAMPLES_3    = ex5
 
 runex1:
 	-@$(MPIRUN) ex1
@@ -37,5 +39,9 @@ ex3: ex3.o  chkopts
 ex4: ex4.o  chkopts
 	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
 	$(RM) -f ex4.o
+
+ex5: ex5.o  chkopts
+	-$(FLINKER) -o ex5 ex5.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) -f ex5.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

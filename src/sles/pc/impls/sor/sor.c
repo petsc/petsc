@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.34 1995/07/26 02:24:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.35 1995/08/07 18:51:58 bsmith Exp bsmith $";
 #endif
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */
 #include "pcimpl.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 typedef struct {
   int        its;

@@ -3,7 +3,7 @@ IPETSCDIR = ../../../../..
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../../..  \
-           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"mat/impls/bdiag/seq/"'
+           $(CONF) -D__DIR__='"mat/impls/bdiag/seq/"'
 SOURCEC  = bdiag.c bdfact.c
 SOURCEF  =
 SOURCEH  = bdiag.h

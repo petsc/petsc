@@ -2,6 +2,7 @@ IPETSCDIR = ../../..
 ALL: ex1
 
 CFLAGS        = $(OPT) $(CONF) $(PETSC_INCLUDE)
+FFLAGS        = -I$(IPETSCDIR) $(MPI_INCLUDE) $(BASEOPTF)
 SOURCEC       = 
 SOURCEF       =
 WSOURCE       = 
@@ -14,7 +15,9 @@ EXAMPLES_1    = ex3 ex4 ex5 ex6
 RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6
 EXAMPLES_2    = ex1 ex2 ex7 ex8
 RUNEXAMPLES_2 = runex1 runex2 runex7 runex8
+EXAMPLES_3    = ex12
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c
+EXAMPLESF     = ex12.F
 DIRS          = umin
 
 ex1: ex1.o  chkopts
@@ -56,6 +59,10 @@ ex9: ex9.o  chkopts
 ex10: ex10.o  chkopts
 	-$(CLINKER) -o ex10 ex10.o $(PETSC_LIB)
 	$(RM) ex10.o
+
+ex12: ex12.o  chkopts
+	-$(FLINKER) -o ex12 ex12.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex12.o
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \

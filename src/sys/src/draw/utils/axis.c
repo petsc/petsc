@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.18 1995/08/07 22:00:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.19 1995/08/22 16:32:41 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: axis.c,v 1.18 1995/08/07 22:00:49 bsmith Exp bsmith $
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
-#include "petscfix.h"
+#include "pinclude/petscfix.h"
 
 #if defined(PARCH_alpha) && defined(__cplusplus)
 extern "C" {
@@ -49,7 +49,7 @@ static double rint(double x )
 }
 #endif
 
-/*@
+/*@C
    DrawAxisCreate - Generate the axis data structure.
 
    Input Parameters:
@@ -85,7 +85,7 @@ int DrawAxisCreate(DrawCtx win,DrawAxisCtx *ctx)
   return 0;
 }
 
-/*@
+/*@C
       DrawAxisDestroy - Frees the space used by an axis structure.
 
   Input Parameters:
@@ -114,7 +114,7 @@ int DrawAxisSetColors(DrawAxisCtx axis,int ac,int tc,int cc)
   return 0;
 }
 
-/*@
+/*@C
     DrawAxisSetLabels -  Sets the x and y axis labels.
 
 

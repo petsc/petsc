@@ -2,7 +2,7 @@ ALL: lib
 IPETSCDIR = ../../../..
 
 CFLAGS   = $(OPT) $(CONF) $(PETSC_INCLUDE) -I../..  \
-           -I$(IPETSCDIR)/pinclude -D__DIR__='"ksp/impls/rich/"'
+           -D__DIR__='"ksp/impls/rich/"'
 SOURCEC  = rich.c
 SOURCEF  =
 SOURCEH  = richctx.h

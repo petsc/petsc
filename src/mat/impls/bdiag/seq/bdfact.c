@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.3 1995/07/29 04:20:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.4 1995/08/15 20:28:36 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
 
 #include "bdiag.h"
-#include "plapack.h"
+#include "pinclude/plapack.h"
 
 /* COMMENT: I have chosen to hide column permutation in the pivots,
    rather than put it in the Mat->col slot.*/

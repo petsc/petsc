@@ -1,14 +1,16 @@
 
-C      Include file for for Fortran use of the KSP package
+C      Include file for for Fortran use of the DA package
 C
-      integer KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
-     *         KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR,
-     *         KSPPREONLY, KSPQCG
+      integer DA_STENCIL_STAR, DA_STENCIL_BOX
 
-      parameter (KSPRICHARDSON = 0, KSPCHEBYCHEV = 1, KSPCG = 2,
-     *           KSPGMRES = 3,KSPTCQMR = 4, KSPBCGS = 5, KSPCGS = 6,
-     *           KSPTFQMR = 7, KSPCR = 8, KSPLSQR = 9, KSPPREONLY = 10,
-     *           KSPQCG = 11)
+      integer DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC,
+     *        DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
+
+      parameter (DA_STENCIL_STAR = 0, DA_STENCIL_BOX = 1)
+
+      parameter (DA_NONPERIODIC = 0, DA_XPERIODIC = 1, DA_YPERIODIC = 2,
+     *         DA_XYPERIODIC = 3, DA_XYZPERIODIC = 4, DA_XZPERIODIC = 5,
+     *         DA_YZPERIODIC = 6, DA_ZPERIODIC = 7)
 C
-C      End of Fortran include file for the KSP package
+C      End of Fortran include file for the DA package
 

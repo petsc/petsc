@@ -10,7 +10,7 @@ SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = src include pinclude finclude docs 
+DIRS     = src include docs 
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
@@ -21,9 +21,9 @@ all: chkpetsc_dir
 	$(RANLIB) $(PDIR)/*.a
 
 fortran: chkpetsc_dir
-	-@cd fortran/custom; \
+	-@cd src/fortran/custom; \
           $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
-	-@cd fortran/auto; \
+	-@cd src/fortran/auto; \
           $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast   
 	$(RANLIB) $(PDIR)/libpetscfortran.a
     
@@ -64,7 +64,7 @@ etags:
 	etags -a -f TAGS src/*/examples/*.c src/*/examples/*/*.c
 	etags -a -f TAGS src/*/*.h src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c src/*/impls/*/*/*/*.c 
-	etags -a -f TAGS include/*.h pinclude/*.h bmake/common
+	etags -a -f TAGS include/*.h include/pinclude/*.h bmake/common
 	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS makefile src/*/src/makefile src/makefile 
 	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
@@ -84,7 +84,8 @@ etags_noexamples:
 	etags -f TAGS_NO_EXAMPLES src/*/impls/*/*.h src/*/impls/*/*/*.h 
 	etags -a -f TAGS_NO_EXAMPLES src/*/*.h src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*/*/*.c src/*/impls/*/*/*/*.c 
-	etags -a -f TAGS_NO_EXAMPLES include/*.h pinclude/*.h bmake/common
+	etags -a -f TAGS_NO_EXAMPLES include/*.h include/pinclude/*.h
+	etags -a -f TAGS_NO_EXAMPLES  bmake/common
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS_NO_EXAMPLES makefile src/*/src/makefile src/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/makefile src/*/impls/*/makefile
@@ -99,3 +100,18 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/routin.tex  docs/tex/manual.tex
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/intro.tex  docs/tex/part1.tex
 	chmod g+w TAGS_NO_EXAMPLES
+
+etags_makefiles:
+	$(RM) TAGS_MAKEFILES
+	etags -a -f TAGS_MAKEFILES bmake/common
+	etags -a -f TAGS_MAKEFILES makefile src/*/src/makefile src/makefile 
+	etags -a -f TAGS_MAKEFILES src/*/impls/makefile src/*/impls/*/makefile
+	etags -a -f TAGS_MAKEFILES src/*/utils/makefile
+	etags -a -f TAGS_MAKEFILES src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS_MAKEFILES bmake/common bmake/sun4/sun4* 
+	etags -a -f TAGS_MAKEFILES bmake/rs6000/rs6000* 
+	etags -a -f TAGS_MAKEFILES bmake/solaris/solaris*
+	etags -a -f TAGS_MAKEFILES bmake/IRIX/IRIX* bmake/freebsd/freebsd*
+	etags -a -f TAGS_MAKEFILES bmake/hpux/hpux* bmake/alpha/alpha*
+	etags -a -f TAGS_MAKEFILES bmake/t3d/t3d* bmake/paragon/paragon*
+	chmod g+w TAGS_MAKEFILES

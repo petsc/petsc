@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.24 1995/08/17 20:43:12 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.25 1995/08/22 19:35:15 curfman Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -412,7 +412,7 @@ static int MatDestroy_MPIBDiag(PetscObject obj)
 }
 
 #include "draw.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;

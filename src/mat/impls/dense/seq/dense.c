@@ -1,16 +1,16 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.50 1995/08/17 20:42:48 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.51 1995/08/22 19:33:42 curfman Exp bsmith $";
 #endif
 
 /*
     Standard Fortran style matrices
 */
 #include "petsc.h"
-#include "plapack.h"
+#include "pinclude/plapack.h"
 #include "matimpl.h"
 #include "math.h"
 #include "vec/vecimpl.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 typedef struct {
   Scalar *v;

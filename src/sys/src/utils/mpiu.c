@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.14 1995/07/07 17:15:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.15 1995/07/10 04:50:34 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: mpiu.c,v 1.14 1995/07/07 17:15:33 bsmith Exp bsmith $
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscfix.h"
+#include "pinclude/petscfix.h"
 
 /*@C
     MPIU_fopen - The first process in the communicator opens a file,

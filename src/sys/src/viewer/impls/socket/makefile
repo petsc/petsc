@@ -2,7 +2,7 @@ IPETSCDIR = ../../../..
 
 
 ALL: lib 
-CFLAGS    = $(OPT) -I../.. $(PETSC_INCLUDE) -I$(IPETSCDIR)/pinclude \
+CFLAGS    = $(OPT) -I../.. $(PETSC_INCLUDE) \
             $(CONF) -D__DIR__='"viewer/impls/matlab/"' \
             $(MATLAB_INCLUDE)
 SOURCEC   = senddense.c send.c  sendsparse.c

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.43 1995/08/22 19:32:04 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.44 1995/08/23 17:11:50 curfman Exp bsmith $";
 #endif
 
 /*  
    Defines the abstract operations on index sets 
 */
 #include "pcimpl.h"      /*I "pc.h" I*/
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 extern int PCPrintMethods_Private(char*,char*);
 /*@

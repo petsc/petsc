@@ -2,8 +2,8 @@ IPETSCDIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I$(IPETSCDIR)/pinclude \
-           -I../.. -I$(IPETSCDIR) $(CONF)
+CFLAGS   = $(OPT) $(PETSC_INCLUDE) \
+           -I../.. $(CONF)
 SOURCEC  =  
 SOURCEF  =
 SOURCEH  = 

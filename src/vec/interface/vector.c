@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.43 1995/08/22 17:32:03 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.44 1995/08/23 17:08:13 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -634,6 +634,10 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 
    Output Parameter:
 .  a - location to put pointer to the array
+
+   Fortran Note: From Fortran the user must pass in a Fortran array and 
+its length must be big enough to contain the entire local part of the 
+vector.
 
 .keywords: vector, get, array
 

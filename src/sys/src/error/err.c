@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.22 1995/08/21 18:11:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.23 1995/08/22 16:29:51 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdio.h>           /*I <stdio.h> I*/
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscfix.h"
+#include "pinclude/petscfix.h"
 
 struct EH {
   int    cookie;

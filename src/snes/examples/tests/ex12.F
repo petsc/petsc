@@ -1,184 +1,200 @@
-#ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.8 1995/08/22 02:30:57 curfman Exp $";
-#endif
 
-static char help[] = 
-"This example uses Newton-like methods to solve u`` + u^{2} = f\n\
- in parallel.\n";
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/da.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/snes.h"
+C
+C      ctx(1) = da
+C          2  = F
+C          3  = xl
+C          4  = mytid
+C          5  = numtid
 
-#include "draw.h"
-#include "da.h"
-#include "snes.h"
-#include "petsc.h"
-#include <math.h>
+      integer          ctx(8)
+      integer          snes,J,x,r,u,F,ierr,N,start,end,nn,i
+      double precision xp,FF,UU
+      external         FormJacobian,FormFunction,FormInitialGuess
 
-int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction(SNES,Vec,Vec,void*),
-     FormInitialGuess(SNES,Vec,void*);
+      call PetscInitialize(ierr)
+      N = 10
+      call OptionsGetInt(' ','-n',N,ierr)
+      h = 1.0/(N-1.0)
 
-typedef struct {
-   DA     da;
-   Vec    F,xl;
-   int    mytid,numtid;
-   double h;
-} ApplicationCtx;
+      call  MPI_Comm_rank(MPI_COMM_WORLD,ctx(4),ierr)
+      call  MPI_Comm_size(MPI_COMM_WORLD,ctx(5),ierr)
 
-int main( int argc, char **argv )
-{
-  SNES           snes;               /* SNES context */
-  SNESMethod     method = SNES_NLS;  /* nonlinear solution method */
-  Mat            J;                  /* Jacobian matrix */
-  ApplicationCtx ctx;                /* user-defined contest */
-  Vec            x, r, U, F;
-  Scalar         xp, *FF, *UU;
-  int            ierr, its, N = 5, i, start, end, n;
+C     /* Set up data structures */
+      call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,ctx(1),ierr)
 
-  PetscInitialize( &argc, &argv, 0,0 );
-  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
-  OptionsGetInt(0,"-n",&N);
-  ctx.h = 1.0/(N-1);
+      call DAGetDistributedVector(ctx(1),x,ierr)
+      call DAGetLocalVector(ctx(1),ctx(3),ierr)
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&ctx.mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&ctx.numtid);
+      call PetscObjectSetName(x,'Approximate Solution',ierr)
+      call VecDuplicate(x,r,ierr)
+      call VecDuplicate(x,F,ierr)
+      ctx(2) = F
+      call VecDuplicate(x,U,ierr)
+      call  PetscObjectSetName(U,'Exact Solution',ierr)
 
-  /* Set up data structures */
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,&ctx.da);
-  CHKERRA(ierr);
-  ierr = DAGetDistributedVector(ctx.da,&x); CHKERRA(ierr);
-  ierr = DAGetLocalVector(ctx.da,&ctx.xl); CHKERRQ(ierr);
+      call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,
+     *                     N,3,0,0,0,J,ierr)
 
-  PetscObjectSetName((PetscObject)x,"Approximate Solution");
-  ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&F); CHKERRA(ierr); ctx.F = F;
-  ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
-  PetscObjectSetName((PetscObject)U,"Exact Solution");
-  if (OptionsHasName(0,"-mat_row")) 
-    ierr=MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
-                         0,0,&J);
-  else
-    ierr=MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
-                         0,0,&J);
-  CHKERRA(ierr);
+C     /* Store right-hand-side of PDE and exact solution */
+      call VecGetOwnershipRange(x,start,end,ierr)
+      xp = h*start
+      nn = end - start
+      ii = start
+      do 10, i=0,n-1
+        FF = 6.0*xp + xp**6.0
+        UU = xp*xp*xp
+        call VecSetValues(F,1,ii,FF,INSERTVALUES,ierr)
+        call VecSetValues(U,1,ii,UU,INSERTVALUES,ierr)
+        xp = xp + h
+        ii = ii + 1
+ 10   continue
+      call VecAssemblyBegin(F,ierr)
+      call VecAssemblyEnd(F,ierr)
+      call VecAssemblyBegin(U,ierr)
+      call VecAssemblyEnd(U,ierr)
 
-  /* Store right-hand-side of PDE and exact solution */
-  ierr = VecGetOwnershipRange(x,&start,&end); CHKERRQ(ierr);
-  ierr = VecGetArray(F,&FF); CHKERRQ(ierr);
-  ierr = VecGetArray(U,&UU); CHKERRQ(ierr);
-  xp = ctx.h*start; n = end - start;
-  for ( i=0; i<n; i++ ) {
-    FF[i] = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    UU[i] = xp*xp*xp;
-    xp += ctx.h;
-  }
-  VecAssemblyBegin(F);
-  VecAssemblyEnd(F);
-  VecAssemblyBegin(U);
-  VecAssemblyEnd(U);
+C       /* Create nonlinear solver */  
+      call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
 
-  /* Create nonlinear solver */  
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
-  CHKERRA(ierr);
-  ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
+C       /* Set various routines */
+      call SNESSetSolution(snes,x,FormInitialGuess,0,ierr)
+      call SNESSetFunction(snes,r,FormFunction,ctx,1,ierr)
+      call SNESSetJacobian(snes,J,J,FormJacobian,ctx,ierr)
 
-  /* Set various routines */
-  ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&ctx,1); CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&ctx); CHKERRA(ierr);
+C      /* Set up nonlinear solver; then execute it */
+      call SNESSetFromOptions(snes,ierr)
+      call SNESSetUp(snes,ierr)
+      call SNESSolve(snes,its,ierr)
+      print*,'Number of Newton iterations = ', its
 
-  /* Set up nonlinear solver; then execute it */
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESSetUp(snes); CHKERRA(ierr);
-  ierr = SNESSolve(snes,&its); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Number of Newton iterations = %d\n\n", its );
+C  /* Free data structures */
+      call VecDestroy(x,ierr)
+      call VecDestroy(ctx(3),ierr)
+      call VecDestroy(r,ierr)
+      call VecDestroy(U,ierr)
+      call VecDestroy(F,ierr)
+      call MatDestroy(J,ierr)
+      call SNESDestroy(snes,ierr)
+      call DADestroy(ctx(1),ierr)
+      call PetscFinalize(ierr)
+      stop
+      end
 
-  /* Free data structures */
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(ctx.xl); CHKERRA(ierr);
-  ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = VecDestroy(U); CHKERRA(ierr);
-  ierr = VecDestroy(F); CHKERRA(ierr);
-  ierr = MatDestroy(J); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
-  ierr = DADestroy(ctx.da); CHKERRA(ierr);
-  PetscFinalize();
 
-  return 0;
-}
-/* --------------------  Evaluate Function F(x) --------------------- */
+C/* --------------------  Evaluate Function F(x) --------------------- */
 
-int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
-{
-   ApplicationCtx *ctx = (ApplicationCtx*) dummy;
-   DA             da = (DA) ctx->da;
-   Scalar         *xx, *ff,*FF,d;
-   int            i, ierr, n,mytid = ctx->mytid,numtid = ctx->numtid,s;
-   Vec            xl;
+      subroutine FormFunction(snes,x,f,ctx)
+      integer snes,x,f,ctx(*)
+      integer mytid, numtid,i,s,xl,n
+      double precision h,d,ff(1000),F2(1000),xx(1000)
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/da.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/snes.h"
 
-   xl = ctx->xl; 
-   ierr = DAGlobalToLocalBegin(da,x,INSERTVALUES,xl); CHKERRQ(ierr);
-   ierr = DAGlobalToLocalEnd(da,x,INSERTVALUES,xl); CHKERRQ(ierr);
+      mytid  = ctx(4)
+      numtid = ctx(5)
+      call DAGlobalToLocalBegin(da,x,INSERTVALUES,xl,ierr)
+      call DAGlobalToLocalEnd(da,x,INSERTVALUES,xl,ierr)
 
-   ierr = VecGetArray(xl,&xx); CHKERRQ(ierr);
-   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
-   ierr = VecGetArray(ctx->F,&FF); CHKERRQ(ierr);
-   ierr = VecGetLocalSize(xl,&n); CHKERRQ(ierr);
-   d = ctx->h*ctx->h;
-   if (mytid == 0) {s = 0; ff[0] = -xx[0];} else s = 1;
-   for ( i=1; i<n-1; i++ ) {
-     ff[i-s] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i-s];
-   }
-   if (mytid == numtid-1) ff[n-1-s] = -xx[n-1] + 1.0;
-   return 0;
-}
-/* --------------------  Form initial approximation ----------------- */
+      call VecGetLocalSize(xl,n,ierr)
+      if (n .gt. 1000) then 
+        print*, 'Local work array not big enough'
+        call MPI_Abort(MPI_COMM_WORLD,0,ierr)
+      endif
 
-int FormInitialGuess(SNES snes,Vec x,void *dummy)
-{
-   int    ierr;
-   Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
-   return 0;
-}
-/* --------------------  Evaluate Jacobian F'(x) -------------------- */
+      call VecGetArray(xl,xx,ierr)
+      call VecGetArray(f,ff,ierr)
+      call VecGetArray(ctx(1),F2,ierr)
 
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
-{
-  ApplicationCtx *ctx = (ApplicationCtx*) dummy;
-  Scalar         *xx, d, A;
-  int            i, j, ierr, n, mytid = ctx->mytid, numtid = ctx->numtid;
-  Vec            xl;
-  int            start, end, N, ii, istart, iend;
+      d = h*h
 
-  xl = ctx->xl; 
-  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
-  ierr =  VecGetOwnershipRange(x,&start,&end); CHKERRQ(ierr);
-  n = end - start; 
-  d = ctx->h*ctx->h;
-  ierr = VecGetSize(x,&N); CHKERRQ(ierr);
-  if (mytid == 0) {
-    A = 1.0; 
-    ierr = MatSetValues(*jac,1,&start,1,&start,&A,INSERTVALUES); CHKERRQ(ierr);
-    istart = 1;
-  }
-  else {istart = 0; }
-  if (mytid == numtid-1) {
-    i = N-1; A = 1.0; 
-    ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERRQ(ierr);
-    iend = n-1;
-  }
-  else iend = n;
-  for ( i=istart; i<iend; i++ ) {
-    ii = i + start;
-    j = start + i - 1; 
-    ierr = MatSetValues(*jac,1,&ii,1,&j,&d,INSERTVALUES); CHKERRQ(ierr);
-    j = start + i + 1; 
-    ierr = MatSetValues(*jac,1,&ii,1,&j,&d,INSERTVALUES); CHKERRQ(ierr);
-    A = -2.0*d + 2.0*xx[i];
-    ierr = MatSetValues(*jac,1,&ii,1,&ii,&A,INSERTVALUES); CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  return 0;
-}
+      if (mytid .eq. 0) then 
+        s = 0
+        ff(1) = -xx(1)
+      else
+        s = 1
+      endif
+
+      do 10 i=1,n-2
+       ff(i-s+1) = -d*(xx(i) - 2.0*xx(i+1) + xx(i+2) - xx(i+1)*xx(i+1))
+     *             + F2(i-s+1)
+ 10   continue
+
+      if (mytid .eq. numtid-1) then
+        ff(n-s) = -xx(n) + 1.0
+      endif
+
+      call VecRestoreArray(f,ff,ierr)
+      return
+      end
+
+C  /* --------------------  Form initial approximation ----------------- */
+
+      subroutine FormInitialGuess(snes,x,dummy,ierr)
+      integer snes,x,dummy(*),ierr
+      integer ierr
+
+      call VecSet(.5,x,ierr)
+      return
+      end
+
+C/* --------------------  Evaluate Jacobian F'(x) -------------------- */
+
+      subroutine FormJacobian(snes,x,jac,B,flag,ctx)
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/da.h"
+#include "include/finclude/mat.h"
+#include "include/finclude/snes.h"
+      integer          snes,x,jac(*),B,flag,ctx(*),N2,ii,istart,iend
+      double precision xx(1000),d,A,h
+      integer          i,j,ierr,n,mytid,numtid,end
+
+      call VecGetSize(x,N2,ierr)
+      h = 1.0/(N2 - 1.0)
+      d = h*h
+      mytid = ctx(4)
+      numtid = ctx(5)
+
+      call VecGetArray(x,xx,ierr)
+      call VecGetOwnershipRange(x,start,end,ierr)
+      n = end - start
+
+      if (mytid .eq. 0) then
+        A = 1.0 
+        call MatSetValues(jac(1),1,start,1,start,A,INSERTVALUES,ierr)
+        istart = 1
+      else 
+        istart = 0
+      endif
+      if (mytid .eq. numtids-1) then
+        i = N-1
+        A = 1.0 
+        call MatSetValues(jac(1),1,i,1,i,A,INSERTVALUES,ierr)
+        iend = n-1
+      else
+        iend = n
+      endif
+      do 10 i=istart,iend
+        ii = i + start
+        j = start + i - 1 
+        call MatSetValues(jac(1),1,ii,1,j,d,INSERTVALUES,ierr)
+        j = start + i + 1 
+        call MatSetValues(jac(1),1,ii,1,j,d,INSERTVALUES,ierr)
+        A = -2.0*d + 2.0*xx(i+1)
+        call MatSetValues(jac(1),1,ii,1,ii,A,INSERTVALUES,ierr)
+ 10   continue
+      call MatAssemblyBegin(jac(1),FINAL_ASSEMBLY,ierr)
+      callMatAssemblyEnd(jac(1),FINAL_ASSEMBLY,ierr)
+      return
+      end
+
 
 

@@ -1,44 +1,45 @@
 
-static char help[] = "Plots a simple line graph\n";
+#include "include/finclude/petsc.h"
+#include "include/finclude/draw.h"
 
-#include "draw.h"
-#include <math.h>
+ 
+      integer           draw, lg, axis
+      integer           n,i, ierr, x, y, width, height
+      double precision  xd,yd
 
-int main(int argc,char **argv)
-{
-  DrawCtx     draw;
-  DrawLGCtx   lg;
-  DrawAxisCtx axis;
-  int         n = 20,i, ierr, x = 0, y = 0, width = 300, height = 300;
-  char        *xlabel,*ylabel,*toplabel;
-  double      xd,yd;
+      n      = 20
+      x      = 0
+      y      = 0
+      width  = 300
+      height = 300
 
-  xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
+      call PetscInitialize(ierr)
 
-  PetscInitialize(&argc,&argv,(char*)0,(char*)0);
-  if (OptionsHasName(0,"-help")) fprintf(stdout,help);
-  OptionsGetInt(0,"-width",&width); OptionsGetInt(0,"-height",&height);
-  OptionsGetInt(0,"-n",&n);
-  if (OptionsHasName(0,"-nolabels")) {
-    xlabel = (char *)0; toplabel = (char *)0;
-  }
-  ierr = DrawOpenX(MPI_COMM_SELF,0,"Window Title",x,y,width,height,&draw);
-  CHKERRA(ierr);
-  ierr = DrawLGCreate(draw,1,&lg); CHKERRA(ierr);
-  ierr = DrawLGGetAxisCtx(lg,&axis); CHKERRA(ierr);
-  ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE); CHKERRA(ierr);
-  ierr = DrawAxisSetLabels(axis,toplabel,xlabel,ylabel); CHKERRA(ierr);
+      call OptionsGetInt(' ','-width',width,ierr) 
+      call OptionsGetInt(' ','-height',height,ierr)
+      call OptionsGetInt(' ','-n',n,ierr)
 
-  for ( i=0; i<n ; i++ ) {
-    xd = (double)( i - 5 ); yd = xd*xd;
-    ierr = DrawLGAddPoint(lg,&xd,&yd); CHKERRA(ierr);
-  }
-  ierr = DrawLGIndicateDataPoints(lg); CHKERRA(ierr);
-  ierr = DrawLG(lg); CHKERRA(ierr);
-  ierr = DrawFlush(draw); CHKERRA(ierr); PetscSleep(2);
+      call DrawOpenX(MPI_COMM_SELF,' ',' ',x,y,width,height,draw,ierr)
 
-  ierr = DrawLGDestroy(lg); CHKERRA(ierr);
-  PetscFinalize();
-  return 0;
-}
+      call DrawLGCreate(draw,1,lg,ierr)
+      call DrawLGGetAxisCtx(lg,axis,ierr)
+      call DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE,ierr)
+      call DrawAxisSetLabels(axis,'toplabel','xlabel','ylabel',ierr)
+
+      do 10, i=0,n-1
+        xd = i - 5.0
+        yd = xd*xd
+        call DrawLGAddPoint(lg,xd,yd,ierr)
+ 10   continue
+
+      call DrawLGIndicateDataPoints(lg,ierr)
+      call DrawLG(lg,ierr)
+      call DrawFlush(draw,ierr)
+
+      call PetscSleep(10)
+
+      call DrawLGDestroy(lg,ierr)
+      call PetscFinalize(ierr)
+      stop 
+      end
  

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.23 1995/08/21 18:11:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.24 1995/08/22 16:29:51 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: adebug.c,v 1.23 1995/08/21 18:11:41 bsmith Exp bsmith
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscfix.h"
+#include "pinclude/petscfix.h"
 
 static char  *Debugger = "gdb", *Display = 0;
 static int   Xterm     = 1;

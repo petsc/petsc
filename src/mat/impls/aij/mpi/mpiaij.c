@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.68 1995/08/18 14:06:05 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.69 1995/08/22 19:34:21 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -512,7 +512,7 @@ static int MatDestroy_MPIAIJ(PetscObject obj)
   return 0;
 }
 #include "draw.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 {

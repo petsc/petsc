@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.30 1995/07/26 02:24:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.31 1995/08/15 20:27:34 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
 
 */
 #include "mgimpl.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif

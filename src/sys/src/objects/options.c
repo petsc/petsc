@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.36 1995/08/18 17:20:17 curfman Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.37 1995/08/18 20:39:00 curfman Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -24,8 +24,8 @@ static char vcid[] = "$Id: options.c,v 1.36 1995/08/18 17:20:17 curfman Exp curf
 #if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "pviewer.h"
-#include "petscfix.h"
+#include "pinclude/pviewer.h"
+#include "pinclude/petscfix.h"
 
 /* 
     For simplicity, we begin with a static size database

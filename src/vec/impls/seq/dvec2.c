@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.12 1995/06/13 20:48:42 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.13 1995/06/21 14:14:12 bsmith Exp bsmith $ */
 
 /*
      These are routines shared by sequential vectors and BLAS sequential 
@@ -14,7 +14,7 @@
 #include "vecimpl.h"             
 #include "dvecimpl.h"   
 #include "draw.h"          
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 
 static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )

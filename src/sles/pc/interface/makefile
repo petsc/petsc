@@ -3,7 +3,7 @@ IPETSCDIR = ../../..
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I..  \
-           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"pc/src/"'
+           $(CONF) -D__DIR__='"pc/src/"'
 SOURCEC  = precon.c pcset.c pcregis.c
 SOURCEF  =
 SOURCEH  = 

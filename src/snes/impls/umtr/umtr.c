@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.7 1995/08/14 23:16:30 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.8 1995/08/17 01:22:14 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "umtr.h"
 #include "kspimpl.h"
 #include "qcg.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 /*
     NLM_NTR1 - Implements Newton's Method with a trust region approach 

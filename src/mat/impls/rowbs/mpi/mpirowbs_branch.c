@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.50 1995/08/17 20:43:06 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.51 1995/08/22 19:34:54 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -178,7 +178,7 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
 }
 
 #include "draw.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 static int MatView_MPIRowbs_local(Mat mat,Viewer ptr)
 {

@@ -1,15 +1,14 @@
 
-C      Include file for for Fortran use of the Vec package
+C      Include file for for Fortran use of the KSP package
 C
-      integer INSERTVALUES, ADDVALUES
-      integer SCATTERREVERSE,SCATTERDOWN,SCATTERUP,SCATTERALL,
-     *        SCATTERALLREVERSE
-      integer PIPELINEDOWN,PIPELINEUP
+      integer KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
+     *         KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR,
+     *         KSPPREONLY, KSPQCG
 
-      parameter (INSERTVALUES = 1, ADDVALUES = 2)
-      parameter (SCATTERREVERSE = 1,SCATTERDOWN = 2,SCATTERUP = 4,
-     *           SCATTERALL = 8, SCATTERALLREVERSE = 9)
-      parameter (PIPELINEDOWN = 0,PIPELINEUP = 1)
+      parameter (KSPRICHARDSON = 0, KSPCHEBYCHEV = 1, KSPCG = 2,
+     *           KSPGMRES = 3,KSPTCQMR = 4, KSPBCGS = 5, KSPCGS = 6,
+     *           KSPTFQMR = 7, KSPCR = 8, KSPLSQR = 9, KSPPREONLY = 10,
+     *           KSPQCG = 11)
 C
-C      End of Fortran include file for the Vec package
+C      End of Fortran include file for the KSP package
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.32 1995/08/05 20:42:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.33 1995/08/17 03:00:21 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: tr.c,v 1.32 1995/08/05 20:42:10 curfman Exp bsmith $"
 #if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "petscfix.h"
+#include "pinclude/petscfix.h"
 
 void *TrMalloc(unsigned int, int, char *);
 int TrFree( void *, int, char * );

@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.37 1995/08/14 23:15:55 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.38 1995/08/17 01:22:34 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "ls.h"
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif

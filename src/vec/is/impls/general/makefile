@@ -3,7 +3,7 @@ IPETSCDIR = ../../../../..
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../../.. -I$(IPETSCDIR) \
-           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"is/impls/seq/general/"'
+           $(CONF) -D__DIR__='"is/impls/seq/general/"'
 SOURCEC  = general.c 
 SOURCEF  =
 SOURCEH  = 

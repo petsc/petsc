@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.24 1995/08/14 23:16:35 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.25 1995/08/17 01:32:58 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "tr.h"                /*I   "snes.h"   I*/
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 /*
    This convergence test determines if the two norm of the 

@@ -3,7 +3,7 @@ IPETSCDIR = ../../../..
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../..  \
-          -I$(IPETSCDIR)/pinclude $(CONF) -I$(IPETSCDIR)/src/ksp \
+          $(CONF) -I$(IPETSCDIR)/src/ksp \
           -I$(IPETSCDIR)/src/ksp/impls/qcg -D__DIR__='"snes/impls/umtr/"'
 SOURCEC  = umtr.c
 SOURCEF  =

@@ -9,7 +9,7 @@ SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = 
+DIRS     = pinclude finclude 
 MANSEC   = 7
 
 runexamples:

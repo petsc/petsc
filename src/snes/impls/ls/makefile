@@ -3,7 +3,7 @@ IPETSCDIR = ../../../..
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../..  \
-          -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"snes/impls/ls/"'
+           $(CONF) -D__DIR__='"snes/impls/ls/"'
 SOURCEC  = ls.c
 SOURCEF  =
 SOURCEH  = ls.h

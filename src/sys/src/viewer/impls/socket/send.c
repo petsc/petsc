@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.19 1995/08/01 22:18:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.20 1995/08/15 20:29:10 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -38,7 +38,7 @@ typedef unsigned long   u_long;
 #endif
 
 #include "matlab.h"
-#include "petscfix.h"
+#include "pinclude/petscfix.h"
 
 /*
      Many machines don't prototype many of the socket functions?

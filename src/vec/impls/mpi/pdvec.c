@@ -1,6 +1,6 @@
-/* $Id: pdvec.c,v 1.19 1995/08/17 15:13:06 curfman Exp curfman $ */
+/* $Id: pdvec.c,v 1.20 1995/08/22 19:29:30 curfman Exp bsmith $ */
 
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 static int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {

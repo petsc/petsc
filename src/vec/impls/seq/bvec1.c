@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.5 1995/06/23 12:39:50 bsmith Exp bsmith $ */
+/* $Id: bvec1.c,v 1.6 1995/07/07 17:15:00 bsmith Exp bsmith $ */
 
 /*
    Defines the BLAS based vector operations
@@ -8,7 +8,7 @@
 #include <math.h>
 #include "vecimpl.h" 
 #include "dvecimpl.h" 
-#include "plapack.h"
+#include "pinclude/plapack.h"
 
 static int VecDot_Blas(Vec xin, Vec yin,Scalar *z )
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.20 1995/08/15 20:29:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.21 1995/08/22 16:32:41 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -22,7 +22,7 @@ struct _DrawLGCtx {
 };
 #define CHUNCKSIZE 100
 
-/*@
+/*@C
      DrawLGCreate - Creates a line graph data structure
 
   Input Parameters:
@@ -81,7 +81,7 @@ int DrawLGReset(DrawLGCtx lg)
   return 0;
 }
 
-/*@
+/*@C
     DrawLGDestroy - Frees all space taken up by line graph 
                          data structure.
 
@@ -253,7 +253,7 @@ int DrawLGSetLimits( DrawLGCtx lg,double x_min,double x_max,double y_min,
   return 0;
 }
  
-/*@
+/*@C
     DrawLGGetAxisCtx - Gets the axis context associated with a line graph.
            This is useful if one wants to change some axis property, like
            labels, color, etc. The axis context should not be destroyed
@@ -273,7 +273,7 @@ int DrawLGGetAxisCtx(DrawLGCtx lg,DrawAxisCtx *axis)
   return 0;
 }
 
-/*@
+/*@C
     DrawLGGetDrawCtx - Gets the draw context associated with a line graph.
 
   Input Parameter:

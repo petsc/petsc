@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.36 1995/08/22 20:37:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.37 1995/08/23 17:17:43 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 /*@ 
    SLESView - Prints the SLES data structure.

@@ -1,9 +1,9 @@
-IPETSCDIR = ../
+IPETSCDIR = ../..
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = petsc.h vec.h
+SOURCEH  = petsc.h vec.h snes.h da.h draw.h mat.h ksp.h pc.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec

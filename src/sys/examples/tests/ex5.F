@@ -1,16 +1,17 @@
 C
 C  Simple PETSc Program written in Fortran 77, (shudder)
 C
-       integer ierr
+#include "include/finclude/petsc.h"
+       integer ierr, mytid
 
-       PetscInitialize(ierr)
+       call PetscInitialize(ierr)
 
        if (ierr .ne. 0) then 
          print*, "Unable to begin PETSc program"
        endif
 
-       print*, "Greetings"
+       call MPI_Comm_rank(MPI_COMM_WORLD,mytid,ierr)
+       print*, "Greetings from", mytid
 
-       PetscFinalize()
-       return
+       call PetscFinalize(ierr)
        end

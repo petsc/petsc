@@ -3,7 +3,7 @@ IPETSCDIR = ../../..
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I..  \
-          -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"viewer/src/"'
+           $(CONF) -D__DIR__='"viewer/src/"'
 SOURCEC  = view.c 
 SOURCEF  =
 SOURCEH  = 

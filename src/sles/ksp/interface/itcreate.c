@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.54 1995/08/22 19:30:09 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.55 1995/08/23 17:09:18 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.54 1995/08/22 19:30:09 curfman Exp cur
 #include "sys/nreg.h"     /*I "sys/nreg.h" I*/
 #include "sys.h"
 #include "viewer.h"       /*I "viewer.h" I*/
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 
 /*@ 
    KSPView - Prints the KSP data structure.

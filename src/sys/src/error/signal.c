@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.15 1995/08/04 01:51:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.16 1995/08/21 18:11:41 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: signal.c,v 1.15 1995/08/04 01:51:30 bsmith Exp bsmith
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
-#include "petscfix.h"     
+#include "pinclude/petscfix.h"     
 
 struct SH {
   int    cookie;

@@ -4,7 +4,7 @@
 /*  Code for manipulating distributed regular 3d arrays in parallel  */
 
 #include "daimpl.h"     /*I   "da.h"    I*/
-#include "pviewer.h"
+#include "pinclude/pviewer.h"
 #include <math.h>
 #include "draw.h"
 

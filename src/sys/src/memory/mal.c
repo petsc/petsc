@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mal.c,v 1.8 1995/08/01 15:18:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.9 1995/08/21 18:11:41 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"             /*I   "petsc.h"   I*/
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: mal.c,v 1.8 1995/08/01 15:18:42 curfman Exp bsmith $"
 #if defined(HAVE_MALLOC_H) && !defined(__cplusplus)
 #include <malloc.h>
 #endif
-#include "petscfix.h"
+#include "pinclude/petscfix.h"
 
 void *(*PetscMalloc)(unsigned int,int,char*) = 
                             (void*(*)(unsigned int,int,char*))malloc;
