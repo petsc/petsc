@@ -11,7 +11,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = inline is vec ksp sys pc mat sles options draw grid stencil \
-           viewer
+           viewer plog
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
