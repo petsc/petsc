@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.40 1997/04/01 15:56:24 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.41 1997/08/22 15:20:41 bsmith Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -152,7 +152,7 @@ extern PLogDouble nt_time();
 /*
     The usual Unix time routines.
 */
-#if (defined(PARCH_IRIX)) && defined(__cplusplus)
+#if ((defined(PARCH_IRIX) || defined(PARCH_IRIX64)) && defined(__cplusplus))
 struct timeval {
   long tv_sec;         /* seconds */
   long tv_usec;        /* and microseconds */
