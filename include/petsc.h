@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.202 1998/03/27 21:46:54 balay Exp balay $ */
+/* $Id: petsc.h,v 1.203 1998/03/30 20:02:29 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -193,11 +193,9 @@ extern int PetscObjectDestroy(PetscObject);
 extern int PetscObjectExists(PetscObject,int*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
 extern int PetscObjectGetCookie(PetscObject,int *cookie);
-extern int PetscObjectGetChild(PetscObject,void **child);
 extern int PetscObjectGetType(PetscObject,int *type);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
-extern int PetscObjectCompose(PetscObject,void *, int (*)(void *,void **),int (*)(void*));
 extern int PetscObjectReference(PetscObject);
 extern int PetscObjectGetReference(PetscObject,int*);
 extern int PetscObjectDereference(PetscObject);
@@ -205,11 +203,32 @@ extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
 extern int PetscObjectView(PetscObject,Viewer);
 
+extern int PetscObjectCompose(PetscObject,char *,PetscObject);
+extern int PetscObjectQuery(PetscObject,char *,PetscObject *);
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,0)
+#else
+#define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,d)
+#endif
+extern int PetscObjectComposeFunction_Private(PetscObject,char *,char *,void *);
+extern int PetscObjectQueryFunction(PetscObject,char *,void **);
+
 
 /*
     Defines PETSc error handling.
 */
 #include "petscerror.h"
+
+/*
+    Mechanism for managing lists of objects attached (composed) with 
+   a PETSc object.
+*/
+typedef struct _OList *OList;
+extern int OListDestroy(OList *);
+extern int OListFind(OList,char *,PetscObject*);
+extern int OListAdd(OList *,char *,PetscObject);
+extern int OListRemove(OList *,char *);
+extern int OListDuplicate(OList,OList *);
 
 /*
     Dynamic library lists. Lists of names of routines in dynamic 
