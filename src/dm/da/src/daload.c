@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daload.c,v 1.6 1999/03/18 23:37:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daload.c,v 1.7 1999/03/19 21:24:07 bsmith Exp bsmith $";
 #endif
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: daload.c,v 1.6 1999/03/18 23:37:25 bsmith Exp bsmith 
 
 #undef __FUNC__  
 #define __FUNC__ "DALoad"
-/*@
+/*@C
       DALoad - Creates an appropriate DA and loads its global vector from a file.
 
    Input Parameter:
