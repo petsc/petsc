@@ -8,6 +8,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Change PLOgEventBegin() and end to no longer use the 
+    "tacky" stuff since it should be no longer needed, then 
+    fix the logging inside snesmfj.c
+
   - PetscFree(); CHKERRQ(); on IRIX64 ( + manpages)
 
   - There is no man page for AOCreateDebug() why and fix?

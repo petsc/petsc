@@ -1,10 +1,11 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.48 1997/04/07 20:11:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.49 1997/04/10 00:06:10 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
 #include "pinclude/pviewer.h"
+#include <math.h>
 
 typedef struct {  /* default context for matrix-free SNES */
   SNES        snes;      /* SNES context */
@@ -54,6 +55,9 @@ int SNESMatrixFreeView_Private(Mat J,Viewer viewer)
   return 0;
 }
 
+extern int VecDot_Seq(Vec,Vec,double *);
+extern int VecNorm_Seq(Vec,NormType,double *);
+
 #undef __FUNC__  
 #define __FUNC__ "SNESMatrixFreeMult_Private"
 /*
@@ -68,11 +72,13 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
 {
   MFCtx_Private *ctx;
   SNES          snes;
-  double        norm, sum, umin;
+  double        ovalues[3],values[3],norm, sum, umin;
   Scalar        h, dot, mone = -1.0;
   Vec           w,U,F;
   int           ierr, (*eval_fct)(SNES,Vec,Vec);
+  MPI_Comm      comm;
 
+  PetscObjectGetComm((PetscObject)mat,&comm);
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   snes = ctx->snes;
   w    = ctx->w;
@@ -82,7 +88,6 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
 
   ierr = SNESGetSolution(snes,&U); CHKERRQ(ierr);
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -96,9 +101,36 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   else SETERRQ(1,0,"Invalid method class");
 
   /* Determine a "good" step size, h */
-  ierr = VecDot(U,a,&dot); CHKERRQ(ierr);
-  ierr = VecNorm(a,NORM_1,&sum); CHKERRQ(ierr);
-  ierr = VecNorm(a,NORM_2,&norm); CHKERRQ(ierr);
+
+  /*
+    ierr = VecDot(U,a,&dot); CHKERRQ(ierr);
+    ierr = VecNorm(a,NORM_1,&sum); CHKERRQ(ierr);
+    ierr = VecNorm(a,NORM_2,&norm); CHKERRQ(ierr);
+  */
+
+  /*
+     Call the Seq Vector routines and then do 
+    a single reduction to reduce the number of communications
+     required
+  */
+
+  PLogEventBegin(VEC_Dot,U,a,0,0);
+  ierr = VecDot_Seq(U,a,ovalues); CHKERRQ(ierr);
+  PLogEventEnd(VEC_Dot,U,a,0,0);
+  PLogEventBegin(VEC_Norm,a,0,0,0);
+  ierr = VecNorm_Seq(a,NORM_1,ovalues+1); CHKERRQ(ierr);
+  ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
+  ovalues[2] = ovalues[2]*ovalues[2];
+  MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm );
+  dot = values[0]; sum = values[1]; norm = sqrt(values[2]);
+  PLogEventEnd(VEC_Norm,a,0,0,0);
+
+  /* 
+     the plogeventbegin() below should really be above,
+     but they cannot be nested so it excludes the time 
+     to compute h
+  */
+  PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
 
   /* Safeguard for step sizes too small */
   if (sum == 0.0) {dot = 1.0; norm = 1.0;}
