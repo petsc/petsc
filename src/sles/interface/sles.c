@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.96 1998/04/09 21:16:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.97 1998/04/13 17:44:19 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -331,22 +331,22 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 /*@
    SLESSolve - Solves a linear system.
 
+   Collective on SLES
+
    Input Parameters:
-.  sles - the SLES context
-.  b - the right hand side
++  sles - the SLES context
+-  b - the right hand side
 
    Output Parameters:
-.  x - the approximate solution
-.  its - the number of iterations until termination
-
-   Collective on SLES
++  x - the approximate solution
+-  its - the number of iterations until termination
 
    Notes:
      On return, the parameter "its" contains
-$     - the iteration number at which convergence
-$       was successfully reached, 
-$     - or the negative of the iteration at which
-$        divergence or breakdown was detected.
++     - the iteration number at which convergence
+       was successfully reached, 
+-     - or the negative of the iteration at which
+        divergence or breakdown was detected.
 
      If using a direct method (e.g., via the KSP solver
      KSPPREONLY and a preconditioner such as PCLU/PCILU),
@@ -418,13 +418,13 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 /*@C
    SLESGetKSP - Returns the KSP context for a SLES solver.
 
+   Not Collective, but if KSP will be a parallel object if SLES is
+
    Input Parameter:
 .  sles - the SLES context
 
    Output Parameter:
 .  ksp - the Krylov space context
-
-   Not Collective, but if KSP will be a parallel object if SLES is
 
    Notes:  
    The user can then directly manipulate the KSP context to set various 
@@ -447,13 +447,13 @@ int SLESGetKSP(SLES sles,KSP *ksp)
 /*@C
    SLESGetPC - Returns the preconditioner (PC) context for a SLES solver.
 
+   Not Collective, but if PC will be a parallel object if SLES is
+
    Input Parameter:
 .  sles - the SLES context
 
    Output Parameter:
 .  pc - the preconditioner context
-
-   Not Collective, but if PC will be a parallel object if SLES is
 
    Notes:  
    The user can then directly manipulate the PC context to set various 
@@ -478,17 +478,18 @@ int SLESGetPC(SLES sles,PC *pc)
    SLESSetOperators - Sets the matrix associated with the linear system
    and a (possibly) different one associated with the preconditioner. 
 
+   Collective on SLES and Mat
+
    Input Parameters:
-.  sles - the sles context
++  sles - the sles context
 .  Amat - the matrix associated with the linear system
 .  Pmat - matrix to be used in constructing preconditioner, usually the same
           as Amat. 
-.  flag - flag indicating information about the preconditioner matrix structure
+-  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
    system.
 
-   Collective on SLES and Mat
 
    Notes: 
    The flag can be used to eliminate unnecessary work in the preconditioner 
@@ -540,10 +541,10 @@ int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz 
    methods.
 
+   Collective on SLES
+
    Input parameters:
 .  pc - the preconditioner context
-
-   Collective on SLES
 
    Notes:
    SLESSetUpOnBlocks() is a routine that the user can optinally call for

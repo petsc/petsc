@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.23 1998/04/09 04:17:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.24 1998/04/13 17:51:12 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -498,14 +498,14 @@ int TSPVodeSetExactFinalTime_PVode(TS ts,PetscTruth s)
    TSPVodeGetIterations - Gets the number of nonlinear and linear iterations used so
       far by PVode.
 
+   Not Collective
+
    Input parameters:
 .    ts     - the time-step context
 
    Output Parameters:
-.   nonlin - number of nonlinear iterations
-.   lin    - number of linear iterations
-
-   Not Collective
++   nonlin - number of nonlinear iterations
+-   lin    - number of linear iterations
 
 .keywords: non-linear iterations, linear iterations
 
@@ -527,11 +527,11 @@ int TSPVodeGetIterations(TS ts, int *nonlin,int *lin )
 /*@
    TSPVodeSetType - Sets the method that PVode will use for integration.
 
-   Input parameters:
-    ts     - the time-step context
-    type - one of  PVODE_ADAMS or PVODE_BDF
-
    Collective on TS
+
+   Input parameters:
++    ts     - the time-step context
+-    type   - one of  PVODE_ADAMS or PVODE_BDF
 
     Contributed by: Liyang Xu
 
@@ -557,11 +557,11 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
        GMRES in the linear solver in PVODE. PVODE DOES NOT use restarted GMRES so
        this is ALSO the maximum number of GMRES steps that will be used.
 
-   Input parameters:
-    ts     - the time-step context
-    restart - number of direction vectors (the restart size).
-
    Collective on TS
+
+   Input parameters:
++    ts      - the time-step context
+-    restart - number of direction vectors (the restart size).
 
 .keywords: GMRES, restart
 
@@ -585,12 +585,13 @@ int TSPVodeSetGMRESRestart(TS ts, int restart)
    TSPVodeSetLinearTolerance - Sets the tolerance used to solve the linear
        system by PVODE.
 
+   Collective on TS
+
    Input parameters:
-    ts     - the time-step context
-    tol    - the factor by which the tolerance on the nonlinear solver is
++    ts     - the time-step context
+-    tol    - the factor by which the tolerance on the nonlinear solver is
              multiplied to get the tolerance on the linear solver, .05 by default.
 
-   Collective on TS
 
 .keywords: GMRES, linear convergence tolerance, PVODE
 
@@ -613,11 +614,11 @@ int TSPVodeSetLinearTolerance(TS ts, double tol)
    TSPVodeSetGramSchmidtType - Sets type of orthogonalization used
         in GMRES method by PVODE linear solver.
 
-   Input parameters:
-.    ts  - the time-step context
-.    type - either PVODE_MODIFIED_GS or PVODE_CLASSICAL_GS
-
    Collective on TS
+
+   Input parameters:
++    ts  - the time-step context
+-    type - either PVODE_MODIFIED_GS or PVODE_CLASSICAL_GS
 
 .keywords: PVode, orthogonalization
 
@@ -640,12 +641,12 @@ int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
    TSPVodeSetTolerance - Sets the absolute and relative tolerance used by 
                          PVode for error control.
 
-   Input parameters:
-.    ts  - the time-step context
-.    aabs - the absolute tolerance  
-.    rel - the relative tolerance
-
    Collective on TS
+
+   Input parameters:
++    ts  - the time-step context
+.    aabs - the absolute tolerance  
+-    rel - the relative tolerance
 
     Contributed by: Liyang Xu
 
