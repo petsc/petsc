@@ -18,8 +18,8 @@ EXAMPLES_2    = ex10 ex11 ex6 runex8_3
 RUNEXAMPLES_2 = runex11
 EXAMPLES_3    = ex7 ex12
 RUNEXAMPLES_3 = runex7
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c\
-                ex6.c
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c ex11.c\
+                ex13.c
 EXAMPLESF     = ex7.F ex12.F
 
 ex1: ex1.o  chkopts
