@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.53 2001/01/19 23:22:17 balay Exp balay $*/
+/*$Id: aodata.c,v 1.54 2001/03/23 23:24:50 balay Exp bsmith $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -1292,8 +1292,8 @@ int AODataPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   AOData        ao = (AOData) obj;
-  AODataKey     *key;
-  AODataSegment *segment;
+  AODataKey     *key = 0;
+  AODataSegment *segment = 0;
   int           ierr,keys,segments;
   char          tmp[1024];
 #endif

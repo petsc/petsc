@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.69 2001/05/16 19:20:22 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.70 2001/05/16 19:20:41 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -115,6 +115,8 @@ EXTERN int   DAVecRestoreArray(DA,Vec,void **);
 
 EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 
+EXTERN int   MatCreateDAAD(DA,Mat*);
+
 /*S
      DALocalInfo - C struct that contains information about a structured grid and a processors logical
               location in it.
@@ -142,6 +144,8 @@ typedef int (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
 EXTERN int DAFormFunction1(DA,Vec,Vec,void*);
 EXTERN int DAComputeJacobian1WithAdic(DA,Vec,Mat,void*);
 EXTERN int DAComputeJacobian1WithAdifor(DA,Vec,Mat,void*);
+EXTERN int DAMultiplyByJacobian1WithAdic(DA,Vec,Vec,Vec,void*);
+EXTERN int DAMultiplyByJacobian1WithAdifor(DA,Vec,Vec,Vec,void*);
 EXTERN int DAComputeJacobian1(DA,Vec,Mat,void*);
 EXTERN int DAGetLocalFunction(DA,DALocalFunction1*);
 EXTERN int DASetLocalFunction(DA,DALocalFunction1);
@@ -152,7 +156,12 @@ EXTERN int DASetLocalad_Function_Private(DA,DALocalFunction1);
 #else
 #define DASetLocalad_Function(a,d) DASetLocalad_Function_Private(a,0)
 #endif
-EXTERN int DALocalGetWorkArray();
+EXTERN int DASetLocaladmf_Function_Private(DA,DALocalFunction1);
+#if defined(PETSC_HAVE_ADIC)
+#define DASetLocaladmf_Function(a,d) DASetLocaladmf_Function_Private(a,(DALocalFunction1)d)
+#else
+#define DASetLocaladmf_Function(a,d) DASetLocaladmf_Function_Private(a,0)
+#endif
 
 
 #include "petscmat.h"
