@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.51 1996/06/30 17:36:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.52 1996/07/08 22:23:15 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -23,8 +23,9 @@ int main( int argc, char **argv )
   Vec        x, r, F, U;             /* vectors */
   Mat        J;                      /* Jacobian matrix */
   MonitorCtx monP;                   /* monitoring context */
-  int        ierr, its, n = 5,i,flg;
+  int        ierr, its, n = 5, i, flg, maxit, maxf;
   Scalar     h, xp = 0.0, v;
+  double     atol, rtol, stol;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
@@ -57,6 +58,12 @@ int main( int argc, char **argv )
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr); 
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+
+  /* Print the various parameters used for convergence testing */
+  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf); CHKERRA(ierr);
+  PetscPrintf(MPI_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
+     atol,rtol,stol,maxit,maxf);
+
 
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x); CHKERRA(ierr); CHKERRA(ierr);
