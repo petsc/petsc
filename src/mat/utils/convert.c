@@ -22,9 +22,8 @@ PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,Mat *newmat)
   ierr = MatGetLocalSize(mat,&lm,&ln);CHKERRQ(ierr);
 
   if (ln == n) ln = PETSC_DECIDE; /* try to preserve column ownership */
-
-  ierr = MatCreate(mat->comm,lm,ln,m,n,newmat);CHKERRQ(ierr);
-  M    = *newmat;
+  
+  ierr = MatCreate(mat->comm,lm,ln,m,n,&M);CHKERRQ(ierr);
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
@@ -37,8 +36,9 @@ PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,Mat *newmat)
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (M == mat) {
+  if (*newmat == mat) {
     ierr = MatDestroy(mat);CHKERRQ(ierr);
   }
+  *newmat = M;
   PetscFunctionReturn(0);
 }

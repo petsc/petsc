@@ -1,0 +1,71 @@
+static char help[] = "Testing PtAP for SeqMAIJ matrix, P, with SeqAIJ matrix, A.\n\n";
+
+#include "petscmat.h"
+MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat,Mat,PetscReal,Mat*);
+MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat,Mat,Mat);
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **argv) {
+  Mat            pA,P,aijP;
+  PetscScalar    pa[]={1.,-1.,0.,0.,1.,-1.,0.,0.,1.};
+  PetscInt       pij[]={0,1,2};
+  PetscInt       aij[3][3]={{0,1,2},{3,4,5},{6,7,8}};
+  Mat            A,mC,C;
+  PetscScalar    none=-1.,one=1.;
+  PetscErrorCode ierr;
+
+  PetscInitialize(&argc,&argv,(char *)0,help);
+
+  /* Create MAIJ matrix, P */
+  ierr = MatCreate(PETSC_COMM_SELF,3,3,3,3,&pA);CHKERRQ(ierr);
+  ierr = MatSetType(pA,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetOption(pA,MAT_IGNORE_ZERO_ENTRIES);CHKERRQ(ierr);
+  ierr = MatSetValues(pA,3,pij,3,pij,pa,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(pA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(pA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatCreateMAIJ(pA,3,&P);CHKERRQ(ierr);
+  ierr = MatDestroy(pA);
+
+  /* Create AIJ equivalent matrix, aijP, for comparison testing */
+  ierr = MatConvert(P,MATSEQAIJ,&aijP);
+
+  /* Create AIJ matrix, A */
+  ierr = MatCreate(PETSC_COMM_SELF,9,9,9,9,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES);CHKERRQ(ierr);
+  ierr = MatSetValues(A,3,aij[0],3,aij[0],pa,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(A,3,aij[1],3,aij[1],pa,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(A,3,aij[2],3,aij[2],pa,ADD_VALUES);CHKERRQ(ierr);
+  {int i;
+   for (i=0;i<9;i++) {
+    ierr = MatSetValue(A,i,i,one,ADD_VALUES);CHKERRQ(ierr);
+   }
+  }
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  
+  /* Perform SeqAIJ_SeqMAIJ PtAP -- this will use the interface once dispatch mechanism is figured out */
+  ierr = MatPtAPSymbolic_SeqAIJ_SeqMAIJ(A,P,1.,&mC);CHKERRQ(ierr);
+  ierr = MatPtAPNumeric_SeqAIJ_SeqMAIJ(A,P,mC);CHKERRQ(ierr);
+  ierr = MatView(mC,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+
+  /* Perform SeqAIJ_SeqAIJ PtAP for comparison testing */
+  ierr = MatPtAP(A,aijP,MAT_INITIAL_MATRIX,1.,&C);CHKERRQ(ierr);
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+
+  /* Perform diff of two matrices */
+  ierr = MatAXPY(&none,mC,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+  /* Note: We should be able to use SAME_NONZERO_PATTERN on the line above, */
+  /*       but don't because this flag doesn't assist testing. */
+  ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+
+  /* Cleanup */
+  ierr = MatDestroy(P);
+  ierr = MatDestroy(aijP);
+  ierr = MatDestroy(A);
+  ierr = MatDestroy(C);
+  ierr = MatDestroy(mC);
+  PetscFinalize();
+  return(0);
+}

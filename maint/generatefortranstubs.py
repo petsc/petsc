@@ -40,7 +40,7 @@ def FixDir(petscdir):
 	files = os.listdir(dir)
 	names = []
         for f in files:
-	  if f.endswith('.c'):
+          if os.path.splitext(f)[1]=='.c':
             FixFile(os.path.join(dir,f))
 	    names.append(f)
 	ff = open(os.path.join(dir,'makefile.src'),'w')
@@ -53,7 +53,7 @@ def processDir(arg,dirname,names):
 	bfort    = arg[1]
 	newls = []
 	for l in names:
-	  if l.endswith('.c') or l.endswith('.h'):
+          if os.path.splitext(l)[1]=='.c' or os.path.splitext(l)[1]=='.h':
 	    newls.append(l)
         if newls:
           (status,output) = commands.getstatusoutput('cd '+dirname+';'+bfort+' -dir '+os.path.join(petscdir,'src','fortran','auto')+' \
@@ -74,7 +74,7 @@ def main():
 	dir      = os.path.join(petscdir,'src','fortran','auto') 
 	files    = os.listdir(dir)
         for f in files:
-          if f.endswith('.c'):
+          if os.path.splitext(f)[1]=='.c':
             try: os.unlink(os.path.join(dir,f))
             except: pass
 	os.path.walk(os.getcwd(),processDir,[petscdir,sys.argv[1]])

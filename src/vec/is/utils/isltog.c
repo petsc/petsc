@@ -221,7 +221,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,PetscInt n,const Petsc
 -    bs - block size
 
     Output Parameter:
-.   outmap - block based mapping
+.   outmap - block based mapping; the indices are relative to BLOCKS, not individual vector or matrix entries.
 
     Level: advanced
 
@@ -240,7 +240,7 @@ PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,PetscInt
     if (n*bs != inmap->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Pointwise mapping length is not divisible by block size");
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ii[i] = inmap->indices[bs*i];
+      ii[i] = inmap->indices[bs*i]/bs;
     }
     ierr = ISLocalToGlobalMappingCreate(inmap->comm,n,ii,outmap);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);

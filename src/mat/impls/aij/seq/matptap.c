@@ -183,10 +183,10 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C
   /* Determine symbolic info for each row of C: */
   for (i=0;i<pn;i++) {
     ptnzi  = pti[i+1] - pti[i];
-    ptanzi = 0;
     ptJ    = ptj + pti[i];
     for (dof=0;dof<ppdof;dof++) {
-    /* Determine symbolic row of PtA: */
+      ptanzi = 0;
+      /* Determine symbolic row of PtA: */
       for (j=0;j<ptnzi;j++) {
         /* Expand ptJ[j] by block size and shift by dof to get the right row of A */
         arow = ptJ[j]*ppdof + dof;

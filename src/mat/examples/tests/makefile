@@ -13,7 +13,8 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
-                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c
+                   ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c \
+                   ex101.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F
 
 include ${PETSC_DIR}/bmake/common/base
@@ -371,6 +372,10 @@ ex99: ex99.o chkopts
 ex100: ex100.o chkopts
 	-${CLINKER} -o ex100 ex100.o ${PETSC_FORTRAN_LIB} ${PETSC_MAT_LIB}
 	${RM} ex100.o
+
+ex101: ex101.o chkopts
+	-${CLINKER} -o ex101 ex101.o ${PETSC_MAT_LIB}
+	${RM} ex101.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -935,6 +940,12 @@ runex100:
 	else echo "Possible problem with ex100, diffs above"; fi; \
 	${RM} -f ex100.tmp
 
+runex101:
+	-@${MPIRUN} -np 1  ex101  > ex101.tmp 2>&1;   \
+	   if (${DIFF} output/ex101.out ex101.tmp) then true; \
+	   else echo "Possible problem with ex101_1, diffs above"; fi; \
+	   ${RM} -f ex101.tmp
+
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
 		   runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm \
@@ -971,7 +982,7 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 \
 		   ex21.rm ex35.PETSc runex35 ex35.rm  ex48.PETSc runex48 ex48.rm \
                    ex71.PETSc ex71.rm ex93.PETSc runex93 ex93.rm \
-	           ex95.PETSc  ex95.rm 
+	           ex95.PETSc  ex95.rm ex101.PETSc runex101 ex101.rm
 TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm \
 	           ex42.PETSc runex42 ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm  \
 	           ex50.PETSc ex50.rm ex53.PETSc runex53 ex53.rm ex94.PETSc runex94 runex94_2 ex94.rm \

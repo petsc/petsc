@@ -288,6 +288,10 @@ getmpirun:
 #
 .cpp.rm .cc.rm .C.rm .F.rm .f.rm .c.rm:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
+	-@if test -e $*.exe; then ${RM} $*.exe; fi
+	-@if test -e $*.ilk; then ${RM} $*.ilk; fi
+	-@if test -e $*.pdb; then ${RM} $*.pdb; fi
+	-@if test -e $*.tds; then ${RM} $*.tds; fi
 
 .c.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1

@@ -21,8 +21,7 @@ PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat
       rowlengths[i*bs+j] = bs*(ai[i+1] - ai[i]);
     }
   }
-  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,newmat);CHKERRQ(ierr);
-  B    = *newmat;
+  ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
@@ -54,9 +53,10 @@ PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat
   B->bs = A->bs;
 
   /* Fake support for "inplace" convert. */
-  if (B == A) {
+  if (*newmat == A) {
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
+  *newmat = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -81,8 +81,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat
   for (i=0; i<m; i++) {
     rowlengths[i] = ai[i+1] - ai[i];
   }
-  ierr = MatCreate(A->comm,m,n,m,n,newmat);CHKERRQ(ierr);
-  B    = *newmat;
+  ierr = MatCreate(A->comm,m,n,m,n,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(B,1,0,rowlengths);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
@@ -102,9 +101,10 @@ PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (B == A) {
+  if (*newmat == A) {
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
+  *newmat = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

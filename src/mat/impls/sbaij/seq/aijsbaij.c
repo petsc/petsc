@@ -124,7 +124,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newma
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
-  ierr = MatMissingDiagonal_SeqAIJ(A);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
+  ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
 
   ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
