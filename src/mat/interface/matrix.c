@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.197 1996/10/02 17:22:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.198 1996/10/11 21:37:23 bsmith Exp balay $";
 #endif
 
 /*
@@ -1913,7 +1913,7 @@ int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,
   if (ia) PetscValidIntPointer(ia);
   if (ja) PetscValidIntPointer(ja);
   PetscValidIntPointer(done);
-
+  if (mat->M != Mat->N) SETERRQ(PETSC_ERR_SIZ,"MatGetRowIJ: Matrix should be square");
   if (!mat->ops.getrowij) *done = PETSC_FALSE;
   else {
     *done = PETSC_TRUE;
