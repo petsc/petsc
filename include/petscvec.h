@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.113 2001/01/15 21:44:23 bsmith Exp bsmith $ */
+/* $Id: petscvec.h,v 1.114 2001/01/17 19:43:57 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -14,9 +14,53 @@
 #define MAP_COOKIE         PETSC_COOKIE+22
 #define VEC_SCATTER_COOKIE PETSC_COOKIE+4
 
+/*S
+     Map - Abstract PETSc object that defines the layout of vector and
+  matrices accross processors
+
+   Level: advanced
+
+   Notes:
+    Does not play a role in the PETSc design, can be ignored
+
+  Concepts: parallel decomposition
+
+.seealso:  MapCreateMPI()
+S*/
 typedef struct _p_Map*         Map;
+
+/*S
+     Vec - Abstract PETSc vector object
+
+   Level: beginner
+
+  Concepts: field variables, unknowns, arrays
+
+.seealso:  VecCreate(), VecType, VecSetType()
+S*/
 typedef struct _p_Vec*         Vec;
+
+/*S
+     VecScatter - Object used to manage communication of data
+       between vectors in parallel. Manages both scatters and gathers
+
+   Level: beginner
+
+  Concepts: scatter
+
+.seealso:  VecScatterCreate(), VecScatterBegin(), VecScatterEnd()
+S*/
 typedef struct _p_VecScatter*  VecScatter;
+
+/*E
+    VecType - String with the name of a PETSc vector or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
+
+   Level: beginner
+
+.seealso: VecSetType(), Vec
+E*/
 #define VEC_SEQ    "seq"
 #define VEC_MPI    "mpi"
 #define VEC_FETI   "feti"
@@ -46,8 +90,16 @@ EXTERN int VecTDot(Vec,Vec,Scalar*);
 EXTERN int VecMDot(int,Vec,const Vec[],Scalar*);
 EXTERN int VecMTDot(int,Vec,const Vec[],Scalar*); 
 
+/*E
+    NormType - determines what type of norm to compute
+
+    Level: beginner
+
+.seealso: VecNorm(), VecNormBegin(), VecNormEnd(), MatNorm()
+E*/
 typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4,NORM_1_AND_2=5} NormType;
 #define NORM_MAX NORM_INFINITY
+
 EXTERN int VecNorm(Vec,NormType,PetscReal *);
 EXTERN int VecSum(Vec,Scalar*);
 EXTERN int VecMax(Vec,int*,PetscReal *);
@@ -72,6 +124,16 @@ EXTERN int VecDuplicateVecs(Vec,int,Vec*[]);
 EXTERN int VecDestroyVecs(const Vec[],int); 
 EXTERN int VecGetMap(Vec,Map*);
 
+/*E
+    InsertMode - Whether entries are inserted or added into vectors or matrices
+     to continue to add values to it
+
+    Level: beginner
+
+.seealso: VecSetValues(), MatSetValues(), VecSetValue(), VecSetValuesBlocked(),
+          VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(),
+          MatSetValuesBlockedLocal(), MatSetValuesLocal()
+E*/
 typedef enum {NOT_SET_VALUES,INSERT_VALUES,ADD_VALUES,MAX_VALUES} InsertMode;
 
 EXTERN int VecStrideNorm(Vec,int,NormType,double*);
@@ -105,6 +167,14 @@ EXTERN int        VecRegister(const char[],const char[],const char[],int(*)(Vec)
 #define VecRegisterDynamic(a,b,c,d) VecRegister(a,b,c,d)
 #endif
 
+
+/*E
+    ScatterMode - Determines the direction of a scatter
+
+   Level: beginner
+
+.seealso: VecScatter, VecScatterBegin(), VecScatterEnd()
+E*/
 typedef enum {SCATTER_FORWARD=0,SCATTER_REVERSE=1,SCATTER_FORWARD_LOCAL=2,
               SCATTER_REVERSE_LOCAL=3,SCATTER_LOCAL=2} ScatterMode;
 EXTERN int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
@@ -200,6 +270,12 @@ EXTERN int VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
 EXTERN int VecConjugate(Vec);
 
 #endif
+
+
+
+
+
+
 
 
 
