@@ -6,9 +6,7 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I.. -I../.. \
-           $(CONF) $(COPT) $(PCONF) \
-           -D__DIR__='"vec/impls/mpi/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I.. -I../..
 SOURCEC  = pbvec.c
 SOURCEF  =
 SOURCEH  = pvecimpl.h pdvec.c pvec2.c

@@ -2,14 +2,14 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../.. $(PCONF)\
-           $(CONF) -D__DIR__='"pc/impls/none/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../.. 
 SOURCEC  = none.c
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = none.o
 OBJSF    =
 LIBBASE  = libpetscsles
-DIRS     = 
+DIRS     =
+LOCDIR   = src/pc/impls/none/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -2,8 +2,7 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../..  $(PCONF)\
-          $(CONF) -D__DIR__='"snes/impls/tr/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../.. 
 SOURCEC  = tr.c
 SOURCEF  =
 SOURCEH  = tr.h

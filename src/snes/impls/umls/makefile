@@ -2,8 +2,7 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../..  $(PCONF) \
-          $(CONF) -D__DIR__='"snes/impls/umls/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'  -I../.. 
 SOURCEC  = umls.c search.c
 SOURCEF  = 
 SOURCEH  = umls.h

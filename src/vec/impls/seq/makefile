@@ -2,9 +2,8 @@ PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I.. -I../.. \
-           -I$(PETSC_DIR)/src/is $(CONF) $(PCONF)\
-           -D__DIR__='"vec/impls/seq/"'
+CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
+           -I.. -I../.. -I$(PETSC_DIR)/src/is
 SOURCEC  = bvec2.c 
 SOURCEF  =
 SOURCEH  = 
