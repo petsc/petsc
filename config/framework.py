@@ -36,7 +36,12 @@ class Framework(config.base.Configure):
       self.logName   = self.argDB['log']
       self.logExists = os.path.exists(self.logName)
       if self.logExists:
-        self.log     = file(self.logName, 'a')
+        try:
+          os.rename(self.logName, self.logName+'.bkp')
+          self.log   = file(self.logName, 'w')
+        except OSError:
+          print 'WARNING: Cannot backup log file, appending instead.'
+          self.log   = file(self.logName, 'a')
       else:
         self.log     = file(self.logName, 'w')
     return self.log
@@ -251,11 +256,16 @@ class Framework(config.base.Configure):
 
   def outputHeader(self, name):
     '''Write the configuration header'''
-    dir = os.path.dirname(name)
-    if dir and not os.path.exists(dir):
-      os.makedirs(dir)
-    f = file(name, 'w')
-    guard = 'INCLUDED_'+os.path.basename(name).upper().replace('.', '_')
+    if isinstance(name, file):
+      f = name
+      filename = 'Unknown'
+    else:
+      dir = os.path.dirname(name)
+      if dir and not os.path.exists(dir):
+        os.makedirs(dir)
+      f = file(name, 'w')
+      filename = os.path.basename(name)
+    guard = 'INCLUDED_'+filename.upper().replace('.', '_')
     f.write('#if !defined('+guard+')\n')
     f.write('#define '+guard+'\n\n')
     if hasattr(self, 'headerTop'):
@@ -266,7 +276,8 @@ class Framework(config.base.Configure):
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif /* '+guard+' */\n')
-    f.close()
+    if not isinstance(name, file):
+      f.close()
     return
 
   def filterCompileOutput(self, output):

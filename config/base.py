@@ -48,7 +48,7 @@ class Configure:
 
   def executeTest(self, test, args = []):
     self.framework.log.write('================================================================================\n')
-    self.framework.log.write('TEST '+str(test.im_func.__name__)+' from '+str(test.im_class.__module__)+'\n')
+    self.framework.log.write('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')\n')
     if test.__doc__: self.framework.log.write('  '+test.__doc__+'\n')
     if not isinstance(args, list): args = [args]
     return apply(test, args)
@@ -388,6 +388,8 @@ class Configure:
     if out or ret:
       self.framework.log.write('ERR (compiler): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
+      self.framework.log.write('Header:\n')
+      self.framework.outputHeader(self.framework.log)
       self.framework.log.write('Source:\n'+self.getCode(includes, body))
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
@@ -442,6 +444,9 @@ class Configure:
       self.framework.log.write('ERR (linker): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
       self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
+      self.framework.log.write('Header:\n')
+      self.framework.outputHeader(self.framework.log)
+      self.framework.log.write('Source:\n'+self.getCode(includes, body))
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       self.linkerObj = self.linkerObj+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
