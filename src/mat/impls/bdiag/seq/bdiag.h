@@ -14,28 +14,22 @@
 */
 
 typedef struct {
-  int    m, n;         /* rows, columns */
-  int    mblock, nblock;       /* block rows and columns */
+  int    m, n;             /* rows, columns */
+  int    mblock, nblock;   /* block rows and columns */
   int    assembled, nonew;
-  int    nz,maxnz,mem; /* nonzeros, allocated nonzeros, memory */
-  int    nd;         /* Number of block diagonals */
-  int    mainbd;     /* the number of the main block diagonal */
-  int    nb;         /* Each diagonal element is an nb x nb matrix */
-  int    *diag;      /* value of (row-col)/nb for each diagonal */
-  int    *bdlen;     /* block-length of each diagonal */
-  int    ndim;       /* Diagonals come from an ndim pde (if 0, ignore) */
-  int    ndims[3];   /* Sizes of the mesh if ndim > 0 */
-  int    user_alloc; /* True if the user provided the diagonals */
-  int    *colloc;    /* Used to hold the column locations if
-			      ScatterFromRow is used */
-  Scalar **diagv;    /* The actual diagonals */
-  Scalar *dvalue;    /* Used to hold a row if ScatterFromRow is used */
+  int    nz,maxnz,mem;     /* nonzeros, allocated nonzeros, memory */
+  int    nd;               /* number of block diagonals */
+  int    mainbd;           /* the number of the main block diagonal */
+  int    nb;               /* Each diagonal element is an nb x nb matrix */
+  int    *diag;            /* value of (row-col)/nb for each diagonal */
+  int    *bdlen;           /* block-length of each diagonal */
+  int    ndim;             /* diagonals come from an ndim pde (if 0, ignore) */
+  int    ndims[3];         /* sizes of the mesh if ndim > 0 */
+  int    user_alloc;       /* true if the user provided the diagonals */
+  int    *colloc;          /* used to hold the column locations if
+			      MatGetRow is used */
+  Scalar **diagv;          /* The actual diagonals */
+  Scalar *dvalue;          /* Used to hold a row if MatGetRow is used */
 } Mat_BDiag;
-
-/* need something like this.
-   SpBDGetDiagNumbers - Returns a pointer to the array of diagonal numbers.
-
-#define SpBDGetDiagNumbers( mat )	((SpMatBDiag *)(mat)->data)->diag
- */
 
 #endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.7 1995/05/02 16:34:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.8 1995/05/03 04:06:24 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -7,6 +7,16 @@ static char vcid[] = "$Id: bdiag.c,v 1.7 1995/05/02 16:34:40 curfman Exp bsmith 
 #include "bdiag.h"
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
+
+int MatGetBDiagData(Mat matin,int *nd,int *nb,int **diag, Scalar ***diagv)
+{
+  Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
+  *nd    = dmat->nd;
+  *nb    = dmat->nb;
+  *diag  = dmat->diag;
+  *diagv = dmat->diagv;
+  return 0;
+}
 
 static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode  addv)
@@ -49,6 +59,7 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
       }
     }
   } else {
+
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row    = idxm[kk];   
       if (row < 0) SETERR(1,"Negative row index");
@@ -65,8 +76,6 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
              else
 	      loc = shift;
 	    if ((valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ]))) {
-              printf("row=%d, col=%d, bdiag=%d, loc=%d, idx=%d, val=%g\n",
-                 row,idxn[j],ldiag, loc, loc + (idxn[j]%nb)*nb, v[j] );             
 	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERR(1,
@@ -586,17 +595,17 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
 
    Input Parameters:
 .  comm - MPI communicator, set to MPI_COMM_SELF
-.  m      - number of rows
-.  n      - number of columns
-.  nd     - number of block diagonals
-.  nb     - each element of a diagonal is an nb x nb dense matrix
-.  diag   - array of block diagonal numbers, values of (row-col)/nb
-            NOTE:  currently, diagonals MUST be listed in descending order!
-            You must store the main diagonal, even if it has zero values.
+.  m - number of rows
+.  n - number of columns
+.  nd - number of block diagonals
+.  nb - each element of a diagonal is an nb x nb dense matrix
+.  diag - array of block diagonal numbers, values are
+$     diag = row/nb - col/nb (integer division)
+   NOTE:  currently, diagonals MUST be listed in descending order!
+   You must store the main diagonal, even if it has zero values.
 .  diagv  - pointer to actual diagonals (in same order as diag array), 
-            if allocated by user.
-            Otherwise, set diagv=0 on input for PETSc to control memory 
-            allocation.
+   if allocated by user. Otherwise, set diagv=0 on input for PETSc to 
+   control memory allocation.
 
    Output Parameters:
 .  newmat - the matrix
@@ -610,9 +619,9 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
    The case nb=1 (conventional diagonal storage) is implemented as
    a special case. 
 
-.keywords: Mat, matrix, block, diagonal
+.keywords: matrix, block, diagonal, sparse
 
-.seealso: MatCreateSequentialAIJ()
+.seealso: MatCreate(), MatCreateMPIBDiag(), MatSetValues()
 @*/
 int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
                              int *diag,Scalar **diagv,Mat *newmat)
@@ -621,6 +630,9 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   Mat_BDiag *mat;
   int       i, j, temp, sizetot;
 
+  int mytid;
+
+#define  MIN(a,b) ((a) < (b) ? (a) : (b))
   *newmat       = 0;
   if ((n%nb) || (m%nb)) SETERR(1,"Invalid block size.");
   PETSCHEADERCREATE(bmat,_Mat,MAT_COOKIE,MATBDIAG,comm);
@@ -656,16 +668,21 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     }
   }
 
+  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   for (i=0; i<nd; i++) {
     mat->diag[i] = diag[i];
     if (diag[i] > 0) /* lower triangular */
-      mat->bdlen[i] = 2 * mat->mblock - diag[i] - mat->nblock;
-    else if (diag[i] < 0) /* upper triangular */
-      mat->bdlen[i] = diag[i] + mat->nblock;
-    else mat->bdlen[i] = mat->mblock;
+      mat->bdlen[i] = MIN(mat->nblock,mat->mblock - diag[i]);
+    else {           /* upper triangular */
+      if (mat->mblock - diag[i] > mat->nblock)
+        mat->bdlen[i] = mat->nblock + diag[i];
+  /*    mat->bdlen[i] = mat->mblock + diag[i] + (mat->nblock - mat->mblock); */
+      else
+        mat->bdlen[i] = mat->mblock;
+    }
     sizetot += mat->bdlen[i];
     if (diag[i] == 0) mat->mainbd = i;
-    printf("i=%d, diag=%d, dlen=%d\n",i,mat->diag[i],mat->bdlen[i]);
+    printf("[%d] i=%d, diag=%d, dlen=%d\n",mytid,i,diag[i],mat->bdlen[i]);
   }
   if ((mat->mainbd == -1))
     SETERR(1,"No main diagonal.  Must set main diagonal, even if empty.")
@@ -685,7 +702,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     MEMSET(d,0,sizetot*sizeof(Scalar));
     for (i=0; i<nd; i++) {
       mat->diagv[i] = d;
-      d += mat->bdlen[i];
+      d += nb*nb*mat->bdlen[i];
     }
   } else {
     for (i=0; i<nd; i++) mat->diagv[i] = diagv[i];
