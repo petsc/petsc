@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.166 1998/03/06 00:12:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.167 1998/03/12 23:16:41 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -585,6 +585,9 @@ int PetscFinalize()
      attribute.
   */
   ierr = PetscCommFree_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
+#if defined(USE_PETSC_LOG)
+  PLogEventRegisterDestroy_Private();
+#endif
 
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
@@ -604,12 +607,11 @@ int PetscFinalize()
       PetscPrintf(PETSC_COMM_SELF,"[%d] Maximum memory used %g\n",rank,maxm);
     PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
   }
+  /* Can be dumped only after all the Objects are destroyed */
   if (flg3) {
     ierr = PetscTrLogDump(stdout);CHKERRQ(ierr); 
   }
-#if defined(USE_PETSC_LOG)
-  PLogEventRegisterDestroy_Private();
-#endif
+  /* Can be destroyed only after all the options are used */
   OptionsDestroy_Private();
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.96 1998/01/05 19:55:50 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.97 1998/01/06 16:12:54 balay Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -498,7 +498,7 @@ int PetscTrLogDump(FILE *fp)
 
   if (fp == 0) fp = stderr;
   ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
-  (*PetscErrorPrintf)("[%d]Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);
+  (*PetscErrorPrintf)("[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);
 
   /*
   for ( i=0; i<PetscLogMalloc; i++ ) {
@@ -525,7 +525,7 @@ int PetscTrLogDump(FILE *fp)
     foundit:;
   }
 
-  fprintf(fp,"[%d]Memory usage sorted by function\n",rank);
+  fprintf(fp,"[%d] Memory usage sorted by function\n",rank);
   for ( i=0; i<n; i++ ) {
     fprintf(fp,"[%d] %d %s()\n",rank,shortlength[i],shortfunction[i]);
   }
