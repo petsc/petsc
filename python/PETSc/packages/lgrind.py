@@ -38,13 +38,14 @@ class Configure(config.base.Configure):
       packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
       try:
         self.framework.log.write('Downloading it using "bk clone bk://petsc.bkbits.net/lgrind-dev $PETSC_DIR/packages/lgrind-dev"''\n')
-        (status,output) = commands.getstatusoutput('bk clone file://Users/barrysmith/lgrind-dev packages/lgrind-dev')
+        (status,output) = commands.getstatusoutput('bk clone bk://petsc.bkbits.net/lgrind-dev packages/lgrind-dev')
         if status:
           if output.find('ommand not found') >= 0:
             print '''******** Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path'''
           elif output.find('Cannot resolve host') >= 0:
             print '''******** Unable to download lgrind. You must be off the network. Connect to the internet and run config/configure.py again******** '''
           else:
+            import sys
             print '''******** Unable to download lgrind. Please send this message to petsc-maint@mcs.anl.gov******** '''
             print output
             sys.exit(3)
