@@ -1,0 +1,197 @@
+<HTML>
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000FF" VLINK="#FF0000" ALINK="#FF0000">
+
+<H3>
+Patches for PETSc (Release 2.0.24)</H3>
+
+<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.14.tar.gz">petsc-patches-2.0.24.14.tar.gz</A>
+and extracting it with
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.24.14.tar.gz | tar xf -</PRE>
+Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.24)
+before you run the tar command.
+<BR><BR>
+For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.24.14.exe">petsc-patches-2.0.24.14.exe</A> and rebuild the libraries.
+<HR>
+<BR>The patch file fixes the following:<BR><BR>
+
+
+<H3> 2.0.24.14 (Aug 25)</H3>
+<LI>error in MatSetUpMultiply_MPIDense</LI>
+<pre>
+<!##>src/mat/impls/dense/mpi/mmdense.c
+</pre>
+<LI> viewing (Draw) vectors with small values</LI>
+<pre>
+<!#>src/dm/da/src/gr2.c
+</pre>
+<LI> Missing fortran interface for KSPGetIterationNumber()</LI>
+<pre>
+<!##>src/fortran/auto/makefile
+<!##>src/fortran/auto/iterativf.c
+</pre>
+
+<H3> 2.0.24.13 (Aug 10)</H3>
+<LI>Error using PCBJACOBI with MPIDENSE </LI>
+<pre>
+<!#>src/mat/impls/dense/mpi/mpidense.c
+</pre>
+
+<H3> 2.0.24.12 (Aug 10)</H3>
+<LI>Error in MatGetDiagonal_MPIDense() </LI>
+<pre>
+<!##>src/mat/impls/dense/mpi/mpidense.c
+</pre>
+
+<H3> 2.0.24.11 (Jul 28)</H3>
+<LI>Error in testexamples with src/snes/examples/tutorials/ex3.c on solaris (using CTABLE) </LI>
+<pre>
+<!##>src/mat/impls/aij/mpi/mmaij.c
+</pre>
+
+
+<H3> 2.0.24.10 (Jul 28)</H3>
+<LI>Fortran interface for ISLocalToGlobalMappingApply() </LI>
+<pre>
+<!##>src/fortran/auto/isltogf.c
+</pre>
+<LI>Solaris 5.0 compiler update for complex </LI>
+<pre>
+<!##>include/petscmath.h
+</pre>
+
+
+<H3> 2.0.24.9 (Jul 15)</H3>
+<LI>Dynamic loading of libraries </LI>
+<pre>
+<!##>src/sys/src/dll/reg.c
+<!##>src/sys/src/dll/dl.c
+</pre>
+
+<LI>IRIX/IRIX64 signal handler</LI>
+<pre>
+<!##>src/sys/src/error/signal.c
+</pre>
+
+<LI>Multiple destroys called in MatDestroy_MPIRowbs()</LI>
+<pre>
+<!##>src/mat/impls/rowbs/mpi/mpirowbs.c
+</pre>
+
+<LI>PCDestroy_ICC() error</LI>
+<pre>
+<!##>src/sles/pc/impls/icc/icc.c
+</pre>
+
+<LI>wrong prototype for XiGetColor() </LI>
+<pre>
+<!##>src/sys/src/draw/impls/x/frame.c
+</pre>
+
+<LI>bug in man-page source </LI>
+<pre>
+<!##>src/mat/interface/matrix.c
+</pre>
+
+
+<H3> 2.0.24.8 (May 7)</H3>
+<LI>Missing calls to VecRestoreArray() in MatDiagonalScale_SeqBAIJ </LI>
+<pre>
+<!##>src/mat/impls/baij/seq/baij2.c
+</pre>
+
+
+<H3> 2.0.24.7 (May 5)</H3>
+<LI>Eliminate VecPipline routines form PETSc - to aviod conflicts when using PARPRE</LI>
+<pre>
+<!#repeat>src/include/vec.h
+<!#repeat>src/include/finclude/vec.h
+<!#repeat>src/include/foldinclude/vec.h
+<!##>src/vec/utils/makefile
+<!##>src/vec/examples/tests/makefile
+</pre>
+
+
+<H3> 2.0.24.6 (May 3)</H3>
+<LI>Error in Split phase global vector reductions. Affects the use of 
+matrix free jacobians with SNES</LI>
+<pre>
+<!##>src/vec/utils/comb.c
+<!##>src/vec/examples/tests/ex28.c
+</pre>
+
+<LI>Missing fortran interface for MatDuplicate()</LI>
+<pre>
+<!##>src/fortran/custom/zmat.c
+</pre>
+
+<H3> 2.0.24.5 (Apr 20)</H3>
+<LI> error in checking levels in MatILUFactor_SeqBAIJ() </LI>
+<pre>
+<!##>src/mat/impls/baij/seq/baij.c
+</pre>
+
+
+<H3> 2.0.24.4 (Apr 19)</H3>
+<LI> incorrectly spelled problem with USE_CTABLE </LI>
+<pre>
+<!##>src/mat/impls/aij/mpi/mmaij.c
+</pre>
+
+
+<H3> 2.0.24.3 (Apr 16)</H3>
+<LI> problem with fortran Interface an LAM </LI>
+<pre>
+<!##>src/fortran/custom/zstartf.c
+</pre>
+
+
+<H3> 2.0.24.2 (Apr 13)</H3>
+<LI> graphical viewing Vectors created with DACreate2d() using non-periodic boundary conditions,
+an overlap of 1 and a box stencil</LI>
+<pre>
+<!##>src/dm/da/src/gr2.c
+</pre>
+
+
+<H3> 2.0.24.1 (Apr 8)</H3>
+<LI> bug in include files for VecSetOperation() </LI>
+<pre>
+<!##>include/vec.h
+<!##>include/finclude/vec.h
+<!##>include/foldinclude/vec.h
+</pre>
+
+<LI> updated Windows NT installation instructions.</LI>
+<pre>
+<!##>docs/installation.html
+</pre>
+
+<LI> incomplete SNES MG example</LI>
+<pre>
+<!##>src/snes/examples/tests/ex11.c
+<!##>src/snes/examples/tests/ex11options
+</pre>
+
+<LI> bug in CG when using KSPSetAvoidNorms()</LI>
+<pre>
+<!##>src/sles/ksp/impls/cg/cg.c
+</pre>
+
+<LI> error in handling user-set options prefixes on the solvers
+for each level of multilevel algorithms.</LI>
+<pre>
+<!##>src/sles/pc/impls/mg/mg.c
+<!##>src/sles/pc/impls/mg/mgfunc.c
+</pre>
+
+<LI> updated version file </LI>
+<pre>
+<!##>include/petscversion.h
+</pre>
+
+
+<BR>
+<HR>
+<BR></item>
+</BODY>
+</HTML>
