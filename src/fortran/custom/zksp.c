@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.3 1995/10/09 21:58:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.4 1995/11/23 04:15:38 bsmith Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -148,4 +148,27 @@ void kspregisterdestroy_(int* MPIR_ierr)
 void kspregisterall_(int* MPIR_ierr)
 {
   *MPIR_ierr = KSPRegisterAll();
+}
+
+void mattranspose_(Mat mat,Mat *B, int *__ierr )
+{
+  Mat mm;
+  *__ierr = MatTranspose((Mat)MPIR_ToPointer( *(int*)(mat) ),&mm);
+  *(int*) B = MPIR_FromPointer(mm);
+}
+
+void kspbuildsolution_(KSP ctx,Vec v,Vec *V, int *__ierr ){
+  Vec vv;
+  *__ierr = KSPBuildSolution(
+      (KSP)MPIR_ToPointer( *(int*)(ctx) ),
+      (Vec)MPIR_ToPointer( *(int*)(v) ),&vv);
+  *(int*) V = MPIR_FromPointer(vv);
+}
+void kspbuildresidual_(KSP ctx,Vec t,Vec v,Vec *V, int *__ierr ){
+  Vec vv;
+  *__ierr = KSPBuildResidual(
+    (KSP)MPIR_ToPointer( *(int*)(ctx) ),
+    (Vec)MPIR_ToPointer( *(int*)(t) ),
+    (Vec)MPIR_ToPointer( *(int*)(v) ),&vv);
+  *(int*) V = MPIR_FromPointer(vv);
 }
