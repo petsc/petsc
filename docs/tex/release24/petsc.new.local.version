@@ -21,3 +21,16 @@ been built (by specifying the needed PETSC_ARCH and BOPT).
 Thanks for your support.
 Barry, Satish, Bill, and Lois
 
+
+
+******************
+
+The following versions are installed
+
+Arch     PETSC_ARCH   BOPT             machine (examples)
+SP       rs6000_quad  g,O,g_c++,O_c++   quad
+SP1      rs6000       O,O_c++           bonnie
+dwarves  rs6000_p4    g,O               dwarf
+SGIs     IRIX         g,O,g_c++         cyan
+Suns     sun4         g,O,g_c++,O_c++   cosmo
+
