@@ -7,6 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Add link to MPI manual pages from Main PETSc mainual pages pate; also to system dependent?
+  how to run mpi?
+
   for certain manual pages, including VecNorm() etc add a Performance Issues: section that
 describes what effects performance for that routine. For examplle, memory bandwidth, parallel
 communication latency, synchronization
