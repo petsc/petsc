@@ -2911,7 +2911,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] nnz(C): %d\n",rank,ai[M]);
+  /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] nnz(C): %d\n",rank,ai[M]); */
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
   } else if (scall == MAT_REUSE_MATRIX){
@@ -2965,12 +2965,12 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     /*--------------------------------------------------------*/
     ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,len_s,&merge->nrecv);CHKERRQ(ierr);
     ierr = PetscGatherMessageLengths(comm,merge->nsend,merge->nrecv,len_s,&merge->id_r,&len_r);CHKERRQ(ierr);
-    
+    /*
     ierr = PetscPrintf(PETSC_COMM_SELF," [%d] nsend: %d, nrecv: %d\n",rank,merge->nsend,merge->nrecv);
     for (i=0; i<merge->nrecv; i++){
       ierr = PetscPrintf(PETSC_COMM_SELF," [%d] expects recv len_r=%d from [%d]\n",rank,len_r[i],merge->id_r[i]);
     }
-    
+    */
 
     /* post the Irecvs corresponding to these messages */
     /*-------------------------------------------------*/
@@ -3234,7 +3234,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
     iscola = *col;
   }
   if (scall != MAT_INITIAL_MATRIX){
-    ierr = PetscMalloc(sizeof(Mat),&aloc);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(Mat),&aloc);CHKERRQ(ierr); 
     aloc[0] = *A_loc;
   }
   ierr = MatGetSubMatrices(A,1,&isrowa,&iscola,scall,&aloc);CHKERRQ(ierr); 
@@ -3281,7 +3281,7 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,P
   if (a->cstart != b->rstart || a->cend != b->rend){
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%d, %d) != (%d,%d)",a->cstart,a->cend,b->rstart,b->rend);
   }
- 
+  
   if (scall == MAT_INITIAL_MATRIX){
     start = a->cstart;
     cmap  = a->garray;

@@ -45,7 +45,7 @@ typedef struct {
 
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat product */
   IS     isrowa,isrowb,iscolb;
-  Mat    *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
+  Mat    A_loc,B_seq,C_seq; 
   int    brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
 } Mat_MatMatMultMPI;
 

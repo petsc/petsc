@@ -175,8 +175,12 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   ierr = ISDestroy(mult->isrowb);CHKERRQ(ierr);
   ierr = ISDestroy(mult->iscolb);CHKERRQ(ierr);
   ierr = ISDestroy(mult->isrowa);CHKERRQ(ierr);
+  ierr = MatDestroy(mult->A_loc);CHKERRQ(ierr); 
+  ierr = MatDestroy(mult->B_seq);CHKERRQ(ierr); 
+  /*
   ierr = MatDestroyMatrices(1,&mult->aseq);CHKERRQ(ierr); 
   ierr = MatDestroyMatrices(1,&mult->bseq);CHKERRQ(ierr); 
+  */
   ierr = MatDestroy(mult->C_seq);CHKERRQ(ierr); 
   ierr = PetscFree(mult);CHKERRQ(ierr); 
 
@@ -201,31 +205,15 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
 
   /* create a seq matrix B_seq = submatrix of B by taking rows of B that equal to nonzero col of A */
-  start = a->cstart;
-  cmap  = a->garray;
-  nzA   = a->A->n; 
-  nzB   = a->B->n;
-  ierr  = PetscMalloc((nzA+nzB)*sizeof(int), &idx);CHKERRQ(ierr);
-  ncols = 0;
-  for (i=0; i<nzB; i++) {
-    if (cmap[i] < start) idx[ncols++] = cmap[i];
-    else break;
-  }
-  mult->brstart = i;
-  for (i=0; i<nzA; i++) idx[ncols++] = start + i;
-  for (i=mult->brstart; i<nzB; i++) idx[ncols++] = cmap[i];
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&mult->isrowb);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr); 
-  ierr = ISCreateStride(PETSC_COMM_SELF,B->N,0,1,&mult->iscolb);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_INITIAL_MATRIX,&mult->bseq);CHKERRQ(ierr);
- 
+  ierr = MatGetBrowsOfAcols(A,B,MAT_INITIAL_MATRIX,&mult->isrowb,&mult->iscolb,&mult->brstart,&mult->B_seq);CHKERRQ(ierr);
+
   /*  create a seq matrix A_seq = submatrix of A by taking all local rows of A */
   start = a->rstart; end = a->rend;
   ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&mult->isrowa);CHKERRQ(ierr); 
-  ierr = MatGetSubMatrices(A,1,&mult->isrowa,&mult->isrowb,MAT_INITIAL_MATRIX,&mult->aseq);CHKERRQ(ierr); 
+  ierr = MatGetLocalMat(A,MAT_INITIAL_MATRIX,&mult->isrowa,&mult->isrowb,&mult->A_loc);CHKERRQ(ierr); 
 
   /* compute C_seq = A_seq * B_seq */
-  ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->aseq[0],mult->bseq[0],MAT_INITIAL_MATRIX,fill,&mult->C_seq);CHKERRQ(ierr);
+  ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->A_loc,mult->B_seq,MAT_INITIAL_MATRIX,fill,&mult->C_seq);CHKERRQ(ierr);
 
   /* create mpi matrix C by concatinating C_seq */
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); /* prevent C_seq being destroyed by MatMerge() */
@@ -399,11 +387,18 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr;
   Mat_MatMatMultMPI *mult=(Mat_MatMatMultMPI*)C->spptr;
+  Mat               *seq;
 
   PetscFunctionBegin;
-  ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_REUSE_MATRIX,&mult->bseq);CHKERRQ(ierr)
-  ierr = MatGetSubMatrices(A,1,&mult->isrowa,&mult->isrowb,MAT_REUSE_MATRIX,&mult->aseq);CHKERRQ(ierr);
-  ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->aseq[0],mult->bseq[0],MAT_REUSE_MATRIX,0.0,&mult->C_seq);CHKERRQ(ierr);
+  seq = &mult->B_seq;
+  ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_REUSE_MATRIX,&seq);CHKERRQ(ierr);
+  mult->B_seq = *seq;
+  
+  seq = &mult->A_loc;
+  ierr = MatGetSubMatrices(A,1,&mult->isrowa,&mult->isrowb,MAT_REUSE_MATRIX,&seq);CHKERRQ(ierr);
+  mult->A_loc = *seq;
+
+  ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->A_loc,mult->B_seq,MAT_REUSE_MATRIX,0.0,&mult->C_seq);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); 
   ierr = MatMerge(A->comm,mult->C_seq,B->n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
