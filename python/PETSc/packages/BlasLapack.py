@@ -1,7 +1,7 @@
 from __future__ import generators
 import user
 import config.base
-
+import md5
 import os
 
 class Configure(config.base.Configure):
@@ -40,6 +40,22 @@ class Configure(config.base.Configure):
     help.addArgument('BLAS/LAPACK', '-download-c-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
     help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,ifneeded>',  nargs.ArgFuzzyBool(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
     return
+
+  def getChecksum(self,source, chunkSize = 1024*1024):
+    '''Return the md5 checksum for a given file, which may also be specified by its filename
+       - The chunkSize argument specifies the size of blocks read from the file'''
+    if isinstance(source, file):
+      f = source
+    else:
+      f = file(source)
+    m = md5.new()
+    size = chunkSize
+    buf  = f.read(size)
+    while buf:
+      m.update(buf)
+      buf = f.read(size)
+    f.close()
+    return m.hexdigest()
 
   def parseLibrary(self, library):
     (dir, lib)  = os.path.split(library)
@@ -104,7 +120,13 @@ class Configure(config.base.Configure):
       raise RuntimeError('You cannot set both the library containing BLAS with --with-blas-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
     if 'with-blas-lapack-lib' in self.framework.argDB and 'with-blas-lapack-dir' in self.framework.argDB:
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
-    
+
+    if self.framework.argDB['download-f-blas-lapack'] == 1:
+      if not 'FC' in self.framework.argDB:
+        raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
+      libdir = self.downLoadBlasLapack('f','f')            
+      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'))
+      raise RuntimeError('Could not use downloaded f-blas-lapack?')
     # Try specified BLASLAPACK library
     if 'with-blas-lapack-lib' in self.framework.argDB:
       yield ('User specified BLAS/LAPACK library', None, self.framework.argDB['with-blas-lapack-lib'])
@@ -192,21 +214,24 @@ class Configure(config.base.Configure):
       yield ('PETSc location 2', os.path.join(dir2, 'libblas.a'), os.path.join(dir2, 'liblapack.a'))
       dir3 = os.path.join(dir1, 'libO_c++', PETSC_ARCH)
       yield ('PETSc location 3', os.path.join(dir3, 'libblas.a'), os.path.join(dir3, 'liblapack.a'))
+    if self.framework.argDB['download-f-blas-lapack'] == 2:
+      if not 'FC' in self.framework.argDB:
+        raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
+      libdir = self.downLoadBlasLapack('f','f')            
+      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'lib'+f2c+'blas.a'), os.path.join(libdir,'lib'+f2c+'lapack.a'))
     return
 
   def downLoadBlasLapack(self,f2c,l):
-    self.framework.log.write('Downloading '+l+'blaslapack')
+    self.framework.log.write('Downloading '+l+'blaslapack\n')
 
     packages = os.path.join(self.framework.argDB['PETSC_DIR'],'packages')
     if not os.path.isdir(packages):
       os.mkdir(packages)
 
     if f2c == 'f2c': self.addDefine('BLASLAPACK_F2C',1)
-    self.foundBlas       = 1
-    self.foundLapack     = 1
     libdir               = os.path.join(packages,f2c+'blaslapack',self.framework.argDB['PETSC_ARCH'])
-    self.functionalBlasLapack.append((f2c+'blaslapack', os.path.join(libdir,'lib'+f2c+'blas.a'), os.path.join(libdir,'lib'+f2c+'lapack.a')))
     if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
+      self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
       try:
         urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/'+f2c+'blaslapack.tar.gz',os.path.join('packages',f2c+'blaslapack.tar.gz'))
@@ -222,23 +247,65 @@ class Configure(config.base.Configure):
         raise RuntimeError('Error doing tar -xf '+f2c+'blaslapack.tar requested with -with-'+l+'-blas-lapack option')
       os.unlink(os.path.join('packages',f2c+'blaslapack.tar'))
       self.framework.actions.addArgument('BLAS/LAPACK', 'Download', 'Downloaded PETSc '+f2c+'blaslapack into '+os.path.dirname(libdir))
+    else:
+      self.framework.log.write('Found '+l+'blaslapack, do not need to download\n')
     if not os.path.isdir(libdir):
       os.mkdir(libdir)
-    
+    # C Blas/Lapack does not compile at this stage (kind of a BUG) but PETSc make will compile it
+    if f2c == 'f2c': return
+    blasDir = os.path.join(packages,f2c+'blaslapack')
+    g = open(os.path.join(blasDir,'tmpmakefile'),'w')
+    f = open(os.path.join(blasDir,'makefile'),'r')    
+    line = f.readline()
+    while line:
+      if line.startswith('FC  '):
+        line = 'FC = '+self.framework.argDB['FC']+'\n'
+      if line.startswith('  '):
+        line = 'FOPTFLAGS  = '+self.framework.argDB['FFLAGS']+'\n'
+      if line.startswith('  '):
+        line = 'AR      = '+self.setcompilers.AR+'\n'
+      if line.startswith('  '):
+        line = 'AR_FLAGS      = '+self.setcompilers.AR_FLAGS+'\n'
+      if line.startswith('  '):
+        line = 'LIB_SUFFIX = '+self.framework.argDB['LIB_SUFFIX']+'\n'
+      if line.startswith('  '):
+        line = 'RANLIB = '+self.framework.argDB['RANLIB']+'\n'
+      if line.startswith('  '):
+        line = 'RM = '+self.framework.argDB['RM']+'\n'
+
+      if line.startswith('include'):
+        line = '\n'
+      g.write(line)
+      line = f.readline()
+    f.close()
+    g.close()
+    if os.path.isfile(os.path.join(libdir,'tmpmakefile')) and (self.getChecksum(os.path.join(libdir,'tmpmakefile')) == self.getChecksum(os.path.join(blasDir,'tmpmakefile'))):
+      self.framework.log.write('Do not need to compile '+l+'blaslapack, already compiled\n')
+      return libdir
+    try:
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';make -f tmpmakefile', timeout=800, log = self.framework.log)[0]
+    except RuntimeError, e:
+      raise RuntimeError('Error running make on fblaslapack: '+str(e))
+    try:
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f libfblas.a libflapack.a '+self.framework.argDB['PETSC_ARCH'], timeout=30, log = self.framework.log)[0]
+    except RuntimeError, e:
+      raise RuntimeError('Error moving fblaslapack libraries: '+str(e))
+    try:
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f tmpmakefile '+self.framework.argDB['PETSC_ARCH'], timeout=30, log = self.framework.log)[0]
+    except RuntimeError, e:
+      pass
+    return libdir
+  
   def configureLibrary(self):
     self.functionalBlasLapack = []
     self.foundBlas       = 0
     self.foundLapack     = 0
-    if self.framework.argDB['download-c-blas-lapack'] == 1 or self.framework.argDB['download-f-blas-lapack'] == 1:
-      if self.framework.argDB['download-c-blas-lapack']:
-        f2c = 'f2c'
-        l   = 'c'
-      else:
-        if not 'FC' in self.framework.argDB:
-          raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
-        f2c = 'f'
-        l   = 'f'
-      self.downLoadBlasLapack(f2c,l)        
+    if self.framework.argDB['download-c-blas-lapack'] == 1:
+      if 'FC' in self.framework.argDB:
+        raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
+      self.downLoadBlasLapack('f2c','c')        
+      self.foundBlas       = 1
+      self.foundLapack     = 1
     else:
       for (name, blasLibrary, lapackLibrary) in self.generateGuesses():
         self.framework.log.write('================================================================================\n')
@@ -252,17 +319,13 @@ class Configure(config.base.Configure):
             break
 
     if not (self.foundBlas and self.foundLapack):
-      if self.framework.argDB['download-c-blas-lapack'] == 2 or self.framework.argDB['download-f-blas-lapack'] == 2:
-        if self.framework.argDB['download-c-blas-lapack'] == 2:
-          f2c = 'f2c'
-          l   = 'c'
-        else:
-          if not 'FC' in self.framework.argDB:
-            raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
-          f2c = 'f'
-          l   = 'f'
-        self.downLoadBlasLapack(f2c,l)        
-        
+      if self.framework.argDB['download-c-blas-lapack'] == 2:
+        if 'FC' in self.framework.argDB:
+          raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=ifneeded since you have a fortran compiler?')
+        self.downLoadBlasLapack('f2c','c')        
+        self.foundBlas       = 1
+        self.foundLapack     = 1
+    
     # User chooses one or take first (sort by version)
     if self.foundBlas and self.foundLapack:
       name, self.blasLibrary, self.lapackLibrary = self.functionalBlasLapack[0]
@@ -273,8 +336,8 @@ class Configure(config.base.Configure):
       self.sharedBlasLapack = 1
       if len(self.blasLibrary) > 0 and self.blasLibrary[0]:
         if ' '.join(self.blasLibrary).find('blas.a') >= 0: self.sharedBlasLapack = 0
-      if len(self.lapackLibrary) > 0 and self.lapackLibrary[0]:
-        if ' '.join(self.lapackLibrary).find('lapack.a') >= 0: self.sharedBlasLapack = 0
+        if len(self.lapackLibrary) > 0 and self.lapackLibrary[0]:
+          if ' '.join(self.lapackLibrary).find('lapack.a') >= 0: self.sharedBlasLapack = 0
 
     else:
       if not self.foundBlas:
