@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.91 2001/03/22 20:31:27 bsmith Exp balay $*/
+/*$Id: cheby.c,v 1.92 2001/03/23 23:23:39 balay Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -54,7 +54,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);
   }

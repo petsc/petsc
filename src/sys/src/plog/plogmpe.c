@@ -1,4 +1,4 @@
-/*$Id: plogmpe.c,v 1.55 2001/01/15 21:44:04 bsmith Exp balay $*/
+/*$Id: plogmpe.c,v 1.56 2001/03/23 23:20:50 balay Exp bsmith $*/
 /*
       PETSc code to log PETSc events using MPE
 */
@@ -339,7 +339,7 @@ int PetscLogMPEBegin(void)
 #endif
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
-    for (i=0; i < PetscLog_USER_EVENT_HIGH; i++) {
+    for (i=0; i < PETSC_LOG_USER_EVENT_HIGH; i++) {
       if (PetscLogEventMPEFlags[i]) {
         MPE_Describe_state(MPEBEGIN+2*i,MPEBEGIN+2*i+1,PetscLogEventName[i],PetscLogEventColor[i]);
       }

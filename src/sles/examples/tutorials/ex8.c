@@ -1,7 +1,7 @@
-/*$Id: ex8.c,v 1.47 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex8.c,v 1.48 2001/03/23 23:23:55 balay Exp bsmith $*/
 
-static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
-Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
+static char help[] = "Illustrates use of the preconditioner ASM.\n\
+The Additive Schwarz Method for solving a linear system in parallel with SLES.  The\n\
 code indicates the procedure for setting user-defined subdomains.  Input\n\
 parameters include:\n\
   -user_set_subdomain_solvers:  User explicitly sets subdomain solvers\n\

@@ -1,7 +1,6 @@
-/*$Id: ex1.c,v 1.18 2001/01/23 20:57:52 balay Exp balay $*/
+/*$Id: ex1.c,v 1.19 2001/03/23 23:24:56 balay Exp bsmith $*/
 
-static char help[] = 
-"Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
+static char help[] = "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\
     -f input_file : Specifies input file\n\
     -d : Dumps the entire database\n\
     -e : Allows addition of character string values to the database\n\

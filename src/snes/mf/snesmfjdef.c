@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.23 2001/01/16 18:20:09 balay Exp balay $*/
+/*$Id: snesmfjdef.c,v 1.24 2001/03/23 23:24:10 balay Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -228,7 +228,7 @@ int MatSNESMFDefaultSetUmin(Mat A,PetscReal umin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFDefaultSetUmin_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFDefaultSetUmin_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,umin);CHKERRQ(ierr);
   }

@@ -1,7 +1,6 @@
-/*$Id: ex13.c,v 1.15 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex13.c,v 1.16 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = 
-"Tests copying and ordering uniprocessor row-based sparse matrices.\n\n";
+static char help[] = "Tests copying and ordering uniprocessor row-based sparse matrices.\n\n";
 
 #include "petscmat.h"
 

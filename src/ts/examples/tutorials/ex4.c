@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.24 2001/01/23 20:57:37 balay Exp balay $*/
+/*$Id: ex4.c,v 1.25 2001/03/23 23:24:45 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   Vec           u;                      /* approximate solution vector */
   double        time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 100;   /* default max timesteps */
-  PetscDraw          draw;                   /* drawing context */
+  PetscDraw     draw;                   /* drawing context */
   int           ierr,steps,size,m;
   double        dt,ftime;
   PetscTruth    flg;

@@ -1,6 +1,6 @@
-/*$Id: ex1.c,v 1.26 2001/01/23 20:57:37 balay Exp balay $*/
+/*$Id: ex1.c,v 1.27 2001/03/23 23:24:45 balay Exp bsmith $*/
 
-static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
+static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping.";
 
 /*
    Concepts: TS^pseudo-timestepping

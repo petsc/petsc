@@ -1,4 +1,4 @@
-/*$Id: pname.c,v 1.40 2001/03/22 20:29:03 bsmith Exp balay $*/
+/*$Id: pname.c,v 1.41 2001/03/23 23:20:38 balay Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -99,7 +99,7 @@ int PetscObjectPublish(PetscObject obj)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name=PetscObjectChangeTypeName""></a>*/"PetscObjectChangeTypeName"
+#define __FUNCT__ "PetscObjectChangeTypeName"
 int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
 {
   int ierr;

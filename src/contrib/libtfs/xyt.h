@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /*************************************xyt.h************************************
 Module Name: xyt
 Module Info: need xyt.{c,h} gs.{c,h} comm.{c,h} ivec.{c,h} error.{c,h} 

@@ -1,8 +1,7 @@
-/*$Id: ex2.c,v 1.40 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex2.c,v 1.41 2001/03/23 23:21:37 balay Exp bsmith $*/
 
-static char help[] = "Builds a parallel vector with 1 component on the first\n\
-processor, 2 on the second, etc.  Then each processor adds one to all\n\
-elements except the last rank.\n\n";
+static char help[] = "Builds a parallel vector with 1 component on the firstprocessor, 2 on the second, etc.\n\
+  Then each processor adds one to all elements except the last rank.\n\n";
 
 /*T
    Concepts: vectors^assembling vectors;

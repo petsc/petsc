@@ -1,13 +1,6 @@
-/*$Id: ex1.c,v 1.26 2001/01/23 20:55:27 balay Exp balay $*/
+/*$Id: ex1.c,v 1.27 2001/03/23 23:22:44 balay Exp bsmith $*/
 
-static char help[] = 
-"Reads a PETSc matrix and vector from a file and reorders it.\n\
-This version first preloads and solves a small system, then loads \n\
-another (larger) system and reorders it.  This example illustrates\n\
-preloading of instructions with the smaller system so that more accurate\n\
-performance monitoring can be done with the larger one (that actually\n\
-is the system of interest).  See the 'Performance Hints' chapter of the\n\
-users manual for a discussion of preloading.  Input parameters include\n\
+static char help[] = "Reads a PETSc matrix and vector from a file and reorders it.\n\
   -f0 <input_file> : first file to load (small system)\n\
   -f1 <input_file> : second file to load (larger system)\n\n";
 
@@ -33,7 +26,7 @@ T*/
 int main(int argc,char **args)
 {
   Mat               A;                /* matrix */
-  PetscViewer            fd;               /* viewer */
+  PetscViewer       fd;               /* viewer */
   char              file[2][128];     /* input file name */
   IS                isrow,iscol;      /* row and column permutations */
   int               ierr;

@@ -1,10 +1,10 @@
-/*$Id: ex2.c,v 1.19 2001/01/23 20:53:45 balay Exp balay $*/
+/*$Id: ex2.c,v 1.20 2001/03/23 23:21:11 balay Exp bsmith $*/
 
 /*
        Formatted test for ISStride routines.
 */
 
-static char help[] = "Tests IS stride routines\n\n";
+static char help[] = "Tests IS stride routines.\n\n";
 
 #include "petscis.h"
 

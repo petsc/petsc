@@ -1,6 +1,6 @@
-/*$Id: ex9.c,v 1.12 2001/01/23 20:52:52 balay Exp balay $*/
+/*$Id: ex9.c,v 1.13 2001/03/23 23:20:21 balay Exp bsmith $*/
 
-static char help[] = "Makes a simple histogram\n";
+static char help[] = "Makes a simple histogram.\n";
 
 #include "petsc.h"
 
@@ -11,11 +11,11 @@ int main(int argc,char **argv)
   PetscDraw       draw;
   PetscDrawHG     hist;
   PetscDrawAxis   axis;
-  int        n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,bins = 8;
-  int        color = PETSC_DRAW_GREEN;
-  char       *xlabel,*ylabel,*toplabel;
-  double     xd;
-  PetscTruth flg;
+  int             n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,bins = 8;
+  int             color = PETSC_DRAW_GREEN;
+  char            *xlabel,*ylabel,*toplabel;
+  double          xd;
+  PetscTruth      flg;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 

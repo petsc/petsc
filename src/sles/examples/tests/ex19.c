@@ -1,6 +1,6 @@
-/* "$Id: ex19.c,v 1.8 2001/01/23 20:56:37 balay Exp balay $" */
+/* "$Id: ex19.c,v 1.9 2001/03/23 23:23:50 balay Exp bsmith $" */
 
-static char help[] ="\
+static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\

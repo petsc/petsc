@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.82 2001/01/20 03:33:35 bsmith Exp bsmith $ */
+/* $Id: petscviewer.h,v 1.83 2001/03/08 17:29:14 bsmith Exp bsmith $ */
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
@@ -6,7 +6,17 @@
 #if !defined(__PETSCVIEWER_H)
 #define __PETSCVIEWER_H
 
-typedef struct _p_PetscViewer*            PetscViewer;
+/*S
+     PetscViewer - Abstract PETSc object that helps view (in ASCII, binary, graphically etc)
+         other PETSc objects
+
+   Level: beginner
+
+  Concepts: viewing
+
+.seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType
+S*/
+typedef struct _p_PetscViewer* PetscViewer;
 
 /*
     petsc.h must be included AFTER the definition of PetscViewer for ADIC to 
@@ -15,8 +25,15 @@ typedef struct _p_PetscViewer*            PetscViewer;
 #include "petsc.h"
 
 #define PETSC_VIEWER_COOKIE              PETSC_COOKIE+1
-typedef char*PetscViewerType;
 
+/*E
+    PetscViewerType - String with the name of a PETSc PETScViewer
+
+   Level: beginner
+
+.seealso: PetscViewerSetType(), PetscViewer
+E*/
+typedef char* PetscViewerType;
 #define PETSC_VIEWER_SOCKET       "socket"
 #define PETSC_VIEWER_ASCII        "ascii"
 #define PETSC_VIEWER_BINARY       "binary"
@@ -37,7 +54,6 @@ EXTERN int PetscViewerRegister(char*,char*,char*,int(*)(PetscViewer));
 EXTERN int PetscViewerCreate(MPI_Comm,PetscViewer*);
 EXTERN int PetscViewerSetFromOptions(PetscViewer);
 
-
 EXTERN int PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
 typedef enum {PETSC_BINARY_RDONLY,PETSC_BINARY_WRONLY,PETSC_BINARY_CREATE} PetscViewerBinaryType;
 EXTERN int PetscViewerBinaryOpen(MPI_Comm,const char[],PetscViewerBinaryType,PetscViewer*);
@@ -53,6 +69,13 @@ EXTERN int PetscViewerGetSingleton(PetscViewer,PetscViewer*);
 EXTERN int PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
 
 
+/*E
+    PetscViewerFormat - Way a viewer presents the object
+
+   Level: beginner
+
+.seealso: PetscViewerSetFormat(), PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
+E*/
 typedef enum { 
   PETSC_VIEWER_ASCII_DEFAULT,
   PETSC_VIEWER_ASCII_MATLAB, 
@@ -71,8 +94,6 @@ typedef enum {
   PETSC_VIEWER_DRAW_PORTS,
   PETSC_VIEWER_NATIVE,
   PETSC_VIEWER_NOFORMAT} PetscViewerFormat;
-
-
 
 EXTERN int PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
 EXTERN int PetscViewerPushFormat(PetscViewer,PetscViewerFormat);
@@ -146,9 +167,16 @@ EXTERN int  PetscViewerSocketPutInt(PetscViewer,int,int*);
 EXTERN int  PetscViewerSocketPutSparse_Private(PetscViewer,int,int,int,Scalar*,int*,int *);
 EXTERN int  PetscViewerDestroyAMS_Private(void);
 
-/*
-    Manages sets of viewers
-*/
+/*S
+     PetscViewers - Abstract collection of PetscViewers
+
+   Level: intermediate
+
+  Concepts: viewing
+
+.seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType, PetscViewer, PetscViewersCreate(),
+           PetscViewersGetViewer()
+S*/
 typedef struct _p_PetscViewers* PetscViewers;
 EXTERN int PetscViewersCreate(MPI_Comm,PetscViewers*);
 EXTERN int PetscViewersDestroy(PetscViewers);

@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.30 2001/03/28 15:56:14 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.31 2001/04/03 03:03:19 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -139,7 +139,7 @@ int DMMGDestroy(DMMG *dmmg)
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy
+.seealso DMMGCreate(), DMMGDestroy()
 
 @*/
 int DMMGSetDM(DMMG *dmmg,DM dm)
@@ -161,6 +161,19 @@ int DMMGSetDM(DMMG *dmmg,DM dm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetUp"
+/*@C
+    DMMGSetUp - Prepares the DMMG to solve a system
+
+    Collective on DMMG
+
+    Input Parameter:
+.   dmmg - the context
+
+    Level: advanced
+
+.seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetSLES(), DMMGSolve()
+
+@*/
 int DMMGSetUp(DMMG *dmmg)
 {
   int        ierr,i,nlevels = dmmg[0]->nlevels;
@@ -178,7 +191,7 @@ int DMMGSetUp(DMMG *dmmg)
     ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->b);CHKERRQ(ierr);
     ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->r);CHKERRQ(ierr);
     if (!dmmg[i]->matrixfree) {
-      ierr = DMGetColoring(dmmg[i]->dm,MATMPIAIJ,PETSC_NULL,&dmmg[i]->J);CHKERRQ(ierr);
+      ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GLOBAL,MATMPIAIJ,PETSC_NULL,&dmmg[i]->J);CHKERRQ(ierr);
     } 
     dmmg[i]->B = dmmg[i]->J;
   }
@@ -197,6 +210,19 @@ int DMMGSetUp(DMMG *dmmg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolve"
+/*@C
+    DMMGSolve - Actually solves the (non)linear system defined with the DMMG
+
+    Collective on DMMG
+
+    Input Parameter:
+.   dmmg - the context
+
+    Level: advanced
+
+.seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetSLES(), DMMGSetUp()
+
+@*/
 int DMMGSolve(DMMG *dmmg)
 {
   int        i,ierr,nlevels = dmmg[0]->nlevels;

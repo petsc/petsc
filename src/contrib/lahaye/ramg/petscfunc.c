@@ -100,13 +100,13 @@ int KSPMonitorAmg(KSP ksp,int n,double rnorm,void* ctx)
 */ 
 int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
 {
-  Scalar   *values; 
-  Vec      t, v, V; 
-  PetscViewer   viewer; 
-  char     filename[161];
-  int      ierr, i, numnodes; 
-  CONVHIST *convhist;
-  FILE     *fout; 
+  Scalar      *values; 
+  Vec         t, v, V; 
+  PetscViewer viewer; 
+  char        filename[161];
+  int         ierr, i, numnodes; 
+  CONVHIST    *convhist;
+  FILE        *fout; 
 
   convhist = (CONVHIST*)(ctx); 
   numnodes = convhist->NUMNODES;
@@ -207,7 +207,7 @@ int PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 #define __FUNCT__ "ViewSubMatrices"
 int ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
-  int    i, ierr;
+  int         i, ierr;
   PetscViewer viewer; 
   PetscDraw   draw; 
 
@@ -246,12 +246,11 @@ int SamgShellPCSetUpOnFem(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 #define __FUNCT__ "MyMatView"
 int MyMatView(Mat mat,void *dummy)
 {
-  int    i, ierr;
+  int         i, ierr;
   PetscViewer viewer; 
   PetscDraw   draw; 
 
-  ierr = PetscViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 
-	 0, 0, 500,500,&viewer); 
+  ierr = PetscViewerDrawOpen(MPI_COMM_WORLD,PETSC_NULL, PETSC_NULL, 0, 0, 500,500,&viewer); 
   ierr = PetscViewerDrawGetDraw(viewer, 0, &draw); CHKERRQ(ierr);
   ierr = MatView(mat, viewer); CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw, 5); CHKERRQ(ierr);
@@ -266,12 +265,11 @@ int MyMatView(Mat mat,void *dummy)
 #define __FUNCT__ "PrintMatrix"
 int PrintMatrix(Mat mat, char* path, char* base)
 {
-   int      ierr;
-   PetscViewer   viewer; 
-   char     filename[80]; 
-   Scalar   *vals_getrow; 
-   int      numrows, numcols, numnonzero, I, j, ncols_getrow, *cols_getrow;
-   MatInfo  info;
+   int         ierr,numrows, numcols, numnonzero, I, j, ncols_getrow, *cols_getrow;
+   PetscViewer viewer; 
+   char        filename[80]; 
+   Scalar      *vals_getrow; 
+   MatInfo     info;
 
    /*..Get size and number of unknowns of matrix..*/ 
    ierr = MatGetSize(mat, &numrows, &numcols); CHKERRQ(ierr);
@@ -321,11 +319,10 @@ int PrintMatrix(Mat mat, char* path, char* base)
 #define __FUNCT__ "PrintVector"
 int PrintVector(Vec vec, char* path, char* base) 
 {
-   int    ierr;
+   int         ierr,size,i;
    PetscViewer viewer; 
-   char   filename[80]; 
-   Scalar *values; 
-   int    size, i; 
+   char        filename[80]; 
+   Scalar      *values; 
 
    sprintf(filename, "%s%s%s", path, base, ".m");
    printf("   [PrintVector]::Generating file %s ...\n", filename); 

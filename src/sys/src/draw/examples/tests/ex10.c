@@ -1,5 +1,5 @@
-/*$Id: ex10.c,v 1.14 2001/01/23 20:52:52 balay Exp balay $*/
-static char help[] = "Tests repeatedly setting a window type\n";
+/*$Id: ex10.c,v 1.15 2001/03/23 23:20:21 balay Exp bsmith $*/
+static char help[] = "Tests repeatedly setting a window type.\n";
 
 #include "petsc.h"
 

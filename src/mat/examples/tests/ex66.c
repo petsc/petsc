@@ -1,7 +1,6 @@
-/*$Id: ex66.c,v 1.12 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex66.c,v 1.13 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = 
-"Reads in rectangular matrix from disk, stored from ex65.c\n\n";
+static char help[] = "Reads in rectangular matrix from disk, stored from ex65.c\n\n";
 
 #include "petscmat.h"
 
@@ -9,9 +8,9 @@ static char help[] =
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int        ierr;
-  Mat        A;
-  PetscViewer     fd;
+  int         ierr;
+  Mat         A;
+  PetscViewer fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

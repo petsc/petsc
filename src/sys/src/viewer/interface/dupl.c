@@ -1,4 +1,4 @@
-/*$Id: dupl.c,v 1.12 2001/01/15 21:43:19 bsmith Exp balay $*/
+/*$Id: dupl.c,v 1.13 2001/03/23 23:20:05 balay Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
@@ -11,7 +11,7 @@
     Collective on PetscViewer
 
    Input Parameter:
-.  PetscViewer - the PetscViewer to be duplicated
+.  viewer - the PetscViewer to be duplicated
 
    Output Parameter:
 .  outviewer - new PetscViewer
@@ -55,7 +55,7 @@ int PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
     Collective on PetscViewer
 
    Input Parameters:
-+  PetscViewer - the PetscViewer to be duplicated
++  viewer - the PetscViewer to be duplicated
 -  outviewer - new PetscViewer
 
    Level: advanced

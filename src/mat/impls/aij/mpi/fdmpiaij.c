@@ -1,4 +1,4 @@
-/*$Id: fdmpiaij.c,v 1.37 2001/01/15 21:45:38 bsmith Exp balay $*/
+/*$Id: fdmpiaij.c,v 1.38 2001/03/23 23:21:56 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -16,7 +16,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   int        nis = iscoloring->n,*ncolsonproc,size,nctot,*cols,*disp,*B_ci,*B_cj;
   int        *rowhit,M = mat->m,cstart = aij->cstart,cend = aij->cend,colb;
   int        *columnsforrow,l;
-  IS         *isa = iscoloring->is;
+  IS         *isa;
   PetscTruth done,flg;
 
   PetscFunctionBegin;
@@ -24,6 +24,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled first; MatAssemblyBegin/End();");
   }
 
+  ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
   c->M             = mat->M;  /* set the global rows and columns and local rows */
   c->N             = mat->N;
   c->m             = mat->m;
@@ -228,6 +229,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
       c->vscaleforrow[k][l] = colb;
     }
   }
+  ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
@@ -236,4 +238,9 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
+
+
+
+
+
 

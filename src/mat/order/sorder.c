@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.87 2001/03/15 17:01:06 bsmith Exp balay $*/
+/*$Id: sorder.c,v 1.88 2001/03/23 23:22:51 balay Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -142,7 +142,7 @@ int MatOrderingRegister(char *sname,char *path,char *name,int (*function)(Mat,Ma
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatOrderingList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatOrderingList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -257,7 +257,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   }
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
-  ierr =  PetscFListFind(mat->comm,MatOrderingList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(mat->comm,MatOrderingList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
 
   ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);

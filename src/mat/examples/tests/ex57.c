@@ -1,7 +1,6 @@
-/*$Id: ex57.c,v 1.21 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex57.c,v 1.22 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
- binary file.\n\
+static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another binary file.\n\
 Options:\n\
   -fin  <mat>  : input matrix file\n\
   -fout <mat>  : output marrix file\n\
@@ -15,14 +14,14 @@ Options:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {  
-  char       fin[128],fout[128] ="default.mat";
-  PetscViewer     fdin,fdout;               
-  Vec        b;   
-  MatType    mtype = MATSEQBAIJ;            
-  Mat        A,*B;             
-  int        ierr,start=0,size;
-  IS         isrow,iscol;
-  PetscTruth flg;
+  char        fin[128],fout[128] ="default.mat";
+  PetscViewer fdin,fdout;               
+  Vec         b;   
+  MatType     mtype = MATSEQBAIJ;            
+  Mat         A,*B;             
+  int         ierr,start=0,size;
+  IS          isrow,iscol;
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.42 2001/03/22 20:28:46 bsmith Exp balay $*/
+/*$Id: drawreg.c,v 1.43 2001/03/23 23:20:08 balay Exp bsmith $*/
 /*
        Provides the registration process for PETSc PetscDraw routines
 */
@@ -134,7 +134,7 @@ int PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   /* Get the function pointers for the graphics method requested */
   if (!PetscDrawList) SETERRQ(1,"No draw implementations ierr");
 
-  ierr =  PetscFListFind(draw->comm,PetscDrawList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(draw->comm,PetscDrawList,type,(void (**)()) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,"Unknown PetscDraw type given: %s",type);
 
@@ -236,12 +236,12 @@ M*/
 #define __FUNCT__ "PetscDrawRegister" 
 int PetscDrawRegister(char *sname,char *path,char *name,int (*function)(PetscDraw))
 {
-  int ierr;
+  int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PetscDrawList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PetscDrawList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

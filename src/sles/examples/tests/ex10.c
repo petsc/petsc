@@ -1,7 +1,6 @@
-/*$Id: ex10.c,v 1.91 2001/01/23 20:56:37 balay Exp balay $*/
+/*$Id: ex10.c,v 1.92 2001/03/23 23:23:50 balay Exp bsmith $*/
 
-static char help[] = 
-"This example calculates the stiffness matrix for a brick in three\n\
+static char help[] = "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\
 elasticity. This also demonstrates use of  block\n\
 diagonal data structure.  Input arguments are:\n\

@@ -1,7 +1,6 @@
-/*$Id: ex2.c,v 1.38 2001/03/09 04:03:32 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.39 2001/03/23 23:24:56 balay Exp bsmith $*/
 
-static char help[] = 
-"Reads a a simple unstructured grid from a file, partitions it,\n\
+static char help[] = "Reads a a simple unstructured grid from a file. Partitions it,\n\
 and distributes the grid data accordingly\n\n";
 
 /*T

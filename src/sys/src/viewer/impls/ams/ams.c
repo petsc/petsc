@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.45 2001/03/08 17:07:44 bsmith Exp balay $*/
+/*$Id: ams.c,v 1.46 2001/03/23 23:20:01 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -18,9 +18,9 @@ EXTERN_C_BEGIN
 int PetscViewerAMSSetCommName_AMS(PetscViewer v,const char name[])
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS*)v->data;
-  int        ierr,port = -1;
-  PetscTruth flg,flg2;
-  char       m[16];
+  int             ierr,port = -1;
+  PetscTruth      flg,flg2;
+  char            m[16];
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int PetscViewerAMSSetCommName(PetscViewer v,const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)v,"PetscViewerAMSSetCommName_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)v,"PetscViewerAMSSetCommName_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(v,name);CHKERRQ(ierr);
   }
@@ -133,7 +133,7 @@ int PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)v,"PetscViewerAMSGetAMSComm_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)v,"PetscViewerAMSGetAMSComm_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(v,ams_comm);CHKERRQ(ierr);
   }
@@ -226,11 +226,11 @@ int PetscViewer_AMS_Destroy(MPI_Comm comm)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name=ViewerDestroy_AMS""></a>*/"PetscViewerDestroy_AMS" 
+#define __FUNCT__ "PetscViewerDestroy_AMS" 
 static int PetscViewerDestroy_AMS(PetscViewer viewer)
 {
   PetscViewer_AMS *vams = (PetscViewer_AMS*)viewer->data;
-  int        ierr;
+  int             ierr;
 
   PetscFunctionBegin;
 
@@ -257,7 +257,7 @@ EXTERN_C_BEGIN
 int PetscViewerCreate_AMS(PetscViewer v)
 {
   PetscViewer_AMS *vams;
-  int        ierr;
+  int             ierr;
 
   PetscFunctionBegin;
   v->ops->destroy = PetscViewerDestroy_AMS;

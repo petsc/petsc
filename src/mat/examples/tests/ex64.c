@@ -1,4 +1,4 @@
-/*$Id: ex64.c,v 1.13 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex64.c,v 1.14 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
 
@@ -8,11 +8,11 @@ static char help[] = "Saves 4by4 block matrix.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     A;
-  int     i,j,ierr,size;
-  PetscViewer  fd;
-  Scalar  values[16],one = 1.0;
-  Vec     x;
+  Mat         A;
+  int         i,j,ierr,size;
+  PetscViewer fd;
+  Scalar      values[16],one = 1.0;
+  Vec         x;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

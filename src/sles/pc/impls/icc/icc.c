@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.77 2001/01/15 21:46:56 bsmith Exp balay $*/
+/*$Id: icc.c,v 1.78 2001/03/23 23:23:14 balay Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -77,7 +77,7 @@ int PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetMatOrdering_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetMatOrdering_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 
@@ -110,7 +110,7 @@ int PCICCSetLevels(PC pc,int levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetLevels_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetLevels_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,levels);CHKERRQ(ierr);
   } 
@@ -151,7 +151,7 @@ int PCICCSetFill(PC pc,PetscReal fill)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less than 1.0");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetFill_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetFill_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 

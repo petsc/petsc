@@ -1,4 +1,4 @@
-/*$Id: ex40.c,v 1.22 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex40.c,v 1.23 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -16,10 +16,11 @@ int main(int argc,char **args)
   PetscTruth  flg;
   Mat         A,B;
   char        file[128]; 
-  PetscViewer      fd;
+  PetscViewer fd;
   IS          *is1,*is2;
   PetscRandom r;
   Scalar      rand;
+
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(1,"This example does not work with complex numbers");

@@ -1,4 +1,4 @@
-/*$Id: hists.c,v 1.24 2001/01/17 19:44:18 balay Exp balay $*/
+/*$Id: hists.c,v 1.25 2001/03/23 23:20:24 balay Exp bsmith $*/
 
 /*
   Contains the data structure for plotting a histogram in a window with an axis.
@@ -8,18 +8,18 @@
 
 struct _p_DrawHG {
   PETSCHEADER(int) 
-  int       (*destroy)(PetscDrawSP);
-  int       (*view)(PetscDrawSP,PetscViewer);
-  PetscDraw      win;
-  PetscDrawAxis  axis;
-  PetscReal xmin,xmax;
-  PetscReal ymin,ymax;
-  int       numBins;
-  PetscReal *bins;
-  int       numValues;
-  int       maxValues;
-  PetscReal *values;
-  int       color;
+  int           (*destroy)(PetscDrawSP);
+  int           (*view)(PetscDrawSP,PetscViewer);
+  PetscDraw     win;
+  PetscDrawAxis axis;
+  PetscReal     xmin,xmax;
+  PetscReal     ymin,ymax;
+  int           numBins;
+  PetscReal     *bins;
+  int           numValues;
+  int           maxValues;
+  PetscReal     *values;
+  int           color;
 };
 
 #define CHUNKSIZE 100
@@ -52,7 +52,7 @@ int PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
   int         ierr;
   PetscTruth  isnull;
   PetscObject obj = (PetscObject)draw;
-  PetscDrawHG      h;
+  PetscDrawHG h;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
@@ -265,9 +265,9 @@ int PetscDrawHGAddValue(PetscDrawHG hist,PetscReal value)
 @*/
 int PetscDrawHGDraw(PetscDrawHG hist)
 {
-  PetscDraw     draw;
+  PetscDraw   draw;
   PetscReal   xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight;
-  int      numBins,numValues,i,p,ierr,bcolor,color,rank;
+  int         numBins,numValues,i,p,ierr,bcolor,color,rank;
 
   PetscFunctionBegin;
   if (hist && hist->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);

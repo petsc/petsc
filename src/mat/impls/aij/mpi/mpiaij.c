@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.332 2001/03/23 22:05:05 bsmith Exp balay $*/
+/*$Id: mpiaij.c,v 1.333 2001/03/23 23:21:56 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1431,6 +1431,9 @@ EXTERN int MatIncreaseOverlap_MPIAIJ(Mat,int,IS *,int);
 EXTERN int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
 EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,IS *,IS *,MatReuse,Mat **);
 EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
+#if !defined(PETSC_USE_COMPLEX)
+EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatLUInfo*,Mat*);
+#endif
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
@@ -1459,7 +1462,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatSetOption_MPIAIJ,
        MatZeroEntries_MPIAIJ,
        MatZeroRows_MPIAIJ,
+#if !defined(PETSC_USE_COMPLEX)
+				       MatLUFactorSymbolic_MPIAIJ_TFS,
+#else
        0,
+#endif
        0,
        0,
        0,
@@ -1537,8 +1544,6 @@ EXTERN_C_BEGIN
 EXTERN int MatGetDiagonalBlock_MPIAIJ(Mat,PetscTruth *,MatReuse,Mat *);
 EXTERN_C_END
 
-EXTERN int MatUseTFS_MPIAIJ(Mat);
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIAIJ"
@@ -1546,7 +1551,6 @@ int MatCreate_MPIAIJ(Mat B)
 {
   Mat_MPIAIJ   *b;
   int          ierr,i,size;
-  PetscTruth   flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
@@ -1605,9 +1609,6 @@ int MatCreate_MPIAIJ(Mat B)
   b->rowindices   = 0;
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
-
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_mpiaij_tfs",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = MatUseTFS_MPIAIJ(B);CHKERRQ(ierr); }
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",

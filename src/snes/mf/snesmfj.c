@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.117 2001/03/23 23:24:10 balay Exp balay $*/
+/*$Id: snesmfj.c,v 1.118 2001/03/28 19:42:19 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -52,7 +52,7 @@ int MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
   /* Get the function pointers for the requrested method */
   if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr =  PetscFListFind(ctx->comm,MatSNESMPetscFList,ftype,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(ctx->comm,MatSNESMPetscFList,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ(1,"Unknown MatSNESMF type given");
 
@@ -110,7 +110,7 @@ int MatSNESMFRegister(char *sname,char *path,char *name,int (*function)(MatSNESM
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatSNESMPetscFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatSNESMPetscFList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,7 +1,6 @@
-/*$Id: ex13.c,v 1.28 2001/01/23 20:57:06 balay Exp balay $*/
+/*$Id: ex13.c,v 1.29 2001/03/23 23:24:20 balay Exp bsmith $*/
 
-static char help[] =
-"This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\
+static char help[] = "This program is a replica of ex6.c except that it does 2 solves to avoid paging.\n\
 This program demonstrates use of the SNES package to solve systems of\n\
 nonlinear equations in parallel, using 2-dimensional distributed arrays.\n\
 The 2-dim Bratu (SFI - solid fuel ignition) test problem is used, where\n\

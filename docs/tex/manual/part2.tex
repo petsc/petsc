@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.358 2001/04/06 03:00:10 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.359 2001/04/07 02:36:10 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -26,7 +26,7 @@ sides for linear systems, etc. This chapter is organized as follows:
   \item (ISLocalToGlobalMapping) Mapping between local and global numberings
   \end{itemize}
 \item (DA) Section \ref{sec:struct} - management of structured grids
-\item (IS, VecScatter) Section \ref{sec:unstruct} - management of unstructured grids
+\item (IS, VecScatter) Section \ref{sec:unstruct} - management of vectors related to unstructured grids
 \end{itemize}
 
 % --------------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ the user's code can perform any series of other actions between these
 two calls while the messages are in transition. 
 
 Example usage of \trl{VecSetValues()} may be found in 
-{src/vec/examples/tutorials/ex2.c or ex2f.F}
+\trl{${PETSC_DIR}/src/vec/examples/tutorials/ex2.c or ex2f.F}
 
 Often, rather than inserting elements in a vector, one may wish to 
 add values. This process \sindex{vector values, setting}
@@ -470,8 +470,8 @@ numbering scheme back to the global PETSc numbering can be handled with the
 If one is given a list of indices in a global numbering, the routine
 \begin{verbatim}
   ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,
-                                      ISGlobalToLocalMappingType type,int nin,
-                                      int *idxin,int *nout,int *idxout);
+                              ISGlobalToLocalMappingType type,int nin,
+                              int *idxin,int *nout,int *idxout);
 \end{verbatim}
 \findex{ISGlobalToLocalMappingApply}  \sindex{global to local mapping} will provide
 a new list of indices in the local numbering. Again, negative values in 
@@ -533,7 +533,8 @@ processor; the ghost points for the seventh processor's local part of
 a parallel array are shown in gray.
 
 \begin{figure}[tb]
-\centerline{\psfig{file=ghost.eps,angle=0}}
+\centerline{\immediate \pdfximage  {ghost.pdf} \pdfrefximage \pdflastximage}
+%\centerline{\psfig{file=ghost.eps,angle=0}}
 \caption{Ghost Points for Two Stencil Types on the Seventh Processor}
 \label{fig:ghosts}
 \end{figure}
@@ -550,7 +551,7 @@ One creates a distributed array communication data structure
 in two dimensions with the command 
 \begin{verbatim}
   DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType st,int M,
-                     int N,int m,int n,int dof,int s,int *lx,int *ly,DA *da);
+             int N,int m,int n,int dof,int s,int *lx,int *ly,DA *da);
 \end{verbatim}
 The \findex{DACreate2d} \sindex{array, distributed} arguments
 \sindex{distributed array} \trl{M} and \trl{N} indicate the global
@@ -599,10 +600,10 @@ in one and three dimensions are analogous:
 \findex{DACreate3d()} \findex{DACreate1d()} \findex{DACreate3d()}
 \begin{verbatim}
   DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,
-                     DA *inra);
+             DA *inra);
   DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                     int M,int N,int P,int m,int n,int p,int w,int s,int *lx,
-                     int *ly,int *lz,DA *inra);
+             int M,int N,int P,int m,int n,int p,int w,int s,int *lx,
+             int *ly,int *lz,DA *inra);
 \end{verbatim}
 \trl{DA_ZPERIODIC}, \findex{DA_ZPERIODIC}
 \trl{DA_XZPERIODIC}, \findex{DA_XZPERIODIC}
@@ -734,8 +735,8 @@ For example for a scalar problem in two dimensions one could do
   DAVecRestoreArray(DA da,Vec local,(void**)u);
   DAVecRestoreArray(DA da,Vec global,(void**)f);
 \end{verbatim}
-See \trl{$PETSC_DIR/src/snes/examples/tutorials/ex5.c} for a 
-complete example and See \trl{$PETSC_DIR/src/snes/examples/tutorials/ex19.c} for an
+See \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c} for a 
+complete example and See \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex19.c} for an
 example for a multi-component PDE.
 
 %---------------------------------------------------------------------------
@@ -807,7 +808,8 @@ In Figure \ref{fig:daao} we indicate the orderings for a two-dimensional distrib
 array, divided among four processors.
 
 \begin{figure}[tb]
-\centerline{\psfig{file=danumbering.eps,angle=270,width=4.7in}}
+\centerline{\immediate \pdfximage height 4.7in {danumbering.pdf} \pdfrefximage \pdflastximage}
+%\centerline{\psfig{file=danumbering.eps,angle=270,width=4.7in}}
 \caption{Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processors)}
 \label{fig:daao}
 \end{figure}
@@ -829,7 +831,7 @@ solvers.
 %\end{figure}
 
 % -------------------------------------------------------------------------------------- 
-\section{Software for Managing Unstructured Grids}
+\section{Software for Managing Vectors Related to Unstructured Grids}
 \label{sec:unstruct}
 
 % -------------------------------------------------------------------------------------- 
@@ -1129,7 +1131,7 @@ an unstructured grid.
 \label{chapter:matrices}
 \sindex{matrices}
 
-PETSc 2.0 provides a variety of matrix implementations because no
+PETSc provides a variety of matrix implementations because no
 single matrix format is appropriate for all problems.  Currently we
 support dense storage and compressed sparse row storage (both
 sequential and parallel versions), as well as several specialized
@@ -1886,8 +1888,9 @@ sum of all the \trl{mlocal}. The arguments \trl{ia} and \trl{ja} are the row poi
 and column pointers for the given rows, these are the usual format for parallel 
 compressed sparse row storage, using indices starting at 0, {\bf not} 1.
 
-\begin{figure}[tb]
-\centerline{\psfig{file=usg.ps,angle=0}}
+\begin{figure}[H]
+\centerline{\immediate \pdfximage height 3in {usg.pdf} \pdfrefximage \pdflastximage}
+%\centerline{\psfig{file=usg.ps,angle=0}}
 \caption{Numbering on Simple Unstructured Grid}
 \label{fig:usg}
 \end{figure}
@@ -2158,7 +2161,7 @@ matrix in GMRES is the iterative refinement Gram-Schmidt method.
 via 
 \begin{verbatim}
   KSPGMRESSetOrthogonalization(KSP ksp,
-                               KSPGMRESModifiedGramSchmidtOrthogonalization);
+                        KSPGMRESModifiedGramSchmidtOrthogonalization);
 \end{verbatim}
 A slightly
 faster approachis to use the 
@@ -2167,7 +2170,7 @@ with \findex{KSPGMRESSetOrthogonalization()}
 \findex{KSPGMRESUnmodifiedGramSchmidtOrthogonalization}
 \begin{verbatim}
   KSPGMRESSetOrthogonalization(KSP ksp,
-                               KSPGMRESUnmodifiedGramSchmidtOrthogonalization);
+                        KSPGMRESUnmodifiedGramSchmidtOrthogonalization);
 \end{verbatim}
 or the options database \findex{-ksp_gmres_unmodifiedgramschmidt}
 command \trl{-ksp_gmres_unmodifiedgramschmidt}.
@@ -2315,9 +2318,9 @@ The user can specify a customized
 routine with the command \findex{KSPSetConvergenceTest()}
 \begin{verbatim}
   KSPSetConvergenceTest(KSP ksp,
-                                int (*test)(KSP ksp,int it,double rnorm,
-                                            KSPConvergedReason *reason,void *ctx),
-                                void *ctx);
+                        int (*test)(KSP ksp,int it,double rnorm,
+                                    KSPConvergedReason *reason,void *ctx),
+                        void *ctx);
 \end{verbatim}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined convergence routine, \trl{test}.  Other
@@ -2514,6 +2517,7 @@ Linear solver                        & PCSLES        & sles \\
 Combination of preconditioners       & PCCOMPOSITE   & composite \\
 \hline
 LU                                   & PCLU          & lu\\
+Cholesky                             & PCCholesky    & cholesky\\
 No preconditioning                   & PCNONE        & none\\
 Shell for user-defined PC            & PCSHELL       & shell\\
 \hline
@@ -2536,6 +2540,7 @@ just a few in the sections below.
 Some of the options for ILU preconditioner are 
 \begin{verbatim}
   PCILUSetLevels(PC pc,int levels);
+  PCILCCSetLevels(PC pc,int levels);
   PCILUSetReuseOrdering(PC pc,PetscTruth flag);
   PCILUSetUseDropTolerance(PC pc,double dt,int dtcount);
   PCILUDTSetReuseFill(PC pc,PetscTruth flag);
@@ -2737,8 +2742,9 @@ The possible orderings are
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
 \sindex{quotient minimum degree} \findex{-pc_lu_ordering_type}
 These orderings can also be set through the options database by specifying 
-one of the following:  \trl{-pc_lu_ordering_type natural, -pc_lu_ordering_type nd, 
--pc_lu_ordering_type 1wd, -pc_lu_ordering_type rcm, -pc_lu_ordering_type qmd}.
+one of the following:  \trl{-pc_lu_ordering_type} \trl{natural}, \trl{-pc_lu_ordering_type}
+\trl{nd}, \trl{-pc_lu_ordering_type} \trl{1wd}, \trl{-pc_lu_ordering_type} \trl{rcm},
+\trl{-pc_lu_ordering_type} \trl{qmd}.
 In addition, see 
 \break \trl{MatGetOrdering()}, discussed in Section~\ref{sec:matfactor}.
 
@@ -2903,9 +2909,9 @@ improve performance. In many cases using a single preconditioner is better
 than a combination; an exception is the multigrid/multilevel preconditioners
 (solvers) that are always combinations of some sort, see Section \ref{sec:mg}.
 
-Let \trl{B1} and \trl{B2} represent the application of two 
+Let $B_1$ and $B_2$ represent the application of two 
 preconditioners of type \trl{type1} and \trl{type2}. The preconditioner
-$ B = B1 + B2 $ can be obtained with
+$ B = B_1 + B_2 $ can be obtained with
 \begin{verbatim}
   PCSetType(pc,PCCOMPOSITE);
   PCCompositeAddPC(pc,type1);
@@ -2924,13 +2930,13 @@ default behavior. An alternative can be set with the option
 \sindex{multiplicative preconditioners}
 In this form the new residual is updated after the application of 
 each preconditioner and the next preconditioner applied to the next 
-residual. For example, with two composed preconditioners: \trl{B1} and 
-\trl{B2}; $ y = B x $ is obtained from
-\[
-  y   = B1 x \\
-  w1  = x - A y \\
-  y   = y + B2 w1 
-\]
+residual. For example, with two composed preconditioners: $B_1$ and 
+$ B_2$; $ y = B x $ is obtained from
+\begin{eqnarray*}
+  y    = B_1 x \\
+  w_1  = x - A y \\
+  y    = y + B_2 w_1 
+\end{eqnarray*}
 Loosely, this corresponds to a Gauss-Siedel iteration, while
 additive corresponds to a Jacobi like.
 
@@ -2999,7 +3005,7 @@ it is not clear whether one would ever wish to do such a thing.
 %----------------------------------------------------------------------
 \subsection{Multigrid Preconditioners} \sindex{multigrid} \label{sec:mg}
 
-See also \trl{$PETSC_DIR/src/snes/examples/tutorials/ex19.c} for a higher level
+See also \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex19.c} for a higher level
 interface to the multigrid solvers using the \trl{DMMG} object.
 
 A large suite of routines is available for using multigrid as a
@@ -3480,8 +3486,8 @@ Users can set their own customized convergence tests in SNES by using
 the command \findex{SNESSetConvergenceTest()}
 \begin{verbatim}
   SNESSetConvergenceTest(SNES snes,int (*test)(SNES snes,double xnorm,
-                                 double gnorm,double f,SNESConvergedReason reason,
-                                 void *cctx),void *cctx);
+                         double gnorm,double f,SNESConvergedReason reason,
+                         void *cctx),void *cctx);
 \end{verbatim}
 The final argument of the convergence test routine, \trl{cctx},
 denotes an optional user-defined context for private data.  When
@@ -4231,212 +4237,6 @@ or \findex{TSPseudoSetTimeStepIncrement()} the option
 \end{itemize}
 
 
-% ---------------------------------------------------------------
-\chapter{Graphics}\sindex{graphics}
-\label{ch:graphics}
-
-PETSc graphics components are not intended to compete with 
-high-quality graphics packages.  Instead, they are intended to be 
-easy to use interactively with PETSc programs. We urge users
-to generate their publication-quality graphics using a
-professional graphics package. If a user wants to hook
-certain packages in PETSc, he or she should send a message to 
-petsc-maint@mcs.anl.gov, and we will see whether it is reasonable
-to try to provide direct interfaces.
-
-\section{Windows as PetscViewers}
-For drawing predefined PETSc objects such as matrices and vectors, one must 
-first create a viewer using the 
-command \findex{ViewerDrawOpenX()}
-\begin{verbatim}
-  PetscViewerDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
-                          int h,PetscViewer *viewer);
-\end{verbatim}
-This viewer may be passed to any of the \trl{XXXView()} routines.
-To draw into the viewer, one must obtain the \trl{Draw} object with the
-command \findex{ViewerDrawGetDraw()}
-\begin{verbatim}
-  PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
-\end{verbatim}
-Then one can call any of the \trl{DrawXXX} commands on the \trl{draw}
-object. If one obtains the \trl{draw} object in this manner, 
-one does not call the \trl{DrawOpenX()} command discussed below.
-
-\findex{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_SELF} 
-Predefined viewers, \trl{VIEWER_DRAW_WORLD} 
-and \trl{VIEWER_DRAW_SELF}, may be used at any time. Their initial
-use will cause the appropriate window to be created.
-
-\medskip
-By default, PETSc drawing tools employ a private colormap,
-which remedies the problem of poor color choices for contour plots due
-to an external program's mangling of the colormap (e.g, Netscape tends
-to do this).
-Unfortunately, this causes flashing of colors as the mouse is moved
-between the PETSc windows and other windows.  Alternatively, a shared
-colormap can be used via the option \trl{-draw_x_shared_colormap}.
-
-\section{Simple PetscDrawing}
-
-One can open a window that is not associated with a viewer directly 
-under the X11 Window System with the
-command \findex{DrawOpenX()} \sindex{X windows}
-\begin{verbatim}
-  PetscDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
-                    int h,PetscDraw *win);
-\end{verbatim}
-All drawing routines are done relative to the windows coordinate system 
-and viewport. By default the drawing coordinates are from \trl{(0,0)} to 
-\trl{(1,1)}, where \trl{(0,0)} indicates the lower left corner of the 
-window. The application program can change the window coordinates with the 
-command \findex{DrawSetCoordinates()} \sindex{coordinates}
-\begin{verbatim}
-  PetscDrawSetCoordinates(PetscDraw win,double xl,double yl,double xr,double yr);
-\end{verbatim}
-By default, graphics will be drawn in the entire window. To restrict the 
-drawing to a portion of the window, one may 
-use the command \findex{DrawSetViewPort()}
-\begin{verbatim}
-  PetscDrawSetViewPort(PetscDraw win,double xl,double yl,double xr,double yr);
-\end{verbatim}
-These arguments, which indicate the fraction of the window in which the 
-drawing should be done, must satisfy 
-$ 0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$ 
-
-To draw a line, one uses
- the command \findex{DrawLine()} \sindex{lines, drawing}
-\begin{verbatim}
-  PetscDrawLine(PetscDraw win,double xl,double yl,double xr,double yr,int cl);
-\end{verbatim}
-The argument \trl{cl} indicates the color (which is an integer between 0 and 255)
-of the line. A list of predefined colors may be found in \trl{include/petscdraw.h}
-and includes \trl{DRAW_BLACK}, \trl{DRAW_RED}, \trl{DRAW_BLUE} etc.
-
-To ensure that all graphics actually have been displayed, one should use 
-\sindex{flushing, graphics} the
-command \findex{DrawFlush()}
-\begin{verbatim}
-  PetscDrawFlush(PetscDraw win);
-\end{verbatim}
-When displaying by using double buffering, which is set with the
-command \findex{DrawSetDoubleBuffer()} \sindex{double buffer}
-\begin{verbatim}
-  PetscDrawSetDoubleBuffer(PetscDraw win);
-\end{verbatim}
-{\em all} processors must call \findex{DrawSynchronizedFlush()}
-\begin{verbatim}
-  PetscDrawSynchronizedFlush(PetscDraw win);
-\end{verbatim}
-in order to swap the buffers. From the options database one may use 
-\trl{-draw_pause n}, which \findex{-draw_pause} causes the PETSc application 
-to pause \trl{n} seconds at each \trl{DrawPause()}. A time of \trl{-1}
-indicates that the application should pause until receiving mouse 
-input from the user.
-
-Text can be drawn with either of the two \findex{DrawStringVertical()}
-commands \findex{DrawString()} \sindex{text, drawing}
-\begin{verbatim}
-  PetscDrawString(PetscDraw win,double x,double y,int color,char *text);
-  PetscDrawStringVertical(PetscDraw win,double x,double y,int color,char *text);
-\end{verbatim}
-The user can set the text font size or determine it with the 
-commands \findex{DrawStringSetSize()} \findex{DrawStringGetSize()}
-\begin{verbatim}
-  PetscDrawStringSetSize(PetscDraw win,double width,double height);
-  PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
-\end{verbatim}
-
-\section{Line Graphs}
-PETSc includes a set of routines for manipulating simple two-dimensional
-graphs. These routines, which begin with \trl{DrawAxisDraw()}, are usually 
-not used directly by the application programmer.  Instead, the programmer 
-employs the line graph routines to draw simple line graphs.
-As shown in the program, within Figure~\ref{fig:plot}, line graphs 
-are created with the command \findex{DrawLGCreate()} \sindex{line graphs}
-\begin{verbatim}
-  PetscDrawLGCreate(PetscDraw win,int ncurves,PetscDrawLG *ctx);
-\end{verbatim}
-The argument \trl{ncurves} indicates how many curves are to be drawn.
-Points can be added to each of the curves with the 
-command \findex{DrawLGAddPoint()}
-\begin{verbatim}
-  PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
-\end{verbatim}
-The arguments \trl{x} and \trl{y} are arrays containing the next 
-point value for each curve.
-Several points for each curve may be added with \findex{DrawLGAddPoints()}
-\begin{verbatim}
-  PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
-\end{verbatim}
-
-The line graph is drawn (or redrawn) with the command \findex{DrawLGDraw()}
-\begin{verbatim}
-  PetscDrawLGDraw(PetscDrawLG ctx);
-\end{verbatim}
-A line graph that is no longer needed can be destroyed with the 
-command \findex{DrawLGDestroy()}
-\begin{verbatim}
-  PetscDrawLGDestroy(PetscDrawLG ctx);
-\end{verbatim}
-To plot new curves, one can reset a linegraph with the
-command \findex{DrawLGReset()}
-\begin{verbatim}
-  PetscDrawLGReset(PetscDrawLG ctx);
-\end{verbatim}
-The line graph automatically determines the range of values to 
-display on the two axes.  The user can change these defaults with the 
-command \findex{DrawLGSetLimits()}
-\begin{verbatim}
-  PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,double ymax);
-\end{verbatim}
-
-It is also possible to change the display of the axes and to label
-them. This procedure is done by first obtaining the axes context with the 
-command \findex{DrawLGGetAxis()} \sindex{axis, drawing}
-\begin{verbatim}
-  PetscDrawLGGetAxis(PetscDrawLG ctx,PetscDrawAxis *axis);
-\end{verbatim}
-One can set the axes' colors and labels, respectively, by using the
-commands \findex{DrawAxisSetColors()} \findex{DrawAxisSetLabels()}
-\begin{verbatim}
-  PetscDrawAxisSetColors(PetscDrawAxis axis,int axis_lines,int ticks,int text);
-  PetscDrawAxisSetLabels(PetscDrawAxis axis,char *top,char *x,char *y);
-\end{verbatim}
-
-\begin{figure}[H]
-{\small
-\fileinclude{../../../src/sys/src/draw/examples/tests/ex3.c}
-}
-\caption{Example of PetscDrawing Plots}
-\label{fig:plot}
-\end{figure}
-
-It is possible to turn off all graphics with the option \findex{-nox}
-\trl{-nox}. This
-will prevent any windows from being opened or any drawing actions to be done.
-This is useful for running large jobs when the graphics overhead is too
-large, or for timing.
-
-\section{Graphical Convergence Monitor}
-For both the linear and nonlinear solvers default routines
-allow one to graphically monitor convergence of the iterative method.
-These are accessed via the command line with 
-\trl{-ksp_xmonitor} and \trl{-snes_xmonitor}. \findex{-ksp_xmonitor}
-\findex{-snes_xmonitor} See also Sections \ref{sec:kspmonitor} and
-\ref{sec:snesmonitor}. 
-
-The two functions used are \trl{KSPLGMonitor()} \findex{KSPLGMonitor()}
-and \trl{KSPLGMonitorCreate()}  \findex{KSPLGMonitorCreate()}. These 
-can easily be modified to serve specialized needs.
-
-
-\section{Disabling Graphics at Compile Time}
-
-\sindex{graphics, disabling}
-To disable all x-window-based graphics, edit the file
-\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/base} and remove the flag
-\trl{-PETSC_DHAVE_X11} from the CONF variable definition.  Then (re)compile
-the PETSc libraries.
 
 %------------------------------------------------------------------
 \chapter{Using Matlab with PETSc}
@@ -4451,7 +4251,7 @@ the PETSc program.
 
 \section{Dumping Data for Matlab}
 One can dump PETSc matrices and vectors to the screen (and thus save in a file via
-> filename.m) in a format that Matlab can read in directly. This is done with the
+\trl{> filename.m}) in a format that Matlab can read in directly. This is done with the
 command line options \trl{-vec_view_matlab} or \trl{-mat_view_matlab}. This causes the PETSc program
 to print the vectors and matrices every time a VecAssemblyXXX() and MatAssemblyXXX()
 is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer control
@@ -4492,16 +4292,45 @@ It is also possible to start your PETSc program from Matlab via \trl{launch()}.
 
 \section{Using the Matlab Compute Engine}
 
-One creates access to the Matlab engine via \trl{PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *e);}
+One creates access to the Matlab engine via 
+\begin{verbatim}
+  PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *e);
+\end{verbatim}
 (\trl{machine} may be \trl{PETSC_NULL}).
-One can send objects to Matlab via \trl{PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);} One can get objects
-via \trl{PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);}. Similarly one can send arrays via
-\trl{PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,Scalar *array,char *name);} and get them back via
-\trl{PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,Scalar *array,char *name);} One cannot use Matlab
+One can send objects to Matlab via 
+\begin{verbatim}
+  PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
+\end{verbatim}
+One can get objects
+via 
+\begin{verbatim}
+  PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);.
+\end{verbatim}
+Similarly one can send arrays via
+\begin{verbatim}
+  PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,Scalar *array,
+                            char *name);
+\end{verbatim}
+and get them back via
+\begin{verbatim}
+  PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,Scalar *array,
+                            char *name);
+\end{verbatim}
+One cannot use Matlab
 interactively in this mode but you can send Matlab commands via
-\trl{PetscMatlabEngineEvaluate(PetscMatlabEngine,''format'',...);} where \trl{format} has the usual \trl{printf()} format.
-Responses can be returned from Matlab via \trl{PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);} or 
-\trl{PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*)}. There is a short-cut to starting the Matlab engine
+\begin{verbatim}
+  PetscMatlabEngineEvaluate(PetscMatlabEngine,''format'',...);
+\end{verbatim}
+where \trl{format} has the usual \trl{printf()} format.
+Responses can be returned from Matlab via 
+\begin{verbatim}
+  PetscMatlabEngineGetOutput(PetscMatlabEngine,char **); 
+\end{verbatim}
+or
+\begin{verbatim}
+PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
+\end{verbatim}
+There is a short-cut to starting the Matlab engine
 with \trl{MATLAB_ENGINE_(MPI_Comm)}.
 
 
@@ -4688,7 +4517,7 @@ the integer index {\em must} then be used together.
 For example, the following Fortran program fragment illustrates
 directly setting the values of a vector array instead of using \trl{
 VecSetValues()}.  Note the (optional) use of the preprocessor 
-\trl{\#define} statement to enable array manipulations in the conventional
+\trl{#define} statement to enable array manipulations in the conventional
 Fortran manner.
 \begin{verbatim}
    #define xx_a(ib)  xx_v(xx_i + (ib))
@@ -4887,7 +4716,7 @@ The following functions are not supported in Fortran:
 \begin{itemize}
 \item \trl{PetscFClose()}, \trl{PetscFOpen()}, \trl{PetscFPrintf()}, \trl{PetscPrintf()}
 \item \trl{PetscPopErrorHandler()}, \trl{PetscPushErrorHandler()}
-\item \trl{PLogInfo()}
+\item \trl{PetscLogInfo()}
 \item \trl{PetscSetDebugger()}
 \item \trl{VecGetArrays()}, \trl{VecRestoreArrays()}
 \item \trl{ViewerASCIIGetPointer()}, \trl{ViewerBinaryGetDescriptor()}
@@ -5025,7 +4854,7 @@ As shown in Figure~\ref{fig:exprof} (in Part I), the option \trl{
 -log_summary} \findex{-log_summary} activates printing of profile
 data to standard output at the conclusion of a program.  Profiling
 data can also be printed at any time within a program by calling \trl{
-PLogPrintSummary()}.
+PetscLogPrintSummary()}.
 
 We print performance data for each routine, organized by PETSc
 components, followed by any user-defined events (discussed in
@@ -5127,8 +4956,9 @@ Finally, a summary of memory usage and object creation and destruction
 is presented.
 
 \begin{figure}[tb]
-\centerline{\psfig{file=perflog1.ps,width=7.5in}}
-\vspace{-2.5in}
+\centerline{\immediate \pdfximage width 7in {perflog1.pdf} \pdfrefximage \pdflastximage}
+%\centerline{\psfig{file=perflog1.ps,width=7.5in}}
+%\vspace{-2.5in}
 \caption{Profiling a PETSc Program: Part I - Overall Summary}
 \label{fig:exparprof}
 \end{figure}
@@ -5151,8 +4981,9 @@ Additional statistics for each phase include the total number of messages sent,
 the average message length, and the number of global reductions.
 
 \begin{figure}[tb]
-\centerline{\psfig{file=perflog2.ps,width=7.5in}}
-\vspace{-2.5in}
+\centerline{\immediate \pdfximage height 7in {perflog2.pdf} \pdfrefximage \pdflastximage}
+%\centerline{\psfig{file=perflog2.ps,width=7.5in}}
+%\vspace{-2.5in}
 \caption{Profiling a PETSc Program: Part II - Phase Summaries}
 \label{fig:exparprof2}
 \end{figure}
@@ -5206,11 +5037,11 @@ since \trl{MatSetValues()} may be called thousands of times in a program,
 by default its calls are not logged with MPE. To activate MPE logging of
 a particular event, one should use the command 
 \begin{verbatim}
-    PLogEventMPEActivate(int event);
+    PetscLogEventMPEActivate(int event);
 \end{verbatim}
 To deactivate logging of an event for MPE, one should use 
 \begin{verbatim}
-    PLogEventMPEDeactivate(int event);
+    PetscLogEventMPEDeactivate(int event);
 \end{verbatim}
 The \trl{event} may be either a predefined PETSc event (as listed in
 the file \trl{${PETSC_DIR}/include/petsclog.h}) or one obtained with
@@ -5244,34 +5075,34 @@ code fragment below:
 
     #include "petsclog.h"
     int USER_EVENT;
-    PLogEventRegister(&USER_EVENT,"User event name","Color:");
-    PLogEventBegin(USER_EVENT,0,0,0,0);
+    PetscLogEventRegister(&USER_EVENT,"User event name","Color:");
+    PetscLogEventBegin(USER_EVENT,0,0,0,0);
        /* application code segment to monitor */
-       PLogFlops(number of flops for this code segment);
-    PLogEventEnd(USER_EVENT,0,0,0,0);
+       PetscLogFlops(number of flops for this code segment);
+    PetscLogEventEnd(USER_EVENT,0,0,0,0);
 
 \end{verbatim}
 
 One must register the event by calling \trl{
-PLogEventRegister()}, which assigns a unique integer to identify the
-event for profiling purposes: \findex{PLogEventRegister()}
+PetscLogEventRegister()}, which assigns a unique integer to identify the
+event for profiling purposes: \findex{PetscLogEventRegister()}
 \begin{verbatim}
-  PLogEventRegister(int *e,char *string,char *color);
+  PetscLogEventRegister(int *e,char *string,char *color);
 \end{verbatim}
 Here \trl{string} is a user-defined event name, and \trl{color} is an
 optional user-defined event color (for use with {\em Upshot/Nupshot} logging);
 one should see the manual page for details.  The argument returned in \trl{e} should then
-be passed to the \trl{PLogEventBegin()} and \trl{PLogEventEnd()}
+be passed to the \trl{PetscLogEventBegin()} and \trl{PetscLogEventEnd()}
 routines.
 
-Events are logged by using the pair \findex{PLogEventBegin()}
+Events are logged by using the pair \findex{PetscLogEventBegin()}
 \begin{verbatim}
-   PLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,
+   PetscLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,
                   PetscObject o4);
-   PLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,
+   PetscLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,
                 PetscObject o4);
 \end{verbatim}
-The \findex{PLogEventEnd()}
+The \findex{PetscLogEventEnd()}
 four objects are the PETSc objects that are most closely associated 
 with the event.  For instance, in a matrix-vector product they 
 would be the matrix and the two vectors.  These objects can be omitted
@@ -5280,11 +5111,11 @@ two routine calls will be automatically timed and logged as part of the
 specified event.
 
 The user can log the number of floating-point operations 
-for this segment of code by calling \findex{PLogFlops()}
+for this segment of code by calling \findex{PetscLogFlops()}
 \begin{verbatim}
-    PLogFlops(number of flops for this code segment);
+    PetscLogFlops(number of flops for this code segment);
 \end{verbatim}
-between the calls to \trl{PLogEventBegin()} and \trl{PLogEventEnd()}.
+between the calls to \trl{PetscLogEventBegin()} and \trl{PetscLogEventEnd()}.
 This value will automatically be added to the global flop counter for the
 entire program.
 
@@ -5296,33 +5127,33 @@ By default, the profiling produces a single set of statistics for all
 code between the \trl{PetscInitialize()} and \trl{PetscFinalize()}
 calls within a program.  One can independently monitor up to ten
 stages of code by switching among the various stages with the comands
-\findex{PLogStagePush()} \findex{PLogStagePop()}
+\findex{PetscLogStagePush()} \findex{PetscLogStagePop()}
 \begin{verbatim}
-   PLogStagePush(int stage);
-   PLogStagePop();
+   PetscLogStagePush(int stage);
+   PetscLogStagePop();
 \end{verbatim}
 where \trl{stage} is an integer (0-9); see the manual pages for details.
-The command  \findex{PLogStageRegister()}
+The command  \findex{PetscLogStageRegister()}
 \begin{verbatim}
-   PLogStageRegister(int stage,char *name)
+   PetscLogStageRegister(int stage,char *name)
 \end{verbatim}
 allows one to associate a name with a stage; these names are printed whenever
-summaries are generated with \trl{-log_summary} or \trl{PLogPrintSummary()}.
+summaries are generated with \trl{-log_summary} or \trl{PetscLogPrintSummary()}.
 The following code fragment uses three profiling stages within an program.
 
 \begin{verbatim}
    PetscInitialize(int *argc,char ***args,0,0);
    /* [stage 0 of code here] */
-   PLogStageRegister(0,"Stage 0 of Code");
+   PetscLogStageRegister(0,"Stage 0 of Code");
    for (i=0; i<ntimes; i++) {
-      PLogStagePush(1);
-      PLogStageRegister(1,"Stage 1 of Code");
+      PetscLogStagePush(1);
+      PetscLogStageRegister(1,"Stage 1 of Code");
       /* [stage 1 of code here] */
-      PLogStagePop()
-      PLogStagePush(2);
-      PLogStageRegister(1,"Stage 2 of Code");
+      PetscLogStagePop()
+      PetscLogStagePush(2);
+      PetscLogStageRegister(1,"Stage 2 of Code");
       /* [stage 2 of code here] */
-      PLogStagePop()
+      PetscLogStagePop()
    }
    PetscFinalize();
 \end{verbatim}
@@ -5349,8 +5180,8 @@ Section~\ref{sec:profaccuracy}.
 By default, all PETSc operations are logged.
 To enable or disable the PETSc logging of individual events, one uses the commands
 \begin{verbatim}
-   PLogEventActivate(int event);
-   PLogEventDeactivate(int event);
+   PetscLogEventActivate(int event);
+   PetscLogEventDeactivate(int event);
 \end{verbatim}
 The \trl{event} may be either a predefined PETSc event (as listed in
 the file \trl{${PETSC_DIR}/include/petsclog.h}) or one obtained with
@@ -5362,17 +5193,17 @@ components that support such logging (de)activation are \trl{Mat} (matrices),
 \trl{Vec} (vectors), \trl{SLES} (linear solvers, including \trl{KSP} 
 and \trl{PC} components), and \trl{SNES} (nonlinear solvers):
 \begin{verbatim}
-   PLogEventDeactivateClass(MAT_COOKIE);
-   PLogEventDeactivateClass(SLES_COOKIE); /* includes PC and KSP */
-   PLogEventDeactivateClass(VEC_COOKIE);
-   PLogEventDeactivateClass(SNES_COOKIE);
+   PetscLogEventDeactivateClass(MAT_COOKIE);
+   PetscLogEventDeactivateClass(SLES_COOKIE); /* includes PC and KSP */
+   PetscLogEventDeactivateClass(VEC_COOKIE);
+   PetscLogEventDeactivateClass(SNES_COOKIE);
 \end{verbatim}
 and 
 \begin{verbatim}
-   PLogEventActivateClass(MAT_COOKIE);
-   PLogEventActivateClass(SLES_COOKIE);   /* includes PC and KSP */
-   PLogEventActivateClass(VEC_COOKIE);
-   PLogEventActivateClass(SNES_COOKIE);
+   PetscLogEventActivateClass(MAT_COOKIE);
+   PetscLogEventActivateClass(SLES_COOKIE);   /* includes PC and KSP */
+   PetscLogEventActivateClass(VEC_COOKIE);
+   PetscLogEventActivateClass(SNES_COOKIE);
 \end{verbatim}
 
 Recall that the option \trl{-log_all} produces extensive profile
@@ -5388,12 +5219,12 @@ in MPE logging.
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 \section{Interpreting {\tt -log\_info} Output: Informative Messages}
-\label{sec:ploginfo}
+\label{sec:PetscLoginfo}
 
 Users can activate the printing of verbose information about
 algorithms, data structures, etc. to the screen by using the option \trl{
 -log_info} \findex{-log_info} or by calling \trl{
-PLogInfoAllow(PETSC_TRUE)}. \findex{PLogInfoAllow()}
+PetscLogInfoAllow(PETSC_TRUE)}. \findex{PetscLogInfoAllow()}
 Such logging, which is used throughout the PETSc libraries,
 can aid the user in understanding algorithms and 
 tuning program performance.  For example, as discussed in
@@ -5402,27 +5233,27 @@ printing of information about memory allocation during
 matrix assembly.
 
 Application programmers can employ this logging as well, by
-using the routine \findex{PLogInfo()}
+using the routine \findex{PetscLogInfo()}
 \begin{verbatim}
-   PLogInfo(void* obj,char *message,...)
+   PetscLogInfo(void* obj,char *message,...)
 \end{verbatim}
 where \trl{obj} is the PETSc object associated most closely with
 the logging statement, \trl{message}.
 For example, in the line search Newton methods, we use a statement such as
 \begin{verbatim}
-   PLogInfo(snes,"Cubically determined step, lambda %g\n",lambda);
+   PetscLogInfo(snes,"Cubically determined step, lambda %g\n",lambda);
 \end{verbatim}
 
 One can selectively turn off informative messages about any of the 
 basic PETSc objects (e.g., \trl{Mat}, \trl{SNES}) with the command
 \begin{verbatim}
-   PLogInfoDeactivateClass(int object_cookie)
+   PetscLogInfoDeactivateClass(int object_cookie)
 \end{verbatim}
-where \findex{PLogInfoDeactivateClass()} \findex{PLogInfoActivateClass()}
+where \findex{PetscLogInfoDeactivateClass()} \findex{PetscLogInfoActivateClass()}
 \trl{object_cookie} is one of \trl{MAT_COOKIE}, \trl{SNES_COOKIE}, etc.
 Messages can be reactivated with the command
 \begin{verbatim}
-   PLogInfoActivateClass(int object_cookie)
+   PetscLogInfoActivateClass(int object_cookie)
 \end{verbatim}
 Such deactivation can be useful when one wishes to view information
 about higher level PETSc components (e.g., \trl{TS} and \trl{SNES}) without 
@@ -5435,7 +5266,7 @@ events at runtime for matrix and linear solver components via \trl{-log_info [no
 PETSc application programmers can access the wall clock time directly 
 with the command \sindex{wall clock time}
 \begin{verbatim}
-  PLogDouble time;
+  PetscLogDouble time;
 PetscGetTime(&time);CHKERRQ(ierr);
 \end{verbatim}
 \findex{PetscGetTime()} \sindex{time}
@@ -5487,8 +5318,16 @@ the profiled code of interest (solving the linear system for the larger problem)
 occurs within event stages 4 and 5.  Section~\ref{sec:parperformance} provides
 details about interpreting such profiling data.
 
-In particular, the macros \trl{PreLoadBegin(PetscTruth,char* stagename)}, \trl{
-PreLoadStage(char *stagename)}, and \trl{PreLoadEnd()} can be used to easily 
+In particular, the macros 
+\begin{verbatim}
+  PreLoadBegin(PetscTruth,char* stagename),
+  PreLoadStage(char *stagename),
+\end{verbatim}
+and 
+\begin{verbatim}
+  PreLoadEnd()
+\end{verbatim}
+can be used to easily 
 convert a regular PETSc program to one that uses preloading. The command line options
 \trl{-preload} \trl{true} and \trl{-preload} \trl{false} may be used to turn on and off
 preloading at run time for PETSc programs that use these macros. \findex{PreLoadBegin()}
@@ -5499,7 +5338,7 @@ preloading at run time for PETSc programs that use these macros. \findex{PreLoad
 \label{ch:performance} \sindex{performance tuning}
 
 This chapter presents some tips on achieving good performance within
-PETSc 2.0 codes.  We urge users to read these hints before
+PETSc codes.  We urge users to read these hints before
 evaluating the performance of PETSc application codes.
 
 \section{Compiler Options}
@@ -5514,7 +5353,7 @@ The user can specify alternative compiler options instead of
 the defaults set in the PETSc distribution.  One can set
 the compiler options for a particular architecture
 (\trl{PETSC_ARCH}) and \trl{BOPT} by editing the file
-\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/base.$\{BOPT\}}.
+\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/base.${BOPT}}.
 Section~\ref{sec:custom} gives details.
 
 \section{Profiling}
@@ -5783,7 +5622,7 @@ overcoming them.
 \label{sec:options}
 
 Allowing the user to modify parameters and options easily at runtime
-is very desirable for many applications.  PETSc 2.0 provides a simple
+is very desirable for many applications.  PETSc provides a simple
 mechanism to enable such customization.  To print a list of
 available options for a given program, simply specify the option 
 \trl{-help} (or \trl{-h}) at runtime, e.g., \findex{-help} \findex{-h}
@@ -5815,11 +5654,11 @@ Each PETSc process maintains a database of option names and values
 \trl{PETScInitialize()}, which is listed below in its C/C++ and
 Fortran variants, respectively:
 \begin{verbatim}
-  PetscInitialize(int *argc,char ***args,char *file_name,char *help_message);
-   call PetscInitialize(character file_name,integer ierr)
+  PetscInitialize(int *argc,char ***args,char *file,char *help);
+   call PetscInitialize(character file,integer ierr)
 \end{verbatim}
 The arguments \trl{argc} and \trl{args} (in the C/C++ version only) are
-the usual command line arguments, while the \trl{file_name} is a name of
+the usual command line arguments, while the \trl{file} is a name of
 a file that can contain additional options. 
 By default this file is called \trl{.petscrc} \findex{.petscrc} in the 
 user's home directory.  The user can also specify options via the
@@ -5928,18 +5767,12 @@ predefined viewers:
 \item Passing in a zero for the viewer causes the object to be printed 
       to the screen; this is most useful when viewing an object in 
       a debugger.
-\item \trl{VIEWER_STDOUT_SELF} \findex{VIEWER_STDOUT_SELF}
-      causes the object to be printed to the screen.
-      For parallel objects the parts owned by individual processors are 
-      printed in random order.
-\item \trl{VIEWER_STDOUT_WORLD} \findex{VIEWER_STDOUT_WORLD}
-      is similar to \trl{VIEWER_STDOUT_SELF}, except that 
-      parallel objects are printed in the natural order that would occur
-      if only a single processor were in use for the entire problem;
-      this viewer uses the communicator \trl{PETSC_COMM_WORLD}.
-\item \trl{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_WORLD} causes the 
-      object to be drawn in a default X window.
-\item \trl{VIEWER_DRAW_SELF} \findex{VIEWER_DRAW_SELF} causes the 
+\item \trl{VIEWER_STDOUT_SELF} \findex{VIEWER_STDOUT_SELF} and 
+      \trl{VIEWER_STDOUT_WORLD} \findex{VIEWER_STDOUT_WORLD}
+      cause the object to be printed to the screen.
+
+\item \trl{VIEWER_DRAW_SELF} \findex{VIEWER_DRAW_SELF} and 
+      \trl{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_WORLD} causes the 
       object to be drawn in a default X window.
 \item Passing in a viewer obtained by
       \trl{ViewerDrawOpenX()} causes the object to be displayed graphically.
@@ -5952,7 +5785,7 @@ predefined viewers:
       \trl{VIEWER_STDOUT_WORLD} (for a parallel communicator).
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
-      \trl{ViewerBinaryOpen(MPI_Comm comm,char* file,PetscViewerBinaryType type,
+      \trl{ViewerBinaryOpen(MPI_Comm} \trl{comm,char* file,PetscViewerBinaryType} \trl{type,
       PetscViewer *viewer)}. \findex{ViewerBinaryOpen}  Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running Matlab process
@@ -6052,6 +5885,13 @@ option in the debugger will not correctly handle the MPI startup and
 should not be used.  Not all debuggers work on all machines, so the user
 may have to experiment to find one that works correctly.
 
+You can select a subset of the processors to be debugged (the rest just run 
+without the debugger) with the option
+\begin{verbatim}
+  -debugger_nodes node1,node2,...
+\end{verbatim}
+where you simply list the nodes you want the debugger to run with.
+
 \section{Error Handling} \sindex{errors} \sindex{debugging} 
 
 Errors are handled through the routine \trl{PetscError()}. 
@@ -6093,7 +5933,7 @@ hanging without running in the debugger) with the option
 \end{verbatim}
 where \trl{filename} is optional. By default the traces are printed to the 
 screen.  This can also be set with the 
-command \trl{PLogTraceBegin(FILE*)}. \findex{-log_trace} \findex{PLogTraceBegin()}
+command \trl{PetscLogTraceBegin(FILE*)}. \findex{-log_trace} \findex{PetscLogTraceBegin()}
 
 
 It is also possible to trap signals by using the \sindex{signals}
@@ -6135,11 +5975,11 @@ one should set it by calling
 The user should check the return codes for all PETSc routines (and
 possibly user-defined routines as well) with 
 \begin{verbatim}
-  PetscRoutine(...);CHKERRQ(int ierr);
+  ierr = PetscRoutine(...);CHKERRQ(int ierr);
 \end{verbatim}
 Likewise, all memory allocations should be checked with 
 \begin{verbatim}
-ierr = PetscMalloc(n*sizeof(double),&ptr);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(double),&ptr);CHKERRQ(ierr);
 \end{verbatim}
 If this procedure is followed throughout all of the user's libraries 
 and codes, any error will by default generate a clean traceback of 
@@ -6150,8 +5990,8 @@ Note that the macro \trl{__FUNCT__} is used to keep track of
 routine names during error tracebacks.  Users need not worry about this
 macro in their application codes; however, users can take advantage of this feature
 if desired by setting this macro before each user-defined routine
-that may call \trl{SETERRQ()}, \trl{CHKERRQ()},
-or \trl{CHKERRQ()}.  A simple example of usage is given below.
+that may call \trl{SETERRQ()}, \trl{CHKERRQ()}.
+A simple example of usage is given below.
 \begin{verbatim}
     #undef __FUNCT__  
     #define __FUNCT__ "MyRoutine1"
@@ -6192,7 +6032,7 @@ following contents:
 (Of course, workstation1, etc. can be the same machine.) Then, one can
 execute the command
 \begin{verbatim}
-   mpirun -p4pg <procgroup_filemame> old -compare <tolerance> [your_program_options]
+   mpirun -p4pg <procgroup_filemame> old -compare <tolerance> [options]
 \end{verbatim}
 Note that the same runtime options must be used for the two programs.
 The first time an inner product or norm detects an inconsistency larger
@@ -6284,12 +6124,226 @@ PETSc is done through MPI, the message-passing interface standard
 \cite{MPI-final}.  Any file that includes \trl{petsc.h} (or any other 
 PETSc include file), can freely use any MPI routine.
 
+% ---------------------------------------------------------------
+\section{Graphics}
+\sindex{graphics}
+
+PETSc graphics components are not intended to compete with 
+high-quality graphics packages.  Instead, they are intended to be 
+easy to use interactively with PETSc programs. We urge users
+to generate their publication-quality graphics using a
+professional graphics package. If a user wants to hook
+certain packages in PETSc, he or she should send a message to 
+petsc-maint@mcs.anl.gov, and we will see whether it is reasonable
+to try to provide direct interfaces.
+
+\subsection{Windows as PetscViewers}
+For drawing predefined PETSc objects such as matrices and vectors, one must 
+first create a viewer using the 
+command \findex{ViewerDrawOpenX()}
+\begin{verbatim}
+  PetscViewerDrawOpenX(MPI_Comm comm,char *display,char *title,int x,
+                       int y,int w,int h,PetscViewer *viewer);
+\end{verbatim}
+This viewer may be passed to any of the \trl{XXXView()} routines.
+To draw into the viewer, one must obtain the \trl{Draw} object with the
+command \findex{ViewerDrawGetDraw()}
+\begin{verbatim}
+  PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
+\end{verbatim}
+Then one can call any of the \trl{DrawXXX} commands on the \trl{draw}
+object. If one obtains the \trl{draw} object in this manner, 
+one does not call the \trl{DrawOpenX()} command discussed below.
+
+\findex{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_SELF} 
+Predefined viewers, \trl{VIEWER_DRAW_WORLD} 
+and \trl{VIEWER_DRAW_SELF}, may be used at any time. Their initial
+use will cause the appropriate window to be created.
+
+\medskip
+By default, PETSc drawing tools employ a private colormap,
+which remedies the problem of poor color choices for contour plots due
+to an external program's mangling of the colormap (e.g, Netscape tends
+to do this).
+Unfortunately, this causes flashing of colors as the mouse is moved
+between the PETSc windows and other windows.  Alternatively, a shared
+colormap can be used via the option \trl{-draw_x_shared_colormap}.
+
+\subsection{Simple PetscDrawing}
+
+One can open a window that is not associated with a viewer directly 
+under the X11 Window System with the
+command \findex{DrawOpenX()} \sindex{X windows}
+\begin{verbatim}
+  PetscDrawOpenX(MPI_Comm comm,char *display,char *title,int x,
+                 int y,int w,int h,PetscDraw *win);
+\end{verbatim}
+All drawing routines are done relative to the windows coordinate system 
+and viewport. By default the drawing coordinates are from \trl{(0,0)} to 
+\trl{(1,1)}, where \trl{(0,0)} indicates the lower left corner of the 
+window. The application program can change the window coordinates with the 
+command \findex{DrawSetCoordinates()} \sindex{coordinates}
+\begin{verbatim}
+  PetscDrawSetCoordinates(PetscDraw win,double xl,double yl,double xr,
+                          double yr);
+\end{verbatim}
+By default, graphics will be drawn in the entire window. To restrict the 
+drawing to a portion of the window, one may 
+use the command \findex{DrawSetViewPort()}
+\begin{verbatim}
+  PetscDrawSetViewPort(PetscDraw win,double xl,double yl,double xr,
+                       double yr);
+\end{verbatim}
+These arguments, which indicate the fraction of the window in which the 
+drawing should be done, must satisfy 
+$ 0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$ 
+
+To draw a line, one uses
+ the command \findex{DrawLine()} \sindex{lines, drawing}
+\begin{verbatim}
+  PetscDrawLine(PetscDraw win,double xl,double yl,double xr,double yr,
+                int cl);
+\end{verbatim}
+The argument \trl{cl} indicates the color (which is an integer between 0 and 255)
+of the line. A list of predefined colors may be found in \trl{include/petscdraw.h}
+and includes \trl{DRAW_BLACK}, \trl{DRAW_RED}, \trl{DRAW_BLUE} etc.
+
+To ensure that all graphics actually have been displayed, one should use 
+\sindex{flushing, graphics} the
+command \findex{DrawFlush()}
+\begin{verbatim}
+  PetscDrawFlush(PetscDraw win);
+\end{verbatim}
+When displaying by using double buffering, which is set with the
+command \findex{DrawSetDoubleBuffer()} \sindex{double buffer}
+\begin{verbatim}
+  PetscDrawSetDoubleBuffer(PetscDraw win);
+\end{verbatim}
+{\em all} processors must call \findex{DrawSynchronizedFlush()}
+\begin{verbatim}
+  PetscDrawSynchronizedFlush(PetscDraw win);
+\end{verbatim}
+in order to swap the buffers. From the options database one may use 
+\trl{-draw_pause n}, which \findex{-draw_pause} causes the PETSc application 
+to pause \trl{n} seconds at each \trl{DrawPause()}. A time of \trl{-1}
+indicates that the application should pause until receiving mouse 
+input from the user.
+
+Text can be drawn with either of the two \findex{DrawStringVertical()}
+commands \findex{DrawString()} \sindex{text, drawing}
+\begin{verbatim}
+  PetscDrawString(PetscDraw win,double x,double y,int color,char *text);
+  PetscDrawStringVertical(PetscDraw win,double x,double y,int color,
+                          char *text);
+\end{verbatim}
+The user can set the text font size or determine it with the 
+commands \findex{DrawStringSetSize()} \findex{DrawStringGetSize()}
+\begin{verbatim}
+  PetscDrawStringSetSize(PetscDraw win,double width,double height);
+  PetscDrawStringGetSize(PetscDraw win,double *width,double *height);
+\end{verbatim}
+
+\subsection{Line Graphs}
+PETSc includes a set of routines for manipulating simple two-dimensional
+graphs. These routines, which begin with \trl{DrawAxisDraw()}, are usually 
+not used directly by the application programmer.  Instead, the programmer 
+employs the line graph routines to draw simple line graphs.
+As shown in the program, within Figure~\ref{fig:plot}, line graphs 
+are created with the command \findex{DrawLGCreate()} \sindex{line graphs}
+\begin{verbatim}
+  PetscDrawLGCreate(PetscDraw win,int ncurves,PetscDrawLG *ctx);
+\end{verbatim}
+The argument \trl{ncurves} indicates how many curves are to be drawn.
+Points can be added to each of the curves with the 
+command \findex{DrawLGAddPoint()}
+\begin{verbatim}
+  PetscDrawLGAddPoint(PetscDrawLG ctx,double *x,double *y);
+\end{verbatim}
+The arguments \trl{x} and \trl{y} are arrays containing the next 
+point value for each curve.
+Several points for each curve may be added with \findex{DrawLGAddPoints()}
+\begin{verbatim}
+  PetscDrawLGAddPoints(PetscDrawLG ctx,int n,double **x,double **y);
+\end{verbatim}
+
+The line graph is drawn (or redrawn) with the command \findex{DrawLGDraw()}
+\begin{verbatim}
+  PetscDrawLGDraw(PetscDrawLG ctx);
+\end{verbatim}
+A line graph that is no longer needed can be destroyed with the 
+command \findex{DrawLGDestroy()}
+\begin{verbatim}
+  PetscDrawLGDestroy(PetscDrawLG ctx);
+\end{verbatim}
+To plot new curves, one can reset a linegraph with the
+command \findex{DrawLGReset()}
+\begin{verbatim}
+  PetscDrawLGReset(PetscDrawLG ctx);
+\end{verbatim}
+The line graph automatically determines the range of values to 
+display on the two axes.  The user can change these defaults with the 
+command \findex{DrawLGSetLimits()}
+\begin{verbatim}
+  PetscDrawLGSetLimits(PetscDrawLG ctx,double xmin,double xmax,double ymin,
+                       double ymax);
+\end{verbatim}
+
+It is also possible to change the display of the axes and to label
+them. This procedure is done by first obtaining the axes context with the 
+command \findex{DrawLGGetAxis()} \sindex{axis, drawing}
+\begin{verbatim}
+  PetscDrawLGGetAxis(PetscDrawLG ctx,PetscDrawAxis *axis);
+\end{verbatim}
+One can set the axes' colors and labels, respectively, by using the
+commands \findex{DrawAxisSetColors()} \findex{DrawAxisSetLabels()}
+\begin{verbatim}
+  PetscDrawAxisSetColors(PetscDrawAxis axis,int axis_lines,int ticks,
+                         int text);
+  PetscDrawAxisSetLabels(PetscDrawAxis axis,char *top,char *x,char *y);
+\end{verbatim}
+
+\begin{figure}[H]
+{\small
+\fileinclude{../../../src/sys/src/draw/examples/tests/ex3.c}
+}
+\caption{Example of PetscDrawing Plots}
+\label{fig:plot}
+\end{figure}
+
+It is possible to turn off all graphics with the option \findex{-nox}
+\trl{-nox}. This
+will prevent any windows from being opened or any drawing actions to be done.
+This is useful for running large jobs when the graphics overhead is too
+large, or for timing.
+
+\subsection{Graphical Convergence Monitor}
+For both the linear and nonlinear solvers default routines
+allow one to graphically monitor convergence of the iterative method.
+These are accessed via the command line with 
+\trl{-ksp_xmonitor} and \trl{-snes_xmonitor}. \findex{-ksp_xmonitor}
+\findex{-snes_xmonitor} See also Sections \ref{sec:kspmonitor} and
+\ref{sec:snesmonitor}. 
+
+The two functions used are \trl{KSPLGMonitor()} \findex{KSPLGMonitor()}
+and \trl{KSPLGMonitorCreate()}  \findex{KSPLGMonitorCreate()}. These 
+can easily be modified to serve specialized needs.
+
+
+\subsection{Disabling Graphics at Compile Time}
+
+\sindex{graphics, disabling}
+To disable all x-window-based graphics, edit the file
+\trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/base} and remove the flag
+\trl{-PETSC_DHAVE_X11} from the CONF variable definition.  Then (re)compile
+the PETSc libraries.
+
+
 %----------------------------------------------------------------------
 \chapter{Makefiles}
 \label{ch:makefiles}
 
 This chapter describes the design of the PETSc makefiles, which are the
-key to managing our code portability across a wide variety of UNIX systems.
+key to managing our code portability across a wide variety of UNIX and Windows systems.
 
 \section{Our Makefile System}
 
@@ -6329,17 +6383,6 @@ directory of execution, include
       rather than individually, this command saves time when many files
       must be compiled.
 \item \trl{clean} - Removes garbage files.
-\end{itemize}
-\noindent Most other commands are intended for PETSc developers are generally
-not needed by users.
-\begin{itemize}
-\item \trl{ci} - Uses the RCS \trl{ci} mechanism to check in all files in the
-      directory. 
-\item \trl{co} - Uses the RCS \trl{co} mechanism to check out 
-      all files in the directory. 
-\item \trl{fortranstubs} - Generates the Fortran wrapper routines.  
-\item \trl{latexpages} - Updates the LaTeX version of the manual pages.
-\item \trl{manualpages} - Updates the HTML version of the manual pages.
 \end{itemize}
 
 The \trl{tree} command enables the user to execute a particular action
@@ -6454,14 +6497,7 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   RUNEXAMPLES_1 = runex1 runex2
-   RUNEXAMPLES_2 = runex4
-   RUNEXAMPLES_3 = runex3
-   EXAMPLESC     = ex1.c ex2.c ex4.c
-   EXAMPLESF     = ex3.F
-   EXAMPLES_1    = ex1 ex2
-   EXAMPLES_2    = ex4
-   EXAMPLES_3    = ex3
+   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
    ex1: ex1.o 
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -6485,7 +6521,16 @@ controls the generation of several example programs.
    runex4:
         -@${MPIRUN} -np 4 ex4 -trdump
 
-   include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+   RUNEXAMPLES_1 = runex1 runex2
+   RUNEXAMPLES_2 = runex4
+   RUNEXAMPLES_3 = runex3
+   EXAMPLESC     = ex1.c ex2.c ex4.c
+   EXAMPLESF     = ex3.F
+   EXAMPLES_1    = ex1 ex2
+   EXAMPLES_2    = ex4
+   EXAMPLES_3    = ex3
+
+   include ${PETSC_DIR}/bmake/common_test
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Several Example Programs}
@@ -6582,7 +6627,7 @@ the following:
 
 %------------------------------------------------------------------
 
-\chapter{Advanced Features of Matrices and Solvers}
+\chapter{Unimportant and Advanced Features of Matrices and Solvers}
 \label{ch:advanced}
 
 This chapter introduces additional features of the PETSc matrices and solvers.
@@ -6665,7 +6710,7 @@ The user registers the ordering routine
 with the command
 \begin{verbatim}
   MatOrderingRegisterDynamic(MatOrderingType inname,char *path,char *sname,
-                                int (*reorder)(Mat,MatOrderingType,IS*,IS*)));
+                             int (*reorder)(Mat,MatOrderingType,IS*,IS*)));
 \end{verbatim}
 The \findex{MatOrderingRegisterDynamic()} \sindex{ordering} \sindex{matrix ordering}
 input argument \trl{inname} is a string of the user's choice, \trl{iname} is either 
@@ -6687,7 +6732,7 @@ factorizations for symmetric and nonsymmetric matrices, respectively:
   MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,
                       MatLUInfo *info); 
 \end{verbatim}
-The argument \trl{info->fill $ \ge $ 1} is the predicted fill
+The argument \trl{info->fill > 1} is the predicted fill
 expected in the factored matrix, as a ratio of the original fill. 
 For example, \trl{info->fill=2.0} would indicate that one expects the factored
 matrix to have twice as many nonzeros as the original.
@@ -6828,7 +6873,7 @@ component. This strategy makes things much simpler conceptually, so
 clean code will result. {\em Note}: We had this idea already implicitly in 
 older versions of SLES, but, for instance, just doing Gauss-Seidel
 with Richardson in old SLES was much more expensive than it had to be. 
-With PETSc 2.0 this should not be a problem. 
+With PETSc this should not be a problem. 
 
 \section{Unimportant Details of PC}
 

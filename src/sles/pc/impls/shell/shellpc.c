@@ -1,4 +1,4 @@
-/*$Id: shellpc.c,v 1.73 2001/01/15 21:46:50 bsmith Exp balay $*/
+/*$Id: shellpc.c,v 1.74 2001/03/23 23:23:08 balay Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -225,7 +225,7 @@ int PCShellSetSetUp(PC pc,int (*setup)(void*))
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetSetUp_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetSetUp_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,setup);CHKERRQ(ierr);
   }
@@ -265,7 +265,7 @@ int PCShellSetApply(PC pc,int (*apply)(void*,Vec,Vec),void *ptr)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApply_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApply_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);
   }
@@ -307,7 +307,7 @@ int PCShellSetApplyTranspose(PC pc,int (*applytranspose)(void*,Vec,Vec))
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyTranspose_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyTranspose_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,applytranspose);CHKERRQ(ierr);
   }
@@ -338,7 +338,7 @@ int PCShellSetName(PC pc,char *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetName_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetName_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
   }
@@ -371,7 +371,7 @@ int PCShellGetName(PC pc,char **name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellGetName_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellGetName_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
   } else {
@@ -416,7 +416,7 @@ int PCShellSetApplyRichardson(PC pc,int (*apply)(void*,Vec,Vec,Vec,int),void *pt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyRichardson_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyRichardson_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);
   }

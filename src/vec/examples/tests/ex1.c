@@ -1,6 +1,6 @@
-/*$Id: ex1.c,v 1.10 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex1.c,v 1.11 2001/03/23 23:21:30 balay Exp bsmith $*/
 
-static char help[] = "Tests repeated VecSetType()\n\n";
+static char help[] = "Tests repeated VecSetType().\n\n";
 
 #include "petscvec.h"
 #include "petscsys.h"

@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.154 2001/03/09 19:26:25 balay Exp balay $*/
+/*$Id: itfunc.c,v 1.155 2001/03/23 23:23:29 balay Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -242,9 +242,9 @@ int KSPSolve(KSP ksp,int *its)
         }
       }
       if (flag2 && !rank) {
-        PetscViewer    viewer;
-        PetscDraw      draw;
-        PetscDrawSP    drawsp;
+        PetscViewer viewer;
+        PetscDraw   draw;
+        PetscDrawSP drawsp;
 
         ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Iteratively Computed Eigenvalues",
                                PETSC_DECIDE,PETSC_DECIDE,300,300,&viewer);CHKERRQ(ierr);
@@ -278,9 +278,9 @@ int KSPSolve(KSP ksp,int *its)
       }
     }
     if (flag2 && !rank) {
-      PetscViewer    viewer;
-      PetscDraw      draw;
-      PetscDrawSP    drawsp;
+      PetscViewer viewer;
+      PetscDraw   draw;
+      PetscDrawSP drawsp;
 
       ierr = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Explicitly Computed Eigenvalues",0,320,300,300,&viewer);CHKERRQ(ierr);
       ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);

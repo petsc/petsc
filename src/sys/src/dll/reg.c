@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.68 2001/03/23 22:03:35 bsmith Exp balay $*/
+/*$Id: reg.c,v 1.69 2001/03/23 23:20:29 balay Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -53,7 +53,7 @@ int PetscInitialize_DynamicLibraries(void)
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetsc");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
@@ -62,42 +62,42 @@ int PetscInitialize_DynamicLibraries(void)
     SETERRQ1(1,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from ${PETSC_DIR}/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
   }
 
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscvec");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscmat");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscdm");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscsles");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscsnes");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcpy(libs,PETSC_LIB_DIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscts");CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
@@ -159,10 +159,10 @@ int PetscFinalize_DynamicLibraries(void)
 
 /* ------------------------------------------------------------------------------*/
 struct _PetscFList {
-  int    (*routine)(void *); /* the routine */
-  char   *path;              /* path of link library containing routine */
-  char   *name;              /* string to identify routine */
-  char   *rname;             /* routine name in dynamic library */
+  void        (*routine)();       /* the routine */
+  char        *path;              /* path of link library containing routine */
+  char        *name;              /* string to identify routine */
+  char        *rname;             /* routine name in dynamic library */
   PetscFList  next;               /* next pointer */
   PetscFList  next_list;          /* used to maintain list of all lists for freeing */
 };
@@ -172,7 +172,9 @@ struct _PetscFList {
 */
 static PetscFList   dlallhead = 0;
 
-/*
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFListAdd"
+/*@C
    PetscFListAddDynamic - Given a routine and a string id, saves that routine in the
    specified registry.
 
@@ -191,16 +193,15 @@ static PetscFList   dlallhead = 0;
    for that particular component (e.g., SNESRegisterDynamic()) instead of
    calling PetscFListAddDynamic() directly.
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
   occuring in pathname will be replaced with appropriate values.
 
-.seealso: PetscFListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
-          PCRegisterDynamic(), TSRegisterDynamic()
-*/
+   Level: developer
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFListAdd"
-int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],int (*fnc)(void *))
+.seealso: PetscFListDestroy(), SNESRegisterDynamic(), KSPRegisterDynamic(),
+          PCRegisterDynamic(), TSRegisterDynamic(), PetscFList
+@*/
+int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],void (*fnc)())
 {
   PetscFList entry,ne;
   int        ierr;
@@ -261,14 +262,16 @@ int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],int (*fnc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListDestroy"
-/*
+/*@
     PetscFListDestroy - Destroys a list of registered routines.
 
     Input Parameter:
 .   fl  - pointer to list
 
-.seealso: PetscFListAddDynamic()
-*/
+    Level: developer
+
+.seealso: PetscFListAddDynamic(), PetscFList
+@*/
 int PetscFListDestroy(PetscFList *fl)
 {
   PetscFList   next,entry,tmp = dlallhead;
@@ -334,7 +337,7 @@ int PetscFListDestroyAll(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListFind"
-/*
+/*@
     PetscFListFind - Given a name, finds the matching routine.
 
     Input Parameters:
@@ -349,9 +352,11 @@ int PetscFListDestroyAll(void)
     The routine id or name MUST have been registered with the PetscFList via
     PetscFListAddDynamic() before PetscFListFind() can be called.
 
-.seealso: PetscFListAddDynamic()
-*/
-int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],int (**r)(void *))
+    Level: developer
+
+.seealso: PetscFListAddDynamic(), PetscFList
+@*/
+int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)())
 {
   PetscFList   entry = fl;
   int          ierr;
@@ -441,7 +446,7 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],int (**r)(void 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListView"
-/*
+/*@
    PetscFListView - prints out contents of an PetscFList
 
    Collective over MPI_Comm
@@ -450,8 +455,10 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],int (**r)(void 
 +  PetscFList - the list of functions
 -  viewer - currently ignored
 
-.seealso: PetscFListAddDynamic(), PetscFListPrintTypes()
-*/
+   Level: developer
+
+.seealso: PetscFListAddDynamic(), PetscFListPrintTypes(), PetscFList
+@*/
 int PetscFListView(PetscFList list,PetscViewer viewer)
 {
   int        ierr;
@@ -479,7 +486,7 @@ int PetscFListView(PetscFList list,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListGet"
-/*
+/*@
    PetscFListGet - Gets an array the contains the entries in PetscFList, this is used
          by help etc.
 
@@ -496,8 +503,10 @@ int PetscFListView(PetscFList list,PetscViewer viewer)
        This allocates the array so that must be freed. BUT the individual entries are
     not copied so should not be freed.
 
-.seealso: PetscFListAddDynamic()
-*/
+   Level: developer
+
+.seealso: PetscFListAddDynamic(), PetscFList
+@*/
 int PetscFListGet(PetscFList list,char ***array,int *n)
 {
   int        count = 0,ierr;
@@ -524,7 +533,7 @@ int PetscFListGet(PetscFList list,char ***array,int *n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListPrintTypes"
-/*
+/*@
    PetscFListPrintTypes - Prints the methods available.
 
    Collective over MPI_Comm
@@ -536,8 +545,10 @@ int PetscFListGet(PetscFList list,char ***array,int *n)
 .  name   - option string
 -  list   - list of types
 
-.seealso: PetscFListAddDynamic()
-*/
+   Level: developer
+
+.seealso: PetscFListAddDynamic(), PetscFList
+@*/
 int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],char *text,char *man,PetscFList list)
 {
   int      ierr,count = 0;
@@ -562,7 +573,7 @@ int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char n
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListDuplicate"
-/*
+/*@
     PetscFListDuplicate - Creates a new list from a given object list.
 
     Input Parameters:
@@ -571,8 +582,11 @@ int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char n
     Output Parameters:
 .   nl - the new list (should point to 0 to start, otherwise appends)
 
+    Level: developer
 
-*/
+.seealso: PetscFList, PetscFListAdd(), PetscFlistDestroy()
+
+@*/
 int PetscFListDuplicate(PetscFList fl,PetscFList *nl)
 {
   int  ierr;

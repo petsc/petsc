@@ -1,6 +1,6 @@
-/*$Id: ex6.c,v 1.16 2001/01/23 20:57:50 balay Exp balay $*/
+/*$Id: ex6.c,v 1.17 2001/03/23 23:24:54 balay Exp bsmith $*/
 
-static char help[] = "Tests removing entries from an AOData \n\n";
+static char help[] = "Tests removing entries from an AOData. \n\n";
 
 #include "petscao.h"
 

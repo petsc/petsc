@@ -1,7 +1,7 @@
-/*$Id: ex5.c,v 1.23 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex5.c,v 1.24 2001/03/23 23:22:29 balay Exp bsmith $*/
  
-static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose(),\n\
-MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
+static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose().\n\
+Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
 
 #include "petscmat.h"
 

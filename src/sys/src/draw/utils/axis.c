@@ -1,4 +1,4 @@
-/*$Id: axis.c,v 1.72 2001/01/17 19:44:18 balay Exp balay $*/
+/*$Id: axis.c,v 1.73 2001/03/23 23:20:24 balay Exp bsmith $*/
 /*
    This file contains a simple routine for generating a 2-d axis.
 */
@@ -53,10 +53,10 @@ static int PetscRint(PetscReal x,PetscReal *result)
 @*/
 int PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
 {
-  PetscDrawAxis    ad;
-  PetscObject obj = (PetscObject)draw;
-  int         ierr;
-  PetscTruth  isnull;
+  PetscDrawAxis ad;
+  PetscObject   obj = (PetscObject)draw;
+  int           ierr;
+  PetscTruth    isnull;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
@@ -209,7 +209,7 @@ int PetscDrawAxisDraw(PetscDrawAxis axis)
   int       i,ierr,ntick,numx,numy,ac = axis->ac,tc = axis->tc,cc = axis->cc,rank,len;
   PetscReal tickloc[MAXSEGS],sep,h,w,tw,th,xl,xr,yl,yr;
   char      *p;
-  PetscDraw      draw = axis->win;
+  PetscDraw draw = axis->win;
   
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
@@ -532,7 +532,7 @@ int PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,PetscReal * t
 #define EPS 1.e-6
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="PetscExp10"></a>*/"PetscExp10" 
+#define __FUNCT__ "PetscExp10" 
 static int PetscExp10(PetscReal d,PetscReal *result)
 {
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.223 2001/03/23 22:05:39 bsmith Exp balay $*/
+/*$Id: baij.c,v 1.224 2001/03/23 23:22:07 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -468,7 +468,7 @@ static int MatView_SeqBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   int          row,ierr,i,j,k,l,mbs=a->mbs,color,bs=a->bs,bs2=a->bs2;
   PetscReal    xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   MatScalar    *aa;
-  PetscViewer       viewer;
+  PetscViewer  viewer;
 
   PetscFunctionBegin; 
 
@@ -530,7 +530,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,PetscViewer viewer)
 {
   int          ierr;
   PetscReal    xl,yl,xr,yr,w,h;
-  PetscDraw         draw;
+  PetscDraw    draw;
   PetscTruth   isnull;
 
   PetscFunctionBegin; 
@@ -1289,7 +1289,7 @@ int MatSeqBAIJSetColumnIndices(Mat mat,int *indices)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqBAIJSetColumnIndices_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqBAIJSetColumnIndices_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);
   } else {

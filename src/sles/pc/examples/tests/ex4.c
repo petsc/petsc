@@ -1,6 +1,6 @@
-/*$Id: ex4.c,v 1.42 2001/01/23 20:56:10 balay Exp balay $*/
+/*$Id: ex4.c,v 1.43 2001/03/23 23:23:25 balay Exp bsmith $*/
 
-static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
+static char help[] = "Demonstrates the use of fast Richardson for SOR. And tests\n\
 the MatRelax() routines.\n\n";
 
 #include "petscpc.h"

@@ -1,4 +1,4 @@
-/*$Id: sor.c,v 1.99 2001/01/15 21:46:48 bsmith Exp balay $*/
+/*$Id: sor.c,v 1.100 2001/03/23 23:23:06 balay Exp bsmith $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
@@ -197,7 +197,7 @@ int PCSORSetSymmetric(PC pc,MatSORType flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetSymmetric_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetSymmetric_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   }
@@ -230,7 +230,7 @@ int PCSORSetOmega(PC pc,PetscReal omega)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetOmega_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetOmega_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,omega);CHKERRQ(ierr);
   }
@@ -264,7 +264,7 @@ int PCSORSetIterations(PC pc,int its)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetIterations_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetIterations_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,its);CHKERRQ(ierr);
   }

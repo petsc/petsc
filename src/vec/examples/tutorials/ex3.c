@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.52 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex3.c,v 1.53 2001/03/23 23:21:37 balay Exp bsmith $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 
@@ -21,10 +21,10 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        i,istart,iend,n = 6,ierr,rank,nlocal;
-  Scalar     v,*array;
-  Vec        x;
-  PetscViewer     viewer;
+  int         i,istart,iend,n = 6,ierr,rank,nlocal;
+  Scalar      v,*array;
+  Vec         x;
+  PetscViewer viewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

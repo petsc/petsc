@@ -1,7 +1,7 @@
-/*$Id: ex23.c,v 1.16 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex23.c,v 1.17 2001/03/23 23:21:30 balay Exp bsmith $*/
 
-static char help[] = "Scatters from a parallel vector to a sequential vector\n\
-  using a blocked send and a strided receive.\n\n";
+static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
+  Using a blocked send and a strided receive.\n\n";
 
 /*
         0 1 2 3 | 4 5 6 7 ||  8 9 10 11 

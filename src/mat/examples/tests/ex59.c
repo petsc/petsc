@@ -1,6 +1,6 @@
-/*$Id: ex59.c,v 1.17 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex59.c,v 1.18 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Tests MatGetSubmatrix() in parallel";
+static char help[] = "Tests MatGetSubmatrix() in parallel.";
 
 #include "petscmat.h"
 

@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.107 2001/03/09 19:22:35 balay Exp balay $*/
+/*$Id: umls.c,v 1.108 2001/03/23 23:24:18 balay Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -638,7 +638,7 @@ int SNESLineSearchGetDampingParameter(SNES snes,Scalar *damp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(snes,damp);CHKERRQ(ierr);
   } else {

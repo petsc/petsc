@@ -1,6 +1,6 @@
-/*$Id: ex61.c,v 1.10 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex61.c,v 1.11 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Tests MatSeq(B)AIJSetColumnIndices()";
+static char help[] = "Tests MatSeq(B)AIJSetColumnIndices().\n\n";
 
 #include "petscmat.h"
 

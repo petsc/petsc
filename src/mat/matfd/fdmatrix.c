@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.83 2001/01/22 23:05:09 bsmith Exp balay $*/
+/*$Id: fdmatrix.c,v 1.84 2001/03/23 23:22:48 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -35,7 +35,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 {
   int         ierr;
   PetscTruth  isnull;
-  PetscDraw        draw;
+  PetscDraw   draw;
   PetscReal   xr,yr,xl,yl,h,w;
 
   PetscFunctionBegin;

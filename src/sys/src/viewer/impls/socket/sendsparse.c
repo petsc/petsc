@@ -1,21 +1,23 @@
-/*$Id: sendsparse.c,v 1.32 2001/01/15 21:43:07 bsmith Exp balay $*/
+/*$Id: sendsparse.c,v 1.33 2001/03/23 23:19:52 balay Exp bsmith $*/
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
 /*--------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketPutSparse_Private" 
-/*
+/*@C
    PetscViewerSocketPutSparse_Private - Passes a sparse matrix in AIJ format
              to a Socket PetscViewer. 
 
    Input Parameters:
-.  vw - obtained from PetscViewerSocketOpen()
++  vw - obtained from PetscViewerSocketOpen()
 .  m, n - number of rows and columns of matrix
 .  nnz - number of nonzeros in matrix
 .  v - the nonzero entries
 .  r - the row pointers (m + 1 of them)
-.  c - the column pointers (nnz of them)
+-  c - the column pointers (nnz of them)
+
+    Level: developer
 
    Notes:
    Most users should not call this routine, but instead should employ
@@ -33,7 +35,7 @@ $     MatView(Mat matrix,PetscViewer viewer)
 int PetscViewerSocketPutSparse_Private(PetscViewer vw,int m,int n,int nnz,Scalar *v,int *r,int *c)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)vw->data;
-  int           ierr,t = vmatlab->port,type = SPARSEREAL,value;
+  int                ierr,t = vmatlab->port,type = SPARSEREAL,value;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);

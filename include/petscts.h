@@ -1,4 +1,4 @@
-/* $Id: petscts.h,v 1.44 2001/01/15 21:48:24 bsmith Exp bsmith $ */
+/* $Id: petscts.h,v 1.45 2001/03/22 20:32:16 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -66,6 +66,7 @@ EXTERN int TSGetSolution(TS,Vec*);
 EXTERN int TSSetDuration(TS,int,double);
 
 EXTERN int TSDefaultMonitor(TS,int,double,Vec,void*);
+EXTERN int TSVecViewMonitor(TS,int,double,Vec,void*);
 EXTERN int TSStep(TS,int *,double*);
 
 EXTERN int TSSetInitialTimeStep(TS,double,double);

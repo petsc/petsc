@@ -1,7 +1,6 @@
-/*$Id: ex44.c,v 1.13 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex44.c,v 1.14 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = 
-"Loads matrix dumped by ex43.\n\n";
+static char help[] = "Loads matrix dumped by ex43.\n\n";
 
 #include "petscmat.h"
 
@@ -9,9 +8,9 @@ static char help[] =
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     C;
-  PetscViewer  viewer;
-  int     ierr;
+  Mat         C;
+  PetscViewer viewer;
+  int         ierr;
 
   PetscInitialize(&argc,&args,0,help);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",PETSC_BINARY_RDONLY,&viewer); 

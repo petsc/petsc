@@ -1,7 +1,6 @@
-/*$Id: ex42.c,v 1.22 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex42.c,v 1.23 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = 
-"Tests MatIncreaseOverlap() and MatGetSubmatrices() for the parallel case.\n\
+static char help[] = "Tests MatIncreaseOverlap() and MatGetSubmatrices() for the parallel case.\n\
 This example is similar to ex40.c; here the index sets used are random.\n\
 Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -19,7 +18,7 @@ int main(int argc,char **args)
   PetscTruth  flg;
   Mat         A,B,*submatA,*submatB;
   char        file[128]; 
-  PetscViewer      fd;
+  PetscViewer fd;
   IS          *is1,*is2;
   PetscRandom r;
   Scalar      rand;

@@ -1,6 +1,5 @@
-/*$Id: ex56.c,v 1.28 2001/01/23 20:55:11 balay Exp balay $*/
-static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for \n\
-rectangular MatBAIJ matrix";
+/*$Id: ex56.c,v 1.29 2001/03/23 23:22:29 balay Exp bsmith $*/
+static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for rectangular MatBAIJ matrix.";
 
 #include "petscmat.h"
 

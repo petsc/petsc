@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.9 2001/01/23 20:57:36 balay Exp balay $*/
+/*$Id: ex4.c,v 1.10 2001/03/23 23:24:43 balay Exp bsmith $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -13,7 +13,7 @@
 
 */
 
-static char help[] = "Solve the convection-diffusion equation \n\n";
+static char help[] = "Solve the convection-diffusion equation. \n\n";
 
 #include "petscsys.h"
 #include "petscts.h"
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   int 		mn;
 #if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
   PC		pc;
-  PetscViewer        viewer;
+  PetscViewer   viewer;
   char          pcinfo[120],tsinfo[120];
 #endif
 

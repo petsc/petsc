@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.84 2001/03/22 20:29:29 bsmith Exp balay $*/
+/*$Id: gcreatev.c,v 1.85 2001/03/23 23:21:18 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -99,7 +99,7 @@ int VecRegisterDestroy(void)
       -vec_type my_vector_name
 .ve
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
   occuring in pathname will be replaced with appropriate values.
 
    Level: advanced
@@ -118,7 +118,7 @@ int VecRegister(const char sname[],const char path[],const char name[],int (*fun
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&VecList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&VecList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -162,7 +162,7 @@ int VecSetType(Vec vec,VecType type_name)
   /* Get the function pointers for the vector requested */
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr =  PetscFListFind(vec->comm,VecList,type_name,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(vec->comm,VecList,type_name,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,"Unknown vector type given: %s",type_name);
 

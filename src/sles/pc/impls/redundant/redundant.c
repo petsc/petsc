@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.27 2001/01/15 21:46:59 bsmith Exp balay $*/
+/*$Id: redundant.c,v 1.28 2001/03/23 23:23:18 balay Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -21,7 +21,7 @@ static int PCView_Redundant(PC pc,PetscViewer viewer)
   PC_Redundant *red = (PC_Redundant*)pc->data;
   int          ierr,rank;
   PetscTruth   isascii,isstring;
-  PetscViewer       sviewer;
+  PetscViewer  sviewer;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantSetScatter_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantSetScatter_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,in,out);CHKERRQ(ierr);
   } 
@@ -264,7 +264,7 @@ int PCRedundantGetPC(PC pc,PC *innerpc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetPC_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetPC_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,innerpc);CHKERRQ(ierr);
   } 
@@ -309,7 +309,7 @@ int PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetOperators_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetOperators_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,mat,pmat);CHKERRQ(ierr);
   } 

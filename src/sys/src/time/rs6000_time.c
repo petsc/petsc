@@ -1,4 +1,4 @@
-/*$Id: rs6000_time.c,v 1.9 2001/01/15 21:43:58 bsmith Exp balay $*/
+/*$Id: rs6000_time.c,v 1.10 2001/03/23 23:20:44 balay Exp bsmith $*/
 
 #include "petsc.h"
 #if defined (PETSC_USE_READ_REAL_TIME)
@@ -10,7 +10,7 @@
 PetscLogDouble rs6000_time(void) 
 {
    timebasestruct_t t;
-   PetscLogDouble time;
+   PetscLogDouble   time;
 
    PetscFunctionBegin;
 

@@ -1,6 +1,6 @@
-/*$Id: ex20.c,v 1.20 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex20.c,v 1.21 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
+static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
 #include "petscmat.h"
 

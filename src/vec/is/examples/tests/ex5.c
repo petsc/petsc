@@ -1,6 +1,6 @@
-/*$Id: ex5.c,v 1.5 2001/01/23 20:53:45 balay Exp balay $*/
+/*$Id: ex5.c,v 1.6 2001/03/23 23:21:11 balay Exp bsmith $*/
 
-static char help[] = "Tests ISLocalToGlobalMappingGetInto()\n\n";
+static char help[] = "Tests ISLocalToGlobalMappingGetInfo.()\n\n";
 
 #include "petscis.h"
 

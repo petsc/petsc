@@ -1,5 +1,5 @@
 !
-!  $Id: petscpc.h,v 1.34 2000/08/01 20:58:48 bsmith Exp balay $;
+!  $Id: petscpc.h,v 1.35 2000/09/25 18:01:55 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
@@ -54,7 +54,9 @@
 ! PCCompositeType
 !
       integer PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE
+      integer PC_COMPOSITE_SPECIAL
       parameter (PC_COMPOSITE_ADDITIVE=0,PC_COMPOSITE_MULTIPLICATIVE=1)
+      parameter (PC_COMPOSITE_SPECIAL=2)
 !
 !  End of Fortran include file for the PC package in PETSc
 

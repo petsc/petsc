@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.32 2001/01/23 20:57:36 balay Exp balay $*/
+/*$Id: ex2.c,v 1.33 2001/03/23 23:24:43 balay Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -13,7 +13,7 @@
 
 */
 
-static char help[] = "Solves a nonlinear ODE \n\n";
+static char help[] = "Solves a nonlinear ODE. \n\n";
 
 #include "petscsys.h"
 #include "petscts.h"

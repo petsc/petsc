@@ -1,4 +1,4 @@
-/* $Id: senddense.c,v 1.45 2001/01/15 21:43:07 bsmith Exp balay $ */
+/* $Id: senddense.c,v 1.46 2001/03/23 23:19:52 balay Exp bsmith $ */
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
@@ -8,9 +8,9 @@
    PetscViewerSocketPutScalar - Passes an Scalar array to a Socket PetscViewer.
 
   Input Parameters:
-.  PetscViewer - obtained from PetscViewerSocketOpen()
++  viewer - obtained from PetscViewerSocketOpen()
 .  m, n - number of rows and columns of array
-.  array - the array stored in Fortran 77 style (matrix or vector data) 
+-  array - the array stored in Fortran 77 style (matrix or vector data) 
 
     Level: advanced
 
@@ -26,12 +26,13 @@
    Concepts: Matlab^sending data
    Concepts: sockets^sending data
 
-.seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutReal(), PetscViewerSocketPutScalar()
+.seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutReal(), PetscViewerSocketPutScalar(),
+      PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
 int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,Scalar *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
-  int           ierr,t = vmatlab->port,type = DENSEREAL,value;
+  int                ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);
@@ -54,7 +55,7 @@ int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,Scalar *array)
    a Matlab PetscViewer.
 
   Input Parameters:
-+  PetscViewer - obtained from PetscViewerSocketOpen()
++  viewer - obtained from PetscViewerSocketOpen()
 .  m, n - number of rows and columns of array
 -  array - the array stored in Fortran 77 style (matrix or vector data) 
 
@@ -72,12 +73,13 @@ int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,Scalar *array)
    Concepts: Matlab^sending data
    Concepts: sockets^sending data
 
-.seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutInt(), PetscViewerSocketPutReal()
+.seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutInt(), PetscViewerSocketPutReal(),
+          PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
 int PetscViewerSocketPutReal(PetscViewer viewer,int m,int n,PetscReal *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
-  int           ierr,t = vmatlab->port,type = DENSEREAL,value;
+  int                ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);
@@ -96,7 +98,7 @@ int PetscViewerSocketPutReal(PetscViewer viewer,int m,int n,PetscReal *array)
    PetscViewerSocketPutInt - Passes an integer array to a Socket PetscViewer.
 
    Input Parameters:
-+  PetscViewer - obtained from PetscViewerSocketOpen()
++  viewer - obtained from PetscViewerSocketOpen()
 .  m - number of rows of array
 -  array - the array stored in Fortran 77 style (matrix or vector data) 
 
@@ -113,12 +115,13 @@ int PetscViewerSocketPutReal(PetscViewer viewer,int m,int n,PetscReal *array)
    Concepts: Matlab^sending data
    Concepts: sockets^sending data
 
-.seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutScalar(), PetscViewerSocketPutReal()
+.seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutScalar(), PetscViewerSocketPutReal(),
+       PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
 int PetscViewerSocketPutInt(PetscViewer viewer,int m,int *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
-  int           ierr,t = vmatlab->port,type = DENSEINT;
+  int                ierr,t = vmatlab->port,type = DENSEINT;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.20 2001/01/23 20:57:37 balay Exp balay $*/
+/*$Id: ex5.c,v 1.21 2001/03/23 23:24:45 balay Exp bsmith $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   Vec           u;                      /* approximate solution vector */
   double        time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 100;   /* default max timesteps */
-  PetscDraw          draw;                   /* drawing context */
+  PetscDraw     draw;                   /* drawing context */
   int           ierr,steps,size,m;
   PetscTruth    flg;
   double        dt,ftime;

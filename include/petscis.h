@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.59 2001/01/17 19:43:59 bsmith Exp bsmith $ */
+/* $Id: petscis.h,v 1.60 2001/03/31 04:21:33 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -127,6 +127,16 @@ EXTERN int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,int,ISLocalToGloba
 }
 
 /* --------------------------------------------------------------------------*/
+/*E
+    ISColoringType - determines if the coloring is for the entire parallel grid/graph/matrix
+                     or for just the local ghosted portion
+
+    Level: beginner
+
+.seealso: DAGetColoring()
+E*/
+typedef enum {IS_COLORING_GLOBAL,IS_COLORING_LOCAL} ISColoringType;
+
 /*S
      ISColorings - sets of IS's that define a coloring
               of the underlying indices
@@ -134,18 +144,19 @@ EXTERN int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,int,ISLocalToGloba
    Level: intermediate
 
     Notes:
-        One should not access the is records below because they may not yet 
+        One should not access the *is records below directly because they may not yet 
     have been created. One should use ISColoringGetIS() to make sure they are 
     created when needed.
 
 .seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView(), ISColoringGetIS()
 S*/
 struct _p_ISColoring {
-  int      n;                /* number of colors */
-  IS       *is;              /* for each color indicates columns */
-  MPI_Comm comm;
-  int      *colors;          /* for each column indicates color */
-  int      N;                /* number of columns */
+  int            n;                /* number of colors */
+  IS             *is;              /* for each color indicates columns */
+  MPI_Comm       comm;
+  int            *colors;          /* for each column indicates color */
+  int            N;                /* number of columns */
+  ISColoringType ctype;
 };
 typedef struct _p_ISColoring* ISColoring;
 

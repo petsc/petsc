@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.197 2001/03/23 23:21:48 balay Exp balay $*/
+/*$Id: dense.c,v 1.198 2001/03/27 22:18:54 balay Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -905,7 +905,7 @@ int MatView_SeqDense_Draw_Zoom(PetscDraw draw,void *Aa)
 #define __FUNCT__ "MatView_SeqDense_Draw"
 int MatView_SeqDense_Draw(Mat A,PetscViewer viewer)
 {
-  PetscDraw       draw;
+  PetscDraw  draw;
   PetscTruth isnull;
   PetscReal  xr,yr,xl,yl,h,w;
   int        ierr;

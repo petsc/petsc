@@ -1,7 +1,6 @@
-/*$Id: ex31.c,v 1.24 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex31.c,v 1.25 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = 
-"Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
+static char help[] = "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
 
 #include "petscmat.h"
 
@@ -13,11 +12,11 @@ static char help[] =
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     C;
-  Scalar  v;
-  int     i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size;
-  PetscViewer  viewer;
-  int     MATRIX_GENERATE,MATRIX_READ;
+  Mat         C;
+  Scalar      v;
+  int         i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size;
+  PetscViewer viewer;
+  int         MATRIX_GENERATE,MATRIX_READ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

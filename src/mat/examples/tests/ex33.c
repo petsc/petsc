@@ -1,7 +1,6 @@
-/*$Id: ex33.c,v 1.18 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex33.c,v 1.19 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = 
-"Writes a matrix using the PETSc sparse format. Input arguments are:\n\
+static char help[] = "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
    -fout <file> : output file name\n\n";
 
 #include "petscmat.h"
@@ -10,13 +9,13 @@ static char help[] =
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat        A;
-  Vec        b;
-  char       fileout[128];
-  int        i,j,m = 6,n = 6,N = 36,ierr,I,J;
-  PetscTruth flg;
-  Scalar     val,v;
-  PetscViewer     view;
+  Mat         A;
+  Vec         b;
+  char        fileout[128];
+  int         i,j,m = 6,n = 6,N = 36,ierr,I,J;
+  PetscTruth  flg;
+  Scalar      val,v;
+  PetscViewer view;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

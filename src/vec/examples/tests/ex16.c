@@ -1,6 +1,6 @@
-/*$Id: ex16.c,v 1.13 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex16.c,v 1.14 2001/03/23 23:21:30 balay Exp bsmith $*/
 
-static char help[] = "Tests VecSetValuesBlocked() on MPI vectors\n\n";
+static char help[] = "Tests VecSetValuesBlocked() on MPI vectors.\n\n";
 
 #include "petscvec.h"
 #include "petscsys.h"

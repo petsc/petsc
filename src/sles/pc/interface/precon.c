@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.211 2001/03/09 19:35:20 balay Exp balay $*/
+/*$Id: precon.c,v 1.212 2001/03/23 23:23:02 balay Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1476,7 +1476,7 @@ $     -pc_type my_solver
 
    Level: advanced
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
  occuring in pathname will be replaced with appropriate values.
 
 .keywords: PC, register
@@ -1494,7 +1494,7 @@ int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
   PetscFunctionBegin;
 
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PCList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-% Acknowledgements for PETSc 2.0 Users Manual
+% Acknowledgements for PETSc Users Manual
 %
 % These are also listed on the PETSc homepage, so if you add something here
 % add it to the home page also
@@ -9,7 +9,7 @@
 We thank all PETSc users for their many suggestions, bug reports, and
 encouragement.  We especially thank Victor Eijkhout, David Keyes, and
 Matthew Knepley for their valuable comments on the source code,
-functionality, and documentation for PETSc 2.0.
+functionality, and documentation for PETSc.
 
 
 \vspace{.3in}
@@ -25,7 +25,7 @@ have been written by
   \item Victor Eijkhout, (KSP type BICG, VecPipeline() and VecXXXBegin()/End() routines), 
   \item Paulo Goldfeld, (balancing Neumann-Neumann preconditioner)
   \item Matt Hille, 
-  \item Matthew Knepley, (too much to mention),
+  \item Matthew Knepley,
   \item Domenico Lahaye, (the interface to John Ruge and Klaus Stueben's AMG),
   \item Peter Mell, (portions of the DA routines),
   \item Todd Munson, (the LUSOL (sparse solver in MINOS) interface)
@@ -45,7 +45,7 @@ PETSc uses routines from
                        evaluations; converted to C using {\tt f2c}),
   \item SPARSPAK     (matrix reordering routines, converted to C using {\tt f2c}),
   \item SPARSEKIT2 (written by Yousef Saad) (iludtp(), converted to C using {\tt f2c}). These routines 
-                     are copyrighted by Saad under the GNU copyright, see \url{${PETSC_DIR}/src/mat/impls/aij/seq/gnu}),
+                     are copyrighted by Saad under the GNU copyright, see \trl{${PETSC_DIR}/src/mat/impls/aij/seq/ilut.c}),
   \item libtfs (the efficient, parallel direct solver developed by Henry Tufo and Paul Fischer).
 \end{itemize}
 
@@ -54,15 +54,19 @@ PETSc uses routines from
 \noindent
 PETSc interfaces to the following external software:
 \begin{itemize}
-  \item AMG          (the algebraic multigrid code of John Ruge and Klaus Stueben)
-  \item BlockSolve95 (for parallel ICC(0) and ILU(0) preconditioning)
+  \item AMG          (the algebraic multigrid code of John Ruge and Klaus Stueben,
+                     \trl{http://www.mgnet.org/mgnet-codes-gmd.html})
+  \item BlockSolve95 (for parallel ICC(0) and ILU(0) preconditioning,
+                     \trl{http://www.mcs.anl.gov/blocksolve})
   \item ESSL         (IBM's math library for fast sparse direct LU factorization)
-  \item Matlab       
-  \item ParMeTiS      (parallel graph partitioner)
-  \item PVODE        (parallel ODE integrator)
-  \item SPAI         (for parallel sparse approximate inverse preconditiong)
   \item LUSOL        (sparse LU factorization code (part of MINOS) developed by Michael Saunders,
-                      Systems Optimization Laboratory, Stanford University).
+                      Systems Optimization Laboratory, Stanford University)
+                     \trl{http://www.sbsi-sol-optimize.com/},
+  \item Matlab       
+  \item ParMeTiS      (parallel graph partitioner, \trl{http://www-users.cs.umn.edu/~karypis/metis/})
+  \item PVODE        (parallel ODE integrator, \trl{http://www.llnl.gov/CASC/PVODE})
+  \item SPAI         (for parallel sparse approximate inverse preconditiong, 
+                     \trl{http://www.sam.math.ethz.ch/~grote/spai/}).
 \end{itemize}
 These are all optional packages and do not need to be installed to use PETSc.
 

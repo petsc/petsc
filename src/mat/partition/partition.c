@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.57 2001/01/16 18:18:35 balay Exp balay $*/
+/*$Id: partition.c,v 1.58 2001/03/23 23:22:49 balay Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -138,7 +138,7 @@ int MatPartitioningRegister(char *sname,char *path,char *name,int (*function)(Ma
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatPartitioningList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatPartitioningList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -487,7 +487,7 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
 
   /* Get the function pointers for the method requested */
   if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
-  ierr =  PetscFListFind(part->comm,MatPartitioningList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(part->comm,MatPartitioningList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown partitioning type %s",type);}
 

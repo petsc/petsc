@@ -1,5 +1,5 @@
 !
-!    "$Id: ex5.F,v 1.26 2001/01/15 21:43:34 bsmith Exp balay $";
+!    "$Id: ex5.F,v 1.27 2001/01/19 23:19:43 balay Exp bsmith $";
 !
       program main
 #include "include/finclude/petsc.h"
@@ -8,9 +8,9 @@
 !  This example demonstrates basic use of the Fortran interface for
 !  PetscDraw routines.
 !
-      PetscDraw              draw
-      PetscDrawLG            lg
-      PetscDrawAxis          axis
+      PetscDraw         draw
+      PetscDrawLG       lg
+      PetscDrawAxis     axis
       integer           n,i,ierr,x,y,width,height,flg
       Scalar            xd,yd
 

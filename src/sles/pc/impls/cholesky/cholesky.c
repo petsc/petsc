@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.8 2001/01/15 21:47:04 bsmith Exp balay $*/
+/*$Id: cholesky.c,v 1.9 2001/03/23 23:23:23 balay Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -88,9 +88,9 @@ static int PCSetFromOptions_Cholesky(PC pc)
 #define __FUNCT__ "PCView_Cholesky"
 static int PCView_Cholesky(PC pc,PetscViewer viewer)
 {
-  PC_Cholesky      *lu = (PC_Cholesky*)pc->data;
-  int        ierr;
-  PetscTruth isascii,isstring;
+  PC_Cholesky *lu = (PC_Cholesky*)pc->data;
+  int         ierr;
+  PetscTruth  isascii,isstring;
   
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -322,7 +322,7 @@ int PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetReuseOrdering_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetReuseOrdering_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -356,7 +356,7 @@ int PCCholeskySetReuseFill(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetReuseFill_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetReuseFill_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -397,7 +397,7 @@ int PCCholeskySetFill(PC pc,PetscReal fill)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less then 1.0");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetFill_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetFill_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
@@ -431,7 +431,7 @@ int PCCholeskySetDamping(PC pc,PetscReal damping)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetDamping_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetDamping_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,damping);CHKERRQ(ierr);
   } 
@@ -476,7 +476,7 @@ int PCCholeskySetUseInPlace(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetUseInPlace_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetUseInPlace_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -507,7 +507,7 @@ int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
   int ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetMatOrdering_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetMatOrdering_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 

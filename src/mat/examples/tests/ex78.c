@@ -1,7 +1,7 @@
-/*$Id: ex78.c,v 1.9 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex78.c,v 1.10 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] =
-"Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format, then writes them using the PETSc sparse format.\n\
+static char help[] = "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format.\n\
+Writes them using the PETSc sparse format.\n\
 Note: I and J start at 1, not 0!\n\
 Input parameters are:\n\
   -Ain  <filename> : input matrix in ascii format\n\

@@ -1,6 +1,6 @@
-/*$Id: ex17.c,v 1.6 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex17.c,v 1.7 2001/03/23 23:25:07 balay Exp bsmith $*/
 
-static char help[] = "Tests DA interpolation for coarse DA on a subset of processors\n\n";
+static char help[] = "Tests DA interpolation for coarse DA on a subset of processors.\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"

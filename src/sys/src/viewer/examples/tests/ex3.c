@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.8 2001/01/23 20:52:34 balay Exp balay $*/
+/*$Id: ex3.c,v 1.9 2001/03/23 23:20:05 balay Exp bsmith $*/
 
 static char help[] = "Tests dynamic loading of viewer.\n\n";
 
@@ -8,7 +8,7 @@ static char help[] = "Tests dynamic loading of viewer.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int     ierr;
+  int          ierr;
   PetscViewer  viewer;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.64 2001/03/22 20:11:48 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.65 2001/03/28 03:46:37 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -103,8 +103,29 @@ EXTERN int   DAVecRestoreArray(DA,Vec,void **);
 
 EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 
+/*S
+     DALocalInfo - C struct that contains information about a structured grid and a processors logical
+              location in it.
+
+   Level: beginner
+
+  Concepts: distributed array
+
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAGetLocalInfo(), DAGetInfo()
+S*/
+typedef struct {
+  int            dim,dof,sw;
+  DAPeriodicType pt;
+  DAStencilType  st;
+  int            mx,my,mz;    /* global number of grid points in each direction */
+  int            xs,ys,zs;    /* starting point of this processor */
+  int            xm,ym,zm;    /* number of grid points on this processor */
+} DALocalInfo;
+
+EXTERN int DAGetLocalInfo(DA,DALocalInfo*);
+
 #include "petscmat.h"
-EXTERN int   DAGetColoring(DA,MatType,ISColoring *,Mat *);
+EXTERN int   DAGetColoring(DA,ISColoringType,MatType,ISColoring *,Mat *);
 EXTERN int   DAGetInterpolation(DA,DA,Mat*,Vec*);
 
 #include "petscpf.h"
@@ -159,7 +180,7 @@ typedef struct _p_DM* DM;
 EXTERN int DMView(DM,PetscViewer);
 EXTERN int DMDestroy(DM);
 EXTERN int DMCreateGlobalVector(DM,Vec*);
-EXTERN int DMGetColoring(DM,MatType,ISColoring*,Mat*);
+EXTERN int DMGetColoring(DM,ISColoringType,MatType,ISColoring*,Mat*);
 EXTERN int DMGetInterpolation(DM,DM,Mat*,Vec*);
 EXTERN int DMRefine(DM,MPI_Comm,DM*);
 EXTERN int DMGetInterpolationScale(DM,DM,Mat,Vec*);
@@ -194,7 +215,10 @@ struct _p_DMMG {
   Vec           Rscale;                /* scaling to restriction before computing Jacobian */
   int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
   int           (*computefunction)(SNES,Vec,Vec,void*);  
-  MatFDColoring fdcoloring;            /* only used with finite difference coloring for Jacobian */  
+  int           (*computefunctionlocal)(Scalar**,Scalar**,DALocalInfo*,void*);  
+  int           (*ad_computefunctionlocal)(Scalar**,Scalar**,DALocalInfo*,void*);  
+  ISColoring    iscoloring;            /* used with AD or FD coloring for Jacobian */
+  MatFDColoring fdcoloring;            /* only used with FD coloring for Jacobian */  
   SNES          snes;                  
   int           (*initialguess)(SNES,Vec,void*);
   Vec           work1,work2;
@@ -205,6 +229,7 @@ EXTERN int DMMGDestroy(DMMG*);
 EXTERN int DMMGSetUp(DMMG*);
 EXTERN int DMMGSetSLES(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
 EXTERN int DMMGSetSNES(DMMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
+EXTERN int DMMGSetSNESLocal(DMMG*,int(*)(Scalar**,Scalar**,DALocalInfo*,void*),int(*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 EXTERN int DMMGSetInitialGuess(DMMG*,int (*)(SNES,Vec,void*));
 EXTERN int DMMGView(DMMG*,PetscViewer);
 EXTERN int DMMGSolve(DMMG*);

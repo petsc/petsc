@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.17 2000/07/13 03:03:52 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.18 2000/08/17 04:51:54 bsmith Exp bsmith $ 
 
 
 
@@ -9,6 +9,7 @@ FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
 EXAMPLESC       = ex1.c
 EXAMPLESF       =
+MANSEC          = Mat
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

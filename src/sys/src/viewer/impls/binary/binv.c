@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.97 2001/01/22 23:01:24 bsmith Exp balay $*/
+/*$Id: binv.c,v 1.98 2001/03/23 23:20:00 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -61,7 +61,7 @@ int PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer
 
     Not Collective
 
-+   PetscViewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
++   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
 -   fdes - file descriptor
 
     Level: advanced
@@ -97,7 +97,7 @@ int PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 
     Not Collective
 
-+   PetscViewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
++   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
 -   file - file pointer
 
     Level: advanced
@@ -216,7 +216,7 @@ int PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerBinaryType 
     Collective on PetscViewer
 
   Input Parameters:
-+  PetscViewer - the PetscViewer; must be a binary PetscViewer
++  viewer - the PetscViewer; must be a binary PetscViewer
 -  type - type of file
 $    PETSC_BINARY_CREATE - create new file for binary output
 $    PETSC_BINARY_RDONLY - open existing file for binary input
@@ -233,7 +233,7 @@ int PetscViewerBinarySetType(PetscViewer viewer,PetscViewerBinaryType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerBinarySetType_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerBinarySetType_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,type);CHKERRQ(ierr);
   }
@@ -486,7 +486,7 @@ EXTERN_C_END
 static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
-#define __FUNCT__ "VIEWER_BINARY_"  
+#define __FUNCT__ "PETSC_VIEWER_BINARY_"  
 /*@C
      PETSC_VIEWER_BINARY_ - Creates a binary PetscViewer shared by all processors 
                      in a communicator.

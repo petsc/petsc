@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.13 2001/01/23 20:58:10 balay Exp balay $*/
+/*$Id: ex1.c,v 1.14 2001/03/23 23:25:13 balay Exp bsmith $*/
 
 static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   int            rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
   PetscTruth     flg;
   DA             da;
-  PetscViewer         viewer;
+  PetscViewer    viewer;
   Vec            local,global;
   Scalar         value;
   DAPeriodicType ptype = DA_NONPERIODIC;

@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.158 2001/01/15 21:45:34 bsmith Exp balay $*/
+/*$Id: aijfact.c,v 1.159 2001/03/23 23:21:51 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -264,7 +264,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
     Factorization code for AIJ format. 
 */
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="MatLUFactorSymbolic_SeqAIJ""></a>*/"MatLUFactorSymbolic_SeqAIJ"
+#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ"
 int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;

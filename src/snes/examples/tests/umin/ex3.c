@@ -1,7 +1,6 @@
-/*$Id: ex3.c,v 1.66 2001/03/23 23:24:24 balay Exp balay $*/
+/*$Id: ex3.c,v 1.67 2001/03/28 19:42:25 balay Exp bsmith $*/
 
-static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
-minimization problems in parallel.  This example is based on the\n\
+static char help[] = "Demonstrates use of the SNES package to solve unconstrained minimization problems in parallel.  This example is based on the\n\
 Elastic-Plastic Torsion (dept) problem from the MINPACK-2 test suite.\n\
 The command line options are:\n\
   -mx xg, where xg = number of grid points in the 1st coordinate direction\n\

@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.22 2001/01/15 21:43:39 bsmith Exp balay $*/
+/*$Id: errtrace.c,v 1.23 2001/03/23 23:20:26 balay Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -107,7 +107,7 @@ $     SETERRQ(number,p,mess)
  @*/
 int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
-  PetscLogDouble        mem,rss;
+  PetscLogDouble    mem,rss;
   int               rank;
   PetscTruth        flg1,flg2;
 

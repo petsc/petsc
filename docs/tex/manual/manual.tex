@@ -1,15 +1,11 @@
-% $Id: manual_tex.tex,v 1.137 2001/04/06 02:59:05 bsmith Exp bsmith $ 
+% $Id: manual.tex,v 1.138 2001/04/06 14:08:41 bsmith Exp bsmith $ 
 %
-% LATEX version of the PETSc users manual.
-%
-% manual_tex.tex is the base file for LaTeX format, while manual.tex is
-% the corresponding base HTML format file.
 %
 \documentclass[twoside,11pt]{../sty/report_petsc}
 
-%\usepackage{makeidx,xspace}
-%\usepackage[bookmarksopen,colorlinks]{hyperref}
-%\usepackage[monochrome]{color}
+\usepackage{makeidx,xspace}
+\usepackage[bookmarksopen,colorlinks]{hyperref}
+\usepackage{color}
 
 \usepackage{times}
 \usepackage{psfig}
@@ -52,7 +48,7 @@
 
 \begin{document}
 
-\ANLTitle{PETSc 2.0 Users Manual}{\em Satish Balay\\
+\ANLTitle{PETSc Users Manual}{\em Satish Balay\\
 William Gropp\\ Lois Curfman McInnes\\ Barry Smith\\
 \hspace{0.3in}\\
 Mathematics and Computer Science Division \\
@@ -72,7 +68,7 @@ http://www.mcs.anl.gov/petsc
 \addcontentsline{toc}{chapter}{Abstract}
 \input{abstract.tex}
 
-\input{gettinginfo_tex.tex}
+\input{gettinginfo.tex}
 
 \medskip \medskip
 
@@ -109,30 +105,18 @@ http://www.mcs.anl.gov/petsc
 
 %------------------------------------------------------------------
 
-% We no longer include the long list of all PETSc functions. Instead one
-% can access them on line. They are still generated automatically, just not
-% used.
-%\appendix
-%
-%\chapter{PETSc Function Reference List}
-%
-%\input routin
-
-\vfill
-\eject
 
 \newpage
 
-\addcontentsline{toc}{chapter}{Subject Index}
-\label{sec:sindex}
-\include{sindex}
-\addcontentsline{toc}{chapter}{Function Index}
-\label{sec:findex}
-\include{findex}
+\addcontentsline{toc}{chapter}{Index}
+\label{sec:index}
+\include{index}
 
 \bibliographystyle{plain}
 \addcontentsline{toc}{chapter}{Bibliography}
+\label{sec:bib}
 \bibliography{../petsc}
 
 \end{document}
+
 

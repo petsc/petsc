@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.20 2001/01/15 21:48:51 bsmith Exp balay $*/
+/*$Id: dainterp.c,v 1.21 2001/03/23 23:25:00 balay Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -26,7 +26,7 @@ int DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="DAGetInterpolation_1D_dof"></a>*/"DAGetInterpolation_1D_dof"
+#define __FUNCT__ "DAGetInterpolation_1D_dof"
 int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 {
   int            ierr,i,i_start,m_f,Mx,*idx_f;
@@ -97,7 +97,7 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="DAGetInterpolation_2D_dof"></a>*/"DAGetInterpolation_2D_dof"
+#define __FUNCT__ "DAGetInterpolation_2D_dof"
 int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 {
   int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
@@ -245,7 +245,7 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
 
 /*   dof degree of freedom per node, nonperiodic */
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="DAGetInterpolation_3D_dof"></a>*/"DAGetInterpolation_3D_dof"
+#define __FUNCT__ "DAGetInterpolation_3D_dof"
 int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 {
   int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof,l;

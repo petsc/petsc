@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.44 2001/03/09 20:00:24 balay Exp balay $*/
+/*$Id: pinit.c,v 1.45 2001/03/23 23:20:38 balay Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -420,9 +420,9 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 @*/
 int PetscFinalize(void)
 {
-  int        ierr,rank,nopt;
+  int            ierr,rank,nopt;
   PetscLogDouble rss;
-  PetscTruth flg1,flg2,flg3;
+  PetscTruth     flg1,flg2,flg3;
   
   PetscFunctionBegin;
 
@@ -588,7 +588,7 @@ int PetscFinalize(void)
       ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }
   } else if (flg2) {
-    MPI_Comm   local_comm;
+    MPI_Comm       local_comm;
     PetscLogDouble maxm;
 
     ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);

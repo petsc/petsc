@@ -1,10 +1,10 @@
-/*$Id: ex7.c,v 1.13 2001/01/23 20:53:32 balay Exp balay $*/
+/*$Id: ex7.c,v 1.14 2001/03/23 23:20:59 balay Exp bsmith $*/
 
 /*
      Formatted test for PetscSetCommWorld()
 */
 
-static char help[] = "Tests PetscSetCommWorld()\n\n";
+static char help[] = "Tests PetscSetCommWorld().\n\n";
 
 #include "petsc.h"
 

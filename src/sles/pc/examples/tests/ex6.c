@@ -1,7 +1,6 @@
-/*$Id: ex6.c,v 1.14 2001/01/23 20:56:10 balay Exp balay $*/
+/*$Id: ex6.c,v 1.15 2001/03/23 23:23:25 balay Exp bsmith $*/
 
-static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
-test  MatIncreaseOverlap (needed for aditive schwarts preconditioner \n\
+static char help[] = "Creates a matrix using 9 pt stensil, and uses it to test MatIncreaseOverlap (needed for aditive schwarts preconditioner. \n\
   -m <size>       : problem size\n\
   -x1, -x2 <size> : no of subdomains in x and y directions\n\n";
 

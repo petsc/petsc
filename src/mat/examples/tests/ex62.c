@@ -1,4 +1,4 @@
-/*$Id: ex62.c,v 1.19 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex62.c,v 1.20 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
@@ -8,16 +8,16 @@ static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat        C,A;
-  int        i,j,m,ierr,size;
-  IS         row,col;
-  Vec        x,u,b;
-  double     norm;
-  PetscViewer     fd;
-  char       type[256];
-  char       file[128];
-  Scalar     one = 1.0,mone = -1.0;
-  PetscTruth flg;
+  Mat         C,A;
+  int         i,j,m,ierr,size;
+  IS          row,col;
+  Vec         x,u,b;
+  double      norm;
+  PetscViewer fd;
+  char        type[256];
+  char        file[128];
+  Scalar      one = 1.0,mone = -1.0;
+  PetscTruth  flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

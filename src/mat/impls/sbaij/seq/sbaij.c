@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.53 2001/03/23 22:05:55 bsmith Exp balay $*/
+/*$Id: sbaij.c,v 1.54 2001/03/23 23:22:21 balay Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -269,9 +269,9 @@ int MatTranspose_SeqSBAIJ(Mat A,Mat *B)
 static int MatView_SeqSBAIJ_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         i,fd,*col_lens,ierr,bs = a->bs,count,*jj,j,k,l,bs2=a->bs2;
-  Scalar      *aa;
-  FILE        *file;
+  int          i,fd,*col_lens,ierr,bs = a->bs,count,*jj,j,k,l,bs2=a->bs2;
+  Scalar       *aa;
+  FILE         *file;
 
   PetscFunctionBegin;
   ierr        = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -409,12 +409,12 @@ static int MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
 static int MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   Mat          A = (Mat) Aa;
-  Mat_SeqSBAIJ  *a=(Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ *a=(Mat_SeqSBAIJ*)A->data;
   int          row,ierr,i,j,k,l,mbs=a->mbs,color,bs=a->bs,bs2=a->bs2,rank;
   PetscReal    xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   MatScalar    *aa;
   MPI_Comm     comm;
-  PetscViewer       viewer;
+  PetscViewer  viewer;
 
   PetscFunctionBegin; 
   /*
@@ -484,7 +484,7 @@ static int MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
 {
   int          ierr;
   PetscReal    xl,yl,xr,yr,w,h;
-  PetscDraw         draw;
+  PetscDraw    draw;
   PetscTruth   isnull;
 
   PetscFunctionBegin; 
@@ -1116,7 +1116,7 @@ int MatSeqSBAIJSetColumnIndices(Mat mat,int *indices)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqSBAIJSetColumnIndices_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqSBAIJSetColumnIndices_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);
   } else {
@@ -1617,7 +1617,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatLoad_SeqSBAIJ"
 int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
 {
-  Mat_SeqSBAIJ  *a;
+  Mat_SeqSBAIJ *a;
   Mat          B;
   int          i,nz,ierr,fd,header[4],size,*rowlengths=0,M,N,bs=1;
   int          *mask,mbs,*jj,j,rowcount,nzcount,k,*browlengths,*s_browlengths,maskcount;

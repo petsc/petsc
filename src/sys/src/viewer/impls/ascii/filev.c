@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.116 2001/03/09 15:07:28 balay Exp balay $ */
+/* $Id: filev.c,v 1.117 2001/03/23 23:19:56 balay Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -19,7 +19,7 @@ typedef struct {
 #define __FUNCT__ "PetscViewerDestroy_ASCII" 
 int PetscViewerDestroy_ASCII(PetscViewer viewer)
 {
-  int          rank,ierr;
+  int               rank,ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
   PetscFunctionBegin;
@@ -50,7 +50,7 @@ int PetscViewerDestroy_ASCII(PetscViewer viewer)
 int PetscViewerDestroy_ASCII_Singleton(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
-  int          ierr;
+  int               ierr;
   PetscFunctionBegin;
   ierr = PetscViewerRestoreSingleton(vascii->bviewer,&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -71,7 +71,7 @@ int PetscViewerFlush_ASCII_Singleton_0(PetscViewer viewer)
 #define __FUNCT__ "PetscViewerFlush_ASCII" 
 int PetscViewerFlush_ASCII(PetscViewer viewer)
 {
-  int          rank,ierr;
+  int               rank,ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
 
   PetscFunctionBegin;
@@ -94,7 +94,7 @@ int PetscViewerFlush_ASCII(PetscViewer viewer)
 
     Not Collective
 
-+   PetscViewer - PetscViewer context, obtained from PetscViewerASCIIOpen()
++   viewer - PetscViewer context, obtained from PetscViewerASCIIOpen()
 -   fd - file pointer
 
     Level: intermediate
@@ -131,7 +131,7 @@ extern FILE *petsc_history;
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-+    PetscViewer - optained with PetscViewerASCIIOpen()
++    viewer - optained with PetscViewerASCIIOpen()
 -    tabs - number of tabs
 
     Level: developer
@@ -149,8 +149,8 @@ extern FILE *petsc_history;
 int PetscViewerASCIISetTab(PetscViewer viewer,int tabs)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
-  PetscTruth   isascii;
-  int          ierr;
+  PetscTruth        isascii;
+  int               ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
@@ -170,7 +170,7 @@ int PetscViewerASCIISetTab(PetscViewer viewer,int tabs)
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-.    PetscViewer - optained with PetscViewerASCIIOpen()
+.    viewer - optained with PetscViewerASCIIOpen()
 
     Level: developer
 
@@ -187,8 +187,8 @@ int PetscViewerASCIISetTab(PetscViewer viewer,int tabs)
 int PetscViewerASCIIPushTab(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
-  PetscTruth   isascii;
-  int          ierr;
+  PetscTruth        isascii;
+  int               ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
@@ -208,7 +208,7 @@ int PetscViewerASCIIPushTab(PetscViewer viewer)
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-.    PetscViewer - optained with PetscViewerASCIIOpen()
+.    viewer - optained with PetscViewerASCIIOpen()
 
     Level: developer
 
@@ -225,8 +225,8 @@ int PetscViewerASCIIPushTab(PetscViewer viewer)
 int PetscViewerASCIIPopTab(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
-  int          ierr;
-  PetscTruth   isascii;
+  int               ierr;
+  PetscTruth        isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
@@ -246,7 +246,7 @@ int PetscViewerASCIIPopTab(PetscViewer viewer)
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-+    PetscViewer - optained with PetscViewerASCIIOpen()
++    viewer - optained with PetscViewerASCIIOpen()
 -    flg - PETSC_YES or PETSC_NO
 
     Level: developer
@@ -264,8 +264,8 @@ int PetscViewerASCIIPopTab(PetscViewer viewer)
 int PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
-  PetscTruth   isascii;
-  int          ierr;
+  PetscTruth        isascii;
+  int               ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
@@ -294,7 +294,7 @@ int PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
     Not Collective, but only first processor in set has any effect
 
     Input Parameters:
-+    PetscViewer - optained with PetscViewerASCIIOpen()
++    viewer - optained with PetscViewerASCIIOpen()
 -    format - the usual printf() format string 
 
     Level: developer
@@ -313,9 +313,9 @@ int PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
 int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
-  int          rank,tab,ierr;
-  FILE         *fd = ascii->fd;
-  PetscTruth   isascii;
+  int               rank,tab,ierr;
+  FILE              *fd = ascii->fd;
+  PetscTruth        isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
@@ -381,7 +381,7 @@ int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
     Collective on PetscViewer
 
   Input Parameters:
-+  PetscViewer - the PetscViewer; either ASCII or binary
++  viewer - the PetscViewer; either ASCII or binary
 -  name - the name of the file it should use
 
     Level: advanced
@@ -397,7 +397,7 @@ int PetscViewerSetFilename(PetscViewer viewer,const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   if (!name) SETERRQ(1,"You must pass in non-null string");
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerSetFilename_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerSetFilename_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
   }
@@ -413,7 +413,7 @@ int PetscViewerSetFilename(PetscViewer viewer,const char name[])
     Not Collective
 
   Input Parameter:
-.  PetscViewer - the PetscViewer; either ASCII or binary
+.  viewer - the PetscViewer; either ASCII or binary
 
   Output Parameter:
 .  name - the name of the file it is using
@@ -429,7 +429,7 @@ int PetscViewerGetFilename(PetscViewer viewer,char **name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerGetFilename_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"PetscViewerGetFilename_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(viewer,name);CHKERRQ(ierr);
   }
@@ -445,7 +445,6 @@ int PetscViewerGetFilename_ASCII(PetscViewer viewer,char **name)
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
 
   PetscFunctionBegin;
-  
   *name = vascii->filename;
   PetscFunctionReturn(0);
 }
@@ -456,10 +455,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerSetFilename_ASCII" 
 int PetscViewerSetFilename_ASCII(PetscViewer viewer,const char name[])
 {
-  int          ierr,len;
-  char         fname[256],*gz;
+  int               ierr,len;
+  char              fname[256],*gz;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
-  PetscTruth   isstderr,isstdout;
+  PetscTruth        isstderr,isstdout;
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
@@ -534,7 +533,7 @@ int PetscViewerGetSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
 #define __FUNCT__ "PetscViewerRestoreSingleton_ASCII" 
 int PetscViewerRestoreSingleton_ASCII(PetscViewer viewer,PetscViewer *outviewer)
 {
-  int          ierr;
+  int               ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)(*outviewer)->data;
   PetscViewer_ASCII *ascii  = (PetscViewer_ASCII *)viewer->data;
 
@@ -560,7 +559,7 @@ EXTERN_C_BEGIN
 int PetscViewerCreate_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii;
-  int          ierr;
+  int               ierr;
 
   PetscFunctionBegin;
   ierr         = PetscNew(PetscViewer_ASCII,&vascii);CHKERRQ(ierr);
@@ -601,7 +600,7 @@ EXTERN_C_END
     Not Collective, must call collective PetscViewerFlush() to get the results out
 
     Input Parameters:
-+   PetscViewer - the ASCII PetscViewer
++   viewer - the ASCII PetscViewer
 -   format - the usual printf() format string 
 
     Level: intermediate
@@ -614,10 +613,10 @@ EXTERN_C_END
 int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],...)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
-  int          ierr,rank,tab = vascii->tab;
-  MPI_Comm     comm;
-  FILE         *fp;
-  PetscTruth   isascii;
+  int               ierr,rank,tab = vascii->tab;
+  MPI_Comm          comm;
+  FILE              *fp;
+  PetscTruth        isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);

@@ -1,7 +1,6 @@
-/*$Id: ex9.c,v 1.46 2001/01/23 20:57:06 balay Exp balay $*/
+/*$Id: ex9.c,v 1.47 2001/03/23 23:24:20 balay Exp bsmith $*/
 
-static char help[] =
-"This program demonstrates use of the SNES package to solve systems of\n\
+static char help[] = "This program demonstrates use of the SNES package. Solve systems of\n\
 nonlinear equations in parallel.  This example uses matrix-free Krylov\n\
 Newton methods with no preconditioner to solve the Bratu (SFI - solid fuel\n\
 ignition) test problem. The command line options are:\n\

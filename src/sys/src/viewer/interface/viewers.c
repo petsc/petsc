@@ -1,4 +1,4 @@
-/*$Id: viewers.c,v 1.14 2001/01/15 21:43:19 bsmith Exp balay $*/
+/*$Id: viewers.c,v 1.15 2001/03/23 23:20:05 balay Exp bsmith $*/
 
 #include "petscviewer.h"
 
@@ -16,7 +16,7 @@ struct _p_PetscViewers {
    Collective on PetscViewers
 
    Input Parameters:
-.  PetscViewers - the PetscViewer to be destroyed.
+.  v - the PetscViewers to be destroyed.
 
    Level: intermediate
 
@@ -77,11 +77,11 @@ int PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
    Not Collective, but PetscViewer will be collective object on PetscViewers
 
    Input Parameter:
-+   PetscViewers - object created with PetscViewersCreate()
++   viewers - object created with PetscViewersCreate()
 -   n - number of PetscViewer you want
 
    Output Parameter:
-.  PetscViewer - the PetscViewer
+.  viewer - the PetscViewer
 
    Level: intermediate
 

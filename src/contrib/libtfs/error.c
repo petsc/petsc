@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /**********************************error.c*************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -162,14 +163,13 @@ Description: prints error message.
 void 
 error_msg_warning(char *msg, ...)
 {
+  /* print error message along w/node identifier */
+#if   defined V
   va_list ap;
   char *p, *sval, cval;
   int ival;
   REAL dval;
 
-
-  /* print error message along w/node identifier */
-#if   defined V
   va_start(ap,msg);
   if (!my_id)
     {
@@ -217,6 +217,10 @@ error_msg_warning(char *msg, ...)
 
 
 #elif defined VV
+  va_list ap;
+  char *p, *sval, cval;
+  int ival;
+  REAL dval;
   va_start(ap,msg);
   if (my_id>=0)
     {

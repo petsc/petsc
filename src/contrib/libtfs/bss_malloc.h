@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /********************************bss_malloc.h**********************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 

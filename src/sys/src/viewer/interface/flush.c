@@ -1,9 +1,9 @@
-/*$Id: flush.c,v 1.29 2001/01/15 21:43:19 bsmith Exp balay $*/
+/*$Id: flush.c,v 1.30 2001/03/23 23:20:05 balay Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petscviewer.h" I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name=ViewerFlush""></a>*/"PetscViewerFlush" 
+#define __FUNCT__ "PetscViewerFlush" 
 /*@
    PetscViewerFlush - Flushes a PetscViewer (i.e. tries to dump all the 
    data that has been printed through a PetscViewer).
@@ -11,7 +11,7 @@
    Collective on PetscViewer
 
    Input Parameter:
-.  PetscViewer - the PetscViewer to be flushed
+.  viewer - the PetscViewer to be flushed
 
    Level: intermediate
 

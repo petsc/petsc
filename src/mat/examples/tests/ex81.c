@@ -1,6 +1,6 @@
-/*$Id: ex81.c,v 1.6 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex81.c,v 1.7 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format\n\
+static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing format.\n\
   -fout <output_file> : file to load.\n\
   -fin <input_file> : For a 5X5 example of the 5-pt. stencil,\n\
                        use the file petsc/src/mat/examples/matbinary.ex\n\n";
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   Mat         A;
   Vec         x;
   char        bfile[512],hbfile[512]; 
-  PetscViewer      fd;
+  PetscViewer fd;
   Mat_SeqAIJ  *a;
   Scalar      *aa,*xx;
   FILE        *file;

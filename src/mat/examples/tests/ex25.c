@@ -1,6 +1,6 @@
-/*$Id: ex25.c,v 1.14 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex25.c,v 1.15 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Tests MatTranspose\n\n";
+static char help[] = "Tests MatTranspose()\n\n";
 
 #include "petscmat.h"
 

@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.20 2001/01/20 03:37:20 bsmith Exp balay $*/
+/*$Id: pf.c,v 1.21 2001/03/23 23:25:49 balay Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -346,7 +346,7 @@ $     -pf_type my_function
 
    Level: advanced
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT}, or ${any environmental variable}
+   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
  occuring in pathname will be replaced with appropriate values.
 
 .keywords: PF, register
@@ -363,7 +363,7 @@ int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PPetscFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PPetscFList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -444,7 +444,7 @@ int PFSetType(PF pf,PFType type,void *ctx)
   if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr =  PetscFListFind(pf->comm,PPetscFList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(pf->comm,PPetscFList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to find requested PF type %s",type);
 
   pf->ops->destroy             = 0;

@@ -1,7 +1,7 @@
-/*$Id: ex29.c,v 1.16 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex29.c,v 1.17 2001/03/23 23:21:30 balay Exp bsmith $*/
 
-static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
-where atleast a couple of mallocs will occur in the stash code.\n\n";
+static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors.\n\
+Where atleast a couple of mallocs will occur in the stash code.\n\n";
 
 #include "petscvec.h"
 #include "petscsys.h"

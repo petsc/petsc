@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /******************************************************************************
 File: stack.c
 -------------
@@ -59,7 +60,7 @@ pointer contained w/in.
 ******************************************************************************/
 void free_stack(stack_ADT s)
 {
-  struct node *hold, *remove;
+  struct node *hold, *rremove;
 
 #ifdef DEBUG
   if (!s->len)
@@ -83,10 +84,10 @@ void free_stack(stack_ADT s)
 
   /* should use while (s->len--) {pop();} but why waste the fct calls */
   hold = s->top;
-  while (remove = hold)
+  while ((rremove = hold))
     {
       hold = hold->next;
-      bss_free(remove);
+      bss_free(rremove);
     }
 
   bss_free(s);

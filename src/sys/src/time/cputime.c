@@ -1,4 +1,4 @@
-/*$Id: cputime.c,v 1.38 2001/01/17 22:20:12 bsmith Exp balay $*/
+/*$Id: cputime.c,v 1.39 2001/03/23 23:20:44 balay Exp bsmith $*/
 /*
   This is to allow one to measure CPU time usage of their job, 
   NOT real time usage. Do not use this for reported timings, speedup etc.
@@ -98,7 +98,7 @@ int PetscGetCPUTime(PetscLogDouble *t)
 int PetscGetCPUTime(PetscLogDouble *t)
 {
   static struct rusage temp;
-  PetscLogDouble           foo,foo1;
+  PetscLogDouble       foo,foo1;
 
   PetscFunctionBegin;
   getrusage(RUSAGE_SELF,&temp);

@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 
 /********************************bit_mask.c************************************
 SPARSE GATHER-SCATTER PACKAGE: bit_mask bss_malloc ivec error comm gs queue
@@ -175,7 +176,7 @@ len_bit_mask(register int num_items)
     {rt_val++;}
   
   /* make mults of sizeof int */
-  if (tmp=rt_val%INT_LEN) 
+  if ((tmp=rt_val%INT_LEN)) 
     {rt_val+=(INT_LEN-tmp);}
 
   return(rt_val);
@@ -234,7 +235,7 @@ len_buf(int item_size, int num_items)
   rt_val = item_size * num_items;
 
   /*  double precision align for now ... consider page later */
-  if (tmp = (rt_val%(int)sizeof(double)))
+  if ((tmp = (rt_val%(int)sizeof(double))))
     {rt_val += (sizeof(double) - tmp);}
 
   return(rt_val);

@@ -1,4 +1,4 @@
-/*$Id: pcsles.c,v 1.37 2001/01/15 21:46:58 bsmith Exp balay $*/
+/*$Id: pcsles.c,v 1.38 2001/03/23 23:23:16 balay Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
@@ -175,7 +175,7 @@ int PCSLESSetUseTrue(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESSetUseTrue_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESSetUseTrue_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   }
@@ -209,7 +209,7 @@ int PCSLESGetSLES(PC pc,SLES *sles)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SLESSetUp first");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESGetSLES_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSLESGetSLES_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,sles);CHKERRQ(ierr);
   }

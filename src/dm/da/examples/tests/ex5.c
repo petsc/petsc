@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.40 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex5.c,v 1.41 2001/03/23 23:25:07 balay Exp bsmith $*/
 
 /* This file created by Peter Mell   6/30/95 */ 
 
@@ -11,14 +11,14 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int       rank,size,M = 14,ierr,time_steps = 1000,w=1,s=1;
-  DA        da;
-  PetscViewer    viewer;
-  PetscDraw      draw;
-  Vec       local,global,copy;
-  Scalar    *localptr,*copyptr;
-  double    h,k;
-  int       localsize,j,i,mybase,myend;
+  int         rank,size,M = 14,ierr,time_steps = 1000,w=1,s=1;
+  DA          da;
+  PetscViewer viewer;
+  PetscDraw   draw;
+  Vec         local,global,copy;
+  Scalar      *localptr,*copyptr;
+  double      h,k;
+  int         localsize,j,i,mybase,myend;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

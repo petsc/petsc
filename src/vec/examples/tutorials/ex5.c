@@ -1,7 +1,6 @@
-/*$Id: ex5.c,v 1.46 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex5.c,v 1.47 2001/03/23 23:21:37 balay Exp bsmith $*/
 
-static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
-user-defined event logging.\n\n";
+static char help[] = "Tests binary I/O of vectors and illustrates the use of user-defined event logging.\n\n";
 
 #include "petscvec.h"
 
@@ -13,11 +12,11 @@ user-defined event logging.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int     i,m = 10,rank,size,low,high,ldim,iglobal,ierr;
-  Scalar  v;
-  Vec     u;
+  int          i,m = 10,rank,size,low,high,ldim,iglobal,ierr;
+  Scalar       v;
+  Vec          u;
   PetscViewer  viewer;
-  int     VECTOR_GENERATE,VECTOR_READ;
+  int          VECTOR_GENERATE,VECTOR_READ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

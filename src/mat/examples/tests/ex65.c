@@ -1,6 +1,6 @@
-/*$Id: ex65.c,v 1.11 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex65.c,v 1.12 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Saves a rectangular sparse matrix to disk\n\n";
+static char help[] = "Saves a rectangular sparse matrix to disk.\n\n";
 
 #include "petscmat.h"
 
@@ -8,9 +8,9 @@ static char help[] = "Saves a rectangular sparse matrix to disk\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat    A;
-  int    m = 100,n = 11,ierr,js[11],i,j,cnt;
-  Scalar values[11];
+  Mat         A;
+  int         m = 100,n = 11,ierr,js[11],i,j,cnt;
+  Scalar      values[11];
   PetscViewer view;
 
   PetscInitialize(&argc,&args,(char *)0,help);

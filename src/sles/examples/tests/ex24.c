@@ -1,7 +1,6 @@
-/*$Id: ex24.c,v 1.9 2001/01/23 20:56:37 balay Exp balay $*/
+/*$Id: ex24.c,v 1.10 2001/03/23 23:23:50 balay Exp bsmith $*/
 
-static char help[] = 
-"Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
+static char help[] = "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
 
 #include "petscsles.h"
 

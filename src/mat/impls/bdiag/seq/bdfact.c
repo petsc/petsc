@@ -1,4 +1,4 @@
-/*$Id: bdfact.c,v 1.61 2001/01/15 21:45:45 bsmith Exp balay $*/
+/*$Id: bdfact.c,v 1.62 2001/03/23 23:22:03 balay Exp bsmith $*/
 
 /* Block diagonal matrix format - factorization and triangular solves */
 
@@ -125,7 +125,7 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="MatLUFactorNumeric_SeqBDiag_1"></a>*/"MatLUFactorNumeric_SeqBDiag_1"
+#define __FUNCT__ "MatLUFactorNumeric_SeqBDiag_1"
 int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 {
   Mat          C = *B;

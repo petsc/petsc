@@ -1,4 +1,4 @@
-/*$Id: dm.c,v 1.3 2001/03/22 20:32:54 bsmith Exp balay $*/
+/*$Id: dm.c,v 1.4 2001/03/23 23:25:14 balay Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"     /*I      "petscda.h"     I*/
 
@@ -125,6 +125,7 @@ int DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 
     Input Parameter:
 +   dm - the DM object
+.   ctype - IS_COLORING_LOCAL or IS_COLORING_GLOBAL
 -   mtype - MATMPIAIJ or MATMPIBAIJ
 
     Output Parameter:
@@ -136,12 +137,12 @@ int DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-int DMGetColoring(DM dm,MatType mtype,ISColoring *coloring,Mat *mat)
+int DMGetColoring(DM dm,ISColoringType ctype,MatType mtype,ISColoring *coloring,Mat *mat)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->getcoloring)(dm,mtype,coloring,mat);CHKERRQ(ierr);
+  ierr = (*dm->ops->getcoloring)(dm,ctype,mtype,coloring,mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex53.c,v 1.20 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex53.c,v 1.21 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 
@@ -10,7 +10,7 @@ static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 int main(int argc,char **args)
 {
   Mat         A,B,C,At,Bt;
-  PetscViewer      fd;
+  PetscViewer fd;
   char        file[128];
   PetscRandom rand;
   Vec         xx,yy,s1,s2;
@@ -19,7 +19,6 @@ int main(int argc,char **args)
   int         *cols1,ncols2,*cols2,bs;
   Scalar      vals1[4],vals2[4],v,*v1,*v2;
   PetscTruth  flg;
-
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.57 2001/01/22 23:01:27 bsmith Exp balay $*/
+/*$Id: drawv.c,v 1.58 2001/03/23 23:20:02 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
@@ -7,7 +7,7 @@
 #define __FUNCT__ "PetscViewerDestroy_Draw" 
 int PetscViewerDestroy_Draw(PetscViewer v)
 {
-  int         ierr,i;
+  int              ierr,i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
@@ -27,7 +27,7 @@ int PetscViewerDestroy_Draw(PetscViewer v)
 #define __FUNCT__ "PetscViewerFlush_Draw" 
 int PetscViewerFlush_Draw(PetscViewer v)
 {
-  int         ierr,i;
+  int              ierr,i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
@@ -47,7 +47,7 @@ int PetscViewerFlush_Draw(PetscViewer v)
     Not collective (but PetscDraw returned will be parallel object if PetscViewer is)
 
     Input Parameter:
-+   PetscViewer - the PetscViewer (created with PetscViewerDrawOpen()
++  viewer - the PetscViewer (created with PetscViewerDrawOpen()
 -   windownumber - indicates which subwindow (usually 0)
 
     Ouput Parameter:
@@ -63,9 +63,9 @@ int PetscViewerFlush_Draw(PetscViewer v)
 int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
 {
   PetscViewer_Draw *vdraw;
-  int         ierr;
-  PetscTruth  isdraw;
-  char        *title;
+  int              ierr;
+  PetscTruth       isdraw;
+  char             *title;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
@@ -115,8 +115,8 @@ int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
 @*/
 int PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *drawlg)
 {
-  int         ierr;
-  PetscTruth  isdraw;
+  int              ierr;
+  PetscTruth       isdraw;
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
@@ -152,7 +152,7 @@ int PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *dr
     Not Collective (but PetscDrawAxis object will be parallel if PetscViewer is)
 
     Input Parameter:
-+   PetscViewer - the PetscViewer (created with PetscViewerDrawOpen()
++   viewer - the PetscViewer (created with PetscViewerDrawOpen()
 -   windownumber - indicates which subwindow (usually 0)
 
     Ouput Parameter:
@@ -166,8 +166,8 @@ int PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *dr
 @*/
 int PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,PetscDrawAxis *drawaxis)
 {
-  int         ierr;
-  PetscTruth  isdraw;
+  int              ierr;
+  PetscTruth       isdraw;
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
@@ -197,7 +197,7 @@ int PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,PetscDrawAxis
 #define __FUNCT__ "PetscViewerDrawSetInfo" 
 int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[],int x,int y,int w,int h)
 {
-  int         ierr;
+  int              ierr;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
@@ -228,7 +228,7 @@ int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[]
           PETSC_DRAW_THIRD_SIZE, PETSC_DRAW_QUARTER_SIZE
 
    Output Parameters:
-.  PetscViewer - the PetscViewer
+. viewer - the PetscViewer
 
    Format Options:
 +  PETSC_VIEWER_DRAW_BASIC - displays with basic format
@@ -274,7 +274,7 @@ int PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],in
 #define __FUNCT__ "PetscViewerGetSingleton_Draw" 
 int PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 {
-  int         ierr,rank,i;
+  int              ierr,rank,i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data,*vsdraw;
 
   PetscFunctionBegin;
@@ -302,7 +302,7 @@ int PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 #define __FUNCT__ "PetscViewerRestoreSingleton_Draw" 
 int PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 {
-  int         ierr,rank,i;
+  int              ierr,rank,i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data,*vsdraw;
 
   PetscFunctionBegin;
@@ -362,7 +362,7 @@ EXTERN_C_END
     Not Collective
 
     Input Parameter:
-.   PetscViewer - the PetscViewer 
+.  viewer - the PetscViewer 
 
     Level: intermediate
 
@@ -371,8 +371,8 @@ EXTERN_C_END
 @*/
 int PetscViewerDrawClear(PetscViewer viewer)
 {
-  int         ierr,i;
-  PetscTruth  isdraw;
+  int              ierr,i;
+  PetscTruth       isdraw;
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
@@ -394,9 +394,9 @@ int PetscViewerDrawClear(PetscViewer viewer)
 static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
-#define __FUNCT__ "VIEWER_DRAW_" 
+#define __FUNCT__ "PETSC_VIEWER_DRAW_" 
 /*@C
-     PetscViewer_DRAW_ - Creates a window PetscViewer shared by all processors 
+    PETSC_VIEWER_DRAW_ - Creates a window PetscViewer shared by all processors 
                      in a communicator.
 
      Collective on MPI_Comm
@@ -407,11 +407,11 @@ static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
      Notes:
-     Unlike almost all other PETSc routines, PetscViewer_DRAW_ does not return 
-     an error code.  The window PetscViewer is usually used in the form
+     Unlike almost all other PETSc routines, PETSC)VIEWER_DRAW_ does not return 
+     an error code.  The window is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_DRAW_(comm));
 
-.seealso: PetscViewer_DRAW_WORLD, PetscViewer_DRAW_SELF, PetscViewerDrawOpen(), 
+.seealso: PETSC_VIEWER_DRAW_WORLD, PETSC_VIEWER_DRAW_SELF, PetscViewerDrawOpen(), 
 @*/
 PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
 {

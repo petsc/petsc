@@ -1,4 +1,4 @@
-/*$Id: ex43.c,v 1.16 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex43.c,v 1.17 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
@@ -8,10 +8,10 @@ static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     C;
-  Scalar  v;
-  int     i,j,ierr,m = 4,n = 4,rank,size;
-  PetscViewer  viewer;
+  Mat         C;
+  Scalar      v;
+  int         i,j,ierr,m = 4,n = 4,rank,size;
+  PetscViewer viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h,v 1.66 2000/09/25 18:00:50 balay Exp bsmith $;
+!  $Id: petscmat.h,v 1.67 2000/10/24 20:28:11 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -25,6 +25,12 @@
 #define MatDuplicateOption integer      
 #define MatStructure integer
 #define MatPartitioningType character*(80)
+
+#define MatStencil integer
+#define MatStencil_k 1
+#define MatStencil_j 2
+#define MatStencil_i 3
+#define MatStencil_c 4
 
 #define MATPARTITIONING_CURRENT 'current'
 #define MATPARTITIONING_PARMETIS 'parmetis'

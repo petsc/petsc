@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.26 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex7.c,v 1.27 2001/03/23 23:25:07 balay Exp bsmith $*/
 
 static char help[] = "Tests DALocalToLocal().\n\n";
 
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   Vec            local,global,local_copy;
   Scalar         value,mone = -1.0;
   double         norm,work;
-  PetscViewer         viewer;
+  PetscViewer    viewer;
   char           filename[64];
   FILE           *file;
 

@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /********************************bss_malloc.c**********************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -377,7 +378,7 @@ bss_malloc(size_t size)
     }
 
 #else
-  if (tmp = (void *) malloc(size))
+  if ((tmp = (void *) malloc(size)))
     {
       bss_req+=size;
       num_bss_req++;

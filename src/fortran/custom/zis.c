@@ -1,4 +1,4 @@
-/*$Id: zis.c,v 1.38 2001/01/15 21:49:49 bsmith Exp bsmith $*/
+/*$Id: zis.c,v 1.39 2001/01/17 19:48:31 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscis.h"
@@ -191,7 +191,11 @@ void PETSC_STDCALL isdestroy_(IS *is,int *ierr)
 
 void PETSC_STDCALL iscoloringcreate_(MPI_Comm *comm,int *n,int *colors,ISColoring *iscoloring,int *ierr)
 {
-  *ierr = ISColoringCreate((MPI_Comm)PetscToPointerComm(*comm),*n,colors,iscoloring);
+  int *color;
+  /* copies the colors[] array since that is kept by the ISColoring that is created */
+  *ierr = PetscMalloc((*n+1)*sizeof(int),&color);if (*ierr) return;
+  *ierr = PetscMemcpy(color,colors,(*n)*sizeof(int));if (*ierr) return;
+  *ierr = ISColoringCreate((MPI_Comm)PetscToPointerComm(*comm),*n,color,iscoloring);
 }
 
 void PETSC_STDCALL islocaltoglobalmappingcreate_(MPI_Comm *comm,int *n,int *indices,ISLocalToGlobalMapping *mapping,int *ierr)

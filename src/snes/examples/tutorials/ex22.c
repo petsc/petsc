@@ -1,6 +1,6 @@
-/*$Id: ex22.c,v 1.16 2001/03/12 22:34:22 bsmith Exp balay $*/
+/*$Id: ex22.c,v 1.17 2001/03/23 23:24:25 balay Exp bsmith $*/
 
-static char help[] = "Solves PDE optimization problem\n\n";
+static char help[] = "Solves PDE optimization problem.\n\n";
 
 #include "petscda.h"
 #include "petscpf.h"

@@ -1,7 +1,6 @@
-/*$Id: ex47.c,v 1.20 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex47.c,v 1.21 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = 
-"Tests the various routines in MatBAIJ format.\n\
+static char help[] = "Tests the various routines in MatBAIJ format.\n\
 Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
@@ -13,7 +12,7 @@ Input arguments are:\n\
 int main(int argc,char **args)
 {
   Mat         A,B,C;
-  PetscViewer      va,vb,vc;
+  PetscViewer va,vb,vc;
   Vec         x,y;
   int         ierr,i,j,row,m,n,ncols1,ncols2,*cols1,*cols2,ct,m2,n2;
   char        file[128];

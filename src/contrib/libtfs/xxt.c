@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /*************************************xxt.c************************************
 Module Name: xxt
 Module Info:
@@ -65,7 +66,7 @@ typedef struct matvec_info {
   int n, m, n_global, m_global;
   int *local2global;
   gs_ADT gs_handle;
-  vfp matvec;
+  int (*matvec)(struct matvec_info*,REAL*,REAL*);
   void *grid_data;
 } mv_info;
 
@@ -156,7 +157,7 @@ XXT_new(void)
 
   /* rolling count on n_xxt ... pot. problem here */
   n_xxt_handles++;
-  xxt_handle       = bss_malloc(sizeof(struct xxt_CDT));
+  xxt_handle       = (xxt_ADT)bss_malloc(sizeof(struct xxt_CDT));
   xxt_handle->id   = ++n_xxt;
   xxt_handle->info = NULL; xxt_handle->mvi  = NULL;
 
@@ -226,7 +227,7 @@ XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
     {error_msg_fatal("only 2^k for now and MPI_COMM_WORLD!!! %d != %d\n",1<<i_log2_num_nodes,num_nodes);}
 
   /* space for X info */
-  xxt_handle->info = bss_malloc(sizeof(xxt_info));
+  xxt_handle->info = (xxt_info*)bss_malloc(sizeof(xxt_info));
 
   /* set up matvec handles */
   xxt_handle->mvi  = set_mvi(local2global, n, m, matvec, grid_data);
@@ -539,7 +540,7 @@ XXT_stats(xxt_ADT xxt_handle)
     {
       if (!my_id) 
 	{printf("XXT_stats() :: no stats available!\n");}
-      return;
+      return 1;
     }
 
   vals[0]=vals[1]=vals[2]=xxt_handle->info->nnz;
@@ -635,22 +636,18 @@ static
 int
 xxt_generate(xxt_ADT xxt_handle)
 {
-  int i,j,k,l,index;
+  int i,j,k,index;
   int dim, col;
   REAL *u, *uu, *v, *z, *w, alpha, alpha_w;
-  int *col_map, *segs;
+  int *segs;
   int op[] = {GL_ADD,0};
-  int max=0;
   int off, len;
   REAL *x_ptr;
   int *iptr, flag;
   int start=0, end, work;
   int op2[] = {GL_MIN,0};
-  int op3[] = {GL_MAX,0};
-  int cmin;
-  int id, mask;
   gs_ADT gs_handle;
-  int *nsep, *lnsep, *fo, nfo;
+  int *nsep, *lnsep, *fo;
   int a_n=xxt_handle->mvi->n;
   int a_m=xxt_handle->mvi->m;
   int *a_local2global=xxt_handle->mvi->local2global;
@@ -672,7 +669,6 @@ xxt_generate(xxt_ADT xxt_handle)
   nsep=xxt_handle->info->nsep; 
   lnsep=xxt_handle->info->lnsep;
   fo=xxt_handle->info->fo;
-  nfo=xxt_handle->info->nfo;
   end=lnsep[0];
   level=xxt_handle->level;
   gs_handle=xxt_handle->mvi->gs_handle;
@@ -721,13 +717,13 @@ xxt_generate(xxt_ADT xxt_handle)
 
   /* storage for sparse x values */
   n_global = xxt_handle->info->n_global;
-  xxt_max_nnz = (2.5*pow(1.0*n_global,1.6667) + j*n/2)/num_nodes;
+  xxt_max_nnz = (int)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/num_nodes;
   x = (REAL *) bss_malloc(xxt_max_nnz*sizeof(REAL));
   xxt_nnz = 0;
 
   /* LATER - can embed next sep to fire in gs */
   /* time to make the donuts - generate X factor */
-  for (id=dim=i=j=0;i<m;i++)
+  for (dim=i=j=0;i<m;i++)
     {
       /* time to move to the next level? */
       while (i==segs[dim])
@@ -971,7 +967,9 @@ do_xxt_solve(xxt_ADT xxt_handle, register REAL *uc)
   int *stages     =xxt_handle->info->stages;
   int *col_indices=xxt_handle->info->col_indices;
   register REAL *x_ptr, *uu_ptr;
+#if   BLAS||CBLAS
   REAL zero=0.0;
+#endif
   REAL *solve_uu=xxt_handle->info->solve_uu;
   REAL *solve_w =xxt_handle->info->solve_w;
   REAL *x       =xxt_handle->info->x;
@@ -1124,11 +1122,11 @@ det_separators(xxt_ADT xxt_handle)
   error_msg_warning("det_separators() :: start %d %d %d\n",level,n,m);
 #endif
  
-  dir  = bss_malloc(INT_LEN*(level+1));
-  nsep = bss_malloc(INT_LEN*(level+1));
-  lnsep= bss_malloc(INT_LEN*(level+1));
-  fo   = bss_malloc(INT_LEN*(n+1));
-  used = bss_malloc(INT_LEN*n);
+  dir  = (int*)bss_malloc(INT_LEN*(level+1));
+  nsep = (int*)bss_malloc(INT_LEN*(level+1));
+  lnsep= (int*)bss_malloc(INT_LEN*(level+1));
+  fo   = (int*)bss_malloc(INT_LEN*(n+1));
+  used = (int*)bss_malloc(INT_LEN*n);
 
   ivec_zero(dir  ,level+1);
   ivec_zero(nsep ,level+1);
@@ -1136,8 +1134,8 @@ det_separators(xxt_ADT xxt_handle)
   ivec_set (fo   ,-1,n+1);
   ivec_zero(used,n);
 
-  lhs  = bss_malloc(REAL_LEN*m);
-  rhs  = bss_malloc(REAL_LEN*m);
+  lhs  = (double*)bss_malloc(REAL_LEN*m);
+  rhs  = (double*)bss_malloc(REAL_LEN*m);
 
   /* determine the # of unique dof */
   rvec_zero(lhs,m);
@@ -1411,15 +1409,15 @@ mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
   error_msg_warning("set_mvi() :: start\n");
 #endif
 
-  mvi = bss_malloc(sizeof(mv_info));
+  mvi = (mv_info*)bss_malloc(sizeof(mv_info));
   mvi->n=n;
   mvi->m=m;
   mvi->n_global=-1;
   mvi->m_global=-1;
-  mvi->local2global=bss_malloc((m+1)*INT_LEN);
+  mvi->local2global=(int*)bss_malloc((m+1)*INT_LEN);
   ivec_copy(mvi->local2global,local2global,m);
   mvi->local2global[m] = INT_MAX;
-  mvi->matvec=matvec;
+  mvi->matvec=(int (*)(mv_info*,REAL*,REAL*))matvec;
   mvi->grid_data=grid_data;
 
   /* set xxt communication handle to perform restricted matvec */
@@ -1447,7 +1445,7 @@ Description:
 static
 void do_matvec(mv_info *A, REAL *v, REAL *u)
 {
-  A->matvec(A->grid_data,v,u);
+  A->matvec((mv_info*)A->grid_data,v,u);
 }
 
 

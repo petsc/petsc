@@ -1,6 +1,6 @@
-/*$Id: ex32.c,v 1.25 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex32.c,v 1.26 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
+static char help[] = "Reads in a matrix and vector in ASCII slap format. Writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
   -fin <filename> : input file\n\
   -fout <filename> : output file\n\n";
@@ -11,12 +11,12 @@ them using the PETSc sparse format. Input parameters are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat    A;
-  Vec    b;
-  char   filein[128],fileout[128];
-  int    i,j,m,n,nnz,ierr,rank,size,start,end,*col,*row,*brow,length;
-  Scalar *val,*bval;
-  FILE*  file;
+  Mat         A;
+  Vec         b;
+  char        filein[128],fileout[128];
+  int         i,j,m,n,nnz,ierr,rank,size,start,end,*col,*row,*brow,length;
+  Scalar      *val,*bval;
+  FILE*       file;
   PetscViewer view;
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -1,7 +1,6 @@
-/*$Id: ex4.c,v 1.19 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex4.c,v 1.20 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Creates a matrix, inserts some values, and tests\n\
-MatGetSubMatrices and MatZeroEntries.\n\n";
+static char help[] = "Creates a matrix, inserts some values, and tests MatGetSubMatrices() and MatZeroEntries().\n\n";
 
 #include "petscmat.h"
 
@@ -9,11 +8,11 @@ MatGetSubMatrices and MatZeroEntries.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat       mat,submat,*submatrices;
-  int       m = 10,n = 10,i = 4,tmp,ierr;
-  IS        irkeep,ickeep;
-  Scalar    value = 1.0;
-  PetscViewer    sviewer;
+  Mat         mat,submat,*submatrices;
+  int         m = 10,n = 10,i = 4,tmp,ierr;
+  IS          irkeep,ickeep;
+  Scalar      value = 1.0;
+  PetscViewer sviewer;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.151 2001/03/09 15:46:03 balay Exp balay $*/
+/*$Id: mtr.c,v 1.152 2001/03/23 23:20:36 balay Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -410,8 +410,8 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 int PetscShowMemoryUsage(PetscViewer viewer,char *message)
 {
   PetscLogDouble allocated,maximum,resident;
-  int        ierr,rank;
-  MPI_Comm   comm;
+  int            ierr,rank;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscTrSpace(&allocated,PETSC_NULL,&maximum);CHKERRQ(ierr);
@@ -554,11 +554,11 @@ int PetscTrLog(void)
 @*/
 int PetscTrLogDump(FILE *fp)
 {
-  int        i,rank,j,n,*shortlength,ierr,dummy,size,tag = 1212 /* very bad programming */;
-  PetscTruth match;
-  char       **shortfunction;
+  int            i,rank,j,n,*shortlength,ierr,dummy,size,tag = 1212 /* very bad programming */;
+  PetscTruth     match;
+  char           **shortfunction;
   PetscLogDouble rss;
-  MPI_Status status;
+  MPI_Status     status;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);

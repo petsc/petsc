@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.162 2001/03/28 19:42:42 balay Exp bsmith $*/
+/*$Id: da2.c,v 1.163 2001/04/07 15:22:00 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -189,7 +189,7 @@ int DAPublish_Petsc(PetscObject obj)
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="VecMatlabEnginePut_DA2d"></a>*/"VecMatlabEnginePut_DA2d"
+#define __FUNCT__ "VecMatlabEnginePut_DA2d"
 int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
 {
   int     ierr,n,m;
@@ -1138,7 +1138,7 @@ int DARefine(DA da,MPI_Comm comm,DA *daref)
 
 */
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="DASplitComm2d"></a>*/"DASplitComm2d"
+#define __FUNCT__ "DASplitComm2d"
 int DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
 {
   int ierr,m,n = 0,csize,size,rank,x = 0,y = 0;

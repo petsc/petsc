@@ -1,6 +1,6 @@
-/*$Id: ex7.c,v 1.55 2001/01/23 20:57:06 balay Exp balay $*/
+/*$Id: ex7.c,v 1.56 2001/03/23 23:24:20 balay Exp bsmith $*/
 
-static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
+static char help[] = "Solves u`` + u^{2} = f with Newton-like methods. Using\n\
  matrix-free techniques with user-provided explicit preconditioner matrix.\n\n";
 
 #include "petscsnes.h"

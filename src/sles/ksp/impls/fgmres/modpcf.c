@@ -1,4 +1,4 @@
-/* $Id: modpcf.c,v 1.12 2001/01/15 21:47:28 bsmith Exp balay $*/
+/* $Id: modpcf.c,v 1.13 2001/03/23 23:23:47 balay Exp bsmith $*/
 
 #include "petscsles.h" 
 #undef __FUNCT__  
@@ -45,7 +45,7 @@ int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void* c
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPFGMRESSetModifyPC_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,fcn,ctx,d);CHKERRQ(ierr);
   }

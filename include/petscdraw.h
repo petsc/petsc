@@ -1,4 +1,4 @@
-/* $Id: petscdraw.h,v 1.74 2000/06/07 17:42:13 balay Exp bsmith $ */
+/* $Id: petscdraw.h,v 1.75 2001/01/15 21:43:21 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -8,15 +8,30 @@
 
 #define PETSC_DRAW_COOKIE PETSC_COOKIE+6
 
-/* types of draw contexts */
+/*E
+    PetscDrawType - String with the name of a PetscDraw 
+
+   Level: beginner
+
+.seealso: PetscDrawSetType(), PetscDraw, PetscViewer
+E*/
+typedef char* PetscDrawType;
 #define PETSC_DRAW_X     "x"
 #define PETSC_DRAW_NULL  "null"
 #define PETSC_DRAW_PS    "ps"
 #define PETSC_DRAW_WIN32 "win32"
  
+/*S
+     PetscDraw - Abstract PETSc object for graphics
+
+   Level: beginner
+
+  Concepts: graphics
+
+.seealso:  PetscDrawCreate(), PetscDrawSetType(), PetscDrawType
+S*/
 typedef struct _p_PetscDraw* PetscDraw;
 
-typedef char* PetscDrawType;
 extern PetscFList PetscDrawList;
 EXTERN int PetscDrawRegisterAll(char *);
 EXTERN int PetscDrawRegisterDestroy(void);
@@ -132,26 +147,49 @@ EXTERN int PetscDrawEOP(PetscDraw);
 EXTERN int PetscDrawGetSingleton(PetscDraw,PetscDraw*);
 EXTERN int PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
 
+/*E
+    PetscDrawButton - Used to determine which button was pressed
+
+   Level: intermediate
+
+.seealso: PetscDrawGetMouseButton(), PetscDrawSynchronizedGetMouseButton()
+E*/
 typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT } PetscDrawButton;
+
 EXTERN int PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,double*,double *,double *,double *);
 EXTERN int PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,double*,double *,double *,double *);
 
 EXTERN int PetscDrawZoom(PetscDraw,int (*)(PetscDraw,void *),void *);
 
-/*   Allows one to maintain a subset of viewports for a single window */
+/*S
+     PetscDrawViewPorts - Subwindows in a PetscDraw object
+
+   Level: intermediate
+
+  Concepts: graphics
+
+.seealso:  PetscDrawViewPortsCreate(), PetscDrawViewPortsSet()
+S*/
 typedef struct {
-  int    nports;
-  double *xl,*xr,*yl,*yr;
-  PetscDraw   draw;
+  int       nports;
+  double    *xl,*xr,*yl,*yr;
+  PetscDraw draw;
 } PetscDrawViewPorts;
 EXTERN int PetscDrawViewPortsCreate(PetscDraw,int,PetscDrawViewPorts**);
 EXTERN int PetscDrawViewPortsDestroy(PetscDrawViewPorts*);
 EXTERN int PetscDrawViewPortsSet(PetscDrawViewPorts*,int);
 
-/*
-    Routines for drawing X-Y axises in a PetscDraw object
-*/
+/*S
+     PetscDrawAxis - Manages X-Y axis
+
+   Level: advanced
+
+  Concepts: graphics, axis
+
+.seealso:  PetscDrawAxisCreate(), PetscDrawAxisSetLimits(), PetscDrawAxisSetColors(), PetscDrawAxisSetLabels()
+S*/
 typedef struct _p_DrawAxis* PetscDrawAxis;
+
 #define DRAWAXIS_COOKIE PETSC_COOKIE+16
 EXTERN int PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
 EXTERN int PetscDrawAxisDestroy(PetscDrawAxis);
@@ -160,10 +198,17 @@ EXTERN int PetscDrawAxisSetLimits(PetscDrawAxis,double,double,double,double);
 EXTERN int PetscDrawAxisSetColors(PetscDrawAxis,int,int,int);
 EXTERN int PetscDrawAxisSetLabels(PetscDrawAxis,char*,char*,char*);
 
-/*
-    Routines to draw line curves in X-Y space
-*/
+/*S
+     PetscDrawLG - Manages drawing x-y plots
+
+   Level: advanced
+
+  Concepts: graphics, axis
+
+.seealso:  PetscDrawAxisCreate(), PetscDrawLGCreate(), PetscDrawLGAddPoint()
+S*/
 typedef struct _p_DrawLG*   PetscDrawLG;
+
 #define DRAWLG_COOKIE PETSC_COOKIE+7
 EXTERN int PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
 EXTERN int PetscDrawLGDestroy(PetscDrawLG);
@@ -177,10 +222,17 @@ EXTERN int PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
 EXTERN int PetscDrawLGIndicateDataPoints(PetscDrawLG);
 EXTERN int PetscDrawLGSetLimits(PetscDrawLG,double,double,double,double); 
 
-/*
-    Routines to draw scatter plots in complex space
-*/
+/*S
+     PetscDrawSP - Manages drawing scatter plots
+
+   Level: advanced
+
+  Concepts: graphics, scatter plots
+
+.seealso:  PetscDrawSPCreate()
+S*/
 typedef struct _p_DrawSP*   PetscDrawSP;
+
 #define DRAWSP_COOKIE PETSC_COOKIE+27
 EXTERN int PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
 EXTERN int PetscDrawSPDestroy(PetscDrawSP);
@@ -193,10 +245,17 @@ EXTERN int PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis *);
 EXTERN int PetscDrawSPGetDraw(PetscDrawSP,PetscDraw *);
 EXTERN int PetscDrawSPSetLimits(PetscDrawSP,double,double,double,double); 
 
-/*
-    Routines to draw histograms
-*/
+/*S
+     PetscDrawHG - Manages drawing histograms
+
+   Level: advanced
+
+  Concepts: graphics, histograms
+
+.seealso:  PetscDrawHGCreate()
+S*/
 typedef struct _p_DrawHG*   PetscDrawHG;
+
 #define DRAWHG_COOKIE PETSC_COOKIE+15
 EXTERN int PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
 EXTERN int PetscDrawHGDestroy(PetscDrawHG);
@@ -221,12 +280,9 @@ EXTERN int PetscDrawUtilitySetGamma(double);
 
 /* Mesh management routines */
 typedef struct _p_DrawMesh* PetscDrawMesh;
-int PetscDrawMeshCreate(PetscDrawMesh *,
-		    double *,double *,double *,
-		    int,int,int,int,int,int,int,int,int,
-		    int,int,int,int,double *,int);
-int PetscDrawMeshCreateSimple(PetscDrawMesh *,double *,double *,double *,
-			  int,int,int,int,double *,int);
+int PetscDrawMeshCreate(PetscDrawMesh *,double *,double *,double *,
+		        int,int,int,int,int,int,int,int,int,int,int,int,int,double *,int);
+int PetscDrawMeshCreateSimple(PetscDrawMesh *,double *,double *,double *,int,int,int,int,double *,int);
 int PetscDrawMeshDestroy(PetscDrawMesh *);
 
 

@@ -1,7 +1,6 @@
-/*$Id: ex8.c,v 1.20 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex8.c,v 1.21 2001/03/23 23:21:37 balay Exp bsmith $*/
 
-static char help[] = "Demonstrates using a local ordering to set values into\n\
-a parallel vector.\n\n";
+static char help[] = "Demonstrates using a local ordering to set values into a parallel vector.\n\n";
 
 /*T
    Concepts: vectors^assembling vectors with local ordering;

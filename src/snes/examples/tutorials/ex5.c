@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.130 2001/03/22 20:32:01 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.131 2001/03/23 23:24:25 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   AppCtx                 user;                 /* user-defined work context */
   int                    its;                  /* iterations for convergence */
   PetscTruth             matrix_free,coloring;
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
   PetscTruth             matlab;
 #endif
   int                    ierr;
@@ -115,7 +115,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set function evaluation routine and vector
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
   ierr = PetscOptionsHasName(PETSC_NULL,"-matlab",&matlab);CHKERRQ(ierr);
   if (matlab) {
     ierr = SNESSetFunction(snes,r,FormFunctionMatlab,(void*)&user);CHKERRQ(ierr);
@@ -145,14 +145,14 @@ int main(int argc,char **argv)
     if (coloring) {
       ISColoring    iscoloring;
 
-      ierr = DAGetColoring(user.da,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
+      ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,MATMPIAIJ,&iscoloring,&J);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
     } else {
-      ierr = DAGetColoring(user.da,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
+      ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,MATMPIAIJ,PETSC_IGNORE,&J);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
     }
   }
@@ -488,7 +488,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 /*
       Variant of FormFunction() that computes the function in Matlab
 */
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
 int FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx   *user = (AppCtx*)ptr;

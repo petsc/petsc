@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.69 2001/03/23 23:20:29 balay Exp balay $*/
+/*$Id: dl.c,v 1.70 2001/04/05 21:06:44 balay Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -190,7 +190,7 @@ int PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int ll
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name=""PetscDLLibraryOpen></a>*/"PetscDLLibraryOpen"
+#define __FUNCT__ "PetscDLLibraryOpen"
 /*@C
    PetscDLLibraryOpen - Opens a dynamic link library
 

@@ -1,6 +1,6 @@
-/*$Id: ex14.c,v 1.14 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex14.c,v 1.15 2001/03/23 23:25:07 balay Exp bsmith $*/
 
-static char help[] = "Tests saving DA vectors to files\n\n";
+static char help[] = "Tests saving DA vectors to files.\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"
@@ -9,12 +9,12 @@ static char help[] = "Tests saving DA vectors to files\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int      rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
-  int      dof = 1;
-  DA       da;
-  Vec      local,global,natural;
-  Scalar   value;
-  PetscViewer   bviewer;
+  int         rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
+  int         dof = 1;
+  DA          da;
+  Vec         local,global,natural;
+  Scalar      value;
+  PetscViewer bviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.125 2001/02/09 18:57:48 bsmith Exp balay $*/
+/*$Id: err.c,v 1.126 2001/03/23 23:20:26 balay Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -247,7 +247,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
     Input Parameters:
 +   N - number of integers in array
 .   idx - array of integers
--   PetscViewer - location to print array,  PetscViewer_STDOUT_WORLD, PetscViewer_STDOUT_SELF or 0
+-   viewer - location to print array,  PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF or 0
 
   Level: intermediate
 
@@ -327,7 +327,7 @@ int PetscIntView(int N,int idx[],PetscViewer viewer)
     Input Parameters:
 +   N - number of doubles in array
 .   idx - array of doubles
--   PetscViewer - location to print array,  PetscViewer_STDOUT_WORLD, PetscViewer_STDOUT_SELF or 0
+-   viewer - location to print array,  PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF or 0
 
   Level: intermediate
 
@@ -408,7 +408,7 @@ int PetscDoubleView(int N,PetscReal idx[],PetscViewer viewer)
     Input Parameters:
 +   N - number of scalars in array
 .   idx - array of scalars
--   PetscViewer - location to print array,  PetscViewer_STDOUT_WORLD, PetscViewer_STDOUT_SELF or 0
+-   viewer - location to print array,  PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF or 0
 
   Level: intermediate
 

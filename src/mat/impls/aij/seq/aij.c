@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.368 2001/03/23 22:04:55 bsmith Exp balay $*/
+/*$Id: aij.c,v 1.369 2001/03/23 23:21:51 balay Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -549,7 +549,7 @@ int MatView_SeqAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
 int MatView_SeqAIJ_Draw(Mat A,PetscViewer viewer)
 {
   int        ierr;
-  PetscDraw       draw;
+  PetscDraw  draw;
   PetscReal  xr,yr,xl,yl,h,w;
   PetscTruth isnull;
 
@@ -1776,7 +1776,6 @@ int MatPrintHelp_SeqAIJ(Mat A)
 }
 EXTERN int MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
 EXTERN int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN int MatColoringPatch_SeqAIJ(Mat,int,int *,ISColoring *);
 EXTERN int MatILUDTFactor_SeqAIJ(Mat,MatILUInfo*,IS,IS,Mat*);
 #undef __FUNCT__  
 #define __FUNCT__ "MatCopy_SeqAIJ"
@@ -1889,7 +1888,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetColumnIJ_SeqAIJ,
        MatRestoreColumnIJ_SeqAIJ,
        MatFDColoringCreate_SeqAIJ,
-       MatColoringPatch_SeqAIJ,
+       0,
        0,
        MatPermute_SeqAIJ,
        0,
@@ -1914,7 +1913,6 @@ int MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,int *indices)
   int        i,nz,n;
 
   PetscFunctionBegin;
-  if (aij->indexshift) SETERRQ(1,"No support with 1 based indexing");
 
   nz = aij->maxnz;
   n  = mat->n;
@@ -1952,6 +1950,8 @@ EXTERN_C_END
 
     MUST be called before any calls to MatSetValues();
 
+    The indices should start with zero, not one.
+
 @*/ 
 int MatSeqAIJSetColumnIndices(Mat mat,int *indices)
 {
@@ -1959,7 +1959,7 @@ int MatSeqAIJSetColumnIndices(Mat mat,int *indices)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqAIJSetColumnIndices_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqAIJSetColumnIndices_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);
   } else {
@@ -1995,7 +1995,7 @@ int MatStoreValues_SeqAIJ(Mat mat)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="MatStoreValues""></a>*/"MatStoreValues"
+#define __FUNCT__ "MatStoreValues"
 /*@
     MatStoreValues - Stashes a copy of the matrix values; this allows, for 
        example, reuse of the linear part of a Jacobian, while recomputing the 
@@ -2049,7 +2049,7 @@ int MatStoreValues(Mat mat)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatStoreValues_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatStoreValues_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat);CHKERRQ(ierr);
   } else {
@@ -2106,7 +2106,7 @@ int MatRetrieveValues(Mat mat)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatRetrieveValues_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatRetrieveValues_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat);CHKERRQ(ierr);
   } else {
@@ -2599,7 +2599,7 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name="MatEqual_SeqAIJ""></a>*/"MatEqual_SeqAIJ"
+#define __FUNCT__ "MatEqual_SeqAIJ"
 int MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data,*b = (Mat_SeqAIJ *)B->data;

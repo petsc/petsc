@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.121 2001/02/14 22:40:36 balay Exp balay $ */
+/* $Id: send.c,v 1.122 2001/03/23 23:19:52 balay Exp bsmith $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -62,14 +62,12 @@ EXTERN_C_END
 static int PetscViewerDestroy_Socket(PetscViewer viewer)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
-  int           ierr;
+  int                ierr;
 
   PetscFunctionBegin;
   if (vmatlab->port) {
     ierr = close(vmatlab->port);
-    if (ierr) {
-      SETERRQ(PETSC_ERR_LIB,"System error closing socket");
-    }
+    if (ierr) SETERRQ(PETSC_ERR_LIB,"System error closing socket");
   }
   ierr = PetscFree(vmatlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -179,7 +177,8 @@ $    -viewer_socket_port <port>
    Concepts: sockets^sending data
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerSetType(),
-          PetscViewerSocketSetConnection()
+          PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, 
+          PETSC_VIEWER_SOCKET_SELF
 @*/
 int PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
@@ -246,9 +245,9 @@ EXTERN_C_END
 #define __FUNCT__ "PetscViewerSocketSetConnection" 
 int PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 {
-  int           ierr,rank;
-  char          mach[256];
-  PetscTruth    tflg;
+  int                ierr,rank;
+  char               mach[256];
+  PetscTruth         tflg;
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
 
   PetscFunctionBegin;
@@ -286,9 +285,9 @@ int PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
-#define __FUNCT__ "VIEWER_SOCKET_"  
+#define __FUNCT__ "PETSC_VIEWER_SOCKET_"  
 /*@C
-     PetscViewer_SOCKET_ - Creates a socket PetscViewer shared by all processors 
+     PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors 
                      in a communicator.
 
      Collective on MPI_Comm
@@ -299,7 +298,7 @@ static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
    Options Database Keys:
-   For use with the default Matlab PetscViewer, PetscViewer_SOCKET_WORLD or if 
+   For use with the default Matlab PetscViewer, PETSC_VIEWER_SOCKET_WORLD or if 
     PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
 $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
@@ -319,7 +318,7 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
      Connects to a waiting socket and stays connected until PetscViewerDestroy() is called.
 
 .seealso: PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF, PetscViewerSocketOpen(), PetscViewerCreate(),
-          PetscViewerSocketSetConnection(), PetscViewerDestroy()
+          PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_()
 @*/
 PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {

@@ -1,4 +1,4 @@
-/*$Id: viewa.c,v 1.21 2001/01/22 23:01:31 bsmith Exp balay $*/
+/*$Id: viewa.c,v 1.22 2001/03/23 23:20:05 balay Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -10,7 +10,7 @@
    Collective on PetscViewer
 
    Input Parameters:
-+  PetscViewer - the PetscViewer
++  viewer - the PetscViewer
 .  format - the format
 -  char - optional object name
 
@@ -61,7 +61,7 @@ int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
    Collective on PetscViewer
 
    Input Parameters:
-+  PetscViewer - the PetscViewer
++  viewer - the PetscViewer
 .  format - the format
 -  char - optional object name
 
@@ -116,7 +116,7 @@ int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
    Collective on PetscViewer
 
    Input Parameters:
-.  PetscViewer - the PetscViewer
+.  viewer - the PetscViewer
 
    Level: intermediate
 

@@ -1,4 +1,4 @@
-/*$Id: sregis.c,v 1.36 2001/01/16 18:18:38 balay Exp balay $*/
+/*$Id: sregis.c,v 1.37 2001/03/23 23:22:51 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"     /*I       "petscmat.h"   I*/
 
@@ -13,7 +13,7 @@ EXTERN int MatOrdering_DSC(Mat,MatOrderingType,IS*,IS*);
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name=""></a>*/"MatOrderingRegisterAll"
+#define __FUNCT__ "MatOrderingRegisterAll"
 /*@C
   MatOrderingRegisterAll - Registers all of the matrix 
   reordering routines in PETSc.

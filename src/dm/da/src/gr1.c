@@ -1,4 +1,4 @@
-/*$Id: gr1.c,v 1.25 2001/01/15 21:48:51 bsmith Exp balay $*/
+/*$Id: gr1.c,v 1.26 2001/03/23 23:25:00 balay Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
@@ -106,10 +106,10 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   MPI_Status     status;
   double         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
   Scalar         *array,*xg;
-  PetscDraw           draw;
+  PetscDraw      draw;
   PetscTruth     isnull;
   MPI_Comm       comm;
-  PetscDrawAxis       axis;
+  PetscDrawAxis  axis;
   Vec            xcoor;
   DAPeriodicType periodic;
 

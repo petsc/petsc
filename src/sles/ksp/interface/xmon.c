@@ -1,4 +1,4 @@
-/*$Id: xmon.c,v 1.48 2001/01/15 21:47:10 bsmith Exp balay $*/
+/*$Id: xmon.c,v 1.49 2001/03/23 23:23:29 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"              /*I  "petscksp.h"   I*/
 
@@ -35,7 +35,7 @@
 int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw win;
-  int  ierr;
+  int       ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
@@ -49,14 +49,14 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawL
 #define __FUNCT__ "KSPLGMonitor"
 int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
-  PetscDrawLG    lg = (PetscDrawLG) monctx;
-  int       ierr;
-  PetscReal x,y;
+  PetscDrawLG lg = (PetscDrawLG) monctx;
+  int         ierr;
+  PetscReal   x,y;
 
   PetscFunctionBegin;
   if (!monctx) {
     MPI_Comm comm;
-    PetscViewer   viewer;
+    PetscViewer viewer;
 
     ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     viewer = PETSC_VIEWER_DRAW_(comm);
@@ -93,7 +93,7 @@ int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 int KSPLGMonitorDestroy(PetscDrawLG drawlg)
 {
   PetscDraw draw;
-  int  ierr;
+  int       ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
@@ -137,7 +137,7 @@ int KSPLGMonitorDestroy(PetscDrawLG drawlg)
 int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw win;
-  int  ierr,rank;
+  int       ierr,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -154,15 +154,15 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int 
 #define __FUNCT__ "KSPLGTrueMonitor"
 int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
-  PetscDrawLG    lg = (PetscDrawLG) monctx;
-  PetscReal x[2],y[2],scnorm;
-  int       ierr,rank;
-  Vec       resid,work;
+  PetscDrawLG lg = (PetscDrawLG) monctx;
+  PetscReal   x[2],y[2],scnorm;
+  int         ierr,rank;
+  Vec         resid,work;
 
   PetscFunctionBegin;
   if (!monctx) {
-    MPI_Comm comm;
-    PetscViewer   viewer;
+    MPI_Comm    comm;
+    PetscViewer viewer;
 
     ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     viewer = PETSC_VIEWER_DRAW_(comm);
@@ -210,7 +210,7 @@ int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 @*/
 int KSPLGTrueMonitorDestroy(PetscDrawLG drawlg)
 {
-  int  ierr;
+  int       ierr;
   PetscDraw draw;
 
   PetscFunctionBegin;

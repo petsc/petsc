@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.150 2001/01/15 21:50:04 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.151 2001/03/22 20:33:30 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -125,12 +125,12 @@
 #define EC_Solve                                106
 
 /* 
-   Event numbers PetscLog_USER_EVENT_LOW to PetscLog_USER_EVENT_HIGH are reserved 
+   Event numbers PETSC_LOG_USER_EVENT_LOW to PETSC_LOG_USER_EVENT_HIGH are reserved 
    for applications.  Make sure that src/PetscLog/src/PetscLog.c defines enough
-   entries in (*name)[] to go up to PetscLog_USER_EVENT_HIGH.
+   entries in (*name)[] to go up to PETSC_LOG_USER_EVENT_HIGH.
 */
-#define PetscLog_USER_EVENT_LOW_STATIC              120
-#define PetscLog_USER_EVENT_HIGH                    200
+#define PETSC_LOG_USER_EVENT_LOW_STATIC              120
+#define PETSC_LOG_USER_EVENT_HIGH                    200
 
 /* Global flop counter */
 extern PetscLogDouble _TotalFlops;
@@ -277,7 +277,7 @@ EXTERN int  PetscGetFlops(PetscLogDouble*);
 extern PetscLogDouble irecv_ct,isend_ct,wait_ct,wait_any_ct,recv_ct,send_ct;
 extern PetscLogDouble irecv_len,isend_len,recv_len,send_len;
 extern PetscLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
-extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
+extern int            PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
 /*
      This does not work for MPI-Uni because our src/mpiuni/mpi.h file

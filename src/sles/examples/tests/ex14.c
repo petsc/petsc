@@ -1,9 +1,9 @@
-/*$Id: ex14.c,v 1.28 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex14.c,v 1.29 2001/03/23 23:23:50 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
-static char help[] = "Solves a nonlinear system in parallel with a user-defined\n\
-Newton method that uses SLES to solve the linearized Newton sytems.  This solver\n\
+static char help[] = "Solves a nonlinear system in parallel with a user-defined Newton method.\n\
+Uses SLES to solve the linearized Newton sytems.  This solver\n\
 is a very simplistic inexact Newton method.  The intent of this code is to\n\
 demonstrate the repeated solution of linear sytems with the same nonzero pattern.\n\
 \n\

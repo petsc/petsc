@@ -1,4 +1,4 @@
-/* $Id: win32draw.c,v 1.11 2001/02/13 00:11:03 buschelm Exp balay $ */
+/* $Id: win32draw.c,v 1.12 2001/03/23 23:20:18 balay Exp bsmith $ */
 #include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
 #include "win32draw.h"
@@ -49,7 +49,7 @@ extern int  PetscDrawGetPopup_Win32(PetscDraw,PetscDraw *);
 static int PetscDrawSetDoubleBuffer_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  HDC        hdc      = GetDC(windraw->hWnd);
+  HDC             hdc      = GetDC(windraw->hWnd);
   
   PetscFunctionBegin;
   windraw->node->DoubleBuffer = CreateCompatibleDC(hdc);
@@ -74,7 +74,7 @@ static int PetscDrawSetDoubleBuffer_Win32(PetscDraw draw)
 static int PetscDrawFlush_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  HDC        hdc = GetDC(windraw->hWnd);
+  HDC             hdc = GetDC(windraw->hWnd);
   
   PetscFunctionBegin;
   /* flush double buffer into primary buffer */
@@ -96,7 +96,7 @@ static int PetscDrawFlush_Win32(PetscDraw draw)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ /* <a name="deletemouselist_Win32"></a> */"deletemouselist_Win32" 
+#define __FUNCT__ "deletemouselist_Win32" 
 static int deletemouselist_Win32(WindowNode deletelist)
 { 
   /* Called upon window close. Frees memory of linked list of stored mouse commands */
@@ -126,8 +126,8 @@ static int PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawButton *button
                                     double *x_phys,double *y_phys)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  WindowNode  current;
-  MouseNode   node=0;
+  WindowNode      current;
+  MouseNode       node=0;
   
   PetscFunctionBegin;
   /* Make sure no other code is using the linked list at this moment */
@@ -217,10 +217,10 @@ static int AverageColorTriangle_Win32(PetscDraw draw,int c1,int c2,int c3)
 static int PetscDrawRectangle_Win32(PetscDraw draw,double xl,double yl,double xr,double yr,int c1,int c2,int c3,int c4)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  HBRUSH      hbrush;
-  RECT        rect;
-  int         x1,y1,x2,y2;
-  HDC         hdc;
+  HBRUSH          hbrush;
+  RECT            rect;
+  int             x1,y1,x2,y2;
+  HDC             hdc;
   
   PetscFunctionBegin;
   x1 = XTRANS(draw,windraw,xl);
@@ -251,9 +251,9 @@ static int PetscDrawRectangle_Win32(PetscDraw draw,double xl,double yl,double xr
 static int PetscDrawLine_Win32(PetscDraw draw,double xl,double yl,double xr,double yr,int color)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  HPEN       hpen;
-  int        x1,y1,x2,y2;
-  HDC        hdc;
+  HPEN            hpen;
+  int             x1,y1,x2,y2;
+  HDC             hdc;
   
   PetscFunctionBegin;
   TranslateColor_Win32(draw,color);
@@ -279,8 +279,8 @@ static int PetscDrawLine_Win32(PetscDraw draw,double xl,double yl,double xr,doub
 static int PetscDrawLineSetWidth_Win32(PetscDraw draw,double width)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  int         averagesize,finalwidth;
-  RECT        rect;
+  int             averagesize,finalwidth;
+  RECT            rect;
   
   PetscFunctionBegin;
   GetClientRect(windraw->hWnd,&rect);
@@ -308,11 +308,11 @@ static int PetscDrawLineGetWidth_Win32(PetscDraw draw,PetscReal *width)
 static int PetscDrawPoint_Win32(PetscDraw draw,double x,double y,int color)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  HBRUSH     hbrush;
-  HRGN       hrgn;
-  int        radius;
-  int        x1,y1,left,right,top,bottom;
-  HDC        hdc;
+  HBRUSH          hbrush;
+  HRGN            hrgn;
+  int             radius;
+  int             x1,y1,left,right,top,bottom;
+  HDC             hdc;
   
   PetscFunctionBegin;
   TranslateColor_Win32(draw,color);
@@ -344,8 +344,8 @@ static int PetscDrawPoint_Win32(PetscDraw draw,double x,double y,int color)
 static int PetscDrawPointSetSize_Win32(PetscDraw draw,double width)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  int         averagesize,diameter;
-  RECT        rect;
+  int             averagesize,diameter;
+  RECT            rect;
   
   PetscFunctionBegin;
   GetClientRect(windraw->hWnd,&rect);
@@ -360,11 +360,11 @@ static int PetscDrawPointSetSize_Win32(PetscDraw draw,double width)
 static int PetscDrawString_Win32(PetscDraw draw,double x,double y,int color,char *text)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  RECT        r;
-  HFONT       hfont;                                                                    
-  LOGFONT     logfont; 
-  int         x1,y1;
-  HDC         hdc;
+  RECT            r;
+  HFONT           hfont;                                                                    
+  LOGFONT         logfont; 
+  int             x1,y1;
+  HDC             hdc;
   
   PetscFunctionBegin;
   x1              = XTRANS(draw,windraw,x);
@@ -407,11 +407,11 @@ static int PetscDrawString_Win32(PetscDraw draw,double x,double y,int color,char
 static int PetscDrawStringVertical_Win32(PetscDraw draw,double x,double y,int color,char *text)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  RECT        r;
-  HFONT       hfont;                                                                                    
-  LOGFONT     logfont;
-  int         x1,y1;
-  HDC         hdc;
+  RECT            r;
+  HFONT           hfont;                                                                                    
+  LOGFONT         logfont;
+  int             x1,y1;
+  HDC             hdc;
   
   PetscFunctionBegin;
   x1           = XTRANS(draw,windraw,x);
@@ -454,7 +454,7 @@ static int PetscDrawStringVertical_Win32(PetscDraw draw,double x,double y,int co
 static int PetscDrawStringSetSize_Win32(PetscDraw draw,double width,double height)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  int         w,h;
+  int             w,h;
   
   PetscFunctionBegin;
   w = (int)((windraw->w)*width *(draw->port_xr - draw->port_xl)/(draw->coor_xr - draw->coor_xl));
@@ -482,7 +482,7 @@ static int PetscDrawStringGetSize_Win32(PetscDraw draw,double *width,double *hei
 static int PetscDrawResizeWindow_Win32(PetscDraw draw,int w,int h)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  RECT        r;
+  RECT            r;
   
   PetscFunctionBegin;
   GetWindowRect(windraw->hWnd,&r);
@@ -551,10 +551,10 @@ static int PetscDrawTriangle_Win32(PetscDraw draw,double x1,double y1,double x2,
                               int c1,int c2,int c3)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  HBRUSH      hbrush;
-  HPEN        hpen;
-  int         p1x,p1y,p2x,p2y,p3x,p3y;
-  HDC         bit;
+  HBRUSH          hbrush;
+  HPEN            hpen;
+  int             p1x,p1y,p2x,p2y,p3x,p3y;
+  HDC             bit;
   
   PetscFunctionBegin;
   AverageColorTriangle_Win32(draw,c1,c2,c3); 
@@ -687,11 +687,11 @@ static int PetscDrawSynchronizedClear_Win32(PetscDraw draw)
 void MessageLoopThread_Win32(PetscDraw draw)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
-  MSG        msg;
-  HWND       hWnd = NULL;
-  char       classname[MAX_LOADSTRING + 1];
-  WNDCLASSEX wclass;
-  LPVOID     lpMsgBuf;
+  MSG             msg;
+  HWND            hWnd = NULL;
+  char            classname[MAX_LOADSTRING + 1];
+  WNDCLASSEX      wclass;
+  LPVOID          lpMsgBuf;
   
   /* initialize window class parameters */
   wclass.cbSize         = sizeof(WNDCLASSEX);

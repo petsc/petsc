@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.40 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex2.c,v 1.41 2001/03/23 23:25:07 balay Exp bsmith $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -9,13 +9,13 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        rank,M = 13,ierr,w=1,s=1,wrap=1;
-  DA         da;
-  PetscViewer     viewer;
-  Vec        local,global;
-  Scalar     value;
-  PetscDraw       draw;
-  PetscTruth flg;
+  int          rank,M = 13,ierr,w=1,s=1,wrap=1;
+  DA           da;
+  PetscViewer  viewer;
+  Vec          local,global;
+  Scalar       value;
+  PetscDraw    draw;
+  PetscTruth   flg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

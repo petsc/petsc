@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.62 2001/01/17 19:46:06 balay Exp balay $*/
+/*$Id: snesut.c,v 1.63 2001/03/23 23:24:07 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
@@ -24,8 +24,8 @@
 @*/
 int SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
-  int    ierr;
-  Vec    x;
+  int         ierr;
+  Vec         x;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
@@ -62,8 +62,8 @@ int SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 @*/
 int SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
-  int    ierr;
-  Vec    x;
+  int         ierr;
+  Vec         x;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
@@ -106,7 +106,7 @@ int SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 @*/
 int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
-  int    ierr;
+  int         ierr;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;

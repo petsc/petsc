@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /**********************************queue.c*************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -78,7 +79,7 @@ Usage: free_queue(queue);
 **********************************queue.c*************************************/
 void free_queue(queue_ADT q)
 {
-  struct node *hold, *remove;
+  struct node *hold, *rremove;
 
 #ifdef DEBUG
   if (!q->len)
@@ -102,10 +103,10 @@ void free_queue(queue_ADT q)
 
   /* should use other queue fcts but what's the point */
   hold = q->head;
-  while (remove = hold)
+  while ((rremove = hold))
     {
       hold = hold->next;
-      bss_free(remove);
+      bss_free(rremove);
     }
 
   bss_free(q);

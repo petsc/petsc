@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.146 2001/01/20 03:34:28 bsmith Exp balay $*/
+/* $Id: pdvec.c,v 1.147 2001/03/23 23:21:26 balay Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -226,9 +226,9 @@ int VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
   Vec_MPI     *x = (Vec_MPI*)xin->data;
   int         i,rank,size,N = xin->N,*lens,ierr;
-  PetscDraw        draw;
+  PetscDraw   draw;
   PetscReal   *xx,*yy;
-  PetscDrawLG      lg;
+  PetscDrawLG lg;
   PetscTruth  isnull;
 
   PetscFunctionBegin;
@@ -290,13 +290,13 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecView_MPI_Draw"
 int VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 {
-  Vec_MPI     *x = (Vec_MPI*)xin->data;
-  int         i,rank,size,ierr,start,end,tag = ((PetscObject)viewer)->tag;
-  MPI_Status  status;
-  PetscReal   coors[4],ymin,ymax,xmin,xmax,tmp;
-  PetscDraw        draw;
-  PetscTruth  isnull;
-  PetscDrawAxis    axis;
+  Vec_MPI       *x = (Vec_MPI*)xin->data;
+  int           i,rank,size,ierr,start,end,tag = ((PetscObject)viewer)->tag;
+  MPI_Status    status;
+  PetscReal     coors[4],ymin,ymax,xmin,xmax,tmp;
+  PetscDraw     draw;
+  PetscTruth    isnull;
+  PetscDrawAxis axis;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);

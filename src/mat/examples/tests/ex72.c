@@ -1,8 +1,8 @@
-/*$Id: ex72.c,v 1.15 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex72.c,v 1.16 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
-static char help[] = "Reads in a Symmetric matrix in MatrixMarket format and writes\n\
+static char help[] = "Reads in a Symmetric matrix in MatrixMarket format. Writes\n\
 it using the PETSc sparse format. It also adds a Vector set to random values to the\n\
 output file. Input parameters are:\n\
   -fin <filename> : input file\n\
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   int         i,m,n,nnz,ierr,size,col,row;
   Scalar      val;
   FILE*       file;
-  PetscViewer      view;
+  PetscViewer view;
   PetscRandom r;
 
   PetscInitialize(&argc,&args,(char *)0,help);

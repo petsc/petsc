@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.256 2001/03/09 18:40:01 balay Exp balay $*/
+/*$Id: plog.c,v 1.257 2001/03/23 23:20:50 balay Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -146,7 +146,7 @@ int PetscLogInfoActivateClass(int objclass)
 
 /* -------------------------------------------------------------------*/
 #if defined(PETSC_USE_LOG)
-static int PetscLog_USER_EVENT_LOW = PetscLog_USER_EVENT_LOW_STATIC;
+static int PETSC_LOG_USER_EVENT_LOW = PETSC_LOG_USER_EVENT_LOW_STATIC;
 
 /* 
    Make sure that all events used by PETSc have the
@@ -448,7 +448,7 @@ static PetscLogDouble  EventsStageReductions[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.
 #define MESSAGES   3
 #define LENGTHS    4
 #define REDUCTIONS 5
-static PetscLogDouble  EventsType[10][PetscLog_USER_EVENT_HIGH][6];
+static PetscLogDouble  EventsType[10][PETSC_LOG_USER_EVENT_HIGH][6];
 static int             EventsStagePrevious = 0;
 
 #undef __FUNCT__  
@@ -661,7 +661,7 @@ int PetscLogDefaultPHC(PetscObject obj)
 
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
-    Events *tmp;
+    Events         *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
     tmp = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));
@@ -671,7 +671,7 @@ int PetscLogDefaultPHC(PetscObject obj)
     PetscTime(end); BaseTime += (end - start);
   }
   if (nobjects >= objectsspace) {
-    Objects *tmp;
+    Objects        *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
     tmp = (Objects*)malloc((objectsspace+CHUNCK)*sizeof(Objects));
@@ -710,7 +710,7 @@ int PetscLogDefaultPHD(PetscObject obj)
 
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
-    Events *tmp;
+    Events         *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
     tmp = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));
@@ -768,7 +768,7 @@ int PetscLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObj
 
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
-    Events *tmp;
+    Events         *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
     tmp  = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));
@@ -807,7 +807,7 @@ int PetscLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObj
 
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
-    Events *tmp;
+    Events         *tmp;
     PetscLogDouble end,start;
     PetscTime(start);
     tmp  = (Events*)malloc((eventsspace+CHUNCK)*sizeof(Events));
@@ -903,7 +903,7 @@ int PetscLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscO
 #define __FUNCT__ "PetscLogDefaultPLETrace"
 int PetscLogDefaultPLETrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  int        ierr,rank;
+  int            ierr,rank;
   PetscLogDouble cur_time;
 
   PetscFunctionBegin;
@@ -1202,7 +1202,7 @@ int PetscLogDump(const char sname[])
     if (!objects[i].name[0]) {ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"No Name\n");CHKERRQ(ierr);}
     else {ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%s\n",objects[i].name);CHKERRQ(ierr);}
   }
-  for (i=0; i<PetscLog_USER_EVENT_HIGH; i++) {
+  for (i=0; i<PETSC_LOG_USER_EVENT_HIGH; i++) {
     flops = 0.0;
     if (EventsType[0][i][TIME]){flops = EventsType[0][i][FLOPS]/EventsType[0][i][TIME];}
     ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"%d %16g %16g %16g %16g\n",i,EventsType[0][i][COUNT],
@@ -1275,8 +1275,8 @@ int PetscLogEventRegister(int *e,const char string[],const char color[])
   int  ierr;
 
   PetscFunctionBegin;
-  *e = PetscLog_USER_EVENT_LOW++;
-  if (*e > PetscLog_USER_EVENT_HIGH) { 
+  *e = PETSC_LOG_USER_EVENT_LOW++;
+  if (*e > PETSC_LOG_USER_EVENT_HIGH) { 
     *e = 0;
     SETERRQ(PETSC_ERR_PLIB,"Out of event IDs");
   }
@@ -1314,7 +1314,7 @@ int PetscLogEventRegisterDestroy_Private(void)
   int i,ierr;
   
   PetscFunctionBegin;
-  for (i=PetscLog_USER_EVENT_LOW-1; i>=PetscLog_USER_EVENT_LOW_STATIC; i--) {
+  for (i=PETSC_LOG_USER_EVENT_LOW-1; i>=PETSC_LOG_USER_EVENT_LOW_STATIC; i--) {
     ierr = PetscFree(PetscLogEventName[i]);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPE)
     if (PetscLogEventColorMalloced[i]) {ierr = PetscFree(PetscLogEventColor[i]);CHKERRQ(ierr);}
@@ -1471,19 +1471,19 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
 
 
   wdou = _TotalFlops; 
-  ierr = MPI_Allreduce(&wdou,&minf,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&maxf,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&totf,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&minf,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&maxf,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&totf,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   avef = (totf)/((PetscLogDouble) size);
   wdou = nobjects;
-  ierr = MPI_Allreduce(&wdou,&mino,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&maxo,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&aveo,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&mino,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&maxo,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&aveo,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   aveo = (aveo)/((PetscLogDouble) size);
   wdou = _TotalTime;
-  ierr = MPI_Allreduce(&wdou,&mint,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&maxt,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&tott,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&mint,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&maxt,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&tott,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   avet = (tott)/((PetscLogDouble) size);
 
   ierr = PetscFPrintf(comm,fd,"\n                         Max       Max/Min      Avg      Total \n");CHKERRQ(ierr);
@@ -1501,29 +1501,29 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = PetscFPrintf(comm,fd,"Flops/sec:            %5.3e   %10.5f              %5.3e\n",fmax,ratio,ftot);CHKERRQ(ierr);
   ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&mem);CHKERRQ(ierr);
   if (mem > 0.0) {
-    ierr = MPI_Allreduce(&mem,&maxmem,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&mem,&minmem,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&mem,&totmem,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&mem,&maxmem,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&mem,&minmem,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&mem,&totmem,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     if (minmem) ratio = maxmem/minmem; else ratio = 0.0;
     ierr = PetscFPrintf(comm,fd,"Memory:               %5.3e   %8.3f              %5.3e\n",maxmem,ratio,totmem);CHKERRQ(ierr);
   }
   wdou = .5*(irecv_ct + isend_ct + recv_ct + send_ct);
-  ierr = MPI_Allreduce(&wdou,&minm,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&maxm,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&totm,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&minm,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&maxm,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&totm,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   avem = (totm)/((PetscLogDouble) size);
   wdou = .5*(irecv_len + isend_len + recv_len + send_len);
-  ierr = MPI_Allreduce(&wdou,&minml,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&maxml,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&wdou,&totml,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&minml,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&maxml,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wdou,&totml,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   if (totm) aveml = (totml)/(totm); else aveml = 0;
   if (minm) ratio = maxm/minm; else ratio = 0.0;
   ierr = PetscFPrintf(comm,fd,"MPI Messages:         %5.3e   %8.3f   %5.3e  %5.3e\n",maxm,ratio,avem,totm);CHKERRQ(ierr);
   if (minml) ratio = maxml/minml; else ratio = 0.0;
   ierr = PetscFPrintf(comm,fd,"MPI Message Lengths:  %5.3e   %8.3f   %5.3e  %5.3e\n",maxml,ratio,aveml,totml);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&allreduce_ct,&minr,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&allreduce_ct,&maxr,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&allreduce_ct,&totr,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&allreduce_ct,&minr,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&allreduce_ct,&maxr,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&allreduce_ct,&totr,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
   if (minr) ratio = maxr/minr; else ratio = 0.0;
   ierr = PetscFPrintf(comm,fd,"MPI Reductions:       %5.3e   %8.3f\n",maxr,ratio);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n");CHKERRQ(ierr);
@@ -1539,15 +1539,15 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
     for (j=0; j<=lEventsStageMax; j++) {
       if (!PetscLogStagePrintFlag[j]) continue;
 
-      ierr = MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
       if (tott)   pstime = 100.0*sstime/tott; else pstime = 0.0;if (pstime >= 99.9) pstime = 99.9;
       if (totf)   psflops = 100.*sflops/totf; else psflops = 0.0; 
       if (sstime) psflops1 = (size*sflops)/sstime; else psflops1 = 0.0;
 
-      ierr = MPI_Allreduce(&EventsStageMessageCounts[j],&mcounts,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsStageMessageLengths[j],&mlens,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsStageReductions[j],&rcounts,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsStageMessageCounts[j],&mcounts,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsStageMessageLengths[j],&mlens,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsStageReductions[j],&rcounts,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
       mcounts = .5*mcounts; mlens = .5*mlens; rcounts = rcounts/size;
       if (totm)  rat1 = 100.*mcounts/totm; else rat1 = 0.0; if (rat1 >= 99.9) rat1 = 99.9;
       if (totml) rat2 = 100.*mlens/totml; else rat2 = 0.0;  if (rat2 >= 99.9) rat2 = 99.9;
@@ -1633,8 +1633,8 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
     "------------------------------------------------------------------------------------------------------------------------\n");CHKERRQ(ierr); 
   for (j=0; j<=EventsStageMax; j++) {
     if (!PetscLogStagePrintFlag[j]) continue;
-    ierr = MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     if (EventsStageMax) {
       if (EventsStageName[j]) {
         ierr = PetscFPrintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);CHKERRQ(ierr);
@@ -1642,27 +1642,27 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
         ierr = PetscFPrintf(comm,fd,"\n--- Event Stage %d:\n\n",j);CHKERRQ(ierr);
       }
     }
-    ierr = MPI_Allreduce(&EventsStageMessageCounts[j],&totms,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&EventsStageMessageLengths[j],&totmls,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&EventsStageReductions[j],&totrs,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-    /* This loop assumes that PetscLog_USER_EVENT_HIGH is the max event number */
-    for (i=0; i<PetscLog_USER_EVENT_HIGH; i++) {  
+    ierr = MPI_Allreduce(&EventsStageMessageCounts[j],&totms,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&EventsStageMessageLengths[j],&totmls,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&EventsStageReductions[j],&totrs,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+    /* This loop assumes that PETSC_LOG_USER_EVENT_HIGH is the max event number */
+    for (i=0; i<PETSC_LOG_USER_EVENT_HIGH; i++) {  
       if (EventsType[j][i][TIME]) {
         wdou = EventsType[j][i][FLOPS]/EventsType[j][i][TIME];
       }
       else wdou = 0.0;
-      ierr = MPI_Allreduce(&wdou,&minf,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&wdou,&maxf,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][FLOPS],&totff,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][TIME],&mint,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][TIME],&maxt,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][TIME],&totts,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][MESSAGES],&mp,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][LENGTHS],&lp,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][REDUCTIONS],&rp,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&wdou,&minf,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&wdou,&maxf,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][FLOPS],&totff,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][TIME],&mint,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][TIME],&maxt,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][TIME],&totts,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][MESSAGES],&mp,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][LENGTHS],&lp,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][REDUCTIONS],&rp,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 
-      ierr = MPI_Allreduce(&EventsType[j][i][COUNT],&mict,1,MPIU_PetscLogDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][COUNT],&mact,1,MPIU_PetscLogDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][COUNT],&mict,1,MPIU_PETSCLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][COUNT],&mact,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
      
       if (maxt) flopr = totff/maxt; else flopr = 0.0;
 
@@ -1690,8 +1690,8 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
     }
     /* print effective bandwidth in vector scatters */
     if (EventsType[j][VEC_ScatterBarrier][COUNT]) {
-      ierr = MPI_Allreduce(&EventsType[j][i][MESSAGES],&mp,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&EventsType[j][i][LENGTHS],&lp,1,MPIU_PetscLogDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][MESSAGES],&mp,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&EventsType[j][i][LENGTHS],&lp,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
     }
 
   }

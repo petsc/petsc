@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.29 2001/03/22 20:30:10 bsmith Exp balay $*/
+/*$Id: bdiag3.c,v 1.30 2001/03/23 23:22:03 balay Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -660,7 +660,7 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatView_SeqBDiag_Draw"
 static int MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
 {
-  PetscDraw          draw;
+  PetscDraw     draw;
   PetscReal     xl,yl,xr,yr,w,h;
   int           ierr,nz,*col,i,j,nr = A->m;
   PetscTruth    isnull;

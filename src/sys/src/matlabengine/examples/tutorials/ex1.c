@@ -1,6 +1,6 @@
-/*$Id: ex1.c,v 1.5 2001/01/23 20:53:28 balay Exp balay $*/
+/*$Id: ex1.c,v 1.6 2001/03/23 23:20:55 balay Exp bsmith $*/
 
-static char help[] = "Demonstrates opening and drawing a window\n";
+static char help[] = "Demonstrates opening and drawing a window.\n";
 
 #include "petsc.h"
 

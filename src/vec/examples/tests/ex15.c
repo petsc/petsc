@@ -1,6 +1,6 @@
-/*$Id: ex15.c,v 1.15 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex15.c,v 1.16 2001/03/23 23:21:30 balay Exp bsmith $*/
 
-static char help[] = "Tests VecSetValuesBlocked() on Seq vectors\n\n";
+static char help[] = "Tests VecSetValuesBlocked() on sequential vectors.\n\n";
 
 #include "petscvec.h"
 #include "petscsys.h"

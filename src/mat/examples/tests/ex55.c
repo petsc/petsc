@@ -1,6 +1,6 @@
-/*$Id: ex55.c,v 1.16 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex55.c,v 1.17 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Tests converting a matrix to another format with MatConvert()\n\n";
+static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
 #include "petscmat.h"
 
@@ -8,13 +8,13 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     C,A,B; 
-  int     ierr,i,j,ntypes = 9,size;
-  MatType type[9] = {MATMPIAIJ, MATMPIROWBS, MATMPIBDIAG,MATMPIDENSE,
-                     MATMPIBAIJ,MATSEQDENSE,MATSEQAIJ,  MATSEQBDIAG,MATSEQBAIJ};
-  char    file[128];
-  Vec     v;
-  PetscViewer  fd;
+  Mat         C,A,B; 
+  int         ierr,i,j,ntypes = 9,size;
+  MatType     type[9] = {MATMPIAIJ, MATMPIROWBS, MATMPIBDIAG,MATMPIDENSE,
+                         MATMPIBAIJ,MATSEQDENSE,MATSEQAIJ,  MATSEQBDIAG,MATSEQBAIJ};
+  char        file[128];
+  Vec         v;
+  PetscViewer fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRQ(ierr);

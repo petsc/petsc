@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.66 2001/01/15 21:48:25 bsmith Exp balay $*/
+/*$Id: tsreg.c,v 1.67 2001/03/23 23:24:34 balay Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
@@ -57,7 +57,7 @@ int TSSetType(TS ts,TSType type)
 
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr =  PetscFListFind(ts->comm,TSList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(ts->comm,TSList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type: %s",type);}
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
@@ -182,6 +182,10 @@ int TSSetFromOptions(TS ts)
     ierr = PetscOptionsName("-ts_xmonitor","Monitor timestep size graphically","TSLGMonitor",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsName("-ts_vecmonitor","Monitor solution graphically","TSVecViewMonitor",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = TSSetMonitor(ts,TSVecViewMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
     if (ts->setfromoptions) {
       ierr = (*ts->setfromoptions)(ts);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: richscale.c,v 1.20 2001/01/15 21:47:22 bsmith Exp balay $*/
+/*$Id: richscale.c,v 1.21 2001/03/23 23:23:40 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"         /*I "petscksp.h" I*/
 #include "src/sles/ksp/impls/rich/richctx.h"
@@ -26,7 +26,7 @@ int KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,scale);CHKERRQ(ierr);
   }

@@ -1,6 +1,6 @@
-/*$Id: ex21.c,v 1.9 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex21.c,v 1.10 2001/03/23 23:21:30 balay Exp bsmith $*/
 
-static char help[] = "Tests VecMax() with index\
+static char help[] = "Tests VecMax() with index.\n\
   -n <length> : vector length\n\n";
 
 #include "petscvec.h"

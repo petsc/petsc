@@ -1,6 +1,6 @@
-/*$Id: ex3.c,v 1.39 2001/01/23 20:52:52 balay Exp balay $*/
+/*$Id: ex3.c,v 1.40 2001/03/23 23:20:21 balay Exp bsmith $*/
 
-static char help[] = "Plots a simple line graph\n";
+static char help[] = "Plots a simple line graph.\n";
 
 #include "petsc.h"
 
@@ -8,14 +8,14 @@ static char help[] = "Plots a simple line graph\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscDraw           draw;
-  PetscDrawLG         lg;
-  PetscDrawAxis       axis;
-  int            n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,nports = 1;
-  PetscTruth     flg;
-  char           *xlabel,*ylabel,*toplabel;
-  double         xd,yd;
-  PetscDrawViewPorts  *ports;
+  PetscDraw          draw;
+  PetscDrawLG        lg;
+  PetscDrawAxis      axis;
+  int                n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,nports = 1;
+  PetscTruth         flg;
+  char               *xlabel,*ylabel,*toplabel;
+  double             xd,yd;
+  PetscDrawViewPorts *ports;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 

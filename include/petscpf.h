@@ -1,4 +1,4 @@
-/* $Id: petscpf.h,v 1.8 2000/08/24 22:43:56 bsmith Exp bsmith $ */
+/* $Id: petscpf.h,v 1.9 2001/01/15 21:49:41 bsmith Exp bsmith $ */
 
 /*
       mathematical function module. 
@@ -12,11 +12,15 @@
    These are added with the PFRegisterDynamic() macro
 */
 extern PetscFList PPetscFList;
-typedef char *PFType;
 
-/*
-    Standard PETSc functions
-*/
+/*E
+    PFType - Type of PETSc mathematical function, a string name
+
+   Level: beginner
+
+.seealso: PFSetType(), PF
+E*/
+typedef char *PFType;
 #define PFCONSTANT      "constant"
 #define PFMAT           "mat"
 #define PFSTRING        "string"
@@ -24,9 +28,18 @@ typedef char *PFType;
 #define PFIDENTITY      "identity"
 #define PFMATLAB        "matlab"
 
-typedef struct _p_PF* PF;
-#define PF_COOKIE     PETSC_COOKIE+9
+/*S
+     PF - Abstract PETSc mathematical function
 
+   Level: beginner
+
+  Concepts: functions
+
+.seealso:  PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec(), PFSet(), PFType
+S*/
+typedef struct _p_PF* PF;
+
+#define PF_COOKIE     PETSC_COOKIE+9
 
 EXTERN int PFCreate(MPI_Comm,int,int,PF*);
 EXTERN int PFSetType(PF,PFType,void*);

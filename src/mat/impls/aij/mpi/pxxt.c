@@ -1,4 +1,4 @@
-/*$Id: xxt.c,v 1.4 2001/03/23 23:21:56 balay Exp bsmith $*/
+/*$Id: pxxt.c,v 1.5 2001/03/26 15:49:35 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the Tufo-Fischer parallel direct solver
@@ -6,7 +6,7 @@
 */
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-#if !defined(__cplusplus)
+#if !defined(PETSC_USE_COMPLEX)
 #include "src/contrib/libtfs/xxt.h"
 
 typedef struct {
@@ -273,21 +273,11 @@ int MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseTFS_MPIAIJ"
-int MatUseTFS_MPIAIJ(Mat A)
-{
-  PetscFunctionBegin;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_TFS;
-  PetscLogInfo(0,"Using TFS for MPIAIJ LU factorization and solves");
-  PetscFunctionReturn(0);
-}
-
 #else
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatUseXXT_MPIAIJ"
-int MatUseTFS_MPIAIJ(Mat A)
+#define __FUNCT__ "dummy83"
+int dummy83(int a)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

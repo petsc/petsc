@@ -1,9 +1,9 @@
-/*$Id: ex3.c,v 1.16 2001/01/23 20:53:45 balay Exp balay $*/
+/*$Id: ex3.c,v 1.17 2001/03/23 23:21:11 balay Exp bsmith $*/
 /*
        Tests ISAllGather()
 */
 
-static char help[] = "Tests ISAllGather()\n\n";
+static char help[] = "Tests ISAllGather().\n\n";
 
 #include "petscis.h"
 

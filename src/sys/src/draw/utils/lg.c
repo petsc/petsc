@@ -1,4 +1,4 @@
-/*$Id: lg.c,v 1.74 2001/01/17 19:44:18 balay Exp balay $*/
+/*$Id: lg.c,v 1.75 2001/03/23 23:20:24 balay Exp bsmith $*/
 /*
        Contains the data structure for plotting several line
     graphs in a window with an axis. This is intended for line 
@@ -10,14 +10,14 @@
 
 struct _p_DrawLG {
   PETSCHEADER(int) 
-  int         (*destroy)(PetscDrawLG);
-  int         (*view)(PetscDrawLG,PetscViewer);
-  int         len,loc;
-  PetscDraw        win;
-  PetscDrawAxis    axis;
-  PetscReal   xmin,xmax,ymin,ymax,*x,*y;
-  int         nopts,dim;
-  PetscTruth  use_dots;
+  int           (*destroy)(PetscDrawLG);
+  int           (*view)(PetscDrawLG,PetscViewer);
+  int           len,loc;
+  PetscDraw     win;
+  PetscDrawAxis axis;
+  PetscReal     xmin,xmax,ymin,ymax,*x,*y;
+  int           nopts,dim;
+  PetscTruth    use_dots;
 };
 
 #define CHUNCKSIZE 100
@@ -47,7 +47,7 @@ int PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
   int         ierr;
   PetscTruth  isnull;
   PetscObject obj = (PetscObject)draw;
-  PetscDrawLG      lg;
+  PetscDrawLG lg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
@@ -275,7 +275,7 @@ int PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 @*/
 int PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 {
-  int    i,j,k,ierr;
+  int       i,j,k,ierr;
   PetscReal *x,*y;
 
   PetscFunctionBegin;
@@ -331,7 +331,7 @@ int PetscDrawLGDraw(PetscDrawLG lg)
 {
   PetscReal xmin=lg->xmin,xmax=lg->xmax,ymin=lg->ymin,ymax=lg->ymax;
   int       i,j,dim = lg->dim,nopts = lg->nopts,rank,ierr;
-  PetscDraw      draw = lg->win;
+  PetscDraw draw = lg->win;
 
   PetscFunctionBegin;
   if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);

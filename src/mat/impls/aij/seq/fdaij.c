@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.36 2001/01/15 21:45:34 bsmith Exp balay $*/
+/*$Id: fdaij.c,v 1.37 2001/03/23 23:21:51 balay Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -12,7 +12,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   int        i,*is,n,nrows,N = mat->N,j,k,m,*rows,ierr,*ci,*cj,ncols,col;
   int        nis = iscoloring->n,*rowhit,*columnsforrow,l;
-  IS         *isa = iscoloring->is;
+  IS         *isa;
   PetscTruth done,flg;
 
   PetscFunctionBegin;
@@ -20,6 +20,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
   }
 
+  ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
   c->M       = mat->M;  /* set total rows, columns and local rows */
   c->N       = mat->N;
   c->m       = mat->M;
@@ -152,45 +153,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
       c->vscaleforrow[k][l] = col;
     }
   }
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatColoringPatch_SeqAIJ"
-int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscoloring)
-{
-  int        n = mat->n,*sizes,i,**ii,ierr,tag;
-  IS         *is;
-
-  PetscFunctionBegin;
-  /* construct the index sets from the coloring array */
-  ierr = PetscMalloc(ncolors*sizeof(int),&sizes);CHKERRQ(ierr);
-  ierr = PetscMemzero(sizes,ncolors*sizeof(int));CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    sizes[coloring[i]-1]++;
-  }
-  ierr = PetscMalloc(ncolors*sizeof(int*),&ii);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(int),&ii[0]);CHKERRQ(ierr);
-  for (i=1; i<ncolors; i++) {
-    ii[i] = ii[i-1] + sizes[i-1];
-  }
-  ierr = PetscMemzero(sizes,ncolors*sizeof(int));CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    ii[coloring[i]-1][sizes[coloring[i]-1]++] = i;
-  }
-  ierr = PetscMalloc(ncolors*sizeof(IS),&is);CHKERRQ(ierr);
-  for (i=0; i<ncolors; i++) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,sizes[i],ii[i],is+i);CHKERRQ(ierr);
-  }
-
-  ierr                = PetscNew(struct _p_ISColoring,iscoloring);CHKERRQ(ierr);
-  (*iscoloring)->n    = ncolors;
-  (*iscoloring)->is   = is;
-  ierr = PetscCommDuplicate_Private(mat->comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
-  ierr = PetscFree(sizes);CHKERRQ(ierr);
-  ierr = PetscFree(ii[0]);CHKERRQ(ierr);
-  ierr = PetscFree(ii);CHKERRQ(ierr);
+  ierr = ISColoringRestoreIS(iscoloring,&isa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +162,7 @@ int MatColoringPatch_SeqAIJ(Mat mat,int ncolors,int *coloring,ISColoring *iscolo
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringPatch_SeqAIJ_Inode"
-int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *iscoloring)
+int MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,int *coloring,ISColoring *iscoloring)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)mat->data;
   int        n = mat->n,ierr,m = a->inode.node_count,j,*ns = a->inode.size,row;
@@ -207,7 +170,6 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *
 
   PetscFunctionBegin;
   ierr = PetscMalloc((n+1)*sizeof(int),&newcolor);CHKERRQ(ierr);
-
   /* loop over inodes, marking a color for each column*/
   row = 0;
   for (i=0; i<m; i++){
@@ -220,7 +182,7 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *
   ierr = PetscMalloc(5*ncolors*sizeof(int),&colorused);CHKERRQ(ierr);
   ierr = PetscMemzero(colorused,5*ncolors*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    colorused[newcolor[i]-1] = 1;
+    colorused[newcolor[i]] = 1;
   }
 
   for (i=1; i<5*ncolors; i++) {
@@ -228,12 +190,11 @@ int MatColoringPatch_SeqAIJ_Inode(Mat mat,int ncolors,int *coloring,ISColoring *
   }
   ncolors = colorused[5*ncolors-1];
   for (i=0; i<n; i++) {
-    newcolor[i] = colorused[newcolor[i]-1];
+    newcolor[i] = colorused[newcolor[i]];
   }
   ierr = PetscFree(colorused);CHKERRQ(ierr);
-
-  ierr = MatColoringPatch_SeqAIJ(mat,ncolors,newcolor,iscoloring);CHKERRQ(ierr);
-  ierr = PetscFree(newcolor);CHKERRQ(ierr);
+  ierr = PetscFree(coloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(mat->comm,n,newcolor,iscoloring);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

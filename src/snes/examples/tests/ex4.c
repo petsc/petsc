@@ -1,10 +1,9 @@
-/*$Id: ex4.c,v 1.59 2001/03/23 23:24:20 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.60 2001/04/04 18:09:20 bsmith Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
-static char help[] =
-"This program demonstrates use of the SNES package to solve systems of\n\
-nonlinear equations on a single processor.  Both of these examples employ\n\
+static char help[] ="This program demonstrates use of the SNES package to solve systems of nonlinear equations on a single processor.\n\
+  Both of these examples employ\n\
 sparse storage of the Jacobian matrices and are taken from the MINPACK-2\n\
 test suite.  By default the Bratu (SFI - solid fuel ignition) test problem\n\
 is solved.  The command line options are:\n\

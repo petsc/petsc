@@ -1,9 +1,8 @@
-/*$Id: ex18.c,v 1.22 2001/01/23 20:56:37 balay Exp balay $*/
+/*$Id: ex18.c,v 1.23 2001/03/23 23:23:50 balay Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
-static char help[] = 
-"Reads a PETSc matrix and vector from a file and solves a linear system.\n\
+static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
@@ -15,15 +14,15 @@ Input arguments are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int        ierr,its,m,n,mvec;
+  int            ierr,its,m,n,mvec;
   PetscLogDouble time1,time2,time;
-  double     norm;
-  Scalar     zero = 0.0,none = -1.0;
-  Vec        x,b,u;
-  Mat        A;
-  SLES       sles;
-  char       file[128]; 
-  PetscViewer     fd;
+  double         norm;
+  Scalar         zero = 0.0,none = -1.0;
+  Vec            x,b,u;
+  Mat            A;
+  SLES           sles;
+  char           file[128]; 
+  PetscViewer    fd;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

@@ -1,4 +1,4 @@
-/*$Id: stringv.c,v 1.42 2001/03/09 17:19:37 balay Exp balay $*/
+/*$Id: stringv.c,v 1.43 2001/03/23 23:20:01 balay Exp bsmith $*/
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
@@ -17,7 +17,7 @@ typedef struct  {
 static int PetscViewerDestroy_String(PetscViewer viewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
-  int           ierr;
+  int                ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(vstr);CHKERRQ(ierr);
@@ -46,10 +46,10 @@ static int PetscViewerDestroy_String(PetscViewer viewer)
 @*/
 int PetscViewerStringSPrintf(PetscViewer viewer,char *format,...)
 {
-  va_list       Argp;
-  int           shift,ierr;
-  PetscTruth    isstring;
-  char          tmp[512];
+  va_list            Argp;
+  int                shift,ierr;
+  PetscTruth         isstring;
+  char               tmp[512];
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
@@ -119,7 +119,7 @@ int PetscViewerStringOpen(MPI_Comm comm,char string[],int len,PetscViewer *lab)
 int PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
-  int           ierr;
+  int                ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerStringOpen(PETSC_COMM_SELF,vstr->head,vstr->maxlen-vstr->curlen,sviewer);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ int PetscViewerGetSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 #define __FUNCT__ "PetscViewerRestoreSingleton_String" 
 int PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
 {
-  int           ierr;
+  int                ierr;
   PetscViewer_String *iviewer = (PetscViewer_String*)(*sviewer)->data;
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 

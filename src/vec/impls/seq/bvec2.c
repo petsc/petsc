@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.193 2001/03/22 20:29:34 bsmith Exp balay $*/
+/*$Id: bvec2.c,v 1.194 2001/03/23 23:21:25 balay Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -130,11 +130,11 @@ int VecView_Seq_File(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_Seq_Draw_LG"
 static int VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
-  Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      i,n = xin->n,ierr;
-  PetscDraw     win;
+  Vec_Seq     *x = (Vec_Seq *)xin->data;
+  int         i,n = xin->n,ierr;
+  PetscDraw   win;
   PetscReal   *xx;
-  PetscDrawLG   lg;
+  PetscDrawLG lg;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDrawLG(v,0,&lg);CHKERRQ(ierr);
@@ -359,7 +359,7 @@ static int VecPublish_Seq(PetscObject obj)
                                 AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   /* if the vector knows its "layout" let it set it*/
-  ierr = PetscObjectQueryFunction(obj,"AMSSetFieldBlock_C",(void**)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction(obj,"AMSSetFieldBlock_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
   }

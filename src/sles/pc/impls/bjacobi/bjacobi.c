@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.156 2001/03/22 20:31:04 bsmith Exp balay $*/
+/*$Id: bjacobi.c,v 1.157 2001/03/23 23:23:09 balay Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -122,7 +122,7 @@ static int PCSetUp_BJacobi(PC pc)
           }
         }
       }
-      ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void**)&f);CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void (**)())&f);CHKERRQ(ierr);
       if (!f) {
         SETERRQ(PETSC_ERR_SUP,"This matrix does not support getting diagonal block");
       }
@@ -148,7 +148,7 @@ static int PCSetUp_BJacobi(PC pc)
           }
         }
       }
-      ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void**)&f);CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)())&f);CHKERRQ(ierr);
       if (!f) {
         SETERRQ(PETSC_ERR_SUP,"This matrix does not support getting diagonal block");
       }
@@ -216,10 +216,10 @@ static int PCSetFromOptions_BJacobi(PC pc)
 #define __FUNCT__ "PCView_BJacobi"
 static int PCView_BJacobi(PC pc,PetscViewer viewer)
 {
-  PC_BJacobi *jac = (PC_BJacobi*)pc->data;
-  int        rank,ierr,i;
-  PetscTruth isascii,isstring;
-  PetscViewer     sviewer;
+  PC_BJacobi  *jac = (PC_BJacobi*)pc->data;
+  int         rank,ierr,i;
+  PetscTruth  isascii,isstring;
+  PetscViewer sviewer;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -385,7 +385,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -429,7 +429,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetSubSLES_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetSubSLES_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
   } else {
@@ -471,7 +471,7 @@ int PCBJacobiSetTotalBlocks(PC pc,int blocks,int *lens)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have positive blocks");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetTotalBlocks_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
   } 
@@ -507,7 +507,7 @@ int PCBJacobiSetLocalBlocks(PC pc,int blocks,int *lens)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have nonegative blocks");
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
   } 

@@ -1,6 +1,6 @@
-/*$Id: ex7.c,v 1.15 2001/01/23 20:57:50 balay Exp balay $*/
+/*$Id: ex7.c,v 1.16 2001/03/23 23:24:54 balay Exp bsmith $*/
 
-static char help[] = "Demonstrates constructing an application ordering\n\n";
+static char help[] = "Demonstrates constructing an application ordering.\n\n";
 
 #include "petscao.h"
 

@@ -1,7 +1,6 @@
-/*$Id: ex73.c,v 1.9 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex73.c,v 1.10 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = 
-"Reads a PETSc matrix from a file partitions it\n\n";
+static char help[] = "Reads a PETSc matrix from a file partitions it\n\n";
 
 /*T
    Concepts: partitioning
@@ -24,7 +23,7 @@ int main(int argc,char **args)
 {
   MatType         mtype = MATSEQSBAIJ;            /* matrix format */
   Mat             A,B;                /* matrix */
-  PetscViewer          fd;               /* viewer */
+  PetscViewer     fd;               /* viewer */
   char            file[128];        /* input file name */
   PetscTruth      flg;
   int             ierr,*nlocal,rank,size;

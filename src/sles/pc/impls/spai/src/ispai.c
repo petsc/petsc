@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.23 2001/02/12 19:28:50 bsmith Exp balay $*/
+/* $Id: ispai.c,v 1.24 2001/03/23 23:23:20 balay Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -293,7 +293,7 @@ int PCSPAISetEpsilon(PC pc,double epsilon)
 {
   int ierr,(*f)(PC,double);
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetEpsilon_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetEpsilon_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,epsilon);CHKERRQ(ierr);
   }
@@ -308,7 +308,7 @@ int PCSPAISetNBSteps(PC pc,int nbsteps)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetNBSteps_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetNBSteps_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,nbsteps);CHKERRQ(ierr);
   }
@@ -324,7 +324,7 @@ int PCSPAISetMax(PC pc,int max)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMax_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMax_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,max);CHKERRQ(ierr);
   }
@@ -339,7 +339,7 @@ int PCSPAISetMaxNew(PC pc,int maxnew)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMaxNew_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMaxNew_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,maxnew);CHKERRQ(ierr);
   }
@@ -354,7 +354,7 @@ int PCSPAISetBlockSize(PC pc,int block_size)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetBlockSize_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetBlockSize_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,block_size);CHKERRQ(ierr);
   }
@@ -369,7 +369,7 @@ int PCSPAISetCacheSize(PC pc,int cache_size)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetCacheSize_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetCacheSize_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,cache_size);CHKERRQ(ierr);
   }
@@ -384,7 +384,7 @@ int PCSPAISetVerbose(PC pc,int verbose)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetVerbose_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetVerbose_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,verbose);CHKERRQ(ierr);
   }
@@ -399,7 +399,7 @@ int PCSPAISetSp(PC pc,int sp)
 {
   int ierr,(*f)(PC,int);
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetSp_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetSp_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,sp);CHKERRQ(ierr);
   }

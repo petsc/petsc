@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.72 2001/01/15 21:46:47 bsmith Exp balay $*/
+/*$Id: jacobi.c,v 1.73 2001/03/23 23:23:05 balay Exp bsmith $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -401,7 +401,7 @@ int PCJacobiSetUseRowMax(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetRowMax_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetRowMax_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 

@@ -1,4 +1,4 @@
-/*$Id: dscatter.c,v 1.36 2001/01/17 19:44:18 balay Exp balay $*/
+/*$Id: dscatter.c,v 1.37 2001/03/23 23:20:24 balay Exp bsmith $*/
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter
@@ -9,13 +9,13 @@
 
 struct _p_DrawSP {
   PETSCHEADER(int) 
-  int         (*destroy)(PetscDrawSP);
-  int         (*view)(PetscDrawSP,PetscViewer);
-  int         len,loc;
-  PetscDraw        win;
-  PetscDrawAxis    axis;
-  PetscReal   xmin,xmax,ymin,ymax,*x,*y;
-  int         nopts,dim;
+  int           (*destroy)(PetscDrawSP);
+  int           (*view)(PetscDrawSP,PetscViewer);
+  int           len,loc;
+  PetscDraw     win;
+  PetscDrawAxis axis;
+  PetscReal     xmin,xmax,ymin,ymax,*x,*y;
+  int           nopts,dim;
 };
 
 #define CHUNCKSIZE 100
@@ -45,7 +45,7 @@ int PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   int         ierr;
   PetscTruth  isnull;
   PetscObject obj = (PetscObject)draw;
-  PetscDrawSP      sp;
+  PetscDrawSP sp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
@@ -299,7 +299,7 @@ int PetscDrawSPDraw(PetscDrawSP sp)
 {
   PetscReal xmin=sp->xmin,xmax=sp->xmax,ymin=sp->ymin,ymax=sp->ymax;
   int       ierr,i,j,dim = sp->dim,nopts = sp->nopts,rank;
-  PetscDraw      draw = sp->win;
+  PetscDraw draw = sp->win;
 
   PetscFunctionBegin;
   if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);

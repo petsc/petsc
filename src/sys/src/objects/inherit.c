@@ -1,4 +1,4 @@
-/*$Id: inherit.c,v 1.67 2001/01/15 21:43:52 bsmith Exp balay $*/
+/*$Id: inherit.c,v 1.68 2001/03/23 23:20:38 balay Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -7,8 +7,8 @@
 EXTERN int PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
 EXTERN int PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
 EXTERN int PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
-EXTERN int PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void *);
-EXTERN int PetscObjectQueryFunction_Petsc(PetscObject,const char[],void **);
+EXTERN int PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void (*)());
+EXTERN int PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)());
 EXTERN int PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
 EXTERN int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
 
@@ -239,23 +239,23 @@ int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposeFunction_Petsc"
-int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void *ptr)
+int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void (*ptr)())
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListAddDynamic(&obj->qlist,name,fname,(int (*)(void *))ptr);CHKERRQ(ierr);
+  ierr = PetscFListAddDynamic(&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectQueryFunction_Petsc"
-int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void **ptr)
+int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void (**ptr)())
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(obj->comm,obj->qlist,name,(int(**)(void *)) ptr);CHKERRQ(ierr);
+  ierr = PetscFListFind(obj->comm,obj->qlist,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -398,7 +398,7 @@ int PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposeFunction"
-int PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void *ptr)
+int PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void (*ptr)())
 {
   int ierr;
 
@@ -432,7 +432,7 @@ int PetscObjectComposeFunction(PetscObject obj,const char name[],const char fnam
 
 .seealso: PetscObjectComposeFunctionDynamic()
 @*/
-int PetscObjectQueryFunction(PetscObject obj,const char name[],void **ptr)
+int PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)())
 {
   int ierr;
 

@@ -1,6 +1,6 @@
-/*$Id: ex15.c,v 1.7 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex15.c,v 1.8 2001/03/23 23:25:07 balay Exp bsmith $*/
 
-static char help[] = "Tests DA interpolation\n\n";
+static char help[] = "Tests DA interpolation.\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"

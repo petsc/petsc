@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.399 2001/03/26 22:15:01 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.400 2001/03/30 03:54:45 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3976,7 +3976,7 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
 .seealso: MatGetRowIJ(), MatGetColumnIJ()
 
 @*/
-int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
+int MatColoringPatch(Mat mat,int n,int ncolors,int *colorarray,ISColoring *iscoloring)
 {
   int ierr;
 
@@ -3987,9 +3987,9 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
   PetscValidIntPointer(colorarray);
 
   if (!mat->ops->coloringpatch){
-    SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+    ierr = ISColoringCreate(mat->comm,n,colorarray,iscoloring);CHKERRQ(ierr);
   } else {
-    ierr  = (*mat->ops->coloringpatch)(mat,n,colorarray,iscoloring);CHKERRQ(ierr);
+    ierr = (*mat->ops->coloringpatch)(mat,n,ncolors,colorarray,iscoloring);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /***********************************comm.c*************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -61,42 +62,6 @@ static void hmt_concat(REAL *vals, REAL *work, int size);
 
 
 
-/***********************************comm.c*************************************
-Function: c_init_ ()
-
-Input : 
-Output: 
-Return: 
-Description: legacy ...
-***********************************comm.c*************************************/
-#if defined UPCASE
-static 
-void
-C_INIT (void)
-#else
-static 
-void
-c_init_ (void)
-#endif
-{
-  comm_init();
-}
-
-/***********************************comm.c*************************************
-Function: c_init ()
-
-Input : 
-Output: 
-Return: 
-Description: legacy ...
-***********************************comm.c*************************************/
-static 
-void
-c_init (void)
-{
-  comm_init();
-}
-
 
 
 /***********************************comm.c*************************************
@@ -146,8 +111,8 @@ comm_init (void)
     {error_msg_fatal("Int/Long Incompatible!");}
 #endif
 
-  if (NULL!=0)
-    {error_msg_fatal("NULL != 0!");}
+  /*if (NULL!=0)
+    {error_msg_fatal("NULL != 0!");}*/
 
   if (sizeof(int) != 4)
     {error_msg_warning("Int != 4 Bytes!");}
@@ -798,7 +763,7 @@ void
 gfop(void *vals, void *work, int n, vbfp fp, DATA_TYPE dt, int comm_type)
 {
   register int mask, edge;
-  int type, dest;
+  int dest;
 #if defined MPISRC
   MPI_Status  status;
   MPI_Op op;
@@ -975,7 +940,7 @@ void
 ssgl_radd(register REAL *vals, register REAL *work, register int level, 
 	  register int *segs)
 {
-  register int edge, type, dest, source, mask;
+  register int edge, type, dest, mask;
   register int stage_n;
 #if defined MPISRC
   MPI_Status  status;
@@ -1457,7 +1422,7 @@ Description:
 static void
 sgl_iadd(int *vals, int level)
 {
-  int edge, type, dest, source, len, mask, ceil;
+  int edge, type, dest, source, len, mask;
   int tmp, *work;
 
 
@@ -1639,8 +1604,10 @@ Description:
 static void
 sgl_radd(double *vals, int level)
 {
-  int edge, type, dest, source, len, mask, ceil;
+#if defined NXSRC
+  int edge, type, dest, source, len, mask;
   double tmp, *work;
+#endif
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -1837,10 +1804,12 @@ ii+1 entries in seg :: 0 .. ii
 static void 
 hmt_concat(REAL *vals, REAL *work, int size)
 {
-  int edge, type, dest, source, len, mask, ceil;
-  int offset, stage_n;
+#if defined NXSRC  
+  int  mask,stage_n;
+  int edge, type, dest, source, len;
+  int offset;
   double *dptr;
-
+#endif
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -1850,11 +1819,11 @@ hmt_concat(REAL *vals, REAL *work, int size)
 
   /* all msgs are *NOT* the same length */
   /* implement the mesh fan in/out exchange algorithm */
-  mask = 0;
-  stage_n = size;
   rvec_copy(work,vals,size);
 
 #if defined NXSRC  
+  mask = 0;
+  stage_n = size;
   {
     long msg_id;
     
@@ -2038,7 +2007,7 @@ new_ssgl_radd(register REAL *vals, register REAL *work, register int level,
 	  register int *segs)
 #endif
 {
-  register int edge, type, dest, source, mask;
+  register int edge, type, dest, mask;
   register int stage_n;
 #if defined MPISRC
   MPI_Status  status;

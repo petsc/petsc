@@ -1,4 +1,4 @@
-/*$Id: gmres2.c,v 1.32 2001/01/15 21:47:19 bsmith Exp balay $*/
+/*$Id: gmres2.c,v 1.33 2001/03/23 23:23:37 balay Exp bsmith $*/
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNCT__  
@@ -29,7 +29,7 @@ int KSPGMRESSetHapTol(KSP ksp,double tol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (tol < 0.0) SETERRQ(1,"Tolerance must be non-negative");
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,tol);CHKERRQ(ierr);
   }
@@ -68,7 +68,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (max_k < 1) SETERRQ(1,"Restart must be positive");
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,max_k);CHKERRQ(ierr);
   }
@@ -124,7 +124,7 @@ int KSPGMRESSetOrthogonalization(KSP ksp,int (*fcn)(KSP,int))
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",(void (**)())&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,fcn);CHKERRQ(ierr);
   }

@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.114 2001/03/22 20:30:56 bsmith Exp balay $*/
+/*$Id: pcset.c,v 1.115 2001/03/23 23:23:02 balay Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -73,7 +73,7 @@ int PCSetType(PC pc,PCType type)
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
 
   /* Determine the PCCreateXXX routine for a particular preconditioner */
-  ierr =  PetscFListFind(pc->comm,PCList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(pc->comm,PCList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unable to find requested PC type %s",type);
   if (pc->data) {ierr = PetscFree(pc->data);CHKERRQ(ierr);}
 

@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.202 2001/03/22 20:31:20 bsmith Exp balay $*/
+/*$Id: itcreate.c,v 1.203 2001/03/23 23:23:29 balay Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -292,7 +292,7 @@ int KSPSetType(KSP ksp,KSPType type)
   /* Get the function pointers for the iterative method requested */
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr =  PetscFListFind(ksp->comm,KSPList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(ksp->comm,KSPList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,"Unknown KSP type given: %s",type);
 
@@ -545,7 +545,7 @@ $     -ksp_type my_solver
 
    Level: advanced
 
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT},
+   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT},
    and others of the form ${any_environmental_variable} occuring in pathname will be 
    replaced with appropriate values.
 
@@ -564,6 +564,6 @@ int KSPRegister(char *sname,char *path,char *name,int (*function)(KSP))
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&KSPList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&KSPList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

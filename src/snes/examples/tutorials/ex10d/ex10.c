@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.23 2001/01/23 20:57:24 balay Exp balay $*/
+/*$Id: ex10.c,v 1.24 2001/03/23 23:24:31 balay Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -6,7 +6,7 @@
 
 #if !defined(PETSC_USE_COMPLEX)
 
-static char help[] = "An Unstructured Grid Example\n\
+static char help[] = "An Unstructured Grid Example.\n\
 This example demonstrates how to solve a nonlinear system in parallel\n\
 with SNES for an unstructured mesh. The mesh and partitioning information\n\
 is read in an application defined ordering,which is later transformed\n\

@@ -1,6 +1,6 @@
-/*$Id: ex13.c,v 1.13 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex13.c,v 1.14 2001/03/23 23:25:07 balay Exp bsmith $*/
 
-static char help[] = "Tests loading DA vector from file\n\n";
+static char help[] = "Tests loading DA vector from file.\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"
@@ -9,10 +9,10 @@ static char help[] = "Tests loading DA vector from file\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int      ierr,M = PETSC_DECIDE,N = PETSC_DECIDE;
-  DA       da;
-  Vec      global;
-  PetscViewer   bviewer;
+  int         ierr,M = PETSC_DECIDE,N = PETSC_DECIDE;
+  DA          da;
+  Vec         global;
+  PetscViewer bviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

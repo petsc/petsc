@@ -1,6 +1,6 @@
-/*$Id: ex24.c,v 1.13 2001/03/12 23:06:42 bsmith Exp balay $*/
+/*$Id: ex24.c,v 1.14 2001/03/23 23:24:25 balay Exp bsmith $*/
 
-static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
+static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint.\n\n";
 
 #include "petscda.h"
 #include "petscpf.h"
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   for (i=0; i<nlevels; i++) {
     packer = (VecPack)dmmg[i]->dm;
     ierr   = VecPackGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
-    ierr   = DAGetColoring(da,MATMPIAIJ,PETSC_NULL,&J);CHKERRQ(ierr);
+    ierr   = DAGetColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,PETSC_NULL,&J);CHKERRQ(ierr);
     dmmg[i]->user = (void*)J;
   }
 

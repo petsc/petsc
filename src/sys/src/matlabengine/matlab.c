@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.13 2001/02/09 18:58:45 bsmith Exp balay $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.14 2001/03/23 23:20:54 balay Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -228,7 +228,7 @@ int PetscMatlabEnginePut(PetscMatlabEngine engine,PetscObject obj)
   int ierr,(*put)(PetscObject,void*);
   
   PetscFunctionBegin;  
-  ierr = PetscObjectQueryFunction(obj,"PetscMatlabEnginePut_C",(void**)&put);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction(obj,"PetscMatlabEnginePut_C",(void (**)())&put);CHKERRQ(ierr);
   if (!put) {
     SETERRQ1(1,"Object %s cannot be put into Matlab engine",obj->class_name);
   }
@@ -263,7 +263,7 @@ int PetscMatlabEngineGet(PetscMatlabEngine engine,PetscObject obj)
   if (!obj->name) {
     SETERRQ(1,"Cannot get object that has no name");
   }
-  ierr = PetscObjectQueryFunction(obj,"PetscMatlabEngineGet_C",(void**)&get);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction(obj,"PetscMatlabEngineGet_C",(void (**)())&get);CHKERRQ(ierr);
   if (!get) {
     SETERRQ1(1,"Object %s cannot be get into Matlab engine",obj->class_name);
   }

@@ -1,8 +1,7 @@
-/*$Id: ex21.c,v 1.19 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex21.c,v 1.20 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
-parallel Row format. This also tests MatGetRow() and MatRestoreRow()\n\
-for the parallel case.";
+static char help[] = "Tests converting a parallel AIJ formatted matrix to the parallel Row format.\n\
+ This also tests MatGetRow() and MatRestoreRow() for the parallel case.\n\n";
 
 #include "petscmat.h"
 

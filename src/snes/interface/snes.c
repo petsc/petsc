@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.227 2001/03/22 20:31:49 bsmith Exp balay $*/
+/*$Id: snes.c,v 1.228 2001/03/23 23:24:07 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -1998,7 +1998,7 @@ int SNESSetType(SNES snes,SNESType type)
   /* Get the function pointers for the iterative method requested */
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr =  PetscFListFind(snes->comm,SNESList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(snes->comm,SNESList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,"Unable to find requested SNES type %s",type);
 
@@ -2361,7 +2361,7 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
-   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LDIR}, ${BOPT},
+   Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT},
    and others of the form ${any_environmental_variable} occuring in pathname will be 
    replaced with appropriate values.
 
@@ -2392,6 +2392,6 @@ int SNESRegister(char *sname,char *path,char *name,int (*function)(SNES))
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&SNESList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&SNESList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

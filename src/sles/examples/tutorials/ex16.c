@@ -1,9 +1,8 @@
-/*$Id: ex16.c,v 1.21 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex16.c,v 1.22 2001/03/23 23:23:55 balay Exp bsmith $*/
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
 
-static char help[] = "Solves with SLES a sequence of linear systems that\n\
-have the same matrix but different right-hand-side vectors.\n\
+static char help[] = "Solves a sequence of linear systems with different right-hand-side vectors.\n\
 Input parameters include:\n\
   -ntimes <ntimes>  : number of linear systems to solve\n\
   -view_exact_sol   : write exact solution vector to stdout\n\

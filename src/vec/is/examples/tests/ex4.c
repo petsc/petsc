@@ -1,6 +1,6 @@
-/*$Id: ex4.c,v 1.12 2001/01/23 20:53:45 balay Exp balay $*/
+/*$Id: ex4.c,v 1.13 2001/03/23 23:21:11 balay Exp bsmith $*/
 
-static char help[] = "Tests ISStrideToGeneral()\n\n";
+static char help[] = "Tests ISStrideToGeneral().\n\n";
 
 #include "petscis.h"
 

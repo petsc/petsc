@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.141 2001/04/06 02:59:34 bsmith Exp bsmith $ 
+% $Id: part1.tex,v 1.142 2001/04/07 02:35:18 bsmith Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -32,10 +32,9 @@ experiences with scientific computation. Some of the PETSc modules deal with
 \item distributed arrays (useful for parallelizing regular grid-based 
       problems);
 \item Krylov subspace methods;
-\item preconditioners;
-\item nonlinear solvers;
-\item timesteppers for solving time-dependent (nonlinear) PDEs; and
-\item graphics devices.
+\item preconditioners, including multigrid and sparse direct solvers;
+\item nonlinear solvers; and
+\item timesteppers for solving time-dependent (nonlinear) PDEs.
 \end{itemize}
 Each of these components consists of an abstract interface 
 (simply a set of calling sequences) and one or more implementations 
@@ -55,21 +54,23 @@ of algorithms.  The PETSc infrastructure creates a
 foundation for building large-scale applications.
 
 It is useful to consider the interrelationships among different
-pieces of PETSc 2.0.  Figure \ref{fig:1} is a diagram of some 
+pieces of PETSc.  Figure \ref{fig:1} is a diagram of some 
 of the components of PETSc; Figure \ref{fig:2} presents
 several of the individual components in more detail.
 These figures illustrate the library's hierarchical organization,
 which enables users to employ the level of abstraction that is most 
 appropriate for a particular problem.  
 \begin{figure}[hbt]
-\centerline{\psfig{file=petscwww.ps,angle=270,height=3.4in}}
+\centerline{\immediate \pdfximage height 3.4in {petscwww.pdf} \pdfrefximage \pdflastximage}
+%\centerline{\psfig{file=petscwww.ps,angle=270,height=3.4in}}
 % \centerline{\psfig{file=petsc_pt.eps,angle=0,height=4in,width=5in}}
 \caption{Organization of the PETSc Library}
 \label{fig:1}
 \end{figure}
 
 \begin{figure}[hbt]
-\centerline{\psfig{file=zoom_ls.ps,angle=270,height=3.4in}}
+\centerline{\immediate \pdfximage height 3.4in {zoom.pdf} \pdfrefximage \pdflastximage}
+%\centerline{\psfig{file=zoom_ls.ps,angle=270,height=3.4in}}
 \caption{Numerical Components of PETSc}
 \label{fig:2}
 \end{figure}
@@ -104,7 +105,7 @@ PETSc design.
 
 \nocite{efficient}
 
-The {\em PETSc 2.0 Users Manual} documents {\em all} of PETSc 2.0; thus,
+The {\em PETSc Users Manual} documents {\em all} of PETSc; thus,
 it can be rather intimidating for new users. We recommend that one initially
 read the entire document before proceeding with serious use of PETSc,
 but bear in mind that PETSc can be used efficiently
@@ -130,7 +131,7 @@ source code.  Details of this feature are provided in
 Section~\ref{sec:emacs}. 
 
 The file \trl{manual.ps} contains the PostScript form of
-the {\em PETSc 2.0 Users Manual} in its entirety, while \trl{intro.ps} 
+the {\em PETSc Users Manual} in its entirety, while \trl{intro.ps} 
 includes only the introductory segment, Part I.  \sindex{installing PETSc} 
 The complete PETSc distribution, users
 manual, manual pages, and additional information are also available via
@@ -186,8 +187,14 @@ command initiates a program that uses eight processors:
    mpirun -np 8 petsc_program_name petsc_options
 \end{verbatim}
 
+PETSc also comes with a script 
+\begin{verbatim}
+   ${PETSC_DIR}bin/petscmpirun -np 8 petsc_program_name petsc_options
+\end{verbatim}
+that uses the information set in \trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site} to 
+automatically use the correct trl{mpirun} for your configuration.
 
-All PETSc 2.0-compliant programs support the use of the \trl{-h}
+All PETSc-compliant programs support the use of the \trl{-h}
 \findex{-h} or \trl{-help} option as well as the \trl{-v} \findex{-v}
 or \trl{-version} option. 
 
@@ -216,25 +223,25 @@ See Section \ref{sec:debugging} for more information on debugging PETSc programs
 
 Most PETSc programs begin with a call to \findex{PetscInitialize()}
 \begin{verbatim}
-  PetscInitialize(int *argc,char ***argv,char *file_name,char *help_mess);
+  PetscInitialize(int *argc,char ***argv,char *file,char *help);
 \end{verbatim} 
 which initializes PETSc and MPI.  The arguments \trl{argc} and 
 \trl{argv} are the command line arguments delivered in all C and C++
-programs. \sindex{command line arguments} The argument \trl{file_name}
+programs. \sindex{command line arguments} The argument \trl{file}
 optionally indicates an alternative name for the PETSc options file,
 \trl{.petscrc}, which resides by default in the user's home directory.
 Section \ref{sec:options} provides details regarding
 this file and the PETSc options database, which can be used for runtime
-customization. The final argument, \trl{help_mess}, is an optional
+customization. The final argument, \trl{help}, is an optional
 character string that will be printed if the program is run with the
 \trl{-help} option.  In Fortran the initialization command has the form
 \begin{verbatim}
-   call PetscInitialize(character file_name,integer ierr)
+   call PetscInitialize(character file,integer ierr)
 \end{verbatim} 
 \trl{PetscInitialize()} automatically calls \trl{MPI_Init()} if MPI
 has not been not previously initialized. In certain \findex{MPI_Init()}
 circumstances in which MPI needs to be initialized directly (or is
-initialized by some other library), the user should first call 
+initialized by some other library), the user can first call 
 \trl{MPI_Init()} (or have the other library do it), and then call
 \trl{PetscInitialize()}.
 By default, \trl{PetscInitialize()} sets the PETSc ``world''
@@ -269,8 +276,7 @@ calling \trl{MPI_Init()}. \trl{PetscSetCommWorld()} can be called
 at most once per process. Most users will never need to use the routine
 \trl{PetscSetCommWorld()}.
 
-As illustrated by the \trl{PetscInitialize()} statements above,
-PETSc~2.0 routines return an integer indicating whether an error has
+All PETSc routines return an integer indicating whether an error has
 occurred during the call.  The error code is set to be nonzero if an
 error has been detected; otherwise, it is zero.  For the C/C++
 interface, the error variable is the routine's return value, while for
@@ -439,14 +445,14 @@ the PC and KSP components for preconditioners and Krylov subspace methods.
 \subsection*{Nonlinear Solvers}
 Most PDE problems of interest are inherently nonlinear. PETSc provides 
 an interface to tackle the nonlinear problems directly called SNES. Chapter
-\ref{ch:snes} describes the nonlinear solvers in detail. We recommend 
+\ref{chapter:snes} describes the nonlinear solvers in detail. We recommend 
 most PETSc users work directly with SNES.
 
 \subsection*{Error Checking}
 
-All PETSc 2.0 routines return an integer indicating whether an error
+All PETSc routines return an integer indicating whether an error
 has occurred during the call.  The PETSc macro \trl{CHKERRQ(ierr)}
-checks the value of \trl{ierr} and calls the PETSc 2.0 error handler
+checks the value of \trl{ierr} and calls the PETSc error handler
 upon error detection.  \trl{CHKERRQ(ierr)} should be used in all
 subroutines to enable a complete error traceback.
 In Figure~\ref{fig:traceback} we indicate a
@@ -616,7 +622,7 @@ MatILUFctrSymbol      1  5.719e-03    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+
 MatLUFactorNumer      1  1.092e-02    1.0  2.7e+05    1.0  0.0e+00 0.0e+00 0.0e+00  9  7  0  0  0
 MatSolve              2  4.193e-03    1.0  2.4e+06    1.0  0.0e+00 0.0e+00 0.0e+00  4 25  0  0  0
 MatSetValues       1000  2.461e-02    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00 21  0  0  0  0
-VecDot                1  2.060e-04    1.0  9.7e+06    1.0  0.0e+00 0.0e+00 0.0e+00  0  5  0  0  0
+VecDot                1 60e-04    1.0  9.7e+06    1.0  0.0e+00 0.0e+00 0.0e+00  0  5  0  0  0
 VecNorm               3  5.870e-04    1.0  1.0e+07    1.0  0.0e+00 0.0e+00 0.0e+00  1 15  0  0  0
 VecScale              1  1.640e-04    1.0  6.1e+06    1.0  0.0e+00 0.0e+00 0.0e+00  0  3  0  0  0
 VecCopy               1  3.101e-04    1.0  0.0e+00    0.0  0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0
@@ -626,7 +632,7 @@ VecMAXPY              1  2.550e-04    1.0  7.8e+06    1.0  0.0e+00 0.0e+00 0.0e+
 SLESSolve             1  1.288e-02    1.0  2.2e+06    1.0  0.0e+00 0.0e+00 0.0e+00 11 70  0  0  0
 SLESSetUp             1  2.669e-02    1.0  1.1e+05    1.0  0.0e+00 0.0e+00 0.0e+00 23  7  0  0  0
 KSPGMRESOrthog        1  1.151e-03    1.0  3.5e+06    1.0  0.0e+00 0.0e+00 0.0e+00  1 10  0  0  0
-PCSetUp               1  2.024e-02    1.0  1.5e+05    1.0  0.0e+00 0.0e+00 0.0e+00 18  7  0  0  0
+PCSetUp               1 24e-02    1.0  1.5e+05    1.0  0.0e+00 0.0e+00 0.0e+00 18  7  0  0  0
 PCApply               2  4.474e-03    1.0  2.2e+06    1.0  0.0e+00 0.0e+00 0.0e+00  4 25  0  0  0
 -------------------------------------------------------------------------------------------------
 
@@ -659,12 +665,12 @@ users examine programs in the directories
 where \trl{<component>}
 denotes any of the PETSc components (listed in the following
 section), such as \trl{snes} or \trl{sles}.  
-The HTML version of the manual pages located at
+The manual pages located at
 \begin{verbatim}
    ${PETSC_DIR}/docs/index.html or 
    http://www.mcs.anl.gov/petsc/docs/
 \end{verbatim}
-provides indices (organized by both routine names and concepts) to the tutorial examples.
+provide indices (organized by both routine names and concepts) to the tutorial examples.
 
 To write a new application program using PETSc, we suggest the
 following procedure:
@@ -692,18 +698,18 @@ When referencing PETSc in a publication please cite the following:
    Year   = "1998"}
 
 @TechReport{petsc-manual,
-   Author      = "Satish Balay and William D. Gropp and Lois C. McInnes and 
-                  Barry F. Smith",
-   Title       = "{PETSc} 2.0 Users Manual",
-   Number      = "ANL-95/11 - Revision 2.0.28",
+   Author      = "Satish Balay and William D. Gropp and Lois C. McInnes
+                  and Barry F. Smith",
+   Title       = "{PETSc} Users Manual",
+   Number      = "ANL-95/11 - Revision 2.1.0",
    Institution = "Argonne National Laboratory",
    Year        = "2000"}
 
 @InProceedings{petsc-efficient,
-   Author    = "Satish Balay and William D. Gropp and Lois C. McInnes and 
-                Barry F. Smith",
-   Title     = "Efficienct Management of Parallelism in Object Oriented Numerical 
-                Software Libraries",
+   Author    = "Satish Balay and William D. Gropp and Lois C. McInnes
+                and Barry F. Smith",
+   Title     = "Efficienct Management of Parallelism in Object Oriented
+                Numerical Software Libraries",
    Booktitle = "Modern Software Tools in Scientific Computing",
    Editor    = "E. Arge and A. M. Bruaset and H. P. Langtangen",
    Pages     = "163--202",
@@ -722,10 +728,9 @@ The root directory of PETSc contains the following directories:
 % As shown in Figure~\ref{fig:directories}, the root directory of PETSc contains the following directories:
 
 \begin{itemize}
-\item \trl{docs} - All documentation for PETSc. The files \trl{manual.ps}
-                   and \trl{manual.html} contain the users manual in
-                   PostScript and HTML formats, respectively. Includes
-                   the subdirectory
+\item \trl{docs} - All documentation for PETSc. The files \trl{manual.pdf}
+                   contains the hyperlinked users manual, suitable for printing
+                   or on-screen viewering. Includes the subdirectory
  \subitem - \trl{manualpages} (on-line manual pages).
 \item \trl{bin} - Utilities and short scripts for use with PETSc, including
  \begin{itemize}

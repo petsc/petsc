@@ -1,4 +1,4 @@
-/* $Id: petscbt.h,v 1.19 2001/03/09 18:50:07 balay Exp balay $ */
+/* $Id: petscbt.h,v 1.20 2001/03/09 19:54:15 balay Exp bsmith $ */
 
 /*    
 
@@ -32,6 +32,17 @@
 #define BITSPERBYTE 8
 #endif
 
+/*S
+     PetscBT - PETSc bitarrays
+
+   Level: advanced
+
+   Notes: the PetscBT routines do not currently have manual pages. See include/petscbt.h for 
+          documentation
+
+.seealso:  PetscBTCreate(), PetscBTDestroy(), PetscBTMemzero(), PetscBTSet(), PetscBTClear(),
+           PetscBTLookup(), PetscBTLookupSet(), PetscBTLength(), PetscBTView()
+S*/
 typedef char* PetscBT;
 
 extern char _BT_mask,_BT_c;

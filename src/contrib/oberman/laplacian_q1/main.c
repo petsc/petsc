@@ -1,6 +1,5 @@
-/*$Id: main.c,v 1.9 2001/01/23 20:58:21 balay Exp balay $*/
-static char help[] =
-"Solves 2d-laplacian on quadrilateral grid.\n\
+/*$Id: main.c,v 1.10 2001/03/23 23:25:29 balay Exp bsmith $*/
+static char help[] = "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
     -show_solution pipe solution to matlab (visualized with bscript.m).\n\
     -show_griddata print the local index sets and local to global mappings \n\

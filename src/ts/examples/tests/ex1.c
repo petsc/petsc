@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.44 2001/03/23 23:24:43 balay Exp balay $*/
+/*$Id: ex1.c,v 1.45 2001/03/28 19:42:35 balay Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -51,8 +51,8 @@ int main(int argc,char **argv)
   Mat           A = 0;
   MatStructure  A_structure;
   TSProblemType tsproblem = TS_LINEAR;
-  PetscDraw          draw;
-  PetscViewer        viewer;
+  PetscDraw     draw;
+  PetscViewer   viewer;
   char          tsinfo[120];
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.123 2001/01/17 22:21:56 bsmith Exp balay $*/
+/*$Id: aijnode.c,v 1.124 2001/03/23 23:21:51 balay Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -18,8 +18,6 @@ EXTERN int MatGetRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 EXTERN int MatRestoreRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
-EXTERN int MatColoringPatch_SeqAIJ(Mat,int,int*,ISColoring*);
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_AIJ_CreateColInode"
@@ -771,7 +769,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
-EXTERN int MatColoringPatch_SeqAIJ_Inode(Mat,int,int *,ISColoring *);
+EXTERN int MatColoringPatch_SeqAIJ_Inode(Mat,int,int,int *,ISColoring *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_AIJ_CheckInode"
@@ -823,7 +821,7 @@ int Mat_AIJ_CheckInode(Mat A)
     A->ops->restorerowij    = MatRestoreRowIJ_SeqAIJ;
     A->ops->getcolumnij     = MatGetColumnIJ_SeqAIJ;
     A->ops->restorecolumnij = MatRestoreColumnIJ_SeqAIJ;
-    A->ops->coloringpatch   = MatColoringPatch_SeqAIJ;
+    A->ops->coloringpatch   = 0;
     a->inode.node_count     = 0;
     a->inode.size           = 0;
     PetscLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes out of %d rows. Not using Inode routines\n",node_count,m);

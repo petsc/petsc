@@ -1,4 +1,4 @@
-/*$Id: ex71.c,v 1.42 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex71.c,v 1.43 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 
@@ -8,11 +8,11 @@ static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int     ierr,m = 4,n = 5,i,j,I,J;
-  Scalar  one = 1.0,v;
-  Vec     x;
-  Mat     A;
-  PetscViewer  viewer;
+  int         ierr,m = 4,n = 5,i,j,I,J;
+  Scalar      one = 1.0,v;
+  Vec         x;
+  Mat         A;
+  PetscViewer viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

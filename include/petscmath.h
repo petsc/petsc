@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.19 2000/04/09 03:11:53 bsmith Exp bsmith $ */
+/* $Id: petscmath.h,v 1.20 2001/01/15 21:50:04 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -167,10 +167,10 @@ typedef double PetscLogDouble;
    we will create a new MPI_Datatype for the inactive double variables.
 */
 #if defined(AD_DERIV_H)
-/* extern  MPI_Datatype  MPIU_PetscLogDOUBLE; */
+/* extern  MPI_Datatype  MPIU_PETSCLOGDOUBLE; */
 #else
 #if !defined(USING_MPIUNI)
-#define MPIU_PetscLogDOUBLE MPI_DOUBLE
+#define MPIU_PETSCLOGDOUBLE MPI_DOUBLE
 #endif
 #endif
 

@@ -1,6 +1,6 @@
-/*$Id: ex3.c,v 1.25 2001/01/23 20:57:50 balay Exp balay $*/
+/*$Id: ex3.c,v 1.26 2001/03/23 23:24:54 balay Exp bsmith $*/
 
-static char help[] = "Tests AOData \n\n";
+static char help[] = "Tests AOData.\n\n";
 
 #include "petscao.h"
 #include "petscbt.h"

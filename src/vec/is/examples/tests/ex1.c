@@ -1,9 +1,9 @@
-/*$Id: ex1.c,v 1.39 2001/01/23 20:53:45 balay Exp balay $*/
+/*$Id: ex1.c,v 1.40 2001/03/23 23:21:11 balay Exp bsmith $*/
 /*
        Formatted test for ISGeneral routines.
 */
 
-static char help[] = "Tests IS general routines\n\n";
+static char help[] = "Tests IS general routines.\n\n";
 
 #include "petscis.h"
 

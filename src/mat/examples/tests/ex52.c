@@ -1,7 +1,6 @@
-/*$Id: ex52.c,v 1.13 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex52.c,v 1.14 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = 
-"Tests the vatious routines in MatMPIBAIJ format.\n";
+static char help[] = "Tests the vatious routines in MatMPIBAIJ format.\n";
 
 
 #include "petscmat.h"

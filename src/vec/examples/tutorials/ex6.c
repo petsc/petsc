@@ -1,7 +1,6 @@
-/*$Id: ex6.c,v 1.29 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex6.c,v 1.30 2001/03/23 23:21:37 balay Exp bsmith $*/
 
-static char help[] = "Writes an array to a file, then reads an array from\n\
-a file, then forms a vector.\n\n";
+static char help[] = "Writes an array to a file, then reads an array from a file, then forms a vector.\n\n";
 
 #include "petscvec.h"
 
@@ -9,10 +8,10 @@ a file, then forms a vector.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int     i,ierr,m = 10,fd,size,sz;
-  Scalar  *avec,*array;
-  Vec     vec;
-  PetscViewer  view_out,view_in;
+  int         i,ierr,m = 10,fd,size,sz;
+  Scalar      *avec,*array;
+  Vec         vec;
+  PetscViewer view_out,view_in;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&sz);CHKERRQ(ierr);

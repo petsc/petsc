@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.45 2001/01/23 20:58:05 balay Exp balay $*/
+/*$Id: ex6.c,v 1.46 2001/03/23 23:25:07 balay Exp bsmith $*/
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   int            *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   PetscTruth     test_order;
   DA             da;
-  PetscViewer         viewer;
+  PetscViewer    viewer;
   Vec            local,global;
   Scalar         value;
   DAPeriodicType wrap = DA_XYPERIODIC;

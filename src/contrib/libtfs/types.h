@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /**********************************types.h*************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -19,7 +20,7 @@ File Description:
 -----------------
 
 ***********************************types.h************************************/
-typedef void (*vfp)();
+typedef void (*vfp)(void*,void*,int,...);
 typedef void (*rbfp)(REAL *, REAL *, int len);
 #ifdef MPISRC
 #define vbfp MPI_User_function *

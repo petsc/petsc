@@ -1,4 +1,4 @@
-/* $Id: pops.c,v 1.9 2001/03/09 15:13:12 balay Exp balay $*/
+/* $Id: pops.c,v 1.10 2001/03/23 23:20:17 balay Exp bsmith $*/
 
 /*
     Defines the operations for the Postscript PetscDraw implementation.
@@ -18,7 +18,7 @@
 -   file - name of file where Postscript is to be stored
 
   Output Parameter:
-.   PetscViewer - the PetscViewer object
+.  viewer - the PetscViewer object
 
   Level: beginner
 
@@ -57,8 +57,8 @@ static PetscTruth rgbfilled = PETSC_FALSE;
 #define __FUNCT__ "PetscDrawPoint_PS" 
 static int PetscDrawPoint_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c)
 {
-  PetscReal   xx,yy;
-  int      ierr;
+  PetscReal     xx,yy;
+  int           ierr;
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
 
   PetscFunctionBegin;
@@ -73,8 +73,8 @@ static int PetscDrawPoint_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c)
 static int PetscDrawLine_PS(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
-  PetscReal   x1,y_1,x2,y2;
-  int      ierr;
+  PetscReal     x1,y_1,x2,y2;
+  int           ierr;
 
   PetscFunctionBegin;
   x1 = XTRANS(draw,xl);   x2  = XTRANS(draw,xr); 
@@ -89,7 +89,7 @@ static int PetscDrawLine_PS(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal x
 static int PetscDrawStringSetSize_PS(PetscDraw draw,PetscReal x,PetscReal  y)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
-  int      ierr,w,h;
+  int           ierr,w,h;
 
   PetscFunctionBegin;
   w = (int)((WIDTH)*x*(draw->port_xr - draw->port_xl)/(draw->coor_xr - draw->coor_xl));
@@ -115,8 +115,8 @@ static int PetscDrawStringGetSize_PS(PetscDraw draw,PetscReal *x,PetscReal  *y)
 static int PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
-  PetscReal   x1,y_1;
-  int      ierr;
+  PetscReal     x1,y_1;
+  int           ierr;
 
   PetscFunctionBegin;
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
@@ -131,8 +131,8 @@ static int PetscDrawString_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,char
 static int PetscDrawStringVertical_PS(PetscDraw draw,PetscReal x,PetscReal  y,int c,char *chrs)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
-  PetscReal   x1,y_1;
-  int      ierr;
+  PetscReal     x1,y_1;
+  int           ierr;
 
   PetscFunctionBegin;
   ierr = PSSetColor(ps,c);CHKERRQ(ierr);
@@ -150,8 +150,8 @@ static int PetscDrawTriangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscR
                           PetscReal Y2,PetscReal X3,PetscReal Y3,int c1,int c2,int c3)
 {
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
-  int      ierr;
-  PetscReal   x1,y_1,x2,y2,x3,y3;
+  int           ierr;
+  PetscReal     x1,y_1,x2,y2,x3,y3;
 
   PetscFunctionBegin;
   x1   = XTRANS(draw,X1);
@@ -174,10 +174,10 @@ static int PetscDrawTriangle_PS(PetscDraw draw,PetscReal X1,PetscReal Y_1,PetscR
 #define __FUNCT__ "PetscDrawDestroy_PS" 
 static int PetscDrawDestroy_PS(PetscDraw draw)
 {
-  PetscDraw_PS    *ps = (PetscDraw_PS*)draw->data;
-  int        ierr;
-  PetscTruth show;
-  char       *filename,par[1024];
+  PetscDraw_PS *ps = (PetscDraw_PS*)draw->data;
+  int          ierr;
+  PetscTruth   show;
+  char         *filename,par[1024];
  
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");CHKERRQ(ierr);
@@ -197,7 +197,7 @@ static int PetscDrawDestroy_PS(PetscDraw draw)
 #define __FUNCT__ "PetscDrawSynchronizedFlush_PS" 
 static int PetscDrawSynchronizedFlush_PS(PetscDraw draw)
 {
-  int      ierr;
+  int           ierr;
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
 
   PetscFunctionBegin;
@@ -209,7 +209,7 @@ static int PetscDrawSynchronizedFlush_PS(PetscDraw draw)
 #define __FUNCT__ "PetscDrawSynchronizedClear_PS" 
 static int PetscDrawSynchronizedClear_PS(PetscDraw draw)
 {
-  int      ierr;
+  int           ierr;
   PetscDraw_PS* ps = (PetscDraw_PS*)draw->data;
 
   PetscFunctionBegin;
@@ -254,7 +254,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscDrawCreate_PS" 
 int PetscDrawCreate_PS(PetscDraw draw)
 {
-  PetscDraw_PS       *ps;
+  PetscDraw_PS  *ps;
   int           ierr,ncolors,i;
   unsigned char *red,*green,*blue;
   static int    filecount = 0;

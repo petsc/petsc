@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.76 2001/01/19 23:20:58 balay Exp balay $*/
+/*$Id: matio.c,v 1.77 2001/03/23 23:22:45 balay Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -34,7 +34,7 @@ int MatLoadRegister(char *sname,char *path,char *name,int (*function)(PetscViewe
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatLoadList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatLoadList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -173,7 +173,7 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   }
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   if (!outtype) outtype = MATMPIAIJ;
-  ierr =  PetscFListFind(comm,MatLoadList,outtype,(int(**)(void*))&r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(comm,MatLoadList,outtype,(void(**)())&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unknown Mat type given: %s",outtype);
 
   ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);

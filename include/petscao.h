@@ -1,4 +1,4 @@
-/* $Id: petscao.h,v 1.24 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscao.h,v 1.25 2001/01/15 21:48:40 bsmith Exp bsmith $ */
 
 /* 
   An application ordering is mapping between an application-centric
@@ -14,6 +14,15 @@ typedef enum {AO_BASIC=0,AO_ADVANCED=1} AOType;
 
 #define AO_COOKIE PETSC_COOKIE+20
 
+/*S
+     AO - Abstract PETSc object that manages mapping between different global numbering
+
+   Level: intermediate
+
+  Concepts: global numbering
+
+.seealso:  AOCreateBasic(), AOCreateBasicIS(), AOPetscToApplication(), AOView()
+S*/
 typedef struct _p_AO* AO;
 
 EXTERN int AOCreateBasic(MPI_Comm,int,int*,int*,AO*);
@@ -33,6 +42,14 @@ typedef enum {AODATA_BASIC=0,AODATA_ADVANCED=1} AODataType;
 
 #define AODATA_COOKIE PETSC_COOKIE+24
 
+/*S
+     AOData - Abstract PETSc object that manages complex parallel data structures intended to 
+         hold grid information, etc
+
+   Level: advanced
+
+.seealso:  AODataCreateBasic()
+S*/
 typedef struct _p_AOData* AOData;
 
 EXTERN int AODataCreateBasic(MPI_Comm,AOData *);

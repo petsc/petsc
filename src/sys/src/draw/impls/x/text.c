@@ -1,4 +1,4 @@
-/*$Id: text.c,v 1.39 2001/01/15 21:43:29 bsmith Exp balay $*/
+/*$Id: text.c,v 1.40 2001/03/23 23:20:15 balay Exp bsmith $*/
 
 /*
    This file contains simple code to manage access to fonts, insuring that
@@ -23,7 +23,7 @@ int XiLoadFont(PetscDraw_X*,XiFont*);
 int XiFontFixed(PetscDraw_X *XBWin,int w,int h,XiFont **outfont)
 {
   static XiFont *curfont = 0,*font;
-  int    ierr;
+  int           ierr;
 
   PetscFunctionBegin;
   if (!curfont) { ierr = XiInitFonts(XBWin);CHKERRQ(ierr);}

@@ -1,4 +1,4 @@
-/*$Id: stack.c,v 1.32 2001/01/15 21:43:39 bsmith Exp balay $*/
+/*$Id: stack.c,v 1.33 2001/03/23 23:20:26 balay Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
@@ -198,7 +198,7 @@ int PetscStackView(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
-#define __FUNCT__ /*<a name=""PetscStackDestroy></a>*/"PetscStackDestroy"
+#define __FUNCT__ "PetscStackDestroy"
 int PetscStackDestroy(void) 
 {
   PetscFunctionBegin;

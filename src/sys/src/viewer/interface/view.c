@@ -1,4 +1,4 @@
-/*$Id: view.c,v 1.42 2001/01/19 23:19:35 balay Exp balay $*/
+/*$Id: view.c,v 1.43 2001/03/23 23:20:05 balay Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -10,7 +10,7 @@
    Collective on PetscViewer
 
    Input Parameters:
-.  PetscViewer - the PetscViewer to be destroyed.
+.  viewer - the PetscViewer to be destroyed.
 
    Level: beginner
 
@@ -44,7 +44,7 @@ int PetscViewerDestroy(PetscViewer viewer)
    Not Collective
 
    Input Parameter:
-.   PetscViewer - the PetscViewer
+.   viewer - the PetscViewer
 
    Output Parameter:
 .  type - PetscViewer type (see below)

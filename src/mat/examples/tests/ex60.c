@@ -1,6 +1,6 @@
-/*$Id: ex60.c,v 1.11 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex60.c,v 1.12 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Tests MatGetColumnVector()";
+static char help[] = "Tests MatGetColumnVector().";
 
 #include "petscmat.h"
 

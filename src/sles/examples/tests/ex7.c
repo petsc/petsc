@@ -1,7 +1,6 @@
-/*$Id: ex7.c,v 1.15 2001/01/23 20:56:37 balay Exp balay $*/
+/*$Id: ex7.c,v 1.16 2001/03/23 23:23:50 balay Exp bsmith $*/
 
-static char help[] = 
-"Reads a PETSc matrix and vector from a file and solves a linear system.\n\
+static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
  Tests inplace factorization for SeqBAIJ. Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\n";
 
@@ -25,15 +24,15 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  SLES       sles;             /* linear solver context */
-  Mat        A,B;                /* matrix */
-  Vec        x,b,u;          /* approx solution, RHS, exact solution */
-  PetscViewer     fd;               /* viewer */
-  char       file[2][128];     /* input file name */
-  int        ierr,its;
-  PetscTruth flg;
-  double     norm;
-  Scalar     zero = 0.0,none = -1.0;
+  SLES        sles;             /* linear solver context */
+  Mat         A,B;                /* matrix */
+  Vec         x,b,u;          /* approx solution, RHS, exact solution */
+  PetscViewer fd;               /* viewer */
+  char        file[2][128];     /* input file name */
+  int         ierr,its;
+  PetscTruth  flg;
+  double      norm;
+  Scalar      zero = 0.0,none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

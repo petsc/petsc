@@ -1,4 +1,4 @@
-/*$Id: ptype.c,v 1.4 2001/01/15 21:43:52 bsmith Exp balay $*/
+/*$Id: ptype.c,v 1.5 2001/03/23 23:20:38 balay Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -32,6 +32,23 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
   }
   PetscFunctionReturn(0);
 }
+
+typedef enum {PETSC_INT_SIZE = sizeof(int),PETSC_DOUBLE_SIZE = sizeof(double),
+              PETSC_COMPLEX_SIZE = sizeof(Scalar),PETSC_LONG_SIZE=sizeof(long),
+              PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
+              PETSC_CHAR_SIZE = sizeof(char),PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
+#if defined(PETSC_USE_COMPLEX)
+#define PETSC_SCALAR_SIZE PETSC_COMPLEX_SIZE
+#else
+#define PETSC_SCALAR_SIZE PETSC_DOUBLE_SIZE
+#endif
+#if defined(PETSC_USE_SINGLE)
+#define PETSC_REAL_SIZE PETSC_FLOAT_SIZE
+#else
+#define PETSC_REAL_SIZE PETSC_DOUBLE_SIZE
+#endif
+#define PETSC_FORTRANADDR_SIZE PETSC_LONG_SIZE
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDataTypeGetSize"

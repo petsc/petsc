@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /**********************************ivec.c**************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -668,27 +669,27 @@ Description:
 vfp ivec_fct_addr(register int type)
 {
   if (type == NON_UNIFORM)
-    {return(&ivec_non_uniform);}
+    {return((void (*)(void *, void *, int, ...))&ivec_non_uniform);}
   else if (type == GL_MAX)
-    {return(&ivec_max);}
+    {return((void (*)(void *, void *, int, ...))&ivec_max);}
   else if (type == GL_MIN)
-    {return(&ivec_min);}
+    {return((void (*)(void *, void *, int, ...))&ivec_min);}
   else if (type == GL_MULT)
-    {return(&ivec_mult);}
+    {return((void (*)(void *, void *, int, ...))&ivec_mult);}
   else if (type == GL_ADD)
-    {return(&ivec_add);}
+    {return((void (*)(void *, void *, int, ...))&ivec_add);}
   else if (type == GL_B_XOR)
-    {return(&ivec_xor);}
+    {return((void (*)(void *, void *, int, ...))&ivec_xor);}
   else if (type == GL_B_OR)
-    {return(&ivec_or);}
+    {return((void (*)(void *, void *, int, ...))&ivec_or);}
   else if (type == GL_B_AND)  
-    {return(&ivec_and);}
+    {return((void (*)(void *, void *, int, ...))&ivec_and);}
   else if (type == GL_L_XOR)
-    {return(&ivec_lxor);}
+    {return((void (*)(void *, void *, int, ...))&ivec_lxor);}
   else if (type == GL_L_OR)
-    {return(&ivec_lor);}
+    {return((void (*)(void *, void *, int, ...))&ivec_lor);}
   else if (type == GL_L_AND)   
-    {return(&ivec_land);}
+    {return((void (*)(void *, void *, int, ...))&ivec_land);}
 
   /* catch all ... not good if we get here */
   return(NULL);
@@ -703,6 +704,7 @@ Output:
 Return: 
 Description: MUST FIX THIS!!!
 ***********************************ivec.c*************************************/
+#if defined(notusing)
 static
 int 
 ivec_ct_bits(register int *ptr, register int n)
@@ -726,7 +728,7 @@ ivec_ct_bits(register int *ptr, register int n)
 
   return(tmp);
 }
-
+#endif
 
 
 /******************************************************************************
@@ -794,7 +796,7 @@ ivec_sort(register int *ar, register int size)
 	    {error_msg_fatal("ivec_sort() :: STACK EXHAUSTED!!!");}
 
 	  /* push right hand child iff length > 1 */
-	  if (*top_s = size-((int) (pi-ar)))
+	  if ((*top_s = size-((int) (pi-ar))))
 	    {
 	      *(top_a++) = pi;
 	      size -= *top_s+2;  
@@ -913,7 +915,7 @@ ivec_sort_companion(register int *ar, register int *ar2, register int size)
 	    {error_msg_fatal("ivec_sort_companion() :: STACK EXHAUSTED!!!");}
 
 	  /* push right hand child iff length > 1 */
-	  if (*top_s = size-((int) (pi-ar)))
+	  if ((*top_s = size-((int) (pi-ar))))
 	    {
 	      *(top_a++) = pi;
 	      *(top_a++) = pi2;
@@ -1039,7 +1041,7 @@ ivec_sort_companion_hack(register int *ar, register int **ar2,
          {error_msg_fatal("ivec_sort_companion_hack() :: STACK EXHAUSTED!!!");}
 
 	  /* push right hand child iff length > 1 */
-	  if (*top_s = size-((int) (pi-ar)))
+	  if ((*top_s = size-((int) (pi-ar))))
 	    {
 	      *(top_a++) = pi;
 	      *(top_a++) = (int *) pi2;
@@ -1104,14 +1106,14 @@ SMI_sort(void *ar1, void *ar2, int size, int type)
       if (ar2)
 	{ivec_sort_companion((int *)ar1,(int *)ar2,size);}
       else
-	{ivec_sort(ar1,size);}
+	{ivec_sort((int*)ar1,size);}
     }
   else if (type == SORT_INT_PTR)
     {
       if (ar2)
 	{ivec_sort_companion_hack((int *)ar1,(int **)ar2,size);}
       else
-	{ivec_sort(ar1,size);}
+	{ivec_sort((int*)ar1,size);}
     }
 
   else
@@ -1532,21 +1534,21 @@ Description:
 vfp rvec_fct_addr(register int type)
 {
   if (type == NON_UNIFORM)
-    {return(&rvec_non_uniform);}
+    {return((void (*)(void *, void *, int, ...))&rvec_non_uniform);}
   else if (type == GL_MAX)
-    {return(&rvec_max);}
+    {return((void (*)(void *, void *, int, ...))&rvec_max);}
   else if (type == GL_MIN)
-    {return(&rvec_min);}
+    {return((void (*)(void *, void *, int, ...))&rvec_min);}
   else if (type == GL_MULT)
-    {return(&rvec_mult);}
+    {return((void (*)(void *, void *, int, ...))&rvec_mult);}
   else if (type == GL_ADD)
-    {return(&rvec_add);}
+    {return((void (*)(void *, void *, int, ...))&rvec_add);}
   else if (type == GL_MAX_ABS)
-    {return(&rvec_max_abs);}
+    {return((void (*)(void *, void *, int, ...))&rvec_max_abs);}
   else if (type == GL_MIN_ABS)
-    {return(&rvec_min_abs);}
+    {return((void (*)(void *, void *, int, ...))&rvec_min_abs);}
   else if (type == GL_EXISTS)
-    {return(&rvec_exists);}
+    {return((void (*)(void *, void *, int, ...))&rvec_exists);}
 
   /* catch all ... not good if we get here */
   return(NULL);
@@ -1619,7 +1621,7 @@ rvec_sort(register REAL *ar, register int Size)
 	    {error_msg_fatal("\nSTACK EXHAUSTED!!!\n");}
 
 	  /* push right hand child iff length > 1 */
-	  if (*top_s = size-(pi-ar))
+	  if ((*top_s = size-(pi-ar)))
 	    {
 	      *(top_a++) = pi;
 	      size -= *top_s+2;  
@@ -1740,7 +1742,7 @@ rvec_sort_companion(register REAL *ar, register int *ar2, register int Size)
 	    {error_msg_fatal("\nSTACK EXHAUSTED!!!\n");}
 
 	  /* push right hand child iff length > 1 */
-	  if (*top_s = size-(pi-ar))
+	  if ((*top_s = size-(pi-ar)))
 	    {
 	      *(top_a++) = pi;
 	      *(top_a++) = (REAL *) pi2;

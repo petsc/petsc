@@ -1,7 +1,7 @@
-/*$Id: ex9.c,v 1.47 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex9.c,v 1.48 2001/03/23 23:23:55 balay Exp bsmith $*/
 
-static char help[] = "Illustrates the solution of 2 different linear systems\n\
-with different linear solvers.  Also, this example illustrates the repeated\n\
+static char help[] = "The solution of 2 different linear systems with different linear solvers.\n\
+Also, this example illustrates the repeated\n\
 solution of linear systems, while reusing matrix, vector, and solver data\n\
 structures throughout the process.  Note the various stages of event logging.\n\n";
 

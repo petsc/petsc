@@ -1,7 +1,7 @@
-/*$Id: ex30.c,v 1.24 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex30.c,v 1.25 2001/03/23 23:22:29 balay Exp bsmith $*/
 
-static char help[] = "Tests ILU factorization and illustrates drawing\n\
-of matrix sparsity structure with MatView().  Input parameters are:\n\
+static char help[] = "Tests ILU factorization and illustrates drawing of matrix sparsity structure with MatView().\n\
+  Input parameters are:\n\
   -lf <level> : level of fill for ILU (default is 0)\n\
   -lu : use full LU factorization\n\
   -m <value>,-n <value> : grid dimensions\n\
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscTruth  flg1;
   Scalar      v;
   IS          row,col;
-  PetscViewer      viewer1,viewer2;
+  PetscViewer viewer1,viewer2;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

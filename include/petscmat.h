@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.216 2001/03/22 21:22:07 bsmith Exp balay $ */
+/* $Id: petscmat.h,v 1.217 2001/03/28 19:41:14 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -545,7 +545,7 @@ EXTERN int MatColoringRegister(char*,char*,char*,int(*)(Mat,MatColoringType,ISCo
 EXTERN int        MatColoringRegisterAll(char *);
 extern PetscTruth MatColoringRegisterAllCalled;
 EXTERN int        MatColoringRegisterDestroy(void);
-EXTERN int        MatColoringPatch(Mat,int,int *,ISColoring*);
+EXTERN int        MatColoringPatch(Mat,int,int,int *,ISColoring*);
 
 #define MAT_FDCOLORING_COOKIE PETSC_COOKIE + 23
 /*S
