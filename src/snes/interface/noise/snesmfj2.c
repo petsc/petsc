@@ -46,8 +46,8 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
 PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  MFCtx_Private *ctx;
-  PetscTruth    iascii;
+  MFCtx_Private  *ctx;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
      ierr = PetscViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
      ierr = PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",ctx->umin);CHKERRQ(ierr);
      if (ctx->compute_err) {
-       ierr = PetscViewerASCIIPrintf(viewer,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);CHKERRQ(ierr);
+       ierr = PetscViewerASCIIPrintf(viewer,"    freq_err=%D (frequency for computing err)\n",ctx->compute_err_freq);CHKERRQ(ierr);
      }
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by SNES matrix free Jorge",((PetscObject)viewer)->type_name);
@@ -80,14 +80,14 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J,PetscViewer viewer)
 */
 PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
 {
-  MFCtx_Private *ctx;
-  SNES          snes;
-  PetscReal     h,norm,sum,umin,noise;
-  PetscScalar   hs,dot,mone = -1.0;
-  Vec           w,U,F;
+  MFCtx_Private  *ctx;
+  SNES           snes;
+  PetscReal      h,norm,sum,umin,noise;
+  PetscScalar    hs,dot,mone = -1.0;
+  Vec            w,U,F;
   PetscErrorCode ierr,(*eval_fct)(SNES,Vec,Vec);
-  MPI_Comm      comm;
-  int           iter;
+  MPI_Comm       comm;
+  PetscInt       iter;
 
   PetscFunctionBegin;
 

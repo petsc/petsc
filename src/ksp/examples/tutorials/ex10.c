@@ -47,12 +47,13 @@ int main(int argc,char **args)
   PetscViewer    fd;               /* viewer */
   char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE;
-  int            ierr,its,ierrp;
+  PetscErrorCode ierr,ierrp;
+  PetscInt       its;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscScalar    zero = 0.0,none = -1.0;
   PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE,Test_MatDuplicate=PETSC_FALSE;
-  int            num_numfac;
+  PetscInt       num_numfac;
   PetscScalar    sigma;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -265,14 +266,14 @@ int main(int argc,char **args)
      */
     ierr = PetscOptionsHasName(PETSC_NULL,"-test_inertia",&flg);CHKERRQ(ierr);
     if (flg){
-      PC      pc;
-      int     nneg, nzero, npos;
-      Mat     F;
+      PC        pc;
+      PetscInt  nneg, nzero, npos;
+      Mat       F;
       
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       ierr = PCGetFactoredMatrix(pc,&F);CHKERRQ(ierr);
       ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %d, nzero: %d, npos: %d\n",nneg,nzero,npos);
+      ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);
     }
 
     /*
@@ -390,7 +391,7 @@ int main(int argc,char **args)
     if (flg){
       KSPConvergedReason reason;
       ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-      PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %d\n", reason); 
+      PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason); 
     }
        
     } /* while ( num_numfac-- ) */

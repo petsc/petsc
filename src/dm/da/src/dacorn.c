@@ -254,7 +254,7 @@ PetscErrorCode DASetFieldName(DA da,int nf,const char name[])
   PetscFunctionBegin;
  
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
-  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %d",nf);
+  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   if (da->fieldname[nf]) {ierr = PetscFree(da->fieldname[nf]);CHKERRQ(ierr);}
   
   ierr = PetscStrallocpy(name,&da->fieldname[nf]);CHKERRQ(ierr);
@@ -289,7 +289,7 @@ PetscErrorCode DAGetFieldName(DA da,int nf,char **name)
  
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(name,3);
-  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %d",nf);
+  if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   *name = da->fieldname[nf];
   PetscFunctionReturn(0);
 }

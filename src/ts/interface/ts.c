@@ -125,7 +125,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
     }
     break;
   default:
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid problem type: %d", ts->problem_type);
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid problem type: %d", (int)ts->problem_type);
   }
 
   PetscFunctionReturn(0);
@@ -597,12 +597,12 @@ PetscErrorCode TSView(TS ts,PetscViewer viewer)
       ierr = (*ts->ops->view)(ts,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%d\n",ts->max_steps);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  maximum steps=%D\n",ts->max_steps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%g\n",ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%d\n",ts->nonlinear_its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->nonlinear_its);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",ts->linear_its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->linear_its);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
@@ -1508,7 +1508,7 @@ PetscErrorCode TSDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(ts->comm,"timestep %d dt %g time %g\n",step,ts->time_step,ptime);CHKERRQ(ierr);
+  ierr = PetscPrintf(ts->comm,"timestep %D dt %g time %g\n",step,ts->time_step,ptime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

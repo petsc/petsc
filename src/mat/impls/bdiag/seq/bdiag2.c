@@ -19,10 +19,10 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const in
   for (kk=0; kk<m; kk++) { /* loop over added rows */
     row = im[kk];   
     if (row < 0) continue;
-    if (row >= A->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->M-1);
+    if (row >= A->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->M-1);
     for (j=0; j<n; j++) {
       if (in[j] < 0) continue;
-      if (in[j] >= A->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[j],A->N-1);
+      if (in[j] >= A->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[j],A->N-1);
       ldiag  = row - in[j]; /* diagonal number */
       dfound = PETSC_FALSE;
       if (roworiented) {
@@ -46,10 +46,10 @@ PetscErrorCode MatSetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const in
 #else
           if (a->user_alloc && PetscRealPart(value) || PetscImaginaryPart(value)) {
 #endif
-            PetscLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
+            PetscLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %D that user did not allocate\n",ldiag);
           }
         } else {
-          PetscLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
+          PetscLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %D\n",ldiag);
           a->reallocs++;
           /* free old bdiag storage info and reallocate */
           ierr      = PetscMalloc(2*(a->nd+1)*sizeof(int),&diag_new);CHKERRQ(ierr);
@@ -108,8 +108,8 @@ PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const in
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over added rows */
     row = im[kk];   
-    if (row < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %d",row);
-    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->m-1);
+    if (row < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",row);
+    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->m-1);
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
       ldiag  = row/bs - in[j]/bs; /* block diagonal */
@@ -135,10 +135,10 @@ PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const in
 #else
           if (a->user_alloc && PetscRealPart(value) || PetscImaginaryPart(value)) {
 #endif
-            PetscLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
+            PetscLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %D that user did not allocate\n",ldiag);
           }
         } else {
-          PetscLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
+          PetscLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %D\n",ldiag);
           a->reallocs++;
           /* free old bdiag storage info and reallocate */
           ierr      = PetscMalloc(2*(a->nd+1)*sizeof(int),&diag_new);CHKERRQ(ierr);
@@ -914,7 +914,7 @@ PetscErrorCode MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 
   PetscFunctionBegin;
   its = its*lits;
-  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
+  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
 
   /* Currently this code doesn't use wavefront orderings, although
      we should eventually incorporate that option, whatever wavefront
@@ -1085,7 +1085,7 @@ PetscErrorCode MatRelax_SeqBDiag_1(Mat A,Vec bb,PetscReal omega,MatSORType flag,
 
   PetscFunctionBegin;
   its = its*lits;
-  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
+  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
   /* Currently this code doesn't use wavefront orderings,although
      we should eventually incorporate that option, whatever wavefront
      ordering maybe :-) */

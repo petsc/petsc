@@ -340,10 +340,10 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
 #define __FUNCT__ "BuildGmresSoln"
 static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
 {
-  PetscScalar tt,zero = 0.0,one = 1.0;
+  PetscScalar    tt,zero = 0.0,one = 1.0;
   PetscErrorCode ierr;
-  int  ii,k,j;
-  KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
+  PetscInt       ii,k,j;
+  KSP_GMRES      *gmres = (KSP_GMRES *)(ksp->data);
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -355,7 +355,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,i
     }
     PetscFunctionReturn(0);
   }
-  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %d GRS(it) = %g",it,PetscAbsScalar(*GRS(it)));
+  if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %g",it,PetscAbsScalar(*GRS(it)));
   if (*HH(it,it) != 0.0) {
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
@@ -509,10 +509,10 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
 #define __FUNCT__ "KSPView_GMRES" 
 PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 {
-  KSP_GMRES  *gmres = (KSP_GMRES *)ksp->data; 
-  const char *cstr;
+  KSP_GMRES      *gmres = (KSP_GMRES *)ksp->data; 
+  const char     *cstr;
   PetscErrorCode ierr;
-  PetscTruth iascii,isstring;
+  PetscTruth     iascii,isstring;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -531,10 +531,10 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
     cstr = "unknown orthogonalization";
   }
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%d, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: restart=%D, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",gmres->haptol);CHKERRQ(ierr);
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer,"%s restart %d",cstr,gmres->max_k);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,gmres->max_k);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
   }

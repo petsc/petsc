@@ -38,13 +38,14 @@ int main(int argc,char **argv)
 #define __FUNCT__ "kspex"
 int kspex(int argc,char **args)
 {
-  Vec         x,b,u;      /* approx solution, RHS, exact solution */
-  Mat         A;            /* linear system matrix */
-  KSP         ksp;         /* linear solver context */
-  PC          pc;           /* preconditioner context */
-  PetscReal   norm;         /* norm of solution error */
-  int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
-  PetscScalar v,one = 1.0,none = -1.0;
+  Vec            x,b,u;      /* approx solution, RHS, exact solution */
+  Mat            A;            /* linear system matrix */
+  KSP            ksp;         /* linear solver context */
+  PC             pc;           /* preconditioner context */
+  PetscReal      norm;         /* norm of solution error */
+  PetscInt       i,j,I,J,Istart,Iend,m = 8,n = 7,its;
+  PetscErrorCode ierr;
+  PetscScalar    v,one = 1.0,none = -1.0;
 
   ierr = PetscSetCommWorld(PETSC_COMM_SELF);CHKERRQ(ierr);
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -169,7 +170,7 @@ int kspex(int argc,char **args)
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

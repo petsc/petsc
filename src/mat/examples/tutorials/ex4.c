@@ -10,7 +10,7 @@ static char help[] = "Reads U and V matrices from a file and performs y = V*U'*x
      petscis.h     - index sets            petscviewer.h - viewers               
 */
 #include "petscmat.h"
-extern int LowRankUpdate(Mat,Mat,Vec,Vec,Vec,Vec,int);
+extern PetscErrorCode LowRankUpdate(Mat,Mat,Vec,Vec,Vec,Vec,PetscInt);
 
 
 #undef __FUNCT__
@@ -52,8 +52,8 @@ int main(int argc,char **args)
 
   ierr = MatGetLocalSize(U,&N,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(V,&M,&m);CHKERRQ(ierr);
-  if (N != M) SETERRQ2(1,"U and V matrices must have same number of local rows %d %d",N,M);
-  if (n != m) SETERRQ2(1,"U and V matrices must have same number of local columns %d %d",n,m);
+  if (N != M) SETERRQ2(1,"U and V matrices must have same number of local rows %D %D",N,M);
+  if (n != m) SETERRQ2(1,"U and V matrices must have same number of local columns %D %D",n,m);
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,N,PETSC_DETERMINE,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);

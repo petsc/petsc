@@ -56,7 +56,7 @@ PetscErrorCode ISColoringDestroy(ISColoring iscoloring)
 @*/
 PetscErrorCode ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 {
-  PetscInt            i;
+  PetscInt       i;
   PetscErrorCode ierr;
   PetscTruth     iascii;
   IS             *is;
@@ -211,7 +211,8 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm,PetscInt n,const ISColoringValue c
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag;
-  PetscInt            base,top,nc,ncwork,i;
+  PetscInt       base,top,i;
+  PetscInt       nc,ncwork;
   PetscTruth     flg;
   MPI_Status     status;
 
@@ -242,7 +243,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm,PetscInt n,const ISColoringValue c
     if (ncwork < colors[i]) ncwork = colors[i];
   }
   ncwork++;
-  ierr = MPI_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ncwork,&nc,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = 0;
   (*iscoloring)->colors = (ISColoringValue *)colors;
@@ -254,7 +255,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm,PetscInt n,const ISColoringValue c
   if (flg) {
     ierr = ISColoringView(*iscoloring,PETSC_VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
   }
-  PetscLogInfo(0,"ISColoringCreate: Number of colors %d\n",(int)nc);
+  PetscLogInfo(0,"ISColoringCreate: Number of colors %d\n",nc);
   PetscFunctionReturn(0);
 }
 

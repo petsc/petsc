@@ -163,7 +163,7 @@ PetscErrorCode DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
   } else if (dim == 3) {
     ierr =  DAGetColoring3d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else {
-      SETERRQ1(PETSC_ERR_SUP,"Not done for %d dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
+      SETERRQ1(PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
   }
   PetscFunctionReturn(0);
 }
@@ -238,7 +238,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
       *coloring = da->ghostedcoloring;
-    } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",ctype);
+    } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   }
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -319,7 +319,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",ctype);
+  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -383,7 +383,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",ctype);
+  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -449,7 +449,7 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
       ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
     }
     *coloring = da->ghostedcoloring;
-  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",ctype);
+  } else SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown ISColoringType %d",(int)ctype);
   PetscFunctionReturn(0);
 }
 
@@ -571,13 +571,13 @@ PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)
       if (sbaij) {
         ierr = DAGetMatrix3d_MPISBAIJ(da,A);CHKERRQ(ierr);
       } else {
-        SETERRQ2(PETSC_ERR_SUP,"Not implemented for %d dimension and Matrix Type: %s!\n" \
+        SETERRQ2(PETSC_ERR_SUP,"Not implemented for %D dimension and Matrix Type: %s!\n" \
                                "Send mail to petsc-maint@mcs.anl.gov for code",
                                dim,Atype);
       }
     }
   } else {
-    SETERRQ2(PETSC_ERR_SUP,"Not implemented for %d dimension and matrix type: %s!\n" \
+    SETERRQ2(PETSC_ERR_SUP,"Not implemented for %D dimension and matrix type: %s!\n" \
                            "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype);
   }
   ierr = DAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);

@@ -251,7 +251,7 @@ int UpdateSolution(DMMG *dmmg, AppCtx *user, int *nits)
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
     ierr = VecCopy(DMMGGetx(dmmg),user->Xguess);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr); (*nits)+=its;
-    if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %d\n", *nits);
+    if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %D\n", *nits);
     if (param->stop_solve) goto done;
     param->ivisc = tmpIVisc; 
   }
@@ -268,7 +268,7 @@ int UpdateSolution(DMMG *dmmg, AppCtx *user, int *nits)
       ierr = VecCopy(DMMGGetx(dmmg),user->Xguess);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
       ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr); (*nits)+=its;
-      if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %d, Cumulative: %d\n", its, *nits);
+      if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %D, Cumulative: %D\n", its, *nits);
       if (param->stop_solve || reason<0 || param->continuation==1.0) goto done;
 
       /* update continuation parameter */
@@ -1004,7 +1004,7 @@ int ReportParams(Parameter *param, GridInfo *grid)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Lid depth = %5.2f km,   Fault depth = %5.2f km\n",param->lid_depth*param->L,param->fault_depth*param->L);CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"\nGrid: \n");
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %d, %d       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,grid->dx*param->L,grid->dz*param->L);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %D, %D       [dx,dz] = %g, %g km\n",grid->ni,grid->nj,grid->dx*param->L,grid->dz*param->L);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  jlid = %3d              jfault = %3d \n",grid->jlid,grid->jfault);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pe = %g\n",param->peclet);CHKERRQ(ierr);
 
@@ -1046,7 +1046,7 @@ int ReportParams(Parameter *param, GridInfo *grid)
       PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Binary file \"%s\"\n",param->filename);
 #endif
     if ( param->output_ivisc != param->ivisc ) 
-      PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %d\n",param->output_ivisc);
+      PetscPrintf(PETSC_COMM_WORLD,"                          Output viscosity: -ivisc %D\n",param->output_ivisc);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"---------------------END ex30 PARAM REPORT---------------------\n");CHKERRQ(ierr);
   }

@@ -263,7 +263,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       r_rmapd[i] = inA->bmapping->indices[i] + 1;
     }
   }
-  if (nt*bs != n) SETERRQ2(PETSC_ERR_PLIB,"Hmm nt*bs %d n %d",nt*bs,n);
+  if (nt*bs != n) SETERRQ2(PETSC_ERR_PLIB,"Hmm nt*bs %D n %D",nt*bs,n);
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&uglyrmapd);CHKERRQ(ierr);
   for (i=0; i<inA->bmapping->n; i++) {
     if (r_rmapd[i]){
@@ -290,7 +290,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       r_rmapo[i] = lindices[inA->bmapping->indices[i]];
     }
   }
-  if (nt > no) SETERRQ2(PETSC_ERR_PLIB,"Hmm nt %d no %d",nt,n);
+  if (nt > no) SETERRQ2(PETSC_ERR_PLIB,"Hmm nt %D no %D",nt,n);
   ierr = PetscFree(lindices);CHKERRQ(ierr);
   ierr = PetscMalloc((nt*bs+1)*sizeof(PetscInt),&uglyrmapo);CHKERRQ(ierr);
   for (i=0; i<inA->bmapping->n; i++) {

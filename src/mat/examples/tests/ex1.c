@@ -40,8 +40,8 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %d, allocated nonzeros = %d\n",
-    (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %D, allocated nonzeros = %D\n",
+    (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
   /* Cholesky factorization is not yet in place for this matrix format */
   factinfo.fill = 1.0;

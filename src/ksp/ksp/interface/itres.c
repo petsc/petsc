@@ -56,7 +56,7 @@ PetscErrorCode KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec
     } else if (ksp->pc_side == PC_SYMMETRIC) {
       ierr = PCApplySymmetricLeft(ksp->pc, vb, vres);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP, "Invalid preconditioning side %d", ksp->pc_side);
+      SETERRQ1(PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
   }
 
   }

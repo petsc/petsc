@@ -266,6 +266,7 @@ extern  PetscErrorCode __gierr;
 
 #endif
 
+EXTERN PetscErrorCode PetscErrorPrintfInitialize(void);
 EXTERN PetscErrorCode PetscErrorMessage(int,const char*[],char **);
 EXTERN PetscErrorCode PetscTraceBackErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
 EXTERN PetscErrorCode PetscIgnoreErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);

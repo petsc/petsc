@@ -200,7 +200,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
   }
   if (!A->m || !A->n) PetscFunctionReturn(0);
   LApotrf_("L",&n,mat->v,&mat->lda,&info);
-  if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",(int)info-1);
+  if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
   A->factor = FACTOR_CHOLESKY;
   PetscLogFlops((A->n*A->n*A->n)/3);
 #endif
@@ -404,7 +404,7 @@ PetscErrorCode MatRelax_SeqDense(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   its  = its*lits;
-  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
+  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP){
       for (i=0; i<m; i++) {
@@ -579,12 +579,12 @@ PetscErrorCode MatSetValues_SeqDense(Mat A,int m,const int indexm[],int n,const 
       for (j=0; j<n; j++) {
         if (indexn[j] < 0) {idx += m; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-        if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[j],A->n-1);
+        if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",indexn[j],A->n-1);
 #endif
         for (i=0; i<m; i++) {
           if (indexm[i] < 0) {idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-          if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[i],A->m-1);
+          if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",indexm[i],A->m-1);
 #endif
           mat->v[indexn[j]*mat->lda + indexm[i]] = v[idx++];
         }
@@ -593,12 +593,12 @@ PetscErrorCode MatSetValues_SeqDense(Mat A,int m,const int indexm[],int n,const 
       for (j=0; j<n; j++) {
         if (indexn[j] < 0) {idx += m; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-        if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[j],A->n-1);
+        if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",indexn[j],A->n-1);
 #endif
         for (i=0; i<m; i++) {
           if (indexm[i] < 0) {idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-          if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[i],A->m-1);
+          if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",indexm[i],A->m-1);
 #endif
           mat->v[indexn[j]*mat->lda + indexm[i]] += v[idx++];
         }
@@ -609,12 +609,12 @@ PetscErrorCode MatSetValues_SeqDense(Mat A,int m,const int indexm[],int n,const 
       for (i=0; i<m; i++) {
         if (indexm[i] < 0) { idx += n; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-        if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[i],A->m-1);
+        if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",indexm[i],A->m-1);
 #endif
         for (j=0; j<n; j++) {
           if (indexn[j] < 0) { idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-          if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[j],A->n-1);
+          if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",indexn[j],A->n-1);
 #endif
           mat->v[indexn[j]*mat->lda + indexm[i]] = v[idx++];
         }
@@ -623,12 +623,12 @@ PetscErrorCode MatSetValues_SeqDense(Mat A,int m,const int indexm[],int n,const 
       for (i=0; i<m; i++) {
         if (indexm[i] < 0) { idx += n; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-        if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",indexm[i],A->m-1);
+        if (indexm[i] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",indexm[i],A->m-1);
 #endif
         for (j=0; j<n; j++) {
           if (indexn[j] < 0) { idx++; continue;}
 #if defined(PETSC_USE_BOPT_g)  
-          if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",indexn[j],A->n-1);
+          if (indexn[j] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",indexn[j],A->n-1);
 #endif
           mat->v[indexn[j]*mat->lda + indexm[i]] += v[idx++];
         }
@@ -759,17 +759,17 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<A->m; i++) {
       v = a->v + i;
-      ierr = PetscViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
       for (j=0; j<A->n; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscRealPart(*v) != 0.0 && PetscImaginaryPart(*v) != 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%d, %g + %g i) ",j,PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g + %g i) ",j,PetscRealPart(*v),PetscImaginaryPart(*v));CHKERRQ(ierr);
         } else if (PetscRealPart(*v)) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%d, %g) ",j,PetscRealPart(*v));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",j,PetscRealPart(*v));CHKERRQ(ierr);
         }
 #else
         if (*v) {
-          ierr = PetscViewerASCIIPrintf(viewer," (%d, %g) ",j,*v);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %g) ",j,*v);CHKERRQ(ierr);
         }
 #endif
         v += a->lda;
@@ -789,8 +789,8 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
 #endif
     if (format == PETSC_VIEWER_ASCII_MATLAB) {
       ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %d %d \n",A->m,A->n);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"%s = zeros(%d,%d);\n",name,A->m,A->n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%% Size = %D %D \n",A->m,A->n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%s = zeros(%D,%D);\n",name,A->m,A->n);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"%s = [\n",name);CHKERRQ(ierr);
     }
 
@@ -1022,7 +1022,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)mat,"Rows %d Cols %d",mat->m,mat->n);
+  PetscLogObjectState((PetscObject)mat,"Rows %D Cols %D",mat->m,mat->n);
 #endif
   if (l->pivots) {ierr = PetscFree(l->pivots);CHKERRQ(ierr);}
   if (!l->user_alloc) {ierr = PetscFree(l->v);CHKERRQ(ierr);}
@@ -1661,7 +1661,7 @@ PetscErrorCode MatSeqDenseSetLDA(Mat B,int lda)
 {
   Mat_SeqDense *b = (Mat_SeqDense*)B->data;
   PetscFunctionBegin;
-  if (lda < B->m) SETERRQ2(PETSC_ERR_ARG_SIZ,"LDA %d must be at least matrix dimension %d",lda,B->m);
+  if (lda < B->m) SETERRQ2(PETSC_ERR_ARG_SIZ,"LDA %D must be at least matrix dimension %D",lda,B->m);
   b->lda = lda;
   PetscFunctionReturn(0);
 }

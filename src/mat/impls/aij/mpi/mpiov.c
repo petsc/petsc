@@ -543,7 +543,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive(Mat C,PetscInt nrqr,Pets
     isz1[i]     = ct2; /* size of each message */
   }
   ierr = PetscBTDestroy(xtable);CHKERRQ(ierr);
-  PetscLogInfo(0,"MatIncreaseOverlap_MPIAIJ:[%d] Allocated %d bytes, required %d bytes, no of mallocs = %d\n",rank,mem_estimate, ct3,no_malloc);    
+  PetscLogInfo(0,"MatIncreaseOverlap_MPIAIJ:[%d] Allocated %D bytes, required %D bytes, no of mallocs = %D\n",rank,mem_estimate, ct3,no_malloc);    
   PetscFunctionReturn(0);
 }  
 /* -------------------------------------------------------------------------*/
@@ -626,7 +626,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
         jsendbuf[cnt++] = garray[*b_jsendbuf++];
       }
     }
-    if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %d actual nz %d",sendcount,cnt);
+    if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %D actual nz %D",sendcount,cnt);
 
     /*--------------------------------------------------------------------
        Gather all column indices to all processors
@@ -695,7 +695,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
       b_sendj++;
     }
   }
-  if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %d actual nz %d",sendcount,cnt);
+  if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %D actual nz %D",sendcount,cnt);
    
   /* ----------------------------------------------------------------- 
      Gather all numerical values to all processors 

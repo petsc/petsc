@@ -385,9 +385,9 @@ int main(int argc,char **args)
 */
 int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
 {
-  PetscScalar none = -1.0;
-  PetscReal   norm;
-  int         ierr;
+  PetscScalar    none = -1.0;
+  PetscReal      norm;
+  PetscErrorCode ierr;
 
   ierr = PetscLogEventBegin(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
 
@@ -397,7 +397,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   ierr = VecCopy(x,b);CHKERRQ(ierr);
   ierr = VecAXPY(&none,u,b);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
   return 0;
 }
@@ -416,8 +416,8 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
 */
 int MyKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
-  Vec      x;
-  int      ierr;
+  Vec            x;
+  PetscErrorCode ierr;
 
   /* 
      Build the solution vector
@@ -432,9 +432,9 @@ int MyKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
         data from multiple processors so that the output
         is not jumbled.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d solution vector:\n",n);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D solution vector:\n",n);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   return 0;
 }
 

@@ -668,7 +668,7 @@ int Update(DMMG *dmmg)
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
     snes = DMMGGetSNES(dmmg);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
     ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
     nfailsCum += nfails; nfails = 0;
     if (nfailsCum >= 2) SETERRQ(1,"Unable to find a Newton Step");
@@ -684,9 +684,9 @@ int Update(DMMG *dmmg)
     
     ierr = ComputeTimeStep(snes,((AppCtx*)dmmg[param->mglevels-1]->user));CHKERRQ(ierr);
     if (print_flag) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %D cfl = %g and fnorm = %g\n",
 			 tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Wall clock time needed %g seconds for %d time steps\n",
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Wall clock time needed %g seconds for %D time steps\n",
 			 cpuloc,tsCtx->itstep);CHKERRQ(ierr);    
     }
     fratio = tsCtx->fnorm_ini/tsCtx->fnorm;
@@ -695,7 +695,7 @@ int Update(DMMG *dmmg)
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   } /* End of time step loop */
   
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total wall clock time needed %g seconds for %d time steps\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total wall clock time needed %g seconds for %D time steps\n",
 		     cpuloc,tsCtx->itstep);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"cfl = %g fnorm = %g\n",tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
   if (user->param->PreLoading) {

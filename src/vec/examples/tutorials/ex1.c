@@ -93,13 +93,13 @@ int main(int argc,char **argv)
      (when using real numbers) it is undefined.
   */
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n",int (PetscRealPart(dot)));CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)PetscRealPart(dots[0]),
-                             (int)PetscRealPart(dots[1]),(int)PetscRealPart(dots[2]));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n",(PetscInt) (PetscRealPart(dot)));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)PetscRealPart(dots[0]),
+                             (PetscInt)PetscRealPart(dots[1]),(PetscInt)PetscRealPart(dots[2]));CHKERRQ(ierr);
 #else
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n",(int)dot);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)dots[0],
-                             (int)dots[1],(int)dots[2]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n",(PetscInt)dot);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)dots[0],
+                             (PetscInt)dots[1],(PetscInt)dots[2]);CHKERRQ(ierr);
 #endif
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");CHKERRQ(ierr);

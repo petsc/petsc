@@ -43,7 +43,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscLogInfo(pc,"PCApplyRichardson_SOR: Warning, convergence critera ignored, using %d iterations\n",its);
+  PetscLogInfo(pc,"PCApplyRichardson_SOR: Warning, convergence critera ignored, using %D iterations\n",its);
   its  = its*jac->its;
   ierr = MatRelax(pc->pmat,b,jac->omega,(MatSORType)jac->sym,0.0,its,jac->lits,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -102,7 +102,7 @@ PetscErrorCode PCView_SOR(PC pc,PetscViewer viewer)
     else if (sym & SOR_LOCAL_FORWARD_SWEEP)  sortype = "local_forward";
     else if (sym & SOR_LOCAL_BACKWARD_SWEEP) sortype = "local_backward"; 
     else                                     sortype = "unknown";
-    ierr = PetscViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %d, omega = %g\n",sortype,jac->its,jac->omega);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  SOR: type = %s, iterations = %D, omega = %g\n",sortype,jac->its,jac->omega);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCSOR",((PetscObject)viewer)->type_name);
   }

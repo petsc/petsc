@@ -83,10 +83,10 @@ int main(int argc,char **args)
 
   ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global sums):\n\
-     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+     nonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   ierr = MatGetInfo (C,MAT_GLOBAL_MAX,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global max):\n\
-     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+     nonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);

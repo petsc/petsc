@@ -66,8 +66,6 @@ PetscErrorCode PetscMallocAlign(size_t mem,int line,const char func[],const char
 #define __FUNCT__ "PetscFreeAlign"
 PetscErrorCode PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const char dir[])
 {
-  PetscErrorCode ierr = 0;
-
 #if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && (PETSC_MEMALIGN == 8)) && !defined(PETSC_HAVE_MEMALIGN))
   int shift;
   /*
@@ -80,14 +78,14 @@ PetscErrorCode PetscFreeAlign(void *ptr,int line,const char func[],const char fi
 #endif
 
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
-  ierr = free(ptr); 
-  if (ierr) {
-    return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",ierr);
+  int err = free(ptr); 
+  if (err) {
+    return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",err);
   }
 #else 
   free(ptr);
 #endif
-  return ierr;
+  return 0;
 }
 
 /*
@@ -99,9 +97,9 @@ PetscErrorCode PetscFreeAlign(void *ptr,int line,const char func[],const char fi
 PetscErrorCode PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
 {
 #if defined(PETSC_HAVE_FREE_RETURN_INT)
-  PetscErrorCode ierr = free(ptr); 
-  if (ierr) {
-    return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",ierr);
+  int err = free(ptr); 
+  if (err) {
+    return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",err);
   }
 #else 
   free(ptr);

@@ -203,7 +203,7 @@ PetscErrorCode ISGetLocalSize_Stride(IS is,PetscInt *size)
 PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
 {
   IS_Stride      *sub = (IS_Stride *)is->data;
-  PetscInt            i,n = sub->n;
+  PetscInt       i,n = sub->n;
   PetscMPIInt    rank,size;
   PetscTruth     iascii;
   PetscErrorCode ierr;
@@ -217,17 +217,17 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
       if (is->isperm) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in (stride) set %d\n",n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in (stride) set %D\n",n);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %D\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     } else {
       if (is->isperm) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %d\n",rank,n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %D\n",rank,n);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

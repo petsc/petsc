@@ -102,12 +102,13 @@ PetscErrorCode PetscTraceBackErrorHandler(int line,const char *fun,const char* f
       PetscOptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
       if (flg2) {
         PetscTrLogDump(stdout);
-      } else if (flg1) {
-        (*PetscErrorPrintf)("Memory allocated %d Memory used by process %d\n",(int)mem,(int)rss);
-        PetscTrDump(stdout);
       } else {
-        (*PetscErrorPrintf)("Memory allocated %d Memory used by process %d\n",(int)mem,(int)rss);
-        (*PetscErrorPrintf)("Try running with -trdump or -trmalloc_log for info.\n");
+        (*PetscErrorPrintf)("Memory allocated %D Memory used by process %D\n",(PetscInt)mem,(PetscInt)rss);
+        if (flg1) {
+          PetscTrDump(stdout);
+        } else {
+          (*PetscErrorPrintf)("Try running with -trdump or -trmalloc_log for info.\n");
+        }
       }
     } else {
         const char *text;

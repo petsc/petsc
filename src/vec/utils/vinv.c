@@ -32,8 +32,8 @@
 PetscErrorCode VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
 {
   PetscErrorCode ierr;
-  PetscInt         i,n,bs;
-  PetscScalar *x,xscale = *scale;
+  PetscInt       i,n,bs;
+  PetscScalar    *x,xscale = *scale;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -43,8 +43,8 @@ PetscErrorCode VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%d) is too large for stride\n\
-            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
 
@@ -94,10 +94,10 @@ PetscErrorCode VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
 PetscErrorCode VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
 {
   PetscErrorCode ierr;
-  PetscInt         i,n,bs;
-  PetscScalar *x;
-  PetscReal   tnorm;
-  MPI_Comm    comm;
+  PetscInt       i,n,bs;
+  PetscScalar    *x;
+  PetscReal      tnorm;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -108,8 +108,8 @@ PetscErrorCode VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%d) is too large for stride\n\
-            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
 
@@ -183,10 +183,10 @@ PetscErrorCode VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
 PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
-  PetscInt         i,n,bs;
-  PetscScalar *x;
-  PetscReal   max,tmp;
-  MPI_Comm    comm;
+  PetscInt       i,n,bs;
+  PetscScalar    *x;
+  PetscReal      max,tmp;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -200,8 +200,8 @@ PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%d) is too large for stride\n\
-            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
+    SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
+            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
 
@@ -265,10 +265,10 @@ PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 PetscErrorCode VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
-  PetscInt         i,n,bs;
-  PetscScalar *x;
-  PetscReal   min,tmp;
-  MPI_Comm    comm;
+  PetscInt       i,n,bs;
+  PetscScalar    *x;
+  PetscReal      min,tmp;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -282,8 +282,8 @@ PetscErrorCode VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%d) is too large for stride\n\
-            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
+    SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
+            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
 
@@ -865,8 +865,8 @@ PetscErrorCode VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
 PetscErrorCode VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt          i,n,bs,ns;
-  PetscScalar  *x,*y;
+  PetscInt       i,n,bs,ns;
+  PetscScalar    *x,*y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -878,11 +878,11 @@ PetscErrorCode VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%d) is too large for stride\n\
-            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for gather from original vector %D",ns*bs,n);
   }
   x += start;
   n =  n/bs;
@@ -944,8 +944,8 @@ PetscErrorCode VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
 PetscErrorCode VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt          i,n,bs,ns;
-  PetscScalar  *x,*y;
+  PetscInt       i,n,bs,ns;
+  PetscScalar    *x,*y;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -957,11 +957,11 @@ PetscErrorCode VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%d) is too large for stride\n\
-            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
+            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %d not correct for scatter to multicomponent vector %d",ns*bs,n);
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Subvector length * blocksize %D not correct for scatter to multicomponent vector %D",ns*bs,n);
   }
   x += start;
   n =  n/bs;
@@ -1172,9 +1172,9 @@ PetscErrorCode VecAbs(Vec v)
 @*/
 PetscErrorCode VecPermute(Vec x, IS row, PetscTruth inv)
 {
-  PetscScalar *array, *newArray;
-  PetscInt         *idx;
-  PetscInt          i;
+  PetscScalar    *array, *newArray;
+  PetscInt       *idx;
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1184,7 +1184,7 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscTruth inv)
 #ifdef PETSC_USE_BOPT_g
   for(i = 0; i < x->n; i++) {
     if ((idx[i] < 0) || (idx[i] >= x->n)) {
-      SETERRQ2(PETSC_ERR_ARG_CORRUPT, "Permutation index %d is out of bounds: %d", i, idx[i]);
+      SETERRQ2(PETSC_ERR_ARG_CORRUPT, "Permutation index %D is out of bounds: %D", i, idx[i]);
     }
   }
 #endif

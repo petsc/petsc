@@ -130,14 +130,14 @@ PetscErrorCode SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_LS"
 PetscErrorCode SNESSolve_LS(SNES snes)
-{
-  SNES_LS      *neP = (SNES_LS*)snes->data;
+{ 
+  SNES_LS        *neP = (SNES_LS*)snes->data;
   PetscErrorCode ierr;
-  int          maxits,i,lits,lsfail;
-  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
-  PetscReal    fnorm,gnorm,xnorm,ynorm;
-  Vec          Y,X,F,G,W,TMP;
-  KSP          ksp;
+  PetscInt       maxits,i,lits,lsfail;
+  MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
+  PetscReal      fnorm,gnorm,xnorm,ynorm;
+  Vec            Y,X,F,G,W,TMP;
+  KSP            ksp;
 
   PetscFunctionBegin;
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
@@ -185,7 +185,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
 
     /* should check what happened to the linear solve? */
     snes->linear_its += lits;
-    PetscLogInfo(snes,"SNESSolve_LS: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
+    PetscLogInfo(snes,"SNESSolve_LS: iter=%D, linear solve iterations=%D\n",snes->iter,lits);
 
     /* Compute a (scaled) negative update in the line search routine: 
          Y <- X - lambda*Y 
@@ -193,7 +193,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     */
     ierr = VecCopy(Y,snes->vec_sol_update_always);CHKERRQ(ierr);
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);CHKERRQ(ierr);
-    PetscLogInfo(snes,"SNESSolve_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
+    PetscLogInfo(snes,"SNESSolve_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lsfail=%D\n",fnorm,gnorm,ynorm,lsfail);
 
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
@@ -235,7 +235,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   snes->vec_sol_always  = snes->vec_sol;
   snes->vec_func_always = snes->vec_func;
   if (i == maxits) {
-    PetscLogInfo(snes,"SNESSolve_LS: Maximum number of iterations has been reached: %d\n",maxits);
+    PetscLogInfo(snes,"SNESSolve_LS: Maximum number of iterations has been reached: %D\n",maxits);
     snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);
@@ -558,7 +558,7 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
   count = 1;
   while (count < 10000) {
     if (lambda <= minlambda) { /* bad luck; use full step */
-      PetscLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %d \n",count);
+      PetscLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %D \n",count);
       PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(x,y);CHKERRQ(ierr);
       *flag = -1; break;
@@ -718,7 +718,7 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
   count = 1;
   while (PETSC_TRUE) {
     if (lambda <= minlambda) { /* bad luck; use full step */
-      PetscLogInfo(snes,"SNESQuadraticLineSearch:Unable to find good step length! %d \n",count);
+      PetscLogInfo(snes,"SNESQuadraticLineSearch:Unable to find good step length! %D \n",count);
       PetscLogInfo(snes,"SNESQuadraticLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(x,y);CHKERRQ(ierr);
       *flag = -1; break;

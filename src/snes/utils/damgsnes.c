@@ -33,7 +33,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   if (dmmg[nlevels-1]->updatejacobian && ShouldUpdate(nlevels,it)) {
     ierr = (*DMMGGetFine(dmmg)->computejacobian)(snes,X,J,B,flag,DMMGGetFine(dmmg));CHKERRQ(ierr);
   } else {
-    PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %d frequence %d level %d\n",it,dmmg[nlevels-1]->updatejacobianperiod,nlevels-1);
+    PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[nlevels-1]->updatejacobianperiod,nlevels-1);
     *flag = SAME_PRECONDITIONER;
   }
   ierr = MatSNESMFSetBase(DMMGGetFine(dmmg)->J,X);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
 	if (dmmg[i-1]->updatejacobian && ShouldUpdate(i,it)) {
 	  ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
 	} else {
-	  PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %d frequence %d level %d\n",it,dmmg[i-1]->updatejacobianperiod,i-1);
+	  PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[i-1]->updatejacobianperiod,i-1);
 	  flg = SAME_PRECONDITIONER;
 	}
 	ierr = MGGetSmoother(pc,i-1,&lksp);CHKERRQ(ierr);
@@ -485,7 +485,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
     if (dmmg[level]->monitor){
       ierr = DMMGFormFunction(0,dmmg[level]->x,dmmg[level]->w,dmmg[level]);CHKERRQ(ierr);
       ierr = VecNorm(dmmg[level]->w,NORM_2,&norm);CHKERRQ(ierr);
-      ierr = PetscPrintf(dmmg[level]->comm,"%d FAS function norm %g\n",i,norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(dmmg[level]->comm,"%D FAS function norm %g\n",i,norm);CHKERRQ(ierr);
     }
   }
   theend:
@@ -704,12 +704,12 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
           if (i == 0) {
             ierr = PetscPrintf(dmmg[i]->comm,"FAS Solver Parameters\n");CHKERRQ(ierr);
             ierr = PetscPrintf(dmmg[i]->comm,"  rtol %g atol %g\n",dmmg[i]->rtol,dmmg[i]->atol);CHKERRQ(ierr);
-	    ierr = PetscPrintf(dmmg[i]->comm,"             coarsesmooths %d\n",dmmg[i]->coarsesmooth);CHKERRQ(ierr);
-            ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %d\n",newton_its);CHKERRQ(ierr);
+	    ierr = PetscPrintf(dmmg[i]->comm,"             coarsesmooths %D\n",dmmg[i]->coarsesmooth);CHKERRQ(ierr);
+            ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",newton_its);CHKERRQ(ierr);
           } else {
-	    ierr = PetscPrintf(dmmg[i]->comm,"  level %d   presmooths    %d\n",i,dmmg[i]->presmooth);CHKERRQ(ierr);
-	    ierr = PetscPrintf(dmmg[i]->comm,"             postsmooths   %d\n",dmmg[i]->postsmooth);CHKERRQ(ierr);
-            ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %d\n",newton_its);CHKERRQ(ierr);
+	    ierr = PetscPrintf(dmmg[i]->comm,"  level %D   presmooths    %D\n",i,dmmg[i]->presmooth);CHKERRQ(ierr);
+	    ierr = PetscPrintf(dmmg[i]->comm,"             postsmooths   %D\n",dmmg[i]->postsmooth);CHKERRQ(ierr);
+            ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",newton_its);CHKERRQ(ierr);
           }
         }
 	dmmg[i]->solve = DMMGSolveFAS;
@@ -887,7 +887,7 @@ PetscErrorCode PetscADView(PetscInt N,PetscInt nc,double *ptr,PetscViewer viewer
 
   PetscFunctionBegin;
   for (i=0; i<N; i++) {
-    printf("Element %d value %g derivatives: ",i,*(double*)cptr);
+    printf("Element %D value %g derivatives: ",i,*(double*)cptr);
     values = PetscADGetGradArray(cptr);
     for (j=0; j<nc; j++) {
       printf("%g ",*values++);

@@ -11,11 +11,12 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat A,A11,A12,A21,A22;
-  Vec X,X1,X2,Y,Z,Z1,Z2;
-  PetscScalar *a,*b,*x,*y,*z,v,one=1,mone=-1;
-  PetscReal nrm;
-  PetscErrorCode ierr,size=8,size1=6,size2=2, i,j;
+  Mat            A,A11,A12,A21,A22;
+  Vec            X,X1,X2,Y,Z,Z1,Z2;
+  PetscScalar    *a,*b,*x,*y,*z,v,one=1,mone=-1;
+  PetscReal      nrm;
+  PetscErrorCode ierr;
+  PetscInt       size=8,size1=6,size2=2, i,j;
 
   PetscInitialize(&argc,&argv,0,0);
 

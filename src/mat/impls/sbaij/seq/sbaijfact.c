@@ -22,7 +22,7 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,int *nneig,int *nzero,int *npos)
                *fi = fact_ptr->i;
 
   PetscFunctionBegin;
-  if (bs != 1) SETERRQ1(PETSC_ERR_SUP,"No support for bs: %d >1 yet",bs);
+  if (bs != 1) SETERRQ1(PETSC_ERR_SUP,"No support for bs: %D >1 yet",bs);
   nneig_tmp = 0; npos_tmp = 0;
   for (i=0; i<mbs; i++){
     if (PetscRealPart(dd[*fi]) > 0.0){
@@ -181,7 +181,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
 
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:for best performance.\n");
@@ -345,7 +345,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
 
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:for best performance.\n");
@@ -1279,14 +1279,14 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
           ndamp++;
           break; 
         } else if (PetscAbsScalar(dk) < zeropivot){
-          SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g",k,PetscRealPart(dk),zeropivot);  
+          SETERRQ3(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g",k,PetscRealPart(dk),zeropivot);  
         } else {
-          PetscLogInfo((PetscObject)A,"Negative pivot %g in row %d of Cholesky factorization\n",PetscRealPart(dk),k);
+          PetscLogInfo((PetscObject)A,"Negative pivot %g in row %D of Cholesky factorization\n",PetscRealPart(dk),k);
         }
       }
       
       /* save nonzero entries in k-th row of U ... */
-      /* printf("%d, dk: %g, 1/dk: %g\n",k,dk,1/dk); */
+      /* printf("%D, dk: %g, 1/dk: %g\n",k,dk,1/dk); */
       ba[bi[k]] = 1.0/dk;
       jmin      = bi[k]+1; 
       nz        = bi[k+1] - jmin; 
@@ -1312,10 +1312,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
   C->preallocated = PETSC_TRUE;
   PetscLogFlops(b->mbs);
   if (ndamp) {
-    PetscLogInfo(0,"MatCholeskyFactorNumerical_SeqSBAIJ_1_NaturalOrdering: number of damping tries %d damping value %g\n",ndamp,damping);
+    PetscLogInfo(0,"MatCholeskyFactorNumerical_SeqSBAIJ_1_NaturalOrdering: number of damping tries %D damping value %g\n",ndamp,damping);
   }
  if (nshift) {
-    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering diagonal shifted %d shifts\n",nshift);
+    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering diagonal shifted %D shifts\n",nshift);
   }
  
   PetscFunctionReturn(0);

@@ -53,7 +53,7 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
 
-  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",P->M,A->N);
+  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->M,A->N);
 
   if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 
@@ -144,7 +144,7 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
     ierr = MatGetLocalMat(P,scall,&ptap->B_loc);CHKERRQ(ierr);
 
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",scall);
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %D",scall);
   }
   /* now, compute numeric local P^T*A*P */
   ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr); 
@@ -416,7 +416,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       } 
     }
     if (nzi>0){
-      /* if (rank==1) printf(" [%d] set %d values on C, row: %d\n",rank,bnzi,crow); */
       ierr = MatSetValues(C,1,&crow,bnzi,bj_i,ba_i,ADD_VALUES);CHKERRQ(ierr);
       ierr = PetscMemzero(ba_i,bnzi*sizeof(MatScalar));CHKERRQ(ierr);
     }
@@ -497,8 +496,8 @@ PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
 
   PetscValidPointer(C,3);
 
-  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",P->M,A->N);
-  if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %d != %d",A->M,A->N);
+  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->M,A->N);
+  if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",A->M,A->N);
 
   /* For now, we do not dispatch based on the type of A and P */
   /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
@@ -826,10 +825,10 @@ PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C)
   if (!C->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  if (P->N!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",P->N,C->M);
-  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",P->M,A->N);
-  if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %d != %d",A->M,A->N);
-  if (P->N!=C->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",P->N,C->N);
+  if (P->N!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->N,C->M);
+  if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->M,A->N);
+  if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",A->M,A->N);
+  if (P->N!=C->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->N,C->N);
 
   /* For now, we do not dispatch based on the type of A and P */
   /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  

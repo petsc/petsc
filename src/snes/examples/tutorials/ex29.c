@@ -254,7 +254,7 @@ int main(int argc,char **argv)
 			 "skin_depth # = %g, larmor_radius # = %g\n",
 			 param.nu, param.eta, param.d_e, param.rho_s);CHKERRQ(ierr);
       ierr = DAGetInfo(DMMGGetDA(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Problem size %d by %d\n",m,n);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Problem size %D by %D\n",m,n);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"dx %g dy %g dt %g ratio dt/min(dx,dy) %g\n",lx/mx,ly/my,tsCtx.dt,dt_ratio);CHKERRQ(ierr);
     }
 
@@ -319,7 +319,7 @@ PetscErrorCode Gnuplot(DA da, Vec X, double time)
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       ierr = PetscFPrintf(PETSC_COMM_WORLD, f,
-                          "%d %d %g %g %g %g %g %g\n",
+                          "%D %D %g %g %g %g %g %g\n",
                           i, j, 0.0, 0.0,
                           PetscAbsScalar(x[j][i].U), PetscAbsScalar(x[j][i].F), 
                           PetscAbsScalar(x[j][i].phi), PetscAbsScalar(x[j][i].psi));CHKERRQ(ierr);
@@ -695,8 +695,8 @@ PetscErrorCode Update(DMMG *dmmg)
         SETERRQ(1, "unable to find a newton step");
 
       ierr = PetscPrintf(PETSC_COMM_WORLD,
-                         "time step = %d, time = %g, number of nonlinear steps = %d, "
-                         "number of linear steps = %d, norm of the function = %g\n",
+                         "time step = %D, time = %g, number of nonlinear steps = %D, "
+                         "number of linear steps = %D, norm of the function = %g\n",
 			 tsCtx->itstep + 1, tsCtx->t, its, lits, PetscAbsScalar(tsCtx->fnorm));CHKERRQ(ierr);
 
       /* send solution over to Matlab, to be visualized (using ex29.m) */
@@ -737,7 +737,7 @@ PetscErrorCode Update(DMMG *dmmg)
  
   if (!param->PreLoading){ 
     ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %d fnorm = %g\n",
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %D fnorm = %g\n",
 		       tsCtx->itstep, PetscAbsScalar(tsCtx->fnorm));CHKERRQ(ierr);
   }
 

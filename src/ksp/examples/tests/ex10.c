@@ -23,12 +23,14 @@ extern int paulintegrate20(PetscReal K[60][60]);
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         mat;
-  int         ierr,i,its,m = 3,rdim,cdim,rstart,rend,rank,size;
-  PetscScalar v,neg1 = -1.0;
-  Vec         u,x,b;
-  KSP         ksp;
-  PetscReal   norm;
+  Mat            mat;
+  PetscErrorCode ierr;
+  PetscInt       i,its,m = 3,rdim,cdim,rstart,rend;
+  PetscMPIInt    rank,size;
+  PetscScalar    v,neg1 = -1.0;
+  Vec            u,x,b;
+  KSP            ksp;
+  PetscReal      norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -69,7 +71,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&neg1,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Number of iterations %d\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Number of iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* Free work space */
   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
@@ -89,16 +91,17 @@ int main(int argc,char **args)
  */
 int GetElasticityMatrix(int m,Mat *newmat)
 {
-  int           i,j,k,i1,i2,j_1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
-  int           ict,nz,base,r1,r2,N,*rowkeep,nstart,ierr;
-  IS            iskeep;
-  PetscReal     **K,norm;
-  Mat           mat,submat = 0,*submatb;
-  const MatType type = MATSEQBAIJ;
+  PetscInt       i,j,k,i1,i2,j_1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
+  PetscInt       ict,nz,base,r1,r2,N,*rowkeep,nstart;
+  PetscErrorCode ierr;
+  IS             iskeep;
+  PetscReal      **K,norm;
+  Mat            mat,submat = 0,*submatb;
+  const MatType  type = MATSEQBAIJ;
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"m = %d, N=%d\n",m,N);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"m = %D, N=%D\n",m,N);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat);CHKERRQ(ierr); 
 
   /* Form stiffness for element */

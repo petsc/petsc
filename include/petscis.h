@@ -122,7 +122,7 @@ EXTERN PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscIn
   PetscInt _i,*_idx = (mapping)->indices,_Nmax = (mapping)->n;\
   for (_i=0; _i<N; _i++) {\
     if ((in)[_i] < 0) {(out)[_i] = (in)[_i]; continue;}\
-    if ((in)[_i] >= _Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %d too large %d (max) at %d",(in)[_i],_Nmax,_i);\
+    if ((in)[_i] >= _Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",(in)[_i],_Nmax,_i);\
     (out)[_i] = _idx[(in)[_i]];\
   }\
 }
@@ -165,7 +165,7 @@ struct _p_ISColoring {
   IS              *is;              /* for each color indicates columns */
   MPI_Comm        comm;
   ISColoringValue *colors;          /* for each column indicates color */
-  PetscInt             N;                /* number of columns */
+  PetscInt        N;                /* number of columns */
   ISColoringType  ctype;
 };
 typedef struct _p_ISColoring* ISColoring;

@@ -390,7 +390,7 @@ int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this 
      communicator to print the timestep information.
   */
-  ierr = PetscPrintf(appctx->comm,"Timestep %d: time = %g,2-norm error = %g, max norm error = %g\n",
+  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %g,2-norm error = %g, max norm error = %g\n",
               step,time,en2s,enmax);CHKERRQ(ierr);
 
   /*

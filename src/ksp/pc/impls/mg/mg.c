@@ -278,9 +278,9 @@ static PetscErrorCode PCSetFromOptions_MG(PC pc)
       if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
       levels = mg[0]->levels;
       for (i=0; i<levels; i++) {  
-        sprintf(eventname,"MSetup Level %d",i);
+        sprintf(eventname,"MSetup Level %d",(int)i);
         ierr = PetscLogEventRegister(&mg[i]->eventsetup,eventname,pc->cookie);CHKERRQ(ierr);
-        sprintf(eventname,"MGSolve Level %d",i);
+        sprintf(eventname,"MGSolve Level %d",(int)i);
         ierr = PetscLogEventRegister(&mg[i]->eventsolve,eventname,pc->cookie);CHKERRQ(ierr);
       }
     }
@@ -306,17 +306,17 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
-    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%d cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%D, pre-smooths=%D, post-smooths=%D\n",
                       cstring,levels,mg[0]->cycles,mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
     for (i=0; i<levels; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       if (mg[i]->smoothd == mg[i]->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(mg[i]->smoothu,viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -629,28 +629,28 @@ PetscErrorCode MGCheck(PC pc)
 
   for (i=1; i<n; i++) {
     if (!mg[i]->restrct) {
-      (*PetscErrorPrintf)("No restrict set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No restrict set level %D \n",n-i); count++;
     }    
     if (!mg[i]->interpolate) {
-      (*PetscErrorPrintf)("No interpolate set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No interpolate set level %D \n",n-i); count++;
     }
     if (!mg[i]->residual) {
-      (*PetscErrorPrintf)("No residual set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No residual set level %D \n",n-i); count++;
     }
     if (!mg[i]->smoothu) {
-      (*PetscErrorPrintf)("No smoothup set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No smoothup set level %D \n",n-i); count++;
     }  
     if (!mg[i]->smoothd) {
-      (*PetscErrorPrintf)("No smoothdown set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No smoothdown set level %D \n",n-i); count++;
     }
     if (!mg[i]->r) {
-      (*PetscErrorPrintf)("No r set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No r set level %D \n",n-i); count++;
     } 
     if (!mg[i-1]->x) {
-      (*PetscErrorPrintf)("No x set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No x set level %D \n",n-i); count++;
     }
     if (!mg[i-1]->b) {
-      (*PetscErrorPrintf)("No b set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No b set level %D \n",n-i); count++;
     }
   }
   PetscFunctionReturn(count);

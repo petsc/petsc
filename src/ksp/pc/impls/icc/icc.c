@@ -438,14 +438,14 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (icc->info.levels == 1) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d level of fill\n",(int)icc->info.levels);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %D level of fill\n",(PetscInt)icc->info.levels);CHKERRQ(ierr);
     } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d levels of fill\n",(int)icc->info.levels);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %D levels of fill\n",(PetscInt)icc->info.levels);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ICC: max fill ratio allocated %g\n",icc->info.fill);CHKERRQ(ierr);
     if (icc->info.shift) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," lvls=%d",(int)icc->info.levels);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," lvls=%D",(PetscInt)icc->info.levels);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCICC",((PetscObject)viewer)->type_name);
   }

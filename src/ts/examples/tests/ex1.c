@@ -198,7 +198,7 @@ int main(int argc,char **argv)
       }
     }
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs Avg. error 2 norm %g max norm %g %s\n",
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D Procs Avg. error 2 norm %g max norm %g %s\n",
                 size,appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);CHKERRQ(ierr);
   }
 
@@ -284,7 +284,7 @@ int Monitor(TS ts,int step,PetscReal ltime,Vec global,void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   if (!appctx->nox) {
-    ierr = PetscPrintf(comm,"timestep %d time %g norm of error %g %g\n",step,ltime,norm_2,norm_max);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"timestep %D time %g norm of error %g %g\n",step,ltime,norm_2,norm_max);CHKERRQ(ierr);
   }
 
   appctx->norm_2   += norm_2;

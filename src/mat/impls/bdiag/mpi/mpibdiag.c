@@ -85,7 +85,7 @@ PetscErrorCode MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   mat->insertmode = addv; /* in case this processor had no cache */
   ierr = MatStashScatterBegin_Private(&mat->stash,mbd->rowners);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"MatAssemblyBegin_MPIBDiag:Stash has %d entries,uses %d mallocs.\n",nstash,reallocs);
+  PetscLogInfo(0,"MatAssemblyBegin_MPIBDiag:Stash has %D entries,uses %D mallocs.\n",nstash,reallocs);
   PetscFunctionReturn(0);
 }
 
@@ -431,7 +431,7 @@ PetscErrorCode MatDestroy_MPIBDiag(Mat mat)
   Mat_SeqBDiag *ms = (Mat_SeqBDiag*)mbd->A->data;
 
   PetscFunctionBegin;
-  PetscLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d, BSize=%d, NDiag=%d",mat->M,mat->N,ms->bs,ms->nd);
+  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, BSize=%D, NDiag=%D",mat->M,mat->N,ms->bs,ms->nd);
 #else
   PetscFunctionBegin;
 #endif
@@ -481,13 +481,13 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       int nline = PetscMin(10,mbd->gnd),k,nk,np;
-      ierr = PetscViewerASCIIPrintf(viewer,"  block size=%d, total number of diagonals=%d\n",dmat->bs,mbd->gnd);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  block size=%D, total number of diagonals=%D\n",dmat->bs,mbd->gnd);CHKERRQ(ierr);
       nk = (mbd->gnd-1)/nline + 1;
       for (k=0; k<nk; k++) {
         ierr = PetscViewerASCIIPrintf(viewer,"  global diag numbers:");CHKERRQ(ierr);
         np = PetscMin(nline,mbd->gnd - nline*k);
         for (i=0; i<np; i++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"  %d",mbd->gdiag[i+nline*k]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"  %D",mbd->gdiag[i+nline*k]);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);        
       }
@@ -495,8 +495,8 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
         MatInfo info;
         ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
         ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mat->m,
-            (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] local rows %D nz %D nz alloced %D mem %D \n",rank,mat->m,
+            (PetscInt)info.nz_used,(PetscInt)info.nz_allocated,(PetscInt)info.memory);CHKERRQ(ierr);
         ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
         ierr = VecScatterView(mbd->Mvctx,viewer);CHKERRQ(ierr);
       }

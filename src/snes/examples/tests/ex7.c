@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   ierr = FormInitialGuess(snes,x);CHKERRQ(ierr);
   ierr = SNESSolve(snes,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
 
   /* Free data structures */
   if (user.variant) {
@@ -146,7 +146,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
 
   if (iter%2 ==0) { /* Compute new preconditioner matrix */
-    printf("iter=%d, computing new preconditioning matrix\n",iter+1);
+    printf("iter=%D, computing new preconditioning matrix\n",iter+1);
     *B = user->precond;
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     ierr = VecGetSize(x,&n);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
     *flag = SAME_NONZERO_PATTERN;
   }  else { /* reuse preconditioner from last iteration */
-    printf("iter=%d, using old preconditioning matrix\n",iter+1);
+    printf("iter=%D, using old preconditioning matrix\n",iter+1);
     *flag = SAME_PRECONDITIONER;
   }
   if (user->variant) {
@@ -188,7 +188,7 @@ int Monitor(SNES snes,int its,PetscReal fnorm,void *dummy)
   MPI_Comm   comm;
 
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,stdout,"iter = %d, SNES Function norm %g \n",its,fnorm);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,stdout,"iter = %D, SNES Function norm %g \n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;

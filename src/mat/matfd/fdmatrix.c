@@ -114,19 +114,19 @@ PetscErrorCode MatFDColoringView(MatFDColoring c,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",c->error_rel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors=%d\n",(int)c->ncolors);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors=%D\n",c->ncolors);CHKERRQ(ierr);
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format != PETSC_VIEWER_ASCII_INFO) {
       for (i=0; i<c->ncolors; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  Information for color %d\n",(int)i);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"    Number of columns %d\n",(int)c->ncolumns[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Information for color %D\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    Number of columns %D\n",c->ncolumns[i]);CHKERRQ(ierr);
         for (j=0; j<c->ncolumns[i]; j++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"      %d\n",(int)c->columns[i][j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"      %D\n",c->columns[i][j]);CHKERRQ(ierr);
         }
-        ierr = PetscViewerASCIIPrintf(viewer,"    Number of rows %d\n",(int)c->nrows[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"    Number of rows %D\n",c->nrows[i]);CHKERRQ(ierr);
         for (j=0; j<c->nrows[i]; j++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"      %d %d \n",(int)c->rows[i][j],(int)c->columnsforrow[i][j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"      %D %D \n",c->rows[i][j],c->columnsforrow[i][j]);CHKERRQ(ierr);
         }
       }
     }

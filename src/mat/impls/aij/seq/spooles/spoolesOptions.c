@@ -116,8 +116,8 @@ PetscErrorCode MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:   %s \n",s);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(viewer,"  tau:            %g \n",lu->options.tau);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  seed:           %d \n",lu->options.seed);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:         %d \n",lu->options.msglvl);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  seed:           %D \n",lu->options.seed);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:         %D \n",lu->options.msglvl);CHKERRQ(ierr);
 
   switch (lu->options.ordering) {
   case 0: s = "BestOfNDandMS"; break;  
@@ -126,18 +126,18 @@ PetscErrorCode MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   case 3: s = "ND"; break;
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       %s \n",s);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize:  %d \n",lu->options.maxdomainsize);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:       %d \n",lu->options.maxzeros);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:        %d \n",lu->options.maxsize);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  FrontMtxInfo:   %d \n",lu->options.FrontMtxInfo);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize:  %D \n",lu->options.maxdomainsize);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:       %D \n",lu->options.maxzeros);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:        %D \n",lu->options.maxsize);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  FrontMtxInfo:   %D \n",lu->options.FrontMtxInfo);CHKERRQ(ierr);
 
   if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  patchAndGoFlag: %d \n",lu->options.patchAndGoFlag);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  patchAndGoFlag: %D \n",lu->options.patchAndGoFlag);CHKERRQ(ierr);
     if ( lu->options.patchAndGoFlag > 0 ) {
       ierr = PetscViewerASCIIPrintf(viewer,"  fudge:          %g \n",lu->options.fudge);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  toosmall:       %g \n",lu->options.toosmall);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  storeids:       %d \n",lu->options.storeids);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  storevalues:    %d \n",lu->options.storevalues);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  storeids:       %D \n",lu->options.storeids);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  storevalues:    %D \n",lu->options.storevalues);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

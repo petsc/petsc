@@ -212,7 +212,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   /* Determine the number of messages to expect, their lengths, from from-ids */
   ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,len_s,&nrqr);CHKERRQ(ierr);
   ierr = PetscGatherMessageLengths(comm,nrqs,nrqr,len_s,&id_r1,&len_r1);CHKERRQ(ierr); 
-  /* ierr = PetscPrintf(PETSC_COMM_SELF, "[%d] nrqs: %d, nrqr: %d\n",rank,nrqs,nrqr); */
   
   /*  Now  post the sends */
   ierr = PetscMalloc(2*size*sizeof(MPI_Request),&s_waits1);CHKERRQ(ierr);
@@ -230,7 +229,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   len = 0;
   for (i=0; i<nrqr; i++){
     if (len_r1[i] > len)len = len_r1[i];
-    /* ierr = PetscPrintf(PETSC_COMM_SELF, "[%d] expect to recv len=%d from [%d]\n",rank,len_r1[i],id_r1[i]); */
   }
   ierr = PetscFree(len_r1);CHKERRQ(ierr);
   ierr = PetscFree(id_r1);CHKERRQ(ierr);
@@ -258,7 +256,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       proc_id = r_status.MPI_SOURCE;
       ierr = MPI_Irecv(odata1,len,MPI_INT,proc_id,r_status.MPI_TAG,comm,&r_req);CHKERRQ(ierr);
       ierr = MPI_Wait(&r_req,&r_status);CHKERRQ(ierr);
-      /* ierr = PetscPrintf(PETSC_COMM_SELF, " [%d] recv %d from [%d]\n",rank,len,proc_id); */
 
       /*  Process messages */
       /*  make sure there is enough unused space in odata2 array */
@@ -266,7 +263,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
         ierr = PetscMalloc((len_est+1)*sizeof(int),&odata2);CHKERRQ(ierr);
         odata2_ptr[++nodata2] = odata2;
         len_unused = len_est;
-        /* ierr = PetscPrintf(PETSC_COMM_SELF, " [%d] 2. Malloc odata2, nodata2: %d\n",rank,nodata2); */
       }
 
       ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,odata1,OTHER,odata2,&otable);CHKERRQ(ierr);
@@ -277,7 +273,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 
       /* Send messages back */
       ierr = MPI_Isend(odata2,len,MPI_INT,proc_id,tag2,comm,s_waits2+k);CHKERRQ(ierr);
-      /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] send %d back to [%d] \n",rank,len,proc_id); */
       k++;
       odata2     += len;
       len_unused -= len;
@@ -295,7 +290,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
     ierr = PetscMalloc((len_est+1)*sizeof(int),&odata2);CHKERRQ(ierr);
     odata2_ptr[++nodata2] = odata2;
     len_unused = len_est;
-    /* ierr = PetscPrintf(PETSC_COMM_SELF, " [%d] 3. Malloc data2, nodata2: %d\n",rank,nodata2); */
   }
 
   data = odata2;
@@ -306,7 +300,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   /*------------------------------------------------------*/
   /* get max number of messages that this processor expects to recv */
   ierr = MPI_Allreduce(len_s,iwork,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] expects max_len=%d of data2 from others \n",rank,iwork[rank]); */
   ierr = PetscMalloc((iwork[rank]+1)*sizeof(int),&data2);CHKERRQ(ierr);
   ierr = PetscFree(len_s);CHKERRQ(ierr);
 
@@ -319,7 +312,6 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
       proc_id = r_status.MPI_SOURCE;
       ierr = MPI_Irecv(data2,len,MPI_INT,proc_id,r_status.MPI_TAG,comm,&r_req);CHKERRQ(ierr);
       ierr = MPI_Wait(&r_req,&r_status);CHKERRQ(ierr);
-      /* ierr = PetscPrintf(PETSC_COMM_SELF," [%d] recv %d from [%d], data2:\n",rank,len,proc_id); */
       if (len > 1+is_max){ /* Add data2 into data */
         data2_i = data2 + 1 + is_max;
         for (i=0; i<is_max; i++){
@@ -433,7 +425,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whos
     isz0 = 0; col_max = 0;
     for (j=0; j<n; j++){
       col = idx_i[j]; 
-      if (col >= Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"index col %d >= Mbs %d",col,Mbs);
+      if (col >= Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"index col %D >= Mbs %D",col,Mbs);
       if(!PetscBTLookupSet(table_i,col)) { 
         ierr = PetscBTSet(table0,col);CHKERRQ(ierr);
         if (whose == MINE) {nidx_i[isz0] = col;}

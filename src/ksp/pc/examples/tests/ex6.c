@@ -27,12 +27,13 @@ int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i,m = 2,N,M,ierr,idx[4],Nsub1,Nsub2,ol=1,x1,x2;
-  PetscScalar Ke[16];
-  PetscReal   x,y,h;
-  IS          *is1,*is2;
-  PetscTruth  flg;
+  Mat            C; 
+  PetscErrorCode ierr;
+  PetscInt       i,m = 2,N,M,idx[4],Nsub1,Nsub2,ol=1,x1,x2;
+  PetscScalar    Ke[16];
+  PetscReal      x,y,h;
+  IS             *is1,*is2;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -73,7 +74,7 @@ int main(int argc,char **args)
     
     for (i=0; i<Nsub1; ++i) {
       ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"i =  %d,flg = %d \n",i,flg);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"i =  %D,flg = %d \n",i,(int)flg);CHKERRQ(ierr);
       
     }
     for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(is1[i]);CHKERRQ(ierr);}

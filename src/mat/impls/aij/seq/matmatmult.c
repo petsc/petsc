@@ -52,7 +52,7 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
-  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
+  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->M,A->N);
 
   if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 
@@ -83,7 +83,7 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
   } else if (scall == MAT_REUSE_MATRIX){
     ierr = MatMatMultNumeric_MPIAIJ_MPIAIJ(A,B,*C);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",scall);
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   }
   PetscFunctionReturn(0);
 }
@@ -147,7 +147,7 @@ PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C)
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
 
-  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
+  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->M,A->N);
   if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 
   /* For now, we do not dispatch based on the type of A and P */
@@ -206,7 +206,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
  
   PetscFunctionBegin;
   if (a->cstart != b->rstart || a->cend != b->rend){
-    SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%d, %d) != (%d,%d)",a->cstart,a->cend,b->rstart,b->rend);
+    SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",a->cstart,a->cend,b->rstart,b->rend);
   }
   ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
 
@@ -316,7 +316,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->nonew    = 0;
 
   if (nspacedouble){
-    PetscLogInfo((PetscObject)(*C),"MatMatMultSymbolic_SeqAIJ_SeqAIJ: nspacedouble:%d, nnz(A):%d, nnz(B):%d, fill:%g, nnz(C):%d\n",nspacedouble,ai[am],bi[bm],fill,ci[am]);
+    PetscLogInfo((PetscObject)(*C),"MatMatMultSymbolic_SeqAIJ_SeqAIJ: nspacedouble:%D, nnz(A):%D, nnz(B):%D, fill:%g, nnz(C):%D\n",nspacedouble,ai[am],bi[bm],fill,ci[am]);
   }
   PetscFunctionReturn(0);
 }
@@ -371,9 +371,9 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
   if (!C->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
-  if (B->N!=C->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->N,C->N);
-  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
-  if (A->M!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",A->M,C->M);
+  if (B->N!=C->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->N,C->N);
+  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->M,A->N);
+  if (A->M!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",A->M,C->M);
 
   /* For now, we do not dispatch based on the type of A and B */
   /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
@@ -519,7 +519,7 @@ PetscErrorCode MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
-  if (B->M!=A->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->M);
+  if (B->M!=A->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->M,A->M);
 
   if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 

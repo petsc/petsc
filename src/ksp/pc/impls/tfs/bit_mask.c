@@ -141,7 +141,7 @@ div_ceil(register int numer, register int denom)
   register int rt_val;
 
   if ((numer<0)||(denom<=0))
-    {error_msg_fatal("div_ceil() :: numer=%d ! >=0, denom=%d ! >0",numer,denom);}
+    {error_msg_fatal("div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);}
 
   /* if integer division remainder then increment */
   rt_val = numer/denom;
