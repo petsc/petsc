@@ -77,6 +77,7 @@ typedef struct {
   char           *prefix;                                 \
   void           *cpp;                                    \
   int            amem;                                    \
+  int            state;                                   \
   void           (**fortran_func_pointers)(void);       
 
   /*  ... */                               
@@ -262,6 +263,8 @@ struct _p_PetscObject {
 
 EXTERN int PetscObjectPublishBaseBegin(PetscObject);
 EXTERN int PetscObjectPublishBaseEnd(PetscObject);
+EXTERN int PetscObjectIncreaseState(PetscObject);
+EXTERN int PetscObjectGetState(PetscObject obj,int*);
 
 PETSC_EXTERN_CXX_END
 #endif /* _PETSCHEAD_H */
