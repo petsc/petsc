@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.62 1996/01/15 23:48:01 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.63 1996/01/16 17:42:40 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -197,7 +197,7 @@ int PLogStagePush(int stage)
   return 0;
 }
 
-/*@
+/*@C
    PLogStagePop - Users can log up to 10 stages within a code by using
    -log_summary in conjunction with PLogStagePush() and PLogStagePop().
 
@@ -918,7 +918,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
 
 #endif
 
-/*@
+/*@C
    PetscGetTime - Returns the current time of day in seconds.  
 
    Output Parameter:
