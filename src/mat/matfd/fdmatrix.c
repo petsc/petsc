@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.61 2000/05/05 22:16:39 balay Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.62 2000/05/13 04:18:00 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -37,7 +37,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   int         ierr;
   PetscTruth  isnull;
   Draw        draw;
-  PetscReal   xr,yr,xl,yl,h,w,x,y;
+  PetscReal   xr,yr,xl,yl,h,w;
 
   PetscFunctionBegin;
   ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -46,7 +46,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
   ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",(PetscObject)viewer);CHKERRQ(ierr);
 
   xr  = fd->N; yr = fd->M; h = yr/10.0; w = xr/10.0; 
-  xr += w;    yr += h;  xl = -w;     yl = -h;
+  xr += w;     yr += h;    xl = -w;     yl = -h;
   ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   ierr = DrawZoom(draw,MatFDColoringView_Draw_Zoom,fd);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)fd,"Zoomviewer",PETSC_NULL);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.349 2000/05/10 16:40:36 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.350 2000/05/11 04:51:42 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -467,22 +467,12 @@ int MatView_SeqAIJ_Draw_Zoom(Draw draw,void *Aa)
 {
   Mat         A = (Mat) Aa;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
-  int         ierr,i,j,m = a->m,shift = a->indexshift,color,rank;
+  int         ierr,i,j,m = a->m,shift = a->indexshift,color;
   int         format;
   PetscReal   xl,yl,xr,yr,x_l,x_r,y_l,y_r,maxv = 0.0;
   Viewer      viewer;
-  MPI_Comm    comm;
 
   PetscFunctionBegin; 
-  /*
-      This is nasty. If this is called from an originally parallel matrix
-   then all processes call this,but only the first has the matrix so the
-   rest should return immediately.
-  */
-  ierr = PetscObjectGetComm((PetscObject)draw,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (rank) PetscFunctionReturn(0);
-
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr); 
   ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
 
