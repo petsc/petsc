@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.82 1996/03/02 01:05:36 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.83 1996/03/08 15:41:21 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -714,7 +714,8 @@ extern int  *MPEFlag,UseMPE;
 
     Input Parameter:
 .   string - name associated with the event
-.   color - string giving a color for displaying event
+.   color - string giving a color for displaying event, and the display
+            pattern ( used by upshot/ nupshot) eg - "red:", "green:vlines3"
 
     Output Parameter:
 .   e -  event id for use with PLogEventBegin() and End().
@@ -724,7 +725,11 @@ extern int  *MPEFlag,UseMPE;
     compiled with -DPETSC_LOG (which is the default) and -log,
     -log_summary, or -log_all are specified.  PLogEventRegister() is
     intended for logging user events to supplement this PETSc
-    information.
+    information. If PETSc is compiled with flag -DHAVE_MPE, 
+    (MPE is additional utilities which come with the MPICH distibution)
+    the user can use another command line option -log_mpe. This 
+    creates a logfile "mpe.log", which can be visualised using the utility
+    upshot/nupshot which comes along with MPICH distibution.
 
     Example of Usage:
 $     int USER_EVENT;
