@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.109 2000/05/05 22:15:27 balay Exp bsmith $ */
+/* $Id: matimpl.h,v 1.110 2000/05/10 16:40:28 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -26,7 +26,7 @@ struct _MatOps {
             (*solveadd)(Mat,Vec,Vec,Vec),
             (*solvetranspose)(Mat,Vec,Vec),
 /*10*/      (*solvetransposeadd)(Mat,Vec,Vec,Vec),
-            (*lufactor)(Mat,IS,IS,double),
+            (*lufactor)(Mat,IS,IS,MatLUInfo*),
             (*choleskyfactor)(Mat,IS,double),
             (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),
             (*transpose)(Mat,Mat *),
@@ -41,7 +41,7 @@ struct _MatOps {
             (*setoption)(Mat,MatOption),
             (*zeroentries)(Mat),
 /*25*/      (*zerorows)(Mat,IS,Scalar *),
-            (*lufactorsymbolic)(Mat,IS,IS,double,Mat *),
+            (*lufactorsymbolic)(Mat,IS,IS,MatLUInfo*,Mat *),
             (*lufactornumeric)(Mat,Mat *),
             (*choleskyfactorsymbolic)(Mat,IS,double,Mat *),
             (*choleskyfactornumeric)(Mat,Mat *),
@@ -65,7 +65,7 @@ struct _MatOps {
             (*printhelp)(Mat),
             (*scale)(Scalar *,Mat),
             (*shift)(Scalar *,Mat),
-/*50*/      (*diagonalshift)(Vec,Mat),
+/*50*/      (*diagonalset)(Mat,Vec,InsertMode),
             (*iludtfactor)(Mat,MatILUInfo*,IS,IS,Mat *),
             (*getblocksize)(Mat,int *),
             (*getrowij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
@@ -204,12 +204,18 @@ struct _p_MatPartitioning {
     nrows         = {4,2,3,3}
     rows          = {{0,1,2,3},{0,1},{1,2,3},{0,1,2}}
     columnsforrow = {{0,0,2,2},{1,1},{4,3,3},{5,5,5}}
+    vscaleforrow  = {{,,,},{,},{,,},{,,}}
+    vwscale       = {dx(0),dx(1),dx(2),dx(3)}               MPI Vec
+    vscale        = {dx(0),dx(1),dx(2),dx(3),dx(4),dx(5)}   Seq Vec
 
     ncolumns      = {1,0,1,1}
     columns       = {{6},{},{4},{5}}
     nrows         = {3,0,2,2}
     rows          = {{0,1,2},{},{1,2},{1,2}}
     columnsforrow = {{6,0,6},{},{4,4},{5,5}}
+    vscaleforrow =  {{,,},{},{,},{,}}
+    vwscale       = {dx(4),dx(5),dx(6)}              MPI Vec
+    vscale        = {dx(0),dx(4),dx(5),dx(6)}        Seq Vec
 
     See the routine MatFDColoringApply() for how this data is used
     to compute the Jacobian.
@@ -218,21 +224,22 @@ struct _p_MatPartitioning {
 
 struct  _p_MatFDColoring{
   PETSCHEADER(int)
-  int    M,N,m;          /* total rows, columns; local rows */
+  int    M,N,m;            /* total rows, columns; local rows */
   int    rstart;           /* first row owned by local processor */
   int    ncolors;          /* number of colors */
   int    *ncolumns;        /* number of local columns for a color */ 
   int    **columns;        /* lists the local columns of each color (using global column numbering) */
   int    *nrows;           /* number of local rows for each color */
   int    **rows;           /* lists the local rows for each color (using the local row numbering) */
-  int    **columnsforrow;  /* lists the corresponding columns for those rows (using the global column numbering) */ 
-  Scalar *scale,*wscale;  /* workspace used to hold FD scalings */
+  int    **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */ 
   double error_rel;        /* square root of relative error in computing function */
   double umin;             /* minimum allowable u'dx value */
   int    freq;             /* frequency at which new Jacobian is computed */
-  Vec    w1,w2,w3;       /* work vectors used in computing Jacobian */
+  Vec    w1,w2,w3;         /* work vectors used in computing Jacobian */
   int    (*f)(void);       /* function that defines Jacobian */
   void   *fctx;            /* optional user-defined context for use by the function f */
+  int    **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
+  Vec    vscale;   /* holds FD scaling, i.e. 1/dx for each perturbed column */
 };
 
 
