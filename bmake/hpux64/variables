@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.2 2000/07/13 22:08:48 balay Exp balay $ 
+# $Id: base_variables,v 1.3 2000/09/27 18:33:54 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -19,7 +19,7 @@ C_CLINKER	   = cc +DA2.0W
 C_FLINKER	   = f90 +DA2.0W
 C_CCV		   = unknown
 C_FCV		   = unknown
-C_SYS_LIB	   = -L/opt/fortran90/lib/pa20_64 -lU77 -lF90 -lcl
+C_SYS_LIB	   = -L/opt/fortran90/lib/pa20_64 -lU77 -lF90 -lcl -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
@@ -29,16 +29,16 @@ O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
 #
 #CXX_CC		   = CC -Aa +z -ext +eh 
-#CXX_CC		   = KCC +DA2.0W
-CXX_CC		   = aCC +DA2.0W -Aa +z -ext
+#CXX_CC		   = aCC +DA2.0W -Aa +z -ext
+CXX_CC		   = KCC +DA2.0W
 CXX_FC		   = f90 +DA2.0W +z
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-#CXX_CLINKER	   = KCC +DA2.0W
-CXX_CLINKER	   = aCC +DAD2.0W
-CXX_FLINKER	   = f90 +DA2.0W
+#CXX_CLINKER	   = aCC +DA2.0W
+CXX_CLINKER	   = KCC +DA2.0W
+CXX_FLINKER	   = KCC +DA2.0W
 CXX_CCV		   = unknown
-CXX_SYS_LIB	   = -L/opt/fortran90/lib/pa20_64 -lF90 -lU77 -lcl
+CXX_SYS_LIB	   = -L/opt/fortran90/lib/pa20_64 -lF90 -lU77 -lcl -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g
