@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.259 1999/02/01 21:54:04 balay Exp balay $ 
+# $Id: makefile,v 1.260 1999/02/01 22:10:18 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -212,6 +212,7 @@ etags_complete:
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_makefile alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE etags_bmakefiles
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_docs alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_scripts alltree
 	-chmod g+w TAGS_COMPLETE
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
