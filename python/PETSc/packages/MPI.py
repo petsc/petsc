@@ -67,9 +67,7 @@ class Configure(config.base.Configure):
     oldLibs  = self.framework.argDB['LIBS']
     for inc in self.include:
       self.framework.argDB['CPPFLAGS'] += ' -I'+inc
-    for lib in self.lib:
-      self.framework.argDB['LIBS'] += ' '+self.libraries.getLibArgument(lib)
-    self.framework.argDB['LIBS'] += ' '+self.compilers.flibs
+    self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
     if self.checkLink(includes, body, cleanup, codeBegin, codeEnd):
       success = 1
     self.framework.argDB['CPPFLAGS'] = oldFlags
@@ -82,9 +80,7 @@ class Configure(config.base.Configure):
     oldLibs  = self.framework.argDB['LIBS']
     for inc in self.include:
       self.framework.argDB['CPPFLAGS'] += ' -I'+inc
-    for lib in self.lib:
-      self.framework.argDB['LIBS'] += ' '+self.libraries.getLibArgument(lib)
-    self.framework.argDB['LIBS'] += ' '+self.compilers.flibs
+    self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
     output, status = self.outputRun(includes, body, cleanup)
     self.framework.argDB['CPPFLAGS'] = oldFlags
     self.framework.argDB['LIBS']     = oldLibs

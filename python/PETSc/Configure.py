@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','_snprintf']
-    libraries = [('dl', 'dlopen'),(['socket','nsl'],'socket')]
+    libraries = [(['socket', 'nsl'], 'socket')]
     self.setCompilers = self.framework.require('config.setCompilers', self)
     self.compilers    = self.framework.require('config.compilers',    self)
     self.types        = self.framework.require('config.types',        self)
