@@ -9,6 +9,6 @@ set RCP=rcp
 source /sandbox/petsc/petsc-test/bmake/$1/buildtest
 
 if ( ! -r /home/petsc/logs/nightly/examples_$ARCH.$BOPT.$MACH.log ) then
-  $RCP $MACH:$TMP/maint/examples_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly
+  $RCP ${MACH}:$TMP/maint/examples_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly
 #  $RSH $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly";
 endif
