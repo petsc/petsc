@@ -36,13 +36,12 @@
 
 M*/
 
-   See snesmfjdef.c for  a full set of comments on the routines below.
-*/
-
 /*
     This include file defines the data structure  MatSNESMF that 
    includes information about the computation of h. It is shared by 
    all implementations that people provide.
+
+   See snesmfjdef.c for  a full set of comments on the routines below.
 */
 #include "src/mat/matimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
