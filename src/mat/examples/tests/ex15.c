@@ -15,6 +15,7 @@ int main(int argc,char **args)
   IS          perm,iperm;
   Vec         x,u,b,y;
   PetscReal   norm;
+  MatLUInfo   info;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -57,11 +58,16 @@ int main(int argc,char **args)
   ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %g\n",norm);CHKERRQ(ierr);
 
-  ierr = MatLUFactor(C,perm,iperm,PETSC_NULL);CHKERRQ(ierr);
+  info.fill = 2.0;
+  info.dtcol = 0.0; 
+  info.damping = 0.0; 
+  info.zeropivot = 1.e-14; 
+  info.pivotinblocks = 1.0; 
+  ierr = MatLUFactor(C,perm,iperm,&info);CHKERRQ(ierr); 
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Test MatSolve */
-  ierr = MatSolve(C,b,x);CHKERRQ(ierr);
+  ierr = MatSolve(C,b,x);CHKERRQ(ierr); 
   ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecAXPY(&mone,u,x);CHKERRQ(ierr);
@@ -69,8 +75,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
 
   /* Test MatSolveAdd */
-  ierr = MatSolveAdd(C,b,y,x);CHKERRQ(ierr);
-
+  ierr = MatSolveAdd(C,b,y,x);CHKERRQ(ierr); 
   ierr = VecAXPY(&mone,y,x);CHKERRQ(ierr);
   ierr = VecAXPY(&mone,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
