@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.87 1997/08/22 15:13:29 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.88 1997/09/18 16:06:33 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -372,7 +372,7 @@ int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
   VecGetArray_Fast(bb,b); 
   VecGetArray_Fast(xx,x); 
 
-#if defined(USE_FORTRAN_KERNELS_N)
+#if defined(USE_FORTRAN_KERNELS)
   fortransolveaij_(&n,x,ai,aj,adiag,aa,b);
 #else
   /* forward solve the lower triangular */
