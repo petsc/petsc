@@ -154,7 +154,7 @@ class UsingPython(UsingCompiler):
     try:
       import Numeric
     except ImportError, e:
-      raise RuntimeError("BS requires Numeric Python to be installed: "+str(e))
+      raise RuntimeError("BS requires Numeric Python (http://www.pfdubois.com/numpy) to be installed: "+str(e))
 
   def setupIncludeDirectories(self):
     try:
