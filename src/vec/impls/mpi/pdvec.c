@@ -187,7 +187,8 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
 
   if (!rank) {
-    ierr = PetscBinaryWrite(fdes,&xin->cookie,1,PETSC_INT,0);CHKERRQ(ierr);
+    int cookie = VEC_FILE_COOKIE;
+    ierr = PetscBinaryWrite(fdes,&cookie,1,PETSC_INT,0);CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fdes,&xin->N,1,PETSC_INT,0);CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fdes,xarray,xin->n,PETSC_SCALAR,0);CHKERRQ(ierr);
 

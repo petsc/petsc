@@ -193,13 +193,13 @@ static int VecView_Seq_Draw(Vec xin,PetscViewer v)
 static int VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  int      ierr,fdes,n = xin->n;
+  int      ierr,fdes,n = xin->n,cookie=VEC_FILE_COOKIE;
   FILE     *file;
 
   PetscFunctionBegin;
   ierr  = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
   /* Write vector header */
-  ierr = PetscBinaryWrite(fdes,&xin->cookie,1,PETSC_INT,0);CHKERRQ(ierr);
+  ierr = PetscBinaryWrite(fdes,&cookie,1,PETSC_INT,0);CHKERRQ(ierr);
   ierr = PetscBinaryWrite(fdes,&n,1,PETSC_INT,0);CHKERRQ(ierr);
 
   /* Write vector contents */

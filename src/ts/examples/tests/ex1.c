@@ -125,7 +125,8 @@ int main(int argc,char **argv)
   }
     
   /* make timestep context */
-  ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts);CHKERRQ(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetProblemType(ts,tsproblem);CHKERRQ(ierr);
   ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
 
   dt = appctx.h*appctx.h/2.01;

@@ -99,7 +99,8 @@ int main(int argc,char **argv)
   /* 
      Create timestepper context 
   */
-  ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRQ(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
+  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
 
   /*
      Tell the timestepper context where to compute solutions
