@@ -9,8 +9,7 @@ if __name__ == '__main__':
 	'--with-fc=ifc',
 	'--with-cxx=0',
 	'--with-blas-lapack-dir=/home/petsc/soft/linux-rh73-intel/fblaslapack',
-        '--with-mpi=0',
-        '-PETSC_ARCH='+configure.getarch()
+        '--with-mpi=0'
         ]
 
     configure.petsc_configure(configure_options)

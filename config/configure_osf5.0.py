@@ -10,8 +10,7 @@ if __name__ == '__main__':
         '--with-mpi-lib=/home/petsc/software/mpich-1.2.2.3/alpha/lib/libmpich.a',
         '--with-mpirun=mpirun',
         '--with-blas=/home/petsc/software/fblaslapack/alpha/libfblas.a',
-        '--with-lapack=/home/petsc/software/fblaslapack/alpha/libflapack.a',
-        '-PETSC_ARCH='+configure.getarch()
+        '--with-lapack=/home/petsc/software/fblaslapack/alpha/libflapack.a'
         ]
 
     configure.petsc_configure(configure_options)

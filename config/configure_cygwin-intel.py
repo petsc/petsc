@@ -11,8 +11,7 @@ if __name__ == '__main__':
     '--with-mpi-compilers=0',
     # Using Intel's MKL available from http://www.intel.com
     '--with-blas-lapack=/software/BLAS/MKL/ia32/lib/mkl_c_dll.lib',
-    '--with-vendor-compilers=intel',
-    '-PETSC_ARCH='+configure.getarch()
+    '--with-vendor-compilers=intel'
     ]
 
     configure.petsc_configure(configure_options)

@@ -14,8 +14,7 @@ if __name__ == '__main__':
     '--with-cc=win32fe cl',
     '--with-cxx=win32fe cl',
     # Using Compaq FORTRAN Compiler
-    '--with-fc=win32fe f90',
-    '-PETSC_ARCH='+configure.getarch()
+    '--with-fc=win32fe f90'
     ]
 
     configure.petsc_configure(configure_options)

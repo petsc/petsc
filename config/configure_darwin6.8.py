@@ -7,8 +7,7 @@ if __name__ == '__main__':
 
     configure_options = [
     '--with-mpi-dir=/Users/petsc/software/mpich-1.2.5.2',
-    '--with-mpi-compilers=0',
-    '-PETSC_ARCH='+configure.getarch()
+    '--with-mpi-compilers=0'
     ]
 
     configure.petsc_configure(configure_options)
