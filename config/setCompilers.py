@@ -14,18 +14,18 @@ class Configure(config.base.Configure):
     desc = ['Compilers:']
     if 'CC' in self.framework.argDB:
       self.pushLanguage('C')
-      desc.append('  C Compiler:         '+self.getCompiler()+' '+self.compilerFlags)
-      if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker()+' '+self.linkerFlags)
+      desc.append('  C Compiler:         '+self.getCompiler()+' '+self.getCompilerFlags())
+      if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     if 'CXX' in self.framework.argDB:
       self.pushLanguage('Cxx')
-      desc.append('  C++ Compiler:       '+self.getCompiler()+' '+self.compilerFlags)
-      if not self.getLinker() == self.getCompiler(): desc.append('  C++ Linker:         '+self.getLinker()+' '+self.linkerFlags)
+      desc.append('  C++ Compiler:       '+self.getCompiler()+' '+self.getCompilerFlags())
+      if not self.getLinker() == self.getCompiler(): desc.append('  C++ Linker:         '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     if 'FC' in self.framework.argDB:
       self.pushLanguage('F77')
-      desc.append('  Fortran Compiler:   '+self.getCompiler()+' '+self.compilerFlags)
-      if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:     '+self.getLinker()+' '+self.linkerFlags)
+      desc.append('  Fortran Compiler:   '+self.getCompiler()+' '+self.getCompilerFlags())
+      if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:     '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
     return '\n'.join(desc)+'\n'
 
@@ -76,12 +76,12 @@ class Configure(config.base.Configure):
     '''Check that the given compiler is functional, and if not raise an exception'''
     self.pushLanguage(language)
     if not self.checkCompile():
-      raise RuntimeError('Cannot compile '+language+' with '+self.compiler+'.')
+      raise RuntimeError('Cannot compile '+language+' with '+self.getCompiler()+'.')
     if not self.checkLink():
       if hasattr(self, 'linker'):
-        raise RuntimeError('Cannot link '+language+' with '+self.linker+'.')
+        raise RuntimeError('Cannot link '+language+' with '+self.getLinker()+'.')
       else:
-        raise RuntimeError('Cannot compile '+language+' with '+self.compiler+'.')
+        raise RuntimeError('Cannot compile '+language+' with '+self.getCompiler()+'.')
     if self.framework.argDB['can-execute']:
       if not self.checkRun():
         raise RuntimeError('Cannot run executables created with '+language+'.')
@@ -288,7 +288,7 @@ class Configure(config.base.Configure):
     for compiler in self.generateCxxCompilerGuesses():
       # Determine an acceptable extensions for the C++ compiler
       for ext in ['.cc', '.cpp', '.C']:
-        self.framework.cxxExt = ext
+        self.framework.getCompilerObject('C++').sourceExtension = ext
         try:
           if self.getExecutable(compiler, resultName = 'CXX'):
             self.framework.argDB['CXX'] = self.CXX
@@ -308,7 +308,6 @@ class Configure(config.base.Configure):
           if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
             self.framework.log.write('  MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
           self.popLanguage()
-          self.framework.cxxExt = None
           del self.framework.argDB['CXX']
       if 'CXX' in self.framework.argDB:
         break
