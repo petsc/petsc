@@ -1,4 +1,4 @@
-/* $Id: win32draw.c,v 1.4 2000/08/03 19:28:52 balay Exp balay $ */
+/* $Id: win32draw.c,v 1.5 2000/08/03 20:03:15 balay Exp balay $ */
 #include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
 #include "win32draw.h"
@@ -65,7 +65,7 @@ static int DrawSetDoubleBuffer_Win32(Draw draw)
          0,0,
          SRCCOPY);
 
-  windraw->node->DoubleBuffered = 1;
+  windraw->node->DoubleBuffered = PETSC_TRUE;
   ReleaseDC(windraw->hWnd,hdc);
   PetscFunctionReturn(0);
 }
@@ -495,7 +495,7 @@ static int DrawResizeWindow_Win32(Draw draw,int w,int h)
   if(windraw->node->DoubleBuffered) {
     SetBitmapDimensionEx(windraw->node->DoubleBufferBit,w,h,NULL);
   }
-  windraw->haveresized = 1;
+  windraw->haveresized = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -792,7 +792,7 @@ static int DrawGetPopup_Win32(Draw draw,Draw *popdraw)
   ierr = PetscMemcpy((*popdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   
   pop->hReadyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-  CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)PopMessageLoopThread_Win32,*popdraw,0,hThread);
+  CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)PopMessageLoopThread_Win32,*popdraw,0,(unsigned long*)hThread);
   CloseHandle(hThread);
   WaitForSingleObject(pop->hReadyEvent, INFINITE);
   CloseHandle(pop->hReadyEvent);
@@ -828,7 +828,7 @@ static int DrawGetPopup_Win32(Draw draw,Draw *popdraw)
   
   
   newnode->event          = CreateEvent(NULL, TRUE, FALSE, NULL);
-  newnode->DoubleBuffered = 0;
+  newnode->DoubleBuffered = PETSC_FALSE;
   
   ReleaseDC(pop->hWnd,pop->hdc);
   ReleaseMutex(g_hWindowListMutex);
@@ -855,7 +855,7 @@ int DrawCreate_Win32(Draw draw)
   
   windraw->hReadyEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
   /* makes call to MessageLoopThread to creat window and attach a thread */
-  CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)MessageLoopThread_Win32,draw,0,hThread);
+  CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)MessageLoopThread_Win32,draw,0,(unsigned long*)hThread);
   CloseHandle(hThread);
   WaitForSingleObject(windraw->hReadyEvent,INFINITE);
   CloseHandle(windraw->hReadyEvent);
@@ -891,7 +891,7 @@ int DrawCreate_Win32(Draw draw)
   ExtFloodFill(newnode->Buffer,0,0,COLOR_WINDOW,FLOODFILLBORDER);
   
   newnode->event          = CreateEvent(NULL,TRUE,FALSE,NULL);
-  newnode->DoubleBuffered = 0;
+  newnode->DoubleBuffered = PETSC_FALSE;
   
   ReleaseDC(windraw->hWnd,windraw->hdc);
   ReleaseMutex(g_hWindowListMutex);
