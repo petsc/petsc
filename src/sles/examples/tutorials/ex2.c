@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.41 1996/08/04 20:40:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.42 1996/08/16 02:20:45 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  To test the\n\
@@ -30,7 +30,7 @@ int main(int argc,char **args)
   Mat     A;            /* linear system matrix */
   SLES    sles;         /* linear solver context */
   double  norm;
-  int     i, j, I, J, Istart, Iend, ierr, m = 3, n = 2, its, flg;
+  int     i, j, I, J, Istart, Iend, ierr, m = 8, its, flg;
   Scalar  v, one = 1.0, none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   /* Create parallel matrix.  When using MatCreate(), the matrix format
      can be specified at runtime.  Also, the partioning of the matrix is
      determined by PETSc at runtime. */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,m*m,m*m,&A); CHKERRA(ierr);
 
   /* Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
@@ -68,7 +68,7 @@ int main(int argc,char **args)
 
   /* Create vectors.  Note that we form 1 vector from scratch and
      then duplicate it as needed. */
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,m*m,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 
