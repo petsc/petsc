@@ -56,10 +56,10 @@ def petsc_configure(configure_options):
   jobs = []
   if framework.usingMPIUni:
     jobs.append('4')
-    if 'FC' in framework.argDB:jobs.append('9')
+    if 'FC' in framework.argDB and framework.argDB['FC']:jobs.append('9')
   else:
     jobs.append('1')
-    if 'FC' in framework.argDB:jobs.append('3')
+    if 'FC' in framework.argDB and framework.argDB['FC']:jobs.append('3')
     if framework.foundX11:jobs.append('2')
   fd.write(' '.join(jobs)+'\n')
   fd.close()
