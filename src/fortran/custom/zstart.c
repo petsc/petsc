@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.64 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zstart.c,v 1.65 1999/11/05 14:48:14 bsmith Exp balay $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -43,7 +43,7 @@ extern int          PetscBeganMPI;
     HP-UX does not have Fortran underscore but iargc and getarg 
   do have underscores????
 */
-#if !defined(PARCH_hpux)
+#if !defined(PETSC_HAVE_FORTRAN_IARGC_UNDERSCORE)
 #define iargc_                        iargc
 #define getarg_                       getarg
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.17 1999/11/05 14:42:55 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.18 1999/11/24 21:27:34 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -41,16 +41,11 @@
 #define PETSC_HAVE_HPUXF90
 #define PETSC_NEED_SOCKET_PROTO
 
+#define PETSC_HAVE_FORTRAN_IARGC_UNDERSCORE
+
 #define PETSC_NEED_DEBUGGER_NO_SLEEP
 #define PETSC_HAVE_NO_GETRUSAGE
 #define PETSC_USE_LARGEP_FOR_DEBUGGER
 
 #endif
-
-
-
-
-
-
-
 
