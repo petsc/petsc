@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.79 1996/03/31 17:19:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.80 1996/04/10 04:28:47 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -109,14 +109,25 @@ int PetscInitializedCalled = 0;
 .  argc - count of number of command line arguments
 .  args - the command line arguments
 .  file - [optional] PETSc database file, defaults to ~username/.petscrc
-.  help - [optional] Help message to print.
+          (use PETSC_NULL for default)
+.  help - [optional] Help message to print, use PETSC_NULL for no message
 
    Notes:
    If for some reason you must call MPI_Init() separately, call
    it before PetscInitialize().
 
-   In FORTRAN this routine takes only an ierr argument, as given by
-$       call PetscInitialize(ierr)
+   Fortran Version:
+   In Fortran this routine has the format
+$       call PetscInitialize(file,ierr)
+
+.   ierr - error return code
+.   file - [optional] PETSc database file name, defaults to 
+           ~username/.petscrc (use PETSC_NULL_CHAR for default)
+           
+   Important Fortran Note:
+   In Fortran, you MUST use PETSC_NULL_CHAR to indicate a
+   null character string; you CANNOT just use PETSC_NULL as 
+   in the C version.  See the users manual for details.
 
 .keywords: initialize, options, database, startup
 
