@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.25 2000/05/05 22:18:00 balay Exp bsmith $";
+!    "$Id: ex11f.F,v 1.26 2000/09/22 20:45:46 bsmith Exp bsmith $";
 !
 !/*T
 !  Concepts: SLES^solving a Helmholtz equation
@@ -109,6 +109,7 @@
 
       call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,    &
      &               dim,A,ierr)
+      call MatSetFromOptions(A,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
