@@ -1,5 +1,5 @@
 c
-c  "$Id: ex1f.F,v 1.16 1997/09/22 15:20:58 balay Exp $";
+c  "$Id: resid.F,v 1.3 1997/10/11 18:39:18 curfman Exp curfman $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -53,7 +53,7 @@ C  If using implicit BC's, compute function components for boundary points
       endif
 
 C  Compute function components for interior grid points
-      ierr = resid(xx, p, dxx, br, bl, be,
+      ierr = resid(jacform, xx, p, dxx, br, bl, be,
      &         sadai, sadaj, sadak,
      &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz, 
      &         f1, g1, h1, sp, sm, sp1, sp2, sm1, sm2)
@@ -69,7 +69,7 @@ C  Compute function components for interior grid points
 
 C ----------------------------------------------------------------
 
-      integer function RESID(xx,p,dxx,
+      integer function RESID(jacform,xx,p,dxx,
      &                  br,bl,be,sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                  f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
@@ -111,7 +111,7 @@ c      COMMON /SIGMA/ SP1(5,NI),SP2(5,NI),SM1(5,NI),SM2(5,NI)
 c      COMMON /CONDI/ ORDER,PSI,LIMIT
 c      COMMON /FREQ/ IFREQ,ISGS
       double precision  DQ(5,D_NI),F(5,D_NI),qer(5),qel(5),tl
-      integer i,j,k,l,ib,jb,kb,i1,j1,k1
+      integer i,j,k,l,ib,jb,kb,i1,j1,k1,jacform
 
       resid = 0
       do 20 l=1,5
@@ -167,7 +167,7 @@ c      DO 24 I=1,NI
       f1(3,i,j,k)=f(3,i)
       f1(4,i,j,k)=f(4,i)
    24 f1(5,i,j,k)=f(5,i)
-      IF (ORDER.EQ.1.) GO TO 29
+      IF (ORDER.EQ.1. .or. jacform .eq. 1) GO TO 29
       DO 25 I=gxsf2w,xefm1
 c      DO 25 I=2,NI-1
       DO 25 L=1,5
@@ -259,7 +259,7 @@ c      DO 34 J=1,NJ
       g1(3,i,j,k)=f(3,j)
       g1(4,i,j,k)=f(4,j)
    34 g1(5,i,j,k)=f(5,j)
-      IF (ORDER.EQ.1.) GO TO 39
+      IF (ORDER.EQ.1. .or. jacform .eq. 1) GO TO 39
       DO 35 J=gysf2w,yefm1
 c      DO 35 J=2,NJ-1
       DO 35 L=1,5
@@ -351,7 +351,7 @@ c      DO 44 K=1,NK
       h1(3,i,j,k)=f(3,k)
       h1(4,i,j,k)=f(4,k)
    44 h1(5,i,j,k)=f(5,k)
-      IF (ORDER.EQ.1.) GO TO 49
+      IF (ORDER.EQ.1. .or. jacform .eq. 1) GO TO 49
       DO 45 K=gzsf2w,zefm1
 c      DO 45 K=2,NK-1
       DO 45 L=1,5

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+static char vcid[] = "$Id: user1.c,v 1.56 1997/10/11 18:39:18 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -440,6 +440,7 @@ int UserDestroyEuler(Euler *app)
   ierr = VecDestroy(app->X); CHKERRQ(ierr);
   ierr = VecDestroy(app->Xbc); CHKERRQ(ierr);
   ierr = VecDestroy(app->F); CHKERRQ(ierr);
+  ierr = VecDestroy(app->diagv); CHKERRQ(ierr);
   ierr = VecDestroy(app->localX); CHKERRQ(ierr);
   ierr = VecDestroy(app->localDX); CHKERRQ(ierr);
   ierr = VecDestroy(app->localXBC); CHKERRQ(ierr);
@@ -1041,6 +1042,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->Xbc); CHKERRQ(ierr);
   ierr = VecDuplicate(app->X,&app->F); CHKERRQ(ierr);
+  ierr = VecDuplicate(app->X,&app->diagv); CHKERRQ(ierr);
   ierr = DAGetLocalVector(app->da,&app->localX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localDX); CHKERRQ(ierr);
   ierr = VecDuplicate(app->localX,&app->localXBC); CHKERRQ(ierr);

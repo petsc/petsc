@@ -1,8 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+static char vcid[] = "$Id: jacob.c,v 1.4 1997/10/11 18:39:18 curfman Exp curfman $";
 #endif
 
 #include "user.h"
+extern int DAGetColoring(DA,ISColoring*,Mat*);
 
 #undef __FUNC__  
 #define __FUNC__ "UserSetJacobian"
@@ -226,7 +227,7 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
 {
   Euler         *app = (Euler *)ptr;
   int           iter, ierr, i, rstart, rend;
-  Scalar        one = 1.0;
+  Scalar        one = 1.0, *diagv_a;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set some options; do some preliminary work
@@ -273,22 +274,26 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
      Form Jacobian matrix
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  /* First, initialize the diagonal to 1.   These values will be overwritten
-     everywhere EXCEPT for the edges of the 3D problem domain, where the
-     edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.)
-     We need to do this the first time the Jacobian is assembled.  We
-     could alternatively do this just for the edges and could use
-     MatZeroRows(). */
 
-  if (iter == 1) {
-    ierr = MatGetOwnershipRange(*pjac,&rstart,&rend); CHKERRQ(ierr);
-    for (i=rstart; i<rend; i++) {
+  /* Do finite differencing with coloring */
+  ierr = MatFDColoringApply(*pjac,app->fdcoloring,X,flag,snes); CHKERRQ(ierr);
+
+  /* Fix points on edges of the 3D domain, where diagonal of Jacobian is 1.
+     edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) */
+  ierr = MatGetDiagonal(*pjac,app->diagv); CHKERRQ(ierr);
+  ierr = VecGetArray(app->diagv,&diagv_a); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(*pjac,&rstart,&rend); CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) {
+    if (!diagv_a[i-rstart]) {
       ierr = MatSetValues(*pjac,1,&i,1,&i,&one,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
 
-  /* Do finite differencing with coloring */
-  ierr = MatFDColoringApply(*pjac,app->fdcoloring,X,flag,snes); CHKERRQ(ierr);
+  /* Finish the matrix assembly process.  For the Euler code, the matrix
+     assembly is done completely locally, so no message-pasing is performed
+     during these phases. */
+  ierr = MatAssemblyBegin(*pjac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*pjac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Indicate that the preconditioner matrix has the same nonzero
      structure each time it is formed */

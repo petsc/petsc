@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.143 1997/09/26 02:22:17 bsmith Exp $ */
+/* $Id: user.h,v 1.27 1997/10/11 18:39:18 curfman Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -212,7 +212,8 @@ typedef struct {
     Vec    den, xvel, yvel, zvel;             /* full potential work space */
     Scalar *den_a, *xvel_a, *yvel_a, *zvel_a; /* full potential work space */
     Scalar phi_te[2];                         /* 2-component circulation */
-    VecScatter phi_te_scatter;
+    VecScatter phi_te_scatter;                /* scatter for boundary conditins */
+    Vec    diagv;                             /* diagonal of Jacobian */
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
