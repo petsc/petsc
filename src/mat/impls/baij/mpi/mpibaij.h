@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.13 1998/01/27 23:44:09 balay Exp balay $ */
+/* $Id: mpibaij.h,v 1.14 1998/02/18 19:42:08 balay Exp balay $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -54,6 +54,7 @@ typedef struct {
   int           ht_size;
   int           ht_total_ct,ht_insert_ct; /* Hash table statistics */
   int           ht_flag;                  /* Flag to indicate if hash tables are used */
+  double        ht_fact;                  /* Factor to determine the HT size */
 } Mat_MPIBAIJ;
 
 

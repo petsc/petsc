@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.102 1998/02/01 07:42:11 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.103 1998/02/18 17:03:51 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -585,6 +585,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
 #endif
   PetscFunctionReturn(0);
 }
+
 #undef __FUNC__  
 #define __FUNC__ "MatGetValues_MPIBAIJ"
 int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
@@ -593,6 +594,7 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   int        bs=baij->bs,ierr,i,j, bsrstart = baij->rstart*bs, bsrend = baij->rend*bs;
   int        bscstart = baij->cstart*bs, bscend = baij->cend*bs,row,col;
 
+  PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
     if (idxm[i] >= baij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
@@ -936,13 +938,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     baij->ht_insert_ct = 0;
   }
 #endif
-  ierr = OptionsHasName(PETSC_NULL,"-use_hash",&flg); CHKERRQ(ierr);
-  if (flg && !baij->ht && mode== MAT_FINAL_ASSEMBLY) {
-    double fact = 1.39;
-    ierr = OptionsGetDouble(PETSC_NULL,"-use_hash",&fact,&flg); CHKERRQ(ierr);
-    if (fact <= 1.0) fact = 1.39;
-    PLogInfo(0,"MatAssemblyEnd_MPIBAIJ:Hash table Factor used %5.2f\n",fact);
-    ierr = MatCreateHashTable_MPIBAIJ_Private(mat,fact); CHKERRQ(ierr);
+  if (baij->ht_flag && !baij->ht && mode == MAT_FINAL_ASSEMBLY) {
+    ierr = MatCreateHashTable_MPIBAIJ_Private(mat,baij->ht_fact); CHKERRQ(ierr);
     mat->ops.setvalues        = MatSetValues_MPIBAIJ_HT;
     mat->ops.setvaluesblocked = MatSetValuesBlocked_MPIBAIJ_HT;
   }
@@ -1484,6 +1481,8 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
     a->donotstash = 1;
   } else if (op == MAT_NO_NEW_DIAGONALS) {
     SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");
+  } else if (op == MAT_USE_HASH_TABLE) {
+    a->ht_flag = 1;
   } else { 
     SETERRQ(PETSC_ERR_SUP,0,"unknown option");
   }
@@ -1717,11 +1716,15 @@ extern int MatPrintHelp_SeqBAIJ(Mat);
 int MatPrintHelp_MPIBAIJ(Mat A)
 {
   Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*) A->data;
+  static int  called = 0; 
   int         ierr;
 
   PetscFunctionBegin;
   if (!a->rank) {
+    if (called) {PetscFunctionReturn(0);} else called = 1;
     ierr = MatPrintHelp_SeqBAIJ(a->A);CHKERRQ(ierr);
+    (*PetscHelpPrintf)(comm," Options for MATMPIBAIJ matrix format (the defaults):\n");
+    (*PetscHelpPrintf)(comm,"  -mat_use_hash_table <factor>: Use hashtable for efficient matrix assembly\n");
   }
   PetscFunctionReturn(0);
 }
@@ -1841,7 +1844,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
 {
   Mat          B;
   Mat_MPIBAIJ  *b;
-  int          ierr, i,sum[2],work[2],mbs,nbs,Mbs=PETSC_DECIDE,Nbs=PETSC_DECIDE,size;
+  int          ierr, i,sum[2],work[2],mbs,nbs,Mbs=PETSC_DECIDE,Nbs=PETSC_DECIDE,size,flg;
 
   PetscFunctionBegin;
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size specified, must be positive");
@@ -1972,10 +1975,20 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   b->ht           = 0;
   b->hd           = 0;
   b->ht_size      = 0;
+  b->ht_flag      = 0;
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
 
   *A = B;
+  ierr = OptionsHasName(PETSC_NULL,"-mat_use_hash_table",&flg); CHKERRQ(ierr);
+  if (flg) { 
+    double fact = 1.39;
+    ierr = MatSetOption(B,MAT_USE_HASH_TABLE); CHKERRQ(ierr);
+    ierr = OptionsGetDouble(PETSC_NULL,"-mat_use_hash_table",&fact,&flg); CHKERRQ(ierr);
+    if (fact <= 1.0) fact = 1.39;
+    ierr = MatMPIBAIJSetHashTableFactor(B,fact); CHKERRQ(ierr);
+    PLogInfo(0,"MatCreateMPIBAIJ:Hash table Factor used %5.2f\n",fact);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2020,6 +2033,15 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
   a->rowvalues    = 0;
   a->getrowactive = PETSC_FALSE;
   a->barray       = 0;
+
+  /* hash table stuff */
+  a->ht           = 0;
+  a->hd           = 0;
+  a->ht_size      = 0;
+  a->ht_flag      = oldmat->ht_flag;
+  a->ht_total_ct  = 0;
+  a->ht_insert_ct = 0;
+
 
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,2*(a->size+2)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIBAIJ));
@@ -2285,3 +2307,34 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
 }
 
 
+
+#undef __FUNC__  
+#define __FUNC__ "MatMPIBAIJSetHashTableFactor"
+/*@
+   MatMPIBAIJSetHashTableFactor - Sets the factor required to compute the size of the HashTable.
+
+   Input Parameters:
+.  mat  - the matrix
+.  fact - factor
+
+   Notes:
+   This can also be set by the command line option: -mat_use_hash_table fact
+
+.keywords: matrix, hashtable, factor, HT
+
+.seealso: MatSetOption()
+@*/
+int MatMPIBAIJSetHashTableFactor(Mat mat,double fact)
+{
+  int         ierr;
+  Mat_MPIBAIJ baij;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (mat->type != MPIBAIJ) {
+      SETERRQ(PETSC_ERR_ARG_WRONG,1,"Incorrect matrix type. Use MPIBAIJ only.");
+  }
+  baij = (Mat_MPIBAIJ*) mat->data;
+  baij->ht_fact = fact;
+  PetscFunctionReturn(0);
+}

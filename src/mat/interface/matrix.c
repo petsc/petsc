@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.278 1998/01/31 20:02:18 curfman Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.279 1998/02/18 19:28:53 balay Exp balay $";
 #endif
 
 /*
@@ -2196,6 +2196,7 @@ $    MAT_NO_NEW_DIAGONALS - additional insertions will not be allowed if
 $    MAT_YES_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 $    MAT_IGNORE_OFF_PROC_ENTRIES - drop off-processor entries
 $    MAT_NEW_NONZERO_LOCATION_ERROR - generate error for new matrix entry
+$    MAT_USE_HASH_TABLE - use hash table which speeds up the Matrix assembly
 
    Notes:
    Some options are relevant only for particular matrix types and
@@ -2230,6 +2231,14 @@ $    MAT_NEW_NONZERO_LOCATION_ERROR - generate error for new matrix entry
    always generating the correct matrix entries, so that PETSc need
    not transfer duplicate entries generated on another processor.
    
+   MAT_USE_HASH_TABLE indicates that a hash table be used to improve the
+   searches during matrix assembly. When this flag is set, the hash table
+   is created during the first Matrix Assembly. This hash table is
+   used the next time through, during MatSetVaules()/MatSetVaulesBlocked()
+   to improve the searching of indices. MAT_NO_NEW_NONZERO_LOCATIONS flag 
+   should be used with MAT_USE_HASH_TABLE flag. This option is currently
+   supported by MATMPIBAIJ format only.
+
 .keywords: matrix, option, row-oriented, column-oriented, sorted, nonzero
 @*/
 int MatSetOption(Mat mat,MatOption op)
