@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.5 2001/01/04 22:07:07 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.6 2001/01/05 16:00:38 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -7,6 +7,10 @@ static char help[] = "Solves PDE optimization problem of ex22.c with finite diff
 #include "petscsnes.h"
 
 /*
+
+              Minimize F(w,u) such that G(w,u) = 0
+
+         L(w,u,lambda) = F(w,u) + lambda^T G(w,u)
 
        w - design variables (what we change to get an optimal solution)
        u - state variables (i.e. the PDE solution)
@@ -90,6 +94,7 @@ int main(int argc,char **argv)
     ierr   = VecPackGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
     ierr   = DAGetColoring(da,&coloring,&J);CHKERRQ(ierr);
     ierr   = MatFDColoringCreate(J,coloring,&fd);CHKERRQ(ierr);
+    ierr   = MatFDColoringSetFromOptions(fd);CHKERRQ(ierr);
     ierr   = MatFDColoringSetFunction(fd,(int (*)(void))PDEFormFunction,da);CHKERRQ(ierr);
     ierr   = ISColoringDestroy(coloring);CHKERRQ(ierr);
     ierr   = PetscObjectCompose((PetscObject)J,"FDColoring",(PetscObject)fd);CHKERRQ(ierr);
@@ -148,6 +153,7 @@ int PDEFormFunction(Scalar *w,Vec U,Vec FU,DA da)
   PetscFunctionReturn(0);
 }
 
+
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
@@ -182,9 +188,10 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = MatFDColoringApply((Mat)dmmg->user,fd,vu,PETSC_NULL,w);CHKERRQ(ierr);
   ierr = MatMultTranspose((Mat)dmmg->user,vglambda,vflambda);CHKERRQ(ierr);
 
-  /*  ierr = MatView((Mat)dmmg->user,VIEWER_STDOUT_WORLD); */
+  ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_MATLAB,"joe");
+  ierr = MatView((Mat)dmmg->user,VIEWER_STDOUT_WORLD); 
 
-  /* derivative of L() w.r.t. lambda */
+  /* derivative of constraint portion of L() w.r.t. u */
   ierr = PDEFormFunction(w,vu,vfu,da);CHKERRQ(ierr);
 
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -201,13 +208,22 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     fw[0] = -2.*d*lambda[0];
   }
 
-  /* derivative of L() w.r.t. u */
+  /* derivative of L() constraint portion of L() w.r.t. u */
+  /*    for (i=xs; i<xs+xm; i++) {
+    if      (i == 0)   flambda[0]   = 2.*d*lambda[0]   - d*lambda[1];
+    else if (i == 1)   flambda[1]   = 2.*d*lambda[1]   - d*lambda[2];
+    else if (i == N-1) flambda[N-1] = 2.*d*lambda[N-1] - d*lambda[N-2];
+    else if (i == N-2) flambda[N-2] = 2.*d*lambda[N-2] - d*lambda[N-3];
+    else               flambda[i]   = - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]);
+    }  */
+
+  /* derivative of function part of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   flambda[0]   =    h*u[0]   + 2.*d*lambda[0]   - d*lambda[1];
-    else if (i == 1)   flambda[1]   = 2.*h*u[1]   + 2.*d*lambda[1]   - d*lambda[2];
-    else if (i == N-1) flambda[N-1] =    h*u[N-1] + 2.*d*lambda[N-1] - d*lambda[N-2];
-    else if (i == N-2) flambda[N-2] = 2.*h*u[N-2] + 2.*d*lambda[N-2] - d*lambda[N-3];
-    else               flambda[i]   = 2.*h*u[i]   - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]);
+    if      (i == 0)   flambda[0]   +=    h*u[0];
+    else if (i == 1)   flambda[1]   += 2.*h*u[1];
+    else if (i == N-1) flambda[N-1] +=    h*u[N-1];
+    else if (i == N-2) flambda[N-2] += 2.*h*u[N-2];
+    else               flambda[i]   += 2.*h*u[i];
   } 
 
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
