@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.29 1999/06/30 22:49:49 bsmith Exp balay $";
+static char vcid[] = "$Id: isltog.c,v 1.30 1999/06/30 23:50:14 balay Exp balay $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -200,7 +200,7 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
 
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingApply"
-/*@C
+/*@
    ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
    and converts them to the global numbering.
 
