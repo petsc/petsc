@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.38 1997/01/21 23:34:09 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.39 1997/03/01 16:00:14 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -129,10 +129,6 @@ extern int DrawSPGetDraw(DrawSP,Draw *);
 extern int DrawSPSetLimits(DrawSP,double,double,double,double); 
 
 extern int ViewerDrawGetDrawLG(Viewer, DrawLG*);
-
-#if defined(__VEC_PACKAGE)
-int DrawTensorContour(Draw,int,int,double*,double*,Vec);
-#endif
 
 /* Mesh management routines */
 typedef struct _DrawMesh* DrawMesh;

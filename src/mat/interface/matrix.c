@@ -1,17 +1,15 @@
-
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.233 1997/03/14 17:46:54 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.234 1997/03/14 20:48:49 curfman Exp bsmith $";
 #endif
 
 /*
    This is where the abstract matrix operations are defined
 */
 
-#include "petsc.h"
 #include "src/mat/matimpl.h"        /*I "mat.h" I*/
 #include "src/vec/vecimpl.h"  
 #include "pinclude/pviewer.h"
-#include "draw.h"
+
        
 
 #undef __FUNC__  

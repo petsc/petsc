@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: nt_time.c,v 1.6 1997/02/26 22:51:18 balay Exp balay $";
+static char vcid[] = "$Id: nt_time.c,v 1.7 1997/03/03 18:43:08 balay Exp bsmith $";
 #endif
 
 #include <petsc.h>
@@ -7,6 +7,8 @@ static char vcid[] = "$Id: nt_time.c,v 1.6 1997/02/26 22:51:18 balay Exp balay $
 #include <Windows.h>
 #define FACTOR   4294967296.0
 
+#undef __FUNC__  
+#define __FUNC__ "nt_time" /* ADIC Ignore */
 double nt_time() 
 {
   static int    flag = 1;
@@ -36,11 +38,5 @@ double nt_time()
   time  = (double)SecInTick*dTime;
 
   return time;
-}
-
-#else
-double nt_time()
-{
-  SETERRQ(1,0,"Wrong Architecture");
 }
 #endif

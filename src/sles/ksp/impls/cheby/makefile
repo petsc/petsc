@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = chebctx.h
 OBJSC    = cheby.o 
 OBJSF    =
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 MANSEC   = 5
 LOCDIR   = src/ksp/impls/cheby/
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.36 1997/03/01 15:42:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.37 1997/03/09 17:56:52 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -63,8 +63,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 {
   int           xin = 1, yin = 1, i, N, rank, ierr;
   int           pause,showgrid;
-  double        h, *v, min, max;
-  Scalar        scale;
+  double        h, *v, min, max, scale = 1.0;
   Vec           W;
   IS            from, to;
   VecScatter    ctx;

@@ -1,9 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.127 1997/03/12 22:34:44 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.128 1997/03/13 16:34:12 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
 
+#include "pinclude/pviewer.h"
+#include "sys.h"
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
@@ -1466,9 +1468,6 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 
 /* ----------------------------------------------------------------*/
 
-#include "draw.h"
-#include "pinclude/pviewer.h"
-#include "sys.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqBDiag_Binary"

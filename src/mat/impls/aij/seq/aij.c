@@ -1,11 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.210 1997/03/12 22:32:57 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.211 1997/03/13 16:33:49 curfman Exp bsmith $";
 #endif
 
 /*
-B    Defines the basic matrix operations for the AIJ (compressed row)
+    Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
 */
+
+#include "pinclude/pviewer.h"
+#include "sys.h"
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
@@ -269,9 +272,6 @@ int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
   return 0;
 } 
 
-#include "draw.h"
-#include "pinclude/pviewer.h"
-#include "sys.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqAIJ_Binary"

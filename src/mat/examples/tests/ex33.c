@@ -1,12 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex33.c,v 1.12 1996/07/08 22:20:09 bsmith Exp $";
+static char vcid[] = "$Id: ex33.c,v 1.1 1996/12/10 13:57:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
 "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
    -fout <file> : output file name\n\n";
 
-#include "draw.h"
 #include "mat.h"
 #include <stdio.h>
 

@@ -1,10 +1,9 @@
-/* $Id: kspimpl.h,v 1.26 1997/01/21 20:38:49 curfman Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.27 1997/01/27 18:15:20 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
 
 #include "ksp.h"
-#include "draw.h"
 
 /*
      Maximum number of monitors you can run with a single KSP

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dscatter.c,v 1.5 1997/01/22 18:44:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.6 1997/02/22 02:27:37 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -7,8 +7,7 @@ static char vcid[] = "$Id: dscatter.c,v 1.5 1997/01/22 18:44:30 bsmith Exp bsmit
     plots that change dynamically.
 */
 
-#include "petsc.h"
-#include "draw.h"         /*I "draw.h" I*/
+#include "petsc.h"         /*I "petsc.h" I*/
 
 struct _DrawSP {
   PETSCHEADER 

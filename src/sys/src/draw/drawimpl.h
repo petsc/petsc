@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.16 1996/11/14 03:32:32 curfman Exp curfman $ */
+/* $Id: drawimpl.h,v 1.17 1996/11/14 14:04:50 curfman Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -6,7 +6,7 @@
 #if !defined(_DRAWIMPL_H)
 #define _DRAWIMPL_H
 
-#include "draw.h"
+#include "petsc.h"
 
 struct _DrawOps {
   int (*setdoublebuffer)(Draw);

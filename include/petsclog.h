@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.103 1997/03/06 21:38:32 balay Exp bsmith $ */
+/* $Id: petsclog.h,v 1.104 1997/03/09 18:01:27 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -7,8 +7,6 @@
 #if !defined(__PLOG_PACKAGE)
 #define __PLOG_PACKAGE
 #include "petsc.h"  
-
-typedef double PLogDouble;
 
 /*
   Lists all PETSc events that are logged/profiled.

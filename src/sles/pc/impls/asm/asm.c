@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.56 1997/02/22 02:24:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.57 1997/03/06 01:48:49 curfman Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -250,8 +250,8 @@ static int PCDestroy_ASM(PetscObject obj)
     ierr = SLESDestroy(osm->sles[i]);
   }
   if (osm->is_flg) {
-     for ( i=0; i<osm->n_local_true; i++ ) ISDestroy(osm->is[i]);
-     PetscFree(osm->is);
+    for ( i=0; i<osm->n_local_true; i++ ) {ierr = ISDestroy(osm->is[i]); CHKERRQ(ierr);}
+    PetscFree(osm->is);
   }
   if (osm->sles) PetscFree(osm->sles);
   if (osm->scat) PetscFree(osm->scat);

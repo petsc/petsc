@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.44 1997/02/17 19:30:32 bsmith Exp balay $ */
+/* $Id: petschead.h,v 1.45 1997/02/27 23:36:11 balay Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -21,7 +21,7 @@ extern int PetscRegisterCookie(int *);
 */
 
 #define PETSCHEADER                         \
-  double      flops,time,mem;               \
+  PLogDouble  flops,time,mem;               \
   int         cookie;                       \
   int         type;                         \
   int         id;                           \

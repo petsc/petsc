@@ -1,11 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.87 1997/02/22 02:22:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.88 1997/03/20 19:04:52 curfman Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
 */
 
-#include "draw.h"             /*I "draw.h" I*/
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
 #include "sys.h"
 

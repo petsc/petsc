@@ -2,10 +2,10 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =  $(CPPFLAGS) $(CONF)
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = axpy.h bitarrya.h dot.h ilu.h setval.h spops.h
+SOURCEH  = axpy.h bitarray.h dot.h ilu.h setval.h spops.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec

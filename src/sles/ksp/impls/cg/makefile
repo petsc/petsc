@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = cgctx.h 
 OBJSC    = cg.o cgeig.o cgtype.o
 OBJSF    =
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 MANSEC   = 5
 LOCDIR   = src/ksp/impls/cg/
 

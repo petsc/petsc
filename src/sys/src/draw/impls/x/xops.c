@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.72 1997/02/22 02:27:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.73 1997/03/01 15:54:47 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -601,7 +601,6 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 
 #else
 
-#include "draw.h"
 #undef __FUNC__  
 #define __FUNC__ "DrawOpenX" /* ADIC Ignore */
 int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* ctx)

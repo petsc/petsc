@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex41.c,v 1.1 1996/12/10 13:57:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex41.c,v 1.2 1997/01/01 03:38:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
@@ -9,7 +9,6 @@ is similar to ex40.c; here the index sets used are random. Input arguments are:\
   -nd <size>      : > 0  no of domains per processor \n\
   -ov <overlap>   : >=0  amount of overlap between domains\n\n";
 
-#include "draw.h"
 #include "mat.h"
 #include "sles.h"
 #include <stdio.h>

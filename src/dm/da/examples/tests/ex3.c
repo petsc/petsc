@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.24 1997/02/04 21:26:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.25 1997/02/05 22:05:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -7,7 +7,6 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 #include "petsc.h"
 #include "da.h"
 #include "sys.h"
-#include "draw.h"
 #include <math.h>
 
 #define PETSC_PI 3.14159265

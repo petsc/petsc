@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = richctx.h
 OBJSC    = rich.o richscale.o
 OBJSF    =
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 MANSEC   = 5
 LOCDIR   = src/ksp/impls/rich/
 

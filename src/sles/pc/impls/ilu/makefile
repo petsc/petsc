@@ -6,7 +6,7 @@ CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' \
            $(BS_INCLUDE)
 SOURCEC  = ilu.c
 SOURCEF  =
-SOURCEH  = 
+SOURCEH  = ilu.h
 OBJSC    = ilu.o
 OBJSF    =
 LIBBASE  = libpetscsles

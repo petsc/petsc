@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.56 1997/01/21 21:50:53 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.57 1997/02/03 06:03:27 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -62,11 +62,12 @@ extern int SNESGetNumberLinearIterations(SNES,int*);
 extern int SNES_KSP_SetParametersEW(SNES,int,double,double,double,double,double,double);
 extern int SNES_KSP_SetConvergenceTestEW(SNES);
 
-#if defined(__DRAW_PACKAGE)
+/*
+     Reuse the default KSP monitor routines for SNES
+*/
 #define SNESLGMonitorCreate  KSPLGMonitorCreate
 #define SNESLGMonitorDestroy KSPLGMonitorDestroy
 #define SNESLGMonitor        ((int (*)(SNES,int,double,void*))KSPLGMonitor)
-#endif
 
 extern int SNESSetApplicationContext(SNES,void *);
 extern int SNESGetApplicationContext(SNES,void **);

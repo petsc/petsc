@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.49 1997/02/03 06:03:27 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.50 1997/02/04 21:27:32 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -96,17 +96,23 @@ extern int KSPComputeExplicitOperator(KSP,Mat *);
 typedef enum {KSP_CG_SYMMETRIC=1, KSP_CG_HERMITIAN=2} KSPCGType;
 extern int KSPCGSetType(KSP,KSPCGType);
 
-#if defined(__DRAW_PACKAGE)
+extern int    PCPreSolve(PC,KSP);
+extern int    PCPostSolve(PC,KSP);
+
+/*
+    These routines require the Draw component of PETSc
+*/    
+#if !defined(__DRAW_PACKAGE)
+typedef struct _DrawLG* DrawLG;
+#endif
 extern int KSPLGMonitorCreate(char*,char*,int,int,int,int,DrawLG*);
 extern int KSPLGMonitor(KSP,int,double,void*);
 extern int KSPLGMonitorDestroy(DrawLG);
 extern int KSPLGTrueMonitorCreate(MPI_Comm,char*,char*,int,int,int,int,DrawLG*);
 extern int KSPLGTrueMonitor(KSP,int,double,void*);
 extern int KSPLGTrueMonitorDestroy(DrawLG);
-#endif 
 
-extern int    PCPreSolve(PC,KSP);
-extern int    PCPostSolve(PC,KSP);
+
 
 #endif
 

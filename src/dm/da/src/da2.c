@@ -1,11 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.73 1997/02/22 02:29:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.74 1997/03/13 16:36:32 curfman Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 #include "pinclude/pviewer.h"
-#include "draw.h"
 #include <math.h>
 
 #undef __FUNC__  

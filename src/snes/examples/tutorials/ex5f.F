@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.19 1997/01/06 20:43:11 bsmith Exp bsmith $";
+C "$Id: ex5f.F,v 1.20 1997/02/05 22:04:41 bsmith Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -673,6 +673,11 @@ C     will not function correctly.  Thus, use this optimization
 C     feature with caution!
 
       flag = SAME_NONZERO_PATTERN
+C
+C      Tell the matrix we will never add a new nonzero location to the
+C    matrix. If we do it will generate an error.
+C
+       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR,ierr)
 
       return
       end

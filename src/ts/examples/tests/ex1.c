@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.16 1997/02/04 21:25:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.17 1997/02/05 22:03:21 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -13,7 +13,6 @@ static char help[] = "Solves 1D heat equation.\n\n";
 
 #include "da.h"
 #include "sys.h"
-#include "draw.h"
 #include <math.h>
 #include "ts.h"
 

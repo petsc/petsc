@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex13.c,v 1.4 1997/01/01 03:41:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.5 1997/02/05 22:04:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -31,7 +31,6 @@ options are:\n\
     system of equations.
 */
 
-#include "draw.h"
 #include "snes.h"
 #include "da.h"
 #include <math.h>

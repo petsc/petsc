@@ -1,8 +1,8 @@
-/* $Id: snesimpl.h,v 1.38 1997/01/14 20:41:31 curfman Exp curfman $ */
+/* $Id: snesimpl.h,v 1.39 1997/01/21 21:05:36 curfman Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
-#include "draw.h"
+
 #include "snes.h"
 
 /*

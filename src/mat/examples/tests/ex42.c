@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex42.c,v 1.1 1996/12/10 13:57:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex42.c,v 1.2 1997/01/01 03:38:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -12,7 +12,6 @@ Input arguments are:\n\
   -ov <overlap>   : >=0  amount of overlap between domains\n\n";
 
   
-#include "draw.h"
 #include "mat.h"
 #include "sles.h"
 #include <stdio.h>

@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.39 1997/02/04 01:21:08 balay Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.40 1997/02/04 16:28:38 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 

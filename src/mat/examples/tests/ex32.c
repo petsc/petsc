@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex32.c,v 1.1 1996/12/10 13:57:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex32.c,v 1.2 1997/01/01 03:38:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
@@ -8,7 +8,6 @@ them using the PETSc sparse format. Input parameters are:\n\
   -fin <filename> : input file\n\
   -fout <filename> : output file\n\n";
 
-#include "draw.h"
 #include "mat.h"
 #include <stdio.h>
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.2 1997/03/01 15:58:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.3 1997/03/04 21:36:46 curfman Exp bsmith $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -7,7 +7,6 @@ static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 #include "petsc.h"
 #include "da.h"
 #include "sys.h"
-#include "draw.h"
 #include "ao.h"
 #include <math.h>
 

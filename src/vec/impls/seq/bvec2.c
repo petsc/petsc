@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.92 1997/03/12 22:36:35 curfman Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.93 1997/03/13 16:32:38 curfman Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -9,7 +9,6 @@ static char vcid[] = "$Id: bvec2.c,v 1.92 1997/03/12 22:36:35 curfman Exp curfma
 #include "src/vec/vecimpl.h"          /*I  "vec.h"   I*/
 #include "src/vec/impls/dvecimpl.h" 
 #include "pinclude/plapack.h"
-#include "draw.h"          
 #include "pinclude/pviewer.h"
 
 

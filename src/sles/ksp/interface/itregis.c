@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itregis.c,v 1.19 1997/02/03 15:46:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: itregis.c,v 1.20 1997/02/22 02:22:53 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -31,7 +31,7 @@ extern int KSPCreate_QCG(KSP);
   To prevent all of the methods from being registered and thus 
   save memory, copy this routine and modify it to register only 
   those methods you desire.  Make sure that the replacement routine 
-  is linked before libpetscksp.a.
+  is linked before libpetscsles.a.
 
   Notes:
   Currently the default iterative method, KSPGMRES, must be

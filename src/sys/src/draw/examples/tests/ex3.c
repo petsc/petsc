@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.23 1996/01/12 22:09:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.24 1996/03/19 21:28:29 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Plots a simple line graph\n";
 
-#include "draw.h"
+#include "petsc.h"
 #include <math.h>
 
 int main(int argc,char **argv)

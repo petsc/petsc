@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.151 1997/02/03 06:03:27 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.152 1997/03/01 16:00:14 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -43,6 +43,12 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define PetscConj(a)      (a)
 #endif
 
+/*
+   Certain objects may be created using either single
+  or double precision.
+*/
+typedef enum { SCALAR_DOUBLE, SCALAR_SINGLE } ScalarPrecision;
+
 extern MPI_Comm PETSC_COMM_WORLD;
 extern int      PetscInitializedCalled;
 extern int      PetscSetCommWorld(MPI_Comm);
@@ -56,6 +62,13 @@ extern  Scalar            PETSC_i;
 #define PetscAbsDouble(a)  ( ((a)<0)   ? -(a) : (a) )
 
 /*
+    PLogDouble variables are used to contain double precision numbers
+  that are not used in the numerical computations, but rather in logging,
+  timing etc.
+*/
+typedef double PLogDouble;
+
+/*
     Defines the malloc employed by PETSc. Users may employ these routines as well. 
 */
 extern void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*);
@@ -67,11 +80,12 @@ extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*,char*,char*),
 #define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
 
 extern int   PetscTrDump(FILE *);
-extern int   PetscTrSpace( double *, double *,double *);
+extern int   PetscTrSpace( PLogDouble *, PLogDouble *,PLogDouble *);
 extern int   PetscTrValid(int,char *,char *,char *);
 extern int   PetscTrDebugLevel(int);
 extern int   PetscTrLog();
 extern int   PetscTrLogDump(FILE *);
+extern int   PetscGetResidentSetSize(PLogDouble *);
 
 extern void  PetscMemcpy(void *,void *,int);
 extern void  PetscMemzero(void *,int);
@@ -107,6 +121,7 @@ extern int LARGEST_PETSC_COOKIE;
 
 #include "viewer.h"
 #include "options.h"
+#include "draw.h"
 
 extern double PetscGetTime();
 extern void   PetscSleep(int);

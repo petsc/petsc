@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.7 1996/07/08 12:44:09 curfman Exp bsmith $ */
+/* $Id: baij.h,v 1.8 1996/08/08 14:43:31 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 #include <math.h>
@@ -15,7 +15,7 @@
 typedef struct {
   int              sorted;       /* if true, rows are sorted by increasing columns */
   int              roworiented;  /* if true, row-oriented input, default */
-  int              nonew;        /* if true, don't allow new elements to be added */
+  int              nonew;        /* 1 don't add new nonzeros, -1 generate error on new */
   int              singlemalloc; /* if true a, i, and j have been obtained with
                                         one big malloc */
   int              m,n;          /* rows, columns */

@@ -21,7 +21,7 @@ CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS)
 # and all lower level PETSc components (such as vectors and matrices).
 # The order of listing these libraries is important!
 #
-PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes  -lpetscsles -lpetscksp \
+PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes  -lpetscsles \
 		-lpetscmat -lpetscvec -lpetscsys $(X11_LIB) \
 		$(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
@@ -30,23 +30,30 @@ PETSC_LIB   = -L$(LDIR) -lpetscts -lpetscsnes  -lpetscsles -lpetscksp \
 # level PETSc components (such as vectors and matrices).  The order
 # of listing these libraries is important!
 #
-SLES_LIB    =	-L$(LDIR) -lpetscsles -lpetscksp \
+SLES_LIB    =	-L$(LDIR) -lpetscsles \
 		-lpetscmat -lpetscvec -lpetscsys $(BS_LIB) $(LAPACK_LIB) \
                  $(BLAS_LIB) $(X11_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 #
 #   Library if you are using the GVec component of PETSc
 #
-GVEC_LIB   = -L$(LDIR) -lpetscgvec  -lpetscts -lpetscsnes  -lpetscsles -lpetscksp \
+GVEC_LIB   = -L$(LDIR) -lpetscgvec  -lpetscts -lpetscsnes  -lpetscsles \
 		-lpetscmat  -lpetscvec -lpetscsys $(X11_LIB) \
 		$(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 #
 #   All PETSc libraries
 #
-GVEC_LIB   = -L$(LDIR) -lpetscgvec  -lpetscts -lpetscsnes -lpetscec -lpetscsles \
-                -lpetscksp -lpetscmat  -lpetscvec -lpetscsys $(X11_LIB) \
+GVEC_LIB   = -L$(LDIR) -lpetscgvec  -lpetscts -lpetscsnes -lpetscsles \
+                -lpetscmat  -lpetscvec -lpetscsys $(X11_LIB) \
 		$(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
+		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
+#
+#   Currently ignore this entry
+#
+PETSC_ADIC_LIB   = -L$(LDIR) -lpetsctsadic -lpetscsnesadic  -lpetscslesadic  \
+		    -lpetscmatadic -lpetscvecadic -lpetscsysadic $(BS_LIB) $(LAPACK_LIB) \
+                 $(BLAS_LIB) $(X11_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 #
 # Link if you are using the PETSc Fortran interface.
@@ -302,35 +309,46 @@ wwwpages:
 adic:
 	@-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-          adiC.new -auhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
+          $(ADIC_CC) -s -h -f 1 $(CFLAGS) $$i ; \
           fi; done ; \
         fi; fi
 	@-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEH)" != "" ]; then \
           for i in $(SOURCEH) foo; do if [ -f $$i ]; then \
-          adiC.new -auhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
+          $(ADIC_CC) -s -h -f 1 $(CFLAGS) $$i ; \
           fi; done ; \
         fi; fi
-	-@chmod go+rw *.ad.*
+	-@chmod -f go+rw *.ad.*
 
 adic2:
 	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-          adiC.new -avuhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
+          $(ADIC_CC) -h -f 1 $(CFLAGS) $$i ; \
           fi; done ; \
         fi; fi
 	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEH)" != "" ]; then \
           for i in $(SOURCEH) foo; do if [ -f $$i ]; then \
-          adiC.new -avuhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
+          $(ADIC_CC) -h -f 1 $(CFLAGS) $$i ; \
           fi; done ; \
         fi; fi
-	-@chmod go+rw *.ad.*
+	-@chmod -f go+rw *.ad.*
 
 adiclib:
-	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
-          $(CC) -c $(CFLAGS) $(COPTFLAGS) -I$(ADIC)/include  -I/home/derivs/ADIC/run-lib/include -I$(ADIC)/gradient -Dad_GRAD_MAX=10 *.ad.c ; \
+	-@if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
+          $(CC) -c $(CFLAGS) $(COPTFLAGS) $(ADIC_INCLUDE) *.ad.c ; \
         fi; fi
-	$(AR) cr $(PDIR)/$(LIBBASE)adic.a *.ad.o
-	$(RM) *.ad.o
+	-@if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
+          $(AR) cr $(PDIR)/$(LIBBASE)adic.a *.ad.o ; \
+        fi; fi
+	-@$(RM) -f *.ad.o
+
+adiclib2:
+	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
+          $(CC) -c $(CFLAGS) $(COPTFLAGS) $(ADIC_INCLUDE) *.ad.c ; \
+        fi; fi
+	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
+          $(AR) cr $(PDIR)/$(LIBBASE)adic.a *.ad.o ; \
+        fi; fi
+	-@$(RM) -f *.ad.o
 #
 #
 #     Functions that need not be differentiated with ADIC are listed with a
@@ -363,7 +381,7 @@ adicnotignore: chkpetsc_dir
         fi
 # -------------------------------------------------------------------------------
 
-SHLIBS = libmpiuni libpetsccontrib libpetscksp libpetscmat libpetscsles \
+SHLIBS = libmpiuni libpetsccontrib libpetscmat libpetscsles \
 	libpetscsnes libpetscsys libpetscts libpetscvec libpetscts libpetscgvec
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.45 1997/02/05 22:04:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.46 1997/02/06 17:34:43 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -30,7 +30,7 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
      sles.h   - linear solvers
 */
-#include "draw.h"
+
 #include "da.h"
 #include "snes.h"
 #include <math.h>

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.25 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.26 1997/02/22 02:23:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -32,7 +32,7 @@ struct _PetscRandom {
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscRandomDestroy" /* ADIC Ignore */
+#define __FUNC__ "PetscRandomDestroy" 
 /*@C
    PetscRandomDestroy - Destroys a context that has been formed by 
    PetscRandomCreate().
@@ -104,7 +104,7 @@ extern void   srand48(long);
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "PetscRandomCreate" /* ADIC Ignore */
+#define __FUNC__ "PetscRandomCreate" 
 /*@C
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
@@ -217,7 +217,7 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 extern double drand48();
 
 #undef __FUNC__  
-#define __FUNC__ "PetscRandomCreate" /* ADIC Ignore */
+#define __FUNC__ "PetscRandomCreate" 
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;

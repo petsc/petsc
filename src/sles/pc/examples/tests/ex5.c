@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.49 1996/11/13 16:23:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.50 1997/01/01 03:37:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -16,7 +16,6 @@ This example also demonstrates matrix-free methods\n\n";
   This is not a good example to understand the use of multigrid with PETSc.
 */
 #include <math.h>
-#include "draw.h"
 #include "mg.h"
 #include "petsc.h"
 

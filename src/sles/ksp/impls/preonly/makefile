@@ -7,7 +7,7 @@ SOURCEC  = preonly.c
 SOURCEF  =
 OBJSC    = preonly.o
 OBJSF    =
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 LOCDIR   = src/ksp/impls/preonly/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

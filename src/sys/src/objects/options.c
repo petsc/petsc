@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.123 1997/03/01 15:45:33 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.124 1997/03/06 21:37:21 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -382,6 +382,7 @@ $     the database
 $  -mpidump : Calls PetscMPIDump()
 $  -trdump : Calls PetscTrDump()
 $  -trinfo : Prints total memory usage
+$  -trmalloc_log: Prints summary of memory usage
 $  -trdebug : Calls malloc_debug(2) to activate memory
 $      allocation diagnostics (used by PETSC_ARCH=sun4, 
 $      BOPT=[g,g_c++,g_complex] only!)
@@ -410,6 +411,11 @@ $      utility Upshot/Nupshot (in MPICH distribution)
 int PetscFinalize()
 {
   int  ierr,i,rank = 0,flg1,flg2,flg3;
+
+  if (!PetscInitializedCalled) {
+    fprintf(stderr,"PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
+    return 0;
+  }
 
   ViewerDestroy_Private();
   ViewerDestroyDrawX_Private();

@@ -1,10 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: ex35.c,v 1.12 1996/08/15 12:48:18 bsmith Exp $";
+static char vcid[] = "$Id: ex35.c,v 1.1 1996/12/10 13:57:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatGetSubMatrices().\n\n";
 
-#include "draw.h"
 #include "mat.h"
 #include <stdio.h>
 

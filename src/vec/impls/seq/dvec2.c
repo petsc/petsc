@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.38 1997/01/16 04:58:46 curfman Exp bsmith $ */
+/* $Id: dvec2.c,v 1.39 1997/02/22 02:22:30 bsmith Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -9,7 +9,6 @@
 #include "src/inline/axpy.h"
 #include "src/vec/vecimpl.h"             
 #include "src/vec/impls/dvecimpl.h"   
-#include "draw.h"          
 #include "pinclude/pviewer.h"
 
 /*

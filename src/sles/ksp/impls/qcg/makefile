@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = qcg.h 
 OBJSC    = qcg.o
 OBJSF    =
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 LINCLUDE = 
 LOCDIR   = src/ksp/impls/qcg/
 

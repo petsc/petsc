@@ -1,11 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.112 1997/03/12 22:35:06 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.113 1997/03/13 16:34:18 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
 */
 
+#include "pinclude/pviewer.h"
 #include "src/mat/impls/bdiag/mpi/mpibdiag.h"
 #include "src/vec/vecimpl.h"
 
@@ -533,8 +534,6 @@ int MatDestroy_MPIBDiag(PetscObject obj)
   return 0;
 }
 
-#include "draw.h"
-#include "pinclude/pviewer.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIBDiag_Binary" /* ADIC Ignore */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.39 1997/01/06 20:27:51 balay Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.40 1997/02/22 02:27:37 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -8,8 +8,7 @@ static char vcid[] = "$Id: lg.c,v 1.39 1997/01/06 20:27:51 balay Exp bsmith $";
     the end of the X axis.
 */
 
-#include "petsc.h"
-#include "draw.h"         /*I "draw.h" I*/
+#include "petsc.h"         /*I "petsc.h" I*/
 
 struct _DrawLG {
   PETSCHEADER 

@@ -1,7 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.193 1997/03/12 22:33:18 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.194 1997/03/13 16:33:58 curfman Exp bsmith $";
 #endif
 
+#include "pinclude/pviewer.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
@@ -667,8 +668,6 @@ int MatDestroy_MPIAIJ(PetscObject obj)
   PetscHeaderDestroy(mat);
   return 0;
 }
-#include "draw.h"
-#include "pinclude/pviewer.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatView_MPIAIJ_Binary" /* ADIC Ignore */

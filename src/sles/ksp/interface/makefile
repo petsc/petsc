@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
            xmon.o eige.o
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 DIRS     =
 MANSEC   = 5
 LOCDIR   = src/ksp/interface/

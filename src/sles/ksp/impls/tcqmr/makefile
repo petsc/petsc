@@ -7,7 +7,7 @@ SOURCEF  =
 SOURCEH  = tcqmrp.h
 OBJSC    = tcqmr.o
 OBJSF    = 
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 LOCDIR   = src/ksp/impls/tcqmr/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

@@ -1,6 +1,9 @@
-/* $Id: mpiaij.h,v 1.11 1995/10/22 03:22:25 bsmith Exp bsmith $ */
+/* $Id: mpiaij.h,v 1.12 1995/12/23 21:57:19 bsmith Exp bsmith $ */
 
-#include "aij.h"
+#if !defined(__MPIAIJ_H)
+#define __MPIAIJ_H
+
+#include "src/mat/impls/aij/seq/aij.h"
 
 typedef struct {
   int           *rowners, *cowners;     /* ranges owned by each processor */
@@ -15,9 +18,8 @@ typedef struct {
 
   /* The following variables are used for matrix assembly */
 
-  int           assembled;              /* MatAssemble has been called */
-  InsertMode    insertmode;             /* mode for MatSetValues */
   Stash         stash;                  /* stash for non-local elements */
+  int           donotstash;             /* 1 if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends, nrecvs;         /* numbers of sends and receives */
@@ -28,7 +30,15 @@ typedef struct {
 
   /* The following variables are used for matrix-vector products */
 
-  Vec           lvec;                   /* local vector */
-  VecScatter    Mvctx;                  /* scatter context for vector */
-  int           roworiented;           /* if true, row-oriented input, default true */
+  Vec           lvec;              /* local vector */
+  VecScatter    Mvctx;             /* scatter context for vector */
+  int           roworiented;       /* if true, row-oriented input, default true */
+
+  /* The following variables are for MatGetRow() */
+
+  int           *rowindices;       /* column indices for row */
+  Scalar        *rowvalues;        /* nonzero values in row */
+  PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 } Mat_MPIAIJ;
+
+#endif

@@ -7,7 +7,7 @@ SOURCEC  = lsqr.c
 SOURCEF  =
 OBJSC    = lsqr.o
 OBJSF    =
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 LOCDIR   = src/ksp/impls/lsqr/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

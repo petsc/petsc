@@ -6,7 +6,7 @@ SOURCEC  = bcgs.c
 SOURCEF  =
 OBJSC    = bcgs.o
 OBJSF    =
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 LOCDIR   = src/ksp/impls/bcgs/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

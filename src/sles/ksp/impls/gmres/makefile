@@ -10,7 +10,7 @@ SOURCEF  =
 OBJSC    = gmres.o borthog.o borthog2.o borthog3.o gmres2.o gmreig.o \
            gmpre.o gmcnv.o
 OBJSF    = 
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 MANSEC   = 5
 LOCDIR   = src/ksp/impls/gmres/
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.44 1997/01/01 03:39:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.45 1997/01/02 13:09:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -9,7 +9,6 @@ Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
 
-#include "draw.h"
 #include "mat.h"
 #include "sles.h"
 #include "petsclog.h"

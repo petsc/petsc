@@ -7,7 +7,7 @@ SOURCEC  = cr.c
 SOURCEF  = 
 OBJSC    = cr.o 
 OBJSF    =
-LIBBASE  = libpetscksp
+LIBBASE  = libpetscsles
 LOCDIR   = src/ksp/impls/cr/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

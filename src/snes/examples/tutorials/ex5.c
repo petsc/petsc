@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.74 1997/02/03 06:01:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.75 1997/02/05 22:04:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -484,6 +484,11 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
         feature with caution!
   */
   *flag = SAME_NONZERO_PATTERN;
+  /*
+      Tell the matrix we will never add a new nonzero location to the
+    matrix. If we do it will generate an error.
+  */
+  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr);
   return 0;
 }
 

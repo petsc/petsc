@@ -1,10 +1,10 @@
 
-/* $Id: pdvec.c,v 1.71 1997/02/21 18:27:16 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.72 1997/02/22 02:22:33 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
 */
-#include "draw.h"
+
 #include "pinclude/pviewer.h"
 #include "pvecimpl.h"   /*I  "vec.h"   I*/
 

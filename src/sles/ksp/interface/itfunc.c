@@ -1,11 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.80 1997/02/04 21:23:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.81 1997/02/22 02:22:53 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
 */
-#include "petsc.h"
-#include "draw.h"
+
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
 #undef __FUNC__  

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.7 1997/02/05 22:05:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.8 1997/02/07 23:31:11 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -7,7 +7,6 @@ static char help[] = "Tests DALocalToLocal().\n\n";
 #include "petsc.h"
 #include "da.h"
 #include "sys.h"
-#include "draw.h"
 #include <math.h>
 
 int main(int argc,char **argv)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.10 1997/02/05 22:03:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.11 1997/02/22 02:28:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,7 +12,6 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #include "petsc.h"
 #include "da.h"
 #include "sys.h"
-#include "draw.h"
 #include <math.h>
 
 #define PETSC_PI 3.14159265

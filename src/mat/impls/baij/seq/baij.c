@@ -1,11 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.93 1997/03/12 22:35:28 curfman Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.94 1997/03/13 16:34:33 curfman Exp bsmith $";
 #endif
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
+
+#include "pinclude/pviewer.h"
+#include "sys.h"
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/spops.h"
@@ -37,9 +40,6 @@ int MatMarkDiag_SeqBAIJ(Mat A)
   return 0;
 }
 
-#include "draw.h"
-#include "pinclude/pviewer.h"
-#include "sys.h"
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 

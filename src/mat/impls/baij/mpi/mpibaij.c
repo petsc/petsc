@@ -1,12 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.57 1997/03/13 16:30:14 curfman Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.58 1997/03/13 21:03:42 balay Exp bsmith $";
 #endif
 
+#include "pinclude/pviewer.h"
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "src/vec/vecimpl.h"
 
-#include "draw.h"
-#include "pinclude/pviewer.h"
 
 extern int MatSetUpMultiply_MPIBAIJ(Mat); 
 extern int DisAssemble_MPIBAIJ(Mat);

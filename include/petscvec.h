@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.57 1997/02/04 21:27:32 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.58 1997/03/09 18:01:27 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component of PETSc. Vectors generally
   represent degrees of freedom for finite element/finite difference functions
@@ -20,8 +20,9 @@ typedef struct _VecScatter*  VecScatter;
 
 extern int VecCreateSeq(MPI_Comm,int,Vec*);  
 extern int VecCreateMPI(MPI_Comm,int,int,Vec*);  
-extern int VecCreateMPIGhost(MPI_Comm,int,int,int,Vec*);  
 extern int VecCreate(MPI_Comm,int,Vec*); 
+extern int VecCreateSeqWithArray(MPI_Comm,int,Scalar*,Vec*);  
+extern int VecCreateGhost(MPI_Comm,int,int,int,Vec*,Vec*);  
 
 extern int VecDestroy(Vec);        
 
@@ -97,9 +98,13 @@ extern int VecSetValuesLocal(Vec,int,int*,Scalar*,InsertMode);
 typedef enum {VEC_IGNORE_OFF_PROCESSOR_ENTRIES} VecOption;
 extern int VecSetOption(Vec,VecOption);
 
-#if defined(__DRAW_PACKAGE)
-extern int DrawTensorContour(Draw,int,int,double *,double *,Vec);
+/*
+    These routines require the Draw component of PETSc
+*/   
+#if !defined(__DRAW_PACKAGE)
+typedef struct _Draw* Draw;
 #endif
+extern int DrawTensorContour(Draw,int,int,double *,double *,Vec);
 
 #endif
 

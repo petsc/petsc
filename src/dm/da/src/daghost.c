@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daghost.c,v 1.8 1997/01/06 20:30:32 balay Exp bsmith $";
+static char vcid[] = "$Id: daghost.c,v 1.9 1997/02/22 02:29:24 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -24,7 +24,11 @@ $    y and z are optional (used for 2D and 3D problems)
 $    n and p are optional (used for 2D and 3D problems)
 
    Note:
-   Any of y, z, n, and p should be set to PETSC_NULL if not needed.
+   The corner information is independent of the number of degrees of 
+freedom per node set with the DACreateXX() routine. Thus the x, y, z, and
+m, n, p can be thought of as coordinates on a logical grid, where each
+grid point has (potentially) several degrees of freedom.
+   Any of y, z, n, and p can be passed in as PETSC_NULL if not needed.
 
 .keywords: distributed array, get, ghost, corners, nodes, local indices
 

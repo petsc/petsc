@@ -1,9 +1,8 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.45 1997/01/28 03:01:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.46 1997/02/22 02:28:38 bsmith Exp bsmith $";
 #endif
 
-#include "draw.h"       /*I  "draw.h"   I*/
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
 #include "pinclude/pviewer.h"
 

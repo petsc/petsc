@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.46 1997/01/01 03:41:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.47 1997/01/21 21:50:22 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -47,7 +47,7 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
      sles.h   - linear solvers
 */
-#include "draw.h"
+
 #include "snes.h"
 #include <math.h>
 

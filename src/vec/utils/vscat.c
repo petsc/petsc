@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.82 1997/02/04 21:23:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.83 1997/02/22 02:22:21 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -817,7 +817,8 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
    Notes:
    If you use SCATTER_REVERSE the first two arguments should be reversed, from 
    the SCATTER_FORWARD.
-   The vectors x and y cannot be the same. y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+   
+   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
    This scatter is far more general than the conventional
    scatter, since it can be a gather or a scatter or a combination,
@@ -839,7 +840,6 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
   if (inctx->inuse) SETERRQ(1,0," Scatter ctx already in use");
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"y cannot be x");
 #if defined(PETSC_BOPT_g)
   /*
      Error checking to make sure these vectors match the vectors used
@@ -888,7 +888,7 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
    Notes:
    If you use SCATTER_REVERSE the first two arguments should be reversed, from 
    the SCATTER_FORWARD.
-   The vectors x and y cannot be the same. y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
 .keywords: vector, scatter, gather, end
 
@@ -899,7 +899,6 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
   int ierr;
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"y cannot be x");
   ctx->inuse = 0;
   if (!ctx->end) return 0;
   PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);
