@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.2 2000/08/01 20:57:32 bsmith Exp balay $ */
+/* $Id: ex20.c,v 1.3 2000/09/06 22:19:32 balay Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -594,7 +594,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   
   /* Insert values into global vector */ 
   ierr = DALocalToGlobal(finegrid->da,localF,INSERT_VALUES,F);CHKERRQ(ierr); 
-  ierr = PLogFlops((33 + 6*POWFLOP)*ym*xm*zm); CHKERRQ(ierr);
+  ierr = PLogFlops((33 + 6*POWFLOP)*ym*xm*zm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 /* --------------------  Evaluate Jacobian F(x) --------------------- */ 

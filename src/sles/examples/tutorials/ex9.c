@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.40 2000/05/05 22:18:00 balay Exp balay $*/
+/*$Id: ex9.c,v 1.41 2000/09/06 22:19:19 balay Exp bsmith $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
@@ -401,7 +401,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   ierr = VecAXPY(&none,u,b);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
-  ierr = PLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr;
+  ierr = PLogEventEnd(CHECK_ERROR,u,x,b,0);CHKERRQ(ierr);
   return 0;
 }
 /* ------------------------------------------------------------- */

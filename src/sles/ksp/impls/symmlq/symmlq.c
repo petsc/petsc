@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.4 2000/09/04 02:19:19 hzhang Exp hzhang $*/
+/*$Id: symmlq.c,v 1.5 2000/09/04 02:22:13 hzhang Exp bsmith $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -104,13 +104,13 @@ int  KSPSolve_SYMMLQ(KSP ksp,int *its)
       ierr = VecCopy(Z,U);CHKERRQ(ierr);
       ierr = VecScale(&ibeta,U);CHKERRQ(ierr); /* u <- ibeta*z; */
 
-      ierr = VecCopy(Wbar,W); CHKERRQ(ierr);
-      ierr = VecScale(&c,W);  CHKERRQ(ierr);
-      ierr = VecAXPY(&s,U,W); CHKERRQ(ierr);   /* w  <- c*w_bar + s*u;    (w_k) */
+      ierr = VecCopy(Wbar,W);CHKERRQ(ierr);
+      ierr = VecScale(&c,W);CHKERRQ(ierr);
+      ierr = VecAXPY(&s,U,W);CHKERRQ(ierr);   /* w  <- c*w_bar + s*u;    (w_k) */
       ms = -s;
-      ierr = VecScale(&ms,Wbar); CHKERRQ(ierr);
-      ierr = VecAXPY(&c,U,Wbar); CHKERRQ(ierr); /* w_bar <- -s*w_bar + c*u; (w_bar_(k+1)) */
-      ierr = VecAXPY(&ceta,W,X); CHKERRQ(ierr); /* x <- x + ceta * w;       (xL_k )  */
+      ierr = VecScale(&ms,Wbar);CHKERRQ(ierr);
+      ierr = VecAXPY(&c,U,Wbar);CHKERRQ(ierr); /* w_bar <- -s*w_bar + c*u; (w_bar_(k+1)) */
+      ierr = VecAXPY(&ceta,W,X);CHKERRQ(ierr); /* x <- x + ceta * w;       (xL_k)  */
 
       ceta_oold = ceta_old;
       ceta_old  = ceta;
