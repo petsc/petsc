@@ -1,10 +1,10 @@
-/*$Id: qcg.c,v 1.81 2001/07/10 07:10:40 buschelm Exp buschelm $*/
+/*$Id: qcg.c,v 1.82 2001/07/11 05:25:44 buschelm Exp balay $*/
 /*
    Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
 */
 
-#include "src/sles/ksp/kspimpl.h"
+#include "src/sles/ksp/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/sles/ksp/impls/qcg/qcg.h"
 
 static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
