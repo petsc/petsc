@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.108 1997/01/27 18:17:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.109 1997/02/22 02:25:36 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -18,10 +18,6 @@ static int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
   int          ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
   int          roworiented = mbd->roworiented;
 
-  if (mbd->insertmode != NOT_SET_VALUES && mbd->insertmode != addv) {
-    SETERRQ(1,0,"Cannot mix inserts and adds");
-  }
-  mbd->insertmode = addv;
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(1,0,"Negative row");
     if (idxm[i] >= mbd->M) SETERRQ(1,0,"Row too large");
@@ -91,11 +87,11 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   Scalar       *rvalues,*svalues;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce(&mbd->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
+  MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,0,
     "Cannot mix adds/inserts on different procs");
   }
-  mbd->insertmode = addv; /* in case this processor had no cache */
+  mat->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
@@ -189,7 +185,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   int          imdex, nrecvs = mbd->nrecvs, count = nrecvs, i, n, row, col;
   int          *tmp1, *tmp2, ierr, len, ict, Mblock, Nblock;
   Scalar       *values, val;
-  InsertMode   addv = mbd->insertmode;
+  InsertMode   addv = mat->insertmode;
 
   /*  wait on receives */
   while (count) {
@@ -220,7 +216,6 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   }
   PetscFree(mbd->send_waits); PetscFree(mbd->svalues);
 
-  mbd->insertmode = NOT_SET_VALUES;
   ierr = MatAssemblyBegin(mbd->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mbd->A,mode); CHKERRQ(ierr);
 
@@ -926,7 +921,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   B->factor	= 0;
   B->mapping    = 0;
 
-  b->insertmode = NOT_SET_VALUES;
+  B->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&b->rank);
   MPI_Comm_size(comm,&b->size);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.63 1997/01/22 18:42:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.64 1997/01/27 18:16:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -17,10 +17,6 @@ static int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar 
   int          ierr, i, j, rstart = A->rstart, rend = A->rend, row;
   int          roworiented = A->roworiented;
 
-  if (A->insertmode != NOT_SET_VALUES && A->insertmode != addv) {
-    SETERRQ(1,0,"Cannot mix inserts and adds");
-  }
-  A->insertmode = addv;
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(1,0,"Negative row");
     if (idxm[i] >= A->M) SETERRQ(1,0,"Row too large");
@@ -110,11 +106,11 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   Scalar       *rvalues,*svalues;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce(&mdn->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
+  MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { 
     SETERRQ(1,0,"Cannot mix adds/inserts on different procs");
   }
-  mdn->insertmode = addv; /* in case this processor had no cache */
+  mat->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
@@ -201,7 +197,7 @@ static int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
   MPI_Status   *send_status,recv_status;
   int          imdex, nrecvs=mdn->nrecvs, count=nrecvs, i, n, ierr, row, col;
   Scalar       *values,val;
-  InsertMode   addv = mdn->insertmode;
+  InsertMode   addv = mat->insertmode;
 
   /*  wait on receives */
   while (count) {
@@ -231,7 +227,6 @@ static int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
   }
   PetscFree(mdn->send_waits); PetscFree(mdn->svalues);
 
-  mdn->insertmode = NOT_SET_VALUES;
   ierr = MatAssemblyBegin(mdn->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mdn->A,mode); CHKERRQ(ierr);
 
@@ -932,7 +927,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   mat->mapping    = 0;
 
   a->factor       = 0;
-  a->insertmode   = NOT_SET_VALUES;
+  mat->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&a->rank);
   MPI_Comm_size(comm,&a->size);
 
@@ -1012,11 +1007,11 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
     /* copy factor contents ... add this code! */
   } else a->factor = 0;
 
-  a->rstart     = oldmat->rstart;
-  a->rend       = oldmat->rend;
-  a->size       = oldmat->size;
-  a->rank       = oldmat->rank;
-  a->insertmode = NOT_SET_VALUES;
+  a->rstart       = oldmat->rstart;
+  a->rend         = oldmat->rend;
+  a->size         = oldmat->size;
+  a->rank         = oldmat->rank;
+  mat->insertmode = NOT_SET_VALUES;
 
   a->rowners = (int *) PetscMalloc((a->size+1)*sizeof(int)); CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _Mat)+sizeof(Mat_MPIDense));

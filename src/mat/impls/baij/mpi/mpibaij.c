@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.52 1997/01/27 18:17:11 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.53 1997/03/08 18:16:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -163,12 +163,6 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   int         low,high,t,ridx,cidx,bs2=a->bs2; 
   Scalar      *ap,*aa=a->a,*bap;
 
-#if defined(PETSC_BOPT_g)
-  if (baij->insertmode != NOT_SET_VALUES && baij->insertmode != addv) {
-    SETERRQ(1,0,"Cannot mix inserts and adds");
-  }
-#endif
-  baij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
 #if defined(PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,0,"Negative row");
@@ -233,11 +227,6 @@ static int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scala
   int         rend=baij->rend,cstart=baij->cstart,stepval;
   int         cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
 
-#if defined(PETSC_BOPT_g)
-  if (baij->insertmode != NOT_SET_VALUES && baij->insertmode != addv) {
-    SETERRQ(1,0,"Cannot mix inserts and adds");
-  }
-#endif
   /* Should be stashed somewhere to avoid multiple mallocs */
   tmp = (Scalar*) PetscMalloc(bs2*sizeof(Scalar)); CHKPTRQ(tmp);
   if (roworiented) { 
@@ -246,7 +235,6 @@ static int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scala
     stepval = (m-1)*bs;
   }
   value = (Scalar *)PetscMalloc(bs2*sizeof(Scalar)); CHKPTRQ(value);
-  baij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
 #if defined(PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,0,"Negative row");
@@ -419,11 +407,11 @@ static int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   Scalar      *rvalues,*svalues;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce(&baij->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
+  MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) {
     SETERRQ(1,0,"Some processors inserted others added");
   }
-  baij->insertmode = addv; /* in case this processor had no cache */
+  mat->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
@@ -516,7 +504,7 @@ static int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   int         imdex,nrecvs = baij->nrecvs, count = nrecvs, i, n, ierr;
   int         bs=baij->bs,row,col,other_disassembled;
   Scalar      *values,val;
-  InsertMode  addv = baij->insertmode;
+  InsertMode  addv = mat->insertmode;
 
   /*  wait on receives */
   while (count) {
@@ -560,7 +548,6 @@ static int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   }
   PetscFree(baij->send_waits); PetscFree(baij->svalues);
 
-  baij->insertmode = NOT_SET_VALUES;
   ierr = MatAssemblyBegin(baij->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->A,mode); CHKERRQ(ierr);
 
@@ -1465,7 +1452,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   B->factor     = 0;
   B->assembled  = PETSC_FALSE;
 
-  b->insertmode = NOT_SET_VALUES;
+  B->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&b->rank);
   MPI_Comm_size(comm,&b->size);
 
@@ -1563,9 +1550,9 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
 #define __FUNC__ "MatConvertSameType_MPIBAIJ"
 static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
 {
-  Mat        mat;
+  Mat         mat;
   Mat_MPIBAIJ *a,*oldmat = (Mat_MPIBAIJ *) matin->data;
-  int        ierr, len=0, flg;
+  int         ierr, len=0, flg;
 
   *newmat       = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIBAIJ,matin->comm);
@@ -1595,7 +1582,7 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
   a->cend         = oldmat->cend;
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
-  a->insertmode   = NOT_SET_VALUES;
+  mat->insertmode = NOT_SET_VALUES;
   a->rowvalues    = 0;
   a->getrowactive = PETSC_FALSE;
 
