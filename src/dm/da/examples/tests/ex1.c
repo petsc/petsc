@@ -1,14 +1,12 @@
 
-
-static char help[] = "Tests various RA routines\n";
+static char help[] = "This example tests various RA routines.\n\n";
 
 #include "petsc.h"
 #include "ra.h"
 #include "sys.h"
-#include "options.h"
-#include <sysio.h>
 #include "draw.h"
 #include <math.h>
+#include <sysio.h>
 
 int main(int argc,char **argv)
 {
