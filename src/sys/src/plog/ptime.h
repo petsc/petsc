@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.27 1996/10/31 16:02:02 balay Exp balay $ */
+/* $Id: ptime.h,v 1.28 1996/12/19 16:15:14 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -134,6 +134,21 @@ extern UTP_readTime(struct timestruc_t *);
 #define PetscTimeSubtract(v) (v)-=MPI_Wtime();
 
 #define PetscTimeAdd(v)      (v)+=MPI_Wtime();
+
+#elif defined(PARCH_nt_gnu)
+#include <time.h>
+
+#define PetscTime(v)         {static clock_t _tp; \
+                             _tp = clock(); \
+                             (v)=((double)_tp/CLK_TCK);}
+
+#define PetscTimeSubtract(v) {static clock_t _tp; \
+                             _tp = clock(); \
+                             (v)-=((double)_tp/CLK_TCK);}
+
+#define PetscTimeAdd(v)      {static clock_t _tp; \
+                             _tp = clock(); \
+                             (v)+=((double)_tp/CLK_TCK);}
 
 #elif defined(HAVE_SYS_TIME_H)
 /*
