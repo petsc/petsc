@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.404 2001/06/06 15:50:59 bsmith Exp buschelm $*/
+/*$Id: matrix.c,v 1.405 2001/06/21 23:49:29 buschelm Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3606,7 +3606,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
    individual index sets according to the local submatrix desired.
 
    When finished using the submatrices, the user should destroy
-   them with MatDestroySubMatrices().
+   them with MatDestroyMatrices().
 
    MAT_REUSE_MATRIX can only be used when the nonzero structure of the 
    original matrix has not changed from that last call to MatGetSubMatrices().
@@ -3654,6 +3654,8 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
 -  mat - the matrices
 
    Level: advanced
+
+    Notes: Frees not only the matrices, but also the array that contains the matrices
 
 .seealso: MatGetSubMatrices()
 @*/
