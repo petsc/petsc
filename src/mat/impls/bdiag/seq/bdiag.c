@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.108 1996/07/08 22:19:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.109 1996/08/06 04:02:34 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1978,9 +1978,6 @@ static int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 static int MatConvertSameType_SeqBDiag(Mat,Mat *,int);
 extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,int,Mat*);
-extern int MatLUFactorNumeric_SeqBDiag_N(Mat,Mat*);
-extern int MatLUFactorNumeric_SeqBDiag_1(Mat,Mat*);
-extern int MatLUFactor_SeqBDiag(Mat,IS,IS,double);
 extern int MatILUFactor_SeqBDiag(Mat,IS,IS,double,int);
 extern int MatSolve_SeqBDiag_1(Mat,Vec,Vec);
 extern int MatSolve_SeqBDiag_2(Mat,Vec,Vec);
@@ -1995,14 +1992,13 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
        MatMult_SeqBDiag_N,MatMultAdd_SeqBDiag_N, 
        MatMultTrans_SeqBDiag_N,MatMultTransAdd_SeqBDiag_N, 
        MatSolve_SeqBDiag_N,0,
-       0,0,
-       MatLUFactor_SeqBDiag,0,
+       0,0,0,0,
        MatRelax_SeqBDiag_N,MatTranspose_SeqBDiag,
        MatGetInfo_SeqBDiag,0,
        MatGetDiagonal_SeqBDiag_N,MatDiagonalScale_SeqBDiag,MatNorm_SeqBDiag,
        0,MatAssemblyEnd_SeqBDiag,
        0,MatSetOption_SeqBDiag,MatZeroEntries_SeqBDiag,MatZeroRows_SeqBDiag,0,
-       MatLUFactorSymbolic_SeqBDiag,MatLUFactorNumeric_SeqBDiag_N,0,0,
+       0,MatLUFactorNumeric_SeqBDiag_N,0,0,
        MatGetSize_SeqBDiag,MatGetSize_SeqBDiag,MatGetOwnershipRange_SeqBDiag,
        MatILUFactorSymbolic_SeqBDiag,0,
        0,0,MatConvert_SeqBDiag,

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.24 1996/05/19 23:28:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.25 1996/08/04 23:12:52 bsmith Exp curfman $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -23,10 +23,6 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   int         *ainew,*ajnew, jmax,*fill, *ajtmp, nz, bs = a->bs, bs2=a->bs2;
   int         *idnew, idx, row,m,fm, nnz, nzi,len, realloc = 0,nzbd,*im;
  
-  if (a->m != a->n) SETERRQ(1,"MatLUFactorSymbolic_SeqBAIJ:Must be square");
-  if (!isrow) SETERRQ(1,"MatLUFactorSymbolic_SeqBAIJ:Must have row permutation");
-  if (!iscol) SETERRQ(1,"MatLUFactorSymbolic_SeqBAIJ:Must have col. permutation");
-
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
@@ -1239,10 +1235,6 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   int         *dloc, idx, row,m,fm, nzf, nzi,len,  realloc = 0;
   int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2;
   PetscTruth  col_identity, row_identity;
- 
-  if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBAIJ:Matrix must be square");
-  if (!isrow) SETERRQ(1,"MatILUFactorSymbolic_SeqBAIJ:Must have row permutation");
-  if (!iscol) SETERRQ(1,"MatILUFactorSymbolic_SeqBAIJ:Must have column permutation");
 
   /* special case that simply copies fill pattern */
   ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.64 1996/03/26 22:21:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.65 1996/07/02 18:05:45 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -106,7 +106,6 @@ static int PCSetUp_LU(PC pc)
   MatType     type;
 
   ierr = MatGetType(pc->pmat,&type,PETSC_NULL); CHKERRQ(ierr);
-  if (type == MATSEQBDIAG) dir->ordering = ORDER_NATURAL;
   if (dir->inplace) {
     ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
     ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
