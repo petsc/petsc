@@ -958,7 +958,7 @@ fi
     import sys
     # Find auxilliary directory by checking for config.sub
     auxDir = None
-    for dir in [os.path.abspath('config')] + sys.path:
+    for dir in [os.path.abspath(os.path.join('bin', 'config')), os.path.abspath('config')] + sys.path:
       if os.path.isfile(os.path.join(dir, 'config.sub')):
         auxDir      = dir
         configSub   = os.path.join(auxDir, 'config.sub')
