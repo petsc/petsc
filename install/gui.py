@@ -124,7 +124,7 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
   def cursesGetProjects(self,stdscr):
     '''Display nice message while downloading list of projects'''
     stdscr.clear()
-    CursesInstall.CenterAddStr(stdscr, 3, 'Downloading list of possible projects')
+    bootstrap.CursesInstall.CenterAddStr(stdscr, 3, 'Downloading list of possible projects')
     stdscr.refresh()
     self.GetProjects()
 
