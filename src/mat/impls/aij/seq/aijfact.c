@@ -532,6 +532,7 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatLUInfo *info)
   ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
   ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
+  PetscLogObjectParent(A,((Mat_SeqAIJ*)(A->data))->icol); 
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
