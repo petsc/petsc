@@ -1,9 +1,9 @@
-/*$Id: pname.c,v 1.34 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: pname.c,v 1.35 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectSetName"
+#define __FUNC__ /*<a name="PetscObjectSetName"></a>*/"PetscObjectSetName"
 /*@C 
    PetscObjectSetName - Sets a string name associated with a PETSc object.
 
@@ -33,7 +33,39 @@ int PetscObjectSetName(PetscObject obj,const char name[])
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectPublish"
+#define __FUNC__ /*<a name="PetscObjectName"></a>*/"PetscObjectName"
+/*@C
+   PetscObjectName - Gives an object a name if it does not have one
+
+   Not Collective
+
+   Input Parameters:
+.  obj - the Petsc variable
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectSetName((PetscObject)mat,name);
+
+   Level: advanced
+
+.keywords: object, set, name
+
+.seealso: PetscObjectGetName(), PetscObjectSetName()
+@*/
+int PetscObjectName(PetscObject obj)
+{
+  int        ierr;
+  char       name[16];
+  static int counter = 0;
+
+  PetscFunctionBegin;
+  if (!obj->name) {
+    sprintf(name,"n_%d",counter++);
+    ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PetscObjectPublish"></a>*/"PetscObjectPublish"
 /*@C 
    PetscObjectPublish - Publishs an object for the ALICE Memory Snooper
 
@@ -64,7 +96,7 @@ int PetscObjectPublish(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscObjectChangeTypeName"
+#define __FUNC__ /*<a name=PetscObjectChangeTypeName""></a>*/"PetscObjectChangeTypeName"
 int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
 {
   int ierr;

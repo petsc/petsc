@@ -1,4 +1,4 @@
-/*$Id: pams.c,v 1.3 2000/04/09 04:34:45 bsmith Exp bsmith $*/
+/*$Id: pams.c,v 1.4 2000/04/12 04:21:35 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -13,19 +13,12 @@ int PetscObjectPublishBaseBegin(PetscObject obj)
   AMS_Memory amem;
   AMS_Comm   acomm;
   int        ierr;
-  static int counter = 0;
-  char       name[16];
 
   PetscFunctionBegin;
-
-  if (obj->name) {
-    ierr = PetscStrncpy(name,obj->name,16);CHKERRQ(ierr);
-  } else {
-    sprintf(name,"n_%d",counter++);
-  }
+  ierr = PetscObjectName(obj);CHKERRQ(ierr);
 
   ierr      = ViewerAMSGetAMSComm(VIEWER_AMS_(obj->comm),&acomm);CHKERRQ(ierr);
-  ierr      = AMS_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
+  ierr      = AMS_Memory_create(acomm,obj->name,&amem);CHKERRQ(ierr);
   obj->amem = (int)amem;
 
   ierr = AMS_Memory_take_access(amem);CHKERRQ(ierr); 
