@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: checknightly,v 1.46 1999/01/29 15:36:38 balay Exp balay $ 
+# $Id: checknightly,v 1.47 1999/03/26 16:12:24 balay Exp balay $ 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
 # Checks if the remote jobs are done in the past 2days, and 
@@ -111,7 +111,7 @@ proc main { } {
     # if errors send out a report to the petsc team
     close $tmpfileid
     if { [ file size $tmpfile] > 0} {
-        exec /usr/ucb/mail -s "NIGHTLY BUILD PROBLEM"  balay curfman bsmith < $tmpfile
+        exec /usr/ucb/mail -s "NIGHTLY BUILD PROBLEM"  balay < $tmpfile
     }
     exec /bin/rm -f $tmpfile
 
