@@ -21,7 +21,7 @@ typedef struct {
                 *global_struc_new_num, *global_struc_owner,  
                 dsc_id,bs,*local_cols_old_num,*replication; 
   int           order_code,scheme_code,factor_type, stat, 
-                LBLASLevel, DBLASLevel;             /* runtime options */ 
+                LBLASLevel, DBLASLevel;             
   MatStructure  flg;
   IS            my_cols,iden,iden_dsc;
   Vec           vec_dsc;
@@ -296,6 +296,10 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
                        lu->local_struc_old_num,
                        PETSC_NULL,
                        &my_a_nonz);
+      if (ierr <0) {
+          DSC_ErrorDisplay(lu->My_DSC_Solver);
+          SETERRQ1(1,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
+      }
 
       /* get local_cols_old_num and IS my_cols to be used later */
       ierr = PetscMalloc(lu->num_local_cols*sizeof(int),&lu->local_cols_old_num);CHKERRQ(ierr);  
@@ -356,6 +360,10 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
                        lu->local_struc_old_num,
                        iidx,
                        &my_a_nonz);
+        if (ierr <0) {
+          DSC_ErrorDisplay(lu->My_DSC_Solver);
+          SETERRQ1(1,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
+        }
      
         ierr = PetscFree(idx);
         ierr = PetscFree(itmp);
@@ -369,19 +377,18 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
                        lu->local_struc_old_num,
                        PETSC_NULL,
                        &my_a_nonz);
+      if (ierr <0) {
+        DSC_ErrorDisplay(lu->My_DSC_Solver);
+        SETERRQ1(1,"Error setting local nonzeroes at processor %d \n", lu->dsc_id);
+      }
     }
     if ( size>1 ) {ierr = MatDestroy(A_seq);CHKERRQ(ierr); }   
   }
   
   if (lu->dsc_id != -1) {
-    if (ierr <0) {
-      DSC_ErrorDisplay(lu->My_DSC_Solver);
-      SETERRQ1(1,"Error seeting local nonzeroes at processor %d \n", lu->dsc_id);
-    }
-  
     ierr = DSC_NFactor(lu->My_DSC_Solver, lu->scheme_code, my_a_nonz, lu->factor_type, lu->LBLASLevel, lu->DBLASLevel);    
     ierr = PetscFree(my_a_nonz);CHKERRQ(ierr);
-  }  /* end of if(lu->dsc_id != -1)  */
+  }  
   
   (*F)->assembled = PETSC_TRUE; 
   lu->flg         = SAME_NONZERO_PATTERN;
