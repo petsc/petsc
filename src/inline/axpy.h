@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.6 1996/06/22 19:29:59 bsmith Exp bsmith $ */
+/* $Id: axpy.h,v 1.7 1997/09/13 01:16:08 curfman Exp curfman $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -182,6 +182,7 @@ for(__i=0;__i<n;__i++)U[__i]=p1[__i]+a1 * U[__i];}
 /* ----------------------------------------------------------------------------------
        Useful for APXY where alpha == -1 
   ----------------------------------------------------------------------------------
+  */
 #define YMX(U,p1,n)  {int __i;\
 for(__i=0;__i<n;__i++)U[__i]-=p1[__i];}
 /* Useful for APXY where alpha == 1 */
