@@ -24,12 +24,18 @@ class Package(config.base.Configure):
     self.name         = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
-    # these are optional items set in the particular packages file
+    # ***********  these are optional items set in the particular packages file
     self.complex      = 0
+    # urls where bk or tarballs may be found
     self.download     = []
+    # other packages whose dlib or include we depend on (maybe can be figured automatically)
     self.deps         = []
+    # functions we wish to check in the libraries
     self.functions    = []
+    # include files we wish to check for
     self.includes     = []
+    # list of libraries we wish to check for (can be overwritten by providing your own generateLibraryList()
+    self.liblist      = [] 
     
   def __str__(self):
     '''Prints the location of the packages includes and libraries'''
@@ -50,6 +56,13 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<dir,or list of libraries>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' libraries or a list of libraries'))    
     return
+
+  def generateLibList(self,dir):
+    '''Generates full path list of libraries from self.liblist'''
+    alllibs = []
+    for l in liblist:
+      alllibs.append(os.path.join(dir,l))
+    return alllibs
 
   def generateGuesses(self):
     if self.download and self.framework.argDB['download-'+self.package] == 1:
