@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.20 1996/03/27 00:06:28 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.21 1996/03/27 18:59:56 balay Exp curfman $";
 #endif
 
 /*
@@ -579,20 +579,6 @@ extern int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
-
-static int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  *m = a->m; *n = a->n;
-  return 0;
-}
-
-static int MatGetOwnershipRange_SeqBAIJ(Mat A,int *m,int *n)
-{
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  *m = 0; *n = a->m;
-  return 0;
-}
 
 static int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
 {
