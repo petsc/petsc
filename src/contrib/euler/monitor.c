@@ -31,7 +31,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
   Euler    *app = (Euler *)dummy;
-  Scalar   ksprtol, negone = -1.0, mfeps, cfl1, c_lift = 0.0, c_drag = 0.0, c_lift2 = 0.0, c_drag2 = 0.0;
+  Scalar   negone = -1.0, cfl1, c_lift = 0.0, c_drag = 0.0;
   Vec      DX, X;
   Viewer   view1;
   char     filename[64];
@@ -56,7 +56,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = pvar_(app->xx,app->p,
        app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
        app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint,
-       &c_lift,&c_drag,&c_lift2,&c_drag2); CHKERRA(ierr);
+       &c_lift,&c_drag); CHKERRA(ierr);
   }
 
   app->flog[its]  = log10(fnorm);
@@ -76,9 +76,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       if (app->rank == 0) {
         app->fp = fopen("fnorm.m","w"); 
         fprintf(app->fp,"zsnes = [\n");
-	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8.4e  %8.4e\n",
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
-                app->lin_rtol[its],c_lift,c_drag,c_lift2,c_drag2);
+                app->lin_rtol[its],c_lift,c_drag);
       }
     }
     app->sles_tot += app->lin_its[its];
@@ -97,9 +97,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       /* PetscPrintf(comm,"iter = %d, Function norm %g, lin_rtol=%g, lin_its = %d\n",
                   its,fnorm,app->lin_rtol[its],app->lin_its[its]); */
       if (app->rank == 0) {
-	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8.4e  %8.4e\n",
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
-                app->lin_rtol[its],c_lift,c_drag,c_lift2,c_drag2);
+                app->lin_rtol[its],c_lift,c_drag);
         fflush(app->fp);
       }
     }
@@ -150,10 +150,6 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
          app->sadai,app->sadaj,app->sadak,
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
          app->aiz,app->ajz,app->akz,&app->ts_type);
-    /*  eigenv_(app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
-         app->sadai,app->sadaj,app->sadak,
-         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz,&app->ts_type); */
 
     /* Extract solution and update vectors; convert to Julianne format */
     ierr = SNESGetSolutionUpdate(snes,&DX); CHKERRQ(ierr);
@@ -166,12 +162,6 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
            app->work_p,app->xx,app->p,app->dxx,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz); CHKERRQ(ierr); 
-
-    /*    ierr = jmonitor_(&app->flog[its],&app->cfl,
-           app->work_p,app->r,app->ru,app->rv,app->rw,app->e,
-           app->p,app->dr,app->dru,app->drv,app->drw,app->de,
-           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-           app->aiz,app->ajz,app->akz); CHKERRQ(ierr); */
 
     if (!app->no_output) {
       /* Check solution */
@@ -206,13 +196,6 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
           ierr = ViewerDestroy(view); CHKERRQ(ierr);
         }
       }
-    }
-    /* Set our own adaptive relative convergence tolerance for the next linear solve */
-    if (app->adaptive_ksp_rtol) {
-      ksprtol = 0.2 * fnorm;
-      ksprtol = PetscMin(app->ksp_rtol_max,ksprtol);
-      ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,
-             PETSC_DEFAULT); CHKERRQ(ierr);
     }
   }
 
@@ -256,10 +239,6 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
     ierr = UnpackWorkComponent(app,app->p,app->P); CHKERRQ(ierr);
     ierr = DFVecFormUniVec_MPIRegular_Private(app->P,&P_uni); CHKERRQ(ierr);
     ierr = DFVecFormUniVec_MPIRegular_Private(app->X,&X_uni); CHKERRQ(ierr);
-    if (app->rank == 0) {
-      ierr = VecGetArray(P_uni,&pp); CHKERRQ(ierr);
-      ierr = VecGetArray(X_uni,&xx); CHKERRQ(ierr);
-    }
   }
 
   /* Dump data from first processor only */
@@ -347,7 +326,14 @@ int MonitorDumpGeneralJulianne(Euler *app)
 /* --------------------------------------------------------------------------- */
 
 /*
-    ComputeMach - Computes the mach contour on the wing surface.
+   ComputeMach - Computes the mach contour on the wing surface.
+
+   Input Parameters:
+   app   - user-defined application context
+   x     - solution vector
+
+   Output Parameter:
+   smach - mach number on wing surface
  */
 int ComputeMach(Euler *app,Scalar *x,Scalar *smach)
 {

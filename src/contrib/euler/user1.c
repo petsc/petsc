@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   int      logging;               /* flag indicating use of logging */
   int      solve_with_julianne;   /* flag indicating use of original Julianne solver */
   int      init1, init2, init3;   /* event numbers for application initialization */
-  int      len, its, ierr, flg, stage;
+  int      len, its, ierr, flg, stage, pprint;
 
   /* Set Defaults */
   int      total_stages = 1;      /* number of times to run nonlinear solver */
@@ -111,7 +111,7 @@ int main(int argc,char **argv)
   int      maxsnes;               /* maximum number of SNES iterations */
   double   rtol = 1.e-10;         /* SNES relative convergence tolerance */
   double   time1, tsolve;         /* time for solution process */
-  Scalar   c_lift, c_drag, c_lift2, c_drag2;
+  Scalar   c_lift, c_drag;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize PETSc and print help information
@@ -266,23 +266,19 @@ int main(int argc,char **argv)
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,rtol,
                                 1.e-13,3000,100000); CHKERRA(ierr);
 
-  /* Either use my own adaptive method for choosing KSP relative convergence tolerance, or
-     use the Eisenstat-Walker method */
-  ierr = OptionsHasName(PETSC_NULL,"-adaptive_ksp_rtol",&app->adaptive_ksp_rtol); CHKERRA(ierr);
-  if (!app->adaptive_ksp_rtol) {
-    /* Use the Eisenstat-Walker method to set KSP convergence tolerances.  Set the
-       initial and maximum relative tolerance for the linear solvers to ksp_rtol_max */
-    ierr = SNES_KSP_SetConvergenceTestEW(snes); CHKERRA(ierr);
-    ierr = SNES_KSP_SetParametersEW(snes,PETSC_DEFAULT,app->ksp_rtol_max,app->ksp_rtol_max,
-           PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRA(ierr);
-  }
+  /* Use the Eisenstat-Walker method to set KSP convergence tolerances.  Set the
+     initial and maximum relative tolerance for the linear solvers to ksp_rtol_max */
+  ierr = SNES_KSP_SetConvergenceTestEW(snes); CHKERRA(ierr);
+  ierr = SNES_KSP_SetParametersEW(snes,PETSC_DEFAULT,app->ksp_rtol_max,app->ksp_rtol_max,
+         PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRA(ierr);
 
   /* Set runtime options (e.g. -snes_rtol <rtol> -ksp_type <type>) */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
   /* If using ILU(0) preconditioner and matrix-free version, then use in-place 
      factorization.  Note:  All of this section could be replaced by the options
-     -pc_ilu_in_place and -sub_pc_ilu_in_place */
+     -pc_ilu_in_place and -sub_pc_ilu_in_place (we code it here so that this is
+     the application's default). */
 
   if (app->matrix_free) {
     PCType pctype;
@@ -393,13 +389,11 @@ int main(int argc,char **argv)
     ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
 
     /* Calculate physical quantities of interest */
-    if (app->size == 1) {
-      int pprint = 1;
-      ierr = pvar_(app->xx,app->p,
-         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint,
-         &c_lift,&c_drag,&c_lift2,&c_drag2); CHKERRA(ierr);
-    }
+    pprint = 1;
+    ierr = pvar_(app->xx,app->p,
+           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+           app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc,&pprint,
+           &c_lift,&c_drag); CHKERRA(ierr);
 
     /* Dump all fields for general viewing */
     ierr = MonitorDumpGeneral(snes,app->X,app); CHKERRA(ierr);
@@ -982,7 +976,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
 {
   Euler  *app = (Euler *)ptr;
-  int    ierr, base_unit, fortvec, iter, ii, fcount;
+  int    ierr, base_unit, fortvec, iter;
   Scalar zero = 0.0, *farray;
   Vec    Fvec;
 
@@ -1197,7 +1191,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   int   nj1;	         /* y-direction grid dimension */
   int   nk1;	         /* z-direction grid dimension */
   int   Nx, Ny, Nz;   /* number of procs in each direction */
-  int   Nlocal, ierr, flg, llen, llenb, fort_comm, problem = 1, nc;
+  int   Nlocal, ierr, flg, llen, llenb, fort_comm, fort_comm_x, problem = 1, nc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                  Create user-defined application context
@@ -1230,8 +1224,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.0e-6;
       app->cfl_snes_it    = 2;
-      app->ksp_max_it     = 25;       /* max number of KSP iterations */
-      app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
+      app->ksp_max_it     = 25;   /* max number of KSP iterations */
+      app->f_reduction    = 0.3;  /* fnorm reduction before beginning to advance CFL */
       break;
     case 2:
       /* from m6f: Fortran: itl=19, itu=79, ile=49, ktip=11 */
@@ -1241,7 +1235,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_mf_default = 1.52e-5;
       app->cfl_snes_it    = 4;
       app->ksp_max_it     = 50; 
-      app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
+      app->f_reduction    = 0.3;
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
@@ -1250,8 +1244,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.42e-5;
       app->cfl_snes_it    = 4;
-      app->ksp_max_it     = 100; 
-      app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
+      app->ksp_max_it     = 100;
+      app->f_reduction    = 0.1; 
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1274,7 +1268,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->cfl_begin_advancement = 0;        /* flag - indicates CFL advancement has begun */
   app->cfl_max_incr          = 2.0;      /* maximum CFL increase at any given step */
   app->cfl_max_decr          = 0.1;      /* maximum CFL decrease at any given step */
-  app->f_reduction           = 0.1;     /* fnorm reduction ratio before beginning to advance CFL */
   app->cfl_advance           = CONSTANT; /* flag - by default we don't advance CFL */
   app->ts_type               = LOCAL_TS; /* type of timestepping */
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
@@ -1317,7 +1310,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
 
   ierr = OptionsHasName(PETSC_NULL,"-global_timestep",&flg); CHKERRQ(ierr);
   if (flg) app->ts_type = GLOBAL_TS;
-  ierr = OptionsGetDouble(PETSC_NULL,"-mf_tol",&app->mf_tol,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-use_jratio",&app->use_jratio); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-jratio",&app->jratio,&flg); CHKERRQ(ierr);
@@ -1531,7 +1523,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
               Setup parallel grid for Fortran code 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  fort_comm = PetscFromPointerComm(comm);
+  fort_comm   = PetscFromPointerComm(comm);
   ierr = parsetup_(&fort_comm, &app->print_grid, &app->no_output,
             &app->bctype, &app->rank, &app->size, &problem,
             &app->gxsf, &app->gysf, &app->gzsf,
@@ -2036,5 +2028,41 @@ int UserSetGrid(Euler *app)
     app->yc = yt;
     app->zc = zt;
   }
+  return 0;
+}
+
+/***************************************************************************/
+
+int GetXCommunicator(Euler *app,int* fcomm)
+{
+  MPI_Group group_all, group_x;
+  int fort_comm_x, ierr, ict, i, *ranks_x, *recv, send[2];
+  MPI_Comm comm_x;
+
+  /* Create communicator with processor subset (defined by those having the
+     same region of grid in x-direction, y=0 boundary only) */
+
+  if (app->ys == 0) {
+    ranks_x = (int *)PetscMalloc(3*app->size*sizeof(int)); CHKPTRQ(ranks_x);
+    PetscMemzero(ranks_x,3*app->size*sizeof(int));
+    recv = (int *) ranks_x + app->size;
+    send[0] = app->xs; send[1] = app->rank;
+    ierr = MPI_Allgather(send,2,MPI_INT,recv,2,MPI_INT,app->comm); CHKERRQ(ierr);
+    ict = 0;
+    for (i=0; i<app->size; i++) {
+      if (recv[2*i] == app->xs) ranks_x[ict++] = recv[2*i+1];
+    }
+    for (i=0; i<ict; i++) {
+       printf("[%d] xs=%d, ict=%d, i=%d, member=%d\n",app->rank,app->xs,ict,i,ranks_x[i]);
+    }
+    ierr = MPI_Comm_group(app->comm,&group_all); CHKERRQ(ierr);
+    ierr = MPI_Group_incl(group_all,ict,ranks_x,&group_x); CHKERRQ(ierr);
+    ierr = MPI_Comm_create(app->comm,group_x,&comm_x); CHKERRQ(ierr);
+    PetscFree(ranks_x);
+    fort_comm_x = PetscFromPointerComm(comm_x);
+  } else {
+    fort_comm_x = 0;
+  }
+  *fcomm = fort_comm_x;
   return 0;
 }

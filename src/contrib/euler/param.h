@@ -85,10 +85,10 @@ c   Problem number (1, 2, or 3), number of components per node
        integer problem, nc
 
 c   Communicator, rank, size
-       integer comm, xcomm, rank, size
+       integer comm, rank, size
 
 c   Common block for local data
-       common /pgrid/ rank, size, comm, xcomm, problem, nc
+       common /pgrid/ rank, size, comm, problem, nc
        common /pgrid/ printg, no_output, bctype
        common /pgrid/ xsf, ysf, zsf, xef, yef, zef
        common /pgrid/ xsf2, ysf2, zsf2, xsf1, ysf1, zsf1
