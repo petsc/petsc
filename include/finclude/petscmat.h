@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.51 1999/03/11 16:24:57 bsmith Exp balay $;
+!  $Id: mat.h,v 1.52 1999/03/24 18:07:39 balay Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -21,6 +21,7 @@
 #define MatColoringType     integer
 #define MatInfo             double precision
 #define MatILUInfo          double precision
+#define MatDuplicateOption  integer      
 #define MatStructure        integer
 #define MatPartitioningType integer
 
@@ -28,6 +29,9 @@
 !
 !  Matrix types
 !
+      integer MAX_MATRIX_TYPES
+      parameter (MAX_MATRIX_TYPES = 14)
+
       integer MATSAME,MATSEQDENSE,MATSEQAIJ,MATMPIAIJ
       integer MATSHELL,MATMPIROWBS,MATSEQBDIAG
       integer MATMPIBDIAG,MATMPIDENSE,MATSEQBAIJ
@@ -76,6 +80,20 @@
       parameter (MAT_USE_HASH_TABLE=78)
 
 !
+!  MatDuplicateOption
+!
+      integer MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES
+      parameter (MAT_DO_NOT_COPY_VALUES=0,MAT_COPY_VALUES=1)
+!
+!  Flags for PCSetOperators()
+!
+      integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN
+      integer SAME_PRECONDITIONER
+
+      parameter (SAME_NONZERO_PATTERN = 0,DIFFERENT_NONZERO_PATTERN = 1)
+      parameter (SAME_PRECONDITIONER = 2)
+
+!
 !  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
 !  (See petsc/include/mat.h)
 !
@@ -99,6 +117,23 @@
       parameter (MAT_INFO_MALLOCS=11,MAT_INFO_FILL_RATIO_GIVEN=12)
       parameter (MAT_INFO_FILL_RATIO_NEEDED=13)
       parameter (MAT_INFO_FACTOR_MALLOCS=14)
+!
+!  MatReuse
+!
+      integer MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX
+
+      parameter (MAT_INITIAL_MATRIX=0, MAT_REUSE_MATRIX=1)
+!
+!  Matrix orderings
+!
+      integer ORDER_NATURAL,ORDER_ND,ORDER_1WD,ORDER_RCM
+      integer ORDER_QMD,ORDER_ROWLENGTH,ORDER_FLOW,ORDER_NEW
+
+      parameter (ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2)
+      parameter (ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5)
+      parameter (ORDER_FLOW=6, ORDER_NEW=7)
+
+
 
 !
 !  MatInfoType
@@ -124,24 +159,8 @@
       parameter (MAT_ILUINFO_DIAGONAL_FILL = 3)
 
 !
-!  MatReuse
-!
-      integer MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX
-
-      parameter (MAT_INITIAL_MATRIX=0, MAT_REUSE_MATRIX=1)
-!
-!  Matrix orderings
-!
-      integer ORDER_NATURAL,ORDER_ND,ORDER_1WD,ORDER_RCM
-      integer ORDER_QMD,ORDER_ROWLENGTH,ORDER_FLOW,ORDER_NEW
-
-      parameter (ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2)
-      parameter (ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5)
-      parameter (ORDER_FLOW=6, ORDER_NEW=7)
-
-
-!
 !  Options for SOR and SSOR
+!  MatSorType may be bitwise ORd together, so do not change the numbers
 !
       integer SOR_FORWARD_SWEEP,SOR_BACKWARD_SWEEP,SOR_SYMMETRIC_SWEEP
       integer SOR_LOCAL_FORWARD_SWEEP,SOR_LOCAL_BACKWARD_SWEEP
@@ -154,15 +173,6 @@
       parameter (SOR_LOCAL_SYMMETRIC_SWEEP=12)
       parameter (SOR_ZERO_INITIAL_GUESS=16,SOR_EISENSTAT=32)
       parameter (SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128)
-
-!
-!  Flags for PCSetOperators()
-!
-      integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN
-      integer SAME_PRECONDITIONER
-
-      parameter (SAME_NONZERO_PATTERN = 0,DIFFERENT_NONZERO_PATTERN = 1)
-      parameter (SAME_PRECONDITIONER = 2)
 !
 !     MatColoringType
 !
