@@ -10,13 +10,11 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
-  - Add MatSetValuesLocal() modeled on VecSetValuesLocal().
-
   - Write preprocessor that zips through all of PETSc finding SETERRQ()
     setting unique error code number and save to big file: error code,
     file, line number and error message.
 
-  - Have option for MatSetValues() and VecSetValues() to ignore data inserted
+  - Have option for VecSetValues() to ignore data inserted
     that belongs to other processors.
 
   - Support y = alpha *y + beta *A *x
@@ -27,11 +25,6 @@ Additional Capabilities that PETSc Needs:
     builds giant table.
 
   - Have two types of error tests, one assert type and one real error type
-
-  - Have test if one passes in valid PETSc object to things like MatCreate()
-    to generate an error, for example if A already is a matrix and one
-    calls MatCreate(...... &A);
-
 
  - allow more then one TS monitor. Model on KSP.
 
@@ -595,4 +588,6 @@ Additional Capabilities that PETSc Needs:
     is available on all machines.
 
  X add -log_trace option, somewhat like -mpitrace stuff.
+
+ X Add MatSetValuesLocal() modeled on VecSetValuesLocal().
 
