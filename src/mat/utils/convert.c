@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.7 1995/05/02 16:33:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.8 1995/05/02 18:00:29 bsmith Exp curfman $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -96,7 +96,7 @@ int MatDetermineDiagonals_Private(Mat mat,int nb,int newr,int newc,
 /* 
   MatConvert_AIJ - Converts from MATAIJ format to another sequential format.
  */
-int MatConvert_AIJ(Mat mat, MATTYPE newtype, Mat *newmat)
+int MatConvert_AIJ(Mat mat, MatType newtype, Mat *newmat)
 { 
   Mat_AIJ *aij = (Mat_AIJ *) mat->data;
   Scalar  *vwork;
@@ -136,7 +136,7 @@ int MatConvert_AIJ(Mat mat, MATTYPE newtype, Mat *newmat)
            CHKERR(ierr);
     ierr = MatRestoreRow(mat,i,&nz,&cwork,&vwork); CHKERR(ierr);
   }
-  ierr = MatBeginAssembly(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyBegin(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatAssemblyEnd(*newmat,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }
@@ -145,7 +145,7 @@ int MatConvert_AIJ(Mat mat, MATTYPE newtype, Mat *newmat)
   MatConvert_MPIAIJ - Converts from MATMPIAIJ format to another
   parallel format.
  */
-int MatConvert_MPIAIJ(Mat mat, MATTYPE newtype, Mat *newmat)
+int MatConvert_MPIAIJ(Mat mat, MatType newtype, Mat *newmat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   Mat_AIJ    *Ad = (Mat_AIJ *)(aij->A->data), *Bd = (Mat_AIJ *)(aij->B->data);
