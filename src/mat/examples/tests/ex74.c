@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.21 2000/07/28 14:22:22 hzhang Exp balay $*/
+/*$Id: ex74.c,v 1.22 2000/07/28 19:27:53 balay Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -226,6 +226,7 @@ int main(int argc,char **args)
     ierr = MatView(sA,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
     printf("submatrix of sA =\n");
     ierr = MatView(sC,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = MatDestroy(sC);CHKERRA(ierr);
   }  
 
   /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
@@ -278,7 +279,7 @@ int main(int argc,char **args)
     } 
   }
 
-  /* Test MatReordering(), MatLUFactor(), MatILUFactor() */
+  /* Test MatReordering() */
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&isrow,&iscol);CHKERRA(ierr); 
   ip = isrow;
 
@@ -292,16 +293,20 @@ int main(int argc,char **args)
     /* ierr = ISView(ip, VIEWER_STDOUT_SELF); CHKERRA(ierr); 
        ierr = MatView(sA,VIEWER_DRAW_SELF); CHKERRA(ierr); */
   }
-
+  
+  ierr = ISDestroy(iscol);CHKERRA(ierr);
+  /* ierr = ISDestroy(isrow);CHKERRA(ierr);*/
+#ifndef Cholesky
+  /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() */
   if (bs == 1) {
     for (lf=-1; lf<0; lf++){   
       if (lf==-1) {  /* Cholesky factor */
         fill = 5.0;
-        ierr = MatCholeskyFactorSymbolic(sA,ip,fill,&sC);CHKERRA(ierr);
+        ierr = MatCholeskyFactorSymbolic(sA,isrow,fill,&sC);CHKERRA(ierr);
         norm1 = tol;
       } else {       /* incomplete Cholesky factor */
         fill          = 5.0;
-        ierr = MatIncompleteCholeskyFactorSymbolic(sA,ip,fill,lf,&sC);CHKERRA(ierr);
+        ierr = MatIncompleteCholeskyFactorSymbolic(sA,isrow,fill,lf,&sC);CHKERRA(ierr);
       }
       ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRA(ierr);
       /* MatView(sC, VIEWER_DRAW_WORLD); */
@@ -318,10 +323,11 @@ int main(int argc,char **args)
       norm1 = norm2;
     } 
   }
-
+  ierr = MatDestroy(sC);CHKERRA(ierr);
+  ierr = ISDestroy(isrow);CHKERRA(ierr);
+#endif
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
-  ierr = MatDestroy(sC);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr);
   ierr = VecDestroy(s1);CHKERRA(ierr);
