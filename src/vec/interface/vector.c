@@ -2167,7 +2167,7 @@ int VecGetLocalSize(Vec x,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGetOwnershipRange"
-/*@
+/*@C
    VecGetOwnershipRange - Returns the range of indices owned by 
    this processor, assuming that the vectors are laid out with the
    first n1 elements on the first processor, next n2 elements on the
@@ -2185,6 +2185,8 @@ int VecGetLocalSize(Vec x,int *size)
 
    Note:
    The high argument is one more than the last element stored locally.
+
+   Fortran: PETSC_NULL_INTEGER should be used instead of PETSC_NULL
 
    Level: beginner
 

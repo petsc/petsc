@@ -28,8 +28,8 @@ C_SYS_LIB	   = /usr/lib/libxlf.a /usr/lib/libxlf90.a  -lisode -lm
 G_COPTFLAGS	   = -g  -qfullpath
 G_FOPTFLAGS	   = -g  -qfullpath
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O3 -qarch=pwr2  -qmaxmem=-1 -w -qspill=3000
-O_FOPTFLAGS	   = -O3  -qarch=pwr2 -w
+O_COPTFLAGS	   = -O3 -qmaxmem=-1 -w -qspillsize=8000 -qarch=auto -qtune=auto -qcache=auto -qhot
+O_FOPTFLAGS	   = -O3 -w -qmaxmem=-1 -qarch=auto -qtune=auto -qcache=auto -qhot
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = xlC_r -+
@@ -44,7 +44,7 @@ CXX_SYS_LIB	   = /usr/lib/libxlf.a /usr/lib/libxlf90.a  -lcomplex -lisode -lm
 GCXX_COPTFLAGS	   = -g  -qfullpath
 GCXX_FOPTFLAGS	   = -g  -qfullpath 
 # ------------------------- BOPT - O_c++ options ------------------------------
-OCXX_COPTFLAGS	   = -O3  -qmaxmem=-1 -qspill=3000
+OCXX_COPTFLAGS	   = -O3  -qmaxmem=-1 -qspill=8000
 OCXX_FOPTFLAGS	   = -O3
 # -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS	   = -g  -qfullpath

@@ -46,6 +46,7 @@
 #define vecloadintovector_            VECLOADINTOVECTOR  
 #define vecconvertmpitoseqall_        VECCONVERTMPITOSEQALL
 #define vecconvertmpitompizero_       VECCONVERTMPITOMPIZERO
+#define vecgetownershiprange_         VECGETOWNERSHIPRANGE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecloadintovector_            vecloadintovector
 #define veccreateghostblockwitharray_ veccreateghostblockwitharray
@@ -90,6 +91,7 @@
 #define vecsetrandom_             vecsetrandom
 #define vecconvertmpitoseqall_    vecconvertmpitoseqall
 #define vecconvertmpitompizero_   vecconvertmpitompizero
+#define vecgetownershiprange_     vecgetownershiprange
 #endif
 
 EXTERN_C_BEGIN
@@ -107,12 +109,9 @@ void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
 }
 void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscReal *V,int *ierr)
 {
-  PetscReal *xx = PETSC_NULL;
-  PetscReal *yy = PETSC_NULL;
-  CHKFORTRANNULLDOUBLE(x) else xx = x;
-  CHKFORTRANNULLDOUBLE(y) else yy = y;
-
-  *ierr = PetscDrawTensorContour(*win,*m,*n,xx,yy,V);
+  CHKFORTRANNULLDOUBLE(x);
+  CHKFORTRANNULLDOUBLE(y);
+  *ierr = PetscDrawTensorContour(*win,*m,*n,x,y,V);
 }
 
 void PETSC_STDCALL vecsetfromoptions_(Vec *x,int *ierr)
@@ -376,6 +375,13 @@ void PETSC_STDCALL vecconvertmpitoseqall_(Vec *v,Vec *newv,int *ierr)
 void PETSC_STDCALL vecconvertmpitompizero_(Vec *v,Vec *newv,int *ierr)
 {
   *ierr = VecConvertMPIToMPIZero(*v,newv);
+}
+
+void PETSC_STDCALL vecgetownershiprange_(Vec *x,int *low,int *high, int *ierr)
+{
+  CHKFORTRANNULLINTEGER(low);
+  CHKFORTRANNULLINTEGER(high);
+  *ierr = VecGetOwnershipRange(*x,low,high);
 }
 
 EXTERN_C_END

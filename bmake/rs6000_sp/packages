@@ -11,7 +11,7 @@
 # for information on retrieving them.
 #
 # 
-BLASLAPACK_LIB         = -lesslp2
+BLASLAPACK_LIB         = -lessl
 PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_ESSL_ONLY
 #
 # Location of MPI (Message Passing Interface) software
