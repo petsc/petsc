@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.24 1999/10/24 14:01:50 bsmith Exp bsmith $*/
+/*$Id: comb.c,v 1.25 2000/01/11 21:00:05 bsmith Exp bsmith $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -27,42 +27,42 @@
 
 #define REDUCE_SUM  0
 #define REDUCE_MAX  1
+#define REDUCE_MIN  2
 
 typedef struct {
   MPI_Comm comm;
   Scalar   *lvalues;    /* this are the reduced values before call to MPI_Allreduce() */
   Scalar   *gvalues;    /* values after call to MPI_Allreduce() */
-  Vec      *invecs;     /* for debugging only, vector used with each op */
+  void     **invecs;     /* for debugging only, vector/memory used with each op */
   int      *reducetype; /* is particular value to be summed or maxed? */
   int      state;       /* are we calling xxxBegin() or xxxEnd()? */
   int      maxops;      /* total amount of space we have for requests */
   int      numopsbegin; /* number of requests that have been queued in */
   int      numopsend;   /* number of requests that have been gotten by user */
-} VecSplitReduction;
+} PetscSplitReduction;
 /*
-   Note: the lvalues and gvalues are twice as long as maxops this is to allow the second half of
-the entries to have a flag indicating if they are REDUCE_SUM or REDUCE_MAX, these are used by 
-the custom reduction operation that replaces MPI_SUM or MPI_MAX in the case when a reduction involves
+   Note: the lvalues and gvalues are twice as long as maxops, this is to allow the second half of
+the entries to have a flag indicating if they are REDUCE_SUM, REDUCE_MAX, or REDUCE_MIN these are used by 
+the custom reduction operation that replaces MPI_SUM, MPI_MAX, or MPI_MIN in the case when a reduction involves
 some of each.
 */
 
 #undef __FUNC__
-#define __FUNC__ "VecSplitReductionCreate"
+#define __FUNC__ "PetscSplitReductionCreate"
 /*
-   VecSplitReductionCreate - Creates a data structure to contain the queued 
-                             information.
+   PetscSplitReductionCreate - Creates a data structure to contain the queued information.
 */
-int VecSplitReductionCreate(MPI_Comm comm,VecSplitReduction **sr)
+int PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReduction **sr)
 {
   PetscFunctionBegin;
-  (*sr)              = PetscNew(VecSplitReduction);CHKPTRQ((*sr));
+  (*sr)              = PetscNew(PetscSplitReduction);CHKPTRQ((*sr));
   (*sr)->numopsbegin = 0;
   (*sr)->numopsend   = 0;
   (*sr)->state       = STATE_BEGIN;
   (*sr)->maxops      = 32;
   (*sr)->lvalues     = (Scalar*)PetscMalloc(2*32*sizeof(Scalar));CHKPTRQ((*sr)->lvalues);
   (*sr)->gvalues     = (Scalar*)PetscMalloc(2*32*sizeof(Scalar));CHKPTRQ((*sr)->gvalues);
-  (*sr)->invecs      = (Vec*)   PetscMalloc(32*sizeof(Vec));CHKPTRQ((*sr)->invecs);
+  (*sr)->invecs      = (void*)PetscMalloc(32*sizeof(void**));CHKPTRQ((*sr)->invecs);
   (*sr)->comm        = comm;
   (*sr)->reducetype  = (int*)PetscMalloc(32*sizeof(int));CHKPTRQ((*sr)->reducetype);
   PetscFunctionReturn(0);
@@ -71,15 +71,15 @@ int VecSplitReductionCreate(MPI_Comm comm,VecSplitReduction **sr)
 /*
        This function is the MPI reduction operation used when there is 
    a combination of sums and max in the reduction. The call below to 
-   MPI_Op_create() converts the function VecSplitReduction_Local() to the 
-   MPI operator VecSplitReduction_Op.
+   MPI_Op_create() converts the function PetscSplitReduction_Local() to the 
+   MPI operator PetscSplitReduction_Op.
 */
-MPI_Op VecSplitReduction_Op = 0;
+MPI_Op PetscSplitReduction_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNC__
-#define __FUNC__ "VecSplitReduction_Local"
-void VecSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+#define __FUNC__ "PetscSplitReduction_Local"
+void PetscSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   Scalar *xin = (Scalar *)in,*xout = (Scalar*)out;
   int    i,count = *cnt;
@@ -98,26 +98,28 @@ void VecSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
       xout[i] += xin[i]; 
     } else if ((int)PetscRealPart(xin[count+i]) == REDUCE_MAX) {
       xout[i] = PetscMax(*(PetscReal *)(xout+i),*(PetscReal *)(xin+i));
+    } else if ((int)PetscRealPart(xin[count+i]) == REDUCE_MIN) {
+      xout[i] = PetscMin(*(PetscReal *)(xout+i),*(PetscReal *)(xin+i));
     } else {
-      (*PetscErrorPrintf)("Reduction type input is not REDUCE_SUM or REDUCE_MAX");
+      (*PetscErrorPrintf)("Reduction type input is not REDUCE_SUM, REDUCE_MAX, or REDUCE_MIN");
       MPI_Abort(MPI_COMM_WORLD,1);
     }
   }
-  PetscStackPop;
+  PetscStackPop; /* since function returns void cannot use PetscFunctionReturn(); */
   return;
 }
 EXTERN_C_END
 
 #undef __FUNC__
-#define __FUNC__ "VecSplitReductionApply"
+#define __FUNC__ "PetscSplitReductionApply"
 /*
-   VecSplitReductionApply - Actually do the communication required for a split phase reduction
+   PetscSplitReductionApply - Actually do the communication required for a split phase reduction
 */
-int VecSplitReductionApply(VecSplitReduction *sr)
+int PetscSplitReductionApply(PetscSplitReduction *sr)
 {
   int        size,ierr,i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
   Scalar     *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  PetscTruth sum_flg = PETSC_FALSE,max_flg = PETSC_FALSE;
+  int        sum_flg = 0,max_flg = 0, min_flg = 0;
   MPI_Comm   comm = sr->comm;
 
   PetscFunctionBegin;
@@ -131,17 +133,19 @@ int VecSplitReductionApply(VecSplitReduction *sr)
   if (size == 1) {
     ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(Scalar));CHKERRQ(ierr);
   } else {
-    /* determine if all reductions are sum, or if some involve max */
+    /* determine if all reductions are sum, max, or min */
     for (i=0; i<numops; i++) {
       if (reducetype[i] == REDUCE_MAX) {
-        max_flg = PETSC_TRUE;
+        max_flg = 1;
       } else if (reducetype[i] == REDUCE_SUM) {
-        sum_flg = PETSC_TRUE;
+        sum_flg = 1;
+      } else if (reducetype[i] == REDUCE_MIN) {
+        min_flg = 1;
       } else {
-        SETERRQ(1,1,"Error in VecSplitReduction data structure, probably memory corruption");
+        SETERRQ(1,1,"Error in PetscSplitReduction data structure, probably memory corruption");
       }
     }
-    if (sum_flg && max_flg) {
+    if (sum_flg + max_flg + min_flg > 1) {
       /* 
          after all the entires in lvalues we store the reducetype flags to indicate
          to the reduction operations what are sums and what are max
@@ -150,9 +154,9 @@ int VecSplitReductionApply(VecSplitReduction *sr)
         lvalues[numops+i] = reducetype[i];
       }
 #if defined(PETSC_USE_COMPLEX)
-      ierr = MPI_Allreduce(lvalues,gvalues,2*2*numops,MPI_DOUBLE,VecSplitReduction_Op,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,2*2*numops,MPI_DOUBLE,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
 #else
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,VecSplitReduction_Op,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,PetscSplitReduction_Op,comm);CHKERRQ(ierr);
 #endif
     } else if (max_flg) {
 #if defined(PETSC_USE_COMPLEX)
@@ -163,6 +167,16 @@ int VecSplitReductionApply(VecSplitReduction *sr)
       ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
 #else
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
+#endif
+    } else if (min_flg) {
+#if defined(PETSC_USE_COMPLEX)
+      /* 
+        complex case we min both the real and imaginary parts, the imaginary part
+        is just ignored later
+      */
+      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
+#else
+      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
 #endif
     } else {
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
@@ -177,27 +191,26 @@ int VecSplitReductionApply(VecSplitReduction *sr)
 
 
 #undef __FUNC__
-#define __FUNC__ "VecSplitReductionExtend"
+#define __FUNC__ "PetscSplitReductionExtend"
 /*
-   VecSplitReductionExtend - Double the amount of space (slots) allocated for 
-                             a split reduction object.
+   PetscSplitReductionExtend - Double the amount of space (slots) allocated for a split reduction object.
 */
-int VecSplitReductionExtend(VecSplitReduction *sr)
+int PetscSplitReductionExtend(PetscSplitReduction *sr)
 {
   int    maxops = sr->maxops,*reducetype = sr->reducetype,ierr;
   Scalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  Vec    *invecs = sr->invecs;
+  void   *invecs = sr->invecs;
 
   PetscFunctionBegin;
   sr->maxops     = 2*maxops;
   sr->lvalues    = (Scalar*)PetscMalloc(2*2*maxops*sizeof(Scalar));CHKPTRQ(sr->lvalues);
   sr->gvalues    = (Scalar*)PetscMalloc(2*2*maxops*sizeof(Scalar));CHKPTRQ(sr->gvalues);
   sr->reducetype = (int*)PetscMalloc(2*maxops*sizeof(int));CHKPTRQ(sr->reducetype);
-  sr->invecs     = (Vec*)PetscMalloc(2*maxops*sizeof(Vec));CHKPTRQ(sr->invecs);
+  sr->invecs     = (void**)PetscMalloc(2*maxops*sizeof(void*));CHKPTRQ(sr->invecs);
   ierr = PetscMemcpy(sr->lvalues,lvalues,maxops*sizeof(Scalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(Scalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->reducetype,reducetype,maxops*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(sr->invecs,invecs,maxops*sizeof(Vec));CHKERRQ(ierr);
+  ierr = PetscMemcpy(sr->invecs,invecs,maxops*sizeof(void*));CHKERRQ(ierr);
   ierr = PetscFree(lvalues);CHKERRQ(ierr);
   ierr = PetscFree(gvalues);CHKERRQ(ierr);
   ierr = PetscFree(reducetype);CHKERRQ(ierr);
@@ -206,8 +219,8 @@ int VecSplitReductionExtend(VecSplitReduction *sr)
 }
 
 #undef __FUNC__
-#define __FUNC__ "VecSplitReductionDestroy"
-int VecSplitReductionDestroy(VecSplitReduction *sr)
+#define __FUNC__ "PetscSplitReductionDestroy"
+int PetscSplitReductionDestroy(PetscSplitReduction *sr)
 {
   int ierr;
 
@@ -238,25 +251,23 @@ int Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
 
   PetscFunctionBegin;
   PLogInfo(0,"Petsc_DelReduction:Deleting reduction data in an MPI_Comm %d\n",(int)comm);
-  ierr = VecSplitReductionDestroy((VecSplitReduction *)attr_val);CHKERRQ(ierr);
+  ierr = PetscSplitReductionDestroy((PetscSplitReduction *)attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 /*
-     VecSplitReductionGet - Gets the split reduction object from a 
+     PetscSplitReductionGet - Gets the split reduction object from a 
         PETSc vector, creates if it does not exit.
 
 */
 #undef __FUNC__
-#define __FUNC__ "VecSplitReductionGet"
-int VecSplitReductionGet(Vec x,VecSplitReduction **sr)
+#define __FUNC__ "PetscSplitReductionGet"
+int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 {
-  MPI_Comm comm;
   int      ierr,flag;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   if (Petsc_Reduction_keyval == MPI_KEYVAL_INVALID) {
     /* 
        The calling sequence of the 2nd argument to this function changed
@@ -269,13 +280,13 @@ int VecSplitReductionGet(Vec x,VecSplitReduction **sr)
     /*
          Also create the special MPI reduction operation that may be needed 
     */
-    ierr = MPI_Op_create(VecSplitReduction_Local,1,&VecSplitReduction_Op);CHKERRQ(ierr);
+    ierr = MPI_Op_create(PetscSplitReduction_Local,1,&PetscSplitReduction_Op);CHKERRQ(ierr);
   }
   ierr = MPI_Attr_get(comm,Petsc_Reduction_keyval,(void **)sr,&flag);CHKERRQ(ierr);
   if (!flag) {  /* doesn't exist yet so create it and put it in */
-    ierr = VecSplitReductionCreate(comm,sr);CHKERRQ(ierr);
+    ierr = PetscSplitReductionCreate(comm,sr);CHKERRQ(ierr);
     ierr = MPI_Attr_put(comm,Petsc_Reduction_keyval,*sr);CHKERRQ(ierr);
-    PLogInfo(0,"VecSplitReductionGet:Putting reduction data in an MPI_Comm %d\n",(int)comm);
+    PLogInfo(0,"PetscSplitReductionGet:Putting reduction data in an MPI_Comm %d\n",(int)comm);
   }
 
   PetscFunctionReturn(0);
@@ -303,19 +314,21 @@ seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot
 @*/
 int VecDotBegin(Vec x,Vec y,Scalar *result) 
 {
-  int               ierr;
-  VecSplitReduction *sr;
+  int                 ierr;
+  PetscSplitReduction *sr;
+  MPI_Comm            comm;
 
   PetscFunctionBegin;
-  ierr = VecSplitReductionGet(x,&sr);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
+  ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state == STATE_END) {
     SETERRQ(1,1,"Called before all VecxxxEnd() called");
   }
   if (sr->numopsbegin >= sr->maxops) {
-    ierr = VecSplitReductionExtend(sr);CHKERRQ(ierr);
+    ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
-  sr->invecs[sr->numopsbegin]     = x;
+  sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->dot_local) SETERRQ(1,1,"Vector does not suppport local dots");
   PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);
   ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
@@ -344,21 +357,23 @@ seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMD
 @*/
 int VecDotEnd(Vec x,Vec y,Scalar *result) 
 {
-  int               ierr;
-  VecSplitReduction *sr;
+  int                 ierr;
+  PetscSplitReduction *sr;
+  MPI_Comm            comm;
 
   PetscFunctionBegin;
-  ierr = VecSplitReductionGet(x,&sr);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
+  ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   
   if (sr->state != STATE_END) {
     /* this is the first call to VecxxxEnd() so do the communication */
-    ierr = VecSplitReductionApply(sr);CHKERRQ(ierr);
+    ierr = PetscSplitReductionApply(sr);CHKERRQ(ierr);
   }
 
   if (sr->numopsend >= sr->numopsbegin) {
     SETERRQ(1,1,"Called VecxxxEnd() more times then VecxxxBegin()");
   }
-  if (x && x != sr->invecs[sr->numopsend]) {
+  if (x && (void*) x != sr->invecs[sr->numopsend]) {
     SETERRQ(1,1,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   }
   if (sr->reducetype[sr->numopsend] != REDUCE_SUM) {
@@ -398,19 +413,21 @@ seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDo
 @*/
 int VecTDotBegin(Vec x,Vec y,Scalar *result) 
 {
-  int               ierr;
-  VecSplitReduction *sr;
+  int                 ierr;
+  PetscSplitReduction *sr;
+  MPI_Comm            comm;
 
   PetscFunctionBegin;
-  ierr = VecSplitReductionGet(x,&sr);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
+  ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state == STATE_END) {
     SETERRQ(1,1,"Called before all VecxxxEnd() called");
   }
   if (sr->numopsbegin >= sr->maxops) {
-    ierr = VecSplitReductionExtend(sr);CHKERRQ(ierr);
+    ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
-  sr->invecs[sr->numopsbegin]     = x;
+  sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->tdot_local) SETERRQ(1,1,"Vector does not suppport local dots");
   PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);
   ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
@@ -470,20 +487,22 @@ int VecTDotEnd(Vec x,Vec y,Scalar *result)
 @*/
 int VecNormBegin(Vec x,NormType ntype,PetscReal *result) 
 {
-  int               ierr;
-  VecSplitReduction *sr;
-  PetscReal         lresult[2];
+  int                 ierr;
+  PetscSplitReduction *sr;
+  PetscReal           lresult[2];
+  MPI_Comm            comm;
 
   PetscFunctionBegin;
-  ierr = VecSplitReductionGet(x,&sr);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
+  ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state == STATE_END) {
     SETERRQ(1,1,"Called before all VecxxxEnd() called");
   }
   if (sr->numopsbegin >= sr->maxops || (sr->numopsbegin == sr->maxops-1 && ntype == NORM_1_AND_2)) {
-    ierr = VecSplitReductionExtend(sr);CHKERRQ(ierr);
+    ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
   
-  sr->invecs[sr->numopsbegin]     = x;
+  sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->norm_local) SETERRQ(1,1,"Vector does not support local norms");
   PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);
   ierr = (*x->ops->norm_local)(x,ntype,lresult);CHKERRQ(ierr);
@@ -520,21 +539,23 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 @*/
 int VecNormEnd(Vec x,NormType ntype,PetscReal *result) 
 {
-  int               ierr;
-  VecSplitReduction *sr;
+  int                 ierr;
+  PetscSplitReduction *sr;
+  MPI_Comm            comm;
 
   PetscFunctionBegin;
-  ierr = VecSplitReductionGet(x,&sr);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
+  ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   
   if (sr->state != STATE_END) {
     /* this is the first call to VecxxxEnd() so do the communication */
-    ierr = VecSplitReductionApply(sr);CHKERRQ(ierr);
+    ierr = PetscSplitReductionApply(sr);CHKERRQ(ierr);
   }
 
   if (sr->numopsend >= sr->numopsbegin) {
     SETERRQ(1,1,"Called VecxxxEnd() more times then VecxxxBegin()");
   }
-  if (x && x != sr->invecs[sr->numopsend]) {
+  if (x && (void*)x != sr->invecs[sr->numopsend]) {
     SETERRQ(1,1,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   }
   if (sr->reducetype[sr->numopsend] != REDUCE_MAX && ntype == NORM_MAX) {
@@ -556,5 +577,13 @@ int VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
+/*
+   Possibly add
+
+     PetscReductionSumBegin/End()
+     PetscReductionMaxBegin/End()
+     PetscReductionMinBegin/End()
+   or have more like MPI with a single function with flag for Op? Like first better
+*/
 
 
