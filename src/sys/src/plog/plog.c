@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.241 2000/07/21 20:47:06 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.242 2000/08/16 16:37:20 bsmith Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -18,7 +18,7 @@
 #include <malloc.h>
 #endif
 #include "petscfix.h"
-#include "pinclude/ptime.h"
+#include "src/sys/src/plog/ptime.h"
 
 /*
     The next three variables determine which, if any, PLogInfo() calls are used.
