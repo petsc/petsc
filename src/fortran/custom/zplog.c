@@ -55,14 +55,14 @@ void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_
 #endif
 }
 void PETSC_STDCALL petsclogeventregister_(int *e,CHAR string PETSC_MIXED_LEN(len1),
-               CHAR color PETSC_MIXED_LEN(len2),int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+               CHAR color PETSC_MIXED_LEN(len2),int *cookie,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
 #if defined(PETSC_USE_LOG)
   char *t1,*t2;
   FIXCHAR(string,len1,t1);
   FIXCHAR(color,len2,t2);
 
-  *ierr = PetscLogEventRegister(e,t1,t2);
+  *ierr = PetscLogEventRegister(e,t1,t2,*cookie);
   FREECHAR(string,t1);
   FREECHAR(color,t2);
 #endif
@@ -106,12 +106,12 @@ void PETSC_STDCALL petsclogstagepop_(int *ierr)
 }
 
 void PETSC_STDCALL petsclogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(len),
-                                      int *ierr PETSC_END_LEN(len))
+                                          int *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(sname,len,t);
-  *ierr = PetscLogStageRegister(*stage,t);
+  *ierr = PetscLogStageRegister(stage,t);
 #endif
 }
 

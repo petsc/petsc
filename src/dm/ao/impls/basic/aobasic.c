@@ -261,7 +261,12 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   int        ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(aoout);
   *aoout = 0;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
+#endif
+
   PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_BASIC, "AO", comm, AODestroy, AOView); 
   PetscLogObjectCreate(ao);
   ierr = PetscNew(AO_Basic, &aobasic);                                                                    CHKERRQ(ierr);

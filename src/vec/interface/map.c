@@ -5,6 +5,9 @@
 */
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
+/* Logging support */
+int MAP_COOKIE;
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetLocalSize"
 /*@C

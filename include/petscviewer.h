@@ -6,6 +6,8 @@
 #if !defined(__PETSCVIEWER_H)
 #define __PETSCVIEWER_H
 
+extern int PETSC_VIEWER_COOKIE;
+
 /*S
      PetscViewer - Abstract PETSc object that helps view (in ASCII, binary, graphically etc)
          other PETSc objects
@@ -23,8 +25,6 @@ typedef struct _p_PetscViewer* PetscViewer;
    process correctly.
 */
 #include "petsc.h"
-
-#define PETSC_VIEWER_COOKIE              PETSC_COOKIE+1
 
 /*E
     PetscViewerType - String with the name of a PETSc PETScViewer

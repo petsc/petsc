@@ -25,7 +25,7 @@ EXTERN int  PetscSortRealWithPermutation(int,const PetscReal[],int[]);
 EXTERN int  PetscSetDisplay(void);
 EXTERN int  PetscGetDisplay(char[],int);
 
-#define PETSCRANDOM_COOKIE PETSC_COOKIE+19
+extern int PETSC_RANDOM_COOKIE;
 
 typedef enum { RANDOM_DEFAULT,RANDOM_DEFAULT_REAL,
                RANDOM_DEFAULT_IMAGINARY } PetscRandomType;

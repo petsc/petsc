@@ -165,7 +165,7 @@ int PetscFinalize_DynamicLibraries(void)
 
 #else /* not using dynamic libraries */
 
-EXTERN int PetscDLLibraryRegister_Petsc(char *);
+EXTERN int PetscInitializePackage(char *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitalize_DynamicLibraries"
@@ -179,7 +179,7 @@ int PetscInitialize_DynamicLibraries(void)
     are ALWAYS available. The other classes are initialized the first
     time an XXSetType() is called.
   */
-  ierr = PetscDLLibraryRegister_Petsc(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  

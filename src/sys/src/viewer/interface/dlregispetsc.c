@@ -1,8 +1,68 @@
 /*$Id: dlregispetsc.c,v 1.14 2001/03/23 23:20:05 balay Exp $*/
 
 #include "petsc.h"
+#include "petscdraw.h"
+#include "petscsys.h"
 
-  
+#undef __FUNCT__  
+#define __FUNCT__ "PetscInitializePackage" 
+/*@C
+  PetscInitializePackage - This function initializes everything in the main Petsc package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
+  when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Petsc, initialize, package
+.seealso: PetscInitialize()
+@*/
+int PetscInitializePackage(char *path)
+{
+  static int initialized = 0;
+  char       logList[256];
+  char      *className;
+  PetscTruth opt;
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = 1;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&PETSC_VIEWER_COOKIE, "Viewer");                                           CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&PETSC_DRAW_COOKIE,   "Draw");                                             CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWAXIS_COOKIE,     "Axis");                                             CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWLG_COOKIE,       "Line Graph");                                       CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWHG_COOKIE,       "Histogram");                                        CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWSP_COOKIE,       "Scatter Plot");                                     CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&PETSC_RANDOM_COOKIE, "Random Number Generator");                          CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DICT_COOKIE,         "Parameter Dictionary");                             CHKERRQ(ierr);
+  /* Register Constructors and Serializers */
+  ierr = PetscDrawRegisterAll(path);                                                                      CHKERRQ(ierr);
+  ierr = PetscViewerRegisterAll(path);                                                                    CHKERRQ(ierr);
+  /* Register Events */
+  ierr = PetscLogEventRegister(&PetscEvents[PETSC_Barrier], "PetscBarrier", PETSC_NULL, PETSC_COOKIE);    CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "null", &className);                                                      CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogInfoDeactivateClass(0);                                                              CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "null", &className);                                                      CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(0);                                                             CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryRegister" 
@@ -19,14 +79,11 @@ int PetscDLLibraryRegister(char *path)
   int ierr;
 
   ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
-  /* this follows the Initialize() to make sure PETSc was setup first */
   PetscFunctionBegin;
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
-  ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);
+  ierr = PetscInitializePackage(path);                                                                    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -36,24 +93,3 @@ static char *contents = "PETSc Graphics and PetscViewer libraries. \n\
      ASCII, Binary, Sockets, X-windows, ...\n";
 
 #include "src/sys/src/utils/dlregis.h"
-
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryRegister_Petsc" 
-int PetscDLLibraryRegister_Petsc(char *path)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
-  ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
-
-
-
-
-
-

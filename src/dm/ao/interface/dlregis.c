@@ -5,6 +5,70 @@ static char vcid[] = "$Id: dlregis.c,v 1.1 2000/01/10 06:34:46 knepley Exp $";
 #include "petscao.h"
 #include "petscda.h"
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMInitializePackage"
+/*@C
+  DMInitializePackage - This function initializes everything in the DM package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to AOCreate()
+  or DACreate() when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: AO, DA, initialize, package
+.seealso: PetscInitialize()
+@*/
+int DMInitializePackage(char *path) {
+  static int initialized = 0;
+  char       logList[256];
+  char      *className;
+  PetscTruth opt;
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = 1;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");                                      CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");                                       CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");                                      CHKERRQ(ierr);
+  /* Register Constructors and Serializers */
+  ierr = AOSerializeRegisterAll(path);                                                                    CHKERRQ(ierr);
+  /* Register Events */
+  ierr = PetscLogEventRegister(&AOEvents[AO_PetscToApplication], "AOPetscToApplication", PETSC_NULL, AO_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&AOEvents[AO_ApplicationToPetsc], "AOApplicationToPetsc", PETSC_NULL, AO_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DAEvents[DA_GlobalToLocal],      "DAGlobalToLocal",      PETSC_NULL, DA_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DAEvents[DA_LocalToGlobal],      "DALocalToGlobal",      PETSC_NULL, DA_COOKIE);CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "ao", &className);                                                        CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogInfoDeactivateClass(AO_COOKIE);                                                      CHKERRQ(ierr);
+    }
+    ierr = PetscStrstr(logList, "da", &className);                                                        CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogInfoDeactivateClass(DA_COOKIE);                                                      CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);                   CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscStrstr(logList, "ao", &className);                                                        CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(AO_COOKIE);                                                     CHKERRQ(ierr);
+    }
+    ierr = PetscStrstr(logList, "da", &className);                                                        CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(DA_COOKIE);                                                     CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryRegister"
@@ -27,12 +91,7 @@ int PetscDLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-#if PETSC_USE_NEW_LOGGING
-  ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");                                      CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");                                       CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");                                      CHKERRQ(ierr);
-#endif
-  ierr = AOSerializeRegisterAll(path);                                                                    CHKERRQ(ierr);
+  ierr = DMInitializePackage(path);                                                                       CHKERRQ(ierr);
   return(0);
 }
 EXTERN_C_END
@@ -65,4 +124,4 @@ int PetscDLLibraryInfo(char *path,char *type,char **mess)
 }
 EXTERN_C_END
 
-
+#endif /* PETSC_USE_DYNAMIC_LIBRARIES */

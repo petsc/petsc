@@ -9,128 +9,18 @@
 #include "petsc.h"  
 
 /*
-  Lists all PETSc events that are logged/profiled.
-
-  If you add an event here, make sure you add it to 
-  petsc/src/PetscLog/src/PetscLog.c,  
-  petsc/src/PetscLog/src/PetscLogmpe.c, and
-  petsc/include/finclude/petsclog.h!!!
+  Each PETSc object class has it's own cookie (internal integer in the 
+  data structure used for error checking). These are all defined by an offset 
+  from the lowest one, PETSC_COOKIE.
 */
-#define MAT_Mult                                0
-#define MAT_MatrixFreeMult                      1
-#define MAT_AssemblyBegin                       2
-#define MAT_AssemblyEnd                         3
-#define MAT_GetOrdering                         4
-#define MAT_MultTranspose                       5
-#define MAT_MultAdd                             6
-#define MAT_MultTransposeAdd                    7
-#define MAT_LUFactor                            8
-#define MAT_CholeskyFactor                      9
-#define MAT_LUFactorSymbolic                    10
-#define MAT_ILUFactorSymbolic                   11
-#define MAT_CholeskyFactorSymbolic              12
-#define MAT_ICCFactorSymbolic                   13
-#define MAT_LUFactorNumeric                     14
-#define MAT_CholeskyFactorNumeric               15
-#define MAT_Relax                               16
-#define MAT_Copy                                17
-#define MAT_Convert                             18
-#define MAT_Scale                               19
-#define MAT_ZeroEntries                         20
-#define MAT_Solve                               21
-#define MAT_SolveAdd                            22
-#define MAT_SolveTranspose                      23
-#define MAT_SolveTransposeAdd                   24
-#define MAT_SetValues                           25
-#define MAT_ForwardSolve                        26
-#define MAT_BackwardSolve                       27
-#define MAT_Load                                28
-#define MAT_View                                29
-#define MAT_ILUFactor                           30
-#define MAT_GetColoring                         31
-#define MAT_GetSubMatrices                      32
-#define MAT_GetValues                           33
-#define MAT_IncreaseOverlap                     34
-#define MAT_GetRow                              35
-#define MAT_Partitioning                        36
+#define PETSC_COOKIE 1211211
+extern int PETSC_LARGEST_COOKIE;
+#define PETSC_EVENT  1311311
+extern int PETSC_LARGEST_EVENT;
 
-#define MAT_FDColoringApply                     38
-#define MAT_FDColoringCreate                    41
-
-#define VEC_ReduceArithmetic                    37
-
-#define VEC_View                                39
-
-#define VEC_Max                                 42
-#define VEC_Min                                 43
-#define VEC_TDot                                44
-#define VEC_Scale                               45
-#define VEC_Copy                                46
-#define VEC_Set                                 47
-#define VEC_AXPY                                48
-#define VEC_AYPX                                49
-#define VEC_Swap                                50
-#define VEC_WAXPY                               51
-#define VEC_AssemblyBegin                       52
-#define VEC_AssemblyEnd                         53
-#define VEC_MTDot                               54
-#define VEC_MAXPY                               56
-#define VEC_PMult                               57
-#define VEC_SetValues                           58
-#define VEC_Load                                59
-#define VEC_ScatterBarrier                      60
-#define VEC_ScatterBegin                        61
-#define VEC_ScatterEnd                          62
-#define VEC_SetRandom                           63
-
-#define VEC_NormBarrier                         64
-#define VEC_Norm                                65
-#define VEC_DotBarrier                          66
-#define VEC_Dot                                 67
-#define VEC_MDotBarrier                         68
-#define VEC_MDot                                69
-
-#define SLES_Solve                              70
-#define SLES_SetUp                              71
-
-#define KSP_GMRESOrthogonalization              72
-
-#define PC_ApplyCoarse                          73
-#define PC_ModifySubMatrices                    74
-#define PC_SetUp                                75
-#define PC_SetUpOnBlocks                        76
-#define PC_Apply                                77
-#define PC_ApplySymmetricLeft                   78
-#define PC_ApplySymmetricRight                  79
-
-#define SNES_Solve                              80
-#define SNES_LineSearch                         81
-#define SNES_FunctionEval                       82
-#define SNES_JacobianEval                       83
-#define SNES_MinimizationFunctionEval           84
-#define SNES_GradientEval                       85
-#define SNES_HessianEval                        86
-
-#define VEC_ReduceBarrier                       87
-#define VEC_ReduceComm                          88
-
-#define TS_Step                                 90
-#define TS_PseudoComputeTimeStep                91
-#define TS_FunctionEval                         92
-#define TS_JacobianEval                         93
-
-#define Petsc_Barrier                           100
-
-#define EC_SetUp                                105
-#define EC_Solve                                106
-
-/* 
-   Event numbers PETSC_LOG_USER_EVENT_LOW to PETSC_LOG_USER_EVENT_HIGH are reserved 
-   for applications.  Make sure that src/PetscLog/src/PetscLog.c defines enough
-   entries in (*name)[] to go up to PETSC_LOG_USER_EVENT_HIGH.
-*/
-#define PETSC_LOG_USER_EVENT_LOW_STATIC              120
-#define PETSC_LOG_USER_EVENT_HIGH                    200
+/* Events for the Petsc standard library */
+enum {PETSC_Barrier, PETSC_MAX_EVENTS};
+extern int PetscEvents[PETSC_MAX_EVENTS];
 
 /* Global flop counter */
 extern PetscLogDouble _TotalFlops;
@@ -176,24 +66,134 @@ EXTERN int        PetscLogEventMPEDeactivate(int);
 #define PetscLogEventMPEDeactivate(a) 0
 #endif
 
-EXTERN int PetscLogEventActivate(int);
-EXTERN int PetscLogEventDeactivate(int);
-
-EXTERN int PetscLogEventActivateClass(int);
-EXTERN int PetscLogEventDeactivateClass(int);
-
-extern PetscTruth PetscLogEventFlags[];
 EXTERN int (*_PetscLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 EXTERN int (*_PetscLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 EXTERN int (*_PetscLogPHC)(PetscObject);
 EXTERN int (*_PetscLogPHD)(PetscObject);
 
-extern int PetscLogEventDepth[];
+#define PetscLogObjectParent(p,c)       if (c) {PetscValidHeader((PetscObject)(c)); \
+                                                PetscValidHeader((PetscObject)(p));\
+                                                ((PetscObject)(c))->parent = (PetscObject)(p);\
+				                ((PetscObject)(c))->parentid = ((PetscObject)p)->id;}
+#define PetscLogObjectParents(p,n,d)    {int _i; for (_i=0; _i<n; _i++) \
+                                         PetscLogObjectParent(p,(d)[_i]);}
+#define PetscLogObjectCreate(h)         {if (_PetscLogPHC) (*_PetscLogPHC)((PetscObject)h);}
+#define PetscLogObjectDestroy(h)        {if (_PetscLogPHD) (*_PetscLogPHD)((PetscObject)h);}
+#define PetscLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
+                                         ((PetscObject)(p))->mem += (m);}
+/* Initialization functions */
+EXTERN int PetscLogBegin(void);
+EXTERN int PetscLogAllBegin(void);
+EXTERN int PetscLogTraceBegin(FILE *);
+/* General functions */
+EXTERN int PetscLogDestroy(void);
+EXTERN int PetscLogSet(int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
+                   int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
+EXTERN int PetscLogObjectState(PetscObject, const char[], ...);
+/* Output functions */
+EXTERN int PetscLogPrintSummary(MPI_Comm, const char[]);
+EXTERN int PetscLogDump(const char[]);
+/* Counter functions */
+EXTERN int PetscGetFlops(PetscLogDouble *);
+/* Stage functions */
+EXTERN int PetscLogStageRegister(int *, const char[]);
+EXTERN int PetscLogStagePush(int);
+EXTERN int PetscLogStagePop(void);
+EXTERN int PetscLogStageSetVisible(int, PetscTruth);
+EXTERN int PetscLogStageGetVisible(int, PetscTruth *);
+/* Event functions */
+EXTERN int PetscLogEventRegister(int *, const char[], const char[], int);
+EXTERN int PetscLogEventActivate(int);
+EXTERN int PetscLogEventDeactivate(int);
+EXTERN int PetscLogEventActivateClass(int);
+EXTERN int PetscLogEventDeactivateClass(int);
+/* Class functions */
+EXTERN int PetscLogClassRegister(int *, const char []);
+
+/* Default log */
+typedef struct _StageLog *StageLog;
+extern StageLog _stageLog;
+
+/* Global counters */
+extern PetscLogDouble irecv_ct,  isend_ct,  recv_ct,  send_ct;
+extern PetscLogDouble irecv_len, isend_len, recv_len, send_len;
+extern PetscLogDouble allreduce_ct;
+extern PetscLogDouble wait_ct, wait_any_ct, wait_all_ct, sum_of_waits_ct;
+extern int            PETSC_DUMMY, PETSC_DUMMY_SIZE;
+
+/* We must make these structures available if we are to access the event
+   activation flags in the PetscLogEventBegin/End() macros. If we forced a
+   function call each time, we could leave these structures in plog.h
+*/
+/* The structure for logging performance */
+typedef struct _PerfInfo {
+  char          *name;          /* The name of this section */
+  char          *color;         /* The color of this section */
+  int            id;            /* The integer identifying this event */
+  int            cookie;        /* The class id for this section */
+  int            depth;         /* The nesting depth of the event call */
+  int            count;         /* The number of times this section was executed */
+  PetscLogDouble flops;         /* The flops used in this section */
+  PetscLogDouble time;          /* The time taken for this section */
+  PetscLogDouble numMessages;   /* The number of messages in this section */
+  PetscLogDouble messageLength; /* The total message lengths in this section */
+  PetscLogDouble numReductions; /* The number of reductions in this section */
+} PerfInfo;
+
+/* The structure for logging events */
+typedef struct _EventLog *EventLog;
+struct _EventLog {
+  /* Size information */
+  int       numEvents;   /* The number of registered events */
+  int       maxEvents;   /* The maximum number of events */
+  /* Event specific information */
+  int      *eventActive; /* The flag for active events */
+  PerfInfo *eventInfo;   /* The performance information for each event */
+};
+
+/* The structure for logging class information */
+typedef struct _ClassInfo {
+  char          *name;          /* The class name */
+  int            cookie;        /* The integer identifying this class */
+  int            creations;     /* The number of objects of this class created */
+  int            destructions;  /* The number of objects of this class destroyed */
+  PetscLogDouble mem;           /* The total memory allocated by objects of this class */
+  PetscLogDouble descMem;       /* The total memory allocated by descendents of these objects */
+} ClassInfo;
+
+typedef struct _ClassLog *ClassLog;
+struct _ClassLog {
+  int        numClasses; /* The number of classes registered */
+  int        maxClasses; /* The maximum number of classes */
+  ClassInfo *classInfo;  /* The structure for classs information (cookies are monotonicly increasing) */
+};
+
+/* A simple stack (should replace) */
+typedef struct _IntStack *IntStack;
+
+/* The structure for logging in stages */
+struct _StageLog {
+  /* Size information */
+  int         numStages;    /* The number of registered stages */
+  int         maxStages;    /* The maximum number of stages */
+  /* Runtime information */
+  int        *stageUsed;    /* The flags for stages which were executed */
+  PetscTruth *stageVisible; /* The flags for stages which are visible to PetscLogPrintSummary() */
+  IntStack    stack;        /* The stack for active stages */
+  int         curStage;     /* The current stage (only used in macros so we don't call StackTop) */
+  /* Stage specific information */
+  PerfInfo   *stageInfo;    /* The performance information for each stage */
+  EventLog   *eventLog;     /* The event log for each stage */
+  ClassLog   *classLog;     /* The class information for each stage */
+};
+
+EXTERN int EventLogGetEvent(EventLog, int, int *);
 
 #if defined(PETSC_HAVE_MPE)
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { int _1_ierr; \
-    if (_PetscLogPLB && PetscLogEventFlags[e]) {                         \
+  0; { int _1_ierr, _1_eventNum; \
+    _1_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_1_eventNum); \
+    if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventActive[_1_eventNum]) { \
       _1_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_1_ierr);  \
       if (UseMPE && PetscLogEventMPEFlags[(e)])                      \
         MPE_Log_event(MPEBEGIN+2*(e),0,"");                      \
@@ -207,16 +207,18 @@ extern int PetscLogEventDepth[];
       MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                    \
   }
 #define PetscLogEventBegin(e,o1,o2,o3,o4)  \
-  0; {  \
-   if (_PetscLogPLB && PetscLogEventFlags[(e)] && !PetscLogEventDepth[e]++) {\
+  0; { int _3_ierr, _3_eventNum; \
+    _3_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_3_eventNum); \
+   if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventActive[_3_eventNum]) {\
      (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
    if (UseMPE && PetscLogEventMPEFlags[(e)])\
      MPE_Log_event(MPEBEGIN+2*(e),0,"");\
   }
 #else
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { int _2_ierr;\
-    if (_PetscLogPLB && PetscLogEventFlags[(e)]) {                         \
+  0; { int _2_ierr, _2_eventNum;\
+    _2_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_2_eventNum); \
+    if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventActive[_2_eventNum]) {                         \
       _2_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);    \
       _2_ierr = MPI_Barrier(cm);CHKERRQ(_2_ierr);                    \
       _2_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);      \
@@ -224,8 +226,9 @@ extern int PetscLogEventDepth[];
     _2_ierr = PetscLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(_2_ierr);    \
   }
 #define PetscLogEventBegin(e,o1,o2,o3,o4)  \
-  0; {  \
-   if (_PetscLogPLB && PetscLogEventFlags[(e)] && !PetscLogEventDepth[e]++) {\
+  0; { int _4_ierr, _4_eventNum; \
+    _4_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_4_eventNum); \
+   if (_PetscLogPLB && _stageLog->eventLog[_stageLog->curStage]->eventActive[_4_eventNum]) {\
      (*_PetscLogPLB)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   }
 #endif
@@ -233,8 +236,9 @@ extern int PetscLogEventDepth[];
 #if defined(PETSC_HAVE_MPE)
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
 #define PetscLogEventEnd(e,o1,o2,o3,o4) \
-  0; {\
-  if (_PetscLogPLE && PetscLogEventFlags[(e)] && !--PetscLogEventDepth[e]) {\
+  0; { int _5_ierr, _5_eventNum; \
+    _5_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_5_eventNum); \
+  if (_PetscLogPLE && _stageLog->eventLog[_stageLog->curStage]->eventActive[_5_eventNum]) {\
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   if (UseMPE && PetscLogEventMPEFlags[(e)])\
      MPE_Log_event(MPEBEGIN+2*(e)+1,0,"");\
@@ -242,42 +246,12 @@ extern int PetscLogEventDepth[];
 #else
 #define PetscLogEventBarrierEnd(e,o1,o2,o3,o4,cm) PetscLogEventEnd(e+1,o1,o2,o3,o4)
 #define PetscLogEventEnd(e,o1,o2,o3,o4) \
-  0; {\
-  if (_PetscLogPLE && PetscLogEventFlags[(e)] && !--PetscLogEventDepth[e]) {\
+  0; { int _6_ierr, _6_eventNum; \
+    _6_ierr = EventLogGetEvent(_stageLog->eventLog[_stageLog->curStage], (e), &_6_eventNum); \
+  if (_PetscLogPLE && _stageLog->eventLog[_stageLog->curStage]->eventActive[_6_eventNum]) {\
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));}\
   } 
 #endif
-
-#define PetscLogObjectParent(p,c)       if (c) {PetscValidHeader((PetscObject)(c)); \
-                                     PetscValidHeader((PetscObject)(p));\
-                                     ((PetscObject)(c))->parent = (PetscObject)(p);\
-				     ((PetscObject)(c))->parentid = ((PetscObject)p)->id;}
-#define PetscLogObjectParents(p,n,d)    {int _i; for (_i=0; _i<n; _i++) \
-                                    PetscLogObjectParent(p,(d)[_i]);}
-#define PetscLogObjectCreate(h)         {if (_PetscLogPHC) (*_PetscLogPHC)((PetscObject)h);}
-#define PetscLogObjectDestroy(h)        {if (_PetscLogPHD) (*_PetscLogPHD)((PetscObject)h);}
-#define PetscLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
-                                    ((PetscObject)(p))->mem += (m);}
-EXTERN int  PetscLogObjectState(PetscObject,const char[],...);
-EXTERN int  PetscLogDestroy(void);
-EXTERN int  PetscLogStagePush(int);
-EXTERN int  PetscLogStagePop(void);
-EXTERN int  PetscLogStageRegister(int,const char[]);
-EXTERN int  PetscLogStagePrint(int,PetscTruth);
-EXTERN int  PetscLogPrintSummary(MPI_Comm,const char[]);
-EXTERN int  PetscLogBegin(void);
-EXTERN int  PetscLogTraceBegin(FILE *);
-EXTERN int  PetscLogAllBegin(void);
-EXTERN int  PetscLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
-                    int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject));
-EXTERN int  PetscLogDump(const char[]);
-EXTERN int  PetscLogEventRegister(int*,const char[],const char[]);
-EXTERN int  PetscGetFlops(PetscLogDouble*);
-
-extern PetscLogDouble irecv_ct,isend_ct,wait_ct,wait_any_ct,recv_ct,send_ct;
-extern PetscLogDouble irecv_len,isend_len,recv_len,send_len;
-extern PetscLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
-extern int            PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
 /*
      This does not work for MPI-Uni because our src/mpiuni/mpi.h file
@@ -289,7 +263,7 @@ extern int            PETSC_DUMMY,PETSC_DUMMY_SIZE;
 
      It does not work with Windows NT because winmpich lacks MPI_Type_size()
 */
-#if !defined(USING_MPIUNI) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(HAVE_MPI_UNI) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
 /*
    Logging of MPI activities
 */
@@ -457,9 +431,3 @@ extern PetscTruth PetscPreLoadingOn;         /* true if we are currently in a pr
                                    _3_ierr = PetscLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(_3_ierr);\
                                    _3_ierr = PetscLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
 #endif
-
-
-
-
-
-

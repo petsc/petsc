@@ -95,7 +95,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  ierr = PetscLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
+  ierr = MatLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = VecScale(&hs,y);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr = PetscLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
+  ierr = MatLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

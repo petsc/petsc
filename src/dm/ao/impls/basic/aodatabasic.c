@@ -880,7 +880,12 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
   int       ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(aoout);
   *aoout = 0;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);
+#endif
+
   PetscHeaderCreate(ao,_p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView); 
   PetscLogObjectCreate(ao);
   PetscLogObjectMemory(ao,sizeof(struct _p_AOData));

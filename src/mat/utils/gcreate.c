@@ -90,8 +90,17 @@ static int MatPublish_Base(PetscObject obj)
 int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 {
   Mat B;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  int ierr;
+#endif
 
   PetscFunctionBegin;
+  PetscValidPointer(A);
+  *A = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+#endif
+
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);
   PetscLogObjectCreate(B);
 
@@ -195,7 +204,7 @@ int MatSetUpPreallocation(Mat B)
 
   PetscFunctionBegin;
   if (B->ops->setuppreallocation) {
-    PetscLogInfo(B,"MatSetTpPreallocation: Warning not preallocating matrix storage");
+    PetscLogInfo(B,"MatSetUpPreallocation: Warning not preallocating matrix storage");
     ierr = (*B->ops->setuppreallocation)(B);CHKERRQ(ierr);
     B->ops->setuppreallocation = 0;
     B->preallocated            = PETSC_TRUE;

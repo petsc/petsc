@@ -10,10 +10,6 @@
 #include "petscis.h"
 #include "petscsys.h"
 
-#define VEC_COOKIE         PETSC_COOKIE+3
-#define MAP_COOKIE         PETSC_COOKIE+22
-#define VEC_SCATTER_COOKIE PETSC_COOKIE+4
-
 /*S
      PetscMap - Abstract PETSc object that defines the layout of vector and
   matrices across processors
@@ -73,20 +69,19 @@ typedef char*  VecType;
 #define VEC_SER_MPI_BINARY "mpi_binary"
 typedef char *VecSerializeType;
 
-#ifdef PETSC_USE_NEW_LOGGING
 /* Logging support */
-extern int VEC_COOKIE;
 extern int MAP_COOKIE;
+extern int VEC_COOKIE;
 extern int VEC_SCATTER_COOKIE;
-enum {VEC_ScatterBarrier, VEC_Dot, VEC_Norm, VEC_Max, VEC_Min, VEC_TDot, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX,
-      VEC_Swap, VEC_WAXPY, VEC_AssemblyBegin, VEC_AssemblyEnd, VEC_MTDot, VEC_MDot, VEC_MAXPY, VEC_PMult, VEC_SetValues,
-      VEC_Load, VEC_View, VEC_ScatterBarrierBegin, VEC_ScatterBegin, VEC_ScatterEnd, VEC_SetRandom,
-      VEC_NormBarrier, VEC_NormComm, VEC_DotBarrier, VEC_DotComm, VEC_MDotBarrier, VEC_MDotComm, VEC_ReduceArithmetic,
-      VEC_ReduceCommunication, VEC_ReduceBarrier, VEC_ReduceCommOnly, VEC_MAX_EVENTS};
+enum {VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot, VEC_NormBarrier,
+      VEC_Norm, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin,
+      VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd,
+      VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication, VEC_MAX_EVENTS};
 extern int VecEvents[VEC_MAX_EVENTS];
 #define VecLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(VecEvents[e],o1,o2,o3,o4)
 #define VecLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(VecEvents[e],o1,o2,o3,o4)
-#endif
+
+EXTERN int VecInitializePackage(char *);
 
 EXTERN int VecCreateSeq(MPI_Comm,int,Vec*);
 EXTERN int PetscMapCreateMPI(MPI_Comm,int,int,PetscMap*);  

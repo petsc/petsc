@@ -6,6 +6,8 @@
 #include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
+int MAT_NULLSPACE_COOKIE;
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceCreate"
 /*@C
@@ -35,7 +37,7 @@ int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *
   MatNullSpace sp;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(sp,_p_MatNullSpace,int,MATNULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);
+  PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);
   PetscLogObjectCreate(sp);
   PetscLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));
 

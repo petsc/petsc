@@ -5,6 +5,12 @@
 #include "src/sles/ksp/kspimpl.h"      /*I "petscksp.h" I*/
 #include "petscsys.h"
 
+/* Logging support */
+int KSP_COOKIE;
+int KSPEvents[KSP_MAX_EVENTS];
+
+EXTERN int SLESInitializePackage(char *);
+
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
@@ -191,7 +197,12 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   int ierr;
 
   PetscFunctionBegin;
+  PetscValidPointer(inksp);
   *inksp = 0;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = SLESInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
+#endif
+
   PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);
   PetscLogObjectCreate(ksp);
   *inksp             = ksp;

@@ -12,8 +12,6 @@
 
 typedef enum {AO_BASIC=0, AO_ADVANCED, AO_MAPPING, AO_NEW} AOType;
 
-#define AO_COOKIE PETSC_COOKIE+20
-
 /*S
      AO - Abstract PETSc object that manages mapping between different global numbering
 
@@ -28,6 +26,16 @@ typedef struct _p_AO* AO;
 #define AO_SER_BASIC_BINARY   "basic_binary"
 #define AO_SER_MAPPING_BINARY "mapping_binary"
 typedef char *AOSerializeType;
+
+/* Logging support */
+extern int AO_COOKIE;
+extern int AODATA_COOKIE;
+enum {AO_PetscToApplication, AO_ApplicationToPetsc, AO_MAX_EVENTS};
+extern int AOEvents[AO_MAX_EVENTS];
+#define AOLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(AOEvents[e],o1,o2,o3,o4)
+#define AOLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(AOEvents[e],o1,o2,o3,o4)
+
+EXTERN int DMInitializePackage(char *);
 
 EXTERN int AOCreateBasic(MPI_Comm,int,int*,int*,AO*);
 EXTERN int AOCreateBasicIS(IS,IS,AO*);
@@ -71,8 +79,6 @@ EXTERN int AOMappingHasPetscIndex(AO, int, PetscTruth *);
 /* ----------------------------------------------------*/
 
 typedef enum {AODATA_BASIC=0,AODATA_ADVANCED=1} AODataType;
-
-#define AODATA_COOKIE PETSC_COOKIE+24
 
 /*S
      AOData - Abstract PETSc object that manages complex parallel data structures intended to 

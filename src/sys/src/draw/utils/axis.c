@@ -5,6 +5,8 @@
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
+int DRAWAXIS_COOKIE;
+
 struct _p_DrawAxis {
     PETSCHEADER(int)
     PetscReal  xlow,ylow,xhigh,yhigh;     /* User - coord limits */

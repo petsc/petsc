@@ -31,6 +31,9 @@ int VecCreate(MPI_Comm comm, Vec *vec)
   PetscFunctionBegin;
   PetscValidPointer(vec);
   *vec = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+#endif
 
   PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_COOKIE, -1, "Vec", comm, VecDestroy, VecView);
   PetscLogObjectCreate(v);
