@@ -56,7 +56,7 @@ class Configure(PETSc.package.Package):
     if not os.path.isfile(os.path.join(installDir,'make.inc')) or not (self.getChecksum(os.path.join(installDir,'make.inc')) == self.getChecksum(os.path.join(superluDir,'make.inc'))):
       self.framework.log.write('Have to rebuild SuperLU, make.inc != '+installDir+'/make.inc\n')
       try:
-        self.logPrint("Compiling superlu; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Compiling superlu; this may take several minutes')
         output = config.base.Configure.executeShellCommand('cd '+superluDir+'; SUPERLU_INSTALL_DIR='+installDir+'; export SUPERLU_INSTALL_DIR; make clean; make lib; mv *.a '+os.path.join(installDir,self.libdir)+'; mkdir '+os.path.join(installDir,self.includedir)+'; cp SRC/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))

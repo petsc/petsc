@@ -103,7 +103,7 @@ class Configure(config.base.Configure):
         scotchDir = dir
     if scotchDir is None:
       self.framework.logPrint('Could not locate already downloaded Scotch')
-      raise RuntimeError('Error locating Scotch directory')
+      raise RuntimeError('Could not locate already downloaded Scotch')
     return os.path.join(packages, scotchDir)
 
   def downloadScotch(self):
@@ -116,7 +116,7 @@ class Configure(config.base.Configure):
 
       packages = self.framework.argDB['with-external-packages-dir']      
       try:
-        self.logPrint("Retrieving Scotch; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Retrieving Scotch; this may take several minutes')
         urllib.urlretrieve('http://www.labri.fr/Perso/~pelegrin/scotch/distrib/scotch_3.4.1A_i586_pc_linux2.tar.gz', os.path.join(packages, 'scotch_3.4.1A_i586_pc_linux2.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading Scotch: '+str(e))

@@ -99,18 +99,12 @@ class Configure(PETSc.package.Package):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild HYPRE oldargs = '+oldargs+' new args '+args+'\n')
       try:
-        self.framework.logClear()
-        self.logPrint('=================================================================================', debugSection='screen')
-        self.logPrint("                 Configuring hypre; this may take several minutes\n", debugSection='screen')
-        self.logPrint('=================================================================================', debugSection='screen')
+        self.logPrintBox('Configuring hypre; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
-        self.framework.logClear()
-        self.logPrint('=================================================================================', debugSection='screen')
-        self.logPrint("                 Compiling hypre; this may take several minutes\n", debugSection='screen')
-        self.logPrint('=================================================================================', debugSection='screen')        
+        self.logPrintBox('Compiling hypre; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))

@@ -36,7 +36,7 @@ class Configure(PETSc.package.Package):
     if not os.path.isfile(os.path.join(installDir,'make.inc')) or not (self.getChecksum(os.path.join(installDir,'make.inc')) == self.getChecksum(os.path.join(partyDir,'make.inc'))):
       self.framework.log.write('Have to rebuild Party, make.inc != '+installDir+'/make.inc\n')
       try:
-        self.logPrint("Compiling party; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Compiling party; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(partyDir,'src')+'; PARTY_INSTALL_DIR='+installDir+';export PARTY_INSTALL_DIR; make clean; make all; cd ..; mv *.a '+os.path.join(installDir,self.libdir)+'/.; cp party_lib.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PARTY: '+str(e))

@@ -318,7 +318,7 @@ class Configure(config.base.Configure):
       self.framework.log.write('Do not need to compile '+l+'blaslapack, already compiled\n')
       return libdir
     try:
-      self.logPrint("Running make on "+l.upper()+"BLASLAPACK; this may take several minutes\n", debugSection='screen')
+      self.logPrintBox('Compiling '+l.upper()+'BLASLAPACK; this may take several minutes')
       output  = config.base.Configure.executeShellCommand('cd '+blasDir+';make -f tmpmakefile', timeout=800, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+l+'blaslapack: '+str(e))

@@ -62,13 +62,13 @@ class Configure(PETSc.package.Package):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild ML oldargs = '+oldargs+' new args '+args+'\n')
       try:
-        self.logPrint("Configuring ml; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Configuring ml; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+mlDir+'; ./configure '+args+' --disable-epetra --disable-aztecoo --disable-ml-examples', timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ML: '+str(e))
       # Build ML
       try:
-        self.logPrint("Compiling ml; this may take several minutes\n", debugSection='screen')
+        self.logPrintBox('Compiling ml; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+mlDir+'; ML_INSTALL_DIR='+installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ML: '+str(e))
