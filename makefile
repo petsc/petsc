@@ -38,7 +38,7 @@ bmake/config/petscconf.h.in: config/acconfig.h config/acsite.m4 configure.in
 $(AUTOMAKE_ADD_FILES):
 	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
 	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
-	@automake --foreign --add-missing Makefile >> $(CONFIGURE_LOG_FILE)
+	@automake --foreign --add-missing --copy Makefile >> $(CONFIGURE_LOG_FILE)
 
 Makefile.am: $(AUTOMAKE_ADD_FILES)
 
@@ -63,7 +63,7 @@ configure_petsc: start_configure configure Makefile.in
 	@./configure $(CONFIGURE_OPTIONS) >> $(CONFIGURE_LOG_FILE)
 
 $(CONFIGURE_OPTIONS_FILE):
-	touch $(CONFIGURE_OPTIONS_FILE) 
+	@touch $(CONFIGURE_OPTIONS_FILE) 
 
 # We allow substring matching so that new configure architectures can be created
 $(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE) $(BMAKE_TEMPLATE_FILES)
@@ -82,7 +82,7 @@ configure_clean:
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
 all: $(CONFIGURE_LOG_FILE)
-	${MAKE} all_build
+	-@${MAKE} all_build
 # This is necessary if configure jsut created files to have them reread
 all_build: chk_petsc_dir info info_h chklib_dir deletelibs build shared
 #
@@ -172,9 +172,9 @@ info_h:
 build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
-	${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree \
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree \
          2>&1 | tee make_log_${BOPT} | egrep "(^lib|^*\.c:|Error)"
-	${RANLIB} ${PETSC_LIB_DIR}/*.a
+	-@${RANLIB} ${PETSC_LIB_DIR}/*.a
 	-@chmod g+w  ${PETSC_LIB_DIR}/*.a
 	-@echo "Completed building libraries"
 	-@echo "========================================="
