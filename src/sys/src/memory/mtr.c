@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.94 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.95 1997/12/12 19:37:06 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -136,14 +136,21 @@ int PetscTrValid(int line,char *function,char *file,char *dir )
   head = TRhead;
   while (head) {
     if (head->cookie != COOKIE_VALUE) {
-      fprintf( stderr, "called from %s() line %d in %s%s\n",function,line,dir,file );
-      fprintf( stderr, "Block at address %p is corrupted\n", head );
+      (*PetscErrorPrintf)("called from %s() line %d in %s%s\n",function,line,dir,file );
+      (*PetscErrorPrintf)("Block at address %p is corrupted\n", head );
+      SETERRQ(PETSC_ERR_MEMC,0,"");
+      (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
+    }
+    if (head->size <=0) {
+      (*PetscErrorPrintf)("called from %s() line %d in %s%s\n",function,line,dir,file );
+      (*PetscErrorPrintf)("Block at address %p is corrupted\n", head );
+      (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
       SETERRQ(PETSC_ERR_MEMC,0,"");
     }
     a    = (char *)(((TrSPACE*)head) + 1);
     nend = (unsigned long *)(a + head->size);
     if (nend[0] != COOKIE_VALUE) {
-      fprintf( stderr, "called from %s() line %d in %s%s\n",function,line,dir,file );
+      (*PetscErrorPrintf)("called from %s() line %d in %s%s\n",function,line,dir,file );
       if (nend[0] == ALREADY_FREED) {
         (*PetscErrorPrintf)("Block [id=%d(%lx)] at address %p already freed\n",head->id,head->size, a );
         SETERRQ(PETSC_ERR_MEMC,0,"Freed block in memory list, corrupted memory");
