@@ -10,8 +10,8 @@
 typedef struct _Mat*           Mat;
 typedef struct _MatScatterCtx* MatScatterCtx;
 
-typedef enum { MATDENSESEQ, MATAIJSEQ, MATAIJMPI, MATSHELL, MATROWSEQ, 
-               MATROWMPI } MATTYPE;
+typedef enum { MATDENSE, MATAIJ, MATMPIAIJ, MATSHELL, MATROW, 
+               MATMPIROW } MATTYPE;
 
 extern int MatCreateSequentialDense(int,int,Mat*);
 extern int MatCreateSequentialAIJ(int,int,int,int *,Mat*);

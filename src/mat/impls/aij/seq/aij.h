@@ -18,6 +18,6 @@ typedef struct {
          *i,*imax, *ilen,        /* j + i[k] - 1  is start of row k */
          *j;                     /* ilen is actual lenght of row */
   Scalar *a;     
-} Matiaij;
+} Mat_AIJ;
 
 #endif

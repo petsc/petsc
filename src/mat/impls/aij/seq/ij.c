@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: ij.c,v 1.4 1995/03/06 04:03:09 bsmith Exp curfman $";
 #endif
 
 
@@ -30,7 +30,7 @@ static char vcid[] = "$Id: $";
     those routines call SparsePak routines that expect a symmetric 
     matrix.
 */
-int SpToSymmetricIJ( Matiaij *Matrix, int **iia, int **jja )
+int SpToSymmetricIJ( Mat_AIJ *Matrix, int **iia, int **jja )
 {
   int          *work,*ia,*ja,*j,i, nz, n, row, wr;
   register int col;

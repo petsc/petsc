@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.9 1995/03/06 04:02:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.10 1995/03/17 04:56:47 bsmith Exp curfman $";
 #endif
 
 
@@ -9,9 +9,9 @@ static char vcid[] = "$Id: aijfact.c,v 1.9 1995/03/06 04:02:49 bsmith Exp bsmith
     Factorization code for AIJ format. 
 */
 
-int MatiAIJLUFactorSymbolic(Mat mat,IS isrow,IS iscol,Mat *fact)
+int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
 {
-  Matiaij *aij = (Matiaij *) mat->data, *aijnew;
+  Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew;
   IS      isicol;
   int     *r,*ic, ierr, i, n = aij->m, *ai = aij->i, *aj = aij->j;
   int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz;
@@ -97,7 +97,7 @@ int MatiAIJLUFactorSymbolic(Mat mat,IS isrow,IS iscol,Mat *fact)
 
   /* put together the new matrix */
   ierr = MatCreateSequentialAIJ(n, n, 0, 0, fact); CHKERR(ierr);
-  aijnew = (Matiaij *) (*fact)->data;
+  aijnew = (Mat_AIJ *) (*fact)->data;
   FREE(aijnew->imax);
   aijnew->singlemalloc = 0;
   len = (ainew[n] - 1)*sizeof(Scalar);
@@ -115,10 +115,10 @@ int MatiAIJLUFactorSymbolic(Mat mat,IS isrow,IS iscol,Mat *fact)
   return 0; 
 }
 
-int MatiAIJLUFactorNumeric(Mat mat,Mat *infact)
+int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
 {
   Mat     fact = *infact;
-  Matiaij *aij = (Matiaij *) mat->data, *aijnew = (Matiaij *)fact->data;
+  Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew = (Mat_AIJ *)fact->data;
   IS      iscol = fact->col, isrow = fact->row, isicol;
   int     *r,*ic, ierr, i, j, n = aij->m, *ai = aijnew->i, *aj = aijnew->j;
   int     *ajtmpold, *ajtmp, nz, row,*pj;
@@ -169,13 +169,13 @@ int MatiAIJLUFactorNumeric(Mat mat,Mat *infact)
   aijnew->assembled = 1;
   return 0;
 }
-int MatiAIJLUFactor(Mat matin,IS row,IS col)
+int MatLUFactor_AIJ(Mat matin,IS row,IS col)
 {
-  Matiaij *mat = (Matiaij *) matin->data;
+  Mat_AIJ *mat = (Mat_AIJ *) matin->data;
   int     ierr;
   Mat     fact;
-  ierr = MatiAIJLUFactorSymbolic(matin,row,col,&fact); CHKERR(ierr);
-  ierr = MatiAIJLUFactorNumeric(matin,&fact); CHKERR(ierr);
+  ierr = MatLUFactorSymbolic_AIJ(matin,row,col,&fact); CHKERR(ierr);
+  ierr = MatLUFactorNumeric_AIJ(matin,&fact); CHKERR(ierr);
 
   /* free all the data structures from mat */
   FREE(mat->a); 
@@ -194,9 +194,9 @@ int MatiAIJLUFactor(Mat matin,IS row,IS col)
   return 0;
 }
 
-int MatiAIJSolve(Mat mat,Vec bb, Vec xx)
+int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
 {
-  Matiaij *aij = (Matiaij *) mat->data;
+  Mat_AIJ *aij = (Mat_AIJ *) mat->data;
   IS      iscol = mat->col, isrow = mat->row;
   int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
@@ -235,9 +235,9 @@ int MatiAIJSolve(Mat mat,Vec bb, Vec xx)
   FREE(tmp);
   return 0;
 }
-int MatiAIJSolveAdd(Mat mat,Vec bb, Vec yy, Vec xx)
+int MatSolveAdd_AIJ(Mat mat,Vec bb, Vec yy, Vec xx)
 {
-  Matiaij *aij = (Matiaij *) mat->data;
+  Mat_AIJ *aij = (Mat_AIJ *) mat->data;
   IS      iscol = mat->col, isrow = mat->row;
   int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
@@ -279,9 +279,9 @@ int MatiAIJSolveAdd(Mat mat,Vec bb, Vec yy, Vec xx)
   return 0;
 }
 /* -------------------------------------------------------------------*/
-int MatiAIJSolveTrans(Mat mat,Vec bb, Vec xx)
+int MatSolveTrans_AIJ(Mat mat,Vec bb, Vec xx)
 {
-  Matiaij *aij = (Matiaij *) mat->data;
+  Mat_AIJ *aij = (Mat_AIJ *) mat->data;
   IS      iscol = mat->col, isrow = mat->row, invisrow,inviscol;
   int     *r,*c, ierr, i, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
@@ -333,9 +333,9 @@ int MatiAIJSolveTrans(Mat mat,Vec bb, Vec xx)
   return 0;
 }
 
-int MatiAIJSolveTransAdd(Mat mat,Vec bb, Vec zz,Vec xx)
+int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
 {
-  Matiaij *aij = (Matiaij *) mat->data;
+  Mat_AIJ *aij = (Mat_AIJ *) mat->data;
   IS      iscol = mat->col, isrow = mat->row, invisrow,inviscol;
   int     *r,*c, ierr, i, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
@@ -390,9 +390,9 @@ int MatiAIJSolveTransAdd(Mat mat,Vec bb, Vec zz,Vec xx)
 
 }
 /* ----------------------------------------------------------------*/
-int MatiAIJilu(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
+int MatILU_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
 {
-  Matiaij *aij = (Matiaij *) mat->data, *aijnew;
+  Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew;
   IS      isicol;
   int     *r,*ic, ierr, i, n = aij->m, *ai = aij->i, *aj = aij->j;
   int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz, *lfill,*ajfill,*ajtmpf;
@@ -495,7 +495,7 @@ int MatiAIJilu(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
 
   /* put together the new matrix */
   ierr = MatCreateSequentialAIJ(n, n, 0, 0, fact); CHKERR(ierr);
-  aijnew = (Matiaij *) (*fact)->data;
+  aijnew = (Mat_AIJ *) (*fact)->data;
   FREE(aijnew->imax);
   aijnew->singlemalloc = 0;
   len = (ainew[n] - 1)*sizeof(Scalar);
