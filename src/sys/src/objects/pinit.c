@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.18 1999/05/06 17:59:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.19 1999/05/12 03:27:11 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -40,7 +40,7 @@ int OptionsCheckInitial_Components(void)
   if (flg1) {
     PetscAMSPublishAll = PETSC_TRUE;
   }
-  ierr = OptionsHasName(0, "-ams_publish_stack", &flg1);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL, "-ams_publish_stack", &flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscStackPublish();CHKERRQ(ierr);
   }
