@@ -1,5 +1,5 @@
 
-/* $Id: bvec1.c,v 1.10 1995/11/01 19:08:33 bsmith Exp bsmith $ */
+/* $Id: bvec1.c,v 1.11 1995/11/02 04:11:46 bsmith Exp bsmith $ */
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -65,4 +65,17 @@ static int VecAXPY_Seq(  Scalar *alpha, Vec xin, Vec yin )
   return 0;
 }
 
+static int VecAXBY_Seq(Scalar *alpha, Scalar *beta,Vec xin, Vec yin)
+{
+  Vec_Seq  *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
+  int      n = x->n, i;
+  Scalar   *xx = x->array, *yy = y->array, a = *alpha, b = *beta;
+
+  for ( i=0; i<n; i++ ) {
+    yy[i] = a*xx[i] + b*yy[i];
+  }
+
+  PLogFlops(3*x->n);
+  return 0;
+}
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.65 1996/03/14 21:35:50 curfman Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.66 1996/03/14 22:27:01 curfman Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -219,7 +219,8 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
             Veiobtain_vectors, Veirelease_vectors, VecDot_Seq, VecMDot_Seq,
             VecNorm_Seq,  VecDot_Seq, VecMDot_Seq,
             VecScale_Seq, VecCopy_Seq,
-            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecMAXPY_Seq, VecAYPX_Seq,
+            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXBY_Seq,
+            VecMAXPY_Seq, VecAYPX_Seq,
             VecWAXPY_Seq, VecPMult_Seq,
             VecPDiv_Seq,  
             VecSetValues_Seq,0,0,
