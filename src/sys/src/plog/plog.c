@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.151 1997/03/09 18:00:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.152 1997/03/29 16:25:05 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1367,7 +1367,8 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   MPI_Allreduce(&allreduce_ct,&totr,1,MPI_DOUBLE,MPI_SUM,comm);
   if (minr) ratio = maxr/minr; else ratio = 0.0;
   PetscFPrintf(comm,fd,"MPI Reductions:       %5.3e   %6.1f\n",maxr,ratio);
-
+  PetscFPrintf(comm,fd,"\n Flop counting convention: 1 flop = 1 operation of type (multiply/divide/add/subtract)\n");
+  PetscFPrintf(comm,fd,"                           e.g., VecAXPY() for vectors of length N --> 2N flops\n");
 
   if (EventsStageMax) {
     PLogDouble mcounts,mlens,rcounts;
