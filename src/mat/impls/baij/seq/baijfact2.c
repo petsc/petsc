@@ -3057,7 +3057,6 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
       with natural ordering
   */
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)inA->data;
-  int         ierr;
 
   PetscFunctionBegin;
   inA->ops->solve             = MatSolve_SeqBAIJ_Update;
@@ -3079,6 +3078,7 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
 #if defined(PETSC_USE_MAT_SINGLE)
     {
       PetscTruth  sse_enabled_local;
+      int         ierr;
       ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
       if (sse_enabled_local) {
 #  if defined(PETSC_HAVE_SSE)
