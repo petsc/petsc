@@ -7,7 +7,7 @@
 #
 #  The timing between these runs IS important
 #
-20 23 * * * /home/bsmith/petsc/maint/ciall
+20 23 * * * /home/bsmith/petsc/maint/ciall > /dev/null
 40 23 * * * /home/bsmith/petsc/maint/buildtest /home/bsmith/petsc
 55 23 * * * /home/curfman/petsc/maint/buildtest /home/curfman/petsc
 55 23 * * * rsh clyde -n /sphome/curfman/petsc/maint/buildtest /sphome/curfman/petsc

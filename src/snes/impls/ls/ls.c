@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.26 1995/06/18 16:25:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.27 1995/06/29 23:54:19 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -319,8 +319,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
       VecCopy(w, y );
       PLogInfo((PetscObject)snes,"Using full step\n");
-      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
-      return 0;
+      goto theend;
   }
 
   /* Fit points with quadratic */
@@ -342,7 +341,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
       VecCopy(w, y );
       PLogInfo((PetscObject)snes,"Quadratically determined step, lambda %g\n",lambda);
-      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
+      goto theend;
       return 0;
   }
 
@@ -393,6 +392,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       }
       count++;
    }
+  theend:
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 0;
 }
@@ -467,8 +467,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   if (*gnorm <= fnorm + alpha*initslope) {	/* Sufficient reduction */
       VecCopy(w, y );
       PLogInfo((PetscObject)snes,"Using full step\n");
-      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
-      return 0;
+      goto theend;
   }
 
   /* Fit points with quadratic */
@@ -503,7 +502,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
     }
     count++;
   }
-
+  theend:
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 0;
 }

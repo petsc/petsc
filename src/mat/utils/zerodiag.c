@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zerodiag.c,v 1.1 1995/07/04 20:25:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.2 1995/07/06 17:20:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -11,24 +11,29 @@ static char vcid[] = "$Id: zerodiag.c,v 1.1 1995/07/04 20:25:42 bsmith Exp bsmit
 #include <math.h>
 
 #define SWAP(a,b) {int _t; _t = a; a = b; b = _t; }
+#if !defined(PETSC_COMPLEX)
+#define ABS(a)  fabs(a)
+#else
+#define ABS(a) abs(a)
+#endif
 
 /* Given a current row and current permutation, find a column permutation
    that removes a zero diagonal */
-int SpiZeroFindPre_Private(Mat mat,int prow,int* row,int* col,Scalar repla,
-                           double atol,int* rc,Scalar* rcv )
+int SpiZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
+                           double atol,int* rc,double* rcv )
 {
   int      k, nz, repl, *j, kk, nnz, *jj;
   Scalar   *v, *vv;
 
   MatGetRow( mat, row[prow], &nz, &j, &v );
   for (k=0; k<nz; k++) {
-    if (col[j[k]] < prow && fabs(v[k]) > repla) {
+    if (col[j[k]] < prow && ABS(v[k]) > repla) {
       /* See if this one will work */
       repl  = col[j[k]];
       MatGetRow( mat, row[repl], &nnz, &jj, &vv );
       for (kk=0; kk<nnz; kk++) {
-	if (col[jj[kk]] == prow && fabs(vv[kk]) > atol) {
-	  *rcv = fabs(v[k]);
+	if (col[jj[kk]] == prow && ABS(vv[kk]) > atol) {
+	  *rcv = ABS(v[k]);
 	  *rc  = repl;
           MatRestoreRow( mat, row[repl], &nnz, &jj, &vv );
           MatRestoreRow( mat, row[prow], &nz, &j, &v );
@@ -65,7 +70,8 @@ int SpiZeroFindPre_Private(Mat mat,int prow,int* row,int* col,Scalar repla,
 int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
 {
   int      ierr, prow, k, nz, n, repl, *j, *col, *row, m;
-  Scalar   *v, repla;
+  Scalar   *v;
+  double   repla;
 
   ierr = ISGetIndices(ris,&row); CHKERRQ(ierr);
   ierr = ISGetIndices(cis,&col); CHKERRQ(ierr);
@@ -74,14 +80,14 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
   for (prow=0; prow<n; prow++) {
     MatGetRow( mat, row[prow], &nz, &j, &v );
     for (k=0; k<nz; k++) {if (col[j[k]] == prow) break;}
-    if (k >= nz || fabs(v[k]) <= atol) {
+    if (k >= nz || ABS(v[k]) <= atol) {
       /* Element too small or zero; find the best candidate */
       repl  = prow;
-      repla = (k >= nz) ? 0.0 : fabs(v[k]);
+      repla = (k >= nz) ? 0.0 : ABS(v[k]);
       for (k=0; k<nz; k++) {
-	if (col[j[k]] > prow && fabs(v[k]) > repla) {
+	if (col[j[k]] > prow && ABS(v[k]) > repla) {
 	  repl = col[j[k]];
-	  repla = fabs(v[k]);
+	  repla = ABS(v[k]);
         }
       }
       if (prow == repl) {

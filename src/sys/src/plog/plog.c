@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.10 1995/07/07 13:38:34 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.11 1995/07/07 13:40:35 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -105,8 +105,8 @@ static double EventsType[100][3];
 double _TotalFlops = 0;
 int (*_PHC)(PetscObject) = 0;
 int (*_PHD)(PetscObject) = 0;
-int (*_PLB)(int,PetscObject,PetscObject,PetscObject,PetscObject);
-int (*_PLE)(int,PetscObject,PetscObject,PetscObject,PetscObject);
+int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 
 
 /*
@@ -174,7 +174,7 @@ int phd(PetscObject obj)
 /*
     Event begin logger with complete logging
 */
-int plball(int event,PetscObject o1,PetscObject o2,PetscObject o3,
+int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
                                                       PetscObject o4)
 {
  double time;
@@ -194,6 +194,7 @@ int plball(int event,PetscObject o1,PetscObject o2,PetscObject o3,
   events[nevents].type   = event;
   events[nevents].cookie = 0;
   events[nevents++].event= ACTIONBEGIN;
+  if (t != 1) return 0;
   EventsType[event][COUNT]++;
   EventsType[event][TIME]  -= time;
   EventsType[event][FLOPS] -= _TotalFlops;
@@ -202,7 +203,7 @@ int plball(int event,PetscObject o1,PetscObject o2,PetscObject o3,
 /*
      Event end logger with complete logging
 */
-int pleall(int event,PetscObject o1,PetscObject o2,PetscObject o3,
+int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
                                                          PetscObject o4)
 {
  double time;
@@ -222,6 +223,7 @@ int pleall(int event,PetscObject o1,PetscObject o2,PetscObject o3,
   events[nevents].type   = event;
   events[nevents].cookie = 0;
   events[nevents++].event= ACTIONEND;
+  if (t != 1) return 0;
   EventsType[event][TIME] += time;
   EventsType[event][FLOPS] += _TotalFlops;
   return 0;
@@ -229,8 +231,10 @@ int pleall(int event,PetscObject o1,PetscObject o2,PetscObject o3,
 /*
      Default event begin logger
 */
-int plb(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
+        PetscObject o4)
 {
+  if (t != 1) return 0;
   EventsType[event][COUNT]++;
   PetscTimeSubtract(EventsType[event][TIME]);
   EventsType[event][FLOPS] -= _TotalFlops;
@@ -239,8 +243,10 @@ int plb(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 /*
      Default event end logger
 */
-int ple(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,
+        PetscObject o4)
 {
+  if (t != 1) return 0;
   PetscTimeAdd(EventsType[event][TIME]);
   EventsType[event][FLOPS] += _TotalFlops;
   return 0;

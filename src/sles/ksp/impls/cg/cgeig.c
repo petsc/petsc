@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.8 1995/03/30 21:17:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.9 1995/06/08 03:07:37 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -16,24 +16,6 @@ int ccgtql1(int *, Scalar *, Scalar *, int *);
 *    Uses f2c version of Eispack routine tql1
 * -----------------------------------------------------------------*/
 #if !defined(PETSC_COMPLEX)
-
-static int eig(int i,Scalar *d,Scalar *e,Scalar *dd,Scalar *ee,
-               Scalar *maxe,Scalar *mine)
-{
-   int j, 
-       ii;      /* ii lets us take the address of i; there have been some
-		   problems with some systems */
-
-   /* copy tridiagonal matrix to work space */
-   ii = i;
-   for ( j=0; j<ii ; j++) { dd[j] = d[j]; ee[j] = e[j]; }
-
-   ccgtql1(&ii,dd,ee,&j);
-   if (j != 0) SETERRQ(1,"Error return from tql1 in CG code");  
-
-   *mine = dd[0]; *maxe = dd[ii-1];
-  return 0;
-}
 
 /*@
     KSPCGGetEigenvalues - Called after running KSPSolve (with KSPCG),
@@ -56,19 +38,28 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
 
 {
   KSP_CG *cgP;
-
+  double *d, *e, *dd, *ee;
+  int    ii,j;
   VALIDHEADER(itP,KSP_COOKIE);
   if (itP->type != KSPCG) {SETERRQ(3,"Method not CG");}
   if (!itP->calc_eigs) {
       SETERRQ(4,"Eigenvalue calculation not requested in CG Setup");}
 
-  cgP = (KSP_CG *) itP->MethodPrivate;
   if (n == 0) {
       *emax = *emin = 1.0;
       return 0;
-      }
+  }
+  cgP = (KSP_CG *) itP->MethodPrivate;
+  d = cgP->d; e = cgP->e; dd = cgP->dd; ee = cgP->ee;
 
-  eig(n,cgP->d,cgP->e,cgP->dd,cgP->ee,emax,emin); 
+
+  /* copy tridiagonal matrix to work space */
+  ii = n;
+  for ( j=0; j<ii ; j++) { dd[j] = d[j]; ee[j] = e[j]; }
+
+  ccgtql1(&ii,dd,ee,&j);
+  if (j != 0) SETERRQ(1,"Error return from tql1 in CG code");  
+  *emax = dd[0]; *emin = dd[ii-1];
   return 0;
 }
 
@@ -124,18 +115,18 @@ static double cgpthy(double*,double*);
 int ccgtql1(int *n, Scalar *d, Scalar *e, int *ierr)
 {
     /* System generated locals */
-    int i__1, i__2;
+    int    i__1, i__2;
     double d__1, d__2;
 
     /* Local variables */
     static double c, f, g, h;
-    static int i, j, l, m;
+    static int    i, j, l, m;
     static double p, r, s, c2, c3;
-    static int l1, l2;
+    static int    l1, l2;
     static double s2;
-    static int ii;
+    static int    ii;
     static double dl1, el1;
-    static int mml;
+    static int    mml;
     static double tst1, tst2;
 
 /*     THIS SUBROUTINE IS A TRANSLATION OF THE ALGOL PROCEDURE TQL1, */
