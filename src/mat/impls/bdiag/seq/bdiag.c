@@ -1,625 +1,564 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.23 1995/04/17 19:36:18 curfman Exp $";
+static char vcid[] = "$Id: bdiag.c,v 1.1 1995/04/22 00:47:56 curfman Exp curfman $";
 #endif
 
-/*
-    Standard Fortran style matrices
-*/
-#include "ptscimpl.h"
-#include "plapack.h"
-#include "matimpl.h"
-#include "math.h"
+/* Block diagonal matrix format */
+
+#include "bdiag.h"
 #include "vec/vecimpl.h"
+#include "inline/spops.h"
 
-typedef struct {
-  Scalar *v;
-  int    roworiented;
-  int    m,n,pad;
-  int    *pivots;   /* pivots in LU factorization */
-} Mat_Dense;
-
-
-static int MatGetInfo_Dense(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
+static int MatSetValues_AIJ(Mat matin,int m,int *idxm,int n,
+                            int *idxn,Scalar *v,InsertMode  addv)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int    i,N = mat->m*mat->n,count = 0;
-  Scalar *v = mat->v;
-  for ( i=0; i<N; i++ ) {if (*v != 0.0) count++; v++;}
-  *nz = count; *nzalloc = N; *mem = N*sizeof(Scalar);
+  Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
+  int       nonew = dmat->nonew;
+  int       ierr, kk, j, k, loc, ldiag, shift, row; 
+  int       nb = dmat->nb, nd = dmat->nd, *diag = dmat->diag;
+  int       nz = n;
+  Scalar    *valpt;
+/* 
+   Note:  This routine assumes that space has already been allocated for
+   the gathered elements ... It does NOT currently allocate additional
+   space! 
+ */
+  if (m!=1) SETERR(1,"Currently can set only 1 row at a time.  m=1 only.");
+  if (nb == 1) {
+    for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
+      row  = idxm[kk];   
+      if (row < 0) SETERR(1,"Negative row index");
+      if (row >= dmat->m) SETERR(1,"Row index too large");
+      for (j=0; j<nz; j++) {
+        ldiag = row - idxn[j];			/* diagonal */
+        for (k=0; k<nd; k++) {
+	  if (diag[k] == ldiag) {
+	    if (ldiag > 0) 			/* lower triangle */
+	      loc = row - dmat->diag[k];
+	    else
+	      loc = row;
+	    if (valpt = &((dmat->diagv[k])[loc])) {
+	      if (addv == AddValues) *valpt += v[j];
+	      else                   *valpt = v[j];
+            } else SETERR(1,
+               "Does not support allocation of additional memory." );
+            break;
+          }
+        }
+      }
+    }
+  } else {
+    for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
+      row  = idxm[kk];   
+      if (row < 0) SETERR(1,"Negative row index");
+      if (row >= dmat->m) SETERR(1,"Row index too large");
+      for (j=0; j<nz; j++) {
+        ldiag = row/nb - idxn[j]/nb;		/* block diagonal */
+        shift = (row/nb)*nb*nb + row%nb;
+        for (k=0; k<nd; k++) {
+          if (diag[k] == ldiag) {
+	    if (ldiag > 0) 			/* lower triangle */
+	      loc = shift - ldiag*nb*nb;
+             else
+	      loc = shift;
+	    if (valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ])) {
+	      if (addv == AddValues) *valpt += v[j];
+	      else                   *valpt = v[j];
+            } else SETERR(1,
+                "Does not support allocation of additional memory." );
+            break;
+          }
+        }
+      }
+    }
+  }
   return 0;
 }
+
+/*
+  MatMult_BDiag_base - This routine is intended for use with 
+  MatMult_BDiag() and MatMultAdd_BDiag().  It computes yy += mat * xx.
+ */
+static int MatMult_BDiag_base(Mat matin,Vec xx,Vec yy)
+{ 
+  Mat_BDiag *mat= (Mat_BDiag *) matin->data;
+  int             nd = mat->nd, nb = mat->nb, diag, nrows = mat->m;
+  int             kshift, nbrows;
+  Scalar          *vin, *vout;
+  register Scalar *pvin, *pvout, *dv;
+  register int    d, i, j, k, len;
+
+  VecGetArray(xx,&vin); VecGetArray(yy,&vout);
+  if (nb == 1) { /* This is a simple, diagonal-oriented approach */
+    for (d=0; d<nd; d++) {
+      dv   = mat->diagv[d];
+      diag = mat->diag[d];
+      /* diag is (row/nb - col/nb) */
+      if (diag > 0) {	/* lower triangle */
+        pvin = vin;
+	pvout = vout + diag;
+	len   = nrows - diag;
+      } else {		/* upper triangle, including main diagonal */
+        pvin  = vin - diag;
+        pvout = vout;
+        len   = nrows + diag;
+      }
+      for (j=0; j<len; j++) {
+        pvout[j] += dv[j] * pvin[j];
+      }
+    }
+  } else { /* Block diagonal approach, assuming storage within dense blocks 
+              in column-major order */
+    nbrows = nrows/nb;
+    for (d=0; d<nd; d++) {
+      dv   = mat->diagv[d];
+      diag = mat->diag[d];
+      /* diag is (row/nb - col/nb) */
+      if (diag > 0) {	/* lower triangle */
+        pvin = vin;
+	pvout = vout + nb*diag;
+	len   = nbrows - diag;
+      } else {		/* upper triangle, including main diagonal */
+        pvin  = vin - nb*diag;
+        pvout = vout;
+        len   = nbrows + diag;
+      }
+      for (k=0; k<len; k++) {
+        kshift = k*nb*nb;
+        for (i=0; i<nb; i++) {	/* i = local row */
+          for (j=0; j<nb; j++) {	/* j = local column */
+            pvout[k*nb + i] += dv[kshift + j*nb + i] * pvin[k*nb + j];
+          }
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+/*
+  MatMultTrans_BDiag_base - This routine is intended for use with 
+  MatMultTrans_BDiag() and MatMultTransAdd_BDiag().  It computes 
+            yy += mat^T * xx.
+ */
+static int MatMultTrans_BDiag_base(Mat matin,Vec xx,Vec yy)
+{
+  Mat_BDiag       *mat = (Mat_BDiag *) matin->data;
+  int             nd = mat->nd, nb = mat->nb, diag, nrows = mat->m;
+  int             kshift, nbrows;
+  register Scalar *pvin, *pvout, *dv;
+  register int    d, i, j, k, len;
+  Scalar          *vin, *vout;
   
-/* ---------------------------------------------------------------*/
-/* COMMENT: I have chosen to hide column permutation in the pivots,
-   rather than put it in the Mat->col slot.*/
-static int MatLUFactor_Dense(Mat matin,IS row,IS col)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int    info;
-  if (!mat->pivots) {
-    mat->pivots = (int *) MALLOC( mat->m*sizeof(int) );
-    CHKPTR(mat->pivots);
-  }
-  LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
-  if (info) SETERR(1,"Bad LU factorization");
-  matin->factor = FACTOR_LU;
-  return 0;
-}
-static int MatLUFactorSymbolic_Dense(Mat matin,IS row,IS col,Mat *fact)
-{
-  int ierr;
-  if ((ierr = MatCopy(matin,fact))) SETERR(ierr,0);
-  return 0;
-}
-static int MatLUFactorNumeric_Dense(Mat matin,Mat *fact)
-{
-  return MatLUFactor(*fact,0,0);
-}
-static int MatChFactorSymbolic_Dense(Mat matin,IS row,Mat *fact)
-{
-  int ierr;
-  if ((ierr = MatCopy(matin,fact))) SETERR(ierr,0);
-  return 0;
-}
-static int MatChFactorNumeric_Dense(Mat matin,Mat *fact)
-{
-  return MatCholeskyFactor(*fact,0);
-}
-static int MatChFactor_Dense(Mat matin,IS perm)
-{
-  Mat_Dense    *mat = (Mat_Dense *) matin->data;
-  int       info;
-  if (mat->pivots) {FREE(mat->pivots); mat->pivots = 0;}
-  LApotrf_("L",&mat->n,mat->v,&mat->m,&info);
-  if (info) SETERR(1,"Bad Cholesky factorization");
-  matin->factor = FACTOR_CHOLESKY;
-  return 0;
-}
-
-static int MatSolve_Dense(Mat matin,Vec xx,Vec yy)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int    one = 1, info;
-  Scalar *x, *y;
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  MEMCPY(y,x,mat->m*sizeof(Scalar));
-  if (matin->factor == FACTOR_LU) {
-    LAgetrs_( "N", &mat->m, &one, mat->v, &mat->m, mat->pivots,
-              y, &mat->m, &info );
-  }
-  else if (matin->factor == FACTOR_CHOLESKY){
-    LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
-              y, &mat->m, &info );
-  }
-  else SETERR(1,"Matrix must be factored to solve");
-  if (info) SETERR(1,"Bad solve");
-  return 0;
-}
-static int MatSolveTrans_Dense(Mat matin,Vec xx,Vec yy)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int    one = 1, info;
-  Scalar *x, *y;
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  MEMCPY(y,x,mat->m*sizeof(Scalar));
-  /* assume if pivots exist then LU else Cholesky */
-  if (mat->pivots) {
-    LAgetrs_( "T", &mat->m, &one, mat->v, &mat->m, mat->pivots,
-              y, &mat->m, &info );
-  }
-  else {
-    LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
-              y, &mat->m, &info );
-  }
-  if (info) SETERR(1,"Bad solve");
-  return 0;
-}
-static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int    one = 1, info,ierr;
-  Scalar *x, *y, sone = 1.0;
-  Vec    tmp = 0;
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  if (yy == zz) {
-    ierr = VecCreate(yy,&tmp); CHKERR(ierr);
-    ierr = VecCopy(yy,tmp); CHKERR(ierr);
-  } 
-  MEMCPY(y,x,mat->m*sizeof(Scalar));
-  /* assume if pivots exist then LU else Cholesky */
-  if (mat->pivots) {
-    LAgetrs_( "N", &mat->m, &one, mat->v, &mat->m, mat->pivots,
-              y, &mat->m, &info );
-  }
-  else {
-    LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
-              y, &mat->m, &info );
-  }
-  if (info) SETERR(1,"Bad solve");
-  if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
-  else VecAXPY(&sone,zz,yy);
-  return 0;
-}
-static int MatSolveTransAdd_Dense(Mat matin,Vec xx,Vec zz, Vec yy)
-{
-  Mat_Dense  *mat = (Mat_Dense *) matin->data;
-  int     one = 1, info,ierr;
-  Scalar  *x, *y, sone = 1.0;
-  Vec     tmp;
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  if (yy == zz) {
-    ierr = VecCreate(yy,&tmp); CHKERR(ierr);
-    ierr = VecCopy(yy,tmp); CHKERR(ierr);
-  } 
-  MEMCPY(y,x,mat->m*sizeof(Scalar));
-  /* assume if pivots exist then LU else Cholesky */
-  if (mat->pivots) {
-    LAgetrs_( "T", &mat->m, &one, mat->v, &mat->m, mat->pivots,
-              y, &mat->m, &info );
-  }
-  else {
-    LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
-              y, &mat->m, &info );
-  }
-  if (info) SETERR(1,"Bad solve");
-  if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
-  else VecAXPY(&sone,zz,yy);
-  return 0;
-}
-/* ------------------------------------------------------------------*/
-static int MatRelax_Dense(Mat matin,Vec bb,double omega,int flag,double shift,
-                       int its,Vec xx)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  Scalar *x, *b, *v = mat->v, zero = 0.0, xt;
-  int    o = 1,ierr, m = mat->m, i;
-
-  if (flag & SOR_ZERO_INITIAL_GUESS) {
-    /* this is a hack fix, should have another version without 
-       the second BLdot */
-    if ((ierr = VecSet(&zero,xx))) SETERR(ierr,0);
-  }
-  VecGetArray(xx,&x); VecGetArray(bb,&b);
-  while (its--) {
-    if (flag & SOR_FORWARD_SWEEP){
-      for ( i=0; i<m; i++ ) {
-        xt = b[i]-BLdot_(&m,v+i,&m,x,&o);
-        x[i] = (1. - omega)*x[i] + omega*(xt/(v[i + i*m]+shift) + x[i]);
+  VecGetArray(xx,&vin); VecGetArray(yy,&vout);
+  if (nb == 1) { /* This is a simple, diagonal-oriented approach */
+    for (d=0; d<nd; d++) {
+      dv   = mat->diagv[d];
+      diag = mat->diag[d];
+      /* diag of original matrix is (row/nb - col/nb) */
+      /* diag of transpose matrix is (col/nb - row/nb) */
+      if (diag < 0) {	/* transpose is lower triangle */
+        pvin  = vin;
+	pvout = vout - diag;
+	len   = nrows + diag;
+      } else {	/* transpose is upper triangle, including main diagonal */
+        pvin  = vin + diag;
+        pvout = vout;
+        len   = nrows - diag;
+      }
+      for (j=0; j<len; j++) {
+        pvout[j] += dv[j] * pvin[j];
       }
     }
-    if (flag & SOR_BACKWARD_SWEEP) {
-      for ( i=m-1; i>=0; i-- ) {
-        xt = b[i]-BLdot_(&m,v+i,&m,x,&o);
-        x[i] = (1. - omega)*x[i] + omega*(xt/(v[i + i*m]+shift) + x[i]);
+  } else { /* Block diagonal approach, assuming storage within dense blocks
+              in column-major order */
+    nbrows = nrows/nb;
+    for (d=0; d<nd; d++) {
+      dv   = mat->diagv[d];
+      diag = mat->diag[d];
+      /* diag of original matrix is (row/nb - col/nb) */
+      /* diag of transpose matrix is (col/nb - row/nb) */
+      if (diag < 0) {	/* transpose is lower triangle */
+        pvin  = vin;
+        pvout = vout - nb*diag;
+        len   = nbrows + diag;
+      } else {	/* transpose is upper triangle, including main diagonal */
+        pvin  = vin + nb*diag;
+        pvout = vout;
+        len   = nbrows - diag;
+      }
+      for (k=0; k<len; k++) {
+        kshift = k*nb*nb;
+        for (i=0; i<nb; i++) {	/* i = local column of transpose */
+          for (j=0; j<nb; j++) {	/* j = local row of transpose */
+            pvout[k*nb + j] += dv[kshift + j*nb + i] * pvin[k*nb + i];
+          }
+        }
       }
     }
-  } 
+  }
   return 0;
-} 
+}
+static int MatMult_BDiag(Mat matin,Vec xx,Vec yy)
+{
+  Scalar zero = 0.0;
+  int    ierr;
+  ierr = VecSet(&zero,yy); CHKERR(ierr);
+  return MatMult_BDiag_base(matin,xx,yy);
+}
+static int MatMultTrans_BDiag(Mat matin,Vec xx,Vec yy)
+{
+  Scalar zero = 0.0;
+  int    ierr;
+  ierr = VecSet(&zero,yy); CHKERR(ierr);
+  return MatMultTrans_BDiag_base(matin,xx,yy);
+}
+static int MatMultAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
+{
+  int ierr;
+  ierr = VecCopy(zz,yy); CHKERR(ierr);
+  return MatMult_BDiag_base(matin,xx,yy);
+}
+static int MatMultTransAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
+{
+  int ierr;
+  ierr = VecCopy(zz,yy); CHKERR(ierr);
+  return MatMultTrans_BDiag_base(matin,xx,yy);
+}
 
-/* -----------------------------------------------------------------*/
-static int MatMultTrans_Dense(Mat matin,Vec xx,Vec yy)
+static int MatGetInfo_BDiag(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  Scalar *v = mat->v, *x, *y;
-  int _One=1;Scalar _DOne=1.0, _DZero=0.0;
-  VecGetArray(xx,&x), VecGetArray(yy,&y);
-  LAgemv_( "T", &(mat->m), &(mat->n), &_DOne, v, &(mat->m), 
-         x, &_One, &_DZero, y, &_One );
-  return 0;
-}
-static int MatMult_Dense(Mat matin,Vec xx,Vec yy)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  Scalar *v = mat->v, *x, *y;
-  int _One=1;Scalar _DOne=1.0, _DZero=0.0;
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  LAgemv_( "N", &(mat->m), &(mat->n), &_DOne, v, &(mat->m), 
-         x, &_One, &_DZero, y, &_One );
-  return 0;
-}
-static int MatMultAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  Scalar *v = mat->v, *x, *y, *z;
-  int    _One=1; Scalar _DOne=1.0;
-  VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z);
-  if (zz != yy) MEMCPY(y,z,mat->m*sizeof(Scalar));
-  LAgemv_( "N", &(mat->m), &(mat->n), &_DOne, v, &(mat->m), 
-         x, &_One, &_DOne, y, &_One );
-  return 0;
-}
-static int MatMultTransAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  Scalar *v = mat->v, *x, *y, *z;
-  int    _One=1;
-  Scalar _DOne=1.0;
-  VecGetArray(xx,&x); VecGetArray(yy,&y);
-  VecGetArray(zz,&z);
-  if (zz != yy) MEMCPY(y,z,mat->m*sizeof(Scalar));
-  LAgemv_( "T", &(mat->m), &(mat->n), &_DOne, v, &(mat->m), 
-         x, &_One, &_DOne, y, &_One );
+  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  *nz      = mat->nz;
+  *nzalloc = mat->maxnz;
+  *mem     = mat->mem;
   return 0;
 }
 
 /* -----------------------------------------------------------------*/
-static int MatGetRow_Dense(Mat matin,int row,int *ncols,int **cols,
-                        Scalar **vals)
+static int MatGetRow_BDiag(Mat matin,int row,int *nz,int **col,Scalar **v)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  Scalar *v;
-  int    i;
-  *ncols = mat->n;
-  if (cols) {
-    *cols = (int *) MALLOC(mat->n*sizeof(int)); CHKPTR(*cols);
-    for ( i=0; i<mat->n; i++ ) *cols[i] = i;
-  }
-  if (vals) {
-    *vals = (Scalar *) MALLOC(mat->n*sizeof(Scalar)); CHKPTR(*vals);
-    v = mat->v + row;
-    for ( i=0; i<mat->n; i++ ) {*vals[i] = *v; v += mat->m;}
+  Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
+  Scalar    *p;
+  int       nd = dmat->nd, nb = dmat->nb;
+  int       nc = dmat->n, *diag = dmat->diag;
+  int       i, j, k, loc, pcol, shift;
+
+/* For efficiency, if ((nz) && (col) && (v)) then do all at once */
+  if ((nz) && (col) && (v)) {
+    if (nb == 1) { 
+      *col = dmat->colloc;
+      *v   = dmat->dvalue;
+      k    = 0;
+      for (j=0; j<nd; j++) {
+        pcol = row - diag[j];		/* computed column */
+        if (pcol > -1 && pcol < nc) {
+	  if (diag[j] > 0) 		/* lower triangle */
+	    loc = row - diag[j];
+	  else
+	    loc = row;
+	  (*v)[k]   = (dmat->diagv[j])[loc];
+          (*col)[k] = pcol;  k++;
+	}
+      }
+      *nz = k;
+    } else {
+      k     = 0;
+      *v    = dmat->dvalue;
+      *col  = dmat->colloc;
+      shift = (row/nb)*nb*nb + row%nb;  	/* integer arithmetic */
+      for (j=0; j<nd; j++) {
+        pcol = nb * (row/nb - diag[j]);	/* computed base column */
+        if (pcol > -1 && pcol < nc) {
+          if (diag[j] > 0) 		/* lower triangle */
+	    loc = shift - diag[j]*nb*nb;
+	  else 
+	    loc = shift;
+          for (i=0; i<nb; i++) {
+	    (*v)[k+i]   = (dmat->diagv[j])[loc + i*nb];
+	    (*col)[k+i] = pcol + i;
+	  }
+          k += nb;
+        } 
+      }
+      *nz = k;
+    }
+  } else {
+    if (nb == 1) { 
+      if (nz) {
+        k = 0;
+        for (j=0; j<nd; j++) {
+          pcol = row - diag[j];
+          if (pcol > -1 && pcol < nc) k++; 
+        }
+        *nz = k;
+      }
+      if (col) {
+        *col = dmat->colloc;
+        k = 0;
+        for (j=0; j<nd; j++) {
+          pcol = row - diag[j];
+          if (pcol > -1 && pcol < nc) {
+            (*col)[k] = pcol;  k++;
+          }
+        }
+      }
+      if (v) {
+        *v = dmat->dvalue;
+        k = 0;
+        for (j=0; j<nd; j++) {
+          pcol = row - diag[j];
+          if (pcol > -1 && pcol < nc) {
+	    if (diag[j] > 0) 		/* lower triangle */
+	      loc = row - diag[j];
+	    else
+	      loc = row;
+	    (*v)[k] = (dmat->diagv[j])[loc];	k++;
+          }
+        }
+      }
+    } else {
+      if (nz) {
+        k = 0;
+        for (j=0; j<nd; j++) {
+          pcol = nb * (row/nb - diag[j]);
+          if (pcol > -1 && pcol < nc) k += nb; 
+        }
+        *nz = k;
+      }
+      if (col) {
+        *col = dmat->colloc;
+        k = 0;
+        for (j=0; j<nd; j++) {
+          pcol = nb * (row/nb - diag[j]);
+          if (pcol > -1 && pcol < nc) {
+            for (i=0; i<nb; i++) {
+	      (*col)[k+i] = pcol + i;
+            }
+	    k += nb;
+          }
+        }
+      }
+      if (v) {
+        int shift = (row/nb)*nb*nb + row%nb;  /* integer arithmetic */
+        *v = dmat->dvalue;
+        k = 0;
+        for (j=0; j<nd; j++) {
+          pcol = nb * (row/nb - diag[j]);
+	  if (pcol > -1 && pcol < nc) {
+	    if (diag[j] > 0) 		/* lower triangle */
+	      loc = shift - diag[j]*nb*nb;
+	    else 
+	      loc = shift;
+	    for (i=0; i<nb; i++) {
+	     (*v)[k+i] = (dmat->diagv[j])[loc + i*nb];
+            }
+	    k += nb;
+	  }
+        }
+      }
+    }
   }
   return 0;
 }
-static int MatRestoreRow_Dense(Mat matin,int row,int *ncols,int **cols,
+static int MatRestoreRow_BDiag(Mat matin,int row,int *ncols,int **cols,
                             Scalar **vals)
 {
-  if (cols) { FREE(*cols); }
-  if (vals) { FREE(*vals); }
+  /* Work space is allocated once during matrix creation and then freed
+     when matrix is destroyed */
   return 0;
 }
 /* ----------------------------------------------------------------*/
-static int MatInsert_Dense(Mat matin,int m,int *indexm,int n,
-                        int *indexn,Scalar *v,InsertMode addv)
-{ 
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int    i,j;
- 
-  if (!mat->roworiented) {
-    if (addv == InsertValues) {
-      for ( j=0; j<n; j++ ) {
-        if (indexn[j] < 0) {*v += m; continue;}
-        for ( i=0; i<m; i++ ) {
-          if (indexm[i] < 0) {*v++; continue;}
-          mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
-        }
-      }
-    }
-    else {
-      for ( j=0; j<n; j++ ) {
-        if (indexn[j] < 0) {*v += m; continue;}
-        for ( i=0; i<m; i++ ) {
-          if (indexm[i] < 0) {*v++; continue;}
-          mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
-        }
-      }
-    }
-  }
-  else {
-    if (addv == InsertValues) {
-      for ( i=0; i<m; i++ ) {
-        if (indexm[i] < 0) {*v += n; continue;}
-        for ( j=0; j<n; j++ ) {
-          if (indexn[j] < 0) {*v++; continue;}
-          mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
-        }
-      }
-    }
-    else {
-      for ( i=0; i<m; i++ ) {
-        if (indexm[i] < 0) {*v += n; continue;}
-        for ( j=0; j<n; j++ ) {
-          if (indexn[j] < 0) {*v++; continue;}
-          mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
-        }
-      }
-    }
-  }
-  return 0;
-}
-
-/* -----------------------------------------------------------------*/
-static int MatCopy_Dense(Mat matin,Mat *newmat)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int ierr;
-  Mat newi;
-  Mat_Dense *l;
-  if ((ierr = MatCreateSequentialDense(matin->comm,mat->m,mat->n,&newi)))
-                                                          SETERR(ierr,0);
-  l = (Mat_Dense *) newi->data;
-  MEMCPY(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
-  *newmat = newi;
-  return 0;
-}
 #include "viewer.h"
 
-int MatView_Dense(PetscObject obj,Viewer ptr)
+int MatView_BDiag(PetscObject obj,Viewer ptr)
 {
   Mat         matin = (Mat) obj;
-  Mat_Dense      *mat = (Mat_Dense *) matin->data;
-  Scalar      *v;
-  int         i,j;
-  PetscObject ojb = (PetscObject) ptr;
+  Mat_BDiag      *mat = (Mat_BDiag *) matin->data;
 
-  if (ojb && ojb->cookie == VIEWER_COOKIE && ojb->type == MATLAB_VIEWER) {
-    return ViewerMatlabPutArray(ptr,mat->m,mat->n,mat->v); 
-  }
-  else {
-    FILE *fd = ViewerFileGetPointer(ptr);
-    for ( i=0; i<mat->m; i++ ) {
-      v = mat->v + i;
-      for ( j=0; j<mat->n; j++ ) {
-#if defined(PETSC_COMPLEX)
-        fprintf(fd,"%6.4e + %6.4e i ",real(*v),imag(*v)); v += mat->m;
-#else
-        fprintf(fd,"%6.4e ",*v); v += mat->m;
-#endif
-      }
-      fprintf(fd,"\n");
-    }
-  }
   return 0;
 }
 
-
-static int MatDestroy_Dense(PetscObject obj)
+static int MatDestroy_BDiag(PetscObject obj)
 {
-  Mat    mat = (Mat) obj;
-  Mat_Dense *l = (Mat_Dense *) mat->data;
+  Mat       bmat = (Mat) obj;
+  Mat_BDiag *mat = (Mat_BDiag *) bmat->data;
+  int       nd = mat->nd;
 #if defined(PETSC_LOG)
-  PLogObjectState(obj,"Rows %d Cols %d",l->m,l->n);
+  PLogObjectState(obj,"Rows %d Cols %d NZ %d",mat->m,mat->n,mat->nz);
 #endif
-  if (l->pivots) FREE(l->pivots);
-  FREE(l);
-  PLogObjectDestroy(mat);
-  PETSCHEADERDESTROY(mat);
+  if (!mat->user_alloc) { /* Free the actual diagonals */
+    FREE( mat->diagv[0] );
+  }
+  FREE(mat->diagv);
+  FREE(mat->diag);
+  FREE(mat->dvalue);
+  FREE(mat);
+  PLogObjectDestroy(bmat);
+  PETSCHEADERDESTROY(bmat);
   return 0;
 }
 
-static int MatTrans_Dense(Mat matin)
+static int MatEndAssembly_BDiag(Mat matin,int mode)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  int    k,j;
-  Scalar *v = mat->v, tmp;
-  if (mat->m != mat->n) {
-    SETERR(1,"Cannot transpose rectangular dense matrix");
-  }
-  for ( j=0; j<mat->m; j++ ) {
-    for ( k=0; k<j; k++ ) {
-      tmp = v[j + k*mat->n]; 
-      v[j + k*mat->n] = v[k + j*mat->n];
-      v[k + j*mat->n] = tmp;
-    }
-  }
+  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
+  if (mode == FLUSH_ASSEMBLY) return 0;
+  mat->assembled = 1;
   return 0;
 }
 
-static int MatEqual_Dense(Mat matin1,Mat matin2)
+static int MatGetDiag_BDiag(Mat matin,Vec v)
 {
-  Mat_Dense *mat1 = (Mat_Dense *) matin1->data;
-  Mat_Dense *mat2 = (Mat_Dense *) matin2->data;
-  int    i;
-  Scalar *v1 = mat1->v, *v2 = mat2->v;
-  if (mat1->m != mat2->m) return 0;
-  if (mat1->n != mat2->n) return 0;
-  for ( i=0; i<mat1->m*mat1->n; i++ ) {
-    if (*v1 != *v2) return 0;
-    v1++; v2++;
-  }
-  return 1;
-}
-
-static int MatGetDiag_Dense(Mat matin,Vec v)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
   int    i, n;
   Scalar *x;
   CHKTYPE(v,SEQVECTOR);
   VecGetArray(v,&x); VecGetSize(v,&n);
   if (n != mat->m) SETERR(1,"Nonconforming matrix and vector");
-  for ( i=0; i<mat->m; i++ ) {
+/*  for ( i=0; i<mat->m; i++ ) {
     x[i] = mat->v[i*mat->m + i];
-  }
+  } */
   return 0;
 }
 
-static int MatScale_Dense(Mat matin,Vec ll,Vec rr)
+static int MatZero_BDiag(Mat A)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  Scalar *l,*r,x,*v;
-  int    i,j,m = mat->m, n = mat->n;
-  if (ll) {
-    VecGetArray(ll,&l); VecGetSize(ll,&m);
-    if (m != mat->m) SETERR(1,"Left scaling vector wrong length");
-    for ( i=0; i<m; i++ ) {
-      x = l[i];
-      v = mat->v + i;
-      for ( j=0; j<n; j++ ) { (*v) *= x; v+= m;} 
-    }
-  }
-  if (rr) {
-    VecGetArray(rr,&r); VecGetSize(rr,&n);
-    if (n != mat->n) SETERR(1,"Right scaling vector wrong length");
-    for ( i=0; i<n; i++ ) {
-      x = r[i];
-      v = mat->v + i*m;
-      for ( j=0; j<m; j++ ) { (*v++) *= x;} 
-    }
-  }
   return 0;
 }
 
-
-static int MatNorm_Dense(Mat matin,int type,double *norm)
+static int MatZeroRows_BDiag(Mat A,IS is,Scalar *diag)
 {
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  Scalar *v = mat->v;
-  double sum = 0.0;
-  int    i, j;
-  if (type == NORM_FROBENIUS) {
-    for (i=0; i<mat->n*mat->m; i++ ) {
-#if defined(PETSC_COMPLEX)
-      sum += real(conj(*v)*(*v)); v++;
-#else
-      sum += (*v)*(*v); v++;
-#endif
-    }
-    *norm = sqrt(sum);
-  }
-  else if (type == NORM_1) {
-    *norm = 0.0;
-    for ( j=0; j<mat->n; j++ ) {
-      sum = 0.0;
-      for ( i=0; i<mat->m; i++ ) {
-#if defined(PETSC_COMPLEX)
-        sum += abs(*v++); 
-#else
-        sum += fabs(*v++); 
-#endif
-      }
-      if (sum > *norm) *norm = sum;
-    }
-  }
-  else if (type == NORM_INFINITY) {
-    *norm = 0.0;
-    for ( j=0; j<mat->m; j++ ) {
-      v = mat->v + j;
-      sum = 0.0;
-      for ( i=0; i<mat->n; i++ ) {
-#if defined(PETSC_COMPLEX)
-        sum += abs(*v); v += mat->m;
-#else
-        sum += fabs(*v); v += mat->m;
-#endif
-      }
-      if (sum > *norm) *norm = sum;
-    }
-  }
-  else {
-    SETERR(1,"No support for the two norm yet");
-  }
+  Mat_BDiag *l = (Mat_BDiag *) A->data;
+
   return 0;
 }
 
-static int MatInsOpt_Dense(Mat aijin,int op)
+static int MatGetSize_BDiag(Mat matin,int *m,int *n)
 {
-  Mat_Dense *aij = (Mat_Dense *) aijin->data;
-  if (op == ROW_ORIENTED)            aij->roworiented = 1;
-  else if (op == COLUMN_ORIENTED)    aij->roworiented = 0;
-  /* doesn't care about sorted rows or columns */
-  return 0;
-}
-
-static int MatZero_Dense(Mat A)
-{
-  Mat_Dense *l = (Mat_Dense *) A->data;
-  MEMSET(l->v,0,l->m*l->n*sizeof(Scalar));
-  return 0;
-}
-
-static int MatZeroRows_Dense(Mat A,IS is,Scalar *diag)
-{
-  Mat_Dense *l = (Mat_Dense *) A->data;
-  int    n = l->n, i, j,ierr,N, *rows;
-  Scalar *slot;
-  ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
-  ierr = ISGetIndices(is,&rows); CHKERR(ierr);
-  for ( i=0; i<N; i++ ) {
-    slot = l->v + rows[i];
-    for ( j=0; j<n; j++ ) { *slot = 0.0; slot += n;}
-  }
-  if (diag) {
-    for ( i=0; i<N; i++ ) { 
-      slot = l->v + (n+1)*rows[i];
-      *slot = *diag;
-    }
-  }
-  ISRestoreIndices(is,&rows);
-  return 0;
-}
-
-static int MatGetSize_Dense(Mat matin,int *m,int *n)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
+  Mat_BDiag *mat = (Mat_BDiag *) matin->data;
   *m = mat->m; *n = mat->n;
   return 0;
 }
 
-static int MatGetArray_Dense(Mat matin,Scalar **array)
-{
-  Mat_Dense *mat = (Mat_Dense *) matin->data;
-  *array = mat->v;
-  return 0;
-}
+static int MatCopy_BDiag(Mat,Mat *);
+
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatInsert_Dense,
-       MatGetRow_Dense, MatRestoreRow_Dense,
-       MatMult_Dense, MatMultAdd_Dense, 
-       MatMultTrans_Dense, MatMultTransAdd_Dense, 
-       MatSolve_Dense,MatSolveAdd_Dense,
-       MatSolveTrans_Dense,MatSolveTransAdd_Dense,
-       MatLUFactor_Dense,MatChFactor_Dense,
-       MatRelax_Dense,
-       MatTrans_Dense,
-       MatGetInfo_Dense,MatEqual_Dense,
-       MatCopy_Dense,
-       MatGetDiag_Dense,MatScale_Dense,MatNorm_Dense,
-       0,0,
-       0, MatInsOpt_Dense,MatZero_Dense,MatZeroRows_Dense,0,
-       MatLUFactorSymbolic_Dense,MatLUFactorNumeric_Dense,
-       MatChFactorSymbolic_Dense,MatChFactorNumeric_Dense,
-       MatGetSize_Dense,MatGetSize_Dense,0,
-       0,0,MatGetArray_Dense
+static struct _MatOps MatOps = {0,
+       MatGetRow_BDiag, MatRestoreRow_BDiag,
+       MatMult_BDiag, MatMultAdd_BDiag, 
+       MatMultTrans_BDiag, MatMultTransAdd_BDiag, 
+       0, 0, 0, 0,
+       0, 0, 0, 0,
+       MatGetInfo_BDiag, 0, MatCopy_BDiag,
+       MatGetDiag_BDiag, 0, 0,
+       0,MatEndAssembly_BDiag,
+       0, 0, MatZero_BDiag,MatZeroRows_BDiag,0,
+       0, 0, 0, 0,
+       MatGetSize_BDiag,MatGetSize_BDiag,0,
+       0, 0, 0
 };
 /*@
-   MatCreateSequentialDense - Creates a sequential dense matrix that 
-   is stored in column major order (the usual Fortran 77 manner). Many 
-   of the matrix operations use the BLAS and LAPACK routines.
+   MatCreateSequentialBDiag - Creates a sequential block diagonal matrix.
 
    Input Parameters:
 .  comm - MPI communicator, set to MPI_COMM_SELF
-.  m - number of rows
-.  n - number of column
+.  m      - number of rows
+.  n      - number of columns
+.  nd     - number of block diagonals
+.  nb     - each element of a diagonal is an nb x nb dense matrix
+.  diag   - array of block diagonal numbers, values of (row-col)/nb
+.  diagv  - pointer to actual diagonals (in same order as diag array), 
+            if allocated by user.
+            Otherwise, set diagv=0 on input for PETSc to control memory 
+            allocation.
 
-   Output Parameter:
+   Output Parameters:
 .  newmat - the matrix
+.  diagv  -
 
-.keywords: Mat, dense, matrix, LAPACK, BLAS
+   Notes:
+   Once the diagonals have been created, no new diagonals can be
+   added.  Thus, only elements that fall on the specified diagonals
+   can be set or altered; trying to modify other elements results in
+   an error.
+
+.keywords: Mat, matrix, block, diagonal
 
 .seealso: MatCreateSequentialAIJ()
 @*/
-int MatCreateSequentialDense(MPI_Comm comm,int m,int n,Mat *newmat)
+int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
+                             int *diag,Scalar **diagv,Mat *newmat)
 {
-  int       size = sizeof(Mat_Dense) + m*n*sizeof(Scalar);
-  Mat mat;
-  Mat_Dense    *l;
-  *newmat        = 0;
-  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATDENSE,comm);
-  PLogObjectCreate(mat);
-  l              = (Mat_Dense *) MALLOC(size); CHKPTR(l);
-  mat->ops       = &MatOps;
-  mat->destroy   = MatDestroy_Dense;
-  mat->view      = MatView_Dense;
-  mat->data      = (void *) l;
-  mat->factor    = 0;
-  mat->col       = 0;
-  mat->row       = 0;
+  Mat       bmat;
+  Mat_BDiag *mat;
+  int       i, ierr;
 
-  l->m           = m;
-  l->n           = n;
-  l->v           = (Scalar *) (l + 1);
-  l->pivots      = 0;
-  l->roworiented = 1;
+#if !defined(MAX)
+#define  MAX(a,b)     ((a) > (b) ? (a) : (b))
+#endif
 
-  MEMSET(l->v,0,m*n*sizeof(Scalar));
-  *newmat = mat;
+  *newmat      = 0;
+  if ((n%nb) || (m%nb)) SETERR(1,"Invalid block size.");
+  PETSCHEADERCREATE(bmat,_Mat,MAT_COOKIE,MATBDIAG,comm);
+  PLogObjectCreate(bmat);
+  bmat->data       = (void *) (mat = NEW(Mat_BDiag)); CHKPTR(mat);
+  bmat->ops        = &MatOps;
+  bmat->destroy    = MatDestroy_BDiag;
+  bmat->view       = MatView_BDiag;
+  bmat->factor     = 0;
+  bmat->row        = 0;
+  bmat->col        = 0;
+
+  mat->m      = m;
+  mat->n      = n;
+  mat->nd     = nd;
+  mat->nb     = nb;
+  mat->ndim   = 0;
+
+  mat->diag   = (int *)MALLOC( nd * sizeof(int) ); CHKPTR(mat->diag);
+  for (i=0; i<nd; i++) mat->diag[i] = diag[i];
+  mat->colloc = (int *)MALLOC( nb*nd * sizeof(int) ); CHKPTR(mat->colloc);
+  mat->dvalue = (Scalar *)MALLOC(nb*nd * sizeof(Scalar)); CHKPTR(mat->dvalue);
+  mat->diagv  = (Scalar **)MALLOC(nd * sizeof(Scalar*)); CHKPTR(mat->diagv);
+  mat->mem    = (nd*(nb+1)) * sizeof(int) + nb*nd * sizeof(Scalar)
+                 + nd * sizeof(Scalar*) + sizeof(Mat_BDiag);
+  if (diagv) mat->user_alloc = 1; /* user allocated space */
+  else       mat->user_alloc = 0;
+  if (!mat->user_alloc) {
+    Scalar *d;
+    /* Actually, size = upper bound on each diagonal's size.  Equivalence 
+       holds for main diagonal only. */
+    int    size = nb * n, sizetot = size * nd;
+    d = (Scalar *)MALLOC(sizetot * sizeof(Scalar)); CHKPTR(d);
+    mat->mem += sizetot * sizeof(Scalar);
+    mat->maxnz = sizetot;
+    for (i=0; i<sizetot; i++) d[i] = 0.0;
+    for (i=0; i<nd; i++) {
+      mat->diagv[i] = d;
+      d += size;
+    }
+  } else {
+    /* User must add memory allocated for diagonal storage to mat->mem,
+       and must set mat->maxnz, mat->nz */
+    mat->maxnz = 0;
+    for (i=0; i<nd; i++) mat->diagv[i] = diagv[i];
+  }
+  mat->nz        = 0; /* Currently not keeping track of this */
+  mat->assembled = 0;
+  mat->nonew     = 1; /* Currently all memory must be preallocated! */
+  *newmat        = bmat;
   return 0;
 }
 
-int MatCreate_Dense(Mat matin,Mat *newmat)
-{
-  Mat_Dense *m = (Mat_Dense *) matin->data;
-  return MatCreateSequentialDense(matin->comm,m->m,m->n,newmat);
+static int MatCopy_BDiag(Mat matin,Mat *newmat)
+{ 
+  Mat_BDiag *old = (Mat_BDiag *) matin->data;
+  int       ierr;
+
+  *newmat = 0;
+  SETERR(1,"MatCopy_BDiag:  Code not yet finished.");
+  if (!old->assembled) SETERR(1,"Cannot copy unassembled matrix");
+  ierr = MatCreateSequentialBDiag(matin->comm,old->m,old->n,old->nd,
+         old->nb,old->diag,0,newmat); CHKERR(ierr);
+  /* Copy contents of diagonals */
+  return 0;
 }
