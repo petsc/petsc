@@ -350,7 +350,7 @@ Arg class, which wraps the usual value.'''
       os.remove(addrFilename)
     oldDir      = os.getcwd()
     source      = os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)), 'RDict.py')
-    interpreter = os.path.join(distutils.sysconfig['BINDIR'], distutils.sysconfig['PYTHON'])
+    interpreter = os.path.join(distutils.sysconfig.get_config_var('BINDIR'), distutils.sysconfig.get_config_var('PYTHON'))
     if not os.path.isfile(interpreter):
       interpreter = 'python'
     os.chdir(os.path.dirname(addrFilename))
