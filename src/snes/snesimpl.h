@@ -19,15 +19,15 @@ struct _p_SNES {
   /*  ------------------------ User-provided stuff -------------------------------*/
   void  *user;		                        /* user-defined context */
 
-  Vec   vec_sol,vec_sol_always;                /* pointer to solution */
+  Vec   vec_sol,vec_sol_always;                 /* pointer to solution */
   Vec   vec_sol_update_always;                  /* pointer to solution update */
 
   int   (*computefunction)(SNES,Vec,Vec,void*); /* function routine */
-  Vec   vec_func,vec_func_always;              /* pointer to function (or gradient) */
+  Vec   vec_func,vec_func_always;               /* pointer to function */
   void  *funP;                                  /* user-defined function context */
 
   int   (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-  Mat   jacobian;                               /* Jacobian (or Hessian) matrix */
+  Mat   jacobian;                               /* Jacobian matrix */
   Mat   jacobian_pre;                           /* preconditioner matrix */
   void  *jacP;                                  /* user-defined Jacobian context */
   SLES  sles;                                   /* linear solver context */
@@ -69,11 +69,11 @@ struct _p_SNES {
   int      nfuncs;             /* number of function evaluations */
   int      iter;               /* global iteration number */
   int      linear_its;         /* total number of linear solver iterations */
-  PetscReal   norm;               /* residual norm of current iterate
-				  (or gradient norm of current iterate) */
-  PetscReal   rtol;               /* relative tolerance */
-  PetscReal   atol;               /* absolute tolerance */
-  PetscReal   xtol;               /* relative tolerance in solution */
+  PetscReal   norm;            /* residual norm of current iterate */
+  PetscReal   rtol;            /* relative tolerance */
+  PetscReal   atol;            /* absolute tolerance */
+  PetscReal   xtol;            /* relative tolerance in solution */
+  PetscReal   deltatol;        /* trust region convergence tolerance */
 
   /* ------------------------ Default work-area management ---------------------- */
 
@@ -91,19 +91,6 @@ struct _p_SNES {
   int        numFailures;        /* number of unsuccessful step attempts */
   int        maxFailures;        /* maximum number of unsuccessful step attempts */
 
-  /* ------------------  Data for unconstrained minimization  ------------------ */
-  /* unconstrained minimization info ... For now we share everything else
-     with the nonlinear equations code.  We should find a better way to deal 
-     with this; the naming conventions are confusing.  Perhaps use unions? */
-
-  int             (*computeumfunction)(SNES,Vec,PetscReal*,void*);
-  PetscReal          fc;                /* function value */
-  void            *umfunP;           /* function pointer */
-  SNESProblemType method_class;      /* type of solver */
-  PetscReal          deltatol;          /* trust region convergence tolerance */
-  PetscReal          fmin;              /* minimum tolerance for function value */
-  int             set_method_called; /* flag indicating set_method has been called */
-
  /*
    These are REALLY ugly and don't belong here, but since they must 
   be destroyed at the conclusion we have to put them somewhere.
@@ -111,9 +98,9 @@ struct _p_SNES {
   PetscTruth  ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
   void        *kspconvctx;       /* KSP convergence context */
 
-  PetscReal      ttol;              /* used by default convergence test routine */
+  PetscReal      ttol;           /* used by default convergence test routine */
 
-  Vec         *vwork;            /* more work vectors for Jacobian/Hessian approx */
+  Vec         *vwork;            /* more work vectors for Jacobian approx */
   int         nvwork;
   int        (*destroy)(SNES);
   int        (*view)(SNES,PetscViewer);

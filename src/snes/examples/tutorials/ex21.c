@@ -77,7 +77,7 @@ int main(int argc,char **argv)
 
 
   /* create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,FU,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESSetMonitor(snes,Monitor,&user,0);CHKERRQ(ierr);

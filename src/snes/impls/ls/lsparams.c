@@ -6,7 +6,7 @@
 #define __FUNCT__ "SNESSetLineSeachParams"
 /*@C
    SNESSetLineSearchParams - Sets the parameters associated with the line search
-   routine in the Newton-based method SNESEQLS.
+   routine in the Newton-based method SNESLS.
 
    Collective on SNES
 
@@ -32,12 +32,12 @@
 @*/
 int SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal steptol)
 {
-  SNES_EQ_LS *ls;
+  SNES_LS *ls;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ls = (SNES_EQ_LS*)snes->data;
+  ls = (SNES_LS*)snes->data;
   if (alpha   >= 0.0) ls->alpha   = alpha;
   if (maxstep >= 0.0) ls->maxstep = maxstep;
   if (steptol >= 0.0) ls->steptol = steptol;
@@ -48,7 +48,7 @@ int SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscRea
 #define __FUNCT__ "SNESGetLineSeachParams"
 /*@C
    SNESGetLineSearchParams - Gets the parameters associated with the line search
-     routine in the Newton-based method SNESEQLS.
+     routine in the Newton-based method SNESLS.
 
    Not collective, but any processor will return the same values
 
@@ -74,12 +74,12 @@ int SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscRea
 @*/
 int SNESGetLineSearchParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol)
 {
-  SNES_EQ_LS *ls;
+  SNES_LS *ls;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ls = (SNES_EQ_LS*)snes->data;
+  ls = (SNES_LS*)snes->data;
   if (alpha) {
     PetscValidDoublePointer(alpha);
     *alpha   = ls->alpha;

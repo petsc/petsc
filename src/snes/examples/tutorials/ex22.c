@@ -69,9 +69,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_ls","basic");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-dmmg_jacobian_mf_fd",0);CHKERRQ(ierr);
-  /* ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
+  /* ierr = PetscOptionsSetValue("-snes_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
 
   /* Create a global vector that includes a single redundant array and two da arrays */

@@ -104,16 +104,8 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   umin = ctx->umin;
 
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
-  if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    eval_fct = SNESComputeFunction;
-    ierr = SNESGetFunction(snes,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  }
-  else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-    eval_fct = SNESComputeGradient;
-    ierr = SNESGetGradient(snes,&F,PETSC_NULL);CHKERRQ(ierr);
-  }
-  else SETERRQ(1,"Invalid method class");
-
+  eval_fct = SNESComputeFunction;
+  ierr = SNESGetFunction(snes,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /* Determine a "good" step size, h */
   if (ctx->need_h) {

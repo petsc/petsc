@@ -5,8 +5,8 @@
    of nonlinear equations
  */
 
-#ifndef __SNES_EQTR_H
-#define __SNES_EQTR_H
+#ifndef __SNES_TR_H
+#define __SNES_TR_H
 #include "src/snes/snesimpl.h"
 
 typedef struct {
@@ -21,6 +21,6 @@ typedef struct {
   PetscReal sigma;		/* used to detemine termination */
   int       itflag;	/* flag for convergence testing */
   PetscReal rnorm0,ttol;   /* used for KSP convergence test */
-} SNES_EQ_TR;
+} SNES_TR;
 
 #endif

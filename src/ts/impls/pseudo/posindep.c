@@ -564,7 +564,7 @@ int TSCreate_Pseudo(TS ts)
   ts->ops->setfromoptions  = TSSetFromOptions_Pseudo;
 
   /* create the required nonlinear solver context */
-  ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
+  ierr = SNESCreate(ts->comm,&ts->snes);CHKERRQ(ierr);
 
   ierr = PetscNew(TS_Pseudo,&pseudo);CHKERRQ(ierr);
   PetscLogObjectMemory(ts,sizeof(TS_Pseudo));

@@ -3,10 +3,8 @@
 #include "src/snes/snesimpl.h"     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
-EXTERN int SNESCreate_EQ_LS(SNES);
-EXTERN int SNESCreate_EQ_TR(SNES);
-EXTERN int SNESCreate_UM_TR(SNES);
-EXTERN int SNESCreate_UM_LS(SNES);
+EXTERN int SNESCreate_LS(SNES);
+EXTERN int SNESCreate_TR(SNES);
 EXTERN int SNESCreate_Test(SNES);
 EXTERN_C_END
   
@@ -37,11 +35,9 @@ int SNESRegisterAll(char *path)
   PetscFunctionBegin;
   SNESRegisterAllCalled = PETSC_TRUE;
 
-  ierr = SNESRegisterDynamic("ls",   path,"SNESCreate_EQ_LS",SNESCreate_EQ_LS);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic("tr",   path,"SNESCreate_EQ_TR",SNESCreate_EQ_TR);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic("ls",   path,"SNESCreate_LS",SNESCreate_LS);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic("tr",   path,"SNESCreate_TR",SNESCreate_TR);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic("test", path,"SNESCreate_Test", SNESCreate_Test);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic("umtr", path,"SNESCreate_UM_TR",SNESCreate_UM_TR);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic("umls", path,"SNESCreate_UM_LS",SNESCreate_UM_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

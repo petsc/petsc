@@ -136,8 +136,8 @@ $  KSP_CONVERGED_QCG_NEG_CURVE if convergence is reached along a negative curvat
 $  KSP_CONVERGED_QCG_CONSTRAINED if convergence is reached along a constrained step,
 $  other KSP converged/diverged reasons
 
-  This method is intended for use in conjunction with the SNES trust region method
-  for unconstrained minimization, SNESUMTR.
+  This method is intended for use in conjunction with the TAO trust region method
+  for unconstrained minimization (see www.mcs.anl.gov/tao).
 
   Notes:
   Currently we allow symmetric preconditioning with the following scaling matrices:

@@ -95,13 +95,10 @@ int SNESCreate_Test(SNES  snes)
   int ierr;
 
   PetscFunctionBegin;
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"SNES_NONLINEAR_EQUATIONS only");
-  }
   snes->setup		= 0;
   snes->solve		= SNESSolve_Test;
   snes->destroy		= SNESDestroy_Test;
-  snes->converged	= SNESConverged_EQ_LS;
+  snes->converged	= SNESConverged_LS;
   snes->setfromoptions  = SNESSetFromOptions_Test;
 
   ierr			= PetscNew(SNES_Test,&neP);CHKERRQ(ierr);

@@ -54,7 +54,7 @@ extern int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 int main(int argc, char **argv)
 {
   SNES         snes;                 /* SNES context */
-  SNESType     method = SNESEQLS;    /* default nonlinear solution method */
+  SNESType     method = SNESLS;      /* default nonlinear solution method */
   Vec          x, r;                 /* solution, residual vectors */
   Mat          J;                    /* Jacobian matrix */
   AppCtx       user;                 /* user-defined application context */

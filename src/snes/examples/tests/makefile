@@ -7,7 +7,7 @@ FPPFLAGS        =
 LOCDIR          = src/snes/examples/tests/
 EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex13.c
 EXAMPLESF       = ex12.F
-DIRS	        = umin
+DIRS	        = 
 
 include ${PETSC_DIR}/bmake/common/base
 

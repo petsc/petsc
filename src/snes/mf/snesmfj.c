@@ -227,18 +227,12 @@ int MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
 {
   int             ierr;
   MatSNESMFCtx    j = (MatSNESMFCtx)J->data;
-  SNESProblemType type;
 
   PetscFunctionBegin;
   ierr = MatSNESMFResetHHistory(J);CHKERRQ(ierr);
   if (j->usesnes) {
     ierr = SNESGetSolution(j->snes,&j->current_u);CHKERRQ(ierr);
-    ierr = SNESGetProblemType(j->snes,&type);CHKERRQ(ierr);
-    if (type == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESGetFunction(j->snes,&j->current_f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    } else if (type == SNES_UNCONSTRAINED_MINIMIZATION) {
-      ierr = SNESGetGradient(j->snes,&j->current_f,PETSC_NULL);CHKERRQ(ierr);
-    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid method class");
+    ierr = SNESGetFunction(j->snes,&j->current_f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   j->vshift = 0.0;
   j->vscale = 1.0;
@@ -263,7 +257,6 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
   PetscScalar     h,mone = -1.0;
   Vec             w,U,F;
   int             ierr,(*eval_fct)(SNES,Vec,Vec)=0;
-  SNESProblemType type;
 
   PetscFunctionBegin;
   /* We log matrix-free matrix-vector products separately, so that we can
@@ -301,12 +294,7 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
   ierr = VecWAXPY(&h,a,U,w);CHKERRQ(ierr);
 
   if (ctx->usesnes) {
-    ierr = SNESGetProblemType(snes,&type);CHKERRQ(ierr);
-    if (type == SNES_NONLINEAR_EQUATIONS) {
-      eval_fct = SNESComputeFunction;
-    } else if (type == SNES_UNCONSTRAINED_MINIMIZATION) {
-      eval_fct = SNESComputeGradient;
-    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid method class");
+    eval_fct = SNESComputeFunction;
     F    = ctx->current_f;
     if (!F) SETERRQ(1,"You must call MatAssembly() even on matrix-free matrices");
     ierr = (*eval_fct)(snes,w,y);CHKERRQ(ierr);

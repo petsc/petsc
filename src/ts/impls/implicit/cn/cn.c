@@ -378,7 +378,7 @@ int TSCreate_CN(TS ts)
     ts->ops->setup           = TSSetUp_CN_Nonlinear;  
     ts->ops->step            = TSStep_CN_Nonlinear;
     ts->ops->setfromoptions  = TSSetFromOptions_CN_Nonlinear;
-    ierr = SNESCreate(ts->comm,SNES_NONLINEAR_EQUATIONS,&ts->snes);CHKERRQ(ierr);
+    ierr = SNESCreate(ts->comm,&ts->snes);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
   ierr = PetscNew(TS_CN,&cn);CHKERRQ(ierr);

@@ -5,10 +5,8 @@
 #include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
-#define snesconverged_eq_tr_             snesconverged_eq_tr__
-#define snesconverged_eq_ls_             snesconverged_eq_ls__
-#define snesconverged_um_tr_             snesconverged_um_tr__
-#define snesconverged_um_ls_             snesconverged_um_ls__
+#define snesconverged_tr_                snesconverged_tr__
+#define snesconverged_ls_                snesconverged_ls__
 #endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
@@ -20,10 +18,8 @@
 #define snesdacomputejacobianwithadifor_ SNESDACOMPUTEJACOBIANWITHADIFOR
 #define snesdaformfunction_              SNESDAFORMFUNCTION          
 #define matsnesmfsetbase_                MATSNESMFSETBASE
-#define snesconverged_eq_tr_             SNESCONVERGED_EQ_TR
-#define snesconverged_eq_ls_             SNESCONVERGED_EQ_LS
-#define snesconverged_um_tr_             SNESCONVERGED_UM_TR
-#define snesconverged_um_ls_             SNESCONVERGED_UM_LS
+#define snesconverged_tr_                SNESCONVERGED_TR
+#define snesconverged_ls_                SNESCONVERGED_LS
 #define snesgetconvergedreason_          SNESGETCONVERGEDREASON
 #define snesdefaultmonitor_              SNESDEFAULTMONITOR
 #define snesvecviewmonitor_              SNESVECVIEWMONITOR
@@ -33,18 +29,13 @@
 #define snessetjacobian_                 SNESSETJACOBIAN
 #define snescreate_                      SNESCREATE
 #define snessetfunction_                 SNESSETFUNCTION
-#define snessetminimizationfunction_     SNESSETMINIMIZATIONFUNCTION
 #define snesgetsles_                     SNESGETSLES
-#define snessetgradient_                 SNESSETGRADIENT
-#define snessethessian_                  SNESSETHESSIAN
 #define snessetmonitor_                  SNESSETMONITOR
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
 #define snesregisterdestroy_             SNESREGISTERDESTROY
 #define snesgetsolution_                 SNESGETSOLUTION
 #define snesgetsolutionupdate_           SNESGETSOLUTIONUPDATE
 #define snesgetfunction_                 SNESGETFUNCTION
-#define snesgetminimizationfunction_     SNESGETMINIMIZATIONFUNCTION
-#define snesgetgradient_                 SNESGETGRADIENT
 #define snesdestroy_                     SNESDESTROY
 #define snesgettype_                     SNESGETTYPE
 #define snessetoptionsprefix_            SNESSETOPTIONSPREFIX 
@@ -85,10 +76,8 @@
 #define snesgetlinesearchparams_         snesgetlinesearchparams
 #define snessetlinesearch_               snessetlinesearch
 #define snessetlinesearchcheck_          snessetlinesearchcheck
-#define snesconverged_eq_tr_             snesconverged_eq_tr
-#define snesconverged_eq_ls_             snesconverged_eq_ls
-#define snesconverged_um_tr_             snesconverged_um_tr
-#define snesconverged_um_ls_             snesconverged_um_ls
+#define snesconverged_tr_                snesconverged_tr
+#define snesconverged_ls_                snesconverged_ls
 #define snesgetconvergedreason_          snesgetconvergedreason
 #define sneslgmonitor_                   sneslgmonitor
 #define snesdefaultmonitor_              snesdefaultmonitor
@@ -99,10 +88,7 @@
 #define snessetjacobian_                 snessetjacobian
 #define snescreate_                      snescreate
 #define snessetfunction_                 snessetfunction
-#define snessethessian_                  snessethessian
-#define snessetgradient_                 snessetgradient
 #define snesgetsles_                     snesgetsles
-#define snessetminimizationfunction_     snessetminimizationfunction
 #define snesdestroy_                     snesdestroy
 #define snessetmonitor_                  snessetmonitor
 #define snessetconvergencetest_          snessetconvergencetest
@@ -110,8 +96,6 @@
 #define snesgetsolution_                 snesgetsolution
 #define snesgetsolutionupdate_           snesgetsolutionupdate
 #define snesgetfunction_                 snesgetfunction
-#define snesgetminimizationfunction_     snesgetminimizationfunction
-#define snesgetgradient_                 snesgetgradient
 #define snesgettype_                     snesgettype
 #define snessetoptionsprefix_            snessetoptionsprefix 
 #define snesappendoptionsprefix_         snesappendoptionsprefix
@@ -383,29 +367,18 @@ void PETSC_STDCALL snessetlinesearchcheck_(SNES *snes,void (PETSC_STDCALL *f)(SN
   *ierr = SNESSetLineSearchCheck(*snes,OurSNESLineSearchCheck,ctx);
 }  
 
-/*--------------------------------------------------------------------------------------------*/
-void snesconverged_um_ls_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
+/*----------------------------------------------------------------------*/
+
+void snesconverged_tr_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
                                        void *ct,int *ierr)
 {
-  *ierr = SNESConverged_UM_LS(*snes,*a,*b,*c,r,ct);
+  *ierr = SNESConverged_TR(*snes,*a,*b,*c,r,ct);
 }
 
-void snesconverged_um_tr_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
+void snesconverged_ls_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
                                        void *ct,int *ierr)
 {
-  *ierr = SNESConverged_UM_TR(*snes,*a,*b,*c,r,ct);
-}
-
-void snesconverged_eq_tr_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
-                                       void *ct,int *ierr)
-{
-  *ierr = SNESConverged_EQ_TR(*snes,*a,*b,*c,r,ct);
-}
-
-void snesconverged_eq_ls_(SNES *snes,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
-                                       void *ct,int *ierr)
-{
-  *ierr = SNESConverged_EQ_LS(*snes,*a,*b,*c,r,ct);
+  *ierr = SNESConverged_LS(*snes,*a,*b,*c,r,ct);
 }
 
 static void (PETSC_STDCALL *f8)(SNES*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,int*);
@@ -422,14 +395,10 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
        void *cctx,int *ierr)
 {
   CHKFORTRANNULLOBJECT(cctx);
-  if ((void(*)(void))func == (void(*)(void))snesconverged_eq_ls_){
-    *ierr = SNESSetConvergenceTest(*snes,SNESConverged_EQ_LS,0);
-  } else if ((void(*)(void))func == (void(*)(void))snesconverged_eq_tr_){
-    *ierr = SNESSetConvergenceTest(*snes,SNESConverged_EQ_TR,0);
-  } else if ((void(*)(void))func == (void(*)(void))snesconverged_um_tr_){
-    *ierr = SNESSetConvergenceTest(*snes,SNESConverged_UM_TR,0);
-  } else if ((void(*)(void))func == (void(*)(void))snesconverged_um_ls_){
-    *ierr = SNESSetConvergenceTest(*snes,SNESConverged_UM_LS,0);
+  if ((void(*)(void))func == (void(*)(void))snesconverged_ls_){
+    *ierr = SNESSetConvergenceTest(*snes,SNESConverged_LS,0);
+  } else if ((void(*)(void))func == (void(*)(void))snesconverged_tr_){
+    *ierr = SNESSetConvergenceTest(*snes,SNESConverged_TR,0);
   } else {
     f8 = func;
     *ierr = SNESSetConvergenceTest(*snes,oursnestest,cctx);
@@ -456,20 +425,6 @@ void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void **ctx,void *func,int 
   *ierr = SNESGetFunction(*snes,r,ctx,PETSC_NULL);
 }
 
-void PETSC_STDCALL snesgetminimizationfunction_(SNES *snes,PetscReal *r,void **ctx,int *ierr)
-{
-  CHKFORTRANNULLINTEGER(ctx);
-  CHKFORTRANNULLREAL(r);
-  *ierr = SNESGetMinimizationFunction(*snes,r,ctx);
-}
-
-void PETSC_STDCALL snesgetgradient_(SNES *snes,Vec *r,void **ctx,int *ierr)
-{
-  CHKFORTRANNULLINTEGER(ctx);
-  CHKFORTRANNULLINTEGER(r);
-  *ierr = SNESGetGradient(*snes,r,ctx);
-}
-
 void PETSC_STDCALL snesdestroy_(SNES *snes,int *ierr)
 {
   *ierr = SNESDestroy(*snes);
@@ -478,54 +433,6 @@ void PETSC_STDCALL snesdestroy_(SNES *snes,int *ierr)
 void PETSC_STDCALL snesgetsles_(SNES *snes,SLES *sles,int *ierr)
 {
   *ierr = SNESGetSLES(*snes,sles);
-}
-
-static void (PETSC_STDCALL *f6)(SNES *,Vec *,Mat *,Mat *,int*,void*,int*);
-static int oursneshessianfunction(SNES snes,Vec x,Mat* mat,Mat* pmat,
-                                  MatStructure* st,void *ctx)
-{
-  int              ierr = 0;
-
-  (*f6)(&snes,&x,mat,pmat,(int*)st,ctx,&ierr);CHKERRQ(ierr);
-
-  return 0;
-}
-
-void PETSC_STDCALL snessethessian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL *func)(SNES*,Vec*,Mat*,Mat*,int*,void*,int*),
-                     void *ctx,int *ierr)
-{
-  f6 = func;
-  CHKFORTRANNULLOBJECT(ctx);
-  *ierr = SNESSetHessian(*snes,*A,*B,oursneshessianfunction,ctx);
-}
-
-static void (PETSC_STDCALL *f5)(SNES*,Vec*,Vec *,void*,int*);
-static int oursnesgradientfunction(SNES snes,Vec x,Vec d,void *ctx)
-{
-  int ierr = 0;
-  (*f5)(&snes,&x,&d,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
-void PETSC_STDCALL snessetgradient_(SNES *snes,Vec *r,void (PETSC_STDCALL *func)(SNES*,Vec*,Vec*,void*,int*),void *ctx,int *ierr)
-{
-  CHKFORTRANNULLOBJECT(ctx);
-  f5 = func;
-  *ierr = SNESSetGradient(*snes,*r,oursnesgradientfunction,ctx);
-}
-
-static void (PETSC_STDCALL *f4)(SNES*,Vec*,PetscReal*,void*,int*);
-static int oursnesminfunction(SNES snes,Vec x,PetscReal* d,void *ctx)
-{
-  int ierr = 0;
-  (*f4)(&snes,&x,d,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
-}
-
-void PETSC_STDCALL snessetminimizationfunction_(SNES *snes,
-          void (PETSC_STDCALL *func)(SNES*,Vec*,PetscReal*,void*,int*),void *ctx,int *ierr){
-  f4 = func;
-  *ierr = SNESSetMinimizationFunction(*snes,oursnesminfunction,ctx);
 }
 
 /* ---------------------------------------------------------*/
@@ -579,9 +486,9 @@ void PETSC_STDCALL matsnesmfsetfunction_(Mat *mat,Vec *r,void (PETSC_STDCALL *fu
 }
 /* ---------------------------------------------------------*/
 
-void PETSC_STDCALL snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsnes,int *ierr){
+void PETSC_STDCALL snescreate_(MPI_Comm *comm,SNES *outsnes,int *ierr){
 
-*ierr = SNESCreate((MPI_Comm)PetscToPointerComm(*comm),*type,outsnes);
+*ierr = SNESCreate((MPI_Comm)PetscToPointerComm(*comm),outsnes);
 }
 
 /* ---------------------------------------------------------*/
