@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildbackup,v 1.12 1997/10/08 19:11:10 balay Exp balay $ 
+# $Id: buildbackup,v 1.13 1998/08/04 21:09:44 balay Exp balay $ 
 
 # 
 #  Makes a complete backup of PETSc src incase the PETSc disk is lost
@@ -31,7 +31,7 @@ gzip $BACKUPFILE >>& $LOGFILE
 #
 # Now Copy the backup file over to hsm and /ccsthome/petsc
 #
-rcp $BACKUPFILE.gz mcsasm:userbackups/ >>& $LOGFILE
+rcp $BACKUPFILE.gz mcshsm:userbackups/ >>& $LOGFILE
 cp  $BACKUPFILE.gz /ccsthome/petsc/userbackups >>& $LOGFILE
 #
 # Now Copy the backup file over to a remote site
