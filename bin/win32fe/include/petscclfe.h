@@ -17,6 +17,30 @@ namespace PETScFE {
     virtual void FoundL(LI &);
   };
 
+  class df : public cl {
+  public:
+    df () {}
+    ~df() {}
+  protected:
+    virtual void Help(void);
+  };
+
+  class icl : public cl {
+  public:
+    icl () {}
+    ~icl() {}
+  protected:
+    virtual void Help(void);
+  };
+
+  class ifl : public cl {
+  public:
+    ifl () {}
+    ~ifl() {}
+  protected:
+    virtual void Help(void);
+  };
+
 }
 
 #endif

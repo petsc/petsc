@@ -1,14 +1,15 @@
-/* $Id: petsctoolfe.cpp,v 1.11 2001/05/03 11:03:30 buschelm Exp buschelm $ */
+/* $Id: petsctoolfe.cpp,v 1.9 2001/04/17 21:18:03 buschelm Exp $ */
 #include "Windows.h"
 #include "petsctoolfe.h"
 
 using namespace PETScFE;
 
 tool::tool(void) {
-  tool::OptionTags= "uvh";
+  tool::OptionTags= "uvhp";
   tool::Options['u'] = &tool::FoundUse;
   tool::Options['v'] = &tool::FoundVerbose;
   tool::Options['h'] = &tool::FoundHelp;
+  tool::Options['p'] = &tool::FoundPath;
   verbose   = 0;
   helpfound = 0;
 }
@@ -51,13 +52,36 @@ void tool::Help(void) {
   cout << "  bcc32: Borland C++ for Win32" << endl;
   cout << "  lib:   Microsoft Library Manager" << endl;
   cout << "  tlib:  Borland Library Manager" << endl << endl;
-  cout << "<win32fe options>: {use,verbose,help}" << endl;
-  cout << "  --use <arg>: <arg> Specifies the variant of <tool> to use" << endl;
-  cout << "  --verbose:   Echo to stdout the translated commandline" << endl;
-  cout << "  --help:      Output this help message and help for <tool>" << endl << endl;
+  cout << "<win32fe options>: {use,path,verbose,help}" << endl;
+  cout << "  --use <arg>:  <arg> Specifies the variant of <tool> to use" << endl;
+  cout << "  --path <arg>: <arg> Specifies an addition to the PATH that is required" << endl;
+  cout << "                for your tool (ex. the location of a required .dll)" << endl;
+  cout << "  --verbose:    Echo to stdout the translated commandline" << endl;
+  cout << "  --help:       Output this help message and help for <tool>" << endl << endl;
   cout << "=========================================================================" << endl << endl;
 }
-
+void tool::FoundPath(LI &i) {
+  if (*i=="--path") {
+    i = arg.erase(i);
+    if (i!=arg.end()) {
+      int length = 1024*sizeof(char);
+      char buff[1024];
+      string path="PATH";
+      GetEnvironmentVariable(path.c_str(),buff,length);
+      string newpath = (string)buff;
+      newpath = *i + ";" + newpath;
+      SetEnvironmentVariable(path.c_str(),newpath.c_str());
+      i = arg.erase(i);
+      length = 1024*sizeof(char);
+      GetEnvironmentVariable(path.c_str(),buff,length);
+      cout << (string)buff << endl;
+    } else {
+      i--;
+      arg.push_back("--help");
+      i--;
+    }
+  }
+}
 void tool::FoundUse(LI &i) {
   if (*i=="--use") {
     i = arg.erase(i);

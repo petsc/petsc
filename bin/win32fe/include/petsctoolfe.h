@@ -32,6 +32,7 @@ namespace PETScFE {
     int helpfound;
   private:
     void FoundHelp(LI &);
+    void FoundPath(LI &);
     void FoundUse(LI &);
     void FoundVerbose(LI &);
 
