@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.126 1999/11/10 03:19:11 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.127 1999/11/24 21:53:47 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -15,6 +15,307 @@ int MatOrdering_Flow_SeqAIJ(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   PetscFunctionReturn(0);
 #endif
 }
+
+
+extern int MatMarkDiagonal_SeqAIJ(Mat);
+extern int Mat_AIJ_CheckInode(Mat);
+
+#if !defined(PETSC_USE_COMPLEX) && defined(PETSC_HAVE_SAADILUDT)
+
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define dperm_  DPERM
+#define ilutp_  ILUTP
+#define ilu0_   ILU0
+#define msrcsr_ MSRCSR
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dperm_  dperm
+#define ilutp_  ilutp
+#define ilu0_   ilu0
+#define msrcsr_ msrcsr
+#endif
+
+EXTERN_C_BEGIN
+extern void dperm_(int*,double*,int*,int*,double*,int*,int*,int*,int*,int*);
+extern void ilutp_(int*,double*,int*,int*,int*,double*,double*,int*,double*,int*,int*,int*,double*,int*,int*,int*);
+extern void msrcsr_(int*,double*,int*,double*,int*,int*,double*,int*);
+extern void ilu0_(int*,double*,int*,int*,double*,int*,int*,int*,int *);
+EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ "MatILUDTFactor_SeqAIJ"
+  /* ------------------------------------------------------------
+
+          This interface was contribed by Tony Caola
+
+     This routine is an interface to the pivoting drop-tolerance 
+     ILU routine written by Yousef Saad (saad@cs.umn.edu).  It 
+     was inspired by the non-pivoting iludt written by David
+     Hysom (hysom@cs.odu.edu).  
+
+     Thanks to Prof. Saad, Dr. Hysom, and Dr. Smith for their
+     help in getting this routine ironed out.
+
+     As of right now, there are a couple of things that could
+     be, uh, better.
+
+     1 - Since Saad's routine is Fortran based, memory cannot be
+     malloc'd.  I was trying to get the expected fill from the 
+     preconditioner and use this number as the multiplier in
+     the equation for jmax, below, but couldn't figure it out.  
+     Anyway, perhaps a better solution is to run SPARSKIT through
+     f2c and incorporate mallocs(), but I want to graduate so I'll
+     just rebuild Petsc. . .
+
+     shift = 1, ishift = 0, for indices start at 1
+     shift = 0, ishift = 1, for indices starting at 0
+     ------------------------------------------------------------
+  */
+
+int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data, *b;
+  IS         iscolf, isrowf, isicol, isirow;
+  PetscTruth reorder;
+  int        *c,*r,*ic,*ir, ierr, i, n = a->m;
+  int        *old_i = a->i, *old_j = a->j, *new_i, *old_i2, *old_j2,*new_j;
+  int        *ordcol, *ordrow,*iwk,*iperm, *jw;
+  int        ishift = !a->indexshift,shift = -a->indexshift;
+  int        jmax,lfill,job;
+  Scalar     *old_a = a->a, *w, *new_a, *old_a2, *wk,permtol=0.0;
+
+  PetscFunctionBegin;
+
+  if (info->dt == PETSC_DEFAULT)      info->dt      = .005;
+  if (info->dtcount == PETSC_DEFAULT) info->dtcount = (int) (1.5*a->rmax); 
+  if (info->dtcol == PETSC_DEFAULT)   info->dtcol   = .01;
+  if (info->fill == PETSC_DEFAULT)    info->fill    = (n*info->dtcount)/a->nz;
+  lfill   = info->dtcount/2;
+  jmax    = info->fill*a->nz;
+  permtol = info->dtcol;
+
+  ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  ierr = ISInvertPermutation(isrow,&isirow); CHKERRQ(ierr);
+
+
+  /* ------------------------------------------------------------
+     If reorder=.TRUE., then the original matrix has to be 
+     reordered to reflect the user selected ordering scheme, and
+     then de-reordered so it is in it's original format.  
+     Because Saad's dperm() is NOT in place, we have to copy 
+     the original matrix and allocate more storage. . . 
+     ------------------------------------------------------------
+  */
+
+  /* set reorder to true if either isrow or iscol is not identity */
+  ierr = ISIdentity(isrow,&reorder);CHKERRQ(ierr);
+  if (reorder) {ierr = ISIdentity(iscol,&reorder);CHKERRQ(ierr);}
+  reorder = PetscNot(reorder);
+
+  ierr = ISGetIndices(iscol,&c);           CHKERRQ(ierr);
+  ierr = ISGetIndices(isrow,&r);           CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);          CHKERRQ(ierr);
+  ierr = ISGetIndices(isirow,&ir);          CHKERRQ(ierr);
+  
+  /* storage for ilu factor */
+  new_i = (int *)    PetscMalloc((n+1)*sizeof(int));   CHKPTRQ(new_i);
+  new_j = (int *)    PetscMalloc(jmax*sizeof(int));    CHKPTRQ(new_j);
+  new_a = (Scalar *) PetscMalloc(jmax*sizeof(Scalar)); CHKPTRQ(new_a);
+
+  if (reorder) {
+    old_i2 = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRQ(old_i2);
+    old_j2 = (int *) PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(int)); CHKPTRQ(old_j2);
+    old_a2 = (Scalar *) PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(Scalar));CHKPTRQ(old_a2);
+  }
+
+  ordcol = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(ordcol);
+  ordrow = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(ordrow);  
+
+  /* ------------------------------------------------------------
+     Make sure that everything is Fortran formatted (1-Based)
+     ------------------------------------------------------------
+  */
+  for (i=old_i[0]-shift;i<old_i[n]-shift;i++) {
+    old_j[i] = old_j[i]+ishift;
+    if (reorder) {
+      old_j2[i] = old_j[i];
+      old_a2[i] = old_a[i];
+    }
+  }; 
+  
+  for(i=0;i<n+1;i++) {
+    old_i[i] = old_i[i]+ishift;
+    if (reorder) old_i2[i]=old_i[i];
+  };
+
+  for(i=0;i<n;i++) {
+    r[i]  = r[i]+1;
+    c[i]  = c[i]+1;
+    ir[i] = ir[i]+1;
+    ic[i] = ic[i]+1;
+  }
+
+  if (reorder) {
+    job = 3;
+    dperm_(&n,old_a2,old_j2,old_i2,old_a,old_j,old_i,r,c,&job);
+  }
+
+  /* ------------------------------------------------------------
+     Call Saad's ilutp() routine to generate the factorization
+     ------------------------------------------------------------
+  */
+
+  iperm   = (int *)    PetscMalloc(2*n*sizeof(int)); CHKPTRQ(iperm);
+  jw      = (int *)    PetscMalloc(2*n*sizeof(int)); CHKPTRQ(jw);
+  w       = (Scalar *) PetscMalloc(n*sizeof(Scalar)); CHKPTRQ(w);
+
+
+  ilutp_(&n,old_a,old_j,old_i,&lfill,&info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&ierr); 
+  if (ierr) {
+    switch (ierr) {
+      case -3: SETERRQ1(1,1,"ilutp(), matrix U overflows, need larger info->fill value %d",jmax);
+               break;
+      case -2: SETERRQ1(1,1,"ilutp(), matrix L overflows, need larger info->fill value %d",jmax);
+               break;
+      case -5: SETERRQ(1,1,"ilutp(), zero row encountered");
+               break;
+      case -1: SETERRQ(1,1,"ilutp(), input matrix may be wrong");
+               break;
+      case -4: SETERRQ1(1,1,"ilutp(), illegal info->fill value %d",jmax);
+               break;
+      default: SETERRQ1(1,1,"ilutp(), zero pivot detected on row %d",ierr);
+    }
+  }
+
+  ierr = PetscFree(w);CHKERRQ(ierr);
+  ierr = PetscFree(jw);CHKERRQ(ierr);
+
+
+  /* ------------------------------------------------------------
+     Saad's routine gives the result in Modified Sparse Row (msr)
+     Convert to Compressed Sparse Row format (csr) 
+     ------------------------------------------------------------
+  */
+
+  wk  = (Scalar *)    PetscMalloc(n*sizeof(Scalar)); CHKPTRQ(wk);   
+  iwk = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRQ(iwk);
+
+  msrcsr_(&n,new_a,new_j,new_a,new_j,new_i,wk,iwk);
+
+  ierr = PetscFree(iwk);CHKERRQ(ierr);
+  ierr = PetscFree(wk);CHKERRQ(ierr);
+
+  for(i=old_i[0]; i<=old_i[n]; i++) {
+    old_j[i-1] = iperm[old_j[i-1]-1]; 
+    if (reorder) {
+      old_j2[i-1] = old_j[i-1];
+      old_a2[i-1] = old_a[i-1];
+    }
+  };
+  
+  if (reorder) {
+    for(i=0; i<n+1; i++) {
+      old_i2[i]=old_i[i];
+    };
+
+    job = 3;    
+    dperm_(&n,old_a2,old_j2,old_i2,old_a,old_j,old_i,ir,ic,&job); 
+    ierr = PetscFree(old_a2);CHKERRQ(ierr);
+    ierr = PetscFree(old_j2);CHKERRQ(ierr);
+    ierr = PetscFree(old_i2);CHKERRQ(ierr);
+  }
+
+  /* get rid of the shift to incies statrting at 1 */
+  for (i=0; i<n+1; i++) {
+    old_i[i] = old_i[i]-ishift;
+  }
+
+  for (i=old_i[0]-shift;i<=old_i[n]-shift;i++) {
+    old_j[i-1] = old_j[i-1]-ishift;
+  }
+  
+  /* Make the return matrix 0-based */
+  
+  for (i=new_i[0]-shift;i<=new_i[n]-shift;i++) {
+    new_j[i-1] = new_j[i-1]-ishift;
+  }
+
+  for (i=0; i<n+1; i++) {
+    new_i[i] = new_i[i]-ishift;
+  }
+
+  for (i=0;i<n;i++) {
+    r[i]  = r[i]-1;
+    c[i]  = c[i]-1;
+    ir[i] = ir[i]-1;
+    ic[i] = ic[i]-1;
+  }
+
+  /*-- due to the pivoting, we need to reorder iscol to correctly --*/
+  /*-- permute the right-hand-side and solution vectors           --*/
+  for(i=0; i<n; i++) {
+    ordcol[i] = ic[iperm[i]-1];  
+    ordrow[i] = ir[i]; 
+  };       
+  
+  ierr = PetscFree(iperm);CHKERRQ(ierr);
+
+  ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+
+  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isirow,&ir); CHKERRQ(ierr);
+
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, n, ordcol, &iscolf); 
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ordrow,&isrowf);
+  
+  /*----- put together the new matrix -----*/
+
+  ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,fact); CHKERRQ(ierr);
+  (*fact)->factor    = FACTOR_LU;
+  (*fact)->assembled = PETSC_TRUE;
+
+  b = (Mat_SeqAIJ *) (*fact)->data;
+  ierr = PetscFree(b->imax);CHKERRQ(ierr);
+  b->sorted        = PETSC_FALSE;
+  b->singlemalloc  = PETSC_TRUE;
+  /* the next line frees the default space generated by the Create() */
+  ierr             = PetscFree(b->a);CHKERRQ(ierr);
+  ierr             = PetscFree(b->ilen);CHKERRQ(ierr);
+  b->a             = new_a;
+  b->j             = new_j;
+  b->i             = new_i;
+  b->ilen          = 0;
+  b->imax          = 0;
+  b->row           = isrowf;
+  b->col           = iscolf;
+  b->solve_work    =  (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
+  b->maxnz = b->nz = new_i[n];
+  b->indexshift    = a->indexshift;
+  ierr = MatMarkDiagonal_SeqAIJ(*fact);CHKERRQ(ierr);
+  (*fact)->info.factor_mallocs = 0;
+
+  PLogFlops(b->n);
+
+  a->j      = old_j;
+  a->i      = old_i;
+  a->a      = old_a;
+  a->sorted = PETSC_FALSE;
+  ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
+
+  /* check out for identical nodes. If found, use inode functions */
+  ierr = Mat_AIJ_CheckInode(*fact);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+#else
+#undef __FUNC__  
+#define __FUNC__ "MatILUDTFactor_SeqAIJ"
+int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS isrow,IS iscol,Mat *fact)
+{
+  PetscFunctionBegin;
+  SETERRQ(1,1,"You must install Saad's ILUDT to use this");
+}
+#endif
 
 /*
     Factorization code for AIJ format. 
@@ -105,7 +406,7 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
       /* allocate a longer ajnew */
       ajtmp = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(ajtmp);
       ierr  = PetscMemcpy(ajtmp,ajnew,(ainew[i]+shift)*sizeof(int));CHKERRQ(ierr);
-      ierr = PetscFree(ajnew);CHKERRQ(ierr);
+      ierr  = PetscFree(ajnew);CHKERRQ(ierr);
       ajnew = ajtmp;
       realloc++; /* count how many times we realloc */
     }
@@ -295,7 +596,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
 {
   Mat_SeqAIJ     *mat = (Mat_SeqAIJ *) A->data;
-  int            ierr;
+  int            ierr,refct;
   Mat            C;
   PetscOps       *Abops;
   MatOps         Aops;
@@ -328,13 +629,15 @@ int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,double f)
   */
   Abops = A->bops;
   Aops  = A->ops;
-  ierr = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  mat  = (Mat_SeqAIJ *) A->data;
+  refct = A->refct;
+  ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
+  mat   = (Mat_SeqAIJ *) A->data;
   PLogObjectParent(A,mat->icol); 
   
   A->bops  = Abops;
   A->ops   = Aops;
   A->qlist = 0;
+  A->refct = refct;
   /* copy over the type_name and name */
   ierr     = PetscStrallocpy(C->type_name,&A->type_name);CHKERRQ(ierr);
   ierr     = PetscStrallocpy(C->name,&A->name);CHKERRQ(ierr);
@@ -643,7 +946,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
   /* special case that simply copies fill pattern */
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  if (levels == 0 && row_identity && col_identity) {
+  if (!levels && row_identity && col_identity) {
     ierr = MatDuplicate_SeqAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqAIJ *) (*fact)->data;
