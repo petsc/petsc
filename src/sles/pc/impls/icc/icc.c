@@ -405,7 +405,7 @@ static int PCSetFromOptions_ICC(PC pc)
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHead("ICC Options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_icc_levels","levels of fill","PCICCSetLevels",icc->info.levels,&icc->info.levels,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_icc_levels","levels of fill","PCICCSetLevels",icc->info.levels,&icc->info.levels,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_icc_fill","Expected fill in factorization","PCICCSetFill",icc->info.fill,&icc->info.fill,&flg);CHKERRQ(ierr);
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
     ierr = PetscOptionsList("-pc_icc_mat_ordering_type","Reorder to reduce nonzeros in ICC","PCICCSetMatOrdering",ordlist,icc->ordering,tname,256,&flg);CHKERRQ(ierr);
