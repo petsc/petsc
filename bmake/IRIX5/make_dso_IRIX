@@ -8,7 +8,12 @@ cd $argv[1]
 foreach LIBNAME (mpiuni petsccontrib petscdraw petscksp petscmat \
   petscsles petscsnes petscsys petscts petscvec petscfortran)
   if ( -e lib$LIBNAME.a) then 
-    ld -elf -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so
+     if ( -e lib$LIBNAME.so ) then
+        find . -type f -name "lib$LIBNAME.a" -newer "lib$LIBNAME.so" -exec \
+            ld -elf -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so \;
+     else
+        ld -elf -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so 
+     endif
   endif
 end
 
