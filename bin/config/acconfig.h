@@ -51,3 +51,39 @@
 
 /* PETSC Arch name */
 #undef ARCH_NAME
+
+/* /usr/ucb/ps */
+#undef HAVE_UCBPS
+
+/* Define if SIGSYS is not defined */
+#undef MISSING_SIGSYS
+
+/* Define if SIGBUS is not defined */
+#undef MISSING_SIGBUS
+
+/* Define if SIGQUIT is not defined */
+#undef MISSING_SIGQUIT
+
+/* Define if v.printf requires the last argument to be cast as char * */
+#undef HAVE_VPRINTF_CHAR
+
+/* Define if free returns an int */
+#undef HAVE_FREE_RETURN_INT
+
+/* Define if GETPWUID is not available */
+#undef MISSING_GETPWUID
+
+/* Define is socket is not available */
+#undef MISSING_SOCKETS
+
+/* Define if Fortran does not allow integer * 4 etc. */
+#undef MISSING_FORTRANSTAR
+
+/* Define if DREAL is missing */
+#undef MISSING_DREAL
+
+/* Define if CPP macros cannot be recursive */
+#undef HAVE_BROKEN_RECURSIVE_MACRO
+
+/* Define if (void (*)(int)) casts are required for signals in C++ */
+#undef SIGNAL_CAST
