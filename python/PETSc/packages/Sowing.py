@@ -81,7 +81,10 @@ class Configure(config.base.Configure):
     self.binDir   = os.path.join(installDir, 'bin')
     self.bfort    = os.path.join(self.binDir, 'bfort')
     self.doctext  = os.path.join(self.binDir, 'doctext')
-    self.mapnames = os.path.join(self.binDir, 'mapnames')        
+    self.mapnames = os.path.join(self.binDir, 'mapnames')
+    for prog in [self.bfort, self.doctext, self.mapnames]:
+      if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
+        raise RuntimeError('Error in Sowing installation: Could not find '+prog)
     return
 
   def configureSowing(self):
