@@ -1,7 +1,7 @@
-# $Id: base,v 1.63 1999/03/06 22:38:37 balay Exp balay $ 
+# $Id: base,v 1.64 1999/03/06 22:43:55 balay Exp balay $ 
 #
-include ${PETSC_DIR}/bmake/common
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
+include ${PETSC_DIR}/bmake/common
 
 libc: $(OBJSC)
 	ar crl $(LIBNAME) $(OBJSC)

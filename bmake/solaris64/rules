@@ -1,10 +1,10 @@
-# $Id: base,v 1.58 1999/02/24 20:01:26 balay Exp bsmith $ 
+# $Id: base,v 1.59 1999/03/31 18:38:56 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
 
-include ${PETSC_DIR}/bmake/common
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
+include ${PETSC_DIR}/bmake/common
 
 libc: ${LIBNAME}(${OBJSC})
 libf: ${LIBNAME}(${OBJSF})

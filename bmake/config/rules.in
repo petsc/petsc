@@ -2,8 +2,8 @@
 FCONF    = @FORTRAN_NAMING@
 CONF     = -DHAVE_PETSCCONF_H $(FCONF) 
 
-include $(PETSC_DIR)/bmake/common
 include $(PETSC_DIR)/bmake/${PETSC_ARCH}/base_variables
+include $(PETSC_DIR)/bmake/common
 
 libc: $(LIBNAME)($(OBJSC) $(SOBJSC))
 libadic: $(LIBNAME)($(OBJSADIC))
