@@ -27,7 +27,6 @@ extern "C" {
 #include <unistd.h>
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
-extern int    getdomainname(char *,int);
 #if !defined (htons)
 #define htons __htons
 #endif
@@ -38,7 +37,6 @@ extern int    getdomainname(char *,int);
 #include <unistd.h>
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
-extern int    getdomainname(char *,int);
 #endif
 #endif
 
