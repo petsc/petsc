@@ -6,7 +6,7 @@ static char help[] = "Testing Matrix-Matrix multiplication for SeqAIJ matrices.\
 #define __FUNCT__ "main"
 int main(int argc,char **argv) {
   Mat A,B,C,D;
-  double a[]={1,1,0,0,1,1,0,0,1};
+  PetscScalar a[]={1.,1.,0.,0.,1.,1.,0.,0.,1.};
   int ij[]={0,1,2};
   PetscScalar none=-1.;
   int ierr;
