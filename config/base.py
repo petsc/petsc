@@ -599,6 +599,8 @@ class Configure:
       (output, error, status) = Configure.executeShellCommand(command, log = self.framework.log)
     except RuntimeError, e:
       self.framework.log.write('ERROR while running executable: '+str(e)+'\n')
+      status = 1
+      output = ''
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (output, status)
