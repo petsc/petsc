@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.3 2000/06/27 17:09:41 balay Exp balay $*/
+/*$Id: sro.c,v 1.4 2000/07/07 20:50:34 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -33,7 +33,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS isp)
   ierr = ISGetIndices(isip,&riip);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
-    if ( rip[i] - riip[i] != 0 ) {
+    if (rip[i] - riip[i] != 0) {
       printf("Non-symm. permutation, use symm. permutation or general matrix format\n");
       break;
     }
@@ -96,7 +96,7 @@ int MatReorderingSeqSBAIJ(Mat A,IS isp)
   a->row  = isp;
   a->col  = isp;
   a->icol = isp;
-  ierr = PetscObjectReference((PetscObject)isp); CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)isp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

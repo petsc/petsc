@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.24 2000/07/28 21:52:56 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.25 2000/08/01 14:04:21 hzhang Exp bsmith $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -35,8 +35,8 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRA(ierr);
 
   n = mbs*bs;
-  ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A); CHKERRA(ierr);
-  ierr=MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &sA); CHKERRA(ierr);
+  ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A);CHKERRA(ierr);
+  ierr=MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &sA);CHKERRA(ierr);
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&I,&J);CHKERRA(ierr);
@@ -52,18 +52,18 @@ int main(int argc,char **args)
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
-        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
+        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
       }
       i = n - 1; col[0]=0; col[1] = n - 2; col[2] = n - 1;
       value[0]= 0.1; value[1]=-1; value[2]=2;
-      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
-      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
 
       i = 0; col[0] = 0; col[1] = 1; col[2]=n-1;
       value[0] = 2.0; value[1] = -1.0; value[2]=0.1;
-      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
-      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
       n1 = (int) (sqrt((double)n) + 0.001); 
@@ -103,28 +103,28 @@ int main(int argc,char **args)
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
-        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);    
+        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
+        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);    
       }
       i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
       value[0]=-1.0; value[1]=4.0;  
-      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
-      ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr); 
+      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr); 
 
       i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs; 
       value[0]=4.0; value[1] = -1.0; 
-      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
-      ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);  
+      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRA(ierr);  
     }
     /* off-diagonal blocks */
     value[0]=-1.0;
     for (i=0; i<(n/bs-1)*bs; i++){
       col[0]=i+bs;
-      ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES); CHKERRA(ierr);
-      ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES);CHKERRA(ierr);
       col[0]=i; row=i+bs;
-      ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES); CHKERRA(ierr);
-      ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
+      ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRA(ierr);
     }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -133,8 +133,8 @@ int main(int argc,char **args)
   MatView(A, VIEWER_DRAW_WORLD);
   MatView(A, VIEWER_STDOUT_WORLD); */ 
 
-  ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);  
+  ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);  
   /* PetscPrintf(PETSC_COMM_SELF,"\n Symmetric Part of Matrix: \n");
   MatView(sA, VIEWER_DRAW_WORLD); 
   MatView(sA, VIEWER_STDOUT_WORLD); 
@@ -147,8 +147,8 @@ int main(int argc,char **args)
   if (norm1<-tol || norm1>tol){ 
     PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), fnorm1-fnorm2=%16.14e\n",norm1);
   }
-  ierr = MatNorm(A,NORM_INFINITY,&norm1); CHKERRA(ierr);
-  ierr = MatNorm(sA,NORM_INFINITY,&norm2); CHKERRA(ierr);
+  ierr = MatNorm(A,NORM_INFINITY,&norm1);CHKERRA(ierr);
+  ierr = MatNorm(sA,NORM_INFINITY,&norm2);CHKERRA(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
     PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n",norm1);
@@ -173,8 +173,8 @@ int main(int argc,char **args)
     PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");
   }
  
-  ierr = MatGetBlockSize(A, &I); CHKERRA(ierr);
-  ierr = MatGetBlockSize(sA, &i); CHKERRA(ierr);
+  ierr = MatGetBlockSize(A, &I);CHKERRA(ierr);
+  ierr = MatGetBlockSize(sA, &i);CHKERRA(ierr);
   if (i-I){
     PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");
   }
@@ -186,9 +186,9 @@ int main(int argc,char **args)
     vr1_wk = vr1;  
     vr2 =  (Scalar*)PetscMalloc(n*sizeof(Scalar));CHKPTRQ(vr2); 
     vr2_wk = vr2;
-    ierr = MatGetRow(A,row,&J,&cols1,&vr1); CHKERRA(ierr); 
+    ierr = MatGetRow(A,row,&J,&cols1,&vr1);CHKERRA(ierr); 
     vr1_wk += J-1;
-    ierr = MatGetRow(sA,row,&j,&cols2,&vr2); CHKERRA(ierr); 
+    ierr = MatGetRow(sA,row,&j,&cols2,&vr2);CHKERRA(ierr); 
     vr2_wk += j-1;
     ierr = VecCreateSeq(PETSC_COMM_SELF,j,&x);CHKERRA(ierr);
  
@@ -196,32 +196,32 @@ int main(int argc,char **args)
       VecSetValue(x,i,*vr2_wk - *vr1_wk, INSERT_VALUES);
       vr2_wk--; vr1_wk--;
     }  
-    ierr = VecNorm(x,NORM_1,&norm2); CHKERRA(ierr);
+    ierr = VecNorm(x,NORM_1,&norm2);CHKERRA(ierr);
     if (norm2<-tol || norm2>tol) {
       PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRow()\n");
     } 
     ierr = VecDestroy(x);CHKERRA(ierr);  
-    ierr = MatRestoreRow( A,row,&J,&cols1,&vr1); CHKERRA(ierr);
-    ierr = MatRestoreRow(sA,row,&j,&cols2,&vr2); CHKERRA(ierr);
-    ierr = PetscFree(vr1); CHKERRA(ierr); 
-    ierr = PetscFree(vr2); CHKERRA(ierr);
+    ierr = MatRestoreRow(A,row,&J,&cols1,&vr1);CHKERRA(ierr);
+    ierr = MatRestoreRow(sA,row,&j,&cols2,&vr2);CHKERRA(ierr);
+    ierr = PetscFree(vr1);CHKERRA(ierr); 
+    ierr = PetscFree(vr2);CHKERRA(ierr);
 
     /* Test GetSubMatrix() */
     /* get a submatrix consisting of every next block row and column of the original matrix */
     /* for symm. matrix, iscol=isrow. */
     isrow  =   (IS)PetscMalloc(n*sizeof(IS));CHKPTRA(isrow);
-    ip_ptr = (int*)PetscMalloc(n*sizeof(int)); CHKERRA(ierr);
+    ip_ptr = (int*)PetscMalloc(n*sizeof(int));CHKERRA(ierr);
     j = 0;
     for (n1=0; n1<mbs; n1 += 2){ /* n1: block row */
       for (i=0; i<bs; i++) ip_ptr[j++] = n1*bs + i;  
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, j, ip_ptr, &isrow); CHKERRA(ierr);
-    /* ISView(isrow, VIEWER_STDOUT_SELF); CHKERRA(ierr); */
+    ierr = ISCreateGeneral(PETSC_COMM_SELF, j, ip_ptr, &isrow);CHKERRA(ierr);
+    /* ISView(isrow, VIEWER_STDOUT_SELF);CHKERRA(ierr); */
     
     ierr = MatGetSubMatrix(sA,isrow,isrow,PETSC_DECIDE,MAT_INITIAL_MATRIX,&sC);
-    CHKERRA(ierr);
+   CHKERRA(ierr);
     ierr = ISDestroy(isrow);CHKERRA(ierr);
-    ierr = PetscFree(ip_ptr); CHKERRA(ierr);
+    ierr = PetscFree(ip_ptr);CHKERRA(ierr);
     printf("sA =\n");
     ierr = MatView(sA,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
     printf("submatrix of sA =\n");
@@ -241,8 +241,8 @@ int main(int argc,char **args)
   ierr = MatDiagonalScale(A,x,x);CHKERRA(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRA(ierr);
 
-  ierr = MatGetDiagonal(A,s1); CHKERRA(ierr);  
-  ierr = MatGetDiagonal(sA,s2); CHKERRA(ierr);
+  ierr = MatGetDiagonal(A,s1);CHKERRA(ierr);  
+  ierr = MatGetDiagonal(sA,s2);CHKERRA(ierr);
   ierr = VecNorm(s1,NORM_1,&norm1);CHKERRA(ierr);
   ierr = VecNorm(s2,NORM_1,&norm2);CHKERRA(ierr);
   norm1 -= norm2;
@@ -287,11 +287,11 @@ int main(int argc,char **args)
     ISGetIndices(ip,&ip_ptr);      
     i = ip_ptr[1]; ip_ptr[1] = ip_ptr[n-2]; ip_ptr[n-2] = i; 
     i = ip_ptr[0]; ip_ptr[0] = ip_ptr[n-1]; ip_ptr[n-1] = i; 
-    ierr= ISRestoreIndices(ip,&ip_ptr); CHKERRA(ierr);
+    ierr= ISRestoreIndices(ip,&ip_ptr);CHKERRA(ierr);
 
-    ierr = MatReorderingSeqSBAIJ(sA, ip); CHKERRA(ierr);  
-    /* ierr = ISView(ip, VIEWER_STDOUT_SELF); CHKERRA(ierr); 
-       ierr = MatView(sA,VIEWER_DRAW_SELF); CHKERRA(ierr); */
+    ierr = MatReorderingSeqSBAIJ(sA, ip);CHKERRA(ierr);  
+    /* ierr = ISView(ip, VIEWER_STDOUT_SELF);CHKERRA(ierr); 
+       ierr = MatView(sA,VIEWER_DRAW_SELF);CHKERRA(ierr); */
   }
   
   ierr = ISDestroy(iscol);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.11 2000/08/03 15:03:00 balay Exp balay $*/
+/*$Id: mpisbaij.c,v 1.12 2000/08/03 15:10:05 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -380,8 +380,8 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
   PetscFunctionBegin;
 
   if(!baij->donotstash){
-    in_loc = (int*)PetscMalloc(n*sizeof(int)); CHKPTRQ(in_loc);
-    v_loc  = (MatScalar*)PetscMalloc(n*sizeof(MatScalar)); CHKPTRQ(v_loc);
+    in_loc = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(in_loc);
+    v_loc  = (MatScalar*)PetscMalloc(n*sizeof(MatScalar));CHKPTRQ(v_loc);
   }
 
   for (i=0; i<m; i++) {

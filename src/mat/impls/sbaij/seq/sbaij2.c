@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.3 2000/06/25 17:01:23 balay Exp balay $*/
+/*$Id: sbaij2.c,v 1.4 2000/06/27 16:54:30 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -87,7 +87,7 @@ int MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse sca
 
   PetscFunctionBegin;
  
-  if ( isrow != iscol ) SETERRA(1,0,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro"); 
+  if (isrow != iscol) SETERRA(1,0,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro"); 
   ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
   if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IS is not sorted");
 
@@ -163,7 +163,7 @@ int MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *
   int         *vary,*iary,*irow,nrows,i,ierr,bs=a->bs,count;
 
   PetscFunctionBegin;
-  if ( isrow != iscol ) SETERRA(1,0,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro");
+  if (isrow != iscol) SETERRA(1,0,"MatGetSubmatrices_SeqSBAIJ: For symm. format, iscol must equal isro");
  
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);
@@ -642,7 +642,7 @@ int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz); CHKERRQ(ierr);
+    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);    
   } else {
     z = y;
@@ -689,7 +689,7 @@ int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz); CHKERRQ(ierr);
+    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);    
   } else {
     z = y;
@@ -744,7 +744,7 @@ int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz); CHKERRQ(ierr);
+    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
@@ -802,7 +802,7 @@ int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz); CHKERRQ(ierr);
+    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
@@ -863,7 +863,7 @@ int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz); CHKERRQ(ierr);
+    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
@@ -926,7 +926,7 @@ int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz); CHKERRQ(ierr);
+    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
@@ -993,7 +993,7 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz); CHKERRQ(ierr);
+    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
@@ -1064,7 +1064,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     y = x;
   }
   if (zz != yy) {
-    ierr = VecCopy(yy,zz); CHKERRQ(ierr);
+    ierr = VecCopy(yy,zz);CHKERRQ(ierr);
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr); z_ptr=z;
   } else {
     z = y;
