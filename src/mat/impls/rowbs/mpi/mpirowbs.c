@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.c,v 2.3 2001/06/28 18:25:10 balay Exp balay $*/
+/* $Id: mpirowbs.c,v 2.4 2001/06/28 18:25:32 balay Exp bsmith $*/
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 #include "src/vec/vecimpl.h"
@@ -1948,13 +1948,11 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,PetscReal f,in
         symmetric using the option MatSetOption(A,MAT_SYMMETRIC)");
   }
 
-  /* some bug in here.. ??? 
   if (!mbs->blocksolveassembly) {
-    BSset_mat_icc_storage(bsmat,PETSC_TRUE);
-    BSset_mat_symmetric(bsmat,PETSC_TRUE);
+    BSset_mat_icc_storage(mbs->A,PETSC_TRUE);CHKERRBS(0);
+    BSset_mat_symmetric(mbs->A,PETSC_TRUE);CHKERRBS(0);
     ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat);CHKERRQ(ierr);
   }
-  */
 
   /* Copy permuted matrix */
   if (mbs->fpA) {BSfree_copy_par_mat(mbs->fpA);CHKERRBS(0);}
@@ -2013,7 +2011,7 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatILUInfo* info,Mat
     ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat);CHKERRQ(ierr);
   }
  
-  if (!mat->symmetric) {
+  if (mat->symmetric) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"To use ILU preconditioner with \n\
         MatCreateMPIRowbs() matrix you CANNOT declare it to be a symmetric matrix\n\
         using the option MatSetOption(A,MAT_SYMMETRIC)");

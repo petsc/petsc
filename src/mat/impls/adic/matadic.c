@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.3 2001/05/29 03:41:06 bsmith Exp curfman $*/
+/*$Id: matadic.c,v 1.4 2001/07/03 18:54:27 curfman Exp bsmith $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -86,7 +86,6 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        MatAssemblyEnd_DAAD,
-        0,
        0,
        0,
        0,
@@ -96,7 +95,8 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-				       0,
+       0,
+       0,
        0,
        0,
        0,
@@ -161,6 +161,52 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "MatDAADSetDA_AD"
+int MatDAADSetDA_AD(Mat A,DA da)
+{
+  Mat_DAAD *a = (Mat_DAAD*)A->data;
+  int      ierr,nc,nx,ny,nz,Nx,Ny,Nz;
+
+  PetscFunctionBegin;
+  a->da = da;
+  ierr  = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
+  ierr  = DAGetInfo(da,0,&Nx,&Ny,&Nz,0,0,0,&nc,0,0,0);CHKERRQ(ierr);
+  ierr  = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
+  A->m  = A->n = nc*nx*ny*nz;
+  A->M  = A->N = nc*Nx*Ny*Nz;
+  ierr  = DACreateLocalVector(da,&a->localu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatDAADSetSNES_AD"
+int MatDAADSetSNES_AD(Mat A,SNES snes)
+{
+  Mat_DAAD *a = (Mat_DAAD*)A->data;
+
+  PetscFunctionBegin;
+  a->snes = snes;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatDAADSetCtx_AD"
+int MatDAADSetCtx_AD(Mat A,void *ctx)
+{
+  Mat_DAAD *a = (Mat_DAAD*)A->data;
+
+  PetscFunctionBegin;
+  a->ctx = ctx;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "MatCreate_DAAD"
 int MatCreate_DAAD(Mat B)
 {
@@ -178,6 +224,9 @@ int MatCreate_DAAD(Mat B)
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATDAAD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSNESMFSetBase_C","MatSNESMFSetBase_AD",MatSNESMFSetBase_AD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDAADSetDA_C","MatDAADSetDA_AD",MatDAADSetDA_AD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDAADSetSNES_C","MatDAADSetSNES_AD",MatDAADSetSNES_AD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDAADSetCtx_C","MatDAADSetCtx_AD",MatDAADSetCtx_AD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -202,18 +251,15 @@ EXTERN_C_END
 int MatDAADSetDA(Mat A,DA da)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
-  int      ierr,nc,nx,ny,nz,Nx,Ny,Nz;
+  int      ierr,(*f)(Mat,void*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
   PetscValidHeader(da);
-  a->da = da;
-  ierr  = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
-  ierr  = DAGetInfo(da,0,&Nx,&Ny,&Nz,0,0,0,&nc,0,0,0);CHKERRQ(ierr);
-  ierr  = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
-  A->m  = A->n = nc*nx*ny*nz;
-  A->M  = A->N = nc*Nx*Ny*Nz;
-  ierr  = DACreateLocalVector(da,&a->localu);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetDA_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,da);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -236,9 +282,15 @@ int MatDAADSetDA(Mat A,DA da)
 int MatDAADSetSNES(Mat A,SNES snes)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
+  int      ierr,(*f)(Mat,void*);
 
   PetscFunctionBegin;
-  a->snes = snes;
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidHeader(snes);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetSNES_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,snes);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -261,12 +313,16 @@ int MatDAADSetSNES(Mat A,SNES snes)
 int MatDAADSetCtx(Mat A,void *ctx)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
+  int      ierr,(*f)(Mat,void*);
 
   PetscFunctionBegin;
-  a->ctx = ctx;
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetCtx_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,ctx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateDAAD"
@@ -306,6 +362,6 @@ int MatRegisterDAAD(void)
 { 
   int ierr;
   PetscFunctionBegin;
-  ierr = MatRegisterDynamic(MATDAAD,PETSC_NULL,"MatCreate_DAAD",    MatCreate_DAAD);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATDAAD,PETSC_NULL,"MatCreate_DAAD",MatCreate_DAAD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
