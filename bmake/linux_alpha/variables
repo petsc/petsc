@@ -15,7 +15,7 @@ LIB_SUFFIX         = a
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = gcc
+C_CC		   = gcc -fPIC
 C_FC		   = g77 -Wno-globals
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
@@ -23,9 +23,7 @@ C_CLINKER	   = gcc
 C_FLINKER	   = g77
 C_CCV		   = ${C_CC} --version
 C_FCV              = g77 --version | head -1
-C_SYS_LIB	   = -ldl -lc -lg2c -lm
-#C_SYS_LIB	   = -ldl -lc -lf2c -lm
-#C_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm  #Use /usr/lib/libf2c.a if that's what your f77 uses.
+C_SYS_LIB          = -ldl -lfrtbegin -lg2c -lm ${CLINKER_SLFLAG}/home/petsc/soft/linux-alpha/gcc-3.2.2/lib
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
@@ -41,9 +39,7 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = g++
 CXX_CCV		   = ${CXX_CC} --version
-#CXX_SYS_LIB	   = -ldl -lc -lf2c -lm
-CXX_SYS_LIB	   = -ldl -lstdc++ -lc -lg2c  -lm
-#CXX_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm
+C_SYS_LIB          = -ldl -lfrtbegin -lg2c -lm ${CLINKER_SLFLAG}/home/petsc/soft/linux-alpha/gcc-3.2.2/lib
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g

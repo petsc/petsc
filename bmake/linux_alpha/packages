@@ -3,11 +3,11 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLASLAPACK_LIB       = -L/home/petsc/software/blaslapack/linux_alpha -lflapack -lfblas
+BLASLAPACK_LIB       = -L/home/petsc/soft/linux-alpha/fblaslapack -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /home/petsc/software/mpich-1.2.2.3/linux_alpha_ssh
+MPI_HOME       = /home/petsc/soft/linux-alpha/mpich-1.2.5
 MPI_LIB        = -L${MPI_HOME}/lib  -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
@@ -21,10 +21,4 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.l
 X11_INCLUDE    =
 X11_LIB        = -L/usr/X11R6/lib -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
-#
-# Location of MPE - which is part of MPICH
-#
-MPE_INCLUDE   = 
-MPE_LIB       =  -lmpe
-PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
