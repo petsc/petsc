@@ -327,6 +327,8 @@ int PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char machine[], co
 . viewer - The Mathematica viewer
 . link   - The link to Mathematica
 
+  Level: intermediate
+
 .keywords PetscViewer, Mathematica, link
 .seealso PetscViewerMathematicaOpen()
 @*/
@@ -349,6 +351,8 @@ int PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
   Input Parameters:
 . viewer - The Mathematica viewer
 . type   - The packet type to search for, e.g RETURNPKT
+
+  Level: advanced
 
 .keywords PetscViewer, Mathematica, packets
 .seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaGetVector()
@@ -381,6 +385,8 @@ int PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
   Input Parameters:
 . viewer - The Mathematica viewer
 . type   - The type of graphics, e.g. GRAPHICS_MOTIF, GRAPHICS_PS_FILE, GRAPHICS_PS_STDOUT
+
+  Level: intermediate
 
 .keywords PetscViewer, Mathematica, packets
 .seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaSkipPackets()
@@ -485,6 +491,8 @@ int PetscViewerMathematicaLoadGraphics(PetscViewer viewer, GraphicsType type)
   Output Parameter:
 . name   - The name for new objects created in Mathematica
 
+  Level: intermediate
+
 .keywords PetscViewer, Mathematica, name
 .seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaClearName()
 @*/
@@ -508,6 +516,8 @@ int PetscViewerMathematicaGetName(PetscViewer viewer, const char **name)
 . viewer - The Mathematica viewer
 . name   - The name for new objects created in Mathematica
 
+  Level: intermediate
+
 .keywords PetscViewer, Mathematica, name
 .seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaClearName()
 @*/
@@ -529,6 +539,8 @@ int PetscViewerMathematicaSetName(PetscViewer viewer, const char name[])
 
   Input Parameter:
 . viewer - The Mathematica viewer
+
+  Level: intermediate
 
 .keywords PetscViewer, Mathematica, name
 .seealso PetscViewerMathematicaGetName(), PetscViewerMathematicaSetName()
@@ -553,6 +565,8 @@ int PetscViewerMathematicaClearName(PetscViewer viewer)
 
   Output Parameter:
 . v      - The vector
+
+  Level: intermediate
 
 .keywords PetscViewer, Mathematica, vector
 .seealso VecView()

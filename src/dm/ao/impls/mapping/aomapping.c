@@ -212,8 +212,9 @@ EXTERN_C_END
   Output Parameter:
 . hasIndex - Flag is PETSC_TRUE if the index exists
 
-.keywords: AO, index
+  Level: intermediate
 
+.keywords: AO, index
 .seealso: AOMappingHasPetscIndex(), AOCreateMapping()
 @*/
 int AOMappingHasApplicationIndex(AO ao, int index, PetscTruth *hasIndex)
@@ -260,8 +261,9 @@ int AOMappingHasApplicationIndex(AO ao, int index, PetscTruth *hasIndex)
   Output Parameter:
 . hasIndex - Flag is PETSC_TRUE if the index exists
 
-.keywords: AO, index
+  Level: intermediate
 
+.keywords: AO, index
 .seealso: AOMappingHasApplicationIndex(), AOCreateMapping()
 @*/
 int AOMappingHasPetscIndex(AO ao, int index, PetscTruth *hasIndex)
@@ -299,22 +301,23 @@ int AOMappingHasPetscIndex(AO ao, int index, PetscTruth *hasIndex)
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateMapping"
 /*@C
-   AOCreateMapping - Creates a basic application mapping using two integer arrays.
+  AOCreateMapping - Creates a basic application mapping using two integer arrays.
 
-   Input Parameters:
-.  comm    - MPI communicator that is to share AO
-.  napp    - size of integer arrays
-.  myapp   - integer array that defines an ordering
-.  mypetsc - integer array that defines another ordering
+  Input Parameters:
++ comm    - MPI communicator that is to share AO
+. napp    - size of integer arrays
+. myapp   - integer array that defines an ordering
+- mypetsc - integer array that defines another ordering
 
-   Output Parameter:
-.  aoout   - the new application mapping
+  Output Parameter:
+. aoout   - the new application mapping
 
-   Options Database Key:
-$   -ao_view : call AOView() at the conclusion of AOCreateMapping()
+  Options Database Key:
+$ -ao_view : call AOView() at the conclusion of AOCreateMapping()
+
+  Level: beginner
 
 .keywords: AO, create
-
 .seealso: AOCreateDebug(), AOCreateBasic(), AOCreateMappingIS(), AODestroy()
 @*/
 int AOCreateMapping(MPI_Comm comm, int napp, int *myapp, int *mypetsc, AO *aoout)
@@ -439,21 +442,22 @@ int AOCreateMapping(MPI_Comm comm, int napp, int *myapp, int *mypetsc, AO *aoout
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateMappingIS"
 /*@C
-   AOCreateMappingIS - Creates a basic application ordering using two index sets.
+  AOCreateMappingIS - Creates a basic application ordering using two index sets.
 
-   Input Parameters:
-.  comm    - MPI communicator that is to share AO
-.  isapp   - index set that defines an ordering
-.  ispetsc - index set that defines another ordering
+  Input Parameters:
++ comm    - MPI communicator that is to share AO
+. isapp   - index set that defines an ordering
+- ispetsc - index set that defines another ordering
 
-   Output Parameter:
-.  aoout   - the new application ordering
+  Output Parameter:
+. aoout   - the new application ordering
 
-   Options Database Key:
-$   -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
+  Options Database Key:
+$ -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
+
+  Level: beginner
 
 .keywords: AO, create
-
 .seealso: AOCreateBasic(), AOCreateMapping(), AODestroy()
 @*/
 int AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
