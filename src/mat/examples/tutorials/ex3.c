@@ -69,9 +69,9 @@ int main(int argc,char **argv)
   ierr = KSPSetType(itmeth,KSPPREONLY); CHKERRQ(ierr);
   ierr = SLESGetPC(solver,&pc); CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU); CHKERRQ(ierr);
-  ierr = SLESSetOperators(solver,A,A,0); CHKERRQ(ierr);
+  ierr = SLESSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
   ierr = SLESSolve(solver,X,Y,PETSC_NULL); CHKERRQ(ierr);
-  ierr = SLESSetOperators(solver,B,B,0); CHKERRQ(ierr);
+  ierr = SLESSetOperators(solver,B,B,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
   ierr = SLESSolve(solver,X,Z,PETSC_NULL); CHKERRQ(ierr);
   ierr = VecAXPY(&mone,Y,Z); CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
