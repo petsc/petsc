@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.30 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: mem.c,v 1.31 1998/04/30 15:17:23 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -40,11 +40,13 @@ static char vcid[] = "$Id: mem.c,v 1.30 1998/04/27 19:48:45 curfman Exp bsmith $
 #define MAXPATHLEN 1024
 #endif
 
-#if !defined (PARCH_t3d) && !defined(PARCH_nt)
+#if defined (HAVE_SYS_RESOURCE_H)
 #include <sys/resource.h>
 #endif
-#if defined(PARCH_solaris)
+#if defined(HAVE_SYS_PROCFS_H)
 #include <sys/procfs.h>
+#endif
+#if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
 
