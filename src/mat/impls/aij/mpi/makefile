@@ -10,7 +10,7 @@ SOURCEH	 = mpiaij.h
 OBJSC	 = mpiaij.o mmaij.o mpiaijpc.o mpiov.o fdmpiaij.o pxxt.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
-DIRS	 = spooles superlu_dist mumps 
+DIRS	 = spooles superlu_dist mumps libtfs
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/aij/mpi/
 
