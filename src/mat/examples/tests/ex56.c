@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.16 1999/02/15 21:58:44 balay Exp balay $";
+static char vcid[] = "$Id: ex56.c,v 1.17 1999/02/16 23:40:18 balay Exp balay $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for \n\
 rectangular MatBAIJ matrix";
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-ass_extern",&flg); CHKERRA(ierr);
-  if (flg && (size == 1))    rstart = m*((rank+1)%size);
+  if (flg && (size != 1))    rstart = m*((rank+1)%size);
   else                       rstart = m*(rank);
 
   row[0] =rstart+0;  row[1] =rstart+2;
