@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.14 2000/08/01 22:40:16 kaushik Exp bsmith $ 
+# $Id: makefile,v 1.15 2000/08/02 03:51:35 bsmith Exp bsmith $ 
 
 #requiresscalar real
 
@@ -27,18 +27,10 @@ EXAMPLESF        = user.F userJac.F
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 flow: flow.o $(OBJSF) chkopts
-	-$(FLINKER) -o flow flow.o $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-
-user.o:
-#f77 -c -r8 -i4 -O4 -xs user.f
-#	$(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) user.F
-
-userJac.o:
-#	$(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) userJac.F
+	-$(CLINKER) -o flow flow.o $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 
 puns3d: puns3d.a.o
 	$(FLINKER) -o puns3d puns3d.a.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-puns3d.a.o:
 
 runflow1:
 	-@${MPIRUN} -np 1 flow -mesh testgrid/uns3d.msh -partition testgrid/part_vec.part | grep clift | tail -1 > runflow1.tmp 2>&1;   \
