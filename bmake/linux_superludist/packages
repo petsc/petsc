@@ -57,3 +57,4 @@ MATLABCOMMAND   = matlab
 MATLAB_ENGINE_INCLUDE    = -I/software/linux-rh73/com/packages/matlab-r13.1/extern/include -DV5_COMPAT
 MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}/software/linux-rh73/com/packages/matlab-r13.1/extern/lib/glnx86:/homes/hzhang/bin -L/software/linux-rh73/com/packages/matlab-r13.1/extern/lib/glnx86 -leng -lmx -lmat -lut
 PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
+
