@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 1998/06/12 22:17:56 balay Exp balay $ 
+# $Id: makefile,v 1.20 1998/06/15 15:42:13 balay Exp balay $ 
 
 ALL: lib
 
@@ -6,7 +6,7 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC	 = mpi.c
 SOURCEF	 = 
-SOURCEH	 = mpi.h
+SOURCEH	 = mpi.h mpif.h
 OBJSC	 = mpi.o
 OBJSF	 =
 LIBBASE	 = libmpiuni
