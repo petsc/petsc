@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.9 1998/12/24 04:05:52 bsmith Exp bsmith $ */
+/* $Id: ilu.h,v 1.10 1999/01/04 21:46:43 bsmith Exp balay $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -136,7 +136,7 @@ EXTERN_C_END
 {  \
   Scalar _one = 1.0; \
   int    _ione = 1; \
-  LAgemv_("N",&(bs),&(ncols),&_one,A,&(bs),w,&_ione,&_one,v,&_ione); \
+  LAgemv_("N",&(bs),&(ncols),&_one,A,&(bs),v,&_ione,&_one,w,&_ione); \
 }
 
 /*
