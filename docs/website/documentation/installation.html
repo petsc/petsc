@@ -1,0 +1,385 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <title>PETSc: Docs:&nbsp; Supplementary:&nbsp; Installation</title>
+</head>
+<body bgcolor="#d5eaff">
+<table width="100%">
+  <tbody>
+    <tr>
+      <td width="25%" valign="top">
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <ul>
+        <li><a href="../../index.html"><strong>Home</strong></a></li>
+      </ul>
+      </td>
+      <td width="75%"><!--##begin-->
+      <table border="0" width="100%">
+        <tbody>
+          <tr>
+            <td width="50%">
+            <h1><b>Docs:&nbsp; Installation</b></h1>
+            </td>
+            <td width="50%"><img border="0"
+ src="../../images/headbang.gif" width="113" height="113"></td>
+          </tr>
+        </tbody>
+      </table>
+<!--##end--> </td>
+    </tr>
+    <tr>
+      <td width="100%" colspan="2">
+      <hr size="4" color="#FF5B5B"> </td>
+    </tr>
+    <tr>
+      <td width="25%" valign="top">
+      <ul>
+        <li><strong><font color="#ff0000"><a
+ href="../../download/index.html">Download</a></font></strong></li>
+        <li><a href="../../features/index.html"><strong>Features</strong></a></li>
+        <li><a href="../index.html"><strong>Documentation</strong></a>
+          <ul>
+            <li><a href="../index.html#Manual"><strong>Manual pages and
+Users Manual</strong></a></li>
+            <li><a href="../referencing.html"><strong>Referencing&nbsp;
+PETSc</strong></a></li>
+            <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
+            <li><strong><font color="#ff0000">Installation</font></strong>
+              </li>
+            <li><strong><a href="../changes/index.html">Changes</a></strong></li>
+            <li><strong><a href="../troubleshooting.html">Troubleshooting</a></strong></li>
+            <li><strong><a href="../bugreporting.html">Bug Reporting</a></strong></li>
+            <li><strong><a href="../codemanagement.html">Code Management</a></strong></li>
+            <li><strong><a href="../faq.html">FAQ</a> </strong></li>
+            <li><strong><a href="../copyright.html">Copyright</a> </strong></li>
+          </ul>
+        </li>
+        <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
+        <li><a href="../../talks"><strong>Presentations</strong></a></li>
+        <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+      </ul>
+      </td>
+      <td width="75%" valign="top"><!--##begin--> 
+<h3>Quick Installation Instructions:</h3>
+<ol>
+  <li>on windows, install <a href="http://www.cygwin.com">cygwin</a> package and 
+  use bash as the working shell</li>
+  <li>install BLAS, LAPACK</li>
+  <li>install&nbsp; MPI. (for eg: MPICH or LAM)</li>
+  <li><a href="http://www.mcs.anl.gov/petsc/petsc-2/download">download</a> the 
+  PETSc distribution, and apply the latest patches</li>
+  <li>set the PETSC_DIR and PETSC_ARCH environment variables. (for example with 
+  bash)<br>
+  <font color="#FF0000">export PETSC_DIR=/home/petsc/petsc-2.1.6<br>
+  export PETSC_ARCH=linux<br>
+  </font>a guessed value for PETSC_ARCH can be obtained by running the following 
+  script:<font color="#FF0000"><br>
+  ${PETSC_DIR}/bin/petscarch -suggest</font></li>
+  <li>- for automatic configuration run <font color="#FF0000">config/configure.py
+  </font>(requires python-2.2, and does not work on all machine types)<br>
+  - for manual configuration, edit <font color="#008080">bmake/${PETSC_ARCH}/packages</font> 
+  file - and specify the location of BLASLAPACK &amp; MPI.</li>
+  <li>now build PETSc using the following command in the top level dir<br>
+  <font color="#FF0000">make BOPT=g all</font></li>
+  <li>now test PETSc by running the following command at the top level<br>
+  <font color="#FF0000">make BOPT=g test</font></li>
+  <li>encounter problems? check the
+  <a href="http://www.mcs.anl.gov/petsc/petsc-2/documentation/bugreporting.html">
+  bug-reporting</a> section</li>
+</ol>
+<h3><b>Example Usages:</b></h3>
+<ul>
+  <li>install PETSc with configure.py on linux, assuming blas, lapack, mpich 
+  software are installed at the specified locations:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">export 
+  PETSC_DIR=/home/petsc/petsc-2.1.6<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bin/petscarch -suggest<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; export PETSC_ARCH=linux-gnu<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd $PETSC_DIR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; config/configure.py --with-blas=/usr/lib/libblas.a 
+  --with-lapack=/usr/lib/liblapack.a --with-mpi --with-mpi-dir=/usr/local/mpich<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=g all<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=g test</font></li>
+  <li>install PETSc on solaris - manually - by modifying the config files with 
+  Sun compilers<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">export 
+  PETSC_DIR=/home/petsc/petsc-2.1.6<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bin/petscarch -suggest<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; export PETSC_ARCH=solaris</font><br>
+&nbsp; edit <font color="#008080">bmake/solaris/packages</font> - and update the 
+  location of BLAS/LAPACK, MPI<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">cd $PETSC_DIR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=g all<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=g test</font></li>
+  <li>install PETSc on windows, with MPICH-NT, Microsoft Compilers, Intel MKL<br>
+&nbsp; install cygwin package - and use 'bash' from cygwin to as the working 
+  shell<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">export 
+  PETSC_DIR=/home/petsc/petsc-2.1.6<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bin/petscarch -suggest<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; export PETSC_ARCH=win32_ms_mpich</font><br>
+&nbsp; edit <font color="#008080">bmake/win32_ms_mpich/packages</font> - and 
+  make sure the paths to MPICH-NT, Intel MKL (blas/lapack) are correctly 
+  specified<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">cd $PETSC_DIR<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=g all<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; make BOPT=g test</font></li>
+</ul>
+<h3>Definitions:</h3>
+<p><b><font color="#551A8B">BASH</font></b>: all example commands will be 
+indicated using bash notation. One could use csh/tcsh notation as well. To set a 
+variable, the following can be used:<br>
+&nbsp;&nbsp;&nbsp; <font color="#FF0000">export VARIABLE=value</font>&nbsp;&nbsp;&nbsp;&nbsp; 
+(bash)<br>
+&nbsp;&nbsp;&nbsp; <font color="#FF0000">setenv VARIABLE&nbsp; value</font>&nbsp;&nbsp;&nbsp;&nbsp; 
+(csh/tcsh)&nbsp; </p>
+<p><b><font color="#551A8B">PETSC_DIR</font></b>: - this environment/make 
+variable should point to the location of the PETSc installation that is used. 
+Multiple PETSc versions of PETSc can coexist on the same file-system. By 
+changing PETSC_DIR value - one can switch between the versions</p>
+<p><b><font color="#551A8B">PETSC_ARCH</font></b>: this environment/make 
+variable is used to specify the configuration that should currently be used. It 
+corresponds to the configuration files in bmake/${PETSC_ARCH}. Multiple variants 
+of PETSc libraries can be installed - each variant corresponding to a different 
+PETSC_ARCH. One can switch between using these variants - by changing the value 
+of PETSC_ARCH</p>
+<p><b><font color="#551A8B">BOPT</font></b>: this environment/make variable is 
+used to distinguish debug/optimized or c/c++/complex versions of PETSc 
+libraries. One can install, any/all variants of the libraries, and switch 
+between them by changing the value of BOPT. The following BOPT values are 
+usually used.</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="73%" id="AutoNumber2">
+  <tr>
+    <td width="13%">&nbsp;g</td>
+    <td width="87%">&nbsp;debug version of PETSc libraries - useable from C, 
+    fortran</td>
+  </tr>
+  <tr>
+    <td width="13%">&nbsp;g_c++</td>
+    <td width="87%">&nbsp;debug version of PETSc libraries - useable from C++, 
+    fortran</td>
+  </tr>
+  <tr>
+    <td width="13%">&nbsp;g_complex</td>
+    <td width="87%">&nbsp;debug complex version of PETSc libraries - useable 
+    from C++, fortran</td>
+  </tr>
+  <tr>
+    <td width="13%">&nbsp;O</td>
+    <td width="87%">&nbsp;Optimized version of PETSc libraries - useable from C, 
+    fortran</td>
+  </tr>
+  <tr>
+    <td width="13%">&nbsp;O_c++</td>
+    <td width="87%">&nbsp;Optimized version of PETSc libraries - useable from 
+    C++, fortran</td>
+  </tr>
+  <tr>
+    <td width="13%">&nbsp;O_complex</td>
+    <td width="87%">&nbsp;Optimized version of PETSc libraries - useable from 
+    C++, fortran</td>
+  </tr>
+</table>
+<p>example usage - assuming ex1.c is user code, and a makefile with a target to 
+compile ex1 exists:&nbsp; <br>
+&nbsp;&nbsp;&nbsp; <font color="#FF0000">make BOPT=g PETSC_ARCH=linux PETSC_DIR=/home/petsc/petsc-2.1.5 
+ex1</font></p>
+<p><font color="#551A8B"><b>bmake/${PETSC_ARCH}/packages: </b></font>&nbsp;this config file - corresponding to the PETSC_ARCH used, contains the configuration 
+for all external software packages - PETSc is installed with. The specification 
+is in the compiler notation for include paths, library paths, library names.</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber3">
+  <tr>
+    <td width="11%">&nbsp;Compiler flag</td>
+    <td width="30%">&nbsp; Example </td>
+    <td width="59%">&nbsp;Explanation</td>
+  </tr>
+  <tr>
+    <td width="11%">&nbsp;-D</td>
+    <td width="30%">&nbsp;-DPETSC_HAVE_X11</td>
+    <td width="59%">&nbsp;define a macro</td>
+  </tr>
+  <tr>
+    <td width="11%">&nbsp;-I</td>
+    <td width="30%">&nbsp;-I/home/petsc/mpich-1.2.5/include</td>
+    <td width="59%">&nbsp;specify include paths to the compiler</td>
+  </tr>
+  <tr>
+    <td width="11%">&nbsp;-L</td>
+    <td width="30%">&nbsp;-L/home/petsc/mpich-1.2.5/lib</td>
+    <td width="59%">&nbsp;specify the library paths to the compiler</td>
+  </tr>
+  <tr>
+    <td width="11%">&nbsp;-l</td>
+    <td width="30%">&nbsp;-lmpich</td>
+    <td width="59%">&nbsp;specify the name of the library to link to- if the 
+    library is libmpich.a</td>
+  </tr>
+  <tr>
+    <td width="11%">&nbsp;filename</td>
+    <td width="30%">&nbsp;/home/petsc/foo.a</td>
+    <td width="59%">&nbsp;specify the library to link to (which cannot be 
+    specified using -l)</td>
+  </tr>
+</table>
+<p><b><font color="#551A8B">bmake/${PETSC_ARCH}/variables</font>: </b>this file contains the configuration for the C, C++, fortran compilers 
+- that are associated with the PETSC_ARCH used.</p>
+<h3>Additional Definitions<b>:</b></h3>
+<h4><font color="#551A8B">Cygwin:</font> <span style="font-weight: 400">&nbsp;it 
+provides UNIX tools on windows - which enable PETSc install on windows. It also 
+has GNU compilers - which can be used - if Microsoft compilers are not available</span></h4>
+<table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="72%" id="AutoNumber1">
+  <tr>
+    <td width="23%">&nbsp;Cygwin</td>
+    <td width="77%">&nbsp;<a href="http://www.cygwin.com">http://www.cygwin.com</a></td>
+  </tr>
+</table>
+	
+<p><font color="#551A8B"><b>BLAS/LAPACK:</b></font> these packages provide basic 
+numeric kernels used by PETSc. This is available from the following sources</p>
+<ul>
+  <li>on Windows, one can use Intel MKL</li>
+  <li>On AIX boxes, ESSL, on OSF (alpha) DXML, on Solaris Sunperf libraries 
+  provide this functionality</li>
+  <li>On some linux boxes, regular blas/lapack is installed [/usr/lib/liblapack.a 
+  /usr/lib/libblas.a ]</li>
+  <li>Alternatively download the source distribution fblaslapack or cblaslapack 
+  from <a href="http://www.mcs.anl.gov/petsc/petsc-2/download">PETSc download</a> 
+  page</li>
+</ul>
+<table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="72%" id="AutoNumber1">
+  <tr>
+    <td width="23%">&nbsp;BLAS</td>
+    <td width="77%">&nbsp;<a href="http://www.netlib.org/blas">http://www.netlib.org/blas</a></td>
+  </tr>
+  <tr>
+    <td width="23%">&nbsp;LAPACK&nbsp;&nbsp;&nbsp; </td>
+    <td width="77%">&nbsp;<a href="http://www.netlib.org/lapack">http://www.netlib.org/lapack</a></td>
+  </tr>
+  <tr>
+    <td width="23%">&nbsp;Intel MKL</td>
+    <td width="77%">&nbsp;<a href="http://www.intel.com/software/products/mkl">http://www.intel.com/software/products/mkl</a></td>
+  </tr>
+  <tr>
+    <td width="23%">&nbsp;fblaslapack</td>
+    <td width="77%">&nbsp;<a href="http://www.mcs.anl.gov/petsc/petsc-2/download">http://www.mcs.anl.gov/petsc/petsc-2/download</a></td>
+  </tr>
+  <tr>
+    <td width="23%">&nbsp;cblaslapack</td>
+    <td width="77%">&nbsp;<a href="http://www.mcs.anl.gov/petsc/petsc-2/download">http://www.mcs.anl.gov/petsc/petsc-2/download</a></td>
+  </tr>
+  <tr>
+    <td width="23%">&nbsp;ESSL</td>
+    <td width="77%">
+    &nbsp;<a href="http://www-1.ibm.com/servers/eserver/pseries/library/sp_books/essl.html">http://www-1.ibm.com/servers/eserver/pseries/library/sp_books/essl.html</a></td>
+  </tr>
+</table>
+	
+<p><font color="#551A8B"><b>MPI:</b></font> This software provides the parallel 
+functionality for PETSc. This is available from the follwoing sources</p>
+<ul>
+  <li>On parallel machines, Vendor provided MPI might already be installed. For 
+  eg:, IBM, SGI, Cray etc provide their own implementation of MPI</li>
+  <li>If vendor provided MPI is not available, it can be installed from sources.</li>
+</ul>
+<table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="72%" id="AutoNumber5">
+  <tr>
+    <td width="26%">&nbsp;MPI&nbsp;&nbsp;&nbsp; </td>
+    <td width="74%">&nbsp;<a href="http://www.mpi-forum.org">http://www.mpi-forum.org</a></td>
+  </tr>
+  <tr>
+    <td width="26%">&nbsp;MPICH</td>
+    <td width="74%">&nbsp;<a href="http://www.mcs.anl.gov/mpi/mpich">http://www.mcs.anl.gov/mpi/mpich</a></td>
+  </tr>
+  <tr>
+    <td width="26%">&nbsp;LAM</td>
+    <td width="74%">&nbsp;<a href="http://www.lam-mpi.org">http://www.lam-mpi.org</a></td>
+  </tr>
+  <tr>
+    <td width="26%">&nbsp;MPICH-NT (windows)</td>
+    <td width="74%">&nbsp;<a href="http://www-unix.mcs.anl.gov/~ashton/mpich.nt">http://www-unix.mcs.anl.gov/~ashton/mpich.nt</a></td>
+  </tr>
+  <tr>
+    <td width="26%">&nbsp;MPI/Pro (windows)</td>
+    <td width="74%">&nbsp;<a href="http://www.mpi-softtech.com/products/mpi_pro">http://www.mpi-softtech.com/products/mpi_pro</a></td>
+  </tr>
+  <tr>
+    <td width="26%">&nbsp;HPVM (windows)</td>
+    <td width="74%">&nbsp;<a href="http://www-csag.ucsd.edu/projects/hpvm.html">http://www-csag.ucsd.edu/projects/hpvm.html</a></td>
+  </tr>
+  <tr>
+    <td width="26%">&nbsp;WMPI (windows)</td>
+    <td width="74%">&nbsp;<a href="http://www.criticalsoftware.com/hpc">http://www.criticalsoftware.com/hpc</a></td>
+  </tr>
+  </table>
+	
+<p><font color="#551A8B"><b>Downloading PETSc and applying Patches:</b></font>&nbsp;
+</p>
+<ul>
+  <li>download the distribution and the latest patches file from 
+  <a href="http://www.mcs.anl.gov/petsc/petsc-2/download">PETSc download</a> 
+  section</li>
+  <li>extract the distribution file<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">gnuzip -c 
+  petsc.tar.gz | tar -xof -</font></li>
+  <li>apply the patches (using GNU patch utility)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#FF0000">cd petsc-2.1.6<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; patch -Np1 &lt; petsc_patches_all_2.1.6
+  </font></li>
+</ul>
+<p><b><font color="#551A8B">Configure:</font></b></p>
+<p>Instead of manually editing <font color="#008080">bmake/${PETSC_ARCH}/*</font> files - one can use
+<font color="#FF0000">config/configure.py</font> 
+to create these files - for the specified PETSC_ARCH</p>
+<p>We provide some default configure examples in <font color="#008080">${PETSC_DIR}/config</font> - for 
+example: on Mac OS X, a sample configure file is <font color="#008080">${PETSC_ARCH}/config/configure_darwin6.6.py</font></p>
+<p>Configure is implemented in python - and requires python version 2.2 or 
+newer.</p>
+<p>With configure build, the PETSC_ARCH should be chosen from the suggested 
+value by '<font color="#FF0000">bin/petscarch -suggest</font>'. For example, on a linux box, to use 
+configure - 
+one should use linux-gnu, or linux-gnu-foobar etc.&nbsp; This distinction is so 
+that configure does not overwrite manually editable configuration files - such 
+as linux, linux_intel etc.</p>
+<p>examples:</p>
+<ul>
+  <li><font color="#FF0000">config/configure.py -help</font></li>
+  <li><font color="#FF0000">config/configure.py --with-mpi --with-mpi-dir=/usr/local/mpich --with-blas=/usr/lib/libblas.a 
+  --with-lapack=/usr/lib/liblapack.a</font></li>
+</ul>
+<p>Currently configure cannot handle most of the optional packages</p>
+<p><font color="#551A8B"><b>Optional Packages:</b></font>&nbsp; PETSc can be 
+installed with various optional packages - including SuperLU, Spooles, Matlab 
+etc.. most likely you would have to use the manual installation of PETSc - in 
+order to install PETSc with the optional package.</p>
+<p>The optional package information is specified in bmake/${PETSC_ARCH/packages 
+file. An example specification is as follows:</p>
+<pre>PARMETIS_INCLUDE    = -I/home/petsc/soft/solaris-9/ParMetis-3.0
+PARMETIS_LIB        = -L/home/petsc/soft/solaris-9/ParMetis-3.0 -lparmetis -lmetis
+PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS</pre>
+<p>Notice that the include, library paths, library files are specified, and a 
+flag is set - to enable the package within PETSc. For more example usage for any 
+other package, check out the default bmake/*/packages files in the distribution</p>
+<h3>Aditional Windows Notes:</h3>
+<p><b><font color="#551A8B">PETSc Win32 front end - win32fe</font>:</b>&nbsp; 
+This tool is used as a wrapper to Microsoft/ Borland/ Intel compilers and 
+associated tools - to enable building PETSc libraries using make and other UNIX 
+tools. For additional info, run ${PETSC_DIR}/bin/win32/win32fe without any 
+options.</p>
+<p><b><font color="#551A8B">Compilers:</font></b> Support Microsoft (win32_ms*), 
+Intel (win32_intel), Borland (win32_borlan), Gnu compilers (win32_gnu)</p>
+<p><font color="#551A8B"><b>Project Files:</b> </font>We provide default project 
+files that work with PETSC_ARCH=win32_ms_mpich</p>
+<p><b><font color="#551A8B">Debugger:&nbsp; </font></b>from bash - the following 
+command should work:&nbsp; msdev ex1.exe</p>
+<p>&nbsp;</p>
+      </td>
+	<!--##end--> </tr>
+    <tr>
+      <td width="100%" colspan="2">
+      <hr size="4" color="#FF5B5B"> </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
