@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.59 1996/11/19 16:30:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.60 1996/11/20 04:12:57 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -25,14 +25,13 @@ static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A, int* size, int ** ns)
   if (!ns) {
     for ( count=0,i=0; count<min_mn; count+=ns_row[i],i++ );
     for( ; count+1 < n; count++,i++ );
-    if (count != n)  {
+    if (count < n)  {
       i++;
     }
     *size = i;
     return 0;
   }
   ns_col = (int *)PetscMalloc((n+1)*sizeof(int));  CHKPTRQ(ns_col);
-  
   
   /* Use the same row structure wherever feasible. */
   for ( count=0,i=0; count<min_mn; count+=ns_row[i],i++ ) {
@@ -44,9 +43,12 @@ static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A, int* size, int ** ns)
     ns_col[i] = 1;
   }
   /* The last node is the odd ball. padd it up with the remaining rows; */
-  if (count != n)  {
+  if (count < n)  {
     ns_col[i] = n - count;
     i++;
+  } else if (count > n) {
+    /* Adjust for the over estimation */
+    ns_col[i-1] += n - count;
   }
   *size = i;
   *ns   = ns_col;
@@ -262,7 +264,7 @@ static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, i
   /* allocate space for reformated column_inode structure */
   tns = (int *) PetscMalloc((nslim_col + 1)*sizeof(int)); CHKPTRQ(tns);
   tvc = (int *) PetscMalloc((n + 1)*sizeof(int)); CHKPTRQ(tvc);
-  for (i1=0, tns[0]=0; i1<nslim_col; ++i1) tns[i1+1] = tns[i1] + ns_row[i1];
+  for (i1=0, tns[0]=0; i1<nslim_col; ++i1) tns[i1+1] = tns[i1] + ns_col[i1];
 
   for (i1=0,col=0; i1<nslim_col; ++i1){
     nsz = ns_col[i1];
