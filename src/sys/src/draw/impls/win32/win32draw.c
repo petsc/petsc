@@ -128,7 +128,7 @@ static PetscErrorCode deletemouselist_Win32(WindowNode deletelist)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawGetMouseButton_Win32" 
-static PetscErrorCode PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawButton *button,double *x_user,double *y_user,double *x_phys,double *y_phys)
+static PetscErrorCode PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawButton *button,PetscReal *x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   WindowNode      current;
@@ -219,7 +219,7 @@ static PetscErrorCode AverageColorTriangle_Win32(PetscDraw draw,int c1,int c2,in
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawRectangle_Win32"
-static PetscErrorCode PetscDrawRectangle_Win32(PetscDraw draw,double xl,double yl,double xr,double yr,int c1,int c2,int c3,int c4)
+static PetscErrorCode PetscDrawRectangle_Win32(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int c1,int c2,int c3,int c4)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   HBRUSH          hbrush;
@@ -253,7 +253,7 @@ static PetscErrorCode PetscDrawRectangle_Win32(PetscDraw draw,double xl,double y
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLine_Win32"
-static PetscErrorCode PetscDrawLine_Win32(PetscDraw draw,double xl,double yl,double xr,double yr,int color)
+static PetscErrorCode PetscDrawLine_Win32(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int color)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   HPEN            hpen;
@@ -281,7 +281,7 @@ static PetscErrorCode PetscDrawLine_Win32(PetscDraw draw,double xl,double yl,dou
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLineSetWidth_Win32"
-static PetscErrorCode PetscDrawLineSetWidth_Win32(PetscDraw draw,double width)
+static PetscErrorCode PetscDrawLineSetWidth_Win32(PetscDraw draw,PetscReal width)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   int             averagesize,finalwidth;
@@ -310,7 +310,7 @@ static PetscErrorCode PetscDrawLineGetWidth_Win32(PetscDraw draw,PetscReal *widt
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawPoint_Win32"
-static PetscErrorCode PetscDrawPoint_Win32(PetscDraw draw,double x,double y,int color)
+static PetscErrorCode PetscDrawPoint_Win32(PetscDraw draw,PetscReal x,PetscReal y,int color)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   HBRUSH          hbrush;
@@ -346,7 +346,7 @@ static PetscErrorCode PetscDrawPoint_Win32(PetscDraw draw,double x,double y,int 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawPointSetSize_Win32"
-static PetscErrorCode PetscDrawPointSetSize_Win32(PetscDraw draw,double width)
+static PetscErrorCode PetscDrawPointSetSize_Win32(PetscDraw draw,PetscReal width)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   int             averagesize,diameter;
@@ -362,7 +362,7 @@ static PetscErrorCode PetscDrawPointSetSize_Win32(PetscDraw draw,double width)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawString_Win32"
-static PetscErrorCode PetscDrawString_Win32(PetscDraw draw,double x,double y,int color,const char *text)
+static PetscErrorCode PetscDrawString_Win32(PetscDraw draw,PetscReal x,PetscReal y,int color,const char *text)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   RECT            r;
@@ -409,7 +409,7 @@ static PetscErrorCode PetscDrawString_Win32(PetscDraw draw,double x,double y,int
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringVertical_Win32"
-static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw,double x,double y,int color,const char *text)
+static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw,PetscReal x,PetscReal y,int color,const char *text)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   RECT            r;
@@ -456,7 +456,7 @@ static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw,double x,doub
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringSetSize_Win32"
-static PetscErrorCode PetscDrawStringSetSize_Win32(PetscDraw draw,double width,double height)
+static PetscErrorCode PetscDrawStringSetSize_Win32(PetscDraw draw,PetscReal width,PetscReal height)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   int             w,h;
@@ -472,7 +472,7 @@ static PetscErrorCode PetscDrawStringSetSize_Win32(PetscDraw draw,double width,d
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringGetSize_Win32"
-static PetscErrorCode PetscDrawStringGetSize_Win32(PetscDraw draw,double *width,double *height)
+static PetscErrorCode PetscDrawStringGetSize_Win32(PetscDraw draw,PetscReal *width,PetscReal *height)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   double scaleX = (draw->coor_xr - draw->coor_xl)/(draw->w)*(draw->port_xr - draw->port_xl);
@@ -553,8 +553,8 @@ static PetscErrorCode PetscDrawClear_Win32(PetscDraw draw)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawTriangle_Win32"
-static PetscErrorCode PetscDrawTriangle_Win32(PetscDraw draw,double x1,double yone,double x2,double y2,double x3,double y3,
-                              int c1,int c2,int c3)
+static PetscErrorCode PetscDrawTriangle_Win32(PetscDraw draw,PetscReal x1,PetscReal yone,PetscReal x2,PetscReal y2,
+			      PetscReal x3,PetscReal y3,int c1,int c2,int c3)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   HBRUSH          hbrush;

@@ -17,9 +17,10 @@ class Configure(config.base.Configure):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', 'PETSC_DIR',                nargs.Arg(None, None, 'The root directory of the PETSc installation'))
-    help.addArgument('PETSc', 'PETSC_ARCH',               nargs.Arg(None, None, 'The machine architecture'))
-    help.addArgument('PETSc', '-with-default-arch=<bool>',nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
+    help.addArgument('PETSc', 'PETSC_DIR',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
+    help.addArgument('PETSc', 'PETSC_ARCH',                       nargs.Arg(None, None, 'The machine architecture'))
+    help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
+    help.addArgument('PETSc', '-with-external-packages-dir=<dir>',nargs.Arg(None, os.path.join('$PETSC_DIR','externalpackages'),'Location to installed downloaded packages'))
 
   def configureDirectories(self):
     '''Checks PETSC_DIR and sets if not set'''
@@ -103,4 +104,6 @@ class Configure(config.base.Configure):
   def configure(self):
     self.executeTest(self.configureDirectories)
     self.executeTest(self.configureArchitecture)
+    if self.framework.argDB['with-external-packages-dir'].startswith('$'):
+      self.framework.argDB['with-external-packages-dir'] = os.path.join(self.framework.argDB['PETSC_DIR'], 'externalpackages')
     return

@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
 
   def configureLanguage(self):
     # should do error checking
-    self.language   = self.framework.argDB['with-language']
+    self.language   = self.framework.argDB['with-language'].upper().replace('+','x').replace('X','x')
     self.precision  = self.framework.argDB['with-precision']
     self.scalartype = self.framework.argDB['with-scalar-type']        
     

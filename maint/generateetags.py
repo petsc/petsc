@@ -42,7 +42,7 @@ def addFileNameTags(filename):
 def processDir(tagfile,dirname,names):
 	newls = []
 	for l in names:
-	  if l.endswith('.c') or l.endswith('.F') or l.endswith('.h') or l == 'makefile':
+	  if l.endswith('.py') or l.endswith('.c') or l.endswith('.F') or l.endswith('.h') or l == 'makefile':
 	    newls.append(l)
         if newls:
           (status,output) = commands.getstatusoutput('cd '+dirname+';etags -a -o '+tagfile+' '+' '.join(newls))
@@ -50,7 +50,9 @@ def processDir(tagfile,dirname,names):
 	    raise RuntimeError("Error running etags "+output)
 	if 'SCCS' in names: del names[names.index('SCCS')]
 	if 'output' in names: del names[names.index('output')]
-	if 'BitKeeper' in names: del names[names.index('BitKeeper')]		
+	if 'BitKeeper' in names: del names[names.index('BitKeeper')]
+	if 'externalpackages' in names: del names[names.index('externalpackages')]
+	if 'bilinear' in names: del names[names.index('bilinear')]				
 	
 def main():
 	try: os.path.unlink('TAGS')

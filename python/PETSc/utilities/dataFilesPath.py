@@ -19,9 +19,6 @@ class Configure(config.base.Configure):
      
   def setupHelp(self, help):
     import nargs
-
-    help.addArgument('PETSc', '-with-default-language=<c,c++,complex,0>', nargs.Arg(None, 'c', 'Specifiy default language of libraries. 0 indicates no default'))
-    help.addArgument('PETSc', '-with-default-optimization=<g,O,0>',       nargs.Arg(None, 'g', 'Specifiy default optimization of libraries. 0 indicates no default'))
     help.addArgument('PETSc', '-DATAFILESPATH=directory',                 nargs.Arg(None, None, 'Specifiy location of PETSc datafiles, e.g. test matrices'))    
     return
 

@@ -945,7 +945,7 @@ EXTERN PetscErrorCode PetscDLLibraryGetInfo(void*,const char[],const char *[]);
     Mechanism for translating PETSc object representations between languages
     Not currently used.
 */
-typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
+typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CXX} PetscLanguage;
 #define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
 EXTERN PetscErrorCode PetscObjectComposeLanguage(PetscObject,PetscLanguage,void *);
 EXTERN PetscErrorCode PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);

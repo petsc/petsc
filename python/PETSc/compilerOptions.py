@@ -83,9 +83,9 @@ class compilerOptions(config.base.Configure):
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
         flags.append('-Wall')
-      elif bopt in ['g', 'g_complex']:
+      elif bopt in ['g']:
         flags.append('-g3')
-      elif bopt in ['O', 'O_complex']:
+      elif bopt in ['O']:
         if os.environ.has_key('USER'):
           if os.environ['USER'] in ['barrysmith', 'bsmith', 'knepley', 'buschelm', 'kris', 'petsc', 'balay','hzhang']:
             flags.extend(['-Wshadow', '-Wwrite-strings', '-Wno-strict-aliasing'])
@@ -94,7 +94,7 @@ class compilerOptions(config.base.Configure):
     elif re.match(r'alphaev[0-9]', self.framework.host_cpu):
       # Compaq C++
       if compiler == 'cxx':
-        if bopt in ['O', 'O_complex']:
+        if bopt in ['O']:
           flags.append('-O2')
     # MIPS
     elif re.match(r'mips', self.framework.host_cpu):
@@ -102,9 +102,9 @@ class compilerOptions(config.base.Configure):
       if compiler == 'cc':
         if bopt == '':
           flags.extend(['-woff 1164', '-woff 1552', '-woff 1174'])
-        elif bopt in ['g', 'g_complex']:
+        elif bopt in ['g']:
           flags.append('-g')
-        elif bopt in ['O', 'O_complex']:
+        elif bopt in ['O']:
           flags.extend(['-O2', '-OPT:Olimit=6500'])
     # Intel
     elif re.match(r'i[3-9]86', self.framework.host_cpu):
@@ -118,9 +118,9 @@ class compilerOptions(config.base.Configure):
       elif compiler.find('win32fe icl') >= 0:
         if bopt == '':
           flags.append('-MT -GX -GR')
-        elif bopt in ['g', 'g_complex']:
+        elif bopt in ['g']:
           flags.append('-Z7')
-        elif bopt in ['O', 'O_complex']:
+        elif bopt in ['O']:
           flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
@@ -140,9 +140,9 @@ class compilerOptions(config.base.Configure):
           flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
     # Generic
     if not len(flags):
-      if bopt in ['g', 'g_complex']:
+      if bopt in ['g']:
         flags.append('-g')
-      elif bopt in ['O', 'O_complex']:
+      elif bopt in ['O']:
         flags.append('-O')
     return flags
 
@@ -212,7 +212,7 @@ class compilerOptions(config.base.Configure):
       flags = self.getCFlags(compiler, bopt)
     elif language == 'Cxx':
       flags = self.getCxxFlags(compiler, bopt)
-    elif language in ['Fortran', 'F77']:
+    elif language in ['Fortran', 'FC']:
       flags = self.getFortranFlags(compiler, bopt)
     return flags
 
@@ -239,7 +239,7 @@ class compilerOptions(config.base.Configure):
           flags = compiler+' -version'
         else:
           flags = compiler+' --version'
-      elif language in ['Fortran', 'F77']:
+      elif language in ['Fortran', 'FC']:
         if compiler.endswith('xlf') or compiler.endswith('xlf90'):
           flags = "lslpp -L xlfcmp | grep xlfcmp | awk '{print $2}'"
         elif re.match(r'alphaev[0-9]', self.framework.host_cpu) and compiler.endswith('fort'):

@@ -227,7 +227,7 @@ class Configure(config.base.Configure):
   def downLoadBlasLapack(self,f2c,l):
     self.framework.log.write('Downloading '+l+'blaslapack\n')
 
-    packages = os.path.join(self.framework.argDB['PETSC_DIR'],'packages')
+    packages = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
       os.mkdir(packages)
 
@@ -237,18 +237,18 @@ class Configure(config.base.Configure):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
       try:
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/'+f2c+'blaslapack.tar.gz',os.path.join('packages',f2c+'blaslapack.tar.gz'))
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/'+f2c+'blaslapack.tar.gz',os.path.join(packages,f2c+'blaslapack.tar.gz'))
       except:
         raise RuntimeError('Error downloading '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
-        config.base.Configure.executeShellCommand('cd packages; gunzip '+f2c+'blaslapack.tar.gz', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip '+f2c+'blaslapack.tar.gz', log = self.framework.log)
       except:
         raise RuntimeError('Error unzipping '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
-        config.base.Configure.executeShellCommand('cd packages; tar -xf '+f2c+'blaslapack.tar', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf '+f2c+'blaslapack.tar', log = self.framework.log)
       except:
         raise RuntimeError('Error doing tar -xf '+f2c+'blaslapack.tar requested with -with-'+l+'-blas-lapack option')
-      os.unlink(os.path.join('packages',f2c+'blaslapack.tar'))
+      os.unlink(os.path.join(packages,f2c+'blaslapack.tar'))
       self.framework.actions.addArgument('BLAS/LAPACK', 'Download', 'Downloaded PETSc '+f2c+'blaslapack into '+os.path.dirname(libdir))
     else:
       self.framework.log.write('Found '+l+'blaslapack, do not need to download\n')
@@ -361,7 +361,7 @@ class Configure(config.base.Configure):
     # if yes, then force IBM Fortran to add _ for subroutine names
     # so cab access BLAS/LAPACK from Fortran
     if name.find('MacOSX') >= 0 and 'FC' in self.framework.argDB:
-      self.setcompilers.pushLanguage('F77')
+      self.setcompilers.pushLanguage('FC')
       if self.setcompilers.getCompiler().find('xlf') >= 0 or self.setcompilers.getCompiler().find('xlF') >= 0:
         # should check if compiler is already using underscore and that -qextname works 
         self.compilers.fortranMangling = 'underscore'

@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
 
   def getDir(self):
     '''Find the directory containing Sowing'''
-    packages  = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+    packages  = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
@@ -35,18 +35,18 @@ class Configure(config.base.Configure):
     except RuntimeError:
       import urllib
 
-      packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+      packages = self.framework.argDB['with-external-packages-dir']
       self.framework.log.write('Need to actually ftp Sowing\n')
       try:
         urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz', os.path.join(packages, 'sowing.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading Sowing: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd packages; gunzip sowing.tar.gz', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip sowing.tar.gz', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error unzipping sowing.tar.gz: '+str(e))
       try:
-        config.base.Configure.executeShellCommand('cd packages ;tar -xf sowing.tar', log = self.framework.log)
+        config.base.Configure.executeShellCommand('cd '+packages+' ;tar -xf sowing.tar', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error doing tar -xf sowing.tar: '+str(e))
       os.unlink(os.path.join(packages,'sowing.tar'))
@@ -101,35 +101,24 @@ class Configure(config.base.Configure):
     '''Determine whether the Sowing exist or not'''
     if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
       self.framework.log.write('BitKeeper clone of PETSc, checking for Sowing\n')
-      self.framework.getExecutable('bfort', getFullPath = 1)
-      self.framework.getExecutable('doctext', getFullPath = 1)
-      self.framework.getExecutable('mapnames', getFullPath = 1)
-      self.framework.getExecutable('bib2html', getFullPath = 1)            
-      if hasattr(self.framework, 'bfort'):
-        self.bfort    = self.framework.bfort
-        self.doctext  = self.framework.doctext
-        self.mapnames = self.framework.mapnames
-        if hasattr(self.framework,'bib2html'):
-          self.bib2html = self.framework.bib2html
-        else:
-          self.bib2html = 'NotFound'
-      else:
+      self.getExecutable('pdflatex', getFullPath = 1)
+      self.getExecutable('bfort', getFullPath = 1)
+      self.getExecutable('doctext', getFullPath = 1)
+      self.getExecutable('mapnames', getFullPath = 1)
+      self.getExecutable('bib2html', getFullPath = 1)            
+      if not hasattr(self, 'bfort'):
         self.downLoadSowing()
-        
-      if hasattr(self, 'bfort'):
-        self.framework.getExecutable('pdflatex', getFullPath = 1)
-        if hasattr(self.framework, 'pdflatex'):
-          self.pdflatex = self.framework.pdflatex
-        else:
-          self.pdflatex = 'CouldNotFind'
-      else:
-        message = 'See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\nto obtain Sowing\n'
-        self.framework.log.write(message)
-        raise RuntimeError('Could not install Sowing\n'+message)
     else:
       self.framework.log.write("Not BitKeeper clone of PETSc, don't need Sowing\n")
     return
 
   def configure(self):
     self.executeTest(self.configureSowing)
+    if 'FC' in self.framework.argDB:
+      self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
+      try:
+        (output, error, status) = config.base.Configure.executeShellCommand('generatefortranstubs.py '+self.bfort, timeout = 15*60.0, log = self.framework.log)
+        self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs ')
+      except RuntimeError, e:
+        raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
     return

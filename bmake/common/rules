@@ -208,12 +208,6 @@ getmpirun:
 # PETSc users should not generally need to use these commands.
 #
 #
-# Builds Fortran-77 wrappers 
-fortranstubs:
-	@-${BFORT} -dir ${PETSC_DIR}/src/fortran/auto \
-	  -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr -ptrprefix Petsc\
-	  -ptr64 PETSC_USE_POINTER_CONVERSION  -fcaps PETSC_HAVE_FORTRAN_CAPS \
-          -fuscore PETSC_HAVE_FORTRAN_UNDERSCORE ${SOURCEC}
 
 .SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .r .rm .so .html .ad .m .tex .mtex .make
 
@@ -702,32 +696,6 @@ checkTestCoverage:
 	done
 
 #
-# fixfortran target is used in one of the stages of generating the fortran
-# interface stubs - in src/fortran/auto
-#
-
-fixfortran:
-	@echo "Fixing pointers in src/fortran/auto"
-	-@for FILENAME in ${SOURCEC} ; do \
-	  if [ ! -f $$FILENAME ]; then \
-	    echo "Error: file $$FILENAME specified in SOURCEC does not exist."; \
-	  else \
-	    cat $$FILENAME | \
-	    sed "s/__ierr/ierr/g" | \
-	    sed "s/^void /void PETSC_STDCALL /" | \
-	    sed "s/^PetscErrorCode /void PETSC_STDCALL /" | \
-	    sed "s/PetscToPointer(int)/PetscToPointer(void*)/" | \
-	    sed "s/PetscRmPointer(int)/PetscRmPointer(void*)/" | \
-	    sed "s/PetscToPointer(a) (a)/PetscToPointer(a) (*(long *)(a))/" | \
-	    sed "s/PetscFromPointer(a) (int)(a)/PetscFromPointer(a) (long)(a)/" | \
-	    sed "s/PetscToPointer( \*(int\*)/PetscToPointer( /" | \
-	    sed "s/MPI_Comm comm/MPI_Comm *comm/" | \
-	    sed "s/(MPI_Comm)PetscToPointer( (comm) )/(MPI_Comm)MPI_Comm_f2c(*(MPI_Fint*)(comm))/" | \
-	    sed "s/(PetscInt\* )PetscToPointer//" | \
-	    sed -f ${PETSC_DIR}/bmake/common/sedcmdforfortranstubs > _$$FILENAME; \
-	    /bin/mv _$$FILENAME $$FILENAME ;\
-	  fi; \
-	done
 
 citool:
 	-@bk citool
@@ -750,17 +718,10 @@ update:
           echo "Using BK to update source code" ; \
           ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} BOPT=g pull ;\
           echo " ";\
-          echo "You may need to run ** make allfortranstubs ** to update the Fortran interfaces";\
+          echo "You may need to run ** make alletags allfortranstubs ** to update the Fortran interfaces";\
           echo " ";\
         else \
-          which python > /dev/null 2>&1;  \
-          if [ "$$?" != "0" ]; then \
-            echo "Automatic update requires Python in your path";\
-            echo "See http://www.mcs.anl.gov/petsc/petsc-2/download/petsc-patches.html";\
-          else \
-            echo "Using patch to update source code" ;  \
-	    ${PETSC_DIR}/bin/update.py ${UPDATE_OPTIONS};\
-          fi;\
+          echo "Automatic update requires BitKeeper";\
         fi
 
 

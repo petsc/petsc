@@ -15,7 +15,7 @@ class Configure(config.base.Configure):
 
   def getDir(self):
     '''Find the directory containing lgrind'''
-    packages  = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+    packages  = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
       os.mkdir(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
@@ -35,10 +35,10 @@ class Configure(config.base.Configure):
     except RuntimeError:
       import urllib
 
-      packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
+      packages = self.framework.argDB['with-external-packages-dir']
       try:
-        self.framework.log.write('Downloading it using "bk clone bk://petsc.bkbits.net/lgrind-dev $PETSC_DIR/packages/lgrind-dev"''\n')
-        (status,output) = commands.getstatusoutput('bk clone bk://petsc.bkbits.net/lgrind-dev packages/lgrind-dev')
+        self.framework.log.write('Downloading it using "bk clone bk://petsc.bkbits.net/lgrind-dev '+os.path.join(packages,'lgrind-dev')+'"\n')
+        (status,output) = commands.getstatusoutput('bk clone bk://petsc.bkbits.net/lgrind-dev '+os.path.join(packages,'lgrind-dev'))
         if status:
           if output.find('ommand not found') >= 0:
             print '''******** Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path'''
