@@ -300,6 +300,7 @@ extern int    getpagesize();
 #if defined(__cplusplus)
 extern "C" {
 #include <sys/time.h>
+#include <unistd.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
@@ -308,6 +309,7 @@ extern int    getdomainname(char *,int);
 
 #else
 #include <sys/time.h>
+#include <unistd.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
