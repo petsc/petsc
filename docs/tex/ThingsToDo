@@ -7,6 +7,7 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - seperate KSPSetFromOptions and KSPPrintHelp()
 
   -  a basic member function like viewpublic and destroypublic for object validation
 
@@ -33,14 +34,10 @@ Meta priorities:
   - add support for periodic boundary conditions to DAGetColoring(), not as
     hard as it seems. See the 1d version for how to do it.
 
-  - convert Troubleshooting, Installation, FAQ, Changes etc to HTML.
-
   - Write a program in benchmarks that determines how much memory can be
     malloced on a machine and how much memory you can use before it 
     starts disk thrashing.
 
-  - Where to put material that's currently in the file petsc/MatrixBlocking?
-    Users manual?
 
   - Reduce executable sizes 
 
@@ -88,8 +85,6 @@ Meta priorities:
   - Convert DACreateXd() to use ISCreateBlock() when block size is bigger then
     1.
 
-  - Add OptionsGetStringArray().
-
   - Decide what to do about MAT_NEW_NONZERO_ALLOCATION_ERROR; then update
     manpage and Changes file and parallel macros for MatSetValues().
 
@@ -105,9 +100,6 @@ Meta priorities:
     PETSc solvers for matrices stored in files; see src/mat/examples/tests/ex32.c
     and src/sles/examples/tutorials/ex10.c and talk about partitioning 
     the matrix as well for parallel performance gains.
-
-  - Decide how to handle searches for WWW stuff (edit docs/www/www.html to
-    either fix or remove link to searching for basic distribution).
 
   - Change tutorials examples on web page to use MatSetValuesLocal()
 
@@ -148,7 +140,6 @@ Lois - Add table of all preconditioners and options to PETSc manual.
 
   - Currently no support for MatGetSubMatrices_SeqBDIAG()  MAT_SAME_NON_ZERO_STRUCTURE. (Satish)
 
-
   - Have PETSc put some header information in front of -log and -log_all files indicating
     how PETSc generated, where and on what code
 
@@ -180,8 +171,6 @@ Satish  - Aim for more exhaustive PETSc testing.  Use tconv Unix utilities
 
 Barry  * get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
 
-  - compile with PETSC_DEBUG turned off and fix all places in code that 
-    generate warning messages.
 
 Lois  - Thorougly test PetscRandomSetInterval().
 
@@ -937,3 +926,13 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
  X Add fortran interface for Vec/MatSetValue()
 
   X make VecGetLocalRepresentation() work for Seq vectors
+
+  X convert Troubleshooting, Installation, FAQ, Changes etc to HTML.
+
+  X Where to put material that's currently in the file petsc/MatrixBlocking?
+    Users manual?
+
+  X Add OptionsGetStringArray().
+
+  X compile with PETSC_DEBUG turned off and fix all places in code that 
+    generate warning messages.
