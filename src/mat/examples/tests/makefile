@@ -22,7 +22,7 @@ EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                 ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
                 ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
                 ex34.c ex35.c
-EXAMPLESF     = ex36.c
+EXAMPLESF     = ex36.F
 EXAMPLES_3    = ex36
 RUNEXAMPLES_3 = runex36
 
