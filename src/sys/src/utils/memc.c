@@ -69,8 +69,9 @@ int PetscMemcpy(void *a,const void *b,int n)
   if (a != b) {
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
     if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
-      SETERRQ(PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
-              or make sure your copy regions and lengths are correct");
+      SETERRQ3(PETSC_ERR_ARG_INCOMP,"Memory regions overlap: either use PetscMemmov()\n\
+              or make sure your copy regions and lengths are correct. \n\
+              Length (bytes) %ld first address %ld second address %ld",nl,al,bl);
     }
 #endif
 #if (defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) || defined(PETSC_PREFER_COPY_FOR_MEMCPY) || defined(PETSC_PREFER_FORTRAN_FORMEMCPY))
