@@ -317,14 +317,10 @@ EXTERN PetscInt       PETSC_DLLEXPORT globalmaxstate;
 
    Level: developer
 M*/
-#define PetscObjectComposedDataSetInt(obj,id,data)                  \
-0; {PetscErrorCode ierr_;                                                       \
-  if ((obj)->int_idmax < globalmaxstate) {                            \
-    ierr_ = PetscObjectComposedDataIncreaseInt(obj); CHKERRQ(ierr_);  \
-  }                                                                   \
-  (obj)->intcomposeddata[id] = data;                                  \
-  (obj)->intcomposedstate[id] = (obj)->state;                         \
-}
+#define PetscObjectComposedDataSetInt(obj,id,data)                                      \
+  ((((obj)->int_idmax < globalmaxstate) ? PetscObjectComposedDataIncreaseInt(obj) : 0), \
+   (obj)->intcomposeddata[id] = data,(obj)->intcomposedstate[id] = (obj)->state, 0)
+
 /*MC
    PetscObjectComposedDataGetInt - retrieve integer data attached to an object
 
@@ -350,17 +346,9 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectComposedDataGetInt(obj,id,data,flag)              \
-0; {                                                                 \
-  if ((obj)->intcomposedstate) {                                     \
-    if ((obj)->intcomposedstate[id] == (obj)->state) {               \
-      data = (obj)->intcomposeddata[id];                             \
-      flag = PETSC_TRUE;                                             \
-    } else {                                                         \
-      flag = PETSC_FALSE;                                            \
-    }                                                                \
-  } else flag = PETSC_FALSE;                                         \
-}
+#define PetscObjectComposedDataGetInt(obj,id,data,flag)                            \
+  ((((obj)->intcomposedstate && ((obj)->intcomposedstate[id] == (obj)->state)) ?   \
+   (data = (obj)->intcomposeddata[id],flag = PETSC_TRUE) : (flag = PETSC_FALSE)),0)
 
 /*MC
    PetscObjectComposedDataSetIntstar - attach integer array data to a PetscObject
@@ -382,14 +370,10 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectComposedDataSetIntstar(obj,id,data)                    \
-0; {PetscErrorCode ierr_;                                                            \
-  if ((obj)->intstar_idmax < globalmaxstate) {                            \
-    ierr_ = PetscObjectComposedDataIncreaseIntstar(obj); CHKERRQ(ierr_);  \
-  }                                                                       \
-  (obj)->intstarcomposeddata[id] = data;                                  \
-  (obj)->intstarcomposedstate[id] = (obj)->state;                         \
-}
+#define PetscObjectComposedDataSetIntstar(obj,id,data)                                          \
+  ((((obj)->intstar_idmax < globalmaxstate) ? PetscObjectComposedDataIncreaseIntstar(obj) : 0), \
+  (obj)->intstarcomposeddata[id] = data,(obj)->intstarcomposedstate[id] = (obj)->state, 0)
+
 /*MC
    PetscObjectComposedDataGetIntstar - retrieve integer array data 
    attached to an object
@@ -416,17 +400,9 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectComposedDataGetIntstar(obj,id,data,flag)              \
-0; {                                                                     \
-  if ((obj)->intstarcomposedstate) {                                     \
-    if ((obj)->intstarcomposedstate[id] == (obj)->state) {               \
-      data = (obj)->intstarcomposeddata[id];                             \
-      flag = PETSC_TRUE;                                                 \
-    } else {                                                             \
-      flag = PETSC_FALSE;                                                \
-    }                                                                    \
-  } else flag = PETSC_FALSE;                                             \
-}
+#define PetscObjectComposedDataGetIntstar(obj,id,data,flag)                               \
+  ((((obj)->intstarcomposedstate && ((obj)->intstarcomposedstate[id] == (obj)->state)) ?  \
+   (data = (obj)->intstarcomposeddata[id],flag = PETSC_TRUE) : (flag = PETSC_FALSE)),0)
 
 /*MC
    PetscObjectComposedDataSetReal - attach real data to a PetscObject
@@ -448,14 +424,10 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectComposedDataSetReal(obj,id,data)                  \
-0; {PetscErrorCode ierr_;                                                       \
-  if ((obj)->real_idmax < globalmaxstate) {                          \
-    ierr_ = PetscObjectComposedDataIncreaseReal(obj); CHKERRQ(ierr_); \
-  }                                                                  \
-  (obj)->realcomposeddata[id] = data;                                \
-  (obj)->realcomposedstate[id] = (obj)->state;                       \
-}
+#define PetscObjectComposedDataSetReal(obj,id,data)                                       \
+  ((((obj)->real_idmax < globalmaxstate) ? PetscObjectComposedDataIncreaseReal(obj) : 0), \
+   (obj)->realcomposeddata[id] = data,(obj)->realcomposedstate[id] = (obj)->state, 0)
+
 /*MC
    PetscObjectGetRealComposedData - retrieve real data attached to an object
 
@@ -481,19 +453,9 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectGetRealComposedData(obj,id,data,flag)             \
-0; {                                                                 \
-  if ((obj)->realcomposedstate) {                                    \
-    if ((obj)->realcomposedstate[id] == (obj)->state) {              \
-      data = (obj)->realcomposeddata[id];                            \
-      flag = PETSC_TRUE;                                             \
-    } else {                                                         \
-      flag = PETSC_FALSE;                                            \
-    }                                                                \
-  } else {                                                           \
-    flag = PETSC_FALSE;                                              \
-  }                                                                  \
-}
+#define PetscObjectGetRealComposedData(obj,id,data,flag)                            \
+  ((((obj)->realcomposedstate && ((obj)->realcomposedstate[id] == (obj)->state)) ?  \
+   (data = (obj)->realcomposeddata[id],flag = PETSC_TRUE) : (flag = PETSC_FALSE)),0)
 
 /*MC
    PetscObjectSetRealstarComposedData - attach real array data to a PetscObject
@@ -515,14 +477,10 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectSetRealstarComposedData(obj,id,data)                  \
-0; {PetscErrorCode ierr_;                                                       \
-  if ((obj)->realstar_idmax < globalmaxstate) {                          \
-    ierr_ = PetscObjectComposedDataIncreaseRealstar(obj); CHKERRQ(ierr_); \
-  }                                                                  \
-  (obj)->realstarcomposeddata[id] = data;                                \
-  (obj)->realstarcomposedstate[id] = (obj)->state;                       \
-}
+#define PetscObjectSetRealstarComposedData(obj,id,data)                                           \
+  ((((obj)->realstar_idmax < globalmaxstate) ? PetscObjectComposedDataIncreaseRealstar(obj) : 0), \
+  (obj)->realstarcomposeddata[id] = data, (obj)->realstarcomposedstate[id] = (obj)->state, 0)
+
 /*MC
    PetscObjectGetRealstarComposedData - retrieve real array data
    attached to an object
@@ -549,19 +507,9 @@ M*/
 
    Level: developer
 M*/
-#define PetscObjectGetRealstarComposedData(obj,id,data,flag)        \
-0; {                                                                \
-  if ((obj)->realstarcomposedstate) {                               \
-    if ((obj)->realstarcomposedstate[id] == (obj)->state) {         \
-      data = (obj)->realstarcomposeddata[id];                       \
-      flag = PETSC_TRUE;                                            \
-    } else {                                                        \
-      flag = PETSC_FALSE;                                           \
-    }                                                               \
-  } else {                                                          \
-    flag = PETSC_FALSE;                                             \
-  }                                                                 \
-}
+#define PetscObjectGetRealstarComposedData(obj,id,data,flag)                                \
+  ((((obj)->realstarcomposedstate && ((obj)->realstarcomposedstate[id] == (obj)->state)) ?  \
+   (data = (obj)->realstarcomposeddata[id],flag = PETSC_TRUE) : (flag = PETSC_FALSE)),0)
 
 /*MC
    PetscObjectSetScalarComposedData - attach scalar data to a PetscObject 
@@ -584,14 +532,9 @@ M*/
    Level: developer
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectSetScalarComposedData(obj,id,data)                 \
-0; {PetscErrorCode ierr_;                                                        \
-  if ((obj)->scalar_idmax < globalmaxstate) {                         \
-    ierr_ = PetscObjectComposedDataIncreaseScalar(obj); CHKERRQ(ierr_);\
-  }                                                                   \
-  (obj)->scalarcomposeddata[id] = data;                               \
-  (obj)->scalarcomposedstate[id] = (obj)->state;                      \
-}
+#define PetscObjectSetScalarComposedData(obj,id,data)                                        \
+  ((((obj)->scalar_idmax < globalmaxstate) ? PetscObjectComposedDataIncreaseScalar(obj) : 0) \
+  (obj)->scalarcomposeddata[id] = data,(obj)->scalarcomposedstate[id] = (obj)->state, 0)
 #else
 #define PetscObjectSetScalarComposedData(obj,id,data) \
         PetscObjectComposedDataSetReal(obj,id,data)
@@ -622,19 +565,11 @@ M*/
    Level: developer
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectComposedDataGetScalar(obj,id,data,flag)           \
-0; {                                                                 \
-  if ((obj)->scalarcomposedstate) {				     \
-    if ((obj)->scalarcomposedstate[id] == (obj)->state) {            \
-      data = (obj)->scalarcomposeddata[id];                          \
-      flag = PETSC_TRUE;                                             \
-    } else {                                                         \
-      flag = PETSC_FALSE;                                            \
-    }                                                                \
-  } else flag = PETSC_FALSE;                                         \
-}
+#define PetscObjectComposedDataGetScalar(obj,id,data,flag)                              \
+  ((((obj)->scalarcomposedstate && ((obj)->scalarcomposedstate[id] == (obj)->state) ) ? \
+   (data = (obj)->scalarcomposeddata[id],flag = PETSC_TRUE) : (flag = PETSC_FALSE)),0)
 #else
-#define PetscObjectComposedDataGetScalar(obj,id,data,flag)	     \
+#define PetscObjectComposedDataGetScalar(obj,id,data,flag)                             \
         PetscObjectGetRealComposedData(obj,id,data,flag)
 #endif
 
@@ -659,14 +594,9 @@ M*/
    Level: developer
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectComposedDataSetScalarstar(obj,id,data)                   \
-0; {PetscErrorCode ierr_;                                                              \
-  if ((obj)->scalarstar_idmax < globalmaxstate) {                           \
-    ierr_ = PetscObjectComposedDataIncreaseScalarstar(obj); CHKERRQ(ierr_); \
-  }                                                                         \
-  (obj)->scalarstarcomposeddata[id] = data;                                 \
-  (obj)->scalarstarcomposedstate[id] = (obj)->state;                        \
-}
+#define PetscObjectComposedDataSetScalarstar(obj,id,data)                                             \
+  ((((obj)->scalarstar_idmax < globalmaxstate) ? PetscObjectComposedDataIncreaseScalarstar(obj) : 0), \
+   (obj)->scalarstarcomposeddata[id] = data,(obj)->scalarstarcomposedstate[id] = (obj)->state, 0)
 #else
 #define PetscObjectComposedDataSetScalarstar(obj,id,data) \
         PetscObjectSetRealstarComposedData(obj,id,data)
@@ -698,17 +628,9 @@ M*/
    Level: developer
 M*/
 #if defined(PETSC_USE_COMPLEX)
-#define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)           \
-0; {                                                                     \
-  if ((obj)->scalarstarcomposedstate) {                                  \
-    if ((obj)->scalarstarcomposedstate[id] == (obj)->state) {            \
-      data = (obj)->scalarstarcomposeddata[id];                          \
-      flag = PETSC_TRUE;                                                 \
-    } else {                                                             \
-      flag = PETSC_FALSE;                                                \
-    }                                                                    \
-  } else flag = PETSC_FALSE;                                             \
-}
+#define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)                                 \
+  ((((obj)->scalarstarcomposedstate && ((obj)->scalarstarcomposedstate[id] == (obj)->state)) ? \
+       (data = (obj)->scalarstarcomposeddata[id],flag = PETSC_TRUE) : (flag = PETSC_FALSE)),0)
 #else
 #define PetscObjectComposedDataGetScalarstar(obj,id,data,flag)	         \
         PetscObjectGetRealstarComposedData(obj,id,data,flag)
