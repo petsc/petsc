@@ -72,7 +72,7 @@ struct _KSP {
 */
 
 #define CONVERGED(itP,rn,it) (cerr=(*itP->converged)(itP,it,rn,itP->cnvP))
-#define RCONV(itP,it)           ((cerr>0)?it:-it)
+#define RCONV(itP,it)           ((cerr>0)?(it):-(it))
 
 #define MONITOR(itP,rnorm,it) if (itP->usr_monitor) { \
                                 (*itP->usr_monitor)(itP,it,rnorm,itP->monP);\
