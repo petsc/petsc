@@ -46,7 +46,7 @@ class Defaults:
       return 0
     return 1
 
-  def isServer(self, source):
+  def isServer(self, source, root):
     # The best we can do is exclude the skels and impls from Babel, but IORs and internal clients are still there
     if self.serverRE.match(os.path.dirname(source)):
       return 0

@@ -45,7 +45,7 @@ class Defaults:
       return 1
     return 0
 
-  def isServer(self, source):
+  def isServer(self, source, root):
     # The best we can do is exclude the IORs, skels and impls from Scandal, but internal clients are still there
     if self.serverRE.match(os.path.dirname(source)):
       return 0
