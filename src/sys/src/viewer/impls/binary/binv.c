@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.77 1999/11/24 21:52:42 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.78 2000/01/11 20:58:58 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -104,6 +104,7 @@ int ViewerDestroy_Binary(Viewer v)
       if (fgets(buf,1024,fp)) {
         SETERRQ2(1,1,"Error from command %s\n%s",par,buf);
       }
+      ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
     }
   }
   if (vbinary->fdes_info) fclose(vbinary->fdes_info);
@@ -306,10 +307,13 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
     if (type == BINARY_RDONLY){
       /* possibly get the file from remote site or compressed file */
       ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,1024,&found);CHKERRQ(ierr);
-      if (!found) {
-        SETERRQ1(1,1,"Cannot locate file: %s",vbinary->filename);
-      }
       fname = bname;
+      if (!rank && !found) {
+        SETERRQ1(1,1,"Cannot locate file: %s on node zero",vbinary->filename);
+      } else if (!found) {
+        PLogInfo(viewer,"Nonzero processor did not locate readonly file");
+        fname = 0;
+      }
     } else {
       fname = vbinary->filename;
     }
@@ -319,7 +323,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
       if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file %s for writing",fname);
       }
-    } else if (type == BINARY_RDONLY) {
+    } else if (type == BINARY_RDONLY && fname) {
       if ((vbinary->fdes = open(fname,O_RDONLY|O_BINARY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file %s for reading",fname);
       }
@@ -333,7 +337,7 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
       if ((vbinary->fdes = creat(fname,0666)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot create file %s for writing",fname);
       }
-    } else if (type == BINARY_RDONLY) {
+    } else if (type == BINARY_RDONLY && fname) {
       if ((vbinary->fdes = open(fname,O_RDONLY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file %s for reading",fname);
       }
