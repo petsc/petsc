@@ -1,8 +1,9 @@
-# $Id: base_variables,v 1.16 1999/11/24 22:04:39 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.17 2000/01/11 20:57:57 bsmith Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
 AR		   = ar
+AR_FLAGS           = cr
 RM		   = rm -f
 OMAKE		   = make
 RANLIB		   = true
@@ -70,7 +71,7 @@ OCOMP_PETSCFLAGS   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_O \
 #   PETSc installers should very rarely ever need to edit anything below this 
 #
 ##################################################################################
-
+NEEDED_A_LIBS      = -lm
 PARCH		   = solaris
 
 
