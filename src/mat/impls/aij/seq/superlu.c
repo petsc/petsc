@@ -35,8 +35,7 @@ extern int MatDestroy_SeqAIJ(Mat);
 #define __FUNCT__ "MatDestroy_SeqAIJ_SuperLU"
 int MatDestroy_SeqAIJ_SuperLU(Mat A)
 {
-  Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)a->spptr;
+  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
   int                ierr;
 
   PetscFunctionBegin;
@@ -61,8 +60,7 @@ int MatDestroy_SeqAIJ_SuperLU(Mat A)
 #define __FUNCT__ "MatCreateNull_SeqAIJ_SuperLU"
 int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
 {
-  Mat_SeqAIJ         *a       = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)a->spptr;
+  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
   int                 numRows = A->m;
   int                 numCols = A->n;
   SCformat           *Lstore;
@@ -121,11 +119,10 @@ int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
 #define __FUNCT__ "MatSolve_SeqAIJ_SuperLU"
 int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 {
-  Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)a->spptr;
-  PetscScalar             *array;
-  int                 m;
-  int                 ierr;
+  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
+  PetscScalar        *array;
+  int                m;
+  int                ierr;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
@@ -152,9 +149,8 @@ int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
 int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  Mat_SeqAIJ         *b;
   Mat                 B;
-  Mat_SeqAIJ_SuperLU *lu;
+  Mat_SeqAIJ_SuperLU  *lu;
   int                 ierr,*ca;
 
   PetscFunctionBegin;
@@ -163,9 +159,9 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   B->ops->solve   = MatSolve_SeqAIJ_SuperLU;
   B->ops->destroy = MatDestroy_SeqAIJ_SuperLU;
   B->factor       = FACTOR_LU;
-  b               = (Mat_SeqAIJ*)B->data;
+  
   ierr            = PetscNew(Mat_SeqAIJ_SuperLU,&lu);CHKERRQ(ierr);
-  b->spptr        = (void*)lu;
+  B->spptr        = (void*)lu;
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatCreateNull","MatCreateNull_SeqAIJ_SuperLU",
                                     (void(*)(void))MatCreateNull_SeqAIJ_SuperLU);CHKERRQ(ierr);
 
@@ -190,9 +186,8 @@ int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_SuperLU"
 int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 {
-  Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)(*F)->data;
   Mat_SeqAIJ         *aa = (Mat_SeqAIJ*)(A)->data;
-  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)a->spptr;
+  Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)(*F)->spptr;
   NCformat           *store;
   int                *etree,i,ierr;
 

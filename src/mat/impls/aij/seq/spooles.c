@@ -34,8 +34,7 @@ extern int MatDestroy_SeqAIJ(Mat);
 #define __FUNCT__ "MatDestroy_SeqAIJ_Spooles"
 int MatDestroy_SeqAIJ_Spooles(Mat A)
 {
-  Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data; 
-  Mat_SeqAIJ_Spooles *lu = (Mat_SeqAIJ_Spooles*)a->spptr; 
+  Mat_SeqAIJ_Spooles *lu = (Mat_SeqAIJ_Spooles*)A->spptr; 
   int                ierr;
   
   PetscFunctionBegin;
@@ -59,8 +58,7 @@ int MatDestroy_SeqAIJ_Spooles(Mat A)
 #define __FUNCT__ "MatSolve_SeqAIJ_Spooles"
 int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
 {
-  Mat_SeqAIJ              *aa = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ_Spooles      *lu = (Mat_SeqAIJ_Spooles*)aa->spptr;
+  Mat_SeqAIJ_Spooles      *lu = (Mat_SeqAIJ_Spooles*)A->spptr;
   int                     ierr;
   PetscScalar             *array;
   DenseMtx                *mtxY, *mtxX ;
@@ -108,8 +106,8 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Spooles"
 int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
 {
-  Mat_SeqAIJ         *fac = (Mat_SeqAIJ*)(*F)->data, *mat = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ_Spooles *lu = (Mat_SeqAIJ_Spooles*)fac->spptr;
+  Mat_SeqAIJ         *mat = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ_Spooles *lu = (Mat_SeqAIJ_Spooles*)(*F)->spptr;
   ChvManager         *chvmanager  ;
   FrontMtx           *frontmtx ; 
   int                stats[20],error,pivotingflag=1,nz,m=A->m,irow,count;
@@ -189,7 +187,7 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Spooles"
 int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  Mat_SeqAIJ           *fac,*mat = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ           *mat = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_Spooles   *lu;   
   int                  ierr,m=A->m,n=A->n;
   FILE                 *msgFile ;
@@ -202,6 +200,7 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 
   PetscFunctionBegin;	
   printf(" Symbolic_SeqAIJ_Spooles is called ...\n"); 
+  ierr                        = PetscNew(Mat_SeqAIJ_Spooles,&lu);CHKERRQ(ierr); 
 
   /* Create the factorization matrix F */  
   ierr = MatCreateSeqAIJ(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
@@ -210,10 +209,7 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   (*F)->ops->solve            = MatSolve_SeqAIJ_Spooles;
   (*F)->ops->destroy          = MatDestroy_SeqAIJ_Spooles;  
   (*F)->factor                = FACTOR_LU;  
-  fac                         = (Mat_SeqAIJ*)(*F)->data; 
-
-  ierr                        = PetscNew(Mat_SeqAIJ_Spooles,&lu);CHKERRQ(ierr); 
-  fac->spptr                  = (void*)lu;
+  (*F)->spptr                 = (void*)lu;
 
   /* get input parameters */
   lu->symmetryflag = 2; /* 0: symmetric entries, 1: Hermitian entries, 2: non-symmetric entries -- 
@@ -319,7 +315,6 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
     fprintf(lu->msgFile, "\n\n symbolic factorization") ;
     IVL_writeForHumanEye(lu->symbfacIVL, lu->msgFile) ;
     fflush(lu->msgFile) ;
-    /* Tree_writeToFile(lu->frontETree->tree, "haggar.treef") ; */
   }  
   
   PetscFunctionReturn(0); 
@@ -330,7 +325,6 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 int MatUseSpooles_SeqAIJ(Mat A)
 {
   PetscFunctionBegin;
-  /* printf(" MatUseSpooles is called ...\n"); */
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Spooles;
   A->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Spooles;
   PetscFunctionReturn(0);
@@ -340,8 +334,7 @@ int MatUseSpooles_SeqAIJ(Mat A)
 #define __FUNCT__ "MatSeqAIJFactorInfo_Spooles"
 int MatSeqAIJFactorInfo_Spooles(Mat A,PetscViewer viewer)
 {
-  Mat_SeqAIJ              *fac = (Mat_SeqAIJ*)(A)->data;
-  Mat_SeqAIJ_Spooles      *lu = (Mat_SeqAIJ_Spooles*)fac->spptr;  
+  Mat_SeqAIJ_Spooles      *lu = (Mat_SeqAIJ_Spooles*)A->spptr;  
   int                     ierr;
   
   PetscFunctionBegin;

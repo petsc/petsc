@@ -1494,7 +1494,7 @@ int MatCreate_SeqBAIJ(Mat B)
   b->diag             = 0;
   b->solve_work       = 0;
   b->mult_work        = 0;
-  b->spptr            = 0;
+  B->spptr            = 0;
   B->info.nz_unneeded = (PetscReal)b->maxnz;
   b->keepzeroedrows   = PETSC_FALSE;
 
@@ -1574,7 +1574,7 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->nz                 = a->nz;
   c->maxnz              = a->maxnz;
   c->solve_work         = 0;
-  c->spptr              = 0;     /* Dangerous -I'm throwing away a->spptr */
+  C->spptr              = 0;     /* Dangerous -I'm throwing away a->spptr */
   c->mult_work          = 0;
   C->preallocated       = PETSC_TRUE;
   C->assembled          = PETSC_TRUE;

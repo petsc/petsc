@@ -22,11 +22,14 @@ X11_INCLUDE    =
 X11_LIB        = -L/usr/X11R6/lib -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
-# SuperLU-DIST
+# SuperLU-DIST, SuperLU
 #
 SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
-SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux.a /home/petsc/software/SuperLU/superlu_linux.a
+SUPERLU_INCLUDE        = -I/home/petsc/software/SuperLU/SRC                       
+SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux.a
+SUPERLU_LIB            = /home/petsc/software/SuperLU/superlu_linux.a
 PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
+PETSC_HAVE_SUPERLU     = -DPETSC_HAVE_SUPERLU                      
 #
 # SPOOLES
 #

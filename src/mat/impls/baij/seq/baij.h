@@ -27,7 +27,6 @@ typedef struct {
   MatScalar        *a;           /* nonzero elements */
   IS               row,col,icol; /* index sets, used for reorderings */
   PetscScalar      *solve_work;  /* work space used in MatSolve */
-  void             *spptr;       /* pointer for special library like SuperLU */
   int              reallocs;     /* number of mallocs done during MatSetValues() 
                                     as more values are set then were preallocated */
   PetscScalar      *mult_work;   /* work array for matrix vector product*/

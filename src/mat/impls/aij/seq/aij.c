@@ -2663,7 +2663,7 @@ int MatCreate_SeqAIJ(Mat B)
   b->nonew             = 0;
   b->diag              = 0;
   b->solve_work        = 0;
-  b->spptr             = 0;
+  B->spptr             = 0;
   b->inode.use         = PETSC_TRUE;
   b->inode.node_count  = 0;
   b->inode.size        = 0;
@@ -2788,7 +2788,7 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->nz                 = a->nz;
   c->maxnz              = a->maxnz;
   c->solve_work         = 0;
-  c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
+  C->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
   C->preallocated       = PETSC_TRUE;
 
   *B = C;

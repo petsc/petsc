@@ -183,14 +183,13 @@ typedef struct
 #define __FUNCT__ "MatDestroy_SeqAIJ_LUSOL"
 int MatDestroy_SeqAIJ_LUSOL(Mat A)
 {
-     Mat_SeqAIJ *a;
      Mat_SeqAIJ_LUSOL *lusol;
      int             ierr;
 
      PetscFunctionBegin;
 
      a = (Mat_SeqAIJ *)A->data;
-     lusol = (Mat_SeqAIJ_LUSOL *)a->spptr;
+     lusol = (Mat_SeqAIJ_LUSOL *)A->spptr;
 
      ierr = PetscFree(lusol->ip);CHKERRQ(ierr);
      ierr = PetscFree(lusol->iq);CHKERRQ(ierr);
@@ -216,8 +215,7 @@ int MatDestroy_SeqAIJ_LUSOL(Mat A)
 #define __FUNCT__  "MatSolve_SeqAIJ_LUSOL"
 int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
 {
-     Mat_SeqAIJ_LUSOL *lusol = 
-	  (Mat_SeqAIJ_LUSOL *)((Mat_SeqAIJ*)A->data)->spptr;
+     Mat_SeqAIJ_LUSOL *lusol = (Mat_SeqAIJ_LUSOL *)A->spptr;
      double *bb, *xx;
      int mode = 5;
      int i, m, n, nnz, status, ierr;
@@ -254,7 +252,7 @@ int MatSolve_SeqAIJ_LUSOL(Mat A,Vec b,Vec x)
 int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 {
      Mat_SeqAIJ       *a;
-     Mat_SeqAIJ_LUSOL *lusol = (Mat_SeqAIJ_LUSOL *)((Mat_SeqAIJ *)(*F)->data)->spptr;
+     Mat_SeqAIJ_LUSOL *lusol = (Mat_SeqAIJ_LUSOL *)(*F)->spptr;
      int              m, n, nz, nnz, status;
      int              i, rs, re,ierr;
      int              factorizations;
@@ -413,7 +411,7 @@ int MatLUFactorSymbolic_SeqAIJ_LUSOL(Mat A, IS r, IS c,MatLUInfo *info, Mat *F)
      (*F)->factor = FACTOR_LU;
 
      ierr = PetscNew(Mat_SeqAIJ_LUSOL,&lusol);CHKERRQ(ierr);
-     ((Mat_SeqAIJ *)(*F)->data)->spptr = (void *)lusol;
+     (*F)->spptr = (void *)lusol;
 
      /************************************************************************/
      /* Initialize parameters                                                */

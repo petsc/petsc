@@ -150,28 +150,18 @@ int  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
 #define __FUNCT__ "MatDestroy_MPIBAIJ_DSCPACK"
 int MatDestroy_MPIBAIJ_DSCPACK(Mat A)
 {
-  Mat_MPIBAIJ         *a; 
-  Mat_SeqBAIJ         *a_seq; 
-  Mat_MPIBAIJ_DSC     *lu;  
+  Mat_MPIBAIJ_DSC     *lu=(Mat_MPIBAIJ_DSC*)A->spptr;  
   int                 ierr, size;
     
   PetscFunctionBegin;
-  /* printf(" Destroy is called ...\n"); */
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
  
-  if ( size == 1){
-    a_seq = (Mat_SeqBAIJ*)(A)->data;  
-    lu = (Mat_MPIBAIJ_DSC*)a_seq->spptr;   
-  } else {
-    a  = (Mat_MPIBAIJ*)(A)->data;  
-    lu = (Mat_MPIBAIJ_DSC*)a->spptr; 
-  }
-
+  /*
   if (lu->rank == -1) {
       PetscPrintf(PETSC_COMM_SELF," lu->rank = -1\n");
       PetscFunctionReturn(0);
   }
-
+  */
   /* Deallocate DSCPACK storage */   
   DSC_DoStats(lu->My_DSC_Solver);    
   DSC_FreeAll(lu->My_DSC_Solver);           
@@ -197,35 +187,25 @@ int MatDestroy_MPIBAIJ_DSCPACK(Mat A)
 #define __FUNCT__ "MatSolve_MPIBAIJ_DSCPACK"
 int MatSolve_MPIBAIJ_DSCPACK(Mat A,Vec b_mpi,Vec x)
 {
-  Mat_MPIBAIJ       *a;
-  Mat_SeqBAIJ       *a_seq;
-  Mat_MPIBAIJ_DSC   *lu;
+  Mat_MPIBAIJ_DSC   *lu= (Mat_MPIBAIJ_DSC*)A->spptr;
   int               ierr, size;
   RealNumberType    *solution_vec, *rhs_vec; 
   PetscScalar       *array;
   Vec               vec_dsc;
   IS                iden;
   VecScatter        scat;
-  int               bs,i;
+  int               bs=lu->bs,i;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
- 
-  if ( size == 1){
-    a_seq = (Mat_SeqBAIJ*)(A)->data;  
-    lu = (Mat_MPIBAIJ_DSC*)a_seq->spptr;    
-    bs = a_seq->bs;
-  } else {
-    a  = (Mat_MPIBAIJ*)(A)->data;  
-    lu = (Mat_MPIBAIJ_DSC*)a->spptr;  
-    bs = a->bs;
-  }
+  
   printf(" Solve is called ..., bs: %d\n", bs);
+  /*
   if (lu->rank == -1) {
       PetscPrintf(PETSC_COMM_SELF," lu->rank = -1\n");
       PetscFunctionReturn(0);
   }
-
+  */
   /* create seq vec_dsc */
   ierr = VecCreateSeq(PETSC_COMM_SELF,lu->num_local_cols,&vec_dsc);CHKERRQ(ierr);
 
@@ -282,11 +262,9 @@ int MatSolve_MPIBAIJ_DSCPACK(Mat A,Vec b_mpi,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_MPIBAIJ_DSCPACK"
 int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 {
-  Mat_MPIBAIJ       *fac;
-  Mat_SeqBAIJ       *fac_seq,*a_seq;
-  Mat_MPIBAIJ_DSC   *lu; 
+  Mat_SeqBAIJ       *a_seq;
+  Mat_MPIBAIJ_DSC   *lu=(Mat_MPIBAIJ_DSC*)(*F)->spptr; 
   Mat               *tseq,A_seq;
-
   RealNumberType    *my_a_nonz;
   int               ierr,M=A->M,Mbs,size,i;
   int               max_mem_estimate, max_single_malloc_blk,
@@ -298,14 +276,6 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr); /* to be removed */
 
-  if ( size == 1){    
-    fac_seq = (Mat_SeqBAIJ*)(*F)->data;  
-    lu      = (Mat_MPIBAIJ_DSC*)fac_seq->spptr; 
-  } else {    
-    fac  = (Mat_MPIBAIJ*)(*F)->data;  
-    lu   = (Mat_MPIBAIJ_DSC*)fac->spptr; 
-  }
-
   Mbs = M/lu->bs;
   printf(" Num_Factor is called ..., bs: %d, Mbs: %d, size: %d\n",lu->bs,Mbs,size);
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
@@ -314,7 +284,6 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
     if (size > 1) { 
       ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&lu->iden); CHKERRQ(ierr);
       ierr = MatGetSubMatrices(A,1,&lu->iden,&lu->iden,MAT_INITIAL_MATRIX,&tseq); CHKERRQ(ierr);  
-      /* ierr = ISDestroy(iden);CHKERRQ(ierr); */
    
       A_seq = *tseq;
       ierr = PetscFree(tseq);CHKERRQ(ierr); 
@@ -397,10 +366,8 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
         i_idx[idx[i]] = i;  /* inverse of idx */
       }
 
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,tmp,&my_cols_sorted);CHKERRQ(ierr);
-      
-      ierr = MatGetSubMatrices(A,1,&my_cols_sorted,&lu->iden,MAT_INITIAL_MATRIX,&tseq); CHKERRQ(ierr);  
-      /* ierr = ISDestroy(iden);CHKERRQ(ierr); */
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->num_local_cols,tmp,&my_cols_sorted);CHKERRQ(ierr);     
+      ierr = MatGetSubMatrices(A,1,&my_cols_sorted,&lu->iden,MAT_INITIAL_MATRIX,&tseq); CHKERRQ(ierr);        
       ierr = ISDestroy(my_cols_sorted);CHKERRQ(ierr);
    
       A_seq = *tseq;
@@ -451,8 +418,6 @@ int MatLUFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_MPIBAIJ_DSCPACK"
 int MatLUFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  Mat_MPIBAIJ             *fac;
-  Mat_SeqBAIJ             *fac_seq;
   Mat_MPIBAIJ_DSC         *lu;   
   int                     ierr,M=A->M,size; 
   char                    buff[32];
@@ -463,21 +428,13 @@ int MatLUFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 
   PetscFunctionBegin; 
   printf(" Sym_Factor is called ..., M: %d\n",M);
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  
   ierr = PetscNew(Mat_MPIBAIJ_DSC,&lu);CHKERRQ(ierr); 
 
   /* Create the factorization matrix F */ 
   ierr = MatGetBlockSize(A,&lu->bs);
-  if (size == 1){
-    ierr = MatCreateSeqBAIJ(A->comm,lu->bs,M,M,0,PETSC_NULL,F);CHKERRQ(ierr);
-    fac_seq = (Mat_SeqBAIJ*)(*F)->data; 
-    fac_seq->spptr = (void*)lu;
-  } else {
-    ierr = MatCreateMPIBAIJ(A->comm,lu->bs,PETSC_DECIDE,PETSC_DECIDE,M,M,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
-    fac     = (Mat_MPIBAIJ*)(*F)->data; 
-    fac->spptr = (void*)lu;
-  } 
+  ierr = MatCreateMPIBAIJ(A->comm,lu->bs,PETSC_DECIDE,PETSC_DECIDE,M,M,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+    
+  (*F)->spptr                 = (Mat_MPIBAIJ_DSC*)lu;
   (*F)->ops->lufactornumeric  = MatLUFactorNumeric_MPIBAIJ_DSCPACK;
   (*F)->ops->solve            = MatSolve_MPIBAIJ_DSCPACK;
   (*F)->ops->destroy          = MatDestroy_MPIBAIJ_DSCPACK;  
@@ -575,9 +532,7 @@ int MatUseDSCPACK_MPIBAIJ(Mat A)
 #define __FUNCT__ "MatMPIBAIJFactorInfo_DSCPACK"
 int MatMPIBAIJFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
 {
-  Mat_MPIBAIJ             *fac;
-  Mat_SeqBAIJ             *fac_seq;
-  Mat_MPIBAIJ_DSC         *lu;  
+  Mat_MPIBAIJ_DSC         *lu=(Mat_MPIBAIJ_DSC*)A->spptr;  
   int                     size,ierr;
   char                    *factor_type,*lblas,*dblas;
   
@@ -586,14 +541,6 @@ int MatMPIBAIJFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
   if (A->ops->solve != MatSolve_MPIBAIJ_DSCPACK) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  if ( size == 1){    
-    fac_seq = (Mat_SeqBAIJ*)A->data;  
-    lu      = (Mat_MPIBAIJ_DSC*)fac_seq->spptr;    
-  } else {    
-    fac  = (Mat_MPIBAIJ*)A->data;  
-    lu   = (Mat_MPIBAIJ_DSC*)fac->spptr; 
-  }
-  
   
   ierr = PetscViewerASCIIPrintf(viewer,"DSCPACK run parameters:\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  order_code: %d \n",lu->order_code);CHKERRQ(ierr);

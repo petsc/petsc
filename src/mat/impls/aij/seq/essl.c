@@ -29,8 +29,7 @@ EXTERN int MatDestroy_SeqAIJ(Mat);
 #define __FUNCT__ "MatDestroy_SeqAIJ_Essl"
 int MatDestroy_SeqAIJ_Essl(Mat A)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
+  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)A->spptr;
   int             ierr;
 
   PetscFunctionBegin;
@@ -44,8 +43,7 @@ int MatDestroy_SeqAIJ_Essl(Mat A)
 #define __FUNCT__ "MatSolve_SeqAIJ_Essl"
 int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
+  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)A->spptr;
   PetscScalar     *xx;
   int             ierr,m,zero = 0;
 
@@ -62,9 +60,9 @@ int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Essl"
 int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(*F)->data;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)(*F)->data; 
   Mat_SeqAIJ      *aa = (Mat_SeqAIJ*)(A)->data;
-  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
+  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)(*F)->spptr;
   int             i,ierr,one = 1;
 
   PetscFunctionBegin;
@@ -110,9 +108,9 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   B->ops->destroy         = MatDestroy_SeqAIJ_Essl;
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Essl;
   B->factor               = FACTOR_LU;
-  b                       = (Mat_SeqAIJ*)B->data;
+  
   ierr                    = PetscNew(Mat_SeqAIJ_Essl,&essl);CHKERRQ(ierr);
-  b->spptr                = (void*)essl;
+  B->spptr                = (void*)essl;
 
   /* allocate the work arrays required by ESSL */
   if (info) f = info->fill;

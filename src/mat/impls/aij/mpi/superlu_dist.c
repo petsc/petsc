@@ -74,7 +74,7 @@ EXTERN_C_END
 int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 {
   Mat_MPIAIJ              *a  = (Mat_MPIAIJ*)A->data; 
-  Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)a->spptr; 
+  Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)A->spptr; 
   int                     ierr, size=a->size;
     
   PetscFunctionBegin;
@@ -103,7 +103,7 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 {
   Mat_MPIAIJ              *aa = (Mat_MPIAIJ*)A->data;
-  Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)aa->spptr;
+  Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)A->spptr;
   int                     ierr, size=aa->size;
   int_t                   m=A->M, N=A->N; 
   superlu_options_t       options=lu->options;
@@ -173,7 +173,7 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   Mat_MPIAIJ              *fac = (Mat_MPIAIJ*)(*F)->data;
   Mat                     *tseq,A_seq = PETSC_NULL;
   Mat_SeqAIJ              *aa;
-  Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)fac->spptr;
+  Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)(*F)->spptr;
   int                     M=A->M,N=A->N,info,ierr,size=fac->size,i;
   SuperLUStat_t           stat;
   double                  *berr=0, *bptr=0;
@@ -255,7 +255,7 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
 int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat_MPIAIJ              *fac;
-  Mat_MPIAIJ_SuperLU_DIST *lu;   /* ptr to Mat_MPIAIJ_SuperLU_DIST */
+  Mat_MPIAIJ_SuperLU_DIST *lu;   
   int                     ierr,M=A->M,N=A->N,size;
   gridinfo_t              grid; 
   superlu_options_t       options;
@@ -267,6 +267,8 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *info,Mat 
   char                    *prtype[] = {"LargeDiag","NATURAL"}; 
   PetscFunctionBegin;
 	
+  ierr = PetscNew(Mat_MPIAIJ_SuperLU_DIST,&lu);CHKERRQ(ierr); 
+
   /* Create the factorization matrix F */ 
   ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,M,N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
 
@@ -274,10 +276,8 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *info,Mat 
   (*F)->ops->solve            = MatSolve_MPIAIJ_SuperLU_DIST;
   (*F)->ops->destroy          = MatDestroy_MPIAIJ_SuperLU_DIST;  
   (*F)->factor                = FACTOR_LU;  
+  (*F)->spptr                  = (void*)lu;
   fac                         = (Mat_MPIAIJ*)(*F)->data; 
-
-  ierr                        = PetscNew(Mat_MPIAIJ_SuperLU_DIST,&lu);CHKERRQ(ierr); 
-  fac->spptr                  = (void*)lu;
 
   /* Set the input options */
   set_default_options(&options);
@@ -386,8 +386,7 @@ int MatUseSuperLU_DIST_MPIAIJ(Mat A)
 
 int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
 {
-  Mat_MPIAIJ              *fac = (Mat_MPIAIJ*)(A)->data;
-  Mat_MPIAIJ_SuperLU_DIST *lu;
+  Mat_MPIAIJ_SuperLU_DIST *lu= (Mat_MPIAIJ_SuperLU_DIST*)A->spptr;
   superlu_options_t       options;
   int                     ierr;
   char                    *colperm;
@@ -396,7 +395,6 @@ int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
   /* check if matrix is superlu_dist type */
   if (A->ops->solve != MatSolve_MPIAIJ_SuperLU_DIST) PetscFunctionReturn(0);
 
-  lu      = (Mat_MPIAIJ_SuperLU_DIST*)fac->spptr;
   options = lu->options;
   ierr = PetscViewerASCIIPrintf(viewer,"SuperLU_DIST run parameters:\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",(options.Equil != NO) ? "true": "false");CHKERRQ(ierr);

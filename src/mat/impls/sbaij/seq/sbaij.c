@@ -1288,7 +1288,7 @@ int MatCreate_SeqSBAIJ(Mat B)
   b->diag             = 0;
   b->solve_work       = 0;
   b->mult_work        = 0;
-  b->spptr            = 0;
+  B->spptr            = 0;
   b->keepzeroedrows   = PETSC_FALSE;
   
   b->inew             = 0;
@@ -1599,7 +1599,7 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->s_nz               = a->s_nz;
   c->s_maxnz            = a->s_maxnz;
   c->solve_work         = 0;
-  c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
+  C->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
   c->mult_work          = 0;
   *B = C;
   ierr = PetscFListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);

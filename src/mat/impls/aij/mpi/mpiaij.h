@@ -42,8 +42,6 @@ typedef struct {
   PetscScalar   *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 
-  /* for factorization codes to hide stuff */
-  void          *spptr;
 } Mat_MPIAIJ;
 
 EXTERN int MatSetColoring_MPIAIJ(Mat,ISColoring);
