@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex13.c,v 1.4 1997/04/02 14:59:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.5 1997/04/10 00:04:27 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -32,11 +32,11 @@ T*/
     in the linear solution process.
 */
 typedef struct {
-   Vec    x,b;      /* solution vector, right hand side vector and work vector */
-   Mat    A;        /* sparse matrix */
-   SLES   sles;     /* linear solver context */
-   int    m,n;      /* grid dimensions */
-   Scalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
+   Vec    x, b;      /* solution vector, right-hand-side vector */
+   Mat    A;         /* sparse matrix */
+   SLES   sles;      /* linear solver context */
+   int    m, n;      /* grid dimensions */
+   Scalar hx2, hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 } UserCtx;
 
 extern int UserInitializeLinearSolver(int,int,UserCtx *);

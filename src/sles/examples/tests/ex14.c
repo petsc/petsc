@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.2 1996/12/09 05:11:19 curfman Exp bsmith $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex14.c,v 1.4 1997/07/11 16:07:45 balay Exp balay $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined\n\
@@ -206,7 +206,7 @@ int main( int argc, char **argv )
 
   /* 
       This solver is a very simplistic inexact Newton method, with no
-      no damping strategies of bells and whistles. The intent of this code
+      no damping strategies or bells and whistles. The intent of this code
       is  merely to demonstrate the repeated solution with SLES of linear
       sytems with the same nonzero structure.
 

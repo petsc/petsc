@@ -1,6 +1,5 @@
-
-#ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.8 1997/05/28 23:21:48 bsmith Exp curfman $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex2.c,v 1.9 1997/07/11 16:03:56 balay Exp balay $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit timestepping";
 
