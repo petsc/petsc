@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.62 1996/03/19 21:28:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.63 1996/03/20 06:06:35 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -73,6 +73,9 @@ int SNESView(SNES snes,Viewer viewer)
           kctx->gamma,kctx->alpha,kctx->alpha2);
       }
     }
+  } else if (vtype == STRING_VIEWER) {
+    SNESGetType(snes,PETSC_NULL,&method);
+    ViewerStringSPrintf(viewer," %-3.3s",method);
   }
   SNESGetSLES(snes,&sles);
   ierr = SLESView(sles,viewer); CHKERRQ(ierr);
