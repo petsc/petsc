@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.54 2000/09/22 20:42:19 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.55 2000/09/28 21:09:02 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -437,10 +437,10 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 @*/
 int PetscErrorPrintfDefault(const char format[],...)
 {
-  va_list     Argp;
-  static  int PetscErrorPrintfCalled = 0;
-  static  int InPetscErrorPrintfDefault = 0;
-
+  va_list            Argp;
+  static  PetscTruth PetscErrorPrintfCalled    = PETSC_FALSE;
+  static  PetscTruth InPetscErrorPrintfDefault = PETSC_FALSE;
+  static  FILE       *fd;
   /*
       InPetscErrorPrintfDefault is used to prevent the error handler called (potentially)
      from PetscSleep(), PetscGetArchName(), ... below from printing its own error message.
@@ -454,11 +454,19 @@ int PetscErrorPrintfDefault(const char format[],...)
   */
 
   if (!PetscErrorPrintfCalled) {
-    int  rank;
-    char arch[10],hostname[64],username[16],pname[256],date[64];
+    int        rank;
+    char       arch[10],hostname[64],username[16],pname[256],date[64];
+    PetscTruth use_stderr;
 
-    PetscErrorPrintfCalled    = 1;
-    InPetscErrorPrintfDefault = 1;
+    PetscErrorPrintfCalled    = PETSC_TRUE;
+    InPetscErrorPrintfDefault = PETSC_TRUE;
+
+    OptionsHasName(PETSC_NULL,"-error_output_stderr",&use_stderr);
+    if (use_stderr) {
+      fd = stderr;
+    } else {
+      fd = stdout;
+    }
 
     /*
         On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
@@ -477,34 +485,34 @@ int PetscErrorPrintfDefault(const char format[],...)
     PetscGetUserName(username,16);
     PetscGetProgramName(pname,256);
     PetscGetInitialDate(date,64);
-    fprintf(stdout,"--------------------------------------------\
+    fprintf(fd,"--------------------------------------------\
 ------------------------------\n");
-    fprintf(stdout,"%s\n",PETSC_VERSION_NUMBER);
-    fprintf(stdout,"%s\n",PETSC_AUTHOR_INFO);
-    fprintf(stdout,"See docs/copyright.html for copyright information.\n");
-    fprintf(stdout,"See docs/changes.html for recent updates.\n");
-    fprintf(stdout,"See docs/troubleshooting.html for hints about trouble shooting.\n");
-    fprintf(stdout,"See docs/manualpages/index.html for manual pages.\n");
-    fprintf(stdout,"--------------------------------------------\
+    fprintf(fd,"%s\n",PETSC_VERSION_NUMBER);
+    fprintf(fd,"%s\n",PETSC_AUTHOR_INFO);
+    fprintf(fd,"See docs/copyright.html for copyright information.\n");
+    fprintf(fd,"See docs/changes.html for recent updates.\n");
+    fprintf(fd,"See docs/troubleshooting.html for hints about trouble shooting.\n");
+    fprintf(fd,"See docs/manualpages/index.html for manual pages.\n");
+    fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
-    fprintf(stdout,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
+    fprintf(fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
 #if !defined (PARCH_win32)
-    fprintf(stdout,"Libraries linked from %s\n",PETSC_LDIR);
+    fprintf(fd,"Libraries linked from %s\n",PETSC_LDIR);
 #endif
-    fprintf(stdout,"--------------------------------------------\
+    fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
-    fflush(stdout);
-    InPetscErrorPrintfDefault = 0;
+    fflush(fd);
+    InPetscErrorPrintfDefault = PETSC_FALSE;
   }
 
   if (!InPetscErrorPrintfDefault) {
     va_start(Argp,format);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(stdout,format,(char *)Argp);
+    vfprintf(fd,format,(char *)Argp);
 #else
-    vfprintf(stdout,format,Argp);
+    vfprintf(fd,format,Argp);
 #endif
-    fflush(stdout);
+    fflush(fd);
     va_end(Argp);
   }
   return 0;

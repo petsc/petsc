@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.66 2000/07/10 03:38:43 bsmith Exp bsmith $*/
+/*$Id: xcolor.c,v 1.67 2000/09/28 21:08:36 bsmith Exp bsmith $*/
 
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -120,8 +120,8 @@ int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap
   used so far; this is to allow us to try to reuse as much of the current
   colormap as possible.
 */
-static long int cmap_pixvalues_used[256];
-static int      cmap_base = 0;
+static PetscTruth cmap_pixvalues_used[256];
+static int        cmap_base = 0;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="DrawSetUpColormap_Private"></a>*/"DrawSetUpColormap_Private" 
@@ -142,7 +142,7 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
   }
 
   cmap_base = 0;
-  ierr = PetscMemzero(cmap_pixvalues_used,256*sizeof(long int));CHKERRQ(ierr);
+  ierr = PetscMemzero(cmap_pixvalues_used,256*sizeof(PetscTruth));CHKERRQ(ierr);
 
   /* set the basic colors into the color map */
   for (i=0; i<DRAW_BASIC_COLORS; i++) {
@@ -151,12 +151,12 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
     found = XAllocColor(display,defaultmap,&colordef); 
     /* use it, if it it exists and is not already used in the new colormap */
     if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
-      cmap_pixvalues_used[colordef.pixel] = 1; 
+      cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE; 
     /* otherwise search for the next available slot */
     } else {
       while (cmap_pixvalues_used[cmap_base]) cmap_base++;
       colordef.pixel                   = cmap_base;
-      cmap_pixvalues_used[cmap_base++] = 1;
+      cmap_pixvalues_used[cmap_base++] = PETSC_TRUE;
     }
     XStoreColor(display,gColormap,&colordef); 
     gCmapping[i] = colordef.pixel;
@@ -179,12 +179,12 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
       found = XAllocColor(display,defaultmap,&colordef); 
       /* use it, if it it exists and is not already used in the new colormap */
       if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
-        cmap_pixvalues_used[colordef.pixel] = 1; 
+        cmap_pixvalues_used[colordef.pixel] = PETSC_TRUE; 
         /* otherwise search for the next available slot */
       } else {
         while (cmap_pixvalues_used[cmap_base]) cmap_base++;
         colordef.pixel                   = cmap_base;
-        cmap_pixvalues_used[cmap_base++] = 1;
+        cmap_pixvalues_used[cmap_base++] = PETSC_TRUE;
       }
       XStoreColor(display,gColormap,&colordef); 
       gCmapping[i]   = colordef.pixel;
