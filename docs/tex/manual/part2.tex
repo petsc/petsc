@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.207 1997/03/31 16:09:39 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.208 1997/04/03 17:50:15 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -905,7 +905,7 @@ zero {\em regardless of the storage format employed}.   The array
 {\tt values} is logically two-dimensional, containing the values that are 
 to be inserted.   
 By default the values are given in row major order, which is the opposite 
-of the Fortran 77 convention. To allow the insertion of values in column 
+of the Fortran77 convention. To allow the insertion of values in column 
 major order, one can call the command \findex{MatSetOption()}
 \begin{verbatim}
    ierr = MatSetOption(Mat A,MAT_COLUMN_ORIENTED);
@@ -1033,7 +1033,7 @@ keys are {\tt -mat\_aij\_no\_inode} (do not use inodes) and {\tt
 -mat\_aij\_inode\_limit <limit>} (set inode limit (max limit=5)).
 
 By default the internal data representation for the AIJ formats employs
-zero-based indexing.  For compatibility with standard Fortran 77 storage,
+zero-based indexing.  For compatibility with standard Fortran77 storage,
 thus enabling use of external Fortran software packages such as
 SPARSKIT, \sindex{SPARSKIT} the option {\tt -mat\_aij\_oneindex}
 \findex{-mat_aij_oneindex} enables one-based indexing, where the stored
@@ -1288,7 +1288,7 @@ one should organize the code in such a way that {\em most} values are generated 
 
 PETSc provides both sequential and parallel dense matrix formats,
 where each processor stores its entries in a column-major array in the
-usual Fortran 77 style.  To create a sequential, dense PETSc matrix,
+usual Fortran77 style.  To create a sequential, dense PETSc matrix,
 {\tt A} of dimensions {\tt m} by {\tt n}, the user should
 call \findex{MatCreateSeqDense()}
 \begin{verbatim}
@@ -1350,7 +1350,7 @@ to another vector: \findex{MatMultAdd()} \findex{MatMultTransAdd()}
 \end{verbatim}
 These routines, respectively, produce $ w = A*x + y $ and $ w = A^{T}*x + y$ . 
 In C it is legal for the vectors {\tt y} and {\tt w} to be identical.
-In Fortran 77, this situation is forbidden by the language standard, 
+In Fortran77, this situation is forbidden by the language standard, 
 but we allow it anyway.
 
 One can print a matrix (sequential or parallel) to the screen with the 
@@ -1565,7 +1565,7 @@ some space for reorganizing matrix data before presenting it to the user.
 \label{ch:sles}
 
 SLES is the heart of PETSc, because it provides uniform and efficient access 
-to all of the package's linear system solvers, both parallel and sequential,
+to all of the package's linear system solvers, including parallel and sequential,
 direct and iterative.
 SLES is intended for solving nonsingular systems of the form
 \begin{equation}
@@ -1967,10 +1967,11 @@ Where {\tt x, y, w, h} are the optional location and size of the window.
 Once can cancel all hardwired monitoring routines for KSP at runtime with 
 {\tt -ksp\_cancelmonitors}. \findex{-ksp_cancelmonitors}
 
-\subsection{Understanding the Operators Spectrum}
+\subsection{Understanding the Operator's Spectrum}
+
 Since the convergence of Krylov subspace methods depends strongly on 
 the spectrum (eigenvalues) of the preconditioned operator, PETSc has specific
-routines for their approximation via Arnoldi or Lanczos iteration.
+routines for eigenvalue approximation via the Arnoldi or Lanczos iteration.
 First, before the linear solve one must call 
 \begin{verbatim}
   ierr = KSPSetComputeEigenvalues(KSP ksp);
@@ -3270,14 +3271,16 @@ preset the nonzero structure in the matrix regardless of which
 coloring routine is used.
 
 For sequential matrices PETSc provides three matrix coloring routines from the 
-MINPACK package \cite{more84}. These may be accessed with the command line options
+MINPACK package \cite{more84}: smallest-last ({\tt sl}), largest-first ({\tt lf}),
+and incidence-degree ({\tt id}).  These colorings, as well as the ``natural'' coloring 
+for which each column has its own unique color, may be accessed with the command line options
 \begin{verbatim}
-   -mat_coloring sl, id, or lf
+   -mat_coloring [sl,id,lf,natural]
 \end{verbatim}
 Alternatively, one can set a coloring type of {\tt COLORING\_SL}, {\tt
-COLORING\_ID}, or {\tt COLORING\_LF} when calling {\tt
-MatGetColoring()}. \findex{-mat_coloring} \findex{COLORING_SL} \findex{COLORING_ID}
-\findex{COLORING_LF}
+COLORING\_ID}, {\tt COLORING\_LF}, or {\tt COLORING\_NATURAL} 
+when calling {\tt MatGetColoring()}. \findex{-mat_coloring} \findex{COLORING_SL} \findex{COLORING_ID}
+\findex{COLORING_LF} \findex{COLORING_NATURAL}
 
 As for the matrix-free computation of Jacobians (see Section
 \ref{sec:nlmatrixfree}), two parameters affect the accuracy of the
@@ -4070,7 +4073,7 @@ is available for the adventurous.  Stay tuned for future developments.
 Most of the functionality of PETSc can be obtained by people who
 program purely in Fortran.  Note, however, that we recommend the
 use of C and/or C++ because these languages contain several extremely powerful
-concepts that the Fortran 77/90 family does not. 
+concepts that the Fortran77/90 family does not. 
 
 Since Fortran77 does not provide type checking of routine input/output
 parameters, we find that many errors encountered within PETSc Fortran77
@@ -4458,7 +4461,7 @@ other compilers as well, but we will need assistance from the vendors
 since the Fortran90/C interface is not a defined standard.
 
 
-\section{Sample Fortran 77 Programs}
+\section{Sample Fortran77 Programs}
 \label{sec:fortran-examples}
 
 Sample programs that illustrate the PETSc interface for Fortran
@@ -5266,8 +5269,8 @@ routines is {\tt -trmalloc\_log}, which activates logging of all calls
 to malloc and reports memory usage, including all Fortran arrays.
 This option provides a more complete picture than {\tt -trdump} for
 codes that employ Fortran with hardwired arrays.  Note that the option
-{\tt -trmalloc\_log} activates calls to {\tt PetscTrLog()], {\tt
-PetscTrLogDump()}, and \tt PetscGetResidentSetSize()} during {\tt
+{\tt -trmalloc\_log} activates calls to {\tt PetscTrLog()}, {\tt
+PetscTrLogDump()}, and {\tt PetscGetResidentSetSize()} during {\tt
 PetscFinalize()}; the user can also call these routines elsewhere in a
 program.
 
@@ -5990,11 +5993,24 @@ the variable {\tt PETSCFLAGS} within the base files of {\tt
 \subsection{Sample Makefiles}
 
 Maintaining portable PETSc makefiles is very simple. In Figures
-\ref{fig:make1}, \ref{fig:make2}, and \ref{fig:make3} we present three sample
-makefiles.  
+\ref{fig:make1}, \ref{fig:make2}, and \ref{fig:make3} we present three
+sample makefiles.  
 
-The first is a ``minimum'' makefile for maintaining a single program that uses
-the PETSc libraires.
+The first is a ``minimum'' makefile for maintaining
+a single program that uses the PETSc libraires.
+The most important line in this makefile is the line starting with {\tt include}:
+\begin{verbatim}
+   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+\end{verbatim}
+This line includes other makefiles that provide the needed definitions
+and rules for the particular base PETSc installation (specified by
+environmental {\tt \$(PETSC\_DIR)}) and architecture (specified by
+{\tt \$(PETSC\_ARCH)}).  (See \ref{sec:running} for information on
+setting these environmental variables.)  As listed in the sample
+makefile, the appropriate {\tt include} file is automatically
+completely specified; the user should {\em not} alter this statement
+within the makefile.
+
 \begin{figure}[H]
 {\small
 \begin{verbatim}
@@ -6021,18 +6037,6 @@ the PETSc libraires.
 \label{fig:make1}
 \end{figure}
 
-The most important line in this makefile is the line starting with {\tt include}:
-\begin{verbatim}
-   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
-\end{verbatim}
-This line includes other makefiles that provide the needed definitions
-and rules for the particular base PETSc installation (specified by
-environmental {\tt \$(PETSC\_DIR)}) and architecture (specified by
-{\tt \$(PETSC\_ARCH)}).  (See \ref{sec:running} for information on
-setting these environmental variables.)  As listed in the sample
-makefile, the appropriate {\tt include} file is automatically
-completely specified; the user should {\em not} alter this statement
-within the makefile.
 
 \findex{PETSC_LIB} \findex{SLES_LIB}
 Note that the variable {\tt \$(PETSC\_LIB)} (as listed on the link
@@ -6093,12 +6097,10 @@ controls the generation of several example programs.
 \label{fig:make2}
 \end{figure}
 
-Again, the most important line in this makefile is
-the {\tt include} line that includes the files
-defining all of the macro variables.
-
-Some additional
-variables that can be used in the makefile are defined as follows:
+Again, the most important line in this makefile is the {\tt include}
+line that includes the files defining all of the macro variables.
+Some additional variables that can be used in the makefile are defined
+as follows:
 \begin{itemize}
 \item {\tt CLINKER, FLINKER} - the C and Fortran linkers. 
 \item {\tt RM} - the remove command for deleting files.
@@ -6888,7 +6890,7 @@ the AIJ formats described above, are intended especially for use with
 multicomponent PDEs.  The block variants store matrix elements by
 fixed-sized dense {\tt nb} $\times$ {\tt nb} blocks, where currently
 {\tt nb} ranges from two through five.  These formats are fully
-compatible with standard Fortran 77 storage.  That is, the stored row
+compatible with standard Fortran77 storage.  That is, the stored row
 and column indices can begin at either one (as in Fortran) or zero.
 
 The routine for creating a sequential block AIJ matrix with {\tt m} 
@@ -6952,7 +6954,7 @@ is straightforward.
 
 PETSc provides both sequential and parallel dense matrix formats,
 where each processor stores its entries in a column-major array in the
-usual Fortran 77 style.  Section~\ref{sec:matdense} provides details
+usual Fortran77 style.  Section~\ref{sec:matdense} provides details
 on creating these matrices.
 
 \subsection{Parallel Dense Matrices}
@@ -7057,10 +7059,10 @@ new include file,
 a uniform naming scheme for BLAS (all routines begin with BL) and
 LAPACK (all routines begin with LA). This file incorporates function
 prototypes for the BLAS and LAPACK routines used. In addition, the
-include file deals with different Fortran 77 compilers' treatment of
+include file deals with different Fortran77 compilers' treatment of
 function names (for instance, Sun compilers put an underscore at the
-end of all functions created in Fortran 77).  The include file also
+end of all functions created in Fortran77).  The include file also
 deals with the fact that on Crays, C double precision is the same as
-Fortran 77 single precision.  Lastly, it also calls the appropriate
+Fortran77 single precision.  Lastly, it also calls the appropriate
 complex LAPACK and BLAS routines when needed.
 

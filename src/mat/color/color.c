@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.15 1997/02/22 02:26:05 bsmith Exp curfman $";
+static char vcid[] = "$Id: color.c,v 1.16 1997/04/03 18:32:37 curfman Exp curfman $";
 #endif
  
 /*
@@ -317,7 +317,7 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
 .  mat - the matrix
 .  type - type of coloring, one of the following:
 $      COLORING_NATURAL - natural
-$      COLORING_SL - smallest last
+$      COLORING_SL - smallest-last
 $      COLORING_LF - largest-first
 $      COLORING_ID - incidence-degree
 

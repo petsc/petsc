@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.98 1997/03/26 01:39:14 bsmith Exp curfman $ 
+% $Id: part1.tex,v 1.99 1997/04/03 18:15:44 curfman Exp curfman $ 
 
 % --------------------------------------------------------------------
 %
@@ -115,11 +115,12 @@ before one understands all of the material presented here.
 manual, the examples and calling sequences are given for the C/C++
 family of programming languages.  We follow this convention because we
 highly recommend that PETSc applications be coded in C or C++.
-However, pure Fortran 77 programmers can use most of the
+However, pure Fortran77 programmers can use most of the
 functionality of PETSc from Fortran, with only minor differences in
 the user interface.  Chapter \ref{ch:fortran} provides a discussion of the
 differences between using PETSc from Fortran and C, as well as several
-complete Fortran 77 examples.
+complete Fortran77 examples.  This chapter also introduces some
+routines that support direct use of Fortran90 pointers.
 
 \medskip \medskip
 
@@ -141,7 +142,6 @@ source code.  Details of this feature are provided in
 Section~\ref{sec:emacs}. Similarly, VI users may find the
 {\em ctags} option to be extremely useful. Details of this 
 feature are provided in Section~\ref{sec:vi}.
-
 
 The PETSc source code is available by anonymous ftp
 from {\tt ftp://info.mcs.anl.gov/pub/petsc} in the compressed tar files
@@ -256,7 +256,7 @@ PETSC\_COMM\_WORLD} by calling \findex{PetscSetCommWorld}
 \end{verbatim}
 {\em before} calling {\tt PetscInitialize()}, but, obviously, after
 calling {\tt MPI\_Init()}. {\tt PetscSetCommWorld()} can be called
-at most once per process. Most users will never need to use 
+at most once per process. Most users will never need to use the routine
 {\tt PetscSetCommWorld()}.
 
 As illustrated by the {\tt PetscInitialize()} statements above,
