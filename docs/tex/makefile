@@ -108,8 +108,10 @@ homepage:
 	-/usr/bin/cp onepager.html /mcs/www/petsc
 	-/usr/bin/cp summaries.html /mcs/www/petsc
 	-/usr/bin/cp ../www.html /mcs/www/petsc
+	-/usr/bin/cp ../Readme /mcs/www/petsc
 	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
 	-/usr/bin/cp ../../FAQ /home/ftp/pub/petsc
+	-/usr/bin/cp ../../Performance /home/ftp/pub/petsc
 	-chmod ug+w /home/ftp/pub/petsc/FAQ /mcs/www/petsc/*
 	-chmod ug+w /home/ftp/pub/petsc/Installation /home/ftp/pub/petsc/README
 	-chmod ug+w /home/ftp/pub/petsc/Machines /home/ftp/pub/petsc/manual.ps
@@ -117,6 +119,7 @@ homepage:
 	-chmod ug+w /home/ftp/pub/petsc/intro.ps
 	-chmod ug+w /home/ftp/pub/petsc/Troubleshooting
 	-chmod ug+w /home/ftp/pub/petsc/Changes
+	-chmod ug+w /home/ftp/pub/petsc/Performance
 	-cd ..; tar cf $(HOME)/www.tar www 
 	-cd /mcs/www/petsc/; /bin/rm -rf www; tar xf $(HOME)/www.tar; 
 	-cd /mcs/www/petsc/; chgrp -R pdetools www; chmod -R g+w www
