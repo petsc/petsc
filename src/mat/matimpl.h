@@ -274,6 +274,7 @@ struct  _p_MatFDColoring{
   PetscTruth usersetsrecompute;/* user determines when Jacobian is recomputed, via MatFDColoringSetRecompute() */
   PetscTruth recompute;        /* used with usersetrecompute to determine if Jacobian should be recomputed */
   Vec        F;                /* current value of user provided function; can set with MatFDColoringSetF() */
+  int        currentcolor;     /* color for which function evaluation is being done now */
 };
 
 /*

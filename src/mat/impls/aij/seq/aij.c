@@ -2009,6 +2009,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
       Loop over each color
   */
   for (k=0; k<coloring->ncolors; k++) { 
+    coloring->currentcolor = k;
     ierr = VecCopy(x1,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
     /*
@@ -2052,6 +2053,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   }
+  coloring->currentcolor = k;
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
