@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.63 1996/04/04 22:03:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.64 1996/04/05 05:57:58 bsmith Exp curfman $";
 #endif
 
 /*
@@ -551,6 +551,10 @@ $    KSPGMRESUnmodifiedGramSchmidtOrthogonalization() -
 $    KSPGMRESIROrthogonalization() - interative refinement
        version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization(),
        which may be more numerically stable.
+
+  Options Database Keys:
+$  -ksp_gmres_unmodifiedgramschmidt
+$  -ksp_gmres_irorthog
 
 .keywords: GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 
