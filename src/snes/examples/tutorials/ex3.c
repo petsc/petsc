@@ -43,7 +43,7 @@ PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(Vec);
 PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void *);
-PetscErrorCode StepCheck(SNES,void *,Vec,PetscTruth *);
+PetscErrorCode PostCheck(SNES,Vec,Vec,Vec,void*,PetscTruth *,PetscTruth *);
 
 /* 
    User-defined application context
@@ -68,8 +68,9 @@ typedef struct {
    determined by line search methods
 */
 typedef struct {
-   Vec       last_step;  /* previous iterate */
-   PetscReal tolerance;  /* tolerance for changes between successive iterates */
+  Vec            last_step;  /* previous iterate */
+  PetscReal      tolerance;  /* tolerance for changes between successive iterates */
+  ApplicationCtx *user;
 } StepCheckCtx;
 
 #undef __FUNCT__
@@ -79,7 +80,7 @@ int main(int argc,char **argv)
   SNES           snes;                 /* SNES context */
   Mat            J;                    /* Jacobian matrix */
   ApplicationCtx ctx;                  /* user-defined context */
-  Vec            x,r,U,F;           /* vectors */
+  Vec            x,r,U,F;              /* vectors */
   MonitorCtx     monP;                 /* monitoring context */
   StepCheckCtx   checkP;               /* step-checking context */
   PetscTruth     step_check;           /* flag indicating whether we're checking
@@ -175,9 +176,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-check_iterates",&step_check);CHKERRQ(ierr);
   if (step_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating step checking routine\n");CHKERRQ(ierr);
-    ierr = SNESSetLineSearchCheck(snes,StepCheck,&checkP);CHKERRQ(ierr); 
+    ierr = SNESLineSearchSetPostCheck(snes,PostCheck,&checkP);CHKERRQ(ierr); 
     ierr = VecDuplicate(x,&(checkP.last_step));CHKERRQ(ierr); 
     checkP.tolerance = 1.0;
+    checkP.user      = &ctx;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRQ(ierr);
   }
 
@@ -484,38 +486,41 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "StepCheck"
+#define __FUNCT__ "PostCheck"
 /*
-   StepCheck - Optional user-defined routine that checks the validity of
-   candidate steps of a line search method.  Set by SNESSetLineSearchCheck().
+   PostCheck - Optional user-defined routine that checks the validity of
+   candidate steps of a line search method.  Set by SNESLineSearchPostCheck().
 
    Input Parameters:
    snes - the SNES context
    ctx  - optional user-defined context for private data for the 
-          monitor routine, as set by SNESSetLineSearchCheck()
+          monitor routine, as set by SNESLineSearchSetPostCheck()
+   xcurrent - current solution
+   y - search direction and length
    x    - the new candidate iterate
 
    Output Parameters:
+   y    - proposed step (search direction and length) (possibly changed)
    x    - current iterate (possibly modified)
-   flg - flag indicating whether x has been modified (either
-          PETSC_TRUE of PETSC_FALSE)
+   
  */
-PetscErrorCode StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
+PetscErrorCode PostCheck(SNES snes,Vec xcurrent,Vec y,Vec x,void *ctx,PetscTruth *changed_y,PetscTruth *changed_x)
 {
   PetscErrorCode ierr;
   PetscInt       i,iter,xs,xm;
-  ApplicationCtx *user;
   StepCheckCtx   *check = (StepCheckCtx*) ctx;
+  ApplicationCtx *user = check->user;
   PetscScalar    *xa,*xa_last,tmp;
   PetscReal      rdiff;
   DA             da;
 
   PetscFunctionBegin;
-  *flg = PETSC_FALSE;
+  *changed_x = PETSC_FALSE;
+  *changed_y = PETSC_FALSE;
   ierr = SNESGetIterationNumber(snes,&iter);CHKERRQ(ierr);
 
-  if (iter > 1) {
-    ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
+  /* iteration 1 indicates we are working on the second iteration */
+  if (iter > 0) {
     da   = user->da;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %D with tolerance %g\n",iter,check->tolerance);CHKERRQ(ierr);
 
@@ -533,11 +538,11 @@ PetscErrorCode StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
     for (i=xs; i<xs+xm; i++) {
       rdiff = PetscAbsScalar((xa[i] - xa_last[i])/xa[i]);
       if (rdiff > check->tolerance) {
-        tmp   = xa[i];
-        xa[i] = (xa[i] + xa_last[i])/2.0;
-        *flg = PETSC_TRUE;
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %D: x=%g, x_last=%g, diff=%g, x_new=%g\n",
-                    i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
+        tmp        = xa[i];
+        xa[i]      = (xa[i] + xa_last[i])/2.0;
+        *changed_x = PETSC_TRUE;
+        ierr       = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %D: x=%g, x_last=%g, diff=%g, x_new=%g\n",
+                                i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
       }
     }
     ierr = DAVecRestoreArray(da,check->last_step,&xa_last);CHKERRQ(ierr);

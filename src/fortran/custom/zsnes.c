@@ -51,7 +51,7 @@
 #define snessetlinesearchparams_         SNESSETLINESEARCHPARAMS
 #define snesgetlinesearchparams_         SNESGETLINESEARCHPARAMS
 #define snessetlinesearch_               SNESSETLINESEARCH
-#define snessetlinesearchcheck_          SNESSETLINESEARCHCHECK
+#define sneslinesearchsetpostcheck_      SNESLINESEARCHSETPOSTCHECK
 #define snescubiclinesearch_             SNESCUBICLINESEARCH
 #define snesquadraticlinesearch_         SNESQUADRATICLINESEARCH
 #define snesnolinesearch_                SNESNOLINESEARCH
@@ -72,7 +72,7 @@
 #define snessetlinesearchparams_         snessetlinesearchparams
 #define snesgetlinesearchparams_         snesgetlinesearchparams
 #define snessetlinesearch_               snessetlinesearch
-#define snessetlinesearchcheck_          snessetlinesearchcheck
+#define sneslinesearchsetpostcheck_      sneslinesearchsetpostcheck
 #define snesconverged_tr_                snesconverged_tr
 #define snesconverged_ls_                snesconverged_ls
 #define snesgetconvergedreason_          snesgetconvergedreason
@@ -116,7 +116,7 @@ static void (PETSC_STDCALL *f2)(SNES*,Vec*,Vec*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f11)(SNES*,Vec*,Vec*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*);
 static void (PETSC_STDCALL *f73)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*);
-static void (PETSC_STDCALL *f74)(SNES*,void *,Vec*,PetscTruth*,PetscErrorCode*);
+static void (PETSC_STDCALL *f74)(SNES*,Vec*,Vec*,Vec*,void*,PetscTruth*,PetscTruth*,PetscErrorCode*);
 EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
@@ -127,10 +127,10 @@ PetscErrorCode OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec
   return 0;
 }
 
-PetscErrorCode OurSNESLineSearchCheck(SNES snes,void *checkCtx,Vec x,PetscTruth *flag)
+PetscErrorCode OurSNESLineSearchPostCheck(SNES snes,Vec x,Vec y,Vec z,void *checkCtx,PetscTruth *flag1,PetscTruth *flag2)
 {
   PetscErrorCode ierr = 0;
-  (*f74)(&snes,(void*)&checkCtx,&x,flag,&ierr);CHKERRQ(ierr);
+  (*f74)(&snes,&x,&y,&z,(void*)&checkCtx,flag1,flag2,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -389,10 +389,10 @@ void PETSC_STDCALL snessetlinesearch_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,v
 }
 
 
-void PETSC_STDCALL snessetlinesearchcheck_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL sneslinesearchsetpostcheck_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec *,Vec *,void *,PetscTruth*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   f74 = f;
-  *ierr = SNESSetLineSearchCheck(*snes,OurSNESLineSearchCheck,ctx);
+  *ierr = SNESLineSearchSetPostCheck(*snes,OurSNESLineSearchPostCheck,ctx);
 }  
 
 /*----------------------------------------------------------------------*/

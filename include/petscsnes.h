@@ -367,7 +367,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESNoLineSearchNoNorms(SNES,void*,Vec
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCubicLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESQuadraticLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLineSearchCheck(SNES,PetscErrorCode(*)(SNES,void*,Vec,PetscTruth*),void*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*),void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLineSearchParams(SNES,PetscReal,PetscReal,PetscReal);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLineSearchParams(SNES,PetscReal*,PetscReal*,PetscReal*);
 

@@ -168,6 +168,11 @@ runex3_3:
 	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   ${RM} -f ex3_3.tmp
+runex3_4:
+	-@${MPIRUN} -np 1 ./ex3 -nox -check_iterates > ex3_4.tmp 2>&1; \
+	   if (${DIFF} output/ex3_4.out ex3_4.tmp) then true; \
+	   else echo "Possible problem with ex3_4, diffs above"; fi; \
+	   ${RM} -f ex3_4.tmp
 runex5:
 	-@${MPIRUN} -np 4 ./ex5 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_smonitor -ksp_gmres_cgs_refinement_type always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -383,7 +388,7 @@ runex27_p:
 	-@${MPIRUN} -np 1 ./ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3 -use_parabolic
 
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
-		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 runex5_5 runex5_6 runex5_7 runex5_9\
+		   ex3.PETSc runex3 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 runex5_5 runex5_6 runex5_7 runex5_9\
                    runex5_13 ex5.rm ex6.PETSc runex6 runex6_2 \
 		   ex6.rm ex14.PETSc runex14 runex14_2 ex14.rm ex19.PETSc runex19 ex19.rm  \
                    ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex21.PETSc runex21 ex21.rm \
