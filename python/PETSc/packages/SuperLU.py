@@ -15,13 +15,9 @@ class Configure(PETSc.package.Package):
     self.includes     = ['dsp_defs.h']
     self.libdir       = ''
     self.includedir   = 'SRC'
+    self.liblist      = ['superlu.a']
     return
 
-  def generateLibList(self,dir):
-    alllibs = []
-    alllibs.append(os.path.join(dir,'superlu.a'))   
-    return alllibs
-  
   def Install(self):
     # Get the SUPERLU directories
     superluDir = self.getDir()
@@ -44,10 +40,14 @@ class Configure(PETSc.package.Package):
     g.write('LOADER       = '+self.setcompilers.getLinker()+'\n') 
     g.write('LOADOPTS     = \n') 
     self.setcompilers.popLanguage()
-    self.setcompilers.pushLanguage('FC')
-    g.write('FORTRAN      = '+self.setcompilers.getCompiler()+'\n')
-    g.write('FFLAGS       = '+self.setcompilers.getCompilerFlags()+'\n')
-    self.setcompilers.popLanguage()
+    if 'FC' in self.framework.argDB:
+      self.setcompilers.pushLanguage('FC')
+      g.write('FORTRAN      = '+self.setcompilers.getCompiler()+'\n')
+      g.write('FFLAGS       = '+self.setcompilers.getCompilerFlags()+'\n')
+      self.setcompilers.popLanguage()
+    else:
+      g.write('FORTRAN      = \n')
+      g.write('FFLAGS       = \n')
     g.write('CDEFS        = -DAdd_\n')
     g.write('MATLAB       =\n')
     g.close()

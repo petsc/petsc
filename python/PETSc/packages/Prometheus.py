@@ -28,7 +28,7 @@ class Configure(PETSc.package.Package):
       os.mkdir(os.path.join(installDir,'include'))            
     self.framework.pushLanguage('C')
     args  = 'C_CC = '+self.framework.getCompiler()+'\n'
-    args += 'PETSC_INCLUDE = -I'+os.path.join(self.framework.argDB['PETSC_DIR'])+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'include')+' '+' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include+self.parmetis.include])+'\n'
+    args += 'PETSC_INCLUDE = -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'bmake',self.arch.arch)+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'])+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'include')+' '+' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include+self.parmetis.include])+'\n'
     args += 'BUILD_DIR  = '+prometheusDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
     args += 'RANLIB = '+self.setcompilers.RANLIB+'\n'
@@ -45,7 +45,7 @@ class Configure(PETSc.package.Package):
       oldargs = ''
     if not oldargs == args:
       self.framework.log.write('Have to rebuild Prometheus oldargs = '+oldargs+' new args '+args+'\n')
-      self.logPrintBox('Configuring and compiling Prometheus; this may take several minutes')
+      self.logPrintBox('Configuring Prometheus; this may take a minute')
       fd = file(os.path.join(installDir,'makefile.in'),'w')
       fd.write(args)
       fd.close()
@@ -59,10 +59,14 @@ class Configure(PETSc.package.Package):
 
 def __del__(self):
   if self.compilePrometheus:
+      self.logPrintBox('Compiling Prometheus; this may take several minutes')
       output  = config.base.Configure.executeShellCommand('cd '+self.prometheusDir+'; Make prometheus; mv '+os.path.join('lib','lib*.a')+' '+os.path.join(self.installDir,'lib'),timeout=250, log = self.framework.log)[0]
+      self.framework.log.write(output)
       output  = config.base.Configure.executeShellCommand('cp '+os.path.join(self.prometheusDir,'include','*.*')+' '+os.path.join(self.prometheusDir,'fei_prom','*.h')+' '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
+      self.framework.log.write(output)
       try:
         output  = config.base.Configure.executeShellCommand(self.setcompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libprometheus.a', timeout=250, log = self.framework.log)[0]
+        self.framework.log.write(output)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on PROMETHEUS libraries: '+str(e))
 

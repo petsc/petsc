@@ -15,18 +15,10 @@ class Configure(PETSc.package.Package):
     self.scalapack    = self.framework.require('PETSc.packages.SCALAPACK',self)
     self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.3.2.tar.gz']
     self.deps         = [self.scalapack,self.blacs,self.mpi,self.blasLapack]
+    self.liblist      = ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a']
     self.functions    = ['dmumps_c']
     self.includes     = ['dmumps_c.h']
     return
-
-  def generateLibList(self,dir):
-    libs = ['cmumps','dmumps','smumps','zmumps','pord']
-    alllibs = []
-    for l in libs:
-      alllibs.append('lib'+l+'.a')
-    # Now specify -L mumps-lib-path only to the first library
-    alllibs[0] = os.path.join(dir,alllibs[0])
-    return alllibs
         
   def Install(self):
     # Get the MUMPS directories

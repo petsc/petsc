@@ -14,17 +14,11 @@ class Configure(PETSc.package.Package):
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['InpMtx_init']
     self.includes     = ['MPI/spoolesMPI.h']
+    self.liblist      = [os.path.join('MPI','src','spoolesMPI.a'),'spooles']
     self.libdir       = ''
     self.includedir   = ''
     return
 
-  def generateLibList(self,dir):
-    libs = ['MPI/src/spoolesMPI', 'spooles']
-    alllibs = []
-    for l in libs:
-      alllibs.append(os.path.join(dir,l+'.a'))   
-    return alllibs
-          
   def Install(self):
     # Get the SPOOLES directories
     spoolesDir = self.getDir()

@@ -16,6 +16,7 @@ class Configure(PETSc.package.Package):
     self.includes     = ['ml_include.h']
     self.liblist      = ['libml.a']    
     self.license      = 'http://software.sandia.gov/trilinos/downloads.html'
+    self.fc           = 1 # looks like trilinos requires Fortran
     return
           
   def Install(self):
@@ -30,17 +31,23 @@ class Configure(PETSc.package.Package):
     CCenv = self.framework.getCompiler()
     args.append('--with-ccflags="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
-    
-    self.framework.pushLanguage('FC')
-    F77env = self.framework.getCompiler()
-    args.append('--with-fflags="'+self.framework.getCompilerFlags()+'"')
-    self.framework.popLanguage()
-    
-    self.framework.pushLanguage('Cxx')
-    CXXenv = self.framework.getCompiler()
-    args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+'"')
-    self.framework.popLanguage()
-    
+
+    if 'FC' in self.framework.argDB:    
+      self.framework.pushLanguage('FC')
+      F77env = self.framework.getCompiler()
+      args.append('--with-fflags="'+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
+    else:
+      F77env = ''
+
+    if 'CXX' in self.framework.argDB:    
+      self.framework.pushLanguage('Cxx')
+      CXXenv = self.framework.getCompiler()
+      args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
+    else:
+      CXXenv = ''
+  
     (mpiDir,dummy) = os.path.split(self.mpi.lib[0])
     (mpiDir,dummy) = os.path.split(mpiDir)
     args.append('--with-mpi="'+mpiDir+'"') #better way to get mpiDir?

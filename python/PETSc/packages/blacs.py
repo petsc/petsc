@@ -13,14 +13,12 @@ class Configure(PETSc.package.Package):
     self.download      = ['bk://petsc.bkbits.net/blacs-dev']
     self.deps          = [self.mpi,self.blasLapack]
     self.functions     = ['blacs_pinfo']
+    self.liblist       = ['libblacs.a']
     self.includes      = []
     self.libdir        = ''
+    self.fc            = 1
     return
 
-  def generateLibList(self,dir):
-    alllibs = []
-    alllibs.append(os.path.join(dir,'libblacs.a'))
-    return alllibs
           
   def Install(self):
     # Get the BLACS directories

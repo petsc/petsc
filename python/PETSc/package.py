@@ -33,6 +33,7 @@ class Package(config.base.Configure):
     # ***********  these are optional items set in the particular packages file
     self.complex      = 0   # 1 means cannot use complex
     self.cxx          = 0   # 1 means requires C++
+    self.fc           = 0   # 1 means requires fortran
     # urls where bk or tarballs may be found
     self.download     = []
     # other packages whose dlib or include we depend on (maybe can be figured automatically)
@@ -234,6 +235,8 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')    
       if self.cxx and not self.clanguage.language.lower() == 'cxx':
         raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-language=c++')    
+      if self.fc and not 'FC' in self.framework.argDB:
+        raise RuntimeError('Cannot use '+self.name+' without Fortran, run config/configure.py --with-fc')    
       self.executeTest(self.configureLibrary)
     return
 

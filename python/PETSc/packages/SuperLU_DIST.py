@@ -15,14 +15,10 @@ class Configure(PETSc.package.Package):
     self.functions    = ['set_default_options_dist']
     self.includes     = ['superlu_ddefs.h']
     self.libdir       = ''
+    self.liblist      = ['superlu.a']
     self.includedir   = 'SRC'
     return
 
-  def generateLibList(self,dir):
-    alllibs = []
-    alllibs.append(os.path.join(dir,'superlu.a'))
-    return alllibs
-                
   def Install(self):
     # Get the SUPERLU_DIST directories
     superluDir = self.getDir()
@@ -49,10 +45,14 @@ class Configure(PETSc.package.Package):
     g.write('LOADER       = '+self.setcompilers.getLinker()+'\n') 
     g.write('LOADOPTS     = \n')
     self.setcompilers.popLanguage()
-    self.setcompilers.pushLanguage('FC')
-    g.write('FORTRAN      = '+self.setcompilers.getCompiler()+'\n')
-    g.write('FFLAGS       = '+self.setcompilers.getCompilerFlags()+'\n')
-    self.setcompilers.popLanguage()
+    if 'FC' in self.framework.argDB:
+      self.setcompilers.pushLanguage('FC')
+      g.write('FORTRAN      = '+self.setcompilers.getCompiler()+'\n')
+      g.write('FFLAGS       = '+self.setcompilers.getCompilerFlags()+'\n')
+      self.setcompilers.popLanguage()
+    else:
+      g.write('FORTRAN      = \n')
+      g.write('FFLAGS       = \n')
     g.write('CDEFS        = -DAdd_\n')
     g.close()
     if not os.path.isdir(installDir):
