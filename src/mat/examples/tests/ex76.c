@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.5 2000/10/09 13:44:03 hzhang Exp bsmith $*/
+/*$Id: ex76.c,v 1.6 2000/10/25 14:23:40 bsmith Exp hzhang $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -139,6 +139,7 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
   ierr = VecDuplicate(x,&b);CHKERRA(ierr);
   ierr = VecDuplicate(x,&y);CHKERRA(ierr);
+  ierr = VecSetRandom(rand,x);CHKERRA(ierr);
 
   /* Test MatReordering() */
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iscol);CHKERRA(ierr); 
@@ -174,7 +175,7 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
       ierr = VecNorm(y,NORM_2,&norm2);CHKERRA(ierr);
-      if (norm1 < norm2 && lf != 1){ 
+      if (10*norm1 < norm2 && lf != 1){ 
         ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, %d, Norm of error=%g, %g\n",lf-2,lf,norm1,norm2);CHKERRA(ierr); 
       }  
       norm1 = norm2;
