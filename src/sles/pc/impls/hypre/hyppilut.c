@@ -84,7 +84,8 @@ static int PCSetUp_HYPRE(PC pc)
   ierr = HYPRE_IJMatrixGetObject(jac->ij,(void**)&hmat);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->b,(void**)&bv);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&xv);CHKERRQ(ierr);
-  ierr = (*jac->setup)(jac->hsolver,hmat,bv,xv);CHKERRQ(ierr);
+  ierr = (*jac->setup)(jac->hsolver,hmat,bv,xv);
+  if (ierr) SETERRQ1(1,"Error in HYPRE setup, error code %d",ierr);
   PetscFunctionReturn(0);
 }
 
@@ -123,7 +124,10 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
   ierr = HYPRE_IJMatrixGetObject(jac->ij,(void**)&hmat);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->b,(void**)&jbv);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&jxv);CHKERRQ(ierr);
-  ierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);CHKERRQ(ierr);
+  ierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
+  /* error code of 1 in boomerAMG merely means convergence not achieved */
+  if (ierr && ierr != 1) SETERRQ1(1,"Error in HYPRE solver, error code %d",ierr);
+  
 
   HYPREReplacePointer(jac->b,sbv,bv);
   HYPREReplacePointer(jac->x,sxv,xv);
