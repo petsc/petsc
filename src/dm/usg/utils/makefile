@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 1998/06/12 22:12:29 bsmith Exp balay $ 
+# $Id: makefile,v 1.3 1998/06/15 16:41:34 balay Exp balay $ 
 
 ALL: input
 
@@ -25,6 +25,7 @@ SOURCEC    = input.c
 SOURCEF    =
 SOURCEH    = 
 OBJSC      = 
+DOCS       = README
 CLEANFILES = 
 
 input: chkopts input.o
