@@ -363,12 +363,19 @@ int PetscLogObjects(PetscTruth flag) {
 @*/
 int PetscLogStageRegister(int *stage, const char sname[]) {
   StageLog stageLog;
+  int      event;
   int      ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogRegister(stageLog, sname, stage);                                                        CHKERRQ(ierr);
+  /* Copy events already changed in the main stage, this sucks */
   ierr = EventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents);     CHKERRQ(ierr);
+  for(event = 0; event < stageLog->eventLog->numEvents; event++) {
+    ierr = EventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event],
+                             &stageLog->stageInfo[*stage].eventLog->eventInfo[event]);
+    CHKERRQ(ierr);
+  }
   ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses);    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -730,6 +737,39 @@ int PetscLogEventDeactivate(int event) {
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);                                                            CHKERRQ(ierr);
   ierr = EventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event);                              CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventSetActiveAll"
+/*@
+  PetscLogEventSetActive - Sets the event activity in every stage.
+
+  Not Collective
+
+  Input Parameters:
++ event    - The event id
+- isActive - The activity flag determining whether the event is logged
+
+  Level: advanced
+
+.keywords: log, event, activate
+.seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate(),PlogEventDeactivate()
+@*/
+int PetscLogEventSetActiveAll(int event, PetscTruth isActive) {
+  StageLog stageLog;
+  int      stage;
+  int      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
+  for(stage = 0; stage < stageLog->numStages; stage++) {
+    if (isActive == PETSC_TRUE) {
+      ierr = EventPerfLogActivate(stageLog->stageInfo[stage].eventLog, event);                            CHKERRQ(ierr);
+    } else {
+      ierr = EventPerfLogDeactivate(stageLog->stageInfo[stage].eventLog, event);                          CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

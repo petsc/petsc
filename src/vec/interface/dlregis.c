@@ -71,12 +71,12 @@ int VecInitializePackage(char *path) {
   ierr = PetscLogEventRegister(&VEC_ReduceBarrier,       "VecReduceBarrier", VEC_COOKIE);                 CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_ReduceCommunication, "VecReduceComm",    VEC_COOKIE);                 CHKERRQ(ierr);
   /* Turn off high traffic events by default */
-  ierr = PetscLogEventDeactivate(VEC_DotBarrier);                                                         CHKERRQ(ierr);
-  ierr = PetscLogEventDeactivate(VEC_MDotBarrier);                                                        CHKERRQ(ierr);
-  ierr = PetscLogEventDeactivate(VEC_NormBarrier);                                                        CHKERRQ(ierr);
-  ierr = PetscLogEventDeactivate(VEC_SetValues);                                                          CHKERRQ(ierr);
-  ierr = PetscLogEventDeactivate(VEC_ScatterBarrier);                                                     CHKERRQ(ierr);
-  ierr = PetscLogEventDeactivate(VEC_ReduceBarrier);                                                      CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);                                          CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(VEC_MDotBarrier, PETSC_FALSE);                                         CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(VEC_NormBarrier, PETSC_FALSE);                                         CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(VEC_SetValues, PETSC_FALSE);                                           CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_FALSE);                                      CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(VEC_ReduceBarrier, PETSC_FALSE);                                       CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
