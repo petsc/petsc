@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.21 1998/07/01 15:46:52 balay Exp bsmith $";
+! "$Id: ex2f.F,v 1.22 1998/12/03 04:04:13 bsmith Exp balay $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -88,7 +88,7 @@
 !  MUST be declared as external.
 
       external Monitor, RHSFunction
-      external InitialConditions, RHSJacobian, RHSJacobianFD
+      external InitialConditions, RHSJacobian
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                 Beginning of program
