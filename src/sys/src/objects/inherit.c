@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: inherit.c,v 1.2 1996/02/08 18:26:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: inherit.c,v 1.3 1996/04/14 00:50:07 curfman Exp curfman $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -29,6 +29,8 @@ static int PetscObjectInherit_DefaultCopy(void *in, void **out)
    only one child - we may extend this eventually.
 
 .keywords: object, inherit
+
+.seealso: PetscObjectGetChild()
 @*/
 int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **))
 {
@@ -36,6 +38,26 @@ int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **))
   obj->child = ptr;
   if (copy == PETSC_NULL) copy = PetscObjectInherit_DefaultCopy;
   obj->childcopy = copy;
+  return 0;
+}
+
+/*@C
+   PetscObjectGetChild - Gets the child of any PetscObject.
+
+   Input Parameter:
+.  obj - any PETSc object, for example a Vec, Mat or KSP.
+
+   Output Parameter:
+.  type - the child, if it has been set (otherwise PETSC_NULL)
+
+.keywords: object, get, child
+
+.seealso: PetscObjectInherit()
+@*/
+int PetscObjectGetChild(PetscObject obj,void *child)
+{
+  if (!obj) SETERRQ(1,"PetscObjectGetComm:Null object");
+  child = obj->child;
   return 0;
 }
 
