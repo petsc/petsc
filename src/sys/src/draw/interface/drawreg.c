@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.5 1999/01/31 16:04:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.6 1999/02/01 23:16:16 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -108,7 +108,7 @@ int DrawSetType(Draw draw,DrawType type)
   /* Get the function pointers for the graphics method requested */
   if (!DrawList) SETERRQ(1,1,"No draw implementations ierr");
 
-  registered =  FListFind(draw->comm, DrawList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(draw->comm, DrawList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,1,"Unknown Draw type given: %s",type);
 
