@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.50 2000/01/11 21:02:45 bsmith Exp $";
+! "$Id: ex5f90.F,v 1.25 2000/07/20 22:44:09 balay Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -44,7 +44,7 @@
 #define PETSC_AVOID_DECLARATIONS
 #define PETSC_AVOID_MPIF_H
 
-      module f90sucks
+      module f90module
       type userctx
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
@@ -56,12 +56,12 @@
         integer mx,my,rank,size
         double precision lambda
       end type userctx
-      end module f90sucks
+      end module f90module
 #undef PETSC_AVOID_DECLARATIONS
 #undef PETSC_AVOID_MPIF_H
 
       program main
-      use f90sucks
+      use f90module
       implicit none
 !
 !  We place common blocks, variable declarations, and other include files
@@ -314,7 +314,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(user,X,ierr)
-      use f90sucks
+      use f90module
       implicit none
 
 #include "include/finclude/petscvec.h90"
@@ -379,7 +379,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine ApplicationInitialGuess(user,x,ierr)
-      use f90sucks
+      use f90module
       implicit none
 
 #include "include/finclude/petsc.h"
@@ -450,7 +450,7 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormFunction(snes,X,F,user,ierr)
-      use f90sucks
+      use f90module
       implicit none
 
 #include "include/finclude/petsc.h"
@@ -531,7 +531,7 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine ApplicationFunction(x,f,user,ierr)
-      use f90sucks
+      use f90module
 
       implicit none
 
@@ -622,7 +622,7 @@
 !  used in this example.
 !
       subroutine FormJacobian(snes,X,jac,jac_prec,flag,user,ierr)
-      use f90sucks
+      use f90module
       implicit none
 
 #include "include/finclude/petsc.h"
@@ -741,7 +741,7 @@
 !  used in this example.
 !
       subroutine ApplicationJacobian(x,jac,jac_prec,user,ierr)
-      use f90sucks
+      use f90module
       implicit none
 
 #include "include/finclude/petsc.h"
