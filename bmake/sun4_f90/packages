@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.25 2000/01/31 21:35:32 balay Exp bsmith $ 
+# $Id: base.site,v 1.26 2000/02/02 20:07:23 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,7 +14,7 @@ BLAS_LIB       =  /usr/local/lapack/lib/blas.a
 LAPACK_LIB     =  /usr/local/lapack/lib/lapack.a
 
 # Location of MPI (Message Passing Interface) software  
-MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
+MPI_HOME       = /home/petsc/software/mpich-1.2.0/sun4_f90
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
@@ -34,7 +34,7 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #MPE_INCLUDE   = -I/usr/local/mpi/include
 #MPE_LIB       = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lpmpi
 MPE_INCLUDE    = -I${MPI_HOME}/include
-MPE_LIB        = -L${MPI_HOME}/lib -lmpe
+MPE_LIB        = -L${MPI_HOME}/lib -lmpe -lpmpich
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
 # Location of BlockSolve (MPI version)
