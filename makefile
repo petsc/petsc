@@ -1,6 +1,7 @@
 #
-# This makefile contains some basic commands for building PETSc.
-# See bmake/common for additional commands.
+# This is the makefile for installing PETSc. See the file
+# Installation for directions on installing PETSc.
+# See also bmake/common for additional commands.
 #
 
 PETSC_DIR = .
@@ -74,6 +75,7 @@ testfortran: chkpetsc_dir
 	-@echo "Beginning to compile and run Fortran test examples"
 	-@echo "Using compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using linker: $(FLINKER)"
+	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
 	-@echo "Using libraries: $(PETSC_FORTRAN_LIB)  $(PETSC_LIB)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
@@ -164,8 +166,9 @@ etags:
 	etags -a -f TAGS src/fortran/custom/makefile
 	etags -a -f TAGS include/makefile include/*/makefile 
 	etags -a -f TAGS bmake/common bmake/*/base*
-	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c src/benchmarks/*.c
-	etags -a -f TAGS src/*/examples/*.F src/*/examples/*.f src/fortran/custom/*.F 
+	etags -a -f TAGS src/fortran/custom/*.c src/fortran/auto/*.c 
+	etags -a -f TAGS src/benchmarks/*.c src/fortran/custom/*.F
+	etags -a -f TAGS src/*/examples/*.F src/*/examples/*.f 
 	etags -a -f TAGS src/*/examples/*/*.F src/*/examples/*/*.f
 	chmod g+w TAGS
 
@@ -179,7 +182,8 @@ etags_complete:
 	etags -a -f TAGS_COMPLETE src/*/impls/*/*/*.c  src/benchmarks/*.c
 	etags -a -f TAGS_COMPLETE src/contrib/*/*.c src/contrib/*/src/*.c 
 	etags -a -f TAGS_COMPLETE src/contrib/*/examples/*.c
-	etags -a -f TAGS_COMPLETE src/contrib/*/src/*.h src/contrib/*/examples/*.F
+	etags -a -f TAGS_COMPLETE src/contrib/*/src/*.h 
+	etags -a -f TAGS_COMPLETE src/contrib/*/examples/*.F
 	etags -a -f TAGS_COMPLETE include/*.h include/pinclude/*.h bmake/common
 	etags -a -f TAGS_COMPLETE include/FINCLUDE/*.h 
 	etags -a -f TAGS_COMPLETE src/*/impls/*.c src/*/utils/*.c
@@ -187,19 +191,25 @@ etags_complete:
 	etags -a -f TAGS_COMPLETE src/*/interface/makefile src/makefile 
 	etags -a -f TAGS_COMPLETE src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS_COMPLETE src/*/utils/makefile src/*/examples/makefile
-	etags -a -f TAGS_COMPLETE src/*/examples/*/makefile src/*/examples/*/*/makefile
+	etags -a -f TAGS_COMPLETE src/*/examples/*/makefile 
+	etags -a -f TAGS_COMPLETE src/*/examples/*/*/makefile
 	etags -a -f TAGS_COMPLETE src/*/makefile src/*/impls/*/*/makefile
-	etags -a -f TAGS_COMPLETE src/contrib/*/makefile src/contrib/*/src/makefile 
+	etags -a -f TAGS_COMPLETE src/contrib/*/makefile 
+	etags -a -f TAGS_COMPLETE src/contrib/*/src/makefile 
 	etags -a -f TAGS_COMPLETE src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS_COMPLETE src/fortran/custom/makefile
 	etags -a -f TAGS_COMPLETE include/makefile include/*/makefile 
 	etags -a -f TAGS_COMPLETE bmake/common bmake/*/base*
-	etags -a -f TAGS_COMPLETE src/fortran/custom/*.c src/fortran/auto/*.c src/benchmarks/*.c
-	etags -a -f TAGS_COMPLETE src/*/examples/*.F src/*/examples/*.f src/fortran/custom/*.F 
+	etags -a -f TAGS_COMPLETE src/fortran/custom/*.c src/fortran/auto/*.c 
+	etags -a -f TAGS_COMPLETE src/benchmarks/*.c
+	etags -a -f TAGS_COMPLETE src/*/examples/*.F src/*/examples/*.f 
+	etags -a -f TAGS_COMPLETE src/fortran/custom/*.F 
 	etags -a -f TAGS_COMPLETE src/*/examples/*/*.F src/*/examples/*/*.f
-	etags -a -f TAGS_COMPLETE docs/tex/manual/routin.tex docs/tex/manual/manual.tex
+	etags -a -f TAGS_COMPLETE docs/tex/manual/routin.tex 
+	etags -a -f TAGS_COMPLETE docs/tex/manual/manual.tex
 	etags -a -f TAGS_COMPLETE docs/tex/manual/manual_tex.tex
-	etags -a -f TAGS_COMPLETE docs/tex/manual/intro.tex docs/tex/manual/part1.tex
+	etags -a -f TAGS_COMPLETE docs/tex/manual/intro.tex 
+	etags -a -f TAGS_COMPLETE docs/tex/manual/part1.tex
 	etags -a -f TAGS_COMPLETE docs/tex/manual/part2.tex
 	etags -a -f TAGS_COMPLETE docs/tex/manual/intro.tex docs/makefile
 	chmod g+w TAGS_COMPLETE
@@ -222,13 +232,16 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/*/utils/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/*/makefile src/*/impls/*/*/makefile
-	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/makefile src/contrib/*/src/makefile 
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/makefile src/fortran/auto/makefile 
+	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/makefile 
+	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/makefile 
+	etags -a -f TAGS_NO_EXAMPLES src/fortran/makefile 
+	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/makefile
 	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile 
 	etags -a -f TAGS_NO_EXAMPLES bmake/common bmake/*/base*
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/auto/*.c
-	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c src/fortran/custom/*.F
+	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.c 
+	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/*.F
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/routin.tex 
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/manual.tex
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/manual/intro.tex
@@ -246,10 +259,13 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS_MAKEFILES src/*/utils/makefile src/*/interface/makefile
 	etags -a -f TAGS_MAKEFILES src/*/makefile src/*/impls/*/*/makefile
-	etags -a -f TAGS_MAKEFILES src/*/examples/makefile src/*/examples/*/makefile
+	etags -a -f TAGS_MAKEFILES src/*/examples/makefile 
+	etags -a -f TAGS_MAKEFILES src/*/examples/*/makefile
 	etags -a -f TAGS_MAKEFILES src/*/examples/*/*/makefile
-	etags -a -f TAGS_MAKEFILES src/fortran/makefile src/fortran/auto/makefile 
-	etags -a -f TAGS_MAKEFILES src/contrib/*/makefile src/contrib/*/src/makefile 
+	etags -a -f TAGS_MAKEFILES src/fortran/makefile 
+	etags -a -f TAGS_MAKEFILES src/fortran/auto/makefile 
+	etags -a -f TAGS_MAKEFILES src/contrib/*/makefile 
+	etags -a -f TAGS_MAKEFILES src/contrib/*/src/makefile 
 	etags -a -f TAGS_MAKEFILES src/fortran/custom/makefile
 	etags -a -f TAGS_MAKEFILES include/makefile include/*/makefile
 	etags -a -f TAGS_MAKEFILES bmake/common bmake/*/base*
@@ -274,7 +290,6 @@ allwwwpages: deletewwwpages
 	-make ACTION=wwwpages tree
 	-maint/wwwman
 	-maint/examplesindex.tcl
-
 alllatexpages: deletelatexpages
 	-make ACTION=latexpages tree
 	-cd src/fortran/custom; make latexpages
