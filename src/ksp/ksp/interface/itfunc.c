@@ -881,6 +881,46 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *fl
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPGetComputeSingularValues"
+/*@
+   KSPGetComputeSingularValues - Gets the flag indicating whether the extreme singular 
+   values will be calculated via a Lanczos or Arnoldi process as the linear 
+   system is solved.
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Output Parameter:
+.  flg - PETSC_TRUE or PETSC_FALSE
+
+   Options Database Key:
+.  -ksp_singmonitor - Activates KSPSetComputeSingularValues()
+
+   Notes:
+   Currently this option is not valid for all iterative methods.
+
+   Many users may just want to use the monitoring routine
+   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
+   to print the singular values at each iteration of the linear solve.
+
+   Level: advanced
+
+.keywords: KSP, set, compute, singular values
+
+.seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP ksp,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(flg,2)
+  *flg = ksp->calc_sings;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPSetComputeSingularValues"
 /*@
    KSPSetComputeSingularValues - Sets a flag so that the extreme singular 
@@ -914,6 +954,39 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP ksp,PetscTruth
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->calc_sings  = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetComputeEigenvalues"
+/*@
+   KSPGetComputeEigenvalues - Gets the flag indicating that the extreme eigenvalues
+   values will be calculated via a Lanczos or Arnoldi process as the linear 
+   system is solved.
+
+   Collective on KSP
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Output Parameter:
+.  flg - PETSC_TRUE or PETSC_FALSE
+
+   Notes:
+   Currently this option is not valid for all iterative methods.
+
+   Level: advanced
+
+.keywords: KSP, set, compute, eigenvalues
+
+.seealso: KSPComputeEigenvalues(), KSPComputeEigenvaluesExplicitly()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeEigenvalues(KSP ksp,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(flg,2);
+  *flg = ksp->calc_sings;
   PetscFunctionReturn(0);
 }
 

@@ -124,7 +124,9 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP,PetscTrut
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP,PetscTruth *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP,PetscTruth*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeEigenvalues(KSP,PetscTruth*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeEigenvalues(KSP,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP,PetscTruth*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetRhs(KSP,Vec *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetSolution(KSP,Vec *);
