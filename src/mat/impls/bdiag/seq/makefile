@@ -4,11 +4,11 @@ ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../..  \
            -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"mat/impls/bdiag/seq/"'
-SOURCEC  = bdiag.c
+SOURCEC  = bdiag.c bdfact.c
 SOURCEF  =
 WSOURCE = 
 SOURCEH  = bdiag.h
-OBJSC    = bdiag.o 
+OBJSC    = bdiag.o bdfact.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscmat

@@ -1,11 +1,11 @@
-/* $Id: umtr.h,v 1.1 1995/07/20 04:02:33 curfman Exp $ */
+/* $Id: umtr.h,v 1.1 1995/07/20 16:49:21 curfman Exp curfman $ */
 
 /*
     Context for a Newton trust region method (unconstrained minimization)
  */
 
-#ifndef __TRM_H
-#define __TRM_H
+#ifndef __SNES_UMTR_H
+#define __SNES_UMTR_H
 #include "snesimpl.h"
 
 typedef struct {

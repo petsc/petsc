@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.10 1995/06/07 17:30:43 bsmith Exp $ */
+/* $Id: bdiag.h,v 1.7 1995/06/07 17:32:52 bsmith Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -31,6 +31,7 @@ typedef struct {
 			      MatGetRow is used */
   Scalar **diagv;          /* The actual diagonals */
   Scalar *dvalue;          /* Used to hold a row if MatGetRow is used */
+  int    *pivots;          /* pivots for LU factorization (temporary loc) */
 } Mat_BDiag;
 
 #endif

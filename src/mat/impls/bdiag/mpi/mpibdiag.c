@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.17 1995/07/17 20:41:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.18 1995/07/26 15:42:17 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -711,5 +711,53 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   mbd->assembled = 0;
 
   *newmat = mat;
+  return 0;
+}
+
+/*@
+   MatBDiagGetData - Gets the data for the block diagonal matrix format.
+   For the parallel case, this returns information for the local submatrix.
+
+   Input Parameters:
+.  mat - the matrix, stored in block diagonal format.
+
+   Output Parameters:
+.  m - number of rows
+.  n - number of columns
+.  nd - number of block diagonals
+.  nb - each element of a diagonal is an nb x nb dense matrix
+.  bdlen - array of total block lengths of block diagonals
+.  diag - array of block diagonal numbers,
+$     where for a matrix element A[i,j], 
+$     where i=row and j=column, the diagonal number is
+$     diag = i/nb - j/nb  (integer division)
+.  diagv - pointer to actual diagonals (in same order as diag array), 
+
+   Notes:
+   See the users manual for further details regarding this storage format.
+
+.keywords: matrix, block, diagonal, get, data
+
+.seealso: MatCreateSequentialBDiag(), MatCreateMPIBDiag()
+@*/
+int MatBDiagGetData(Mat mat,int *nd,int *nb,int **diag,int **bdlen,
+                    Scalar ***diagv)
+{
+  Mat_MPIBDiag *pdmat;
+  Mat_BDiag *dmat;
+
+  VALIDHEADER(mat,MAT_COOKIE);
+  if (mat->type == MATBDIAG) {
+    dmat = (Mat_BDiag *) mat->data;
+  } else if (mat->type == MATMPIBDIAG) {
+    pdmat = (Mat_MPIBDiag *) mat->data;
+    dmat = (Mat_BDiag *) pdmat->A->data;
+  } else SETERRQ(1,
+    "MatBDiagGetData: Valid only for MATBDIAG and MATMPIBDIAG formats");
+  *nd    = dmat->nd;
+  *nb    = dmat->nb;
+  *diag  = dmat->diag;
+  *bdlen = dmat->bdlen;
+  *diagv = dmat->diagv;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.34 1995/07/22 19:46:43 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.35 1995/07/27 03:01:17 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -34,6 +34,8 @@ int SNESSolve_LS(SNES snes,int *outits)
   MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   double       fnorm, gnorm, xnorm, ynorm, *history;
   Vec          Y, X, F, G, W, TMP;
+  SLES         sles;
+  KSP          ksp;
 
   history	= snes->conv_hist;	/* convergence history */
   history_len	= snes->conv_hist_len;	/* convergence history length */
@@ -52,7 +54,15 @@ int SNESSolve_LS(SNES snes,int *outits)
   if (history && history_len > 0) history[0] = fnorm;
   if (snes->monitor) 
     {ierr = (*snes->monitor)(snes,0,fnorm,snes->monP); CHKERRQ(ierr);}
-        
+
+  /* Set the KSP stopping criteria to use the Eisenstat-Walker method */
+  if (snes->ksp_ewconv) {
+    ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
+    ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,
+           (void *)snes);  CHKERRQ(ierr);
+  }
+          
   for ( i=0; i<maxits; i++ ) {
        snes->iter = i+1;
 
@@ -109,7 +119,7 @@ int SNESSetUp_LS(SNES snes )
 int SNESDestroy_LS(PetscObject obj)
 {
   SNES snes = (SNES) obj;
-  VecFreeVecs(snes->work, snes->nwork );
+  VecFreeVecs(snes->work,snes->nwork);
   PETSCFREE(snes->data);
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.31 1995/07/26 15:42:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.32 1995/07/28 04:22:17 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -7,16 +7,6 @@ static char vcid[] = "$Id: bdiag.c,v 1.31 1995/07/26 15:42:27 curfman Exp bsmith
 #include "bdiag.h"
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
-
-int MatGetBDiagData(Mat matin,int *nd,int *nb,int **diag, Scalar ***diagv)
-{
-  Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
-  *nd    = dmat->nd;
-  *nb    = dmat->nb;
-  *diag  = dmat->diag;
-  *diagv = dmat->diagv;
-  return 0;
-}
 
 static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode  addv)
@@ -760,6 +750,7 @@ static int MatDestroy_BDiag(PetscObject obj)
   if (!mat->user_alloc) { /* Free the actual diagonals */
     PETSCFREE( mat->diagv[0] );
   }
+  if (mat->pivots) PETSCFREE(mat->pivots);
   PETSCFREE(mat->diagv);
   PETSCFREE(mat->diag);
   PETSCFREE(mat->dvalue);
@@ -898,26 +889,34 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
   return 0;
 }
 
-/* static int MatCopyPrivate_BDiag(Mat,Mat *); */
+static int MatCopyPrivate_BDiag(Mat,Mat *);
+extern int MatLUFactorSymbolic_BDiag(Mat,IS,IS,double,Mat*);
+extern int MatLUFactorNumeric_BDiag(Mat,Mat*);
+extern int MatLUFactor_BDiag(Mat,IS,IS,double);
+extern int MatSolve_BDiag(Mat,Vec,Vec);
+extern int MatSolveAdd_BDiag(Mat,Vec,Vec,Vec);
+extern int MatSolveTrans_BDiag(Mat,Vec,Vec);
+extern int MatSolveTransAdd_BDiag(Mat,Vec,Vec,Vec);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatGetRow_BDiag, MatRestoreRow_BDiag,
        MatMult_BDiag, MatMultAdd_BDiag, 
        MatMultTrans_BDiag, MatMultTransAdd_BDiag, 
-       0, 0, 0, 0,
-       0, 0, 
+       MatSolve_BDiag,MatSolveAdd_BDiag,
+       MatSolveTrans_BDiag,MatSolveTransAdd_BDiag,
+       MatLUFactor_BDiag, 0,
        MatRelax_BDiag, 0,
        MatGetInfo_BDiag, 0,
        MatGetDiagonal_BDiag, 0, 0,
        0,MatAssemblyEnd_BDiag,
-       0, 0, MatZero_BDiag,MatZeroRows_BDiag,0,
-       0, 0, 0, 0,
+       0, 0, MatZero_BDiag,MatZeroRows_BDiag, 0,
+       MatLUFactorSymbolic_BDiag,MatLUFactorNumeric_BDiag, 0, 0,
        MatGetSize_BDiag,MatGetSize_BDiag,MatGetOwnershipRange_BDiag,
        0, 0,
        0, 0, 0,
        MatGetSubMatrix_BDiag, 0,
-       0};
+       MatCopyPrivate_BDiag, 0, 0 };
 
 /*@
    MatCreateSequentialBDiag - Creates a sequential block diagonal matrix.
@@ -983,6 +982,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   mat->nb     = nb;
   mat->ndim   = 0;
   mat->mainbd = -1;
+  mat->pivots = 0;
 
   mat->diag   = (int *)PETSCMALLOC( (2+nb)*nda * sizeof(int) ); 
   CHKPTRQ(mat->diag);
@@ -1056,19 +1056,26 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   return 0;
 }
 
-/*
-static int MatCopyPrivate_BDiag(Mat matin,Mat *newmat)
+static int MatCopyPrivate_BDiag(Mat matin,Mat *matout)
 { 
-  Mat_BDiag *old = (Mat_BDiag *) matin->data;
-  int       ierr;
+  Mat_BDiag *newmat, *oldmat = (Mat_BDiag *) matin->data;
+  int       i, ierr, len;
+  Mat       mat;
 
-  *newmat = 0;
-  SETERRQ(1,"MatCopyPrivate_BDiag:Code not yet finished");
-  if (!old->assembled) SETERRQ(1,"MatCopyPrivate_BDiag:Cannot copy unassembled matrix");
-  ierr = MatCreateSequentialBDiag(matin->comm,old->m,old->n,old->nd,
-         old->nb,old->diag,0,newmat); CHKERRQ(ierr);
-   Copy contents of diagonals 
+  if (!oldmat->assembled) 
+    SETERRQ(1,"MatCopyPrivate_BDiag:Cannot copy unassembled matrix");
+
+  ierr = MatCreateSequentialBDiag(matin->comm,oldmat->m,oldmat->n,
+         oldmat->nd,oldmat->nb,oldmat->diag,0,matout); CHKERRQ(ierr);
+
+  /* Copy contents of diagonals */
+  mat = *matout;
+  newmat = (Mat_BDiag *) mat->data;
+  for (i=0; i<oldmat->nd; i++) {
+    len = oldmat->bdlen[i] * oldmat->nb * oldmat->nb * sizeof(Scalar);
+    PETSCMEMCPY(newmat->diagv[i],oldmat->diagv[i],len);
+  }
+  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }
-
-*/
