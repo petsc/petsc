@@ -11,18 +11,15 @@
 #include "petscvec.h"
 
 struct _PetscMapOps {
-  int  (*getlocalsize)(PetscMap,int*),
-       (*getglobalsize)(PetscMap,int*),
-       (*getlocalrange)(PetscMap,int*,int*),
-       (*getglobalrange)(PetscMap,int**),
-       (*destroy)(PetscMap);
+  int (*setfromoptions)(PetscMap),
+      (*destroy)(PetscMap);
 };
 
 struct _p_PetscMap {
   PETSCHEADER(struct _PetscMapOps)
-  int                    rstart,rend;       /* local start, local end + 1 */
-  int                    N,n;              /* global, local vector size */
-  int                    *range;
+  int  n,N;         /* local, global vector size */
+  int  rstart,rend; /* local start, local end + 1 */
+  int *range;       /* the offset of each processor */
 };
 
 /* ----------------------------------------------------------------------------*/

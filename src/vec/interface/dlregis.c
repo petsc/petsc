@@ -33,6 +33,7 @@ int VecInitializePackage(char *path) {
   ierr = PetscLogClassRegister(&VEC_COOKIE,         "Vec");                                               CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_SCATTER_COOKIE, "Vec Scatter");                                       CHKERRQ(ierr);
   /* Register Constructors and Serializers */
+  ierr = PetscMapRegisterAll(path);                                                                       CHKERRQ(ierr);
   ierr = VecRegisterAll(path);                                                                            CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&VEC_View,                "VecView",          PETSC_NULL, VEC_COOKIE);     CHKERRQ(ierr);

@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = map.c vector.c veccreate.c vecreg.c vecregall.c dlregis.c
+SOURCEC  = map.c mapcreate.c mapreg.c mapregall.c vector.c veccreate.c vecreg.c vecregall.c dlregis.c
 SOURCEF  =
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}

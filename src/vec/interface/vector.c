@@ -64,12 +64,12 @@ static int VecSetTypeFromOptions_Private(Vec vec)
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetFromOptions"
 /*@C
-   VecSetFromOptions - Sets the vector type from the options database.
+  VecSetFromOptions - Configures the vector from the options database.
 
-   Collective on Vec
+  Collective on Vec
 
-   Input Parameter:
-.  vec - the vector
+  Input Parameter:
+. vec - The vector
 
   Notes:  To see all options, run your program with the -help option, or consult the users manual.
           Must be called after VecCreate() but before the vector is used.

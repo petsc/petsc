@@ -18,7 +18,7 @@ EXTERN_C_END
 #undef __FUNC__  
 #define __FUNC__ "VecRegisterAll"
 /*@C
-  VecRegisterAll - Registers all of the Vec components in the PETSc package.
+  VecRegisterAll - Registers all of the vector components in the Vec package.
 
   Not Collective
 
@@ -60,7 +60,7 @@ int VecRegisterAll(const char path[])
 
   Level: advanced
 
-.keywords: Vec, vector, register, all, serialize
+.keywords: Vec, register, all, serialize
 .seealso: VecSerializeRegister(), VecSerializeRegisterDestroy()
 @*/
 int VecSerializeRegisterAll(const char path[])
@@ -68,7 +68,7 @@ int VecSerializeRegisterAll(const char path[])
   int ierr;
 
   PetscFunctionBegin;
-  VecSerializeRegisterAllCalled = 1;
+  VecSerializeRegisterAllCalled = PETSC_TRUE;
 
   ierr = VecSerializeRegister(VEC_SER_SEQ_BINARY, path, "VecSerialize_Seq", VecSerialize_Seq);            CHKERRQ(ierr);
   ierr = VecSerializeRegister(VEC_SER_MPI_BINARY, path, "VecSerialize_MPI", VecSerialize_MPI);            CHKERRQ(ierr);

@@ -9,6 +9,196 @@
 int MAP_COOKIE;
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscMapSetTypeFromOptions_Private"
+/*
+  PetscMapSetTypeFromOptions_Private - Sets the type of map from user options. Defaults to a PETSc sequential map on one
+  processor and a PETSc MPI map on more than one processor.
+
+  Collective on PetscMap
+
+  Input Parameter:
+. map - The map
+
+  Level: intermediate
+
+.keywords: PetscMap, set, options, database, type
+.seealso: PetscMapSetFromOptions(), PetscMapSetType()
+*/
+static int PetscMapSetTypeFromOptions_Private(PetscMap map)
+{
+  PetscTruth opt;
+  char      *defaultType;
+  char       typeName[256];
+  int        numProcs;
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (map->type_name != PETSC_NULL) {
+    defaultType = map->type_name;
+  } else {
+    ierr = MPI_Comm_size(map->comm, &numProcs);                                                           CHKERRQ(ierr);
+    if (numProcs > 1) {
+      defaultType = MAP_MPI;
+    } else {
+      defaultType = MAP_SEQ;
+    }
+  }
+
+  if (!PetscMapRegisterAllCalled) {
+    ierr = PetscMapRegisterAll(PETSC_NULL);                                                               CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsList("-map_type", "PetscMap type"," PetscMapSetType", PetscMapList, defaultType, typeName, 256, &opt);
+  CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscMapSetType(map, typeName);                                                                CHKERRQ(ierr);
+  } else {
+    ierr = PetscMapSetType(map, defaultType);                                                             CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapSetFromOptions"
+/*@C
+  PetscMapSetFromOptions - Configures the map from the options database.
+
+  Collective on PetscMap
+
+  Input Parameter:
+. map - The map
+
+  Notes:  To see all options, run your program with the -help option, or consult the users manual.
+          Must be called after PetscMapCreate() but before the map is used.
+
+  Level: intermediate
+
+  Concepts: maptors^setting options
+  Concepts: maptors^setting type
+
+.keywords: PetscMap, set, options, database
+.seealso: PetscMapCreate(), PetscMapPrintHelp(), PetscMaphSetOptionsPrefix()
+@*/
+int PetscMapSetFromOptions(PetscMap map)
+{
+  PetscTruth opt;
+  int        ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(map,MAP_COOKIE);
+
+  ierr = PetscOptionsBegin(map->comm, map->prefix, "PetscMap options", "PetscMap");                       CHKERRQ(ierr);
+
+  /* Handle generic maptor options */
+  ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);                                                  CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscMapPrintHelp(map);                                                                        CHKERRQ(ierr);
+  }
+
+  /* Handle map type options */
+  ierr = PetscMapSetTypeFromOptions_Private(map);                                                         CHKERRQ(ierr);
+
+  /* Handle specific maptor options */
+  if (map->ops->setfromoptions != PETSC_NULL) {
+    ierr = (*map->ops->setfromoptions)(map);                                                              CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsEnd();                                                                               CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapPrintHelp"
+/*@
+  PetscMapPrintHelp - Prints all options for the PetscMap.
+
+  Input Parameter:
+. map - The map
+
+  Options Database Keys:
+$  -help, -h
+
+  Level: intermediate
+
+.keywords: PetscMap, help
+.seealso: PetscMapSetFromOptions()
+@*/
+int PetscMapPrintHelp(PetscMap map)
+{
+  char p[64];
+  int  ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(map, MAP_COOKIE);
+
+  ierr = PetscStrcpy(p, "-");                                                                             CHKERRQ(ierr);
+  if (map->prefix != PETSC_NULL) {
+    ierr = PetscStrcat(p, map->prefix);                                                                   CHKERRQ(ierr);
+  }
+
+  (*PetscHelpPrintf)(map->comm, "PetscMap options ------------------------------------------------\n");
+  (*PetscHelpPrintf)(map->comm,"   %smap_type <typename> : Sets the map type\n", p);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapDestroy"
+/*@C
+   PetscMapDestroy - Destroys a map object.
+
+   Not Collective
+
+   Input Parameter:
+.  m - the map object
+
+   Level: developer
+
+.seealso: PetscMapCreateMPI()
+
+@*/
+int PetscMapDestroy(PetscMap map)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(map, MAP_COOKIE); 
+  if (--map->refct > 0) PetscFunctionReturn(0);
+  if (map->range != PETSC_NULL) {
+    ierr = PetscFree(map->range);                                                                         CHKERRQ(ierr);
+  }
+  if (map->ops->destroy != PETSC_NULL) {
+    ierr = (*map->ops->destroy)(map);                                                                     CHKERRQ(ierr);
+  }
+  PetscLogObjectDestroy(map);
+  PetscHeaderDestroy(map);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapSetLocalSize"
+/*@C
+  PetscMapSetLocalSize - Sets the number of elements associated with this processor.
+
+  Not Collective
+
+  Input Parameters:
++ m - the map object
+- n - the local size
+
+  Level: developer
+
+.seealso: PetscMapSetSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
+Concepts: PetscMap^local size
+@*/
+int PetscMapSetLocalSize(PetscMap m,int n)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(m,MAP_COOKIE); 
+  m->n = n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetLocalSize"
 /*@C
    PetscMapGetLocalSize - Gets the number of elements associated with this processor.
@@ -30,11 +220,34 @@ int MAP_COOKIE;
 @*/
 int PetscMapGetLocalSize(PetscMap m,int *n)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  ierr = (*m->ops->getlocalsize)(m,n);CHKERRQ(ierr);
+  PetscValidIntPointer(n);
+  *n = m->n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapSetSize"
+/*@C
+  PetscMapSetSize - Sets the total number of elements associated with this map.
+
+  Not Collective
+
+  Input Parameters:
++ m - the map object
+- N - the global size
+
+  Level: developer
+
+.seealso: PetscMapSetLocalSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
+ Concepts: PetscMap^size
+@*/
+int PetscMapSetSize(PetscMap m,int N)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(m,MAP_COOKIE); 
+  m->N = N;
   PetscFunctionReturn(0);
 }
 
@@ -59,11 +272,10 @@ int PetscMapGetLocalSize(PetscMap m,int *n)
 @*/
 int PetscMapGetSize(PetscMap m,int *N)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  ierr = (*m->ops->getglobalsize)(m,N);CHKERRQ(ierr);
+  PetscValidIntPointer(N);
+  *N = m->N;
   PetscFunctionReturn(0);
 }
 
@@ -88,11 +300,12 @@ int PetscMapGetSize(PetscMap m,int *N)
 @*/
 int PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  ierr = (*m->ops->getlocalrange)(m,rstart,rend);CHKERRQ(ierr);
+  PetscValidIntPointer(rstart);
+  PetscValidIntPointer(rend);
+  if (rstart) *rstart = m->rstart;
+  if (rend)   *rend   = m->rend;
   PetscFunctionReturn(0);
 }
 
@@ -118,36 +331,9 @@ int PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
 @*/
 int PetscMapGetGlobalRange(PetscMap m,int *range[])
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  ierr = (*m->ops->getglobalrange)(m,range);CHKERRQ(ierr);
+  PetscValidPointer(range);
+  *range = m->range;
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscMapDestroy"
-/*@C
-   PetscMapDestroy - Destroys a map object.
-
-   Not Collective
-
-   Input Parameter:
-.  m - the map object
-
-   Level: developer
-
-.seealso: PetscMapCreateMPI()
-
-@*/
-int PetscMapDestroy(PetscMap m)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(m,MAP_COOKIE); 
-  ierr = (*m->ops->destroy)(m);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-

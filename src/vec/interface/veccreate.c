@@ -15,7 +15,7 @@ static char vcid[] = "$Id: vecserialize.c,v 1.10 2000/01/10 03:18:14 knepley Exp
 . comm - The communicator for the vector object
 
   Output Parameter:
-. vec  - the vector
+. vec  - The vector object
 
   Level: beginner
 
@@ -94,10 +94,10 @@ int VecSerialize(MPI_Comm comm, Vec *v, PetscViewer viewer, PetscTruth store)
   if (match == PETSC_FALSE) SETERRQ(PETSC_ERR_ARG_WRONG, "Must be binary viewer");
   ierr = PetscViewerBinaryGetDescriptor(viewer, &fd);                                                     CHKERRQ(ierr);
 
-  if (!VecSerializeRegisterAllCalled) {
+  if (VecSerializeRegisterAllCalled == PETSC_FALSE) {
     ierr = VecSerializeRegisterAll(PETSC_NULL);                                                           CHKERRQ(ierr);
   }
-  if (!VecSerializeList) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Could not find table of methods");
+  if (VecSerializeList == PETSC_NULL) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Could not find table of methods");
 
   if (store) {
     PetscValidHeaderSpecific(*v, VEC_COOKIE);
