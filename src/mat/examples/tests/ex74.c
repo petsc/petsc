@@ -1,6 +1,6 @@
-/*$Id: ex74.c,v 1.5 2000/07/07 20:52:23 balay Exp hzhang $*/
+/*$Id: ex74.c,v 1.6 2000/07/10 14:19:05 hzhang Exp hzhang $*/
 
-static char help[] = "Tests the vatious routines in MatSBAIJ format.\n";
+static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
 #include "petscmat.h"
 

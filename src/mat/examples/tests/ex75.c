@@ -1,4 +1,4 @@
-/*$Id: modified from ex2.c,v 1.84 2000/01/11 21:02:20 bsmith Exp $*/
+/*$Id: ex75.c,v 1.1 2000/07/07 21:03:02 balay Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
 
@@ -9,27 +9,8 @@ Input parameters include:\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
 
-/*T
-   Concepts: SLES^Solving a system of linear equations (basic parallel example);
-   Concepts: SLES^Laplacian, 2d
-   Concepts: Laplacian, 2d
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
-   Routines: KSPSetTolerances(); PCSetType();
-   Routines: PetscRandomCreate(); PetscRandomDestroy(); VecSetRandom();
-   Processors: n
-T*/
-
-/* 
-  Include "sles.h" so that we can use SLES solvers.  Note that this file
-  automatically includes:
-     petsc.h  - base PETSc routines   vec.h - vectors
-     sys.h    - system routines       mat.h - matrices
-     is.h     - index sets            ksp.h - Krylov subspace methods
-     viewer.h - viewers               pc.h  - preconditioners
-*/
 #include "petscsles.h"
-#include "mpisbaij.h"
+/* #include "mpisbaij.h" */
 
 #undef __FUNC__
 #define __FUNC__ "main"
