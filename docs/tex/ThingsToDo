@@ -17,9 +17,6 @@ Additional Capabilities that PETSc Needs:
     turning them all off???? Maybe not. Currently PETsc itself does
     this by turning off events one at a time for its own classes.
 
-  * Add feature in nightly builds to remove old libraries (maybe?)
-    See maint/removelibs
-
   - Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
     A prototype is on poseidon:~mcinnes/mpibaij.bak
 
@@ -103,7 +100,6 @@ Additional Capabilities that PETSc Needs:
 
  - Aim for more exhaustive PETSc testing.  Use tconv Unix utilities
 
-
  - Fix VRML vector viewer interface; add documentation about VRML.
 
  - Add feature to SNESDefatulComputeJacobian() for user to set differencing
@@ -138,9 +134,6 @@ Additional Capabilities that PETSc Needs:
     for preallocating matrix space for parallel matrices.  Create an empty
     matrix; pass once through a series of MatSetValues() calls; instead of
     adding elements, just get nonzero info.  Then allocate space.
-
-  - change KSPSetMonitor()... to use functoids with function,context,destroy in
-    one object????
 
   - More test cases that involve, zero size vectors, matrices, IS's etc.
 
@@ -700,3 +693,7 @@ Additional Capabilities that PETSc Needs:
     > set to NaN.
 
   X allow more than one TS monitor. Model on KSP.
+
+  X Add feature in nightly builds to remove old libraries (maybe?)
+    See maint/removelibs
+
