@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.22 1996/03/19 21:25:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.23 1996/03/23 18:33:48 bsmith Exp curfman $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: asm.c,v 1.22 1996/03/19 21:25:26 bsmith Exp bsmith $"
 
 typedef struct {
   int        n,n_local,n_local_true;
-  int        is_flg;              /* flg set to 1 if the IS created in pcsetup*/
+  int        is_flg;              /* flg set to 1 if the IS created in pcsetup */
   int        overlap;             /* overlap requested by user */
   SLES       *sles;               /* linear solvers for each block */
   VecScatter *scat;               /* mapping to subregion */
@@ -42,7 +42,7 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
     MPI_Comm_rank(pc->comm,&rank);
     ierr = SLESView(jac->sles[0],STDOUT_VIEWER_SELF); CHKERRQ(ierr);
   } else if (vtype == STRING_VIEWER) {
-    ViewerStringSPrintf(viewer," blks=%d,ovrlap=%d",jac->n,jac->overlap);
+    ViewerStringSPrintf(viewer," blks=%d, overlap=%d",jac->n,jac->overlap);
     ierr = SLESView(jac->sles[0],viewer);
   }
   return 0;
@@ -259,16 +259,23 @@ int PCCreate_ASM(PC pc)
 }
 
 /*@
+    PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
+    only) for the additive Schwarz preconditioner.  Note: Either all or no
+    processors in the PC communicator must call this routine.
 
-     PCASMSetLocalSubdomains - Sets the subdomains for this processor for the 
-           additive Schwarz preconditioner. Note: all or no processors in the
-           pc must call this. 
-
-  Input Parameters:
+    Input Parameters:
 .   pc - the preconditioner context
-.   n - the number of subdomains for this processor. Default value = 1.
+.   n - the number of subdomains for this processor (default value = 1)
 .   is - the index sets that define the subdomains for this processor
-         or PETSC_NULL for PETSc to determine. 
+         (or PETSC_NULL for PETSc to determine subdomains)
+
+    Note:
+    Use PCASMSetTotalSubdomains() to set the subdomains for all processors.
+
+.keywords: PC, ASM, set, local, subdomains, additive Schwarz
+
+.seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
+          PCASMCreateSubdomains2D()
 @*/
 int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 {
@@ -283,16 +290,23 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 }
 
 /*@
+    PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
+    additive Schwarz preconditioner.  Note: Either all or no processors in the
+    PC communicator must call this routine. 
 
-     PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
-           additive Schwarz preconditioner. Note: all or no processors in the
-           pc must call this. 
-
-  Input Parameters:
+    Input Parameters:
 .   pc - the preconditioner context
-.   n - the number of subdomains for all processor. 
+.   n - the number of subdomains for all processors
 .   is - the index sets that define the subdomains for all processor
-         or PETSC_NULL for PETSc to determine. 
+         (or PETSC_NULL for PETSc to determine subdomains)
+
+    Note:
+    Use PCASMSetLocalSubdomains() to set local subdomains.
+
+.keywords: PC, ASM, set, total, global, subdomains, additive Schwarz
+
+.seealso: PCASMSetLocalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
+          PCASMCreateSubdomains2D()
 @*/
 int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
 {
@@ -318,22 +332,25 @@ set specific index sets\n they cannot be set globally yet.");
 }
 
 /*@
+    PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
+    additive Schwarz preconditioner.  Note: Either all or no processors in the
+    PC communicator must call this routine. 
 
-     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
-           additive Schwarz preconditioner. Note: all or no processors in the
-           pc must call this. 
-
-  Input Parameters:
+    Input Parameters:
 .   pc  - the preconditioner context
-.   ovl - the amount of overlap 
-          >= 0. Default value = 1
+.   ovl - the amount of overlap (ovl >= 0, default value = 1)
+
+.keywords: PC, ASM, set, overlap
+
+.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubSLES(),
+          PCASMCreateSubdomains2D()
 @*/
 int PCASMSetOverlap(PC pc, int ovl)
 {
   PC_ASM *osm;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCASM) return 0;  
-  if (ovl < 0 ) SETERRQ(1,"PCASMSetOverlap: Negetive overlap value used");
+  if (ovl < 0 ) SETERRQ(1,"PCASMSetOverlap:Negative overlap value used");
 
   osm               = (PC_ASM *) pc->data;
   osm->overlap      = ovl;
@@ -341,21 +358,28 @@ int PCASMSetOverlap(PC pc, int ovl)
 }
 
 /*@
-     PCASMCreateSubdomains2D - Creates the index set for overlapping Schwarz 
-       preconditioner for a two dimensional problem on a regular grid.
+   PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz 
+   preconditioner for a two-dimensional problem on a regular grid.
 
-  Presently this is only good for sequential preconditioners.
+   Input Parameters:
+.  m, n - the number of mesh points in the x and y directions
+.  M, N - the number of subdomains in the x and y directions
+.  dof - degrees of freedom per node
+.  overlap - overlap in mesh lines
 
-  Input Parameters:
-.   m, n - the number of mesh points in x and y direction
-.   M, N - the number of subdomains in the x and y direction
-.   dof - degrees of freedom per node
-.   overlap - overlap in mesh lines
+   Output Parameters:
+.  Nsub - the number of subdomains created
+.  is - the array of index sets defining the subdomains
 
-  Output Paramters:
-.   Nsub - the number of subdomains created
-.   is - the array of index sets defining the subdomains
+   Note:
+   Presently PCAMSCreateSubdomains2d() is valid only for sequential
+   preconditioners.  More general related routines are
+   PCASMSetTotalSubdomains() and PCASMSetTotalSubdomains().
 
+.keywords: PC, ASM, additive Schwarz, create, subdomains, 2D, regular grid
+
+.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubSLES(),
+          PCASMSetOverlap()
 @*/
 int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsub,IS **is)
 {
@@ -402,7 +426,6 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   return 0;
 }
 
-
 /*@C
    PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
@@ -421,9 +444,10 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
    
    You must call SLESSetUp() before calling PCASMGetSubSLES().
 
-.keywords:  block, Jacobi, get, sub, SLES, context
+.keywords: PC, ASM, additive Schwarz, get, sub, SLES, context
 
-.seealso: PCASMGetSubSLES()
+.seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMSetOverlap(),
+          PCASMCreateSubdomains2D(),
 @*/
 int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 {

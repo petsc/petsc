@@ -104,7 +104,7 @@ runex4:
 	   $(RM) -f ex4_1.tmp
 runex4_2:
 	-@$(MPIRUN) ex4 -snes_smonitor -nox -snes_type tr > ex4_2.tmp 2>&1;\
-	   if (diff output/ex4_2.ount ex4_2.tmp) then true; \
+	   if (diff output/ex4_2.out ex4_2.tmp) then true; \
 	   else echo "Possible problem with ex4_2, diffs above"; fi; \
 	   $(RM) -f ex4_2.tmp
 runex5:
