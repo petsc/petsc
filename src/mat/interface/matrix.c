@@ -4013,14 +4013,12 @@ int MatPrintHelp(Mat mat)
 {
   static PetscTruth called = PETSC_FALSE;
   int               ierr;
-  MPI_Comm          comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidType(mat);
   MatPreallocated(mat);
 
-  comm = mat->comm;
   if (!called) {
     if (mat->ops->printhelp) {
       ierr = (*mat->ops->printhelp)(mat);CHKERRQ(ierr);
