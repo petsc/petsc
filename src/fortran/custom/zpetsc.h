@@ -39,7 +39,7 @@ EXTERN_C_END
     the char argument (DVF on Win32) or at the end of the argument list
     (general unix compilers)
 */
-#if defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
+#if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
 #define PETSC_MIXED_LEN(len) ,int len
 #define PETSC_END_LEN(len)
 #else

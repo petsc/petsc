@@ -211,7 +211,7 @@ static int ourerrorhandler(int line,const char *fun,const char *file,const char 
    (*f2)(&line,fun_c,file_c,dir_c,&n,&p,mess_c,ctx,&ierr,len1,len2,len3,len4);
 
  }
-#elif defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
+#elif defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
   (*f2)(&line,fun,len1,file,len2,dir,len3,&n,&p,mess,len4,ctx,&ierr);
 #else
   (*f2)(&line,fun,file,dir,&n,&p,mess,ctx,&ierr,len1,len2,len3,len4);
