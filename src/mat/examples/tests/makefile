@@ -50,7 +50,7 @@ BUILDEXAMPLES_3 = ex36.PETSc ex36.rm
 BUILDEXAMPLES_4 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex4.PETSc\
 		  ex4.rm ex5.PETSc ex5.rm ex6.PETSc ex6.rm\
 		  ex10.PETSc ex10.rm ex14.PETSc ex14.rm ex15.PETSc\
-		  runex15 ex15.rm ex20.PETSc ex20.rm ex21.PETSc \
+		  ex15.rm ex20.PETSc ex20.rm ex21.PETSc \
 		  ex21.rm ex35.PETSc ex35.rm 
 BUILDEXAMPLES_6 = ex40.PETSc ex40.rm ex42.PETSc ex42.rm \
                   ex41.PETSc ex41.rm ex47.PETSc ex47.rm 
