@@ -1,13 +1,30 @@
 <HTML>
 <BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000FF" VLINK="#FF0000" ALINK="#FF0000">
 
+<!*************************************************************************************************>
 <HR>
 <H3>Patches for PETSc (Release 2.0.28)</H3>
 
-Currently, no patches are required.
 
+<HR>You can apply all the general patches by obtaining <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.28.1.tar.gz">petsc-patches-2.0.28.1.tar.gz</A>
+and extracting it with
+<PRE>cd $PETSC_DIR ; gunzip -c petsc-patches-2.0.28.1.tar.gz | tar xf -</PRE>
+Make sure you are in the PETSc directory (for example /home/bsmith/petsc-2.0.28)
+before you run the tar command.
+<BR><BR>
+For Windows NT/95/98 download the patches file <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc-patches-2.0.28.1.exe">petsc-patches-2.0.28.1.exe</A> and rebuild the libraries.
 <HR>
+<BR>The patch file fixes the following:<BR><BR>
 
+
+<H3> 2.0.28.1 (???????date???? )</H3>
+<LI>empty keywords.html</LI>
+<pre>
+<!##>docs/manualpages/keywords.html
+</pre>
+
+<!*************************************************************************************************>
+<HR>
 <H3>Patches for PETSc (Release 2.0.24)</H3>
 
 You can apply all the general patches by obtaining 
@@ -22,5 +39,6 @@ For Windows NT/95/98 download the patches file
  and rebuild the libraries.
 <HR>
 
+<!*************************************************************************************************>
 </BODY>
 </HTML>
