@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.29 1995/08/06 17:41:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.30 1995/08/07 21:58:31 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -316,18 +316,18 @@ int PLogAllBegin()
   return 0;
 }
 
-/* @
-   PLogDestroy - Destroys the object and event logging data and resets the global
-   counters. 
+/*@
+   PLogDestroy - Destroys the object and event logging data and resets the 
+   global counters. 
 
    Notes:
-   This routine should be employed when the user wants to dump summary information
-   for multiple segments of code within one PETSc program.  
+   This routine should be employed when the user wants to dump summary 
+   information for multiple segments of code within one PETSc program.  
 
    Example of Usage:
-   If the option -log_sumary is used to run the program containing the following
-   code, then 2 sets of summary data will be printed (one during PLogPrint and
-   one during PetscFinalize, which in turn calls PLogPrint).
+   If the option -log_sumary is used to run the program containing the 
+   following code, then 2 sets of summary data will be printed (one during 
+   PLogPrint and one during PetscFinalize, which in turn calls PLogPrint).
 $
 $     PetscInitialize(int argc,char **args,0,0);
 $     [section 1 of code]
@@ -336,11 +336,11 @@ $     PLogDestroy();
 $     PLogBegin();
 $     [section 2 of code]
 $     PetscFinalize();
-$
 
-   Perhaps this should be 2 separate routines: PLogDestroy and PLogClear?
-   Right now nothing is freeing the objects and events by default.
-@ */
+.keywords: log, destroy
+
+.seealso: PLogDump(), PLogAllBegin(), PLogPrint()
+@*/
 int PLogDestroy()
 {
   /* Destroying phase */
