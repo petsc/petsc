@@ -10,6 +10,7 @@ import md5
 import os
 import os.path
 import re
+import statvfs
 import string
 import sys
 import time
@@ -38,12 +39,27 @@ class Maker (logging.Logger):
     self.cleanupDir(self.tmpDir)
     self.setupChecksum()
 
+  def checkTmpDir(self, mainTmp):
+    if not os.path.exists(mainTmp):
+      del argDB['TMPDIR']
+      argDB.setHelp('TMPDIR', 'Temporary directory '+mainTmp+' does not exist. Select another directory')
+      newTmp = argDB['TMPDIR']
+      return 0
+      
+    stats     = os.statvfs(mainTmp)
+    freeSpace = stats[statvfs.F_BAVAIL]*stats[statvfs.F_FRSIZE]
+    if freeSpace < 1086701569:
+      del argDB['TMPDIR']
+      argDB.setHelp('TMPDIR', 'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory')
+      newTmp = argDB['TMPDIR']
+      return 0
+    return 1
+
   def setupTmpDir(self):
-    try:
-      if not os.path.exists(argDB['TMPDIR']): raise KeyError('TMPDIR')
-      self.tmpDir = os.path.join(argDB['TMPDIR'], 'bs')
-    except KeyError:
-      raise RuntimeError('Please set the TMPDIR argument')
+    mainTmp = argDB['TMPDIR']
+    while not self.checkTmpDir(mainTmp):
+      mainTmp = argDB['TMPDIR']
+    self.tmpDir = os.path.join(mainTmp, 'bs')
 
   def forceRemove(self, file):
     if (os.path.exists(file)):
