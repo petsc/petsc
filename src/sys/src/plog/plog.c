@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.251 2001/01/15 21:44:04 bsmith Exp balay $*/
+/*$Id: plog.c,v 1.252 2001/01/17 19:44:28 balay Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -395,16 +395,16 @@ char *(PetscLogEventName[]) = {"MatMult         ",
     memmax contains maximum memory usage so far
 */
 typedef struct {
-  PetscLogDouble      time,flops,mem,maxmem;
+  PetscLogDouble  time,flops,mem,maxmem;
   int             cookie,type,event,id1,id2,id3;
 } Events;
 
 typedef struct {
-  int         parent;
-  PetscLogDouble  mem;
-  char        string[64];
-  char        name[32];
-  PetscObject obj;
+  int            parent;
+  PetscLogDouble mem;
+  char           string[64];
+  char           name[32];
+  PetscObject    obj;
 } Objects;
 
 /* 
@@ -423,25 +423,25 @@ int PETSC_DUMMY,PETSC_DUMMY_SIZE;
     Log counters in this file only 
 */
 static PetscLogDouble  BaseTime;
-static Events      *events = 0;
-static Objects     *objects = 0;
+static Events          *events = 0;
+static Objects         *objects = 0;
 
-static int         nobjects = 0,nevents = 0,objectsspace = CHUNCK;
-static int         ObjectsDestroyed = 0,eventsspace = CHUNCK;
+static int             nobjects = 0,nevents = 0,objectsspace = CHUNCK;
+static int             ObjectsDestroyed = 0,eventsspace = CHUNCK;
 static PetscLogDouble  ObjectsType[10][PETSC_MAX_COOKIES][4];
 
-static int         EventsStage = 0;    /* which log sessions are we using */
-static int         EventsStageMax = 0; /* highest event log used */ 
-static int         EventsStagePushed = 0;
-static int         EventsStageStack[100];
-static char        *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
+static int             EventsStage = 0;    /* which log sessions are we using */
+static int             EventsStageMax = 0; /* highest event log used */ 
+static int             EventsStagePushed = 0;
+static int             EventsStageStack[100];
+static char            *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
 static PetscLogDouble  EventsStageFlops[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 static PetscLogDouble  EventsStageTime[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 static PetscLogDouble  EventsStageMessageCounts[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 static PetscLogDouble  EventsStageMessageLengths[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 static PetscLogDouble  EventsStageReductions[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-       PetscTruth  PetscLogStagePrintFlag[] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
-                                       PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE};
+       PetscTruth      PetscLogStagePrintFlag[] = {PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,
+                                                   PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE};
 #define COUNT      0
 #define FLOPS      1
 #define TIME       2
@@ -449,7 +449,7 @@ static PetscLogDouble  EventsStageReductions[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.
 #define LENGTHS    4
 #define REDUCTIONS 5
 static PetscLogDouble  EventsType[10][PetscLog_USER_EVENT_HIGH][6];
-static int         EventsStagePrevious = 0;
+static int             EventsStagePrevious = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "PetscLogStageRegister"
@@ -764,7 +764,7 @@ int PetscLogDefaultPHD(PetscObject obj)
 int PetscLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   PetscLogDouble ltime;
-  int        ierr;
+  int            ierr;
 
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
@@ -803,7 +803,7 @@ int PetscLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObj
 int PetscLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   PetscLogDouble ltime;
-  int        ierr;
+  int            ierr;
 
   PetscFunctionBegin;
   if (nevents >= eventsspace) {
@@ -869,17 +869,17 @@ int PetscLogDefaultPLE(int event,int t,PetscObject o1,PetscObject o2,PetscObject
 /*
      Default trace event logging routines
 */
-FILE   *tracefile = 0;
-int    tracelevel = 0;
-char   *traceblanks = "                                                                    ";
-char   tracespace[72];
+FILE           *tracefile = 0;
+int            tracelevel = 0;
+char           *traceblanks = "                                                                    ";
+char           tracespace[72];
 PetscLogDouble tracetime = 0.0;
 
 #undef __FUNC__  
 #define __FUNC__ "PetscLogDefaultPLBTrace"
 int PetscLogDefaultPLBTrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  int        rank,ierr;
+  int            rank,ierr;
   PetscLogDouble cur_time;
 
   PetscFunctionBegin;
@@ -954,7 +954,7 @@ int PetscLogObjectState(PetscObject obj,const char format[],...)
 
 @*/
 int PetscLogSet(int (*b)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
-            int (*e)(int,int,PetscObject,PetscObject,PetscObject,PetscObject))
+                int (*e)(int,int,PetscObject,PetscObject,PetscObject,PetscObject))
 {
   PetscFunctionBegin;
   _PetscLogPLB    = b;
@@ -1169,9 +1169,9 @@ $      Log.<rank>
 @*/
 int PetscLogDump(const char sname[])
 {
-  int        i,rank,ierr;
-  FILE       *fd;
-  char       file[64],fname[64];
+  int            i,rank,ierr;
+  FILE           *fd;
+  char           file[64],fname[64];
   PetscLogDouble flops,_TotalTime;
   
   PetscFunctionBegin;
@@ -1389,6 +1389,7 @@ int PetscLogEventActivate(int event)
 }
 
 PetscTruth PetscPreLoadingUsed = PETSC_FALSE;
+PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
 
 #undef __FUNC__  
 #define __FUNC__ "PetscLogPrintSummary"
@@ -1434,9 +1435,9 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
   PetscLogDouble minm,maxm,avem,totm,minr,maxr,maxml,minml,totml,aveml,totr;
   PetscLogDouble rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
   PetscLogDouble pstime,psflops1,psflops,flopr,mict,mact,rct,x,y;
-  int        size,rank,i,j,ierr,lEventsStageMax;
-  char       arch[10],hostname[64],username[16],pname[256],date[64];
-  FILE       *fd = stdout;
+  int            size,rank,i,j,ierr,lEventsStageMax;
+  char           arch[10],hostname[64],username[16],pname[256],date[64];
+  FILE           *fd = stdout;
 
   PetscFunctionBegin;
   /* pop off any stages the user forgot to remove */
