@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.73 1999/12/19 21:22:19 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.74 2000/03/14 14:55:23 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -35,6 +35,7 @@ TESTEXAMPLES_8   =
 TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
 TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm clean
 TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm clean
+TESTEXAMPLES_17   =ex10.PETSc runex10_11 ex10.rm
 BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
 		   ex5.PETSc ex5.rm ex9.PETSc ex9.rm \
 		   ex13.PETSc ex13.rm ex14.PETSc ex14.rm \
@@ -353,6 +354,8 @@ runex10_10:
 	   if (diff output/ex10_10.out ex10_10.tmp) then true; \
 	   else echo "Possible problem with ex10_10, diffs above"; fi; \
 	   ${RM} -f ex10_10.tmp
+runex10_11:
+	-@${MPIRUN} -np 2 ex10 -options_left_off -f0 ftp://info.mcs.anl.gov/pub/petsc/testmatrix.gz
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_irorthog > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
