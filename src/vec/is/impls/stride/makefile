@@ -1,8 +1,8 @@
-IPETSCDIR = ../../../../..
+PETSC_DIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I$(IPETSCDIR) \
+CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I$(PETSC_DIR) \
            $(CONF) -D__DIR__='"is/impls/seq/stride/"'
 SOURCEC  = stride.c
 SOURCEF  =
@@ -12,5 +12,5 @@ OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 6
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

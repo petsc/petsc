@@ -2,7 +2,7 @@
 #   I'd like to add the dependancies pvec.c depends on pdvec.c ...
 #  but can't figure out how.
 #
-IPETSCDIR = ../../../..
+PETSC_DIR = ../../../..
 
 ALL: lib
 
@@ -17,5 +17,5 @@ OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 1
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.37 1995/09/04 17:33:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.38 1995/09/07 22:36:56 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -47,14 +47,14 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   int numtid;
   MPI_Comm_size(comm,&numtid);
   if (OptionsHasName(0,"-help")) {
-    MPIU_printf(comm,"MatCreate() options: -mat_dense, -mat_row -mat_mpirowbs\n");
-    MPIU_printf(comm,"         -mat_mpirow  -mat_bdiag -mat_mpibdiag\n"); 
+    MPIU_printf(comm,"MatCreate() options: -mat_dense, -mat_aij, -mat_mpiaij, -mat_row\n");
+    MPIU_printf(comm,"         -mat_mpirow, -mat_mpirowbs, -mat_bdiag, -mat_mpibdiag\n"); 
   }
   if (OptionsHasName(0,"-mat_dense")) {
     return MatCreateSequentialDense(comm,m,n,V);
   }
   if (OptionsHasName(0,"-mat_bdiag") || OptionsHasName(0,"-mat_mpibdiag")) {
-    int nb = 1, ndiag = 0, ndiag2,  *d, ierr;
+    int nb = 1, ndiag = 0, ndiag2 = 0, *d = 0, ierr;
     if (OptionsHasName(0,"-help")) {
       MPIU_printf(comm,"Options with -mat_bdiag: -mat_bdiag_bsize block_size\n");
       MPIU_printf(comm,"  -mat_bdiag_ndiag number_diags \n"); 
@@ -63,35 +63,35 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     }
     OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
     OptionsGetInt(0,"-mat_bdiag_ndiag",&ndiag);
-    if (!ndiag) SETERRQ(1,"MatCreate:Must set diagonals before creating mat");
-    d = (int *)PETSCMALLOC( ndiag * sizeof(int) ); CHKPTRQ(d);
-    ndiag2 = ndiag;
-    OptionsGetIntArray(0,"-mat_bdiag_dvals",d,&ndiag2);
-    if (ndiag2 != ndiag) { 
-      SETERRQ(1,"MatCreate:Incompatible number of diags and diagonal vals");
+    if (ndiag) {
+      d = (int *)PETSCMALLOC( ndiag * sizeof(int) ); CHKPTRQ(d);
+      ndiag2 = ndiag;
+      OptionsGetIntArray(0,"-mat_bdiag_dvals",d,&ndiag2);
+      if (ndiag2 != ndiag)
+        SETERRQ(1,"MatCreate: Incompatible number of diags and diagonal vals");
+    } else if (OptionsHasName(0,"-mat_bdiag_dvals"))
+      SETERRQ(1,"MatCreate: Must specify number of diagonals with -mat_bdiag_ndiag");
+    if (OptionsHasName(0,"-mpi_mpibdiag") || numtid>1) {
+      ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,0,V); CHKERRQ(ierr);
+    } else {
+      ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); CHKERRQ(ierr);
     }
-    if (OptionsHasName(0,"-mpi_mpibdiag"))
-      ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,0,V); 
-    else if (numtid == 1) 
-      ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); 
-    else SETERRQ(1,"Cannot use -mpi_bdiag with 2+ processors");
-    CHKERRQ(ierr);
     if (d) PETSCFREE(d);
     return ierr;
   }
   if (OptionsHasName(0,"-mat_mpirowbs")) {
     return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,0,0,V);
   }
-  if (OptionsHasName(0,"-mat_mpirow")) {
+  if (OptionsHasName(0,"-mat_mpirow") || (OptionsHasName(0,"-mat_row") && numtid >1)) {
     return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
   }
   if (OptionsHasName(0,"-mat_row")) {
     return MatCreateSequentialRow(comm,m,n,10,0,V);
   }
-  if (OptionsHasName(0,"-mat_mpiaij")) {
+  if (OptionsHasName(0,"-mat_mpiaij")  || (numtid >1)) { /* Default parallel format */
     return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
   }
-  return MatCreateSequentialAIJ(comm,m,n,10,0,V);
+  return MatCreateSequentialAIJ(comm,m,n,10,0,V); /* default uniprocessor format */
 }
 
 #include "matimpl.h"

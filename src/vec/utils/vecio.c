@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vecio.c,v 1.10 1995/09/07 04:24:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.11 1995/09/07 22:35:22 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -32,7 +32,7 @@ static char vcid[] = "$Id: vecio.c,v 1.10 1995/09/07 04:24:32 bsmith Exp bsmith 
 @*/  
 int VecLoad(Viewer bview,Vec *newvec)
 {
-  int         i,rows,ierr,lsize, gsize, type, fd;
+  int         i, rows, ierr, type, fd;
   Vec         vec;
   Vec_MPI     *v;
   Scalar      *avec;

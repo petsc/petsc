@@ -1,6 +1,6 @@
-IPETSCDIR = ..
+PETSC_DIR = ..
 
-CFLAGS   = -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
+CFLAGS   = -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = 
@@ -10,5 +10,5 @@ LIBBASE  = libpetscvec
 DIRS     = inline is vec ksp sys pc mat sles draw \
            viewer snes da
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

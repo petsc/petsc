@@ -1,4 +1,4 @@
-IPETSCDIR = ../../..
+PETSC_DIR = ../../..
 ALL: ex1
 
 CFLAGS        = $(CONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
@@ -15,7 +15,7 @@ RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
                 runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex5\
                 runex8 runex8_2
 EXAMPLES_2    = ex10 ex11 ex12
-RUNEXAMPLES_2 = runex10 runex11
+RUNEXAMPLES_2 = runex11
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex8.c ex9.c ex10.c ex11.c\
                 ex12.c
 
@@ -200,4 +200,4 @@ runex11:
            else echo "Possible problem with ex11_1, diffs above"; fi; \
            $(RM) -f ex11_1.tmp
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

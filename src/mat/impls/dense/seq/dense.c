@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.54 1995/09/06 03:05:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.55 1995/09/06 22:51:28 curfman Exp curfman $";
 #endif
 
 /*
@@ -437,11 +437,9 @@ static int MatTranspose_Dense(Mat matin,Mat *matout)
     Scalar *v2;
     ierr = MatCreateSequentialDense(matin->comm,mat->n,mat->m,&tmat); CHKERRQ(ierr);
     tmatd = (Mat_Dense *) tmat->data;
-    v = mat->v; v2 = tmatd->v; m = tmatd->m; n = tmatd->n;
+    v = mat->v; v2 = tmatd->v;
     for ( j=0; j<n; j++ ) {
-      for ( k=0; k<m; k++ ) {
-        v2[j + k*n] = v[k + j*m];
-      }
+      for ( k=0; k<m; k++ ) v2[j + k*n] = v[k + j*m];
     }
     ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);

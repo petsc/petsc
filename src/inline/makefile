@@ -1,8 +1,8 @@
-IPETSCDIR = ../..
+PETSC_DIR = ../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I.. -I$(IPETSCDIR) $(CONF)
+CFLAGS   =  $(PETSC_INCLUDE) -I.. -I$(PETSC_DIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = 
@@ -11,4 +11,4 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../..
+PETSC_DIR = ../../../..
 ALL: lib 
 
 CFLAGS   =  $(CONF) $(PETSC_INCLUDE) \
@@ -9,4 +9,4 @@ OBJSC    = cgs.o
 OBJSF    = 
 LIBBASE  = libpetscksp
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -1,4 +1,4 @@
-IPETSCDIR = ../../..
+PETSC_DIR = ../../..
 
 ALL: lib 
 CFLAGS    =  $(PETSC_INCLUDE) $(CONF)\
@@ -16,4 +16,4 @@ MANSEC    = 7
 LIBBASE   = libpetscsys
 DIRS      = 
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

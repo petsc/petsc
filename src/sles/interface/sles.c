@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.40 1995/09/06 03:06:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.41 1995/09/07 04:27:14 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -64,8 +64,11 @@ int SLESView(SLES sles,Viewer viewer)
 @*/
 int SLESPrintHelp(SLES sles)
 {
+  char    *prefix = "-";
+  if (sles->prefix) prefix = sles->prefix;
   PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   MPIU_printf(sles->comm,"SLES options:\n");
+  MPIU_printf(sles->comm," %ssles_view: view SLES info after each linear solve\n",prefix);
   KSPPrintHelp(sles->ksp);
   PCPrintHelp(sles->pc);
   return 0;
@@ -237,7 +240,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
   ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
   PLogEventEnd(SLES_Solve,sles,b,x,0);
-  if (OptionsHasName(0,"-sles_view")) {
+  if (OptionsHasName(sles->prefix,"-sles_view")) {
     ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
   }
   return 0;

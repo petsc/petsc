@@ -1,5 +1,5 @@
 ALL: lib 
-IPETSCDIR = ../../../../
+PETSC_DIR = ../../../../
 
 CFLAGS   =  $(PETSC_INCLUDE) $(CONF)  \
            -I../.. -D__DIR__='"ksp/impls/qcg/"'
@@ -12,4 +12,4 @@ OBJSF    =
 LIBBASE  = libpetscksp
 LINCLUDE = 
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

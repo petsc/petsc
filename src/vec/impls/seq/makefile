@@ -1,9 +1,9 @@
-IPETSCDIR = ../../../..
+PETSC_DIR = ../../../..
 
 ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I.. -I../.. \
-           -I$(IPETSCDIR)/src/is $(CONF) \
+           -I$(PETSC_DIR)/src/is $(CONF) \
            -D__DIR__='"vec/impls/seq/"'
 SOURCEC  = bvec2.c 
 SOURCEF  =
@@ -13,5 +13,5 @@ OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 1
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

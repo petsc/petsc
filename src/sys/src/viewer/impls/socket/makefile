@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../..
+PETSC_DIR = ../../../..
 
 
 ALL: lib 
@@ -26,4 +26,4 @@ closeport: chkopts closeport.o
 	$(CMEX)  closeport.o $(MATLABLIB)
 	$(RM) -f  closeport.o 
   
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

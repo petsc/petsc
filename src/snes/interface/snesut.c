@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.1 1995/08/22 19:40:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.2 1995/09/04 17:25:39 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -110,8 +110,7 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
   SNESTrustRegionDefaultConverged */
   if (fnorm < snes->atol) {
     PLogInfo((PetscObject)snes,
-      "SNES: Converged due to function norm %g < %g\n",
-      fnorm,snes->atol);
+      "SNES: Converged due to function norm %g < %g\n",fnorm,snes->atol);
     return 2;
   }
   if (pnorm < snes->xtol*(xnorm)) {

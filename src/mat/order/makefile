@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../../
+PETSC_DIR = ../../../../
 #
 #  All the Sparspak routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
@@ -7,7 +7,7 @@ IPETSCDIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../../.. \
-           -I$(IPETSCDIR)/pinclude $(CONF) \
+           -I$(PETSC_DIR)/pinclude $(CONF) \
            -D__DIR__='"mat/impls/aij/seq/order/"'
 SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c sorder.c sregis.c\
            degree.c  fnroot.c genqmd.c qmdqt.c rcm.c fn1wd.c gen1wd.c \
@@ -21,4 +21,4 @@ MANSEC   = 2
 
 runexamples:
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -1,4 +1,4 @@
-IPETSCDIR = ../../../../
+PETSC_DIR = ../../../../
 ALL: ex1
 
 CFLAGS        = $(OPT) $(CONF) $(PETSC_INCLUDE)
@@ -70,5 +70,5 @@ runex2_3:
            else echo "Possible problem with ex2_3, diffs above"; fi; \
            $(RM) -f ex2_3.tmp
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

@@ -1,10 +1,10 @@
-IPETSCDIR = ../../../..
+PETSC_DIR = ../../../..
 
 ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../..  \
-          $(CONF) -I$(IPETSCDIR)/src/ksp \
-          -I$(IPETSCDIR)/src/ksp/impls/qcg -D__DIR__='"snes/impls/umtr/"'
+          $(CONF) -I$(PETSC_DIR)/src/ksp \
+          -I$(PETSC_DIR)/src/ksp/impls/qcg -D__DIR__='"snes/impls/umtr/"'
 SOURCEC  = umtr.c
 SOURCEF  =
 SOURCEH  = umtr.h
@@ -13,5 +13,5 @@ OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = n
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

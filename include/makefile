@@ -1,4 +1,4 @@
-IPETSCDIR = ../
+PETSC_DIR = ../
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
@@ -14,6 +14,6 @@ MANSEC   = 7
 
 runexamples:
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
 

@@ -1,4 +1,4 @@
-IPETSCDIR = ../../..
+PETSC_DIR = ../../..
 ALL: ex1
 
 CFLAGS        =  $(PETSC_INCLUDE) $(CONF) $(COPT)
@@ -11,10 +11,10 @@ LIBBASE       = libpetscmat
 EXAMPLES_1    = ex1  ex3  ex5 ex6  ex8 ex9 ex10 ex11  ex14\
                 ex15 ex16 ex19 ex20 ex21 ex22
 RUNEXAMPLES_1 = runex1  runex3  runex5 runex6  runex8 runex9\
-                runex10 runex11 runex14 runex15 runex15_2 runex16 runex19\
+                runex10 runex11 runex14 runex15 runex15_2 runex16\
                 runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex18 ex23 ex24 ex25 ex26\
-                ex27 ex28 ex29 ex30 ex32
+                ex27 ex28 ex29 ex30 ex31 ex32
 RUNEXAMPLES_2 = runex2 runex2_2 runex4 runex7 runex12 runex13 
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
@@ -271,4 +271,4 @@ runex22:
            else echo "Possible problem with ex22_1, diffs above"; fi; \
            $(RM) -f ex22_1.tmp
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

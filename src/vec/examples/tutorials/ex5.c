@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.6 1995/09/05 14:41:37 curfman Exp curfman $";
+static char vcid[] = "$Id: ex20.c,v 1.7 1995/09/05 19:26:01 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -17,10 +17,9 @@ user-defined event logging.\n\n";
 
 int main(int argc,char **args)
 {
-  int     i, lm, m = 10, mytid, numtids, low, high, ldim, iglobal, ierr;
+  int     i, m = 10, mytid, numtids, low, high, ldim, iglobal, ierr;
   Scalar  v;
   Vec     u;
-  IS      ind;
   VecType vtype;
   Viewer  bview;
 
@@ -52,7 +51,7 @@ int main(int argc,char **args)
 
   MPIU_printf(MPI_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BIN_CREAT,&bview); 
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_CREATE,&bview); 
          CHKERRA(ierr);
   ierr = VecView(u,bview); CHKERRA(ierr);
   ierr = ViewerDestroy(bview); CHKERRA(ierr);
@@ -65,27 +64,22 @@ int main(int argc,char **args)
   MPI_Barrier(MPI_COMM_WORLD);
   PetscSleep(10);
 
-  /* lm = number of locally owned vector elements */
-  lm = m/numtids + ((m % numtids) > mytid);
-  ierr = ISCreateStrideSequential(MPI_COMM_WORLD,lm,mytid,numtids,&ind);
   CHKERRA(ierr);
 
   /* Read new vector in binary format */
   PLogEventRegister(VECTOR_READ,"Read Vector     ");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   MPIU_printf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
-  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BIN_RDONLY,&bview); 
+  ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_RDONLY,&bview); 
          CHKERRA(ierr);
   vtype = VECSEQ;
-  if (OptionsHasName(0,"-mpi_objects") || numtids>1) vtype = VECMPI;
-  ierr = VecLoad(MPI_COMM_WORLD,bview,vtype,ind,&u); CHKERRA(ierr);
+  ierr = VecLoad(bview,&u); CHKERRA(ierr);
   ierr = ViewerDestroy(bview); CHKERRA(ierr);
   PLogEventEnd(VECTOR_READ,0,0,0,0);
   ierr = VecView(u,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = ISDestroy(ind); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

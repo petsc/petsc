@@ -1,9 +1,9 @@
-IPETSCDIR = ../../..
+PETSC_DIR = ../../..
 
 ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../impls -I..\
-           -I$(IPETSCDIR)/src/draw $(COPT) $(CONF) -D__DIR__='"vec/utils/"'
+           -I$(PETSC_DIR)/src/draw $(COPT) $(CONF) -D__DIR__='"vec/utils/"'
 SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c
 SOURCEF  =
 SOURCEH  = 
@@ -12,5 +12,5 @@ OBJSF    =
 LIBBASE  = libpetscvec
 MANSEC   = 1
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

@@ -1,4 +1,4 @@
-IPETSCDIR = ../../..
+PETSC_DIR = ../../..
 ALL: ex1
 
 CFLAGS        =  $(PETSC_INCLUDE) $(CONF) 
@@ -34,4 +34,4 @@ ex2: ex2.o chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
 	$(RM) -f ex2.o
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

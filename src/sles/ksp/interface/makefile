@@ -1,4 +1,4 @@
-IPETSCDIR = ../../..
+PETSC_DIR = ../../..
 
 ALL: lib
 
@@ -14,4 +14,4 @@ LIBBASE  = libpetscksp
 DIRS     =
 MANSEC   = 5
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

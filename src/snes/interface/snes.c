@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.15 1995/09/06 03:06:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.16 1995/09/07 04:27:47 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -194,8 +194,8 @@ int SNESPrintHelp(SNES snes)
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   MPIU_printf(snes->comm,"SNES options ----------------------------\n");
   SNESPrintMethods_Private(prefix,"snes_method");
-  MPIU_printf(snes->comm," %ssnes_monitor\n",prefix);
-  MPIU_printf(snes->comm," %ssnes_view\n",prefix);
+  MPIU_printf(snes->comm," %ssnes_monitor: use default SNES monitor\n",prefix);
+  MPIU_printf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",prefix);
   MPIU_printf(snes->comm," %ssnes_max_it its (default %d)\n",prefix,snes->max_its);
   MPIU_printf(snes->comm," %ssnes_stol tol (default %g)\n",prefix,snes->xtol);
   MPIU_printf(snes->comm," %ssnes_atol tol (default %g)\n",prefix,snes->atol);

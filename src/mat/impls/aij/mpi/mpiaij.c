@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.73 1995/09/06 19:05:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.74 1995/09/07 04:26:19 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1152,7 +1152,7 @@ static int MatNorm_MPIAIJ(Mat mat,MatNormType type,double *norm)
   return 0; 
 }
 
-static int MatTranspose_MPIAIJ(Mat A,Mat *Bin)
+static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 { 
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
@@ -1161,6 +1161,8 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *Bin)
   int        M = a->M, N = a->N,m,*ai,*aj,row,*cols,i,*ct;
   Scalar     *array;
 
+  if (!matout && M != N) SETERRQ(1,
+    "MatTranspose_MPIAIJ: Cannot transpose rectangular matrix in place");
   ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,0,0,0,0,&B);
   CHKERRQ(ierr);
 
@@ -1191,7 +1193,21 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *Bin)
   PETSCFREE(ct);
   ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  *Bin = B;
+  if (matout) {
+    *matout = B;
+  } else {
+    /* This isn't really an in-place transpose .... but free data structures from a */
+    PETSCFREE(a->rowners); 
+    ierr = MatDestroy(a->A); CHKERRQ(ierr);
+    ierr = MatDestroy(a->B); CHKERRQ(ierr);
+    if (a->colmap) PETSCFREE(a->colmap);
+    if (a->garray) PETSCFREE(a->garray);
+    if (a->lvec) VecDestroy(a->lvec);
+    if (a->Mvctx) VecScatterCtxDestroy(a->Mvctx);
+    PETSCFREE(a); 
+    PETSCMEMCPY(A,B,sizeof(struct _Mat)); 
+    PETSCHEADERDESTROY(B);
+  }
   return 0;
 }
 
@@ -1323,7 +1339,6 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   }
   aij->cstart = aij->cowners[aij->mytid]; 
   aij->cend   = aij->cowners[aij->mytid+1]; 
-
 
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,m,n,d_nz,d_nnz,&aij->A); 
   CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.45 1995/09/06 03:05:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.46 1995/09/06 22:51:54 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -12,16 +12,13 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode  addv)
 {
   Mat_BDiag *dmat = (Mat_BDiag *) matin->data;
-  int       kk, j, k, loc, ldiag, shift, row, nz = n, dfound;
-  int       nb = dmat->nb, nd = dmat->nd, *diag = dmat->diag;
-  Scalar    *valpt;
-/* 
-   Note:  This routine assumes that space has already been allocated for
-   the gathered elements ... It does NOT currently allocate additional
-   space! 
- */
+  int       i, kk, j, k, loc, ldiag, shift, row, nz = n, dfound, temp;
+  int       nb = dmat->nb, nd = dmat->nd, *diag = dmat->diag, *diag_new;
+  int       newnz, *bdlen_new;
+  Scalar    *valpt, **diagv_new, *dtemp;
+
   if (m!=1) SETERRQ(1,
-     "MatSetValues_BDiag:Currently can set only 1 row at a time");
+    "MatSetValues_BDiag:Currently can set only 1 row at a time");
   if (nb == 1) {
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row  = idxm[kk];   
@@ -34,20 +31,78 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
         for (k=0; k<nd; k++) {
 	  if (diag[k] == ldiag) {
             dfound = 1;
-	    if (ldiag > 0) /* lower triangle */
-	      loc = row - dmat->diag[k];
-	    else
-	      loc = row;
+	    if (ldiag > 0) loc = row - ldiag; /* lower triangle */
+	    else           loc = row;
 	    if ((valpt = &((dmat->diagv[k])[loc]))) {
 	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
-            } else SETERRQ(1,
- "MatSetValues_BDiag:Allocation of additional memory not supported yet" );
+            } else SETERRQ(1,"MatSetValues_BDiag: Invalid data location");
             break;
           }
         }
-        if (!dfound) SETERRQ(1,
- "MatSetValues_BDiag: Diagonal not allocated;set all diags at mat creation");
+        if (!dfound) {
+          if (dmat->nonew) {
+            if (dmat->user_alloc && v[j]) {
+              PLogInfo((PetscObject)matin,
+                "MatSetValues_BDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
+            }
+          } else {
+            nd++; 
+            PLogInfo((PetscObject)matin,"MatSetValues_BDiag: Allocating new diagonal: %d\n",ldiag);
+            /* free old bdiag storage info and reallocate */
+            diag_new = (int *)PETSCMALLOC(2*nd*sizeof(int)); CHKPTRQ(diag_new);
+            bdlen_new = diag_new + nd;
+            diagv_new = (Scalar**)PETSCMALLOC(nd*sizeof(Scalar*)); CHKPTRQ(diagv_new);
+            for (k=0; k<dmat->nd; k++) {
+              diag_new[k]  = dmat->diag[k];
+              diagv_new[k] = dmat->diagv[k];
+              bdlen_new[k] = dmat->bdlen[k];
+            }
+            diag_new[dmat->nd]  = ldiag;
+            if (ldiag > 0) /* lower triangular */
+              bdlen_new[dmat->nd] = PETSCMIN(dmat->nblock,dmat->mblock - ldiag);
+            else {         /* upper triangular */
+              if (dmat->mblock - ldiag > dmat->nblock)
+                bdlen_new[dmat->nd] = dmat->nblock + ldiag;
+              else
+                bdlen_new[dmat->nd] = dmat->mblock;
+            }
+            newnz = bdlen_new[dmat->nd];
+            diagv_new[dmat->nd] = (Scalar*)PETSCMALLOC(newnz*sizeof(Scalar));
+            CHKPTRQ(diagv_new[dmat->nd]);
+            dmat->maxnz += newnz;
+            dmat->nz += newnz;
+            PETSCFREE(dmat->diagv); PETSCFREE(dmat->diag); 
+            dmat->diag  = diag_new; 
+            dmat->bdlen = bdlen_new;
+            dmat->diagv = diagv_new;
+
+            /* Insert value */
+	    if (ldiag > 0) loc = row - ldiag; /* lower triangle */
+	    else           loc = row;
+	    if ((valpt = &((dmat->diagv[dmat->nd])[loc]))) {
+	      if (addv == ADDVALUES) *valpt += v[j];
+	      else                   *valpt = v[j];
+            } else SETERRQ(1,"MatSetValues_BDiag: Invalid data location");
+
+            for (i=0; i<nd; i++) {  /* Sort diagonals */
+              for (k=i+1; k<nd; k++) {
+                if (diag_new[i] < diag_new[k]) {
+                  temp         = diag_new[i];   
+                  diag_new[i]  = diag_new[k];
+                  diag_new[k]  = temp;
+                  temp         = bdlen_new[i];   
+                  bdlen_new[i] = bdlen_new[k];
+                  bdlen_new[k] = temp;
+                  dtemp        = diagv_new[i];
+                  diagv_new[i] = diagv_new[k];
+                  diagv_new[k] = dtemp;
+                }
+              }
+            }
+            dmat->nd = nd; 
+          }
+        }
       }
     }
   } else {
@@ -55,8 +110,7 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
     for ( kk=0; kk<m; kk++ ) { /* loop over added rows */
       row    = idxm[kk];   
       if (row < 0) SETERRQ(1,"MatSetValues_BDiag:Negative row");
-      if (row >= dmat->m) 
-        SETERRQ(1,"MatSetValues_BDiag:Row too large");
+      if (row >= dmat->m) SETERRQ(1,"MatSetValues_BDiag:Row too large");
       shift = (row/nb)*nb*nb + row%nb;
       for (j=0; j<nz; j++) {
         ldiag = row/nb - idxn[j]/nb; /* block diagonal */
@@ -71,13 +125,74 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 	    if ((valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ]))) {
 	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
-            } else SETERRQ(1,
- "MatSetValues_BDiag:Allocation of additional memory not supported yet" );
+            } else SETERRQ(1,"MatSetValues_BDiag: Invalid data location");
             break;
           }
         }
-        if (!dfound) SETERRQ(1,
- "MatSetValues_BDiag: Diagonal not allocated;set all diags at mat creation");
+        if (!dfound) {
+          if (dmat->nonew) {
+            if (dmat->user_alloc && v[j]) {
+              PLogInfo((PetscObject)matin,
+                "MatSetValues_BDiag: Nonzero in diagonal %d that user did not allocate\n",ldiag);
+            }
+          } else {
+            nd++; 
+            PLogInfo((PetscObject)matin,"MatSetValues_BDiag: Allocating new diagonal: %d\n",ldiag);
+            /* free old bdiag storage info and reallocate */
+            diag_new = (int *)PETSCMALLOC(2*nd*sizeof(int)); CHKPTRQ(diag_new);
+            bdlen_new = diag_new + nd;
+            diagv_new = (Scalar**)PETSCMALLOC(nd*sizeof(Scalar*)); CHKPTRQ(diagv_new);
+            for (k=0; k<dmat->nd; k++) {
+              diag_new[k]  = dmat->diag[k];
+              diagv_new[k] = dmat->diagv[k];
+              bdlen_new[k] = dmat->bdlen[k];
+            }
+            diag_new[dmat->nd]  = ldiag;
+            if (ldiag > 0) /* lower triangular */
+              bdlen_new[dmat->nd] = PETSCMIN(dmat->nblock,dmat->mblock - ldiag);
+            else {         /* upper triangular */
+              if (dmat->mblock - ldiag > dmat->nblock)
+                bdlen_new[dmat->nd] = dmat->nblock + ldiag;
+              else
+                bdlen_new[dmat->nd] = dmat->mblock;
+            }
+            newnz = nb*nb*bdlen_new[dmat->nd];
+            diagv_new[dmat->nd] = (Scalar*)PETSCMALLOC(newnz*sizeof(Scalar));
+            CHKPTRQ(diagv_new[dmat->nd]);
+            dmat->maxnz += newnz; dmat->nz += newnz;
+            PETSCFREE(dmat->diagv); PETSCFREE(dmat->diag); 
+            dmat->diag  = diag_new; 
+            dmat->bdlen = bdlen_new;
+            dmat->diagv = diagv_new;
+
+            /* Insert value */
+	    if (ldiag > 0) /* lower triangle */
+	      loc = shift - ldiag*nb*nb;
+             else
+	      loc = shift;
+	    if ((valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ]))) {
+	      if (addv == ADDVALUES) *valpt += v[j];
+	      else                   *valpt = v[j];
+            } else SETERRQ(1,"MatSetValues_BDiag: Invalid data location");
+
+            for (i=0; i<nd; i++) {  /* Sort diagonals */
+              for (k=i+1; k<nd; k++) {
+                if (diag_new[i] < diag_new[k]) {
+                  temp         = diag_new[i];   
+                  diag_new[i]  = diag_new[k];
+                  diag_new[k]  = temp;
+                  temp         = bdlen_new[i];   
+                  bdlen_new[i] = bdlen_new[k];
+                  bdlen_new[k] = temp;
+                  dtemp        = diagv_new[i];
+                  diagv_new[i] = diagv_new[k];
+                  diagv_new[k] = dtemp;
+                }
+              }
+            }
+            dmat->nd = nd; 
+          }
+        }
       }
     }
   }
@@ -648,15 +763,16 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
         dv   = mat->diagv[d];
         diag = mat->diag[d];
         len  = mat->bdlen[d];
+
         if (diag > 0) {	/* lower triangle: row = loc+diag, col = loc */
           for (k=0; k<len; k++) {
             kloc = k*nb; kshift = kloc*nb; 
             for (i=0; i<nb; i++) {	/* i = local row */
               for (j=0; j<nb; j++) {	/* j = local column */
 #if defined(PETSC_COMPLEX)
-                tmp[kloc + i] += abs(dv[kshift + j*nb + i]);
+                tmp[kloc + j] += abs(dv[kshift + j*nb + i]);
 #else
-                tmp[kloc + i] += fabs(dv[kshift + j*nb + i]);
+                tmp[kloc + j] += fabs(dv[kshift + j*nb + i]);
 #endif
               }
             }
@@ -667,9 +783,9 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
             for (i=0; i<nb; i++) {	/* i = local row */
               for (j=0; j<nb; j++) {	/* j = local column */
 #if defined(PETSC_COMPLEX)
-                tmp[kloc + i - nb*diag] += abs(dv[kshift + j*nb + i]);
+                tmp[kloc + j - nb*diag] += abs(dv[kshift + j*nb + i]);
 #else
-                tmp[kloc + i - nb*diag] += fabs(dv[kshift + j*nb + i]);
+                tmp[kloc + j - nb*diag] += fabs(dv[kshift + j*nb + i]);
 #endif
               }
             }
@@ -714,7 +830,7 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
         dv   = mat->diagv[d];
         diag = mat->diag[d];
         len  = mat->bdlen[d];
-        if (diag > 0) {	/* lower triangle */
+        if (diag > 0) {
           for (k=0; k<len; k++) {
             kloc = k*nb; kshift = kloc*nb; 
             for (i=0; i<nb; i++) {	/* i = local row */
@@ -727,7 +843,7 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
               }
             }
           }
-        } else {	/* upper triangle, including main diagonal */
+        } else {
           for (k=0; k<len; k++) {
             kloc = k*nb; kshift = kloc*nb; 
             for (i=0; i<nb; i++) {	/* i = local row */
@@ -754,25 +870,45 @@ static int MatNorm_BDiag(Mat matin,MatNormType type,double *norm)
   return 0;
 }
 
-/* static int MatTranspose_BDiag(Mat A,Mat *Bin)
+static int MatTranspose_BDiag(Mat A,Mat *matout)
 { 
-  Mat_BDiag *mbd = (Mat_BDiag *) A->data;
+  Mat_BDiag *mbd = (Mat_BDiag *) A->data, *mbdnew;
   Mat     tmat;
-  int     i, ierr, nz, m = mbd->m, *cwork;
-  Scalar  *vwork;
+  int     i, ierr, nz, *cwork, nd = mbd->nd, *diag = mbd->diag, *diagnew, temp;
+  Scalar  *vwork, *dtemp;
 
-   Should make this more efficient by working directly with the diagonals
-  ierr = MatCreateSequentialBDiag(A->comm,mbd->n,m,0,0,&tmat); CHKERRQ(ierr);
-  for ( i=0; i<nd; i++ ) {
-    ierr = MatGetRow(A,i,&nz,&cwork,&vwork): CHKERRQ(ierr);
-    ierr = MatSetValues(tmat,nz,cwork,1,&i,vwork,INSERTVALUES); CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork): CHKERRQ(ierr);
+  if (matout) {
+    diagnew = (int *) PETSCMALLOC(nd*sizeof(int)); CHKPTRQ(diagnew);
+    for (i=0; i<nd; i++) {
+      diagnew[i] = -diag[nd-i]; /* assume sorted in descending order */
+    }
+    ierr = MatCreateSequentialBDiag(A->comm,mbd->n,mbd->m,nd,mbd->nb,diagnew,
+                                    0,&tmat); CHKERRQ(ierr);
+    PETSCFREE(diagnew);
+    mbdnew = (Mat_BDiag *) tmat->data;
+    for (i=0; i<nd; i++) {
+      PETSCMEMCPY(mbdnew->diagv[i],mbd->diagv[nd-i],
+                  mbd->nb*mbd->nb*mbdnew->bdlen[i]*sizeof(Scalar));
+    } 
+    ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    *matout = tmat;
   } 
-  ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  *Bin = tmat;
+  else { /* in-place transpose */
+    if (mbd->pivots) PETSCFREE(mbd->pivots);
+    for (i=0; i<nd/2; i++) { /* integer arithmetic */
+      temp             = -diag[i]; /* assume sorted in descending order */
+      diag[i]          = -mbd->diag[nd-i];
+      diag[nd-i]       = temp;
+      dtemp            = mbd->diagv[i];
+      mbd->diagv[i]    = mbd->diagv[nd-i]; 
+      mbd->diagv[nd-i] = dtemp;
+    }
+    ierr = MatAssemblyBegin(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(tmat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  }
   return 0;
-} */
+}
 
 /* ----------------------------------------------------------------*/
 #include "draw.h"
@@ -933,17 +1069,19 @@ static int MatDestroy_BDiag(PetscObject obj)
 {
   Mat       bmat = (Mat) obj;
   Mat_BDiag *mat = (Mat_BDiag *) bmat->data;
+  int       i;
 
 #if defined(PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d, BSize=%d, NDiag=%d",
                        mat->m,mat->n,mat->nz,mat->nb,mat->nd);
 #endif
   if (!mat->user_alloc) { /* Free the actual diagonals */
-    PETSCFREE( mat->diagv[0] );
+    for (i=0; i<mat->nd; i++) PETSCFREE( mat->diagv[i] );
   }
   if (mat->pivots) PETSCFREE(mat->pivots);
   PETSCFREE(mat->diagv);
   PETSCFREE(mat->diag);
+  PETSCFREE(mat->colloc);
   PETSCFREE(mat->dvalue);
   PETSCFREE(mat);
   PLogObjectDestroy(bmat);
@@ -956,6 +1094,14 @@ static int MatAssemblyEnd_BDiag(Mat matin,MatAssemblyType mode)
   Mat_BDiag *mat = (Mat_BDiag *) matin->data;
   if (mode == FLUSH_ASSEMBLY) return 0;
   mat->assembled = 1;
+  return 0;
+}
+
+static int MatSetOption_BDiag(Mat mat,MatOption op)
+{
+  Mat_BDiag *mbd = (Mat_BDiag *) mat->data;
+  if (op == NO_NEW_NONZERO_LOCATIONS)       mbd->nonew = 1;
+  else if (op == YES_NEW_NONZERO_LOCATIONS) mbd->nonew = 0;
   return 0;
 }
 
@@ -1109,7 +1255,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatGetInfo_BDiag, 0,
        MatGetDiagonal_BDiag, 0, MatNorm_BDiag,
        0,MatAssemblyEnd_BDiag,
-       0, 0, MatZeroEntries_BDiag,MatZeroRows_BDiag, 0,
+       0, MatSetOption_BDiag, MatZeroEntries_BDiag,MatZeroRows_BDiag, 0,
        MatLUFactorSymbolic_BDiag,MatLUFactorNumeric_BDiag, 0, 0,
        MatGetSize_BDiag,MatGetSize_BDiag,MatGetOwnershipRange_BDiag,
        0, 0,
@@ -1185,12 +1331,10 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   mat->mainbd = -1;
   mat->pivots = 0;
 
-  mat->diag   = (int *)PETSCMALLOC( (2+nb)*nda * sizeof(int) ); 
-  CHKPTRQ(mat->diag);
+  mat->diag   = (int *)PETSCMALLOC(2*nda*sizeof(int)); CHKPTRQ(mat->diag);
   mat->bdlen  = mat->diag + nda;
-  mat->colloc = mat->bdlen + nda;
-  mat->diagv  = (Scalar **)PETSCMALLOC(nda * sizeof(Scalar*)); 
-  CHKPTRQ(mat->diagv);
+  mat->colloc = (int *)PETSCMALLOC(n*sizeof(int)); CHKPTRQ(mat->colloc);
+  mat->diagv  = (Scalar**)PETSCMALLOC(nda*sizeof(Scalar*)); CHKPTRQ(mat->diagv);
   sizetot = 0;
 
   if (diagv) { /* user allocated space */
@@ -1228,31 +1372,28 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
     }
     sizetot += mat->bdlen[i];
     if (diag[i] == 0) mat->mainbd = i;
-/*    printf("i=%d, diag=%d, dlen=%d\n",i,diag[i],mat->bdlen[i]); */
   }
   sizetot *= nb*nb;
   if (nda != nd) sizetot += 1;
   mat->maxnz  = sizetot;
-  mat->dvalue = (Scalar *)PETSCMALLOC(nb*nda * sizeof(Scalar)); 
-  CHKPTRQ(mat->dvalue);
+  mat->dvalue = (Scalar *)PETSCMALLOC(n*sizeof(Scalar)); CHKPTRQ(mat->dvalue);
   PLogObjectMemory(bmat,(nda*(nb+2))*sizeof(int) + nb*nda*sizeof(Scalar)
                     + nda*sizeof(Scalar*) + sizeof(Mat_BDiag)
                     + sizeof(struct _Mat) + sizetot*sizeof(Scalar));
 
   if (!mat->user_alloc) {
-    Scalar *d;
-    d = mat->diagv[0] = (Scalar *)PETSCMALLOC(sizetot * sizeof(Scalar)); 
-    CHKPTRQ(d);
-    PETSCMEMSET(d,0,sizetot*sizeof(Scalar));
     for (i=0; i<nd; i++) {
-      mat->diagv[i] = d;
-      d += nb*nb*mat->bdlen[i];
+      mat->diagv[i] = (Scalar*)PETSCMALLOC(nb*nb*mat->bdlen[i]*sizeof(Scalar));
+      CHKPTRQ(mat->diagv[i]);
+      PETSCMEMSET(mat->diagv[i],0,nb*nb*mat->bdlen[i]*sizeof(Scalar));
     }
-  } /* otherwise diagonals set on input */
+    mat->nonew = 0;
+  } else { /* diagonals are set on input; don't allow dynamic allocation */
+    mat->nonew = 1;
+  }
 
   mat->nz        = mat->maxnz; /* Currently not keeping track of exact count */
   mat->assembled = 0;
-  mat->nonew     = 1; /* Currently all memory must be preallocated! */
   *newmat        = bmat;
   return 0;
 }

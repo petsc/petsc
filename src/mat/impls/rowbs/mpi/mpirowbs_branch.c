@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.59 1995/09/07 04:26:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.60 1995/09/07 22:36:38 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -533,6 +533,7 @@ static int MatView_MPIRowbs_File(Mat mat,Viewer viewer)
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerFileGetFormat_Private(viewer,&format); CHKERRQ(ierr);
 
+  if (format == FILE_FORMAT_INFO) return 0; /* do nothing for now */
   MPIU_Seq_begin(mat->comm,1);
   fprintf(fd,"[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
            mrow->mytid,mrow->m,mrow->rstart,mrow->rend,mrow->n,0,mrow->N);

@@ -1,7 +1,7 @@
-IPETSCDIR = ../../..
+PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS        =  $(PETSC_INCLUDE) $(COPT) $(CONF) -I$(IPETSCDIR)/include
+CFLAGS        =  $(PETSC_INCLUDE) $(COPT) $(CONF) -I$(PETSC_DIR)/include
 FFLAGS        =  $(BASEOPTF)
 SOURCEC       = 
 SOURCEF       =
@@ -19,7 +19,7 @@ RUNEXAMPLES_2 = runex15
 EXAMPLES_3    = ex19
 RUNEXAMPLES_3 = runex19
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
-                ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c 
+                ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c
 EXAMPLESF     = ex19.F
 
 ex1: ex1.o  chkopts 
@@ -209,5 +209,5 @@ runex20_2:
            else echo "Possible problem with ex20_2, diffs above"; fi;\
            $(RM) -f ex20_2.tmp vector.dat
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 

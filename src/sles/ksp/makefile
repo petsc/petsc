@@ -1,8 +1,8 @@
-IPETSCDIR = ../..
+PETSC_DIR = ../..
 
 ALL: lib
 
-CFLAGS   =  -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
+CFLAGS   =  -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = kspimpl.h
@@ -11,4 +11,4 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = interface impls  examples
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

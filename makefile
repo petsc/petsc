@@ -3,9 +3,9 @@
 # See bmake/common for additional commands.
 #
 
-IPETSCDIR = .
+PETSC_DIR = .
 
-CFLAGS   =  -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
+CFLAGS   =  -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
@@ -17,7 +17,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = src include docs 
 
-include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
 # Builds PETSc libraries for a given BOPT and architecture
 all: chkpetsc_dir
@@ -82,10 +82,13 @@ etags:
 	etags -a -f TAGS src/*/impls/*/*/*.c 
 	etags -a -f TAGS include/*.h include/pinclude/*.h bmake/common
 	etags -a -f TAGS src/*/impls/*.c src/*/utils/*.c
-	etags -a -f TAGS makefile src/*/src/makefile src/makefile 
+	etags -a -f TAGS makefile src/*/src/makefile
+	etags -a -f TAGS src/*/interface/makefile src/makefile 
 	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
+	etags -a -f TAGS src/*/examples/*/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS include/makefile include/*/makefile docs/makefile
 	etags -a -f TAGS bmake/common bmake/sun4/sun4* bmake/rs6000/rs6000* 
 	etags -a -f TAGS bmake/solaris/solaris*
 	etags -a -f TAGS bmake/IRIX/IRIX* bmake/freebsd/freebsd*
@@ -105,10 +108,12 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES include/*.h include/pinclude/*.h
 	etags -a -f TAGS_NO_EXAMPLES bmake/common
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*.c src/*/utils/*.c
-	etags -a -f TAGS_NO_EXAMPLES makefile src/*/src/makefile src/makefile 
+	etags -a -f TAGS_NO_EXAMPLES makefile src/*/src/makefile 
+	etags -a -f TAGS_NO_EXAMPLES src/*/interface/makefile src/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/*/utils/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile docs/makefile
 	etags -a -f TAGS_NO_EXAMPLES bmake/common bmake/sun4/sun4* 
 	etags -a -f TAGS_NO_EXAMPLES bmake/rs6000/rs6000* 
 	etags -a -f TAGS_NO_EXAMPLES bmake/solaris/solaris*
@@ -123,10 +128,13 @@ etags_noexamples:
 etags_makefiles:
 	$(RM) TAGS_MAKEFILES
 	etags -a -f TAGS_MAKEFILES bmake/common
-	etags -a -f TAGS_MAKEFILES makefile src/*/src/makefile src/makefile 
+	etags -a -f TAGS_MAKEFILES makefile src/*/src/makefile 
+	etags -a -f TAGS_MAKEFILES src/*/interface/makefile src/makefile 
 	etags -a -f TAGS_MAKEFILES src/*/impls/makefile src/*/impls/*/makefile
 	etags -a -f TAGS_MAKEFILES src/*/utils/makefile src/*/interface/makefile
 	etags -a -f TAGS_MAKEFILES src/*/makefile src/*/impls/*/*/makefile
+	etags -a -f TAGS_MAKEFILES src/*/examples/makefile src/*/examples/*/makefile
+	etags -a -f TAGS_MAKEFILES include/makefile include/*/makefile docs/makefile
 	etags -a -f TAGS_MAKEFILES bmake/common bmake/sun4/sun4* 
 	etags -a -f TAGS_MAKEFILES bmake/rs6000/rs6000* 
 	etags -a -f TAGS_MAKEFILES bmake/solaris/solaris*
