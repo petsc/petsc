@@ -7,9 +7,10 @@ static char help[] = "Tests copying an AIJ matrix.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C,A; 
-  int         i,j,m = 5,n = 5,I,J,ierr;
-  PetscScalar v;
+  Mat            C,A; 
+  PetscInt       i,j,m = 5,n = 5,I,J;
+  PetscErrorCode ierr;
+  PetscScalar    v;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

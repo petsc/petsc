@@ -7,11 +7,12 @@ static char help[] = "Tests relaxation for dense matrices.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  Vec         u,x,b,e;
-  int         i,n = 10,midx[3],ierr;
-  PetscScalar v[3],one = 1.0,zero = 0.0,mone = -1.0;
-  PetscReal   omega = 1.0,norm;
+  Mat            C; 
+  Vec            u,x,b,e;
+  PetscInt       i,n = 10,midx[3];
+  PetscErrorCode ierr;
+  PetscScalar    v[3],one = 1.0,zero = 0.0,mone = -1.0;
+  PetscReal      omega = 1.0,norm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-omega",&omega,PETSC_NULL);CHKERRQ(ierr);

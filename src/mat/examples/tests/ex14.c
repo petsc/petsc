@@ -8,8 +8,10 @@ static char help[] = "Tests sequential and parallel MatGetRow() and MatRestoreRo
 int main(int argc,char **args)
 {
   Mat               C; 
-  int               i,j,m = 5,n = 5,I,J,ierr,nz,rstart,rend,rank;
-  const int         *idx;
+  PetscInt          i,j,m = 5,n = 5,I,J,nz,rstart,rend;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank;
+  const PetscInt    *idx;
   PetscScalar       v;
   const PetscScalar *values;
 

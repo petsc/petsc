@@ -16,10 +16,10 @@ EXTERN_C_BEGIN
 #define fortranmdot2_      fortranmdot2
 #define fortranmdot1_      fortranmdot1
 #endif
-EXTERN void fortranmdot4_(void*,void*,void*,void*,void*,int*,void*,void*,void*,void*);
-EXTERN void fortranmdot3_(void*,void*,void*,void*,int*,void*,void*,void*);
-EXTERN void fortranmdot2_(void*,void*,void*,int*,void*,void*);
-EXTERN void fortranmdot1_(void*,void*,int*,void*);
+EXTERN void fortranmdot4_(void*,void*,void*,void*,void*,PetscInt*,void*,void*,void*,void*);
+EXTERN void fortranmdot3_(void*,void*,void*,void*,PetscInt*,void*,void*,void*);
+EXTERN void fortranmdot2_(void*,void*,void*,PetscInt*,void*,void*);
+EXTERN void fortranmdot1_(void*,void*,PetscInt*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
@@ -28,7 +28,7 @@ EXTERN void fortranmdot1_(void*,void*,int*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortrannormsqr_    fortrannormsqr
 #endif
-EXTERN void fortrannormsqr_(void*,int*,void*);
+EXTERN void fortrannormsqr_(void*,PetscInt*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
@@ -37,7 +37,7 @@ EXTERN void fortrannormsqr_(void*,int*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaij_    fortranmultaij
 #endif
-EXTERN void fortranmultaij_(int*,void*,int*,int*,void*,void*);
+EXTERN void fortranmultaij_(PetscInt*,void*,PetscInt*,PetscInt*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
@@ -46,7 +46,7 @@ EXTERN void fortranmultaij_(int*,void*,int*,int*,void*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmulttransposeaddaij_    fortranmulttransposeaddaij
 #endif
-EXTERN void fortranmulttransposeaddaij_(int*,void*,int*,int*,void*,void*);
+EXTERN void fortranmulttransposeaddaij_(PetscInt*,void*,PetscInt*,PetscInt*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
@@ -55,7 +55,7 @@ EXTERN void fortranmulttransposeaddaij_(int*,void*,int*,int*,void*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaddaij_ fortranmultaddaij
 #endif
-EXTERN void fortranmultaddaij_(int*,void*,int*,int*,void*,void*,void*);
+EXTERN void fortranmultaddaij_(PetscInt*,void*,PetscInt*,PetscInt*,void*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
@@ -64,7 +64,7 @@ EXTERN void fortranmultaddaij_(int*,void*,int*,int*,void*,void*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolveaij_   fortransolveaij
 #endif
-EXTERN void fortransolveaij_(int*,void*,int*,int*,int*,void*,void*);
+EXTERN void fortransolveaij_(PetscInt*,void*,PetscInt*,PetscInt*,PetscInt*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
@@ -79,10 +79,10 @@ EXTERN void fortransolveaij_(int*,void*,int*,int*,int*,void*,void*);
 #define fortranrelaxaijforwardzero_   fortranrelaxaijforwardzero
 #define fortranrelaxaijbackwardzero_   fortranrelaxaijbackwardzero
 #endif
-EXTERN void fortranrelaxaijforward_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*);
-EXTERN void fortranrelaxaijbackward_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*);
-EXTERN void fortranrelaxaijforwardzero_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*,void*);
-EXTERN void fortranrelaxaijbackwardzero_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*,void*);
+EXTERN void fortranrelaxaijforward_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,void*,void*);
+EXTERN void fortranrelaxaijbackward_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,void*,void*);
+EXTERN void fortranrelaxaijforwardzero_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,void*,void*,void*);
+EXTERN void fortranrelaxaijbackwardzero_(PetscInt*,PetscReal*,void*,PetscInt*,PetscInt*,const PetscInt*,void*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
@@ -91,7 +91,7 @@ EXTERN void fortranrelaxaijbackwardzero_(int*,PetscReal*,void*,int*,int*,const i
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4_          fortransolvebaij4
 #endif
-EXTERN void fortransolvebaij4_(int*,void*,int*,int*,int*,void*,void*,void*);
+EXTERN void fortransolvebaij4_(PetscInt*,void*,PetscInt*,PetscInt*,PetscInt*,void*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
@@ -100,7 +100,7 @@ EXTERN void fortransolvebaij4_(int*,void*,int*,int*,int*,void*,void*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4unroll_    fortransolvebaij4unroll
 #endif
-EXTERN void fortransolvebaij4unroll_(int*,void*,int*,int*,int*,void*,void*);
+EXTERN void fortransolvebaij4unroll_(PetscInt*,void*,PetscInt*,PetscInt*,PetscInt*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
@@ -109,7 +109,7 @@ EXTERN void fortransolvebaij4unroll_(int*,void*,int*,int*,int*,void*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4blas_      fortransolvebaij4blas
 #endif
-EXTERN void fortransolvebaij4blas_(int*,void*,int*,int*,int*,void*,void*,void*);
+EXTERN void fortransolvebaij4blas_(PetscInt*,void*,PetscInt*,PetscInt*,PetscInt*,void*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
@@ -118,7 +118,7 @@ EXTERN void fortransolvebaij4blas_(int*,void*,int*,int*,int*,void*,void*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranxtimesy_ fortranxtimesy
 #endif
-EXTERN void fortranxtimesy_(void*,void*,void*,int*);
+EXTERN void fortranxtimesy_(void*,void*,void*,PetscInt*);
 #endif
 
 EXTERN_C_END
@@ -162,17 +162,17 @@ while(n--) {sum+= *x * *x; x++;}}
 EXTERN double ddot_();
 #define DOT(sum,x,y,n) {PetscBLASInt one=1;\
 sum=ddot_(&n,x,&one,y,&one);}
-#define DOT2(sum1,sum2,x,y1,y2,n) {int __i;\
+#define DOT2(sum1,sum2,x,y1,y2,n) {PetscInt __i;\
 for(__i=0;__i<n;__i++){sum1+=x[__i]*y1[__i];sum2+=x[__i]*y2[__i];}}
 #define SQR(sum,x,n)   {PetscBLASInt one=1;\
 sum=ddot_(&n,x,&one,x,&one);}
 
 #else
-#define DOT(sum,x,y,n) {int __i;\
+#define DOT(sum,x,y,n) {PetscInt __i;\
 for(__i=0;__i<n;__i++)sum+=x[__i]*y[__i];}
-#define DOT2(sum1,sum2,x,y1,y2,n) {int __i;\
+#define DOT2(sum1,sum2,x,y1,y2,n) {PetscInt __i;\
 for(__i=0;__i<n;__i++){sum1+=x[__i]*y1[__i];sum2+=x[__i]*y2[__i];}}
-#define SQR(sum,x,n)   {int __i;\
+#define SQR(sum,x,n)   {PetscInt __i;\
 for(__i=0;__i<n;__i++)sum+=x[__i]*x[__i];}
 #endif
 
@@ -209,11 +209,11 @@ while(n--){sum1+= *x*conj(*y1);sum2+=*x*conj(*y2); x++; y1++; y2++;}}
 while(n--) {sum+= *x * conj(*x); x++;}}
 
 #else
-#define DOT(sum,x,y,n) {int __i;\
+#define DOT(sum,x,y,n) {PetscInt __i;\
 for(__i=0;__i<n;__i++)sum+=x[__i]*conj(y[__i]);}
-#define DOT2(sum1,sum2,x,y1,y2,n) {int __i;\
+#define DOT2(sum1,sum2,x,y1,y2,n) {PetscInt __i;\
 for(__i=0;__i<n;__i++){sum1+=x[__i]*conj(y1[__i]);sum2+=x[__i]*conj(y2[__i]);}}
-#define SQR(sum,x,n)   {int __i;\
+#define SQR(sum,x,n)   {PetscInt __i;\
 for(__i=0;__i<n;__i++)sum+=x[__i]*conj(x[__i]);}
 #endif
 

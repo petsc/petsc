@@ -10,7 +10,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCICCSetMatOrdering_ICC"
 PetscErrorCode PCICCSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
 {
-  PC_ICC *dir = (PC_ICC*)pc->data;
+  PC_ICC         *dir = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
  
   PetscFunctionBegin;
@@ -80,7 +80,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetLevels_ICC"
-PetscErrorCode PCICCSetLevels_ICC(PC pc,int levels)
+PetscErrorCode PCICCSetLevels_ICC(PC pc,PetscInt levels)
 {
   PC_ICC *icc;
 
@@ -145,9 +145,9 @@ PetscErrorCode PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
    Concepts: ICC^setting levels of fill
 
 @*/
-PetscErrorCode PCICCSetLevels(PC pc,int levels)
+PetscErrorCode PCICCSetLevels(PC pc,PetscInt levels)
 {
-  PetscErrorCode ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,PetscInt);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -311,8 +311,8 @@ PetscErrorCode PCICCSetZeroPivot(PC pc,PetscReal zero)
 #define __FUNCT__ "PCSetup_ICC"
 static PetscErrorCode PCSetup_ICC(PC pc)
 {
-  PC_ICC *icc = (PC_ICC*)pc->data;
-  IS     perm,cperm;
+  PC_ICC         *icc = (PC_ICC*)pc->data;
+  IS             perm,cperm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -334,7 +334,7 @@ static PetscErrorCode PCSetup_ICC(PC pc)
 #define __FUNCT__ "PCDestroy_ICC"
 static PetscErrorCode PCDestroy_ICC(PC pc)
 {
-  PC_ICC *icc = (PC_ICC*)pc->data;
+  PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -348,7 +348,7 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
 #define __FUNCT__ "PCApply_ICC"
 static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
 {
-  PC_ICC *icc = (PC_ICC*)pc->data;
+  PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -361,7 +361,7 @@ static PetscErrorCode PCApply_ICC(PC pc,Vec x,Vec y)
 static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PC_ICC *icc = (PC_ICC*)pc->data;
+  PC_ICC         *icc = (PC_ICC*)pc->data;
 
   PetscFunctionBegin;
   ierr = MatForwardSolve(icc->fact,x,y);CHKERRQ(ierr);
@@ -373,7 +373,7 @@ static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PC_ICC *icc = (PC_ICC*)pc->data;
+  PC_ICC         *icc = (PC_ICC*)pc->data;
 
   PetscFunctionBegin;
   ierr = MatBackwardSolve(icc->fact,x,y);CHKERRQ(ierr);
@@ -395,11 +395,11 @@ static PetscErrorCode PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
 #define __FUNCT__ "PCSetFromOptions_ICC"
 static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 {
-  PC_ICC     *icc = (PC_ICC*)pc->data;
-  char       tname[256];
-  PetscTruth flg;
+  PC_ICC         *icc = (PC_ICC*)pc->data;
+  char           tname[256];
+  PetscTruth     flg;
   PetscErrorCode ierr;
-  PetscFList ordlist;
+  PetscFList     ordlist;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
@@ -429,9 +429,9 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
 #define __FUNCT__ "PCView_ICC"
 static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 {
-  PC_ICC     *icc = (PC_ICC*)pc->data;
+  PC_ICC         *icc = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth isstring,iascii;
+  PetscTruth     isstring,iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
@@ -492,7 +492,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCreate_ICC(PC pc)
 {
   PetscErrorCode ierr;
-  PC_ICC *icc;
+  PC_ICC         *icc;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_ICC,&icc);CHKERRQ(ierr);
@@ -500,6 +500,7 @@ PetscErrorCode PCCreate_ICC(PC pc)
 
   icc->fact	          = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&icc->ordering);CHKERRQ(ierr);
+  ierr = MatFactorInfoInitialize(&icc->info);CHKERRQ(ierr);
   icc->info.levels	  = 0;
   icc->info.fill          = 1.0;
   icc->implctx            = 0;

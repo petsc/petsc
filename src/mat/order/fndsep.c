@@ -3,6 +3,7 @@
 
 #include "petsc.h"
 #include "src/mat/order/order.h"
+EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 
 /*****************************************************************/
 /*************     FNDSEP ..... FIND SEPARATOR       *************/
@@ -34,18 +35,15 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKfndsep" 
-PetscErrorCode SPARSEPACKfndsep(int *root, int *xadj, int *adjncy, 
-	int *mask, int *nsep, int *sep, int *xls, int *ls)
+PetscErrorCode SPARSEPACKfndsep(PetscInt *root, PetscInt *xadj, PetscInt *adjncy, 
+	                        PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *xls, PetscInt *ls)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, 
-	    midend, midlvl;
-    EXTERN PetscErrorCode SPARSEPACKfnroot(int*, int *, int *, 
-	    int *, int *, int *, int *);
-    int nbr;
+    PetscInt node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, midend, midlvl;
+    PetscInt nbr;
 
     PetscFunctionBegin;
     /* Parameter adjustments */
@@ -91,7 +89,7 @@ L200:
     for (i = midbeg; i <= i__1; ++i) {
 	node = ls[i];
 	jstrt = xadj[node];
-	jstop = (i__2 = xadj[node + 1], (int)PetscAbsInt(i__2)) - 1;
+	jstop = (i__2 = xadj[node + 1], (PetscInt)PetscAbsInt(i__2)) - 1;
 	i__2 = jstop;
 	for (j = jstrt; j <= i__2; ++j) {
 	    nbr = adjncy[j];

@@ -7,10 +7,11 @@ static char help[] = "Tests matrix ordering routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i,j,m = 5,n = 5,I,J,ierr;
-  PetscScalar v;
-  IS          perm,iperm;
+  Mat            C; 
+  PetscInt       i,j,m = 5,n = 5,I,J;
+  PetscErrorCode ierr;
+  PetscScalar    v;
+  IS             perm,iperm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

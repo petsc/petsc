@@ -11,10 +11,12 @@ EXTERN PetscErrorCode TestMatZeroRows_with_no_allocation(Mat,IS,const PetscScala
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A;
-  int         i,j,m = 3,n,rank,size,I,J,ierr,Imax;
-  PetscScalar v,diag=-4.0;
-  IS          is;
+  Mat            A;
+  PetscInt       i,j,m = 3,n,I,J,Imax;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+  PetscScalar    v,diag=-4.0;
+  IS             is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -80,9 +82,9 @@ int main(int argc,char **args)
 #define __FUNCT__ "TestMatZeroRows_Basic"
 PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar diag[])
 {
-  Mat        B;
+  Mat            B;
   PetscErrorCode ierr;
-  PetscTruth keepzeroedrows;
+  PetscTruth     keepzeroedrows;
 
   /* Now copy A into B, and test it with MatZeroRows() */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
@@ -102,7 +104,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar diag[])
 #define __FUNCT__ "TestMatZeroRows_with_no_allocation"
 PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,const PetscScalar diag[])
 {
-  Mat         B;
+  Mat            B;
   PetscErrorCode ierr;
 
   /* Now copy A into B, and test it with MatZeroRows() */

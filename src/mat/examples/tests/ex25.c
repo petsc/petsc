@@ -7,9 +7,11 @@ static char help[] = "Tests MatTranspose()\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     C,A; 
-  PetscScalar  v;
-  int     i,j,m = 4,n = 4,rank,size,I,J,ierr,Istart,Iend;
+  Mat            C,A; 
+  PetscScalar    v;
+  PetscInt       i,j,m = 4,n = 4,I,J,Istart,Iend;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

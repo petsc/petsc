@@ -20,7 +20,7 @@
 #define fortrancopy_ fortrancopy
 #endif
 EXTERN_C_BEGIN
-extern void fortrancopy_(int*,PetscScalar*,PetscScalar*); 
+extern void fortrancopy_(PetscInt*,PetscScalar*,PetscScalar*); 
 EXTERN_C_END
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -29,7 +29,7 @@ EXTERN_C_END
 #define fortranzero_ fortranzero
 #endif
 EXTERN_C_BEGIN
-extern void fortranzero_(int*,PetscScalar*);
+extern void fortranzero_(PetscInt*,PetscScalar*);
 EXTERN_C_END
 
 
@@ -40,7 +40,7 @@ EXTERN_C_END
 #define fortranaypx_ fortranaypx
 #endif
 EXTERN_C_BEGIN
-extern void fortranaypx_(int*,const PetscScalar*,PetscScalar*,PetscScalar*); 
+extern void fortranaypx_(PetscInt*,const PetscScalar*,PetscScalar*,PetscScalar*); 
 EXTERN_C_END
 #endif
 
@@ -51,7 +51,7 @@ EXTERN_C_END
 #define fortranwaxpy_ fortranwaxpy
 #endif
 EXTERN_C_BEGIN
-extern void fortranwaxpy_(int*,const PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*); 
+extern void fortranwaxpy_(PetscInt*,const PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*); 
 EXTERN_C_END
 #endif
 
@@ -68,9 +68,9 @@ EXTERN_C_END
 #endif
 
 EXTERN_C_BEGIN
-EXTERN void fortranmaxpy4_(void*,void*,void*,void*,void*,void*,void*,void*,void*,int*);
-EXTERN void fortranmaxpy3_(void*,void*,void*,void*,void*,void*,void*,int*);
-EXTERN void fortranmaxpy2_(void*,void*,void*,void*,void*,int*);
+EXTERN void fortranmaxpy4_(void*,void*,void*,void*,void*,void*,void*,void*,void*,PetscInt*);
+EXTERN void fortranmaxpy3_(void*,void*,void*,void*,void*,void*,void*,PetscInt*);
+EXTERN void fortranmaxpy2_(void*,void*,void*,void*,void*,PetscInt*);
 EXTERN_C_END
 
 #define APXY(U,a1,p1,n)  {PetscBLASInt one=1;\
@@ -145,26 +145,26 @@ aa[0]=a1;aa[1]=a2;\
 
 #elif defined(PETSC_USE_FOR_KERNELS)
 
-#define APXY(U,a1,p1,n)  {int __i;PetscScalar __s1,__s2; \
+#define APXY(U,a1,p1,n)  {PetscInt __i;PetscScalar __s1,__s2; \
   for(__i=0;__i<n-1;__i+=2){__s1=a1*p1[__i];__s2=a1*p1[__i+1];\
   __s1+=U[__i];__s2+=U[__i+1];U[__i]=__s1;U[__i+1]=__s2;}\
   if (n & 0x1) U[__i] += a1 * p1[__i];}
-#define APXY2(U,a1,a2,p1,p2,n) {int __i;\
+#define APXY2(U,a1,a2,p1,p2,n) {PetscInt __i;\
   for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
-#define APXY3(U,a1,a2,a3,p1,p2,p3,n){int __i;\
+#define APXY3(U,a1,a2,a3,p1,p2,p3,n){PetscInt __i;\
   for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i];}
-#define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){int __i;\
+#define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){PetscInt __i;\
   for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
 
 #else
 
-#define APXY(U,a1,p1,n)  {int __i;PetscScalar _a1=a1;\
+#define APXY(U,a1,p1,n)  {PetscInt __i;PetscScalar _a1=a1;\
   for(__i=0;__i<n;__i++)U[__i]+=_a1 * p1[__i];}
-#define APXY2(U,a1,a2,p1,p2,n) {int __i;\
+#define APXY2(U,a1,a2,p1,p2,n) {PetscInt __i;\
   for(__i=0;__i<n;__i++)U[__i] += a1 * p1[__i] + a2 * p2[__i];}
-#define APXY3(U,a1,a2,a3,p1,p2,p3,n){int __i;\
+#define APXY3(U,a1,a2,a3,p1,p2,p3,n){PetscInt __i;\
   for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i];}
-#define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){int __i;\
+#define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){PetscInt __i;\
   for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
 
 #endif
@@ -246,14 +246,14 @@ U += 4; P += 4; n -= 4;}}
 while (n--) {*U = *p1++ + a1 * *U;U++;}
 
 #elif defined(PETSC_USE_FOR_KERNELS)
-#define AYPX(U,a1,p1,n)  {int __i;PetscScalar __s1,__s2; \
+#define AYPX(U,a1,p1,n)  {PetscInt __i;PetscScalar __s1,__s2; \
 for(__i=0;__i<n-1;__i+=2){__s1=p1[__i];__s2=p1[__i+1];\
 __s1+=a1*U[__i];__s2+=a1*U[__i+1];\
 U[__i]=__s1;U[__i+1]=__s2;}\
 if (n & 0x1) U[__i] = p1[__i] + a1 * U[__i];}
 
 #else
-#define AYPX(U,a1,p1,n)  {int __i;\
+#define AYPX(U,a1,p1,n)  {PetscInt __i;\
 for(__i=0;__i<n;__i++)U[__i]=p1[__i]+a1 * U[__i];}
 #endif
 
@@ -261,10 +261,10 @@ for(__i=0;__i<n;__i++)U[__i]=p1[__i]+a1 * U[__i];}
        Useful for APXY where alpha == -1 
   ----------------------------------------------------------------------------------
   */
-#define YMX(U,p1,n)  {int __i;\
+#define YMX(U,p1,n)  {PetscInt __i;\
 for(__i=0;__i<n;__i++)U[__i]-=p1[__i];}
 /* Useful for APXY where alpha == 1 */
-#define YPX(U,p1,n)  {int __i;\
+#define YPX(U,p1,n)  {PetscInt __i;\
 for(__i=0;__i<n;__i++)U[__i]+=p1[__i];}
 
 #endif

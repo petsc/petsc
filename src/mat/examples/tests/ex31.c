@@ -11,11 +11,13 @@ static char help[] = "Tests binary I/O of matrices and illustrates user-defined 
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C;
-  PetscScalar v;
-  int         i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size;
-  PetscViewer viewer;
-  int         MATRIX_GENERATE,MATRIX_READ;
+  Mat            C;
+  PetscScalar    v;
+  PetscInt       i,j,I,J,Istart,Iend,N,m = 4,n = 4;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+  PetscViewer    viewer;
+  PetscEvent     MATRIX_GENERATE,MATRIX_READ;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -14,12 +14,13 @@ directly.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C,A; 
-  int         i,j,m = 5,n = 5,I,J,ierr,lf = 0;
-  PetscTruth  flg1;
-  PetscScalar v;
-  IS          row,col;
-  PetscViewer viewer1,viewer2;
+  Mat            C,A; 
+  PetscInt       i,j,m = 5,n = 5,I,J,lf = 0;
+  PetscErrorCode ierr;
+  PetscTruth     flg1;
+  PetscScalar    v;
+  IS             row,col;
+  PetscViewer    viewer1,viewer2;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

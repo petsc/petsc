@@ -7,10 +7,11 @@ static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i,j,m = 3,n = 3,I,J,ierr;
-  PetscScalar v;
-  MatInfo     info;
+  Mat            C; 
+  PetscInt       i,j,m = 3,n = 3,I,J;
+  PetscErrorCode ierr;
+  PetscScalar    v;
+  MatInfo        info;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

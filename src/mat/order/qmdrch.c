@@ -28,15 +28,15 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKqmdrch"
-PetscErrorCode SPARSEPACKqmdrch(int *root, int *xadj, int *adjncy, 
-	int *deg, int *marker, int *rchsze, int *rchset, 
-	int *nhdsze, int *nbrhd)
+PetscErrorCode SPARSEPACKqmdrch(PetscInt *root, PetscInt *xadj, PetscInt *adjncy, 
+	PetscInt *deg, PetscInt *marker, PetscInt *rchsze, PetscInt *rchset, 
+	PetscInt *nhdsze, PetscInt *nbrhd)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int node, i, j, nabor, istop, jstop, istrt, jstrt;
+    PetscInt node, i, j, nabor, istop, jstop, istrt, jstrt;
 
 /*       LOOP THROUGH THE NEIGHBORS OF ROOT IN THE*/
 /*       QUOTIENT GRAPH.*/

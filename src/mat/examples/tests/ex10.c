@@ -7,9 +7,11 @@ static char help[] = "Tests repeated use of assembly for matrices.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i,j,m = 5,n = 2,I,J,ierr,rank,size;
-  PetscScalar v;
+  Mat            C; 
+  PetscInt       i,j,m = 5,n = 2,I,J;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscScalar    v;
 
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -38,17 +38,17 @@
 /****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKrcm"
-PetscErrorCode SPARSEPACKrcm(int *root, int *xadj, int *adjncy, 
-	int *mask, int *perm, int *ccsize, int *deg)
+PetscErrorCode SPARSEPACKrcm(PetscInt *root, PetscInt *xadj, PetscInt *adjncy, 
+	PetscInt *mask, PetscInt *perm, PetscInt *ccsize, PetscInt *deg)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
-    EXTERN PetscErrorCode SPARSEPACKdegree(int*, int *, int *, 
-	    int *, int *, int *, int *);
-    int lbegin, lvlend, nbr;
+    PetscInt node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
+    EXTERN PetscErrorCode SPARSEPACKdegree(PetscInt*, PetscInt *, PetscInt *, 
+	    PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+    PetscInt lbegin, lvlend, nbr;
 
 /*       FIND THE DEGREES OF THE NODES IN THE                  */
 /*       COMPONENT SPECIFIED BY MASK AND ROOT.                 */

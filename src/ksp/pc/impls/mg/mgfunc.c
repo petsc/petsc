@@ -221,10 +221,10 @@ PetscErrorCode MGGetSmoother(PC pc,int l,KSP *ksp)
 @*/
 PetscErrorCode MGGetSmootherUp(PC pc,int l,KSP *ksp)
 {
-  MG       *mg = (MG*)pc->data;
+  MG             *mg = (MG*)pc->data;
   PetscErrorCode ierr;
-  char     *prefix;
-  MPI_Comm comm;
+  char           *prefix;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   /*
@@ -237,9 +237,8 @@ PetscErrorCode MGGetSmootherUp(PC pc,int l,KSP *ksp)
   if (mg[l]->smoothu == mg[l]->smoothd) {
     ierr = PetscObjectGetComm((PetscObject)mg[l]->smoothd,&comm);CHKERRQ(ierr);
     ierr = KSPCreate(comm,&mg[l]->smoothu);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(mg[l]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(mg[l]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mg[l]->smoothu,prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_");CHKERRQ(ierr);
     PetscLogObjectParent(pc,mg[l]->smoothu);
   }
   if (ksp) *ksp = mg[l]->smoothu;
