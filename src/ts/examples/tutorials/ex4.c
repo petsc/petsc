@@ -1,15 +1,20 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.1 1998/06/20 22:18:50 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.2 1998/06/20 23:33:43 curfman Exp curfman $";
 #endif
 
-static char help[] ="Solves a simple time-dependent linear PDE using implicit\n\
-timestepping.  Runtime options include:\n\
-  -M <xg>, where <xg> = number of grid points\n\
-  -debug : Activate debugging printouts\n\
-  -nox : Deactivate x-window graphics\n\n";
+/* Program usage:  mpirun -np <procs> ex3 [-help] [all PETSc options] */
+
+static char help[] ="Solves a simple time-dependent linear PDE (the heat equation).\n\
+Input parameters include:\n\
+  -m <points>, where <points> = number of grid points\n\
+  -time_dependent_rhs     : Treat the problem as having a time-dependent right-hand side\n\
+  -debug                  : Activate debugging printouts\n\
+  -nox                    : Deactivate x-window graphics\n\n";
 
 /*
    Concepts: TS^time-dependent linear problems
+   Concepts: TS^heat equation
+   Concepts: TS^diffusion equation
    Routines: TSCreate(); TSSetSolution(); TSSetRHSMatrix();
    Routines: TSSetInitialTimeStep(); TSSetDuration(); TSSetMonitor();
    Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
@@ -18,24 +23,30 @@ timestepping.  Runtime options include:\n\
 
 /* ------------------------------------------------------------------------
 
-   This program solves the one-dimensional heat or diffusion equation:
-       u_t = u_xx 
+   This program solves the one-dimensional heat equation (also called the
+   diffusion equation),
+       u_t = u_xx, 
    on the domain 0 <= x <= 1, with the boundary conditions
-       u(t,0) = 
-       u(t,1) =
+       u(t,0) = 0, u(t,1) = 0,
    and the initial condition
-       u(0,x) = sin(6*pi*x) + 3*sin(2*pi*x)
+       u(0,x) = sin(6*pi*x) + 3*sin(2*pi*x).
    This is a linear, second-order, parabolic equation.
 
    We discretize the right-hand side using finite differences with
    uniform grid spacing h:
        u_xx = (u_{i+1} - 2u_{i} + u_{i-1})/(h^2)
+   We then demonstrate time evolution using the various TS methods via
+       mpirun -np <procs> ex3 -ts_type <timestepping solver>
 
    We compare the approximate solution with the exact solution, given by
        u_exact(x,t) = exp(-36*pi*pi*t) * sin(6*pi*x) +
                       3*exp(-4*pi*pi*t) * sin(2*pi*x)
 
-   By default we use Euler's method.
+   Notes:
+   This code demonstrates the TS solver interface to two variants of 
+   linear problems, u_t = f(u,t), namely
+     - time-dependent f:   f(u,t) is a function of t
+     - time-independent f: f(u,t) is simply just f(u)
 
   ------------------------------------------------------------------------- */
 
@@ -64,8 +75,8 @@ typedef struct {
   Vec      localwork;         /* local ghosted work vector */
   Vec      u_local;           /* local ghosted approximate solution vector */
   Vec      solution;          /* global exact solution vector */
-  int      M;                 /* total number of grid points */
-  double   h;                 /* mesh width h = 1/(M-1) */
+  int      m;                 /* total number of grid points */
+  double   h;                 /* mesh width h = 1/(m-1) */
   int      debug;             /* flag (1 indicates activation of debugging printouts) */
   Viewer   viewer1, viewer2;  /* viewers for the solution and error */
   double   norm_2, norm_max;  /* error norms */
@@ -87,8 +98,6 @@ int main(int argc,char **argv)
   Vec           u;                      /* approximate solution vector */
   double        time_total_max = 100.0; /* default max total time */
   int           time_steps_max = 100;   /* default max timesteps */
-  TSProblemType tsproblem = TS_LINEAR;  /* We are solving a linear problem with
-                                           variable coefficient matrix */
   Draw          draw;                   /* drawing context */
   int           ierr,  steps, flg, size, m;
   double        dt, ftime;
@@ -100,11 +109,13 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   appctx.comm = PETSC_COMM_WORLD;
 
-  appctx.M = 60;
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.M,&flg); CHKERRA(ierr);
+  m    = 60;
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug); CHKERRA(ierr);    
-  appctx.h      = 1.0/(appctx.M-1.0);
-  appctx.norm_2 = 0.0; appctx.norm_max = 0.0;
+  appctx.m        = m;
+  appctx.h        = 1.0/(m-1.0);
+  appctx.norm_2   = 0.0;
+  appctx.norm_max = 0.0;
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   PetscPrintf(PETSC_COMM_WORLD,"Solving a linear TS problem, number of processors = %d\n",size);
 
@@ -117,7 +128,7 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors.
   */ 
 
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.M,1,1,PETSC_NULL,&appctx.da); CHKERRA(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,1,1,PETSC_NULL,&appctx.da); CHKERRA(ierr);
 
   /*
      Extract global and local vectors from DA; we use these to store the
@@ -149,7 +160,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts); CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,TS_LINEAR,&ts); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
@@ -158,20 +169,37 @@ int main(int argc,char **argv)
   ierr = TSSetMonitor(ts,Monitor,&appctx); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     For linear problems with a variable coefficient matrix, the user 
-     provides the right-hand-side of the ODE as a time-dependent matrix.
 
      Create matrix data structure; set matrix evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,appctx.M,appctx.M,&A); CHKERRA(ierr);
-  ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m,m,&A); CHKERRA(ierr);
+
+  ierr = OptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg); CHKERRA(ierr);
+  if (flg) {
+    /*
+       For linear problems with a time-dependent f(u,t) in the equation 
+       u_t = f(u,t), the user provides the discretized right-hand-side
+       as a time-dependent matrix.
+    */
+    ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx); CHKERRA(ierr);
+  } else {
+    /*
+       For linear problems with a time-independent f(u) in the equation 
+       u_t = f(u), the user provides the discretized right-hand-side
+       as a matrix only once, and then sets a null matrix evaluation
+       routine.
+    */
+    MatStructure A_structure;
+    ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
+    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solution vector and initial timestep
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  dt = appctx.h*appctx.h/2.01;
+  dt = appctx.h*appctx.h/2.0;
   ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
   ierr = TSSetSolution(ts,u); CHKERRA(ierr);
 
@@ -461,12 +489,13 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
      Set matrix rows corresponding to boundary data
   */
 
-  if (mstart == 0) {
+  if (mstart == 0) {  /* first processor only */
     v[0] = 1.0;
     ierr = MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES); CHKERRQ(ierr);
     mstart++;
   }
-  if (mend == appctx->M) {
+
+  if (mend == appctx->m) { /* last processor only */
     mend--;
     v[0] = 1.0;
     ierr = MatSetValues(A,1,&mend,1,&mend,v,INSERT_VALUES); CHKERRQ(ierr);
