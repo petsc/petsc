@@ -1,0 +1,9 @@
+
+
+WWW info:
+
+  Perl script for WWW e-mail interface is located in:
+        charlotte:/www/ncsa_httpd/cgi-bin/petsc/mailpetsc
+            (MUST access from charlotte)
+
+  To add e-mail to petsc.html, just click add hyperlink to email.html
