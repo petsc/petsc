@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.41 1995/11/26 21:11:50 curfman Exp bsmith $ */
+/* $Id: matimpl.h,v 1.42 1995/12/21 22:50:49 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -41,7 +41,7 @@ struct _MatOps {
             (*convert)(Mat,MatType,Mat *),
             (*getsubmatrix)(Mat,IS,IS,MatGetSubMatrixCall,Mat*),
             (*getsubmatrixinplace)(Mat,IS,IS),
-            (*copyprivate)(Mat,Mat *,int),
+            (*convert)(Mat,Mat *,int),
             (*forwardsolve)(Mat,Vec,Vec),(*backwardsolve)(Mat,Vec,Vec),
             (*ilufactor)(Mat,IS,IS,double,int),
             (*incompletecholeskyfactor)(Mat,IS,double),
@@ -63,7 +63,7 @@ struct _Mat {
   double           lupivotthreshold;  /* threshold for pivoting */
 };
 
-/* final argument for MatCopyPrivate_XXX() */
+/* final argument for MatConvertXXX() */
 #define DO_NOT_COPY_VALUES 0
 #define COPY_VALUES        1
 
