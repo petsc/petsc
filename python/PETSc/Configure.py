@@ -27,9 +27,8 @@ class Configure(config.base.Configure):
     self.headers     = self.framework.require('config.headers',   self)
     self.functions   = self.framework.require('config.functions', self)
     self.libraries   = self.framework.require('config.libraries', self)
-    self.blas        = self.framework.require('PETSc.packages.BLAS',   self)
-    self.lapack      = self.framework.require('PETSc.packages.LAPACK', self)
-    self.mpi         = self.framework.require('PETSc.packages.MPI',    self)
+    self.blaslapack  = self.framework.require('PETSc.packages.BlasLapack',  self)
+    self.mpi         = self.framework.require('PETSc.packages.MPI',         self)
     self.adic        = self.framework.require('PETSc.packages.ADIC',        self)
     self.matlab      = self.framework.require('PETSc.packages.Matlab',      self)
     self.mathematica = self.framework.require('PETSc.packages.Mathematica', self)
@@ -47,8 +46,7 @@ class Configure(config.base.Configure):
     self.headers.headerPrefix     = self.headerPrefix
     self.functions.headerPrefix   = self.headerPrefix
     self.libraries.headerPrefix   = self.headerPrefix
-    self.blas.headerPrefix        = self.headerPrefix
-    self.lapack.headerPrefix      = self.headerPrefix
+    self.blaslapack.headerPrefix  = self.headerPrefix
     self.mpi.headerPrefix         = self.headerPrefix
     self.adic.headerPrefix        = self.headerPrefix
     self.matlab.headerPrefix      = self.headerPrefix
@@ -96,8 +94,8 @@ class Configure(config.base.Configure):
 
   def checkRequirements(self):
     '''Checking that packages Petsc required are actually here'''
-    if not self.blas.found: raise RuntimeError('Petsc requires BLAS!\n Could not link to '+str(self.blas.lib)+'. Check configure.log.')
-    if not self.lapack.found: raise RuntimeError('Petsc requires LAPACK!\n Could not link to '+str(self.lapack.lib)+'. Check configure.log.')
+    if not self.blaslapack.foundBlas:   raise RuntimeError('Petsc requires BLAS!\n Check configure.log.')
+    if not self.blaslapack.foundLapack: raise RuntimeError('Petsc requires LAPACK!\n Check configure.log.')
     return
 
   def configureDirectories(self):
