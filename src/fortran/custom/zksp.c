@@ -1,60 +1,69 @@
-/*$Id: zksp.c,v 1.39 1999/11/24 21:55:52 bsmith Exp bsmith $*/
+/*$Id: zksp.c,v 1.40 1999/12/13 01:46:46 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ksp.h"
 
+
+
+
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define kspdefaultconverged_      KSPDEFAULTCONVERGED
-#define kspdefaultmonitor_        KSPDEFAULTMONITOR
-#define ksptruemonitor_           KSPTRUEMONITOR
-#define kspvecviewmonitor_        KSPVECVIEWMONITOR
-#define ksplgmonitor_             KSPLGMONITOR
-#define ksplgtruemonitor_         KSPLGTRUEMONITOR
-#define kspsingularvaluemonitor_  KSPSINGULARVALUEMONITOR
-#define kspregisterdestroy_       KSPREGISTERDESTROY
-#define kspdestroy_               KSPDESTROY
-#define ksplgmonitordestroy_      KSPLGMONITORDESTROY
-#define ksplgmonitorcreate_       KSPLGMONITORCREATE
-#define kspgetrhs_                KSPGETRHS
-#define kspgetsolution_           KSPGETSOLUTION
-#define kspgetpc_                 KSPGETPC
-#define kspsetmonitor_            KSPSETMONITOR
-#define kspsetconvergencetest_    KSPSETCONVERGENCETEST
-#define kspcreate_                KSPCREATE
-#define kspsetoptionsprefix_      KSPSETOPTIONSPREFIX
-#define kspappendoptionsprefix_   KSPAPPENDOPTIONSPREFIX
-#define kspgettype_               KSPGETTYPE
-#define kspgetpreconditionerside_ KSPGETPRECONDITIONERSIDE
-#define kspbuildsolution_         KSPBUILDSOLUTION
-#define kspsettype_               KSPSETTYPE           
-#define kspgetresidualhistory_    KSPGETRESIDUALHISTORY
-#define kspgetoptionsprefix_      KSPGETOPTIONSPREFIX
+#define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC
+#define kspfgmresmodifypcsles_     KSPFGMRESMODIFYPCSLES
+#define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
+#define kspdefaultconverged_       KSPDEFAULTCONVERGED
+#define kspdefaultmonitor_         KSPDEFAULTMONITOR
+#define ksptruemonitor_            KSPTRUEMONITOR
+#define kspvecviewmonitor_         KSPVECVIEWMONITOR
+#define ksplgmonitor_              KSPLGMONITOR
+#define ksplgtruemonitor_          KSPLGTRUEMONITOR
+#define kspsingularvaluemonitor_   KSPSINGULARVALUEMONITOR
+#define kspregisterdestroy_        KSPREGISTERDESTROY
+#define kspdestroy_                KSPDESTROY
+#define ksplgmonitordestroy_       KSPLGMONITORDESTROY
+#define ksplgmonitorcreate_        KSPLGMONITORCREATE
+#define kspgetrhs_                 KSPGETRHS
+#define kspgetsolution_            KSPGETSOLUTION
+#define kspgetpc_                  KSPGETPC
+#define kspsetmonitor_             KSPSETMONITOR
+#define kspsetconvergencetest _    KSPSETCONVERGENCETEST
+#define kspcreate_                 KSPCREATE
+#define kspsetoptionsprefix_       KSPSETOPTIONSPREFIX
+#define kspappendoptionsprefix_    KSPAPPENDOPTIONSPREFIX
+#define kspgettype_                KSPGETTYPE
+#define kspgetpreconditionerside_  KSPGETPRECONDITIONERSIDE
+#define kspbuildsolution_          KSPBUILDSOLUTION
+#define kspsettype_                KSPSETTYPE           
+#define kspgetresidualhistory_     KSPGETRESIDUALHISTORY
+#define kspgetoptionsprefix_       KSPGETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define kspdefaultconverged_      kspdefaultconverged
-#define kspsingularvaluemonitor_  kspsingularvaluemonitor
-#define kspdefaultmonitor_        kspdefaultmonitor
-#define ksptruemonitor_           ksptruemonitor
-#define kspvecviewmonitor_        kspvecviewmonitor
-#define ksplgmonitor_             ksplgmonitor
-#define ksplgtruemonitor_         ksplgtruemonitor
-#define kspgetresidualhistory_    kspgetresidualhistory
-#define kspsettype_               kspsettype
-#define kspregisterdestroy_       kspregisterdestroy
-#define kspdestroy_               kspdestroy
-#define ksplgmonitordestroy_      ksplgmonitordestroy
-#define ksplgmonitorcreate_       ksplgmonitorcreate
-#define kspgetrhs_                kspgetrhs
-#define kspgetsolution_           kspgetsolution
-#define kspgetpc_                 kspgetpc
-#define kspsetmonitor_            kspsetmonitor
-#define kspsetconvergencetest_    kspsetconvergencetest
-#define kspcreate_                kspcreate
-#define kspsetoptionsprefix_      kspsetoptionsprefix
-#define kspappendoptionsprefix_   kspappendoptionsprefix
-#define kspgettype_               kspgettype
-#define kspgetpreconditionerside_ kspgetpreconditionerside
-#define kspbuildsolution_         kspbuildsolution
-#define kspgetoptionsprefix_      kspgetoptionsprefix
+#define kspfgmressetmodifypc_      kspfgmressetmodifypc
+#define kspfgmresmodifypcsles_     kspfgmresmodifypcsles
+#define kspfgmresmodifypcnochange_ kspfgmresmodifypcnochange
+#define kspdefaultconverged_       kspdefaultconverged
+#define kspsingularvaluemonitor_   kspsingularvaluemonitor
+#define kspdefaultmonitor_         kspdefaultmonitor
+#define ksptruemonitor_            ksptruemonitor
+#define kspvecviewmonitor_         kspvecviewmonitor
+#define ksplgmonitor_              ksplgmonitor
+#define ksplgtruemonitor_          ksplgtruemonitor
+#define kspgetresidualhistory_     kspgetresidualhistory
+#define kspsettype_                kspsettype
+#define kspregisterdestroy_        kspregisterdestroy
+#define kspdestroy_                kspdestroy
+#define ksplgmonitordestroy_       ksplgmonitordestroy
+#define ksplgmonitorcreate_        ksplgmonitorcreate
+#define kspgetrhs_                 kspgetrhs
+#define kspgetsolution_            kspgetsolution
+#define kspgetpc_                  kspgetpc
+#define kspsetmonitor_             kspsetmonitor
+#define kspsetconvergencetest_     kspsetconvergencetest
+#define kspcreate_                 kspcreate
+#define kspsetoptionsprefix_       kspsetoptionsprefix
+#define kspappendoptionsprefix_    kspappendoptionsprefix
+#define kspgettype_                kspgettype
+#define kspgetpreconditionerside_  kspgetpreconditionerside
+#define kspbuildsolution_          kspbuildsolution
+#define kspgetoptionsprefix_       kspgetoptionsprefix
 #endif
 
 EXTERN_C_BEGIN
@@ -269,8 +278,7 @@ void PETSC_STDCALL kspbuildresidual_(KSP *ctx,Vec *t,Vec *v,Vec *V, int *ierr )
   *ierr = KSPBuildResidual(*ctx,*t,*v,V);
 }
 
-void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp, CHAR prefix PETSC_MIXED_LEN(len),
-                    int *ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp, CHAR prefix PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len) )
 {
   char *tname;
 
@@ -284,4 +292,48 @@ void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp, CHAR prefix PETSC_MIXED_LEN(le
   *ierr = PetscStrncpy(prefix,tname,len); if (*ierr) return;
 #endif
 }
+
+static void (*f109)(KSP*,int*,int*,double*,void*,int*);
+static int ourmodify(KSP ksp,int i,int i2,double d,void* ctx)
+{
+  int ierr = 0;
+  (*f109)(&ksp,&i,&i2,&d,ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+static void (*f210)(void*,int*);
+static int ourmoddestroy(void* ctx)
+{
+  int ierr = 0;
+  (*f210)(ctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
+void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP *ksp,int *total_its,int *loc_its,double *res_norm,void* dummy, int *__ierr )
+{
+  *__ierr = KSPFGMRESModifyPCNoChange(*ksp,*total_its,*loc_its,*res_norm,dummy);
+}
+
+void PETSC_STDCALL kspfgmresmodifypcsles_(KSP *ksp,int *total_its,int *loc_its,double *res_norm,void*dummy, int *__ierr )
+{
+  *__ierr = KSPFGMRESModifyPCSLES(*ksp,*total_its,*loc_its,*res_norm,dummy);
+}
+
+void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (*fcn)( KSP*,int*,int*,double*,void*,int*),void* ctx,void (*d)(void*,int*),int *__ierr)
+{
+  if ((void *) fcn == (void *) kspfgmresmodifypcsles_) {
+    *__ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCSLES,0,0);
+  } else if ((void *) fcn == (void *) kspfgmresmodifypcnochange_) {
+    *__ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCNoChange,0,0);
+  } else {
+    f109 = fcn;
+    if (FORTRANNULLFUNCTION(d)) {
+      *__ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,0);
+    } else {
+      f210 = d;
+      *__ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,ourmoddestroy);
+    }
+  }
+}
+
 EXTERN_C_END
