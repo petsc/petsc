@@ -1,4 +1,4 @@
-/*$Id: mpimesg.c,v 1.5 2001/03/05 16:09:52 bsmith Exp bsmith $*/
+/*$Id: mpimesg.c,v 1.6 2001/03/05 16:10:59 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
@@ -92,7 +92,7 @@ int PetscGatherNoOfMessages(MPI_Comm comm,int nsends,int *iflags,int *ilengths,i
 . nsends    - no of messages that are to be sent.
 . nrecvs    - number of messages being received
 - ilengths  - an array of integers of length sizeof(comm)
-              a non zero ilenghts[i] represent a message to i of length ilenghts[i] 
+              a non zero ilengths[i] represent a message to i of length ilengths[i] 
 
 
   Output Parameters:
@@ -117,7 +117,7 @@ int PetscGatherNoOfMessages(MPI_Comm comm,int nsends,int *iflags,int *ilengths,i
 #define __FUNC__ "PetscGatherMessageLengths"
 int PetscGatherMessageLengths(MPI_Comm comm,int nsends,int nrecvs,int *ilengths,int **onodes,int **olengths)
 {
-  int size,i,j,tag,ierr;
+  int         size,i,j,tag,ierr;
   MPI_Request *s_waits,*r_waits;
   MPI_Status  *w_status;
 
@@ -177,7 +177,6 @@ int PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
   len *= sizeof(int);
   len += (nrecvs+1)*sizeof(int*); /* Array of pointers for each message */
-
 
   /* allocate memory for recv buffers */
   ierr    = PetscMalloc(len,&rbuf_t);CHKERRQ(ierr);
