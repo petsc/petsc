@@ -26,6 +26,7 @@ class Configure(config.base.Configure):
     help.addArgument('Update', '-with-patch',                nargs.Arg(None, None, 'Location of GNU patch program'))
     help.addArgument('Update', '-with-patch-petsc',          nargs.Arg(None, None, 'Location of a patch for the PETSc source'))
     help.addArgument('Update', '-with-patch-buildsystem',    nargs.Arg(None, None, 'Location of a patch for the BuildSystem'))
+    help.addArgument('Update', '-freeform-arch',             nargs.ArgBool(None, 0, 'Allow arbitrary configure PETSC_ARCH specification'))
     return
 
   def configureArchitecture(self):
@@ -64,7 +65,8 @@ class Configure(config.base.Configure):
     else:
       self.framework.arch = self.framework.argDB['PETSC_ARCH']
     if not self.framework.arch.startswith(self.host_os):
-      raise RuntimeError('PETSC_ARCH ('+self.framework.arch+') does not have our guess ('+self.host_os+') as a prefix!\nRun bin/petscarch --suggest and set the environment variable PETSC_ARCH to the suggested value.')
+      if not self.framework.argDB['freeform-arch']:
+        raise RuntimeError('PETSC_ARCH ('+self.framework.arch+') does not have our guess ('+self.host_os+') as a prefix!\nRun bin/petscarch --suggest and set the environment variable PETSC_ARCH to the suggested value.')
     self.addSubstitution('ARCH', self.framework.arch)
     self.framework.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.arch)
     self.addDefine('ARCH', self.framework.archBase)
