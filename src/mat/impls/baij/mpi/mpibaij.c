@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.121 1998/05/11 21:55:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.122 1998/05/12 16:16:36 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -929,9 +929,15 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
 
   /* determine if any processor has disassembled, if so we must 
      also disassemble ourselfs, in order that we may reassemble. */
-  ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);CHKERRQ(ierr);
-  if (mat->was_assembled && !other_disassembled) {
-    ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr);
+  /*
+     if nonzero structure of submatrix B cannot change then we know that
+     no processor disassembled thus we can skip this stuff
+  */
+  if (!((Mat_SeqBAIJ*) baij->B->data)->nonew)  {
+    ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);CHKERRQ(ierr);
+    if (mat->was_assembled && !other_disassembled) {
+      ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr);
+    }
   }
 
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
