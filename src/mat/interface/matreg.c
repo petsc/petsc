@@ -57,6 +57,7 @@ int MatSetType(Mat mat,MatType matype)
     /* free the old data structure if it existed */
     if (mat->ops->destroy) {
       ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
+      mat->ops->destroy = PETSC_NULL;
     }
     if (mat->rmap) {
       ierr = PetscMapDestroy(mat->rmap);CHKERRQ(ierr);
