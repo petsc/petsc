@@ -1145,7 +1145,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   PetscErrorCode ierr;
   PetscInt       *r,*ic,*c,n = A->m,*bi = b->i; 
   PetscInt       *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,row,prow;
-  PetscInt       *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nsz;
+  PetscInt       *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nodesz;
   PetscInt       *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
   PetscScalar    *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
   PetscScalar    tmp,*ba = b->a,*aa = a->a,*pv,*rtmps1,*rtmps2,*rtmps3;
@@ -1218,16 +1218,16 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   ierr = PetscMalloc(n*sizeof(PetscInt)+1,&nsmap);CHKERRQ(ierr);
   ierr = PetscMalloc(node_max*sizeof(PetscInt)+1,&tmp_vec2);CHKERRQ(ierr);
   for (i=0,row=0; i<node_max; i++) {
-    nsz = tmp_vec1[i];
-    for (j=0; j<nsz; j++,row++) {
+    nodesz = tmp_vec1[i];
+    for (j=0; j<nodesz; j++,row++) {
       nsmap[row] = i;
     }
   }
   /* Using nsmap, create a reordered ns structure */
   for (i=0,j=0; i< node_max; i++) {
-    nsz       = tmp_vec1[nsmap[r[j]]];    /* here the reordered row_no is in r[] */
-    tmp_vec2[i] = nsz;
-    j        += nsz;
+    nodesz       = tmp_vec1[nsmap[r[j]]];    /* here the reordered row_no is in r[] */
+    tmp_vec2[i] = nodesz;
+    j        += nodesz;
   }
   ierr = PetscFree(nsmap);CHKERRQ(ierr);
   ierr = PetscFree(tmp_vec1);CHKERRQ(ierr);
@@ -1238,12 +1238,11 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
     sctx.lushift = PETSC_FALSE;
     /* Now loop over each block-row, and do the factorization */
     for (i=0,row=0; i<node_max; i++) { 
-      nsz   = ns[i];
+      nodesz   = ns[i];
       nz    = bi[row+1] - bi[row];
       bjtmp = bj + bi[row];
 
-      /* printf("nsz: %d\n",nsz); rm! */
-      switch (nsz){
+      switch (nodesz){
       case 1:
         for  (j=0; j<nz; j++){
           idx         = bjtmp[j];
@@ -1299,7 +1298,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g, inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         break;
       
@@ -1376,7 +1375,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (newshift == 1){
             goto endofwhile; /* sctx.shift_amount is updated */
           } else if (newshift == -1){
-            SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
+            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
           }
         }
  
@@ -1402,7 +1401,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g, nsz %d",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nsz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         sctx.pv = 1.0/rtmp2[row+1]; 
         sctx.rs = rsum[1];
@@ -1410,7 +1409,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row+1 %D value %g tolerance %g * rs %g, nsz %d",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nsz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         break;
 
@@ -1486,7 +1485,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (newshift == 1){
             goto endofwhile;
           } else if (newshift == -1){
-            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g, nsz %d",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nsz);
+            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
           }
 
           mul2 = (*pc2)/(*pc1);
@@ -1515,7 +1514,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (newshift == 1){
             goto endofwhile;
           } else if (newshift == -1){
-            SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
+            SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
           }
           mul3 = (*pc3)/(*pc2);
           *pc3 = mul3;
@@ -1555,7 +1554,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g, nsz %d",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nsz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D",row,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         sctx.pv = 1.0/rtmp2[row+1];
         sctx.rs = rsum[1];
@@ -1563,7 +1562,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row+1 %D value %g tolerance %g * rs %g, nsz %d",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nsz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D, 2nd row",row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         sctx.pv = 1.0/rtmp3[row+2];
         sctx.rs = rsum[2];
@@ -1571,13 +1570,13 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row+2 %D value %g tolerance %g * rs %g, nsz %d",row+2,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nsz);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g inode.size %D, 3rd row",row+2,PetscAbsScalar(sctx.pv),info->zeropivot,rs,nodesz);
         }
         break;
       default:
         SETERRQ(PETSC_ERR_COR,"Node size not yet supported \n");
       }
-      row += nsz;                 /* Update the row */
+      row += nodesz;                 /* Update the row */
     } 
     endofwhile:;
   } while (sctx.lushift);
