@@ -107,8 +107,10 @@ int PetscDrawSetType(PetscDraw draw,PetscDrawType type)
   ierr = PetscTypeCompare((PetscObject)draw,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
+#if defined(PETSC_HAVE_X11)
   /*  User requests no graphics */
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);
+#endif
 
   /*
      This is not ideal, but it allows codes to continue to run if X graphics 

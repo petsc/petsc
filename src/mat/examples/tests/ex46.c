@@ -8,11 +8,17 @@ static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat     C,A;
-  PetscScalar  v;
-  int     i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size;
+#if !defined(PETSC_USE_COMPLEX)
+  Mat         C,A;
+  PetscScalar v;
+  int         i,j,I,J,Istart,Iend,N,m = 4,n = 4,rank,size;
+#endif
+  int         ierr;
 
   PetscInitialize(&argc,&args,0,help);
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(1,"This example does not work with complex numbers");
+#else
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -34,6 +40,7 @@ int main(int argc,char **args)
   ierr = MatConvert(C,MATMPIAIJ,&A);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
+#endif
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
