@@ -130,66 +130,43 @@ class Configure(config.base.Configure):
         options = mod.Options(self.framework)
     except ImportError: print 'Failed to load custom options'
     if options:
-      # We use the framework in order to remove the PETSC_ namespace
-      if self.framework.argDB['C_VERSION']   == 'Unknown':
-        self.framework.argDB['C_VERSION']   = options.getCompilerVersion('C',       self.compilers.CC,  self)
-      if self.framework.argDB['CXX']:
-        if self.framework.argDB['CXX_VERSION'] == 'Unknown':
-          self.framework.argDB['CXX_VERSION'] = options.getCompilerVersion('Cxx',     self.compilers.CXX, self)
-      else:
-          self.framework.argDB['CXX_VERSION'] = ''
+      for language, flags in [('C', 'CFLAGS'), ('Cxx', 'CXXFLAGS'), ('F77', 'FFLAGS')]:
+        # Calling getCompiler() will raise an exception if a language is missing
+        self.pushLanguage(language)
+        try:
+          # Check compiler version
+          if language == 'F77':
+            versionName = 'F_VERSION'
+          else:
+            versionName = language.upper()+'_VERSION'
+          if self.framework.argDB[versionName] == 'Unknown':
+            self.framework.argDB[versionName]  = options.getCompilerVersion(language, self.getCompiler())
+          self.addArgumentSubstitution(versionName, versionName)
+          # Check normal compiler flags
+          self.addCompilerFlag(options.getCompilerFlags(language, self.getCompiler(), ''))
+          if language == 'Cxx':
+            # Does C++ compiler (IBM's xlC, OSF5) need special flag for .c which contain c++?
+            self.sourceExtension = '.c'
+            for flag in ['', '-+', '-x cxx -tlocal']:
+              try:
+                self.addCompilerFlag(flag, body = 'class somename { int i; };')
+                break
+              except RuntimeError: pass
+          # Check special compiler flags
+          for bopt in ['g', 'O']:
+            flagsName = flags+'_'+bopt
+            if self.framework.argDB[flagsName] == 'Unknown':
+              self.framework.argDB[flagsName] = options.getCompilerFlags(language, self.getCompiler(), bopt)
+            testFlags = self.framework.argDB[flagsName]
+            if not self.checkCompilerFlag(testFlags):
+              raise RuntimeError('Invalid '+language+' compiler flags for bopt '+bopt+': '+flags)
+            self.addArgumentSubstitution(flagsName, flagsName)
+        except RuntimeError: pass
+        self.popLanguage()
 
-      if self.framework.argDB['CFLAGS_g']   == 'Unknown':
-        self.framework.argDB['CFLAGS_g']    = options.getCompilerFlags('C',       self.compilers.CC,  'g', self)
-      if self.framework.argDB['CFLAGS_O']   == 'Unknown':
-        self.framework.argDB['CFLAGS_O']    = options.getCompilerFlags('C',       self.compilers.CC,  'O', self)
-      if self.framework.argDB['CXX']:
-        if self.framework.argDB['CXXFLAGS_g'] == 'Unknown':
-          self.framework.argDB['CXXFLAGS_g']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'g', self)
-        if self.framework.argDB['CXXFLAGS_O'] == 'Unknown':
-          self.framework.argDB['CXXFLAGS_O']  = options.getCompilerFlags('Cxx',     self.compilers.CXX, 'O', self)
-      else:
-        self.framework.argDB['CXXFLAGS_g']  = ''
-        self.framework.argDB['CXXFLAGS_O']  = ''
-
-      if hasattr(self.compilers,'FC'):
-        if self.framework.argDB['F_VERSION']   == 'Unknown':
-          self.framework.argDB['F_VERSION']   = options.getCompilerVersion('Fortran', self.compilers.FC,  self)
-        if self.framework.argDB['FFLAGS_g']   == 'Unknown':
-          self.framework.argDB['FFLAGS_g']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'g', self)
-        if self.framework.argDB['FFLAGS_O']   == 'Unknown':
-          self.framework.argDB['FFLAGS_O']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'O', self)
-
-    # does C++ compiler (IBM's xlC, OSF5) need special for .c files as c++?
-    if self.framework.argDB['CXX']:
-      self.pushLanguage('C++')
-      self.sourceExtension = '.c'
-      if not self.checkCompile('class somename { int i; };'):
-        oldFlags = self.framework.argDB['CXXFLAGS']
-        self.framework.argDB['CXXFLAGS'] = oldFlags+' -+'
-        if not self.checkCompile('class somename { int i; };'):
-          self.framework.argDB['CXXFLAGS'] = oldFlags+' -x cxx -tlocal'
-          if not self.checkCompile('class somename { int i; };'):
-            self.framework.argDB['CXXFLAGS'] = oldFlags
-      self.popLanguage()
-
-
-    self.addSubstitution('C_VERSION',   self.framework.argDB['C_VERSION'])
-    self.addSubstitution('CFLAGS_g',    self.framework.argDB['CFLAGS_g'])
-    self.addSubstitution('CFLAGS_O',    self.framework.argDB['CFLAGS_O'])
-    self.framework.addSubstitution('CFLAGS',self.framework.argDB['CFLAGS'])
-    self.addSubstitution('CXX_VERSION', self.framework.argDB['CXX_VERSION'])
-    self.addSubstitution('CXXFLAGS_g',  self.framework.argDB['CXXFLAGS_g'])
-    self.addSubstitution('CXXFLAGS_O',  self.framework.argDB['CXXFLAGS_O'])
-    self.framework.addSubstitution('CXXFLAGS',self.framework.argDB['CXXFLAGS'])
-    self.addSubstitution('F_VERSION',   self.framework.argDB['F_VERSION'])
-    self.addSubstitution('FFLAGS_g',    self.framework.argDB['FFLAGS_g'])
-    self.addSubstitution('FFLAGS_O',    self.framework.argDB['FFLAGS_O'])
-    self.framework.addSubstitution('FFLAGS',self.framework.argDB['FFLAGS'])
-
-    self.framework.addSubstitution('PETSCFLAGS', self.framework.argDB['PETSCFLAGS'])
-    self.framework.addSubstitution('COPTFLAGS',  self.framework.argDB['COPTFLAGS'])
-    self.framework.addSubstitution('FOPTFLAGS',  self.framework.argDB['FOPTFLAGS'])
+    self.framework.addArgumentSubstitution('PETSCFLAGS', 'PETSCFLAGS')
+    self.framework.addArgumentSubstitution('COPTFLAGS',  'COPTFLAGS')
+    self.framework.addArgumentSubstitution('FOPTFLAGS',  'FOPTFLAGS')
     return
 
   def configureFortranPIC(self):
