@@ -4,6 +4,7 @@
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 
+
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define matsettype_                      MATSETTYPE
 #define matmpiaijgetseqaij_              MATMPIAIJGETSEQAIJ
@@ -59,6 +60,18 @@
 #define matpartitioningapply_            MATPARTITIONINGAPPLY
 #define matcreatempiadj_                 MATCREATEMPIADJ
 #define matsetvaluesstencil_             MATSETVALUESSTENCIL
+#define matseqaijsetpreallocation_       MATSEQAIJSETPREALLOCATION
+#define matmpiaijsetpreallocation_       MATMPIAIJSETPREALLOCATION
+#define matseqbaijsetpreallocation_      MATSEQBAIJSETPREALLOCATION
+#define matmpibaijsetpreallocation_      MATMPIBAIJSETPREALLOCATION
+#define matseqsbaijsetpreallocation_     MATSEQSBAIJSETPREALLOCATION
+#define matmpisbaijsetpreallocation_     MATMPISBAIJSETPREALLOCATION
+#define matseqbdiagsetpreallocation_     MATSEQBDIAGSETPREALLOCATION
+#define matmpibdiagsetpreallocation_     MATMPIBDIAGSETPREALLOCATION
+#define matseqdensesetpreallocation_     MATSEQDENSESETPREALLOCATION
+#define matmpidensesetpreallocation_     MATMPIDENSESETPREALLOCATION
+#define matmpiadjsetpreallocation_       MATMPIADJSETPREALLOCATION
+#define matmpirowbssetpreallocation_     MATMPIROWBSSETPREALLOCATION
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matsettype_                      matsettype
 #define matmpiaijgetseqaij_              matmpiaijgetseqaij
@@ -114,6 +127,18 @@
 #define matcreatempiadj_                 matcreatempiadj
 #define matsetfromoptions_               matsetfromoptions
 #define matsetvaluesstencil_             matsetvaluesstencil
+#define matseqaijsetpreallocation_       matseqaijsetpreallocation
+#define matmpiaijsetpreallocation_       matmpiaijsetpreallocation
+#define matseqbaijsetpreallocation_      matseqbaijsetpreallocation
+#define matmpibaijsetpreallocation_      matmpibaijsetpreallocation
+#define matseqsbaijsetpreallocation_     matseqsbaijsetpreallocation
+#define matmpisbaijsetpreallocation_     matmpisbaijsetpreallocation
+#define matseqbdiagsetpreallocation_     matseqbdiagsetpreallocation
+#define matmpibdiagsetpreallocation_     matmpibdiagsetpreallocation
+#define matseqdensesetpreallocation_     matseqdensesetpreallocation
+#define matmpidensesetpreallocation_     matmpidensesetpreallocation
+#define matmpiadjsetpreallocation_       matmpiadjsetpreallocation
+#define matmpirowbssetpreallocation_     matmpirowbssetpreallocation
 #endif
 
 
@@ -375,6 +400,7 @@ void PETSC_STDCALL matcreatempidense_(MPI_Comm *comm,int *m,int *n,int *M,int *N
 void PETSC_STDCALL matcreatempibdiag_(MPI_Comm *comm,int *m,int *M,int *N,int *nd,int *bs,
                         int *diag,PetscScalar **diagv,Mat *newmat,int *ierr)
 {
+  CHKFORTRANNULLINTEGER(diag);
   *ierr = MatCreateMPIBDiag((MPI_Comm)PetscToPointerComm(*comm),
                               *m,*M,*N,*nd,*bs,diag,PETSC_NULL,newmat);
 }
@@ -383,6 +409,7 @@ void PETSC_STDCALL matcreatempibdiag_(MPI_Comm *comm,int *m,int *M,int *N,int *n
 void PETSC_STDCALL matcreateseqbdiag_(MPI_Comm *comm,int *m,int *n,int *nd,int *bs,
                         int *diag,PetscScalar **diagv,Mat *newmat,int *ierr)
 {
+  CHKFORTRANNULLINTEGER(diag);
   *ierr = MatCreateSeqBDiag((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*nd,*bs,diag,
                                PETSC_NULL,newmat);
 }
@@ -490,7 +517,6 @@ void PETSC_STDCALL matcreatempisbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *
   *ierr = MatCreateMPISBAIJ((MPI_Comm)PetscToPointerComm(*comm),
                              *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
-
 
 /*
       The MatShell Matrix Vector product requires a C routine.
@@ -634,8 +660,83 @@ void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,PetscScalar *diag,int *ierr
   *ierr = MatZeroRowsLocal(*mat,*is,diag);
 }
 
+void PETSC_STDCALL matseqaijsetpreallocation_(Mat *mat,int *nz,int *nnz,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(nnz);
+  CHKFORTRANNULLINTEGER(nnz);
+  *ierr = MatSeqAIJSetPreallocation(*mat,*nz,nnz);
+}
+
+void PETSC_STDCALL matmpiaijsetpreallocation_(Mat *mat,int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(d_nnz);
+  CHKFORTRANNULLINTEGER(o_nnz);
+  *ierr = MatMPIAIJSetPreallocation(*mat,*d_nz,d_nnz,*o_nz,o_nnz);
+}
+
+void PETSC_STDCALL matseqbaijsetpreallocation_(Mat *mat,int *bs,int *nz,int *nnz,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(nnz);
+  CHKFORTRANNULLINTEGER(nnz);
+  *ierr = MatSeqBAIJSetPreallocation(*mat,*bs,*nz,nnz);
+}
+
+void PETSC_STDCALL matmpibaijsetpreallocation_(Mat *mat,int *bs,int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(d_nnz);
+  CHKFORTRANNULLINTEGER(o_nnz);
+  *ierr = MatMPIBAIJSetPreallocation(*mat,*bs,*d_nz,d_nnz,*o_nz,o_nnz);
+}
+
+void PETSC_STDCALL matseqsbaijsetpreallocation_(Mat *mat,int *bs,int *nz,int *nnz,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(nnz);
+  CHKFORTRANNULLINTEGER(nnz);
+  *ierr = MatSeqSBAIJSetPreallocation(*mat,*bs,*nz,nnz);
+}
+
+void PETSC_STDCALL matmpisbaijsetpreallocation_(Mat *mat,int *bs,int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(d_nnz);
+  CHKFORTRANNULLINTEGER(o_nnz);
+  *ierr = MatMPISBAIJSetPreallocation(*mat,*bs,*d_nz,d_nnz,*o_nz,o_nnz);
+}
+
+/* Fortran ignores diagv */
+void PETSC_STDCALL matseqbdiagsetpreallocation_(Mat *mat,int *nd,int *bs,int *diag,PetscScalar **diagv,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(diag);
+  *ierr = MatSeqBDiagSetPreallocation(*mat,*nd,*bs,diag,PETSC_NULL);
+}
+/* Fortran ignores diagv */
+void PETSC_STDCALL matmpibdiagsetpreallocation_(Mat *mat,int *nd,int *bs,int *diag,PetscScalar **diagv,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(diag);
+  *ierr = MatMPIBDiagSetPreallocation(*mat,*nd,*bs,diag,PETSC_NULL);
+}
+
+void PETSC_STDCALL matseqdensesetpreallocation_(Mat *mat,PetscScalar *data,int *ierr)
+{
+  CHKFORTRANNULLSCALAR(data);
+  *ierr = MatSeqDenseSetPreallocation(*mat,data);
+}
+void PETSC_STDCALL matmpidensesetpreallocation_(Mat *mat,PetscScalar *data,int *ierr)
+{
+  CHKFORTRANNULLSCALAR(data);
+  *ierr = MatMPIDenseSetPreallocation(*mat,data);
+}
+void PETSC_STDCALL matmpiadjsetpreallocation_(Mat *mat,int *i,int *j,int *values, int *ierr)
+{
+  CHKFORTRANNULLINTEGER(values);
+  *ierr = MatMPIAdjSetPreallocation(*mat,i,j,values);
+}
+
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+void PETSC_STDCALL matmpirowbssetpreallocation_(Mat *mat,int *nz,int *nnz,int *ierr)
+{
+  CHKFORTRANNULLINTEGER(nnz);
+  *ierr = MatMPIRowbsSetPreallocation(*mat,*nz,nnz);
+}
+#endif
+
 EXTERN_C_END
-
-
-
-
