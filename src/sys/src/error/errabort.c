@@ -55,9 +55,17 @@ $     SETERRQ(number,mess)
 .seealso: PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
           PetscAttachDebuggerErrorHandler()
 @*/
-int PetscAbortErrorHandler(int line,char *func,char *file,char* dir,int n,int p,char *mess,void *ctx)
+int PetscAbortErrorHandler(int line,char *fun,char *file,char* dir,int n,int p,char *mess,void *ctx)
 {
+  int ierr,rank;
+
   PetscFunctionBegin;
+  if (!fun)  fun = "User provided function";
+  if (!dir)  dir = " ";
+  if (!mess) mess = " ";
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  (*PetscErrorPrintf)("[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
 
   abort(); 
   PetscFunctionReturn(0);
