@@ -306,6 +306,7 @@ extern int MatMPIAIJFactorInfo_SuperLu(Mat,PetscViewer);
 extern int MatFactorInfo_Spooles(Mat,PetscViewer);
 extern int MatSeqAIJFactorInfo_UMFPACK(Mat,PetscViewer);
 extern int MatSeqAIJFactorInfo_Matlab(Mat,PetscViewer);
+extern int MatFactorInfo_MUMPS(Mat,PetscViewer);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqAIJ_ASCII"
@@ -366,7 +367,9 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
      ierr = MatSeqAIJFactorInfo_Matlab(A,viewer);CHKERRQ(ierr);
 #endif
-
+#if defined(PETSC_HAVE_MUMPS) && !defined(PETSC_USE_SINGLE)
+     ierr = MatFactorInfo_MUMPS(A,viewer);CHKERRQ(ierr);
+#endif
      PetscFunctionReturn(0);
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
