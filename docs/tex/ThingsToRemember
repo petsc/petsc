@@ -85,10 +85,11 @@ SGI Power Challenge (IRIX64):
 
 ---------
 
-ICASE/NASA paragon: crabcake.larc.nasa.gov, account: mcinnes
-   Decommissioned on 6/28/96!   :-)
-   See the file ~mcinnes/README on crabcake for up-to-date info on
-   the paragon's quirks: 
+ICASE/NASA paragon: Back in action at Va-Tech :(
+     machine:  sioux.cc.vt.edu
+     account:  mcinnes
+     password: petsc-passwd
+     
       - must do "unsetenv TERM" so that make does'nt crash
       - must use make -e PETSC_DIR=<whatever> (which always crashes)
       - for BlockSolve95 muse use 
