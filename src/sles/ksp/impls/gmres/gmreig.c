@@ -1,4 +1,4 @@
-/*$Id: gmreig.c,v 1.22 2001/01/15 21:47:19 bsmith Exp balay $*/
+/*$Id: gmreig.c,v 1.23 2001/01/16 18:19:33 balay Exp balay $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
 #include "petscblaslapack.h"
@@ -27,10 +27,11 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
   
   /* compute Singular Values */
   /*
-      The Cray math libraries do not seem to have the DGESVD() lapack routines
+      The Cray math libraries on T3D/T3E, and Intel Math Kernel Libraries (MKL) for PCs do not 
+      seem to have the DGESVD() lapack routines
   */
 #if defined(PETSC_HAVE_MISSING_DGESVD) 
-  SETERRQ(PETSC_ERR_SUP,"DGESVD not found on Cray T3D\nNot able to provide singular value estimates.");
+  SETERRQ(PETSC_ERR_SUP,"DGESVD - Lapack routine is unavilable\nNot able to provide singular value estimates.");
 #else
 #if !defined(PETSC_USE_COMPLEX)
   LAgesvd_("N","N",&n,&n,R,&N,realpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
@@ -129,7 +130,11 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
+#if defined(PETSC_HAVE_MISSING_DGEEV) 
+  SETERRQ(PETSC_ERR_SUP,"DGEEV - Lapack routine is unavilable\nNot able to provide eigen values.");
+#else
   LAgeev_("N","N",&n,R,&N,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
+#endif
   if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
   ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
@@ -161,7 +166,11 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
+#if defined(PETSC_HAVE_MISSING_DGEEV) 
+  SETERRQ(PETSC_ERR_SUP,"DGEEV - Lapack routine is unavilable\nNot able to provide eigen values.");
+#else
   LAgeev_("N","N",&n,R,&N,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,gmres->Dsvd,&ierr);
+#endif
   if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
   ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
