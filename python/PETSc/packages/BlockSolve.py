@@ -50,6 +50,7 @@ class Configure(config.base.Configure):
       # This next stuff to generate the include should actually be testing existance of the actual headers and also check with-blocksolve95-include
       # This is just quick and dirty -- really 
       bsroot = lib[0]
+      # We have /home/user/BlockSolve95/lib/libO/bsarch/libBS95.a so remove the last 4 elements from the path
       for i in 1,2,3,4:
         (bsroot,dummy) = os.path.split(bsroot)
       self.include = os.path.join(bsroot,'include')
