@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.29 2000/10/16 21:32:58 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.30 2000/10/17 16:59:32 hzhang Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2231,7 +2231,7 @@ int MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 #define __FUNC__ /*<a name=""></a>*/"MatGetRowMax_MPISBAIJ"
 int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 {
-  Mat_MPISBAIJ  *a = (Mat_MPISBAIJ*)A->data;
+  Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
   Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)(a->B)->data;
   PetscReal    atmp;
   double       *work,*svalues,*rvalues;
