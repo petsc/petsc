@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.5 2000/07/24 21:09:16 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.6 2000/07/25 13:40:46 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -2388,18 +2388,16 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactor_SeqSBAIJ"
-int MatCholeskyFactor_SeqSBAIJ(Mat A,IS col,MatLUInfo *info)
+int MatCholeskyFactor_SeqSBAIJ(Mat A,IS perm,PetscReal f)
 {
   Mat_SeqSBAIJ    *mat = (Mat_SeqSBAIJ*)A->data;
   int            ierr,refct;
   Mat            C;
   PetscOps *Abops;
   MatOps   Aops;
-  double   fill;
 
   PetscFunctionBegin;
-  fill = (*info).fill;
-  ierr = MatCholeskyFactorSymbolic(A,col,fill,&C);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(A,perm,f,&C);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(A,&C);CHKERRQ(ierr);
 
   /* free all the data structures from mat */
