@@ -483,8 +483,14 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
+# Make a tarball of all the Python code
+#   This is currently used to release to the Teragrid
+petscPython.tgz:
+	@tar cvzf $@ --exclude SCCS --exclude BitKeeper --dereference python/
+	-@scp $@ tg-login2.uc.teragrid.org:./
+
 .PHONY: info info_h all all_build build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples updatewebdocs alldoc allmanualpages \
         allhtml allcleanhtml allfortranstubs allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
-        start_configure configure_petsc configure_clean
+        start_configure configure_petsc configure_clean petscPython.tgz
 
