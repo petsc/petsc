@@ -533,15 +533,20 @@ class Configure(config.base.Configure):
   def checkFortranPreprocessor(self):
     '''Determine if Fortran handles preprocessing properly'''
     self.pushLanguage('F77')
-            # Does Fortran compiler need special flag for using CPP
+    # Does Fortran compiler need special flag for using CPP
     for flag in ['', '-cpp', '-xpp=cpp', '-F', '-Cpp', '-fpp:-m']:
       try:
-        self.addCompilerFlag(flag, body = '#define dummy \n           dummy\n          PTesting',extraflags = '-DPtesting')
+        flagsArg = self.getCompilerFlagsArg()
+        oldFlags = self.framework.argDB[flagsArg]
+        self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+'-DPtesting'
+        self.addCompilerFlag(flag, body = '#define dummy \n           dummy\n          PTesting')
+        self.framework.argDB[flagsArg] = oldFlags
         self.fortranPreprocess = 1
         self.popLanguage()
         self.framework.log.write('Fortran uses CPP preprocessor')
         return
-      except RuntimeError: pass
+      except RuntimeError:
+        self.framework.argDB[flagsArg] = oldFlags
     self.popLanguage()
     self.fortranPreprocess = 0
     self.framework.log.write('Fortran does NOT use CPP preprocessor')
