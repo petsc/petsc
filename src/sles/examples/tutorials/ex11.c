@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.53 1996/08/31 15:32:37 curfman Exp $";
+static char vcid[] = "$Id: ex11.c,v 1.1 1996/09/25 20:33:38 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -69,7 +69,7 @@ int main(int argc,char **args)
      runtime. Also, the parallel partioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,dim,dim,&A); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
@@ -90,13 +90,13 @@ int main(int argc,char **args)
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.0; i = I/n; j = I - i*n;  
       if ( i>0 ) {
-        J = I-n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+        J = I-n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRQ(ierr);}
       if ( i<n-1 ) {
-        J = I+n; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+        J = I+n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRQ(ierr);}
       if ( j>0 ) {
-        J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+        J = I-1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRQ(ierr);}
       if ( j<n-1 ) {
-        J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
+        J = I+1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES); CHKERRQ(ierr);}
       ierr = PetscRandomGetValue(rctx,&sigma2); CHKERRQ(ierr);
       v = 4.0 - sigma1*h2 + sigma2*h2;
       ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES); CHKERRQ(ierr);
@@ -118,7 +118,7 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
+  ierr = VecCreate(MPI_COMM_WORLD,dim,&u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 
