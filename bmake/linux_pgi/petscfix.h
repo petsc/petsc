@@ -145,6 +145,7 @@ extern double atof(const char *);
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
 extern int    abort();
+extern void   exit(int);
 }
 
 #else
