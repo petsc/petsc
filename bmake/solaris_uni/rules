@@ -1,4 +1,4 @@
-# $Id: base,v 1.22 2000/03/27 18:43:28 balay Exp balay $ 
+# $Id: base,v 1.23 2000/03/27 18:44:12 balay Exp balay $ 
 #
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 include ${PETSC_DIR}/bmake/common
@@ -26,7 +26,7 @@ shared: chkopts_basic
             if [ "$$flag" != "" ]; then \
 	      echo "building $$LIBNAME.${SLSUFFIX}"; \
 	      ${AR} x ../$$LIBNAME.a ;\
-	      ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ${NEEDED_A_LIBS} ${C_SYS_LIB} ; \
+	      ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
 	      ${RM} -f * ; \
 	    fi; \
 	  fi; \
@@ -44,6 +44,6 @@ oshared:
 	cd tmp; \
         echo "building ${LIBNAME}.${SLSUFFIX}"; \
 	${AR} x ../${LIBNAME}.a ;\
-	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ../${LIBNAME}.${SLSUFFIX}; \
+	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ../${LIBNAME}.${SLSUFFIX} ; \
 	cd ../ ; \
 	${RM} -rf tmp
