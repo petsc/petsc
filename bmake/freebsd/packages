@@ -39,14 +39,14 @@ MPIRUN         = /home/petsc/mpich/lib/freebsd/ch_shmem/mpirun
 # remove -DHAVE_BLOCKSOLVE from the PCONF definition below if it is there
 # and comment out or remove the next two lines.
 #
-BS_INCLUDE     = 
-BS_LIB         = 
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # PCONF - indicates which external packages are available at your site
 #
 #    Make sure that -DHAVE_BLOCKSOLVE is not listed below
 #
-PCONF          = 
+PCONF          = -DHAVE_BLOCKSOLVE
 #
 
 
