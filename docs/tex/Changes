@@ -63,6 +63,8 @@ PCILUSetUseDropTolerance(pc,dt,dtcol,rowmax).
    
   General
 
+ PetsReal() and PetscImaginary() are now PetscRealPart() PetscImaginaryPart()
+
 -optionstable -> -options_table -optionsleft -> -options_left but old left for compatibility
 
  
