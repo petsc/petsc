@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+import args
 import fileset
+import logging
 
 import atexit
 import cPickle
@@ -11,22 +13,20 @@ import re
 import string
 import sys
 import time
-import traceback
 import types
-import UserDict
 
-# Debugging
-debugLevel    = 1
-debugSections = []
+class ChecksumError (RuntimeError):
+  def __init__(self, value):
+    self.value = value
+
+  def __str__(self):
+    return str(self.value)
 
 class Maker:
   def __init__(self):
     self.setupTmpDir()
     self.cleanupDir(self.tmpDir)
     self.setupChecksum()
-    self.debugLevel    = debugLevel
-    self.debugSections = list(debugSections)
-    self.debugIndent   = '  '
 
   def setupTmpDir(self):
     try:
@@ -80,39 +80,11 @@ class Maker:
       pass
     return checksum
 
-  def debugListStr(self, list):
-    if (self.debugLevel > 4) or (len(list) < 4):
-      return str(list)
-    else:
-      return '['+str(list[0])+'-<'+str(len(list)-2)+'>-'+str(list[-1])+']'
-
-  def debugFileSetStr(self, set):
-    if isinstance(set, fileset.FileSet):
-      if set.tag:
-        return '('+set.tag+')'+self.debugListStr(set.getFiles())
-      else:
-        return self.debugListStr(set.getFiles())
-    elif type(set) == types.ListType:
-      output = '['
-      for fs in set:
-        output += self.debugFileSetStr(fs)
-      return output+']'
-    else:
-      raise RuntimeError('Invalid fileset '+set)
-
-  def debugPrint(self, msg, level = 1, section = None):
-    indentLevel = len(traceback.extract_stack())-4
-    if self.debugLevel >= level:
-      if (not section) or (not self.debugSections) or (section in self.debugSections):
-        for i in range(indentLevel):
-          sys.stdout.write(self.debugIndent)
-        print msg
-
   def defaultCheckCommand(self, command, status, output):
     if status: raise RuntimeError('Could not execute \''+command+'\': '+output)
 
   def executeShellCommand(self, command, checkCommand = None):
-    self.debugPrint('sh: '+command, 3, 'shell')
+    logging.debugPrint('sh: '+command, 3, 'shell')
     (status, output) = commands.getstatusoutput(command)
     if checkCommand:
       checkCommand(command, status, output)
@@ -126,92 +98,46 @@ class Maker:
       (checksum, mtime, timestamp, dependencies) = sourceDB[source]
     except KeyError:
       pass
-    self.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
+    logging.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
     sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
 
 class BS (Maker):
   includeRE   = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
   targets     = {}
   batchArgs   = 0
-  args        = {}
-  defaultArgs = {}
   directories = {}
   filesets    = {}
 
-  def __init__(self, args = None):
-    self.argDBFilename = os.path.join(os.getcwd(), 'bsArg.db')
-    self.setupArgDB()
-    self.setupDefaultArgs()
-    self.processArgs(args)
+  def __init__(self, clArgs = None):
+    self.setupArgDB(clArgs)
     Maker.__init__(self)
-    self.debugPrint('Read source database from '+self.argDBFilename, 2, 'argDB')
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
     self.setupSourceDB()
-    for key in argDB.keys():
-      self.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
 
   def setupDefaultArgs(self):
-    self.defaultArgs['target']       = ['default']
-    self.defaultArgs['TMPDIR']       = '/tmp'
-    self.defaultArgs['checksumType'] = 'md5'
+    argDB.setDefault('target',      ['default'])
+    argDB.setDefault('TMPDIR',      '/tmp')
+    argDB.setDefault('checksumType', 'md5')
 
-  def processArgs(self, args):
-    global argDB
-    global debugLevel
-    global debugSections
-
-    for key in self.defaultArgs.keys():
-      if not argDB.has_key(key): argDB[key] = self.defaultArgs[key]
-    argDB.update(os.environ)
-    argDB.update(self.parseArgs(args))
-    # Here we could have an object BSOptions which had nothing but member
-    # variables. Then we could use reflection to get all the names of the
-    # variables, and look them up in args[]
-    try:
-      debugLevel    = int(argDB['debugLevel'])
-      debugSections = argDB['debugSections']
-    except KeyError: pass
-
-  def parseArgs(self, argList):
-    if not type(argList) == types.ListType: return
-    args = {}
-    for arg in argList:
-      if not arg[0] == '-':
-        if args.has_key('target'):
-          args['target'].append(arg)
-        else:
-          args['target'] = [arg]
-      else:
-        # Could try just using eval() on val, but we would need to quote lots of stuff
-        (key, val) = string.split(arg[1:], '=')
-        if val[0] == '[' and val[-1] == ']': val = string.split(val[1:-1], ',')
-        args[key]  = val
-    return args
-
-  def saveArgDB(self):
-    self.debugPrint('Saving argument database in '+self.argDBFilename, 2, 'argDB')
-    dbFile = open(self.argDBFilename, 'w')
-    cPickle.dump(argDB.data, dbFile)
-    dbFile.close()
-
-  def setupArgDB(self):
+  def setupArgDB(self, clArgs):
     global argDB
 
-    argDB = ArgDict()
-    if os.path.exists(self.argDBFilename):
-      dbFile     = open(self.argDBFilename, 'r')
-      argDB.data = cPickle.load(dbFile)
-      dbFile.close()
-    atexit.register(self.saveArgDB)
+    argDB = args.ArgDict(os.path.join(os.getcwd(), 'bsArg.db'))
+    self.setupDefaultArgs()
+    argDB.input(clArgs)
+    logging.debugLevel    = int(argDB['debugLevel'])
+    logging.debugSections = list(argDB['debugSections'])
+    for key in argDB.keys():
+      logging.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
 
   def saveSourceDB(self):
-    self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
+    logging.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
     dbFile = open(self.sourceDBFilename, 'w')
     cPickle.dump(sourceDB, dbFile)
     dbFile.close()
 
   def setupSourceDB(self):
-    self.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
+    logging.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
     global sourceDB
 
     if os.path.exists(self.sourceDBFilename):
@@ -223,9 +149,9 @@ class BS (Maker):
     atexit.register(self.saveSourceDB)
 
   def calculateDependencies(self):
-    self.debugPrint('Recalculating dependencies', 1, 'sourceDB')
+    logging.debugPrint('Recalculating dependencies', 1, 'sourceDB')
     for source in sourceDB.keys():
-      self.debugPrint('Calculating '+source, 3, 'sourceDB')
+      logging.debugPrint('Calculating '+source, 3, 'sourceDB')
       (checksum, mtime, timestamp, dependencies) = sourceDB[source]
       newDep = []
       file   = open(source, 'r')
@@ -236,15 +162,15 @@ class BS (Maker):
           filename  = m.group('includeFile')
           matchNum  = 0
           matchName = filename
-          self.debugPrint('  Includes '+filename, 3, 'sourceDB')
+          logging.debugPrint('  Includes '+filename, 3, 'sourceDB')
           for s in sourceDB.keys():
             if string.find(s, filename) >= 0:
-              self.debugPrint('    Checking '+s, 3, 'sourceDB')
+              logging.debugPrint('    Checking '+s, 3, 'sourceDB')
               c = string.split(s, '/')
               for i in range(len(c)):
                 if not comps[i] == c[i]: break
               if i > matchNum:
-                self.debugPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
+                logging.debugPrint('    Choosing '+s+'('+str(i)+')', 3, 'sourceDB')
                 matchName = s
                 matchNum  = i
           newDep.append(matchName)
@@ -262,18 +188,20 @@ class BS (Maker):
 
   def purge(self):
     if argDB.has_key('arg'):
-      argName = argDB['arg']
-      if argDB.has_key(argName):
-        self.debugPrint('Purging '+argName, 3, 'argDB')
-        del argDB[argName]
+      argNames = argDB['arg']
+      if not type(argNames) == types.ListType: argNames = [argNames]
+      for argName in argNames:
+        if argDB.has_key(argName):
+          logging.debugPrint('Purging '+argName, 3, 'argDB')
+          del argDB[argName]
       del argDB['arg']
     else:
       setName = argDB['fileset']
       try:
-        self.debugPrint('Purging source database of fileset '+setName, 1, 'sourceDB')
+        logging.debugPrint('Purging source database of fileset '+setName, 1, 'sourceDB')
         for file in self.filesets[setName]:
           if sourceDB.has_key(file):
-            self.debugPrint('Purging '+file, 3, 'sourceDB')
+            logging.debugPrint('Purging '+file, 3, 'sourceDB')
             del sourceDB[file]
       except KeyError:
         print 'FileSet '+setName+' not found for purge'
@@ -291,37 +219,15 @@ class BS (Maker):
       for target in argDB['target']:
         if self.targets.has_key(target):
           self.targets[target].execute()
-        elif target == 'recalc':
-          self.calculateDependencies()
+        elif target == 'listTargets':
+          print 'Available targets: '+str(self.targets.keys())
         elif target == 'purge':
           self.purge()
+        elif target == 'recalc':
+          self.calculateDependencies()
         elif target == 'debugDep':
           self.debugDependencies()
         else:
           print 'Invalid target: '+target
     if argDB.has_key('target'): del argDB['target']
     self.cleanupDir(self.tmpDir)
-
-class ArgDict (UserDict.UserDict):
-  interactive = 1
-  help        = {}
-
-  def __getitem__(self, key):
-    if self.interactive and not self.data.has_key(key):
-      try:
-        if self.help.has_key(key): print self.help[key]
-        self[key] = raw_input('Please enter value for '+key+':')
-      except KeyboardInterrupt:
-        print
-        sys.exit('Unable to get argument \''+key+'\'')
-    return self.data[key]
-
-  def setHelp(self, key, docString):
-    self.help[key] = docString
-
-class ChecksumError (RuntimeError):
-  def __init__(self, value):
-    self.value = value
-
-  def __str__(self):
-    return str(self.value)
