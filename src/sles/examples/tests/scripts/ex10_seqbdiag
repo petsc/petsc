@@ -1,20 +1,14 @@
 #! /bin/csh
 #
-#  Tests the different matrix orderings for LU
+#  Tests SeqBdiag matrix format for different blocksizes
 #
 foreach matrix (medium arco1)
 
-  foreach order (natural nd 1wd rcm qmd)
+  foreach mode (-mat_no_unroll nothing)
 
-    foreach mode (-mat_no_unroll nothing)
+    foreach bs (4 5)
 
-      foreach bs (1 2 3 4 5 6)
-
-        echo "mpirun ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu  -mat_order $order $mode blocksize $bs"
-
-        mpirun ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu -mat_order $order -ksp_monitor $mode -matload_ignore_info -matload_block_size $bs -optionsleft -mat_seqbaij
-
-      end
+      mpirun ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type ilu -mat_order natural -ksp_monitor $mode -matload_ignore_info -matload_block_size $bs -optionsleft -mat_seqbdiag -ksp_gmres_restart 200
 
     end
 
