@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.49 1996/06/24 19:54:53 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.50 1996/06/24 20:57:39 balay Exp balay $";
 #endif
 
 /*
@@ -1098,6 +1098,128 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
   }
   ierr = VecRestoreArray(xx,&xg); CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&zg); CHKERRQ(ierr);
+  PLogFlops(2*a->nz*a->bs2 - a->n);
+  return 0;
+}
+static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
+  Scalar          *xg,*zg,*zb;
+  register Scalar *x,*z,*v,*xb,x1,x2,x3,x4,x5;
+  int             mbs=a->mbs,i,*idx,*ii,*ai=a->i,rval,N=a->n;
+  int             bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
+
+
+  if ( yy != zz ) { ierr = VecCopy(yy,zz); CHKERRQ(ierr); }
+  else PetscMemzero(z,N*sizeof(Scalar));
+
+  ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
+  ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
+
+
+  idx   = a->j;
+  v     = a->a;
+  ii    = a->i;
+  
+  switch (bs) {
+  case 1:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++;
+      xb = x + i; x1 = xb[0];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        rval    = ib[j];
+        z[rval] += *v++ * x1;
+      }
+    }
+    break;
+  case 2:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      xb = x + 2*i; x1 = xb[0]; x2 = xb[1];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        rval      = ib[j]*2;
+        z[rval++] += v[0]*x1 + v[1]*x2;
+        z[rval++] += v[2]*x1 + v[3]*x2;
+        v += 4;
+      }
+    }
+    break;
+  case 3:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      xb = x + 3*i; x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        rval      = ib[j]*3;
+        z[rval++] += v[0]*x1 + v[1]*x2 + v[2]*x3;
+        z[rval++] += v[3]*x1 + v[4]*x2 + v[5]*x3;
+        z[rval++] += v[6]*x1 + v[7]*x2 + v[8]*x3;
+        v += 9;
+      }
+    }
+    break;
+  case 4:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      xb = x + 4*i; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        rval      = ib[j]*4;
+        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4;
+        z[rval++] +=  v[4]*x1 +  v[5]*x2 +  v[6]*x3 +  v[7]*x4;
+        z[rval++] +=  v[8]*x1 +  v[9]*x2 + v[10]*x3 + v[11]*x4;
+        z[rval++] += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
+        v += 16;
+      }
+    }
+    break;
+  case 5:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      xb = x + 5*i; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; 
+      x4 = xb[3];   x5 = xb[4];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        rval      = ib[j]*5;
+        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5;
+        z[rval++] +=  v[5]*x1 +  v[6]*x2 +  v[7]*x3 +  v[8]*x4 +  v[9]*x5;
+        z[rval++] += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4 + v[14]*x5;
+        z[rval++] += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4 + v[19]*x5;
+        z[rval++] += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4 + v[24]*x5;
+        v += 25;
+      }
+    }
+    break;
+      /* block sizes larger then 5 by 5 are handled by BLAS */
+    default: {
+      int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
+      if (!a->mult_work) {
+        k = PetscMax(a->m,a->n);
+        a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));
+        CHKPTRQ(a->mult_work);
+      }
+      work = a->mult_work;
+      for ( i=0; i<mbs; i++ ) {
+        n     = ii[1] - ii[0]; ii++;
+        ncols = n*bs;
+        PetscMemzero(work,ncols*sizeof(Scalar));
+        LAgemv_("T",&bs,&ncols,&_DOne,v,&bs,x,&_One,&_DOne,work,&_One);
+        v += n*bs2;
+        x += bs;
+        workt = work;
+        for ( j=0; j<n; j++ ) {
+          zb = z + bs*(*idx++);
+          for ( k=0; k<bs; k++ ) zb[k] += workt[k] ;
+          workt += bs;
+        }
+      }
+    }
+  }
+  ierr = VecRestoreArray(xx,&xg); CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&zg); CHKERRQ(ierr);
+  PLogFlops(2*a->nz*a->bs2);
   return 0;
 }
 
@@ -1342,7 +1464,7 @@ static int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
        MatMult_SeqBAIJ_N,MatMultAdd_SeqBAIJ_N,
-       MatMultTrans_SeqBAIJ,0,
+       MatMultTrans_SeqBAIJ,MatMultTransAdd_SeqBAIJ,
        MatSolve_SeqBAIJ_N,0,
        0,0,
        MatLUFactor_SeqBAIJ,0,
