@@ -9,14 +9,8 @@
 /* #define UPWINDING  */
 
 static char help[] = "Hall MHD with in two dimensions with time stepping and multigrid.\n\n\
--da_grid_x 5 -da_grid_y 5 -dmmg_nlevels 3\n\
--mg_coarse_pc_lu_damping\n\
--mg_levels_pc_type sor -mg_levels_pc_sor_symmetric\n\
--mg_levels_ksp_type richardson\n\
--mg_coarse_pc_type sor -mg_coarse_pc_sor_symmetric\n\
--snes_atol 1.e-10\n\
--ksp_atol 1.e-10\n\
--max_st 5\n\
+-options_file ex29.options\n\
+other PETSc options\n\
 -resistivity <eta>\n\
 -viscosity <nu>\n\
 -skin_depth <d_e>\n\

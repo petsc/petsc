@@ -378,7 +378,7 @@ int PCApply(PC pc,Vec x,Vec y,PCSide side)
   }
 
   /* Remove null space from input vector y */
-  if (side == PC_LEFT && pc->nullsp) {
+  if (side == PC_RIGHT && pc->nullsp) {
     Vec tmp;
     ierr = MatNullSpaceRemove(pc->nullsp,x,&tmp);CHKERRQ(ierr);
     x    = tmp;
