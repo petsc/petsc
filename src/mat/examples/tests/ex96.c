@@ -2,23 +2,12 @@
 static char help[] ="Tests sequential and parallel MatMatMult() and MatPtAP()\n\
   -Mx <xg>, where <xg> = number of coarse grid points in the x-direction\n\
   -My <yg>, where <yg> = number of coarse grid points in the y-direction\n\
+  -Mz <zg>, where <zg> = number of coarse grid points in the z-direction\n\
   -Npx <npx>, where <npx> = number of processors in the x-direction\n\
-  -Npy <npy>, where <npy> = number of processors in the y-direction\n\n";
+  -Npy <npy>, where <npy> = number of processors in the y-direction\n\
+  -Npz <npz>, where <npz> = number of processors in the z-direction\n\n";
 
-/*  This test is modified from ~src/ksp/examples/tests/ex19.c.
-    This problem is modeled by
-    the partial differential equation
-  
-            -Laplacian u  = g,  0 < x,y < 1,
-  
-    with boundary conditions
-   
-             u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
-    A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
-    system of equations.
-*/
+/*  This test is modified from ~src/ksp/examples/tests/ex19.c. */
 
 #include "petscksp.h"
 #include "petscda.h"
@@ -28,7 +17,7 @@ static char help[] ="Tests sequential and parallel MatMatMult() and MatPtAP()\n\
 
 /* User-defined application contexts */
 typedef struct {
-   int        mx,my;            /* number grid points in x and y direction */
+   int        mx,my,mz;         /* number grid points in x, y and z direction */
    Vec        localX,localF;    /* local vectors with ghost region */
    DA         da;
    Vec        x,b,r;            /* global vectors */
@@ -54,7 +43,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   AppCtx         user;                      
-  int            Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
+  int            Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,Nz=PETSC_DECIDE;
   int            size,rank,m,n,M,N,i,nrows,*ia,*ja; 
   PetscScalar   one = 1.0;
   PetscReal     fill=2.0;
@@ -64,25 +53,37 @@ int main(int argc,char **argv)
   Vec          x,v1,v2;
   PetscReal    norm,norm_tmp,norm_tmp1,tol=1.e-12;
   PetscRandom  rand;
-  PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
+  PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&tol,PETSC_NULL);CHKERRQ(ierr);
 
   user.ratio = 2;
-  user.coarse.mx = 2; user.coarse.my = 2; 
+  user.coarse.mx = 2; user.coarse.my = 2; user.coarse.mz = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Mz",&user.coarse.mz,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRQ(ierr);
-  user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  if (user.coarse.mz) Test_3D = PETSC_TRUE;
+
+  user.fine.mx = user.ratio*(user.coarse.mx-1)+1; 
+  user.fine.my = user.ratio*(user.coarse.my-1)+1;
+  user.fine.mz = user.ratio*(user.coarse.mz-1)+1;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Npx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Npy",&Ny,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-Npz",&Nz,PETSC_NULL);CHKERRQ(ierr);
 
   /* Set up distributed array for fine grid */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
+  if (!Test_3D){
+    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
                     user.fine.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+  } else {
+    ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
+                    user.fine.mx,user.fine.my,user.fine.mz,Nx,Ny,Nz,
+                    1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
+  }
 
   ierr = DAGetMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -108,8 +109,14 @@ int main(int argc,char **argv)
   /* ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /* Set up distributed array for coarse grid */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.coarse.mx,
+  if (!Test_3D){
+    ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.coarse.mx,
                     user.coarse.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+  } else {
+    ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,
+                    user.coarse.mx,user.coarse.my,user.coarse.mz,Nx,Ny,Nz,
+                    1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.coarse.da);CHKERRQ(ierr);
+  }
 
   /* Create interpolation between the levels */
   ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&P,PETSC_NULL);CHKERRQ(ierr);
