@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spartition.c,v 1.10 1999/03/11 16:19:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spartition.c,v 1.11 1999/03/17 23:23:28 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -34,15 +34,14 @@ EXTERN_C_END
 
 .seealso: MatPartitioningRegister(), MatPartitioningRegisterDestroy()
 @*/
-int MatPartitioningRegisterAll(void)
+int MatPartitioningRegisterAll(char *path)
 {
   int         ierr;
 
   PetscFunctionBegin;
-  MatPartitioningRegisterAllCalled = 1;  
-  ierr = MatPartitioningRegister(MATPARTITIONING_CURRENT,0,"current",MatPartitioningCreate_Current);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONING_CURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
 #if defined(HAVE_PARMETIS)
-  ierr = MatPartitioningRegister(MATPARTITIONING_PARMETIS,0,"parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(MATPARTITIONING_PARMETIS,path,"MatPartitioningCreate_Parmetis",MatPartitioningCreate_Parmetis);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);
