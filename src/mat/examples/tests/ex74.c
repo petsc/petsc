@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.12 2000/07/14 14:45:36 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.13 2000/07/17 18:55:42 hzhang Exp balay $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   Mat     A;           /* linear system matrix */ 
   Mat     sA,sC;         /* symmetric part of the matrices */ 
 
-  int     n = 16,bs=1,nz=3,prob=1;
+  int     n,bs=1,nz=3,prob=2;
   Scalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;
   int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   IS      ip, isrow, iscol;
@@ -26,17 +26,16 @@ int main(int argc,char **args)
   
   int      lf; /* level of fill for ilu */
   Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
-  int      *cols1,*cols2,mbs;
+  int      *cols1,*cols2,mbs=16;
   double   norm1,norm2,tol=1.e-10;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&mbs,PETSC_NULL);CHKERRA(ierr);
 
-  mbs = n/bs;
-  if (mbs*bs != n) SETERRA(1,0,"Number rows/cols must be divisible by bs");
+  n = mbs*bs;
   ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &A); CHKERRA(ierr);
   ierr=MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL, &sA); CHKERRA(ierr);
 
@@ -68,7 +67,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
-      n1 = sqrt(n); 
+      n1 = (int) (sqrt((double)n) + 0.001); 
       if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,0,"sqrt(n) must be a positive interger!"); 
       printf("n1 = %d\n",n1);
       for (i=0; i<n1; i++) {
@@ -154,7 +153,8 @@ int main(int argc,char **args)
   ierr = MatNorm(sA,NORM_INFINITY,&norm2); CHKERRA(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-inf_norm2=%16.14e\n,norm1");
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), inf_norm1-i  if (mbs*bs != n) SETERRA(1,0,"Number rows/cols must be divisible by bs");
+nf_norm2=%16.14e\n,norm1");
   }
   
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
@@ -164,8 +164,8 @@ int main(int argc,char **args)
   printf("matrix nonzeros (BAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo1.nz_used,(int)minfo1.nz_allocated); 
   printf("matrix nonzeros(SBAIJ format) = %d, allocated nonzeros= %d\n", (int)minfo2.nz_used,(int)minfo2.nz_allocated); 
   */
-  i = minfo1.nz_used - minfo2.nz_used; 
-  j = minfo1.nz_allocated - minfo2.nz_allocated;
+  i = (int) (minfo1.nz_used - minfo2.nz_used); 
+  j = (int) (minfo1.nz_allocated - minfo2.nz_allocated);
   if (i<0 || j<0) {
     PetscPrintf(PETSC_COMM_SELF,"Error: MatGetInfo()\n");
   }
@@ -295,29 +295,29 @@ int main(int argc,char **args)
        ierr = MatView(sA,VIEWER_DRAW_SELF); CHKERRA(ierr); */
   }
 
-  if (bs>1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"bs>1 is not supported for Cholesky Factor in SBAIJ matrix format");
-    
-  for (lf=-1; lf<10; lf++){   
-    if (lf==-1) {  /* LU */
-      ierr = MatLUFactorSymbolic(sA,ip,ip,PETSC_NULL,&sC);CHKERRA(ierr);
-    } else {       /* ILU */
-      info.levels        = lf;
-      info.fill          = 2.0;
-      info.diagonal_fill = 0;
-      /* ierr = OptionsHasName(PETSC_NULL,"-lf",&flg);CHKERRA(ierr);*/
-      ierr = MatILUFactorSymbolic(sA,ip,ip,&info,&sC);CHKERRA(ierr);
-    }
-    ierr = MatLUFactorNumeric(sA,&sC);CHKERRA(ierr);
-    /* MatView(sC, VIEWER_DRAW_WORLD); */
-
-    ierr = MatMult(sA,x,b);CHKERRA(ierr);
-    ierr = MatSolve(sC,b,y);CHKERRA(ierr);
-  
-    /* Check the error */
-    ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
-    ierr = VecNorm(y,NORM_2,&norm1);CHKERRA(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, Norm of error=%g\n",lf,norm1);CHKERRA(ierr);
-  } 
+  if (bs == 1) {
+    for (lf=-1; lf<10; lf++){   
+      if (lf==-1) {  /* LU */
+        ierr = MatLUFactorSymbolic(sA,ip,ip,PETSC_NULL,&sC);CHKERRA(ierr);
+      } else {       /* ILU */
+        info.levels        = lf;
+        info.fill          = 2.0;
+        info.diagonal_fill = 0;
+        /* ierr = OptionsHasName(PETSC_NULL,"-lf",&flg);CHKERRA(ierr);*/
+        ierr = MatILUFactorSymbolic(sA,ip,ip,&info,&sC);CHKERRA(ierr);
+      }
+      ierr = MatLUFactorNumeric(sA,&sC);CHKERRA(ierr);
+      /* MatView(sC, VIEWER_DRAW_WORLD); */
+      
+      ierr = MatMult(sA,x,b);CHKERRA(ierr);
+      ierr = MatSolve(sC,b,y);CHKERRA(ierr);
+      
+      /* Check the error */
+      ierr = VecAXPY(&neg_one,x,y);CHKERRA(ierr);
+      ierr = VecNorm(y,NORM_2,&norm1);CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, Norm of error=%g\n",lf,norm1);CHKERRA(ierr);
+    } 
+  }
   
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
