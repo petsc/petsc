@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.29 2000/03/29 19:17:58 balay Exp balay $ 
+# $Id: solid.make,v 1.30 2000/08/09 18:47:15 balay Exp buschelm $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.28"
@@ -71,6 +71,7 @@ make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n maple "cd $hme/$src_dir; $make BOPT=g"
 rsh -n maple "cd $hme/$src_dir; $make BOPT=O"
 rsh -n maple "cd $hme/$src_dir; $make BOPT=g_c++"
+rsh -n maple "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n maple "cd $hme/$src_dir; $make BOPT=g_complex"
 
 # solaris_uni
@@ -79,7 +80,7 @@ make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n maple "cd $hme/$src_dir; $make BOPT=g"
 
 
-arch=IRIX64
+#arch=IRIX64
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=g"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=O"
@@ -100,13 +101,15 @@ rsh -n ico09 "cd $hme/$src_dir; $make BOPT=g_complex"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_complex"
 
 # IRIX
-arch=IRIX
-make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n rock "cd $hme/$src_dir; $make BOPT=g"
-rsh -n rock "cd $hme/$src_dir; $make BOPT=g_c++"
+#arch=IRIX
+#make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+#rsh -n rock "cd $hme/$src_dir; $make BOPT=g"
+#rsh -n rock "cd $hme/$src_dir; $make BOPT=g_c++"
 
 
 arch=linux
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+rsh -n gaea "cd $hme/$src_dir; $make BOPT=g"
+rsh -n gaea "cd $hme/$src_dir; $make BOPT=O"
 rsh -n gaea "cd $hme/$src_dir; $make BOPT=g_c++"
 rsh -n gaea "cd $hme/$src_dir; $make BOPT=O_c++"
