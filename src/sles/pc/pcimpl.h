@@ -37,7 +37,7 @@ struct _p_PC {
   Vec           diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
   PetscTruth    diagonalscale;
   MatNullSpace  nullsp;
-  int           (*modifysubmatrices)(PC,int,IS*,IS*,Mat*,void*); /* user provided routine */
+  int           (*modifysubmatrices)(PC,int,const IS[],const IS[],Mat[],void*); /* user provided routine */
   void          *modifysubmatricesP; /* context for user routine */
   void          *data;
 };

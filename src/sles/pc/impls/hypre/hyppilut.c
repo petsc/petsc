@@ -599,7 +599,7 @@ static int PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCHYPRESetType_HYPRE"
-static int PCHYPRESetType_HYPRE(PC pc,char *name)
+static int PCHYPRESetType_HYPRE(PC pc,const char name[])
 {
   PC_HYPRE   *jac = (PC_HYPRE*)pc->data;
   int        ierr;
@@ -715,9 +715,9 @@ static int PCSetFromOptions_HYPRE(PC pc)
            PCHYPRE
 
 @*/
-int PCHYPRESetType(PC pc,char *name)
+int PCHYPRESetType(PC pc,const char name[])
 {
-  int ierr,(*f)(PC,char*);
+  int ierr,(*f)(PC,const char[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

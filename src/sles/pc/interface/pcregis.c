@@ -54,7 +54,7 @@ EXTERN_C_END
 
 .seealso: PCRegisterDynamic(), PCRegisterDestroy()
 @*/
-int PCRegisterAll(char *path)
+int PCRegisterAll(const char path[])
 {
   int ierr;
 

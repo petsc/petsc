@@ -348,7 +348,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiSetLocalBlocks_BJacobi"
-int PCBJacobiSetLocalBlocks_BJacobi(PC pc,int blocks,int *lens)
+int PCBJacobiSetLocalBlocks_BJacobi(PC pc,int blocks,const int lens[])
 {
   PC_BJacobi *jac;
   int        ierr;
@@ -497,9 +497,9 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetLocalBlocks()
 @*/
-int PCBJacobiSetTotalBlocks(PC pc,int blocks,int *lens)
+int PCBJacobiSetTotalBlocks(PC pc,int blocks,const int lens[])
 {
-  int ierr,(*f)(PC,int,int *);
+  int ierr,(*f)(PC,int,const int[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -568,9 +568,9 @@ int PCBJacobiGetTotalBlocks(PC pc, int *blocks, const int *lens[])
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetTotalBlocks()
 @*/
-int PCBJacobiSetLocalBlocks(PC pc,int blocks,int *lens)
+int PCBJacobiSetLocalBlocks(PC pc,int blocks,const int lens[])
 {
-  int ierr,(*f)(PC,int,int *);
+  int ierr,(*f)(PC,int,const int []);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

@@ -205,7 +205,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-int AOPetscToApplication(AO ao,int n,int *ia)
+int AOPetscToApplication(AO ao,int n,int ia[])
 {
   int ierr;
 
@@ -240,7 +240,7 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplication(),
           AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-int AOApplicationToPetsc(AO ao,int n,int *ia)
+int AOApplicationToPetsc(AO ao,int n,int ia[])
 {
   int ierr;
 
@@ -268,7 +268,7 @@ int AOApplicationToPetsc(AO ao,int n,int *ia)
 .keywords: application ordering, mapping
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-int AOPetscToApplicationPermuteInt(AO ao, int block, int *array)
+int AOPetscToApplicationPermuteInt(AO ao, int block, int array[])
 {
   int ierr;
 
@@ -297,7 +297,7 @@ int AOPetscToApplicationPermuteInt(AO ao, int block, int *array)
 
 .seealso: AOCreateBasic(), AOView(), AOPetscToApplicationIS(), AOApplicationToPetsc()
 @*/
-int AOApplicationToPetscPermuteInt(AO ao, int block, int *array)
+int AOApplicationToPetscPermuteInt(AO ao, int block, int array[])
 {
   int ierr;
 
@@ -326,7 +326,7 @@ int AOApplicationToPetscPermuteInt(AO ao, int block, int *array)
 
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-int AOPetscToApplicationPermuteReal(AO ao, int block, double *array)
+int AOPetscToApplicationPermuteReal(AO ao, int block, double array[])
 {
   int ierr;
 
@@ -355,7 +355,7 @@ int AOPetscToApplicationPermuteReal(AO ao, int block, double *array)
 
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-int AOApplicationToPetscPermuteReal(AO ao, int block, double *array)
+int AOApplicationToPetscPermuteReal(AO ao, int block, double array[])
 {
   int ierr;
 

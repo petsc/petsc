@@ -37,10 +37,10 @@ extern int AOEvents[AO_MAX_EVENTS];
 
 EXTERN int DMInitializePackage(char *);
 
-EXTERN int AOCreateBasic(MPI_Comm,int,int*,int*,AO*);
+EXTERN int AOCreateBasic(MPI_Comm,int,const int[],const int[],AO*);
 EXTERN int AOCreateBasicIS(IS,IS,AO*);
 
-EXTERN int AOCreateMapping(MPI_Comm,int,int*,int*,AO*);
+EXTERN int AOCreateMapping(MPI_Comm,int,const int[],const int[],AO*);
 EXTERN int AOCreateMappingIS(IS,IS,AO*);
 
 EXTERN int AOView(AO,PetscViewer);
@@ -63,15 +63,15 @@ EXTERN int AOSerializeRegister_Private(const char [], const char [], const char 
 #define AOSerializeRegister(a,b,c,d) AOSerializeRegister_Private(a,b,c,d)
 #endif
 
-EXTERN int AOPetscToApplication(AO,int,int*);
-EXTERN int AOApplicationToPetsc(AO,int,int*);
+EXTERN int AOPetscToApplication(AO,int,int[]);
+EXTERN int AOApplicationToPetsc(AO,int,int[]);
 EXTERN int AOPetscToApplicationIS(AO,IS);
 EXTERN int AOApplicationToPetscIS(AO,IS);
 
-EXTERN int AOPetscToApplicationPermuteInt(AO, int, int *);
-EXTERN int AOApplicationToPetscPermuteInt(AO, int, int *);
-EXTERN int AOPetscToApplicationPermuteReal(AO, int, double *);
-EXTERN int AOApplicationToPetscPermuteReal(AO, int, double *);
+EXTERN int AOPetscToApplicationPermuteInt(AO, int, int[]);
+EXTERN int AOApplicationToPetscPermuteInt(AO, int, int[]);
+EXTERN int AOPetscToApplicationPermuteReal(AO, int, double[]);
+EXTERN int AOApplicationToPetscPermuteReal(AO, int, double[]);
 
 EXTERN int AOMappingHasApplicationIndex(AO, int, PetscTruth *);
 EXTERN int AOMappingHasPetscIndex(AO, int, PetscTruth *);

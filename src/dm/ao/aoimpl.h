@@ -16,12 +16,12 @@ struct _AOOps {
   int (*view)(AO, PetscViewer),
       (*destroy)(AO),
       /* AO-Specific Operations */
-      (*petsctoapplication)(AO, int, int *),
-      (*applicationtopetsc)(AO, int, int *),
-      (*petsctoapplicationpermuteint)(AO, int, int *),
-      (*applicationtopetscpermuteint)(AO, int, int *),
-      (*petsctoapplicationpermutereal)(AO, int, double *),
-      (*applicationtopetscpermutereal)(AO, int, double *);
+      (*petsctoapplication)(AO, int, int[]),
+      (*applicationtopetsc)(AO, int, int[]),
+      (*petsctoapplicationpermuteint)(AO, int, int[]),
+      (*applicationtopetscpermuteint)(AO, int, int[]),
+      (*petsctoapplicationpermutereal)(AO, int, double[]),
+      (*applicationtopetscpermutereal)(AO, int, double[]);
 };
 
 struct _p_AO {

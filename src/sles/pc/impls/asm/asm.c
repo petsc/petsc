@@ -399,7 +399,7 @@ static int PCSetFromOptions_ASM(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetLocalSubdomains_ASM"
-int PCASMSetLocalSubdomains_ASM(PC pc,int n,IS *is)
+int PCASMSetLocalSubdomains_ASM(PC pc,int n,IS is[])
 {
   PC_ASM *osm;
 
@@ -586,9 +586,9 @@ int PCASMSetUseInPlace(PC pc)
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
           PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains()
 @*/
-int PCASMSetLocalSubdomains(PC pc,int n,IS *is)
+int PCASMSetLocalSubdomains(PC pc,int n,IS is[])
 {
-  int ierr,(*f)(PC,int,IS *);
+  int ierr,(*f)(PC,int,IS[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -975,7 +975,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubmatrices()
 @*/
-int PCASMGetLocalSubdomains(PC pc,int *n,IS **is)
+int PCASMGetLocalSubdomains(PC pc,int *n,IS *is[])
 {
   PC_ASM *osm;
 
@@ -986,7 +986,7 @@ int PCASMGetLocalSubdomains(PC pc,int *n,IS **is)
   }
 
   osm = (PC_ASM*)pc->data;
-  if (n)   *n = osm->n_local_true;
+  if (n)  *n = osm->n_local_true;
   if (is) *is = osm->is;
   PetscFunctionReturn(0);
 }
@@ -1014,7 +1014,7 @@ int PCASMGetLocalSubdomains(PC pc,int *n,IS **is)
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubdomains()
 @*/
-int PCASMGetLocalSubmatrices(PC pc,int *n,Mat **mat)
+int PCASMGetLocalSubmatrices(PC pc,int *n,Mat *mat[])
 {
   PC_ASM *osm;
 

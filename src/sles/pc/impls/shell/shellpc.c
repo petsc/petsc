@@ -169,13 +169,14 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetName_Shell"
-int PCShellSetName_Shell(PC pc,char *name)
+int PCShellSetName_Shell(PC pc,const char name[])
 {
   PC_Shell *shell;
+  int      ierr;
 
   PetscFunctionBegin;
-  shell       = (PC_Shell*)pc->data;
-  shell->name = name;
+  shell = (PC_Shell*)pc->data;
+  ierr  = PetscStrallocpy(name,&shell->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -183,7 +184,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellGetName_Shell"
-int PCShellGetName_Shell(PC pc,char **name)
+int PCShellGetName_Shell(PC pc,char *name[])
 {
   PC_Shell *shell;
 
@@ -389,9 +390,9 @@ int PCShellSetApplyTranspose(PC pc,int (*applytranspose)(void*,Vec,Vec))
 
 .seealso: PCShellGetName()
 @*/
-int PCShellSetName(PC pc,char *name)
+int PCShellSetName(PC pc,const char name[])
 {
-  int ierr,(*f)(PC,char *);
+  int ierr,(*f)(PC,const char []);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -414,7 +415,7 @@ int PCShellSetName(PC pc,char *name)
 .  pc - the preconditioner context
 
    Output Parameter:
-.  name - character string describing shell preconditioner
+.  name - character string describing shell preconditioner (you should not free this)
 
    Level: developer
 
@@ -422,9 +423,9 @@ int PCShellSetName(PC pc,char *name)
 
 .seealso: PCShellSetName()
 @*/
-int PCShellGetName(PC pc,char **name)
+int PCShellGetName(PC pc,char *name[])
 {
-  int ierr,(*f)(PC,char **);
+  int ierr,(*f)(PC,char *[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

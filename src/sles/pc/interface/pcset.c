@@ -92,7 +92,7 @@ int PCSetType(PC pc,PCType type)
   pc->ops->applysymmetricleft  = (int (*)(PC,Vec,Vec)) 0;
   pc->ops->applysymmetricright = (int (*)(PC,Vec,Vec)) 0;
   pc->ops->setuponblocks       = (int (*)(PC)) 0;
-  pc->modifysubmatrices   = (int (*)(PC,int,IS*,IS*,Mat*,void*)) 0;
+  pc->modifysubmatrices        = (int (*)(PC,int,const IS[],const IS[],Mat[],void*)) 0;
 
   /* Call the PCCreateXXX routine for this particular preconditioner */
   ierr = (*r)(pc);CHKERRQ(ierr);

@@ -895,7 +895,7 @@ $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
 .seealso: PCModifySubMatrices()
 @*/
-int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx)
+int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,const IS[],const IS[],Mat[],void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -943,7 +943,7 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
 
 .seealso: PCSetModifySubMatrices()
 @*/
-int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
+int PCModifySubMatrices(PC pc,int nsub,const IS row[],const IS col[],Mat submat[],void *ctx)
 {
   int ierr;
 
@@ -1192,7 +1192,7 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 
 .seealso: PCAppendOptionsPrefix(), PCGetOptionsPrefix()
 @*/
-int PCSetOptionsPrefix(PC pc,char *prefix)
+int PCSetOptionsPrefix(PC pc,const char prefix[])
 {
   int ierr;
 
@@ -1225,7 +1225,7 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 
 .seealso: PCSetOptionsPrefix(), PCGetOptionsPrefix()
 @*/
-int PCAppendOptionsPrefix(PC pc,char *prefix)
+int PCAppendOptionsPrefix(PC pc,const char prefix[])
 {
   int ierr;
 
@@ -1258,7 +1258,7 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 
 .seealso: PCSetOptionsPrefix(), PCAppendOptionsPrefix()
 @*/
-int PCGetOptionsPrefix(PC pc,char **prefix)
+int PCGetOptionsPrefix(PC pc,char *prefix[])
 {
   int ierr;
 
@@ -1483,7 +1483,7 @@ int PCView(PC pc,PetscViewer viewer)
 
   Level: advanced
 @*/
-int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
+int PCRegister(const char sname[],const char path[],const char name[],int (*function)(PC))
 {
   int  ierr;
   char fullname[256];

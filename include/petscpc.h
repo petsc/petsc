@@ -93,10 +93,10 @@ EXTERN int PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
 EXTERN int PCApplyRichardsonExists(PC,PetscTruth*);
 
 EXTERN int        PCRegisterDestroy(void);
-EXTERN int        PCRegisterAll(char*);
+EXTERN int        PCRegisterAll(const char[]);
 extern PetscTruth PCRegisterAllCalled;
 
-EXTERN int PCRegister(char*,char*,char*,int(*)(PC));
+EXTERN int PCRegister(const char[],const char[],const char[],int(*)(PC));
 
 /*MC
    PCRegisterDynamic - Adds a method to the preconditioner package.
@@ -151,8 +151,8 @@ EXTERN int PCESISetFromOptions(PC);
 EXTERN int PCGetType(PC,PCType*);
 
 EXTERN int PCGetFactoredMatrix(PC,Mat*);
-EXTERN int PCSetModifySubMatrices(PC,int(*)(PC,int,IS*,IS*,Mat*,void*),void*);
-EXTERN int PCModifySubMatrices(PC,int,IS*,IS*,Mat*,void*);
+EXTERN int PCSetModifySubMatrices(PC,int(*)(PC,int,const IS[],const IS[],Mat[],void*),void*);
+EXTERN int PCModifySubMatrices(PC,int,const IS[],const IS[],Mat[],void*);
 
 EXTERN int PCSetOperators(PC,Mat,Mat,MatStructure);
 EXTERN int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
@@ -161,9 +161,9 @@ EXTERN int PCSetVector(PC,Vec);
 EXTERN int PCGetVector(PC,Vec*);
 EXTERN int PCView(PC,PetscViewer);
 
-EXTERN int PCSetOptionsPrefix(PC,char*);
-EXTERN int PCAppendOptionsPrefix(PC,char*);
-EXTERN int PCGetOptionsPrefix(PC,char**);
+EXTERN int PCSetOptionsPrefix(PC,const char[]);
+EXTERN int PCAppendOptionsPrefix(PC,const char[]);
+EXTERN int PCGetOptionsPrefix(PC,char*[]);
 
 EXTERN int PCNullSpaceAttach(PC,MatNullSpace);
 
@@ -191,8 +191,8 @@ EXTERN int PCEisenstatNoDiagonalScaling(PC);
 #define USE_PRECONDITIONER_MATRIX 0
 #define USE_TRUE_MATRIX           1
 EXTERN int PCBJacobiSetUseTrueLocal(PC);
-EXTERN int PCBJacobiSetTotalBlocks(PC,int,int*);
-EXTERN int PCBJacobiSetLocalBlocks(PC,int,int*);
+EXTERN int PCBJacobiSetTotalBlocks(PC,int,const int[]);
+EXTERN int PCBJacobiSetLocalBlocks(PC,int,const int[]);
 
 EXTERN int PCSLESSetUseTrue(PC);
 
@@ -201,8 +201,8 @@ EXTERN int PCShellSetApplyTranspose(PC,int (*)(void*,Vec,Vec));
 EXTERN int PCShellSetSetUp(PC,int (*)(void*));
 EXTERN int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void*);
 EXTERN int PCShellSetView(PC,int (*)(void*,PetscViewer));
-EXTERN int PCShellSetName(PC,char*);
-EXTERN int PCShellGetName(PC,char**);
+EXTERN int PCShellSetName(PC,const char[]);
+EXTERN int PCShellGetName(PC,char*[]);
 
 EXTERN int PCLUSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCLUSetReuseOrdering(PC,PetscTruth);
@@ -245,8 +245,8 @@ EXTERN int PCICCSetShift(PC,PetscTruth);
 EXTERN int PCICCSetPivotInBlocks(PC,PetscTruth);
 EXTERN int PCICCSetZeroPivot(PC,PetscReal);
 
-EXTERN int PCASMSetLocalSubdomains(PC,int,IS *);
-EXTERN int PCASMSetTotalSubdomains(PC,int,IS *);
+EXTERN int PCASMSetLocalSubdomains(PC,int,IS[]);
+EXTERN int PCASMSetTotalSubdomains(PC,int,IS[]);
 EXTERN int PCASMSetOverlap(PC,int);
 /*E
     PCASMType - Type of additive Schwarz method to use
@@ -269,8 +269,8 @@ typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM
 EXTERN int PCASMSetType(PC,PCASMType);
 EXTERN int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 EXTERN int PCASMSetUseInPlace(PC);
-EXTERN int PCASMGetLocalSubdomains(PC,int*,IS**);
-EXTERN int PCASMGetLocalSubmatrices(PC,int*,Mat**);
+EXTERN int PCASMGetLocalSubdomains(PC,int*,IS*[]);
+EXTERN int PCASMGetLocalSubmatrices(PC,int*,Mat*[]);
 
 /*E
     PCCompositeType - Determines how two or more preconditioner are composed
@@ -318,7 +318,7 @@ EXTERN int PCSPAISetCacheSize(PC,int);
 EXTERN int PCSPAISetVerbose(PC,int);
 EXTERN int PCSPAISetSp(PC,int);
 
-EXTERN int PCHYPRESetType(PC,char*);
+EXTERN int PCHYPRESetType(PC,const char[]);
 EXTERN int PCBJacobiGetLocalBlocks(PC,int*,const int*[]);
 EXTERN int PCBJacobiGetTotalBlocks(PC,int*,const int*[]);
 

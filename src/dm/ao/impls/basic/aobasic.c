@@ -250,7 +250,7 @@ EXTERN_C_END
 
 .seealso: AOCreateBasicIS(), AODestroy()
 @*/
-int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
+int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],AO *aoout)
 {
   AO_Basic   *aobasic;
   AO         ao;

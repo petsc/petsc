@@ -320,7 +320,7 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMapping()
 .keywords: AO, create
 .seealso: AOCreateDebug(), AOCreateBasic(), AOCreateMappingIS(), AODestroy()
 @*/
-int AOCreateMapping(MPI_Comm comm, int napp, int *myapp, int *mypetsc, AO *aoout)
+int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],AO *aoout)
 {
   AO          ao;
   AO_Mapping *aomap;
