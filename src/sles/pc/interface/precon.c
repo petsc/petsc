@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.50 1995/09/21 20:09:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.51 1995/10/01 21:52:01 bsmith Exp curfman $";
 #endif
 
 #include "pcimpl.h"            /*I "pc.h" I*/
@@ -11,6 +11,9 @@ extern int PCPrintMethods_Private(char*,char*);
 
    Input Parameter:
 .  pc - the preconditioner context
+
+   Options Database Keys:
+$  -help, -h
 
 .keywords: PC, help
 

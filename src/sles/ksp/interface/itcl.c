@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.35 1995/09/04 17:23:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.36 1995/09/30 19:27:03 bsmith Exp curfman $";
 #endif
 /*
     Command line interface for KSP
@@ -94,8 +94,11 @@ extern int KSPPrintMethods_Private(char *,char *);
 /*@ 
    KSPPrintHelp - Prints all options for the KSP component.
 
-   Input Parameters:
+   Input Parameter:
 .  ctx - the KSP context
+
+   Options Database Keys:
+$  -help, -h
 
 .keywords: KSP, help
 
