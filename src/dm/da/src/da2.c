@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.150 2000/09/28 21:15:20 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.151 2000/09/29 02:35:37 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -148,7 +148,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
     if (ierr) {
       char *message;
       AMS_Explain_error(ierr,&message);
-      SETERRQ(ierr,1,message);
+      SETERRQ(ierr,message);
     }
   } else {
     SETERRQ1(1,"Wrong vector type %s for this call",((PetscObject)vec)->type_name);

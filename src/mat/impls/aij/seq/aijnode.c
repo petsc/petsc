@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.118 2000/08/29 16:59:11 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.119 2000/09/28 21:11:00 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -1717,7 +1717,7 @@ int MatSeqAIJGetInodeSizes(Mat A,int *node_count,int *sizes[],int *limit)
 
   PetscFunctionBegin;  
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  if (A->type !=MATSEQAIJ) SETERRQ(PETSC_ERR_ARG_WRONG,0,"MatSeqAIJ only");
+  if (A->type != MATSEQAIJ) SETERRQ(PETSC_ERR_ARG_WRONG,"MatSeqAIJ only");
   a           = (Mat_SeqAIJ*)A->data; 
   *node_count = a->inode.node_count;
   *sizes      = a->inode.size;
