@@ -223,6 +223,7 @@ class UsingPython(UsingCompiler):
       raise RuntimeError("BS requires Numeric Python (http://www.pfdubois.com/numpy) to be installed: "+str(e))
     if not hasattr(sys,"version_info") or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
       raise RuntimeError("Requires Python version 2.2 or higher. Get Python at python.org")
+    return
 
   def setupIncludeDirectories(self):
     try:
@@ -421,6 +422,19 @@ class UsingF90 (UsingCompiler):
   '''This class handles all interaction specific to the Fortran 90 language'''
   def __init__(self, usingSIDL):
     UsingCompiler.__init__(self, usingSIDL)
+    #TODO: bs.argDB.setType('F90_LIB', nargs.ArgLibrary(1, 'The libraries containing F90 intrinsics'))
+    self.setupExtraLibraries()
+    return
+
+  def setupExtraLibraries(self):
+    if bs.argDB.has_key('F90_LIB'):
+      extraLibraries = bs.argDB['F90_LIB']
+      if not isinstance(extraLibraries, list):
+        extraLibraries = [extraLibraries]
+      self.extraLibraries[self.getLanguage()].extend(extraLibraries)
+      for package in self.usingSIDL.getPackages():
+        self.extraLibraries[package].extend(extraLibraries)
+    return self.extraLibraries
 
   def getLanguage(self):
     '''The language name'''
