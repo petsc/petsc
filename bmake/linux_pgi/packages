@@ -1,0 +1,93 @@
+# $Id: base.site,v 1.38 1999/03/24 19:12:00 balay Exp $ 
+
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
+# for information on retrieving them.
+#
+BLAS_LIB       = -lblas -lpgftnrtl
+LAPACK_LIB     = -llapack 
+#
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = -I/usr/include/X11
+X11_LIB        = -L/usr/X11R6/lib -lX11
+#
+# Location of MPI (Message Passing Interface) software
+#
+#MPI_LIB        = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpich
+#MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include
+#MPIRUN         = /home/petsc/mpich-1.1.1/lib/LINUX/ch_p4/mpirun
+MPI_HOME       = /usr/local/mpi
+MPI_BUILD_HOME = ${MPI_HOME}/build/LINUX/ch_p4
+MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /usr/local/mpi/util/machines/machines.LINUX
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
+# ----------------------------------------------------------------------------------------  
+#
+# Optional location of MPE
+# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
+#
+#MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
+#MPE_LIB       = -L/usr/local/mpi/build/LINUX/ch_p4/lib -lmpe -lpmpich
+MPE_INCLUDE   = -I${MPI_HOME}/include
+MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+#
+# Optional location of BlockSolve (MPI version)
+#
+#BS_INCLUDE     = -I/home/petsc/BlockSolve95/include
+#BS_LIB         =  -L/home/petsc/BlockSolve95/lib/libO/$(PETSC_ARCH) -lBS95
+#
+# Optional Matlab location
+#
+#MATLAB_LIB     = -L/usr/local/src/matlab5/extern/lib/lnx86 -lmx
+#MATLAB_INCLUDE = -I/usr/local/src/matlab5/extern/include
+#CMEX           = /usr/local/src/matlab5/bin/cmex 
+#
+# Option location where adiC is installed
+#
+#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/linux/libpvode.a
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+#
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DHAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package above.
+#
+#PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE
+#PCONF        = -DHAVE_BLOCKSOLVE -DHAVE_MPE -DHAVE_PVODE
+PCONF        = -DHAVE_MPE_INITIALIZED_LOGGING -DHAVE_MPE
+#EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
+PGI_LIB = -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl
+EXTERNAL_LIB  = ${MPE_LIB} ${PGI_LIB}
+#
+# ---------------------------------------------------------------------------------------
+#
+# If you are using shared version of any external libraries you must make this
+# point to the directories where all your shared libraries are stored.
+#
+DYLIBPATH     = /usr/local/pgi/linux86/lib
