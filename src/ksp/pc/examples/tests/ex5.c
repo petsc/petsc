@@ -112,10 +112,14 @@ int main(int Argc,char **Args)
 
     ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     X[levels - 1 - i] = x;
-    ierr = MGSetX(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+    if (i > 0) {
+      ierr = MGSetX(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+    }
     ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     B[levels -1 - i] = x;
-    ierr = MGSetRhs(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+    if (i > 0) {
+      ierr = MGSetRhs(pcmg,levels - 1 - i,x);CHKERRQ(ierr);
+    }
     ierr = VecCreateSeq(PETSC_COMM_SELF,N[i],&x);CHKERRQ(ierr);
     R[levels - 1 - i] = x;
     ierr = MGSetR(pcmg,levels - 1 - i,x);CHKERRQ(ierr);

@@ -117,17 +117,22 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetResidual(PC pc,PetscInt l,PetscErrorCode 
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
 
+         If you do not set this, the transpose of the Mat set with MGSetRestriction()
+    is used.
+
 .keywords:  multigrid, set, interpolate, level
 
 .seealso: MGSetRestriction()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT MGSetInterpolate(PC pc,PetscInt l,Mat mat)
 { 
-  MG *mg = (MG*)pc->data;
+  MG             *mg = (MG*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[l]->interpolate = mat;  
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -153,17 +158,22 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetInterpolate(PC pc,PetscInt l,Mat mat)
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
 
+         If you do not set this, the transpose of the Mat set with MGSetInterpolate()
+    is used.
+
 .keywords: MG, set, multigrid, restriction, level
 
 .seealso: MGSetInterpolate()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT MGSetRestriction(PC pc,PetscInt l,Mat mat)  
 {
-  MG *mg = (MG*)pc->data;
+  PetscErrorCode ierr;
+  MG             *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[l]->restrct  = mat;  
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -311,8 +321,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt c
 #define __FUNCT__ "MGSetRhs"
 /*@
    MGSetRhs - Sets the vector space to be used to store the right-hand side
-   on a particular level.  The user should free this space at the conclusion 
-   of multigrid use. 
+   on a particular level. 
 
    Collective on PC and Vec
 
@@ -323,17 +332,25 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt c
 
    Level: advanced
 
+   Notes: If this is not provided PETSc will automatically generate one.
+
+          You do not need to keep a reference to this vector if you do 
+          not need it PCDestroy() will properly free it.
+
 .keywords: MG, multigrid, set, right-hand-side, rhs, level
 
 .seealso: MGSetX(), MGSetR()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT MGSetRhs(PC pc,PetscInt l,Vec c)  
 { 
-  MG *mg = (MG*)pc->data;
+  PetscErrorCode ierr;
+  MG             *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (l == mg[0]->levels-1) SETERRQ(PETSC_ERR_ARG_INCOMP,"Do not set rhs for finest level");
   mg[l]->b  = c;
+  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -341,8 +358,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetRhs(PC pc,PetscInt l,Vec c)
 #define __FUNCT__ "MGSetX"
 /*@
    MGSetX - Sets the vector space to be used to store the solution on a 
-   particular level.  The user should free this space at the conclusion 
-   of multigrid use.
+   particular level.
 
    Collective on PC and Vec
 
@@ -352,6 +368,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetRhs(PC pc,PetscInt l,Vec c)
 -  c - the space
 
    Level: advanced
+
+   Notes: If this is not provided PETSc will automatically generate one.
+
+          You do not need to keep a reference to this vector if you do 
+          not need it PCDestroy() will properly free it.
 
 .keywords: MG, multigrid, set, solution, level
 
@@ -359,11 +380,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetRhs(PC pc,PetscInt l,Vec c)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT MGSetX(PC pc,PetscInt l,Vec c)  
 { 
-  MG *mg = (MG*)pc->data;
+  PetscErrorCode ierr;
+  MG             *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (l == mg[0]->levels-1) SETERRQ(PETSC_ERR_ARG_INCOMP,"Do not set rhs for finest level");
   mg[l]->x  = c;
+  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -371,8 +395,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetX(PC pc,PetscInt l,Vec c)
 #define __FUNCT__ "MGSetR"
 /*@
    MGSetR - Sets the vector space to be used to store the residual on a
-   particular level.  The user should free this space at the conclusion of
-   multigrid use.
+   particular level. 
 
    Collective on PC and Vec
 
@@ -383,15 +406,22 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetX(PC pc,PetscInt l,Vec c)
 
    Level: advanced
 
+   Notes: If this is not provided PETSc will automatically generate one.
+
+          You do not need to keep a reference to this vector if you do 
+          not need it PCDestroy() will properly free it.
+
 .keywords: MG, multigrid, set, residual, level
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT MGSetR(PC pc,PetscInt l,Vec c)
 { 
-  MG *mg = (MG*)pc->data;
+  PetscErrorCode ierr;
+  MG             *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[l]->r  = c;
+  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

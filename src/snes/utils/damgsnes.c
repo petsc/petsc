@@ -495,7 +495,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
     for (j=1; j<=level; j++) {
       /* x_fine = x_fine + R'*(x_coarse - R*x_fine) */
       ierr = VecAXPY(&mone,dmmg[j-1]->b,dmmg[j-1]->x);CHKERRQ(ierr);
-      ierr = MatInterpolateAdd(mg[j]->restrct,dmmg[j-1]->x,dmmg[j]->x,dmmg[j]->x);CHKERRQ(ierr);
+      ierr = MatInterpolateAdd(mg[j]->interpolate,dmmg[j-1]->x,dmmg[j]->x,dmmg[j]->x);CHKERRQ(ierr);
 
       if (dmmg[j]->monitorall) {
         /* norm( F(x_fine) - residual_fine ) */

@@ -103,6 +103,11 @@ in PETSc 2.2.2 </font></p>
         <li>Replace PCLUSetShift(), PCILUSetShift(), PCCholeskySetShift() and PCICCSetShift() by PCFactorSetShiftPd(). Change the option database keys -pc_lu_shift, -pc_ilu_shift, -pc_cholesky_shift and -pc_icc_shift to -pc_factor_shfit_positive_definite</li>
         <li>PCMG: will automatically using the outer pmat operator to define the finest level operator if not user supplied</li>
         <li>PCMG: added MGUseGalerkin(), -pc_mg_galerkin option to have coarser grid matrices computed from the finest grid matrix</li> 
+        <li>PCMG: now does referencing counting on set vectors and restriction/interpolation matrices so user need not keep 
+                  reference to free later</li>
+        <li>PCMG: if user does not provide restriction the interpolation is used and vis versa</li>
+        <li>PCMG: if user does not provide Vecs for each level, will automatically provide them</li>
+       
        </ul>
       </p>
 

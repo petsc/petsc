@@ -118,7 +118,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
       PetscInt        *mcolors,**ii,nc = iscoloring->n,i,base, n = iscoloring->N;
       ISColoringValue *colors = iscoloring->colors;
       IS              *is;
-      
+
+#if defined(PETSC_USE_DEBUG)
+      for (i=0; i<n; i++) {
+        if (colors[i] >= (ISColoringValue) nc) {
+          SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
+        }
+      }
+#endif
+                      
       /* generate the lists of nodes for each color */
       ierr = PetscMalloc(nc*sizeof(PetscInt),&mcolors);CHKERRQ(ierr);
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
