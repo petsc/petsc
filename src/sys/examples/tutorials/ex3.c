@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.17 1996/08/06 04:01:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.18 1996/08/28 18:39:22 curfman Exp curfman $";
 #endif
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
@@ -11,8 +11,8 @@ codes.  Note that the code must be compiled with the flag -DPETSC_LOG\n\
 (the default) to activate logging.\n\n";
 
 /*T
-   Concepts: Plog (user-defined event logging)
-   Concepts: Plog (activating/deactivating events)
+   Concepts: Plog (user-defined event profiling)
+   Concepts: Plog (activating/deactivating events for profiling)
    Routines: PLogEventRegister(); PLogEventBegin(); PLogEventEnd();
    Routines: PLogEventDeactivate(); PLogEventActivate(); PLogFlops();
    Routines: PLogEventMPEDeactivate(); PLogEventMPEActivate();

@@ -1,5 +1,5 @@
 
-C    "$Id: ex3f.F,v 1.28 1996/08/27 22:24:14 curfman Exp $";
+C    "$Id: ex1f.F,v 1.2 1996/08/28 13:56:56 curfman Exp curfman $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -95,10 +95,10 @@ C     in Fortran as well as in C (as set here in the array "col").
       value(1) = -1.0
       value(2) = 2.0
       value(3) = -1.0
-      do 50 i=i,n-2
+      do 50 i=1,n-2
          col(1) = i-1
-         col(1) = i
-         col(2) = i+1
+         col(2) = i
+         col(3) = i+1
          call MatSetValues(A,1,i,3,col,value,INSERT_VALUES,ierr)
   50  continue
       i = n - 1
@@ -106,10 +106,10 @@ C     in Fortran as well as in C (as set here in the array "col").
       col(2) = n - 1
       call MatSetValues(A,1,i,2,col,value,INSERT_VALUES,ierr)
       i = 0
-      col(0) = 0
-      col(1) = 1
-      value(0) = 2.0
-      value(1) = -1.0
+      col(1) = 0
+      col(2) = 1
+      value(1) = 2.0
+      value(2) = -1.0
       call MatSetValues(A,1,i,2,col,value,INSERT_VALUES,ierr)
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
@@ -169,7 +169,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  View solver options; we could instead use the option -sles_view
 
-      call SLESView(sles,VIEWER_STDOUT_WORLD,ierr)
+c      call SLESView(sles,VIEWER_STDOUT_WORLD,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                      Check solution and clean up
