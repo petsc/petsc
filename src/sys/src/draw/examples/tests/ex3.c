@@ -1,12 +1,7 @@
 
-
-static char help[] = "Plots a line graph\n";
+static char help[] = "Plots a simple line graph\n";
 
 #include "petsc.h"
-#include "is.h"
-#include "vec.h"
-#include "sys.h"
-#include "sysio.h"
 #include "draw.h"
 #include <math.h>
 
@@ -43,7 +38,6 @@ int main(int argc,char **argv)
 
   ierr = DrawLG(lg); CHKERR(ierr);
   ierr = DrawFlush(draw);
-  sleep(2);
 
   DrawLGDestroy(lg);
   PetscFinalize();
