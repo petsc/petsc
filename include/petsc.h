@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.83 1996/01/11 20:07:16 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.84 1996/01/11 20:10:50 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -111,6 +111,7 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #include "options.h"
 
 extern double PetscGetTime();
+extern double PetscGetFlops();
 extern void PetscSleep(int);
 
 extern int PetscInitialize(int*,char***,char*,char*,char*);
@@ -122,9 +123,6 @@ extern int PetscObjectExists(PetscObject,int*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
 extern int PetscObjectGetCookie(PetscObject,int *cookie);
 extern int PetscObjectGetType(PetscObject,int *type);
-extern int PetscObjectSetPrefix(PetscObject,char*);
-extern int PetscObjectAppendPrefix(PetscObject,char*);
-extern int PetscObjectGetPrefix(PetscObject,char**);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
 extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **));

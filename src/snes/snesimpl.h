@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.28 1996/01/01 01:05:04 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.29 1996/01/11 20:14:53 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -10,7 +10,6 @@
 
 struct _SNES {
   PETSCHEADER
-  char *prefix;                     /* options database prefix */
 
   /*  ----------------- User provided stuff ------------------------*/
   void  *user;		            /* user context */
@@ -46,7 +45,7 @@ struct _SNES {
   int   setup_called;               /* true if setup has been called */
   int   (*solve)(SNES,int*);        /* actual nonlinear solver */
   int   (*setfromoptions)(SNES);    /* sets options from database */
-  int   (*printhelp)(SNES);         /* prints help info */
+  int   (*printhelp)(SNES,char*);   /* prints help info */
   void  *data;                      /* implementationspecific data */
 
   /* ------------------  Parameters -------------------------------------- */

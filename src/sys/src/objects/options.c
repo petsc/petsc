@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.58 1995/11/30 22:32:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.59 1995/12/21 18:30:34 bsmith Exp bsmith $";
 #endif
 /*
   These routines simplify the use of command line, file options, etc.,
@@ -213,7 +213,7 @@ int PetscFinalize()
         fprintf(stdout,"There are %d unused database options. They are:\n",nopt);
       for ( i=0; i<options->N; i++ ) {
         if (!options->used[i]) {
-          fprintf(stdout,"Option left: name:%s value: %s\n",options->names[i],
+          fprintf(stdout,"Option left: name:-%s value: %s\n",options->names[i],
                                                            options->values[i]);
         }
       }
@@ -570,10 +570,10 @@ int OptionsPrint(FILE *fd)
   if (!options) OptionsCreate_Private(0,0,0,0);
   for ( i=0; i<options->N; i++ ) {
     if (options->values[i]) {
-      fprintf(fd,"OptionTable: %s %s\n",options->names[i],options->values[i]);
+      fprintf(fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);
     }
     else {
-      fprintf(fd,"OptionTable: %s\n",options->names[i]);
+      fprintf(fd,"OptionTable: -%s\n",options->names[i]);
     }
   }
   return 0;
@@ -611,7 +611,7 @@ static int OptionsDestroy_Private()
    database, overriding whatever is already present.
 
    Input Parameters:
-.  name - name of option
+.  name - name of option, this SHOULD have the - prepended
 .  value - the option value (not used for all options)
 
    Note:
@@ -631,6 +631,7 @@ int OptionsSetValue(char *name,char *value)
   /* this is so that -h and -help are equivalent (p4 don't like -help)*/
   if (!PetscStrcmp(name,"-h")) name = "-help";
 
+  name++;
   /* first check against aliases */
   N = options->Naliases; 
   for ( i=0; i<N; i++ ) {
@@ -708,10 +709,10 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
   names = options->names;
 
   /* append prefix to name; second check is for pre passed from Fortran */
-  if (pre && *pre != '\000' && *pre != ' ') {
+  if (pre) {
     PetscStrcpy(tmp,pre); PetscStrcat(tmp,name+1);
   }
-  else PetscStrcpy(tmp,name);
+  else PetscStrcpy(tmp,name+1);
 
   /* slow search */
   for ( i=0; i<N; i++ ) {

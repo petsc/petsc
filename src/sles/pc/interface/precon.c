@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.59 1996/01/09 14:46:17 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.60 1996/01/09 14:54:32 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -23,13 +23,14 @@ $  -help, -h
 @*/
 int PCPrintHelp(PC pc)
 {
-  char *p; 
-  if (pc->prefix) p = pc->prefix; else p = "-";
+  char p[64]; 
+  PetscStrcpy(p,"-");
+  if (pc->prefix) PetscStrcat(p,pc->prefix);
   MPIU_printf(pc->comm,"PC options ----------------------------------------\n");
   PCPrintTypes_Private(p,"pc_type");
   MPIU_printf(pc->comm,"Run program with %spc_type method -help for help on ",p);
   MPIU_printf(pc->comm,"a particular method\n");
-  if (pc->printhelp) (*pc->printhelp)(pc);
+  if (pc->printhelp) (*pc->printhelp)(pc,p);
   return 0;
 }
 
@@ -472,7 +473,10 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 @*/
 int PCSetOptionsPrefix(PC pc,char *prefix)
 {
-  pc->prefix = prefix;
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  pc->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char));
+  CHKPTRQ(pc->prefix);
+  PetscStrcpy(pc->prefix,prefix);
   return 0;
 }
 

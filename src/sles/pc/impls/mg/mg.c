@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.39 1995/12/12 22:48:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.40 1996/01/02 20:15:25 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -299,10 +299,8 @@ static int PCSetFromOptions_MG(PC pc)
   return 0;
 }
 
-static int PCPrintHelp_MG(PC pc)
+static int PCPrintHelp_MG(PC pc,char *p)
 {
-  char *p;
-  if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCMG preconditioner:\n");
   MPIU_fprintf(pc->comm,stdout," %spc_mg_method [additive,multiplicative,fullmultigrid,kaskade\
                   : type of multigrid method\n",p);

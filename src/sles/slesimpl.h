@@ -5,7 +5,6 @@
 
 struct _SLES {
   PETSCHEADER
-  char *prefix;
   int setupcalled;
   PC  pc;
   KSP ksp;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.36 1995/12/12 22:54:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.37 1996/01/01 01:02:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -130,10 +130,8 @@ static int PCSetFrom_Eisenstat(PC pc)
   return 0;
 }
 
-static int PCPrintHelp_Eisenstat(PC pc)
+static int PCPrintHelp_Eisenstat(PC pc,char *p)
 {
-  char *p;
-  if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCEisenstat preconditioner:\n");
   MPIU_printf(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);
   MPIU_printf(pc->comm," %spc_eisenstat_diagonal_scaling\n",p);

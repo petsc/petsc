@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.64 1996/01/03 14:45:55 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.65 1996/01/03 16:11:06 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -27,10 +27,12 @@ static char vcid[] = "$Id: gcreate.c,v 1.64 1996/01/03 14:45:55 curfman Exp curf
 
 int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
-  int size;
-  char *p = "-";
+  int  size;
+  char p[64];
 
-  if (pre) p = pre;
+  PetscStrcpy(p,"-");
+  if (pre) PetscStrcat(p,pre);
+
   MPI_Comm_size(comm,&size);
   if (OptionsHasName(PETSC_NULL,"-help")) {
     MPIU_printf(comm,"Matrix format options:\n");

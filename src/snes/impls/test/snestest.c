@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.19 1995/12/21 18:34:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.20 1996/01/01 01:05:15 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -68,7 +68,7 @@ int SNESDestroy_Test(PetscObject obj)
   return 0;
 }
 
-static int SNESPrintHelp_Test(SNES snes)
+static int SNESPrintHelp_Test(SNES snes,char *p)
 {
   MPIU_printf(snes->comm,"Test code to compute Jacobian\n");
   MPIU_printf(snes->comm,"-snes_test_display - display difference between\n");

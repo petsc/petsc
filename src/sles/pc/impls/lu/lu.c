@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.51 1995/12/12 22:54:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.52 1996/01/01 01:02:39 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -55,10 +55,8 @@ static int PCSetFromOptions_LU(PC pc)
   return 0;
 }
 
-static int PCPrintHelp_LU(PC pc)
+static int PCPrintHelp_LU(PC pc,char *p)
 {
-  char *p;
-  if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCLU preconditioner:\n");
   MPIU_printf(pc->comm," %spc_lu_in_place: do factorization in place\n",p);
   MPIU_printf(pc->comm," -mat_order name: ordering to reduce fill",p);

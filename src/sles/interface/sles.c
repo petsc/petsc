@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.44 1995/11/01 23:19:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.45 1996/01/01 01:04:25 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -85,13 +85,17 @@ int SLESPrintHelp(SLES sles)
    Notes:
    This prefix is particularly useful for nested use of SLES.  For
    example, the block Jacobi and block diagonal preconditioners use
-   the prefix "-sub" for options relating to the individual blocks.  
+   the prefix "sub" for options relating to the individual blocks.  
 
 .keywords: SLES, set, options, prefix, database
 @*/
 int SLESSetOptionsPrefix(SLES sles,char *prefix)
 {
   PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
+
+  sles->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char));
+  CHKPTRQ(sles->prefix);
+  PetscStrcpy(sles->prefix,prefix);
   KSPSetOptionsPrefix(sles->ksp,prefix);
   PCSetOptionsPrefix(sles->pc,prefix);
   return 0;

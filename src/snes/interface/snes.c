@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.33 1996/01/09 01:13:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.34 1996/01/11 20:14:56 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -10,6 +10,26 @@ static char vcid[] = "$Id: snes.c,v 1.33 1996/01/09 01:13:43 curfman Exp bsmith 
 
 extern int SNESGetTypeFromOptions_Private(SNES,SNESType*);
 extern int SNESPrintTypes_Private(char*,char*);
+
+/*@C
+   SLESSetOptionsPrefix - Sets the prefix used for searching for all 
+   SLES options in the database.
+
+   Input Parameter:
+.  snes - the SNES context
+.  prefix - the prefix to prepend to all option names
+
+.keywords: SNES, set, options, prefix, database
+@*/
+int SNESSetOptionsPrefix(SNES snes,char *prefix)
+{
+  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+
+  snes->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char));
+  CHKPTRQ(snes->prefix);
+  PetscStrcpy(snes->prefix,prefix);
+  return 0;
+}
 
 /*@ 
    SNESView - Prints the SNES data structure.
@@ -200,51 +220,57 @@ $  -help, -h
 @*/
 int SNESPrintHelp(SNES snes)
 {
-  char    *prefix = "-";
-  SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
-  if (snes->prefix) prefix = snes->prefix;
+  char                p[64];
+  SNES_KSP_EW_ConvCtx *kctx;
+
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+
+  PetscStrcpy(p,"-");
+  if (snes->prefix) PetscStrcat(p, snes->prefix);
+
+  kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
+
   MPIU_printf(snes->comm,"SNES options ----------------------------\n");
-  SNESPrintTypes_Private(prefix,"snes_type");
-  MPIU_printf(snes->comm," %ssnes_monitor: use default SNES monitor\n",prefix);
-  MPIU_printf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",prefix);
-  MPIU_printf(snes->comm," %ssnes_max_it its (default %d)\n",prefix,snes->max_its);
-  MPIU_printf(snes->comm," %ssnes_stol tol (default %g)\n",prefix,snes->xtol);
-  MPIU_printf(snes->comm," %ssnes_atol tol (default %g)\n",prefix,snes->atol);
-  MPIU_printf(snes->comm," %ssnes_rtol tol (default %g)\n",prefix,snes->rtol);
-  MPIU_printf(snes->comm," %ssnes_ttol tol (default %g)\n",prefix,snes->trunctol);
+  SNESPrintTypes_Private(p,"snes_type");
+  MPIU_printf(snes->comm," %ssnes_monitor: use default SNES monitor\n",p);
+  MPIU_printf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
+  MPIU_printf(snes->comm," %ssnes_max_it its (default %d)\n",p,snes->max_its);
+  MPIU_printf(snes->comm," %ssnes_stol tol (default %g)\n",p,snes->xtol);
+  MPIU_printf(snes->comm," %ssnes_atol tol (default %g)\n",p,snes->atol);
+  MPIU_printf(snes->comm," %ssnes_rtol tol (default %g)\n",p,snes->rtol);
+  MPIU_printf(snes->comm," %ssnes_ttol tol (default %g)\n",p,snes->trunctol);
   MPIU_printf(snes->comm,
    " options for solving systems of nonlinear equations only:\n");
-  MPIU_printf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",prefix);
-  MPIU_printf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",prefix);
-  MPIU_printf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",prefix);
+  MPIU_printf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
+  MPIU_printf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
+  MPIU_printf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
   MPIU_printf(snes->comm,
    "     %ssnes_ksp_ew_version version (1 or 2, default is %d)\n",
-   prefix,kctx->version);
+   p,kctx->version);
   MPIU_printf(snes->comm,
    "     %ssnes_ksp_ew_rtol0 rtol0 (0 <= rtol0 < 1, default %g)\n",
-   prefix,kctx->rtol_0);
+   p,kctx->rtol_0);
   MPIU_printf(snes->comm,
    "     %ssnes_ksp_ew_rtolmax rtolmax (0 <= rtolmax < 1, default %g)\n",
-   prefix,kctx->rtol_max);
+   p,kctx->rtol_max);
   MPIU_printf(snes->comm,
    "     %ssnes_ksp_ew_gamma gamma (0 <= gamma <= 1, default %g)\n",
-   prefix,kctx->gamma);
+   p,kctx->gamma);
   MPIU_printf(snes->comm,
    "     %ssnes_ksp_ew_alpha alpha (1 < alpha <= 2, default %g)\n",
-   prefix,kctx->alpha);
+   p,kctx->alpha);
   MPIU_printf(snes->comm,
    "     %ssnes_ksp_ew_alpha2 alpha2 (default %g)\n",
-   prefix,kctx->alpha2);
+   p,kctx->alpha2);
   MPIU_printf(snes->comm,
    "     %ssnes_ksp_ew_threshold threshold (0 < threshold < 1, default %g)\n",
-   prefix,kctx->threshold);
+   p,kctx->threshold);
   MPIU_printf(snes->comm,
    " options for solving unconstrained minimization problems only:\n");
-  MPIU_printf(snes->comm,"   %ssnes_fmin tol (default %g)\n",prefix,snes->fmin);
-  MPIU_printf(snes->comm," Run program with %ssnes_type method -help for help on ",prefix);
+  MPIU_printf(snes->comm,"   %ssnes_fmin tol (default %g)\n",p,snes->fmin);
+  MPIU_printf(snes->comm," Run program with %ssnes_type method -help for help on ",p);
   MPIU_printf(snes->comm,"a particular method\n");
-  if (snes->printhelp) (*snes->printhelp)(snes);
+  if (snes->printhelp) (*snes->printhelp)(snes,p);
   return 0;
 }
 /*@

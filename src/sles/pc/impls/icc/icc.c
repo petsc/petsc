@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.26 1995/12/12 22:54:19 curfman Exp curfman $ ";
+static char vcid[] = "$Id: icc.c,v 1.27 1996/01/09 01:28:12 curfman Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -82,10 +82,8 @@ static int PCApplySymmRight_ICC(PC pc,Vec x,Vec y)
   return MatBackwardSolve(icc->fact,x,y);
 }
 
-static int PCPrintHelp_ICC(PC pc)
+static int PCPrintHelp_ICC(PC pc,char *p)
 {
-  char *p;
-  if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCICC preconditioner:\n");
   MPIU_printf(pc->comm,"%pc_icc_bsiter:  use BlockSolve iterative solver instead\
                   of KSP routines\n",p);

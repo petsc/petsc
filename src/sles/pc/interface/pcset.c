@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.33 1996/01/03 14:45:50 curfman Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.34 1996/01/08 23:47:10 curfman Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -49,7 +50,7 @@ int PCSetType(PC ctx,PCType type)
   if (!r) {SETERRQ(1,"PCSetType:Unknown type");}
   if (ctx->data) PetscFree(ctx->data);
   ctx->setfrom     = ( int (*)(PC) ) 0;
-  ctx->printhelp   = ( int (*)(PC) ) 0;
+  ctx->printhelp   = ( int (*)(PC,char*) ) 0;
   ctx->setup       = ( int (*)(PC) ) 0;
   ctx->destroy     = ( int (*)(PetscObject) ) 0;
   return (*r)(ctx);

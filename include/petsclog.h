@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.40 1996/01/04 01:39:50 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.41 1996/01/09 01:26:06 curfman Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -106,8 +106,10 @@ extern double _TotalFlops;
 #define PLogFlops(n)
 #endif 
 
+
 /*M
    PLogFlops - Adds floating point operations to the global counter.
+               You must include "plog.h" to use this function.
 
    Input Parameter:
 .  f - flop counter

@@ -205,7 +205,7 @@ runex6:
 	   $(RM) -f ex6_1.tmp
 runex6_2:
 	-@$(MPIRUN) ex6 -sub_pc_type ilu \
-	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco4 \
+	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco1 \
 	   -ksp_gmres_restart 100 -sub_ksp_type preonly -pc_type bjacobi \
 	   -pc_bjacobi_blocks 8 -sub_pc_ilu_in_place -ksp_smonitor \
 	   > ex6_2.tmp 2>&1; \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.52 1996/01/01 01:05:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.53 1996/01/11 20:15:04 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -471,11 +471,10 @@ int SNESSetLineSearchRoutine(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
   return 0;
 }
 /* ------------------------------------------------------------------ */
-static int SNESPrintHelp_LS(SNES snes)
+static int SNESPrintHelp_LS(SNES snes,char *p)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
-  char    *p;
-  if (snes->prefix) p = snes->prefix; else p = "-";
+
   MPIU_printf(snes->comm," method ls (system of nonlinear equations):\n");
   MPIU_printf(snes->comm,"   %ssnes_line_search [basic,quadratic,cubic]\n",p);
   MPIU_printf(snes->comm,"   %ssnes_line_search_alpha alpha (default %g)\n",p,ls->alpha);

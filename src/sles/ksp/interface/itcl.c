@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.48 1996/01/09 03:32:01 curfman Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.49 1996/01/09 15:12:08 curfman Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -119,14 +119,14 @@ $  -help, -h
 @*/
 int KSPPrintHelp(KSP ctx)
 {
-  char *p;
+  char p[64];
   int  rank = 0;
 
   MPI_Comm_rank(ctx->comm,&rank);
     
   if (!rank) {
-    if (ctx->prefix) p = ctx->prefix;
-    else             p = "-";
+    PetscStrcpy(p,"-");
+    if (ctx->prefix)  PetscStrcat(p,ctx->prefix);
     PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
     MPIU_printf(ctx->comm,"KSP Options -------------------------------------\n");
     KSPPrintTypes_Private(p,"ksp_type");
@@ -161,7 +161,10 @@ int KSPPrintHelp(KSP ctx)
 @*/
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 {
-  ksp->prefix = prefix;
+  PETSCVALIDHEADERSPECIFIC(ksp,KSP_COOKIE);
+  ksp->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char));
+  CHKPTRQ(ksp->prefix);
+  PetscStrcpy(ksp->prefix,prefix);
   return 0;
 }
 

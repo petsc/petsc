@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.9 1995/12/21 18:31:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.10 1996/01/01 01:03:18 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -84,7 +84,7 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
     ierr = KSPSetType(subksp,KSPPREONLY); CHKERRQ(ierr);
     ierr = SLESGetPC(sles,&subpc); CHKERRQ(ierr);
     ierr = PCSetType(subpc,PCLU); CHKERRQ(ierr);
-    ierr = SLESSetOptionsPrefix(sles,"-sub_"); CHKERRQ(ierr);
+    ierr = SLESSetOptionsPrefix(sles,"sub_"); CHKERRQ(ierr);
     ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
 /*
    This is not so good. The only reason we need to generate this vector

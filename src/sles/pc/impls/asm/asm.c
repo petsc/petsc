@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.6 1995/12/21 18:31:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.7 1996/01/01 01:02:52 bsmith Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -87,7 +87,7 @@ static int PCSetUp_ASM(PC pc)
       ierr = KSPSetType(subksp,KSPPREONLY); CHKERRQ(ierr);
       ierr = SLESGetPC(sles,&subpc); CHKERRQ(ierr);
       ierr = PCSetType(subpc,PCLU); CHKERRQ(ierr);
-      ierr = SLESSetOptionsPrefix(sles,"-sub_"); CHKERRQ(ierr);
+      ierr = SLESSetOptionsPrefix(sles,"sub_"); CHKERRQ(ierr);
       ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
       osm->sles[i] = sles;
     }

@@ -8,10 +8,13 @@ PETSC_DIR = .
 CFLAGS   =  -I$(PETSC_DIR)/include -I.. -I$(PETSC_DIR) $(CONF) $(PCONF)
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = Changes Machines Readme maint/addlinks maint/buildtest \
+SOURCEH  = Changes Machines Readme maint/addlinks \
            maint/builddist FAQ Installation Performance BugReporting\
            maint/buildlinks maint/wwwman maint/xclude maint/crontab\
-           bmake/common bmake/*/* maint/autoftp
+           bmake/common bmake/sun4/* bmake/paragon/* bmake/linux/* \
+           bmake/rs6000/* bmake/alpha/* bmake/IRIX/* bmake/IRIX64/* \
+           bmake/hpux/* bmake/t3d/* bmake/freebsd/* bmake/solaris/* \
+           maint/autoftp
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec

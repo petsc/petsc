@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.63 1996/01/05 19:25:25 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.64 1996/01/09 15:52:21 balay Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -223,10 +223,8 @@ int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   return PCBJacobiGetSubSLES(pc, n_local, first_local, sles);
 }
 
-static int PCPrintHelp_BJacobi(PC pc)
+static int PCPrintHelp_BJacobi(PC pc,char *p)
 {
-  char *p;
-  if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCBJACOBI preconditioner:\n");
   MPIU_printf(pc->comm," %spc_bjacobi_blocks blks: blocks in preconditioner\n",p);
   MPIU_printf(pc->comm, " %spc_bjacobi_truelocal: use blocks from the local linear\
@@ -237,10 +235,8 @@ static int PCPrintHelp_BJacobi(PC pc)
   return 0;
 }
 
-static int PCPrintHelp_BGS(PC pc)
+static int PCPrintHelp_BGS(PC pc,char *p)
 {
-  char *p;
-  if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCBGS preconditioner:\n");
   MPIU_printf(pc->comm," %spc_bgs_blocks blks: blocks in preconditioner\n",p);
   MPIU_printf(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\

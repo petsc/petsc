@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.23 1995/12/12 05:29:26 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.24 1995/12/12 17:36:44 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -30,6 +30,7 @@
   MPI_Comm    comm;                        \
   PetscObject parent;                      \
   char*       name;                        \
+  char        *prefix;                     \
   void *      child;                       \
   int         (*childcopy)(void *,void**);     
   /*  ... */                               
@@ -46,6 +47,7 @@
 #define PetscHeaderDestroy(h)                                      \
        {MPIU_Comm_free(&(h)->comm);                                \
         (h)->cookie = PETSCFREEDHEADER;                            \
+        if ((h)->prefix) PetscFree((h)->prefix);                   \
         PetscFree(h);          }
 
 /* 
@@ -60,8 +62,8 @@ extern void *PetscLow,*PetscHigh;
   if (PetscLow > (void *) h || PetscHigh < (void *)h){             \
     SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");            \
   }                                                                \
-  if ((h)->cookie != ck) {                                         \
-    if ((h)->cookie == PETSCFREEDHEADER) {                         \
+  if (((PetscObject)(h))->cookie != ck) {                          \
+    if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {          \
       SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
     }                                                              \
     else {                                                         \
@@ -73,18 +75,18 @@ extern void *PetscLow,*PetscHigh;
   else if (PetscLow > (void *) h || PetscHigh < (void *)h){        \
     SETERRQ(PETSC_ERR_OBJ,"Invalid Pointer to Object");            \
   }                                                                \
-  else if ((h)->cookie == PETSCFREEDHEADER) {                      \
+  else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {       \
       SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
   }                                                                \
-  else if ((h)->cookie < PETSC_COOKIE ||                           \
-      (h)->cookie > PETSC_COOKIE+20) {                             \
+  else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||            \
+      ((PetscObject)(h))->cookie > PETSC_COOKIE+20) {              \
       SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
   }}
 #else
 #define PETSCVALIDHEADERSPECIFIC(h,ck)                             \
   {if (!h) {SETERRQ(PETSC_ERR_OBJ,"Null Object");}                 \
-  if ((h)->cookie != ck) {                                         \
-    if ((h)->cookie == PETSCFREEDHEADER) {                         \
+  if (((PetscObject)(h))->cookie != ck) {                          \
+    if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {          \
       SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
     }                                                              \
     else {                                                         \
@@ -93,11 +95,11 @@ extern void *PetscLow,*PetscHigh;
   }}
 #define PETSCVALIDHEADER(h)                                        \
   {if (!h) {SETERRQ(PETSC_ERR_OBJ,"Null Object");}                 \
-  else if ((h)->cookie == PETSCFREEDHEADER) {                      \
+  else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {       \
       SETERRQ(PETSC_ERR_OBJ,"Object already free");                \
   }                                                                \
-  else if ((h)->cookie < PETSC_COOKIE ||                           \
-      (h)->cookie > PETSC_COOKIE+20) {                             \
+  else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||            \
+      ((PetscObject)(h))->cookie > PETSC_COOKIE+20) {              \
       SETERRQ(PETSC_ERR_OBJ,"Invalid or Wrong Object");            \
   }}
 #endif
@@ -105,6 +107,12 @@ extern void *PetscLow,*PetscHigh;
 #define CHKSAME(a,b) \
   if ((a)->type != (b)->type) SETERRQ(3,"Objects not of same type");
 
+/*
+      All PETSc objects begin with the fields defined in PETSCHEADER,
+   the PetscObject is a way of examining these fields regardless of 
+   the specific object. In C++ this could be a base abstract class
+   from which all objects are derived.
+*/
 struct _PetscObject {
   PETSCHEADER
 };

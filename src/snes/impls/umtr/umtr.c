@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.24 1996/01/01 01:05:16 bsmith Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.25 1996/01/08 23:48:18 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -286,11 +286,10 @@ static int SNESSetFromOptions_UMTR(SNES snes)
   return 0;
 }
 /*------------------------------------------------------------*/
-static int SNESPrintHelp_UMTR(SNES snes)
+static int SNESPrintHelp_UMTR(SNES snes,char *p)
 {
   SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
-  char      *p;
-  if (snes->prefix) p = snes->prefix; else p = "-";
+
   MPIU_printf(snes->comm," method umtr (unconstrained minimization):\n");
   MPIU_printf(snes->comm,"   %ssnes_trust_region_eta1 eta1 (default %g)\n",p,ctx->eta1);
   MPIU_printf(snes->comm,"   %ssnes_trust_region_eta2 eta2 (default %g)\n",p,ctx->eta2);

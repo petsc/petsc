@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.14 1996/01/09 03:31:52 curfman Exp curfman $ */
+/* $Id: kspimpl.h,v 1.15 1996/01/09 15:06:43 curfman Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -62,8 +62,6 @@ struct _KSP {
   void *monP,       /* User Monitor */
        *cnvP;       /* Convergence tester */
   int setupcalled;
-  /* ------Prefix for Names of setable parameters----------------------*/
-  char  *prefix;
 };
 
 #define MONITOR(itP,rnorm,it) if (itP->monitor) { \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.50 1995/12/21 18:31:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.51 1996/01/02 20:15:29 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -93,10 +93,8 @@ static int PCSetFromOptions_ILU(PC pc)
   return 0;
 }
 
-static int PCPrintHelp_ILU(PC pc)
+static int PCPrintHelp_ILU(PC pc,char *p)
 {
-  char *p;
-  if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCILU preconditioner:\n");
   MPIU_printf(pc->comm," -mat_order name: ordering to reduce fill",p);
   MPIU_printf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");

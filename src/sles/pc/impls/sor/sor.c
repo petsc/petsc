@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.41 1995/12/12 22:54:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.42 1996/01/01 01:02:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -63,10 +63,8 @@ static int PCSetFromOptions_SOR(PC pc)
   return 0;
 }
 
-static int PCPrintHelp_SOR(PC pc)
+static int PCPrintHelp_SOR(PC pc,char *p)
 {
-  char *p;
-  if (pc->prefix) p = pc->prefix; else p = "-";
   MPIU_printf(pc->comm," Options for PCSOR preconditioner:\n");
   MPIU_printf(pc->comm," %spc_sor_omega omega: relaxation factor (0 < omega < 2)\n",p);
   MPIU_printf(pc->comm," %spc_sor_symmetric: use SSOR\n",p);
