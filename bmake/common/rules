@@ -303,7 +303,18 @@ wwwpages:
 
 
 
+.SUFFIXES: $(SUFFIXES) .PETSc
 
-
-
-
+.c.PETSc:
+	-@$(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $* > trashz 2>&1
+	-@grep -v clog trashz | grep -v "information sections" | \
+          grep -v "preempts that definition" | \
+	  egrep -i '(Error|warning|Can)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; $(RM) trashz
+.F.PETSc:
+	-@$(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $* > trashz 2>&1
+	-@grep -v EXTERNAL trashz | grep -v Wall | \
+	egrep -i '(Error|warning|Can)'  >> /dev/null ; \
+	if [ "$$?" != 1 ]; then \
+	cat trashz ; fi; $(RM) trashz;
