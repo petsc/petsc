@@ -41,8 +41,6 @@ Lois - Add table of all preconditioners and options to PETSc manual.
   - Have PETSc put some header information in front of -log and -log_all files indicating
     how PETSc generated, where and on what code
 
-  - make clean copy of emacs stuff for mud to give to all summer visitors, ALICE folks etc.
-
  - Add support to DA so that Global to Local and Local to Global uninterlaces
    multicomponent vectors.
 
@@ -764,3 +762,6 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
  X Add info about which library components do what.  Mention SLES_LIB.
 
  X Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
+
+ X make clean copy of emacs stuff for mud to give to all summer visitors, ALICE folks etc.
+
