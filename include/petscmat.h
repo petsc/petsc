@@ -1212,7 +1212,20 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_ILU_FACTOR_SYMBOLIC_CONSTRAINED=79,
                MATOP_PERMUTE_SPARSIFY=80,
                MATOP_MULT_MULTIPLE=81,
-               MATOP_SOLVE_MULTIPLE=82
+               MATOP_SOLVE_MULTIPLE=82,
+               MATOP_GET_INERTIA=83,
+               MATOP_LOAD=84,
+               MATOP_IS_SYMMETRIC=85,
+               MATOP_IS_HERMITIAN=86,
+               MATOP_IS_STRUCTURALLY_SYMMETRIC=87,
+               MATOP_PB_RELAX=88,
+               MATOP_GET_VECS=89,
+               MATOP_MAT_MULT=90,
+               MATOP_MAT_MULT_SYMBOLIC=91,
+               MATOP_MAT_MULT_NUMERIC=92,
+               MATOP_PTAP=93,
+               MATOP_PTAP_SYMBOLIC=94,
+               MATOP_PTAP_NUMERIC=95
              } MatOperation;
 EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));

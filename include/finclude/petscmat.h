@@ -314,6 +314,39 @@
 
       integer MATOP_DESTROY
       integer MATOP_VIEW
+      integer MATOP_GET_MAPS
+      integer MATOP_USE_SCALED_FORM
+      integer MATOP_SCALE_SYSTEM
+      integer MATOP_UNSCALE_SYSTEM
+      integer MATOP_SET_LOCAL_TO_GLOBAL_MAPPING
+      integer MATOP_SET_VALUES_LOCAL
+      integer MATOP_ZERO_ROWS_LOCAL
+      integer MATOP_GET_ROW_MAX
+      integer MATOP_CONVERT
+      integer MATOP_SET_COLORING
+      integer MATOP_SET_VALUES_ADIC
+      integer MATOP_SET_VALUES_ADIFOR
+      integer MATOP_FD_COLORING_APPLY
+      integer MATOP_SET_FROM_OPTIONS
+      integer MATOP_MULT_CONSTRAINED
+      integer MATOP_MULT_TRANSPOSE_CONSTRAINED
+      integer MATOP_ILU_FACTOR_SYMBOLIC_CONSTRAINED
+      integer MATOP_PERMUTE_SPARSIFY
+      integer MATOP_MULT_MULTIPLE
+      integer MATOP_SOLVE_MULTIPLE
+      integer MATOP_GET_INERTIA
+      integer MATOP_LOAD
+      integer MATOP_IS_SYMMETRIC
+      integer MATOP_IS_HERMITIAN
+      integer MATOP_IS_STRUCTURALLY_SYMMETRIC
+      integer MATOP_PB_RELAX
+      integer MATOP_GET_VECS
+      integer MATOP_MAT_MULT
+      integer MATOP_MAT_MULT_SYMBOLIC
+      integer MATOP_MAT_MULT_NUMERIC
+      integer MATOP_PTAP
+      integer MATOP_PTAP_SYMBOLIC
+      integer MATOP_PTAP_NUMERIC
 
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -345,44 +378,72 @@
       parameter(MATOP_LUFACTOR_NUMERIC=27)
       parameter(MATOP_CHOLESKY_FACTOR_SYMBOLIC=28)
       parameter(MATOP_CHOLESKY_FACTOR_NUMERIC=29)
-      parameter(MATOP_GET_SIZE=30)
-      parameter(MATOP_GET_LOCAL_SIZE=31)
-      parameter(MATOP_GET_OWNERSHIP_RANGE=32)
-      parameter(MATOP_ILUFACTOR_SYMBOLIC=33)
-      parameter(MATOP_ICCFACTOR_SYMBOLIC=34)
-      parameter(MATOP_GET_ARRAY=35)
-      parameter(MATOP_RESTORE_ARRAY=36)
-
-      parameter(MATOP_CONVERT_SAME_TYPE=37)
-      parameter(MATOP_FORWARD_SOLVE=38)
-      parameter(MATOP_BACKWARD_SOLVE=39)
-      parameter(MATOP_ILUFACTOR=40)
-      parameter(MATOP_ICCFACTOR=41)
-      parameter(MATOP_AXPY=42)
-      parameter(MATOP_GET_SUBMATRICES=43)
-      parameter(MATOP_INCREASE_OVERLAP=44)
-      parameter(MATOP_GET_VALUES=45)
-      parameter(MATOP_COPY=46)
-      parameter(MATOP_PRINT_HELP=47)
-      parameter(MATOP_SCALE=48)
-      parameter(MATOP_SHIFT=49)
-      parameter(MATOP_DIAGONAL_SHIFT=50)
-      parameter(MATOP_ILUDT_FACTOR=51)
-      parameter(MATOP_GET_BLOCK_SIZE=52)
-
-      parameter(MATOP_GET_ROW_IJ=53)
-      parameter(MATOP_RESTORE_ROW_IJ=54)
-      parameter(MATOP_GET_COLUMN_IJ=55)
-      parameter(MATOP_RESTORE_COLUMN_IJ=56)
-      parameter(MATOP_FDCOLORING_CREATE=57)
-      parameter(MATOP_COLORING_PATCH=58)
-      parameter(MATOP_SET_UNFACTORED=59)
-      parameter(MATOP_PERMUTE=60)
-      parameter(MATOP_SET_VALUES_BLOCKED=61)
-
-
-      parameter(MATOP_DESTROY=250)
-      parameter(MATOP_VIEW=251)
+      parameter(MATOP_SETUP_PREALLOCATION=30)
+      parameter(MATOP_ILUFACTOR_SYMBOLIC=31)
+      parameter(MATOP_ICCFACTOR_SYMBOLIC=32)
+      parameter(MATOP_GET_ARRAY=33)
+      parameter(MATOP_RESTORE_ARRAY=34)
+      parameter(MATOP_DUPLICATE=35)
+      parameter(MATOP_FORWARD_SOLVE=36)
+      parameter(MATOP_BACKWARD_SOLVE=37)
+      parameter(MATOP_ILUFACTOR=38)
+      parameter(MATOP_ICCFACTOR=39)
+      parameter(MATOP_AXPY=40)
+      parameter(MATOP_GET_SUBMATRICES=41)
+      parameter(MATOP_INCREASE_OVERLAP=42)
+      parameter(MATOP_GET_VALUES=43)
+      parameter(MATOP_COPY=44)
+      parameter(MATOP_PRINT_HELP=45)
+      parameter(MATOP_SCALE=46)
+      parameter(MATOP_SHIFT=47)
+      parameter(MATOP_DIAGONAL_SHIFT=48)
+      parameter(MATOP_ILUDT_FACTOR=49)
+      parameter(MATOP_GET_BLOCK_SIZE=50)
+      parameter(MATOP_GET_ROW_IJ=51)
+      parameter(MATOP_RESTORE_ROW_IJ=52)
+      parameter(MATOP_GET_COLUMN_IJ=53)
+      parameter(MATOP_RESTORE_COLUMN_IJ=54)
+      parameter(MATOP_FDCOLORING_CREATE=55)
+      parameter(MATOP_COLORING_PATCH=56)
+      parameter(MATOP_SET_UNFACTORED=57)
+      parameter(MATOP_PERMUTE=58)
+      parameter(MATOP_SET_VALUES_BLOCKED=59)
+      parameter(MATOP_GET_SUBMATRIX=60)
+      parameter(MATOP_DESTROY=61)
+      parameter(MATOP_VIEW=62)
+      parameter(MATOP_GET_MAPS=63)
+      parameter(MATOP_USE_SCALED_FORM=64)
+      parameter(MATOP_SCALE_SYSTEM=65)
+      parameter(MATOP_UNSCALE_SYSTEM=66)
+      parameter(MATOP_SET_LOCAL_TO_GLOBAL_MAPPING=67)
+      parameter(MATOP_SET_VALUES_LOCAL=68)
+      parameter(MATOP_ZERO_ROWS_LOCAL=69)
+      parameter(MATOP_GET_ROW_MAX=70)
+      parameter(MATOP_CONVERT=71)
+      parameter(MATOP_SET_COLORING=72)
+      parameter(MATOP_SET_VALUES_ADIC=73)
+      parameter(MATOP_SET_VALUES_ADIFOR=74)
+      parameter(MATOP_FD_COLORING_APPLY=75)
+      parameter(MATOP_SET_FROM_OPTIONS=76)
+      parameter(MATOP_MULT_CONSTRAINED=77)
+      parameter(MATOP_MULT_TRANSPOSE_CONSTRAINED=78)
+      parameter(MATOP_ILU_FACTOR_SYMBOLIC_CONSTRAINED=79)
+      parameter(MATOP_PERMUTE_SPARSIFY=80)
+      parameter(MATOP_MULT_MULTIPLE=81)
+      parameter(MATOP_SOLVE_MULTIPLE=82)
+      parameter(MATOP_GET_INERTIA=83)
+      parameter(MATOP_LOAD=84)
+      parameter(MATOP_IS_SYMMETRIC=85)
+      parameter(MATOP_IS_HERMITIAN=86)
+      parameter(MATOP_IS_STRUCTURALLY_SYMMETRIC=87)
+      parameter(MATOP_PB_RELAX=88)
+      parameter(MATOP_GET_VECS=89)
+      parameter(MATOP_MAT_MULT=90)
+      parameter(MATOP_MAT_MULT_SYMBOLIC=91)
+      parameter(MATOP_MAT_MULT_NUMERIC=92)
+      parameter(MATOP_PTAP=93)
+      parameter(MATOP_PTAP_SYMBOLIC=94)
+      parameter(MATOP_PTAP_NUMERIC=95)
 !
 !  
 !

@@ -987,7 +987,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        0,
-/*85*/ MatLoad_MPIDense};
+/*84*/ MatLoad_MPIDense};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

@@ -99,17 +99,17 @@ struct _MatOps {
             (*mults)(Mat, Vecs, Vecs),
             (*solves)(Mat, Vecs, Vecs),
             (*getinertia)(Mat,int*,int*,int*),
-/*85*/      (*load)(PetscViewer,const MatType,Mat*),
+/*84*/      (*load)(PetscViewer,const MatType,Mat*),
             (*issymmetric)(Mat,PetscReal,PetscTruth*),
             (*ishermitian)(Mat,PetscTruth*),
             (*isstructurallysymmetric)(Mat,PetscTruth*),
             (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec),
-/*90*/      (*getvecs)(Mat,Vec*,Vec*),
+/*89*/      (*getvecs)(Mat,Vec*,Vec*),
             (*matmult)(Mat,Mat,MatReuse,PetscReal,Mat*),
             (*matmultsymbolic)(Mat,Mat,PetscReal,Mat*),
             (*matmultnumeric)(Mat,Mat,Mat),
             (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*),
-/*95*/      (*ptapsymbolic)(Mat,Mat,PetscReal,Mat*),
+/*94*/      (*ptapsymbolic)(Mat,Mat,PetscReal,Mat*),
             (*ptapnumeric)(Mat,Mat,Mat);
 };
 
