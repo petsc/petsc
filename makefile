@@ -352,7 +352,7 @@ updatewebdocs:
 
 # Builds all the documentation - should be done every night
 alldoc: allmanualpages
-	cd docs/tex/manual; ${OMAKE} manual.dvi manual.ps manual.html splitmanual.html
+	cd docs/tex/manual; ${OMAKE} manual.pdf
 
 # Deletes man pages (HTML version)
 deletemanualpages:
