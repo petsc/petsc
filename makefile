@@ -12,7 +12,9 @@ SOURCEF	 =
 SOURCEH	 = Changes Machines Readme maint/addlinks \
 	   maint/builddist FAQ Installation Performance BugReporting\
 	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
-	   bmake/common bmake/*/base* maint/autoftp docs/www/sec/*
+	   bmake/common bmake/*/base* maint/autoftp docs/www/sec/* \
+           include/finclude/generateincludes bin/petscviewinfo.text \
+           bin/petscoptsinfo.text
 OBJSC	 =
 OBJSF	 =
 LIBBASE	 = libpetscvec
