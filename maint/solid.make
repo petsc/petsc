@@ -31,6 +31,9 @@ for arg in "$@" ; do
         echo " "
         echo "Defaults:"
         echo "  PETSC_DIR=$hme SRC_DIR=$src_dir ACTION=$action"
+        echo " "
+        echo "Notes:"
+        echo " It is better that this routine be invoked by ~petsc"
         exit 1
         ;;
 
