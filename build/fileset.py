@@ -97,7 +97,11 @@ class RootedFileSet(FileSet, base.Base):
 
   def getProjectRoot(self):
     if not hasattr(self, '_projectRoot'):
-      self._projectRoot = self.getInstalledProject(self.projectUrl).getRoot()
+      project = self.getInstalledProject(self.projectUrl)
+      if project is None:
+        self._projectRoot = ''
+      else:
+        self._projectRoot = project.getRoot()
     return self._projectRoot
 
   def setProjectRoot(self):
