@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.8 1997/10/08 01:29:46 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.9 1997/10/10 04:08:45 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -36,28 +36,32 @@ typedef struct _p_AOData* AOData;
 
 extern int AODataCreateBasic(MPI_Comm,int,AOData *);
 
-extern int AODataAddKey(AOData,char*,int,int,int);
-extern int AODataAddKeyLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping);
+extern int AODataKeyAdd(AOData,char*,int,int,int);
+extern int AODataKeyAddLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping);
+extern int AODataKeyRemapIS(AOData,char *,IS);
 
-extern int AODataAddSegment(AOData,char*,char *,int, int, int *,void *,PetscDataType);
-extern int AODataAddSegmentIS(AOData,char*,char *,int, IS,void *,PetscDataType);
+extern int AODataSegmentAdd(AOData,char*,char *,int, int, int *,void *,PetscDataType);
+extern int AODataSegmentAddIS(AOData,char*,char *,int, IS,void *,PetscDataType);
 
-extern int AODataGetInfoKey(AOData,char *,int *,int*,int *);
-extern int AODataGetInfoKeyOwnership(AOData,char *,int *,int*);
-extern int AODataGetInfoSegment(AOData,char *,char *,int *,int *,int*,PetscDataType*);
+extern int AODataKeyGetInfo(AOData,char *,int *,int*,int *);
+extern int AODataKeyGetInfoOwnership(AOData,char *,int *,int*);
+extern int AODataSegmentGetInfo(AOData,char *,char *,int *,int *,int*,PetscDataType*);
 
-extern int AODataGetSegment(AOData,char *,char *,int,int*,void **);
-extern int AODataRestoreSegment(AOData,char *,char *,int,int*,void **);
-extern int AODataGetSegmentIS(AOData,char *,char *,IS,void **);
-extern int AODataRestoreSegmentIS(AOData,char *,char *,IS,void **);
+extern int AODataSegmentGet(AOData,char *,char *,int,int*,void **);
+extern int AODataSegmentRestore(AOData,char *,char *,int,int*,void **);
+extern int AODataSegmentGetIS(AOData,char *,char *,IS,void **);
+extern int AODataSegmentRestoreIS(AOData,char *,char *,IS,void **);
 
-extern int AODataGetLocalSegment(AOData,char *,char *,int,int*,void **);
-extern int AODataRestoreLocalSegment(AOData,char *,char *,int,int*,void **);
-extern int AODataGetLocalSegmentIS(AOData,char *,char *,IS,void **);
-extern int AODataRestoreLocalSegmentIS(AOData,char *,char *,IS,void **);
+extern int AODataSegmentGetLocal(AOData,char *,char *,int,int*,void **);
+extern int AODataSegmentRestoreLocal(AOData,char *,char *,int,int*,void **);
+extern int AODataSegmentGetLocalIS(AOData,char *,char *,IS,void **);
+extern int AODataSegmentRestoreLocalIS(AOData,char *,char *,IS,void **);
 
-extern int AODataGetReducedSegment(AOData,char *,char *,int,int*,IS *);
-extern int AODataGetReducedSegmentIS(AOData,char *,char *,IS,IS *);
+extern int AODataSegmentGetReduced(AOData,char *,char *,int,int*,IS *);
+extern int AODataSegmentGetReducedIS(AOData,char *,char *,IS,IS *);
+
+extern int AODataKeyGetNeighbors(AOData,char *,int,int*,IS *);
+extern int AODataKeyGetNeighborsIS(AOData,char *,IS,IS *);
 
 extern int AODataView(AOData,Viewer);
 extern int AODataDestroy(AOData);
