@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.30 1996/03/08 05:48:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.31 1996/03/18 00:42:21 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -59,6 +59,10 @@ extern int close(int);
 #if !defined(PARCH_freebsd) && !defined(PARCH_linux) && !defined(PARCH_solaris)
 extern int socket(int,int,int);
 #if !defined(PARCH_hpux) && !defined(PARCH_alpha) && !defined(PARCH_solaris)
+/*
+    Some IBM rs6000 machines require the prototype of 
+    extern int connect(int const struct sockaddr *,int);
+*/
 extern int connect(int,struct sockaddr *,int);
 #endif
 #endif
