@@ -1,4 +1,4 @@
-/*$Id: appctx.h,v 1.7 2000/01/16 03:22:15 bsmith Exp bsmith $*/
+/*$Id: appctx.h,v 1.8 2000/01/16 03:24:08 bsmith Exp bsmith $*/
 /*
        Defines data structures for writing a simple cell (element) based PDE code
     for solving scalar PDE problems like the Laplacian.
@@ -51,7 +51,7 @@ typedef struct {
 
     The AppAlgebra data structure:
       contains all the linear algebra objects needed to solve the linear
-      problem. It is created in appsetalg.c
+      problem. It is created in appalgebra.c
 */
 typedef struct {
   Vec b;           /* Global vector for the rhs */

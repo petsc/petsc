@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.4 2000/01/06 21:32:13 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.5 2000/01/16 02:37:09 bsmith Exp bsmith $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   /*   Setup the graphics routines to view the grid -- in appview.c  */
   ierr = AppCtxGraphics(appctx);CHKERRA(ierr);
  
-  /*   Setup the linear system and solve it -- in appsetalg.c */
+  /*   Setup the linear system and solve it -- in appalgebra.c */
   ierr = AppCtxSolve(appctx);CHKERRA(ierr);
 
   /*   Send solution to  matlab viewer -- in appview.c */

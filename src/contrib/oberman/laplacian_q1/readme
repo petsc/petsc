@@ -14,8 +14,8 @@ Reference:
 	
 -----------------------------------------------------------------------------------
 Usage:
-    generate the grid using input
-    solve the equation using main 
+    generate the grid using  the simple sequential grid generation program input
+    solve the equation using the parallel MPI-PETSc program main 
 
   ++ Running the Grid Generator:
         make BOPT=xxxx input
@@ -32,12 +32,13 @@ Usage:
         -show_matrix:    visualize the sparsity structure of the stiffness matrix.
         -show_grid:      visualize the global and local grids with numbering.
         -help:   for full description of the run-time options available.
+        -f gridfilename: name of file with grid data 
         any PETSc linear solver options
 
 -----------------------------------------------------------------------------------
 Directory  Contents
         appctx.h
-          -define data structure
+          -defines the data structures used by the code
 
 	main.c
 	  -main part of the code.
@@ -50,18 +51,17 @@ Directory  Contents
 	  - get the information from the grid file using database calls.  
             Sets up the local data.
 
-        appsetalg.c
+        appalgebra.c
           - setup the linear system and solve it.
 
 	appview.c
-	  -utility for viewing the solution.  
+	  -utility for viewing the solution and grid.  
            Connects to matlab using the matlab script, bscript.m
 
 
 The basic philosophy of the codes is to make data-structures and
 computations cell-oriented.  The boundary conditions are one
 exception, and the flavor of the code for applying boundary conditions
-is consequently very different.  For clarity, the boundary code is
-kept separate from the rest of the code.
+is consequently very different. 
 
 

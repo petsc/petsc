@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 1999/11/23 17:10:58 bsmith Exp hzhang $ 
+# $Id: makefile,v 1.3 1999/11/23 18:37:03 hzhang Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify  user-defined compiler flags
@@ -11,15 +11,15 @@ CFLAGS    =
 
 ALL: main
 
-LOCDIR     = src/usg/2d/constant_bilinear/
+LOCDIR     = src/contrib/oberman/laplacian_q1
 
 TESTEXAMPLES_1 = main.PETSc main.rm
-EXAMPLESC      = main.c appview.c appload.c functions.c appsetalg.c
+EXAMPLESC      = main.c appview.c appload.c functions.c appalgebra.c
 
-main: chkopts main.o appview.o appload.o functions.o  appsetalg.o
+main: chkopts main.o appview.o appload.o functions.o  appalgebra.o
 	-$(RM) main
-	-$(CLINKER) -o main main.o appview.o appload.o functions.o appsetalg.o $(PETSC_LIB)
-#	-$(RM) main.o appview.o appload.o functions.o appcreate.o appintegrator.o appsetref.o appsetalg.o
+	-$(CLINKER) -o main main.o appview.o appload.o functions.o appalgebra.o $(PETSC_LIB)
+	-$(RM) main.o appview.o appload.o functions.o appcreate.o appintegrator.o appsetref.o appalgebra.o
 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
