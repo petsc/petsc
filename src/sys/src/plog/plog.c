@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.116 1996/08/04 23:14:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.117 1996/08/06 04:04:17 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1144,26 +1144,30 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 
 
   PetscFPrintf(comm,fd,  
-    "\n-------------------------------------------------------------------------------------------------------------\n"); 
+    "\n------------------------------------------------------------------------------------------------------------------------\n"); 
   PetscFPrintf(comm,fd,"Phase summary info:\n");
   PetscFPrintf(comm,fd,"   Count: number of times phase was executed\n");
   PetscFPrintf(comm,fd,"   Time and Flops/sec: Max - maximum over all processors\n");
   PetscFPrintf(comm,fd,"                       Ratio - ratio of maximum to minimum over all processors\n");
+  PetscFPrintf(comm,fd,"   Mess: number of messages sent\n");
+  PetscFPrintf(comm,fd,"   Avg. len: average message length\n");
+  PetscFPrintf(comm,fd,"   Reduct: number of global reductions\n");
   PetscFPrintf(comm,fd,"   Global: entire computation\n");
   PetscFPrintf(comm,fd,"   Stage: optional user-defined stages of a computation. Set stages with PLogStagePush() and PLogStagePop().\n");
-  PetscFPrintf(comm,fd,"      %%T - percent time in this phase %%F - percent flops in this phase\n");
-  PetscFPrintf(comm,fd,"      %%M - percent messages in this phase %%L - percent message lengths in this phase\n");
+  PetscFPrintf(comm,fd,"      %%T - percent time in this phase         %%F - percent flops in this phase\n");
+  PetscFPrintf(comm,fd,"      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n");
   PetscFPrintf(comm,fd,"      %%R - percent reductions in this phase\n");
+  PetscFPrintf(comm,fd,"   Total Mflop/s: 10^6 * (sum of flops over all processors)/(max time over all processors)\n");
   PetscFPrintf(comm,fd,
-    "---------------------------------------------------------------------------------------------------------------\n"); 
+    "------------------------------------------------------------------------------------------------------------------------\n"); 
 
   /* loop over operations looking for interesting ones */
-  PetscFPrintf(comm,fd,"Phase             Count      Time (sec)       Flops/sec\
-                           -- Global --      -- Stage --\n");
-  PetscFPrintf(comm,fd,"                           Max    Ratio      Max    Ratio\
-  Mess  Avg len  Reduct %%T %%F %%M %%L %%R    %%T %%F %%M %%L %%R\n");
+  PetscFPrintf(comm,fd,"Phase              Count      Time (sec)       Flops/sec\
+                          --- Global ---  --- Stage ---   Total\n");
+  PetscFPrintf(comm,fd,"                            Max    Ratio      Max    Ratio\
+  Mess  Avg len  Reduct %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s\n");
   PetscFPrintf(comm,fd,
-    "---------------------------------------------------------------------------------------------------------------\n"); 
+    "------------------------------------------------------------------------------------------------------------------------\n"); 
   for ( j=0; j<=EventsStageMax; j++ ) {
     MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,comm);
     MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPI_DOUBLE,MPI_SUM,comm);
@@ -1215,7 +1219,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
         if (mp) lpmp = lp/mp; else lpmp = 0.0;
         mp = mp/2.0;
         rp = rp/((double) size);
-        PetscFPrintf(comm,fd,"%s %6d %4.3e %6.1f  %2.1e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
+        PetscFPrintf(comm,fd,"%s %7d %4.3e %6.1f  %2.1e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
                     PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
                     mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps,flopr/1.e6);
       }
@@ -1223,7 +1227,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   }
 
   PetscFPrintf(comm,fd,
-    "---------------------------------------------------------------------------------------------------------------\n"); 
+    "------------------------------------------------------------------------------------------------------------------------\n"); 
   PetscFPrintf(comm,fd,"\n"); 
   PetscFPrintf(comm,fd,"Memory usage is given in bytes:\n\n");
 
