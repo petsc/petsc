@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.31 1995/11/27 22:25:25 bsmith Exp curfman $ */
+/* $Id: plog.h,v 1.32 1995/12/02 19:23:22 curfman Exp curfman $ */
 
 /*
     Defines high level logging in Petsc.
@@ -7,6 +7,10 @@
 #if !defined(__PLOG_PACKAGE)
 #define __PLOG_PACKAGE
 #include "petsc.h"  
+
+#if defined (PETSC_LOG) && defined(HAVE_BLOCKSOLVE)
+#define BSMAINLOG
+#endif
 
 /*
   If you add an event here, make sure you add to petsc/bin/petscview.cfg
