@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.316 1999/03/29 23:18:16 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.317 1999/03/30 03:41:46 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -635,13 +635,13 @@ duplicating {\tt l} or {\tt g} via
 We emphasize that a distributed array provides the information needed
 to communicate the ghost value information between processes.  In most
 cases, several different vectors can share the same communication
-information (or, in other words, can share a given {\tt DA}.  The
+information (or, in other words, can share a given {\tt DA}).  The
 design of the {\tt DA} object makes this easy, as each {\tt DA}
 operation may operate on vectors of the appropriate size, as obtained
 via {\tt DACreateLocalVector()} and {\tt DACreateGlobalVector()} or as
 produced by {\tt VecDuplicate()}.  As such, the {\tt DA}
-scatter/gather operations (e.g., {\tt DAGlobalToLocalBegin()} require
-vector input/output arguments (see below).
+scatter/gather operations (e.g., {\tt DAGlobalToLocalBegin()}) require
+vector input/output arguments, as discussed below.
 
 PETSc currently provides no container for multiple arrays sharing the
 same distributed array communication; note, however, that the {\tt dof}
@@ -3921,6 +3921,7 @@ supported for the AIJ matrix format.
 
 % ---------------------------------------------------------------
 \chapter{TS: Scalable ODE Solvers}
+\label{chapter:ts}
 \sindex{ODE solvers}
 
 \findex{TS} 
