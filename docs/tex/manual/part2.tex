@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.188 1997/01/21 21:03:35 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.189 1997/01/21 21:49:42 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3079,8 +3079,7 @@ product approximation with the command
 The parameter {\tt rerror} should be set to the square root of the 
 relative error in the function evaluations, $e_{rel}$; the default is $ 1.0e-8 $ , which assumes
 that the functions are evaluated to full double precision accuracy. 
-Note setting this parameter appropriately is crucial for achieving
-fast convergence with matrix-free Newton-Krylov methods.  The 
+The 
 second parameter, {\tt umin} (or $u_{min}$), is a bit more involved; its default is 
 $ 1.0e-8 $ . The Jacobian-vector product is approximated via the formula
 \[
@@ -3092,12 +3091,14 @@ where $ h $ is computed via
           = e_{rel}*u_{min}*sign(u^{T}a)*||a||_{1}/||a||^2  &    \hbox{otherwise}.
 \end{eqnarray*}
 This approach is taken from Brown and Saad \cite{brownsaad:90}.
-These may be set from the options database with 
+These parameters can also be set from the options database with 
 \begin{verbatim}
    -snes_mf_err <err>
    -snes_mf_umin <umin>
 \end{verbatim}
 \findex{-snes_mf_err} \findex{-snes_mf_umin}
+Note that setting these parameter appropriately is crucial for achieving
+fast convergence with matrix-free Newton-Krylov methods.  
 
 We include an example in Figure~\ref{fig:snesexample2} that explicitly
 uses a matrix-free approach.  Note that by using the option 
