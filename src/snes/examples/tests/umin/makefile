@@ -55,19 +55,20 @@ runex1_2:
            else echo "Possible problem with ex1_2, diffs above"; fi; \
            $(RM) -f ex1_2.tmp
 runex2:
-	-@$(MPIRUN) ex2 -snes_smonitor > ex2_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex2 -p 2 -snes_smonitor > ex2_1.tmp 2>&1;   \
            if (diff output/ex2_1.out ex2_1.tmp) then true; \
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            $(RM) -f ex2_1.tmp
 runex2_2:
-	-@$(MPIRUN) ex2 -snes_smonitor -snes_method umls > ex2_2.tmp 2>&1;\
+	-@$(MPIRUN) ex2 -p 2 -snes_smonitor -snes_method umls > ex2_2.tmp 2>&1;\
            if (diff output/ex2_2.out ex2_2.tmp) then true; \
            else echo "Possible problem with ex2_2, diffs above"; fi; \
            $(RM) -f ex2_2.tmp
 runex2_3:
-	-@$(MPIRUN) ex2 -snes_smonitor -snes_method umls -snes_mf > ex2_3.tmp 2>&1;\
+	-@$(MPIRUN) ex2 -p 2 -snes_smonitor -snes_method umls -snes_mf > ex2_3.tmp 2>&1;\
            if (diff output/ex2_3.out ex2_3.tmp) then true; \
            else echo "Possible problem with ex2_3, diffs above"; fi; \
            $(RM) -f ex2_3.tmp
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+

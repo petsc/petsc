@@ -155,6 +155,11 @@ runex2:
            if (diff output/ex2_1.out ex2_1.tmp) then true; \
            else echo "Possible problem with ex2_1, diffs above"; fi; \
            $(RM) -f ex2_1.tmp
+runex2_2:
+	-@$(MPIRUN)  ex2 -mat_row > ex2_2.tmp 2>&1;   \
+           if (diff output/ex2_2.out ex2_2.tmp) then true; \
+           else echo "Possible problem with ex2_2, diffs above"; fi; \
+           $(RM) -f ex2_2.tmp
 runex3:
 	-@$(MPIRUN)  ex3 > ex3_1.tmp 2>&1;   \
            if (diff output/ex3_1.out ex3_1.tmp) then true; \
