@@ -4,6 +4,19 @@
 */
 #include "isimpl.h"      /*I "is.h" I*/
 
+/*@
+    ISIsPermutation - returns 1 if the index set is a permutation;
+                      -1 on error.
+
+  InputParmeters:
+.   is - the index set
+@*/
+int ISIsPermutation(IS is)
+{
+  if (!is) {SETERR(-1,"Null pointer");}
+  if (is->cookie != IS_COOKIE) {SETERR(-1,"Not indexset");}
+  return is->isperm;
+}
 
 /*@
     ISDestroy - Destroy an index set.
@@ -16,6 +29,23 @@ int ISDestroy(IS is)
 {
   VALIDHEADER(is,IS_COOKIE);
   return (*is->destroy)((PetscObject) is);
+}
+
+/*@
+    ISInvertPermutation - Create a new permutation that is the inverse of 
+                          a given permutation.
+
+  Input Parameters:
+.  is - the index set
+
+  Putput Parameters:
+.  isout - the inverse permutation.
+@*/
+int ISInvertPermutation(IS is,IS *isout)
+{
+  VALIDHEADER(is,IS_COOKIE);
+  if (!is->isperm) SETERR(1,"Cannot invert nonpermutation");
+  return (*is->ops->invert)(is,isout);
 }
 
 /*@
@@ -106,4 +136,17 @@ int ISRestoreIndices(IS is,int **ptr)
   VALIDHEADER(is,IS_COOKIE);
   if (is->ops->restoreindices) return (*is->ops->restoreindices)(is,ptr);
   else return 0;
+}
+
+/*@
+   ISView - Displays an index set
+
+  InputParameters:
+.  is - the index set
+.  viewer - location to display set
+@*/
+int ISView(IS is, Viewer viewer)
+{
+  VALIDHEADER(is,IS_COOKIE);
+  return (*is->view)((PetscObject)is,viewer);
 }

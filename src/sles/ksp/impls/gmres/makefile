@@ -2,7 +2,7 @@ ALL: lib
 
 ITOOLSDIR = ../../../
 
-CFLAGS   = $(OPT) $(CONF) -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include \
+CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
            -I$(ITOOLSDIR)/pinclude -I../../
 SOURCEC  = gmres.c borthog.c mmaxpy.c
 WSOURCEC = gmresf.c  
@@ -12,5 +12,6 @@ WOBJS    = gmresf.o
 OBJSF    = 
 LIBBASE  = libpetscksp
 LINCLUDE = 
+MANSEC   = 5
 
 include $(ITOOLSDIR)/bmake/$(PARCH)

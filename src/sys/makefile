@@ -2,10 +2,10 @@ ITOOLSDIR = ..
 
 ALL: lib workers
 CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF)
-SOURCEC   = tr.c arch.c txt.c file.c  getopts.c nreg.c
+SOURCEC   = tr.c arch.c txt.c file.c  nreg.c
 SOURCEF   =
 SOURCEH   =
-OBJSC     = tr.o arch.o txt.o file.o  getopts.o nreg.o
+OBJSC     = tr.o arch.o txt.o file.o  nreg.o
 OBJSF     =
 WSOURCEC  = archf.c   
 WOBJS     = archf.o  

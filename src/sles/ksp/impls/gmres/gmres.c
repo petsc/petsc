@@ -460,8 +460,8 @@ static int GMRESGetNewVectors( KSP itP,int it )
   for (k=0; k<nalloc; k++)
     gmresP->vecs[it+VEC_OFFSET+k] = gmresP->user_work[nwork][k];
   gmresP->nwork_alloc++;
+  return 0;
 }
-
 
 
 

@@ -24,7 +24,7 @@ static struct _VeOps DvOps = { VeiDVBCreateVector,
               VeiDVBaxpy, VeiDVmaxpy, VeiDVaypx, VeiDVwaxpy, VeiDVpmult,
               VeiDVpdiv, 0,0,0,0, 
               VeiDVaddvalues,VeiDVinsertvalues,0,0,
-              VeiDVgetarray,VeiDVview, VeiDVsize, VeiDVsize };
+              VeiDVgetarray, VeiDVsize, VeiDVsize };
 
 int VecCreateSequentialBLAS(int n,Vec *V)
 {
@@ -34,6 +34,7 @@ int VecCreateSequentialBLAS(int n,Vec *V)
   *V             = 0;
   CREATEHEADER(v,_Vec);
   v->destroy     = VeiDestroyVector;
+  v->view        = VeiDVview;
   s              = (DvVector *) MALLOC(size); CHKPTR(s);
   v->cookie      = VEC_COOKIE;
   v->type        = SEQVECTOR;

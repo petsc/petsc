@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.1 1994/10/02 02:04:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.2 1994/10/31 16:14:54 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -135,5 +135,8 @@ itP->setup                = KSPiTFQMRSetUp;
 itP->solver               = KSPiTFQMRSolve;
 itP->adjustwork           = KSPiDefaultAdjustWork;
 itP->destroy              = KSPiDefaultDestroy;
+  itP->converged            = KSPDefaultConverged;
+  itP->BuildSolution = KSPDefaultBuildSolution;
+  itP->BuildResidual = KSPDefaultBuildResidual;
 return 0;
 }

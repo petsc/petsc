@@ -18,7 +18,9 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern char *malloc(...);
+#if !defined(rs6000)
+extern char *malloc(int );
+#endif
 #if defined(__cplusplus)
 };
 #endif
@@ -170,7 +172,7 @@ if (TRdebugLevel > 0) {
 nsize = a;
 if (nsize & TR_ALIGN_MASK) 
     nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
-inew = malloc( (unsigned)( nsize + sizeof(TrSPACE) + sizeof(unsigned long) ) );
+inew = (char *) malloc( (unsigned)( nsize + sizeof(TrSPACE) + sizeof(unsigned long) ) );
 if (!inew) return 0;
 
 head = (TRSPACE *)inew;
@@ -404,7 +406,7 @@ while (head) {
     fnd    = (TRINFO **)tsearch( (char *) key, (char **) &root, IntCompare );
 #else
     fnd    = (TRINFO **)tsearch( (void *) key, (void **) &root, 
-				 (int (*)())IntCompare );
+				 (int (*)(void*,void*))IntCompare );
 #endif
     if (*fnd == key) {
 	key->size = 0;
@@ -416,7 +418,7 @@ while (head) {
 
 /* Print the data */
 TRFP = fp;
-twalk( (char *)root, (void (*)())PrintSum );
+twalk( (char *)root, (void (*)(void*,VISIT,int))PrintSum );
 fprintf( fp, "The maximum space allocated was %d bytes [%d]\n", 
 	 TRMaxMem, TRMaxMemId );
   return 0;
@@ -631,6 +633,7 @@ while (head) {
     head = head->next;
     }
 TRhead = trIsort( TRhead, cnt );
+return 0;
 }
 
 /* Takes sorted input and dumps as an aggregate */

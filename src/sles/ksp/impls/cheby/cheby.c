@@ -154,9 +154,12 @@ int KSPiChebychevCreate(KSP itP)
   chebychevP->emin          = 1.e-2;
   chebychevP->emax          = 1.e+2;
 
-  itP->setup      = KSPiChebychevSetUp;
-  itP->solver     = KSPiChebychevSolve;
-  itP->adjustwork = KSPiDefaultAdjustWork;
-  itP->destroy    = KSPiDefaultDestroy;
+  itP->setup                = KSPiChebychevSetUp;
+  itP->solver               = KSPiChebychevSolve;
+  itP->adjustwork           = KSPiDefaultAdjustWork;
+  itP->destroy              = KSPiDefaultDestroy;
+  itP->converged            = KSPDefaultConverged;
+  itP->BuildSolution        = KSPDefaultBuildSolution;
+  itP->BuildResidual        = KSPDefaultBuildResidual;
   return 0;
 }

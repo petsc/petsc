@@ -13,6 +13,6 @@ WOBJS    = indexf.o
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-MANSEC   = 2
+MANSEC   = 6
 
 include $(ITOOLSDIR)/bmake/$(PARCH)

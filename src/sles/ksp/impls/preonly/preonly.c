@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: preonly.c,v 1.1 1994/10/02 02:04:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.2 1994/10/31 16:14:50 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -40,5 +40,8 @@ itP->setup                = KSPiPREONLYSetUp;
 itP->solver               = KSPiPREONLYSolve;
 itP->adjustwork           = 0;
 itP->destroy              = KSPiDefaultDestroy;
+  itP->converged            = KSPDefaultConverged;
+  itP->BuildSolution        = KSPDefaultBuildSolution;
+  itP->BuildResidual        = KSPDefaultBuildResidual;
 return 0;
 }

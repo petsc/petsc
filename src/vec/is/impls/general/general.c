@@ -51,8 +51,36 @@ static int ISiPosition(IS is,int ii,int *pos)
   }
 }
 
+static int ISiInverse(IS is, IS *isout)
+{
+  IndexiGeneral *sub = (IndexiGeneral *)is->data;
+  int           i,ierr, *ii,n = sub->n,*idx = sub->idx;
+  ii = (int *) MALLOC( n*sizeof(int) ); CHKPTR(ii);
+  for ( i=0; i<n; i++ ) {
+    ii[idx[i]] = i;
+  }
+  if (ierr = ISCreateSequentialPermutation(n,ii,isout)) SETERR(ierr,0);
+  FREE(ii);
+  return 0;
+}
+
+static int ISgview(PetscObject obj, Viewer viewer)
+{
+  IS            is = (IS) obj;
+  IndexiGeneral *sub = (IndexiGeneral *)is->data;
+  int           i,n = sub->n,*idx = sub->idx;
+  if (is->isperm) {
+    printf("Index set is permutation\n");
+  }
+  printf("Number of indices in set %d\n",n);
+  for ( i=0; i<n; i++ ) {
+    printf("%d %d\n",i,idx[i]);
+  }
+  return 0;
+}
+  
 static struct _ISOps myops = { ISiSize,ISiSize,
-                               ISiPosition,ISiIndices,0};
+                               ISiPosition,ISiIndices,0,ISiInverse};
 /*@
     ISCreateSequential - creates data structure for 
      a index set containing a list of integers.
@@ -83,7 +111,27 @@ int ISCreateSequential(int n,int *idx,IS *is)
   Nindex->type    = GENERALSEQUENTIAL;
   Nindex->ops     = &myops;
   Nindex->destroy = ISidestroy;
+  Nindex->view    = ISgview;
+  Nindex->isperm  = 0;
   *is = Nindex; return 0;
 }
 
+/*@
+    ISCreateSequentialPermutation - creates data structure for 
+     a index set containing a permutation. Special case of 
+     ISCreateSequential().
+
+  Input Parameters:
+.   n - the length of the index set
+.   idx - the list of integers.
+
+@*/
+int ISCreateSequentialPermutation(int n,int *idx,IS *is)
+{
+  int ierr;
+
+  if (ierr = ISCreateSequential(n,idx,is)) SETERR(ierr,0);
+  (*is)->isperm = 1;
+  return 0;
+}
 

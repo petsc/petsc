@@ -3,7 +3,7 @@
 #include "petsc.h"
 #include <signal.h> 
 #include <stdio.h>
-
+#include <unistd.h>
 
 static char  *Debugger = "gdb", *Display = 0;
 static int   Xterm     = 1;
@@ -93,6 +93,7 @@ int PetscAttachDebugger()
     sleep(10);
     return 0;
   }
+  return 0;
 }
 
 /*@

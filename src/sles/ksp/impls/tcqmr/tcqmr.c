@@ -158,8 +158,9 @@ int KSPiTCQMRCreate(KSP itP)
 {
 itP->MethodPrivate = (void *) 0;
 itP->method        = KSPTCQMR;
-itP->BuildSolution = KSPDefaultBuildSolution;
-itP->BuildResidual = KSPDefaultBuildResidual;
+  itP->converged            = KSPDefaultConverged;
+  itP->BuildSolution = KSPDefaultBuildSolution;
+  itP->BuildResidual = KSPDefaultBuildResidual;
 itP->setup         = KSPiTCQMRSetUp;
 itP->solver        = KSPiTCQMRSolve;
 itP->adjustwork    = KSPiDefaultAdjustWork;

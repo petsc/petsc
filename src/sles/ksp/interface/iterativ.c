@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.2 1994/10/31 16:14:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.3 1994/10/31 22:11:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -165,6 +165,7 @@ int KSPiDefaultAdjustWork( KSP itP )
   if ( itP->adjust_work_vectors ) {
     return (itP->adjust_work_vectors)(itP, itP->work,itP->nwork); 
   }
+  return 0;
 }
 
 /*

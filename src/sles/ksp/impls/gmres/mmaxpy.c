@@ -9,7 +9,6 @@
    This is a basic routine that simply uses the maxpy operation;
    versions that use 2, 4, or more at a time can be found in ...
 
-/*
     This is a multi-maxpy.
     input parameters:
         v1    - vectors to use.  v1, v1+1, ..., v1+nv

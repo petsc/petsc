@@ -517,10 +517,10 @@ int VecGetArray(Vec x,Scalar **a)
 .  v - the vector
 .  ptr - a pointer to a viewer ctx
 @*/
-int VecView(Vec v,void *ptr)
+int VecView(Vec v,Viewer ptr)
 {
   VALIDHEADER(v,VEC_COOKIE);
-  return (*v->ops->view)(v,ptr);
+  return (*v->view)((PetscObject)v,ptr);
 }
 
 /*@

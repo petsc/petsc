@@ -114,5 +114,8 @@ itP->setup                = KSPiBCGSSetUp;
 itP->solver               = KSPiBCGSSolve;
 itP->adjustwork           = KSPiDefaultAdjustWork;
 itP->destroy              = KSPiDefaultDestroy;
+  itP->converged            = KSPDefaultConverged;
+  itP->BuildSolution        = KSPDefaultBuildSolution;
+  itP->BuildResidual        = KSPDefaultBuildResidual;
 return 0;
 }

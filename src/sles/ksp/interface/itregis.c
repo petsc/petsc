@@ -26,4 +26,5 @@ int KSPRegisterAll()
   KSPRegister(KSPCR         , "cr",         KSPiCRCreate); 
   KSPRegister(KSPLSQR       , "lsqr",       KSPiLSQRCreate);
   KSPRegister(KSPPREONLY    , "preonly",    KSPiPREONLYCreate);
+  return 0;
 }

@@ -1,11 +1,11 @@
 ITOOLSDIR = ../..
 
 ALL: lib 
-CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF)
+CFLAGS    = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude $(CONF)
 SOURCEC   = adebug.c  error.c 
 SOURCEF   =
 SOURCEH   =
-OBJSC     = adebug.o  error.o  
+OBJSC     = adebug.o  error.o 
 OBJSF     =
 WSOURCEC  = errorf.c  
 WOBJS     = errorf.o 

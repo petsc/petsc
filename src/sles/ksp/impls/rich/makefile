@@ -11,6 +11,7 @@ WOBJS    = richf.o
 OBJSF    =
 LIBBASE  = libpetscksp
 LINCLUDE = 
+MANSEC   = 5
 
 include $(ITOOLSDIR)/bmake/$(PARCH)
 

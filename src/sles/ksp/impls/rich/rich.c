@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.3 1994/10/31 16:14:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.4 1994/10/31 22:11:45 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -148,5 +148,8 @@ int KSPiRichardsonCreate(KSP itP)
   itP->adjustwork = KSPiDefaultAdjustWork;
   itP->destroy    = KSPiDefaultDestroy;
   itP->calc_res   = 1;
+  itP->converged            = KSPDefaultConverged;
+  itP->BuildSolution        = KSPDefaultBuildSolution;
+  itP->BuildResidual        = KSPDefaultBuildResidual;
   return 0;
 }

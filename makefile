@@ -1,4 +1,4 @@
-ITOOLSDIR = ./
+ITOOLSDIR = .
 
 CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) $(CONF)
 SOURCEC  =
@@ -10,7 +10,7 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = is vec ksp sys
+DIRS     = is vec ksp sys pc mat sles options
 
 include $(ITOOLSDIR)/bmake/$(PARCH)
 
@@ -20,4 +20,8 @@ all:
 
 
 deletelibs:
-	-$(RM) -f $(LDIR)/*.o $(LDIR)/*.a $(LDIR)/complex/*
+	-$(RM) $(LDIR)/*.o $(LDIR)/*.a $(LDIR)/complex/*
+
+deletemanpages:
+	$(RM) -f man/man*/*
+

@@ -15,7 +15,7 @@
 @*/
 int PetscAbortErrorHandler(int line,char *file,char *message,int number)
 {
-  abort(0);
+  abort(); return 0;
 }
 /*@
     PetscDefaultErrorHandler - an error handler routine that generates
@@ -62,3 +62,44 @@ int PetscErrorHandler(int line,char *file,char *message,int number)
 {
   return (*errorhandler)(line,file,message,number);
 }
+
+/*
+     Useful functions for debugging
+*/
+int IntView(int N,int* idx,Viewer viewer)
+{
+  int j,i,n = N/20, p = N % 20;
+
+  for ( i=0; i<n; i++ ) {
+    printf("%d:",20*i);
+    for ( j=0; j<20; j++ ) {
+       printf(" %d",idx[i*20+j]);
+    }
+    printf("\n");
+  }
+  if (p) {
+    printf("%d:",20*n);
+    for ( i=0; i<p; i++ ) { printf(" %d",idx[20*n+i]);}
+    printf("\n");
+  }
+  return 0;
+}
+int DoubleView(int N,double* idx,Viewer viewer)
+{
+  int j,i,n = N/5, p = N % 5;
+
+  for ( i=0; i<n; i++ ) {
+    printf("%d:",5*i);
+    for ( j=0; j<5; j++ ) {
+       printf(" %6.4e",idx[i*5+j]);
+    }
+    printf("\n");
+  }
+  if (p) {
+    printf("%d:",5*n);
+    for ( i=0; i<p; i++ ) { printf(" %6.4e",idx[5*n+i]);}
+    printf("\n");
+  }
+  return 0;
+}
+

@@ -2,7 +2,7 @@ ITOOLSDIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I../../.. -I$(ITOOLSDIR)\
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I../../.. \
            -I$(ITOOLSDIR)/pinclude $(CONF) $(COPT)
 SOURCEC  = pvec.c pbvec.c
 SOURCEF  =

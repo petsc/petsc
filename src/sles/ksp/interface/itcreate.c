@@ -5,7 +5,24 @@
 #include "sys/nreg.h"
 #include "sys.h"
 #include "options.h"
+/*@ 
+    KSPView - prints KSP datastructure.
 
+  Input Parameters:
+.  ksp - the Krylov space context
+.  viewer - the location where to display context (usually 0)
+@*/
+int KSPView(KSP ksp,Viewer viewer)
+{
+  fprintf(stderr,"KSP Object\n");
+  fprintf(stderr,"Max. Its. %d rtol %g atol %g\n",
+          ksp->max_it,ksp->rtol,ksp->atol);
+  return 0;
+}
+int _KSPView(PetscObject obj,Viewer viewer)
+{
+  return  KSPView((KSP) obj,viewer);
+}
 static NRList *__ITList = 0;
 /*@
     KSPCreate - Creates default KSP
@@ -21,6 +38,7 @@ int KSPCreate(KSP *ksp)
   CREATEHEADER(ctx,_KSP);
   *ksp               = ctx;
   ctx->cookie        = KSP_COOKIE;
+  ctx->view          = _KSPView;
   ctx->namemethod    = "-kspmethod";
   ctx->namemax_it    = "-kspmax_it";
   ctx->nameright_pre = "-kspright_pre";
@@ -43,9 +61,9 @@ int KSPCreate(KSP *ksp)
   ctx->residual_history = 0;
   ctx->res_hist_size    = 0;
   ctx->res_act_size     = 0;
-  ctx->converged      = KSPDefaultConverged;
   ctx->usr_monitor= 0;
   ctx->adjust_work_vectors = 0;
+  ctx->converged     = KSPDefaultConverged;
   ctx->BuildSolution = KSPDefaultBuildSolution;
   ctx->BuildResidual = KSPDefaultBuildResidual;
 

@@ -29,6 +29,9 @@ int KSPSetFromOptions(KSP ctx)
   OptionsGetDouble(0,ctx->namertol,&ctx->rtol);  
   OptionsGetDouble(0,ctx->nameatol,&ctx->atol);
   OptionsGetDouble(0,ctx->namedivtol,&ctx->divtol);
+  if (OptionsHasName(0,"-kspmonitor")){
+    KSPSetMonitor(ctx,KSPDefaultMonitor,(void *)0);
+  }
   return 0;
 }
   
@@ -52,6 +55,7 @@ int KSPPrintHelp(KSP ctx)
                  ctx->namedivtol,ctx->divtol);
   fprintf(stderr," %s (maximum iterations: defaults to %d)\n",
                  ctx->namemax_it,ctx->max_it);
+  fprintf(stderr," -kspmonitor: use residual convergence monitor\n");
   return 1;
 }
 

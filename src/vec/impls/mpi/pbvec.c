@@ -49,7 +49,7 @@ static struct _VeOps DvOps = { VeiDVPBCreateVector,
             VeiDVpmult,
             VeiDVpdiv, 0,0,0,0,
             0,0,0,0,
-            VeiDVgetarray, VeiDVPview,0,0};
+            VeiDVgetarray, 0,0};
 
 int VecCreateMPIBLAS(MPI_Comm comm,int n,int N, Vec *vv)
 {
@@ -74,6 +74,7 @@ int VecCreateMPIBLAS(MPI_Comm comm,int n,int N, Vec *vv)
   v->type        = MPIVECTOR;
   v->ops         = &DvOps;
   v->destroy     = VeiDestroyVector;
+  v->view        = VeiDVPview;
   v->data        = (void *) s;
   s->n           = n;
   s->N           = N;

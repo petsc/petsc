@@ -2,7 +2,7 @@ ALL: lib
 
 ITOOLSDIR = ../../..
 
-CFLAGS   = $(OPT) $(CONF) -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include \
+CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
            -I$(ITOOLSDIR)/pinclude -I../..
 FFLAGS   =
 SOURCEC  = cr.c 

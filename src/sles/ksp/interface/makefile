@@ -13,7 +13,7 @@ WOBJS    = itfuncf.o itcreatef.o iterativf.o itresf.o
 LIBBASE  = libpetscksp
 LINCLUDE = 
 DIRS     =
-MANSEC   = 4
+MANSEC   = 5
 
 include $(ITOOLSDIR)/bmake/$(PARCH)
 
