@@ -1158,14 +1158,14 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       ni1 = 98; nj1 = 18; nk1 = 18;
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
       app->eps_jac        = 1.0e-7;
-      app->eps_mf_default = 1.0e-5;
+      app->eps_mf_default = 5.0e-4;
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
       ni1 = 194; nj1 = 34; nk1 = 34;
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
       app->eps_jac        = 1.0e-7;
-      app->eps_mf_default = 1.0e-4;
+      app->eps_mf_default = 5.0e-3;
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1213,8 +1213,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->last_its              = 0;
 
   /* Override default with runtime options */
-  ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_local",&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-cfl_snes_its",&app->cfl_snes_its,&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_local",&flg); CHKERRQ(ierr);
   if (flg) {
     app->cfl_advance = ADVANCE_LOCAL;
     PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_local method, cfl_snes_its = %d\n",app->cfl_snes_its);
