@@ -229,9 +229,9 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
       lu->options.Fact = SamePattern; 
     }
 #if defined(PETSC_USE_COMPLEX)
-    zCompRow_to_CompCol(M,N,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,&lu->val,&lu->col, &lu->row);
+    zCompRow_to_CompCol_dist(M,N,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,&lu->val,&lu->col, &lu->row);
 #else
-    dCompRow_to_CompCol(M,N,aa->nz,aa->a,aa->j,aa->i,&lu->val, &lu->col, &lu->row);
+    dCompRow_to_CompCol_dist(M,N,aa->nz,aa->a,aa->j,aa->i,&lu->val, &lu->col, &lu->row);
 #endif
 
     /* Create compressed column matrix A_sup. */
@@ -265,8 +265,8 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
       dallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row);
 #endif
     } else { /* successive numeric factorization, sparsity pattern and perm_c are reused. */
-      /* Destroy_CompRowLoc_Matrix_dist(&lu->A_sup);  */
-      /* Destroy_LU(N, &lu->grid, &lu->LUstruct); */ /* not available yet! */
+      /* Destroy_CompRowLoc_Matrix_dist(&lu->A_sup);  */ /* crash! */
+      Destroy_LU(N, &lu->grid, &lu->LUstruct); 
       lu->options.Fact = SamePattern; 
     }
     nz = 0; jB = 0; irow = mat->rstart;   
