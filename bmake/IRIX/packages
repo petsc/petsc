@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.23 1999/05/10 16:23:39 balay Exp bsmith $ 
+# $Id: base.site,v 1.24 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -61,9 +61,9 @@ BS_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS9
 #
 # Optional Matlab location
 #
-#MATLAB_LIB     = /usr/local/matlab/extern/lib/IRIX/libmex.a
-#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
 #CMEX           = /usr/local/bin/cmex 
+#MCC            = 
+#MATLABCOMMAND  = matlab
 #
 #
 # Option location where adiC is installed

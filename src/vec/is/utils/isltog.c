@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.27 1999/02/01 21:43:29 curfman Exp balay $";
+static char vcid[] = "$Id: isltog.c,v 1.28 1999/05/04 20:30:24 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -142,6 +142,9 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
   PetscFunctionBegin;
   PetscValidPointer(mapping);
   if (--mapping->refct > 0) PetscFunctionReturn(0);
+  if (mapping->refct < 0) {
+    SETERRQ(1,1,"Mapping already destroyed");
+  }
 
   PetscFree(mapping->indices);
   if (mapping->globals) PetscFree(mapping->globals);

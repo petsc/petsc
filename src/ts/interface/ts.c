@@ -1330,7 +1330,7 @@ $     -ts_type my_solver
 
    Level: advanced
 
-   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
 
 .keywords: TS, register
 

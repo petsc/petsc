@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.92 1999/04/12 18:51:28 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.93 1999/05/12 03:35:01 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -91,6 +91,7 @@ extern int PCGetOptionsPrefix(PC,char**);
 extern int PCNullSpaceCreate(MPI_Comm,int,int,Vec *,PCNullSpace*);
 extern int PCNullSpaceDestroy(PCNullSpace);
 extern int PCNullSpaceRemove(PCNullSpace,Vec);
+extern int PCNullSpaceAttach(PC,PCNullSpace);
 
 /* ------------- options specific to particular preconditioners --------- */
 extern int PCSORSetSymmetric(PC, MatSORType);

@@ -1,33 +1,56 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: openport.c,v 1.10 1998/12/03 04:04:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: openport.c,v 1.11 1999/01/12 23:17:16 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
+
+   This code has not been tested on all machines, the function prototypes may not
+exist for certain systems. Only compiles as C code.
 */
 
-#if defined(PARCH_rs6000)
-/* 
-   Had trouble locating the right include file on IBM for these definitions
-*/
+#include "petsc.h"
+#include "sys.h"
+
+#if defined(PETSC_NEEDS_UTYPE_TYPEDEFS)
+/* Some systems have inconsistent include files that use but don't
+   ensure that the following definitions are made */
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;
-typedef unsigned short  ushort;
 typedef unsigned int    u_int;
 typedef unsigned long   u_long;
 #endif
-#include <stdio.h>
-#include <errno.h>
+
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
 #include <sys/types.h>
+#include <ctype.h>
+#if defined(PETSC_HAVE_ENDIAN_H)
+#include <machine/endian.h>
+#endif
+#if defined(PETSC_HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
+#if !defined(PARCH_win32)
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
+#if defined(PETSC_HAVE_STROPTS_H)
 #include <stropts.h>
+#endif
+#if defined (PETSC_HAVE_IO_H)
+#include <io.h>
+#endif
+#if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
-#include "src/viewer/impls/socket/socket.h"
+#endif
+
+#include "src/sys/src/viewer/impls/socket/socket.h"
+#include "pinclude/petscfix.h"
 #include "mex.h"
 
 extern int SOCKConnect_Private(int);
@@ -35,11 +58,12 @@ extern int SOCKConnect_Private(int);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "mexFunction"
+#undef __FUNC__  
+#define __FUNC__ "mexFunction"
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
   int t, portnumber;
+printf("1\n");fflush(stdout);
 
   /* check output parameters */
   if (nlhs != 1) ERROR("Open requires one output argument.");
@@ -53,9 +77,11 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   } else {
     portnumber = (int) *mxGetPr(prhs[0]);
   }
+printf("1\n");fflush(stdout);
 
   /* open connection */
   t = SOCKConnect_Private(portnumber); if (t == -1)  ERROR("opening socket");
+printf("2\n");fflush(stdout);
 
   plhs[0]  = mxCreateFull(1, 1, 0);
  
@@ -72,14 +98,18 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 /* and control c we may not be able to close the correct listener. */
 static int listenport;
 /*-----------------------------------------------------------------*/
-int establish(u_short);
-#undef __FUNCTION__  
-#define __FUNCTION__ "SOCKConnect_Private"
+extern int establish(u_short);
+#undef __FUNC__  
+#define __FUNC__ "SOCKConnect_Private"
 int SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa; 
-
-  int                i,t;
+#if defined(PETSC_HAVE_ACCEPT_SIZE_T)
+  size_t             i;
+#else
+  int                i;
+#endif
+  int                t;
 
 /* open port*/
   listenport = establish( (u_short) portnumber);
@@ -99,15 +129,15 @@ int SOCKConnect_Private(int portnumber)
 }
 /*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
-#undef __FUNCTION__  
-#define __FUNCTION__ "establish"
+#undef __FUNC__  
+#define __FUNC__ "establish"
 int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];
   int                s,ierr;
   struct sockaddr_in sa;  
   struct hostent     *hp;
-  struct utsname utname;
+  struct utsname     utname;
 
   /* Note we do not use gethostname since that is not POSIX */
   uname(&utname); strncpy(myname,utname.nodename,MAXHOSTNAME);
@@ -141,5 +171,5 @@ int establish(u_short portnum)
   listen(s,0);
   return(s);
 }
-    
+#endif    
  

@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.65 1999/05/12 03:34:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.66 1999/05/17 19:59:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define chkmem_fortran_            CHKMEM_FORTRAN
+#define chkmemfortran_             CHKMEMFORTRAN
 #define petscattachdebugger_       PETSCATTACHDEBUGGER
 #define petscobjectsetname_        PETSCOBJECTSETNAME
 #define petscobjectdestroy_        PETSCOBJECTDESTROY
@@ -43,7 +43,7 @@ static char vcid[] = "$Id: zsys.c,v 1.65 1999/05/12 03:34:35 bsmith Exp bsmith $
 #define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
 #define petsccommrestorenewtag_    PETSCCOMMRESTORENEWTAG
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define chkmem_fortran_            chkmem_fortran
+#define chkmemfortran_             chkmemfortran
 #define petscobjectgetnewtag_      petscobjectgetnewtag
 #define petscobjectrestorenewtag_  petscobjectrestorenewtag
 #define petsccommgetnewtag_        petsccommgetnewtag
@@ -212,7 +212,48 @@ void petsctrlog_(int *__ierr)
   *__ierr = PetscTrLog();
 }
 
-void chkmem_fortran_(int *line, CHAR file,int len)
+/*
+        This version does not do a malloc 
+*/
+static char FIXCHARSTRING[1024];
+#if defined(USES_CPTOFCD)
+#include <fortran.h>
+
+#define CHAR _fcd
+#define FIXCHARNOMALLOC(a,n,b) \
+{ \
+  b = _fcdtocp(a); \
+  n = _fcdlen (a); \
+  if (b == PETSC_NULL_CHARACTER_Fortran) { \
+      b = 0; \
+  } else {  \
+    while((n > 0) && (b[n-1] == ' ')) n--; \
+    b = FIXCHARSTRING; \
+    PetscStrncpy(b,_fcdtocp(a),n); \
+    b[n] = 0; \
+  } \
+}
+
+#else
+
+#define CHAR char*
+#define FIXCHARNOMALLOC(a,n,b) \
+{\
+  if (a == PETSC_NULL_CHARACTER_Fortran) { \
+    b = a = 0; \
+  } else { \
+    while((n > 0) && (a[n-1] == ' ')) n--; \
+    if (a[n] != 0) { \
+      b = FIXCHARSTRING; \
+      PetscStrncpy(b,a,n); \
+      b[n] = 0; \
+    } else b = a;\
+  } \
+}
+
+#endif
+
+void chkmemfortran_(int *line, CHAR file,int len)
 {
   int  ierr;
   char *c1;

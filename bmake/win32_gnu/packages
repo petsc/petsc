@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.22 1998/12/16 15:21:07 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.23 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -36,9 +36,9 @@ BS_LIB     =
 #
 # Optional Matlab location, remove if not needed.
 #
-#MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
-#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
-#CMEX           = /usr/local/bin/cmex 
+#CMEX            = 
+#MCC            = 
+#MATLABCOMMAND  = matlab
 #  
 # PCONF - indicates which external packages are available at your site
 #  Make sure that -DPETSC_HAVE_BLOCKSOLVE is not listed below unless you have

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.125 1999/05/04 20:34:35 balay Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.126 1999/05/06 01:17:31 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -597,7 +597,7 @@ int KSPSetUsePreconditionedResidual(KSP ksp)
    Collective on KSP
 
    Input Parameters:
-.  ksp - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from SLESGetKSP() or KSPCreate()
 
    Level: beginner
 

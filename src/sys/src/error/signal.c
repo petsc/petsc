@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.59 1999/05/04 20:28:50 balay Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.60 1999/05/12 03:26:57 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -42,10 +42,12 @@ static char *SIGNAME[] = {
     "CONT", 
     "CHLD" }; 
 
+
+EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PetscSignalHandler"
+#define __FUNC__ "PetscSignalHandler_Private"
 /*
-    PetscSignalHandler - This is the signal handler called by the system. This calls 
+    PetscSignalHandler_Private - This is the signal handler called by the system. This calls 
              any signal handler set by PETSc or the application code.
  
    Input Parameters: (depends on system)
@@ -54,11 +56,15 @@ static char *SIGNAME[] = {
 .    sigcontext - ??
 .    addr - ??
 
+    Note: this is declared extern "C" because it is passed to the system routine signal()
+          which is an extern "C" routine. The Solaris 2.7 OS compilers require that this be
+          extern "C".
+
 */
 #if defined(PETSC_HAVE_4ARG_SIGNAL_HANDLER)
-static void PetscSignalHandler( int sig, int code,struct sigcontext * scp,char *addr)
+static void PetscSignalHandler_Private( int sig, int code,struct sigcontext * scp,char *addr)
 #else
-static void PetscSignalHandler( int sig )
+static void PetscSignalHandler_Private( int sig )
 #endif
 {
   int ierr;
@@ -71,7 +77,7 @@ static void PetscSignalHandler( int sig )
   }
   if (ierr) MPI_Abort(PETSC_COMM_WORLD,0);
 }
-
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PetscDefaultSignalHandler"
@@ -143,36 +149,36 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
   PetscFunctionBegin;
   if (!SignalSet && routine) {
 #if defined(PARCH_IRIX5)  && defined(__cplusplus)
-    signal( SIGQUIT, (void (*)(...)) PetscSignalHandler );
-    signal( SIGILL,  (void (*)(...)) PetscSignalHandler );
-    signal( SIGFPE,  (void (*)(...)) PetscSignalHandler );
-    signal( SIGSEGV, (void (*)(...)) PetscSignalHandler );
-    signal( SIGSYS,  (void (*)(...)) PetscSignalHandler );
+    signal( SIGQUIT, (void (*)(...)) PetscSignalHandler_Private );
+    signal( SIGILL,  (void (*)(...)) PetscSignalHandler_Private );
+    signal( SIGFPE,  (void (*)(...)) PetscSignalHandler_Private );
+    signal( SIGSEGV, (void (*)(...)) PetscSignalHandler_Private );
+    signal( SIGSYS,  (void (*)(...)) PetscSignalHandler_Private );
 #elif (defined(PARCH_IRIX64) || defined(PARCH_IRIX)) && defined(__cplusplus)
-    signal( SIGQUIT, (void (*)(int)) PetscSignalHandler );
-    signal( SIGILL,  (void (*)(int)) PetscSignalHandler );
-    signal( SIGFPE,  (void (*)(int)) PetscSignalHandler );
-    signal( SIGSEGV, (void (*)(int)) PetscSignalHandler );
-    signal( SIGSYS,  (void (*)(int)) PetscSignalHandler );
+    signal( SIGQUIT, (void (*)(int)) PetscSignalHandler_Private );
+    signal( SIGILL,  (void (*)(int)) PetscSignalHandler_Private );
+    signal( SIGFPE,  (void (*)(int)) PetscSignalHandler_Private );
+    signal( SIGSEGV, (void (*)(int)) PetscSignalHandler_Private );
+    signal( SIGSYS,  (void (*)(int)) PetscSignalHandler_Private );
 #elif defined(PARCH_win32)
     /*
-    signal( SIGILL,  PetscSignalHandler );
-    signal( SIGFPE,  PetscSignalHandler );
-    signal( SIGSEGV, PetscSignalHandler );
+    signal( SIGILL,  PetscSignalHandler_Private );
+    signal( SIGFPE,  PetscSignalHandler_Private );
+    signal( SIGSEGV, PetscSignalHandler_Private );
     */
 #elif defined(PARCH_win32_gnu) || defined (PARCH_linux) 
-    signal( SIGILL,  PetscSignalHandler );
-    signal( SIGFPE,  PetscSignalHandler );
-    signal( SIGSEGV, PetscSignalHandler );
-    signal( SIGBUS,  PetscSignalHandler );
-    signal( SIGQUIT, PetscSignalHandler );
+    signal( SIGILL,  PetscSignalHandler_Private );
+    signal( SIGFPE,  PetscSignalHandler_Private );
+    signal( SIGSEGV, PetscSignalHandler_Private );
+    signal( SIGBUS,  PetscSignalHandler_Private );
+    signal( SIGQUIT, PetscSignalHandler_Private );
 #else
-    signal( SIGILL,  PetscSignalHandler );
-    signal( SIGFPE,  PetscSignalHandler );
-    signal( SIGSEGV, PetscSignalHandler );
-    signal( SIGBUS,  PetscSignalHandler );
-    signal( SIGQUIT, PetscSignalHandler );
-    signal( SIGSYS,  PetscSignalHandler );
+    signal( SIGILL,  PetscSignalHandler_Private );
+    signal( SIGFPE,  PetscSignalHandler_Private );
+    signal( SIGSEGV, PetscSignalHandler_Private );
+    signal( SIGBUS,  PetscSignalHandler_Private );
+    signal( SIGQUIT, PetscSignalHandler_Private );
+    signal( SIGSYS,  PetscSignalHandler_Private );
 #endif
     SignalSet = 1;
   }

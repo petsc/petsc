@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.34 1999/01/26 02:18:52 bsmith Exp balay $ 
+# $Id: makefile,v 1.35 1999/03/25 23:41:40 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -33,7 +33,7 @@ BUILDEXAMPLES_9	 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
 BUILDEXAMPLES_12 = ex1f90.PETSc ex1f90.rm ex4f90.PETSc ex4f90.rm clean
 
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c
-EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F
+EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F ex14f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -121,6 +121,9 @@ ex13: ex13.o  chkopts
 	-${CLINKER} -o ex13 ex13.o  ${PETSC_VEC_LIB}
 	${RM} -f ex13.o
 
+ex14f: ex14f.o  chkopts
+	-${FLINKER} -o ex14f ex14f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
+	${RM} -f ex14f.o
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \

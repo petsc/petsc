@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.162 1999/02/01 21:30:13 balay Exp balay $ 
+# $Id: makefile,v 1.163 1999/04/01 17:10:56 balay Exp bsmith $ 
 
 ALL: ex1
 
 CFLAGS	  = 
 FFLAGS    =
-CPPFLAGS  = ${BS_INCLUDE}
+CPPFLAGS  = 
 FPPFLAGS  =
 LOCDIR    = src/sles/examples/tests/
 NOADIC    = true
@@ -23,7 +23,7 @@ TESTEXAMPLES_6  = ex6.PETSc runex6 runex6_2 runex6_3 \
 		  ex6.rm clean
 TESTEXAMPLES_7  = ex6.PETSc runex6_6 ex6.rm clean
 TESTEXAMPLES_8  = ex16.PETSc ex16.rm clean
-TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex5f.PETSc ex5f.rm clean
+TESTEXAMPLES_13 = ex18.PETSc ex18.rm ex20.PETSc ex20.rm ex5f.PETSc ex5f.rm clean
 BUILDEXAMPLES_1 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm clean
 BUILDEXAMPLES_2 = ex10.PETSc ex10.rm ex15.PETSc ex15.rm clean
 BUILDEXAMPLES_3 = ex12.PETSc ex12.rm ex16.PETSc ex16.rm clean
@@ -36,7 +36,7 @@ BUILDEXAMPLES_8 = ex16.PETSc ex16.rm clean
 BUILDEXAMPLES_9 = ex12.PETSc ex12.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex10.c \
-		  ex15.c ex17.c ex18.c
+		  ex15.c ex17.c ex18.c ex20.c
 EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12.F ex16.F
 
@@ -123,7 +123,7 @@ ex19: ex19.o  chkopts
 	${RM} ex19.o
 
 ex20: ex20.o  chkopts
-	-${FLINKER} -o ex20 ex20.o  ${PETSC_FORTRAN_LIB} ${PETSC_SLES_LIB}
+	-${FLINKER} -o ex20 ex20.o  ${PETSC_SLES_LIB}
 	${RM} ex20.o
 
 ex21: ex21.o  chkopts

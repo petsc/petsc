@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.159 1999/05/12 03:28:22 bsmith Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.160 1999/06/08 22:55:12 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -355,6 +355,10 @@ static int VecPublish_Seq(PetscObject object)
 
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
+
+  /* if array in vector was not allocated (for example PCSetUp_BJacobi_Singleblock()) then
+     cannot AMS publish the object*/
+  if (!s->array) PetscFunctionReturn(0);
 
   ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,

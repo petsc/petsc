@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfjdef.c,v 1.2 1999/05/04 20:35:51 balay Exp bsmith $";
+static char vcid[] = "$Id: snesmfjdef.c,v 1.3 1999/05/12 03:32:36 bsmith Exp bsmith $";
 #endif
 /*
   Implements the default PETSc approach for computing the h 
@@ -49,9 +49,6 @@ static char vcid[] = "$Id: snesmfjdef.c,v 1.2 1999/05/04 20:35:51 balay Exp bsmi
 typedef struct {
   double umin;          /* minimum allowable u'a value relative to |u|_1 */
 } MatSNESMFDefault;
-
-extern int VecDot_Seq(Vec,Vec,Scalar *);
-extern int VecNorm_Seq(Vec,NormType,double *);
 
 #undef __FUNC__  
 #define __FUNC__ "MatSNESMFCompute_Default"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.37 1999/05/06 17:59:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.38 1999/05/12 03:27:03 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -62,6 +62,8 @@ int PetscInitialize_DynamicLibraries(void)
   ierr = DLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
   if (found) {
     ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,1,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
   }
 
 
@@ -188,6 +190,8 @@ static FList   dlallhead = 0;
    component (e.g., SNES) should generally call the registration routine
    for that particular component (e.g., SNESRegister()) instead of
    calling FListAdd() directly.
+
+   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
 
 .seealso: FListDestroy(), SNESRegister(), KSPRegister(),
           PCRegister(), TSRegister()
@@ -345,7 +349,7 @@ int FListDestroyAll(void)
 int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 {
   FList        entry = fl;
-  char          *function, *path;
+  char          *function, *path, *newpath;
   int           ierr;
  
   PetscFunctionBegin;
@@ -376,7 +380,9 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 
       /* it is not yet in memory so load from dynamic library */
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-      ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,entry->rname,(void **)r);CHKERRQ(ierr);
+      newpath = path;
+      if (!path) newpath = entry->path;
+      ierr = DLLibrarySym(comm,&DLLibrariesLoaded,newpath,entry->rname,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
         if (path) PetscFree(path);

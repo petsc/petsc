@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.3 1999/04/02 00:11:51 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.4 1999/05/12 03:24:58 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -37,4 +37,9 @@
 
 #define PETSC_HAVE_SLOW_NRM2
 #define PETSC_USE_DCLOCK
+
+#define PETSC_NEED_SETSOCKETOPT_PROTO
+#define PETSC_NEED_CONNECT_PROTO
+#define PETSC_NEED_SOCKET_PROTO
+
 #endif

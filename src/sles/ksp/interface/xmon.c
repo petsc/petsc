@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.39 1999/04/19 22:14:29 bsmith Exp balay $";
+static char vcid[] = "$Id: xmon.c,v 1.40 1999/05/04 20:34:35 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -91,7 +91,7 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
 
   PetscFunctionBegin;
   ierr = DrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
-  ierr = DrawDestroy(draw);CHKERRQ(ierr);
+  if (draw) { ierr = DrawDestroy(draw);CHKERRQ(ierr);}
   ierr = DrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

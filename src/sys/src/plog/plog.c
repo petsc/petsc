@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.215 1999/05/04 20:29:40 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.216 1999/05/12 03:27:27 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -132,10 +132,14 @@ int PLogInfoDeactivateClass(int objclass)
 int PLogInfoActivateClass(int objclass)
 {
   PetscFunctionBegin;
-  PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 1;
-  if (objclass == SLES_COOKIE) {
-    PLogInfoFlags[PC_COOKIE - PETSC_COOKIE - 1]  = 1;
-    PLogInfoFlags[KSP_COOKIE - PETSC_COOKIE - 1] = 1;
+  if (!objclass) {
+    PLogPrintInfoNull = 1;
+  } else {
+    PLogInfoFlags[objclass - PETSC_COOKIE - 1] = 1;
+    if (objclass == SLES_COOKIE) {
+      PLogInfoFlags[PC_COOKIE - PETSC_COOKIE - 1]  = 1;
+      PLogInfoFlags[KSP_COOKIE - PETSC_COOKIE - 1] = 1;
+    }
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.56 1999/04/21 18:17:18 bsmith Exp balay $";
+static char vcid[] = "$Id: shellpc.c,v 1.57 1999/05/04 20:34:04 balay Exp bsmith $";
 #endif
 
 /*
@@ -109,7 +109,7 @@ static int PCView_Shell(PC pc,Viewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCShellSetSetUp_Shell"
-int PCShellSetSetUp_Shell(PC pc, int (*setup)(void*))
+int PCShellSetSetUp_Shell(PC pc,  int (*setup)(void*))
 {
   PC_Shell *shell;
 

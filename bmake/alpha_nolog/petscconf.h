@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.13 1999/03/31 23:58:55 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.14 1999/05/12 03:24:58 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -34,5 +34,8 @@
 
 #define PETSC_USE_DYNAMIC_LIBRARIES 1
 #define PETSC_USE_NONEXECUTABLE_SO 1
+
+#define PETSC_NEED_SOCKET_PROTO
+#define PETSC_HAVE_ENDIAN_H
 
 #endif

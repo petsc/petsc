@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.28 1999/05/11 19:27:23 balay Exp bsmith $ 
+# $Id: base.site,v 1.29 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -50,9 +50,9 @@ BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location, remove if not needed.
 #
-MATLAB_LIB     =
-MATLAB_INCLUDE =
-CMEX           =
+CMEX            = /software/aix-4/com/packages/matlab-5.2/bin/mex
+MCC             = xlc
+MATLABCOMMAND   = matlab
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 

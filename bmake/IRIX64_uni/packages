@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.15 1999/05/10 16:24:44 balay Exp bsmith $ 
+# $Id: base.site,v 1.16 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -58,9 +58,6 @@ MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # Optional Matlab location
 #
-#MATLAB_LIB     = /usr/local/matlab/extern/lib/IRIX64/libmex.a
-#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
-#CMEX           = /usr/local/bin/cmex 
 #
 # Option location where adiC is installed
 #

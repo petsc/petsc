@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.63 1999/05/10 21:21:04 balay Exp bsmith $ 
+# $Id: base.site,v 1.64 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -52,19 +52,20 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/ma
 #
 #MPE_INCLUDE   = -I/home/petsc/mpich/mpe
 #MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
-MPE_INCLUDE   = -I${MPI_HOME}/mpe
-MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+#MPE_INCLUDE   = -I${MPI_HOME}/mpe
+#MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 
 #
 # Optional location of BlockSolve (MPI version)
 #
-BS_INCLUDE = -I/home/petsc/software/BlockSolve95/include
-BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#BS_INCLUDE = -I/home/petsc/software/BlockSolve95/include
+#BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #
 CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/mex
 MCC             = cc
+MATLABCOMMAND   = matlab
 #
 # Option location where adiC is installed
 #
@@ -74,13 +75,13 @@ MCC             = cc
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
-PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/solaris/libpvode.a
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/solaris/libpvode.a
 #
 # Optional location of ParMetis
 #
-PARMETIS_INCLUDE = -I/home/petsc/software/ParMetis.v1.0
-PARMETIS_LIB     = /home/petsc/software/ParMetis.v1.0/libparmetis_solaris.a 
+#PARMETIS_INCLUDE = -I/home/petsc/software/ParMetis.v1.0
+#PARMETIS_LIB     = /home/petsc/software/ParMetis.v1.0/libparmetis_solaris.a 
 #
 #  Optional location for ALICE Memory Snooper
 #
@@ -89,8 +90,8 @@ AMS_LIB     =  -L/home/alice/ams/lib/lib/solaris -lamspub -lamsutilmt -lamsutil 
 #
 # Optional location of SPAI;
 #
-SPAI_INCLUDE = -I/home/petsc/software/spai_3.0/lib
-SPAI_LIB     = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a
+#SPAI_INCLUDE = -I/home/petsc/software/spai_3.0/lib
+#SPAI_LIB     = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a
 # 
 # ---------------------------------------------------------------------------------------
 #
@@ -100,7 +101,7 @@ SPAI_LIB     = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DPETSC_HAVE_MPE -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_PVODE -DPETSC_HAVE_PARMETIS -DPETSC_HAVE_AMS
+PCONF         = -DPETSC_HAVE_AMS
 #PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE 
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
                 ${SPAI_LIB} ${AMS_LIB}
@@ -110,4 +111,4 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /opt/SUNWspro/SC4.2/lib:/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH}
+DYLIBPATH     = /opt/SUNWspro/SC5.0/lib:/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH}

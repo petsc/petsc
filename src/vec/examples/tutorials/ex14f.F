@@ -1,11 +1,11 @@
 !
-!     "$Id: ex9f.F,v 1.2 1998/07/23 21:21:20 bsmith Exp $";
+!     "$Id: ex14f.F,v 1.1 1999/05/20 19:41:21 bsmith Exp bsmith $";
 !
 ! Description: Illustrates the use of VecCreateGhost()
 !
 !/*T
 !   Concepts: Vectors^Assembling vectors; Ghost padding
-!   Routines: VecCreateGhost(); VecGetSize(); VecSet(); VecSetValues();
+!   Routines: VecCreateGhostBlock(); VecGetSize(); VecSet(); VecSetValues();
 !   Routines: VecView(); VecDestroy(); PetscSynchronizedPrintf();
 !   Routines: VecGhostGetLocalForm(); VecGhostUpdateEnd();
 !   Routines: VecGhostRestoreLocalForm(); VecGhostUpdateBegin();
@@ -13,13 +13,13 @@
 !   Processors: n
 !
 !   Comment: Ghost padding is one way to handle local calculations that
-!      involve values from other processors. VecCreateGhost() provides
+!      involve values from other processors. VecCreateGhostBlock() provides
 !      a way to create vectors with extra room at the end of the vector 
 !      array to contain the needed ghost values from other processors, 
 !      vector computations are otherwise unaffected.
 !T*/
 
-      program ex9f
+      program ex14f
       implicit none
 
 !
@@ -33,12 +33,14 @@
 #include "include/finclude/vec.h"
 
       integer    rank,nlocal,nghost,ifrom(2),size,ierr,i,rstart,rend
-      integer    flag
+      integer    flag,bs
       Scalar     value,tarray(20)
       Vec        lx,gx,gxs
 
       nlocal = 6
       nghost = 2
+      bs     = 2
+      nlocal = bs*nlocal
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr) 
@@ -62,19 +64,19 @@
 !     degrees of freedom in a one dimensional grid with periodic 
 !     boundary conditions.
 !
-!        ----Processor  1---------  ----Processor 2 --------
-!         0    1   2   3   4    5    6    7   8   9   10   11
-!                               |----| 
-!         |-------------------------------------------------|
+!        ----Processor  1-----------  ----Processor 2 --------
+!         0 1 2 3 4 5 6 7 8 9 10 11    12 13 14 15 16 17 18 19 20 21 22 23
+!                              |--|----|---| 
+!         |-|--------------------------------------------------------|--|
 !
 
 
       if (rank .eq. 0) then
-        ifrom(1) = 11
-        ifrom(2) = 6
+        ifrom(1) = bs*11
+        ifrom(2) = bs*6
       else
-        ifrom(1) = 0
-        ifrom(2) = 5
+        ifrom(1) = bs*0
+        ifrom(2) = bs*5
       endif
 
 !     Create the vector with two slots for ghost points. Note that both 
@@ -83,11 +85,11 @@
 
       call OptionsHasName(PETSC_NULL_CHARACTER,'-allocate',flag,ierr)
       if (flag .ne. 0) then
-        call VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,            &
+        call VecCreateGhostBlockWithArray(PETSC_COMM_WORLD,bs,nlocal,    &
      &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)
       else 
-        call VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,        &
-     &       nghost,ifrom,gxs,ierr)
+        call VecCreateGhostBlock(PETSC_COMM_WORLD,bs,nlocal,             &
+     &       PETSC_DECIDE,nghost,ifrom,gxs,ierr)
       endif
 
 

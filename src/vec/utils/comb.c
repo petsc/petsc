@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.18 1999/05/04 20:30:27 balay Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.19 1999/05/12 03:28:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -79,6 +79,7 @@ int VecSplitReductionCreate(MPI_Comm comm,VecSplitReduction **sr)
 */
 MPI_Op VecSplitReduction_Op = 0;
 
+EXTERN_C_BEGIN
 #undef __FUNC__
 #define __FUNC__ "VecSplitReduction_Local"
 void VecSplitReduction_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype)
@@ -106,6 +107,7 @@ void VecSplitReduction_Local(void *in, void *out,int *cnt,MPI_Datatype *datatype
   }
   return;
 }
+EXTERN_C_END
 
 #undef __FUNC__
 #define __FUNC__ "VecSplitReductionApply"
@@ -223,6 +225,7 @@ int VecSplitReductionDestroy(VecSplitReduction *sr)
 
 static int Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "Petsc_DelReduction" 
 /*
@@ -241,6 +244,7 @@ int Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
   ierr = VecSplitReductionDestroy((VecSplitReduction *)attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /*
      VecSplitReductionGet - Gets the split reduction object from a 

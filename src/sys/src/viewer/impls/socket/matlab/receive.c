@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: receive.c,v 1.11 1999/01/12 23:17:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: receive.c,v 1.12 1999/05/12 03:26:02 bsmith Exp bsmith $";
 #endif
 /*
  
@@ -15,9 +15,8 @@ static char vcid[] = "$Id: receive.c,v 1.11 1999/01/12 23:17:16 bsmith Exp bsmit
 */
 
 #include <stdio.h>
-#include "petsc.h"
 #include "sys.h"
-#include "src/viewer/impls/socket/socket.h"
+#include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
 extern int ReceiveSparseMatrix(Matrix **,int);
 extern int ReceiveIntDenseMatrix(Matrix **,int);
@@ -26,8 +25,8 @@ extern int ReceiveIntDenseMatrix(Matrix **,int);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "mexFunction"
+#undef __FUNC__  
+#define __FUNC__ "mexFunction"
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
  int    type,t;
@@ -65,8 +64,8 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 /*
   SYByteSwapInt - Swap bytes in an integer
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SYByteSwapInt"
+#undef __FUNC__  
+#define __FUNC__ "SYByteSwapInt"
 void SYByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp;
@@ -82,8 +81,8 @@ void SYByteSwapInt(int *buff,int n)
 /*
   SYByteSwapShort - Swap bytes in a short
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SYByteSwapShort"
+#undef __FUNC__  
+#define __FUNC__ "SYByteSwapShort"
 void SYByteSwapShort(short *buff,int n)
 {
   int   i,j;
@@ -101,8 +100,8 @@ void SYByteSwapShort(short *buff,int n)
   SYByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SYByteSwapScalar"
+#undef __FUNC__  
+#define __FUNC__ "SYByteSwapScalar"
 void SYByteSwapScalar(Scalar *buff,int n)
 {
   int    i,j;
@@ -121,8 +120,8 @@ void SYByteSwapScalar(Scalar *buff,int n)
 }
 #endif
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscBinaryRead"
+#undef __FUNC__  
+#define __FUNC__ "PetscBinaryRead"
 /*
     PetscBinaryRead - Reads from a binary file.
 

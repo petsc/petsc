@@ -43,9 +43,9 @@ BS_LIB     = @BS_LIB@
 #
 # Optional Matlab location
 #
-MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
-MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
-CMEX           = /usr/local/bin/cmex 
+CMEX           = @CMEX@
+MCC            = @MCC@
+MATLABCOMMAND  = @MATLABCOMMAND@
 #
 # Option location where adiC is installed
 #

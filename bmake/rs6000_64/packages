@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 1999/04/02 22:05:50 balay Exp bsmith $ 
+# $Id: base.site,v 1.2 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -43,9 +43,9 @@ X11_LIB        = -lX11
 #
 # Optional Matlab location, remove if not needed.
 #
-#MATLAB_LIB     = /usr/local/matlab/extern/lib/ibm_rs/libmat.a
-#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
-#CMEX           = /usr/local/matlab/bin/cmex 
+#CMEX            = 
+#MCC            = 
+#MATLABCOMMAND  = matlab
 #
 # Optional location of SuperLU, if you do not have
 # SuperLU, then remove -DPETSC_HAVE_SUPERLU from the PCONF definition

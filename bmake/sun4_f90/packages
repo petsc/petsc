@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.21 1999/05/10 16:27:35 balay Exp bsmith $ 
+# $Id: base.site,v 1.22 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -48,9 +48,9 @@ MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
 #
 # Optional Matlab location
 #
-MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
-MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
-CMEX           = /usr/local/bin/cmex 
+#CMEX            = 
+#MCC            = 
+#MATLABCOMMAND  = matlab
 #
 # Option location where adiC is installed
 #

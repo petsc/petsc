@@ -1,4 +1,4 @@
-# $Id: base,v 1.61 1999/06/28 17:17:59 bsmith Exp bsmith $ 
+# $Id: base,v 1.62 1999/06/28 17:22:23 bsmith Exp bsmith $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -48,10 +48,10 @@ oshared:
 	-@${RM} -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \
-        echo "building ${LIBNAME}.${SLSUFFIX}"; \
+        echo "building ${LIBNAME}.${SLSUFFIX} with ${NEEDED_A_LIBS} ${C_SYS_LIB} "; \
 	${AR} x ${LIBNAME}.a ;\
 	${LD} -G  -h ${LIBNAME}.${SLSUFFIX} *.o  -o ${LIBNAME}.${SLSUFFIX} \
-               ${C_SYS_LIB} ; \
+               ${NEEDED_A_LIBS} ${C_SYS_LIB} ; \
 	cd ../ ; \
 	${RM} -rf tmp
 

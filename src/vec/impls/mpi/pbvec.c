@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.133 1999/05/04 20:30:48 balay Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.134 1999/05/12 03:28:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -643,4 +643,136 @@ int VecDuplicate_MPI( Vec win, Vec *v)
 #endif
   PetscFunctionReturn(0);
 }
+
+/* ------------------------------------------------------------------------------------------*/
+/*@C
+   VecCreateGhostBlockWithArray - Creates a parallel vector with ghost padding on each processor;
+   the caller allocates the array space. Indices in the ghost region are based on blocks.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the MPI communicator to use
+.  bs - block size
+.  n - local vector length 
+.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+.  nghost - number of local ghost blocks
+.  ghosts - global indices of ghost blocks (or PETSC_NULL if not needed)
+-  array - the space to store the vector values (as long as n + nghost*bs)
+
+   Output Parameter:
+.  vv - the global vector representation (without ghost points as part of vector)
+ 
+   Notes:
+   Use VecGhostGetLocalForm() to access the local, ghosted representation 
+   of the vector.
+
+   n is the local vector size (total local size not the number of blocks) while nghost
+   is the number of blocks in the ghost portion, i.e. the number of elements in the ghost
+   portion is bs*nghost
+
+   Level: advanced
+
+.keywords: vector, create, MPI, ghost points, ghost padding
+
+.seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), 
+          VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray(),
+          VecCreateGhostWithArray(), VecCreateGhostBlocked()
+
+@*/ 
+int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],
+                            const Scalar array[],Vec *vv)
+{
+  int     ierr;
+  Vec_MPI *w;
+  Scalar  *larray;
+
+  PetscFunctionBegin;
+  *vv = 0;
+
+  if (n == PETSC_DECIDE)      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local size");
+  if (nghost == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local ghost size");
+  if (nghost < 0)             SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Ghost length must be >= 0");
+  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
+  /* Create global representation */
+  ierr = VecCreate(comm,n,N,vv);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*vv,nghost*bs,array,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
+  w    = (Vec_MPI *)(*vv)->data;
+  /* Create local representation */
+  ierr = VecGetArray(*vv,&larray);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,n+bs*nghost,larray,&w->localrep);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(w->localrep,bs);CHKERRQ(ierr);
+  PLogObjectParent(*vv,w->localrep);
+  ierr = VecRestoreArray(*vv,&larray);CHKERRQ(ierr);
+
+  /*
+       Create scatter context for scattering (updating) ghost values 
+  */
+  if (ghosts) {
+    IS from, to;
+  
+    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,nghost,ghosts,&from);CHKERRQ(ierr);   
+    ierr = ISCreateStride(PETSC_COMM_SELF,bs*nghost,n,1,&to);CHKERRQ(ierr);
+    ierr = VecScatterCreate(*vv,from,w->localrep,to,&w->localupdate);CHKERRQ(ierr);
+    PLogObjectParent(*vv,w->localupdate);
+    ierr = ISDestroy(to);CHKERRQ(ierr);
+    ierr = ISDestroy(from);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   VecCreateGhostBlock - Creates a parallel vector with ghost padding on each processor.
+        The indicing of the ghost points is done with blocks.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the MPI communicator to use
+.  bs - the block size
+.  n - local vector length 
+.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+.  nghost - number of local ghost blocks
+-  ghosts - global indices of ghost blocks
+
+   Output Parameter:
+.  vv - the global vector representation (without ghost points as part of vector)
+ 
+   Notes:
+   Use VecGhostGetLocalForm() to access the local, ghosted representation 
+   of the vector.
+
+   n is the local vector size (total local size not the number of blocks) while nghost
+   is the number of blocks in the ghost portion, i.e. the number of elements in the ghost
+   portion is bs*nghost
+
+   Level: advanced
+
+.keywords: vector, create, MPI, ghost points, ghost padding
+
+.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
+          VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
+          VecCreateGhostWithArray(), VecCreateMPIWithArray(), VecCreateGhostBlockWithArray()
+
+@*/ 
+int VecCreateGhostBlock(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],Vec *vv)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCreateGhostBlockWithArray(comm,bs,n,N,nghost,ghosts,0,vv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
+
+
+
+
+
+
+
 

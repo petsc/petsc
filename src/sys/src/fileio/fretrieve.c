@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.12 1999/05/06 17:59:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fretrieve.c,v 1.13 1999/05/12 03:27:04 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -38,7 +38,9 @@ static char vcid[] = "$Id: fretrieve.c,v 1.12 1999/05/06 17:59:08 bsmith Exp bsm
 #endif
 #include "pinclude/petscfix.h"
 
+EXTERN_C_BEGIN
 extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSharedTmp"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.109 1999/04/09 16:10:21 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.110 1999/05/04 20:36:19 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -183,12 +183,17 @@ int main( int argc, char **argv )
   */
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRA(ierr);
   if (!matrix_free) {
-    if (size == 1) {
-      ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRA(ierr);
+    int usegenericmatcreate;
+
+    ierr = VecGetLocalSize(x,&m);CHKERRA(ierr);
+
+    ierr = OptionsHasName(PETSC_NULL,"-use_generic_matcreate",&usegenericmatcreate);CHKERRA(ierr);
+    if (usegenericmatcreate) {
+      ierr = MatCreate(PETSC_COMM_WORLD,m,m,N,N,&J);CHKERRA(ierr);
     } else {
-      ierr = VecGetLocalSize(x,&m);CHKERRA(ierr);
       ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,PETSC_NULL,3,PETSC_NULL,&J);CHKERRA(ierr);
     }
+
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRA(ierr);
 
     /*

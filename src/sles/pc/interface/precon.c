@@ -1,10 +1,48 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.173 1999/05/04 20:33:53 balay Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.174 1999/05/12 03:30:56 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
 #include "src/sles/pc/pcimpl.h"            /*I "sles.h" I*/
+
+#undef __FUNC__  
+#define __FUNC__ "PCNullSpaceAttach"
+/*@C
+   PCNullSpaceAttach - attaches a null space to a preconditioner object.
+        This null space will be removed from the resulting vector whenever
+        the preconditioner is applied.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  nullsp - the null space object
+
+   Level: developer
+
+   Notes:
+      Overwrites any previous null space that may have been attached
+
+.keywords: PC, destroy, null space
+
+.seealso: PCCreate(), PCSetUp()
+@*/
+int PCNullSpaceAttach(PC pc,PCNullSpace nullsp)
+{
+  int ierr = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(nullsp,PCNULLSPACE_COOKIE);
+
+  if (pc->nullsp) {
+    ierr = PCNullSpaceDestroy(nullsp);CHKERRQ(ierr);
+  }
+  pc->nullsp = nullsp;
+  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PCDestroy"
@@ -31,6 +69,7 @@ int PCDestroy(PC pc)
   if (--pc->refct > 0) PetscFunctionReturn(0);
 
   if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
+  if (pc->nullsp) {ierr = PCNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);}
   PLogObjectDestroy(pc);
   PetscHeaderDestroy(pc);
   PetscFunctionReturn(0);
@@ -160,6 +199,12 @@ int PCApply(PC pc,Vec x,Vec y)
 
   if (!apply_double_count) {PLogEventBegin(PC_Apply,pc,x,y,0);}apply_double_count++;
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
+
+  /* Remove null space from preconditioned vector y */
+  if (pc->nullsp) {
+    ierr = PCNullSpaceRemove(pc->nullsp,y);CHKERRQ(ierr);
+  }
+
   if (apply_double_count == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);}apply_double_count--;
   PetscFunctionReturn(0);
 }
@@ -1230,7 +1275,7 @@ $     -pc_type my_solver
 
    Level: advanced
 
-   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
 
 .keywords: PC, register
 
@@ -1246,7 +1291,8 @@ int PCRegister_Private(char *sname,char *path,char *name,int (*function)(PC))
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(fullname,path);CHKERRQ(ierr);
-  PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = PetscStrcat(fullname,":");CHKERRQ(ierr);
+  ierr = PetscStrcat(fullname,name);CHKERRQ(ierr);
   ierr = FListAdd_Private(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

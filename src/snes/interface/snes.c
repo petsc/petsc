@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.188 1999/06/04 16:12:18 balay Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.189 1999/06/08 22:57:38 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -2461,7 +2461,7 @@ $     -snes_type my_solver
 
    Level: advanced
 
-   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
 
 .keywords: SNES, nonlinear, register
 

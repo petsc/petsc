@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.63 1999/05/10 21:21:04 balay Exp bsmith $ 
+# $Id: base.site,v 1.64 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -65,6 +65,7 @@ BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/mex
 MCC             = cc
+MATLABCOMMAND   = matlab
 #
 # Option location where adiC is installed
 #
@@ -110,4 +111,4 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB} \
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-DYLIBPATH     = /opt/SUNWspro/SC4.2/lib:/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH}
+DYLIBPATH     = /opt/SUNWspro/SC5.0/lib:/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH}

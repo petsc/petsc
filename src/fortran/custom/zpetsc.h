@@ -110,12 +110,7 @@ EXTERN_C_END
 #define FREECHAR(a,b) if (b) PetscFree(b);
 
 #else
-/*
-  if (a == ((char*) PETSC_NULL_Fortran)) {  \
-    (*PetscErrorPrintf)("PETSC ERROR: Must use PETSC_NULL_CHARACTER!"); \
-    *__ierr = 1; return; \
-  } 
-*/
+
 #define CHAR char*
 #define FIXCHAR(a,n,b) \
 {\
@@ -135,7 +130,10 @@ EXTERN_C_END
 
 #endif
 
+
+
 #define FORTRANNULLINTEGER(a)  (((void *) a) == PETSC_NULL_INTEGER_Fortran)
+#define FORTRANNULLOBJECT(a)   (((void *) a) == PETSC_NULL_INTEGER_Fortran)
 #define FORTRANNULLSCALAR(a)   (((void *) a) == PETSC_NULL_SCALAR_Fortran)
 #define FORTRANNULLDOUBLE(a)   (((void *) a) == PETSC_NULL_DOUBLE_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void *) a) == PETSC_NULL_FUNCTION_Fortran)

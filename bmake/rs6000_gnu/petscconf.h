@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.14 1999/04/18 07:13:34 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.15 1999/05/12 03:24:58 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -28,7 +28,6 @@
 #define _XOPEN_SOURCE_EXTENDED 1
 #define PETSC_HAVE_UNAME  
 #define PETSC_HAVE_BROKEN_REQUEST_FREE 
-#define PETSC_NEEDS_GETTIMEOFDAY_PROTO
 #define PETSC_HAVE_TEMPLATED_COMPLEX
 #define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
 
@@ -44,7 +43,7 @@
 #define PETSC_SIZEOF_DOUBLE 8
 
 #define PETSC_WORDS_BIGENDIAN 1
-
-#define PETSC_HAVE_CTYPE_H 
+#define PETSC_NEED_SOCKET_PROTO
+#define PETSC_HAVE_ACCEPT_SIZE_T
 
 #endif

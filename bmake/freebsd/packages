@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.22 1999/05/10 16:25:49 balay Exp bsmith $ 
+# $Id: base.site,v 1.23 1999/05/12 03:24:58 bsmith Exp bsmith $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -49,9 +49,9 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 #
 # Optional Matlab location
 #
-#MATLAB_LIB     = /usr/local/matlab/extern/lib/freebsd/libmex.a
-#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
-#CMEX           = /usr/local/bin/cmex 
+#CMEX            = 
+#MCC            = 
+#MATLABCOMMAND  = matlab
 #
 # Option location where adiC is installed
 #

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.23 1999/03/19 21:24:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.24 1999/05/04 20:37:40 balay Exp bsmith $";
 #endif
 
 /*
@@ -74,6 +74,7 @@ int main(int argc,char **argv)
 
     /*Extract local array */ 
     ierr = VecGetArray(local,&localptr);CHKERRA(ierr);
+    ierr = VecGetArray (copy,&copyptr);CHKERRA(ierr);
 
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
@@ -82,6 +83,7 @@ int main(int argc,char **argv)
                            (localptr[i+1]-2*localptr[i]+localptr[i-1]);
     }
   
+    ierr = VecRestoreArray (copy,&copyptr);CHKERRA(ierr);
     ierr = VecRestoreArray(local,&localptr);CHKERRA(ierr);
 
     /* Local to Global */

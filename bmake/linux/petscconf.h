@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.15 1999/02/08 22:22:33 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.16 1999/05/12 03:24:58 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -38,4 +38,5 @@
 #define PETSC_HAVE_RTLD_GLOBAL 1
 #endif
 
+#define PETSC_HAVE_SYS_UTSNAME_H
 #endif

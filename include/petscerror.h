@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.31 1998/12/11 16:40:57 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.32 1999/05/12 03:35:01 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -84,6 +84,10 @@
 #define CHKERRA(n)     {if (n) SETERRA(n,0,(char *)0);}
 #define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,0,(char*)0);
 #define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,0,(char*)0);
+
+#define CHKMEMQ {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__); CHKERRQ(__ierr);}
+#define CHKMEMA {int __ierr = PetscTrValid(__LINE__,__FUNC__,__FILE__,__SDIR__); CHKERRA(__ierr);}
+
 #else
 #define SETERRQ(n,p,s) ;
 #define SETERRQ1(n,p,s,a1) ;
@@ -91,10 +95,15 @@
 #define SETERRQ3(n,p,s,a1,a2,a3) ;
 #define SETERRQ4(n,p,s,a1,a2,a3,a4) ;
 #define SETERRA(n,p,s) ;
+
 #define CHKERRQ(n)     ;
 #define CHKERRA(n)     ;
 #define CHKPTRQ(p)     ;
 #define CHKPTRA(p)     ;
+
+#define CHKMEMQ        ;
+#define CHKMEMA        ;
+
 #endif
 
 extern int PetscTraceBackErrorHandler(int,char*,char*,char*,int,int,char*,void*);

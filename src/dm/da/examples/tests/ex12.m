@@ -3,9 +3,11 @@ function ex12(np,opt)
 %   ex12(np) 
 % creates a series of vectors in PETSc and displays them in Matlab
 %
-%  Requires the Matlab mex routines in src/sys/src/viewer/impls/socket. To make
-% these cd to src/sys/src/viewer/impls/socket and run make BOPT=g matlabcodes
-% then make sure that src/sys/src/viewer/impls/socket is in your Matlab PATH.
+% Run with option -on_error_attach_debugger to debug
+%
+%  Requires the Matlab mex routines in ${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab. To make
+% these cd to ${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab and run make BOPT=g matlabcodes
+% then make sure that ${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab is in your Matlab PATH.
 %
 if (nargin < 1)
   np = 1;
@@ -14,7 +16,7 @@ if (nargin < 2)
   opt = ' ';
 end
 time = 20;
-err = launch(['ex12 -on_error_attach_debugger -time ' int2str(time) opt] ,np);
+err = launch(['ex12 -time ' int2str(time) ' -viewer_socket_machine ' getenv('HOST') opt] ,np);
 if (err ~= 0) then 
   return;
 end

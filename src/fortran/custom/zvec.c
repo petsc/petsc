@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.52 1999/05/04 20:38:08 balay Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.53 1999/05/12 03:34:35 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -43,7 +43,11 @@ static char vcid[] = "$Id: zvec.c,v 1.52 1999/05/04 20:38:08 balay Exp bsmith $"
 #define vecmax_                   VECMAX
 #define drawtensorcontour_        DRAWTENSORCONTOUR
 #define vecsetrandom_              VECSETRANDOM
+#define veccreateghostblockwitharray_ VECCREATEGHOSTBLOCKWITHARRAY
+#define veccreateghostblock_ VECCREATEGHOSTBLOCK
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define veccreateghostblockwitharray_ veccreateghostblockwitharray
+#define veccreateghostblock_      veccreateghostblock
 #define drawtensorcontour_        drawtensorcontour
 #define vecsetfromoptions_        vecsetfromoptions
 #define vecsettype_               vecsettype
@@ -305,6 +309,19 @@ void vecstridenorm_(Vec *x,int *start,NormType *type,double *val, int *__ierr )
 }
 
 /* ----------------------------------------------------------------------------------------------*/
+void veccreateghostblockwitharray_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,
+                              Scalar *array,Vec *vv, int *__ierr )
+{
+  *__ierr = VecCreateGhostBlockWithArray((MPI_Comm)PetscToPointerComm( *comm) ,*bs,*n,*N,*nghost,
+                                    ghosts,array,vv);
+}
+
+void veccreateghostblock_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,Vec *vv, 
+                          int *__ierr )
+{
+  *__ierr = VecCreateGhostBlock((MPI_Comm)PetscToPointerComm( *comm),*bs,*n,*N,*nghost,ghosts,vv);
+}
+
 void veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Scalar *array,
                               Vec *vv, int *__ierr )
 {

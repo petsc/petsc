@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.96 1999/05/12 11:16:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.97 1999/05/12 16:28:29 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,7 +20,7 @@ typedef unsigned long   u_long;
 #endif
 #include <sys/types.h>
 #include <ctype.h>
-#if defined(PARCH_alpha)
+#if defined(PETSC_HAVE_ENDIAN_H)
 #include <machine/endian.h>
 #endif
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -42,6 +42,7 @@ typedef unsigned long   u_long;
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "pinclude/petscfix.h"
 
+EXTERN_C_BEGIN
 #if defined(PETSC_NEED_SETSOCKETOPT_PROTO)
 extern int setsockopt(int,int,int,char*,int);
 #endif
@@ -57,63 +58,9 @@ extern int sleep(unsigned);
 #if defined(PETSC_NEED_CONNECT_PROTO)
 extern int connect(int,struct sockaddr *,int);
 #endif
-
-/*
-     Many machines don't prototype many of the socket functions?
-*/
-#if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_freebsd) \
-    || defined(PARCH_hpux) || defined(PARCH_alpha) || defined(PARCH_solaris) \
-    || defined(PARCH_linux) || defined(PARCH_ascired)
-EXTERN_C_BEGIN
-#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_hpux) \
-    && !defined(PARCH_alpha) && !defined(PARCH_solaris) && \
-    !defined(PARCH_linux)
-/*
-    Some versions of the Gnu g++ compiler on the IBM RS6000 require the 
-  prototype below.
-*/
-extern int setsockopt(int,int,int,char*,int);
-#endif
-extern int close(int);
-#if !defined(PARCH_freebsd) && !defined(PARCH_linux) && !defined(PARCH_solaris)
-extern int socket(int,int,int);
-#if !defined(PARCH_hpux) && !defined(PARCH_alpha) && !defined(PARCH_solaris)
-/*
-    For some IBM rs6000 machines running AIX 3.2 uncomment the prototype 
-   below for connect()
-*/
-/*
-#if defined(PARCH_rs6000) && !defined(__cplusplus)
-extern int connect(int,const struct sockaddr *,size_t);
-#endif
-*/
-
-#if !defined(PARCH_rs6000)
-extern int connect(int,struct sockaddr *,int);
-#endif
-#endif
-#endif
-#if !defined(PARCH_alpha)
-/* 
-   Some IBM rs6000 machines have the sleep prototype already declared
-   in unistd.h, so just remove it below.
- */
-#if defined(PARCH_rs6000)
-extern unsigned int sleep(unsigned int);
-#elif !defined(PARCH_ascired) && !defined(PARCH_linux) && !defined(PARCH_solaris) && !defined(PARCH_sun4)
-extern int sleep(unsigned);
-#endif
-#endif
 EXTERN_C_END
-#endif
 
-#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)) && defined(__cplusplus)
-extern "C" {
-extern int sleep(unsigned);
-extern int close(int);
-};
-#endif
-
+/*--------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_Socket"
 static int ViewerDestroy_Socket(Viewer viewer)

@@ -1,32 +1,33 @@
-# $Id: makefile,v 1.44 1999/02/02 21:21:25 balay Exp $ 
+# $Id: makefile,v 1.1 1999/05/12 17:34:53 bsmith Exp bsmith $ 
 
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
 # in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If cmex fails 
 # in compiling these files and you are using the gcc compiler then try 
-# removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+# removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 #
 ALL: lib
 matlabcodes: receive openport closeport launch
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = ${MATLAB_INCLUDE}
-SOURCEC   = senddense.c send.c sendsparse.c
+CPPFLAGS  = 
+SOURCEC   = 
 SOURCEF   =
-SOURCEH   = socket.h closeport.c openport.c receivedense.c launch.c receive.c  \
+SOURCEH   = closeport.c openport.c receivedense.c launch.c receive.c  \
             receivesparse.c closeport.m launch.m openport.m receive.m
-OBJSC     = senddense.o send.o  sendsparse.o
+OBJSC     = 
 OBJSF     =
 MANSEC    = Viewer
 LIBBASE   = libpetsc
 DIRS      = 
-LOCDIR    = src/sys/src/viewer/impls/socket/
+LOCDIR    = src/sys/src/viewer/impls/socket/matlab
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-# Depending on your compiler, you may need to change CC below to cc, for example.
+# CMEX and MCC are defined in bmake/${PETSC_ARCH}/base.site
+#
 receive:  
 	${CMEX} -V4 -g CC=${MCC} ${CFLAGS} ${CCPPFLAGS} receive.c receivesparse.c  receivedense.c 
 	${RM} -f receive.o receivesparse.o  receivedense.o 

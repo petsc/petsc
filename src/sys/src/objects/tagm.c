@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.11 1999/05/04 20:29:12 balay Exp bsmith $";
+static char vcid[] = "$Id: tagm.c,v 1.12 1999/05/12 03:27:11 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
 */
-#include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
@@ -27,6 +26,7 @@ static char vcid[] = "$Id: tagm.c,v 1.11 1999/05/04 20:29:12 balay Exp bsmith $"
 
 static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "Petsc_DelTag" 
 /*
@@ -35,6 +35,10 @@ static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.  
+
+    Note: this is declared extern "C" because it is passed to the system routine signal()
+          which is an extern "C" routine. The Solaris 2.7 OS compilers require that this be
+          extern "C".
 */
 int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 {
@@ -43,6 +47,7 @@ int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
   PetscFree( attr_val );
   PetscFunctionReturn(MPI_SUCCESS);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectGetNewTag" 
@@ -244,7 +249,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     *comm_out = comm_in;
   }
 
-  if (*tagvalp < 1) SETERRQ1(PETSC_ERR_PLIB,0,"Out of tags for object.Number tags issued %d",tagvalp[1]);
+  if (*tagvalp < 1) SETERRQ1(PETSC_ERR_PLIB,0,"Out of tags for object. Number tags issued %d",tagvalp[1]);
   *first_tag = tagvalp[0]--;
   tagvalp[1]++;
 #if defined(PETSC_USE_BOPT_g)

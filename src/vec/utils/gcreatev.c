@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.59 1999/03/23 20:07:55 balay Exp balay $";
+static char vcid[] = "$Id: gcreatev.c,v 1.60 1999/05/04 20:30:27 balay Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -104,6 +104,8 @@ int VecRegisterDestroy(void)
 .vb
       -vec_type my_vector_name
 .ve
+
+   $PETSC_ARCH, $PETSC_DIR, $PETSC_LDIR, and $BOPT occuring in pathname will be replaced with appropriate values.
 
    Level: advanced
 

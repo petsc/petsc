@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.26 1999/05/04 20:38:08 balay Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.27 1999/05/12 03:34:35 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -25,7 +25,11 @@ static char vcid[] = "$Id: zpc.c,v 1.26 1999/05/04 20:38:08 balay Exp bsmith $";
 #define pcgettype_                 PCGETTYPE
 #define pcsettype_                 PCSETTYPE
 #define pcgetoptionsprefix_        PCGETOPTIONSPREFIX
+#define pcnullspaceattach_         PCNULLSPACEATTACH
+#define pcnullspacecreate_         PCNULLSPACECREATE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define pcnullspacecreate_         pcnullspacecreate
+#define pcnullspaceattach_         pcnullspaceattach
 #define pcregisterdestroy_         pcregisterdestroy
 #define pcdestroy_                 pcdestroy
 #define pccreate_                  pccreate
@@ -47,6 +51,16 @@ static char vcid[] = "$Id: zpc.c,v 1.26 1999/05/04 20:38:08 balay Exp bsmith $";
 #endif
 
 EXTERN_C_BEGIN
+
+void pcnullspacecreate_(MPI_Comm comm,int *has_cnst,int *n,Vec *vecs,PCNullSpace *SP,int *ierr)
+{
+  *ierr = PCNullSpaceCreate((MPI_Comm)PetscToPointerComm(*(int*)(comm)),*has_cnst, *n, vecs,SP);
+}
+
+void pcnullspaceattach_(PC *pc,PCNullSpace *nullsp,int *__ierr)
+{
+  *__ierr = PCNullSpaceAttach(*pc,*nullsp);
+}
 
 void pcsettype_(PC *pc,CHAR itmethod, int *__ierr,int len )
 {
@@ -149,6 +163,8 @@ void pcasmgetsubsles_(PC *pc,int *n_local,int *first_local,SLES *sles,int *__ier
 void pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag, int *__ierr)
 {
   if (FORTRANNULLINTEGER(flag)) flag = PETSC_NULL;
+  if (FORTRANNULLOBJECT(mat))   mat = PETSC_NULL;
+  if (FORTRANNULLOBJECT(pmat))  pmat = PETSC_NULL;
   *__ierr = PCGetOperators(*pc,mat,pmat,flag);
 }
 

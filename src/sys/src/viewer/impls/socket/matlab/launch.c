@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: launch.c,v 1.5 1998/06/11 19:57:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: launch.c,v 1.6 1999/01/12 23:17:16 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = launch(programname,number processors); 
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: launch.c,v 1.5 1998/06/11 19:57:49 bsmith Exp bsmith 
 #include <errno.h>
 extern int fork();
 extern int system(const char *);
-#include "src/viewer/impls/socket/socket.h"
+#include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
 #define ERROR(a) {fprintf(stderr,"LAUNCH: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
