@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.56 1996/07/09 16:57:09 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.57 1996/07/09 17:06:28 balay Exp balay $";
 #endif
 
 /*
@@ -738,7 +738,7 @@ static int MatMult_SeqBAIJ_N(Mat A,Vec xx,Vec zz)
 
   if (!a->mult_work) {
     k = PetscMax(a->m,a->n);
-    a->mult_work = (Scalar *) PetscMalloc(k*sizeof(Scalar));CHKPTRQ(a->mult_work);
+    a->mult_work = (Scalar *) PetscMalloc((k+1)*sizeof(Scalar));CHKPTRQ(a->mult_work);
   }
   work = a->mult_work;
   for ( i=0; i<mbs; i++ ) {
