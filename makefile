@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.217 1998/03/27 20:06:26 balay Exp balay $ 
+# $Id: makefile,v 1.218 1998/04/03 22:36:52 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -366,6 +366,7 @@ allfortranstubs:
 
 allci: 
 	-@cd src/fortran/custom ; ${OMAKE} BOPT=${BOPT} ci
+	-@cd src/fortran/f90 ; ${OMAKE} BOPT=${BOPT} ci
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=ci  tree 
 
 allco: 
