@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.27 2001/08/07 21:32:24 bsmith Exp bsmith $ */
+/* $Id: petscmath.h,v 1.28 2001/08/10 03:35:52 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -164,6 +164,16 @@ extern  PetscScalar       PETSC_i;
 #define PETSC_MIN                -1.e300
 #define PETSC_MAX_INT            1000000000;
 #define PETSC_MIN_INT            -1000000000;
+
+#if defined(PETSC_USE_SINGLE)
+#  define PETSC_MACHINE_EPSILON         1.e-7;
+#  define PETSC_SQRT_MACHINE_EPSILON    3.e-4;
+#  define PETSC_SMALL                   1.e-6;
+#else
+#  define PETSC_MACHINE_EPSILON         1.e-14;
+#  define PETSC_SQRT_MACHINE_EPSILON    1.e-7;
+#  define PETSC_SMALL                   1.e-12;
+#endif
 
 /* ----------------------------------------------------------------------------*/
 /*
