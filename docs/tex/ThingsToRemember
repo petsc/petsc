@@ -104,7 +104,11 @@ ICASE/NASA paragon: Back in action at Va-Tech :(
             make -e BS_DIR=<whatever> PETSC_DIR=<whatever>
       - sample run command:
         pexec "mpirun -np 4 ex8 -log_summary" -sz 4
-ICASE/NASA SP: poseidon.larc.nasa.gov, account: mcinnes
+
+ICASE/NASA SP2: poseidon.larc.nasa.gov, account: mcinnes
+     info: http://parallel.nas.nasa.gov/Parallel/Metacenter/howto.html
+     Now jobs submitted to poseidon may actually run on babbage, the
+         NASA Ames machine, so that staging input/output files is crucial!
 
 ---------
 
