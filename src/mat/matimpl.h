@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.59 1996/07/02 18:06:05 bsmith Exp balay $ */
+/* $Id: matimpl.h,v 1.60 1996/07/11 04:05:13 balay Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -50,8 +50,6 @@ struct _MatOps {
             (*getarray)(Mat,Scalar **),
             (*restorearray)(Mat,Scalar **),
             (*convert)(Mat,MatType,Mat *),
-            (*getsubmatrix)(Mat,IS,IS,MatGetSubMatrixCall,Mat *),
-            (*getsubmatrixinplace)(Mat,IS,IS),
             (*convertsametype)(Mat,Mat *,int),
             (*forwardsolve)(Mat,Vec,Vec),
             (*backwardsolve)(Mat,Vec,Vec),
