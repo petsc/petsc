@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.60 1998/04/23 22:50:37 balay Exp balay $ 
+# $Id: makefile,v 1.61 1998/06/12 21:50:20 balay Exp balay $ 
 
 ALL: ex1
 
@@ -19,9 +19,10 @@ BUILDEXAMPLES_8 = ex1.PETSc ex1.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF       = deptfg.f dgl1fg.f dgl2fg.f dmsafg.f dodcfg.f dpjbfg.f \
 		  dsscfg.f dgl1hs.f dgl2hs.f dmsahs.f dodchs.f dpjbhs.f \
-		  dsschs.f dmsabc.f dodcps.f dgl2co.f mpinter.f
+		  dsschs.f dmsabc.f dodcps.f dgl2co.f mpinter.f depths.f \
+		  pdgl2fg.f
+DOCS            = README
 DIRS            = 
-
 FOBJ1 = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
         depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \
         dmsabc.o dodcps.o dgl2co.o mpinter.o

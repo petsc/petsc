@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.159 1999/01/22 20:23:37 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.160 1999/02/01 19:21:48 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -37,6 +37,7 @@ BUILDEXAMPLES_9 = ex12.PETSc ex12.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex9.c ex10.c \
 		  ex15.c ex17.c ex18.c
+EXAMPLESCH      = paragrid.h
 EXAMPLESF       = ex5f.F ex12.F ex16.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
