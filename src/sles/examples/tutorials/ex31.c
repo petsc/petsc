@@ -6,10 +6,9 @@ static char help[] = "MRC 2D.\n\n";
 #include "petscmg.h"
 #include "petscsles.h"
 
-#include "da_hdf.c"
 
 #define EQ
-#define FISHPAK
+/*#define FISHPAK */
 
 #ifdef FISHPAK
 #include "cyclic.h"
@@ -69,8 +68,9 @@ PetscReal min_dt = .001;
 PetscReal cfl_thres = 3; // 1.
 PetscReal t_end = 10000;
 
-int
-CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
+#undef __FUNCT__
+#define __FUNCT__ "CalcRhs"
+int CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
 {
 	int ierr;
 	int i, j, mx, my;
@@ -98,9 +98,9 @@ CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
 	ierr = DAGlobalToLocalBegin(da, B, INSERT_VALUES, Blocal); CE;
 	ierr = DAGlobalToLocalEnd  (da, B, INSERT_VALUES, Blocal); CE;
 
-	ierr = DAVecGetArray(da, Xlocal, (void *) &p); CE;
-	ierr = DAVecGetArray(da, Blocal, (void *) &f); CE;
-	ierr = DAVecGetArray(da, Rhs   , (void *) &rhs); CE;
+	ierr = DAVecGetArray(da, Xlocal, (void **) &p); CE;
+	ierr = DAVecGetArray(da, Blocal, (void **) &f); CE;
+	ierr = DAVecGetArray(da, Rhs   , (void **) &rhs); CE;
 
 	DA_for_each_point(da, i, j) {
 #ifdef EQ
@@ -129,9 +129,9 @@ CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
 		  *cfl = PetscMax(*cfl, PetscAbs(by*dt/Hy));
 	}
 
-	ierr = DAVecRestoreArray(da, Xlocal, (void *)&p); CE;
-	ierr = DAVecRestoreArray(da, Blocal, (void *)&f); CE;
-	ierr = DAVecRestoreArray(da, Rhs   , (void *)&rhs); CE;
+	ierr = DAVecRestoreArray(da, Xlocal, (void **)&p); CE;
+	ierr = DAVecRestoreArray(da, Blocal, (void **)&f); CE;
+	ierr = DAVecRestoreArray(da, Rhs   , (void **)&rhs); CE;
 
 	ierr = DARestoreLocalVector(da, &Xlocal); CE;
 	ierr = DARestoreLocalVector(da, &Blocal); CE;
@@ -141,8 +141,9 @@ CalcRhs(MRC mrc, Vec B, Vec X, Vec Rhs, PetscReal *cfl)
 
 #ifdef FISHPAK
 
-int
-PoiCreate(MRC mrc, Poi *in_poi)
+#undef __FUNCT__
+#define __FUNCT__ "PoiCreate"
+int PoiCreate(MRC mrc, Poi *in_poi)
 {
 	int ierr;
 	Poi poi;
@@ -160,8 +161,9 @@ PoiCreate(MRC mrc, Poi *in_poi)
 	PetscFunctionReturn(0);
 }
 
-int
-PoiDestroy(Poi poi)
+#undef __FUNCT__
+#define __FUNCT__ "PoiDestroy"
+int PoiDestroy(Poi poi)
 {
 	int ierr;
 	
@@ -173,8 +175,9 @@ PoiDestroy(Poi poi)
 	PetscFunctionReturn(0);
 }
 
-int
-PoiGetDA(Poi poi, DA *in_da)
+#undef __FUNCT__
+#define __FUNCT__ "PoiGetDA"
+int PoiGetDA(Poi poi, DA *in_da)
 {
 	PetscFunctionBegin;
 
@@ -183,8 +186,9 @@ PoiGetDA(Poi poi, DA *in_da)
 	PetscFunctionReturn(0);
 }
 
-int
-PoiCalcRhs(Poi poi, Vec X, Vec B)
+#undef __FUNCT__
+#define __FUNCT__ "PoiCalcRhs"
+int PoiCalcRhs(Poi poi, Vec X, Vec B)
 {
 	int ierr;
 	int i, j, mx, my;
@@ -224,8 +228,9 @@ PoiCalcRhs(Poi poi, Vec X, Vec B)
 
 double log2(double);
 
-int
-PoiSolve(Poi poi, Vec B, Vec X)
+#undef __FUNCT__
+#define __FUNCT__ "PoiSolve"
+int PoiSolve(Poi poi, Vec B, Vec X)
 {
 	int ierr, i, j, rank, mx, my, mbdcnd, nbdcnd, MX, MY, MXS, sz;
 	MRC mrc = poi->mrc;
@@ -314,8 +319,9 @@ PoiSolve(Poi poi, Vec B, Vec X)
 
 static Vec _B;
 
-int
-ComputeRHS(DMMG dmmg, Vec b)
+#undef __FUNCT__
+#define __FUNCT__ "ComputeRHS"
+int ComputeRHS(DMMG dmmg, Vec b)
 {
 	int ierr;
 	Vec B = _B; // FIXME
@@ -325,8 +331,9 @@ ComputeRHS(DMMG dmmg, Vec b)
 	PetscFunctionReturn(0);
 }
 
-int
-ComputeJacobian(DMMG dmmg, Mat J)
+#undef __FUNCT__
+#define __FUNCT__ "ComputeJacobian"
+int ComputeJacobian(DMMG dmmg, Mat J)
 {
 	int          ierr, i, j, mx, my;
 	DA           da = (DA)dmmg->dm;
@@ -364,8 +371,9 @@ ComputeJacobian(DMMG dmmg, Mat J)
 	return 0;
 }
 
-int
-AttachNullSpace(PC pc, Vec model)
+#undef __FUNCT__
+#define __FUNCT__ "AttachNullSpace"
+int AttachNullSpace(PC pc, Vec model)
 {
 	int ierr, i, N, start, end;
 	PetscScalar scale;
@@ -380,12 +388,12 @@ AttachNullSpace(PC pc, Vec model)
 	scale = 1.0 / sqrt(N/2);
 	ierr  = VecGetOwnershipRange(V, &start, &end); CE;
 
-	ierr  = VecGetArray(V, (void *) &v); CE;
+	ierr  = VecGetArray(V, (PetscScalar **) &v); CE;
 	for (i = start/w; i < end/w; i++) {
 		v[i].U = scale;
 		v[i].F = 0.;
 	}
-	ierr = VecRestoreArray(V, (void *) &v); CE;
+	ierr = VecRestoreArray(V, (PetscScalar **) &v); CE;
 	ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, 0, 1, &V, &sp); CE;
 	ierr = VecDestroy(V); CE;
 	ierr = PCNullSpaceAttach(pc, sp); CE;
@@ -394,8 +402,9 @@ AttachNullSpace(PC pc, Vec model)
 	PetscFunctionReturn(0);
 }
  
-int
-PoiCreate(MRC mrc, Poi *in_poi)
+#undef __FUNCT__
+#define __FUNCT__ "PoiCreate"
+int PoiCreate(MRC mrc, Poi *in_poi)
 {
 	int ierr, i;
 	Poi poi;
@@ -440,8 +449,9 @@ PoiCreate(MRC mrc, Poi *in_poi)
 	PetscFunctionReturn(0);
 }
 
-int
-PoiDestroy(Poi poi)
+#undef __FUNCT__
+#define __FUNCT__ "PoiDestroy"
+int PoiDestroy(Poi poi)
 {
 	int ierr;
 
@@ -453,8 +463,9 @@ PoiDestroy(Poi poi)
 	PetscFunctionReturn(0);
 }
 
-int
-PoiGetDA(Poi poi, DA *in_da)
+#undef __FUNCT__
+#define __FUNCT__ "PoiGetDA"
+int PoiGetDA(Poi poi, DA *in_da)
 {
 	PetscFunctionBegin;
 
@@ -463,8 +474,9 @@ PoiGetDA(Poi poi, DA *in_da)
 	PetscFunctionReturn(0);
 }
 
-int
-PoiCalcRhs(Poi poi, Vec X, Vec B)
+#undef __FUNCT__
+#define __FUNCT__ "PoiCalcRhs"
+int PoiCalcRhs(Poi poi, Vec X, Vec B)
 {
 	int ierr, mx, my;
 	MRC mrc = poi->mrc;
@@ -483,8 +495,9 @@ PoiCalcRhs(Poi poi, Vec X, Vec B)
 	PetscFunctionReturn(0);
 }
 
-int
-PoiSolve(Poi poi, Vec B, Vec X)
+#undef __FUNCT__
+#define __FUNCT__ "PoiSolve"
+int PoiSolve(Poi poi, Vec B, Vec X)
 {
 	int ierr, mx, my;
 	MRC mrc = poi->mrc;
@@ -507,8 +520,9 @@ PoiSolve(Poi poi, Vec B, Vec X)
 
 #endif
 
-int
-IniPorcelli(MRC mrc)
+#undef __FUNCT__
+#define __FUNCT__ "IniPorcelli"
+int IniPorcelli(MRC mrc)
 {
 	int ierr, mx, my, i, j;
 	DA da = mrc->da;
@@ -525,7 +539,7 @@ IniPorcelli(MRC mrc)
 	ierr = DAGetInfo(da, 0, &mx ,&my, 0, 0, 0, 0, 0, 0, 0, 0); CE;
 
 	ierr = DAGetGlobalVector(da, &X); CE;
-	ierr = DAVecGetArray(da, X, (void *)&v); CE;
+	ierr = DAVecGetArray(da, X, (void **)&v); CE;
 	DA_for_each_point(da, i, j) {
 		x = mrc->Sx + mrc->Lx*i/mx;
 		y = mrc->Sy + mrc->Ly*j/my;
@@ -545,7 +559,7 @@ IniPorcelli(MRC mrc)
 		v[j][i].psi = cos(x);
 #endif
 	}
-	ierr = DAVecRestoreArray(da, X, (void *)&v); CE;
+	ierr = DAVecRestoreArray(da, X, (void **)&v); CE;
 
 	ierr = PoiCalcRhs(mrc->poi, X, mrc->b); CE;
 	ierr = VecSet(&zero, X);
@@ -554,8 +568,9 @@ IniPorcelli(MRC mrc)
 	PetscFunctionReturn(0);
 }
 
-int
-MRCCreate(MRC *in_mrc)
+#undef __FUNCT__
+#define __FUNCT__ "MRCCreate"
+int MRCCreate(MRC *in_mrc)
 {
 	int ierr;
 	MRC mrc;
@@ -617,8 +632,9 @@ MRCCreate(MRC *in_mrc)
 	PetscFunctionReturn(0);
 }
 
-int
-MRCSetUp(MRC mrc, int (*ini)(MRC))
+#undef __FUNCT__
+#define __FUNCT__ "MRCSetUp"
+int MRCSetUp(MRC mrc, int (*ini)(MRC))
 {
 	int ierr;
 
@@ -629,8 +645,9 @@ MRCSetUp(MRC mrc, int (*ini)(MRC))
 	PetscFunctionReturn(0);
 }
 
-int
-MRCDestroy(MRC mrc)
+#undef __FUNCT__
+#define __FUNCT__ "MRCDestroy"
+int MRCDestroy(MRC mrc)
 {
 	int ierr;
 
@@ -644,8 +661,9 @@ MRCDestroy(MRC mrc)
 	PetscFunctionReturn(0);
 }
 
-int
-MRCSpo1Output(MRC mrc, Vec X, FILE *spo)
+#undef __FUNCT__
+#define __FUNCT__ "MRCSpo1Output"
+int MRCSpo1Output(MRC mrc, Vec X, FILE *spo)
 {
 	int ierr, mx, my, rank, i, j, tag, xs, ys, xm, ym;
 	DA da = mrc->da;
@@ -669,12 +687,12 @@ MRCSpo1Output(MRC mrc, Vec X, FILE *spo)
 	ierr = DAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0); CE;
 	if (i >= xs && i < xs + xm &&
 	    j >= ys && j < ys + ym) {
-		ierr = DAVecGetArray(da, X, (void *)&p); CE;
+		ierr = DAVecGetArray(da, X, (void **)&p); CE;
 		values[0] = D_x2(p, psi);
 		values[1] = D_y2(p, psi);
 		values[2] = D_xy(p, phi);
 		values[3] = p[j][i].psi;
-		ierr = DAVecRestoreArray(da, X, (void *)&p); CE;
+		ierr = DAVecRestoreArray(da, X, (void **)&p); CE;
 		if (rank != 0) {
 			ierr = MPI_Send(values, 4, MPIU_REAL, 0, tag, da->comm); CE;
 		}
@@ -688,8 +706,9 @@ MRCSpo1Output(MRC mrc, Vec X, FILE *spo)
 	PetscFunctionReturn(0);
 }
 
-int
-MRCSpecOutput(MRC mrc, Vec X)
+#undef __FUNCT__
+#define __FUNCT__ "MRCSpecOutput"
+int MRCSpecOutput(MRC mrc, Vec X)
 {
 	int ierr;
 	DA da = mrc->da;
@@ -719,8 +738,9 @@ MRCSpecOutput(MRC mrc, Vec X)
 	PetscFunctionReturn(0);
 }
 
-int
-MRCOutput(MRC mrc, const char *s, Vec V)
+#undef __FUNCT__
+#define __FUNCT__ "MRCOutput"
+int MRCOutput(MRC mrc, const char *s, Vec V)
 {
 	int ierr;
 	char fname[256];
@@ -729,13 +749,14 @@ MRCOutput(MRC mrc, const char *s, Vec V)
 
 	HERE;
 	sprintf(fname, "%s-%g.hdf", s, mrc->t);
-	ierr = DAVecHDFOutput(mrc->da, V, fname); CE;
+	/*	ierr = DAVecHDFOutput(mrc->da, V, fname); CE; */
 
 	PetscFunctionReturn(0);
 }
 
-int
-MRCRun(MRC mrc)
+#undef __FUNCT__
+#define __FUNCT__ "MRCRun"
+int MRCRun(MRC mrc)
 {
 	int ierr, antialias = 0;
 	DA da = mrc->da;
@@ -811,8 +832,9 @@ MRCRun(MRC mrc)
 	PetscFunctionReturn(0);
 }
 
-int
-main(int argc, char **argv)
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc, char **argv)
 {
 	int ierr;
 	MRC mrc;

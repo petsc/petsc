@@ -147,6 +147,15 @@ typedef struct {
   DA             da;
 } DALocalInfo;
 
+#define DAForEachPointBegin2d(info,i,j) {\
+  int _xints = info->xs,_xinte = info->xs+info->xm,_yints = info->ys,_yinte = info->ys+info->ym;\
+  for (j=_yints; j<_yinte; j++) {\
+    for (i=_xints; i<_xinte; i++) {\
+
+#define DAForEachPointEnd2d }}}
+
+    
+
 EXTERN int DAGetLocalInfo(DA,DALocalInfo*);
 typedef int (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
 EXTERN int DAFormFunction1(DA,Vec,Vec,void*);
