@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.35 2000/05/01 23:14:38 bsmith Exp balay $";*/
+/* "$Id: flow.c,v 1.36 2000/05/05 22:20:00 balay Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -131,42 +131,44 @@ int main(int argc,char **args)
   user.tsCtx = &tsCtx;
 
   /* 
-     Preload the executable to get accurate timings
-     */
+     Preload the executable to get accurate timings. This runs the following chunk of 
+    code twice, first to get the executable pages into memory and the second time for
+    accurate timings.
+  */
   PreLoadBegin(PETSC_TRUE,"Time integration");
-  user.PreLoading = PreLoading;
+    user.PreLoading = PreLoading;
 
-  /* Create nonlinear solver */
-  ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
-  ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
+    /* Create nonlinear solver */
+    ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
+    ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
+    ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
  
-  /* Set various routines and options */
-  ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
-  if (flg) {
-    /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
-    ierr = MatCreateSNESMF(snes,user.grid->qnode,&Jpc);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,Jpc,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
-  } else {
-    /* Use explicit (approx) Jacobian to define Newton system and preconditioner */
-    ierr = SNESSetJacobian(snes,user.grid->A,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
-  }
+    /* Set various routines and options */
+    ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
+    if (flg) {
+      /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
+      ierr = MatCreateSNESMF(snes,user.grid->qnode,&Jpc);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,Jpc,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
+    } else {
+      /* Use explicit (approx) Jacobian to define Newton system and preconditioner */
+      ierr = SNESSetJacobian(snes,user.grid->A,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
+    }
  
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
  
-  /* Initialize the flowfield */
-  ierr = FormInitialGuess(snes,user.grid);CHKERRQ(ierr);
+    /* Initialize the flowfield */
+    ierr = FormInitialGuess(snes,user.grid);CHKERRQ(ierr);
 
-  /* Solve nonlinear system */
-  ierr = Update(snes,&user);CHKERRQ(ierr);
+    /* Solve nonlinear system */
+    ierr = Update(snes,&user);CHKERRQ(ierr);
 
-  /* Write restart file */
-  ierr = VecGetArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
-  /*f77WREST(&user.grid->nnodes,qnode,user.grid->turbre,user.grid->amut);*/
+    /* Write restart file */
+    ierr = VecGetArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
+    /*f77WREST(&user.grid->nnodes,qnode,user.grid->turbre,user.grid->amut);*/
 
-  /* Write Tecplot solution file */
-  /*
+    /* Write Tecplot solution file */
+    /*
     if (!rank) 
     f77TECFLO(&user.grid->nnodes, 
     &user.grid->nnbound,&user.grid->nvbound,&user.grid->nfbound,
@@ -182,12 +184,12 @@ int main(int argc,char **args)
     &rank); 
     */
 
-  /*f77FASFLO(&user.grid->nnodes,&user.grid->nsnode,&user.grid->nnfacet,
+    /*f77FASFLO(&user.grid->nnodes,&user.grid->nsnode,&user.grid->nnfacet,
     user.grid->isnode, user.grid->f2ntn,
     user.grid->x,      user.grid->y,      user.grid->z,
     qnode);*/
 
-  /* Write residual,lift,drag,and moment history file */
+    /* Write residual,lift,drag,and moment history file */
     /*
      if (!rank) f77PLLAN(&user.grid->nnodes,&rank);
     */

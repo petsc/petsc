@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.237 2000/05/05 22:14:18 balay Exp bsmith $*/
+/*$Id: plog.c,v 1.238 2000/05/17 22:10:27 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -287,7 +287,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "VecReduceArith. ",
                          "MatFDColoringApp",
                          "VecView         ",
-                         "                ",
+                         "MatFDColoringCre",
                          "                ",
                          "VecMax          ",
                          "VecMin          ",
@@ -1391,8 +1391,7 @@ int PLogEventActivate(int event)
    Notes:
    By default the summary is printed to stdout.
    More extensive examination of the log information can be done with 
-   PLogDump(), which is activated by the option -log or -log_all, in 
-   combination with petsc/bin/petscview.
+   PLogDump(), which is activated by the option -log or -log_all.
 
    Level: beginner
    
@@ -1718,7 +1717,6 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
       PetscTime(y);
       ierr = PetscFPrintf(comm,fd,"Average time for zero size MPI_Send(): %g\n",(y-x)/size);CHKERRQ(ierr);
     }
-    ierr = PetscCommRestoreNewTag(comm,&tag);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_USE_FORTRAN_KERNELS)
