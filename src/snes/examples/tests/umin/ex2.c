@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.42 1998/06/11 15:27:29 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.43 1998/12/03 04:05:51 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -806,10 +806,10 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
  */
 int BoundaryValues(AppCtx *user)
 {
-  int    maxit=5, i, j, k, limit, nx = user->mx, ny = user->my;
+  int    maxit=5, i, j, k, limit=0, nx = user->mx, ny = user->my;
   double three=3.0, tol=1.0e-10;
   Scalar one=1.0, two=2.0;
-  Scalar b=-.50, t=.50, l=-.50, r=.50, det, fnorm, xt, yt;
+  Scalar b=-.50, t=.50, l=-.50, r=.50, det, fnorm, xt=0.0, yt=0.0;
   Scalar nf[2], njac[2][2], u[2], hx = user->hx, hy = user->hy;
   Scalar *bottom, *top, *left, *right;
 
