@@ -6,6 +6,9 @@ Additional Capabilities that PETSc Needs:
 
 -----------------------------------------------------------------------
 Meta priorities: 
+  - Incorporate functionality that Deb needs for VRML stuff (currently she's copied
+    a code segment from version 2.0.15 into her application because PETSc evolved
+    to be out of sync with previous versions).
 
   - add MatGetSubMatrix() for MPIBAIJ
 
