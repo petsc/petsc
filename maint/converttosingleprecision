@@ -1,5 +1,5 @@
 #! /usr/local/tcl/bin/tclsh 
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: converttosingleprecision,v 1.7 1997/09/10 19:41:12 balay Exp balay $ 
 
 #
 #   For a source file, takes a list of function names
@@ -78,7 +78,7 @@ proc main { } {
     set sourcefileid [ open $outputsourcefilename w ]
     puts $sourcefileid $sourcefilebuff
     close $sourcefileid
-    
+    exec /bin/chmod ug+w $outputsourcefilename
     return 0
 }
 main
