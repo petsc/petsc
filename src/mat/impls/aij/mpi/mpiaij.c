@@ -1077,18 +1077,6 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_MPIAIJ"
-int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
-{
-  Mat_MPIAIJ *mat = (Mat_MPIAIJ*)matin->data;
-
-  PetscFunctionBegin;
-  if (m) *m = mat->rstart;
-  if (n) *n = mat->rend;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIAIJ"
 int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
@@ -1483,7 +1471,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        MatSetUpPreallocation_MPIAIJ,
        0,
-       MatGetOwnershipRange_MPIAIJ,
        0,
        0,
        0,

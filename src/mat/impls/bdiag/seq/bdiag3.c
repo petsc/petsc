@@ -55,16 +55,6 @@ int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_SeqBDiag" 
-int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
-{
-  PetscFunctionBegin;
-  if (m) *m = 0;
-  if (n) *n = A->m;
-  PetscFunctionReturn(0);
-}
-
 /*
      Note: this currently will generate different answers if you request
  all items or a subset. If you request all items it checks if the value is

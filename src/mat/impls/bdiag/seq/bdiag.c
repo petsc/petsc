@@ -35,7 +35,6 @@ EXTERN int MatGetRow_SeqBDiag(Mat,int,int *,int **,PetscScalar **);
 EXTERN int MatRestoreRow_SeqBDiag(Mat,int,int *,int **,PetscScalar **);
 EXTERN int MatTranspose_SeqBDiag(Mat,Mat *);
 EXTERN int MatNorm_SeqBDiag(Mat,NormType,PetscReal *);
-EXTERN int MatGetOwnershipRange_SeqBDiag(Mat,int*,int *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqBDiag"
@@ -464,7 +463,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        0,
        MatSetUpPreallocation_SeqBDiag,
        0,
-       MatGetOwnershipRange_SeqBDiag,
        MatILUFactorSymbolic_SeqBDiag,
        0,
        0,

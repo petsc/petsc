@@ -167,17 +167,17 @@ void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,int
 }
 
 /* -----------------------------------------------------------------*/
-static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,int*,int*);
-static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,int m)
+static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*);
+static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
 {
   int              ierr = 0;
 
-  (*f2)(ctx,&x,&y,&w,&m,&ierr);CHKERRQ(ierr);
+  (*f2)(ctx,&x,&y,&w,&rtol,&atol,&dtol,&m,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
-         void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,int*,int*),
+         void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,int*,int*),
          void *ptr,int *ierr)
 {
   f2 = apply;

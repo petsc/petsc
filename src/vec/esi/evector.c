@@ -277,7 +277,7 @@ void *create_esi_petsc_vectorfactory(void)
 // See dccafe/cxx/dc/framework/ComponentFactory.h for details.
 char **getComponentList() {
   static char *list[2];
-  list[0] = "create_esi_petsc_vectorfactory esi::VectorFactory";
+  list[0] = "create_esi_petsc_vectorfactory esi::petsc::VectorFactory";
   list[1] = 0;
   return list;
 }

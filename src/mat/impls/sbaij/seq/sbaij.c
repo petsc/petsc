@@ -185,16 +185,6 @@ int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_SeqSBAIJ"
-int MatGetOwnershipRange_SeqSBAIJ(Mat A,int *m,int *n)
-{
-  PetscFunctionBegin;
-  *m = 0; 
-  *n = A->m;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_SeqSBAIJ"
 int MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,PetscScalar **v)
 {
@@ -1192,7 +1182,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatCholeskyFactorNumeric_SeqSBAIJ_N,
        MatSetUpPreallocation_SeqSBAIJ,
        0,
-       MatGetOwnershipRange_SeqSBAIJ,
        0,
        MatICCFactorSymbolic_SeqSBAIJ,
        0,

@@ -25,6 +25,21 @@ esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSp
 }
 
 
+esi::petsc::Matrix<double,int>::Matrix(Mat mat)
+{
+  int m,n,M,N,ierr;
+
+  this->mat  = mat;
+  
+  this->pobject = (PetscObject)this->mat;
+  PetscObjectGetComm((PetscObject)this->mat,&this->comm);
+  ierr = MatGetLocalSize(mat,&m,&n);
+  ierr = MatGetSize(mat,&M,&N);
+  this->rmap = new esi::petsc::IndexSpace<int>(this->comm,m,M);
+  this->cmap = new esi::petsc::IndexSpace<int>(this->comm,n,N);
+}
+
+
 esi::petsc::Matrix<double,int>::~Matrix()
 {
   int ierr;
@@ -39,6 +54,8 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getInterface(const char* name, vo
     iface = (void *) (esi::Object *) this;
   } else if (!PetscStrcmp(name,"esi::Operator",&flg),flg){
     iface = (void *) (esi::Operator<double,int> *) this;
+  } else if (!PetscStrcmp(name,"esi::MatrixData",&flg),flg){
+    iface = (void *) (esi::MatrixData<int> *) this;
   } else if (!PetscStrcmp(name,"esi::MatrixRowReadAccess",&flg),flg){
     iface = (void *) (esi::MatrixRowReadAccess<double,int> *) this;
   } else if (!PetscStrcmp(name,"esi::MatrixRowWriteAccess",&flg),flg){
@@ -55,6 +72,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getInterfacesSupported(esi::Argv 
 {
   list->appendArg("esi::Object");
   list->appendArg("esi::Operator");
+  list->appendArg("esi::MatrixData");
   list->appendArg("esi::MatrixRowReadAccess");
   list->appendArg("esi::MatrixRowWriteAccess");
   list->appendArg("esi::petsc::Matrix");
