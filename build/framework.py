@@ -535,8 +535,10 @@ class Framework(base.Base):
     exportDir = self.argDB['exportDir']
     if not os.path.isdir(exportDir): os.makedirs(exportDir)
     self.t_printSIDLBabel(exportDir)
+
+    directories = self.getDependencyPaths()
     import getsplicers
-    getsplicers.getSplicers()
+    getsplicers.getSplicers(directories)
     try:
       #output = self.executeShellCommand('cd '+exportDir+'; babel --server=C allsidl.sidl')
       import commands
@@ -548,6 +550,18 @@ class Framework(base.Base):
     import setsplicers
     setsplicers.setSplicers(exportDir)
 
+  def getDependencyPaths(self):
+    directories = [self.project.getRoot()]
+    ip          = self.argDB['installedprojects']
+    for j in self.t_getDependencies():
+      for l in ip:
+        if l.getUrl() == j:
+          maker = self.getMakeModule(l.getRoot()).PetscMake(None, self.argDB)
+          dirs  = maker.getDependencyPaths()
+          for d in dirs:
+            if not d in directories: directories.append(d)
+    return directories
+    
   def t_updateBootstrap(self):
     '''Create a bootstrap tarball and copy it to the FTP site'''
     import installerclass
