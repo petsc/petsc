@@ -187,7 +187,8 @@ class Configure(config.base.Configure):
     else:
       self.framework.addSubstitution('LT_CC', '')
       self.framework.addSubstitution('LIBTOOL', '')
-      if self.framework.argDB['with-shared']:
+      # OSF/alpha cannot handle multiple -rpath, therefor current configure cannot do shared on alpha
+      if self.framework.argDB['with-shared'] and not self.framework.argDB['PETSC_ARCH_BASE'].startswith('osf'):
         self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.argDB['PETSC_ARCH_BASE'])
       else:
         self.framework.addSubstitution('SHARED_TARGET', 'shared_none')
