@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.51 2000/07/07 14:41:19 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.52 2000/07/10 18:56:33 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -464,7 +464,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   scale  = Ng/size + 1;
-  ng     = scale; if (rank == size-1) ng = Ng - scale*(size-1);
+  ng     = scale; if (rank == size-1) ng = Ng - scale*(size-1); ng = PetscMax(1,ng);
   rstart = scale*rank;
 
   /* determine ownership ranges of global indices */

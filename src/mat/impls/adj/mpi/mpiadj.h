@@ -1,4 +1,4 @@
-/* $Id: mpicsr.h,v 1.5 2000/02/02 20:09:14 bsmith Exp bsmith $ */
+/* $Id: mpiadj.h,v 1.6 2000/04/09 03:10:00 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -22,6 +22,7 @@ typedef struct {
   int              *j;               /* column values: j + i[k] - 1 is start of row k */
   int              *values;          /* numerical values */
   PetscTruth       symmetric;        /* user indicates the nonzero structure is symmetric */
+  PetscTruth       freeaij;          /* call PetscFree() on a, i,j at destroy */
 } Mat_MPIAdj;
 
 #endif

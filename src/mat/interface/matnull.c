@@ -1,4 +1,4 @@
-/*$Id: pcnull.c,v 1.31 2000/05/05 22:16:59 balay Exp bsmith $*/
+/*$Id: matnull.c,v 1.32 2000/07/31 03:50:59 bsmith Exp bsmith $*/
 /*
     Routines to project vectors out of null spaces.
 */
@@ -127,3 +127,72 @@ int MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
   
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceTest"
+/*@
+   MatNullSpaceTest  - Tests if the claimed null space is really a
+     null space of a matrix
+
+   Collective on MatNullSpace
+
+   Input Parameters:
++  sp - the null space context
+-  mat - the matrix
+
+   Level: advanced
+
+.keywords: PC, null space, remove
+
+.seealso: MatNullSpaceCreate(), MatNullSpaceDestroy()
+@*/
+int MatNullSpaceTest(MatNullSpace sp,Mat mat)
+{
+  Scalar     sum;
+  int        j,n = sp->n,N,ierr,m;
+  Vec        l,r;
+  MPI_Comm   comm = sp->comm;
+  PetscTruth flg1,flg2;
+
+  PetscFunctionBegin;
+  ierr = OptionsHasName(PETSC_NULL,"-mat_null_space_test_view",&flg1);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_null_space_test_view_draw",&flg2);CHKERRQ(ierr);
+
+  if (!sp->vec) {
+    if (n) {
+      ierr = VecDuplicate(sp->vecs[0],&sp->vec);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetLocalSize(mat,&m,PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecCreateMPI(sp->comm,m,PETSC_DETERMINE,&sp->vec);CHKERRQ(ierr);
+    }
+  }
+  l    = sp->vec;
+
+  if (sp->has_cnst) {
+    ierr = VecDuplicate(l,&r);CHKERRQ(ierr);
+    ierr = VecGetSize(l,&N);CHKERRQ(ierr);
+    sum  = 1.0/N;
+    ierr = VecSet(&sum,l);CHKERRQ(ierr);
+    ierr = MatMult(mat,l,r);CHKERRQ(ierr);
+    ierr = VecNorm(r,NORM_2,&sum);CHKERRQ(ierr);
+    if (sum < 1.e-7) {ierr = PetscPrintf(comm,"Constants are likely null vector");CHKERRQ(ierr);}
+    else {ierr = PetscPrintf(comm,"Constants are unlikely null vector ");CHKERRQ(ierr);}
+    ierr = PetscPrintf(comm,"|| A * 1 || = %g\n",sum);CHKERRQ(ierr);
+    if (sum > 1.e-7 && flg1) {ierr = VecView(r,VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
+    if (sum > 1.e-7 && flg2) {ierr = VecView(r,VIEWER_DRAW_(comm));CHKERRQ(ierr);}
+    ierr = VecDestroy(r);CHKERRQ(ierr);
+  }
+
+  for (j=0; j<n; j++) {
+    ierr = (*mat->ops->mult)(mat,sp->vecs[j],l);CHKERRQ(ierr);
+    ierr = VecNorm(l,NORM_2,&sum);CHKERRQ(ierr);
+    if (sum < 1.e-7) {ierr = PetscPrintf(comm,"Null vector %d is likely null vector",j);CHKERRQ(ierr);}
+    else {ierr = PetscPrintf(comm,"Null vector %d unlikely null vector ",j);CHKERRQ(ierr);}
+    ierr = PetscPrintf(comm,"|| A * v[%d] || = %g\n",j,sum);CHKERRQ(ierr);
+    if (sum > 1.e-7 && flg1) {ierr = VecView(l,VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
+    if (sum > 1.e-7 && flg2) {ierr = VecView(l,VIEWER_DRAW_(comm));CHKERRQ(ierr);}
+  }
+  
+  PetscFunctionReturn(0);
+}
+

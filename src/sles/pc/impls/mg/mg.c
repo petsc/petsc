@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.109 2000/07/07 14:35:15 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.110 2000/07/18 16:02:18 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -46,7 +46,7 @@ int MGMCycle_Private(MG *mglevels)
 */
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MGCreate_Private"
-static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
+static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *comms,MG **result)
 {
   MG   *mg;
   int  i,ierr,size;
@@ -62,14 +62,18 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 
   for (i=0; i<levels; i++) {
     mg[i]         = (MG)PetscMalloc(sizeof(struct _MG));CHKPTRQ(mg[i]);
-    ierr = PetscMemzero(mg[i],sizeof(struct _MG));CHKERRQ(ierr);
+    ierr          = PetscMemzero(mg[i],sizeof(struct _MG));CHKERRQ(ierr);
     mg[i]->level  = i;
     mg[i]->levels = levels;
     mg[i]->cycles = 1;
+
+    if (comms) comm = comms[i];
     ierr = SLESCreate(comm,&mg[i]->smoothd);CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
     ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(mg[i]->smoothd,prefix);CHKERRQ(ierr);
+
+    /* do special stuff for coarse grid */
     if (!i && levels > 1) {
       ierr = SLESAppendOptionsPrefix(mg[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
 
@@ -182,7 +186,7 @@ static int PCSetFromOptions_MG(PC pc)
   PetscFunctionBegin;
   if (!pc->data) {
     ierr = OptionsGetInt(pc->prefix,"-pc_mg_levels",&levels,&flg);CHKERRQ(ierr);
-    ierr = MGSetLevels(pc,levels);CHKERRQ(ierr);
+    ierr = MGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = OptionsGetInt(pc->prefix,"-pc_mg_cycles",&m,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -331,7 +335,9 @@ static int PCSetUp_MG(PC pc)
 
    Input Parameters:
 +  pc - the preconditioner context
--  levels - the number of levels
+.  levels - the number of levels
+-  comms - optional communicators for each level; this is to allow solving the coarser problems
+           on smaller sets of processors
 
    Level: intermediate
 
@@ -343,7 +349,7 @@ static int PCSetUp_MG(PC pc)
 
 .seealso: MGSetType(), MGGetLevels()
 @*/
-int MGSetLevels(PC pc,int levels)
+int MGSetLevels(PC pc,int levels,MPI_Comm *comms)
 {
   int ierr;
   MG  *mg;
@@ -355,7 +361,7 @@ int MGSetLevels(PC pc,int levels)
     SETERRQ(1,1,"Number levels already set for MG\n\
     make sure that you call MGSetLevels() before SLESSetFromOptions()");
   }
-  ierr                     = MGCreate_Private(pc->comm,levels,pc,&mg);CHKERRQ(ierr);
+  ierr                     = MGCreate_Private(pc->comm,levels,pc,comms,&mg);CHKERRQ(ierr);
   mg[0]->am                = MGMULTIPLICATIVE;
   pc->data                 = (void*)mg;
   pc->ops->applyrichardson = MGCycleRichardson;

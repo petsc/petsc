@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.70 2000/05/18 21:29:02 balay Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.71 2000/05/20 20:27:23 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -480,7 +480,6 @@ int MatFDColoringDestroy(MatFDColoring c)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatFDColoringApply"
 /*@
@@ -514,6 +513,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   Vec           w1,w2,w3;
   void          *fctx = coloring->fctx;
   PetscTruth    flg;
+
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE);
@@ -568,7 +568,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       vscale_array[col] = 1.0/dx;
     }
   } 
-  vscale_array = vscale_array - start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  vscale_array = vscale_array + start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -598,6 +598,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx            *= epsilon;
+      if (!dx) SETERRQ(1,1,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
     w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
@@ -605,6 +606,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
     */
+
     ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
 
@@ -626,6 +628,11 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);
+
+  ierr = OptionsHasName(PETSC_NULL,"-mat_null_space_test",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatNullSpaceTest(J->nullsp,J);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

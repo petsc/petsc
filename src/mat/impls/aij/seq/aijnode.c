@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.115 2000/07/01 03:34:23 bsmith Exp bsmith $*/
+/*$Id: aijnode.c,v 1.116 2000/07/31 22:39:35 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -1609,7 +1609,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   C->factor      = FACTOR_LU;
   C->assembled   = PETSC_TRUE;
   ierr = Mat_AIJ_CheckInode(C);CHKERRQ(ierr);
-  if (ndamp) {
+  if (ndamp || b->lu_damping) {
     PLogInfo(0,"MatLUFactorNumerical_SeqAIJ_Inode: number of damping tries %d damping value %g\n",ndamp,damping);
   }
   PLogFlops(b->n);

@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.33 1999/01/31 16:08:03 bsmith Exp balay $ 
+# $Id: makefile,v 1.34 1999/02/02 21:27:35 balay Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = precon.c pcset.c pcregis.c pcnull.c
+SOURCEC  = precon.c pcset.c pcregis.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = precon.o pcset.o pcregis.o pcnull.o
+OBJSC    = precon.o pcset.o pcregis.o
 OBJSF    =
 LIBBASE  = libpetscsles
 MANSEC   = PC

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.17 2000/05/05 22:16:34 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.18 2000/07/13 03:03:24 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   Viewer            fd;               /* viewer */
   char              file[2][128];     /* input file name */
   IS                isrow,iscol;      /* row and column permutations */
-  int               ierr,i;
+  int               ierr;
   MatOrderingType   rtype = MATORDERING_RCM;
   PetscTruth        set,flg,PreLoad = PETSC_FALSE;
 

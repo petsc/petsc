@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.151 2000/05/16 22:04:11 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.152 2000/06/23 18:52:11 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -525,7 +525,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   (*B)->ops->lufactornumeric   =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
   C->assembled = PETSC_TRUE;
   PLogFlops(b->n);
-  if (ndamp) {
+  if (ndamp || b->lu_damping) {
     PLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of damping tries %d damping value %g\n",ndamp,damping);
   }
   PetscFunctionReturn(0);
@@ -904,6 +904,13 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
     b->row              = isrow;
     b->col              = iscol;
     b->icol             = isicol;
+    if (info) {
+      b->lu_damp    = info->damp;
+      b->lu_damping = info->damping;
+    } else {
+      b->lu_damp    = PETSC_FALSE;
+      b->lu_damping = 0.0;
+    }
     b->solve_work       = (Scalar*)PetscMalloc((b->m+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
     (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
     ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
@@ -1075,6 +1082,13 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
      Allocate dloc, solve_work, new a, new j */
   PLogObjectMemory(*fact,(ainew[n]+shift-n) * (sizeof(int)+sizeof(Scalar)));
   b->maxnz          = b->nz = ainew[n] + shift;
+  if (info) {
+    b->lu_damp    = info->damp;
+    b->lu_damping = info->damping;
+  } else {
+    b->lu_damp    = PETSC_FALSE;
+    b->lu_damping = 0.0;
+  }
   (*fact)->factor   = FACTOR_LU;
 
   (*fact)->info.factor_mallocs    = realloc;

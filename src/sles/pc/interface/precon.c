@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.197 2000/07/06 20:22:44 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.198 2000/07/12 13:36:59 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -26,16 +26,16 @@
 
 .seealso: PCCreate(), PCSetUp()
 @*/
-int PCNullSpaceAttach(PC pc,PCNullSpace nullsp)
+int PCNullSpaceAttach(PC pc,MatNullSpace nullsp)
 {
   int ierr = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  PetscValidHeaderSpecific(nullsp,PCNULLSPACE_COOKIE);
+  PetscValidHeaderSpecific(nullsp,MATNULLSPACE_COOKIE);
 
   if (pc->nullsp) {
-    ierr = PCNullSpaceDestroy(nullsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);
   }
   pc->nullsp = nullsp;
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ int PCDestroy(PC pc)
   ierr = PetscObjectDepublish(pc);CHKERRQ(ierr);
 
   if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
-  if (pc->nullsp) {ierr = PCNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);}
+  if (pc->nullsp) {ierr = MatNullSpaceDestroy(pc->nullsp);CHKERRQ(ierr);}
   PLogObjectDestroy(pc);
   PetscHeaderDestroy(pc);
   PetscFunctionReturn(0);
@@ -194,15 +194,18 @@ int PCApply(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
+  if (pc->nullsp) {
+    ierr = MatNullSpaceRemove(pc->nullsp,x,&x);CHKERRQ(ierr);
+  }
+
   PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
+  PLogEventEnd(PC_Apply,pc,x,y,0);
 
   /* Remove null space from preconditioned vector y */
   if (pc->nullsp) {
-    ierr = PCNullSpaceRemove(pc->nullsp,y);CHKERRQ(ierr);
+    ierr = MatNullSpaceRemove(pc->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
   }
-
-  PLogEventEnd(PC_Apply,pc,x,y,0);
   PetscFunctionReturn(0);
 }
 

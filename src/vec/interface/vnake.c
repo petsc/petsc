@@ -1,4 +1,4 @@
-/*$Id: vnake.c,v 1.17 2000/05/04 16:25:10 bsmith Exp balay $*/
+/*$Id: vnake.c,v 1.18 2000/05/05 22:14:59 balay Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"    /*I "petscvec.h" I*/
 
@@ -12,8 +12,8 @@
 
    Input Parameter:
 +  comm - the communicator
-.  n - the local vector length 
--  N - total vector length
+.  n - the local vector length (or PETSC_DECIDE)
+-  N - total vector length (or PETSC_DETERMINE)
 
    Output Parameter:
 .  V - the vector

@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.139 2000/06/12 21:20:49 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.140 2000/07/10 03:39:13 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -2164,7 +2164,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Index out of range");
+    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Index %d out of range",idx);
   }
   nprocslocal  = nprocs[rank];
   nprocs[rank] = procs[rank] = 0; 
@@ -2389,7 +2389,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Index out of range");
+    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Index %d out of range",idx);
   }
   nsends = 0;  for (i=0; i<size; i++) { nsends += procs[i];} 
 

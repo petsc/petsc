@@ -1,4 +1,4 @@
-/*$Id: psplit.c,v 1.9 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: psplit.c,v 1.10 2000/04/12 04:21:38 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I    "petsc.h" I*/
 
@@ -38,7 +38,7 @@ int PetscSplitOwnership(MPI_Comm comm,int *n,int *N)
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
     *n = *N/size + ((*N % size) > rank);
   }
-#if defined(PETSC_USE_BOPT_g)
+#if defined(old_test)
   else {
     int tmp;
     ierr = MPI_Allreduce(n,&tmp,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);

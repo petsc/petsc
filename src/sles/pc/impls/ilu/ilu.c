@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.148 2000/05/05 22:17:14 balay Exp bsmith $*/
+/*$Id: ilu.c,v 1.149 2000/05/16 22:54:03 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -7,6 +7,21 @@
 #include "src/mat/matimpl.h"
 
 /* ------------------------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PCILUSetDamping_ILU"></a>*/"PCLUSetDamping_ILU"
+int PCILUSetDamping_ILU(PC pc,PetscReal damping)
+{
+  PC_ILU *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_ILU*)pc->data;
+  dir->info.damping = damping;
+  dir->info.damp    = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCILUSetUseDropTolerance_ILU"
@@ -126,6 +141,40 @@ int PCILUSetAllowDiagonalFill_ILU(PC pc)
 EXTERN_C_END
 
 /* ------------------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PCILUSetDamping"></a>*/"PCILUSetDamping"
+/*@
+   PCILUSetDamping - adds this quantity to the diagonal of the matrix during the 
+     ILU numerical factorization
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  damping - amount of damping
+
+   Options Database Key:
+.  -pc_ilu_damping <damping> - Sets damping amount
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: PCILUSetFill(), PCLUSetDamp()
+@*/
+int PCILUSetDamping(PC pc,PetscReal damping)
+{
+  int ierr,(*f)(PC,PetscReal);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetDamping_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,damping);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCILUSetUseDropTolerance"
 /*@
@@ -423,7 +472,7 @@ static int PCSetFromOptions_ILU(PC pc)
 {
   int        levels,ierr,dtmax = 3;
   PetscTruth flg;
-  PetscReal  dt[3],fill;
+  PetscReal  dt[3],fill,damping;
   char       tname[256];
 
   PetscFunctionBegin;
@@ -446,6 +495,15 @@ static int PCSetFromOptions_ILU(PC pc)
   ierr = OptionsHasName(pc->prefix,"-pc_ilu_reuse_ordering",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCILUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_damping",&damping,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCILUSetDamping(pc,damping);CHKERRQ(ierr);
+  } else {
+    ierr = OptionsHasName(pc->prefix,"-pc_ilu_damping",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCILUSetDamping(pc,0.0);CHKERRQ(ierr);
+    }
   }
   dt[0] = PETSC_DEFAULT;
   dt[1] = PETSC_DEFAULT;
@@ -478,6 +536,7 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_damping <damping>: damping added to diagonal\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_factorpointwise: do NOT use block factorization\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_use_drop_tolerance <dt,dtcol,maxrowcount>:\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," The ILUDT code is based on Yousef Saad's SPARSEKIT2 code\n",p);CHKERRQ(ierr);
@@ -696,6 +755,8 @@ int PCCreate_ILU(PC pc)
   ilu->info.dt            = PETSC_DEFAULT;
   ilu->info.dtcount       = PETSC_DEFAULT;
   ilu->info.dtcol         = PETSC_DEFAULT;
+  ilu->info.damp          = PETSC_FALSE;
+  ilu->info.damping       = 0.0;
   ilu->reusefill          = PETSC_FALSE;
   ilu->info.diagonal_fill = 0;
   pc->data                = (void*)ilu;
@@ -714,6 +775,8 @@ int PCCreate_ILU(PC pc)
                     PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetFill_C","PCILUSetFill_ILU",
                     PCILUSetFill_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetDamping_C","PCILUSetDamping_ILU",
+                    PCILUSetDamping_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetMatOrdering_C","PCILUSetMatOrdering_ILU",
                     PCILUSetMatOrdering_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseOrdering_C","PCILUSetReuseOrdering_ILU",

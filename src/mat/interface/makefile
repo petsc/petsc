@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.36 1999/03/17 23:22:43 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.37 2000/07/10 03:39:27 bsmith Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = matrix.c mhas.c matcnv.c mgtype.c matreg.c matregis.c
+SOURCEC  = matrix.c mhas.c matcnv.c mgtype.c matreg.c matregis.c matnull.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = matrix.o mhas.o matcnv.o mgtype.o matreg.o matregis.o
+OBJSC    = matrix.o mhas.o matcnv.o mgtype.o matreg.o matregis.o matnull.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = Mat

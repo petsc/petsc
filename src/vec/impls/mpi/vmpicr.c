@@ -1,4 +1,4 @@
-/*$Id: vmpicr.c,v 1.9 2000/04/12 04:22:23 bsmith Exp balay $*/
+/*$Id: vmpicr.c,v 1.10 2000/05/05 22:15:06 balay Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -16,7 +16,7 @@
    Input Parameters:
 +  comm - the MPI communicator to use 
 .  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
--  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+-  N - global vector length (or PETSC_DETERMINE to have calculated if n is given)
 
    Output Parameter:
 .  vv - the vector

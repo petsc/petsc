@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.26 1999/11/24 21:54:30 bsmith Exp balay $ */
+/* $Id: pcimpl.h,v 1.27 2000/05/05 22:16:58 balay Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -31,25 +31,16 @@ struct _PCOps {
 */
 struct _p_PC {
   PETSCHEADER(struct _PCOps)
-  int          setupcalled;
-  MatStructure flag;
-  Mat          mat,pmat;
-  Vec          vec;
-  PCNullSpace  nullsp;
-  int          (*modifysubmatrices)(PC,int,IS*,IS*,Mat*,void*); /* user provided routine */
-  void         *modifysubmatricesP; /* context for user routine */
-  void         *data;
+  int           setupcalled;
+  MatStructure  flag;
+  Mat           mat,pmat;
+  Vec           vec;
+  MatNullSpace  nullsp;
+  int           (*modifysubmatrices)(PC,int,IS*,IS*,Mat*,void*); /* user provided routine */
+  void          *modifysubmatricesP; /* context for user routine */
+  void          *data;
 };
 
-/*
-   Null space context for preconditioner
-*/
-struct _p_PCNullSpace {
-  PETSCHEADER(int)
-  int         has_cnst;
-  int         n;
-  Vec*        vecs;
-};
 
 
 #endif

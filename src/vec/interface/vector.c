@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.210 2000/06/23 18:21:47 buschelm Exp bsmith $*/
+/*$Id: vector.c,v 1.211 2000/07/24 03:41:04 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1416,6 +1416,11 @@ int VecAssemblyEnd(Vec vec)
   if (flg) {
     ierr = VecView(vec,VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
     ierr = ViewerFlush(VIEWER_SOCKET_(vec->comm));CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-vec_view_binary",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecView(vec,VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_BINARY_(vec->comm));CHKERRQ(ierr);
   }
 #if defined(PETSC_HAVE_AMS)
   ierr = OptionsHasName(PETSC_NULL,"-vec_view_ams",&flg);CHKERRQ(ierr);

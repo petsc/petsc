@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.375 2000/06/06 19:01:58 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.376 2000/07/28 14:07:13 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -906,10 +906,17 @@ int MatMult(Mat mat,Vec x,Vec y)
   if (mat->M != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec y: global dim %d %d",mat->M,y->N); 
   if (mat->m != y->n) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec y: local dim %d %d",mat->m,y->n); 
 
+  if (mat->nullsp) {
+    ierr = MatNullSpaceRemove(mat->nullsp,x,&x);CHKERRQ(ierr);
+  }
+
   PLogEventBegin(MAT_Mult,mat,x,y,0);
   ierr = (*mat->ops->mult)(mat,x,y);CHKERRQ(ierr);
   PLogEventEnd(MAT_Mult,mat,x,y,0);
 
+  if (mat->nullsp) {
+    ierr = MatNullSpaceRemove(mat->nullsp,y,PETSC_NULL);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }   
 
@@ -4054,5 +4061,85 @@ int MatRestrict(Mat A,Vec x,Vec y)
   } else {
     ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatNullSpaceAttach"
+/*@C
+   MatNullSpaceAttach - attaches a null space to a matrix.
+        This null space will be removed from the resulting vector whenever
+        MatMult() is called
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+-  nullsp - the null space object
+
+   Level: developer
+
+   Notes:
+      Overwrites any previous null space that may have been attached
+
+.keywords: Mat, destroy, null space
+
+.seealso: MatCreate(), MatNullSpaceCreate()
+@*/
+int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
+{
+  int ierr = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(nullsp,MATNULLSPACE_COOKIE);
+
+  if (mat->nullsp) {
+    ierr = MatNullSpaceDestroy(mat->nullsp);CHKERRQ(ierr);
+  }
+  mat->nullsp = nullsp;
+  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"MatIncompleteCholeskyFactor"
+/*@  
+   MatIncompleteCholeskyFactor - Performs in-place incomplete Cholesky factorization of matrix.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  row - row/column permutation
+.  fill - expected fill factor >= 1.0
+-  level - level of fill, for ICC(k)
+
+   Notes: 
+   Probably really in-place only when level of fill is zero, otherwise allocates
+   new space to store factored matrix and deletes previous memory.
+
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
+.keywords: matrix, factor, incomplete Cholesky, in-place
+
+.seealso: MatIncompleteCholeskyFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
+@*/
+int MatIncompleteCholeskyFactor(Mat mat,IS row,PetscReal fill,int level)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+  if (!mat->ops->incompletecholeskyfactor) SETERRQ(PETSC_ERR_SUP,0,"");
+
+  ierr = (*mat->ops->incompletecholeskyfactor)(mat,row,fill,level);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

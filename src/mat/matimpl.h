@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.111 2000/06/02 16:58:45 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.112 2000/07/10 03:39:26 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -56,7 +56,7 @@ struct _MatOps {
             (*forwardsolve)(Mat,Vec,Vec),
             (*backwardsolve)(Mat,Vec,Vec),
 /*40*/      (*ilufactor)(Mat,IS,IS,MatILUInfo*),
-            (*incompletecholeskyfactor)(Mat,IS,double),
+            (*incompletecholeskyfactor)(Mat,IS,double,int),
             (*axpy)(Scalar *,Mat,Mat),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatReuse,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
@@ -159,6 +159,7 @@ struct _p_Mat {
   ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
+  MatNullSpace           nullsp;
 };
 
 
@@ -245,6 +246,16 @@ struct  _p_MatFDColoring{
   Vec    vscale;   /* holds FD scaling, i.e. 1/dx for each perturbed column */
 };
 
+/*
+   Null space context for preconditioner/operators
+*/
+struct _p_MatNullSpace {
+  PETSCHEADER(int)
+  int         has_cnst;
+  int         n;
+  Vec*        vecs;
+  Vec         vec;      /* for out of place removals */
+};
 
 
 #endif
