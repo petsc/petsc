@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.33 1996/09/12 16:28:47 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.34 1996/10/02 18:07:22 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -82,6 +82,9 @@ extern int DrawEOP(Draw);
 typedef enum {BUTTON_NONE, BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT } DrawButton;
 extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
 
+/*
+    Routines for drawing X-Y axises in a Draw object
+*/
 typedef struct _DrawAxis* DrawAxis;
 #define DRAWAXIS_COOKIE PETSC_COOKIE+16
 extern int DrawAxisCreate(Draw,DrawAxis *);
@@ -91,6 +94,9 @@ extern int DrawAxisSetLimits(DrawAxis,double,double,double,double);
 extern int DrawAxisSetColors(DrawAxis,int,int,int);
 extern int DrawAxisSetLabels(DrawAxis,char*,char*,char*);
 
+/*
+    Routines to draw line curves in X-Y space
+*/
 typedef struct _DrawLG*   DrawLG;
 #define DRAWLG_COOKIE PETSC_COOKIE+7
 extern int DrawLGCreate(Draw,int,DrawLG *);
@@ -105,6 +111,9 @@ extern int DrawLGGetDraw(DrawLG,Draw *);
 extern int DrawLGIndicateDataPoints(DrawLG);
 extern int DrawLGSetLimits(DrawLG,double,double,double,double); 
 
+/*
+    Routines to draw scatter plots in complex space
+*/
 typedef struct _DrawSP*   DrawSP;
 #define DRAWSP_COOKIE PETSC_COOKIE+27
 extern int DrawSPCreate(Draw,int,DrawSP *);

@@ -1,16 +1,42 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.76 1996/10/24 21:14:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.77 1996/10/24 21:22:28 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
 */
 
-#include "draw.h"     /*I "draw.h" I*/
+#include "draw.h"             /*I "draw.h" I*/
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
 #include "sys.h"
 
 extern int KSPGetTypeFromOptions_Private(KSP,KSPType *);
 extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
+
+/*
+       We retain a list of functions that also take KSP command 
+    line options. These are called at the end KSPSetFromOptions()
+*/
+#define MAXSETFROMOPTIONS 5
+static int numberofsetfromoptions;
+static int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP ksp);
+
+/*@
+    KSPAddOptionsChecker - Adds an additional function to check for KSP options.
+
+  Input Parameter:
+.   kspcheck - function that checks for options
+
+.seealso: KSPSetFromOptions()
+@*/
+int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
+{
+  if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
+    SETERRQ(1,"KSPAddOptionsChecker:Too many options checkers, only 5 allowed");
+  }
+
+  othersetfromoptions[numberofsetfromoptions++] = kspcheck;
+  return 0;
+}
 
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
@@ -27,7 +53,7 @@ extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 int KSPSetFromOptions(KSP ksp)
 {
   KSPType   method;
-  int       restart, flg, ierr,loc[4], nmax = 4, mset = 0;
+  int       restart, flg, ierr,loc[4], nmax = 4,i;
   double    tmp;
 
   loc[0] = 0; loc[1] = 0; loc[2] = 300; loc[3] = 300;
@@ -57,24 +83,21 @@ int KSPSetFromOptions(KSP ksp)
     if (!rank) {
       KSPSetMonitor(ksp,KSPDefaultMonitor,(void *)0);
     }
-    mset = 1;
   }
   /*
      Prints preconditioned and true residual norm at each iteration
   */
   ierr = OptionsHasName(ksp->prefix,"-ksp_truemonitor",&flg); CHKERRQ(ierr);
   if (flg) {
-    if (mset) SETERRQ(1,"KSPSetFromOptions:Monitor for KSP is already set");
-    KSPSetMonitor(ksp,KSPTrueMonitor,(void *)0); mset = 1;
+    KSPSetMonitor(ksp,KSPTrueMonitor,(void *)0); 
   }
   /*
      Prints extreme eigenvalue estimates at each iteration
   */
   ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor",&flg); CHKERRQ(ierr);
   if (flg) {
-    if (mset) SETERRQ(1,"KSPSetFromOptions:Monitor for KSP is already set");
-    KSPSetComputeSingularValues(ksp);
-    KSPSetMonitor(ksp,KSPSingularValueMonitor,(void *)0); mset = 1;
+    ierr = KSPSetComputeSingularValues(ksp); CHKERRQ(ierr);
+    KSPSetMonitor(ksp,KSPSingularValueMonitor,(void *)0); 
   }
   /*
      Prints true residual for BlockSolve95 preconditioners
@@ -82,8 +105,7 @@ int KSPSetFromOptions(KSP ksp)
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   ierr = OptionsHasName(ksp->prefix,"-ksp_bsmonitor",&flg); CHKERRQ(ierr);
   if (flg) {
-    if (mset) SETERRQ(1,"KSPSetFromOptions:Monitor for KSP is already set");
-    KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)0); mset = 1;
+    KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)0);
   }
 #endif
   /*
@@ -92,12 +114,10 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor",&flg); CHKERRQ(ierr); 
   if (flg) {
     int rank = 0;
-    if (mset) SETERRQ(1,"KSPSetFromOptions:Monitor for KSP is already set");
     MPI_Comm_rank(ksp->comm,&rank);
     if (!rank) {
       KSPSetMonitor(ksp,KSPDefaultSMonitor,(void *)0);
     }
-    mset = 1;
   }
   /*
      Graphically plots preconditioned residual norm
@@ -107,14 +127,12 @@ int KSPSetFromOptions(KSP ksp)
     int    rank = 0;
     DrawLG lg;
     MPI_Comm_rank(ksp->comm,&rank);
-    if (mset) SETERRQ(1,"KSPSetFromOptions:Monitor for KSP is already set");
     if (!rank) {
       ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); CHKERRQ(ierr);
       PLogObjectParent(ksp,(PetscObject) lg);
       KSPSetMonitor(ksp,KSPLGMonitor,(void *)lg);
       ksp->xmonitor = lg; 
-    } else ksp->monitor = 0;
-    mset = 1;
+    }
   }
   /*
      Graphically plots preconditioned and true residual norm
@@ -124,14 +142,12 @@ int KSPSetFromOptions(KSP ksp)
     int    rank = 0;
     DrawLG lg;
     MPI_Comm_rank(ksp->comm,&rank);
-    if (mset) SETERRQ(1,"KSPSetFromOptions:Monitor for KSP is already set");
     if (!rank) {
       ierr = KSPLGTrueMonitorCreate(ksp->comm,0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
       PLogObjectParent(ksp,(PetscObject) lg);
       KSPSetMonitor(ksp,KSPLGTrueMonitor,(void *)lg);
       ksp->xmonitor = lg; 
-    } else ksp->monitor = 0;
-    mset = 1;
+    } 
   }
   /* -----------------------------------------------------------------------*/
   ierr = OptionsHasName(ksp->prefix,"-ksp_preres",&flg); CHKERRQ(ierr);
@@ -162,6 +178,9 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsGetDouble(ksp->prefix,"-ksp_richardson_scale",&tmp,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPRichardsonSetScale(ksp,tmp); CHKERRQ(ierr); }
 
+  for ( i=0; i<numberofsetfromoptions; i++ ) {
+    ierr = (*othersetfromoptions[i])(ksp); CHKERRQ(ierr);
+  }
   return 0;
 }
   
@@ -216,6 +235,8 @@ int KSPPrintHelp(KSP ksp)
     PetscPrintf(ksp->comm,"       (only for CG and GMRES)\n");
     PetscPrintf(ksp->comm,"   %sksp_bsmonitor: at each iteration print the unscaled and \n",p);
     PetscPrintf(ksp->comm,"       (only for ICC and ILU in BlockSolve95)\n");
+    PetscPrintf(ksp->comm,"   %sksp_plot_eigenvalues_explicitly\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_plot_eigenvalues\n",p);
     PetscPrintf(ksp->comm," GMRES Options:\n");
     PetscPrintf(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
     PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
