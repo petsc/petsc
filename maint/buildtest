@@ -40,7 +40,7 @@ $RSH $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' $APPEND maint/b
 # Run Configure
 if ("${CONFIGURE}" == "yes") then
   $RSH $MACH -n "rm -f $TMP/configure.log" >& /dev/null
-  $RSH $MACH -n "cd $TMP; configure_$ARCH.py $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
+  $RSH $MACH -n "cd $TMP; config/configure_$ARCH.py $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
   $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
   $RSH $MACH -n "cd $TMP; cat configure.log $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
   $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
