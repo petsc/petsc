@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.82 1996/12/19 01:14:04 balay Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.83 1997/01/01 03:35:32 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -38,6 +38,8 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
 
     for (i=0; i<n; i++) {
       if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
+      /* check special case of tmp == NaN */
+      if (tmp != tmp) {max = tmp; break;}
       xx++;
     }
     *z   = max;

@@ -19,21 +19,12 @@ Additional Capabilities that PETSc Needs:
 
   - Check out the performance of VecOps ( noticed tnem to be extremely bad (Satish)
 
-  - Fix this:
-    > VecNorm with a NORM_MAX option returns 0 if the
-    > vector has NaN's. It seems to me that it should return
-    > NaN like the 1 and 2 norms. I guess the problem is that
-    > the comparison in the loop of the current max to NaN
-    > returns false becuase of the NaN, so the max is not
-    > set to NaN.
 
   - fix PetscView so that with scrolling in horizontal direction and click on icon
     it pops up detailed information in correct location.
 
   - Add some indication to window indicating that it is awaiting input.
 
-  - Provide support somehow for -mat_view_draw and -vec_view_draw etc.
-    to reuse same window for subsequent calls with same matrix or vector.
 
   - Maybe, like, say, test one or two BDiag routines before making a release?
 
@@ -50,16 +41,8 @@ Additional Capabilities that PETSc Needs:
 
   - change KSP to not return -it on error but instead use error handling.
 
-  - Change error handling: PetscError() gets two new arguments
-      (1) __FUNCTION__ 
-      (2) a specific error code; set by script.
-    Macro interface SETTERR... do not change. __FUNCTION__ defaults to "unknown"
-    In each function in the entire package we need #undef __FUNCTION__ followed
-    by #define __FUNCTION__ "functionname" With this, our tracebacks can generate
-    function names on each level, we can remove functionname from error message
-    and easily manage different languages for each message.
 
-  - Try using Isaac's trick for VecGetArray(), ISGetIndices(), etc:
+  * Try using Isaac's trick for VecGetArray(), ISGetIndices(), etc:
       common /xxx/ v(1),i(1)
 
   - Try debugger on HP (unset the EDITOR environmental variable)
@@ -72,7 +55,7 @@ Additional Capabilities that PETSc Needs:
 
   - Write preprocessor that zips through all of PETSc finding SETERRQ()
     setting unique error code number and save to big file: error code,
-    file, line number and error message.
+    function name, file, line number and error message.
 
   - Support y = alpha *y + beta *A *x
 
@@ -83,7 +66,7 @@ Additional Capabilities that PETSc Needs:
 
   - Have two types of error tests, one assert type and one real error type?
 
- - allow more than one TS monitor. Model on KSP.
+  - allow more than one TS monitor. Model on KSP.
 
  - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
 
@@ -172,8 +155,6 @@ Additional Capabilities that PETSc Needs:
     the number of loads required? Add otehr optimization that sorts by 
     row length, then loops over rows of each length doing rows unrolled.
 
-  - Add VIEWER_STDOUT_(comm) modeled on VIEWER_DRAWX_WORLD() that
-    automatically creates viewer for the communicator.
 
   - Provide easy means to use SOR as stand-alone method with convergence testing
     rather than just as preconditioner with a fixed number of iterations.
@@ -672,3 +653,27 @@ Additional Capabilities that PETSc Needs:
 
   X fix breakdown error message in KSP BCGS.
 
+  X Change error handling: PetscError() gets two new arguments
+      (1) __FUNCTION__ 
+      (2) a specific error code; set by script.
+    Macro interface SETTERR... do not change. __FUNCTION__ defaults to "unknown"
+    In each function in the entire package we need #undef __FUNCTION__ followed
+    by #define __FUNCTION__ "functionname" With this, our tracebacks can generate
+    function names on each level, we can remove functionname from error message
+    and easily manage different languages for each message.
+
+  X Provide support for VIEWER_DRAWX_WORLD from Fortran.
+
+  X Provide support somehow for -mat_view_draw and -vec_view_draw etc.
+    to reuse same window for subsequent calls with same matrix or vector.
+
+  X Add VIEWER_STDOUT_(comm) modeled on VIEWER_DRAWX_WORLD() that
+    automatically creates viewer for the communicator.
+
+  X Fix this:
+    > VecNorm with a NORM_MAX option returns 0 if the
+    > vector has NaN's. It seems to me that it should return
+    > NaN like the 1 and 2 norms. I guess the problem is that
+    > the comparison in the loop of the current max to NaN
+    > returns false becuase of the NaN, so the max is not
+    > set to NaN.
