@@ -26,17 +26,17 @@ set day=`date | cut -f1 -d" "`
   autoftp crabcake.larc.nasa.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
 
 if ($day == Sun || $day == Wed || $day == Fri) then
-    set M=(merlin       merlin      )
+    set M=(eagle       eagle      )
     set B=(g            O           )
     set A=(sun4         sun4        )
     set J=(fortran      fortran     )
 else if ($day == Mon || $day == Sat) then
-    set M=(merlin     ptera     )
+    set M=(eagle      doc   )
     set B=(g          O_c++     )
-    set A=(sun4       alpha     )
-    set J=(fortran    nofortran )
+    set A=(sun4       rs6000     )
+    set J=(fortran    fortran )
 else
-    set M=(merlin       merlin        )
+    set M=(eagle       eagle        )
     set B=(g            O_c++         )
     set A=(sun4         sun4          )
     set J=(fortran      nofortran     )
