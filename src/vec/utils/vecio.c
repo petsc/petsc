@@ -132,7 +132,6 @@ int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 #else
   PetscFunctionBegin;
   SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
-  PetscFunctionReturn(0);
 #endif
 }
 
@@ -279,7 +278,6 @@ int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 #else
   PetscFunctionBegin;
   SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
-  PetscFunctionReturn(0);
 #endif
 }
 int VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)

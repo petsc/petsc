@@ -16,9 +16,8 @@ users manual for a discussion of preloading.  Input parameters include\n\
    ex10 -f0 <datafile> -ksp_type preonly  \n\
         -help -sles_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
-        -ksp_type preonly -pc_type lu -mat_aij_spooles/superlu/superlu_dist/mumps \n\
-        -ksp_type preonly -pc_type cholesky -mat_baij_dscpack  -matload_type mpibaij \n\  
-        -ksp_type preonly -pc_type cholesky -mat_sbaij_spooles/mumps -matload_type mpisbaij\n\n";
+        -ksp_type preonly -pc_type lu -matload_type seqaijspooles/superlu/superlu_dist/aijmumps \n\
+        -ksp_type preonly -pc_type cholesky -matload_type seqsbaijspooles/dscpack/sbaijmumps    \n\n";
 */
 /*T
    Concepts: SLES^solving a linear system
