@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.46 1995/11/06 16:48:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.47 1995/12/06 00:23:44 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -38,11 +38,11 @@ static int MPIToAll(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
       PetscMemcpy(yv,xv+yy->ownership[yy->rank],yy->n*sizeof(Scalar));
     }
     else {
-      if (scat->work2) xvt2 = scat->work2; 
-      else {scat->work2 = xvt2 = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt2);}
+      if (scat->work) xvt = scat->work; 
+      else {scat->work = xvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt);}
       if (!yy->rank) { /* I am the zeroth processor, values are accumulated here */
-        if (scat->work) xvt = scat->work; 
-        else {scat->work = xvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt);}
+        if (scat->work2) xvt2 = scat->work2; 
+        else {scat->work2 = xvt2 = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(xvt2);}
         MPI_Gatherv(yv,yy->n,MPIU_SCALAR,xvt2,scat->count,yy->ownership,MPIU_SCALAR,0,ctx->comm);
         MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);
 	for ( i=0; i<size; i++ ) {
@@ -53,7 +53,7 @@ static int MPIToAll(Vec x,Vec y,InsertMode addv,int mode,VecScatter ctx)
       else {
         MPI_Gatherv(yv, yy->n, MPIU_SCALAR, 0,  0, 0, MPIU_SCALAR, 0, ctx->comm);
         MPI_Reduce(xv, xvt, size, MPIU_SCALAR, MPI_SUM, 0, ctx->comm);
-        MPI_Scatterv(xvt,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);
+        MPI_Scatterv(0,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);
       }
     }
   }

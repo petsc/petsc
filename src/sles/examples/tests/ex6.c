@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.18 1995/11/30 22:34:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.19 1995/12/06 00:25:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -16,7 +16,7 @@ Input arguments are:\n\
 int main(int argc,char **args)
 {
   int        ierr, its, set;
-  double     time, norm;
+  double     time1, norm;
   Scalar     zero = 0.0, none = -1.0;
   Vec        x, b, u;
   Mat        A;
@@ -48,9 +48,9 @@ int main(int argc,char **args)
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,ALLMAT_DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
-  PetscTime(time);
+  PetscTime(time1);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  PetscTimeElapsed(time);
+  PetscTimeElapsed(time1);
 
   /* Show result */
   ierr = MatMult(A,x,u);
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   } else {
     MPIU_printf(MPI_COMM_WORLD,"Residual norm = %10.4e\n",norm);
   }
-  /* MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time); */
+  /* MPIU_printf(MPI_COMM_WORLD,"Time for solve = %5.2f seconds\n",time1); */
 
   /* Cleanup */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
