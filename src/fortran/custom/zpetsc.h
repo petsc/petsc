@@ -10,17 +10,13 @@
 extern void   *PETSC_NULL_Fortran;
 extern char   *PETSC_NULL_CHARACTER_Fortran;
 
+/*  ----------------------------------------------------------------------*/
 /*
    On 32 bit machines we store each PETSc object C pointer directly as a
    Fortran integer. On 64 bit machines we convert these with the routines
        C pointer       = PetscToPointer(Fortran integer)
        Fortran integer = PetscFromPointer(C pointer)
 
-   For 32 bit machines and MPI implementations that use integers as MPI_Comms
-   (i.e. when USES_INT_MPI_COMM is defined), the C and Fortran representations 
-   are the same. For 64 bit machines using MPICH, we convert it with the routines
-       C pointer       = PetscToPointerComm(Fortran integer)
-       Fortran integer = PetscFromPointerComm(C pointer)
 */
 #if defined(HAVE_64BITS)
 #if defined(__cplusplus)
@@ -32,6 +28,43 @@ extern void PetscRmPointer(int);
 #if defined(__cplusplus)
 }
 #endif
+#else
+#define PetscToPointer(a)            (a)
+#define PetscFromPointer(a)     (int)(a)
+#define PetscRmPointer(a)
+#endif
+
+/*  ----------------------------------------------------------------------*/
+/*
+
+   Some MPI implementations use the same representation of MPI_Comm in C and 
+Fortran. 
+
+   MPICH
+     -For 32 bit machines there is no conversion between C and Fortran
+     -For 64 bit machines
+         = Before version 1.1 conversion with MPIR_xxx()
+         = Version 1.1 and later no conversion
+
+   Cray T3E/T3D 
+     No conversion
+
+   SGI
+     No conversion
+
+   HP-Convex
+     - Before release 1.3 MPI_*_F2C() and MPI_*_C2F()
+     - Release 1.3 and later MPI_*_f2c() and MPI_*_c2f()
+
+   MPI-2 standard
+     - MPI_*_f2c() and MPI_*_c2f()
+
+   We define the macros
+     PetscToPointerComm - from Fortran to C
+     PetscFromPointerComm - From C to Fortran
+
+*/
+#if defined(HAVE_64BITS)
 
 #if defined(USES_INT_MPI_COMM)
 #define PetscToPointerComm(a)        (a)
@@ -54,13 +87,11 @@ extern int   MPIR_FromPointer(void*);
 #endif
 
 #else
-#define PetscToPointer(a)            (a)
-#define PetscFromPointer(a)     (int)(a)
-#define PetscRmPointer(a)
 #define PetscToPointerComm(a)        (a)
 #define PetscFromPointerComm(a) (int)(a)
 #endif
 
+/* --------------------------------------------------------------------*/
 /*
     This defines the mappings from Fortran charactor strings 
   to C charactor strings on the Cray T3D.
