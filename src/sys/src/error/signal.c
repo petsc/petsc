@@ -8,10 +8,10 @@
 #include "petscfix.h"     
 
 struct SH {
-  int    cookie;
+  int            cookie;
   PetscErrorCode (*handler)(int,void *);
-  void   *ctx;
-  struct SH* previous;
+  void           *ctx;
+  struct SH*     previous;
 };
 static struct SH* sh        = 0;
 static PetscTruth SignalSet = PETSC_FALSE;
@@ -186,7 +186,7 @@ PetscErrorCode PetscDefaultSignalHandler(int sig,void *ptr)
 
    Concepts: signal handler^setting
 
-.seealso: PetscPopSignalHandler()
+.seealso: PetscPopSignalHandler(), PetscDefaultSignalHandler()
 
 @*/
 PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void* ctx)
@@ -204,7 +204,7 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void*
     signal(SIGBUS, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGCONT)
-    signal(SIGCONT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    /*signal(SIGCONT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);*/
 #endif
 #if !defined(PETSC_MISSING_SIGFPE)
     signal(SIGFPE,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
@@ -237,7 +237,7 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void*
     signal(SIGTRAP,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGTSTP)
-    signal(SIGTSTP,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    /* signal(SIGTSTP,  PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
 #if !defined(PETSC_MISSING_SIGURG)
     signal(SIGURG,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
@@ -258,7 +258,7 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void*
     signal(SIGBUS,  0);
 #endif
 #if !defined(PETSC_MISSING_SIGCONT)
-    signal(SIGCONT, 0);
+    /* signal(SIGCONT, 0); */
 #endif
 #if !defined(PETSC_MISSING_SIGFPE)
     signal(SIGFPE,  0);
@@ -291,7 +291,7 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void*
     signal(SIGTRAP, 0);
 #endif
 #if !defined(PETSC_MISSING_SIGTSTP)
-    signal(SIGTSTP, 0);
+    /* signal(SIGTSTP, 0); */
 #endif
 #if !defined(PETSC_MISSING_SIGURG)
     signal(SIGURG,  0);
@@ -348,7 +348,7 @@ PetscErrorCode PetscPopSignalHandler(void)
     signal(SIGBUS,  0);
 #endif
 #if !defined(PETSC_MISSING_SIGCONT)
-    signal(SIGCONT, 0);
+    /* signal(SIGCONT, 0); */
 #endif
 #if !defined(PETSC_MISSING_SIGFPE)
     signal(SIGFPE,  0);
@@ -381,7 +381,7 @@ PetscErrorCode PetscPopSignalHandler(void)
     signal(SIGTRAP, 0);
 #endif
 #if !defined(PETSC_MISSING_SIGTSTP)
-    signal(SIGTSTP, 0);
+    /* signal(SIGTSTP, 0); */
 #endif
 #if !defined(PETSC_MISSING_SIGURG)
     signal(SIGURG,  0);
