@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.26 1996/03/19 21:22:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.27 1996/04/20 04:18:30 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -155,7 +155,8 @@ int ISGetSize(IS is,int *size)
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
-   See the users manual and petsc/src/is/examples for details.
+   See the Fortran chapter of the users manual and 
+   petsc/src/is/examples for details.
 
 .keywords: IS, index set, get, indices
 

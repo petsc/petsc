@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daindex.c,v 1.2 1996/03/19 21:29:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.3 1996/04/09 23:14:21 bsmith Exp curfman $";
 #endif
  
 /*
@@ -18,6 +18,10 @@ static char vcid[] = "$Id: daindex.c,v 1.2 1996/03/19 21:29:33 bsmith Exp bsmith
    Output Parameters:
 .  n - the number of local elements, including ghost nodes (or PETSC_NULL)
 .  idx - the global indices
+
+   Fortran Note:
+   The Fortran interface is slightly different from that given below.
+   See the Fortran chapter of the users manual for details.
 
 .keywords: distributed array, get, global, indices, local to global
 
