@@ -47,7 +47,7 @@ class Linker(config.compile.processor.Processor):
   '''The C linker'''
   def __init__(self, argDB):
     self.compiler        = Compiler(argDB)
-    self.configLibraries = config.libraries.Configure(config.framework.Framework(argDB = argDB))
+    self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['CC_LD', 'LD', self.compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
@@ -102,7 +102,7 @@ class SharedLinker(config.compile.processor.Processor):
   '''The C linker'''
   def __init__(self, argDB):
     self.compiler = Compiler(argDB)
-    self.configLibraries = config.libraries.Configure(config.framework.Framework(argDB = argDB))
+    self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['LD_SHARED', self.compiler.name], ['LDFLAGS', 'sharedLibraryFlags'], '.o', None)
     self.outputFlag = '-o'
     self.libraries  = sets.Set()

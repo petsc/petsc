@@ -35,7 +35,7 @@ class Linker(config.compile.processor.Processor):
   '''The Fortran linker'''
   def __init__(self, argDB):
     self.compiler        = Compiler(argDB)
-    self.configLibraries = config.libraries.Configure(config.framework.Framework(argDB = argDB))
+    self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['FC_LD', 'LD', self.compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
