@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.113 1998/08/26 18:30:33 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.114 1998/08/26 18:33:26 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -419,6 +419,7 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
 
    Fortran Note:
    The calling sequence in Fortran is PetscTrDump(integer ierr)
+   The fp defaults to stdout.
 
 .keywords: memory, allocation, tracing, space, statistics
 
