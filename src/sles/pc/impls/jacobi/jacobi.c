@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.68 2000/09/02 02:48:46 bsmith Exp bsmith $*/
+/*$Id: jacobi.c,v 1.69 2000/10/25 16:35:51 bsmith Exp bsmith $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -301,7 +301,6 @@ static int PCSetFromOptions_Jacobi(PC pc)
 {
   PC_Jacobi  *jac = (PC_Jacobi*)pc->data;
   int        ierr;
-  PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsHead("Jacobi options");CHKERRQ(ierr);
@@ -351,7 +350,7 @@ int PCCreate_Jacobi(PC pc)
   */
   jac->diag          = 0;
   jac->diagsqrt      = 0;
-  jac->userowmax     = PETSC_NULL;
+  jac->userowmax     = PETSC_FALSE;
 
   /*
       Set the pointers for the functions that are provided above.
