@@ -295,6 +295,8 @@ EXTERN int PetscObjectReference(PetscObject);
 EXTERN int PetscObjectGetReference(PetscObject,int*);
 EXTERN int PetscObjectDereference(PetscObject);
 EXTERN int PetscObjectGetNewTag(PetscObject,int *);
+EXTERN int PetscObjectSetParameterDict(PetscObject,ParameterDict);
+EXTERN int PetscObjectGetParameterDict(PetscObject,ParameterDict*);
 EXTERN int PetscCommGetNewTag(MPI_Comm,int *);
 EXTERN int PetscObjectView(PetscObject,PetscViewer);
 EXTERN int PetscObjectCompose(PetscObject,const char[],PetscObject);

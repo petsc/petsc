@@ -142,9 +142,9 @@ int VecPrintHelp(Vec vec)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecSetSize"
+#define __FUNCT__ "VecSetSizes"
 /*@
-  VecSetSize - Sets the local and global sizes, and checks to determine compatibility
+  VecSetSizes - Sets the local and global sizes, and checks to determine compatibility
 
   Collective on Vec
 
@@ -156,7 +156,7 @@ int VecPrintHelp(Vec vec)
 
 .seealso: VecGetSize()
 @*/
-int VecSetSize(Vec v, int n, int N)
+int VecSetSizes(Vec v, int n, int N)
 {
   int ierr;
 

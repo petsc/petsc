@@ -158,7 +158,7 @@ int VecSetSerializeType(Vec vec, VecSerializeType method)
   VecRegister - Adds a new vector component implementation
 
   Synopsis:
-  VecRegister(char *name, char *path, char *func_name, int (*create_func)(Vec, ParameterDict))
+  VecRegister(char *name, char *path, char *func_name, int (*create_func)(Vec))
 
   Not Collective
 
@@ -198,7 +198,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecRegister_Private"
-int VecRegister(const char sname[], const char path[], const char name[], int (*function)(Vec, ParameterDict))
+int VecRegister(const char sname[], const char path[], const char name[], int (*function)(Vec))
 {
   char fullname[256];
   int  ierr;

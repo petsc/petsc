@@ -446,6 +446,57 @@ int PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)())
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectSetParameterDict"
+/*@C
+  PetscObjectSetParameterDict - Sets a parameter dictionary for an object
+
+  Input Parameters:
++ obj  - The PetscObject
+- dict - The ParameterDict
+
+  Level: intermediate
+
+.seealso PetscObjectGetParameterDict()
+@*/
+int PetscObjectSetParameterDict(PetscObject obj, ParameterDict dict) {
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeader(obj);
+  if (obj->dict != PETSC_NULL) {
+    ierr = PetscObjectDereference((PetscObject) obj->dict);                                               CHKERRQ(ierr);
+  }
+  if (dict != PETSC_NULL) {
+    ierr = PetscObjectReference((PetscObject) dict);                                                      CHKERRQ(ierr);
+  }
+  obj->dict = dict;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectGetParameterDict"
+/*@C
+  PetscObjectGetParameterDict - Gets the parameter dictionary for an object
+
+  Input Parameter:
+. obj  - The PetscObject
+
+  Output Parameter:
+. dict - The ParameterDict
+
+  Level: intermediate
+
+.seealso PetscObjectSetParameterDict()
+@*/
+int PetscObjectGetParameterDict(PetscObject obj, ParameterDict *dict) {
+  PetscFunctionBegin;
+  PetscValidHeader(obj);
+  PetscValidPointer(dict);
+  *dict = obj->dict;
+  PetscFunctionReturn(0);
+}
+
 struct _p_PetscObjectContainer {
   PETSCHEADER(int)
   void   *ptr;

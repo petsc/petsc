@@ -200,7 +200,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_MPI"
-int VecCreate_MPI(Vec vv, ParameterDict dict)
+int VecCreate_MPI(Vec vv)
 {
   int ierr;
 
@@ -211,6 +211,7 @@ int VecCreate_MPI(Vec vv, ParameterDict dict)
     ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);
   }
   ierr = VecCreate_MPI_Private(vv,0,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecSetSerializeType(vv,VEC_SER_MPI_BINARY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -242,7 +243,7 @@ int VecSerialize_MPI(MPI_Comm comm, Vec *vec, PetscViewer viewer, PetscTruth sto
     ierr = MPI_Allreduce(&locVars, &size, 1, MPI_INT, MPI_SUM, comm);                                     CHKERRQ(ierr);
     if (size != vars) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Invalid row partition");
     ierr = VecCreate(comm, &v);                                                                           CHKERRQ(ierr);
-    ierr = VecSetSize(v, locVars, vars);                                                                  CHKERRQ(ierr);
+    ierr = VecSetSizes(v, locVars, vars);                                                                  CHKERRQ(ierr);
     ierr = PetscMalloc((locVars + ghostVars) * sizeof(PetscScalar), &array);                              CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,  array,     locVars + ghostVars, PETSC_SCALAR);                            CHKERRQ(ierr);
     ierr = VecCreate_MPI_Private(v, ghostVars, array, PETSC_NULL);                                        CHKERRQ(ierr);
@@ -302,7 +303,7 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const PetscScalar array[],Ve
   }
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
-  ierr = VecSetSize(*vv,n,N);CHKERRQ(ierr);
+  ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*vv,0,array,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -560,7 +561,7 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
-  ierr = VecSetSize(*vv,n,N);CHKERRQ(ierr);
+  ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*vv,nghost,array,PETSC_NULL);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
@@ -638,7 +639,7 @@ int VecDuplicate_MPI(Vec win,Vec *v)
 
   PetscFunctionBegin;
   ierr = VecCreate(win->comm,v);CHKERRQ(ierr);
-  ierr = VecSetSize(*v,win->n,win->N);CHKERRQ(ierr);
+  ierr = VecSetSizes(*v,win->n,win->N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,0,win->map);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
   ierr = PetscMemcpy((*v)->ops,win->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
@@ -739,7 +740,7 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
-  ierr = VecSetSize(*vv,n,N);CHKERRQ(ierr);
+  ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*vv,nghost*bs,array,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
@@ -855,7 +856,7 @@ int VecSetValuesLocal_FETI(Vec vv,int n,const int *ix,const PetscScalar *values,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_FETI"
-int VecCreate_FETI(Vec vv, ParameterDict dict)
+int VecCreate_FETI(Vec vv)
 {
   int ierr;
 

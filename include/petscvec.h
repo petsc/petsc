@@ -95,12 +95,13 @@ EXTERN int VecCreateSeqWithArray(MPI_Comm,int,const PetscScalar[],Vec*);
 EXTERN int VecCreateMPIWithArray(MPI_Comm,int,int,const PetscScalar[],Vec*);  
 EXTERN int VecCreateShared(MPI_Comm,int,int,Vec*);  
 EXTERN int VecCreate(MPI_Comm, Vec *); 
+EXTERN int VecSerialize(MPI_Comm, Vec *, PetscViewer, PetscTruth);
 EXTERN int VecSetType(Vec,VecType); 
 EXTERN int VecSetFromOptions(Vec);
 EXTERN int VecPrintHelp(Vec);
 EXTERN int VecDestroy(Vec);        
 
-EXTERN int VecSetSize(Vec, int, int);
+EXTERN int VecSetSizes(Vec, int, int);
 
 EXTERN int PetscMapDestroy(PetscMap);
 EXTERN int PetscMapGetLocalSize(PetscMap,int *);
@@ -176,7 +177,7 @@ extern PetscFList VecList;
 extern int VecRegisterAllCalled;
 extern int VecSetType(Vec, VecType);
 extern int VecGetType(Vec, VecType *);
-extern int VecRegister(const char[],const char[],const char[],int(*)(Vec, ParameterDict));
+extern int VecRegister(const char[],const char[],const char[],int(*)(Vec));
 extern int VecRegisterAll(const char []);
 extern int VecRegisterDestroy(void);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)

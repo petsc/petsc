@@ -38,7 +38,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *v)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(1,"Comm_size > 1; sequential vector can be created on 1 processor only");
   ierr = VecCreate(comm,v);CHKERRQ(ierr);
-  ierr = VecSetSize(*v,n,n);CHKERRQ(ierr);
+  ierr = VecSetSizes(*v,n,n);CHKERRQ(ierr);
   ierr = VecSetType(*v,VEC_SEQ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

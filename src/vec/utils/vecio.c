@@ -86,7 +86,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
-    ierr = VecSetSize(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
+    ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
   } else {
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
-    ierr = VecSetSize(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
+    ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
     ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
     ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
     ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
