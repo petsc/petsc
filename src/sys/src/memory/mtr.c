@@ -1,7 +1,11 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.38 1995/10/11 15:18:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.39 1995/10/19 22:19:14 curfman Exp bsmith $";
 #endif
+/*
+     PETSc's interface to malloc() and free(). This code allows for 
+  logging of memory usage and some error checking 
+*/
 #include <stdio.h>
 #include "petsc.h"
 /* rs6000 needs _XOPEN_SOURCE to use tsearch */
@@ -184,8 +188,7 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
     return 0;
   }
   nsize = a;
-  if (nsize & TR_ALIGN_MASK) 
-    nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
+  if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
   inew = (char *) malloc( (unsigned)(nsize+sizeof(TrSPACE)+sizeof(unsigned long)));
   if (!inew) return 0;
 
@@ -402,8 +405,7 @@ static int  PrintSum(TRINFO ** a, VISIT order, int level )
 int TrSummary( FILE *fp )
 {
   TRSPACE *head;
-  TRINFO  *root, *key, **fnd;
-  TRINFO  nspace[1000];
+  TRINFO  *root, *key, **fnd,nspace[1000];
 
   root = 0;
   head = TRhead;
@@ -413,12 +415,11 @@ int TrSummary( FILE *fp )
     key->size   = 0;
     key->lineno = head->lineno;
     key->fname  = head->fname;
-#if !defined(PARCH_IRIX) && !defined(PARCH_solaris) && !defined(PARCH_hpux)\
-     && !defined(PARCH_rs6000)
-    fnd=(TRINFO **)tsearch((char *)key,(char **)&root,(int (*)(void*,void*))IntCompare);
-#elif defined(PARCH_solaris)
+#if defined(PARCH_solaris)
     fnd=(TRINFO **)tsearch((void *)key,(void **)&root, 
                                          (int (*)(const void*,const void*))IntCompare);
+#elif !defined(PARCH_IRIX) && !defined(PARCH_hpux) && !defined(PARCH_rs6000)
+    fnd=(TRINFO **)tsearch((char *)key,(char **)&root,(int (*)(void*,void*))IntCompare);
 #else
     fnd=(TRINFO **)tsearch((void *)key,(void **)&root,(int (*)(void*,void*))IntCompare);
 #endif
@@ -501,6 +502,7 @@ TRSPACE *TrImerge(TRSPACE * l1,TRSPACE * l2 )
 {
   TRSPACE *head = 0, *tail = 0;
   int     sign;
+
   while (l1 && l2) {
     sign = PetscStrcmp(l1->fname, l2->fname);
     if (sign > 0 || (sign == 0 && l1->lineno >= l2->lineno)) {
@@ -521,6 +523,7 @@ TRSPACE *TrImerge(TRSPACE * l1,TRSPACE * l2 )
   if (l2) tail->next = l2;
   return head;
 }
+
 /* Sort head with n elements, returning the head */
 TRSPACE *TrIsort( TRSPACE * head,int n )
 {

@@ -1,6 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.31 1995/10/11 15:18:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.32 1995/11/01 23:15:47 bsmith Exp bsmith $";
 #endif
+/*
+       The default error handlers and code that allows one to change
+   error handlers.
+*/
 #include "petsc.h"           /*I "petsc.h" I*/
 #include <stdio.h>           /*I <stdio.h> I*/
 #if defined(HAVE_STDLIB_H)

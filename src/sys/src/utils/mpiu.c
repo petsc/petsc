@@ -1,7 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.21 1995/10/31 02:08:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.22 1995/11/01 23:15:47 bsmith Exp bsmith $";
 #endif
-
+/*
+      Some PETSc utilites routines (beginning with MPIU_) to add simple
+  IO capability to MPI.
+*/
 #include "petsc.h"
 #include <stdio.h>
 #include <stdarg.h>

@@ -1,10 +1,11 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.51 1995/10/24 21:43:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.52 1995/11/01 19:09:22 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
+  These routines are used to manipulate the options database.
 
     This file uses regular malloc and free because it cannot know 
   what malloc is being used until it has already processed the input.
@@ -291,7 +292,7 @@ int OptionsCheckInitial_Private()
     MPIU_printf(comm,"--------------------------------------------\
 ------------------------------\n");
     MPIU_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
-    MPIU_printf(comm,"Bill Gropp,Lois Curfman McInnes,Barry Smith.\
+    MPIU_printf(comm,"Satish Balay,Bill Gropp,Lois Curfman McInnes,Barry Smith.\
  Bugs: petsc-maint@mcs.anl.gov\n");
     MPIU_printf(comm,"See petsc/COPYRIGHT for copyright information,\
  petsc/Changes for recent updates.\n");

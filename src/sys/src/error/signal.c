@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.21 1995/10/11 15:18:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.22 1995/11/01 23:15:47 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -20,7 +20,8 @@ static struct SH* sh        = 0;
 static int        SignalSet = 0;
 
 static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
-                           "TRAP",    "ABRT", "EMT",  "FPE",  "KILL", 
+                           "TRAP",    "ABRT", "EMT",  "FPE floating point exception"
+                          ,  "KILL", 
                            "BUS error",  
                            "SEGV segmentation violation", 
                            "SYS",  "PIPE", "ALRM",
@@ -32,8 +33,7 @@ static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
   your signal handler.
 */
 #if defined(PARCH_IRIX) || defined(PARCH_sun4)
-static void PetscSignalHandler( int sig, int code,
-                                        struct sigcontext * scp,char *addr)
+static void PetscSignalHandler( int sig, int code,struct sigcontext * scp,char *addr)
 #else
 static void PetscSignalHandler( int sig )
 #endif
@@ -154,3 +154,4 @@ int PetscPopSignalHandler()
   }
   return 0;
 }
+

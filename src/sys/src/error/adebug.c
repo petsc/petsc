@@ -1,6 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.30 1995/10/24 21:43:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.31 1995/11/01 23:15:47 bsmith Exp bsmith $";
 #endif
+/*
+      Code to handle PETSc starting up in debuggers, etc.
+*/
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <signal.h> 
