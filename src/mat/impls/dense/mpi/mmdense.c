@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmdense.c,v 1.7 1996/08/08 14:42:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmdense.c,v 1.8 1996/08/15 12:47:17 bsmith Exp balay $";
 #endif
 
 /*
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: mmdense.c,v 1.7 1996/08/08 14:42:42 bsmith Exp bsmith
 #include "src/mat/impls/dense/mpi/mpidense.h"
 #include "src/vec/vecimpl.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetUpMultiply_MPIDense"
 int MatSetUpMultiply_MPIDense(Mat mat)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
