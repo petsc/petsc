@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.30 1995/08/26 19:19:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.31 1995/08/27 14:15:19 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -65,7 +65,7 @@ int main(int argc,char **args)
           CHKERRA(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
   ierr = KSPGMRESSetRestart(ksp,2*m); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-12,PETSC_DEFAULT,PETSC_DEFAULT,
+  ierr = KSPSetTolerances(ksp,1.e-10,PETSC_DEFAULT,PETSC_DEFAULT,
                           PETSC_DEFAULT); CHKERRA(ierr);
   ierr = KSPSetMethod(ksp,KSPCG); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
@@ -74,7 +74,13 @@ int main(int argc,char **args)
   /* Check error */
   ierr = VecAXPY(&neg1,u,x); CHKERRA(ierr);
   ierr = VecNorm(x,&norm); CHKERRA(ierr);
-  MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
+
+  if (norm > 1.e-12) 
+    MPIU_printf(MPI_COMM_WORLD,
+      "Norm of error %g, Number of iterations %d\n",norm,its);
+  else 
+    MPIU_printf(MPI_COMM_WORLD,
+      "Norm of error < 1.e-12, Number of iterations %d\n",norm,its);
 
   /* Free work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
