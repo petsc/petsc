@@ -473,10 +473,11 @@ class ImportSharedLinker(SharedLinker):
 
   def getLibrary(self, object):
     '''Return the import library'''
-    return super(SharedLinker, self).getLibrary(self, object)+'.a'
+    return super(SharedLinker, self).getLibrary(object)+'.a'
 
   def getOutputFlags(self, source):
     '''Return a list of the linker flags specifying the library'''
+    import tempfile
     return ['-o '+os.path.join(tempfile.tempdir, 'import_dummy')+' -Wl,--out-implib='+self.getLibrary(source)]
 
   def handleErrors(self, command, status, output):
@@ -487,7 +488,7 @@ class ImportSharedLinker(SharedLinker):
   def processFileSet(self, set):
     '''Link all the files in "set"'''
     if self.argDB['HAVE_CYGWIN']:
-      super(SharedLinker, self).processFileSet(self, set)
+      super(SharedLinker, self).processFileSet(set)
     else:
       # Leave this set unchanged
       for f in set:
@@ -497,7 +498,7 @@ class ImportSharedLinker(SharedLinker):
   def processOldFile(self, f, set):
     '''Output old library'''
     if self.argDB['HAVE_CYGWIN']:
-      super(SharedLinker, self).processOldFile(self, f, set)
+      super(SharedLinker, self).processOldFile(f, set)
     return self.output
 
 class LibraryAdder (build.transform.Transform):
