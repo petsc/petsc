@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.16 1997/09/10 18:15:28 balay Exp balay $ 
+# $Id: base.site,v 1.17 1997/09/11 22:07:44 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -58,8 +58,8 @@ MPIRUN         =  /bin/mpirun
 #
 # Optional location of BlockSolve (MPI version)
 #
-#BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Optional Matlab location
 #
@@ -86,7 +86,7 @@ MPIRUN         =  /bin/mpirun
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         =
+PCONF         = -DHAVE_BLOCKSOLVE 
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
 EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
 #
