@@ -59,10 +59,20 @@ class Make(script.Script):
     '''Override this method to setup dependencies between source files'''
     return
 
+  def updateDependencyGraph(self, graph, head):
+    '''Update the directed graph with the project dependencies of head'''
+    for depMake, depSidlFiles in head[0].dependencies.values():
+      graph.addEdges(head, outputs = [(depMake, tuple(depSidlFiles))])
+      self.updateDependencyGraph(graph, (depMake, tuple(depSidlFiles)))
+    return
+
   def setup(self):
     script.Script.setup(self)
     self.builder.setup()
     self.setupDependencies(self.builder.sourceDB)
+    import graph
+    self.dependencyGraph = graph.DirectedGraph()
+    self.updateDependencyGraph(self.dependencyGraph, (self, tuple(self.sidl)))
     return
 
   def shouldConfigure(self, builder, framework):
@@ -237,9 +247,11 @@ class SIDLMake(Make):
     return Make.setupConfigure(self, framework)
 
   def configure(self, builder):
+    import graph
     framework = Make.configure(self, builder)
     if framework is None:
-      for depMake, depSidlFiles in self.dependencies.values():
+      for depMake, depSidlFiles in graph.DirectedGraph.topologicalSort(self.dependencyGraph):
+        if depMake is self: continue
         self.logWrite('Loading configure for '+depMake.getRoot())
         framework = depMake.loadConfigure()
         if not framework is None:
@@ -254,12 +266,13 @@ class SIDLMake(Make):
     self.ase       = framework.require('config.ase', None)
     return framework
 
-  def addDependency(self, url, sidlFile):
+  def addDependency(self, url, sidlFile, make = None):
     if not url in self.dependencies:
-      self.dependencies[url] = (self.getMake(url), sets.Set())
-      for depMake, depSidlFiles in self.dependencies[url][0].dependencies.values():
-        for depSidlFile in depSidlFiles:
-          self.addDependency(depMake.project.getUrl(), depSidlFile)
+      if make is None:
+        make = self.getMake(url)
+      self.dependencies[url] = (make, sets.Set())
+      for depMake, depSidlFiles in make.dependencies.values():
+        [self.addDependency(depMake.project.getUrl(), depSidlFile, depMake) for depSidlFile in depSidlFiles]
     self.dependencies[url][1].add(sidlFile)
     return
 
