@@ -119,7 +119,11 @@ class Configure(config.base.Configure):
     if self.checkLink(includes, body):
       found = 1
       self.framework.argDB['LIBS'] = oldLibs
+      # Handle case where lib='-lfoo -lbar /usr/../..'
+      newLibName = []
       for lib in libName:
+        newLibName.extend(filter(None,lib.split(' ')))
+      for lib in newLibName:
         if self.haveLib(lib): continue
         self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
         if lib.startswith('-L'): continue
