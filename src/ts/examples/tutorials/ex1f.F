@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.7 1997/04/03 18:56:51 curfman Exp bsmith $"
+C "$Id: ex1f.F,v 1.8 1997/04/10 00:05:28 bsmith Exp bsmith $"
 C
 C   Solves the time dependent Bratu problem using pseudo-timestepping
 C
@@ -259,7 +259,8 @@ C
       integer  ierr, i, j, row, mx, my,xidx,fidx
       Double   two, one, lambda
       Double   hx, hy, hxdhy, hydhx
-      Scalar   ut, ub, ul, ur, u, uxx, uyy, sc,xx(1),ff(1)
+      Scalar   ut, ub, ul, ur, u, uxx, uyy, sc
+      Scalar   xx(1),ff(1)
       common   xx, ff
       integer   param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)

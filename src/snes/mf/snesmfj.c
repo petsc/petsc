@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.49 1997/04/10 00:06:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.50 1997/06/12 22:52:40 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -55,7 +55,7 @@ int SNESMatrixFreeView_Private(Mat J,Viewer viewer)
   return 0;
 }
 
-extern int VecDot_Seq(Vec,Vec,double *);
+extern int VecDot_Seq(Vec,Vec,Scalar *);
 extern int VecNorm_Seq(Vec,NormType,double *);
 
 #undef __FUNC__  
