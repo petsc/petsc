@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.46 1997/02/22 02:28:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.47 1997/03/26 01:37:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -73,7 +73,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   Vec           w,U,F;
   int           ierr, (*eval_fct)(SNES,Vec,Vec);
 
-  MatShellGetContext(mat,(void **)&ctx);
+  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   snes = ctx->snes;
   w    = ctx->w;
   umin = ctx->umin;
