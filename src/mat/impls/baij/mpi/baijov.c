@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijov.c,v 1.18 1997/04/10 00:03:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.19 1997/05/30 22:19:03 bsmith Exp balay $";
 #endif
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -674,16 +674,17 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,
   return 0;
 }  
 
-static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
+static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat *);
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_MPIBAIJ" /* ADIC Ignore */
 int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
                              MatGetSubMatrixCall scall,Mat **submat)
 { 
-  int i,ierr;
-  IS  *isrow_new,*iscol_new;
-  
+  IS          *isrow_new,*iscol_new;
+  Mat_MPIBAIJ *c = (Mat_MPIBAIJ *) C->data;
+  int         nmax,nstages_local,nstages,i,pos,max_no,ierr;
+
   /* The compression and expansion should be avoided. Dos'nt point
      out errors might change the indices hence buggey */
 
@@ -691,7 +692,27 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
   iscol_new = isrow_new + ismax;
   ierr = MatCompressIndicesSorted_MPIBAIJ(C, ismax, isrow,isrow_new); CHKERRQ(ierr);
   ierr = MatCompressIndicesSorted_MPIBAIJ(C, ismax, iscol,iscol_new); CHKERRQ(ierr);
-  ierr = MatGetSubMatrices_MPIBAIJ_local(C,ismax,isrow_new,iscol_new,scall,submat); CHKERRQ(ierr);
+
+  /* Allocate memory to hold all the submatrices */
+  if (scall != MAT_REUSE_MATRIX) {
+    *submat = (Mat *)PetscMalloc((ismax+1)*sizeof(Mat));CHKPTRQ(*submat);
+  }
+  /* Determine the number of stages through which submatrices are done */
+  nmax          = 20*1000000 / (c->Nbs * sizeof(int));
+  if (nmax == 0) nmax = 1;
+  nstages_local = ismax/nmax + ((ismax % nmax)?1:0);
+  
+  /* Make sure every porcessor loops through the nstages */
+  MPI_Allreduce(&nstages_local,&nstages,1,MPI_INT,MPI_MAX,C->comm);
+
+  
+  for ( i=0,pos=0; i<nstages; i++ ) {
+    if (pos+nmax <= ismax) max_no = nmax;
+    else if (pos == ismax) max_no = 0;
+    else                   max_no = ismax-pos;
+    ierr = MatGetSubMatrices_MPIBAIJ_local(C,max_no,isrow_new+pos,iscol_new+pos,scall,*submat+pos); CHKERRQ(ierr);
+    pos += max_no;
+  }
   
   for (i=0; i<ismax; i++) {
     ISDestroy(isrow_new[i]);
@@ -705,10 +726,10 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_MPIBAIJ_local" /* ADIC Ignore */
 static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
-                             MatGetSubMatrixCall scall,Mat **submat)
+                             MatGetSubMatrixCall scall,Mat *submats)
 { 
   Mat_MPIBAIJ  *c = (Mat_MPIBAIJ *) C->data;
-  Mat         A = c->A,*submats = *submat;
+  Mat         A = c->A;
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data, *b = (Mat_SeqBAIJ*)c->B->data, *mat;
   int         **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
   int         **sbuf1,**sbuf2, rank, Mbs,i,j,k,l,ct1,ct2,ierr, **rbuf1,row,proc;
@@ -1174,7 +1195,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
     }
   }
   else {
-    *submat = submats = (Mat *)PetscMalloc(ismax*sizeof(Mat)); CHKPTRQ(submats);
+    /* *submat = submats = (Mat *)PetscMalloc(ismax*sizeof(Mat)); CHKPTRQ(submats); */
     for (i=0; i<ismax; i++) {
       ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,a->bs,nrow[i]*bs,ncol[i]*bs,0,lens[i],submats+i);
              CHKERRQ(ierr);
