@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex30.c,v 1.30 1996/11/07 15:09:50 bsmith Exp $";
+static char vcid[] = "$Id: ex30.c,v 1.1 1996/12/10 13:57:52 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
@@ -11,8 +11,8 @@ Note that most users should employ the SLES interface to the\n\
 linear solvers instead of using the factorization routines\n\
 directly.\n\n";
 
-#include "mat.h"
 #include "draw.h"
+#include "mat.h"
 #include <stdio.h>
 
 int main(int argc,char **args)

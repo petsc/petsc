@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.40 1996/09/05 17:52:21 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.41 1996/09/18 12:09:09 curfman Exp bsmith $";
 #endif
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
@@ -77,7 +77,7 @@ int main( int argc, char **argv )
   else        user.param = 6.0;
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
   if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRA(1,0,"Lambda is out of range");
   }
   N = user.mx*user.my;
   
@@ -261,7 +261,7 @@ int FormInitialGuess2(AppCtx *user,Vec X)
   my	 = user->my;
 
   /* Test for invalid input parameters */
-  if ((mx <= 0) || (my <= 0)) SETERRQ(1,0);
+  if ((mx <= 0) || (my <= 0)) SETERRQ(1,0,0);
 
   hx    = 1.0 / (double)(mx-1);
   hy    = 1.0 / (double)(my-1);
