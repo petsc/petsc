@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.44 1996/05/02 15:42:40 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.45 1996/05/02 18:08:32 balay Exp curfman $";
 #endif
 
 /*
@@ -319,7 +319,7 @@ static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
         rp   = aj + ai[brow]; ap = aa + bs2*ai[brow];
         rmax = imax[brow] = imax[brow] + CHUNKSIZE;
         PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(Scalar)));
-        a->maxnz += CHUNKSIZE;
+        a->maxnz += bs2*CHUNKSIZE;
         a->reallocs++;
         a->nz++;
       }
@@ -1177,7 +1177,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->bs2              = bs2;
   b->mbs              = mbs;
   b->nz               = 0;
-  b->maxnz            = nz;
+  b->maxnz            = nz*bs2;
   b->sorted           = 0;
   b->roworiented      = 1;
   b->nonew            = 0;
