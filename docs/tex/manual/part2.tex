@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.206 1997/03/29 00:41:41 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.207 1997/03/31 16:09:39 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -923,8 +923,9 @@ When using the block compressed sparse row matrix format ({\tt MATSEQBAIJ} or
 {\tt MATMPIBAIJ}), one can insert elements more efficiently using the block
 variant, {\tt MatSetValuesBlocked()}. \findex{MatSetValuesBlocked()}
 
-The function {\tt MatSetOption()} accepts several other inputs.  We
-discuss two of these, which are related to the efficiency of the
+The function {\tt MatSetOption()} accepts several other inputs; see
+the man page for details. We
+discuss two of these options, which are related to the efficiency of the
 assembly process.  To indicate to PETSc that the row ({\tt im}) or
 column ({\tt in}) indices set with {\tt MatSetValues()} are sorted,
 one uses the command \findex{MAT_ROWS_SORTED} \findex{MAT_COLUMNS_SORTED}
@@ -1776,7 +1777,7 @@ slightly different algorithms depending on whether the matrix is
 Hermitian symmetric or truly symmetric (the default is to assume that
 it is Hermitian symmetric). To indicate that it is symmetric, one uses the command
 \findex{KSPCGSetType()} \findex{KSP_CG_SYMMETRIC} \findex{KSPCGType}
-\findex{Hermitian matrix} 
+\sindex{Hermitian matrix} 
 \begin{verbatim}
    ierr = KSPCGSetType(KSP ksp,KSPCGType KSP_CG_SYMMETRIC);
 \end{verbatim}
@@ -2269,7 +2270,7 @@ sets the SSOR relaxation coefficient, {\tt omega}, as discussed above.
 
 The LU preconditioner provides several options.  The first, given by
 the \sindex{direct solver}
-command \findex{PCLUSetUseInPlace()} \findex{inplace solvers}
+command \findex{PCLUSetUseInPlace()} \sindex{in-place solvers}
 \begin{verbatim}
    ierr = PCLUSetUseInPlace(PC pc);
 \end{verbatim}
@@ -2449,9 +2450,11 @@ large number of parameters affect the multigrid behavior. The command
 \begin{verbatim}
    ierr = MGSetType(PC pc,MGType mode); 
 \end{verbatim}
-indicates \findex{MGSetType()} \findex{Multiplicative} which
-\findex{Additive} \findex{Full Multigrid} \findex{Kaskade} form of
-multigrid to apply \cite{1sbg}. 
+indicates which form of multigrid to apply \cite{1sbg}. 
+\findex{MGSetType()}
+\sindex{multigrid, multiplicative} 
+\sindex{multigrid, additive} \sindex{multigrid, full} \sindex{multigrid, Kaskade}
+
 For standard V or W-cycle multigrids, one sets the {\tt
 mode} to be \findex{MGMULTIPLICATIVE} {\tt MGMULTIPLICATIVE}; for the
 additive form (which in certain cases reduces to the BPX method, or additive 
@@ -2849,7 +2852,7 @@ Other line search methods provided by PETSc are
 {\tt SNESNoLineSearch()} \findex{SNESNoLineSearch()}
 and {\tt SNESQuadraticLineSearch()}, \findex{SNESNoLineSearch()}
 which can be set with the option
-{\tt -snes\_eq\_ls [basic,quadratic,cubic]}. \findex{-snes_line_search}
+{\tt -snes\_eq\_ls [basic,quadratic,cubic]}. \findex{-snes_eq_ls}
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
 can override the defaults by using the options
@@ -4438,6 +4441,23 @@ The following functions are not supported in Fortran:
 \item ViewerStringOpen(), ViewerStringSPrintf()
 \end{itemize}
 
+\subsection{Fortran90 Pointers}
+
+PETSc includes limited support for direct use of Fortran90 pointers.
+Current routines include:
+\begin{itemize}
+\item VecGetArrayF90(), VecRestoreArrayF90()
+\item MatGetArrayF90(), MatRestoreArrayF90()
+\item ISGetIndicesF90(), ISRestoreIndicesF90()
+\item DAGetGlobalIndicesF90()
+\item VecDuplicateVecsF90(), VecDestroyVecsF90()
+\end{itemize}
+See the man pages for details.  Unfortunately, these routines
+currently work only with the NAG F90 compiler.  We hope to support
+other compilers as well, but we will need assistance from the vendors
+since the Fortran90/C interface is not a defined standard.
+
+
 \section{Sample Fortran 77 Programs}
 \label{sec:fortran-examples}
 
@@ -5210,41 +5230,68 @@ calling {\tt KSPGMRESSetRestart()}. Section~\ref{sec:ksp} gives
 information on setting alternative GMRES orthogonalization routines,
 which may provide much better parallel performance.
 
-\section{Finding Memory Leaks}
+\section{Detecting Memory Allocation Problems}
 
 PETSc provides a number of tools to aid in detection of problems
-with memory allocation.  We briefly describe these below.
+with memory allocation, including leaks and use of uninitialized space.
+We briefly describe these below.
+\sindex{memory leaks} \sindex{memory allocation}
 
+\findex{-trmalloc} \findex{-trmalloc_off}
 \begin{itemize}
 \item The PETSc memory allocation (which collects statistics and performs
 error checking), is employed by default for codes compiled in a
 debug mode ({\tt BOPT=g}, {\tt BOPT=g\_c++}, {\tt BOPT=g\_complex}).
 PETSc memory allocation can be activated for other other cases, such
 as {\tt BOPT=O}, with the option {\tt -trmalloc}, while {\tt
--notrmalloc} forces the use of conventional memory allocation for the
+-trmalloc\_off} forces the use of conventional memory allocation for the
 {\tt BOPT=g}, {\tt BOPT=g\_c++}, and {\tt BOPT=g\_complex} versions.
-When running timing tests, one shoulde always use {\tt -notrmalloc} or the {\tt
-BOPT=O} version of the libraries.
+When running timing tests, one should always use {\tt -trmalloc\_off} or 
+the {\tt BOPT=O} version of the libraries.
 
-\item When the PETSc memory allocation routines are used, the option {\tt
--trdump} will print a list of unfreed memory at the conclusion of a
+\findex{-trdump} \findex{PetscTrDump()}
+\item When the PETSc memory allocation routines are used, the option 
+{\tt -trdump} will print a list of unfreed memory at the conclusion of a
 program.  If all memory has been freed, only a message stating
 the maximum allocated space will be printed.  However, if some memory
 remains unfreed, this information will be printed.  Note that the
-option {\tt -trdump} merely activates a call to {\tt TrDump()} during
-{\tt PetscFinalize()}; the user can also call {\tt TrDump()} elsewhere
+option {\tt -trdump} merely activates a call to {\tt PetscTrDump()} during
+{\tt PetscFinalize()}; the user can also call {\tt PetscTrDump()} elsewhere
 in a program.
+
+\findex{-trmalloc_log} \findex{PetscGetResidentSetSize()}
+\findex{PetscTrLog()} \findex{PetscTrLogDump()}
+\item Another useful option for use with PETSc memory allocation
+routines is {\tt -trmalloc\_log}, which activates logging of all calls
+to malloc and reports memory usage, including all Fortran arrays.
+This option provides a more complete picture than {\tt -trdump} for
+codes that employ Fortran with hardwired arrays.  Note that the option
+{\tt -trmalloc\_log} activates calls to {\tt PetscTrLog()], {\tt
+PetscTrLogDump()}, and \tt PetscGetResidentSetSize()} during {\tt
+PetscFinalize()}; the user can also call these routines elsewhere in a
+program.
+
+\findex{PetscInitializeNans()} \findex{PetscInitializeLargeInts()}
+\findex{-trmalloc_nan}
+\item The option {\tt -trmalloc\_nan} is useful for tracking down the
+allocated memory that is used before it has been initialized.  This
+option calls {\tt PetscInitializeNans()} which marks an array as being
+uninitialized, so that if values are used for computation without
+first having been set, a floating point exception is generated.  This
+option also calls {PetscInitializeLargeInts()}; see the man pages for
+details.  Note that so far these work only on the sun4 system.
 
 \item The utility {\tt \$(PETSC\_DIR)/bin/petscview} can illustrate graphically
 what PETSc objects have never been properly destroyed during a run.  
 First, one should check that the source has been compiled with the
-      {\tt -DPETSC\_LOG} flag (which is the default for all versions).
-Then one runs the program with the {\tt -log} option, and views the resulting
-      log file with {\tt petscview}, which uses colors to illustrate different
-      levels of object activity.  When PETSc objects have been destroyed,
-      they change color (gray, by default).  Any objects that have not
-      been properly destroyed (so that their memory remains allocated)
-      should not turn gray.
+{\tt -DPETSC\_LOG} flag (which is the default for all versions).
+Then one can run the program with the {\tt -log} option, and view the resulting
+log file with {\tt petscview}, which uses colors to illustrate different
+levels of object activity.  When PETSc objects have been destroyed,
+they change color (gray, by default).  Any objects that have not
+been properly destroyed (so that their memory remains allocated)
+should not turn gray.
+\index{petscview}
 \end{itemize}
 
 \section{Machine-Specific Optimizations}
@@ -5269,7 +5316,9 @@ overcoming them.
       memory used by given process is with the UNIX {\tt ps} command.
       Also, the PETSc option {\tt -log\_summary} prints the amount of 
       memory used by the basic PETSc objects, thus providing a lower
-      bound on the memory used.
+      bound on the memory used.  Another useful option is {\tt -trmalloc\_log}
+      which reports all memory, including any Fortran arrays in an
+      application code.
 \item {\bf Effects of other users}:  If other users are running
       jobs on the same physical processor nodes on which a program is being profiled,
       the timing results are essentially meaningless. 
@@ -5302,16 +5351,42 @@ overcoming them.
 %---------------------------------------------------------------------
 \chapter{Other PETSc Features}
 
-\section{Options} \sindex{options} \sindex{command line options}
+\section{Runtime Options} \sindex{runtime options} \sindex{options}
+\sindex{command line options}
 \label{sec:options}
 
 Allowing the user to modify parameters and options easily at runtime
-is very desirable for many applications. PETSc 2.0 provides a simple
-mechanism to enable such runtime customization. Each PETSc process
-maintains a database of option names and values (stored as text
-strings). This database is generated with the command {\tt
-PETScInitialize()}, which is listed below in its C/C++ and Fortran
-variants, respectively:
+is very desirable for many applications.  PETSc 2.0 provides a simple
+mechanism to enable such customization.  To print a list of
+available options for a given program, simply specify the option 
+{\tt -help} (or {\tt -h}) at runtime, e.g., \findex{-help} \findex{-h}
+\begin{verbatim}
+    mpirun ex1 -help
+\end{verbatim}
+
+Note that all runtime options correspond to particular PETSc routines
+that can be explicitly called from within a program to set compile-time
+defaults.   For many applications it is natural to use a combination
+of compile-time and runtime choices.  For example, when solving a linear
+system, one could explicitly specify use of the Krylov subspace
+technique BiCGStab by calling
+\begin{verbatim}
+    ierr = KSPSetType(ksp,KSPBCGS);
+\end{verbatim}
+One could then override this choice at runtime with the option
+\begin{verbatim}
+    -ksp_type tfqmr
+\end{verbatim}
+to select the Transpose-Free QMR algorithm. (See Chapter~\ref{ch:sles} for details.)
+
+The remainder of this section discusses details of runtime options.
+
+\subsection{The Options Database}
+
+Each PETSc process maintains a database of option names and values
+(stored as text strings). This database is generated with the command
+{\tt PETScInitialize()}, which is listed below in its C/C++ and
+Fortran variants, respectively:
 \begin{verbatim}
    ierr = PetscInitialize(int *argc,char ***args,char *file_name,char *help_message);
    call PetscInitialize(character file_name,integer ierr)
@@ -5329,7 +5404,7 @@ The options are processed in the following order:
 \item command line
 \end{itemize}
 Thus, the command line options supersede the environmental variable
-options, which in turn supersede the options file.
+options, which in turn supersede the options file.  
 
 The file format for specifying options is 
 \begin{verbatim}
@@ -5357,6 +5432,8 @@ For example,
 \end{verbatim}
 Comments can be placed in the .petscrc file by using one of the
 following symbols in the first column of a line: {\tt \#, \%}, or {\tt !}.
+
+\subsection{User-Defined Options}
 
 Any subroutine in a PETSc program can add entries to the database with the 
 command \findex{OptionsSetValue()}
@@ -5388,6 +5465,8 @@ the names of the individual options.  For example, when using block
 Jacobi preconditioning, the KSP and PC methods used on the individual
 blocks can be controlled via the options {\tt -sub\_ksp\_type} and {\tt
 -sub\_pc\_type}. \sindex{block Jacobi}
+
+\subsection{Keeping Track of Options}
 
 One useful means of keeping track of user-specified runtime options is
 use of {\tt -optionstable}, which prints to {\tt stdout} during {\tt
@@ -5789,7 +5868,7 @@ PETSc include file), can freely use any MPI routine.
 \label{ch:makefiles}
 
 This chapter describes the design of the PETSc makefiles, which are the
-key to managing our code portability across a wide variety of Unix systems.
+key to managing our code portability across a wide variety of UNIX systems.
 
 \section{Our Makefile System}
 
@@ -5825,7 +5904,7 @@ directory of execution, include
 \begin{itemize}
 \item {\tt lib} - Updates the PETSc libraries based on the source code
       in the directory.
-\item {\tt libfast} - Update the libraries faster.  Since
+\item {\tt libfast} - Updates the libraries faster.  Since
       {\tt libfast} recompiles all source files in the directory at once,
       rather than individually, this command saves time when many files
       must be compiled.
@@ -5914,44 +5993,62 @@ Maintaining portable PETSc makefiles is very simple. In Figures
 \ref{fig:make1}, \ref{fig:make2}, and \ref{fig:make3} we present three sample
 makefiles.  
 
-The first is a minimum Makefile for maintaining a single program that uses
+The first is a ``minimum'' makefile for maintaining a single program that uses
 the PETSc libraires.
 \begin{figure}[H]
 {\small
 \begin{verbatim}
-ALL: ex2
+   ALL: ex2
 
-CFLAGS          = $(CPPFLAGS) 
-FFLAGS          = 
-SOURCEC         = 
-SOURCEF         =
-SOURCEH         =
-OBJSC           =
-OBJSF           = 
-LIBBASE         = libpetscsles
-DIRS            = 
+   CFLAGS          = $(CPPFLAGS) 
+   FFLAGS          = 
+   SOURCEC         = 
+   SOURCEF         =
+   SOURCEH         =
+   OBJSC           =
+   OBJSF           = 
+   LIBBASE         = libpetscsles
+   DIRS            = 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
-ex2: ex2.o chkopts
-        $(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
-        $(RM) ex2.o
+   ex2: ex2.o chkopts
+           $(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
+           $(RM) ex2.o
 \end{verbatim}
 }
-\caption{Sample PETSc Makefile for building a single program}
+\caption{Sample PETSc Makefile for a Single Program}
 \label{fig:make1}
 \end{figure}
 
-The most important line in this makefile is the line starting {\tt include}; 
-this line includes other makefiles that provide the needed definitions and
-rules.  
+The most important line in this makefile is the line starting with {\tt include}:
+\begin{verbatim}
+   include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+\end{verbatim}
+This line includes other makefiles that provide the needed definitions
+and rules for the particular base PETSc installation (specified by
+environmental {\tt \$(PETSC\_DIR)}) and architecture (specified by
+{\tt \$(PETSC\_ARCH)}).  (See \ref{sec:running} for information on
+setting these environmental variables.)  As listed in the sample
+makefile, the appropriate {\tt include} file is automatically
+completely specified; the user should {\em not} alter this statement
+within the makefile.
 
-The second controls the generation of several example programs. 
+\findex{PETSC_LIB} \findex{SLES_LIB}
+Note that the variable {\tt \$(PETSC\_LIB)} (as listed on the link
+line in the above makefile) specifies {\em all} of the various PETSc
+libraries in the appropriate order for correct linking.  For users who
+employ only the PETSc linear solvers and data structures (i.e., do not
+use the nonlinear and timestepping solvers), {\tt \$(SLES\_LIB)} can
+be used as an alternative to {\tt \$(PETSC\_LIB)}.
+
+The second sample makefile, given in Figure~\ref{fig:make2},
+controls the generation of several example programs. 
 
 \begin{figure}[H]
 {\small
 \begin{verbatim}
-   CFLAGS        =  $(CONF) $(PETSC_INCLUDE)
+   CFLAGS        =  $(CPPFLAGS)
    SOURCEC       = 
    SOURCEF       =
    SOURCEH       =
@@ -5992,35 +6089,28 @@ The second controls the generation of several example programs.
    include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 \end{verbatim}
 }
-\caption{Sample PETSc Makefile for Example Programs}
+\caption{Sample PETSc Makefile for Several Example Programs}
 \label{fig:make2}
 \end{figure}
 
-The two most important lines in the makefile of Figure \ref{fig:make2}
-are the location of the {\tt PETSc} home directory, set with {\tt PETSC\_DIR}, 
-and the {\tt include} line that includes the files
-defining all of the macro variables. The variable {\tt PETSC\_DIR} is
-automatically defined for the examples within the PETSc library 
-structure.  In general, the user should set {\tt PETSC\_DIR} 
-to \findex{PETSC_DIR} be the location of the local
-PETSc library.  As listed in the sample makefile, the appropriate
-{\tt include} file is automatically completely specified; the user should
-{\em not} alter this statement within the makefile.  Some additional
-variables used in the makefile are defined as follows:
+Again, the most important line in this makefile is
+the {\tt include} line that includes the files
+defining all of the macro variables.
+
+Some additional
+variables that can be used in the makefile are defined as follows:
 \begin{itemize}
 \item {\tt CLINKER, FLINKER} - the C and Fortran linkers. 
 \item {\tt RM} - the remove command for deleting files.
 \item {\tt PETSC\_INCLUDE} - the directory locations of any PETSc (or PETSc
             needed) files that are included in programs. \findex{PETSC_INCLUDE}
-\item {\tt CONF} - various defines that indicate what packages are available.
+\item {\tt CPPFLAGS} - flags defined for each system and level of 
+                       optimization for C/C++ preprocessor (also processes Fortran *.F files).
+\item {\tt FCONF} - flag that handles the naming convention for Fortran routines
+                    on various machines (needed by C routines that call 
+                    Fortran routines).
 \item {\tt PCONF} - defined in {\tt \$(PETSC\_ARCH)/base.site} to 
             indicate which external packages are available at a particular site.
-\item {\tt COPTFLAGS} - flags defined for each system and level of 
-                        optimization (C/C++ compiler).
-\item {\tt FOPTFLAGS} - flags defined for each system and level of 
-                        optimization (Fortran compiler).
-\item {\tt CPPFLAGS} - flags defined for each system and level of 
-                        optimization for C/C++ preprocessor.
 \item {\tt EXAMPLES\_1} - examples that will be built with
              {\tt make BOPT=[g,O,Opg] examples} (see Section~\ref{sec:common})
 \item {\tt RUNEXAMPLES\_1} - examples that will be run with
@@ -6035,6 +6125,12 @@ variables used in the makefile are defined as follows:
              \findex{PETSC_LIB}
 \item {\tt PETSC\_FORTRAN\_LIB} - the PETSc Fortran interface 
              library. \findex{PETSC_FORTRAN_LIB}
+\item {\tt CONF} - various defines that indicate what packages are available
+           (generally not needed by application programs).
+\item {\tt COPTFLAGS} - flags defined for each system and level of 
+                        optimization (C/C++ compiler).
+\item {\tt FOPTFLAGS} - flags defined for each system and level of 
+                        optimization (Fortran compiler).
 \end{itemize}
 Note that the PETSc example programs are divided into several
 categories, which currently include: 
