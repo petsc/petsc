@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.29 1996/04/20 04:20:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.30 1996/07/08 22:21:48 bsmith Exp balay $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -282,21 +282,21 @@ static char *PetscADefLabel(double val,double sep )
   int    w, d;
 
   /* Find the string */
-  if (fabs(val) < 1.0e6) {
+  if (PetscAbsDouble(val) < 1.0e6) {
     /* Compute the number of digits */
     w = 0;
     d = 0;
     if (sep > 0.0) {
 	d = (int) ceil( - log10 ( sep ) );
 	if (d < 0) d = 0;
-	if (fabs(val) < 1.0e-6*sep) {
+	if (PetscAbsDouble(val) < 1.0e-6*sep) {
 	    /* This is the case where we are near zero and less than a small
 	       fraction of the sep.  In this case, we use 0 as the value */
 	    val = 0.0;
 	    w   = d;
         }
 	else if (val == 0.0) w   = d;
-	else w = (int) (ceil( log10( fabs( val ) ) ) + d);
+	else w = (int) (ceil( log10( PetscAbsDouble( val ) ) ) + d);
 	if (w < 1)   w ++;
 	if (val < 0) w ++;
     }
@@ -401,7 +401,7 @@ static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
 
   /* make it of form   m x 10^power,   m in [1.0, 10) */
   if (base <= 0.0) {
-    base    = fabs( vmin );
+    base    = PetscAbsDouble( vmin );
     if (base < 1.0) base = 1.0;
   }
   ftemp   = log10( ( 1.0 + EPS ) * base );
