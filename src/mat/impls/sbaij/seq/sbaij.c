@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.17 2000/08/28 16:36:39 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.18 2000/09/05 14:10:58 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -19,11 +19,11 @@
 #define __FUNC__ "MatMissingDiagonal_SeqSBAIJ"
 int MatMissingDiagonal_SeqSBAIJ(Mat A)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
   int         *diag,*jj = a->j,i,ierr;
 
   PetscFunctionBegin;
-  ierr = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
+  ierr = MatMarkDiagonal_SeqSBAIJ(A);CHKERRQ(ierr);
   diag = a->diag;
   for (i=0; i<a->mbs; i++) {
     if (jj[diag[i]] != i) {
@@ -37,8 +37,8 @@ int MatMissingDiagonal_SeqSBAIJ(Mat A)
 #define __FUNC__ "MatMarkDiagonal_SeqSBAIJ"
 int MatMarkDiagonal_SeqSBAIJ(Mat A)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
-  int         i,j,*diag,m = a->mbs;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
+  int          i,j,*diag,m = a->mbs;
 
   PetscFunctionBegin;
   if (a->diag) PetscFunctionReturn(0);
@@ -66,44 +66,22 @@ extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
 static int MatGetRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-  int         ierr,n = a->mbs,i;
 
   PetscFunctionBegin;
-  *nn = n;
-  if (!ia) PetscFunctionReturn(0);
-  if (symmetric) {
-    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,oshift,ia,ja);CHKERRQ(ierr);
-  } else if (oshift == 1) {
-    /* temporarily add 1 to i and j indices */
-    int nz = a->i[n] + 1; 
-    for (i=0; i<nz; i++) a->j[i]++;
-    for (i=0; i<n+1; i++) a->i[i]++;
-    *ia = a->i; *ja = a->j;
-  } else {
-    *ia = a->i; *ja = a->j;
-  }
-
+  if (ia) {
+    SETERRQ(1,1,"Function not yet written for SBAIJ format, only supports natural ordering");
+  } 
+  *nn = a->mbs;
   PetscFunctionReturn(0); 
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatRestoreRowIJ_SeqSBAIJ" 
-static int MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
-                                PetscTruth *done)
+static int MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,PetscTruth *done)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
-  int         i,n = a->mbs,ierr;
-
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
-  if (symmetric) {
-    ierr = PetscFree(*ia);CHKERRQ(ierr);
-    ierr = PetscFree(*ja);CHKERRQ(ierr);
-  } else if (oshift == 1) {
-    int nz = a->i[n]; 
-    for (i=0; i<nz; i++) a->j[i]--;
-    for (i=0; i<n+1; i++) a->i[i]--;
-  }
+  SETERRQ(1,1,"Function not yet written for SBAIJ format, only supports natural ordering");
   PetscFunctionReturn(0); 
 }
 
@@ -149,9 +127,6 @@ int MatDestroy_SeqSBAIJ(Mat A)
   if (a->row) {
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
   }
-  if (a->col) {
-    ierr = ISDestroy(a->col);CHKERRQ(ierr);
-  }
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
   if (a->imax) {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
@@ -169,7 +144,7 @@ int MatDestroy_SeqSBAIJ(Mat A)
 #define __FUNC__ "MatSetOption_SeqSBAIJ"
 int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
 
   PetscFunctionBegin;
   if      (op == MAT_ROW_ORIENTED)                 a->roworiented    = PETSC_TRUE;
@@ -188,7 +163,7 @@ int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
            op == MAT_YES_NEW_DIAGONALS ||
            op == MAT_IGNORE_OFF_PROC_ENTRIES ||
            op == MAT_USE_HASH_TABLE) {
-    PLogInfo(A,"MatSetOption_SeqBAIJ:Option ignored\n");
+    PLogInfo(A,"MatSetOption_SeqSBAIJ:Option ignored\n");
   } else if (op == MAT_NO_NEW_DIAGONALS) {
     SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");
   } else {
@@ -206,7 +181,7 @@ int MatGetSize_SeqSBAIJ(Mat A,int *m,int *n)
 
   PetscFunctionBegin;
   if (m) *m = a->m; 
-  if (n) *n = a->m;
+  if (n) *n = a->n;
   PetscFunctionReturn(0);
 }
 
@@ -316,69 +291,7 @@ int MatTranspose_SeqSBAIJ(Mat A,Mat *B)
   MatScalar   *array = a->a;
 
   PetscFunctionBegin;
-  if (!B && mbs!=nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Square matrix only for in-place");
-  col  = (int*)PetscMalloc((1+nbs)*sizeof(int));CHKPTRQ(col);
-  ierr = PetscMemzero(col,(1+nbs)*sizeof(int));CHKERRQ(ierr);
-
-  for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;
-  ierr = MatCreateSeqBAIJ(A->comm,bs,a->n,a->m,PETSC_NULL,col,&C);CHKERRQ(ierr);
-  ierr = PetscFree(col);CHKERRQ(ierr);
-  rows = (int*)PetscMalloc(2*bs*sizeof(int));CHKPTRQ(rows);
-  cols = rows + bs;
-  for (i=0; i<mbs; i++) {
-    cols[0] = i*bs;
-    for (k=1; k<bs; k++) cols[k] = cols[k-1] + 1;
-    len = ai[i+1] - ai[i];
-    for (j=0; j<len; j++) {
-      rows[0] = (*aj++)*bs;
-      for (k=1; k<bs; k++) rows[k] = rows[k-1] + 1;
-      ierr = MatSetValues(C,bs,rows,bs,cols,array,INSERT_VALUES);CHKERRQ(ierr);
-      array += bs2;
-    }
-  }
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
-  if (B) {
-    *B = C;
-  } else {
-    PetscOps *Abops;
-    MatOps   Aops;
-
-    /* This isn't really an in-place transpose */
-    ierr = PetscFree(a->a);CHKERRQ(ierr);
-    if (!a->singlemalloc) {
-      ierr = PetscFree(a->i);CHKERRQ(ierr);
-      ierr = PetscFree(a->j);CHKERRQ(ierr);
-    }
-    if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
-    if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
-    if (a->imax) {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
-    if (a->solve_work) {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
-    ierr = PetscFree(a);CHKERRQ(ierr);
-
-
-    ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
-    ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
-
-    /*
-       This is horrible, horrible code. We need to keep the 
-      A pointers for the bops and ops but copy everything 
-      else from C.
-    */
-    Abops    = A->bops;
-    Aops     = A->ops;
-    refct    = A->refct;
-    ierr     = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-    A->bops  = Abops;
-    A->ops   = Aops;
-    A->qlist = 0;
-    A->refct = refct;
-
-    PetscHeaderDestroy(C);
-  }
+  SETERRQ(1,1,"Matrix is symmetric. MatTranspose() should not be called");
   PetscFunctionReturn(0);
 }
 
@@ -650,7 +563,7 @@ int MatView_SeqSBAIJ(Mat A,Viewer viewer)
 #define __FUNC__ "MatGetValues_SeqSBAIJ"
 int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int        *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
   int        *ai = a->i,*ailen = a->ilen;
   int        brow,bcol,ridx,cidx,bs=a->bs,bs2=a->bs2;
@@ -696,7 +609,7 @@ int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 #define __FUNC__ "MatSetValuesBlocked_SeqSBAIJ"
 int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
   int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented; 
   int         *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=a->bs,stepval,ierr;
@@ -704,144 +617,7 @@ int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Ins
   MatScalar   *ap,*aa=a->a,*bap;
 
   PetscFunctionBegin;
-  if (roworiented) { 
-    stepval = (n-1)*bs;
-  } else {
-    stepval = (m-1)*bs;
-  }
-  for (k=0; k<m; k++) { /* loop over added rows */
-    row  = im[k]; 
-    if (row < 0) continue;
-#if defined(PETSC_USE_BOPT_g)  
-    if (row >= a->mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
-#endif
-    rp   = aj + ai[row]; 
-    ap   = aa + bs2*ai[row];
-    rmax = imax[row]; 
-    nrow = ailen[row]; 
-    low  = 0;
-    for (l=0; l<n; l++) { /* loop over added columns */
-      if (in[l] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)  
-      if (in[l] >= a->nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
-#endif
-      col = in[l]; 
-      if (roworiented) { 
-        value = v + k*(stepval+bs)*bs + l*bs;
-      } else {
-        value = v + l*(stepval+bs)*bs + k*bs;
-      }
-      if (!sorted) low = 0; high = nrow;
-      while (high-low > 7) {
-        t = (low+high)/2;
-        if (rp[t] > col) high = t;
-        else             low  = t;
-      }
-      for (i=low; i<high; i++) {
-        if (rp[i] > col) break;
-        if (rp[i] == col) {
-          bap  = ap +  bs2*i;
-          if (roworiented) { 
-            if (is == ADD_VALUES) {
-              for (ii=0; ii<bs; ii++,value+=stepval) {
-                for (jj=ii; jj<bs2; jj+=bs) {
-                  bap[jj] += *value++; 
-                }
-              }
-            } else {
-              for (ii=0; ii<bs; ii++,value+=stepval) {
-                for (jj=ii; jj<bs2; jj+=bs) {
-                  bap[jj] = *value++; 
-                }
-              }
-            }
-          } else {
-            if (is == ADD_VALUES) {
-              for (ii=0; ii<bs; ii++,value+=stepval) {
-                for (jj=0; jj<bs; jj++) {
-                  *bap++ += *value++; 
-                }
-              }
-            } else {
-              for (ii=0; ii<bs; ii++,value+=stepval) {
-                for (jj=0; jj<bs; jj++) {
-                  *bap++  = *value++; 
-                }
-              }
-            }
-          }
-          goto noinsert2;
-        }
-      } 
-      if (nonew == 1) goto noinsert2;
-      else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Inserting a new nonzero in the matrix");
-      if (nrow >= rmax) {
-        /* there is no extra room in row, therefore enlarge */
-        int       new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
-        MatScalar *new_a;
-
-        if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Inserting a new nonzero in the matrix");
-
-        /* malloc new storage space */
-        len     = new_nz*(sizeof(int)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(int);
-        new_a   = (MatScalar*)PetscMalloc(len);CHKPTRQ(new_a);
-        new_j   = (int*)(new_a + bs2*new_nz);
-        new_i   = new_j + new_nz;
-
-        /* copy over old data into new slots */
-        for (ii=0; ii<row+1; ii++) {new_i[ii] = ai[ii];}
-        for (ii=row+1; ii<a->mbs+1; ii++) {new_i[ii] = ai[ii]+CHUNKSIZE;}
-        ierr = PetscMemcpy(new_j,aj,(ai[row]+nrow)*sizeof(int));CHKERRQ(ierr);
-        len  = (new_nz - CHUNKSIZE - ai[row] - nrow);
-        ierr = PetscMemcpy(new_j+ai[row]+nrow+CHUNKSIZE,aj+ai[row]+nrow,len*sizeof(int));CHKERRQ(ierr);
-        ierr = PetscMemcpy(new_a,aa,(ai[row]+nrow)*bs2*sizeof(MatScalar));CHKERRQ(ierr);
-        ierr = PetscMemzero(new_a+bs2*(ai[row]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr);
-        ierr = PetscMemcpy(new_a+bs2*(ai[row]+nrow+CHUNKSIZE),aa+bs2*(ai[row]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);
-        /* free up old matrix storage */
-        ierr = PetscFree(a->a);CHKERRQ(ierr);
-        if (!a->singlemalloc) {
-          ierr = PetscFree(a->i);CHKERRQ(ierr);
-          ierr = PetscFree(a->j);CHKERRQ(ierr);
-        }
-        aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
-        a->singlemalloc = PETSC_TRUE;
-
-        rp   = aj + ai[row]; ap = aa + bs2*ai[row];
-        rmax = imax[row] = imax[row] + CHUNKSIZE;
-        PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(MatScalar)));
-        a->maxnz += bs2*CHUNKSIZE;
-        a->reallocs++;
-        a->nz++;
-      }
-      N = nrow++ - 1; 
-      /* shift up all the later entries in this row */
-      for (ii=N; ii>=i; ii--) {
-        rp[ii+1] = rp[ii];
-        ierr = PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      }
-      if (N >= i) {
-        ierr = PetscMemzero(ap+bs2*i,bs2*sizeof(MatScalar));CHKERRQ(ierr);
-      }
-      rp[i] = col; 
-      bap   = ap +  bs2*i;
-      if (roworiented) { 
-        for (ii=0; ii<bs; ii++,value+=stepval) {
-          for (jj=ii; jj<bs2; jj+=bs) {
-            bap[jj] = *value++; 
-          }
-        }
-      } else {
-        for (ii=0; ii<bs; ii++,value+=stepval) {
-          for (jj=0; jj<bs; jj++) {
-            *bap++  = *value++; 
-          }
-        }
-      }
-      noinsert2:;
-      low = i;
-    }
-    ailen[row] = nrow;
-  }
+  SETERRQ(1,1,"Function not yet written for SBAIJ format");
   PetscFunctionReturn(0);
 } 
 
@@ -1310,16 +1086,16 @@ EXTERN_C_BEGIN
 #define __FUNC__ "MatSeqSBAIJSetColumnIndices_SeqSBAIJ"
 int MatSeqSBAIJSetColumnIndices_SeqSBAIJ(Mat mat,int *indices)
 {
-  Mat_SeqBAIJ *baij = (Mat_SeqBAIJ *)mat->data;
+  Mat_SeqSBAIJ *baij = (Mat_SeqSBAIJ *)mat->data;
   int         i,nz,n;
 
   PetscFunctionBegin;
-  nz = baij->maxnz;
+  nz = baij->s_maxnz;
   n  = baij->n;
   for (i=0; i<nz; i++) {
     baij->j[i] = indices[i];
   }
-  baij->nz = nz;
+  baij->s_nz = nz;
   for (i=0; i<n; i++) {
     baij->ilen[i] = baij->imax[i];
   }
@@ -1615,7 +1391,6 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   B->lupivotthreshold = 1.0;
   B->mapping          = 0;
   b->row              = 0;
-  b->col              = 0;
   b->icol             = 0;
   b->reallocs         = 0;
   b->saved_values     = 0;
@@ -1721,7 +1496,6 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   C->ops->view      = MatView_SeqSBAIJ;
   C->factor         = A->factor;
   c->row            = 0;
-  c->col            = 0;
   c->icol           = 0;
   c->saved_values   = 0;
   c->keepzeroedrows = a->keepzeroedrows;
