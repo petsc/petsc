@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.2 1996/11/19 16:29:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.3 1997/03/09 17:57:09 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
 a parallel vector.\n\n";
 
 /*T
-   Concepts: Vectors^Assembling vectors; local ordering;
+   Concepts: Vectors^Assembling vectors with local ordering;
    Routines: VecCreateMPI(); VecGetSize(); VecSet(); VecSetValuesLocal();
    Routines: VecView(); VecDestroy(); VecSetLocalToGlobalMapping(); 
    Processors: n
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   ierr = VecSet(&one,x); CHKERRA(ierr);
 
   /*
-      Set the local to global ordering for the vector. Each processor 
+     Set the local to global ordering for the vector. Each processor 
      generates a list of the global indices for each local index. Note that
      the local indices are just whatever is convenient for a particular application.
      In this case we treat the vector as lying on a one dimensional grid and 
