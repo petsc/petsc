@@ -1,11 +1,11 @@
-/* $Id: tr.h,v 1.3 1995/05/18 22:48:06 bsmith Exp curfman $ */
+/* $Id: tr.h,v 1.4 1995/07/11 03:03:27 curfman Exp curfman $ */
 
 /*
    Context for a Newton trust region method (system of nonlinear equations)
  */
 
-#ifndef __TR_H
-#define __TR_H
+#ifndef __EQTR_H
+#define __EQTR_H
 #include "snesimpl.h"
 
 typedef struct {

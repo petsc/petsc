@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.32 1995/07/17 20:42:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.33 1995/07/20 15:34:54 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -626,8 +626,9 @@ int SNESCreate_LS(SNES  snes )
 {
   SNES_LS *neP;
 
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
+    "SNESCreate_LS: Valid for SNES_NONLINEAR_EQUATIONS problems only");
   snes->type		= SNES_EQ_NLS;
-  snes->method_class	= SNES_EQ;
   snes->setup		= SNESSetUp_LS;
   snes->solve		= SNESSolve_LS;
   snes->destroy		= SNESDestroy_LS;
