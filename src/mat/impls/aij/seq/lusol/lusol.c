@@ -508,9 +508,10 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_LUSOL"
 int MatDuplicate_LUSOL(Mat A, MatDuplicateOption op, Mat *M) {
-  int ierr;
+  int       ierr;
+  Mat_LUSOL *lu=(Mat_LUSOL *)A->spptr;
   PetscFunctionBegin;
-  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_LUSOL(*M,MATLUSOL,M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

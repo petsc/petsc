@@ -338,9 +338,11 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_UMFPACK"
 int MatDuplicate_UMFPACK(Mat A, MatDuplicateOption op, Mat *M) {
-  int ierr;
+  int         ierr;
+  Mat_UMFPACK *lu=(Mat_UMFPACK*)A->spptr;
+
   PetscFunctionBegin;
-  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_UMFPACK(*M,MATUMFPACK,M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

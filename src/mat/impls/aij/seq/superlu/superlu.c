@@ -360,9 +360,11 @@ int MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_SuperLU"
 int MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
-  int ierr;
+  int         ierr;
+  Mat_SuperLU *lu=(Mat_SuperLU *)A->spptr;
+
   PetscFunctionBegin;
-  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SuperLU(*M,MATSUPERLU,M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
