@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.15 1999/12/10 16:01:30 bsmith Exp bsmith $;
+!  $Id: petscdef.h,v 1.16 2000/01/11 21:04:11 bsmith Exp bsmith $;
 !
 !  Part of the base include file for Fortran use of PETSc.
 !  Note: This file should contain only define statements and
@@ -115,5 +115,7 @@
 #define CHKMEMQ
 #define CHKMEMA
 #endif
+
+#define PetscMatlabEngine PetscFortranAddr
 
 #endif
