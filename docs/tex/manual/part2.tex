@@ -444,13 +444,13 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to 
 the PETSc global numbering scheme. This is done via the following routines
 \begin{tabbing}
-  &ISLocalToGlobalMappingCreate(int N,int* globalnum,\\
-                                       ISLocalToGlobalMapping* ctx);\\
-  &ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,\\
-                                      int *out);\\
-  &ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,\\
-                                        IS* isout);\\
-  &ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
+  ISLocal\=ToGlobalMappingCreate(int N,int* globalnum,\\
+                               \>        ISLocalToGlobalMapping* ctx);\\
+  ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,\\
+                              \>        int *out);\\
+  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,\\
+                               \>         IS* isout);\\
+  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
 \end{tabbing}
 \findex{ISLocalToGlobalMappingCreate()} \findex{ISLocalToGlobalMappingApply()}
 \findex{ISLocalToGlobalMappingApplyIS()} \findex{ISLocalToGlobalMappingDestroy()}
@@ -608,9 +608,9 @@ The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \findex{DACreate3d()} \findex{DACreate1d()} \findex{DACreate3d()}
 \begin{tabbing}
-  &DACreate1d(MPI\_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);\\
-  &DACreate3d(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType stencil\_type,\\
-  &           int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DA *inra);
+  DACreate1d(MPI\_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);\\
+  DACreate3d\=(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType stencil\_type,\\
+             \>int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DA *inra);
 \end{tabbing}
 \trl{DA_ZPERIODIC}, \findex{DA_ZPERIODIC}
 \trl{DA_XZPERIODIC}, \findex{DA_XZPERIODIC}
@@ -2324,8 +2324,8 @@ customized convergence-testing routines.  \sindex{convergence tests}
 The user can specify a customized 
 routine with the command \findex{KSPSetConvergenceTest()}
 \begin{tabbing}
-  KSPSetConvergenceTest(KSP ksp,int (*test)(KSP ksp,int it,double rnorm,\\
-                       &KSPConvergedReason *reason,void *ctx),void *ctx);
+  KSPSetConvergenceTest\=(KSP ksp,int (*test)(KSP ksp,int it,double rnorm,\\
+                       \>KSPConvergedReason *reason,void *ctx),void *ctx);
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined convergence routine, \trl{test}.  Other
@@ -3169,8 +3169,8 @@ First, one must know what the null space is and store it using an orthonormal ba
 in an array of PETSc Vecs. (The constant functions can be handled seperately, since
 they are such a common case). Create a MatNullSpace object with the command
 \begin{tabbing}
-MatNullSpaceCreate(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,\\
-                  &MatNullSpace *nsp);
+MatNullSpaceCreate\=(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,\\
+                  \>MatNullSpace *nsp);
 \end{tabbing}
 Here \trl{dim} is the number of vectors in \trl{basis} and \trl{hasconstants} indicates
 if the null space contains the constant functions. (If the null space contains the constant
@@ -3211,10 +3211,10 @@ PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU
 %\nobreak
 %\label{fig_package}
 %\end{figure}               
-It should be clear that SUPERLU_LIB specifies the compiler command to link with the SuperLU libraries, and 
-similarly SUPERLU_INCLUDE specifies the compiler command to augment the Include search path to find SuperLU
-header files.  The third essential detail, PETSC_HAVE_SUPERLU informs our make system to perform builds
-in the directories that include the SuperLU interface, and sets the flag -DPETSC_HAVE_SUPERLU for conditional
+It should be clear that SUPERLU\_LIB specifies the compiler command to link with the SuperLU libraries, and 
+similarly SUPERLU\_INCLUDE specifies the compiler command to augment the Include search path to find SuperLU
+header files.  The third essential detail, PETSC\_HAVE\_SUPERLU informs our make system to perform builds
+in the directories that include the SuperLU interface, and sets the flag -DPETSC\_HAVE\_SUPERLU for conditional
 inclusion within various source files.
 
 \item Build the PETSc libraries.
@@ -4554,7 +4554,7 @@ or
   MatView(B,PETSC\_VIEWER\_STDOUT\_WORLD);
 \end{tabbing}
 The name of each PETSc variable printed for Matlab may be set with
-\begin{tabbing}\sfindex{PetscObjectSetName()}\findex{PetscObjectName()}
+\begin{tabbing}\sindex{PetscObjectSetName()}\findex{PetscObjectName()}
 PetscObjectSetName((PetscObject)A,''name'');
 \end{tabbing}
 If no name is specified, the object is given a default name using\trl{PetscObjectName}.
