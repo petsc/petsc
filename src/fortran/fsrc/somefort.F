@@ -1,5 +1,5 @@
 !
-!  "$Id: somefort.F,v 1.20 1999/03/17 19:22:27 balay Exp bsmith $";
+!  "$Id: somefort.F,v 1.21 2000/05/04 16:27:10 bsmith Exp balay $";
 !
 !  Utility routine used to set some values into a Fortran common block
 
@@ -15,7 +15,7 @@
 
       call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER,            &
      &     PETSC_NULL_INTEGER,PETSC_NULL_SCALAR,PETSC_NULL_DOUBLE,      &
-     &     PETSC_NULL_FUNCTION)
+     &     PETSC_NULL_REAL,PETSC_NULL_FUNCTION)
 
       return
       end

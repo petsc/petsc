@@ -1,4 +1,4 @@
-! "$Id: ex1f.F,v 1.54 2001/01/22 23:27:14 balay Exp bsmith $";
+! "$Id: ex1f.F,v 1.55 2001/03/19 21:34:21 bsmith Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -85,13 +85,13 @@
       integer            its,matrix_free,flg,N,ierr
       integer            mx,my,size,rank
       integer            fd_coloring
-      double precision   lambda_max,lambda_min,lambda
+      PetscReal          lambda_max,lambda_min,lambda
       MatFDColoring      fdcoloring
       ISColoring         iscoloring
       MatStructure       str
  
-      Scalar      lx_v(0:1)
-      PetscOffset lx_i
+      PetscScalar        lx_v(0:1)
+      PetscOffset        lx_i
 
 !  Store parameters in common block
 
@@ -126,7 +126,7 @@
       my         = 4
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
-      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,    &
+      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',lambda,      &
      &     flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
@@ -310,12 +310,12 @@
 #include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
-      Vec      X
-      integer  ierr
+      Vec           X
+      integer       ierr
 
 !  Declarations for use with local arrays:
-      Scalar      lx_v(0:1)
-      PetscOffset lx_i
+      PetscScalar   lx_v(0:1)
+      PetscOffset   lx_i
 
       ierr   = 0
 
@@ -360,17 +360,17 @@
       implicit none
 
 !  Common blocks:
-      double precision   lambda
-      integer  mx,my
-      common /params/ lambda,mx,my
+      PetscReal   lambda
+      integer     mx,my
+      common      /params/ lambda,mx,my
 
 !  Input/output variables:
-      Scalar  x(mx,my)
-      integer ierr
+      PetscScalar x(mx,my)
+      integer     ierr
 
 !  Local variables:
-      integer  i,j,hxdhy,hydhx
-      Scalar   temp1,temp,hx,hy,sc,one
+      integer     i,j,hxdhy,hydhx
+      PetscScalar temp1,temp,hx,hy,sc,one
 
 !  Set parameters
 
@@ -434,13 +434,13 @@
       integer           ierr
 
 !  Common blocks:
-      double precision   lambda
-      integer  mx,my
-      common /params/ lambda,mx,my
+      PetscReal         lambda
+      integer           mx,my
+      common            /params/ lambda,mx,my
 
 !  Declarations for use with local arrays:
-      Scalar      lx_v(0:1),lf_v(0:1)
-      PetscOffset lx_i,lf_i 
+      PetscScalar       lx_v(0:1),lf_v(0:1)
+      PetscOffset       lx_i,lf_i 
 
 !  Get pointers to vector data.
 !    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -487,18 +487,18 @@
       implicit none
 
 !  Common blocks:
-      double precision   lambda
-      integer  mx,my
-      common /params/ lambda,mx,my
+      PetscReal      lambda
+      integer        mx,my
+      common         /params/ lambda,mx,my
 
 !  Input/output variables:
-      Scalar   x(mx,my),f(mx,my)
-      integer  ierr
+      PetscScalar    x(mx,my),f(mx,my)
+      integer        ierr
 
 !  Local variables:
-      Scalar   two,one,hx,hy,hxdhy,hydhx,sc
-      Scalar   u,uxx,uyy
-      integer  i,j
+      PetscScalar    two,one,hx,hy,hxdhy,hydhx,sc
+      PetscScalar    u,uxx,uyy
+      integer        i,j
 
       ierr   = 0
       one    = 1.0
@@ -562,20 +562,20 @@
 #include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
-      SNES         snes
-      Vec          X
-      Mat          jac,jac_prec
-      MatStructure flag
-      integer      dummy,ierr
+      SNES          snes
+      Vec           X
+      Mat           jac,jac_prec
+      MatStructure  flag
+      integer       dummy,ierr
 
 !  Common blocks:
-      double precision   lambda
-      integer  mx,my
-      common /params/ lambda,mx,my
+      PetscReal     lambda
+      integer       mx,my
+      common        /params/ lambda,mx,my
 
 !  Declarations for use with local array:
-      Scalar      lx_v(0:1)
-      PetscOffset lx_i
+      PetscScalar   lx_v(0:1)
+      PetscOffset   lx_i
 
 !  Get a pointer to vector data
 
@@ -641,18 +641,18 @@
 #include "include/finclude/petscsnes.h"
 
 !  Common blocks:
-      double precision   lambda
-      integer  mx,my
-      common /params/ lambda,mx,my
+      PetscReal    lambda
+      integer      mx,my
+      common       /params/ lambda,mx,my
 
 !  Input/output variables:
-      Scalar   x(mx,my)
-      Mat      jac,jac_prec
-      integer  ierr
+      PetscScalar  x(mx,my)
+      Mat          jac,jac_prec
+      integer      ierr
 
 !  Local variables:
       integer      i,j,row,col(5)
-      Scalar       two,one, hx,hy,hxdhy,hydhx,sc,v(5)
+      PetscScalar  two,one, hx,hy,hxdhy,hydhx,sc,v(5)
 
 !  Set parameters
 

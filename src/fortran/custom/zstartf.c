@@ -1,4 +1,4 @@
-/*$Id: zstartf.c,v 1.31 2001/03/28 19:43:08 balay Exp balay $*/
+/*$Id: zstartf.c,v 1.32 2001/04/09 19:46:20 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "petscsys.h"
@@ -67,24 +67,27 @@ void PETSC_STDCALL petscinitializefortran_(int *ierr)
 
 #if defined(PETSC_USES_CPTOFCD)
 void PETSC_STDCALL petscsetfortranbasepointers_(_fcd fnull_character,void *fnull_integer,
-                                  void *fnull_scalar,void * fnull_double,
+                                  void *fnull_scalar,void * fnull_double, void *fnull_real,
                                   void (*fnull_function)())
 {
   PETSC_NULL_CHARACTER_Fortran  = _fcdtocp(fnull_character);
   PETSC_NULL_INTEGER_Fortran    = fnull_integer;
   PETSC_NULL_SCALAR_Fortran     = fnull_scalar;
   PETSC_NULL_DOUBLE_Fortran     = fnull_double;
+  PETSC_NULL_REAL_Fortran       = fnull_real;
   PETSC_NULL_FUNCTION_Fortran   = fnull_function;
 }
 #else
 void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
                                   void *fnull_integer,void *fnull_scalar,void * fnull_double,
+                                  void *fnull_real,
                                   void (*fnull_function)() PETSC_END_LEN(len))
 {
   PETSC_NULL_CHARACTER_Fortran  = fnull_character;
   PETSC_NULL_INTEGER_Fortran    = fnull_integer;
   PETSC_NULL_SCALAR_Fortran     = fnull_scalar;
   PETSC_NULL_DOUBLE_Fortran     = fnull_double;
+  PETSC_NULL_REAL_Fortran       = fnull_real;
   PETSC_NULL_FUNCTION_Fortran   = fnull_function;
 }
 #endif 

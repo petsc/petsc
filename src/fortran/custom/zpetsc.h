@@ -1,4 +1,4 @@
-/*$Id: zpetsc.h,v 1.62 2001/04/18 20:48:14 balay Exp bsmith $*/
+/*$Id: zpetsc.h,v 1.63 2001/08/06 21:19:11 bsmith Exp balay $*/
 
 /* This file contains info for the use of PETSc Fortran interface stubs */
 
@@ -13,6 +13,7 @@ extern char   *PETSC_NULL_CHARACTER_Fortran;
 extern void   *PETSC_NULL_INTEGER_Fortran;
 extern void   *PETSC_NULL_SCALAR_Fortran;
 extern void   *PETSC_NULL_DOUBLE_Fortran;
+extern void   *PETSC_NULL_REAL_Fortran;
 EXTERN_C_BEGIN
 extern void   (*PETSC_NULL_FUNCTION_Fortran)();
 EXTERN_C_END
@@ -150,6 +151,7 @@ Fortran.
 #define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_INTEGER_Fortran)
 #define FORTRANNULLSCALAR(a)   (((void*)a) == PETSC_NULL_SCALAR_Fortran)
 #define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
+#define FORTRANNULLREAL(a)     (((void*)a) == PETSC_NULL_REAL_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void(*)())a) == PETSC_NULL_FUNCTION_Fortran)
 /*
     These are used to support the default viewers that are 

@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.96 2001/04/10 22:37:56 balay Exp balay $;
+!  $Id: petsc.h,v 1.97 2001/08/07 03:05:33 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !
@@ -112,6 +112,7 @@
 !
       external PETSC_NULL_FUNCTION
       PetscScalar   PETSC_NULL_SCALAR
+      PetscReal     PETSC_NULL_REAL
 !
 !     Common Block to store some of the PETSc constants.
 !     which can be set - only at runtime.
@@ -123,7 +124,8 @@
       common /petscfortran2/ PETSC_NULL_INTEGER
       common /petscfortran3/ PETSC_NULL_SCALAR
       common /petscfortran4/ PETSC_NULL_DOUBLE
-      common /petscfortran5/ PETSC_COMM_WORLD,PETSC_COMM_SELF
+      common /petscfortran5/ PETSC_NULL_REAL
+      common /petscfortran6/ PETSC_COMM_WORLD,PETSC_COMM_SELF
 
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-! $Id: ex22f.F,v 1.3 2001/03/30 17:03:04 balay Exp bsmith $
+! $Id: ex22f.F,v 1.4 2001/04/20 15:13:04 bsmith Exp balay $
 !
 !   Laplacian in 3D. Modeled by the partial differential equation
 !
@@ -63,14 +63,14 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscda.h"
 
-      integer ierr,mx,my,mz
-      Scalar  h
-      Vec     b
-      DMMG    dmmg
-      DA      da
+      integer      ierr,mx,my,mz
+      PetscScalar  h
+      Vec          b
+      DMMG         dmmg
+      DA           da
 
       call DMMGGetDA(dmmg,da,ierr)
-      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                         &
+      call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                        &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
@@ -90,14 +90,14 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscda.h"
 
-      DMMG    dmmg
-      Mat     jac
-      integer ierr
+      DMMG         dmmg
+      Mat          jac
+      integer      ierr
 
-      DA         da
-      integer    i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs
-      Scalar     v(7),Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy
-      MatStencil row(4),col(4,7)
+      DA           da
+      integer      i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs
+      PetscScalar  v(7),Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy
+      MatStencil   row(4),col(4,7)
 
       call DMMGGetDA(dmmg,da,ierr)
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
