@@ -315,7 +315,7 @@ etags:
 	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/ETAGS ACTION="etags_sourcec etags_sourcej etags_sourceh etags_examplesc etags_examplesf etags_examplesch etags_examplesfh etags_makefile etags_docs etags_scripts" alltree
 	-@cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/ETAGS ACTION=etags_sourcef alltree
 	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/ETAGS etags_bmakefiles
-	-@maint/fixtags.py ETAGS
+	-@bin/fixtags.py ETAGS
 	-@${RM} ETAGS
 # Builds the etags file that excludes the examples directories
 etags_noexamples:
@@ -351,7 +351,7 @@ BMAKEFILES = bmake/common/base bmake/common/test \
 DOCS	   = bmake/readme
 SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint/buildconfigtest maint/builddistlite \
              maint/buildtest maint/checkBuilds.py maint/copylognightly maint/copylognightly.tao maint/countfiles maint/findbadfiles \
-             maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris maint/fixtags.py \
+             maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris bin/fixtags.py \
              maint/lex.py  maint/mapnameslatex.py maint/startnightly maint/startnightly.tao maint/submitPatch.py \
              maint/update-docs.py  maint/wwwindex.py maint/xcludebackup maint/xcludecblas maint/zap maint/zapall \
              python/PETSc/Configure.py python/PETSc/Options.py \
