@@ -149,6 +149,7 @@ PLAPACK_DIRS       = src/sys/src/utils src/ksp/pc/impls/ml
 HYPRE_DIRS         = src/ksp/pc/impls/hypre src/vec/impls/hypre src/mat/impls/hypre src/ksp/pc/interface
 SPOOLES_DIR        = src/mat/impls/aij src/mat/impls/sbaij
 ADIC_DIRS          = src/mat/impls/aij src/snes/utils src/dm/da/src src/fortran/custom
+MATLAB_DIRS        = src/mat/impls/aij/seq
 #
 # ----------------------------------------------------------------------------------------
 #

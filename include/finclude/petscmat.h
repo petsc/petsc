@@ -95,7 +95,7 @@
 #define MATAIJMUMPS        'aijmumps'
 #define MATSBAIJMUMPS      'sbaijmumps'
 #define MATDSCPACK         'dscpack'
-
+#define MATMATLAB          'matlab'
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 

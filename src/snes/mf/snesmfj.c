@@ -549,7 +549,7 @@ int MatSNESMFSetFromOptions(Mat mat)
 
 .seealso: MatCreateMF, MatCreateSNESMF
 M*/
-
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MFFD"
 int MatCreate_MFFD(Mat A)
@@ -615,6 +615,7 @@ int MatCreate_MFFD(Mat A)
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMF"

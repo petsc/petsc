@@ -67,6 +67,7 @@ E*/
 #define MATAIJMUMPS        "aijmumps"
 #define MATSBAIJMUMPS      "sbaijmumps"
 #define MATDSCPACK         "dscpack"
+#define MATMATLAB          "matlab"
 #define MatType char*
 
 /* Logging support */
@@ -1223,6 +1224,5 @@ EXTERN int PetscViewerMathematicaPutCSRMatrix(PetscViewer, int, int, int *, int 
 
 EXTERN int MatSeqAIJPtAP(Mat,Mat,Mat*);
 
-EXTERN int MatUseMatlab_SeqAIJ(Mat);
 PETSC_EXTERN_CXX_END
 #endif
