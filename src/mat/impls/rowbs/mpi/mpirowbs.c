@@ -2187,18 +2187,18 @@ int MatGetSubMatrices_MPIRowbs(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scal
     if (pos+nmax <= ismax) max_no = nmax;
     else if (pos == ismax) max_no = 0;
     else                   max_no = ismax-pos;
-    ierr = MatGetSubMatrices_Rowbs_Local(C,max_no,isrow+pos,iscol+pos,scall,*submat+pos);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices_MPIRowbs_Local(C,max_no,isrow+pos,iscol+pos,scall,*submat+pos);CHKERRQ(ierr);
     pos += max_no;
   }
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------*/
-/* for now MatGetSubMatrices_Rowbs_Local get MPIAij submatrices of input
+/* for now MatGetSubMatrices_MPIRowbs_Local get MPIAij submatrices of input
    matrix and preservs zeroes from structural symetry
  */  
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetSubMatrices_Rowbs_Local" 
-int MatGetSubMatrices_Rowbs_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
+#define __FUNCT__ "MatGetSubMatrices_MPIRowbs_Local" 
+int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
 { 
   Mat_MPIRowbs  *c = (Mat_MPIRowbs *)(C->data);
   BSspmat       *A = c->A;
