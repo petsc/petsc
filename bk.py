@@ -23,7 +23,7 @@ class TagBKOpen (transform.Transform):
 
 class BKOpen (action.Action):
   def __init__(self):
-    action.Action.__init__(self, 'bks', None, 'edit', 1, self.checkEdit)
+    action.Action.__init__(self, 'bk', None, 'edit', 1, self.checkEdit)
     self.buildProducts = 0
 
   def checkEdit(self, command, status, output):

@@ -23,6 +23,7 @@ class CompileSIDL (action.Action):
     action.Action.__init__(self, compiler, sources, '--suppress-timestamp '+compilerFlags, 1)
     self.generatedSources = generatedSources
     self.products         = self.generatedSources
+    self.buildProducts    = 0
 
   def shellSetAction(self, set):
     if set.tag == 'sidl':
