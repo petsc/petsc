@@ -8,6 +8,8 @@ class Base (maker.Maker):
     return
 
   def getInstalledProject(self, url):
+    if not self.argDB.has_key('installedprojects'):
+      self.argDB['installedprojects'] = []
     for project in self.argDB['installedprojects']:
       if project.getUrl() == url:
         self.debugPrint('Already installed '+project.getName()+'('+url+')', 3, 'install')

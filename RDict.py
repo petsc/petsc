@@ -224,7 +224,7 @@ class RArgs (UserDict.UserDict):
     if addr is None:
       self.addr  = self.getServerAddr()
     else:
-      self.addr  = tuple(addr)
+      self.addr  = (addr[0], int(addr[1]))
     return
 
   def getServerAddr(self):
@@ -302,7 +302,7 @@ class RArgs (UserDict.UserDict):
     # if the file DArgs.loc exists but no server is running we are screwed
     try:
       s.connect(self.addr)
-    except:
+    except Exception, e:
       self.addr = self.getServerAddr()
       try:
         s.connect(self.addr)
