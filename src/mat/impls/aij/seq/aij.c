@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.261 1998/04/16 15:25:52 balay Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.262 1998/04/27 03:54:21 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1549,7 +1549,7 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
   PetscFunctionReturn(0);
 }
 
-#include "pinclude/plapack.h"
+#include "pinclude/blaslapack.h"
 #undef __FUNC__  
 #define __FUNC__ "MatScale_SeqAIJ"
 int MatScale_SeqAIJ(Scalar *alpha,Mat inA)
