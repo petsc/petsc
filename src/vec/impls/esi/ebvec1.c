@@ -1,4 +1,4 @@
-/*$Id: ebvec1.c,v 1.7 2001/09/19 16:08:04 bsmith Exp bsmith $*/
+/*$Id: ebvec1.c,v 1.8 2001/09/26 16:02:32 balay Exp balay $*/
 
 
 #include "src/vec/vecimpl.h" 
@@ -49,13 +49,13 @@ int VecESISetVector(Vec xin,esi::Vector<double,int> *v)
   ierr = PetscTypeCompare((PetscObject)xin,VEC_ESI,&tesi);CHKERRQ(ierr);
   if (tesi) {
     int                    n,N;
-    esi::MapPartition<int> *map;
+    esi::IndexSpace<int>   *map;
 
     ierr = v->getGlobalSize(N);CHKERRQ(ierr);
     if (xin->N == -1) xin->N = N;
     else if (xin->N != N) SETERRQ2(1,"Global size of Vec %d not equal size of esi::Vector %d",xin->N,N);
 
-    ierr = v->getMapPartition(map);CHKERRQ(ierr); 
+    ierr = v->getIndexSpace(map);CHKERRQ(ierr); 
     ierr = map->getLocalSize(n);CHKERRQ(ierr);
     if (xin->n == -1) xin->n = n;
     else if (xin->n != n) SETERRQ2(1,"Local size of Vec %d not equal size of esi::Vector %d",xin->n,n);
@@ -311,10 +311,10 @@ int VecGetLocalSize_ESI(Vec vin,int *size)
 {
   Vec_ESI                *x = (Vec_ESI*)vin->data;
   int                    ierr;
-  esi::MapPartition<int> *map;
+  esi::IndexSpace<int>   *map;
 
   PetscFunctionBegin;
-  ierr = x->evec->getMapPartition(map);CHKERRQ(ierr); 
+  ierr = x->evec->getIndexSpace(map);CHKERRQ(ierr); 
   ierr = map->getLocalSize(*size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -518,7 +518,7 @@ int VecESISetType(Vec V,char *name)
   esi::Vector<double,int>               *ve;
   esi::petsc::VectorFactory<double,int> *f;
   void                                  *(*r)(void);
-  esi::MapPartition<int>                *map;
+  esi::IndexSpace<int>                  *map;
 
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
@@ -530,7 +530,7 @@ int VecESISetType(Vec V,char *name)
 #else
   f    = (esi::petsc::VectorFactory<double,int> *)(*r)();
 #endif
-  map  = static_cast<esi::MapPartition<int>* >(new esi::petsc::Map<int>(V->comm,V->n,V->N));
+  map  = new esi::petsc::IndexSpace<int>(V->comm,V->n,V->N);
   ierr = f->getVector(*map,ve);CHKERRQ(ierr);
   ierr = map->deleteReference();CHKERRQ(ierr);
   delete f;

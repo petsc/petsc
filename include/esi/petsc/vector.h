@@ -1,11 +1,11 @@
 #ifndef __PETSc_Vector_h__
 #define __PETSc_Vector_h__
 
-// The PETSc_Vector supports the 
+// The esi::petsc::Vector supports the 
 //    esi::Vector<Scalar,Ordinal>
 //    esi::Vector<Scalar,Ordinal>ReplaceAccess interfaces
 
-#include "esi/petsc/map.h"
+#include "esi/petsc/indexspace.h"
 
 #include "esi/Vector.h"
 #include "esi/VectorReplaceAccess.h"
@@ -24,8 +24,8 @@ template<class Scalar,class Ordinal>
     // Destructor.
     virtual ~Vector();
 
-    // Construct a Vector from a Map.
-    Vector(  esi::MapPartition<Ordinal> *source);
+    // Construct a Vector from a IndexSpace.
+    Vector(  esi::IndexSpace<Ordinal> *source);
 
     // Construct a Vector from a PETSc Vector
     Vector(Vec pvec);
@@ -41,7 +41,7 @@ template<class Scalar,class Ordinal>
     virtual esi::ErrorCode clone(esi::Vector<Scalar,Ordinal>*& x);
     virtual esi::ErrorCode getGlobalSize( Ordinal & dim) ;
     virtual esi::ErrorCode getLocalSize( Ordinal & dim) ;
-    virtual esi::ErrorCode getMapPartition(  esi::MapPartition<Ordinal>*& outmap)  ;
+    virtual esi::ErrorCode getIndexSpace(  esi::IndexSpace<Ordinal>*& outmap)  ;
     virtual esi::ErrorCode copy( esi::Vector<Scalar,Ordinal>& x) ;   
     virtual esi::ErrorCode put(  Scalar scalar) ;
     virtual esi::ErrorCode scale(  Scalar scalar) ;
@@ -66,7 +66,7 @@ template<class Scalar,class Ordinal>
 
   private:
     Vec                        vec;
-    esi::MapPartition<Ordinal> *map;
+    esi::IndexSpace<Ordinal> *map;
 
 };
 
@@ -90,7 +90,7 @@ template<class Scalar,class Ordinal> class VectorFactory
 
 
     // Construct a Vector
-    virtual esi::ErrorCode getVector(esi::MapPartition<int>&,esi::Vector<Scalar,Ordinal>*&v); 
+    virtual esi::ErrorCode getVector(esi::IndexSpace<int>&,esi::Vector<Scalar,Ordinal>*&v); 
 };
 
 

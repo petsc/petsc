@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2001/09/07 20:09:07 bsmith Exp bsmith $
+# $Id: makefile,v 1.3 2001/09/26 16:17:31 balay Exp balay $
 
 #requirespackage  'PETSC_HAVE_ESI'
 #requireslanguage  CPP
@@ -9,9 +9,9 @@ ALL: lib
 
 CFLAGS   = ${ESI_INCLUDE}  ${CCA_INCLUDE}
 FFLAGS   =
-SOURCEC  = emap.c evector.c
-OBJSC    = emap.o evector.o
-SOURCEH  = ${PETSC_DIR}/include/esi/petsc/map.h ${PETSC_DIR}/include/esi/petsc/vector.h
+SOURCEC  = eindexspace.c evector.c
+OBJSC    = eindexspace.o evector.o
+SOURCEH  = ${PETSC_DIR}/include/esi/petsc/indexspace.h ${PETSC_DIR}/include/esi/petsc/vector.h
 LIBBASE  = libpetscvec
 MANSEC   = 
 LOCDIR   = src/vec/esi

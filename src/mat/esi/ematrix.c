@@ -6,7 +6,7 @@
 
 #include "esi/petsc/matrix.h"
 
-esi::petsc::Matrix<double,int>::Matrix(esi::MapPartition<int> *inrmap,esi::MapPartition<int> *incmap)
+esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSpace<int> *incmap)
 {
   int      ierr,rn,rN,cn,cN;
   MPI_Comm *comm;
@@ -18,8 +18,8 @@ esi::petsc::Matrix<double,int>::Matrix(esi::MapPartition<int> *inrmap,esi::MapPa
   ierr = inrmap->getGlobalSize(cN);
   ierr = MatCreate(*comm,rn,cn,rN,cN,&this->mat);if (ierr) return;
 
-  this->rmap = (esi::MapPartition<int> *)inrmap;
-  this->cmap = (esi::MapPartition<int> *)incmap;
+  this->rmap = inrmap;
+  this->cmap = incmap;
 
   this->pobject = (PetscObject)this->mat;
   PetscObjectGetComm((PetscObject)this->mat,&this->comm);
@@ -81,10 +81,10 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::setup()
   return MatAssemblyEnd(this->mat,MAT_FINAL_ASSEMBLY);
 }
 
-esi::ErrorCode esi::petsc::Matrix<double,int>::getMaps(esi::Map<int>*& rowMap, esi::Map<int>*& colMap)
+esi::ErrorCode esi::petsc::Matrix<double,int>::getIndexSpaces(esi::IndexSpace<int>*& rowIndexSpace, esi::IndexSpace<int>*& colIndexSpace)
 {
-  rowMap = (esi::Map<int>*) this->rmap;
-  colMap = (esi::Map<int>*)this->cmap;
+  rowIndexSpace = this->rmap;
+  colIndexSpace = this->cmap;
   return 0;
 }
 

@@ -1,38 +1,37 @@
-#ifndef __PETSc_Map_h__
-#define __PETSc_Map_h__
+#ifndef __PETSc_IndexSpace_h__
+#define __PETSc_IndexSpace_h__
 
 // this contains the definition of PetscMap
 #include "petscvec.h"
 
 #include "esi/petsc/object.h"
 
-// The PETSc_Map supports the esi::Map and esi::MapPartition interfaces
+// The esi::petsc::IndexSpace supports the esi::IndexSpace interfaces
 
-#include "esi/Map.h"
-#include "esi/MapPartition.h"
+#include "esi/IndexSpace.h"
 
 namespace esi{namespace petsc{
 
 /**=========================================================================**/
 template<class Ordinal> 
-class Map : public virtual esi::MapPartition<Ordinal>, public virtual esi::petsc::Object
+class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public virtual esi::petsc::Object
 {
   public:
 
     // constructor.
-    Map(MPI_Comm comm) {};	
+    IndexSpace(MPI_Comm comm) {};	
 
     // Construct a map from a map.
-    Map(esi::Map<Ordinal>& sourceMap);
+    IndexSpace(esi::IndexSpace<Ordinal>& sourceIndexSpace);
 
     // Construct a map from a PETSc (old-style) map.
-    Map(PetscMap sourceMap);
+    IndexSpace(PetscMap sourceIndexSpace);
 
     // Basic constructor
-    Map(MPI_Comm comm, int n, int N);
+    IndexSpace(MPI_Comm comm, int n, int N);
 
     // destructor.
-    virtual ~Map();
+    virtual ~IndexSpace();
 
     //  Interface for esi::Object  ---------------
 
@@ -40,13 +39,11 @@ class Map : public virtual esi::MapPartition<Ordinal>, public virtual esi::petsc
     virtual esi::ErrorCode getInterfacesSupported(esi::Argv * list){return 1;};
 
 
-    //  Interface for esi::Map  ---------------
+    //  Interface for esi::IndexSpace  ---------------
 
     // Get the size of this mapped dimension of the problem.
     virtual esi::ErrorCode getGlobalSize(Ordinal& globalSize);
     virtual esi::ErrorCode getLocalSize(Ordinal& localSize);
-
-    //  Interface for esi::MapPartition  ---------------
 
     // Get the size of this dimension of the problem, as well as 
     // the global offset info for all processors.

@@ -1,13 +1,13 @@
 
 /*
-      Interfaces the ESI_Map and ESI_MapPartition classes to the PETSc
+      Interfaces the ESI_IndexSpace and ESI_IndexSpace classes to the PETSc
     Map object class.
 */
 
-#include "esi/petsc/map.h"
+#include "esi/petsc/indexspace.h"
 
 
-esi::petsc::Map<int>::Map(MPI_Comm comm, int n, int N)
+esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm comm, int n, int N)
 {
   int ierr;
   ierr = PetscMapCreateMPI(comm,n,N,&this->map);
@@ -15,17 +15,17 @@ esi::petsc::Map<int>::Map(MPI_Comm comm, int n, int N)
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);
 }
 
-esi::petsc::Map<int>::Map(esi::Map<int> &sourceMap)
+esi::petsc::IndexSpace<int>::IndexSpace(esi::IndexSpace<int> &sourceIndexSpace)
 {
   int      ierr,n,N;
   MPI_Comm *comm;
 
-  ierr = sourceMap.getRunTimeModel("MPI",static_cast<void *>(comm));
-  ierr = sourceMap.getGlobalSize(N);
+  ierr = sourceIndexSpace.getRunTimeModel("MPI",static_cast<void *>(comm));
+  ierr = sourceIndexSpace.getGlobalSize(N);
   {
-    esi::MapPartition<int> *amap;
+    esi::IndexSpace<int> *amap;
 
-    ierr = sourceMap.getInterface("esi::MapPartition",static_cast<void *>(amap));
+    ierr = sourceIndexSpace.getInterface("esi::IndexSpace",static_cast<void *>(amap));
     ierr = amap->getLocalSize(n);
   }
   ierr = PetscMapCreateMPI(*comm,n,N,&this->map);
@@ -33,65 +33,62 @@ esi::petsc::Map<int>::Map(esi::Map<int> &sourceMap)
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);
 }
 
-esi::petsc::Map<int>::Map(PetscMap sourceMap)
+esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
 {
-  PetscObjectReference((PetscObject) sourceMap);
-  this->map = sourceMap;
+  PetscObjectReference((PetscObject) sourceIndexSpace);
+  this->map = sourceIndexSpace;
   this->pobject = (PetscObject)this->map;
-  PetscObjectGetComm((PetscObject)sourceMap,&this->comm);
+  PetscObjectGetComm((PetscObject)sourceIndexSpace,&this->comm);
 }
 
-esi::petsc::Map<int>::~Map()
+esi::petsc::IndexSpace<int>::~IndexSpace()
 {
   int ierr;
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
-esi::ErrorCode esi::petsc::Map<int>::getInterface(const char* name, void *& iface)
+esi::ErrorCode esi::petsc::IndexSpace<int>::getInterface(const char* name, void *& iface)
 {
   PetscTruth flg;
   if (PetscStrcmp(name,"esi::Object",&flg),flg){
     iface = (void *) (esi::Object *) this;
-  } else if (PetscStrcmp(name,"esi::Map",&flg),flg){
-    iface = (void *) (esi::Map<int> *) this;
-  } else if (PetscStrcmp(name,"esi::MapPartition",&flg),flg){
-    iface = (void *) (esi::MapPartition<int> *) this;
-  } else if (PetscStrcmp(name,"esi::petsc::Map",&flg),flg){
-    iface = (void *) (esi::petsc::Map<int> *) this;
+  } else if (PetscStrcmp(name,"esi::IndexSpace",&flg),flg){
+    iface = (void *) (esi::IndexSpace<int> *) this;
+  } else if (PetscStrcmp(name,"esi::petsc::IndexSpace",&flg),flg){
+    iface = (void *) (esi::petsc::IndexSpace<int> *) this;
   } else {
     iface = 0;
   }
   return 0;
 }
 
-esi::ErrorCode esi::petsc::Map<int>::getInterfacesSupported(esi::Argv * list)
+esi::ErrorCode esi::petsc::IndexSpace<int>::getInterfacesSupported(esi::Argv * list)
 {
   list->appendArg("esi::Object");
-  list->appendArg("esi::Map");
-  list->appendArg("esi::MapPartition");
-  list->appendArg("esi::petsc::Map");
+  list->appendArg("esi::IndexSpace");
+  list->appendArg("esi::petsc::IndexSpace");
   return 0;
 }
 
 
-/* -------------- esi::Map methods --------------------------------------------*/
-esi::ErrorCode esi::petsc::Map<int>::getGlobalSize(int &globalSize)
+/* -------------- esi::IndexSpace methods --------------------------------------------*/
+esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalSize(int &globalSize)
 {
   return PetscMapGetSize(this->map,&globalSize);
 }
 
-esi::ErrorCode esi::petsc::Map<int>::getLocalSize(int &localSize)
+esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalSize(int &localSize)
 {
   return PetscMapGetLocalSize(this->map,&localSize);
 }
 
-/* -------------- esi::MapPartition methods --------------------------------------------*/
-esi::ErrorCode esi::petsc::Map<int>::getLocalPartitionOffset(int &localoffset)
+/* -------------- esi::IndexSpace methods --------------------------------------------*/
+esi::ErrorCode esi::petsc::IndexSpace<int>::getLocalPartitionOffset(int &localoffset)
 { 
   return PetscMapGetLocalRange(this->map,&localoffset,PETSC_IGNORE);
 }
 
-esi::ErrorCode esi::petsc::Map<int>::getGlobalPartitionOffsets(int *globaloffsets)
+esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
 { 
   int ierr,*iglobaloffsets;
   ierr = PetscMapGetGlobalRange(this->map,&iglobaloffsets);
@@ -99,7 +96,7 @@ esi::ErrorCode esi::petsc::Map<int>::getGlobalPartitionOffsets(int *globaloffset
   return ierr;
 }
 
-esi::ErrorCode esi::petsc::Map<int>::getGlobalPartitionSizes(int *globalsizes)
+esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
 { 
   int ierr,i,n,*globalranges;
 

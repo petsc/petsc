@@ -6,7 +6,7 @@
 
 #include "esi/petsc/vector.h"
 
-// The PETSc preconditioner supports the 
+// The esi::petsc::Preconditioner supports the 
 #include "esi/Operator.h"
 #include "esi/Preconditioner.h"
 
@@ -59,7 +59,7 @@ class Preconditioner : public virtual Operator<Scalar, Ordinal>,
 
   private:
     PC                         pc;
-    esi::MapPartition<Ordinal> *rmap,*cmap;
+    esi::IndexSpace<Ordinal>   *rmap,*cmap;
     int                        side;
 };
 }}

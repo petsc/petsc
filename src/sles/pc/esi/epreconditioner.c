@@ -93,16 +93,16 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::solveM2( esi::Vector<doub
 
 esi::ErrorCode esi::petsc::Preconditioner<double,int>::applyB( esi::Vector<double,int> &xx,esi::Vector<double,int> &yy)
 {
-  int ierr;
-  Vec py,px,work;
+  int    ierr;
+  Vec    py,px,work;
   PCSide side;
 
   ierr = yy.getInterface("Vec",static_cast<void*>(py));
   ierr = xx.getInterface("Vec",static_cast<void*>(px));
   ierr = VecDuplicate(py,&work);CHKERRQ(ierr);
-  if (this->side == ESI_PRECON_LEFT)      side = PC_LEFT;
-  if (this->side == ESI_PRECON_RIGHT)     side = PC_RIGHT;
-  if (this->side == ESI_PRECON_TWO_SIDED) side = PC_SYMMETRIC;
+  if (this->side == esi::PRECONDITIONER_LEFT)      side = PC_LEFT;
+  if (this->side == esi::PRECONDITIONER_RIGHT)     side = PC_RIGHT;
+  if (this->side == esi::PRECONDITIONER_TWO_SIDED) side = PC_SYMMETRIC;
   ierr = PCApplyBAorAB(this->pc,side,px,py,work);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);CHKERRQ(ierr);
   return 0;
