@@ -82,6 +82,38 @@ class Configure:
     sys.stdout.flush()
     return
 
+  def defaultCheckCommand(self, command, status, output):
+    '''Raise an error if the exit status is nonzero'''
+    if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output)
+
+  def executeShellCommand(self, command, checkCommand = None, timeout = 120.0):
+    '''Execute a shell command returning the output, and optionally provide a custom error checker'''
+    import threading
+    global status, output
+
+    self.framework.log.write('sh: '+command+'\n')
+    status = -1
+    output = 'Runaway process'
+    def run(command):
+      import commands
+      global status, output
+      (status, output) = commands.getstatusoutput(command)
+      return
+
+    thread = threading.Thread(target = run, name = 'Shell Command', args = (command,))
+    thread.setDaemon(1)
+    thread.start()
+    thread.join(timeout)
+    if thread.isAlive():
+      self.framework.log.write('Runaway process exceeded time limit of '+str(timeout)+'s\n')
+    else:
+      self.framework.log.write('sh: '+output+'\n')
+      if checkCommand:
+        checkCommand(command, status, output)
+      else:
+        self.defaultCheckCommand(command, status, output)
+    return output
+
   def executeTest(self, test, args = []):
     self.framework.log.write('================================================================================\n')
     self.framework.log.write('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')\n')
