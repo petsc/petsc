@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.114 2000/09/28 21:12:48 bsmith Exp balay $*/
+/*$Id: mg.c,v 1.115 2000/10/05 22:04:02 balay Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -22,7 +22,7 @@ int MGMCycle_Private(MG *mglevels)
   Scalar zero = 0.0;
 
   PetscFunctionBegin;
-  if (!mg->level) {
+  if (!mg->level) {  /* coarse grid */
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
   } else {
     while (cycles--) {
@@ -126,15 +126,15 @@ EXTERN int MGFCycle_Private(MG*);
 EXTERN int MGKCycle_Private(MG*);
 
 /*
-   MGCycle - Runs either an additive, multiplicative, Kaskadic
+   PCApply_MG - Runs either an additive, multiplicative, Kaskadic
              or full cycle of multigrid. 
 
   Note: 
   A simple wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
 */ 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGCycle"
-static int MGCycle(PC pc,Vec b,Vec x)
+#define __FUNC__ /*<a name=""></a>*/"PCApply_MG"
+static int PCApply_MG(PC pc,Vec b,Vec x)
 {
   MG     *mg = (MG*)pc->data;
   Scalar zero = 0.0;
@@ -160,8 +160,8 @@ static int MGCycle(PC pc,Vec b,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MGCycleRichardson"
-static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
+#define __FUNC__ /*<a name=""></a>*/"PCApplyRichardson_MG"
+static int PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,int its)
 {
   MG  *mg = (MG*)pc->data;
   int ierr,levels = mg[0]->levels;
@@ -351,7 +351,7 @@ int MGSetLevels(PC pc,int levels,MPI_Comm *comms)
   ierr                     = MGCreate_Private(pc->comm,levels,pc,comms,&mg);CHKERRQ(ierr);
   mg[0]->am                = MGMULTIPLICATIVE;
   pc->data                 = (void*)mg;
-  pc->ops->applyrichardson = MGCycleRichardson;
+  pc->ops->applyrichardson = PCApplyRichardson_MG;
   PetscFunctionReturn(0);
 }
 
@@ -419,7 +419,7 @@ int MGSetType(PC pc,MGType form)
 
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   mg[0]->am = form;
-  if (form == MGMULTIPLICATIVE) pc->ops->applyrichardson = MGCycleRichardson;
+  if (form == MGMULTIPLICATIVE) pc->ops->applyrichardson = PCApplyRichardson_MG;
   else pc->ops->applyrichardson = 0;
   PetscFunctionReturn(0);
 }
@@ -613,7 +613,7 @@ EXTERN_C_BEGIN
 int PCCreate_MG(PC pc)
 {
   PetscFunctionBegin;
-  pc->ops->apply          = MGCycle;
+  pc->ops->apply          = PCApply_MG;
   pc->ops->setup          = PCSetUp_MG;
   pc->ops->destroy        = PCDestroy_MG;
   pc->ops->setfromoptions = PCSetFromOptions_MG;
