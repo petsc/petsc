@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.46 2000/05/05 22:19:37 balay Exp bsmith $*/
+/*$Id: fdda.c,v 1.47 2000/05/10 16:43:42 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -84,7 +84,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,w,s,*cols,k,nc,*rows,col,cnt,l,p;
-  int                    lstart,lend,pstart,pend;
+  int                    lstart,lend,pstart,pend,*dnz,*onz;
   MPI_Comm               comm;
   Scalar                 *values;
   DAPeriodicType         wrap;
@@ -133,10 +133,36 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
   ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
   ierr = PetscFree(colors);CHKERRQ(ierr);
 
-  /* create empty Jacobian matrix */
-  ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,col*col*nc,0,0,0,J);CHKERRQ(ierr);  
-
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+
+  /* determine the matrix preallocation information */
+  MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);
+  for (i=xs; i<xs+nx; i++) {
+
+    pstart = PetscMax(-s,-i);
+    pend   = PetscMin(s,m-i-1);
+
+    for (j=ys; j<ys+ny; j++) {
+      slot = i - gxs + gnx*(j - gys);
+
+      lstart = PetscMax(-s,-j); 
+      lend   = PetscMin(s,n-j-1);
+
+      cnt  = 0;
+      for (k=0; k<nc; k++) {
+        for (l=lstart; l<lend+1; l++) {
+          for (p=pstart; p<pend+1; p++) {
+            cols[cnt++]  = k + nc*(slot + gnx*l + p);
+          }
+        }
+        rows[k] = k + nc*(slot);
+      }
+      MatPreallocateSetLocal(ltog,nc,rows,cnt,cols,dnz,onz);
+    }
+  }
+  /* create empty Jacobian matrix */
+  ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);  
+  MatPreallocateFinalize(dnz,onz);
   ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
   /*
@@ -182,7 +208,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
+  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   Scalar                 *values;
@@ -208,7 +234,6 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
-
   /* create the coloring */
   colors = (int*)PetscMalloc(nc*nx*ny*nz*sizeof(int));CHKPTRQ(colors);
   ii = 0;
@@ -224,10 +249,40 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   ierr = ISColoringCreate(comm,nc*nx*ny*nz,colors,coloring);CHKERRQ(ierr);
   ierr = PetscFree(colors);CHKERRQ(ierr);
 
-  /* create empty Jacobian matrix */
-  ierr = MatCreateMPIAIJ(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,col*col*col*nc,0,0,0,J);CHKERRQ(ierr);  
-
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+
+  /* determine the matrix preallocation information */
+  MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);
+  for (i=xs; i<xs+nx; i++) {
+    istart = PetscMax(-s,-i);
+    iend   = PetscMin(s,m-i-1);
+    for (j=ys; j<ys+ny; j++) {
+      jstart = PetscMax(-s,-j); 
+      jend   = PetscMin(s,n-j-1);
+      for (k=zs; k<zs+nz; k++) {
+        kstart = PetscMax(-s,-k); 
+        kend   = PetscMin(s,p-k-1);
+
+        slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+
+        cnt  = 0;
+        for (l=0; l<nc; l++) {
+          for (ii=istart; ii<iend+1; ii++) {
+            for (jj=jstart; jj<jend+1; jj++) {
+              for (kk=kstart; kk<kend+1; kk++) {
+                cols[cnt++]  = l + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+              }
+            }
+          }
+          rows[l] = l + nc*(slot);
+        }
+        MatPreallocateSetLocal(ltog,nc,rows,cnt,cols,dnz,onz);
+      }
+    }
+  }
+  /* create empty Jacobian matrix */
+  ierr = MatCreateMPIAIJ(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);  
+  MatPreallocateFinalize(dnz,onz);
   ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
   /*
@@ -282,7 +337,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,i1,slot,gxs,gys,ys1,ny1;
   int                    m,n,dim,w,s,*indices,k,xs1,nc,*cols;
-  int                    nx1,gnx,gny;           
+  int                    nx1,gnx,gny,*dnz,*onz;           
   MPI_Comm               comm;
   Scalar                 *values;
   ISLocalToGlobalMapping ltog;
@@ -330,10 +385,178 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
   ierr = ISColoringCreate(comm,nc*nx*ny,colors,coloring);CHKERRQ(ierr);
   ierr = PetscFree(colors);CHKERRQ(ierr);
 
-  /* create empty Jacobian matrix */
-  ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,9*nc,0,0,0,J);CHKERRQ(ierr);  
-
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+
+  /* determine the matrix preallocation information */
+  MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);
+  /* fill up Jacobian for left edge */
+  if (xs == 0) {
+    ys1 = ys;
+    ny1 = ny;
+    /* lower left corner */
+    if (ys == 0) {
+      ys1++;
+      ny1--;
+      slot = xs - gxs + gnx*(ys - gys);
+      for (k=0; k<nc; k++) {
+        indices[0+k]    = k + nc*(slot);         
+        indices[1*nc+k] = k + nc*(slot + 1); 
+        indices[2*nc+k] = k + nc*(slot + gnx);  
+        indices[3*nc+k] = k + nc*(slot + gnx + 1);
+        cols[k]         = k + nc*(slot);
+      }
+      MatPreallocateSetLocal(ltog,nc,cols,4*nc,indices,dnz,onz);
+    }
+    /* upper left corner */
+    if (ys + ny == n) {
+      ny1--;
+      slot = xs - gxs + gnx*(ys + (ny - 1) - gys);
+      for (k=0; k<nc; k++) {
+        indices[0+k]    = k + nc*(slot - gnx);  
+        indices[1*nc+k] = k + nc*(slot - gnx + 1);
+        indices[2*nc+k] = k + nc*(slot);         
+        indices[3*nc+k] = k + nc*(slot + 1);
+        cols[k]         = k + nc*(slot);
+      }
+      MatPreallocateSetLocal(ltog,nc,cols,4*nc,indices,dnz,onz);
+    }
+    for (j=ys1; j<ys1+ny1; j++) {
+      slot = xs - gxs + gnx*(j - gys);
+      for (k=0; k<nc; k++) {
+        indices[0+k]    = k + nc*(slot - gnx);  
+        indices[1*nc+k] = k + nc*(slot - gnx + 1);
+        indices[2*nc+k] = k + nc*(slot);         
+        indices[3*nc+k] = k + nc*(slot + 1);
+        indices[4*nc+k] = k + nc*(slot + gnx);   
+        indices[5*nc+k] = k + nc*(slot + gnx + 1);
+        cols[k]         = k + nc*(slot);
+      }
+      MatPreallocateSetLocal(ltog,nc,cols,6*nc,indices,dnz,onz);
+    }
+  }      
+
+  /* fill up Jacobian for right edge */
+  if (xs + nx == m) {
+    ys1 = ys;
+    ny1 = ny;
+    /* lower right corner */
+    if (ys == 0) {
+      ys1++;
+      ny1--;
+      slot = xs + (nx - 1) - gxs + gnx*(ys - gys);
+      for (k=0; k<nc; k++) {
+        indices[0+k]    = k + nc*(slot - 1);        
+        indices[1*nc+k] = k + nc*(slot); 
+        indices[2*nc+k] = k + nc*(slot + gnx - 1);  
+        indices[3*nc+k] = k + nc*(slot + gnx);
+        cols[k]         = k + nc*(slot);
+      }      
+      MatPreallocateSetLocal(ltog,nc,cols,4*nc,indices,dnz,onz);
+    }
+    /* upper right corner */
+    if (ys + ny == n) {
+      ny1--;
+      slot = xs + (nx - 1) - gxs + gnx*(ys + (ny - 1) - gys);
+      for (k=0; k<nc; k++) {
+        indices[0+k]    = k + nc*(slot - gnx - 1);  
+        indices[1*nc+k] = k + nc*(slot - gnx);
+        indices[2*nc+k] = k + nc*(slot-1);         
+        indices[3*nc+k] = k + nc*(slot);
+        cols[k]         = k + nc*(slot);
+        MatPreallocateSetLocal(ltog,cols[k],4*nc,indices,dnz,onz);
+      }
+    }
+    for (j=ys1; j<ys1+ny1; j++) {
+      slot = xs + (nx - 1) - gxs + gnx*(j - gys);
+      for (k=0; k<nc; k++) {
+        indices[0+k]    = k + nc*(slot - gnx - 1);  
+        indices[1*nc+k] = k + nc*(slot - gnx);
+        indices[2*nc+k] = k + nc*(slot - 1);       
+        indices[3*nc+k] = k + nc*(slot);
+        indices[4*nc+k] = k + nc*(slot + gnx - 1); 
+        indices[5*nc+k] = k + nc*(slot + gnx);
+        cols[k]         = k + nc*(slot);
+      }
+      for (k=0; k<nc; k++) {
+        MatPreallocateSetLocal(ltog,cols[k],6*nc,indices,dnz,onz);
+      }
+    }
+  }   
+
+  /* fill up Jacobian for bottom */
+  if (ys == 0) {
+    if (xs == 0) {nx1 = nx - 1; xs1 = 1;} else {nx1 = nx; xs1 = xs;}
+    if (xs + nx == m) {nx1--;}
+    for (i=xs1; i<xs1+nx1; i++) {
+      slot = i - gxs + gnx*(ys - gys);
+      for (k=0; k<nc; k++) {
+        indices[0+k]    = k + nc*(slot - 1);      
+        indices[1*nc+k] = k + nc*(slot);       
+        indices[2*nc+k] = k + nc*(slot + 1);
+        indices[3*nc+k] = k + nc*(slot + gnx - 1); 
+        indices[4*nc+k] = k + nc*(slot + gnx);
+        indices[5*nc+k] = k + nc*(slot + gnx + 1);
+        cols[k]         = k + nc*(slot);
+      }
+      for (k=0; k<nc; k++) {
+        MatPreallocateSetLocal(ltog,cols[k],6*nc,indices,dnz,onz);
+      }
+    }
+  }
+
+  /* fill up Jacobian for top */
+  if (ys + ny == n) {
+    if (xs == 0) {nx1 = nx - 1; xs1 = 1;} else {nx1 = nx; xs1 = xs;}
+    if (xs + nx == m) {nx1--;}
+    for (i=xs1; i<xs1+nx1; i++) {
+      slot = i - gxs + gnx*(ys + (ny - 1) - gys);
+      for (k=0; k<nc; k++) {    
+        indices[0+k]    = k + nc*(slot - gnx - 1);
+        indices[1*nc+k] = k + nc*(slot - gnx);  
+        indices[2*nc+k] = k + nc*(slot - gnx + 1);
+        indices[3*nc+k] = k + nc*(slot - 1);      
+        indices[4*nc+k] = k + nc*(slot);       
+        indices[5*nc+k] = k + nc*(slot  + 1);
+        cols[k]         = k + nc*(slot);
+      }
+      for (k=0; k<nc; k++) {
+        MatPreallocateSetLocal(ltog,cols[k],6*nc,indices,dnz,onz);
+      }
+    }
+  }
+
+  /* fill up Jacobian for interior of grid */
+  nx1 = nx;
+  ny1 = ny;
+  if (xs == 0)    {xs++; nx1--;}
+  if (ys == 0)    {ys++; ny1--;}
+  if (xs+nx1 == m) {nx1--;}
+  if (ys+ny1 == n) {ny1--;}
+  for (i=xs; i<xs+nx1; i++) {
+    for (j=ys; j<ys+ny1; j++) {
+      slot = i - gxs + gnx*(j - gys);
+      for (k=0; k<nc; k++) {    
+        indices[0+k]    = k + nc*(slot - gnx - 1);
+        indices[1*nc+k] = k + nc*(slot - gnx);
+        indices[2*nc+k] = k + nc*(slot - gnx + 1);
+        indices[3*nc+k] = k + nc*(slot - 1);  
+        indices[4*nc+k] = k + nc*(slot);      
+        indices[5*nc+k] = k + nc*(slot + 1);
+        indices[6*nc+k] = k + nc*(slot + gnx - 1);
+        indices[7*nc+k] = k + nc*(slot + gnx); 
+        indices[8*nc+k] = k + nc*(slot + gnx + 1);
+        cols[k]         = k + nc*(slot);
+      }
+      for (k=0; k<nc; k++) {    
+        MatPreallocateSetLocal(ltog,cols[k],9*nc,indices,dnz,onz);
+      }
+    }
+  }
+
+  /* create empty Jacobian matrix */
+  ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);  
+  MatPreallocateFinalize(dnz,onz);
+
   ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
 
   /*
