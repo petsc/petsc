@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.303 1999/01/31 16:12:41 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.304 1999/02/03 00:28:05 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2087,7 +2087,8 @@ with \findex{KSPGMRESSetOrthogonalization()}
    ierr = KSPGMRESSetOrthogonalization(KSP ksp,
                                KSPGMRESUnmodifiedGramSchmidtOrthogonalization);
 \end{verbatim}
-or the options database command {\tt -ksp\_gmres\_unmodifiedgramschmidt}.
+or the options database \findex{-ksp_gmres_unmodifiedgramschmidt}
+command {\tt -ksp\_gmres\_unmodifiedgramschmidt}.
 Note that this algorithm is numerically unstable, but may deliver 
 slightly better speed performance. One can also use 
 modifed Gram-Schmidt, 
