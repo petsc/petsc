@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.51 1995/11/25 20:50:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.52 1995/11/27 22:23:33 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -127,7 +127,7 @@ static char    *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
 #define COUNT 0
 #define FLOPS 1
 #define TIME  2
-static double  EventsType[10][100][3];
+static double  EventsType[10][PLOG_USER_EVENT_HIGH][3];
 
 /*@
     PLogStageName - Attach a charactor string name to a logging stage.
@@ -147,8 +147,7 @@ int PLogStageName(int stage, char *name)
 
 /*@
    PLogStagePush - Users can log up to 10 stages within a code by using
-   PLogBegin() or -log_summary.  PLogStagePush() enables users to switch
-   to a new stage. 
+   -log_summary in conjunction with PLogStagePush() and PLogStagePop().
 
    Input Parameters:
 .  stage - stage on which to log (0 <= stage <= 9)
@@ -187,8 +186,7 @@ int PLogStagePush(int stage)
 
 /*@
    PLogStagePop - Users can log up to 10 stages within a code by using
-   PLogBegin() or -log_summary.  PLogStagePop() enable users to switch
-   from the current stage to the previous one.
+   -log_summary in conjunction with PLogStagePush() and PLogStagePop().
 
    Example of Usage:
    If the option -log_sumary is used to run the program containing the 
@@ -804,13 +802,14 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   for ( j=0; j<=EventsStageMax; j++ ) {
     if (EventsStageMax) {
       if (EventsStageName[j]) {
-        MPIU_fprintf(comm,fd,"\n                   ---------Event Stage %d:%s -----\n\n",
+        MPIU_fprintf(comm,fd,"\n               -------- Event Stage %d: %s -------\n\n",
                      j,EventsStageName[j]);
       } else {
-        MPIU_fprintf(comm,fd,"\n                   ---------Event Stage %d: -----\n\n",j);
+        MPIU_fprintf(comm,fd,"\n                       -------- Event Stage %d: --------\n\n",j);
       }
     }
-    for ( i=0; i<100; i++ ) {  
+    /* This loop assumes that PLOG_USER_EVENT_HIGH is the max event number */
+    for ( i=0; i<PLOG_USER_EVENT_HIGH; i++ ) {  
       if (EventsType[j][i][TIME]) {
         wdou = EventsType[j][i][FLOPS]/EventsType[j][i][TIME];
       }
