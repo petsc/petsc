@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.25 1995/12/12 22:56:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.26 1995/12/21 18:34:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -49,8 +49,7 @@ int main( int argc, char **argv )
   }
 
   /* Create nonlinear solver */  
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
-  CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
@@ -65,8 +64,7 @@ int main( int argc, char **argv )
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
     if (OptionsHasName(PETSC_NULL,"-user_precond")) { /* user-defined precond */
       ierr = PCSetMethod(pc,PCSHELL); CHKERRA(ierr);
-      ierr = PCShellSetApply(pc,MatrixFreePreconditioner,(void*)0); 
-             CHKERRA(ierr);
+      ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL); CHKERRA(ierr);
     } else {ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);}
   }
 
@@ -91,6 +89,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
   Scalar *xx, *ff,*FF,d;
   int    i, ierr, n;
+
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
   ierr = VecGetArray((Vec)dummy,&FF); CHKERRQ(ierr);
@@ -120,6 +119,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
 {
   Scalar *xx, A[3], d;
   int    i, n, j[3], ierr;
+
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
   d = (double)(n - 1); d = d*d;

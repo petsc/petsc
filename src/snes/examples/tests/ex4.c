@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.26 1995/11/30 22:36:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.27 1995/12/21 18:34:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -60,12 +60,11 @@ int main( int argc, char **argv )
   Mat          J;
   int          ierr, its, N, nfails; 
   AppCtx       user;
-  Draw      win;
+  Draw         win;
   double       bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&win);
-  CHKERRA(ierr);
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,"Solution",300,0,300,300,&win);CHKERRA(ierr);
 
   user.mx    = 4;
   user.my    = 4;
@@ -85,26 +84,21 @@ int main( int argc, char **argv )
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
-  CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   if (OptionsHasName(PETSC_NULL,"-cavity")){
-    ierr = SNESSetSolution(snes,x,FormInitialGuess2,(void *)&user); 
-           CHKERRA(ierr);
+    ierr = SNESSetSolution(snes,x,FormInitialGuess2,(void *)&user); CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user,
            POSITIVE_FUNCTION_VALUE); CHKERRA(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user); 
-           CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user); CHKERRA(ierr);
   }
   else {
-    ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); 
-           CHKERRA(ierr);
+    ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,
            POSITIVE_FUNCTION_VALUE); CHKERRA(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);
-           CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);CHKERRA(ierr);
   }
 
   /* Set up nonlinear solver; then execute it */
@@ -174,8 +168,7 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my;
-  double  two = 2.0, one = 1.0, lambda;
-  double  hx, hy, hxdhy, hydhx;
+  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx;
   Scalar  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
 
   mx	 = user->mx; 
@@ -218,9 +211,9 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   AppCtx *user = (AppCtx *) ptr;
   Mat     jac = *J;
   int     i, j, row, mx, my, col[5], ierr;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5];
+  Scalar  two = 2.0, one = 1.0, lambda, v[5],sc, *x;
   double  hx, hy, hxdhy, hydhx;
-  Scalar  sc, *x;
+
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -303,8 +296,8 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
   int     i, j, row, mx, my, ierr;
   Scalar  two = 2.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   Scalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
-  double  hx, hy;
   Scalar  *x,*f, hx2, hy2, hxhy2;
+  double  hx, hy;
 
   mx	 = user->mx; 
   my	 = user->my;
@@ -426,10 +419,8 @@ int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
   int     i, j, row, mx, my, col, ierr;
   Scalar  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   Scalar  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
-  double  hx, hy;
-  Scalar  val,four = 4.0, three = 3.0;
-  Scalar  *x;
-  double  hx2, hy2, hxhy2;
+  Scalar  val,four = 4.0, three = 3.0,*x;
+  double  hx, hy,hx2, hy2, hxhy2;
 
   mx	 = user->mx; 
   my	 = user->my;

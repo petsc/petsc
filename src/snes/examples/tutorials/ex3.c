@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.22 1995/12/12 22:56:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.23 1995/12/21 18:34:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f\n\
@@ -40,8 +40,7 @@ int main( int argc, char **argv )
   MPI_Comm_size(MPI_COMM_WORLD,&ctx.size);
 
   /* Set up data structures */
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,&ctx.da);
-  CHKERRA(ierr);
+  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,N,1,1,&ctx.da);CHKERRA(ierr);
   ierr = DAGetDistributedVector(ctx.da,&x); CHKERRA(ierr);
   ierr = DAGetLocalVector(ctx.da,&ctx.xl); CHKERRQ(ierr);
 
@@ -59,8 +58,7 @@ int main( int argc, char **argv )
     ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,N,N,3,1,diag,
            PETSC_NULL,&J); CHKERRA(ierr);
   } else if (mtype == MATSEQAIJ) {
-    ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,3,PETSC_NULL,&J);
-           CHKERRA(ierr);
+    ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,3,PETSC_NULL,&J);CHKERRA(ierr);
   } else {
     ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,
            PETSC_NULL,0,PETSC_NULL,&J); CHKERRA(ierr);
@@ -80,8 +78,7 @@ int main( int argc, char **argv )
   ierr = VecRestoreArray(U,&UU); CHKERRA(ierr);
 
   /* Create nonlinear solver */  
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
-  CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
@@ -153,8 +150,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   ApplicationCtx *ctx = (ApplicationCtx*) dummy;
   Scalar         *xx, d, A;
   int            i, j, ierr, n, rank = ctx->rank, size = ctx->size;
-  Vec            xl;
   int            start, end, N, ii, istart, iend;
+  Vec            xl;
 
   xl = ctx->xl; 
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);

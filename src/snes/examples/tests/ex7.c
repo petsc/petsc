@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.16 1995/12/12 22:56:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.17 1995/12/21 18:34:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -20,14 +20,13 @@ typedef struct {
 
 int main( int argc, char **argv )
 {
-  SNES         snes;               /* SNES context */
+  SNES         snes;                  /* SNES context */
   SNESMethod   method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec          x,r,F,U;
-  Mat          J;                  /* Jacobian matrix-free for */
-  Mat          B;                  /* explicit preconditioner matrix*/
+  Mat          J,B;                   /* Jacobian matrix-free,explicit preconditioner */
   int          ierr, its, n = 5,i;
   Scalar       h,xp = 0.0,v;
-  MonitorCtx   monP;               /* monitoring context */
+  MonitorCtx   monP;                  /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0,help );
   OptionsGetInt(PETSC_NULL,"-n",&n);
@@ -93,6 +92,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
   Scalar *xx, *ff,*FF,d;
   int    i, ierr, n;
+
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
   ierr = VecGetArray((Vec) dummy,&FF); CHKERRQ(ierr);
@@ -127,6 +127,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
   Scalar *xx, A[3], d;
   int    i, n, j[3], ierr;
+
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
   d = (double)(n - 1); d = d*d;
@@ -155,6 +156,7 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   int        ierr;
   MonitorCtx *monP = (MonitorCtx*) dummy;
   Vec        x;
+
   fprintf(stdout, "iter = %d, Function norm %g \n",its,fnorm);
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
   ierr = VecView(x,(Viewer)monP->win1); CHKERRQ(ierr);

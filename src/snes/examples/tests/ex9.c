@@ -1,7 +1,7 @@
 /* Peter Mell Modified this file   8/95 */
 
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.9 1995/11/30 22:36:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.10 1995/12/21 18:34:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -53,8 +53,7 @@ int main( int argc, char **argv )
   Mat           J;
   SNESMethod    method = SNES_EQ_NLS;  /* nonlinear solution method */
   Vec           x,r;
-  int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
-  int           Nz = PETSC_DECIDE; 
+  int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, Nz = PETSC_DECIDE; 
   AppCtx        user;
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
   DAStencilType stencil = DA_STENCIL_BOX;
@@ -87,13 +86,11 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
   /* Create nonlinear solver */
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
-  CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); 
-           CHKERRA(ierr);
+  ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,
                           POSITIVE_FUNCTION_VALUE); CHKERRA(ierr);
   ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
@@ -125,11 +122,10 @@ int main( int argc, char **argv )
 int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int     i,j,k, loc, mx, my, mz, ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs;
+  int     i,j,k, loc, mx, my, mz, ierr,xs,ys,zs,xm,ym,zm,Xm,Ym,Zm,Xs,Ys,Zs,base1;
   double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
   Scalar  *x;
   Vec     localX = user->localX;
-  int     base1;
 
   mx	 = user->mx; my	 = user->my; mz = user->mz; lambda = user->param;
   hx     = one / (double)(mx-1);     hy     = one / (double)(my-1);
@@ -165,17 +161,16 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int     ierr, i, j, k,loc, mx,my,mz,xs,ys,zs,xm,ym,zm,Xs,Ys,Zs,Xm,Ym,Zm;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hz, hxhzdhy, hyhzdhx,hxhydhz;
-  Scalar  u, uxx, uyy, sc;
-  Scalar  *x,*f,uzz;
-  Vec     localX = user->localX, localF = user->localF; 
   int     base1, base2;
+  double  two = 2.0, one = 1.0, lambda,hx, hy, hz, hxhzdhy, hyhzdhx,hxhydhz;
+  Scalar  u, uxx, uyy, sc,*x,*f,uzz;
+  Vec     localX = user->localX, localF = user->localF; 
 
-  mx	 = user->mx; my	 = user->my; mz = user->mz; lambda = user->param;
-  hx     = one / (double)(mx-1);
-  hy     = one / (double)(my-1);
-  hz     = one / (double)(mz-1);
-  sc     = hx*hy*hz*lambda; hxhzdhy  = hx*hz/hy; hyhzdhx  = hy*hz/hx;
+  mx      = user->mx; my = user->my; mz = user->mz; lambda = user->param;
+  hx      = one / (double)(mx-1);
+  hy      = one / (double)(my-1);
+  hz      = one / (double)(mz-1);
+  sc      = hx*hy*hz*lambda; hxhzdhy  = hx*hz/hy; hyhzdhx  = hy*hz/hx;
   hxhydhz = hx*hy/hz;
 
   ierr = DAGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);

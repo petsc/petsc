@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.38 1995/12/12 22:56:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.39 1995/12/21 18:34:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -50,8 +50,7 @@ int main( int argc, char **argv )
   }
 
   /* Create nonlinear solver */  
-  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); 
-  CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
@@ -85,6 +84,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
    Scalar *xx, *ff,*FF,d;
    int    i, ierr, n;
+
    ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
    ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
    ierr = VecGetArray((Vec)dummy,&FF); CHKERRQ(ierr);
@@ -115,6 +115,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
   Scalar *xx, A, d;
   int    i, n, j, ierr;
+
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   ierr =  VecGetSize(x,&n); CHKERRQ(ierr);
   d = (double)(n - 1); d = d*d;
@@ -145,6 +146,7 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   int        ierr;
   MonitorCtx *monP = (MonitorCtx*) dummy;
   Vec        x;
+
   fprintf(stdout, "iter = %d, Function norm %g \n",its,fnorm);
   ierr = SNESGetSolution(snes,&x); CHKERRQ(ierr);
   ierr = VecView(x,(Viewer)monP->win1); CHKERRQ(ierr);

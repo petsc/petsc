@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.33 1995/12/12 22:56:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.34 1995/12/21 18:34:15 bsmith Exp bsmith $";
 #endif
 
 static char *help="Uses Newton's method to solve a two-variable system.\n";
@@ -52,6 +52,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy )
 {
   int    ierr;
   Scalar *xx, *ff;
+
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
   ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
@@ -67,11 +68,11 @@ int FormInitialGuess(SNES snes,Vec x,void *dummy)
   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
   return 0;
 }/* --------------------  Evaluate Jacobian F'(x) -------------------- */
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
-                 void *dummy)
+int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   Scalar *xx, A[4];
   int    ierr, idx[2] = {0,1};
+
   ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
   A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
