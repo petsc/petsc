@@ -156,6 +156,7 @@ class BS (Maker):
     atexit.register(self.saveSourceDB)
 
   def calculateDependencies(self):
+    self.debugPrint('Recalculating dependencies', 1, 'sourceDB')
     for source in sourceDB.keys():
       (checksum, mtime, timestamp, dependencies) = sourceDB[source]
       newDep = []
