@@ -7,7 +7,6 @@ Remote Users:
 eijkhout@math.ucla.edu - Victor Eijkhout, developing preconditioners Beta.1
 stodghil@CS.Cornell.EDU - Paul Stodghill, high performance parallel cg Beta.3
 keyes@cs.odu.edu - David Keyes, needs parallel nonlinear solvers for CFD
-balay@cs.odu.edu - Satish Balay, needs matrix-free nonlinear solvers Beta.2
 student of David Keyes: SriKumar (Kumar) Kareti - needs time stepping
 zhang_k@cs.odu.edu - Jie Zhang, needs parallel nonlinear solvers Beta.2
 ozturanc@cs.rpi.edu - Can Ozturan, needs parallel linear solvers
@@ -18,18 +17,19 @@ Local Users:
 dstevens - Deb Stevens, needs Fortran interface to SLES
 bouarich - Ali Bouaricha, needs nonlinear solvers
 canfield - Tom Canfield, needs parallel, symmetric linear solvers
+taylor@nile.eecs.nwu.edu - Valerie Taylor, working with Tom Canfield
 maa (maayj@eden.eecs.nwu.edu) - Yann Maa, needs nonlinear solvers
 freitag - Lori, needs makefile infrastructure
+diachin - Darin, working with Lori, makefiles
 plassman - ILU, BlockSolve
-cooper - Cameron Cooper
 kwong - Man Kwong, writing preprocessor
 
 Not currently active local users:
 
-diachin - Darin, working with Lori, makefiles
 herzog - Jim, working with Lori, makefiles
 mell - Peter Mell
 hille - Matt Hille
+cooper - Cameron Cooper
 wan   - Justin Wan
 anitescu - Mihai Anitescu, direct LU
 
