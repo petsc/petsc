@@ -25,6 +25,10 @@ class UsingCompiler:
     self.extraLibraries = BSTemplates.sidlStructs.SIDLPackageDict(usingSIDL)
     return
 
+  def getClientLanguages(self):
+    '''Returns all languages involved in the client library'''
+    return [self.getLanguage()]
+
   def getDefines(self):
     return self.defines
 
@@ -45,19 +49,25 @@ class UsingCompiler:
   def getClientCompileTarget(self, project):
     sourceDir = self.usingSIDL.getClientRootDir(self.getLanguage())
     # Client filter
-    tag          = self.getLanguage().lower().replace('+', 'x')
-    clientFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isClient(source, sourceDir), tags = [tag, 'old '+tag])
+    clientFilter = []
+    for language in self.getClientLanguages():
+      tag = language.lower().replace('+', 'x')
+      clientFilter.append(transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isClient(source, sourceDir), tags = [tag, 'old '+tag]))
+    if len(clientFilter) == 1: clientFilter = clientFilter[0]
     # Client compiler
-    compiler  = self.getCompiler(self.getClientLibrary(project, self.getLanguage()))
-    compiler.defines.extend(self.getDefines())
-    compiler.includeDirs.append(sourceDir)
-    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
-    compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
-    for dir in self.usingSIDL.repositoryDirs:
-      includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
-      if os.path.isdir(includeDir):
-        compiler.includeDirs.append(includeDir)
-    return [self.getTagger(sourceDir), clientFilter, compiler]
+    compilers = self.getCompiler(self.getClientLibrary(project, self.getLanguage()))
+    if not isinstance(compilers, list): compilers = [compilers]
+    for compiler in compilers:
+      compiler.defines.extend(self.getDefines())
+      compiler.includeDirs.append(sourceDir)
+      compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+      compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
+      for dir in self.usingSIDL.repositoryDirs:
+        includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
+        if os.path.isdir(includeDir):
+          compiler.includeDirs.append(includeDir)
+    if len(compilers) == 1: compilers = compilers[0]
+    return [self.getTagger(sourceDir), clientFilter, compilers]
 
   def getClientLinkTarget(self, project, doLibraryCheck = 1):
     libraries = fileset.FileSet([])
@@ -406,6 +416,60 @@ class UsingF77 (UsingCompiler):
     compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
     compileC.includeDirs.extend(self.includeDirs['executable'])
     return [compile.TagC(self.usingSIDL.sourceDB), compileC, compile.TagF77(self.usingSIDL.sourceDB), compile.CompileF77(self.usingSIDL.sourceDB, library)]
+
+class UsingF90 (UsingCompiler):
+  '''This class handles all interaction specific to the Fortran 90 language'''
+  def __init__(self, usingSIDL):
+    UsingCompiler.__init__(self, usingSIDL)
+
+  def getLanguage(self):
+    '''The language name'''
+    return 'F90'
+
+  def getClientLanguages(self):
+    '''Returns all languages involved in the client library'''
+    return [self.getLanguage(), 'C++']
+
+  def getCompileSuffixes(self):
+    '''The suffix for Fortran 90 files'''
+    return ['.f90', '.cc', '.hh']
+
+  def getTagger(self, rootDir):
+    return [compile.TagF90(self.usingSIDL.sourceDB, root = rootDir), compile.TagCxx(self.usingSIDL.sourceDB, root = rootDir)]
+
+  def getCompiler(self, library):
+    return [compile.CompileF90(self.usingSIDL.sourceDB, library), compile.CompileCxx(self.usingSIDL.sourceDB, library)]
+
+  def getServerCompileTarget(self, project, package):
+    rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
+    stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
+    library = self.getServerLibrary(project, self.getLanguage(), package)
+    # IOR compiler
+    compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
+    compileC.defines.extend(self.getDefines())
+    compileC.includeDirs.append(rootDir)
+    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    # Server compiler
+    compilers = self.getCompiler(library)
+    if not isinstance(compilers, list): compilers = [compilers]
+    for compiler in compilers:
+      compiler.defines.extend(self.getDefines())
+      compiler.includeDirs.append(rootDir)
+      compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+      compiler.includeDirs.append(stubDir)
+      compiler.includeDirs.extend(self.includeDirs[package])
+      compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    if len(compilers) == 1: compilers = compilers[0]
+    return [compile.TagC(self.usingSIDL.sourceDB, root = rootDir), compileC, self.getTagger(rootDir), compilers]
+
+  def getExecutableCompileTarget(self, project, sources, executable):
+    baseName = os.path.splitext(os.path.basename(executable[0]))[0] 
+    library  = fileset.FileSet([os.path.join(project.getRoot(), 'lib', 'lib'+baseName+'.a')])
+    compileCxx = compile.CompileCxx(self.usingSIDL.sourceDB, library)
+    compileCxx.includeDirs.append(self.usingSIDL.getClientRootDir(self.getLanguage()))
+    compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileCxx.includeDirs.extend(self.includeDirs['executable'])
+    return [compile.TagCxx(self.usingSIDL.sourceDB), compileCxx, compile.TagF90(self.usingSIDL.sourceDB), compile.CompileF90(self.usingSIDL.sourceDB, library)]
 
 class UsingJava (UsingCompiler):
   '''This class handles all interaction specific to the Java language'''
