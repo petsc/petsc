@@ -1,5 +1,5 @@
 C
-C  $Id: pc.h,v 1.17 1996/07/08 22:24:44 bsmith Exp curfman $;
+C  $Id: pc.h,v 1.18 1996/09/27 13:51:30 curfman Exp balay $;
 C
 C  Include file for Fortran use of the PC (preconditioner) package in PETSc
 C
@@ -12,12 +12,12 @@ C
 C  Various preconditioners
 C
       integer PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
-     *        PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS, PCSPAI
+     *        PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS
 
       parameter (PCNONE = 0, PCJACOBI = 1, PCSOR = 2, PCLU = 3, 
      *           PCSHELL = 4, PCBJACOBI = 5, PCMG = 6,
      *           PCEISENSTAT = 7, PCILU = 8, PCICC = 9, PCASM = 10,
-     *           PCBGS = 11, PCSPAI = 12)
+     *           PCBGS = 11)
 
 C
 C  PCSide
