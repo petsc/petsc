@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.90 1996/06/20 02:09:57 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.91 1996/06/26 18:29:02 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -17,12 +17,31 @@ static char vcid[] = "$Id: gcreate.c,v 1.90 1996/06/20 02:09:57 curfman Exp curf
    Output Parameters:
 .  set - flag indicating whether user set matrix type option.
 
+   Basic Options Database Keys:
+   These options return MATSEQxxx or MATMPIxxx,
+   depending on the communicator, comm.
+$    -mat_aij      : AIJ type
+$    -mat_baij     : block AIJ type
+$    -mat_dense    : dense type
+$    -mat_bdiag    : block diagonal type
+
+   More Options Database Keys:
+$    -mat_seqaij   : MATSEQAIJ
+$    -mat_mpiaij   : MATMPIAIJ
+$    -mat_seqbaij  : MATSEQBAIJ
+$    -mat_mpibaij  : MATMPIBAIJ
+$    -mat_seqbdiag : MATSEQBDAIG
+$    -mat_mpibdiag : MATMPIBDIAG
+$    -mat_mpirowbs : MATMPIROWBS
+$    -mat_seqdense : MATSEQDENSE
+$    -mat_mpidense : MATMPIDENSE
+
    Note:
-   This routine is automatically called within MatCreate().
+   This routine is automatically called within MatCreate() and MatLoad().
 
 .keywords: matrix, get, format, from, options
 
-.seealso: MatCreate()
+.seealso: MatCreate(), MatLoad()
 @*/
 
 int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
@@ -124,7 +143,6 @@ int MatGetTypeFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
    from the options database. Generates a parallel MPI matrix if the
    communicator has more than one processor.  The default matrix type is
    AIJ, using the routines MatCreateSeqAIJ() and MatCreateMPIAIJ(). 
-
 
    Input Parameters:
 .  m - number of global rows
