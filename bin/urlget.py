@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: urlget.py,v 1.16 1998/03/11 16:45:13 balay Exp balay $ 
+# $Id: urlget.py,v 1.17 1998/05/06 15:18:01 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -14,7 +14,7 @@ import httplib
 from exceptions import *
 from sys import *
 
-# Defines a meta class, wose member functions are common/required
+# Defines a meta class, whose member functions are common/required
 # by ftp/http object classes
 class url_object:
     def gettime(): 
