@@ -2,8 +2,7 @@
 
 /*
     Scatters from  a sequential vector to a parallel vector.
-   Does case when each local vector is as long as the entire 
-   parallel vector.
+   Does tricky case.
 */
 #include "petsc.h"
 #include "comm.h"
@@ -29,26 +28,20 @@ int main(int argc,char **argv)
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 
+
   /* create two vectors */
   N = numtids*n;
   ierr = VecCreateMPI(MPI_COMM_WORLD,-1,N,&y); CHKERR(ierr);
   ierr = VecCreateSequential(N,&x); CHKERR(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(N,0,1,&is1); CHKERR(ierr);
-  ierr = ISCreateStrideSequential(N,0,1,&is2); CHKERR(ierr);
+  ierr = ISCreateStrideSequential(n,0,1,&is1); CHKERR(ierr);
+  ierr = ISCreateStrideSequential(n,mytid,1,&is2); CHKERR(ierr);
 
-  for ( i=0; i<N; i++ ) {
-    value = (Scalar) i;
-    ierr = VecInsertValues(x,1,&i,&value); CHKERR(ierr);
-  }
-  ierr = VecBeginAssembly(x); CHKERR(ierr);
-  ierr = VecEndAssembly(x); CHKERR(ierr);
+  value = mytid+1; VecSet(&value,x);
 
-  VecView(x,0); printf("----\n");
-
-  ierr = VecScatterBegin(x,is2,y,is1,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is2,y,is1,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,AddValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,AddValues,&ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
   VecView(y,0);

@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   /* fill parallel vector: note this is not efficient way*/
   for ( i=0; i<N; i++ ) {
     value = (Scalar) i;
-    ierr = VecInsertValues(x,1,&i,&value); CHKERR(ierr);
+    ierr = VecSetValues(x,1,&i,&value,InsertValues); CHKERR(ierr);
   }
   ierr = VecBeginAssembly(x); CHKERR(ierr);
   ierr = VecEndAssembly(x); CHKERR(ierr);
@@ -47,14 +47,16 @@ int main(int argc,char **argv)
 
   VecView(x,0); 
 
-  ierr = VecScatterBegin(x,is1,y,is2,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
   MPE_Seq_begin(MPI_COMM_WORLD,1);
   printf("-Node %d ---\n",mytid); VecView(y,0); fflush(stdout);
   MPE_Seq_end(MPI_COMM_WORLD,1);
 
+  ierr = ISDestroy(is1); CHKERR(ierr);
+  ierr = ISDestroy(is2); CHKERR(ierr);
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);
 

@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   /* fill local part of parallel vector */
   for ( i=n*mytid; i<n*(mytid+1); i++ ) {
     value = (Scalar) i;
-    ierr = VecInsertValues(x,1,&i,&value); CHKERR(ierr);
+    ierr = VecSetValues(x,1,&i,&value,InsertValues); CHKERR(ierr);
   }
   ierr = VecBeginAssembly(x); CHKERR(ierr);
   ierr = VecEndAssembly(x); CHKERR(ierr);
@@ -46,8 +46,8 @@ int main(int argc,char **argv)
 
   VecView(x,0); printf("----\n");
 
-  ierr = VecScatterBegin(x,is1,y,is2,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
   VecView(y,0);

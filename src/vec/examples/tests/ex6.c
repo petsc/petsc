@@ -31,11 +31,11 @@ int main(int argc,char **argv)
   ierr = ISCreateSequential(3,idx1,&is1); CHKERR(ierr);
   ierr = ISCreateStrideSequential(3,0,2,&is2); CHKERR(ierr);
 
-  ierr = VecInsertValues(x,6,loc,vals); CHKERR(ierr);
+  ierr = VecSetValues(x,6,loc,vals,InsertValues); CHKERR(ierr);
   VecView(x,0); printf("----\n");
   ierr = VecSet(&two,y);CHKERR(ierr);
-  ierr = VecScatterBegin(x,is1,y,is2,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERR(ierr);
   
   VecView(y,0);

@@ -41,15 +41,15 @@ int main(int argc,char **argv)
   /* this is redundant but tests assembly */
   for ( i=0; i<n*numtids; i++ ) {
     value = (Scalar) i;
-    ierr = VecInsertValues(x,1,&i,&value); CHKERR(ierr);
+    ierr = VecSetValues(x,1,&i,&value,InsertValues); CHKERR(ierr);
   }
   ierr = VecBeginAssembly(x); CHKERR(ierr);
   ierr = VecEndAssembly(x); CHKERR(ierr);
 
   VecView(x,0); printf("----\n");
 
-  ierr = VecScatterBegin(x,is1,y,is2,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
   VecView(y,0);

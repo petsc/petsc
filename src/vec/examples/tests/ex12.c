@@ -1,7 +1,7 @@
 
 
 /*
-    Scatters from a parallel vector to a sequential vector.
+    Scatters from  a sequential vector to a parallel vector.
    Does case when we are merely selecting the local part of the 
    parallel vector.
 */
@@ -39,20 +39,20 @@ int main(int argc,char **argv)
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
-  for ( i=0; i<n*numtids; i++ ) {
-    value = (Scalar) i;
-    ierr = VecInsertValues(x,1,&i,&value); CHKERR(ierr);
+  for ( i=0; i<n; i++ ) {
+    value = (Scalar) (i + 10*mytid);
+    ierr = VecSetValues(y,1,&i,&value,InsertValues); CHKERR(ierr);
   }
-  ierr = VecBeginAssembly(x); CHKERR(ierr);
-  ierr = VecEndAssembly(x); CHKERR(ierr);
+  ierr = VecBeginAssembly(y); CHKERR(ierr);
+  ierr = VecEndAssembly(y); CHKERR(ierr);
 
-  VecView(x,0); printf("----\n");
+  VecView(y,0); printf("----\n");
 
-  ierr = VecScatterBegin(x,is1,y,is2,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(y,is2,x,is1,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(y,is2,x,is1,InsertValues,&ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
-  VecView(y,0);
+  VecView(x,0);
 
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);

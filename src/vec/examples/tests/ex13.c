@@ -2,7 +2,7 @@
 
 /*
     Scatters from  a sequential vector to a parallel vector.
-   Does case when we are merely selecting the local part of the 
+   Does case when each local vector is as long as the entire 
    parallel vector.
 */
 #include "petsc.h"
@@ -17,7 +17,7 @@
 int main(int argc,char **argv)
 {
   int           n = 5, ierr;
-  int           numtids,mytid,i;
+  int           numtids,mytid,i,N;
   Scalar        one = 1.0, two = 2.0, three = 3.0, value;
   double        norm;
   Vec           x,y;
@@ -30,29 +30,28 @@ int main(int argc,char **argv)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 
   /* create two vectors */
-  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,numtids*n,&x); CHKERR(ierr);
-  ierr = VecCreateSequential(n,&y); CHKERR(ierr);
+  N = numtids*n;
+  ierr = VecCreateMPI(MPI_COMM_WORLD,-1,N,&y); CHKERR(ierr);
+  ierr = VecCreateSequential(N,&x); CHKERR(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(n,n*mytid,1,&is1); CHKERR(ierr);
-  ierr = ISCreateStrideSequential(n,0,1,&is2); CHKERR(ierr);
+  ierr = ISCreateStrideSequential(N,0,1,&is1); CHKERR(ierr);
+  ierr = ISCreateStrideSequential(N,0,1,&is2); CHKERR(ierr);
 
-  /* each processor inserts the entire vector */
-  /* this is redundant but tests assembly */
-  for ( i=0; i<n; i++ ) {
-    value = (Scalar) (i + 10*mytid);
-    ierr = VecInsertValues(y,1,&i,&value); CHKERR(ierr);
+  for ( i=0; i<N; i++ ) {
+    value = (Scalar) i;
+    ierr = VecSetValues(x,1,&i,&value,InsertValues); CHKERR(ierr);
   }
-  ierr = VecBeginAssembly(y); CHKERR(ierr);
-  ierr = VecEndAssembly(y); CHKERR(ierr);
+  ierr = VecBeginAssembly(x); CHKERR(ierr);
+  ierr = VecEndAssembly(x); CHKERR(ierr);
 
-  VecView(y,0); printf("----\n");
+  VecView(x,0); printf("----\n");
 
-  ierr = VecScatterBegin(y,is2,x,is1,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(y,is2,x,is1,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(x,is2,y,is1,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(x,is2,y,is1,InsertValues,&ctx); CHKERR(ierr);
   VecScatterCtxDestroy(ctx);
   
-  VecView(x,0);
+  VecView(y,0);
 
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);

@@ -35,13 +35,13 @@ int main(int argc,char **argv)
 
   ierr = VecSet(&one,x);CHKERR(ierr);
   ierr = VecSet(&two,y);CHKERR(ierr);
-  ierr = VecScatterBegin(x,is1,y,is2,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,InsertValues,&ctx); CHKERR(ierr);
   
   VecView(y,0);
 
-  ierr = VecScatterBegin(y,is1,x,is2,&ctx); CHKERR(ierr);
-  ierr = VecScatterEnd(y,is1,x,is2,&ctx); CHKERR(ierr);
+  ierr = VecScatterBegin(y,is1,x,is2,InsertValues,&ctx); CHKERR(ierr);
+  ierr = VecScatterEnd(y,is1,x,is2,InsertValues,&ctx); CHKERR(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERR(ierr);
 
   printf("-------\n");VecView(x,0);
@@ -52,6 +52,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERR(ierr);
   ierr = VecDestroy(y);CHKERR(ierr);
 
+  PetscFinalize();
   return 0;
 }
  

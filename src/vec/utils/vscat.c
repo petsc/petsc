@@ -16,7 +16,7 @@
 /*
     Sequential general to general scatter 
 */
-static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,int addv)
+static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
 {
   VecScatterGeneral *gen_to = (VecScatterGeneral *) ctx->todata;
   VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
@@ -25,7 +25,7 @@ static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,int addv)
   DvVector          *xx = (DvVector *) x->data,*yy = (DvVector *) y->data;
   Scalar            *xv = xx->array, *yv = yy->array;
   
-  if (addv == INSERTVALUES) {
+  if (addv == InsertValues) {
     for ( i=0; i<n; i++ ) {yv[tslots[i]] = xv[fslots[i]];}
   }
   else {
@@ -33,7 +33,7 @@ static int SGtoSG(Vec x,Vec y,VecScatterCtx ctx,int addv)
   }
   return 0;
 }
-static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,int addv)
+static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
 {
   VecScatterStride  *gen_to = (VecScatterStride *) ctx->todata;
   VecScatterGeneral *gen_from = (VecScatterGeneral *) ctx->fromdata;
@@ -42,7 +42,7 @@ static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,int addv)
   DvVector          *xx = (DvVector *) x->data,*yy = (DvVector *) y->data;
   Scalar            *xv = xx->array, *yv = yy->array;
   
-  if (addv == INSERTVALUES) {
+  if (addv == InsertValues) {
     for ( i=0; i<n; i++ ) {yv[first + i*step] = xv[fslots[i]];}
   }
   else {
@@ -51,7 +51,7 @@ static int SGtoSS(Vec x,Vec y,VecScatterCtx ctx,int addv)
   return 0;
 }
 
-static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,int addv)
+static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
 {
   VecScatterStride  *gen_from = (VecScatterStride *) ctx->fromdata;
   VecScatterGeneral *gen_to = (VecScatterGeneral *) ctx->todata;
@@ -60,7 +60,7 @@ static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,int addv)
   DvVector          *xx = (DvVector *) x->data,*yy = (DvVector *) y->data;
   Scalar            *xv = xx->array, *yv = yy->array;
   
-  if (addv == INSERTVALUES) {
+  if (addv == InsertValues) {
     for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[first + i*step];}
   }
   else {
@@ -69,7 +69,7 @@ static int SStoSG(Vec x,Vec y,VecScatterCtx ctx,int addv)
   return 0;
 }
 
-static int SStoSS(Vec x,Vec y,VecScatterCtx ctx,int addv)
+static int SStoSS(Vec x,Vec y,VecScatterCtx ctx,InsertMode addv)
 {
   VecScatterStride  *gen_to = (VecScatterStride *) ctx->todata;
   VecScatterStride  *gen_from = (VecScatterStride *) ctx->fromdata;
@@ -79,7 +79,7 @@ static int SStoSS(Vec x,Vec y,VecScatterCtx ctx,int addv)
   DvVector          *xx = (DvVector *) x->data,*yy = (DvVector *) y->data;
   Scalar            *xv = xx->array, *yv = yy->array;
   
-  if (addv == INSERTVALUES) {
+  if (addv == InsertValues) {
     if (to_step == 1 && from_step == 1) {
       MEMCPY(yv+to_first,xv+from_first,n*sizeof(Scalar));
     }
@@ -235,7 +235,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERR(1,"Local scatter sizes don't match");
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
-      MPI_Allreduce((void *) &islocal,(void *) &cando,x->numtids,MPI_INT,
+      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,
                     MPI_LAND,x->comm);
       if (cando) {
         to = (VecScatterStride *) MALLOC(sizeof(VecScatterStride)); 
@@ -274,7 +274,7 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERR(1,"Local scatter sizes don't match");
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
-      MPI_Allreduce((void *) &islocal,(void *) &cando,y->numtids,MPI_INT,
+      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,
                     MPI_LAND,y->comm);
       if (cando) {
         to = (VecScatterStride *) MALLOC(sizeof(VecScatterStride)); 
@@ -308,20 +308,6 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 }
 
 /* ------------------------------------------------------------------*/
-static int VecScatterOrAddBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *inctx,
-                                int addv)
-{
-  int           ierr;
-  VecScatterCtx ctx;
-  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  VALIDHEADER(ix,IS_COOKIE); VALIDHEADER(iy,IS_COOKIE);
-
-  if (!*inctx) {
-    ierr = VecScatterCtxCreate(x,ix,y,iy,inctx); CHKERR(ierr);
-  }
-  return (*(*inctx)->begin)(x,y,*inctx,addv);
-}
-
 /*@
      VecScatterBegin  -  Scatters from one vector into another.
                          This is far more general than the usual
@@ -338,6 +324,7 @@ static int VecScatterOrAddBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *inctx,
 .  ix - indices of elements in x to take
 .  iy - indices of locations in y to insert 
 .  inctx - it not pointing to null, is used to coordinate communication
+.  addv - either AddValues or InsertValues
 
   Output Parameters:
 .  y - vector to scatter to 
@@ -347,42 +334,21 @@ static int VecScatterOrAddBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *inctx,
 .   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 .   destroy inctx with VecScatterCtxDestroy() when no longer needed.
 @*/
-int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *inctx)
+int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv, 
+                                                   VecScatterCtx *inctx)
 {
-  return VecScatterOrAddBegin(x,ix,y,iy,inctx,INSERTVALUES);
-}
+  int           ierr;
+  VecScatterCtx ctx;
+  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
+  VALIDHEADER(ix,IS_COOKIE); VALIDHEADER(iy,IS_COOKIE);
 
-/*@
-     VecScatterAddBegin  -  Scatters from one vector into another.
-                            See VecScatterBegin().
-
-  Input Parameters:
-.  x - vector to scatter from
-.  ix - indices of elements in x to take
-.  iy - indices of locations in y to insert 
-
-  Output Parameters:
-.  y - vector to scatter to 
-
-  Notes:
-.   y[iy[i]] += x[ix[i]], for i=0,...,ni-1
-@*/
-int VecScatterAddBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
-{
-  return VecScatterOrAddBegin(x,ix,y,iy,ctx,ADDVALUES);
+  if (!*inctx) {
+    ierr = VecScatterCtxCreate(x,ix,y,iy,inctx); CHKERR(ierr);
+  }
+  return (*(*inctx)->begin)(x,y,*inctx,addv);
 }
 
 /* --------------------------------------------------------------------*/
-static int VecScatterOrAddEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx,
-                              int addv)
-{
-  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
-  VALIDHEADER(ix,IS_COOKIE); VALIDHEADER(iy,IS_COOKIE);
-  VALIDHEADER(*ctx,VEC_SCATTER_COOKIE);
-  if ((*ctx)->end) return (*(*ctx)->end)(x,y,*ctx,addv);
-  else return 0;
-}
-
 /*@
      VecScatterEnd  -  End scatter from one vector into another.
             Call after call to VecScatterBegin().
@@ -391,6 +357,7 @@ static int VecScatterOrAddEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx,
 .  x - vector to scatter from
 .  ix - indices of elements in x to take
 .  iy - indices of locations in y to insert 
+.  addv - either AddValues or InsertValues
 
   Output Parameters:
 .  y - vector to scatter to 
@@ -398,30 +365,15 @@ static int VecScatterOrAddEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx,
   Notes:
 .   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
+int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv,VecScatterCtx *ctx)
 {
-  return VecScatterOrAddEnd(x,ix,y,iy,ctx,INSERTVALUES);
+  VALIDHEADER(x,VEC_COOKIE); VALIDHEADER(y,VEC_COOKIE);
+  VALIDHEADER(ix,IS_COOKIE); VALIDHEADER(iy,IS_COOKIE);
+  VALIDHEADER(*ctx,VEC_SCATTER_COOKIE);
+  if ((*ctx)->end) return (*(*ctx)->end)(x,y,*ctx,addv);
+  else return 0;
 }
 
-/*@
-     VecScatterAddEnd  -  End scatter from one vector into another.
-            Call after call to VecScatterAddBegin().
-
-  Input Parameters:
-.  x - vector to scatter from
-.  ix - indices of elements in x to take
-.  iy - indices of locations in y to insert 
-
-  Output Parameters:
-.  y - vector to scatter to 
-
-  Notes:
-.   y[iy[i]] += x[ix[i]], for i=0,...,ni-1
-@*/
-int VecScatterAddEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
-{
-  return VecScatterOrAddEnd(x,ix,y,iy,ctx,ADDVALUES);
-}
 
 /*@
      VecScatterCtxDestroy - Destroys a scatter context created by 

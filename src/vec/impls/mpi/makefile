@@ -1,3 +1,7 @@
+#
+#   I'd like to add the dependancies pvec.c depends on pdvec.c ...
+#  but can't figure out how.
+#
 ITOOLSDIR = ../../..
 
 ALL: lib
@@ -13,5 +17,6 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
+MANSEC   = 1
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -3,7 +3,7 @@
 #include "vecimpl.h"
 
 /*@
-     VecReciprocal - replaces each component in a vector by 
+     VecReciprocal - Replaces each component in a vector by 
       its reciprocal.
 
   Input Parameters:

@@ -53,7 +53,7 @@ int PrintPVecScatterCtx(VecScatterCtx ctx)
      the naming can be a little confusing.
 
 */
-int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,int addv)
+int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
@@ -87,7 +87,7 @@ int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,int addv)
   return 0;
 }
 
-int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,int addv)
+int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
@@ -112,14 +112,14 @@ int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,int addv)
     MPI_Get_count(&rstatus,MPI_SCALAR,&n);
     if (n != rstarts[index+1] - rstarts[index]) SETERR(1,"Bad message");
 
-    if (addv == ADDVALUES) {
+    if (addv == InsertValues) {
       for ( i=0; i<n; i++ ) {
-        yv[indices[i+rstarts[index]]] += *val++;
+        yv[indices[i+rstarts[index]]] = *val++;
       }
     }
      else {
       for ( i=0; i<n; i++ ) {
-        yv[indices[i+rstarts[index]]] = *val++;
+        yv[indices[i+rstarts[index]]] += *val++;
       }
     }
     count--;
@@ -397,15 +397,12 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   to->indices  = (int *) (to->requests + nsends); 
   to->starts   = (int *) (to->indices + ny);
   to->procs    = (int *) (to->starts + nsends + 1);
-printf("happy7\n"); fflush(stdout);
   ctx->todata  = (void *) to;
 
   /* move data into send scatter context */
   lowner = (int *) MALLOC( (numtids+nsends+1)*sizeof(int) ); CHKPTR(lowner);
-printf("happy8\n"); fflush(stdout);
   start = lowner + numtids;
   count = 0; to->starts[0] = start[0] = 0;
-printf("happy9\n"); fflush(stdout);
   for ( i=0; i<numtids; i++ ) {
     if (procs[i]) {
       lowner[i]            = count;
@@ -413,14 +410,10 @@ printf("happy9\n"); fflush(stdout);
       to->starts[count]  = start[count] = start[count-1] + nprocs[i];
     }
   }
-printf("happy10\n"); fflush(stdout);
   for ( i=0; i<nx; i++ ) {
     to->indices[start[lowner[owner[i]]]++] = inidx[i];
   }
-printf("happy11\n"); fflush(stdout);
   FREE(lowner); FREE(owner); FREE(nprocs);
-printf("happy12\n"); fflush(stdout);    
-
 
   base = owners[mytid];
 
@@ -428,7 +421,6 @@ printf("happy12\n"); fflush(stdout);
   lens = (int *) MALLOC( 2*(nrecvs+1)*sizeof(int) ); CHKPTR(lens);
   source = lens + nrecvs;
   count = nrecvs; slen = 0;
-printf("happy13\n"); fflush(stdout);   
   while (count) {
     MPI_Waitany(nrecvs,recv_waits,&index,&recv_status);
     /* unpack receives into our local space */
@@ -438,9 +430,7 @@ printf("happy13\n"); fflush(stdout);
     slen += n;
     count--;
   }
-printf("happy14\n"); fflush(stdout);   
   FREE(recv_waits); 
-printf("happy15\n"); fflush(stdout);   
  
   /* allocate entire receive scatter context */
   from = (VecScatterMPI *) MALLOC( sizeof(VecScatterMPI) ); CHKPTR(from);
@@ -481,7 +471,7 @@ printf("happy15\n"); fflush(stdout);
   ctx->begin   = PtoPScatterbegin;
   ctx->end     = PtoPScatterend; 
 
-  PrintPVecScatterCtx(ctx);
+  /* PrintPVecScatterCtx(ctx); */
   return 0;
 }
 

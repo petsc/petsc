@@ -4,7 +4,7 @@
 #include "vecimpl.h"    /*I "vec.h" I*/
 
 /*@
-     VecValidVector - returns 1 if this is a valid vector else 0
+     VecValidVector - Returns 1 if this is a valid vector else 0.
 
   Input Parameter:
 .  v - the object to check
@@ -87,7 +87,7 @@ int VecMax(Vec x,int *p,double *val)
 }
 
 /*@
-     VecTDot  - non-Hermitian vector dot product. That is, it does NOT
+     VecTDot  - Non-Hermitian vector dot product. That is, it does NOT
               use the complex conjugate.
 
   Input Parameters:
@@ -307,52 +307,36 @@ int VecFreeVecs(Vec *vv,int m)
 
 
 
+
 /*@
-     VecAddValues - add values into certain location in vector. These
+     VecSetValues - Insert or add values into certain locations in vector. 
+         These
          values may be cached, you must call VecBeginAssembly() and 
          VecEndAssembly() after you have completed all calls to 
-         VecAddValues() and VecInsertValues().
-
-  Input Parameters:
-.  x - vector to add to 
-.  ni - number of elements to add
-.  ix - indices where to add
-.  y - array of values
-
-  Notes:
-.  x[ix[i]] += y[i], for i=0,...,ni-1.
-
-@*/
-int VecAddValues(Vec x,int ni,int *ix,Scalar *y) 
-{
-  VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->addvalues)( x, ni,ix, y );
-}
-/*@
-     VecInsertValues - insert values into certain locations in vector. These
-         values may be cached, you must call VecBeginAssembly() and 
-         VecEndAssembly() after you have completed all calls to 
-         VecAddValues() and VecInsertValues().
+         VecSetValues() or VecInsertValues(). Note: calls with SetValues
+         and InsertValues may not be interlaced.
 
   Input Parameters:
 .  x - vector to insert in
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
+.  iora - either InsertValues or AddValues
 
   Notes:
 .  x[ix[i]] = y[i], for i=0,...,ni-1.
 
 @*/
-int VecInsertValues(Vec x,int ni,int *ix,Scalar *y) 
+int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
   VALIDHEADER(x,VEC_COOKIE);
-  return (*x->ops->insertvalues)( x, ni,ix, y );
+  return (*x->ops->insertvalues)( x, ni,ix, y,iora );
 }
 
 /*@
     VecBeginAssembly - Begins assembling global vector. Call after
-      all calls to VecAddValues() and VecInsertValues().
+      all calls to VecAddValues() or VecInsertValues(). Note that you cannot
+      mix calls to VecAddValues() and VecInsertValues().
 
   Input Parameter:
 .   vec - the vector to assemble
@@ -366,7 +350,7 @@ int VecBeginAssembly(Vec vec)
 
 /*@
     VecEndAssembly - End assembling global vector. Call after
-      all call VecBeginAssembly().
+      VecBeginAssembly().
 
   Input Parameter:
 .   vec - the vector to assemble
@@ -379,7 +363,7 @@ int VecEndAssembly(Vec vec)
 }
 
 /*@
-     VecMTDot  - non-Hermitian vector multiple dot product. 
+     VecMTDot  - Non-Hermitian vector multiple dot product. 
          That is, it does NOT use the complex conjugate.
 
   Input Parameters:
@@ -397,8 +381,7 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
   return (*x->ops->mtdot)(nv,x,y,val);
 }
 /*@
-     VecMDot  - non-Hermitian vector multiple dot product. That is, it does NOT
-               use the complex conjugate.
+     VecMDot  - Vector multiple dot product. 
 
   Input Parameters:
 .  nv - number of vectors
@@ -432,7 +415,7 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 } 
 
 /*@
-   VecGetArray - return pointer to vector data. For default seqential 
+   VecGetArray - Return pointer to vector data. For default seqential 
         vectors returns pointer to array containing data. Otherwise 
         implementation dependent.
 
@@ -449,7 +432,7 @@ int VecGetArray(Vec x,Scalar **a)
 }
 
 /*@
-    VecView  - allows user to view a vector. This routines is intended to 
+    VecView  - Allows user to view a vector. This routines is intended to 
               be replacable with fancy graphical based viewing.
 
   Input Parameters:
@@ -463,7 +446,7 @@ int VecView(Vec v,Viewer ptr)
 }
 
 /*@
-    VecGetSize - returns number of elements in vector
+    VecGetSize - Returns number of elements in vector.
 
   Input Parameter:
 .   x - the vector
@@ -478,7 +461,7 @@ int VecGetSize(Vec x,int *size)
 }
 
 /*@
-    VecGetLocalSize - returns number of elements in vector stored 
+    VecGetLocalSize - Returns number of elements in vector stored 
                in local memory. This may mean different things 
                for different implementations, use with care.
 

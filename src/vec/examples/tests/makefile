@@ -10,9 +10,9 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
-EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11
+EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14
 EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
-           ex11.c
+           ex11.c ex12.c ex13.c ex14.c
 SYSLIB   = $(LDIR)/libpetscvec.a \
            $(LDIR)/libpetscsys.a $(BLAS) $(CLIB) $(SLIB) -lm 
 LINCLUDE = $(SOURCEH)
@@ -64,6 +64,14 @@ ex11: ex11.o
 ex12: ex12.o 
 	-$(CLINKER) -o ex12 ex12.o  $(SYSLIB)
 	$(RM) -f ex12.o
+
+ex13: ex13.o 
+	-$(CLINKER) -o ex13 ex13.o  $(SYSLIB)
+	$(RM) -f ex13.o
+
+ex14: ex14.o 
+	-$(CLINKER) -o ex14 ex14.o  $(SYSLIB)
+	$(RM) -f ex14.o
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
