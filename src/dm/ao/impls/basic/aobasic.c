@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.25 1997/10/19 03:31:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.26 1997/10/28 14:25:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -130,7 +130,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 {
   AO_Basic  *aodebug;
   AO        ao;
-  int       *lens,size,rank,N,i,flg1,ierr;
+  int       *lens,size,rank,N,i,flg1,ierr,*petsc,start;
   int       *allpetsc,*allapp,*disp,ip,ia;
 
   PetscFunctionBegin;
@@ -158,10 +158,21 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   }
   aodebug->N = N;
 
+  /*
+     If mypetsc is 0 then use "natural" numbering 
+  */
+  if (!mypetsc) {
+    start = disp[rank];
+    petsc = (int *) PetscMalloc((napp+1)*sizeof(int));CHKPTRQ(petsc);
+    for ( i=0; i<napp; i++ ) {
+      petsc[i] = start + i;
+    }
+  }
+
   /* get all indices on all processors */
   allpetsc = (int *) PetscMalloc( 2*N*sizeof(int) ); CHKPTRQ(allpetsc);
   allapp   = allpetsc + N;
-  MPI_Allgatherv(mypetsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);
+  MPI_Allgatherv(petsc,napp,MPI_INT,allpetsc,lens,disp,MPI_INT,comm);
   MPI_Allgatherv(myapp,napp,MPI_INT,allapp,lens,disp,MPI_INT,comm);
   PetscFree(lens);
 
@@ -178,6 +189,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
     if (aodebug->petsc[ia]) SETERRQ(1,0,"Duplicate in ordering");
     aodebug->petsc[ia] = ip + 1;
   }
+  if (!mypetsc) PetscFree(petsc);
   PetscFree(allpetsc);
   /* shift indices down by one */
   for ( i=0; i<N; i++ ) {
