@@ -108,7 +108,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
         jostle_env(env_str);
 
         if (jostle_struct->coarse_seq)
-            jostle_env("matching = local");
+          jostle_env("matching = local");
 
         /* redirect output */
 #ifdef PETSC_HAVE_UNISTD_H
@@ -278,6 +278,27 @@ PetscErrorCode MatPartitioningDestroy_Jostle(MatPartitioning part)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Jostle"
+/*@C
+   MAT_PARTITIONING_JOSTLE - Creates a partitioning context via the external package Jostle.
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.  part - the partitioning context
+
+   Options Database Keys:
++  -mat_partitioning_jostle_coarse_level <0>: Coarse level (MatPartitioningJostleSetCoarseLevel)
+-  -mat_partitioning_jostle_coarse_sequential: Use sequential coarse partitioner (MatPartitioningJostleSetCoarseSequential)
+
+   Level: beginner
+
+   Notes: See http://www.gre.ac.uk/~c.walshaw/jostle/
+
+.keywords: Partitioning, create, context
+
+.seealso: MatPartitioningSetType(), MatPartitioningType
+
+@*/
 PetscErrorCode MatPartitioningCreate_Jostle(MatPartitioning part)
 {
     PetscErrorCode ierr;
