@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.259 1998/04/15 19:38:43 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.260 1998/04/15 22:50:57 curfman Exp balay $";
 #endif
 
 /*
@@ -1323,10 +1323,12 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
     PetscFree(a);
  
     /*
-        This is horrible, horrible code. We need to keep the 
-      A pointers for the bops and ops but copy everything 
-      else from C.
+      This is horrible, horrible code. We need to keep the 
+      the bops and ops Structures, copy everything from C
+      including the function pointers..
     */
+    PetscMemcpy(A->ops,C->ops,sizeof(struct _MatOps));
+    PetscMemcpy(A->bops,C->bops,sizeof(PetscOps));
     Abops = A->bops;
     Aops  = A->ops;
     PetscMemcpy(A,C,sizeof(struct _p_Mat));
