@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.227 1997/11/27 15:26:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.228 1997/12/01 01:54:32 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -482,22 +482,16 @@ int MatZeroEntries_MPIAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-/* the code does not do the diagonal entries correctly unless the 
-   matrix is square and the column and row owerships are identical.
-   This is a BUG. The only way to fix it seems to be to access 
-   aij->A and aij->B directly and not through the MatZeroRows() 
-   routine. 
-*/
 #undef __FUNC__  
 #define __FUNC__ "MatZeroRows_MPIAIJ"
 int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIAIJ     *l = (Mat_MPIAIJ *) A->data;
   int            i,ierr,N, *rows,*owners = l->rowners,size = l->size;
-  int            *procs,*nprocs,j,found,idx,nsends,*work;
+  int            *procs,*nprocs,j,found,idx,nsends,*work,row;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
-  int            *lens,imdex,*lrows,*values;
+  int            *lens,imdex,*lrows,*values,rstart=l->rstart;
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
@@ -594,12 +588,21 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   /* actually zap the local rows */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
   PLogObjectParent(A,istmp);
-  PetscFree(lrows);
-  ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
+
+  ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
   ierr = MatZeroRows(l->B,istmp,0); CHKERRQ(ierr);
   ierr = ISDestroy(istmp); CHKERRQ(ierr);
 
-  /* wait on sends */
+  if (diag) {
+    for ( i = 0; i < slen; i++ ) {
+      row = lrows[i] + rstart;
+      MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES);
+    }
+    MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
+    MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
+  }
+  PetscFree(lrows);
+ /* wait on sends */
   if (nsends) {
     send_status = (MPI_Status *) PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     ierr        = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);

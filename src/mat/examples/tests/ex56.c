@@ -1,26 +1,27 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.10 1997/09/22 15:22:57 balay Exp balay $";
+static char vcid[] = "$Id: ex56.c,v 1.11 1997/10/07 16:19:17 balay Exp balay $";
 #endif
-static char help[] = "Test the use of MatSetValuesBlocked for MatBAIJ";
+static char help[] = "Test the use of MatSetValuesBlocked,MatZeroRows for \n\
+rectangular MatBAIJ matrix";
 
 #include "mat.h"
 
 int main(int argc,char **args)
 {
   Mat         A;
-  int         bs=3,m=4,i,j,val = 10,ierr,flg,size,rank,rstart;
-  Scalar      x[6][9],y[3][3];
+  int         bs=3,m=4,n=6,i,j,val = 10,ierr,flg,size,rank,rstart;
+  Scalar      x[6][9],y[3][3],one=1.0;
   int         row[2],col[3],eval;
-
+  IS          is;
   PetscInitialize(&argc,&args,(char *)0,help);
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   
   if (size == 1) {
-    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,m*bs,1,PETSC_NULL,&A); CHKERRA(ierr);
+    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,n*bs,1,PETSC_NULL,&A); CHKERRA(ierr);
   } else {
-    ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,1,
+    ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,
                             PETSC_NULL,1,PETSC_NULL,&A); CHKERRA(ierr);
   }
 
@@ -42,26 +43,36 @@ int main(int argc,char **args)
     for (j =0; j< 9; j++ ) x[i][j] = (Scalar)val++;
   }
 
-  ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES); CHKERRA(ierr);
 
   /* Do another MatSetValues to test the case when only one local block is specified */
   for (i=0; i<3; i++) {
     for (j =0; j<3 ; j++ )  y[i][j] = (Scalar)(10 + i*eval + j);
   }
-  ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRA(ierr);
 
 
-  ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY); CHKERRA(ierr);
 
 
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr);    
-  ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRA(ierr);    
+  ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRA(ierr);
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   
+  ierr = OptionsHasName(PETSC_NULL,"-zero_rows",&flg); CHKERRA(ierr);
+  if (flg) {
+    row[0] = rstart*bs+0;
+    row[1] = rstart*bs+2;
+    ierr = ISCreateGeneral(MPI_COMM_SELF,2,row,&is); CHKERRA(ierr);
+    ierr = MatZeroRows(A,is,&one); CHKERRA(ierr);
+    ISDestroy(is);
+  }
+
+  ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   MatDestroy(A);
   PetscFinalize();
