@@ -385,7 +385,7 @@ framework.log)[0]
     for (configstr,libs) in self.generateLibGuesses():
       self.framework.log.write('Checking for a functional '+self.name+' in '+configstr+'\n')
       foundlibs = self.executeTest(self.checkLib,[libs,'dmumps_c',0,self.blacslib+self.scalapacklib])
-      self.libs = libs
+      self.lib = libs
       break
     if foundlibs:
       for (inclstr,incl) in self.generateIncludeGuesses():
@@ -394,16 +394,17 @@ framework.log)[0]
         if foundh:
           self.include = [incl]
           break
-      if not self.foundh:
+      if not foundh:
         raise RuntimeError('Could not find include files '+self.name+': Use --with-'+self.package+'-dir to indicate is location\n')        
     else:
       raise RuntimeError('Could not find libraries for '+self.name+': Use --with-'+self.package+'-dir to indicate is location\n')
     self.setFoundOutput()
+    self.found = 1
     return
 
   def setFoundOutput(self):
     self.addSubstitution(self.PACKAGE+'_INCLUDE',' '.join(['-I'+inc for inc in self.include]))
-    self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
+    self.addSubstitution(self.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib+self.scalapacklib+self.blacslib)))
     self.addDefine('HAVE_'+self.PACKAGE,1)
     self.framework.packages.append(self)
             
