@@ -1,11 +1,10 @@
-/*$Id: ex75.c,v 1.2 2000/07/10 16:39:40 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.3 2000/07/10 20:09:54 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
 static char help[] = "Tests the vatious parallel routines in MatMPISBAIJ format.\n";
 
-#include "petscsles.h"
-/* #include "mpisbaij.h" */
+#include "petscmat.h"
 
 #undef __FUNC__
 #define __FUNC__ "main"
@@ -15,14 +14,14 @@ int main(int argc,char **args)
   Mat         A,sA;     /* linear system matrix */
   PetscRandom rctx;     /* random number generator context */
   double      norm;     /* norm of solution error */
-  int         i,j,I,J,Istart,Iend,ierr,its,m;
+  int         i,j,i1,i2,j1,j2,I,J,Istart,Iend,ierr,its,m,m1;
+
   PetscTruth  flg;
   Scalar      v, one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*diag;
-  KSP         ksp;
-  int         bs=2, d_nz=3, o_nz=3, n = 16, prob=2;
+  int         bs=2, d_nz=3, o_nz=3, n = 16, prob=1;
   int         rank,col[3],n1,mbs,block,row;
   int         flg_A = 0, flg_sA = 1;
-  int         ncols, *cols,*ip_ptr;
+  int         ncols,*cols,*ip_ptr,rstart,rend;
   Scalar      *vr;
   IS          isrow;
 
@@ -35,7 +34,7 @@ int main(int argc,char **args)
   /* Assemble matrix */
 
   mbs = n/bs;
-  if (flg_sA ){
+  
   ierr = MatCreateMPISBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&sA);CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(sA,&Istart,&Iend);CHKERRA(ierr); 
@@ -105,9 +104,9 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  }
+ 
   /* ------ A -----------*/
-  if (flg_A){
+  
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);  
@@ -172,19 +171,38 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  }
+  
 
-#ifdef Test
+  /* Test MatGetSize(), MatGetLocalSize() */
   /* ierr = MatScale(&alpha,sA);CHKERRA(ierr); MatView(sA, VIEWER_STDOUT_WORLD); */
-  ierr = MatGetSize(sA, &i,&j);
-  MatGetLocalSize(sA, &i,&j);
-  /* ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRA(ierr); */
+  ierr = MatGetSize(sA, &i1,&j1); ierr = MatGetSize(A, &i2,&j2);
+  i1 -= i2; j1 -= j2;
+  if (i1 || j1) {
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetSize()\n",rank);
+    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  }
+    
+  ierr = MatGetLocalSize(sA, &i1,&j1); ierr = MatGetLocalSize(A, &i2,&j2);
+  i1 -= i2; j1 -= j2;
+  if (i1 || j1) {
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetLocalSize()\n",rank);
+    PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  }
+  
+  /* Test MatGetRow(): can only obtain rows for the associated processor */ 
+  ierr = MatGetOwnershipRange(sA,&rstart,&rend);CHKERRA(ierr);
+  for (i=rstart; i<rend; i++) {
+    ierr = MatGetRow(sA,i,&ncols,&cols,&vr);CHKERRA(ierr);
+    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %d: ",rank,i);CHKERRA(ierr);
+    for (j=0; j<ncols; j++) {
+      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%d %g  ",cols[j],vr[j]);CHKERRA(ierr);
+    }
+    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"\n");CHKERRA(ierr);
+    ierr = MatRestoreRow(sA,i,&ncols,&cols,&vr);CHKERRA(ierr);
+  }
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);CHKERRA(ierr);      
+  /*-------------------
 
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d],for sA, i=%d, j=%d\n",rank,i,j); 
-  PetscSynchronizedFlush(PETSC_COMM_WORLD); 
-#endif
-
-#ifdef MatGetRow
   row = 3*bs-1; 
   ierr = MatGetRow(sA,row,&ncols,&cols,&vr); CHKERRA(ierr); 
   PetscPrintf(PETSC_COMM_WORLD,"[%d], row=%d\n", rank,row);
@@ -195,7 +213,7 @@ int main(int argc,char **args)
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
   cols -= ncols; vr -= ncols; 
   ierr = MatRestoreRow(sA,row,&ncols,&cols,&vr); CHKERRA(ierr); 
-#endif
+  */
 
 #ifdef MatZeroRows
   /* list all the rows we want on THIS processor. For symm. matrix, iscol=isrow. */
@@ -212,10 +230,11 @@ int main(int argc,char **args)
   MatView(sA, VIEWER_STDOUT_WORLD);
   ierr = ISDestroy(isrow);CHKERRA(ierr);
 #endif
+
   /* vectors */
   /*--------------------*/
   /* ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&u);CHKERRA(ierr);*/
-  ierr = MatGetLocalSize(sA,&m,&n);CHKERRA(ierr);
+  ierr = MatGetLocalSize(sA,&m,&m1);CHKERRA(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,m,n,&u); CHKERRA(ierr);
   ierr = VecSetFromOptions(u);CHKERRA(ierr);
   ierr = VecDuplicate(u,&b);CHKERRA(ierr); 
