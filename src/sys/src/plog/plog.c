@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.96 1996/04/09 15:44:42 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.97 1996/04/09 16:51:59 balay Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -35,6 +35,8 @@ static int PrintInfo = 0;
 $    -info 
 
 .keywords: allow, information, printing, monitoring
+
+.seealso: PLogInfo()
 @*/
 int PLogAllowInfo(PetscTruth flag)
 {
@@ -44,7 +46,32 @@ int PLogAllowInfo(PetscTruth flag)
 
 extern FILE *petsc_history;
 
-int PLogInfo(void *vobj,char *format,...)
+/*@C
+    PLogInfo - Logs informative data, which is printed to standart output
+    when the option -info is specified.
+
+    Input Parameter:
+.   vobj - object most closely associated with the logging statement
+.   message - logging message, using standard "printf" format
+
+    Options Database Key:
+$    -info : activates printing of PLogInfo() messages 
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+    Example of Usage:
+$
+$     Mat A
+$     double alpha
+$     PLogInfo(A,"Matrix uses parameter alpha=%g\n",alpha);
+$
+
+.keywords: information, printing, monitoring
+
+.seealso: PLogAllowInfo()
+@*/
+int PLogInfo(void *vobj,char *message,...)
 {
   va_list     Argp;
   int         rank;
@@ -55,10 +82,10 @@ int PLogInfo(void *vobj,char *format,...)
   if (!obj) rank = 0;
   else      {MPI_Comm_rank(obj->comm,&rank);} 
   if (rank) return 0;
-  va_start( Argp, format );
-  vfprintf(stdout,format,Argp);
+  va_start( Argp, message );
+  vfprintf(stdout,message,Argp);
   if (petsc_history) {
-    vfprintf(petsc_history,format,Argp);
+    vfprintf(petsc_history,message,Argp);
   }
   va_end( Argp );
   return 0;
