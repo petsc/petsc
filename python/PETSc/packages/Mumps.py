@@ -28,8 +28,9 @@ class Configure(config.base.Configure):
       output += '  Library: '+self.lib[0]+'\n'
     return output
   
-  def configureHelp(self,help):
+  def setupHelp(self,help):
     import nargs
+
     PACKAGE = self.name.upper()
     package = self.name.lower()
     help.addArgument(PACKAGE,'-with-'+package+'=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for '+self.name))
@@ -122,8 +123,8 @@ class Configure(config.base.Configure):
     if not isinstance(lib,list): lib = [lib]
     oldLibs = self.framework.argDB['LIBS']
     mangleFunc  = 'FC' in self.framework.argDB
-    #found = self.libraries.check(lib,libfile,fortranMangle = mangleFunc)
-    found = self.libraries.check(lib,libfile,otherLibs = self.mpi.lib+self.compilers.flibs,fortranMangle = mangleFunc)
+    #found = self.libraries.check(lib,libfile)
+    found = self.libraries.check(lib,libfile,otherLibs = self.mpi.lib+self.compilers.flibs)
     self.framework.argDB['LIBS']=oldLibs  
     if found:
       self.framework.log.write('Found functional '+libfile+' in '+lib[0]+'\n')
