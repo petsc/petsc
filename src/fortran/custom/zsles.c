@@ -39,7 +39,7 @@ EXTERN_C_END
 
 static int ourrhs(DMMG dmmg,Vec vec)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(int (PETSC_STDCALL *)(DMMG*,Vec*,int*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&dmmg,&vec,&ierr);
   return ierr;
 }
@@ -50,7 +50,7 @@ static int ourrhs(DMMG dmmg,Vec vec)
 */
 static int ourmat(DMMG dmmg,Mat mat)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*theirmat)(&dmmg,&mat,&ierr);
   return ierr;
 }

@@ -6,7 +6,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKsetr" 
-int MINPACKsetr(int*m,int* n,int* indrow,int* jpntr,int* indcol, int*ipntr,int* iwa)
+PetscErrorCode MINPACKsetr(int*m,int* n,int* indrow,int* jpntr,int* indcol, int*ipntr,int* iwa)
 {
     /* System generated locals */
     int i__1, i__2;

@@ -23,9 +23,9 @@
 
 .seealso: MGSetResidual()
 @*/
-int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
+PetscErrorCode MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   PetscScalar mone = -1.0;
 
   PetscFunctionBegin;
@@ -53,7 +53,7 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 
 .keywords: MG, multigrid, get, coarse grid
 @*/ 
-int MGGetCoarseSolve(PC pc,KSP *ksp)  
+PetscErrorCode MGGetCoarseSolve(PC pc,KSP *ksp)  
 { 
   MG *mg = (MG*)pc->data;
 
@@ -82,7 +82,7 @@ int MGGetCoarseSolve(PC pc,KSP *ksp)
 
 .seealso: MGDefaultResidual()
 @*/
-int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
+PetscErrorCode MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
   MG *mg = (MG*)pc->data;
 
@@ -120,7 +120,7 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 
 .seealso: MGSetRestriction()
 @*/
-int MGSetInterpolate(PC pc,int l,Mat mat)
+PetscErrorCode MGSetInterpolate(PC pc,int l,Mat mat)
 { 
   MG *mg = (MG*)pc->data;
 
@@ -156,7 +156,7 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 
 .seealso: MGSetInterpolate()
 @*/
-int MGSetRestriction(PC pc,int l,Mat mat)  
+PetscErrorCode MGSetRestriction(PC pc,int l,Mat mat)  
 {
   MG *mg = (MG*)pc->data;
 
@@ -189,7 +189,7 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 
 .seealso: MGGetSmootherUp(), MGGetSmootherDown()
 @*/
-int MGGetSmoother(PC pc,int l,KSP *ksp)
+PetscErrorCode MGGetSmoother(PC pc,int l,KSP *ksp)
 {
   MG *mg = (MG*)pc->data;
 
@@ -219,10 +219,10 @@ int MGGetSmoother(PC pc,int l,KSP *ksp)
 
 .seealso: MGGetSmootherUp(), MGGetSmootherDown()
 @*/
-int MGGetSmootherUp(PC pc,int l,KSP *ksp)
+PetscErrorCode MGGetSmootherUp(PC pc,int l,KSP *ksp)
 {
   MG       *mg = (MG*)pc->data;
-  int      ierr;
+  PetscErrorCode ierr;
   char     *prefix;
   MPI_Comm comm;
 
@@ -267,9 +267,9 @@ int MGGetSmootherUp(PC pc,int l,KSP *ksp)
 
 .seealso: MGGetSmootherUp(), MGGetSmoother()
 @*/
-int MGGetSmootherDown(PC pc,int l,KSP *ksp)
+PetscErrorCode MGGetSmootherDown(PC pc,int l,KSP *ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
   MG  *mg = (MG*)pc->data;
 
   PetscFunctionBegin;
@@ -297,7 +297,7 @@ int MGGetSmootherDown(PC pc,int l,KSP *ksp)
 
 .seealso: MGSetCycles()
 @*/
-int MGSetCyclesOnLevel(PC pc,int l,int c) 
+PetscErrorCode MGSetCyclesOnLevel(PC pc,int l,int c) 
 {
   MG *mg = (MG*)pc->data;
 
@@ -327,7 +327,7 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 
 .seealso: MGSetX(), MGSetR()
 @*/
-int MGSetRhs(PC pc,int l,Vec c)  
+PetscErrorCode MGSetRhs(PC pc,int l,Vec c)  
 { 
   MG *mg = (MG*)pc->data;
 
@@ -357,7 +357,7 @@ int MGSetRhs(PC pc,int l,Vec c)
 
 .seealso: MGSetRhs(), MGSetR()
 @*/
-int MGSetX(PC pc,int l,Vec c)  
+PetscErrorCode MGSetX(PC pc,int l,Vec c)  
 { 
   MG *mg = (MG*)pc->data;
 
@@ -385,7 +385,7 @@ int MGSetX(PC pc,int l,Vec c)
 
 .keywords: MG, multigrid, set, residual, level
 @*/
-int MGSetR(PC pc,int l,Vec c)
+PetscErrorCode MGSetR(PC pc,int l,Vec c)
 { 
   MG *mg = (MG*)pc->data;
 

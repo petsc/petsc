@@ -7,7 +7,7 @@ static int TSPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   TS   v = (TS) obj;
-  int  ierr;
+  PetscErrorCode ierr;
 #endif  
 
   PetscFunctionBegin;
@@ -47,9 +47,9 @@ static int TSPublish_Petsc(PetscObject obj)
 .keywords: TS, create
 .seealso: TSSetType(), TSSetUp(), TSDestroy(), MeshCreate(), TSSetProblemType()
 @*/
-int TSCreate(MPI_Comm comm, TS *ts) {
+PetscErrorCode TSCreate(MPI_Comm comm, TS *ts) {
   TS  t;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(ts,1);

@@ -22,9 +22,9 @@ static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 
 .keywords: KSP, QCG, set, trust region radius
 @*/
-int KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
+PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 {
-  int ierr,(*f)(KSP,PetscReal);
+  PetscErrorCode ierr,(*f)(KSP,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -53,9 +53,9 @@ int KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 
     Level: advanced
 @*/
-int KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
+PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 {
-  int ierr,(*f)(KSP,PetscReal*);
+  PetscErrorCode ierr,(*f)(KSP,PetscReal*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -94,9 +94,9 @@ int KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 
     Level: advanced
 @*/
-int KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
+PetscErrorCode KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
 {
-  int ierr,(*f)(KSP,PetscReal*);
+  PetscErrorCode ierr,(*f)(KSP,PetscReal*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -143,7 +143,7 @@ $  other KSP converged/diverged reasons
 
  We should perhaps rewrite using PCApplyBAorAB().
  */
-int KSPSolve_QCG(KSP ksp)
+PetscErrorCode KSPSolve_QCG(KSP ksp)
 {
 /* 
    Correpondence with documentation above:  
@@ -371,9 +371,9 @@ int KSPSolve_QCG(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_QCG"
-int KSPSetUp_QCG(KSP ksp)
+PetscErrorCode KSPSetUp_QCG(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Check user parameters and functions */
@@ -390,10 +390,10 @@ int KSPSetUp_QCG(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_QCG" 
-int KSPDestroy_QCG(KSP ksp)
+PetscErrorCode KSPDestroy_QCG(KSP ksp)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
@@ -406,7 +406,7 @@ int KSPDestroy_QCG(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGSetTrustRegionRadius_QCG"
-int KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
+PetscErrorCode KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -419,7 +419,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetTrialStepNorm_QCG"
-int KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
+PetscErrorCode KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -432,7 +432,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetQuadratic_QCG"
-int KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
+PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -444,9 +444,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_QCG"
-int KSPSetFromOptions_QCG(KSP ksp)
+PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscReal  delta;
   KSP_QCG    *cgP = (KSP_QCG*)ksp->data;
   PetscTruth flg;
@@ -477,9 +477,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_QCG"
-int KSPCreate_QCG(KSP ksp)
+PetscErrorCode KSPCreate_QCG(KSP ksp)
 {
-  int     ierr;
+  PetscErrorCode ierr;
   KSP_QCG *cgP;
 
   PetscFunctionBegin;
@@ -534,7 +534,7 @@ EXTERN_C_END
 static int QuadraticRoots_Private(Vec s,Vec p,PetscReal *delta,PetscReal *step1,PetscReal *step2)
 { 
   PetscReal zero = 0.0,dsq,ptp,pts,rad,sts;
-  int       ierr;
+  PetscErrorCode ierr;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    cptp,cpts,csts;
 #endif

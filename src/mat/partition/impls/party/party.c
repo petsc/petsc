@@ -35,7 +35,7 @@ typedef struct {
 #define __FUNCT__ "MatPartitioningApply_Party"
 static int MatPartitioningApply_Party(MatPartitioning part, IS * partitioning)
 {
-    int ierr, *locals, *parttab = NULL, rank, size;
+    PetscErrorCode ierr, *locals, *parttab = NULL, rank, size;
     Mat mat = part->adj, matMPI, matSeq;
     int nb_locals;              
     Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
@@ -174,11 +174,11 @@ static int MatPartitioningApply_Party(MatPartitioning part, IS * partitioning)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningView_Party"
-int MatPartitioningView_Party(MatPartitioning part, PetscViewer viewer)
+PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewer)
 {
 
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
-    int ierr, rank;
+    PetscErrorCode ierr, rank;
     PetscTruth iascii;
 
     PetscFunctionBegin;
@@ -212,7 +212,7 @@ int MatPartitioningView_Party(MatPartitioning part, PetscViewer viewer)
    Level: advanced
 
 @*/
-int MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
+PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -236,7 +236,7 @@ int MatPartitioningPartySetGlobal(MatPartitioning part, const char *global)
    Level: advanced
 
 @*/
-int MatPartitioningPartySetLocal(MatPartitioning part, const char *local)
+PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part, const char *local)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -259,7 +259,7 @@ int MatPartitioningPartySetLocal(MatPartitioning part, const char *local)
    Level: advanced
 
 @*/
-int MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level)
+PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -289,7 +289,7 @@ int MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscReal level)
    Level: advanced
 
 @*/
-int MatPartitioningPartySetMatchOptimization(MatPartitioning part,
+PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part,
     PetscTruth opt)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
@@ -316,7 +316,7 @@ int MatPartitioningPartySetMatchOptimization(MatPartitioning part,
    Level: advanced
 
 @*/
-int MatPartitioningPartySetBipart(MatPartitioning part, PetscTruth bp)
+PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscTruth bp)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
@@ -332,9 +332,9 @@ int MatPartitioningPartySetBipart(MatPartitioning part, PetscTruth bp)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Party"
-int MatPartitioningSetFromOptions_Party(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Party(MatPartitioning part)
 {
-    int ierr;
+    PetscErrorCode ierr;
     PetscTruth flag, b;
     char value[15];
     PetscReal r;
@@ -379,10 +379,10 @@ int MatPartitioningSetFromOptions_Party(MatPartitioning part)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningDestroy_Party"
-int MatPartitioningDestroy_Party(MatPartitioning part)
+PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
 {
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
-    int ierr;
+    PetscErrorCode ierr;
 
     PetscFunctionBegin;
 
@@ -398,9 +398,9 @@ int MatPartitioningDestroy_Party(MatPartitioning part)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Party"
-int MatPartitioningCreate_Party(MatPartitioning part)
+PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
 {
-    int ierr;
+    PetscErrorCode ierr;
     MatPartitioning_Party *party;
 
     PetscFunctionBegin;

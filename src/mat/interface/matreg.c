@@ -35,9 +35,9 @@ PetscFList MatList = 0;
 
 .seealso: PCSetType(), VecSetType(), MatCreate(), MatType, Mat
 @*/
-int MatSetType(Mat mat,const MatType matype)
+PetscErrorCode MatSetType(Mat mat,const MatType matype)
 {
-  int        ierr,(*r)(Mat);
+  PetscErrorCode ierr,(*r)(Mat);
   PetscTruth sametype;
 
   PetscFunctionBegin;
@@ -97,9 +97,9 @@ int MatSetType(Mat mat,const MatType matype)
 
 .seealso: MatRegister(), MatRegisterAll(), MatRegisterDynamic()
 @*/
-int MatRegisterDestroy(void)
+PetscErrorCode MatRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (MatList) {
@@ -129,7 +129,7 @@ int MatRegisterDestroy(void)
 
 .seealso: MatSetType()
 @*/
-int MatGetType(Mat mat,MatType *type)
+PetscErrorCode MatGetType(Mat mat,MatType *type)
 {
   PetscFunctionBegin;
   *type = mat->type_name;
@@ -144,9 +144,9 @@ int MatGetType(Mat mat,MatType *type)
 
   Level: advanced
 @*/
-int MatRegister(const char sname[],const char path[],const char name[],int (*function)(Mat))
+PetscErrorCode MatRegister(const char sname[],const char path[],const char name[],int (*function)(Mat))
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;

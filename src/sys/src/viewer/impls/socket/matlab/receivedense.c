@@ -18,7 +18,7 @@
 /*-----------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "ReceiveDenseMatrix"
-int ReceiveDenseMatrix(mxArray *plhs[],int t)
+PetscErrorCode ReceiveDenseMatrix(mxArray *plhs[],int t)
 {
   int    m,n,compx = 0,i;
   
@@ -43,11 +43,11 @@ int ReceiveDenseMatrix(mxArray *plhs[],int t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ReceiveIntDenseMatrix"
-int ReceiveDenseIntMatrix(mxArray *plhs[],int t)
+PetscErrorCode ReceiveDenseIntMatrix(mxArray *plhs[],int t)
 {
-  int    m,compx = 0,i,*array;
-  double *values;
-  int    ierr;
+  int            m,compx = 0,i,*array;
+  double         *values;
+  PetscErrorCode ierr;
   
   /* get size of matrix */
   ierr = PetscBinaryRead(t,&m,1,PETSC_INT); if (ierr) ERROR("reading number columns"); 

@@ -52,11 +52,11 @@ FILE      *PetscLogInfoFile      = PETSC_NULL;
 
 .seealso: PetscLogInfo()
 @*/
-int PetscLogInfoAllow(PetscTruth flag, char *filename)
+PetscErrorCode PetscLogInfoAllow(PetscTruth flag, char *filename)
 {
   char fname[PETSC_MAX_PATH_LEN], tname[5];
   int  rank;
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (flag && filename) {
@@ -92,7 +92,7 @@ int PetscLogInfoAllow(PetscTruth flag, char *filename)
 .keywords: allow, information, printing, monitoring
 .seealso: PetscLogInfoActivateClass(), PetscLogInfo(), PetscLogInfoAllow()
 @*/
-int PetscLogInfoDeactivateClass(int objclass)
+PetscErrorCode PetscLogInfoDeactivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
@@ -121,7 +121,7 @@ int PetscLogInfoDeactivateClass(int objclass)
 .keywords: allow, information, printing, monitoring
 .seealso: PetscLogInfoDeactivateClass(), PetscLogInfo(), PetscLogInfoAllow()
 @*/
-int PetscLogInfoActivateClass(int objclass)
+PetscErrorCode PetscLogInfoActivateClass(int objclass)
 {
   PetscFunctionBegin;
   if (!objclass) {
@@ -170,13 +170,14 @@ $
 
 .seealso: PetscLogInfoAllow()
 @*/
-int PetscLogInfo(void *vobj, const char message[], ...)  
+PetscErrorCode PetscLogInfo(void *vobj, const char message[], ...)  
 {
   va_list     Argp;
-  int         rank,urank,len;
+  int         rank,urank;
+  size_t      len;
   PetscObject obj = (PetscObject)vobj;
   char        string[8*1024];
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj,1);
@@ -195,19 +196,11 @@ int PetscLogInfo(void *vobj, const char message[], ...)
   va_start(Argp, message);
   sprintf(string, "[%d]", urank); 
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vsprintf(string+len, message, (char *) Argp);
-#else
-  vsprintf(string+len, message, Argp);
-#endif
+  ierr = PetscVSNPrintf(string+len, 8*1024-len,message, Argp);
   fprintf(PetscLogInfoFile, "%s", string);
   fflush(PetscLogInfoFile);
   if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(petsc_history, message, (char *) Argp);
-#else
-    vfprintf(petsc_history, message, Argp);
-#endif
+    PetscVFPrintf(petsc_history, message, Argp);CHKERRQ(ierr);
   }
   va_end(Argp);
   PetscFunctionReturn(0);

@@ -56,9 +56,9 @@
 
 .seealso: PetscDrawSynchronizedFlush(), PetscDrawDestroy()
 @*/
-int PetscDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw* draw)
+PetscErrorCode PetscDrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw* draw)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(comm,display,title,x,y,w,h,draw);CHKERRQ(ierr);

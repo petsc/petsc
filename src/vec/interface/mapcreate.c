@@ -20,10 +20,10 @@
 .keywords: PetscMap, create
 .seealso: PetscMapDestroy(), PetscMapGetLocalSize(), PetscMapGetSize(), PetscMapGetGlobalRange(), PetscMapGetLocalRange()
 @*/ 
-int PetscMapCreate(MPI_Comm comm, PetscMap *map)
+PetscErrorCode PetscMapCreate(MPI_Comm comm, PetscMap *map)
 {
   PetscMap m;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(map,2);

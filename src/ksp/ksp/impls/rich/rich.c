@@ -6,9 +6,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_Richardson"
-int KSPSetUp_Richardson(KSP ksp)
+PetscErrorCode KSPSetUp_Richardson(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {SETERRQ(2,"no right preconditioning for KSPRICHARDSON");}
@@ -19,7 +19,7 @@ int KSPSetUp_Richardson(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_Richardson"
-int  KSPSolve_Richardson(KSP ksp)
+PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 {
   int             i,maxit,ierr;
   MatStructure    pflag;
@@ -116,10 +116,10 @@ int  KSPSolve_Richardson(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPView_Richardson" 
-int KSPView_Richardson(KSP ksp,PetscViewer viewer)
+PetscErrorCode KSPView_Richardson(KSP ksp,PetscViewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
-  int            ierr;
+  PetscErrorCode ierr;
   PetscTruth     iascii;
 
   PetscFunctionBegin;
@@ -134,10 +134,10 @@ int KSPView_Richardson(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_Richardson"
-int KSPSetFromOptions_Richardson(KSP ksp)
+PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
 {
   KSP_Richardson *rich = (KSP_Richardson*)ksp->data;
-  int            ierr;
+  PetscErrorCode ierr;
   PetscReal      tmp;
   PetscTruth     flg;
 
@@ -152,7 +152,7 @@ int KSPSetFromOptions_Richardson(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRichardsonSetScale_Richardson"
-int KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
+PetscErrorCode KSPRichardsonSetScale_Richardson(KSP ksp,PetscReal scale)
 {
   KSP_Richardson *richardsonP;
 
@@ -183,9 +183,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_Richardson"
-int KSPCreate_Richardson(KSP ksp)
+PetscErrorCode KSPCreate_Richardson(KSP ksp)
 {
-  int            ierr;
+  PetscErrorCode ierr;
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;

@@ -20,7 +20,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetReuseOrdering_Cholesky"
-int PCCholeskySetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
+PetscErrorCode PCCholeskySetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
 {
   PC_Cholesky *lu;
   
@@ -34,7 +34,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetReuseFill_Cholesky"
-int PCCholeskySetReuseFill_Cholesky(PC pc,PetscTruth flag)
+PetscErrorCode PCCholeskySetReuseFill_Cholesky(PC pc,PetscTruth flag)
 {
   PC_Cholesky *lu;
   
@@ -50,7 +50,7 @@ EXTERN_C_END
 static int PCSetFromOptions_Cholesky(PC pc)
 {
   PC_Cholesky *lu = (PC_Cholesky*)pc->data;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  flg;
   char        tname[256];
   PetscFList  ordlist;
@@ -98,7 +98,7 @@ static int PCSetFromOptions_Cholesky(PC pc)
 static int PCView_Cholesky(PC pc,PetscViewer viewer)
 {
   PC_Cholesky *lu = (PC_Cholesky*)pc->data;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  iascii,isstring;
   
   PetscFunctionBegin;
@@ -143,7 +143,7 @@ static int PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
 #define __FUNCT__ "PCSetUp_Cholesky"
 static int PCSetUp_Cholesky(PC pc)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
   PC_Cholesky      *dir = (PC_Cholesky*)pc->data;
 
@@ -225,7 +225,7 @@ static int PCSetUp_Cholesky(PC pc)
 static int PCDestroy_Cholesky(PC pc)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact);CHKERRQ(ierr);}
@@ -241,7 +241,7 @@ static int PCDestroy_Cholesky(PC pc)
 static int PCApply_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
-  int   ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   if (dir->inplace) {ierr = MatSolve(pc->pmat,x,y);CHKERRQ(ierr);}
@@ -254,7 +254,7 @@ static int PCApply_Cholesky(PC pc,Vec x,Vec y)
 static int PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (dir->inplace) {ierr = MatSolveTranspose(pc->pmat,x,y);CHKERRQ(ierr);}
@@ -267,7 +267,7 @@ static int PCApplyTranspose_Cholesky(PC pc,Vec x,Vec y)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetFill_Cholesky"
-int PCCholeskySetFill_Cholesky(PC pc,PetscReal fill)
+PetscErrorCode PCCholeskySetFill_Cholesky(PC pc,PetscReal fill)
 {
   PC_Cholesky *dir;
   
@@ -281,7 +281,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetDamping_Cholesky"
-int PCCholeskySetDamping_Cholesky(PC pc,PetscReal damping)
+PetscErrorCode PCCholeskySetDamping_Cholesky(PC pc,PetscReal damping)
 {
   PC_Cholesky *dir;
   
@@ -299,7 +299,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetShift_Cholesky"
-int PCCholeskySetShift_Cholesky(PC pc,PetscTruth shift)
+PetscErrorCode PCCholeskySetShift_Cholesky(PC pc,PetscTruth shift)
 {
   PC_Cholesky *dir;
   
@@ -314,7 +314,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetUseInPlace_Cholesky"
-int PCCholeskySetUseInPlace_Cholesky(PC pc)
+PetscErrorCode PCCholeskySetUseInPlace_Cholesky(PC pc)
 {
   PC_Cholesky *dir;
 
@@ -328,10 +328,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetMatOrdering_Cholesky"
-int PCCholeskySetMatOrdering_Cholesky(PC pc,MatOrderingType ordering)
+PetscErrorCode PCCholeskySetMatOrdering_Cholesky(PC pc,MatOrderingType ordering)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
@@ -364,9 +364,9 @@ EXTERN_C_END
 
 .seealso: PCCholeskySetReuseFill(), PCICholeskySetReuseOrdering(), PCICholeskyDTSetReuseFill()
 @*/
-int PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
+PetscErrorCode PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -398,9 +398,9 @@ int PCCholeskySetReuseOrdering(PC pc,PetscTruth flag)
 
 .seealso: PCICholeskySetReuseOrdering(), PCCholeskySetReuseOrdering(), PCICholeskyDTSetReuseFill()
 @*/
-int PCCholeskySetReuseFill(PC pc,PetscTruth flag)
+PetscErrorCode PCCholeskySetReuseFill(PC pc,PetscTruth flag)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,2);
@@ -438,9 +438,9 @@ int PCCholeskySetReuseFill(PC pc,PetscTruth flag)
 
 .seealso: PCILUSetFill()
 @*/
-int PCCholeskySetFill(PC pc,PetscReal fill)
+PetscErrorCode PCCholeskySetFill(PC pc,PetscReal fill)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -473,9 +473,9 @@ int PCCholeskySetFill(PC pc,PetscReal fill)
 
 .seealso: PCCholeskySetFill(), PCILUSetDamping()
 @*/
-int PCCholeskySetDamping(PC pc,PetscReal damping)
+PetscErrorCode PCCholeskySetDamping(PC pc,PetscReal damping)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -508,9 +508,9 @@ int PCCholeskySetDamping(PC pc,PetscReal damping)
 
 .seealso: PCILUSetShift()
 @*/
-int PCCholeskySetShift(PC pc,PetscTruth shift)
+PetscErrorCode PCCholeskySetShift(PC pc,PetscTruth shift)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -553,9 +553,9 @@ int PCCholeskySetShift(PC pc,PetscTruth shift)
 
 .seealso: PCICholeskySetUseInPlace()
 @*/
-int PCCholeskySetUseInPlace(PC pc)
+PetscErrorCode PCCholeskySetUseInPlace(PC pc)
 {
-  int ierr,(*f)(PC);
+  PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -585,9 +585,9 @@ int PCCholeskySetUseInPlace(PC pc)
 
 .seealso: PCICholeskySetMatOrdering()
 @*/
-int PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
+PetscErrorCode PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
 {
-  int ierr,(*f)(PC,MatOrderingType);
+  PetscErrorCode ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -629,9 +629,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_Cholesky"
-int PCCreate_Cholesky(PC pc)
+PetscErrorCode PCCreate_Cholesky(PC pc)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PC_Cholesky *dir;
 
   PetscFunctionBegin;

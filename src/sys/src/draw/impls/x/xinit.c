@@ -12,19 +12,19 @@
 
 #include "src/sys/src/draw/impls/x/ximpl.h"
 
-EXTERN int XiUniformHues(PetscDraw_X *,int);
-EXTERN int Xi_wait_map(PetscDraw_X*);
-EXTERN int XiInitColors(PetscDraw_X*,Colormap);
-EXTERN int XiFontFixed(PetscDraw_X*,int,int,XiFont**);
-EXTERN int XiInitCmap(PetscDraw_X*);
-EXTERN int PetscDrawSetColormap_X(PetscDraw_X*,char *,Colormap);
+EXTERN PetscErrorCode XiUniformHues(PetscDraw_X *,int);
+EXTERN PetscErrorCode Xi_wait_map(PetscDraw_X*);
+EXTERN PetscErrorCode XiInitColors(PetscDraw_X*,Colormap);
+EXTERN PetscErrorCode XiFontFixed(PetscDraw_X*,int,int,XiFont**);
+EXTERN PetscErrorCode XiInitCmap(PetscDraw_X*);
+EXTERN PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X*,char *,Colormap);
 
 /*
   XiOpenDisplay - Open a display
 */
 #undef __FUNCT__  
 #define __FUNCT__ "XiOpenDisplay" 
-int XiOpenDisplay(PetscDraw_X* XiWin,char *display_name)
+PetscErrorCode XiOpenDisplay(PetscDraw_X* XiWin,char *display_name)
 {
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay(display_name);
@@ -43,7 +43,7 @@ int XiOpenDisplay(PetscDraw_X* XiWin,char *display_name)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "XiSetGC" 
-int XiSetGC(PetscDraw_X* XiWin,PixVal fg)
+PetscErrorCode XiSetGC(PetscDraw_X* XiWin,PixVal fg)
 {
   XGCValues       gcvalues;       /* window graphics context values */
 
@@ -66,7 +66,7 @@ int XiSetGC(PetscDraw_X* XiWin,PixVal fg)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "XiDisplayWindow" 
-int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,int w,int h,PixVal backgnd_pixel)
+PetscErrorCode XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,int w,int h,PixVal backgnd_pixel)
 {
   unsigned int            wavail,havail;
   XSizeHints              size_hints;
@@ -172,9 +172,9 @@ int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,int w,int h,PixVa
 
 #undef __FUNCT__  
 #define __FUNCT__ "XiQuickWindow" 
-int XiQuickWindow(PetscDraw_X* w,char* host,char* name,int x,int y,int nx,int ny)
+PetscErrorCode XiQuickWindow(PetscDraw_X* w,char* host,char* name,int x,int y,int nx,int ny)
 {
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = XiOpenDisplay(w,host);CHKERRQ(ierr);
@@ -200,7 +200,7 @@ int XiQuickWindow(PetscDraw_X* w,char* host,char* name,int x,int y,int nx,int ny
 */
 #undef __FUNCT__  
 #define __FUNCT__ "XiQuickWindowFromWindow" 
-int XiQuickWindowFromWindow(PetscDraw_X* w,char *host,Window win)
+PetscErrorCode XiQuickWindowFromWindow(PetscDraw_X* w,char *host,Window win)
 {
   Window            root;
   int               d,ierr;
@@ -232,10 +232,11 @@ int XiQuickWindowFromWindow(PetscDraw_X* w,char *host,Window win)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "XiSetWindowLabel" 
-int XiSetWindowLabel(PetscDraw_X* Xiwin,char *label)
+PetscErrorCode XiSetWindowLabel(PetscDraw_X* Xiwin,char *label)
 {
   XTextProperty prop;
-  int           len,ierr;
+  size_t        len;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   XGetWMName(Xiwin->disp,Xiwin->win,&prop);
@@ -248,7 +249,7 @@ int XiSetWindowLabel(PetscDraw_X* Xiwin,char *label)
 
 #undef __FUNCT__  
 #define __FUNCT__ "XiSetToBackground" 
-int XiSetToBackground(PetscDraw_X* XiWin)
+PetscErrorCode XiSetToBackground(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
   if (XiWin->gc.cur_pix != XiWin->background) { 

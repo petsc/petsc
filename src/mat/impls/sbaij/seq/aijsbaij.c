@@ -6,12 +6,13 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqSBAI_SeqAIJ"
-int MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat) 
+PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat) 
 {
   Mat          B;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
   Mat_SeqAIJ   *b;
-  int          ierr,*ai=a->i,*aj=a->j,m=A->m,n=A->n,i,j,k,*bi,*bj,
+  PetscErrorCode ierr;
+  int *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,j,k,*bi,*bj,
                *rowlengths,nz,*rowstart,itmp;
   int          bs=a->bs,bs2=bs*bs,mbs=A->m/bs;
   PetscScalar  *av,*bv;
@@ -113,11 +114,12 @@ int MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqSBAIJ"
-int MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) {
   Mat          B;
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
   Mat_SeqSBAIJ *b;
-  int          ierr,*ai=a->i,*aj,m=A->M,n=A->N,i,j,
+  PetscErrorCode ierr;
+  int *ai=a->i,*aj,m=A->M,n=A->N,i,j,
                *bi,*bj,*rowlengths;
   PetscScalar  *av,*bv;
 
@@ -171,12 +173,13 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqSBAI_SeqBAIJ"
-int MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) 
+PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) 
 {
   Mat          B;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
   Mat_SeqBAIJ  *b;
-  int          ierr,*ai=a->i,*aj=a->j,m=A->m,n=A->n,i,k,*bi,*bj,
+  PetscErrorCode ierr;
+  int *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,k,*bi,*bj,
                *browlengths,nz,*browstart,itmp;
   int          bs=a->bs,bs2=bs*bs,mbs=m/bs;
   PetscScalar  *av,*bv;
@@ -260,12 +263,13 @@ int MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqBAIJ_SeqSBAIJ"
-int MatConvert_SeqBAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) 
+PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newmat) 
 {
   Mat          B;
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data; 
   Mat_SeqSBAIJ *b;
-  int          ierr,*ai=a->i,*aj,m=A->m,n=A->n,i,j,k,
+  PetscErrorCode ierr;
+  int *ai=a->i,*aj,m=A->m,n=A->n,i,j,k,
                *bi,*bj,*browlengths;
   int          bs=a->bs,bs2=bs*bs,mbs=m/bs;
   PetscScalar  *av,*bv;

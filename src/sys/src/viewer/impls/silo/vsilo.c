@@ -11,9 +11,9 @@
 #define __FUNCT__ "PetscViewerDestroy_Silo"
 static int PetscViewerDestroy_Silo(PetscViewer viewer)
 {
-  Viewer_Silo *silo = (Viewer_Silo *) viewer->data;
-  int          rank;
-  int          ierr;
+  Viewer_Silo    *silo = (Viewer_Silo *) viewer->data;
+  int            rank;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
@@ -25,11 +25,13 @@ static int PetscViewerDestroy_Silo(PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFlush_Silo"
-int PetscViewerFlush_Silo(PetscViewer viewer)
+PetscErrorCode PetscViewerFlush_Silo(PetscViewer viewer)
 {
-  int rank;
+  int            rank;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  MPI_Comm_rank(viewer->comm, &rank);
+  ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }
@@ -51,7 +53,7 @@ int PetscViewerFlush_Silo(PetscViewer viewer)
 .keywords: PetscViewer, file, get, pointer
 .seealso: PetscViewerSiloOpen()
 @*/
-int PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
+PetscErrorCode PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
 {
   Viewer_Silo *silo = (Viewer_Silo *) viewer->data;
 
@@ -89,13 +91,13 @@ int PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
 
 .keywords: PetscViewer, Silo, open
 @*/
-int PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
+PetscErrorCode PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
 {
-  PetscViewer       v;
-  Viewer_Silo *silo;
-  char         filename[PETSC_MAX_PATH_LEN];
-  char         filetemp[PETSC_MAX_PATH_LEN];
-  int          ierr;
+  PetscViewer    v;
+  Viewer_Silo    *silo;
+  char           filename[PETSC_MAX_PATH_LEN];
+  char           filetemp[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscHeaderCreate(v, _p_PetscViewer, struct _PetscViewerOps, PETSC_VIEWER_COOKIE, -1, PETSC_VIEWER_SILO, comm, PetscViewerDestroy, 0);
@@ -141,12 +143,12 @@ int PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
 .keywords: viewer, Silo, mesh
 .seealso: PetscViewerSiloOpen()
 @*/
-int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
+PetscErrorCode PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
 {
-  Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
-  DBfile      *fp;
-  int          mesh_type;
-  int          ierr;
+  Viewer_Silo    *vsilo = (Viewer_Silo *) viewer->data;
+  DBfile         *fp;
+  int            mesh_type;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerSiloGetFilePointer(viewer, &fp);CHKERRQ(ierr);
@@ -178,7 +180,7 @@ int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
 .keywords PetscViewer, Silo, name
 .seealso PetscViewerSiloSetName(), PetscViewerSiloClearName()
 @*/
-int PetscViewerSiloGetName(PetscViewer viewer, char **name)
+PetscErrorCode PetscViewerSiloGetName(PetscViewer viewer, char **name)
 {
   PetscViewer_Silo *vsilo = (PetscViewer_Silo *) viewer->data;
 
@@ -203,7 +205,7 @@ int PetscViewerSiloGetName(PetscViewer viewer, char **name)
 .keywords PetscViewer, Silo, name
 .seealso PetscViewerSiloSetName(), PetscViewerSiloClearName()
 @*/
-int PetscViewerSiloSetName(PetscViewer viewer, char *name)
+PetscErrorCode PetscViewerSiloSetName(PetscViewer viewer, char *name)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
@@ -227,7 +229,7 @@ int PetscViewerSiloSetName(PetscViewer viewer, char *name)
 .keywords PetscViewer, Silo, name
 .seealso PetscViewerSiloGetName(), PetscViewerSiloSetName()
 @*/
-int PetscViewerSiloClearName(PetscViewer viewer)
+PetscErrorCode PetscViewerSiloClearName(PetscViewer viewer)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
@@ -253,7 +255,7 @@ int PetscViewerSiloClearName(PetscViewer viewer)
 .keywords PetscViewer, Silo, name, mesh
 .seealso PetscViewerSiloSetMeshName(), PetscViewerSiloClearMeshName()
 @*/
-int PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
+PetscErrorCode PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
@@ -278,7 +280,7 @@ int PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
 .keywords PetscViewer, Silo, name, mesh
 .seealso PetscViewerSiloSetMeshName(), PetscViewerSiloClearMeshName()
 @*/
-int PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
+PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
@@ -302,7 +304,7 @@ int PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
 .keywords PetscViewer, Silo, name, mesh
 .seealso PetscViewerSiloGetMeshName(), PetscViewerSiloSetMeshName()
 @*/
-int PetscViewerSiloClearMeshName(PetscViewer viewer)
+PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer viewer)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
@@ -314,39 +316,40 @@ int PetscViewerSiloClearMeshName(PetscViewer viewer)
 
 #else
 
-int PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
+PetscErrorCode PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int PetscViewerSiloGetName(PetscViewer viewer, char **name)
+PetscErrorCode PetscViewerSiloGetName(PetscViewer viewer, char **name)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int PetscViewerSiloSetName(PetscViewer viewer, const char name[])
+PetscErrorCode PetscViewerSiloSetName(PetscViewer viewer, const char name[])
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int PetscViewerSiloClearName(PetscViewer viewer)
+PetscErrorCode PetscViewerSiloClearName(PetscViewer viewer)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
+PetscErrorCode PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int PetscViewerSiloSetMeshName(PetscViewer viewer, const char name[])
+PetscErrorCode PetscViewerSiloSetMeshName(PetscViewer viewer, const char name[])
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int PetscViewerSiloClearMeshName(PetscViewer viewer)
+PetscErrorCode PetscViewerSiloClearMeshName(PetscViewer viewer)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
 #endif /* PETSC_HAVE_SILO */
+  

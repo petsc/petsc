@@ -49,10 +49,10 @@
 
 .seealso: PetscGetFullPath()
 @*/
-int PetscGetRelativePath(const char fullpath[],char path[],int flen)
+PetscErrorCode PetscGetRelativePath(const char fullpath[],char path[],int flen)
 {
   char  *p;
-  int   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Find string after last / or entire string if no / */

@@ -23,7 +23,7 @@ static PixVal HiPix=0,LoPix=0;
  */
 #undef __FUNCT__  
 #define __FUNCT__ "XiFrameColors" 
-int XiFrameColors(PetscDraw_X* XiWin,XiDecoration *Rgn,char *Hi,char *Lo)
+PetscErrorCode XiFrameColors(PetscDraw_X* XiWin,XiDecoration *Rgn,char *Hi,char *Lo)
 {
   PetscFunctionBegin;
   Rgn->Hi = XiGetColor(XiWin,Hi,1);
@@ -34,7 +34,7 @@ int XiFrameColors(PetscDraw_X* XiWin,XiDecoration *Rgn,char *Hi,char *Lo)
 
 #undef __FUNCT__  
 #define __FUNCT__ "XiDrawFrame" 
-int XiDrawFrame(PetscDraw_X *XiWin,XiDecoration *Rgn)
+PetscErrorCode XiDrawFrame(PetscDraw_X *XiWin,XiDecoration *Rgn)
 {
   int    xl = Rgn->Box.x,yl = Rgn->Box.y,xh = Rgn->Box.xh,yh = Rgn->Box.yh,
          o = Rgn->width;
@@ -106,7 +106,7 @@ int XiDrawFrame(PetscDraw_X *XiWin,XiDecoration *Rgn)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "XiFrameColorsByName" 
-int XiFrameColorsByName(PetscDraw_X* XiWin,char *Hi,char *Lo)
+PetscErrorCode XiFrameColorsByName(PetscDraw_X* XiWin,char *Hi,char *Lo)
 {
   PetscFunctionBegin;
   if (XiWin->numcolors > 2) {

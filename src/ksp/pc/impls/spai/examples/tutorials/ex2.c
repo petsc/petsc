@@ -26,7 +26,8 @@ int main(int argc,char **args)
   Vec        b;                /* RHS */
   Viewer     viewer;               /* viewer */
   char       file[PETSC_MAX_PATH_LEN];        /* input file name */
-  int        ierr, flg;
+  PetscErrorCode ierr;
+  int flg;
   PetscTruth set;
   MatType    mtype;
   FILE       *fd;

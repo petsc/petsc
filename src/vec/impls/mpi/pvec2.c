@@ -6,7 +6,7 @@
 #include "petscblaslapack.h"
 
 #define do_not_use_ethernet
-int Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_Op op,MPI_Comm comm)
+PetscErrorCode Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_Op op,MPI_Comm comm)
 {
   int        i,rank,size,ierr;
   MPI_Status status;
@@ -36,10 +36,10 @@ int Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_MPI"
-int VecMDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
+PetscErrorCode VecMDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
 {
   PetscScalar awork[128],*work = awork;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (nv > 128) {
@@ -55,10 +55,10 @@ int VecMDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMTDot_MPI"
-int VecMTDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
+PetscErrorCode VecMTDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
 {
   PetscScalar awork[128],*work = awork;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (nv > 128) {
@@ -74,7 +74,7 @@ int VecMTDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecNorm_MPI"
-int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
+PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
   Vec_MPI      *x = (Vec_MPI*)xin->data;
   PetscReal    sum,work = 0.0;
@@ -183,9 +183,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMax_MPI"
-int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
+PetscErrorCode VecMax_MPI(Vec xin,int *idx,PetscReal *z)
 {
-  int       ierr;
+  PetscErrorCode ierr;
   PetscReal work;
 
   PetscFunctionBegin;
@@ -215,9 +215,9 @@ int VecMax_MPI(Vec xin,int *idx,PetscReal *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMin_MPI"
-int VecMin_MPI(Vec xin,int *idx,PetscReal *z)
+PetscErrorCode VecMin_MPI(Vec xin,int *idx,PetscReal *z)
 {
-  int       ierr;
+  PetscErrorCode ierr;
   PetscReal work;
 
   PetscFunctionBegin;

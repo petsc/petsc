@@ -17,7 +17,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "LINPACKdgedi"
-int LINPACKdgedi(MatScalar *a,int n,int *ipvt,MatScalar *work)
+PetscErrorCode LINPACKdgedi(MatScalar *a,int n,int *ipvt,MatScalar *work)
 {
     int        i__2,kb,kp1,nm1,i,j,k,l,ll,kn,knp1,jn1;
     MatScalar  *aa,*ax,*ay,tmp;

@@ -8,10 +8,40 @@
 */
 extern FILE *petsc_history;
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscVSNPrintf"
+/* 
+   No error handling because may be called by error handler
+*/
+PetscErrorCode PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
+{
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
+  vsprintf(str,format,(char *)Argp);
+#else
+  vsprintf(str,format,Argp);
+#endif
+  return 0;
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscVFPrintf"
+/* 
+   No error handling because may be called by error handler
+*/
+PetscErrorCode PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
+{
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
+  vfprintf(fd,format,(char *)Argp);
+#else
+  vfprintf(fd,format,Argp);
+#endif
+  return 0;
+}
+
 /* ----------------------------------------------------------------------- */
 
 PrintfQueue queue       = 0,queuebase = 0;
-int         queuelength = 0;
+PetscErrorCode         queuelength = 0;
 FILE        *queuefile  = PETSC_NULL;
 
 #undef __FUNCT__  
@@ -33,7 +63,7 @@ FILE        *queuefile  = PETSC_NULL;
     from all the processors to be printed.
 
     Fortran Note:
-    The call sequence is PetscSynchronizedPrintf(PetscViewer, character(*), int ierr) from Fortran. 
+    The call sequence is PetscSynchronizedPrintf(PetscViewer, character(*), PetscErrorCode ierr) from Fortran. 
     That is, you can only pass a single character string from Fortran.
 
     The length of the formatted message cannot exceed QUEUESTRINGSIZE characters.
@@ -41,9 +71,9 @@ FILE        *queuefile  = PETSC_NULL;
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
-int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 {
-  int ierr,rank;
+  PetscErrorCode ierr,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -52,23 +82,14 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(stdout,format,(char*)Argp);
-#else
-    vfprintf(stdout,format,Argp);
-#endif
+    PetscVFPrintf(stdout,format,Argp);CHKERRQ(ierr);
     fflush(stdout);
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
-    int         len;
     va_list     Argp;
     PrintfQueue next;
 
@@ -77,14 +98,8 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vsprintf(next->string,format,(char *)Argp);
-#else
-    vsprintf(next->string,format,Argp);
-#endif
+    ierr = PetscVSNPrintf(next->string,QUEUESTRINGSIZE,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
-    ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer than %d bytes",QUEUESTRINGSIZE);
   }
     
   PetscFunctionReturn(0);
@@ -118,9 +133,9 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
+PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 {
-  int ierr,rank;
+  PetscErrorCode ierr,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -129,24 +144,15 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(fp,format,(char*)Argp);
-#else
-    vfprintf(fp,format,Argp);
-#endif
+    ierr = PetscVFPrintf(fp,format,Argp);CHKERRQ(ierr);
     fflush(fp);
     queuefile = fp;
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
-    int         len;
     va_list     Argp;
     PrintfQueue next;
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
@@ -154,16 +160,9 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vsprintf(next->string,format,(char *)Argp);
-#else
-    vsprintf(next->string,format,Argp);
-#endif
+    ierr = PetscVSNPrintf(next->string,QUEUESTRINGSIZE,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
-    ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > QUEUESTRINGSIZE) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Formatted string longer then %d bytes",QUEUESTRINGSIZE);
   }
-    
   PetscFunctionReturn(0);
 }
 
@@ -187,7 +186,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 .seealso: PetscSynchronizedPrintf(), PetscFPrintf(), PetscPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf()
 @*/
-int PetscSynchronizedFlush(MPI_Comm comm)
+PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm)
 {
   int        rank,size,i,j,n,tag,ierr;
   char       message[QUEUESTRINGSIZE];
@@ -261,7 +260,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
           PetscViewerASCIISynchronizedPrintf(), PetscSynchronizedFlush()
 @*/
-int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
+PetscErrorCode PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 {
   int rank,ierr;
 
@@ -270,18 +269,10 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(fd,format,(char*)Argp);
-#else
-    vfprintf(fd,format,Argp);
-#endif
+    ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
     fflush(fd);
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -304,7 +295,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
    Level: intermediate
 
     Fortran Note:
-    The call sequence is PetscPrintf(PetscViewer, character(*), int ierr) from Fortran. 
+    The call sequence is PetscPrintf(PetscViewer, character(*), PetscErrorCode ierr) from Fortran. 
     That is, you can only pass a single character string from Fortran.
 
    Notes: %A is replace with %g unless the value is < 1.e-12 when it is 
@@ -315,9 +306,10 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-int PetscPrintf(MPI_Comm comm,const char format[],...)
+PetscErrorCode PetscPrintf(MPI_Comm comm,const char format[],...)
 {
-  int       rank,ierr,len;
+  int       rank,ierr;
+  size_t    len;
   char      *nformat,*sub1,*sub2;
   PetscReal value;
 
@@ -349,18 +341,10 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
     } else {
       nformat = (char*)format;
     }
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(stdout,nformat,(char *)Argp);
-#else
-    vfprintf(stdout,nformat,Argp);
-#endif
+    ierr = PetscVFPrintf(stdout,nformat,Argp);CHKERRQ(ierr);
     fflush(stdout);
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,nformat,(char *)Argp);
-#else
-      vfprintf(petsc_history,nformat,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,nformat,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -372,7 +356,7 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
 /* ---------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHelpPrintfDefault" 
-int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
+PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 {
   int rank,ierr;
 
@@ -382,18 +366,10 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(stdout,format,(char *)Argp);
-#else
-    vfprintf(stdout,format,Argp);
-#endif
+    ierr = PetscVFPrintf(stdout,format,Argp);CHKERRQ(ierr);
     fflush(stdout);
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -405,7 +381,7 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfDefault" 
-int PetscErrorPrintfDefault(const char format[],...)
+PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
 {
   va_list            Argp;
   static  PetscTruth PetscErrorPrintfCalled    = PETSC_FALSE;
@@ -445,9 +421,8 @@ int PetscErrorPrintfDefault(const char format[],...)
     */
 #if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
     {
-      int        rank;
-      MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-      if (rank > 8) rank = 8;
+      int rank;
+      if (PetscGlobalRank > 8) rank = 8; else rank = PetscGlobalRank;
       PetscSleep(rank);
     }
 #endif
@@ -463,7 +438,6 @@ int PetscErrorPrintfDefault(const char format[],...)
     fprintf(fd,"--------------------------------------------\
 ------------------------------\n");
     fprintf(fd,"%s\n",version);
-    fprintf(fd,"%s\n",PETSC_AUTHOR_INFO);
     fprintf(fd,"See docs/changes/index.html for recent updates.\n");
     fprintf(fd,"See docs/troubleshooting.html for hints about trouble shooting.\n");
     fprintf(fd,"See docs/index.html for manual pages.\n");
@@ -481,11 +455,8 @@ int PetscErrorPrintfDefault(const char format[],...)
 
   if (!InPetscErrorPrintfDefault) {
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(fd,format,(char *)Argp);
-#else
-    vfprintf(fd,format,Argp);
-#endif
+    fprintf(fd,"[%d]PETSC ERROR: ",PetscGlobalRank);
+    PetscVFPrintf(fd,format,Argp);
     fflush(fd);
     va_end(Argp);
   }
@@ -513,9 +484,9 @@ int PetscErrorPrintfDefault(const char format[],...)
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
-int PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,int len,char string[])
+PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,int len,char string[])
 {
-  int ierr,rank;
+  PetscErrorCode ierr,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

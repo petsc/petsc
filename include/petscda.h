@@ -68,7 +68,7 @@ typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
 E*/
 typedef enum { DA_Q0, DA_Q1 } DAInterpolationType;
 
-EXTERN int DASetInterpolationType(DA,DAInterpolationType);
+EXTERN PetscErrorCode DASetInterpolationType(DA,DAInterpolationType);
 
 #define DAXPeriodic(pt) ((pt)==DA_XPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_XYZPERIODIC)
 #define DAYPeriodic(pt) ((pt)==DA_YPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
@@ -84,62 +84,62 @@ extern int DAEvents[DA_MAX_EVENTS];
 #define DALogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(DAEvents[e],o1,o2,o3,o4)
 #define DALogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(DAEvents[e],o1,o2,o3,o4)
 
-EXTERN int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
-EXTERN int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);
-EXTERN int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int,int,int *,int *,int *,DA *);
-EXTERN int   DADestroy(DA);
-EXTERN int   DAView(DA,PetscViewer);
+EXTERN PetscErrorCode   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
+EXTERN PetscErrorCode   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);
+EXTERN PetscErrorCode   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int,int,int *,int *,int *,DA *);
+EXTERN PetscErrorCode   DADestroy(DA);
+EXTERN PetscErrorCode   DAView(DA,PetscViewer);
 
-EXTERN int   DAPrintHelp(DA);
+EXTERN PetscErrorCode   DAPrintHelp(DA);
 
-EXTERN int   DAGlobalToLocalBegin(DA,Vec,InsertMode,Vec);
-EXTERN int   DAGlobalToLocalEnd(DA,Vec,InsertMode,Vec);
-EXTERN int   DAGlobalToNaturalBegin(DA,Vec,InsertMode,Vec);
-EXTERN int   DAGlobalToNaturalEnd(DA,Vec,InsertMode,Vec);
-EXTERN int   DANaturalToGlobalBegin(DA,Vec,InsertMode,Vec);
-EXTERN int   DANaturalToGlobalEnd(DA,Vec,InsertMode,Vec);
-EXTERN int   DALocalToLocalBegin(DA,Vec,InsertMode,Vec);
-EXTERN int   DALocalToLocalEnd(DA,Vec,InsertMode,Vec);
-EXTERN int   DALocalToGlobal(DA,Vec,InsertMode,Vec);
-EXTERN int   DALocalToGlobalBegin(DA,Vec,Vec);
-EXTERN int   DALocalToGlobalEnd(DA,Vec,Vec);
-EXTERN int   DAGetOwnershipRange(DA,int **,int **,int **);
-EXTERN int   DACreateGlobalVector(DA,Vec *);
-EXTERN int   DACreateNaturalVector(DA,Vec *);
-EXTERN int   DACreateLocalVector(DA,Vec *);
-EXTERN int   DAGetLocalVector(DA,Vec *);
-EXTERN int   DARestoreLocalVector(DA,Vec *);
-EXTERN int   DAGetGlobalVector(DA,Vec *);
-EXTERN int   DARestoreGlobalVector(DA,Vec *);
-EXTERN int   DALoad(PetscViewer,int,int,int,DA *);
-EXTERN int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
-EXTERN int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
-EXTERN int   DAGetInfo(DA,int*,int*,int*,int*,int*,int*,int*,int*,int*,DAPeriodicType*,DAStencilType*);
-EXTERN int   DAGetProcessorSubset(DA,DADirection,int,MPI_Comm*);
-EXTERN int   DARefine(DA,MPI_Comm,DA*);
+EXTERN PetscErrorCode   DAGlobalToLocalBegin(DA,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode   DAGlobalToLocalEnd(DA,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode   DAGlobalToNaturalBegin(DA,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode   DAGlobalToNaturalEnd(DA,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode   DANaturalToGlobalBegin(DA,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode   DANaturalToGlobalEnd(DA,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode   DALocalToLocalBegin(DA,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode   DALocalToLocalEnd(DA,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode   DALocalToGlobal(DA,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode   DALocalToGlobalBegin(DA,Vec,Vec);
+EXTERN PetscErrorCode   DALocalToGlobalEnd(DA,Vec,Vec);
+EXTERN PetscErrorCode   DAGetOwnershipRange(DA,int **,int **,int **);
+EXTERN PetscErrorCode   DACreateGlobalVector(DA,Vec *);
+EXTERN PetscErrorCode   DACreateNaturalVector(DA,Vec *);
+EXTERN PetscErrorCode   DACreateLocalVector(DA,Vec *);
+EXTERN PetscErrorCode   DAGetLocalVector(DA,Vec *);
+EXTERN PetscErrorCode   DARestoreLocalVector(DA,Vec *);
+EXTERN PetscErrorCode   DAGetGlobalVector(DA,Vec *);
+EXTERN PetscErrorCode   DARestoreGlobalVector(DA,Vec *);
+EXTERN PetscErrorCode   DALoad(PetscViewer,int,int,int,DA *);
+EXTERN PetscErrorCode   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
+EXTERN PetscErrorCode   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
+EXTERN PetscErrorCode   DAGetInfo(DA,int*,int*,int*,int*,int*,int*,int*,int*,int*,DAPeriodicType*,DAStencilType*);
+EXTERN PetscErrorCode   DAGetProcessorSubset(DA,DADirection,int,MPI_Comm*);
+EXTERN PetscErrorCode   DARefine(DA,MPI_Comm,DA*);
 
-EXTERN int   DAGlobalToNaturalAllCreate(DA,VecScatter*);
-EXTERN int   DANaturalAllToGlobalCreate(DA,VecScatter*);
+EXTERN PetscErrorCode   DAGlobalToNaturalAllCreate(DA,VecScatter*);
+EXTERN PetscErrorCode   DANaturalAllToGlobalCreate(DA,VecScatter*);
 
-EXTERN int   DAGetGlobalIndices(DA,int*,int**);
-EXTERN int   DAGetISLocalToGlobalMapping(DA,ISLocalToGlobalMapping*);
-EXTERN int   DAGetISLocalToGlobalMappingBlck(DA,ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode   DAGetGlobalIndices(DA,int*,int**);
+EXTERN PetscErrorCode   DAGetISLocalToGlobalMapping(DA,ISLocalToGlobalMapping*);
+EXTERN PetscErrorCode   DAGetISLocalToGlobalMappingBlck(DA,ISLocalToGlobalMapping*);
 
-EXTERN int   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
+EXTERN PetscErrorCode   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
 
-EXTERN int   DAGetAO(DA,AO*);
-EXTERN int   DASetCoordinates(DA,Vec); 
-EXTERN int   DAGetCoordinates(DA,Vec *);
-EXTERN int   DAGetGhostedCoordinates(DA,Vec *);
-EXTERN int   DAGetCoordinateDA(DA,DA *);
-EXTERN int   DASetUniformCoordinates(DA,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-EXTERN int   DASetFieldName(DA,int,const char[]);
-EXTERN int   DAGetFieldName(DA,int,char **);
+EXTERN PetscErrorCode   DAGetAO(DA,AO*);
+EXTERN PetscErrorCode   DASetCoordinates(DA,Vec); 
+EXTERN PetscErrorCode   DAGetCoordinates(DA,Vec *);
+EXTERN PetscErrorCode   DAGetGhostedCoordinates(DA,Vec *);
+EXTERN PetscErrorCode   DAGetCoordinateDA(DA,DA *);
+EXTERN PetscErrorCode   DASetUniformCoordinates(DA,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+EXTERN PetscErrorCode   DASetFieldName(DA,int,const char[]);
+EXTERN PetscErrorCode   DAGetFieldName(DA,int,char **);
 
-EXTERN int   DAVecGetArray(DA,Vec,void *);
-EXTERN int   DAVecRestoreArray(DA,Vec,void *);
+EXTERN PetscErrorCode   DAVecGetArray(DA,Vec,void *);
+EXTERN PetscErrorCode   DAVecRestoreArray(DA,Vec,void *);
 
-EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
+EXTERN PetscErrorCode   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 
 /*S
      SDA - This provides a simplified interface to the DA distributed
@@ -161,17 +161,17 @@ EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 S*/
 typedef struct _SDA* SDA;
 
-EXTERN int   SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int,int,int *,int *,int *,SDA *);
-EXTERN int   SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int *,int *,SDA *);
-EXTERN int   SDACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,SDA *);
-EXTERN int   SDADestroy(SDA);
-EXTERN int   SDALocalToLocalBegin(SDA,PetscScalar*,InsertMode,PetscScalar*);
-EXTERN int   SDALocalToLocalEnd(SDA,PetscScalar*,InsertMode,PetscScalar*);
-EXTERN int   SDAGetCorners(SDA,int*,int*,int*,int*,int*,int*);
-EXTERN int   SDAGetGhostCorners(SDA,int*,int*,int*,int*,int*,int*);
+EXTERN PetscErrorCode   SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int,int,int *,int *,int *,SDA *);
+EXTERN PetscErrorCode   SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int *,int *,SDA *);
+EXTERN PetscErrorCode   SDACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,SDA *);
+EXTERN PetscErrorCode   SDADestroy(SDA);
+EXTERN PetscErrorCode   SDALocalToLocalBegin(SDA,PetscScalar*,InsertMode,PetscScalar*);
+EXTERN PetscErrorCode   SDALocalToLocalEnd(SDA,PetscScalar*,InsertMode,PetscScalar*);
+EXTERN PetscErrorCode   SDAGetCorners(SDA,int*,int*,int*,int*,int*,int*);
+EXTERN PetscErrorCode   SDAGetGhostCorners(SDA,int*,int*,int*,int*,int*,int*);
 
-EXTERN int   MatRegisterDAAD(void);
-EXTERN int   MatCreateDAAD(DA,Mat*);
+EXTERN PetscErrorCode   MatRegisterDAAD(void);
+EXTERN PetscErrorCode   MatCreateDAAD(DA,Mat*);
 
 /*S
      DALocalInfo - C struct that contains information about a structured grid and a processors logical
@@ -279,21 +279,21 @@ M*/
 typedef struct {PetscScalar x,y,z;} DACoor3d;
     
 
-EXTERN int DAGetLocalInfo(DA,DALocalInfo*);
+EXTERN PetscErrorCode DAGetLocalInfo(DA,DALocalInfo*);
 typedef int (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
-EXTERN int DAFormFunction1(DA,Vec,Vec,void*);
-EXTERN int DAFormFunctioni1(DA,int,Vec,PetscScalar*,void*);
-EXTERN int DAComputeJacobian1WithAdic(DA,Vec,Mat,void*);
-EXTERN int DAComputeJacobian1WithAdifor(DA,Vec,Mat,void*);
-EXTERN int DAMultiplyByJacobian1WithAdic(DA,Vec,Vec,Vec,void*);
-EXTERN int DAMultiplyByJacobian1WithAdifor(DA,Vec,Vec,Vec,void*);
-EXTERN int DAMultiplyByJacobian1WithAD(DA,Vec,Vec,Vec,void*);
-EXTERN int DAComputeJacobian1(DA,Vec,Mat,void*);
-EXTERN int DAGetLocalFunction(DA,DALocalFunction1*);
-EXTERN int DASetLocalFunction(DA,DALocalFunction1);
-EXTERN int DASetLocalFunctioni(DA,int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
-EXTERN int DASetLocalJacobian(DA,DALocalFunction1);
-EXTERN int DASetLocalAdicFunction_Private(DA,DALocalFunction1);
+EXTERN PetscErrorCode DAFormFunction1(DA,Vec,Vec,void*);
+EXTERN PetscErrorCode DAFormFunctioni1(DA,int,Vec,PetscScalar*,void*);
+EXTERN PetscErrorCode DAComputeJacobian1WithAdic(DA,Vec,Mat,void*);
+EXTERN PetscErrorCode DAComputeJacobian1WithAdifor(DA,Vec,Mat,void*);
+EXTERN PetscErrorCode DAMultiplyByJacobian1WithAdic(DA,Vec,Vec,Vec,void*);
+EXTERN PetscErrorCode DAMultiplyByJacobian1WithAdifor(DA,Vec,Vec,Vec,void*);
+EXTERN PetscErrorCode DAMultiplyByJacobian1WithAD(DA,Vec,Vec,Vec,void*);
+EXTERN PetscErrorCode DAComputeJacobian1(DA,Vec,Mat,void*);
+EXTERN PetscErrorCode DAGetLocalFunction(DA,DALocalFunction1*);
+EXTERN PetscErrorCode DASetLocalFunction(DA,DALocalFunction1);
+EXTERN PetscErrorCode DASetLocalFunctioni(DA,int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
+EXTERN PetscErrorCode DASetLocalJacobian(DA,DALocalFunction1);
+EXTERN PetscErrorCode DASetLocalAdicFunction_Private(DA,DALocalFunction1);
 
 /*MC
        DASetLocalAdicFunction - Caches in a DA a local function computed by ADIC/ADIFOR
@@ -320,50 +320,50 @@ M*/
 #  define DASetLocalAdicFunction(a,d) DASetLocalAdicFunction_Private(a,0)
 #endif
 
-EXTERN int DASetLocalAdicMFFunction_Private(DA,DALocalFunction1);
+EXTERN PetscErrorCode DASetLocalAdicMFFunction_Private(DA,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #  define DASetLocalAdicMFFunction(a,d) DASetLocalAdicMFFunction_Private(a,(DALocalFunction1)d)
 #else
 #  define DASetLocalAdicMFFunction(a,d) DASetLocalAdicMFFunction_Private(a,0)
 #endif
-EXTERN int DASetLocalAdicFunctioni_Private(DA,int (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode DASetLocalAdicFunctioni_Private(DA,int (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #  define DASetLocalAdicFunctioni(a,d) DASetLocalAdicFunctioni_Private(a,(int (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
 #else
 #  define DASetLocalAdicFunctioni(a,d) DASetLocalAdicFunctioni_Private(a,0)
 #endif
-EXTERN int DASetLocalAdicMFFunctioni_Private(DA,int (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA,int (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #  define DASetLocalAdicMFFunctioni(a,d) DASetLocalAdicMFFunctioni_Private(a,(int (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
 #else
 #  define DASetLocalAdicMFFunctioni(a,d) DASetLocalAdicMFFunctioni_Private(a,0)
 #endif
-EXTERN int DAFormFunctioniTest1(DA,void*);
+EXTERN PetscErrorCode DAFormFunctioniTest1(DA,void*);
 
 
 #include "petscmat.h"
-EXTERN int DAGetColoring(DA,ISColoringType,ISColoring *);
-EXTERN int DAGetMatrix(DA,const MatType,Mat *);
-EXTERN int DASetGetMatrix(DA,int (*)(DA,const MatType,Mat *));
-EXTERN int DAGetInterpolation(DA,DA,Mat*,Vec*);
-EXTERN int DAGetInjection(DA,DA,VecScatter*);
-EXTERN int DASetBlockFills(DA,int*,int*);
-EXTERN int DASetRefinementFactor(DA,int,int,int);
-EXTERN int DAGetRefinementFactor(DA,int*,int*,int*);
+EXTERN PetscErrorCode DAGetColoring(DA,ISColoringType,ISColoring *);
+EXTERN PetscErrorCode DAGetMatrix(DA,const MatType,Mat *);
+EXTERN PetscErrorCode DASetGetMatrix(DA,int (*)(DA,const MatType,Mat *));
+EXTERN PetscErrorCode DAGetInterpolation(DA,DA,Mat*,Vec*);
+EXTERN PetscErrorCode DAGetInjection(DA,DA,VecScatter*);
+EXTERN PetscErrorCode DASetBlockFills(DA,int*,int*);
+EXTERN PetscErrorCode DASetRefinementFactor(DA,int,int,int);
+EXTERN PetscErrorCode DAGetRefinementFactor(DA,int*,int*,int*);
 
-EXTERN int DAGetAdicArray(DA,PetscTruth,void**,void**,int*);
-EXTERN int DARestoreAdicArray(DA,PetscTruth,void**,void**,int*);
-EXTERN int DAGetAdicMFArray(DA,PetscTruth,void**,void**,int*);
-EXTERN int DARestoreAdicMFArray(DA,PetscTruth,void**,void**,int*);
-EXTERN int DAGetArray(DA,PetscTruth,void**);
-EXTERN int DARestoreArray(DA,PetscTruth,void**);
-EXTERN int ad_DAGetArray(DA,PetscTruth,void**);
-EXTERN int ad_DARestoreArray(DA,PetscTruth,void**);
-EXTERN int admf_DAGetArray(DA,PetscTruth,void**);
-EXTERN int admf_DARestoreArray(DA,PetscTruth,void**);
+EXTERN PetscErrorCode DAGetAdicArray(DA,PetscTruth,void**,void**,int*);
+EXTERN PetscErrorCode DARestoreAdicArray(DA,PetscTruth,void**,void**,int*);
+EXTERN PetscErrorCode DAGetAdicMFArray(DA,PetscTruth,void**,void**,int*);
+EXTERN PetscErrorCode DARestoreAdicMFArray(DA,PetscTruth,void**,void**,int*);
+EXTERN PetscErrorCode DAGetArray(DA,PetscTruth,void**);
+EXTERN PetscErrorCode DARestoreArray(DA,PetscTruth,void**);
+EXTERN PetscErrorCode ad_DAGetArray(DA,PetscTruth,void**);
+EXTERN PetscErrorCode ad_DARestoreArray(DA,PetscTruth,void**);
+EXTERN PetscErrorCode admf_DAGetArray(DA,PetscTruth,void**);
+EXTERN PetscErrorCode admf_DARestoreArray(DA,PetscTruth,void**);
 
 #include "petscpf.h"
-EXTERN int DACreatePF(DA,PF*);
+EXTERN PetscErrorCode DACreatePF(DA,PF*);
 
 /*S
      VecPack - Abstract PETSc object that manages treating several distinct vectors as if they
@@ -379,22 +379,22 @@ EXTERN int DACreatePF(DA,PF*);
 S*/
 typedef struct _p_VecPack *VecPack;
 
-EXTERN int VecPackCreate(MPI_Comm,VecPack*);
-EXTERN int VecPackDestroy(VecPack);
-EXTERN int VecPackAddArray(VecPack,int);
-EXTERN int VecPackAddDA(VecPack,DA);
-EXTERN int VecPackAddVecScatter(VecPack,VecScatter);
-EXTERN int VecPackScatter(VecPack,Vec,...);
-EXTERN int VecPackGather(VecPack,Vec,...);
-EXTERN int VecPackGetAccess(VecPack,Vec,...);
-EXTERN int VecPackRestoreAccess(VecPack,Vec,...);
-EXTERN int VecPackGetLocalVectors(VecPack,...);
-EXTERN int VecPackGetEntries(VecPack,...);
-EXTERN int VecPackRestoreLocalVectors(VecPack,...);
-EXTERN int VecPackCreateGlobalVector(VecPack,Vec*);
-EXTERN int VecPackGetGlobalIndices(VecPack,...);
-EXTERN int VecPackRefine(VecPack,MPI_Comm,VecPack*);
-EXTERN int VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
+EXTERN PetscErrorCode VecPackCreate(MPI_Comm,VecPack*);
+EXTERN PetscErrorCode VecPackDestroy(VecPack);
+EXTERN PetscErrorCode VecPackAddArray(VecPack,int);
+EXTERN PetscErrorCode VecPackAddDA(VecPack,DA);
+EXTERN PetscErrorCode VecPackAddVecScatter(VecPack,VecScatter);
+EXTERN PetscErrorCode VecPackScatter(VecPack,Vec,...);
+EXTERN PetscErrorCode VecPackGather(VecPack,Vec,...);
+EXTERN PetscErrorCode VecPackGetAccess(VecPack,Vec,...);
+EXTERN PetscErrorCode VecPackRestoreAccess(VecPack,Vec,...);
+EXTERN PetscErrorCode VecPackGetLocalVectors(VecPack,...);
+EXTERN PetscErrorCode VecPackGetEntries(VecPack,...);
+EXTERN PetscErrorCode VecPackRestoreLocalVectors(VecPack,...);
+EXTERN PetscErrorCode VecPackCreateGlobalVector(VecPack,Vec*);
+EXTERN PetscErrorCode VecPackGetGlobalIndices(VecPack,...);
+EXTERN PetscErrorCode VecPackRefine(VecPack,MPI_Comm,VecPack*);
+EXTERN PetscErrorCode VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
 
 
 #include "petscsnes.h"
@@ -416,15 +416,15 @@ EXTERN int VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
 S*/
 typedef struct _p_DM* DM;
 
-EXTERN int DMView(DM,PetscViewer);
-EXTERN int DMDestroy(DM);
-EXTERN int DMCreateGlobalVector(DM,Vec*);
-EXTERN int DMGetColoring(DM,ISColoringType,ISColoring*);
-EXTERN int DMGetMatrix(DM,const MatType,Mat*);
-EXTERN int DMGetInterpolation(DM,DM,Mat*,Vec*);
-EXTERN int DMGetInjection(DM,DM,VecScatter*);
-EXTERN int DMRefine(DM,MPI_Comm,DM*);
-EXTERN int DMGetInterpolationScale(DM,DM,Mat,Vec*);
+EXTERN PetscErrorCode DMView(DM,PetscViewer);
+EXTERN PetscErrorCode DMDestroy(DM);
+EXTERN PetscErrorCode DMCreateGlobalVector(DM,Vec*);
+EXTERN PetscErrorCode DMGetColoring(DM,ISColoringType,ISColoring*);
+EXTERN PetscErrorCode DMGetMatrix(DM,const MatType,Mat*);
+EXTERN PetscErrorCode DMGetInterpolation(DM,DM,Mat*,Vec*);
+EXTERN PetscErrorCode DMGetInjection(DM,DM,VecScatter*);
+EXTERN PetscErrorCode DMRefine(DM,MPI_Comm,DM*);
+EXTERN PetscErrorCode DMGetInterpolationScale(DM,DM,Mat,Vec*);
 
 typedef struct NLF_DAAD* NLF;
 
@@ -478,20 +478,20 @@ struct _p_DMMG {
   
 };
 
-EXTERN int DMMGCreate(MPI_Comm,int,void*,DMMG**);
-EXTERN int DMMGDestroy(DMMG*);
-EXTERN int DMMGSetUp(DMMG*);
-EXTERN int DMMGSetKSP(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
-EXTERN int DMMGSetSNES(DMMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
-EXTERN int DMMGSetInitialGuess(DMMG*,int (*)(SNES,Vec,void*));
-EXTERN int DMMGView(DMMG*,PetscViewer);
-EXTERN int DMMGSolve(DMMG*);
-EXTERN int DMMGSetUseMatrixFree(DMMG*);
-EXTERN int DMMGSetDM(DMMG*,DM);
-EXTERN int DMMGSetUpLevel(DMMG*,KSP,int);
-EXTERN int DMMGSetUseGalerkinCoarse(DMMG*);
+EXTERN PetscErrorCode DMMGCreate(MPI_Comm,int,void*,DMMG**);
+EXTERN PetscErrorCode DMMGDestroy(DMMG*);
+EXTERN PetscErrorCode DMMGSetUp(DMMG*);
+EXTERN PetscErrorCode DMMGSetKSP(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
+EXTERN PetscErrorCode DMMGSetSNES(DMMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
+EXTERN PetscErrorCode DMMGSetInitialGuess(DMMG*,int (*)(SNES,Vec,void*));
+EXTERN PetscErrorCode DMMGView(DMMG*,PetscViewer);
+EXTERN PetscErrorCode DMMGSolve(DMMG*);
+EXTERN PetscErrorCode DMMGSetUseMatrixFree(DMMG*);
+EXTERN PetscErrorCode DMMGSetDM(DMMG*,DM);
+EXTERN PetscErrorCode DMMGSetUpLevel(DMMG*,KSP,int);
+EXTERN PetscErrorCode DMMGSetUseGalerkinCoarse(DMMG*);
 
-EXTERN int DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
+EXTERN PetscErrorCode DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) \
   DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)(ad_function),(DALocalFunction1)(admf_function))
@@ -499,7 +499,7 @@ EXTERN int DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALo
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)0,(DALocalFunction1)0)
 #endif
 
-EXTERN int DMMGSetSNESLocali_Private(DMMG*,int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),int (*)(DALocalInfo*,MatStencil*,void*,void*,void*),int (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode DMMGSetSNESLocali_Private(DMMG*,int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),int (*)(DALocalInfo*,MatStencil*,void*,void*,void*),int (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(int (*)(DALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(int (*)(DALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
 #else
@@ -523,7 +523,7 @@ EXTERN int DMMGSetSNESLocali_Private(DMMG*,int (*)(DALocalInfo*,MatStencil*,void
    Level: intermediate
 
    Fortran Usage:
-.     DMMGGetx(DMMG dmmg,Vec x,int ierr)
+.     DMMGGetx(DMMG dmmg,Vec x,PetscErrorCode ierr)
 
 .seealso: DMMGCreate(), DMMGSetSNES(), DMMGSetKSP(), DMMGSetSNESLocal()
 

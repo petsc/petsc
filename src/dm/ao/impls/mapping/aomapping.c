@@ -18,10 +18,10 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODestroy_Mapping"
-int AODestroy_Mapping(AO ao)
+PetscErrorCode AODestroy_Mapping(AO ao)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(aomap->app);CHKERRQ(ierr);
@@ -31,12 +31,12 @@ int AODestroy_Mapping(AO ao)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOView_Mapping"
-int AOView_Mapping(AO ao, PetscViewer viewer)
+PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
   int         rank, i;
   PetscTruth  iascii;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(ao->comm, &rank);CHKERRQ(ierr);
@@ -59,7 +59,7 @@ int AOView_Mapping(AO ao, PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOPetscToApplication_Mapping"
-int AOPetscToApplication_Mapping(AO ao, int n, int *ia)
+PetscErrorCode AOPetscToApplication_Mapping(AO ao, int n, int *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
   int        *app   = aomap->app;
@@ -100,7 +100,7 @@ int AOPetscToApplication_Mapping(AO ao, int n, int *ia)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOApplicationToPetsc_Mapping"
-int AOApplicationToPetsc_Mapping(AO ao, int n, int *ia)
+PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, int n, int *ia)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
   int        *app   = aomap->app;
@@ -165,7 +165,7 @@ static struct _AOOps AOps = {AOView_Mapping,
 .keywords: AO, index
 .seealso: AOMappingHasPetscIndex(), AOCreateMapping()
 @*/
-int AOMappingHasApplicationIndex(AO ao, int idex, PetscTruth *hasIndex)
+PetscErrorCode AOMappingHasApplicationIndex(AO ao, int idex, PetscTruth *hasIndex)
 {
   AO_Mapping *aomap;
   int        *app;
@@ -214,7 +214,7 @@ int AOMappingHasApplicationIndex(AO ao, int idex, PetscTruth *hasIndex)
 .keywords: AO, index
 .seealso: AOMappingHasApplicationIndex(), AOCreateMapping()
 @*/
-int AOMappingHasPetscIndex(AO ao, int idex, PetscTruth *hasIndex)
+PetscErrorCode AOMappingHasPetscIndex(AO ao, int idex, PetscTruth *hasIndex)
 {
   AO_Mapping *aomap;
   int        *petsc;
@@ -268,7 +268,7 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMapping()
 .keywords: AO, create
 .seealso: AOCreateDebug(), AOCreateBasic(), AOCreateMappingIS(), AODestroy()
 @*/
-int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],AO *aoout)
+PetscErrorCode AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],AO *aoout)
 {
   AO          ao;
   AO_Mapping *aomap;
@@ -280,7 +280,7 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
   int         N, start;
   int         i;
   PetscTruth  opt;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(aoout,5);
@@ -407,12 +407,12 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
 .keywords: AO, create
 .seealso: AOCreateBasic(), AOCreateMapping(), AODestroy()
 @*/
-int AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
+PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
 {
   MPI_Comm comm;
   int     *mypetsc, *myapp;
   int      napp, npetsc;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) isapp, &comm);CHKERRQ(ierr);

@@ -93,35 +93,35 @@ EXTERN_C_END
 /* These are not extern C because they are passed into non-extern C user level functions */
 static int ourtest(KSP ksp,int i,PetscReal d,KSPConvergedReason *reason,void* ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
   (*f2)(&ksp,&i,&d,reason,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static int ourmonitor(KSP ksp,int i,PetscReal d,void* ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f1)(&ksp,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static int ourdestroy(void* ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f21)(ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static int ourmodify(KSP ksp,int i,int i2,PetscReal d,void* ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f109)(&ksp,&i,&i2,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static int ourmoddestroy(void* ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f210)(ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }

@@ -16,10 +16,10 @@
 /*
      These are defined in mal.c and ensure that malloced space is PetscScalar aligned
 */
-EXTERN int   PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
-EXTERN int   PetscFreeAlign(void*,int,const char[],const char[],const char[]);
-EXTERN int   PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
-EXTERN int   PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
+EXTERN PetscErrorCode   PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
+EXTERN PetscErrorCode   PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+EXTERN PetscErrorCode   PetscTrMallocDefault(size_t,int,const char[],const char[],const char[],void**);
+EXTERN PetscErrorCode   PetscTrFreeDefault(void*,int,const char[],const char[],const char[]);
 
 /*
   Code for checking if a pointer is out of the range 
@@ -34,9 +34,9 @@ void *PetscLow  = (void*)0x0,*PetscHigh = (void*)0xEEEEEEEE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetUseTrMalloc_Private"
-int PetscSetUseTrMalloc_Private(void)
+PetscErrorCode PetscSetUseTrMalloc_Private(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if (PETSC_SIZEOF_VOID_P == 8)
@@ -149,7 +149,7 @@ static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallo
 .seealso: CHKMEMQ
 
 @*/
-int PetscTrValid(int line,const char function[],const char file[],const char dir[])
+PetscErrorCode PetscTrValid(int line,const char function[],const char file[],const char dir[])
 {
   TRSPACE  *head;
   char     *a;
@@ -206,13 +206,13 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
     double aligned pointer to requested storage, or null if not
     available.
  */
-int PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],const char dir[],void**result)
+PetscErrorCode PetscTrMallocDefault(size_t a,int lineno,const char function[],const char filename[],const char dir[],void**result)
 {
   TRSPACE          *head;
   char             *inew;
   unsigned long    *nend;
   size_t           nsize;
-  int              ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (TRdebugLevel) {
@@ -297,12 +297,12 @@ int PetscTrMallocDefault(size_t a,int lineno,const char function[],const char fi
 .   file  - file name where used.  Use __FILE__ for this
 .   dir - directory where file is. Use __SDIR__ for this
  */
-int PetscTrFreeDefault(void *aa,int line,const char function[],const char file[],const char dir[])
+PetscErrorCode PetscTrFreeDefault(void *aa,int line,const char function[],const char file[],const char dir[])
 {
   char     *a = (char*)aa;
   TRSPACE  *head;
   char     *ahead;
-  int      ierr;
+  PetscErrorCode ierr;
   unsigned long *nend;
   
   PetscFunctionBegin; 
@@ -399,10 +399,11 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 
 .seealso: PetscTrDump(),PetscTrSpace(), PetscGetResidentSetSize()
  @*/
-int PetscShowMemoryUsage(PetscViewer viewer,const char message[])
+PetscErrorCode PetscShowMemoryUsage(PetscViewer viewer,const char message[])
 {
   PetscLogDouble allocated,maximum,resident;
-  int            ierr,rank;
+  PetscErrorCode ierr;
+  int            rank;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -438,7 +439,7 @@ int PetscShowMemoryUsage(PetscViewer viewer,const char message[])
 
 .seealso: PetscTrDump()
  @*/
-int PetscTrSpace(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs)
+PetscErrorCode PetscTrSpace(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs)
 {
   PetscFunctionBegin;
 
@@ -479,7 +480,7 @@ int PetscTrSpace(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs)
 
 .seealso:  PetscTrSpace(), PetscTrLogDump() 
 @*/
-int PetscTrDump(FILE *fp)
+PetscErrorCode PetscTrDump(FILE *fp)
 {
   TRSPACE *head;
   int     rank,ierr;
@@ -518,7 +519,7 @@ int PetscTrDump(FILE *fp)
 
 .seealso: PetscTrLogDump()
 @*/
-int PetscTrLog(void)
+PetscErrorCode PetscTrLog(void)
 {
   PetscFunctionBegin;
 
@@ -548,7 +549,7 @@ int PetscTrLog(void)
 
 .seealso: PetscTrLog(), PetscTrDump()
 @*/
-int PetscTrLogDump(FILE *fp)
+PetscErrorCode PetscTrLogDump(FILE *fp)
 {
   int            i,rank,j,n,*shortlength,ierr,dummy,size,tag = 1212 /* very bad programming */,*perm;
   PetscTruth     match;
@@ -629,7 +630,7 @@ int PetscTrLogDump(FILE *fp)
 
 .seealso: CHKMEMQ(), PetscTrValid()
 @*/
-int  PetscTrDebug(PetscTruth level)
+PetscErrorCode  PetscTrDebug(PetscTruth level)
 {
   PetscFunctionBegin;
 

@@ -48,7 +48,11 @@
 
    Compile Option:
     PETSC_PREFER_DCOPY_FOR_MEMCPY will cause the BLAS dcopy() routine to be used 
-   for memory copies on double precision values.
+                                  for memory copies on double precision values.
+    PETSC_PREFER_COPY_FOR_MEMCPY will cause C code to be used 
+                                  for memory copies on double precision values.
+    PETSC_PREFER_FORTRAN_FORMEMCPY will cause Fortran code to be used 
+                                  for memory copies on double precision values.
 
    Note:
    This routine is analogous to memcpy().
@@ -59,7 +63,7 @@
 .seealso: PetscMemmove()
 
 @*/
-int PetscMemcpy(void *a,const void *b,int n)
+PetscErrorCode PetscMemcpy(void *a,const void *b,size_t n)
 {
   unsigned long al = (unsigned long) a,bl = (unsigned long) b;
   unsigned long nl = (unsigned long) n;
@@ -125,7 +129,7 @@ int PetscMemcpy(void *a,const void *b,int n)
 .seealso: PetscMemmove(), PetscMemcpy()
 
 @*/
-int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtype)
+PetscErrorCode PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtype)
 {
   char *aa = (char *)a,*bb = (char *)b;
   int  dsize,ierr;
@@ -168,10 +172,9 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
 
 .seealso: PetscMemcpy()
 @*/
-int PetscMemzero(void *a,int n)
+PetscErrorCode PetscMemzero(void *a,size_t n)
 {
   PetscFunctionBegin;
-  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Memory length must be >= 0");
   if (n > 0) {
 #if defined(PETSC_PREFER_ZERO_FOR_MEMZERO)
     if (!(((long) a) % sizeof(PetscScalar)) && !(n % sizeof(PetscScalar))) {
@@ -218,7 +221,7 @@ int PetscMemzero(void *a,int n)
    Note: 
    This routine is anologous to memcmp()
 @*/
-int PetscMemcmp(const void *str1,const void *str2,int len,PetscTruth *e)
+PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscTruth *e)
 {
   int r;
 
@@ -257,7 +260,7 @@ int PetscMemcmp(const void *str1,const void *str2,int len,PetscTruth *e)
 
 .seealso: PetscMemcpy()
 @*/
-int PetscMemmove(void *a,void *b,int n)
+PetscErrorCode PetscMemmove(void *a,void *b,size_t n)
 {
   PetscFunctionBegin;
 #if !defined(PETSC_HAVE_MEMMOVE)

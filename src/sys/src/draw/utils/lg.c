@@ -7,7 +7,7 @@
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
-int DRAWLG_COOKIE = 0;
+PetscErrorCode DRAWLG_COOKIE = 0;
 
 struct _p_DrawLG {
   PETSCHEADER(int) 
@@ -43,9 +43,9 @@ struct _p_DrawLG {
 
 .seealso:  PetscDrawLGDestroy()
 @*/
-int PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
+PetscErrorCode PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  isnull;
   PetscObject obj = (PetscObject)draw;
   PetscDrawLG lg;
@@ -96,9 +96,9 @@ int PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
    Concepts: line graph^setting number of lines
 
 @*/
-int PetscDrawLGSetDimension(PetscDrawLG lg,int dim)
+PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg,int dim)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
@@ -129,7 +129,7 @@ int PetscDrawLGSetDimension(PetscDrawLG lg,int dim)
    Concepts: line graph^restarting
 
 @*/
-int PetscDrawLGReset(PetscDrawLG lg)
+PetscErrorCode PetscDrawLGReset(PetscDrawLG lg)
 {
   PetscFunctionBegin;
   if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
@@ -157,9 +157,9 @@ int PetscDrawLGReset(PetscDrawLG lg)
 
 .seealso:  PetscDrawLGCreate()
 @*/
-int PetscDrawLGDestroy(PetscDrawLG lg)
+PetscErrorCode PetscDrawLGDestroy(PetscDrawLG lg)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!lg || lg->cookie != PETSC_DRAW_COOKIE) {
@@ -197,7 +197,7 @@ int PetscDrawLGDestroy(PetscDrawLG lg)
 
 .seealso: PetscDrawLGAddPoints()
 @*/
-int PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
+PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
 {
   int i,ierr;
 
@@ -244,7 +244,7 @@ int PetscDrawLGAddPoint(PetscDrawLG lg,PetscReal *x,PetscReal *y)
    Concepts: line graph^showing points
 
 @*/
-int PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
+PetscErrorCode PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 {
   PetscFunctionBegin;
   if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
@@ -274,7 +274,7 @@ int PetscDrawLGIndicateDataPoints(PetscDrawLG lg)
 
 .seealso: PetscDrawLGAddPoint()
 @*/
-int PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
+PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 {
   int       i,j,k,ierr;
   PetscReal *x,*y;
@@ -330,7 +330,7 @@ int PetscDrawLGAddPoints(PetscDrawLG lg,int n,PetscReal **xx,PetscReal **yy)
 .seealso: PetscDrawSPDraw(), PetscDrawLGSPDraw()
 
 @*/
-int PetscDrawLGDraw(PetscDrawLG lg)
+PetscErrorCode PetscDrawLGDraw(PetscDrawLG lg)
 {
   PetscReal xmin=lg->xmin,xmax=lg->xmax,ymin=lg->ymin,ymax=lg->ymax;
   int       i,j,dim = lg->dim,nopts = lg->nopts,rank,ierr;
@@ -379,7 +379,7 @@ int PetscDrawLGDraw(PetscDrawLG lg)
 
 .keywords:  draw, line, graph
 @*/
-int PetscDrawLGPrint(PetscDrawLG lg)
+PetscErrorCode PetscDrawLGPrint(PetscDrawLG lg)
 {
   PetscReal xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
   int       i, j, dim = lg->dim, nopts = lg->nopts;
@@ -417,7 +417,7 @@ int PetscDrawLGPrint(PetscDrawLG lg)
    Concepts: line graph^setting axis
 
 @*/
-int PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
+PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscReal y_min,PetscReal y_max) 
 {
   PetscFunctionBegin;
   if (lg && lg->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
@@ -448,7 +448,7 @@ int PetscDrawLGSetLimits(PetscDrawLG lg,PetscReal x_min,PetscReal x_max,PetscRea
    Level: advanced
 
 @*/
-int PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
+PetscErrorCode PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
 {
   PetscFunctionBegin;
   if (lg && lg->cookie == PETSC_DRAW_COOKIE) {
@@ -477,7 +477,7 @@ int PetscDrawLGGetAxis(PetscDrawLG lg,PetscDrawAxis *axis)
    Level: intermediate
 
 @*/
-int PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
+PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
 {
   PetscFunctionBegin;
   PetscValidHeader(lg,1);
@@ -509,7 +509,7 @@ int PetscDrawLGGetDraw(PetscDrawLG lg,PetscDraw *draw)
    Developer Notes: This code cheats and uses the fact that the LG and SP structs are the same
 
 @*/
-int PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
+PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg,PetscDrawSP spin)
 {
   PetscDrawLG sp = (PetscDrawLG)spin;
   PetscReal   xmin,xmax,ymin,ymax;

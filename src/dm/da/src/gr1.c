@@ -22,7 +22,7 @@
 .seealso: DASetCoordinates(), DAGetCoordinates(), DACreate1d(), DACreate2d(), DACreate3d()
 
 @*/
-int DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
+PetscErrorCode DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
   int            i,j,k,ierr,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
   PetscReal      hx,hy,hz_;
@@ -96,7 +96,7 @@ int DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,P
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Draw_DA1d"
-int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
+PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 {
   DA             da;
   int            i,rank,size,ierr,n,tag1,tag2,N,step;

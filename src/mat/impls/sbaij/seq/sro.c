@@ -33,7 +33,7 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatReorderingSeqSBAIJ"
-int MatReorderingSeqSBAIJ(Mat A,IS perm)
+PetscErrorCode MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ *)A->data;
   int             *r,ierr,i,mbs=a->mbs,*rip,*riip;

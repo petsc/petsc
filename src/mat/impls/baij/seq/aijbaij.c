@@ -4,10 +4,11 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqBAI_SeqAIJ"
-int MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat) {
+PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat) {
   Mat          B;
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data; 
-  int          ierr,bs = a->bs,*ai = a->i,*aj = a->j,n = A->M/bs,i,j,k;
+  PetscErrorCode ierr;
+  int bs = a->bs,*ai = a->i,*aj = a->j,n = A->M/bs,i,j,k;
   int          *rowlengths,*rows,*cols,maxlen = 0,ncols;
   PetscScalar  *aa = a->a;
 
@@ -62,11 +63,12 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqBAIJ"
-int MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) {
   Mat         B;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data; 
   Mat_SeqBAIJ *b;
-  int         ierr,*ai=a->i,m=A->M,n=A->N,i,*rowlengths;
+  PetscErrorCode ierr;
+  int *ai=a->i,m=A->M,n=A->N,i,*rowlengths;
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");

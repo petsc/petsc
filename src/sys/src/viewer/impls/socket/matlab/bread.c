@@ -90,7 +90,7 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
 
   Notes: does byte swapping to work on all machines.
 */
-int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
+PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 {
 
   int  maxblock,wsize,err;

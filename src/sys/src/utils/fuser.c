@@ -35,7 +35,7 @@
 #if defined(PETSC_HAVE_GET_USER_NAME)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetUserName"
-int PetscGetUserName(char name[],int nlen)
+PetscErrorCode PetscGetUserName(char name[],int nlen)
 {
   PetscFunctionBegin;
   GetUserName((LPTSTR)name,(LPDWORD)(&nlen));
@@ -62,10 +62,10 @@ int PetscGetUserName(char name[],int nlen)
 
 .seealso: PetscGetHostName()
 @*/
-int PetscGetUserName(char name[],int nlen)
+PetscErrorCode PetscGetUserName(char name[],size_t nlen)
 {
   struct passwd *pw;
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   pw = getpwuid(getuid());
@@ -78,9 +78,9 @@ int PetscGetUserName(char name[],int nlen)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetUserName"
-int PetscGetUserName(char *name,int nlen)
+PetscErrorCode PetscGetUserName(char *name,int nlen)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(name,"Unknown",nlen);CHKERRQ(ierr);

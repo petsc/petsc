@@ -15,7 +15,7 @@ int AppCtxSolve(AppCtx* appctx)
 {
   AppAlgebra             *algebra = &appctx->algebra;
   SNES                   snes;
-  int ierr,its;
+  PetscErrorCode ierr,its;
  
   PetscFunctionBegin;
 
@@ -197,7 +197,7 @@ Output of CreateVec:
 /* global to local mapping for vectors */
 
  /********** Internal Variables **********/
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*  Create vector to contain load, nonlinear function, and initial guess  
@@ -246,7 +246,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   AppAlgebra             *algebra = &appctx->algebra;
   AppGrid                *grid    = &appctx->grid;
   MPI_Comm               comm = appctx->comm;
-int ierr; 
+PetscErrorCode ierr; 
   PetscFunctionBegin;
   /* now create the matrix */
   /* using very rough estimate for nonzeros on and off the diagonal */
@@ -274,7 +274,7 @@ int AppCtxSetRhs(AppCtx* appctx)
   AppAlgebra *algebra = &appctx->algebra;
   AppElement *phi = &appctx->element;
 
-  int ierr,i;
+  PetscErrorCode ierr,i;
   int *df_ptr;
   double *coords_ptr;
   double  values[8];
@@ -441,7 +441,7 @@ to see if they need to be recomputed */
   /* b is the (already computed) rhs */ 
   Vec  b = algebra->b;
   /* Internal Variables */
-  int ierr;
+  PetscErrorCode ierr;
   double zero = 0.0,mone = -1.0;
 
 /****** Perform computation ***********/
@@ -483,7 +483,7 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   double result[8];
   double *coords_ptr;
   double cell_values[8],*uvvals;
-  int ierr,i,j;
+  PetscErrorCode ierr,i,j;
   int *df_ptr;
 
   /* Scatter the input values from the global vector g, to those on this processor */
@@ -566,7 +566,7 @@ int SetBoundaryConditions(Vec g,AppCtx *appctx,Vec f)
   AppAlgebra *algebra = &appctx->algebra;
   AppGrid *grid = &appctx->grid;
 
-  int ierr,i;
+  PetscErrorCode ierr,i;
   double  *bvs,xval,yval,*uvvals; 
 
   /* Scatter the input values from the global vector g, to those on this processor */
@@ -607,7 +607,7 @@ int FormStationaryJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,vo
 {
   AppCtx *appctx = (AppCtx *)dappctx;
   AppAlgebra *algebra = &appctx->algebra;
-  int ierr;
+  PetscErrorCode ierr;
 
   /* copy the linear part into jac.*/
   ierr= MatCopy(algebra->A,*jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -748,7 +748,7 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
 int FormInitialGuess(AppCtx* appctx)
 {
     AppAlgebra *algebra = &appctx->algebra;
-    int ierr;
+    PetscErrorCode ierr;
     double onep1 = 1.234;
     ierr = VecSet(&onep1,algebra->g);CHKERRQ(ierr);
     PetscFunctionReturn(0);

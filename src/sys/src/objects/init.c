@@ -23,7 +23,7 @@
 */
 PetscTruth PetscBeganMPI         = PETSC_FALSE;
 PetscTruth PetscInitializeCalled = PETSC_FALSE;
-int        PetscGlobalRank = -1,PetscGlobalSize = -1;
+PetscErrorCode        PetscGlobalRank = -1,PetscGlobalSize = -1;
 MPI_Comm   PETSC_COMM_WORLD = 0;
 MPI_Comm   PETSC_COMM_SELF  = 0;
 
@@ -42,7 +42,7 @@ MPI_Datatype  MPIU_2SCALAR = 0;
      These are needed by petscbt.h
 */
 char _BT_mask = ' ',_BT_c = ' ';
-int  _BT_idx  = 0;
+PetscErrorCode  _BT_idx  = 0;
 
 /*
      Determines if all PETSc objects are published to the AMS
@@ -54,10 +54,10 @@ PetscTruth PetscAMSPublishAll = PETSC_FALSE;
 /*
        Function that is called to display all error messages
 */
-EXTERN int  PetscErrorPrintfDefault(const char [],...);
-EXTERN int  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
-int (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
-int (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
+EXTERN PetscErrorCode  PetscErrorPrintfDefault(const char [],...);
+EXTERN PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
+PetscErrorCode (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
+PetscErrorCode (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -67,9 +67,10 @@ FILE *petsc_history = PETSC_NULL;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogOpenHistoryFile"
-int PetscLogOpenHistoryFile(const char filename[],FILE **fd)
+PetscErrorCode PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 {
-  int  ierr,rank,size;
+  PetscErrorCode ierr;
+  int  rank,size;
   char pfile[PETSC_MAX_PATH_LEN],pname[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],date[64];
   char version[256];
 
@@ -103,7 +104,7 @@ int PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogCloseHistoryFile"
-int PetscLogCloseHistoryFile(FILE **fd)
+PetscErrorCode PetscLogCloseHistoryFile(FILE **fd)
 {
   int  rank,ierr;
   char date[64];
@@ -143,7 +144,7 @@ PetscReal  PetscCompareTolerance = 1.e-10;
 
 .seealso: PetscCompareDouble(), PetscCompareScalar()
 @*/
-int PetscCompareInt(int d)
+PetscErrorCode PetscCompareInt(int d)
 {
   int work = d,ierr;
 
@@ -173,10 +174,10 @@ int PetscCompareInt(int d)
 
 .seealso: PetscCompareInt(), PetscComparseScalar()
 @*/
-int PetscCompareDouble(double d)
+PetscErrorCode PetscCompareDouble(double d)
 {
   double work = d;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,1,MPIU_REAL,0,MPI_COMM_WORLD);CHKERRQ(ierr);
@@ -205,10 +206,10 @@ int PetscCompareDouble(double d)
 
 .seealso: PetscCompareInt(), PetscComparseDouble()
 @*/
-int PetscCompareScalar(PetscScalar d)
+PetscErrorCode PetscCompareScalar(PetscScalar d)
 {
   PetscScalar work = d;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,2,MPIU_REAL,0,MPI_COMM_WORLD);CHKERRQ(ierr);
@@ -229,9 +230,11 @@ int PetscCompareScalar(PetscScalar d)
     Note: 
     Only works with C programs.
 */
-int PetscCompareInitialize(double tol)
+PetscErrorCode PetscCompareInitialize(double tol)
 {
-  int        ierr,i,len,rank,*gflag,size,mysize;
+  PetscErrorCode ierr;
+  int        i,rank,*gflag,size,mysize;
+  size_t     len;
   char       pname[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
   MPI_Group  group_all,group_sub;
   PetscTruth work;
@@ -302,7 +305,7 @@ void Petsc_MPI_AbortOnError(MPI_Comm *comm,int *flag)
 #define __FUNCT__ "Petsc_MPI_DebuggerOnError"
 void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag) 
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   (*PetscErrorPrintf)("MPI error %d\n",*flag);
@@ -330,7 +333,7 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm,int *flag)
 
 .seealso: PetscInitialize(), PetscOptionsPrint(), PetscTrDump(), PetscMPIDump(), PetscFinalize()
 @*/
-int PetscEnd(void)
+PetscErrorCode PetscEnd(void)
 {
   PetscFunctionBegin;
   PetscFinalize();
@@ -339,13 +342,13 @@ int PetscEnd(void)
 }
 
 PetscTruth        PetscOptionsPublish = PETSC_FALSE;
-EXTERN int        PetscLogInfoAllow(PetscTruth,char *);
-EXTERN int        PetscSetUseTrMalloc_Private(void);
+EXTERN PetscErrorCode        PetscLogInfoAllow(PetscTruth,char *);
+EXTERN PetscErrorCode        PetscSetUseTrMalloc_Private(void);
 extern PetscTruth petscsetmallocvisited;
 static char       emacsmachinename[256];
 
-int (*PetscExternalVersionFunction)(MPI_Comm) = 0;
-int (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
+PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = 0;
+PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetHelpVersionFunctions"
@@ -363,7 +366,7 @@ int (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
    Concepts: package help message
 
 @*/
-int PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
+PetscErrorCode PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
 {
   PetscFunctionBegin;
   PetscExternalHelpFunction    = help;
@@ -373,12 +376,13 @@ int PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
-int PetscOptionsCheckInitial_Private(void)
+PetscErrorCode PetscOptionsCheckInitial_Private(void)
 {
   char       string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm   comm = PETSC_COMM_WORLD;
   PetscTruth flg1,flg2,flg3,flag;
-  int        ierr,*nodes,i,rank;
+  PetscErrorCode ierr;
+  int        *nodes,i,rank;
   char       version[256];
 
   PetscFunctionBegin;

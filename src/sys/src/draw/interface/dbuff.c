@@ -20,9 +20,9 @@
    Concepts: double buffer
 
 @*/
-int PetscDrawSetDoubleBuffer(PetscDraw draw)
+PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->setdoublebuffer) {

@@ -2,37 +2,37 @@
 #include "src/ksp/pc/pcimpl.h"          /*I   "petscpc.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN int PCCreate_Jacobi(PC);
-EXTERN int PCCreate_BJacobi(PC);
-EXTERN int PCCreate_PBJacobi(PC);
-EXTERN int PCCreate_ILU(PC);
-EXTERN int PCCreate_None(PC);
-EXTERN int PCCreate_LU(PC);
-EXTERN int PCCreate_SOR(PC);
-EXTERN int PCCreate_Shell(PC);
-EXTERN int PCCreate_MG(PC);
-EXTERN int PCCreate_Eisenstat(PC);
-EXTERN int PCCreate_ICC(PC);
-EXTERN int PCCreate_ASM(PC);
-EXTERN int PCCreate_KSP(PC);
-EXTERN int PCCreate_Composite(PC);
-EXTERN int PCCreate_Redundant(PC);
-EXTERN int PCCreate_NN(PC);
-EXTERN int PCCreate_Cholesky(PC);
+EXTERN PetscErrorCode PCCreate_Jacobi(PC);
+EXTERN PetscErrorCode PCCreate_BJacobi(PC);
+EXTERN PetscErrorCode PCCreate_PBJacobi(PC);
+EXTERN PetscErrorCode PCCreate_ILU(PC);
+EXTERN PetscErrorCode PCCreate_None(PC);
+EXTERN PetscErrorCode PCCreate_LU(PC);
+EXTERN PetscErrorCode PCCreate_SOR(PC);
+EXTERN PetscErrorCode PCCreate_Shell(PC);
+EXTERN PetscErrorCode PCCreate_MG(PC);
+EXTERN PetscErrorCode PCCreate_Eisenstat(PC);
+EXTERN PetscErrorCode PCCreate_ICC(PC);
+EXTERN PetscErrorCode PCCreate_ASM(PC);
+EXTERN PetscErrorCode PCCreate_KSP(PC);
+EXTERN PetscErrorCode PCCreate_Composite(PC);
+EXTERN PetscErrorCode PCCreate_Redundant(PC);
+EXTERN PetscErrorCode PCCreate_NN(PC);
+EXTERN PetscErrorCode PCCreate_Cholesky(PC);
 #if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN int PCCreate_SPAI(PC);
+EXTERN PetscErrorCode PCCreate_SPAI(PC);
 #endif
 #if defined(PETSC_HAVE_RAMG)  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN int PCCreate_RAMG(PC);
+EXTERN PetscErrorCode PCCreate_RAMG(PC);
 #endif
 #if defined(PETSC_HAVE_SAMG)  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN int PCCreate_SAMG(PC);
+EXTERN PetscErrorCode PCCreate_SAMG(PC);
 #endif
-EXTERN int PCCreate_PetscESI(PC);
-EXTERN int PCCreate_ESI(PC);
-EXTERN int PCCreate_Mat(PC);
+EXTERN PetscErrorCode PCCreate_PetscESI(PC);
+EXTERN PetscErrorCode PCCreate_ESI(PC);
+EXTERN PetscErrorCode PCCreate_Mat(PC);
 #if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN int PCCreate_HYPRE(PC);
+EXTERN PetscErrorCode PCCreate_HYPRE(PC);
 #endif
 EXTERN_C_END
 
@@ -52,9 +52,9 @@ EXTERN_C_END
 
 .seealso: PCRegisterDynamic(), PCRegisterDestroy()
 @*/
-int PCRegisterAll(const char path[])
+PetscErrorCode PCRegisterAll(const char path[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PCRegisterAllCalled = PETSC_TRUE;

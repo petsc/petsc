@@ -20,6 +20,7 @@ File Description:
 -----------------
 
 *********************************bit_mask.c***********************************/
+#include "petsc.h"
 #include "const.h"
 #include "bit_mask.h"
 #include "error.h"
@@ -103,8 +104,7 @@ Output:
 Return: 
 Description: 
 *********************************bit_mask.c***********************************/
-int 
-ct_bits(register char *ptr, int n)
+PetscErrorCode ct_bits(register char *ptr, int n)
 {
   register int i, tmp=0;
 

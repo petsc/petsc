@@ -10,10 +10,10 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_MPIRowbs"
-int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
+PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
-  int ierr;
+  PetscErrorCode ierr;
 #if defined(PETSC_USE_LOG)
   PetscReal flop1 = BSlocal_flops();
 #endif
@@ -51,7 +51,7 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIRowbs"
-int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
+PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
 
@@ -87,11 +87,11 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_MPIRowbs"
-int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
+PetscErrorCode MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)submat->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscScalar  *ya,*xa,*xworka;
 
 #if defined(PETSC_USE_LOG)
@@ -140,11 +140,11 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatForwardSolve_MPIRowbs"
-int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
+PetscErrorCode MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)submat->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscScalar  *ya,*xa,*xworka;
 
 #if defined(PETSC_USE_LOG)
@@ -183,11 +183,11 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatBackwardSolve_MPIRowbs"
-int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
+PetscErrorCode MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat          submat = (Mat) mat->data;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)submat->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscScalar  *ya,*xworka;
 
 #if defined (PETSC_USE_LOG)
@@ -235,7 +235,7 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 double MLOG_flops;
 double MLOG_event_flops;
 double MLOG_time_stamp;
-int    MLOG_sequence_num;
+PetscErrorCode    MLOG_sequence_num;
 #if defined (MLOG_MAX_EVNTS) 
 MLOG_log_type MLOG_event_log[MLOG_MAX_EVNTS];
 MLOG_log_type MLOG_accum_log[MLOG_MAX_ACCUM];

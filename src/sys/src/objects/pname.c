@@ -20,9 +20,9 @@
 
 .seealso: PetscObjectGetName()
 @*/
-int PetscObjectSetName(PetscObject obj,const char name[])
+PetscErrorCode PetscObjectSetName(PetscObject obj,const char name[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -49,9 +49,9 @@ int PetscObjectSetName(PetscObject obj,const char name[])
 
 .seealso: PetscObjectGetName(), PetscObjectSetName()
 @*/
-int PetscObjectName(PetscObject obj)
+PetscErrorCode PetscObjectName(PetscObject obj)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   char       name[64];
   static int counter = 0;
 
@@ -85,9 +85,9 @@ int PetscObjectName(PetscObject obj)
 .seealso: PetscObjectSetName(), PetscViewerAMSOpen()
 
 @*/
-int PetscObjectPublish(PetscObject obj)
+PetscErrorCode PetscObjectPublish(PetscObject obj)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -99,9 +99,9 @@ int PetscObjectPublish(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectChangeTypeName"
-int PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
+PetscErrorCode PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectTakeAccess(obj);CHKERRQ(ierr);

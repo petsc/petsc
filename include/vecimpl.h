@@ -133,10 +133,10 @@ struct _p_Vec {
   PetscScalar *array_allocated;            
 
 /* Default obtain and release vectors; can be used by any implementation */
-EXTERN int VecDuplicateVecs_Default(Vec,int,Vec *[]);
-EXTERN int VecDestroyVecs_Default(const Vec [],int);
+EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,int,Vec *[]);
+EXTERN PetscErrorCode VecDestroyVecs_Default(const Vec [],int);
 
-EXTERN int VecLoadIntoVector_Default(PetscViewer,Vec);
+EXTERN PetscErrorCode VecLoadIntoVector_Default(PetscViewer,Vec);
 
 /* --------------------------------------------------------------------*/
 /*                                                                     */
@@ -219,14 +219,14 @@ struct _p_VecScatter {
   void       *fromdata,*todata;
 };
 
-EXTERN int VecStashCreate_Private(MPI_Comm,int,VecStash*);
-EXTERN int VecStashDestroy_Private(VecStash*);
-EXTERN int VecStashExpand_Private(VecStash*,int);
-EXTERN int VecStashScatterEnd_Private(VecStash*);
-EXTERN int VecStashSetInitialSize_Private(VecStash*,int);
-EXTERN int VecStashGetInfo_Private(VecStash*,int*,int*);
-EXTERN int VecStashScatterBegin_Private(VecStash*,int*);
-EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,PetscScalar**,int*);
+EXTERN PetscErrorCode VecStashCreate_Private(MPI_Comm,int,VecStash*);
+EXTERN PetscErrorCode VecStashDestroy_Private(VecStash*);
+EXTERN PetscErrorCode VecStashExpand_Private(VecStash*,int);
+EXTERN PetscErrorCode VecStashScatterEnd_Private(VecStash*);
+EXTERN PetscErrorCode VecStashSetInitialSize_Private(VecStash*,int);
+EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,int*,int*);
+EXTERN PetscErrorCode VecStashScatterBegin_Private(VecStash*,int*);
+EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,int*,int**,PetscScalar**,int*);
 
 /* 
    The following are implemented as macros to avoid the function
@@ -276,12 +276,12 @@ EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,PetscScalar**,int
   (stash)->n++; \
 }
 
-EXTERN int VecReciprocal_Default(Vec);
+EXTERN PetscErrorCode VecReciprocal_Default(Vec);
 
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
-EXTERN int VecMatlabEnginePut_Default(PetscObject,void*);
-EXTERN int VecMatlabEngineGet_Default(PetscObject,void*);
+EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
+EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 EXTERN_C_END
 #endif
 

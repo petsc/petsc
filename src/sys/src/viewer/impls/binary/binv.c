@@ -20,9 +20,10 @@ typedef struct  {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerGetSingleton_Binary" 
-int PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
+PetscErrorCode PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 {
-  int                rank,ierr;
+  int                rank;
+  PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data,*obinary;
 
   PetscFunctionBegin;
@@ -40,9 +41,10 @@ int PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerRestoreSingleton_Binary" 
-int PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
+PetscErrorCode PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 {
-  int           ierr,rank;
+  PetscErrorCode ierr;
+  PetscErrorCode rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
@@ -80,7 +82,7 @@ int PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer()
 @*/
-int PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
+PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -110,7 +112,7 @@ int PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetDescriptor()
 @*/
-int PetscViewerBinarySkipInfo(PetscViewer viewer)
+PetscErrorCode PetscViewerBinarySkipInfo(PetscViewer viewer)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -143,7 +145,7 @@ int PetscViewerBinarySkipInfo(PetscViewer viewer)
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetDescriptor()
 @*/
-int PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
+PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -154,10 +156,11 @@ int PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_Binary" 
-int PetscViewerDestroy_Binary(PetscViewer v)
+PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
-  int                ierr,rank;
+  PetscErrorCode     ierr;
+  int                rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
@@ -226,9 +229,9 @@ $    PETSC_FILE_WRONLY - open existing file for binary output
           VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
           PetscViewerBinaryGetInfoPointer(), PetscViewerFileType, PetscViewer
 @*/
-int PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer *binv)
+PetscErrorCode PetscViewerBinaryOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer *binv)
 {
-  int ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
@@ -257,9 +260,9 @@ $    PETSC_FILE_WRONLY - open existing file for binary output
 .seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerBinaryOpen()
 
 @*/
-int PetscViewerSetFileType(PetscViewer viewer,PetscViewerFileType type)
+PetscErrorCode PetscViewerSetFileType(PetscViewer viewer,PetscViewerFileType type)
 {
-  int ierr,(*f)(PetscViewer,PetscViewerFileType);
+  PetscErrorCode ierr,(*f)(PetscViewer,PetscViewerFileType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -273,7 +276,7 @@ int PetscViewerSetFileType(PetscViewer viewer,PetscViewerFileType type)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFileType_Binary" 
-int PetscViewerSetFileType_Binary(PetscViewer viewer,PetscViewerFileType type)
+PetscErrorCode PetscViewerSetFileType_Binary(PetscViewer viewer,PetscViewerFileType type)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
@@ -297,13 +300,14 @@ EXTERN_C_END
    Level: developer
 
 @*/
-int PetscViewerBinaryLoadInfo(PetscViewer viewer)
+PetscErrorCode PetscViewerBinaryLoadInfo(PetscViewer viewer)
 {
-  FILE       *file;
-  char       string[256],*first,*second,*final;
-  int        len,ierr;
-  PetscTruth flg;
-  PetscToken *token;  
+  FILE           *file;
+  char           string[256],*first,*second,*final;
+  size_t         len;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscToken     *token;  
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,"-load_ignore_info",&flg);CHKERRQ(ierr);
@@ -329,12 +333,12 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
       ierr = PetscStrncmp(first,"-mat_double",11,&wrongtype);CHKERRQ(ierr);
       if (wrongtype) {
-        SETERRQ(1,"Loading double number matrix with complex number code");
+        SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Loading double number matrix with complex number code");
       }
 #else
       ierr = PetscStrncmp(first,"-mat_complex",12,&wrongtype);CHKERRQ(ierr);
       if (wrongtype) {
-        SETERRQ(1,"Loading complex number matrix with double number code");
+        SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Loading complex number matrix with double number code");
       }
 #endif
 
@@ -356,9 +360,11 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFilename_Binary" 
-int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
+PetscErrorCode PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 {
-  int                 rank,ierr,len;
+  int                 rank;
+  PetscErrorCode      ierr;
+  size_t              len;
   PetscViewer_Binary  *vbinary = (PetscViewer_Binary*)viewer->data;
   const char          *fname;
   char                bname[PETSC_MAX_PATH_LEN],*gz;
@@ -489,9 +495,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Binary" 
-int PetscViewerCreate_Binary(PetscViewer v)
+PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
 {  
-  int                ierr;
+  PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary;
 
   PetscFunctionBegin;
@@ -556,10 +562,10 @@ $       XXXView(XXX object,PETSC_VIEWER_BINARY_(comm));
 @*/
 PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
 {
-  int         ierr;
-  PetscTruth  flg;
-  PetscViewer viewer;
-  char        fname[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscViewer    viewer;
+  char           fname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) {

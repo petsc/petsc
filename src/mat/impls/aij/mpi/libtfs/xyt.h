@@ -55,7 +55,7 @@ Return:
 Description: This function frees the storage associated with an xyt handle
 Usage: XYT_free(xyt_handle);
 **************************************xyt.h***********************************/
-extern int XYT_free(xyt_ADT xyt_handle);
+EXTERN PetscErrorCode XYT_free(xyt_ADT xyt_handle);
 
 
 /*************************************xyt.h************************************

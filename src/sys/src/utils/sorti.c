@@ -60,9 +60,9 @@ static int PetscSortInt_Private(int *v,int right)
 
 .seealso: PetscSortReal(), PetscSortIntWithPermutation()
 @*/
-int PetscSortInt(int n,int i[])
+PetscErrorCode PetscSortInt(int n,int i[])
 {
-  int ierr,j,k,tmp,ik;
+  PetscErrorCode ierr,j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -134,9 +134,9 @@ static int PetscSortIntWithArray_Private(int *v,int *V,int right)
 
 .seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt()
 @*/
-int PetscSortIntWithArray(int n,int i[],int I[])
+PetscErrorCode PetscSortIntWithArray(int n,int i[],int I[])
 {
-  int ierr,j,k,tmp,ik;
+  PetscErrorCode ierr,j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {

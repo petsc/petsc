@@ -7,14 +7,14 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNES_TR_KSPConverged_Private"
-int SNES_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES) ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   SNES_TR             *neP = (SNES_TR*)snes->data;
   Vec                 x;
   PetscReal           nrm;
-  int                 ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (snes->ksp_ewconv) {
@@ -195,7 +195,7 @@ static int SNESSolve_TR(SNES snes)
 #define __FUNCT__ "SNESSetUp_TR"
 static int SNESSetUp_TR(SNES snes)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   snes->nwork = 4;
@@ -209,7 +209,7 @@ static int SNESSetUp_TR(SNES snes)
 #define __FUNCT__ "SNESDestroy_TR"
 static int SNESDestroy_TR(SNES snes)
 {
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (snes->nwork) {
@@ -225,7 +225,7 @@ static int SNESDestroy_TR(SNES snes)
 static int SNESSetFromOptions_TR(SNES snes)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES trust region options for nonlinear equations");CHKERRQ(ierr);
@@ -246,7 +246,7 @@ static int SNESSetFromOptions_TR(SNES snes)
 static int SNESView_TR(SNES snes,PetscViewer viewer)
 {
   SNES_TR *tr = (SNES_TR *)snes->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -304,10 +304,10 @@ $  SNES_CONVERGED_ITERATING       - (otherwise)
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-int SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   SNES_TR *neP = (SNES_TR *)snes->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (fnorm != fnorm) {
@@ -356,10 +356,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_TR"
-int SNESCreate_TR(SNES snes)
+PetscErrorCode SNESCreate_TR(SNES snes)
 {
   SNES_TR *neP;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   snes->setup		= SNESSetUp_TR;

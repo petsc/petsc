@@ -46,15 +46,15 @@ static char starttime[256];
 .seealso: PetscGetInitialDate()
 
 @*/
-int PetscGetDate(char date[],int len)
+PetscErrorCode PetscGetDate(char date[],size_t len)
 {
   char           *str=0;
 #if defined (PARCH_win32)
   time_t         aclock;
-  int            ierr;
+  PetscErrorCode ierr;
 #else
   struct timeval tp;
-  int            ierr;
+  PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
@@ -73,9 +73,9 @@ int PetscGetDate(char date[],int len)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetInitialDate"
-int PetscSetInitialDate(void)
+PetscErrorCode PetscSetInitialDate(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscGetDate(starttime,256);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -106,9 +106,9 @@ int PetscSetInitialDate(void)
 .seealso: PetscGetDate()
 
 @*/
-int PetscGetInitialDate(char date[],int len)
+PetscErrorCode PetscGetInitialDate(char date[],size_t len)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(date,starttime,len);CHKERRQ(ierr);

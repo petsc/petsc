@@ -23,9 +23,10 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashCreate_Private"
-int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
+PetscErrorCode MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
 {
-  int        ierr,max,*opt,nopt;
+  PetscErrorCode ierr;
+  int max,*opt,nopt;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -78,9 +79,9 @@ int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashDestroy_Private"
-int MatStashDestroy_Private(MatStash *stash)
+PetscErrorCode MatStashDestroy_Private(MatStash *stash)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (stash->array) {
@@ -100,7 +101,7 @@ int MatStashDestroy_Private(MatStash *stash)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashScatterEnd_Private"
-int MatStashScatterEnd_Private(MatStash *stash)
+PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
 { 
   int         nsends=stash->nsends,ierr,bs2,oldnmax;
   MPI_Status  *send_status;
@@ -169,7 +170,7 @@ int MatStashScatterEnd_Private(MatStash *stash)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashGetInfo_Private"
-int MatStashGetInfo_Private(MatStash *stash,int *nstash,int *reallocs)
+PetscErrorCode MatStashGetInfo_Private(MatStash *stash,int *nstash,int *reallocs)
 {
   int bs2 = stash->bs*stash->bs;
 
@@ -193,7 +194,7 @@ int MatStashGetInfo_Private(MatStash *stash,int *nstash,int *reallocs)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashSetInitialSize_Private"
-int MatStashSetInitialSize_Private(MatStash *stash,int max)
+PetscErrorCode MatStashSetInitialSize_Private(MatStash *stash,int max)
 {
   PetscFunctionBegin;
   stash->umax = max;
@@ -258,9 +259,10 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesRow_Private"
-int MatStashValuesRow_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[])
+PetscErrorCode MatStashValuesRow_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[])
 {
-  int    ierr,i; 
+  PetscErrorCode ierr;
+  int i; 
 
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
@@ -291,9 +293,10 @@ int MatStashValuesRow_Private(MatStash *stash,int row,int n,const int idxn[],con
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesCol_Private"
-int MatStashValuesCol_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[],int stepval)
+PetscErrorCode MatStashValuesCol_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[],int stepval)
 {
-  int    ierr,i; 
+  PetscErrorCode ierr;
+  int i; 
 
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
@@ -329,9 +332,10 @@ int MatStashValuesCol_Private(MatStash *stash,int row,int n,const int idxn[],con
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesRowBlocked_Private"
-int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[],int rmax,int cmax,int idx)
+PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[],int rmax,int cmax,int idx)
 {
-  int             ierr,i,j,k,bs2,bs=stash->bs; 
+  PetscErrorCode ierr;
+  int i,j,k,bs2,bs=stash->bs; 
   const MatScalar *vals;
   MatScalar       *array;
 
@@ -378,9 +382,10 @@ int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,const int idx
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesColBlocked_Private"
-int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[],int rmax,int cmax,int idx)
+PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,const int idxn[],const MatScalar values[],int rmax,int cmax,int idx)
 {
-  int             ierr,i,j,k,bs2,bs=stash->bs; 
+  PetscErrorCode ierr;
+  int i,j,k,bs2,bs=stash->bs; 
   const MatScalar *vals;
   MatScalar       *array;
 
@@ -423,7 +428,7 @@ int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,const int idx
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashScatterBegin_Private"
-int MatStashScatterBegin_Private(MatStash *stash,int *owners)
+PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,int *owners)
 { 
   int         *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
   int         size=stash->size,*nprocs,nsends,nreceives;
@@ -541,7 +546,7 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashScatterGetMesg_Private"
-int MatStashScatterGetMesg_Private(MatStash *stash,int *nvals,int **rows,int** cols,MatScalar **vals,int *flg)
+PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,int *nvals,int **rows,int** cols,MatScalar **vals,int *flg)
 {
   int         i,ierr,*flg_v,i1,i2,*rindices,bs2;
   MPI_Status  recv_status;

@@ -15,7 +15,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_Matlab"
-int DAView_Matlab(DA da,PetscViewer viewer)
+PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
 {
   int            rank,ierr;
   int            dim,m,n,p,dof,swidth;
@@ -49,10 +49,11 @@ int DAView_Matlab(DA da,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_Binary"
-int DAView_Binary(DA da,PetscViewer viewer)
+PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 {
   int            rank,ierr;
-  int            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
+  int            i,dim,m,n,p,dof,swidth,M,N,P;
+  size_t         j,len;
   DAStencilType  stencil;
   DAPeriodicType periodic;
   MPI_Comm       comm;
@@ -67,14 +68,14 @@ int DAView_Binary(DA da,PetscViewer viewer)
 
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file) {
-      char           fieldname[256];
+      char fieldname[PETSC_MAX_PATH_LEN];
 
       fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
       for (i=0; i<dof; i++) {
         if (da->fieldname[i]) {
-          ierr = PetscStrncpy(fieldname,da->fieldname[i],256);CHKERRQ(ierr);
+          ierr = PetscStrncpy(fieldname,da->fieldname[i],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
           ierr = PetscStrlen(fieldname,&len);CHKERRQ(ierr);
-          len  = PetscMin(256,len);CHKERRQ(ierr);
+          len  = PetscMin(PETSC_MAX_PATH_LEN,len);CHKERRQ(ierr);
           for (j=0; j<len; j++) {
             if (fieldname[j] == ' ') fieldname[j] = '_';
           }
@@ -176,9 +177,10 @@ int DAView_Binary(DA da,PetscViewer viewer)
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
           DAGetGhostCorners()
 @*/
-int DAView(DA da,PetscViewer viewer)
+PetscErrorCode DAView(DA da,PetscViewer viewer)
 {
-  int        ierr,i,dof = da->w;
+  PetscErrorCode ierr;
+  int i,dof = da->w;
   PetscTruth iascii,fieldsnamed = PETSC_FALSE,isbinary;
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth ismatlab;
@@ -254,7 +256,7 @@ int DAView(DA da,PetscViewer viewer)
 
 .seealso: DAView(), DAGetCorners(), DAGetLocalInfo()
 @*/
-int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,DAStencilType *st)
+PetscErrorCode DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,DAStencilType *st)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -291,7 +293,7 @@ int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,
 
 .seealso: DAGetInfo(), DAGetCorners()
 @*/
-int DAGetLocalInfo(DA da,DALocalInfo *info)
+PetscErrorCode DAGetLocalInfo(DA da,DALocalInfo *info)
 {
   int w;
 

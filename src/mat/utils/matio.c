@@ -11,7 +11,7 @@ static int MatLoadPrintHelp_Private(Mat A)
 {
   static PetscTruth called = PETSC_FALSE; 
   MPI_Comm          comm = A->comm;
-  int               ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
@@ -102,7 +102,7 @@ done.
 
    In addition, PETSc automatically does the byte swapping for
 machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
-linux, nt and the paragon; thus if you write your own binary
+linux, Windows and the paragon; thus if you write your own binary
 read/write routines you have to swap the bytes; see PetscReadBinary()
 and PetscWriteBinary() to see how this may be done.
 
@@ -111,10 +111,10 @@ and PetscWriteBinary() to see how this may be done.
 .seealso: PetscViewerBinaryOpen(), MatView(), VecLoad()
 
  @*/  
-int MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
+PetscErrorCode MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
 {
   Mat         factory;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  isbinary,flg;
   MPI_Comm    comm;
   int         (*r)(PetscViewer,const MatType,Mat*);

@@ -9,7 +9,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering"
-int MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
@@ -17,7 +17,7 @@ int MatSolveTranspose_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_2_NaturalOrdering"
-int MatSolveTranspose_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
@@ -25,7 +25,7 @@ int MatSolveTranspose_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_3_NaturalOrdering"
-int MatSolveTranspose_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");  
@@ -33,7 +33,7 @@ int MatSolveTranspose_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_4_NaturalOrdering"
-int MatSolveTranspose_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
@@ -41,7 +41,7 @@ int MatSolveTranspose_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_5_NaturalOrdering"
-int MatSolveTranspose_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
@@ -49,7 +49,7 @@ int MatSolveTranspose_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_6_NaturalOrdering"
-int MatSolveTranspose_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
@@ -57,7 +57,7 @@ int MatSolveTranspose_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering"
-int MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
@@ -65,7 +65,7 @@ int MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_1"
-int MatSolveTranspose_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
@@ -73,7 +73,7 @@ int MatSolveTranspose_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_2"
-int MatSolveTranspose_SeqSBAIJ_2(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_2(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
@@ -81,7 +81,7 @@ int MatSolveTranspose_SeqSBAIJ_2(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_3"
-int MatSolveTranspose_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
@@ -89,7 +89,7 @@ int MatSolveTranspose_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_4"
-int MatSolveTranspose_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve()."); 
@@ -97,7 +97,7 @@ int MatSolveTranspose_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_5"
-int MatSolveTranspose_SeqSBAIJ_5(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_5(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
@@ -105,7 +105,7 @@ int MatSolveTranspose_SeqSBAIJ_5(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_6"
-int MatSolveTranspose_SeqSBAIJ_6(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_6(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
@@ -113,7 +113,7 @@ int MatSolveTranspose_SeqSBAIJ_6(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqSBAIJ_7"
-int MatSolveTranspose_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolveTranspose_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not needed for SBAIJ format. Call MatSolve().");
@@ -121,7 +121,7 @@ int MatSolveTranspose_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_N"
-int MatSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
@@ -188,7 +188,7 @@ int MatSolve_SeqSBAIJ_N(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_N_NaturalOrdering"
-int MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx) 
+PetscErrorCode MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx) 
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -248,7 +248,7 @@ int MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_7"
-int MatSolve_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
@@ -349,7 +349,7 @@ int MatSolve_SeqSBAIJ_7(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_7_NaturalOrdering"
-int MatSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx) 
+PetscErrorCode MatSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx) 
 { 
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -427,7 +427,7 @@ int MatSolve_SeqSBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_6"
-int MatSolve_SeqSBAIJ_6(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_6(Mat A,Vec bb,Vec xx)
 {  
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
@@ -523,7 +523,7 @@ int MatSolve_SeqSBAIJ_6(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_6_NaturalOrdering"
-int MatSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -598,7 +598,7 @@ int MatSolve_SeqSBAIJ_6_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_5"
-int MatSolve_SeqSBAIJ_5(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_5(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
@@ -690,7 +690,7 @@ int MatSolve_SeqSBAIJ_5(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_5_NaturalOrdering"
-int MatSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -762,7 +762,7 @@ int MatSolve_SeqSBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_4"
-int MatSolve_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
@@ -853,7 +853,7 @@ int MatSolve_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_4_NaturalOrdering"
-int MatSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -922,7 +922,7 @@ int MatSolve_SeqSBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_3"
-int MatSolve_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   IS              isrow=a->row;
@@ -1008,7 +1008,7 @@ int MatSolve_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_3_NaturalOrdering"
-int MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1074,7 +1074,7 @@ int MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_2"
-int MatSolve_SeqSBAIJ_2(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_2(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ *)A->data;
   IS              isrow=a->row;
@@ -1144,7 +1144,7 @@ int MatSolve_SeqSBAIJ_2(Mat A,Vec bb,Vec xx)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_2_NaturalOrdering"
-int MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ*)A->data;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j;
@@ -1203,7 +1203,7 @@ int MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1"
-int MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ *)A->data;
   IS              isrow=a->row;
@@ -1252,10 +1252,10 @@ int MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolves_SeqSBAIJ_1"
-int MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
+PetscErrorCode MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (a->bs == 1) {
@@ -1317,7 +1317,7 @@ int MatSolves_SeqSBAIJ_1(Mat A,Vecs bb,Vecs xx)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_1_NaturalOrdering"
-int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
+PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *)A->data;
   int             mbs=a->mbs,*ai=a->i,*aj=a->j,ierr;
@@ -1359,7 +1359,7 @@ int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 /* Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ"
-int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B) 
+PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B) 
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;  
   int         *rip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;

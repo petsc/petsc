@@ -20,8 +20,9 @@ StageLog _stageLog = 0;
 .keywords: log, stage, destroy
 .seealso: StageLogCreate()
 @*/
-int StageInfoDestroy(StageInfo *stageInfo) {
-  int ierr;
+PetscErrorCode StageInfoDestroy(StageInfo *stageInfo)
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(stageInfo->name);CHKERRQ(ierr);
@@ -45,9 +46,10 @@ int StageInfoDestroy(StageInfo *stageInfo) {
 .keywords: log, stage, destroy
 .seealso: StageLogCreate()
 @*/
-int StageLogDestroy(StageLog stageLog) {
+PetscErrorCode StageLogDestroy(StageLog stageLog) 
+{
   int stage;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = StackDestroy(stageLog->stack);CHKERRQ(ierr);
@@ -80,11 +82,12 @@ int StageLogDestroy(StageLog stageLog) {
 .keywords: log, stage, register
 .seealso: StageLogPush(), StageLogPop(), StageLogCreate()
 @*/
-int StageLogRegister(StageLog stageLog, const char sname[], int *stage) {
+PetscErrorCode StageLogRegister(StageLog stageLog, const char sname[], int *stage)
+{
   StageInfo *stageInfo;
   char      *str;
   int        s;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(sname,2);
@@ -153,11 +156,11 @@ int StageLogRegister(StageLog stageLog, const char sname[], int *stage) {
 .keywords: log, push, stage
 .seealso: StageLogPop(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogPush(StageLog stageLog, int stage)
+PetscErrorCode StageLogPush(StageLog stageLog, int stage)
 {
   int        curStage = 0;
   PetscTruth empty;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -225,11 +228,11 @@ int StageLogPush(StageLog stageLog, int stage)
 .keywords: log, pop, stage
 .seealso: StageLogPush(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogPop(StageLog stageLog)
+PetscErrorCode StageLogPop(StageLog stageLog)
 {
   int        curStage;
   PetscTruth empty;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Record flops/time of current stage */
@@ -280,9 +283,10 @@ int StageLogPop(StageLog stageLog)
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-int StageLogGetCurrent(StageLog stageLog, int *stage) {
+PetscErrorCode StageLogGetCurrent(StageLog stageLog, int *stage) 
+{
   PetscTruth empty;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
@@ -317,7 +321,7 @@ int StageLogGetCurrent(StageLog stageLog, int *stage) {
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-int StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
+PetscErrorCode StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(classLog,2);
@@ -343,7 +347,8 @@ int StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-int StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog) {
+PetscErrorCode StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog) 
+{
   PetscFunctionBegin;
   PetscValidPointer(eventLog,2);
   *eventLog = stageLog->eventLog;
@@ -369,7 +374,7 @@ int StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog) {
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-int StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog)
+PetscErrorCode StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(classLog,2);
@@ -399,7 +404,7 @@ int StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog
 .keywords: log, stage
 .seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
 @*/
-int StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog)
+PetscErrorCode StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(eventLog,3);
@@ -427,7 +432,8 @@ int StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog
 .keywords: log, active, stage
 .seealso: StageLogGetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogSetActive(StageLog stageLog, int stage, PetscTruth isActive) {
+PetscErrorCode StageLogSetActive(StageLog stageLog, int stage, PetscTruth isActive) 
+{
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
@@ -455,7 +461,7 @@ int StageLogSetActive(StageLog stageLog, int stage, PetscTruth isActive) {
 .keywords: log, visible, stage
 .seealso: StageLogSetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogGetActive(StageLog stageLog, int stage, PetscTruth *isActive)
+PetscErrorCode StageLogGetActive(StageLog stageLog, int stage, PetscTruth *isActive)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -486,7 +492,8 @@ int StageLogGetActive(StageLog stageLog, int stage, PetscTruth *isActive)
 .keywords: log, visible, stage
 .seealso: StageLogGetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogSetVisible(StageLog stageLog, int stage, PetscTruth isVisible) {
+PetscErrorCode StageLogSetVisible(StageLog stageLog, int stage, PetscTruth isVisible) 
+{
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
@@ -517,7 +524,7 @@ int StageLogSetVisible(StageLog stageLog, int stage, PetscTruth isVisible) {
 .keywords: log, visible, stage
 .seealso: StageLogSetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible)
+PetscErrorCode StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -547,11 +554,11 @@ int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible)
 .keywords: log, stage
 .seealso: StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
 @*/
-int StageLogGetStage(StageLog stageLog, const char name[], int *stage)
+PetscErrorCode StageLogGetStage(StageLog stageLog, const char name[], int *stage)
 {
   PetscTruth match;
   int        s;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -581,9 +588,10 @@ int StageLogGetStage(StageLog stageLog, const char name[], int *stage)
 .keywords: log, stage, create
 .seealso: StageLogCreate()
 @*/
-int StageLogCreate(StageLog *stageLog) {
+PetscErrorCode StageLogCreate(StageLog *stageLog) 
+{
   StageLog l;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _StageLog, &l);CHKERRQ(ierr);

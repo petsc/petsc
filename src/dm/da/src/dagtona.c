@@ -29,9 +29,9 @@
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
+PetscErrorCode DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 {
-  int ierr,N;
+  PetscErrorCode ierr,N;
   IS  from,to;
   Vec tmplocal,global;
   AO  ao;
@@ -77,9 +77,9 @@ int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
 @*/
-int DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
+PetscErrorCode DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
 {
-  int ierr,M,m = da->Nlocal,start;
+  PetscErrorCode ierr,M,m = da->Nlocal,start;
   IS  from,to;
   Vec tmplocal,global;
   AO  ao;

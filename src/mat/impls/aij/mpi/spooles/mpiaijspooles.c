@@ -8,8 +8,8 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_MPIAIJSpooles"
-int MatAssemblyEnd_MPIAIJSpooles(Mat A,MatAssemblyType mode) {
-  int         ierr;
+PetscErrorCode MatAssemblyEnd_MPIAIJSpooles(Mat A,MatAssemblyType mode) {
+  PetscErrorCode ierr;
   Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
 
   PetscFunctionBegin;
@@ -22,11 +22,11 @@ int MatAssemblyEnd_MPIAIJSpooles(Mat A,MatAssemblyType mode) {
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJSpooles"
-int MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat_Spooles *lu;
   Mat         B;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;	
 

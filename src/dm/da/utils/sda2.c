@@ -5,7 +5,7 @@
 
 #include "petscda.h"    /*I   "petscda.h"   I*/
 
-extern int DALocalToLocalCreate(DA);
+EXTERN PetscErrorCode DALocalToLocalCreate(DA);
 
 struct _SDA {
   DA  da;
@@ -14,9 +14,9 @@ struct _SDA {
 
 #undef __FUNCT__  
 #define __FUNCT__ "SDAArrayView"
-int SDAArrayView(SDA da,PetscScalar *values,PetscViewer v)
+PetscErrorCode SDAArrayView(SDA da,PetscScalar *values,PetscViewer v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecPlaceArray(da->lvec,values);CHKERRQ(ierr);
@@ -54,9 +54,9 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 
 .seealso: SDADestroy(), SDACreate2d(), SDACreate3d()
 @*/
-int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA *sda)
+PetscErrorCode SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA *sda)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   DA            da;
   char          **args;
   int           argc = 0;
@@ -120,10 +120,10 @@ $           the x and y coordinates, or PETSC_NULL
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
-int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
+PetscErrorCode SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M,int N,int m,int n,int w,int s,int *lx,int *ly,SDA *sda)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   DA            da;
   char          **args;
   int           argc = 0;
@@ -187,10 +187,10 @@ $           the x, y, and z coordinates, or PETSC_NUL
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
-int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
+PetscErrorCode SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
                 int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,SDA *sda)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   DA            da;
   Vec           tmp;
   char          **args;
@@ -237,9 +237,9 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
 
 .seealso: SDACreate1d(), SDACreate2d(), SDACreate3d()
 @*/
-int SDADestroy(SDA sda)
+PetscErrorCode SDADestroy(SDA sda)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecDestroy(sda->gvec);CHKERRQ(ierr);
@@ -271,9 +271,9 @@ int SDADestroy(SDA sda)
 
 .seealso: SDALocalToLocalEnd(), SDACreate2d()
 @*/
-int SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
+PetscErrorCode SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 {
-  int ierr;
+  PetscErrorCode ierr;
   DA  da = sda->da;
   Vec gvec = sda->gvec,lvec = sda->lvec;
 
@@ -305,9 +305,9 @@ int SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 
 .seealso: SDALocalToLocalBegin(), SDACreate2d()
 @*/
-int SDALocalToLocalEnd(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
+PetscErrorCode SDALocalToLocalEnd(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 {
-  int ierr;
+  PetscErrorCode ierr;
   DA  da = sda->da;
   Vec gvec = sda->gvec,lvec = sda->lvec;
 
@@ -342,9 +342,9 @@ $    n and p are optional (used for 2D and 3D problems)
 
 .seealso: SDAGetGhostCorners()
 @*/
-int SDAGetCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
+PetscErrorCode SDAGetCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DAGetCorners(da->da,x,y,z,m,n,p);CHKERRQ(ierr);
@@ -376,9 +376,9 @@ $    n and p are optional (used for 2D and 3D problems)
 
 .seealso: SDAGetCorners()
 @*/
-int SDAGetGhostCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
+PetscErrorCode SDAGetGhostCorners(SDA da,int *x,int *y,int *z,int *m,int *n,int *p)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DAGetGhostCorners(da->da,x,y,z,m,n,p);CHKERRQ(ierr);

@@ -18,7 +18,7 @@ T*/
 
 #undef __FUNCT__
 #define __FUNCT__ "myfunction"
-int myfunction(void *ctx,int n,PetscScalar *xy,PetscScalar *u)
+PetscErrorCode myfunction(void *ctx,int n,PetscScalar *xy,PetscScalar *u)
 {
   int i;
 
@@ -36,7 +36,8 @@ int main(int argc,char **argv)
 {
   Vec        u,xy;
   DA         da;
-  int        ierr, m = 10, n = 10, dof = 2;
+  PetscErrorCode ierr;
+  int  m = 10, n = 10, dof = 2;
   PF         pf;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

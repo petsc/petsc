@@ -7,7 +7,8 @@ static char help[] = "Tests ISStrideToGeneral().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        ierr,step = 2;
+  int        ierr;
+  int        step = 2;
   IS         is;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

@@ -87,7 +87,7 @@ EXTERN_C_END
 /* These are not extern C because they are passed into non-extern C user level functions */
 static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
 
   (*f2)(ctx,&x,&y,&w,&rtol,&atol,&dtol,&m,&ierr);CHKERRQ(ierr);
   return 0;
@@ -95,21 +95,21 @@ static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscRe
 
 static int ourshellapply(void *ctx,Vec x,Vec y)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f1)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static int ourshellapplytranspose(void *ctx,Vec x,Vec y)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f3)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static int ourshellsetup(void *ctx)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
 
   (*f9)(ctx,&ierr);CHKERRQ(ierr);
   return 0;
@@ -118,7 +118,7 @@ static int ourshellsetup(void *ctx)
 typedef int (*MVVVV)(Mat,Vec,Vec,Vec);
 static int ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&b,&x,&R,&ierr);
   return 0;
 }

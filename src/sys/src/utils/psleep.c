@@ -31,7 +31,7 @@
    Concepts: waiting
 
 @*/
-int PetscSleep(int s)
+PetscErrorCode PetscSleep(int s)
 {
   PetscFunctionBegin;
   if (s < 0) getc(stdin);

@@ -27,10 +27,10 @@ EXTERN_C_BEGIN
 #include "read_mm_matrix.h"
 EXTERN_C_END
 
-EXTERN int ConvertMatToMatrix(MPI_Comm,Mat,Mat,matrix**);
-EXTERN int ConvertMatrixToMat(MPI_Comm,matrix *,Mat *);
-EXTERN int ConvertVectorToVec(MPI_Comm,vector *v,Vec *Pv);
-EXTERN int MM_to_PETSC(char *,char *,char *);
+EXTERN PetscErrorCode ConvertMatToMatrix(MPI_Comm,Mat,Mat,matrix**);
+EXTERN PetscErrorCode ConvertMatrixToMat(MPI_Comm,matrix *,Mat *);
+EXTERN PetscErrorCode ConvertVectorToVec(MPI_Comm,vector *v,Vec *Pv);
+EXTERN PetscErrorCode MM_to_PETSC(char *,char *,char *);
 
 typedef struct {
 
@@ -59,7 +59,7 @@ typedef struct {
 static int PCSetUp_SPAI(PC pc)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
-  int      ierr;
+  PetscErrorCode ierr;
   Mat      AT;
 
   PetscFunctionBegin;
@@ -120,7 +120,7 @@ static int PCSetUp_SPAI(PC pc)
 static int PCApply_SPAI(PC pc,Vec xx,Vec y)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Now using PETSc's multiply */
@@ -134,7 +134,7 @@ static int PCApply_SPAI(PC pc,Vec xx,Vec y)
 #define __FUNCT__ "PCDestroy_SPAI"
 static int PCDestroy_SPAI(PC pc)
 {
-  int     ierr;
+  PetscErrorCode ierr;
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
@@ -151,7 +151,7 @@ static int PCDestroy_SPAI(PC pc)
 static int PCView_SPAI(PC pc,PetscViewer viewer)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -174,7 +174,7 @@ static int PCView_SPAI(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetEpsilon_SPAI"
-int PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
+PetscErrorCode PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -188,7 +188,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetNBSteps_SPAI"
-int PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
+PetscErrorCode PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -203,7 +203,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMax_SPAI"
-int PCSPAISetMax_SPAI(PC pc,int max1)
+PetscErrorCode PCSPAISetMax_SPAI(PC pc,int max1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -217,7 +217,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMaxNew_SPAI"
-int PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
+PetscErrorCode PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -231,7 +231,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetBlockSize_SPAI"
-int PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
+PetscErrorCode PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -245,7 +245,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetCacheSize_SPAI"
-int PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
+PetscErrorCode PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -259,7 +259,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetVerbose_SPAI"
-int PCSPAISetVerbose_SPAI(PC pc,int verbose)
+PetscErrorCode PCSPAISetVerbose_SPAI(PC pc,int verbose)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -273,7 +273,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetSp_SPAI"
-int PCSPAISetSp_SPAI(PC pc,int sp)
+PetscErrorCode PCSPAISetSp_SPAI(PC pc,int sp)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
@@ -305,9 +305,9 @@ EXTERN_C_END
 
 .seealso: PCSPAI, PCSetType()
   @*/
-int PCSPAISetEpsilon(PC pc,double epsilon1)
+PetscErrorCode PCSPAISetEpsilon(PC pc,double epsilon1)
 {
-  int ierr,(*f)(PC,double);
+  PetscErrorCode ierr,(*f)(PC,double);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetEpsilon_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -339,9 +339,9 @@ int PCSPAISetEpsilon(PC pc,double epsilon1)
 
 .seealso: PCSPAI, PCSetType(), PCSPAISetMaxNew()
 @*/
-int PCSPAISetNBSteps(PC pc,int nbsteps1)
+PetscErrorCode PCSPAISetNBSteps(PC pc,int nbsteps1)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetNBSteps_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -367,9 +367,9 @@ int PCSPAISetNBSteps(PC pc,int nbsteps1)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-int PCSPAISetMax(PC pc,int max1)
+PetscErrorCode PCSPAISetMax(PC pc,int max1)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMax_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -394,9 +394,9 @@ int PCSPAISetMax(PC pc,int max1)
 
 .seealso: PCSPAI, PCSetType(), PCSPAISetNBSteps()
 @*/
-int PCSPAISetMaxNew(PC pc,int maxnew1)
+PetscErrorCode PCSPAISetMaxNew(PC pc,int maxnew1)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetMaxNew_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -438,9 +438,9 @@ int PCSPAISetMaxNew(PC pc,int maxnew1)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-int PCSPAISetBlockSize(PC pc,int block_size1)
+PetscErrorCode PCSPAISetBlockSize(PC pc,int block_size1)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetBlockSize_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -469,9 +469,9 @@ int PCSPAISetBlockSize(PC pc,int block_size1)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-int PCSPAISetCacheSize(PC pc,int cache_size)
+PetscErrorCode PCSPAISetCacheSize(PC pc,int cache_size)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetCacheSize_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -497,9 +497,9 @@ int PCSPAISetCacheSize(PC pc,int cache_size)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-int PCSPAISetVerbose(PC pc,int verbose)
+PetscErrorCode PCSPAISetVerbose(PC pc,int verbose)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetVerbose_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -531,9 +531,9 @@ int PCSPAISetVerbose(PC pc,int verbose)
 
 .seealso: PCSPAI, PCSetType()
 @*/
-int PCSPAISetSp(PC pc,int sp)
+PetscErrorCode PCSPAISetSp(PC pc,int sp)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSPAISetSp_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -551,7 +551,8 @@ int PCSPAISetSp(PC pc,int sp)
 static int PCSetFromOptions_SPAI(PC pc)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
-  int        ierr,nbsteps1,max1,maxnew1,block_size1,cache_size,verbose,sp;
+  PetscErrorCode ierr;
+  int nbsteps1,max1,maxnew1,block_size1,cache_size,verbose,sp;
   double     epsilon1;
   PetscTruth flg;
 
@@ -624,10 +625,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_SPAI"
-int PCCreate_SPAI(PC pc)
+PetscErrorCode PCCreate_SPAI(PC pc)
 {
   PC_SPAI *ispai;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr               = PetscNew(PC_SPAI,&ispai);CHKERRQ(ierr);
@@ -688,14 +689,14 @@ EXTERN_C_END
 */
 #undef __FUNCT__  
 #define __FUNCT__ "ConvertMatToMatrix"
-int ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
+PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 {
   matrix                  *M;
   int                     i,j,col;
   int                     row_indx;
   int                     len,pe,local_indx,start_indx;
   int                     *mapping;
-  int                     ierr;
+  PetscErrorCode ierr;
   const int               *cols;
   const double            *vals;
   int                     *num_ptr,n,mnl,nnl,rank,size,nz,rstart,rend;
@@ -861,10 +862,10 @@ int ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "ConvertMatrixToMat"
-int ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
+PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
 {
   int         size,rank;
-  int         ierr;
+  PetscErrorCode ierr;
   int         m,n,M,N;
   int         d_nz,o_nz;
   int         *d_nnz,*o_nnz;
@@ -926,7 +927,7 @@ int ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "ConvertVectorToVec"
-int ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
+PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
 {
   int size,rank,ierr,m,M,i,*mnls,*start_indices,*global_indices;
   
@@ -981,12 +982,12 @@ int ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MM_to_PETSC"
-int MM_to_PETSC(char *f0,char *f1,char *f2)
+PetscErrorCode MM_to_PETSC(char *f0,char *f1,char *f2)
 {
   Mat         A_PETSC;          /* matrix */
   Vec         b_PETSC;          /* RHS */
   PetscViewer fd;               /* viewer */
-  int         ierr;
+  PetscErrorCode ierr;
   matrix      *A_spai;
   vector      *b_spai;
 

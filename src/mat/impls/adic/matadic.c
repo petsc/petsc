@@ -22,10 +22,10 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_DAAD"
-int MatAssemblyEnd_DAAD(Mat A,MatAssemblyType atype)
+PetscErrorCode MatAssemblyEnd_DAAD(Mat A,MatAssemblyType atype)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
-  int      ierr;
+  PetscErrorCode ierr;
   Vec      u;
 
   PetscFunctionBegin;
@@ -40,11 +40,11 @@ int MatAssemblyEnd_DAAD(Mat A,MatAssemblyType atype)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_DAAD"
-int MatMult_DAAD(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMult_DAAD(Mat A,Vec xx,Vec yy)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
   Vec      localxx;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(a->da,&localxx);CHKERRQ(ierr);
@@ -59,10 +59,11 @@ int MatMult_DAAD(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_DAAD"
-int MatGetDiagonal_DAAD(Mat A,Vec dd)
+PetscErrorCode MatGetDiagonal_DAAD(Mat A,Vec dd)
 {
   Mat_DAAD      *a = (Mat_DAAD*)A->data;
-  int           ierr,j,nI,gI,gtdof;
+  PetscErrorCode ierr;
+  int j,nI,gI,gtdof;
   PetscScalar   *avu,*ad_vustart,ad_f[2],*d;
   DALocalInfo   info;
   MatStencil    stencil;
@@ -112,10 +113,11 @@ int MatGetDiagonal_DAAD(Mat A,Vec dd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_DAAD"
-int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
+PetscErrorCode MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
   Mat_DAAD      *a = (Mat_DAAD*)A->data;
-  int           ierr,j,gtdof,nI,gI;
+  PetscErrorCode ierr;
+  int j,gtdof,nI,gI;
   PetscScalar   *avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*d,*b;
   Vec           localxx,dd;
   DALocalInfo   info;
@@ -218,10 +220,10 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_DAAD"
-int MatDestroy_DAAD(Mat A)
+PetscErrorCode MatDestroy_DAAD(Mat A)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DADestroy(a->da);CHKERRQ(ierr);
@@ -324,9 +326,9 @@ static struct _MatOps MatOps_Values = {0,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetBase_AD"
-int MatSNESMFSetBase_AD(Mat J,Vec U)
+PetscErrorCode MatSNESMFSetBase_AD(Mat J,Vec U)
 {
-  int      ierr;
+  PetscErrorCode ierr;
   Mat_DAAD *a = (Mat_DAAD*)J->data;
 
   PetscFunctionBegin;
@@ -340,10 +342,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetDA_AD"
-int MatDAADSetDA_AD(Mat A,DA da)
+PetscErrorCode MatDAADSetDA_AD(Mat A,DA da)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
-  int      ierr,nc,nx,ny,nz,Nx,Ny,Nz;
+  PetscErrorCode ierr;
+  int nc,nx,ny,nz,Nx,Ny,Nz;
 
   PetscFunctionBegin;
   a->da = da;
@@ -360,7 +363,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetSNES_AD"
-int MatDAADSetSNES_AD(Mat A,SNES snes)
+PetscErrorCode MatDAADSetSNES_AD(Mat A,SNES snes)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
 
@@ -373,7 +376,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetCtx_AD"
-int MatDAADSetCtx_AD(Mat A,void *ctx)
+PetscErrorCode MatDAADSetCtx_AD(Mat A,void *ctx)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
 
@@ -395,10 +398,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_DAAD"
-int MatCreate_DAAD(Mat B)
+PetscErrorCode MatCreate_DAAD(Mat B)
 {
   Mat_DAAD *b;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr    = PetscNew(Mat_DAAD,&b);CHKERRQ(ierr);
@@ -435,9 +438,9 @@ EXTERN_C_END
 .seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD()
 
 @*/
-int MatDAADSetDA(Mat A,DA da)
+PetscErrorCode MatDAADSetDA(Mat A,DA da)
 {
-  int      ierr,(*f)(Mat,void*);
+  PetscErrorCode ierr,(*f)(Mat,void*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -465,9 +468,9 @@ int MatDAADSetDA(Mat A,DA da)
 .seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD(), MatDAADSetDA()
 
 @*/
-int MatDAADSetSNES(Mat A,SNES snes)
+PetscErrorCode MatDAADSetSNES(Mat A,SNES snes)
 {
-  int      ierr,(*f)(Mat,void*);
+  PetscErrorCode ierr,(*f)(Mat,void*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -495,9 +498,9 @@ int MatDAADSetSNES(Mat A,SNES snes)
 .seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD(), MatDAADSetDA()
 
 @*/
-int MatDAADSetCtx(Mat A,void *ctx)
+PetscErrorCode MatDAADSetCtx(Mat A,void *ctx)
 {
-  int      ierr,(*f)(Mat,void*);
+  PetscErrorCode ierr,(*f)(Mat,void*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -527,9 +530,9 @@ int MatDAADSetCtx(Mat A,void *ctx)
 .seealso: MatCreate(), DASetLocalAdicMFFunction()
 
 @*/
-int MatCreateDAAD(DA da,Mat *A)
+PetscErrorCode MatCreateDAAD(DA da,Mat *A)
 {
-  int      ierr;
+  PetscErrorCode ierr;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -542,9 +545,9 @@ int MatCreateDAAD(DA da,Mat *A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRegisterDAAD"
-int MatRegisterDAAD(void)
+PetscErrorCode MatRegisterDAAD(void)
 { 
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MatRegisterDynamic(MATDAAD,PETSC_NULL,"MatCreate_DAAD",MatCreate_DAAD);CHKERRQ(ierr);
   PetscFunctionReturn(0);

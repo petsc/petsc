@@ -9,7 +9,7 @@
 PetscLogDouble nt_time(void) 
 {
   static PetscTruth     flag = PETSC_TRUE;
-  int                   ierr;
+  PetscErrorCode ierr;
 
   static LARGE_INTEGER  StartTime,PerfFreq,CurTime; 
   static PetscLogDouble SecInTick=0.0;

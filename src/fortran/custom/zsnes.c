@@ -120,56 +120,56 @@ static void (PETSC_STDCALL *f74)(SNES*,void *,Vec*,PetscTruth*,int*);
 EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-int OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal*ynorm,PetscReal*gnorm,int *flag)
+PetscErrorCode OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal*ynorm,PetscReal*gnorm,int *flag)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f73)(&snes,(void*)&ctx,&x,&f,&g,&y,&w,&fnorm,ynorm,gnorm,flag,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
-int OurSNESLineSearchCheck(SNES snes,void *checkCtx,Vec x,PetscTruth *flag)
+PetscErrorCode OurSNESLineSearchCheck(SNES snes,void *checkCtx,Vec x,PetscTruth *flag)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f74)(&snes,(void*)&checkCtx,&x,flag,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static int oursnesmonitor(SNES snes,int i,PetscReal d,void*ctx)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
 
   (*f7)(&snes,&i,&d,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 static int ourmondestroy(void* ctx)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
 
   (*f71)(ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 static int oursnestest(SNES snes,PetscReal a,PetscReal d,PetscReal c,SNESConvergedReason*reason,void*ctx)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
 
   (*f8)(&snes,&a,&d,&c,reason,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 static int oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f2)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 static int ourmatsnesmffunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f11)(&snes,&x,&f,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 static int oursnesjacobian(SNES snes,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*f3)(&snes,&x,m,p,type,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
@@ -179,7 +179,7 @@ EXTERN_C_BEGIN
 #if defined(notused)
 static int ourrhs(SNES snes,Vec vec,Vec vec2,void*ctx)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   DMMG *dmmg = (DMMG*)ctx;
   (*(int (PETSC_STDCALL *)(SNES*,Vec*,Vec*,int*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&snes,&vec,&vec2,&ierr);
   return ierr;
@@ -187,7 +187,7 @@ static int ourrhs(SNES snes,Vec vec,Vec vec2,void*ctx)
 
 static int ourmat(DMMG dmmg,Mat mat)
 {
-  int              ierr = 0;
+  PetscErrorCode ierr = 0;
   (*(int (PETSC_STDCALL *)(DMMG*,Vec*,int*))(((PetscObject)dmmg->dm)->fortran_func_pointers[1]))(&dmmg,&vec,&ierr);
   return ierr;
 }

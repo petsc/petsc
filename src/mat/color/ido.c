@@ -7,7 +7,7 @@ static int c_n1 = -1;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKido" 
-int MINPACKido(int *m,int * n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,
+PetscErrorCode MINPACKido(int *m,int * n,int * indrow,int * jpntr,int * indcol,int * ipntr,int * ndeg,
                int *list,int *maxclq, int *iwa1, int *iwa2, int *iwa3, int *iwa4)
 {
     /* System generated locals */

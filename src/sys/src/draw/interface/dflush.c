@@ -19,9 +19,9 @@
 
 .seealso: PetscDrawSynchronizedFlush()
 @*/
-int PetscDrawFlush(PetscDraw draw)
+PetscErrorCode PetscDrawFlush(PetscDraw draw)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->flush) {

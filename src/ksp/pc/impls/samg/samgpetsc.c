@@ -51,10 +51,10 @@ M*/
      Output Parameter:
      shell - user-defined preconditioner context..*/
 
-int SamgShellPCCreate(SamgShellPC **shell)
+PetscErrorCode SamgShellPCCreate(SamgShellPC **shell)
 {
    SamgShellPC *newctx; 
-   int ierr; 
+   PetscErrorCode ierr; 
 
    ierr = PetscNew(SamgShellPC,&newctx);CHKERRQ(ierr);
    *shell = newctx; 
@@ -76,9 +76,10 @@ int SamgShellPCCreate(SamgShellPC **shell)
 
     This routine calls the setup phase of RAMG..*/
  
-int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
+PetscErrorCode SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
 {
-   int              ierr, numnodes, numnonzero, nnz_count; 
+   PetscErrorCode ierr;
+   int  numnodes, numnonzero, nnz_count; 
    int              j, I, J, ncols_getrow, *cols_getrow, *diag; 
    PetscScalar      *vals_getrow; 
    MatInfo          info;
@@ -267,9 +268,10 @@ int SamgShellPCSetUp(SamgShellPC *shell, Mat pmat)
 /*  VecRestoreArray. The values in vals_getarray are then copy to   */
 /*  rhs of the AMG code using memcpy.                               */
 
-int SamgShellPCApply(void *ctx, Vec r, Vec z)
+PetscErrorCode SamgShellPCApply(void *ctx, Vec r, Vec z)
 {
-   int              ierr, I, numnodes, numnonzero, *cols; 
+   PetscErrorCode ierr;
+   int  I, numnodes, numnonzero, *cols; 
    SamgShellPC      *shell = (SamgShellPC *) ctx; 
    double           *u_approx, *rhs, *Asky, *vals_getarray; 
    int              *ia, *ja; 
@@ -385,7 +387,7 @@ int SamgShellPCApply(void *ctx, Vec r, Vec z)
     Input Parameter:
     shell - user-defined preconditioner context..*/
 
-int SamgShellPCDestroy(SamgShellPC *shell)
+PetscErrorCode SamgShellPCDestroy(SamgShellPC *shell)
 {
   /*..Free memory allocated by samg..*/ 
   SAMG_cleanup(); 
@@ -405,9 +407,9 @@ int SamgShellPCDestroy(SamgShellPC *shell)
     OUTPUT: The parameters set in the SAMG_PARAM context
 ..*/   
 
-int SamgGetParam(SAMG_PARAM *samg_param)
+PetscErrorCode SamgGetParam(SAMG_PARAM *samg_param)
 {
-  int       ierr; 
+  PetscErrorCode ierr; 
 
   /*..Set default SAMG paramets..*/ 
   /*....Class 0 SAMG parameters....*/

@@ -33,7 +33,7 @@
 
 .seealso: PetscGatherMessageLengths()
 @*/
-int PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengths,int *nrecvs)
+PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengths,int *nrecvs)
 {
   int *recv_buf,size,rank,i,ierr,*iflags_local;
 
@@ -104,7 +104,7 @@ int PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengths,int *nre
 
 .seealso: PetscGatherNumberOfMessages()
 @*/
-int PetscGatherMessageLengths(MPI_Comm comm,int nsends,int nrecvs,int *ilengths,int **onodes,int **olengths)
+PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm,int nsends,int nrecvs,int *ilengths,int **onodes,int **olengths)
 {
   int         size,i,j,tag,ierr;
   MPI_Request *s_waits,*r_waits;
@@ -157,7 +157,7 @@ int PetscGatherMessageLengths(MPI_Comm comm,int nsends,int nrecvs,int *ilengths,
  */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPostIrecvInt"
-int PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,int ***rbuf,MPI_Request **r_waits)
+PetscErrorCode PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,int ***rbuf,MPI_Request **r_waits)
 {
   int         len=0,**rbuf_t,i,ierr;
   MPI_Request *r_waits_t;
@@ -187,7 +187,7 @@ int PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPostIrecvScalar"
-int PetscPostIrecvScalar(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,PetscScalar ***rbuf,MPI_Request **r_waits)
+PetscErrorCode PetscPostIrecvScalar(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,PetscScalar ***rbuf,MPI_Request **r_waits)
 {
   int         len=0,i,ierr;
   PetscScalar **rbuf_t;

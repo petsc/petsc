@@ -33,7 +33,7 @@ struct _p_VecPipeline {
 static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **to,VecScatter_MPI_General **from)
 {
   VecScatter_MPI_General *gen_to,*gen_from,*pipe_to,*pipe_from;
-  int                    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   gen_to    = (VecScatter_MPI_General*)scatter->todata;
@@ -65,10 +65,10 @@ static int VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_General **t
 */
 #undef __FUNCT__
 #define __FUNCT__ "VecPipelineCreate"
-int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *newctx)
+PetscErrorCode VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *newctx)
 {
   VecPipeline ctx;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr      = PetscNew(struct _p_VecPipeline,&ctx);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ int VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *new
 static int VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScatter_MPI_General *pipe,
                                   int (*test)(int,PetscObject),PetscObject pipe_data)
 {
-  int ierr,i;
+  PetscErrorCode ierr,i;
 
   PetscFunctionBegin;
   pipe->n = 0;
@@ -148,10 +148,10 @@ static int VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScatter_MPI_Gen
 */
 #undef __FUNCT__
 #define __FUNCT__ "VecPipelineSetup"
-int VecPipelineSetup(VecPipeline ctx)
+PetscErrorCode VecPipelineSetup(VecPipeline ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  int                    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ctx->setupcalled) PetscFunctionReturn(0);
@@ -177,16 +177,16 @@ int VecPipelineSetup(VecPipeline ctx)
 /*
    VecPipelineSetType
 */
-EXTERN int ProcYes(int proc,PetscObject pipe_info);
-EXTERN int ProcUp(int proc,PetscObject pipe_info);
-EXTERN int ProcDown(int proc,PetscObject pipe_info);
-EXTERN int ProcColorUp(int proc,PetscObject pipe_info);
-EXTERN int ProcColorDown(int proc,PetscObject pipe_info);
-EXTERN int PipelineSequentialSetup(VecPipeline,PetscObject,PetscObject*);
-EXTERN int PipelineRedblackSetup(VecPipeline,PetscObject,PetscObject*);
-EXTERN int PipelineMulticolorSetup(VecPipeline,PetscObject,PetscObject*);
+EXTERN PetscErrorCode ProcYes(int proc,PetscObject pipe_info);
+EXTERN PetscErrorCode ProcUp(int proc,PetscObject pipe_info);
+EXTERN PetscErrorCode ProcDown(int proc,PetscObject pipe_info);
+EXTERN PetscErrorCode ProcColorUp(int proc,PetscObject pipe_info);
+EXTERN PetscErrorCode ProcColorDown(int proc,PetscObject pipe_info);
+EXTERN PetscErrorCode PipelineSequentialSetup(VecPipeline,PetscObject,PetscObject*);
+EXTERN PetscErrorCode PipelineRedblackSetup(VecPipeline,PetscObject,PetscObject*);
+EXTERN PetscErrorCode PipelineMulticolorSetup(VecPipeline,PetscObject,PetscObject*);
 
-int ProcNo(int proc,PetscObject pipe_info);
+PetscErrorCode ProcNo(int proc,PetscObject pipe_info);
 
 #undef __FUNCT__
 #define __FUNCT__ "VecPipelineSetType"
@@ -215,7 +215,7 @@ int ProcNo(int proc,PetscObject pipe_info);
 
 .seealso: VecPipelineCreate(), VecPipelineBegin(), VecPipelineEnd().
 */
-int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
+PetscErrorCode VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
 {
   PetscFunctionBegin;
   ctx->pipe_type = type;
@@ -250,9 +250,9 @@ int VecPipelineSetType(VecPipeline ctx,PipelineType type,PetscObject x)
 
 .seealso: VecPipelineEnd.
 */
-int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirection pmode,VecPipeline ctx)
+PetscErrorCode VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirection pmode,VecPipeline ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!ctx->setupcalled) {
@@ -296,7 +296,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirec
  
 .seealso: VecPipelineBegin.
 */
-int VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirection pmode,VecPipeline ctx)
+PetscErrorCode VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirection pmode,VecPipeline ctx)
 {
   VecScatter             scat = ctx->scatter;
   VecScatter_MPI_General *gen_from,*gen_to;
@@ -335,7 +335,7 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirecti
 #define __FUNCT__ "VecPipelineDestroy_MPI_General"
 static int VecPipelineDestroy_MPI_General(VecScatter_MPI_General *gen)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (gen->sstatus) {ierr = PetscFree(gen->sstatus);CHKERRQ(ierr);}
@@ -350,9 +350,9 @@ static int VecPipelineDestroy_MPI_General(VecScatter_MPI_General *gen)
    VecPipelineCreate().
 
 */
-int VecPipelineDestroy(VecPipeline ctx)
+PetscErrorCode VecPipelineDestroy(VecPipeline ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* free the VecScatter_MPI_General data structures */
@@ -404,14 +404,14 @@ typedef struct {int rank;} Pipeline_sequential_info;
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcYes"
-int ProcYes(int proc,PetscObject pipe_info)
+PetscErrorCode ProcYes(int proc,PetscObject pipe_info)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(1);
 }
 #undef __FUNCT__
 #define __FUNCT__ "ProcNo"
-int ProcNo(int proc,PetscObject pipe_info)
+PetscErrorCode ProcNo(int proc,PetscObject pipe_info)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -419,7 +419,7 @@ int ProcNo(int proc,PetscObject pipe_info)
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcUp"
-int ProcUp(int proc,PetscObject pipe_info)
+PetscErrorCode ProcUp(int proc,PetscObject pipe_info)
 {
   int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
 
@@ -433,7 +433,7 @@ int ProcUp(int proc,PetscObject pipe_info)
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcDown"
-int ProcDown(int proc,PetscObject pipe_info)
+PetscErrorCode ProcDown(int proc,PetscObject pipe_info)
 { 
   int rank = ((Pipeline_sequential_info *)pipe_info)->rank;
 
@@ -447,10 +447,10 @@ int ProcDown(int proc,PetscObject pipe_info)
 
 #undef __FUNCT__
 #define __FUNCT__ "PipelineSequentialSetup"
-int PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
+PetscErrorCode PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_sequential_info *info;
-  int                      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(Pipeline_sequential_info,&info);CHKERRQ(ierr);
@@ -468,7 +468,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcColorUp"
-int ProcColorUp(int proc,PetscObject pipe_info)
+PetscErrorCode ProcColorUp(int proc,PetscObject pipe_info)
 {
   Pipeline_colored_info* comm_info = (Pipeline_colored_info*)pipe_info;
   int                    rank = comm_info->rank;
@@ -482,7 +482,7 @@ int ProcColorUp(int proc,PetscObject pipe_info)
 }
 #undef __FUNCT__
 #define __FUNCT__ "ProcColorDown"
-int ProcColorDown(int proc,PetscObject pipe_info)
+PetscErrorCode ProcColorDown(int proc,PetscObject pipe_info)
 { 
   Pipeline_colored_info* comm_info = (Pipeline_colored_info*)pipe_info;
   int                    rank = comm_info->rank;
@@ -497,7 +497,7 @@ int ProcColorDown(int proc,PetscObject pipe_info)
 
 #undef __FUNCT__
 #define __FUNCT__ "PipelineRedblackSetup"
-int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
+PetscErrorCode PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_colored_info *info;
   int                    size,i,ierr;
@@ -515,7 +515,7 @@ int PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 
 #undef __FUNCT__
 #define __FUNCT__ "PipelineMulticolorSetup"
-int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
+PetscErrorCode PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_colored_info *info;
   Mat                    mat = (Mat) x;
@@ -548,7 +548,7 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
     while (touch[e]>=owners[p+1]) {
       p++;
 #if defined(PETSC_DEBUG)
-      if (p>=size) SETERRQ(1,p,"Processor overflow");
+      if (p>=size) SETERRQ1(PETSC_ERR_PLIB,"Processor overflow %d",p);
 #endif
     }
     conn[base+p] = 1;
@@ -597,10 +597,10 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecPipelineView"
-int VecPipelineView(VecPipeline pipe,PetscViewer viewer)
+PetscErrorCode VecPipelineView(VecPipeline pipe,PetscViewer viewer)
 {
   MPI_Comm comm = pipe->comm;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscPrintf(comm,">> Vector Pipeline<<\n");CHKERRQ(ierr);

@@ -10,7 +10,7 @@ static char help[] = "Tests DA with variable multiple degrees of freedom per nod
 
 int doit(DA da,Vec global)
 {
-  int ierr,i,j,k,M,N,dof;
+  PetscErrorCode ierr,i,j,k,M,N,dof;
 
   ierr = DAGetInfo(da,0,&M,&N,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   {

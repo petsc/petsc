@@ -4,7 +4,7 @@
 #include "src/vec/is/isimpl.h"      /*I "petscis.h" I*/
 
 /* Logging support */
-int IS_COOKIE = 0;
+PetscCookieCode IS_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity" 
@@ -26,9 +26,9 @@ int IS_COOKIE = 0;
 
 .seealso: ISSetIdentity()
 @*/
-int ISIdentity(IS is,PetscTruth *ident)
+PetscErrorCode ISIdentity(IS is,PetscTruth *ident)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -58,7 +58,7 @@ int ISIdentity(IS is,PetscTruth *ident)
 
 .seealso: ISIdentity()
 @*/
-int ISSetIdentity(IS is)
+PetscErrorCode ISSetIdentity(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -87,7 +87,7 @@ int ISSetIdentity(IS is)
 
 .seealso: ISSetPermutation()
 @*/
-int ISPermutation(IS is,PetscTruth *perm)
+PetscErrorCode ISPermutation(IS is,PetscTruth *perm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -113,7 +113,7 @@ int ISPermutation(IS is,PetscTruth *perm)
 
 .seealso: ISPermutation()
 @*/
-int ISSetPermutation(IS is)
+PetscErrorCode ISSetPermutation(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -135,9 +135,9 @@ int ISSetPermutation(IS is)
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlocked()
 @*/
-int ISDestroy(IS is)
+PetscErrorCode ISDestroy(IS is)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -175,9 +175,9 @@ int ISDestroy(IS is)
    Concepts: permutation^inverse
    Concepts: index sets^inverting
 @*/
-int ISInvertPermutation(IS is,int nlocal,IS *isout)
+PetscErrorCode ISInvertPermutation(IS is,int nlocal,IS *isout)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -191,9 +191,9 @@ int ISInvertPermutation(IS is,int nlocal,IS *isout)
 #if defined(__cplusplus)
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetSizeNew" 
-int ISGetSizeNew(IS is,int *size)
+PetscErrorCode ISGetSizeNew(IS is,int *size)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -222,9 +222,9 @@ int ISGetSizeNew(IS is,int *size)
    Concepts: index sets^size
 
 @*/
-int ISGetSize(IS is,int *size)
+PetscErrorCode ISGetSize(IS is,int *size)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -253,9 +253,9 @@ int ISGetSize(IS is,int *size)
    Concepts: index sets^local size
   
 @*/
-int ISGetLocalSize(IS is,int *size)
+PetscErrorCode ISGetLocalSize(IS is,int *size)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -303,9 +303,9 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
-int ISGetIndices(IS is,int *ptr[])
+PetscErrorCode ISGetIndices(IS is,int *ptr[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -347,9 +347,9 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
-int ISRestoreIndices(IS is,int *ptr[])
+PetscErrorCode ISRestoreIndices(IS is,int *ptr[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -375,9 +375,9 @@ int ISRestoreIndices(IS is,int *ptr[])
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-int ISView(IS is,PetscViewer viewer)
+PetscErrorCode ISView(IS is,PetscViewer viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -406,9 +406,9 @@ int ISView(IS is,PetscViewer viewer)
 
 .seealso: ISSorted()
 @*/
-int ISSort(IS is)
+PetscErrorCode ISSort(IS is)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -434,9 +434,9 @@ int ISSort(IS is)
 
 .seealso: ISSort()
 @*/
-int ISSorted(IS is,PetscTruth *flg)
+PetscErrorCode ISSorted(IS is,PetscTruth *flg)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -464,9 +464,9 @@ int ISSorted(IS is,PetscTruth *flg)
 
 .seealso: ISCreateGeneral()
 @*/
-int ISDuplicate(IS is,IS *newIS)
+PetscErrorCode ISDuplicate(IS is,IS *newIS)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);

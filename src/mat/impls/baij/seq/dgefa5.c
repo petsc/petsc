@@ -14,7 +14,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "Kernel_A_gets_inverse_A_5"
-int Kernel_A_gets_inverse_A_5(MatScalar *a)
+PetscErrorCode Kernel_A_gets_inverse_A_5(MatScalar *a)
 {
     int        i__2,i__3,kp1,j,k,l,ll,i,ipvt[5],kb,k3;
     int        k4,j3;
@@ -45,7 +45,7 @@ int Kernel_A_gets_inverse_A_5(MatScalar *a)
 	ipvt[k-1] = l;
 
 	if (a[l + k3] == 0.0) {
-	  SETERRQ(k,"Zero pivot");
+	  SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %d",k-1);
 	}
 
 /*           interchange if necessary */
@@ -85,7 +85,7 @@ int Kernel_A_gets_inverse_A_5(MatScalar *a)
     }
     ipvt[4] = 5;
     if (a[30] == 0.0) {
-	SETERRQ(3,"Zero pivot,final row");
+      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %d",4);
     }
 
     /*

@@ -19,8 +19,10 @@ static int logkey_mattranspose          = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetSymbolicTranspose_SeqIJ"
-int MatGetSymbolicTranspose_SeqAIJ(Mat A,int *Ati[],int *Atj[]) {
-  int        ierr,i,j,anzj;
+PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A,int *Ati[],int *Atj[]) 
+{
+  PetscErrorCode ierr;
+  int        i,j,anzj;
   Mat_SeqAIJ *a=(Mat_SeqAIJ *)A->data;
   int        an=A->N,am=A->M;
   int        *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
@@ -74,8 +76,10 @@ int MatGetSymbolicTranspose_SeqAIJ(Mat A,int *Ati[],int *Atj[]) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatTranspose_SeqIJ_FAST"
-int MatTranspose_SeqAIJ_FAST(Mat A,Mat *B) {
-  int        ierr,i,j,anzj;
+PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,Mat *B) 
+{
+  PetscErrorCode ierr;
+  int        i,j,anzj;
   Mat        At;
   Mat_SeqAIJ *a=(Mat_SeqAIJ *)A->data,*at;
   int        an=A->N,am=A->M;
@@ -135,8 +139,8 @@ int MatTranspose_SeqAIJ_FAST(Mat A,Mat *B) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatRestoreSymbolicTranspose_SeqAIJ"
-int MatRestoreSymbolicTranspose_SeqAIJ(Mat A,int *ati[],int *atj[]) {
-  int ierr;
+PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A,int *ati[],int *atj[]) {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogInfo(A,"Restoring Symbolic Transpose.\n");CHKERRQ(ierr);

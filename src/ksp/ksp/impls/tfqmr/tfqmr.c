@@ -5,7 +5,7 @@
 #define __FUNCT__ "KSPSetUp_TFQMR"
 static int KSPSetUp_TFQMR(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
@@ -145,7 +145,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_TFQMR"
-int KSPCreate_TFQMR(KSP ksp)
+PetscErrorCode KSPCreate_TFQMR(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                      = (void*)0;

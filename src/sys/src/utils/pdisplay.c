@@ -37,7 +37,7 @@
     put it in a universal location like a .chsrc file
 
 @*/
-int PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],int len,PetscTruth *flag)
+PetscErrorCode PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],int len,PetscTruth *flag)
 {
   int        rank,ierr;
   char       *str,work[256];
@@ -87,9 +87,10 @@ static char PetscDisplay[256];
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetDisplay" 
-int PetscSetDisplay(void)
+PetscErrorCode PetscSetDisplay(void)
 {
-  int        size,rank,len,ierr;
+  int        size,rank,ierr;
+  size_t     len;
   PetscTruth flag;
   char       *str,display[256];
 
@@ -112,6 +113,13 @@ int PetscSetDisplay(void)
   ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = MPI_Bcast(display,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   display[len] = 0;
+  if (rank) {
+    str = getenv("DISPLAY");
+    /* assume that ssh port forwarding is working */
+    if (str && (str[0] != ':')) {
+      ierr = PetscStrcpy(display,str);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscStrcpy(PetscDisplay,display);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
 }
@@ -128,9 +136,9 @@ int PetscSetDisplay(void)
 .   display - the display string
 
 */
-int PetscGetDisplay(char display[],int n)
+PetscErrorCode PetscGetDisplay(char display[],size_t n)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrncpy(display,PetscDisplay,n);CHKERRQ(ierr);

@@ -20,10 +20,11 @@
 .seealso: PetscDrawTensorContour(),PetscDrawTensorContourPatch()
 
 @*/
-int VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
+PetscErrorCode VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
 {
   PetscScalar *values;
-  int         ierr,n,i;
+  PetscErrorCode ierr;
+  int         n,i;
   PetscReal   scale;
 
   PetscFunctionBegin;

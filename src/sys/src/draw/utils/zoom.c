@@ -21,12 +21,13 @@
 
 .seealso:  
 @*/
-int PetscDrawZoom(PetscDraw draw,int (*func)(PetscDraw,void *),void *ctx)
+PetscErrorCode PetscDrawZoom(PetscDraw draw,int (*func)(PetscDraw,void *),void *ctx)
 {
-  int        ierr,pause;
+  PetscErrorCode ierr;
+  int             pause;
   PetscDrawButton button;
-  PetscReal  xc,yc,scale = 1.0,w,h,xr,xl,yr,yl,xmin,xmax,ymin,ymax;
-  PetscTruth isnull;
+  PetscReal       xc,yc,scale = 1.0,w,h,xr,xl,yr,yl,xmin,xmax,ymin,ymax;
+  PetscTruth      isnull;
 
   PetscFunctionBegin;
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);

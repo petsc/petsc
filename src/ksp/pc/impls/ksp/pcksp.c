@@ -12,7 +12,8 @@ typedef struct {
 #define __FUNCT__ "PCApply_KSP"
 static int PCApply_KSP(PC pc,Vec x,Vec y)
 {
-  int     ierr,its;
+  PetscErrorCode ierr;
+  int its;
   PC_KSP *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
@@ -40,7 +41,7 @@ static int PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCSetUp_KSP"
 static int PCSetUp_KSP(PC pc)
 {
-  int     ierr;
+  PetscErrorCode ierr;
   PC_KSP *jac = (PC_KSP*)pc->data;
   Mat     mat;
 
@@ -60,7 +61,7 @@ static int PCSetUp_KSP(PC pc)
 static int PCDestroy_KSP(PC pc)
 {
   PC_KSP *jac = (PC_KSP*)pc->data;
-  int     ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);
@@ -73,7 +74,7 @@ static int PCDestroy_KSP(PC pc)
 static int PCView_KSP(PC pc,PetscViewer viewer)
 {
   PC_KSP    *jac = (PC_KSP*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -99,7 +100,7 @@ static int PCView_KSP(PC pc,PetscViewer viewer)
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_KSP"
 static int PCSetFromOptions_KSP(PC pc){
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -117,7 +118,7 @@ static int PCSetFromOptions_KSP(PC pc){
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCKSPSetUseTrue_KSP"
-int PCKSPSetUseTrue_KSP(PC pc)
+PetscErrorCode PCKSPSetUseTrue_KSP(PC pc)
 {
   PC_KSP   *jac;
 
@@ -131,7 +132,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCKSPGetKSP_KSP"
-int PCKSPGetKSP_KSP(PC pc,KSP *ksp)
+PetscErrorCode PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 {
   PC_KSP   *jac;
 
@@ -167,9 +168,9 @@ EXTERN_C_END
 
 .seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal()
 @*/
-int PCKSPSetUseTrue(PC pc)
+PetscErrorCode PCKSPSetUseTrue(PC pc)
 {
-  int ierr,(*f)(PC);
+  PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -200,9 +201,9 @@ int PCKSPSetUseTrue(PC pc)
 
 .keywords:  PC, KSP, get, context
 @*/
-int PCKSPGetKSP(PC pc,KSP *ksp)
+PetscErrorCode PCKSPGetKSP(PC pc,KSP *ksp)
 {
-  int ierr,(*f)(PC,KSP*);
+  PetscErrorCode ierr,(*f)(PC,KSP*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -242,9 +243,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_KSP"
-int PCCreate_KSP(PC pc)
+PetscErrorCode PCCreate_KSP(PC pc)
 {
-  int       ierr;
+  PetscErrorCode ierr;
   char      *prefix;
   PC_KSP   *jac;
 

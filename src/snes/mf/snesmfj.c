@@ -28,9 +28,9 @@ PetscTruth MatSNESMFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: MatCreateSNESMF(), MatSNESMFRegisterDynamic)
 @*/
-int MatSNESMFSetType(Mat mat,const MatSNESMFType ftype)
+PetscErrorCode MatSNESMFSetType(Mat mat,const MatSNESMFType ftype)
 {
-  int          ierr,(*r)(MatSNESMFCtx);
+  PetscErrorCode ierr,(*r)(MatSNESMFCtx);
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   PetscTruth   match;
   
@@ -60,7 +60,7 @@ typedef int (*FCN1)(Vec,void*); /* force argument to next function to not be ext
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFunctioniBase_FD"
-int MatSNESMFSetFunctioniBase_FD(Mat mat,FCN1 func)
+PetscErrorCode MatSNESMFSetFunctioniBase_FD(Mat mat,FCN1 func)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
@@ -74,7 +74,7 @@ typedef int (*FCN2)(int,Vec,PetscScalar*,void*); /* force argument to next funct
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFunctioni_FD"
-int MatSNESMFSetFunctioni_FD(Mat mat,FCN2 funci)
+PetscErrorCode MatSNESMFSetFunctioni_FD(Mat mat,FCN2 funci)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
@@ -87,9 +87,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFRegister"
-int MatSNESMFRegister(const char sname[],const char path[],const char name[],int (*function)(MatSNESMFCtx))
+PetscErrorCode MatSNESMFRegister(const char sname[],const char path[],const char name[],int (*function)(MatSNESMFCtx))
 {
-  int ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -113,9 +113,9 @@ int MatSNESMFRegister(const char sname[],const char path[],const char name[],int
 
 .seealso: MatSNESMFRegisterDynamic), MatSNESMFRegisterAll()
 @*/
-int MatSNESMFRegisterDestroy(void)
+PetscErrorCode MatSNESMFRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (MatSNESMPetscFList) {
@@ -129,9 +129,9 @@ int MatSNESMFRegisterDestroy(void)
 /* ----------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MFFD"
-int MatDestroy_MFFD(Mat mat)
+PetscErrorCode MatDestroy_MFFD(Mat mat)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
   PetscFunctionBegin;
@@ -150,9 +150,9 @@ int MatDestroy_MFFD(Mat mat)
    MatSNESMFView_MFFD - Views matrix-free parameters.
 
 */
-int MatView_MFFD(Mat J,PetscViewer viewer)
+PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
   PetscTruth   iascii;
 
@@ -184,9 +184,9 @@ int MatView_MFFD(Mat J,PetscViewer viewer)
    MatSNESMFCreate_WP() to properly compute ||U|| only the first time
    in the linear solver rather than every time.
 */
-int MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
+PetscErrorCode MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
 {
-  int             ierr;
+  PetscErrorCode ierr;
   MatSNESMFCtx    j = (MatSNESMFCtx)J->data;
 
   PetscFunctionBegin;
@@ -213,13 +213,13 @@ int MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
         u = current iterate
         h = difference interval
 */
-int MatMult_MFFD(Mat mat,Vec a,Vec y)
+PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 {
   MatSNESMFCtx    ctx = (MatSNESMFCtx)mat->data;
   SNES            snes;
   PetscScalar     h,mone = -1.0;
   Vec             w,U,F;
-  int             ierr,(*eval_fct)(SNES,Vec,Vec)=0;
+  PetscErrorCode ierr,(*eval_fct)(SNES,Vec,Vec)=0;
 
   PetscFunctionBegin;
   /* We log matrix-free matrix-vector products separately, so that we can
@@ -296,7 +296,7 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
         u = current iterate
         h = difference interval
 */
-int MatGetDiagonal_MFFD(Mat mat,Vec a)
+PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   PetscScalar  h,*aa,*ww,v;
@@ -348,7 +348,7 @@ int MatGetDiagonal_MFFD(Mat mat,Vec a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShift_MFFD"
-int MatShift_MFFD(const PetscScalar *a,Mat Y)
+PetscErrorCode MatShift_MFFD(const PetscScalar *a,Mat Y)
 {
   MatSNESMFCtx shell = (MatSNESMFCtx)Y->data;  
   PetscFunctionBegin;
@@ -358,7 +358,7 @@ int MatShift_MFFD(const PetscScalar *a,Mat Y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MFFD"
-int MatScale_MFFD(const PetscScalar *a,Mat Y)
+PetscErrorCode MatScale_MFFD(const PetscScalar *a,Mat Y)
 {
   MatSNESMFCtx shell = (MatSNESMFCtx)Y->data;  
   PetscFunctionBegin;
@@ -420,10 +420,10 @@ int MatScale_MFFD(const PetscScalar *a,Mat Y)
           MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic), MatSNESMFComputeJacobian()
  
 @*/
-int MatCreateSNESMF(SNES snes,Vec x,Mat *J)
+PetscErrorCode MatCreateSNESMF(SNES snes,Vec x,Mat *J)
 {
   MatSNESMFCtx mfctx;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreateMF(x,J);CHKERRQ(ierr);
@@ -438,9 +438,9 @@ int MatCreateSNESMF(SNES snes,Vec x,Mat *J)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetBase_FD"
-int MatSNESMFSetBase_FD(Mat J,Vec U)
+PetscErrorCode MatSNESMFSetBase_FD(Mat J,Vec U)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
   PetscFunctionBegin;
@@ -458,7 +458,7 @@ typedef int (*FCN3)(Vec,Vec,PetscScalar*,void*); /* force argument to next funct
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetCheckh_FD"
-int MatSNESMFSetCheckh_FD(Mat J,FCN3 fun,void*ectx)
+PetscErrorCode MatSNESMFSetCheckh_FD(Mat J,FCN3 fun,void*ectx)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
@@ -492,10 +492,10 @@ EXTERN_C_END
 .seealso: MatCreateSNESMF(),MatSNESMFSetHHistory(), 
           MatSNESMFResetHHistory(), MatSNESMFKSPMonitor()
 @*/
-int MatSNESMFSetFromOptions(Mat mat)
+PetscErrorCode MatSNESMFSetFromOptions(Mat mat)
 {
   MatSNESMFCtx mfctx = (MatSNESMFCtx)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscTruth   flg;
   char         ftype[256];
 
@@ -539,10 +539,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MFFD"
-int MatCreate_MFFD(Mat A)
+PetscErrorCode MatCreate_MFFD(Mat A)
 {
   MatSNESMFCtx mfctx;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -655,7 +655,7 @@ EXTERN_C_END
           MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic),, MatSNESMFComputeJacobian()
  
 @*/
-int MatCreateMF(Vec x,Mat *J)
+PetscErrorCode MatCreateMF(Vec x,Mat *J)
 {
   MPI_Comm     comm;
   int          n,nloc,ierr;
@@ -692,7 +692,7 @@ int MatCreateMF(Vec x,Mat *J)
 .seealso: MatCreateSNESMF(),MatSNESMFSetHHistory(), 
           MatSNESMFResetHHistory(),MatSNESMFKSPMonitor()
 @*/
-int MatSNESMFGetH(Mat mat,PetscScalar *h)
+PetscErrorCode MatSNESMFGetH(Mat mat,PetscScalar *h)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
@@ -708,11 +708,11 @@ int MatSNESMFGetH(Mat mat,PetscScalar *h)
    SNES matrix free routines. Prints the differencing parameter used at 
    each step.
 */
-int MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
+PetscErrorCode MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 {
   PC             pc;
   MatSNESMFCtx   ctx;
-  int            ierr;
+  PetscErrorCode ierr;
   Mat            mat;
   MPI_Comm       comm;
   PetscTruth     nonzeroinitialguess;
@@ -764,7 +764,7 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor(), SNESetFunction()
 @*/
-int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *funcctx)
+PetscErrorCode MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *funcctx)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
@@ -799,9 +799,9 @@ int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *fu
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor(), SNESetFunction()
 @*/
-int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
+PetscErrorCode MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
 {
-  int  ierr,(*f)(Mat,int (*)(int,Vec,PetscScalar*,void *));
+  PetscErrorCode ierr,(*f)(Mat,int (*)(int,Vec,PetscScalar*,void *));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -837,9 +837,9 @@ int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor(), SNESetFunction()
 @*/
-int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
+PetscErrorCode MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
 {
-  int  ierr,(*f)(Mat,int (*)(Vec,void *));
+  PetscErrorCode ierr,(*f)(Mat,int (*)(Vec,void *));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -874,7 +874,7 @@ int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor()
 @*/
-int MatSNESMFSetPeriod(Mat mat,int period)
+PetscErrorCode MatSNESMFSetPeriod(Mat mat,int period)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
@@ -915,7 +915,7 @@ int MatSNESMFSetPeriod(Mat mat,int period)
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor()
 @*/
-int MatSNESMFSetFunctionError(Mat mat,PetscReal error)
+PetscErrorCode MatSNESMFSetFunctionError(Mat mat,PetscReal error)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
@@ -946,9 +946,9 @@ int MatSNESMFSetFunctionError(Mat mat,PetscReal error)
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor(), MatSNESMFErrorRel()
 @*/
-int MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
+PetscErrorCode MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
   MPI_Comm     comm;
 
@@ -987,7 +987,7 @@ int MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
           MatSNESMFKSPMonitor(), MatSNESMFSetFunctionError()
 
 @*/
-int MatSNESMFSetHHistory(Mat J,PetscScalar history[],int nhistory)
+PetscErrorCode MatSNESMFSetHHistory(Mat J,PetscScalar history[],int nhistory)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
@@ -1021,7 +1021,7 @@ int MatSNESMFSetHHistory(Mat J,PetscScalar history[],int nhistory)
           MatSNESMFKSPMonitor(), MatSNESMFSetFunctionError()
 
 @*/
-int MatSNESMFResetHHistory(Mat J)
+PetscErrorCode MatSNESMFResetHHistory(Mat J)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 
@@ -1032,9 +1032,9 @@ int MatSNESMFResetHHistory(Mat J)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFComputeJacobian"
-int MatSNESMFComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+PetscErrorCode MatSNESMFComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1058,9 +1058,9 @@ int MatSNESMFComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
     Level: advanced
 
 @*/
-int MatSNESMFSetBase(Mat J,Vec U)
+PetscErrorCode MatSNESMFSetBase(Mat J,Vec U)
 {
-  int  ierr,(*f)(Mat,Vec);
+  PetscErrorCode ierr,(*f)(Mat,Vec);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE,1);
@@ -1095,9 +1095,9 @@ int MatSNESMFSetBase(Mat J,Vec U)
 
 .seealso:  MatSNESMFSetCheckPositivity()
 @*/
-int MatSNESMFSetCheckh(Mat J,int (*fun)(Vec,Vec,PetscScalar*,void*),void* ctx)
+PetscErrorCode MatSNESMFSetCheckh(Mat J,int (*fun)(Vec,Vec,PetscScalar*,void*),void* ctx)
 {
-  int  ierr,(*f)(Mat,int (*)(Vec,Vec,PetscScalar*,void*),void*);
+  PetscErrorCode ierr,(*f)(Mat,int (*)(Vec,Vec,PetscScalar*,void*),void*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE,1);
@@ -1132,11 +1132,12 @@ int MatSNESMFSetCheckh(Mat J,int (*fun)(Vec,Vec,PetscScalar*,void*),void* ctx)
 
 .seealso:  MatSNESMFSetCheckh()
 @*/
-int MatSNESMFCheckPositivity(Vec U,Vec a,PetscScalar *h,void *dummy)
+PetscErrorCode MatSNESMFCheckPositivity(Vec U,Vec a,PetscScalar *h,void *dummy)
 {
   PetscReal     val, minval;
   PetscScalar   *u_vec, *a_vec;
-  int           ierr, i, size;
+  PetscErrorCode ierr;
+  int  i, size;
   MPI_Comm      comm;
 
   PetscFunctionBegin;

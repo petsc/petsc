@@ -29,7 +29,7 @@
 
 .seealso: SNESGetLineSearchParams(), SNESSetLineSearch()
 @*/
-int SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal steptol)
+PetscErrorCode SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal steptol)
 {
   SNES_LS *ls;
 
@@ -71,7 +71,7 @@ int SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscRea
 
 .seealso: SNESSetLineSearchParams(), SNESSetLineSearch()
 @*/
-int SNESGetLineSearchParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol)
+PetscErrorCode SNESGetLineSearchParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol)
 {
   SNES_LS *ls;
 

@@ -73,7 +73,7 @@
    Concepts: memory usage
 
 @*/
-int PetscGetResidentSetSize(PetscLogDouble *mem)
+PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   FILE            *file;

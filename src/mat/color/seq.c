@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKseq" 
-int MINPACKseq(int *n,int *indrow,int *jpntr,int *indcol,int *ipntr,int *list,int *ngrp,
+PetscErrorCode MINPACKseq(int *n,int *indrow,int *jpntr,int *indcol,int *ipntr,int *list,int *ngrp,
                int *maxgrp,int *iwa)
 {
     /* System generated locals */

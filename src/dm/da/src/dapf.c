@@ -23,9 +23,9 @@
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DACreateGlobalVector()
 @*/
-int DACreatePF(DA da,PF *pf)
+PetscErrorCode DACreatePF(DA da,PF *pf)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

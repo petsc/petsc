@@ -16,12 +16,13 @@
 .keywords: Mat, initialize, package
 .seealso: PetscInitialize()
 @*/
-int MatInitializePackage(char *path) {
+PetscErrorCode MatInitializePackage(char *path) 
+{
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;
   PetscTruth        opt;
-  int               ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
@@ -80,6 +81,8 @@ int MatInitializePackage(char *path) {
   ierr = PetscLogEventRegister(&MAT_FDColoringApply,          "MatFDColorApply",  MAT_FDCOLORING_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_FDColoringFunction,       "MatFDColorFunc",   MAT_FDCOLORING_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_Transpose,                "MatTranspose",     MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_MatMult,                  "MatMatMult",       MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_PtAP,                     "MatPtAP",          MAT_COOKIE);CHKERRQ(ierr);
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
@@ -113,9 +116,9 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-int PetscDLLibraryRegister(char *path)
+PetscErrorCode PetscDLLibraryRegister(char *path)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   ierr = PetscInitializeNoArguments(); if (ierr) return 1;
 

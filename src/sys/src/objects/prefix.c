@@ -21,9 +21,9 @@
    Concepts: prefix^setting
 
 */
-int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
+PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrfree(obj->prefix);CHKERRQ(ierr);
@@ -54,10 +54,11 @@ int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
    Concepts: prefix^setting
 
 */
-int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
+PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
 {
-  char *buf = obj->prefix ;
-  int  ierr,len1,len2;
+  char   *buf = obj->prefix;
+  PetscErrorCode ierr;
+  size_t len1,len2;
 
   PetscFunctionBegin;
   if (!prefix) {PetscFunctionReturn(0);}
@@ -90,7 +91,7 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
    Concepts: prefix^getting
 
 */
-int PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
+PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
 {
   PetscFunctionBegin;
   *prefix = obj->prefix;
@@ -115,10 +116,11 @@ int PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
    Concepts: prefix^setting
 
 */
-int PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
+PetscErrorCode PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
 {
-  char *buf = obj->prefix ;
-  int  ierr,len1,len2;
+  char   *buf = obj->prefix;
+  PetscErrorCode ierr;
+  size_t len1,len2;
 
   PetscFunctionBegin;
   if (!prefix) {PetscFunctionReturn(0);}

@@ -8,7 +8,7 @@ static int MatPublish_Base(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   Mat mat = (Mat)obj;
-  int ierr;
+  PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
@@ -90,11 +90,11 @@ static int MatPublish_Base(PetscObject obj)
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
+PetscErrorCode MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 {
   Mat B;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  int ierr;
+  PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
@@ -158,9 +158,10 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-int MatSetFromOptions(Mat B)
+PetscErrorCode MatSetFromOptions(Mat B)
 {
-  int        ierr,size;
+  PetscErrorCode ierr;
+  int size;
   char       mtype[256];
   PetscTruth flg;
 
@@ -200,9 +201,9 @@ int MatSetFromOptions(Mat B)
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
           MatConvert()
 @*/
-int MatSetUpPreallocation(Mat B)
+PetscErrorCode MatSetUpPreallocation(Mat B)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (B->ops->setuppreallocation) {
@@ -219,9 +220,10 @@ int MatSetUpPreallocation(Mat B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatHeaderCopy"
-int MatHeaderCopy(Mat A,Mat C)
+PetscErrorCode MatHeaderCopy(Mat A,Mat C)
 {
-  int         ierr,refct;
+  PetscErrorCode ierr;
+  int refct;
   PetscOps    *Abops;
   MatOps      Aops;
   char        *mtype,*mname;

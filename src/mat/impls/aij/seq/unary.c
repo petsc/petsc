@@ -210,7 +210,7 @@ static int SPARSEKIT2cperm(int *nrow,PetscScalar * a,int * ja,int * ia,PetscScal
 } /* cperm_ */
 
 /* ----------------------------------------------------------------------- */
-int SPARSEKIT2dperm(int *nrow,PetscScalar *a,int *ja,int *ia,PetscScalar *ao,int *jao,int *iao,int *perm,int *qperm,int *job)
+PetscErrorCode SPARSEKIT2dperm(int *nrow,PetscScalar *a,int *ja,int *ia,PetscScalar *ao,int *jao,int *iao,int *perm,int *qperm,int *job)
 {
     int locjob;
 
@@ -308,7 +308,7 @@ int SPARSEKIT2dperm(int *nrow,PetscScalar *a,int *ja,int *ia,PetscScalar *ao,int
 } /* dperm_ */
 
 /* ----------------------------------------------------------------------- */
-int SPARSEKIT2msrcsr(int *n,PetscScalar * a,int * ja,PetscScalar * ao,int * jao,int * iao,PetscScalar * wk,int * iwk)
+PetscErrorCode SPARSEKIT2msrcsr(int *n,PetscScalar * a,int * ja,PetscScalar * ao,int * jao,int * iao,PetscScalar * wk,int * iwk)
 {
     /* System generated locals */
     int i__1, i__2;

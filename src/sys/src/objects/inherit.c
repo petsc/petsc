@@ -4,13 +4,13 @@
 #include "petsc.h"  /*I   "petsc.h"    I*/
 #include "petscsys.h"
 
-EXTERN int PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
-EXTERN int PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
-EXTERN int PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
-EXTERN int PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void (*)(void));
-EXTERN int PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
-EXTERN int PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
-EXTERN int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
+EXTERN PetscErrorCode PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
+EXTERN PetscErrorCode PetscObjectCompose_Petsc(PetscObject,const char[],PetscObject);
+EXTERN PetscErrorCode PetscObjectQuery_Petsc(PetscObject,const char[],PetscObject *);
+EXTERN PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject,const char[],const char[],void (*)(void));
+EXTERN PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],void (**)(void));
+EXTERN PetscErrorCode PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
+EXTERN PetscErrorCode PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHeaderCreate_Private"
@@ -18,11 +18,11 @@ EXTERN int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
 */
-int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,const char class_name[],MPI_Comm comm,
+PetscErrorCode PetscHeaderCreate_Private(PetscObject h,int cookie,int type,const char class_name[],MPI_Comm comm,
                               int (*des)(PetscObject),int (*vie)(PetscObject,PetscViewer))
 {
   static int idcnt = 1;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   h->cookie                 = cookie;
@@ -54,9 +54,9 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,const char class
     PetscHeaderDestroy_Private - Destroys a base PETSc object header. Called by 
     the macro PetscHeaderDestroy().
 */
-int PetscHeaderDestroy_Private(PetscObject h)
+PetscErrorCode PetscHeaderDestroy_Private(PetscObject h)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (h->amem != -1) {
@@ -117,7 +117,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
 
 .seealso: PetscObjectCompose(), PetscObjectDereference()
 @*/
-int PetscObjectReference(PetscObject obj)
+PetscErrorCode PetscObjectReference(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -144,7 +144,7 @@ int PetscObjectReference(PetscObject obj)
 
 .seealso: PetscObjectCompose(), PetscObjectDereference(), PetscObjectReference()
 @*/
-int PetscObjectGetReference(PetscObject obj,int *cnt)
+PetscErrorCode PetscObjectGetReference(PetscObject obj,int *cnt)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -170,9 +170,9 @@ int PetscObjectGetReference(PetscObject obj,int *cnt)
 
 .seealso: PetscObjectCompose(), PetscObjectReference()
 @*/
-int PetscObjectDereference(PetscObject obj)
+PetscErrorCode PetscObjectDereference(PetscObject obj)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -191,7 +191,7 @@ int PetscObjectDereference(PetscObject obj)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectGetComm_Petsc"
-int PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
+PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 {
   PetscFunctionBegin;
   *comm = obj->comm;
@@ -200,9 +200,9 @@ int PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectCompose_Petsc"
-int PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
+PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char *tname;
 
   PetscFunctionBegin;
@@ -218,9 +218,9 @@ int PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectQuery_Petsc"
-int PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
+PetscErrorCode PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOListFind(obj->olist,name,ptr);CHKERRQ(ierr);
@@ -229,7 +229,7 @@ int PetscObjectQuery_Petsc(PetscObject obj,const char name[],PetscObject *ptr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposeLanguage_Petsc"
-int PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vob)
+PetscErrorCode PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vob)
 {
   PetscFunctionBegin;
   if (lang == PETSC_LANGUAGE_CPP) {
@@ -242,7 +242,7 @@ int PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vo
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectQueryLanguage_Petsc"
-int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob)
+PetscErrorCode PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob)
 {
   PetscFunctionBegin;
   if (lang == PETSC_LANGUAGE_C) {
@@ -261,9 +261,9 @@ int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposeFunction_Petsc"
-int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
+PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFListAdd(&obj->qlist,name,fname,ptr);CHKERRQ(ierr);
@@ -272,9 +272,9 @@ int PetscObjectComposeFunction_Petsc(PetscObject obj,const char name[],const cha
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectQueryFunction_Petsc"
-int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void (**ptr)(void))
+PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void (**ptr)(void))
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFListFind(obj->comm,obj->qlist,name,ptr);CHKERRQ(ierr);
@@ -319,9 +319,9 @@ int PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],void (**ptr
 
 .seealso: PetscObjectQuery(), PetscObjectContainerCreate()
 @*/
-int PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
+PetscErrorCode PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*obj->bops->compose)(obj,name,ptr);CHKERRQ(ierr);
@@ -352,9 +352,9 @@ int PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 
 .seealso: PetscObjectQuery()
 @*/
-int PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
+PetscErrorCode PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*obj->bops->query)(obj,name,ptr);CHKERRQ(ierr);
@@ -381,9 +381,9 @@ int PetscObjectQuery(PetscObject obj,const char name[],PetscObject *ptr)
 
 .seealso: PetscObjectQuery()
 @*/
-int PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
+PetscErrorCode PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*obj->bops->querylanguage)(obj,lang,ptr);CHKERRQ(ierr);
@@ -408,9 +408,9 @@ int PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
 
 .seealso: PetscObjectQuery()
 @*/
-int PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
+PetscErrorCode PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*obj->bops->composelanguage)(obj,lang,ptr);CHKERRQ(ierr);
@@ -420,9 +420,9 @@ int PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectComposeFunction"
-int PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
+PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],const char fname[],void (*ptr)(void))
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*obj->bops->composefunction)(obj,name,fname,ptr);CHKERRQ(ierr);
@@ -454,9 +454,9 @@ int PetscObjectComposeFunction(PetscObject obj,const char name[],const char fnam
 
 .seealso: PetscObjectComposeFunctionDynamic()
 @*/
-int PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void))
+PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void))
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*obj->bops->queryfunction)(obj,name,ptr);CHKERRQ(ierr);
@@ -476,8 +476,8 @@ int PetscObjectQueryFunction(PetscObject obj,const char name[],void (**ptr)(void
 
 .seealso PetscObjectGetParameterDict()
 @*/
-int PetscObjectSetParameterDict(PetscObject obj, ParameterDict dict) {
-  int ierr;
+PetscErrorCode PetscObjectSetParameterDict(PetscObject obj, ParameterDict dict) {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
@@ -506,7 +506,7 @@ int PetscObjectSetParameterDict(PetscObject obj, ParameterDict dict) {
 
 .seealso PetscObjectSetParameterDict()
 @*/
-int PetscObjectGetParameterDict(PetscObject obj, ParameterDict *dict) {
+PetscErrorCode PetscObjectGetParameterDict(PetscObject obj, ParameterDict *dict) {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidPointer(dict,2);
@@ -537,7 +537,7 @@ struct _p_PetscObjectContainer {
 .seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
           PetscObjectContainerSetPointer()
 @*/
-int PetscObjectContainerGetPointer(PetscObjectContainer obj,void **ptr)
+PetscErrorCode PetscObjectContainerGetPointer(PetscObjectContainer obj,void **ptr)
 {
   PetscFunctionBegin;
   *ptr = obj->ptr;
@@ -561,7 +561,7 @@ int PetscObjectContainerGetPointer(PetscObjectContainer obj,void **ptr)
 .seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
           PetscObjectContainerGetPointer()
 @*/
-int PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
+PetscErrorCode PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
 {
   PetscFunctionBegin;
   obj->ptr = ptr;
@@ -582,7 +582,7 @@ int PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
 
 .seealso: PetscObjectContainerCreate()
 @*/
-int PetscObjectContainerDestroy(PetscObjectContainer obj)
+PetscErrorCode PetscObjectContainerDestroy(PetscObjectContainer obj)
 {
   PetscFunctionBegin;
   if (--obj->refct > 0) PetscFunctionReturn(0);
@@ -610,7 +610,7 @@ int PetscObjectContainerDestroy(PetscObjectContainer obj)
 
 .seealso: PetscObjectContainerDestroy(), PetscObjectContainerSetPointer(), PetscObjectContainerSetPointer()
 @*/
-int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
+PetscErrorCode PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
 {
   PetscObjectContainer contain;
 

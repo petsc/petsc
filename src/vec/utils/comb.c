@@ -50,9 +50,9 @@ some of each.
 /*
    PetscSplitReductionCreate - Creates a data structure to contain the queued information.
 */
-int PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReduction **sr)
+PetscErrorCode PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReduction **sr)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr               = PetscNew(PetscSplitReduction,sr);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ EXTERN_C_END
 /*
    PetscSplitReductionApply - Actually do the communication required for a split phase reduction
 */
-int PetscSplitReductionApply(PetscSplitReduction *sr)
+PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 {
   int         size,ierr,i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
   PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
@@ -124,7 +124,7 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
 
   PetscFunctionBegin;
   if (sr->numopsend > 0) {
-    SETERRQ(1,"Cannot call this after VecxxxEnd() has been called");
+    SETERRQ(PETSC_ERR_ORDER,"Cannot call this after VecxxxEnd() has been called");
   }
 
   ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
       } else if (reducetype[i] == REDUCE_MIN) {
         min_flg = 1;
       } else {
-        SETERRQ(1,"Error in PetscSplitReduction data structure, probably memory corruption");
+        SETERRQ(PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
       }
     }
     if (sum_flg + max_flg + min_flg > 1) {
@@ -193,7 +193,7 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
 /*
    PetscSplitReductionExtend - Double the amount of space (slots) allocated for a split reduction object.
 */
-int PetscSplitReductionExtend(PetscSplitReduction *sr)
+PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *sr)
 {
   int         maxops = sr->maxops,*reducetype = sr->reducetype,ierr;
   PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
@@ -218,9 +218,9 @@ int PetscSplitReductionExtend(PetscSplitReduction *sr)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSplitReductionDestroy"
-int PetscSplitReductionDestroy(PetscSplitReduction *sr)
+PetscErrorCode PetscSplitReductionDestroy(PetscSplitReduction *sr)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(sr->lvalues);CHKERRQ(ierr);
@@ -245,7 +245,7 @@ EXTERN_C_BEGIN
 */
 int Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscLogInfo(0,"Petsc_DelReduction:Deleting reduction data in an MPI_Comm %ld\n",(long)comm);
@@ -261,9 +261,10 @@ EXTERN_C_END
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscSplitReductionGet"
-int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
+PetscErrorCode PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 {
-  int      ierr,flag;
+  PetscErrorCode ierr;
+  int      flag;
 
   PetscFunctionBegin;
   if (Petsc_Reduction_keyval == MPI_KEYVAL_INVALID) {
@@ -310,9 +311,9 @@ int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
          VecTDotBegin(), VecTDotEnd()
 @*/
-int VecDotBegin(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode VecDotBegin(Vec x,Vec y,PetscScalar *result) 
 {
-  int                 ierr;
+  PetscErrorCode ierr;
   PetscSplitReduction *sr;
   MPI_Comm            comm;
 
@@ -320,14 +321,14 @@ int VecDotBegin(Vec x,Vec y,PetscScalar *result)
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state == STATE_END) {
-    SETERRQ(1,"Called before all VecxxxEnd() called");
+    SETERRQ(PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
   }
   if (sr->numopsbegin >= sr->maxops) {
     ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void*)x;
-  if (!x->ops->dot_local) SETERRQ(1,"Vector does not suppport local dots");
+  if (!x->ops->dot_local) SETERRQ(PETSC_ERR_SUP,"Vector does not suppport local dots");
   ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
@@ -353,9 +354,9 @@ seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMD
          VecTDotBegin(),VecTDotEnd()
 
 @*/
-int VecDotEnd(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode VecDotEnd(Vec x,Vec y,PetscScalar *result) 
 {
-  int                 ierr;
+  PetscErrorCode ierr;
   PetscSplitReduction *sr;
   MPI_Comm            comm;
 
@@ -369,13 +370,13 @@ int VecDotEnd(Vec x,Vec y,PetscScalar *result)
   }
 
   if (sr->numopsend >= sr->numopsbegin) {
-    SETERRQ(1,"Called VecxxxEnd() more times then VecxxxBegin()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
   }
   if (x && (void*) x != sr->invecs[sr->numopsend]) {
-    SETERRQ(1,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   }
   if (sr->reducetype[sr->numopsend] != REDUCE_SUM) {
-    SETERRQ(1,"Called VecDotEnd() on a reduction started with VecNormBegin()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Called VecDotEnd() on a reduction started with VecNormBegin()");
   }
   *result = sr->gvalues[sr->numopsend++];
 
@@ -409,9 +410,9 @@ seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDo
          VecDotBegin(), VecDotEnd()
 
 @*/
-int VecTDotBegin(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode VecTDotBegin(Vec x,Vec y,PetscScalar *result) 
 {
-  int                 ierr;
+  PetscErrorCode ierr;
   PetscSplitReduction *sr;
   MPI_Comm            comm;
 
@@ -419,14 +420,14 @@ int VecTDotBegin(Vec x,Vec y,PetscScalar *result)
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state == STATE_END) {
-    SETERRQ(1,"Called before all VecxxxEnd() called");
+    SETERRQ(PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
   }
   if (sr->numopsbegin >= sr->maxops) {
     ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void*)x;
-  if (!x->ops->tdot_local) SETERRQ(1,"Vector does not suppport local dots");
+  if (!x->ops->tdot_local) SETERRQ(PETSC_ERR_SUP,"Vector does not suppport local dots");
   ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
@@ -451,9 +452,9 @@ int VecTDotBegin(Vec x,Vec y,PetscScalar *result)
 seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
          VecDotBegin(), VecDotEnd()
 @*/
-int VecTDotEnd(Vec x,Vec y,PetscScalar *result) 
+PetscErrorCode VecTDotEnd(Vec x,Vec y,PetscScalar *result) 
 {
-  int               ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
@@ -483,9 +484,9 @@ int VecTDotEnd(Vec x,Vec y,PetscScalar *result)
 .seealso: VecNormEnd(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd()
 
 @*/
-int VecNormBegin(Vec x,NormType ntype,PetscReal *result) 
+PetscErrorCode VecNormBegin(Vec x,NormType ntype,PetscReal *result) 
 {
-  int                 ierr;
+  PetscErrorCode ierr;
   PetscSplitReduction *sr;
   PetscReal           lresult[2];
   MPI_Comm            comm;
@@ -494,14 +495,14 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   if (sr->state == STATE_END) {
-    SETERRQ(1,"Called before all VecxxxEnd() called");
+    SETERRQ(PETSC_ERR_ORDER,"Called before all VecxxxEnd() called");
   }
   if (sr->numopsbegin >= sr->maxops || (sr->numopsbegin == sr->maxops-1 && ntype == NORM_1_AND_2)) {
     ierr = PetscSplitReductionExtend(sr);CHKERRQ(ierr);
   }
   
   sr->invecs[sr->numopsbegin]     = (void*)x;
-  if (!x->ops->norm_local) SETERRQ(1,"Vector does not support local norms");
+  if (!x->ops->norm_local) SETERRQ(PETSC_ERR_SUP,"Vector does not support local norms");
   ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->norm_local)(x,ntype,lresult);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
@@ -535,7 +536,7 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 .seealso: VecNormBegin(), VecNorm(), VecDot(), VecMDot(), VecDotBegin(), VecDotEnd()
 
 @*/
-int VecNormEnd(Vec x,NormType ntype,PetscReal *result) 
+PetscErrorCode VecNormEnd(Vec x,NormType ntype,PetscReal *result) 
 {
   int                 type_id,ierr;
   PetscSplitReduction *sr;
@@ -553,13 +554,13 @@ int VecNormEnd(Vec x,NormType ntype,PetscReal *result)
   }
 
   if (sr->numopsend >= sr->numopsbegin) {
-    SETERRQ(1,"Called VecxxxEnd() more times then VecxxxBegin()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() more times then VecxxxBegin()");
   }
   if (x && (void*)x != sr->invecs[sr->numopsend]) {
-    SETERRQ(1,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Called VecxxxEnd() in a different order or with a different vector than VecxxxBegin()");
   }
   if (sr->reducetype[sr->numopsend] != REDUCE_MAX && ntype == NORM_MAX) {
-    SETERRQ(1,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
   }
   result[0] = PetscRealPart(sr->gvalues[sr->numopsend++]);
 

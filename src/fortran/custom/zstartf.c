@@ -44,7 +44,7 @@ EXTERN_C_END
 .keywords: Mixing C and Fortran, passing PETSc objects to Fortran
 @*/
 
-int PetscInitializeFortran(void)
+PetscErrorCode PetscInitializeFortran(void)
 {
   int              c1=0,c2=0;
 

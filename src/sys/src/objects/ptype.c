@@ -20,7 +20,7 @@
    
 .seealso: PetscDataType, PetscDataTypeGetName()
 @*/
-int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
+PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {
@@ -81,7 +81,7 @@ typedef enum {PETSC_INT_SIZE = sizeof(int),PETSC_DOUBLE_SIZE = sizeof(double),
    
 .seealso: PetscDataType, PetscDataTypeGetName(), PetscDataTypeToMPIDataType()
 @*/
-int PetscDataTypeGetSize(PetscDataType ptype,int *size)
+PetscErrorCode PetscDataTypeGetSize(PetscDataType ptype,int *size)
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {
@@ -125,7 +125,7 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
    
 .seealso: PetscDataType, PetscDataTypeGetSize(), PetscDataTypeToMPIDataType()
 @*/
-int PetscDataTypeGetName(PetscDataType ptype,const char *name[])
+PetscErrorCode PetscDataTypeGetName(PetscDataType ptype,const char *name[])
 {
   PetscFunctionBegin;
   if (ptype == PETSC_INT) {

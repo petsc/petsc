@@ -85,7 +85,7 @@ struct _p_TS {
   Vec *work;
 };
 
-EXTERN int TSMonitor(TS,int,PetscReal,Vec);
-EXTERN int TSComputeRHSBoundaryConditions(TS,PetscReal,Vec);
+EXTERN PetscErrorCode TSMonitor(TS,int,PetscReal,Vec);
+EXTERN PetscErrorCode TSComputeRHSBoundaryConditions(TS,PetscReal,Vec);
 
 #endif

@@ -19,9 +19,10 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashCreate_Private"
-int VecStashCreate_Private(MPI_Comm comm,int bs,VecStash *stash)
+PetscErrorCode VecStashCreate_Private(MPI_Comm comm,int bs,VecStash *stash)
 {
-  int        ierr,max,*opt,nopt;
+  PetscErrorCode ierr;
+  int        max,*opt,nopt;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -75,9 +76,9 @@ int VecStashCreate_Private(MPI_Comm comm,int bs,VecStash *stash)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashDestroy_Private"
-int VecStashDestroy_Private(VecStash *stash)
+PetscErrorCode VecStashDestroy_Private(VecStash *stash)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (stash->array) {
@@ -100,7 +101,7 @@ int VecStashDestroy_Private(VecStash *stash)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashScatterEnd_Private"
-int VecStashScatterEnd_Private(VecStash *stash)
+PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
 { 
   int         nsends=stash->nsends,ierr,oldnmax;
   MPI_Status  *send_status;
@@ -167,7 +168,7 @@ int VecStashScatterEnd_Private(VecStash *stash)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashGetInfo_Private"
-int VecStashGetInfo_Private(VecStash *stash,int *nstash,int *reallocs)
+PetscErrorCode VecStashGetInfo_Private(VecStash *stash,int *nstash,int *reallocs)
 {
   PetscFunctionBegin;
 
@@ -191,7 +192,7 @@ int VecStashGetInfo_Private(VecStash *stash,int *nstash,int *reallocs)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashSetInitialSize_Private"
-int VecStashSetInitialSize_Private(VecStash *stash,int max)
+PetscErrorCode VecStashSetInitialSize_Private(VecStash *stash,int max)
 {
   PetscFunctionBegin;
   stash->umax = max;
@@ -211,7 +212,7 @@ int VecStashSetInitialSize_Private(VecStash *stash,int max)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashExpand_Private"
-int VecStashExpand_Private(VecStash *stash,int incr)
+PetscErrorCode VecStashExpand_Private(VecStash *stash,int incr)
 { 
   int         *n_idx,newnmax,bs=stash->bs,ierr;
   PetscScalar *n_array;
@@ -256,7 +257,7 @@ int VecStashExpand_Private(VecStash *stash,int incr)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashScatterBegin_Private"
-int VecStashScatterBegin_Private(VecStash *stash,int *owners)
+PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,int *owners)
 { 
   int         *owner,*start,tag1=stash->tag1,tag2=stash->tag2;
   int         size=stash->size,*nprocs,nsends,nreceives;
@@ -362,7 +363,7 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashScatterGetMesg_Private"
-int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,PetscScalar **vals,int *flg)
+PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,PetscScalar **vals,int *flg)
 {
   int         i,ierr,*flg_v;
   int         i1,i2,*rindices,bs=stash->bs;

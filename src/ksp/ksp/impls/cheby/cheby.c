@@ -7,9 +7,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_Chebychev"
-int KSPSetUp_Chebychev(KSP ksp)
+PetscErrorCode KSPSetUp_Chebychev(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(2,"no symmetric preconditioning for KSPCHEBYCHEV");
@@ -20,7 +20,7 @@ int KSPSetUp_Chebychev(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPChebychevSetEigenvalues_Chebychev"
-int KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
+PetscErrorCode KSPChebychevSetEigenvalues_Chebychev(KSP ksp,PetscReal emax,PetscReal emin)
 {
   KSP_Chebychev *chebychevP = (KSP_Chebychev*)ksp->data;
 
@@ -52,9 +52,9 @@ EXTERN_C_END
 
 .keywords: KSP, Chebyshev, set, eigenvalues
 @*/
-int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
+PetscErrorCode KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 {
-  int ierr,(*f)(KSP,PetscReal,PetscReal);
+  PetscErrorCode ierr,(*f)(KSP,PetscReal,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -67,10 +67,10 @@ int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_Chebychev"
-int KSPSetFromOptions_Chebychev(KSP ksp)
+PetscErrorCode KSPSetFromOptions_Chebychev(KSP ksp)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
-  int            ierr;
+  PetscErrorCode ierr;
   int            two = 2;
 
   PetscFunctionBegin;
@@ -82,7 +82,7 @@ int KSPSetFromOptions_Chebychev(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_Chebychev"
-int KSPSolve_Chebychev(KSP ksp)
+PetscErrorCode KSPSolve_Chebychev(KSP ksp)
 {
   int              k,kp1,km1,maxit,ktmp,i,ierr;
   PetscScalar      alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0,tmp;
@@ -196,10 +196,10 @@ int KSPSolve_Chebychev(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPView_Chebychev" 
-int KSPView_Chebychev(KSP ksp,PetscViewer viewer)
+PetscErrorCode KSPView_Chebychev(KSP ksp,PetscViewer viewer)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
-  int           ierr;
+  PetscErrorCode ierr;
   PetscTruth    iascii;
 
   PetscFunctionBegin;
@@ -232,9 +232,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_Chebychev"
-int KSPCreate_Chebychev(KSP ksp)
+PetscErrorCode KSPCreate_Chebychev(KSP ksp)
 {
-  int           ierr;
+  PetscErrorCode ierr;
   KSP_Chebychev *chebychevP;
 
   PetscFunctionBegin;

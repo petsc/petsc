@@ -31,7 +31,7 @@
    Concepts: state
 
 @*/
-int PetscObjectGetState(PetscObject obj,int *state)
+PetscErrorCode PetscObjectGetState(PetscObject obj,int *state)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -65,7 +65,7 @@ int PetscObjectGetState(PetscObject obj,int *state)
    Concepts: state
 
 @*/
-int PetscObjectSetState(PetscObject obj,int state)
+PetscErrorCode PetscObjectSetState(PetscObject obj,int state)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -103,7 +103,7 @@ int PetscObjectSetState(PetscObject obj,int state)
    Concepts: state
 
 @*/
-int PetscObjectIncreaseState(PetscObject obj)
+PetscErrorCode PetscObjectIncreaseState(PetscObject obj)
 {
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
@@ -111,8 +111,8 @@ int PetscObjectIncreaseState(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-int globalcurrentstate = 0, globalmaxstate = 10;
-int PetscRegisterComposedData(int *id)
+PetscErrorCode globalcurrentstate = 0, globalmaxstate = 10;
+PetscErrorCode PetscRegisterComposedData(int *id)
 {
   PetscFunctionBegin;
   *id = globalcurrentstate++;
@@ -120,7 +120,7 @@ int PetscRegisterComposedData(int *id)
   PetscFunctionReturn(0);
 }
 
-int PetscObjectIncreaseIntComposedData(PetscObject obj)
+PetscErrorCode PetscObjectIncreaseIntComposedData(PetscObject obj)
 {
   int *ar = obj->intcomposeddata,*new_ar;
   int *ir = obj->intcomposedstate,*new_ir,
@@ -143,7 +143,7 @@ int PetscObjectIncreaseIntComposedData(PetscObject obj)
   obj->intcomposeddata = new_ar; obj->intcomposedstate = new_ir;
   PetscFunctionReturn(0);
 }
-int PetscObjectIncreaseIntstarComposedData(PetscObject obj)
+PetscErrorCode PetscObjectIncreaseIntstarComposedData(PetscObject obj)
 {
   int **ar = obj->intstarcomposeddata,**new_ar;
   int *ir = obj->intstarcomposedstate,*new_ir,
@@ -167,7 +167,7 @@ int PetscObjectIncreaseIntstarComposedData(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-int PetscObjectIncreaseRealComposedData(PetscObject obj)
+PetscErrorCode PetscObjectIncreaseRealComposedData(PetscObject obj)
 {
   PetscReal *ar = obj->realcomposeddata,*new_ar;
   int *ir = obj->realcomposedstate,*new_ir,
@@ -191,7 +191,7 @@ int PetscObjectIncreaseRealComposedData(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-int PetscObjectIncreaseRealstarComposedData(PetscObject obj)
+PetscErrorCode PetscObjectIncreaseRealstarComposedData(PetscObject obj)
 {
   PetscReal **ar = obj->realstarcomposeddata,**new_ar;
   int *ir = obj->realstarcomposedstate,*new_ir,
@@ -215,7 +215,7 @@ int PetscObjectIncreaseRealstarComposedData(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-int PetscObjectIncreaseScalarComposedData(PetscObject obj)
+PetscErrorCode PetscObjectIncreaseScalarComposedData(PetscObject obj)
 {
   PetscScalar *ar = obj->scalarcomposeddata,*new_ar;
   int *ir = obj->scalarcomposedstate,*new_ir,
@@ -239,7 +239,7 @@ int PetscObjectIncreaseScalarComposedData(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-int PetscObjectIncreaseScalarstarComposedData(PetscObject obj)
+PetscErrorCode PetscObjectIncreaseScalarstarComposedData(PetscObject obj)
 {
   PetscScalar **ar = obj->scalarstarcomposeddata,**new_ar;
   int *ir = obj->scalarstarcomposedstate,*new_ir,

@@ -33,15 +33,16 @@
    Concepts: menu
 
 @*/
-int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
+PetscErrorCode PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
 {
-  int  i,ierr,rank,rows = n + 2,cols,len;
-  char buffer[2048],display[256],geometry[64];
-  FILE *fp;
+  int    i,ierr,rank,rows = n + 2;
+  size_t cols,len;
+  char   buffer[2048],display[256],geometry[64];
+  FILE   *fp;
 
   PetscFunctionBegin;
-  if (!title) SETERRQ(1,"Must pass in a title line");
-  if (n < 1) SETERRQ(1,"Must pass in at least one selection");
+  if (!title) SETERRQ(PETSC_ERR_ARG_NULL,"Must pass in a title line");
+  if (n < 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Must pass in at least one selection");
   if (n == 1) {*choice = 0; PetscFunctionReturn(0);}
 
   ierr = PetscStrlen(title,&cols);CHKERRQ(ierr);
@@ -50,7 +51,7 @@ int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choice
     cols = PetscMax(cols,len);
   }
   cols += 4;
-  sprintf(geometry," -geometry %dx%d ",cols,rows);
+  sprintf(geometry," -geometry %dx%d ",(int)cols,rows);
   ierr = PetscStrcpy(buffer,"xterm -bw 100 -bd blue +sb -display ");CHKERRQ(ierr);
   ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
   ierr = PetscStrcat(buffer,display);CHKERRQ(ierr);

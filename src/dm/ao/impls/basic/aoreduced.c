@@ -5,11 +5,12 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentGetReduced_Basic"
-int AODataSegmentGetReduced_Basic(AOData ao,const char name[],const char segname[],int n,int *keys,IS *is)
+PetscErrorCode AODataSegmentGetReduced_Basic(AOData ao,const char name[],const char segname[],int n,int *keys,IS *is)
 {
   AODataSegment *segment; 
   AODataKey     *key;
-  int           ierr,dsize,i,bs,*found,count,imin,imax,*out;
+  PetscErrorCode ierr;
+  int dsize,i,bs,*found,count,imin,imax,*out;
   char          *idata,*odata;
   PetscBT       mask;
   PetscTruth    flag;

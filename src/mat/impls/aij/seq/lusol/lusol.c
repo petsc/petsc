@@ -46,7 +46,7 @@ extern void PETSC_STDCALL LU6SOL (int *mode, int *m, int *n, double *rhs, double
                         int *inform);
 EXTERN_C_END
 
-EXTERN int MatDuplicate_LUSOL(Mat,MatDuplicateOption,Mat*);
+EXTERN PetscErrorCode MatDuplicate_LUSOL(Mat,MatDuplicateOption,Mat*);
 
 typedef struct  {
   double *data;
@@ -181,10 +181,10 @@ typedef struct  {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_LUSOL_SeqAIJ"
-int MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert an unfactored PETSc-LUSOL matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
-  int       ierr;
+  PetscErrorCode ierr;
   Mat       B=*newmat;
   Mat_LUSOL *lusol=(Mat_LUSOL *)A->spptr;
 
@@ -205,8 +205,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_LUSOL"
-int MatDestroy_LUSOL(Mat A) {
-  int       ierr;
+PetscErrorCode MatDestroy_LUSOL(Mat A) 
+{
+  PetscErrorCode ierr;
   Mat_LUSOL *lusol=(Mat_LUSOL *)A->spptr;
 
   PetscFunctionBegin;
@@ -234,7 +235,7 @@ int MatDestroy_LUSOL(Mat A) {
 
 #undef __FUNCT__  
 #define __FUNCT__  "MatSolve_LUSOL"
-int MatSolve_LUSOL(Mat A,Vec b,Vec x) {
+PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x) {
   Mat_LUSOL *lusol=(Mat_LUSOL*)A->spptr;
   double    *bb,*xx;
   int       mode=5;
@@ -269,7 +270,7 @@ int MatSolve_LUSOL(Mat A,Vec b,Vec x) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_LUSOL"
-int MatLUFactorNumeric_LUSOL(Mat A, Mat *F) {
+PetscErrorCode MatLUFactorNumeric_LUSOL(Mat A, Mat *F) {
   Mat_SeqAIJ *a;
   Mat_LUSOL  *lusol = (Mat_LUSOL*)(*F)->spptr;
   int        m, n, nz, nnz, status;
@@ -373,7 +374,7 @@ int MatLUFactorNumeric_LUSOL(Mat A, Mat *F) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_LUSOL"
-int MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat *F) {
+PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat *F) {
   /************************************************************************/
   /* Input                                                                */
   /*     A  - matrix to factor                                            */
@@ -385,7 +386,8 @@ int MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat *F) {
   /************************************************************************/
   Mat       B;
   Mat_LUSOL *lusol;
-  int       ierr,i, m, n, nz, nnz;
+  PetscErrorCode ierr;
+  int        i, m, n, nz, nnz;
 
   PetscFunctionBegin;
 	  
@@ -468,8 +470,9 @@ int MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, Mat *F) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_LUSOL"
-int MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,Mat *newmat) {
-  int       ierr, m, n;
+PetscErrorCode MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,Mat *newmat) {
+  PetscErrorCode ierr;
+  int        m, n;
   Mat_LUSOL *lusol;
   Mat       B=*newmat;
 
@@ -506,8 +509,8 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_LUSOL"
-int MatDuplicate_LUSOL(Mat A, MatDuplicateOption op, Mat *M) {
-  int       ierr;
+PetscErrorCode MatDuplicate_LUSOL(Mat A, MatDuplicateOption op, Mat *M) {
+  PetscErrorCode ierr;
   Mat_LUSOL *lu=(Mat_LUSOL *)A->spptr;
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
@@ -540,8 +543,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_LUSOL"
-int MatCreate_LUSOL(Mat A) {
-  int ierr;
+PetscErrorCode MatCreate_LUSOL(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ and LUSOL types */

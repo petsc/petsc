@@ -21,9 +21,9 @@
 
 .seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
-int SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
+PetscErrorCode SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   Vec         x;
   PetscViewer viewer = (PetscViewer) dummy;
 
@@ -59,9 +59,9 @@ int SNESVecViewMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 
 .seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
-int SNESVecViewResidualMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
+PetscErrorCode SNESVecViewResidualMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   Vec         x;
   PetscViewer viewer = (PetscViewer) dummy;
 
@@ -97,9 +97,9 @@ int SNESVecViewResidualMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 
 .seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
-int SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
+PetscErrorCode SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   Vec         x;
   PetscViewer viewer = (PetscViewer) dummy;
 
@@ -137,9 +137,9 @@ int SNESVecViewUpdateMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 
 .seealso: SNESSetMonitor(), SNESVecViewMonitor()
 @*/
-int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
+PetscErrorCode SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscViewer viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
@@ -168,9 +168,10 @@ int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 
 .seealso: SNESSetMonitor(), SNESVecViewMonitor()
 @*/
-int SNESRatioMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
+PetscErrorCode SNESRatioMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
-  int         ierr,len;
+  PetscErrorCode ierr;
+  int len;
   PetscReal   *history;
   PetscViewer viewer;
 
@@ -192,9 +193,9 @@ int SNESRatioMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESRatioMonitorDestroy"
-int SNESRatioMonitorDestroy(void *history)
+PetscErrorCode SNESRatioMonitorDestroy(void *history)
 {
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(history);CHKERRQ(ierr);
@@ -218,9 +219,9 @@ int SNESRatioMonitorDestroy(void *history)
 
 .seealso: SNESSetMonitor(), SNESVecViewMonitor(), SNESDefaultMonitor()
 @*/
-int SNESSetRatioMonitor(SNES snes)
+PetscErrorCode SNESSetRatioMonitor(SNES snes)
 {
-  int       ierr;
+  PetscErrorCode ierr;
   PetscReal *history;
 
   PetscFunctionBegin;
@@ -246,9 +247,9 @@ int SNESSetRatioMonitor(SNES snes)
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-int SNESDefaultSMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
+PetscErrorCode SNESDefaultSMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (fgnorm > 1.e-9) {
@@ -299,7 +300,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-int SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
   if (fnorm != fnorm) {
@@ -349,7 +350,7 @@ int SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,S
 
 .keywords: SNES, KSP, Eisenstat, Walker, convergence, test, inexact, Newton
 @*/
-int SNES_KSP_SetConvergenceTestEW(SNES snes)
+PetscErrorCode SNES_KSP_SetConvergenceTestEW(SNES snes)
 {
   PetscFunctionBegin;
   snes->ksp_ewconv = PETSC_TRUE;
@@ -390,7 +391,7 @@ int SNES_KSP_SetConvergenceTestEW(SNES snes)
 
 .seealso: SNES_KSP_SetConvergenceTestEW()
 @*/
-int SNES_KSP_SetParametersEW(SNES snes,int version,PetscReal rtol_0,
+PetscErrorCode SNES_KSP_SetParametersEW(SNES snes,int version,PetscReal rtol_0,
                              PetscReal rtol_max,PetscReal gamma2,PetscReal alpha,
                              PetscReal alpha2,PetscReal threshold)
 {
@@ -428,11 +429,11 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,PetscReal rtol_0,
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNES_KSP_EW_ComputeRelativeTolerance_Private"
-int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
+PetscErrorCode SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   PetscReal           rtol = 0.0,stol;
-  int                 ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
@@ -460,11 +461,11 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNES_KSP_EW_Converged_Private"
-int SNES_KSP_EW_Converged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+PetscErrorCode SNES_KSP_EW_Converged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES)ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
-  int                 ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context set");

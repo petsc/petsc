@@ -1,7 +1,7 @@
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
-int PETSC_VIEWER_COOKIE = 0;
+PetscCookieCode PETSC_VIEWER_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy" 
@@ -18,9 +18,9 @@ int PETSC_VIEWER_COOKIE = 0;
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen()
 
 @*/
-int PetscViewerDestroy(PetscViewer viewer)
+PetscErrorCode PetscViewerDestroy(PetscViewer viewer)
 {
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -67,7 +67,7 @@ int PetscViewerDestroy(PetscViewer viewer)
 .seealso: PetscViewerCreate(), PetscViewerSetType()
 
 @*/
-int PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
+PetscErrorCode PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);

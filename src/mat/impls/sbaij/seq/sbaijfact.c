@@ -14,7 +14,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInertia_SeqSBAIJ"
-int MatGetInertia_SeqSBAIJ(Mat F,int *nneig,int *nzero,int *npos)
+PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,int *nneig,int *nzero,int *npos)
 { 
   Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;
   PetscScalar  *dd = fact_ptr->a;
@@ -48,7 +48,7 @@ See page 85, "Iterative Methods ..." by Saad. */
 /* Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
-int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
   int          *rip,ierr,i,mbs = a->mbs,*ai,*aj;
@@ -444,7 +444,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_N"
-int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
@@ -606,11 +606,12 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering"
-int MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,Mat *B)
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
-  int                ierr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscErrorCode ierr;
+  int i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   int                *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   int                bs=a->bs,bs2 = a->bs2;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
@@ -732,7 +733,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,Mat *B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_2"
-int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
@@ -903,11 +904,12 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering"
-int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
-  int                ierr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscErrorCode ierr;
+  int i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   int                *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
@@ -1038,7 +1040,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_1"
-int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
@@ -1165,11 +1167,12 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering"
-int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqSBAIJ       *a=(Mat_SeqSBAIJ*)A->data,*b=(Mat_SeqSBAIJ *)C->data;
-  int                ierr,i,j,mbs = a->mbs;
+  PetscErrorCode ierr;
+  int i,j,mbs = a->mbs;
   int                *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   int                k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz,ndamp = 0;
   MatScalar          *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
@@ -1315,9 +1318,9 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactor_SeqSBAIJ"
-int MatCholeskyFactor_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactor_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Mat C;
 
   PetscFunctionBegin;

@@ -25,9 +25,9 @@
 
 .seealso: PetscDrawPoint()
 @*/
-int PetscDrawPointSetSize(PetscDraw draw,PetscReal width)
+PetscErrorCode PetscDrawPointSetSize(PetscDraw draw,PetscReal width)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isnull;
 
   PetscFunctionBegin;

@@ -612,7 +612,7 @@ html:
               echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
               sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  \
               -e "s/ierr [ ]*= //g"  $$i | ${C2HTML} -n  | ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
-              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|int ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
+              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
               ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
 	    fi; \
          done

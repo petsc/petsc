@@ -8,12 +8,12 @@
 static int MatIncreaseOverlap_MPIBAIJ_Once(Mat,int,IS *);
 static int MatIncreaseOverlap_MPIBAIJ_Local(Mat,int,char **,int*,int**);
 static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat,int,int **,int**,int*);
-EXTERN int MatGetRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
-EXTERN int MatRestoreRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatGetRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatRestoreRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ"
-int MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS is[],int ov)
+PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS is[],int ov)
 {
   Mat_MPIBAIJ  *c = (Mat_MPIBAIJ*)C->data;
   int          i,ierr,N=C->N, bs=c->bs;
@@ -553,7 +553,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,const IS[],const IS[],MatReus
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIBAIJ"
-int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
   IS          *isrow_new,*iscol_new;
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)C->data;
@@ -598,7 +598,7 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],
 #if defined (PETSC_USE_CTABLE)
 #undef __FUNCT__    
 #define __FUNCT__ "PetscGetProc" 
-int PetscGetProc(const int gid, const int size, const int proc_gnode[], int *proc)
+PetscErrorCode PetscGetProc(const int gid, const int size, const int proc_gnode[], int *proc)
 {
   int nGlobalNd = proc_gnode[size];
   int fproc = (int) ((float)gid * (float)size / (float)nGlobalNd + 0.5);

@@ -59,21 +59,21 @@ typedef struct {
   int        assembled_icc_storage; /* Indicates that the block solve assembly was performed for icc format */
 } Mat_MPIRowbs;
 
-EXTERN int MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);
-EXTERN int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,MatFactorInfo*,Mat *);
-EXTERN int MatLUFactorNumeric_MPIRowbs(Mat,Mat*);
-EXTERN int MatILUFactorSymbolic_MPIRowbs(Mat,IS,IS,MatFactorInfo*,Mat *);
-EXTERN int MatSolve_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatForwardSolve_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatBackwardSolve_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatScaleSystem_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatUnScaleSystem_MPIRowbs(Mat,Vec,Vec);
-EXTERN int MatUseScaledForm_MPIRowbs(Mat,PetscTruth);
-EXTERN int MatGetSubMatrices_MPIRowbs (Mat,int,const IS[],const IS[],MatReuse,Mat **);
-EXTERN int MatGetSubMatrix_MPIRowbs (Mat,IS,IS,int,MatReuse,Mat *);
-EXTERN int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
-EXTERN int MatGetSubMatrices_MPIRowbs_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
-EXTERN int MatLoad_MPIRowbs(PetscViewer,const MatType,Mat*);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat*);
+EXTERN PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,MatFactorInfo*,Mat *);
+EXTERN PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat,Mat*);
+EXTERN PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat,IS,IS,MatFactorInfo*,Mat *);
+EXTERN PetscErrorCode MatSolve_MPIRowbs(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatForwardSolve_MPIRowbs(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatBackwardSolve_MPIRowbs(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatScaleSystem_MPIRowbs(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatUnScaleSystem_MPIRowbs(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatUseScaledForm_MPIRowbs(Mat,PetscTruth);
+EXTERN PetscErrorCode MatGetSubMatrices_MPIRowbs (Mat,int,const IS[],const IS[],MatReuse,Mat **);
+EXTERN PetscErrorCode MatGetSubMatrix_MPIRowbs (Mat,IS,IS,int,MatReuse,Mat *);
+EXTERN PetscErrorCode MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
+EXTERN PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
+EXTERN PetscErrorCode MatLoad_MPIRowbs(PetscViewer,const MatType,Mat*);
 
 #define CHKERRBS(a) {if (__BSERROR_STATUS) {(*PetscErrorPrintf)(\
         "BlockSolve95 Error Code %d\n",__BSERROR_STATUS);CHKERRQ(1);}}

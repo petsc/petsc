@@ -25,7 +25,7 @@
 
 .seealso: PetscDrawGetPause(), PetscDrawPause()
 @*/
-int PetscDrawSetPause(PetscDraw draw,int lpause)
+PetscErrorCode PetscDrawSetPause(PetscDraw draw,int lpause)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

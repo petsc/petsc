@@ -8,10 +8,10 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Spooles_Base"
-int MatConvert_Spooles_Base(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_Spooles_Base(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert an unfactored PETSc-Spooles matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
-  int         ierr;
+  PetscErrorCode ierr;
   Mat         B=*newmat;
   Mat_Spooles *lu=(Mat_Spooles*)A->spptr;
 
@@ -35,10 +35,10 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJSpooles"
-int MatDestroy_SeqAIJSpooles(Mat A)
+PetscErrorCode MatDestroy_SeqAIJSpooles(Mat A)
 {
   Mat_Spooles *lu = (Mat_Spooles*)A->spptr; 
-  int         ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
  
@@ -59,12 +59,13 @@ int MatDestroy_SeqAIJSpooles(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJSpooles"
-int MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
+PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
 {
   Mat_Spooles      *lu = (Mat_Spooles*)A->spptr;
   PetscScalar      *array;
   DenseMtx         *mtxY, *mtxX ;
-  int              ierr,irow,neqns=A->n,nrow=A->m,*iv;
+  PetscErrorCode ierr;
+  int              irow,neqns=A->n,nrow=A->m,*iv;
 #if defined(PETSC_USE_COMPLEX)
   double           x_real,x_imag;
 #else
@@ -137,13 +138,14 @@ int MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_SeqAIJSpooles"
-int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
+PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
 {  
   Mat_Spooles        *lu = (Mat_Spooles*)(*F)->spptr;
   ChvManager         *chvmanager ;
   Chv                *rootchv ;
   IVL                *adjIVL;
-  int                ierr,nz,nrow=A->m,irow,nedges,neqns=A->n,*ai,*aj,i,*diag=0;
+  PetscErrorCode ierr;
+  int                nz,nrow=A->m,irow,nedges,neqns=A->n,*ai,*aj,i,*diag=0;
   PetscScalar        *av;
   double             cputotal,facops;
 #if defined(PETSC_USE_COMPLEX)
@@ -481,10 +483,10 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJSpooles"
-int MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   /* This routine is only called to convert a MATSEQAIJ matrix */
   /* to a MATSEQAIJSPOOLES matrix, so we will ignore 'MatType type'. */
-  int         ierr;
+  PetscErrorCode ierr;
   Mat         B=*newmat;
   Mat_Spooles *lu;
 
@@ -525,8 +527,8 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_Spooles"
-int MatDuplicate_Spooles(Mat A, MatDuplicateOption op, Mat *M) {
-  int         ierr;
+PetscErrorCode MatDuplicate_Spooles(Mat A, MatDuplicateOption op, Mat *M) {
+  PetscErrorCode ierr;
   Mat_Spooles *lu=(Mat_Spooles *)A->spptr;
 
   PetscFunctionBegin;
@@ -574,8 +576,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJSpooles"
-int MatCreate_SeqAIJSpooles(Mat A) {
-  int ierr;
+PetscErrorCode MatCreate_SeqAIJSpooles(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ and SeqAIJSpooles types */
@@ -624,8 +627,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_AIJSpooles"
-int MatCreate_AIJSpooles(Mat A) {
-  int ierr,size;
+PetscErrorCode MatCreate_AIJSpooles(Mat A) 
+{
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJSpooles or MPIAIJSpooles */

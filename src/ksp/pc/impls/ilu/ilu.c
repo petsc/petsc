@@ -10,7 +10,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetSetZeroPivot_ILU"
-int PCILUSetZeroPivot_ILU(PC pc,PetscReal z)
+PetscErrorCode PCILUSetZeroPivot_ILU(PC pc,PetscReal z)
 {
   PC_ILU *lu;
 
@@ -23,10 +23,10 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_ILU_Internal"
-int PCDestroy_ILU_Internal(PC pc)
+PetscErrorCode PCDestroy_ILU_Internal(PC pc)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!ilu->inplace && ilu->fact) {ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);}
@@ -38,7 +38,7 @@ int PCDestroy_ILU_Internal(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetDamping_ILU"
-int PCILUSetDamping_ILU(PC pc,PetscReal damping)
+PetscErrorCode PCILUSetDamping_ILU(PC pc,PetscReal damping)
 {
   PC_ILU *dir;
 
@@ -56,7 +56,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetShift_ILU"
-int PCILUSetShift_ILU(PC pc,PetscTruth shift)
+PetscErrorCode PCILUSetShift_ILU(PC pc,PetscTruth shift)
 {
   PC_ILU *dir;
 
@@ -71,10 +71,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetUseDropTolerance_ILU"
-int PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
+PetscErrorCode PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
 {
   PC_ILU *ilu;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ilu = (PC_ILU*)pc->data;
@@ -102,7 +102,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetFill_ILU"
-int PCILUSetFill_ILU(PC pc,PetscReal fill)
+PetscErrorCode PCILUSetFill_ILU(PC pc,PetscReal fill)
 {
   PC_ILU *dir;
 
@@ -116,10 +116,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetMatOrdering_ILU"
-int PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
+PetscErrorCode PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
 {
   PC_ILU *dir = (PC_ILU*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
  
   PetscFunctionBegin;
@@ -143,7 +143,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetReuseOrdering_ILU"
-int PCILUSetReuseOrdering_ILU(PC pc,PetscTruth flag)
+PetscErrorCode PCILUSetReuseOrdering_ILU(PC pc,PetscTruth flag)
 {
   PC_ILU *ilu;
 
@@ -157,7 +157,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUDTSetReuseFill_ILUDT"
-int PCILUDTSetReuseFill_ILUDT(PC pc,PetscTruth flag)
+PetscErrorCode PCILUDTSetReuseFill_ILUDT(PC pc,PetscTruth flag)
 {
   PC_ILU *ilu;
 
@@ -172,10 +172,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetLevels_ILU"
-int PCILUSetLevels_ILU(PC pc,int levels)
+PetscErrorCode PCILUSetLevels_ILU(PC pc,int levels)
 {
   PC_ILU *ilu;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ilu = (PC_ILU*)pc->data;
@@ -195,7 +195,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetUseInPlace_ILU"
-int PCILUSetUseInPlace_ILU(PC pc)
+PetscErrorCode PCILUSetUseInPlace_ILU(PC pc)
 {
   PC_ILU *dir;
 
@@ -209,7 +209,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetAllowDiagonalFill"
-int PCILUSetAllowDiagonalFill_ILU(PC pc)
+PetscErrorCode PCILUSetAllowDiagonalFill_ILU(PC pc)
 {
   PC_ILU *dir;
 
@@ -240,9 +240,9 @@ EXTERN_C_END
 
 .seealso: PCILUSetFill(), PCLUSetDamp(), PCLUSetZeroPivot()
 @*/
-int PCILUSetZeroPivot(PC pc,PetscReal zero)
+PetscErrorCode PCILUSetZeroPivot(PC pc,PetscReal zero)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -277,9 +277,9 @@ int PCILUSetZeroPivot(PC pc,PetscReal zero)
 
 .seealso: PCILUSetFill(), PCLUSetDamping(), PCILUSetShift()
 @*/
-int PCILUSetDamping(PC pc,PetscReal damping)
+PetscErrorCode PCILUSetDamping(PC pc,PetscReal damping)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -312,9 +312,9 @@ int PCILUSetDamping(PC pc,PetscReal damping)
 
 .seealso: PCILUSetDamping()
 @*/
-int PCILUSetShift(PC pc,PetscTruth shifting)
+PetscErrorCode PCILUSetShift(PC pc,PetscTruth shifting)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -351,9 +351,9 @@ int PCILUSetShift(PC pc,PetscTruth shifting)
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
-int PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,int maxrowcount)
+PetscErrorCode PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,int maxrowcount)
 {
-  int ierr,(*f)(PC,PetscReal,PetscReal,int);
+  PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -391,9 +391,9 @@ $  -pc_ilu_fill <fill>
 
 .seealso: PCLUSetFill()
 @*/
-int PCILUSetFill(PC pc,PetscReal fill)
+PetscErrorCode PCILUSetFill(PC pc,PetscReal fill)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -429,9 +429,9 @@ int PCILUSetFill(PC pc,PetscReal fill)
 .keywords: PC, ILU, set, matrix, reordering
 
 @*/
-int PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
+PetscErrorCode PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
 {
-  int ierr,(*f)(PC,MatOrderingType);
+  PetscErrorCode ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -464,9 +464,9 @@ int PCILUSetMatOrdering(PC pc,MatOrderingType ordering)
 
 .seealso: PCILUDTSetReuseFill(), PCLUSetReuseOrdering(), PCLUSetReuseFill()
 @*/
-int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
+PetscErrorCode PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -498,9 +498,9 @@ int PCILUSetReuseOrdering(PC pc,PetscTruth flag)
 
 .seealso: PCILUSetReuseOrdering(), PCLUSetReuseOrdering(), PCLUSetReuseFill()
 @*/
-int PCILUDTSetReuseFill(PC pc,PetscTruth flag)
+PetscErrorCode PCILUDTSetReuseFill(PC pc,PetscTruth flag)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -529,9 +529,9 @@ int PCILUDTSetReuseFill(PC pc,PetscTruth flag)
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
-int PCILUSetLevels(PC pc,int levels)
+PetscErrorCode PCILUSetLevels(PC pc,int levels)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -564,9 +564,9 @@ int PCILUSetLevels(PC pc,int levels)
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
 @*/
-int PCILUSetAllowDiagonalFill(PC pc)
+PetscErrorCode PCILUSetAllowDiagonalFill(PC pc)
 {
-  int ierr,(*f)(PC);
+  PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -605,9 +605,9 @@ int PCILUSetAllowDiagonalFill(PC pc)
 
 .seealso:  PCLUSetUseInPlace()
 @*/
-int PCILUSetUseInPlace(PC pc)
+PetscErrorCode PCILUSetUseInPlace(PC pc)
 {
-  int ierr,(*f)(PC);
+  PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -637,9 +637,9 @@ int PCILUSetUseInPlace(PC pc)
 
 .seealso: PCIILUSetMatOrdering(), PCILUSetPivoting()
 @*/
-int PCILUSetPivotInBlocks(PC pc,PetscTruth pivot)
+PetscErrorCode PCILUSetPivotInBlocks(PC pc,PetscTruth pivot)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetPivotInBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -654,7 +654,7 @@ int PCILUSetPivotInBlocks(PC pc,PetscTruth pivot)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetPivotInBlocks_ILU"
-int PCILUSetPivotInBlocks_ILU(PC pc,PetscTruth pivot)
+PetscErrorCode PCILUSetPivotInBlocks_ILU(PC pc,PetscTruth pivot)
 {
   PC_ILU *dir = (PC_ILU*)pc->data;
 
@@ -668,7 +668,8 @@ EXTERN_C_END
 #define __FUNCT__ "PCSetFromOptions_ILU"
 static int PCSetFromOptions_ILU(PC pc)
 {
-  int        ierr,dtmax = 3,itmp;
+  PetscErrorCode ierr;
+  int dtmax = 3,itmp;
   PetscTruth flg,set;
   PetscReal  dt[3];
   char       tname[256];
@@ -726,7 +727,7 @@ static int PCSetFromOptions_ILU(PC pc)
 static int PCView_ILU(PC pc,PetscViewer viewer)
 {
   PC_ILU     *ilu = (PC_ILU*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isstring,iascii;
 
   PetscFunctionBegin;
@@ -770,7 +771,7 @@ static int PCView_ILU(PC pc,PetscViewer viewer)
 #define __FUNCT__ "PCSetUp_ILU"
 static int PCSetUp_ILU(PC pc)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
   PC_ILU     *ilu = (PC_ILU*)pc->data;
 
@@ -862,7 +863,7 @@ static int PCSetUp_ILU(PC pc)
 static int PCDestroy_ILU(PC pc)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
@@ -876,7 +877,7 @@ static int PCDestroy_ILU(PC pc)
 static int PCApply_ILU(PC pc,Vec x,Vec y)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatSolve(ilu->fact,x,y);CHKERRQ(ierr);
@@ -888,7 +889,7 @@ static int PCApply_ILU(PC pc,Vec x,Vec y)
 static int PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatSolveTranspose(ilu->fact,x,y);CHKERRQ(ierr);
@@ -946,9 +947,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ILU"
-int PCCreate_ILU(PC pc)
+PetscErrorCode PCCreate_ILU(PC pc)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   PC_ILU *ilu;
 
   PetscFunctionBegin;

@@ -22,9 +22,9 @@ int PETSC_Barrier = 0;
    Concepts: barrier
 
 @*/
-int PetscBarrier(PetscObject obj)
+PetscErrorCode PetscBarrier(PetscObject obj)
 {
-  int      ierr;
+  PetscErrorCode ierr;
   MPI_Comm comm;
 
   PetscFunctionBegin;

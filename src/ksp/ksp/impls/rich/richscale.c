@@ -19,9 +19,9 @@
 
 .keywords: KSP, Richardson, set, scale
 @*/
-int KSPRichardsonSetScale(KSP ksp,PetscReal scale)
+PetscErrorCode KSPRichardsonSetScale(KSP ksp,PetscReal scale)
 {
-  int ierr,(*f)(KSP,PetscReal);
+  PetscErrorCode ierr,(*f)(KSP,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);

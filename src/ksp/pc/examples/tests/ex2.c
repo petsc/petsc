@@ -15,7 +15,8 @@ int main(int argc,char **args)
   Vec         b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
   PC          pc;           /* PC context */
   KSP         ksp;          /* KSP context */
-  int         ierr,n = 10,i,its,col[3];
+  PetscErrorCode ierr;
+  int n = 10,i,its,col[3];
   PetscScalar value[3],mone = -1.0,one = 1.0,zero = 0.0;
   PCType      pcname;
   KSPType     kspname;

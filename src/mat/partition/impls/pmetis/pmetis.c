@@ -29,7 +29,8 @@ typedef struct {
 static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis*)part->data;
-  int                      ierr,*locals,size,rank;
+  PetscErrorCode ierr;
+  int *locals,size,rank;
   int                      *vtxdist,*xadj,*adjncy,itmp = 0;
   int                      wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3], edgecut, i,j;
   Mat                      mat = part->adj,newmat;
@@ -103,10 +104,11 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningView_Parmetis" 
-int MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer viewer)
+PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer viewer)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
-  int                      ierr,rank;
+  PetscErrorCode ierr;
+  int rank;
   PetscTruth               iascii;
 
   PetscFunctionBegin;
@@ -142,7 +144,7 @@ int MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer viewer)
    Level: advanced
 
 @*/
-int MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
+PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
 
@@ -152,9 +154,9 @@ int MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis" 
-int MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -170,10 +172,10 @@ int MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningDestroy_Parmetis" 
-int MatPartitioningDestroy_Parmetis(MatPartitioning part)
+PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_free(&(parmetis->comm_pmetis));CHKERRQ(ierr);
@@ -184,9 +186,9 @@ int MatPartitioningDestroy_Parmetis(MatPartitioning part)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningCreate_Parmetis" 
-int MatPartitioningCreate_Parmetis(MatPartitioning part)
+PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
-  int                      ierr;
+  PetscErrorCode ierr;
   MatPartitioning_Parmetis *parmetis;
 
   PetscFunctionBegin;

@@ -2507,7 +2507,7 @@ int EdgeColoring(int nnodes,int nedge,int *e2n,int *eperm,int *ncle,int *counte)
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
 int EventCountersBegin(int *gen_start,PetscScalar* time_start_counters)
 {
- int ierr;
+ PetscErrorCode ierr;
  if ((*gen_start = start_counters(event0,event1)) < 0)
    SETERRQ(1,"Error in start_counters\n");
  ierr = PetscGetTime(time_start_counters);CHKERRQ(ierr);

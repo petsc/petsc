@@ -17,9 +17,9 @@ typedef struct {
   PetscTruth   user_alloc;        /* true if the user provided the dense data */
 } Mat_SeqDense;
 
-EXTERN int MatMult_SeqDense(Mat A,Vec,Vec);
-EXTERN int MatMultAdd_SeqDense(Mat A,Vec,Vec,Vec);
-EXTERN int MatMultTranspose_SeqDense(Mat A,Vec,Vec);
-EXTERN int MatMultTransposeAdd_SeqDense(Mat A,Vec,Vec,Vec);
+EXTERN PetscErrorCode MatMult_SeqDense(Mat A,Vec,Vec);
+EXTERN PetscErrorCode MatMultAdd_SeqDense(Mat A,Vec,Vec,Vec);
+EXTERN PetscErrorCode MatMultTranspose_SeqDense(Mat A,Vec,Vec);
+EXTERN PetscErrorCode MatMultTransposeAdd_SeqDense(Mat A,Vec,Vec,Vec);
 
 #endif

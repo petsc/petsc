@@ -7,7 +7,7 @@ static char help[] = "Tests catching of floating point exceptions.\n\n";
 #define __FUNCT__ "CreateError"
 int CreateError(PetscReal x)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   x = 1.0/x;
   ierr = PetscPrintf(PETSC_COMM_SELF,"x = %g\n",x);CHKERRQ(ierr);
@@ -18,7 +18,7 @@ int CreateError(PetscReal x)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscPrintf(PETSC_COMM_SELF,"This is a contrived example to test floating pointing\n");CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"It is not a true error.\n");CHKERRQ(ierr);

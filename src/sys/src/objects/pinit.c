@@ -5,21 +5,21 @@
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
 
-EXTERN int PetscLogBegin_Private(void);
+EXTERN PetscErrorCode PetscLogBegin_Private(void);
 
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
 
-EXTERN int PetscInitialize_DynamicLibraries(void);
-EXTERN int PetscFinalize_DynamicLibraries(void);
-EXTERN int PetscFListDestroyAll(void);
-EXTERN int PetscSequentialPhaseBegin_Private(MPI_Comm,int);
-EXTERN int PetscSequentialPhaseEnd_Private(MPI_Comm,int);
-EXTERN int PetscLogCloseHistoryFile(FILE **);
+EXTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
+EXTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
+EXTERN PetscErrorCode PetscFListDestroyAll(void);
+EXTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
+EXTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
+EXTERN PetscErrorCode PetscLogCloseHistoryFile(FILE **);
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
-int __gierr = 0;
+PetscErrorCode __gierr = 0;
 
 /*
        Checks the options database for initializations related to the 
@@ -27,11 +27,11 @@ int __gierr = 0;
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Components"
-int PetscOptionsCheckInitial_Components(void)
+PetscErrorCode PetscOptionsCheckInitial_Components(void)
 {
   MPI_Comm   comm = PETSC_COMM_WORLD;
   PetscTruth flg1;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
@@ -72,9 +72,9 @@ int PetscOptionsCheckInitial_Components(void)
 
 .seealso: PetscInitialize(), PetscInitializeFortran()
 @*/
-int PetscInitializeNoArguments(void)
+PetscErrorCode PetscInitializeNoArguments(void)
 {
-  int ierr,argc = 0;
+  PetscErrorCode ierr,argc = 0;
   char **args = 0;
 
   PetscFunctionBegin;
@@ -91,7 +91,7 @@ int PetscInitializeNoArguments(void)
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
-int PetscInitialized(PetscTruth *isInitialized)
+PetscErrorCode PetscInitialized(PetscTruth *isInitialized)
 {
   PetscFunctionBegin;
   PetscValidPointer(isInitialized, 1);
@@ -99,7 +99,7 @@ int PetscInitialized(PetscTruth *isInitialized)
   PetscFunctionReturn(0);
 }
 
-EXTERN int        PetscOptionsCheckInitial_Private(void);
+EXTERN PetscErrorCode        PetscOptionsCheckInitial_Private(void);
 extern PetscTruth PetscBeganMPI;
 
 /*
@@ -136,7 +136,7 @@ sum of the second entry.
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum"
-int PetscMaxSum(MPI_Comm comm,const int nprocs[],int *max,int *sum)
+PetscErrorCode PetscMaxSum(MPI_Comm comm,const int nprocs[],int *max,int *sum)
 {
   int size,rank,ierr,*work;
   
@@ -262,7 +262,7 @@ static char **PetscGlobalArgs = 0;
 .seealso: PetscFinalize(), PetscInitializeFortran()
 
 @*/
-int PetscGetArgs(int *argc,char ***args)
+PetscErrorCode PetscGetArgs(int *argc,char ***args)
 {
   PetscFunctionBegin;
   if (!PetscGlobalArgs) {
@@ -350,9 +350,10 @@ $       call PetscInitialize(file,ierr)
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetescGetArgs()
 
 @*/
-int PetscInitialize(int *argc,char ***args,const char file[],const char help[])
+PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
-  int        ierr,flag,dummy_tag,size;
+  PetscErrorCode ierr;
+  int        flag,dummy_tag,size;
   PetscTruth flg;
   char       hostname[256];
 
@@ -505,16 +506,17 @@ int PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 
 .seealso: PetscInitialize(), PetscOptionsPrint(), PetscTrDump(), PetscMPIDump(), PetscEnd()
 @*/
-int PetscFinalize(void)
+PetscErrorCode PetscFinalize(void)
 {
-  int            ierr,rank,nopt;
+  PetscErrorCode ierr;
+  int            rank,nopt;
   PetscLogDouble rss;
   PetscTruth     flg1,flg2,flg3;
   
   PetscFunctionBegin;
 
   if (!PetscInitializeCalled) {
-    (*PetscErrorPrintf)("PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
+    (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
   /* Destroy auxiliary packages */
@@ -752,7 +754,7 @@ int PetscFinalize(void)
 
 .seealso: PetscGlobalMin(), PetscGlobalSum()
 @*/
-int PetscGlobalMax(PetscReal* local,PetscReal* result,MPI_Comm comm)
+PetscErrorCode PetscGlobalMax(PetscReal* local,PetscReal* result,MPI_Comm comm)
 {
   return MPI_Allreduce(local,result,1,MPIU_REAL,MPI_MAX,comm);
 }
@@ -779,7 +781,7 @@ int PetscGlobalMax(PetscReal* local,PetscReal* result,MPI_Comm comm)
 
 .seealso: PetscGlobalMax(), PetscGlobalSum()
 @*/
-int PetscGlobalMin(PetscReal* local,PetscReal* result,MPI_Comm comm)
+PetscErrorCode PetscGlobalMin(PetscReal* local,PetscReal* result,MPI_Comm comm)
 {
   return MPI_Allreduce(local,result,1,MPIU_REAL,MPI_MIN,comm);
 }
@@ -806,7 +808,7 @@ int PetscGlobalMin(PetscReal* local,PetscReal* result,MPI_Comm comm)
 
 .seealso: PetscGlobalMin(), PetscGlobalMax()
 @*/
-int PetscGlobalSum(PetscScalar* local,PetscScalar* result,MPI_Comm comm)
+PetscErrorCode PetscGlobalSum(PetscScalar* local,PetscScalar* result,MPI_Comm comm)
 {
   return MPI_Allreduce(local,result,1,MPIU_SCALAR,PetscSum_Op,comm);
 }

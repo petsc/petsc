@@ -8,7 +8,8 @@ static char help[] = "Demonstrates us of color map\n";
 int main(int argc,char **argv)
 {
   PetscDraw draw;
-  int     ierr,x = 0,y = 0,width = 256,height = 256,i; 
+  int       ierr;
+  int       x = 0,y = 0,width = 256,height = 256,i; 
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

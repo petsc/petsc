@@ -35,10 +35,11 @@ int MAT_NULLSPACE_COOKIE = 0;
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), KSPSetNullSpace(), MatNullSpace
 @*/
-int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,const Vec vecs[],MatNullSpace *SP)
+PetscErrorCode MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,const Vec vecs[],MatNullSpace *SP)
 {
   MatNullSpace sp;
-  int          ierr,i;
+  PetscErrorCode ierr;
+  int          i;
 
   PetscFunctionBegin;
   PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);
@@ -79,9 +80,9 @@ int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,const Vec vecs[],MatNull
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceRemove()
 @*/
-int MatNullSpaceDestroy(MatNullSpace sp)
+PetscErrorCode MatNullSpaceDestroy(MatNullSpace sp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (--sp->refct > 0) PetscFunctionReturn(0);
@@ -116,7 +117,7 @@ int MatNullSpaceDestroy(MatNullSpace sp)
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceDestroy()
 @*/
-int MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
+PetscErrorCode MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 {
   PetscScalar sum;
   int         j,n = sp->n,N,ierr;
@@ -166,7 +167,7 @@ int MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceDestroy()
 @*/
-int MatNullSpaceTest(MatNullSpace sp,Mat mat)
+PetscErrorCode MatNullSpaceTest(MatNullSpace sp,Mat mat)
 {
   PetscScalar  sum;
   PetscReal    nrm;

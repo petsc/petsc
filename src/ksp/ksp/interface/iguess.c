@@ -15,10 +15,10 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessCreate" 
-int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
+PetscErrorCode KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 {
   KSPIGUESS *itg;
-  int       ierr;
+  PetscErrorCode ierr;
 
   *ITG = 0;
   PetscFunctionBegin;
@@ -38,9 +38,9 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessDestroy" 
-int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
+PetscErrorCode KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -53,7 +53,7 @@ int KSPGuessDestroy(KSP ksp,KSPIGUESS *itg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessFormB"
-int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
+PetscErrorCode KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 {
   int         i,ierr;
   PetscScalar tmp;
@@ -72,7 +72,7 @@ int KSPGuessFormB(KSP ksp,KSPIGUESS *itg,Vec b)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessFormX"
-int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
+PetscErrorCode KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 {
   int i,ierr;
 
@@ -89,7 +89,7 @@ int KSPGuessFormX(KSP ksp,KSPIGUESS *itg,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGuessUpdate"
-int  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
+PetscErrorCode  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
 {
   PetscReal    normax,norm;
   PetscScalar  tmp;

@@ -35,14 +35,16 @@ typedef struct {
 #define __FUNCT__ "MatPartitioningApply_Scotch"
 static int MatPartitioningApply_Scotch(MatPartitioning part, IS * partitioning)
 {
-    int ierr, *parttab, *locals = NULL, rank, i, size, j;
-    Mat mat = part->adj, matMPI, matSeq;
-    int nb_locals = mat->m;
-    Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
+    PetscErrorCode ierr;
+    int  *parttab, *locals = PETSC_NULL, rank, i, size;
+    size_t                 j;
+    Mat                    mat = part->adj, matMPI, matSeq;
+    int                    nb_locals = mat->m;
+    Mat_MPIAdj             *adj = (Mat_MPIAdj *) mat->data;
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    PetscTruth flg;
+    PetscTruth             flg;
 #ifdef PETSC_HAVE_UNISTD_H
-    int fd_stdout, fd_pipe[2], count;
+    int                    fd_stdout, fd_pipe[2], count;
 #endif
 
     PetscFunctionBegin;
@@ -301,10 +303,10 @@ static int MatPartitioningApply_Scotch(MatPartitioning part, IS * partitioning)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningView_Scotch"
-int MatPartitioningView_Scotch(MatPartitioning part, PetscViewer viewer)
+PetscErrorCode MatPartitioningView_Scotch(MatPartitioning part, PetscViewer viewer)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    int ierr, rank;
+    PetscErrorCode ierr, rank;
     PetscTruth iascii;
 
     PetscFunctionBegin;
@@ -334,7 +336,7 @@ int MatPartitioningView_Scotch(MatPartitioning part, PetscViewer viewer)
    Level: advanced
 
 @*/
-int MatPartitioningScotchSetGlobal(MatPartitioning part,
+PetscErrorCode MatPartitioningScotchSetGlobal(MatPartitioning part,
     MPScotchGlobalType global)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
@@ -366,7 +368,7 @@ int MatPartitioningScotchSetGlobal(MatPartitioning part,
    Level: advanced
 
 @*/
-int MatPartitioningScotchSetCoarseLevel(MatPartitioning part, PetscReal level)
+PetscErrorCode MatPartitioningScotchSetCoarseLevel(MatPartitioning part, PetscReal level)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
 
@@ -399,7 +401,7 @@ int MatPartitioningScotchSetCoarseLevel(MatPartitioning part, PetscReal level)
 
 .seealso: MatPartitioningScotchSetGlobal(), MatPartitioningScotchSetLocal(), MatPartitioningScotchSetCoarseLevel(), MatPartitioningScotchSetMultilevel(), 
 @*/
-int MatPartitioningScotchSetStrategy(MatPartitioning part, char *strat)
+PetscErrorCode MatPartitioningScotchSetStrategy(MatPartitioning part, char *strat)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
 
@@ -422,7 +424,7 @@ int MatPartitioningScotchSetStrategy(MatPartitioning part, char *strat)
    Level: advanced
 
 @*/
-int MatPartitioningScotchSetLocal(MatPartitioning part, MPScotchLocalType local)
+PetscErrorCode MatPartitioningScotchSetLocal(MatPartitioning part, MPScotchLocalType local)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
 
@@ -457,7 +459,7 @@ int MatPartitioningScotchSetLocal(MatPartitioning part, MPScotchLocalType local)
 
 .seealso: MatPartitioningScotchSetHostList(),MatPartitioningScotchSetMapping()
 @*/
-int MatPartitioningScotchSetArch(MatPartitioning part, const char *filename)
+PetscErrorCode MatPartitioningScotchSetArch(MatPartitioning part, const char *filename)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
 
@@ -489,7 +491,7 @@ int MatPartitioningScotchSetArch(MatPartitioning part, const char *filename)
   
 .seealso: MatPartitioningScotchSetArch(), MatPartitioningScotchSetMapping()
 @*/
-int MatPartitioningScotchSetHostList(MatPartitioning part, const char *filename)
+PetscErrorCode MatPartitioningScotchSetHostList(MatPartitioning part, const char *filename)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
 
@@ -511,7 +513,7 @@ int MatPartitioningScotchSetHostList(MatPartitioning part, const char *filename)
    Level: advanced
 
 @*/
-int MatPartitioningScotchSetMultilevel(MatPartitioning part)
+PetscErrorCode MatPartitioningScotchSetMultilevel(MatPartitioning part)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
 
@@ -537,7 +539,7 @@ int MatPartitioningScotchSetMultilevel(MatPartitioning part)
 
 .seealso: MatPartitioningScotchSetArch(),MatPartitioningScotchSetHostList()
 @*/
-int MatPartitioningScotchSetMapping(MatPartitioning part)
+PetscErrorCode MatPartitioningScotchSetMapping(MatPartitioning part)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
 
@@ -550,9 +552,9 @@ int MatPartitioningScotchSetMapping(MatPartitioning part)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Scotch"
-int MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
 {
-    int ierr;
+    PetscErrorCode ierr;
     PetscTruth flag;
     char name[PETSC_MAX_PATH_LEN];
     int i;
@@ -618,10 +620,10 @@ int MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningDestroy_Scotch"
-int MatPartitioningDestroy_Scotch(MatPartitioning part)
+PetscErrorCode MatPartitioningDestroy_Scotch(MatPartitioning part)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    int ierr;
+    PetscErrorCode ierr;
 
     PetscFunctionBegin;
 
@@ -636,9 +638,9 @@ int MatPartitioningDestroy_Scotch(MatPartitioning part)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Scotch"
-int MatPartitioningCreate_Scotch(MatPartitioning part)
+PetscErrorCode MatPartitioningCreate_Scotch(MatPartitioning part)
 {
-    int ierr;
+    PetscErrorCode ierr;
     MatPartitioning_Scotch *scotch;
 
     PetscFunctionBegin;

@@ -125,7 +125,7 @@ int FormInitialGuess(AppCtx* appctx)
 /********* Collect context informatrion ***********/
     AppAlgebra             *algebra = &appctx->algebra;
     Vec g = algebra->g;
-    int ierr;
+    PetscErrorCode ierr;
     double onep1 = 1.234;
     ierr = VecSet(&onep1,g);CHKERRQ(ierr);
  PetscFunctionReturn(0);
@@ -166,7 +166,7 @@ Vec f; /* nonlinear function */
 Vec g; /*for solution, and initial guess */
  Vec f_local; /* used for nonlinear function */
  /********** Internal Variables **********/
-int ierr;
+PetscErrorCode ierr;
 const int two = 2;
 
   PetscFunctionBegin;
@@ -391,7 +391,7 @@ to see if they need to be recomputed */
   Vec  b = algebra->b;
 
   /* Internal Variables */
-  int ierr;
+  PetscErrorCode ierr;
   double zero = 0.0,mone = -1.0;
 
 /****** Perform computation ***********/
@@ -449,7 +449,7 @@ int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
   
   double result[8],coors[8];
   double cell_values[8],*uvvals;
-  int ierr,i,j;
+  PetscErrorCode ierr,i,j;
   int *vertex_ptr;
   int  nindices,*indices;
   double  *bvs,xval,yval;
@@ -555,7 +555,7 @@ int FormJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,void *dappct
   AppAlgebra *algebra = &appctx->algebra;
   Mat A = algebra->A;
 
-  int ierr;
+  PetscErrorCode ierr;
 
   /* copy the linear part into jac.*/
 /* Mat Copy just zeros jac, and copies in the values.  The blocked structure and ltog is preserved */
@@ -681,7 +681,7 @@ int AppCtxSetRhs(AppCtx* appctx)
   /* Room to hold the coordinates of a single cell, plus the RHS generated from a single cell.  */
   double coors[4*2]; /* quad cell */
   double values[4*2]; /* number of elements * number of variables */  
-  int ierr,i,*vertices, j;
+  PetscErrorCode ierr,i,*vertices, j;
 
   /* set flag for element computation */
   phi->dorhs = 1;

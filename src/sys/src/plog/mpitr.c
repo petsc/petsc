@@ -25,7 +25,7 @@
 
 .seealso:  PetscTrDump()
  @*/
-int PetscMPIDump(FILE *fd)
+PetscErrorCode PetscMPIDump(FILE *fd)
 {
   int    rank,ierr;
   double tsends,trecvs,work;
@@ -59,7 +59,7 @@ int PetscMPIDump(FILE *fd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMPIDump"
-int PetscMPIDump(FILE *fd)
+PetscErrorCode PetscMPIDump(FILE *fd)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

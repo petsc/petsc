@@ -1,13 +1,12 @@
 
 #include "vecimpl.h"     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
-extern int VecCreate_Seq(Vec);
-extern int VecCreate_MPI(Vec);
-extern int VecCreate_Shared(Vec);
-extern int VecCreate_FETI(Vec);
-extern int VecCreate_ESI(Vec);
-extern int VecCreate_PetscESI(Vec);
-
+EXTERN PetscErrorCode VecCreate_Seq(Vec);
+EXTERN PetscErrorCode VecCreate_MPI(Vec);
+EXTERN PetscErrorCode VecCreate_Shared(Vec);
+EXTERN PetscErrorCode VecCreate_FETI(Vec);
+EXTERN PetscErrorCode VecCreate_ESI(Vec);
+EXTERN PetscErrorCode VecCreate_PetscESI(Vec);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -25,9 +24,9 @@ EXTERN_C_END
 .keywords: Vec, register, all
 .seealso:  VecRegister(), VecRegisterDestroy(), VecRegisterDynamic()
 @*/
-int VecRegisterAll(const char path[])
+PetscErrorCode VecRegisterAll(const char path[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   VecRegisterAllCalled = PETSC_TRUE;

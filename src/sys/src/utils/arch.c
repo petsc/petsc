@@ -23,9 +23,9 @@
      Concepts: architecture
 
 @*/
-int PetscGetArchType(char str[],int slen)
+PetscErrorCode PetscGetArchType(char str[],size_t slen)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_ARCH_NAME)

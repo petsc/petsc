@@ -20,10 +20,10 @@
 
 .seealso:  
 @*/ 
-int AODataAddAlias(AOData ao,char *alias,char *name)
+PetscErrorCode AODataAddAlias(AOData ao,char *alias,char *name)
 {
   AODataAlias *aoalias,*t;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AODATA_COOKIE,1);

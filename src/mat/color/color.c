@@ -11,10 +11,10 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringDegreeSequence_Minpack" 
-int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int *ria, int **seq)
+PetscErrorCode MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int *ria, int **seq)
 {
   int *work;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(m*sizeof(int),&work);CHKERRQ(ierr);  
@@ -33,7 +33,7 @@ int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringMinimumNumberofColors_Private" 
-int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
+PetscErrorCode MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
 {
   int i,c = 0;
 
@@ -52,7 +52,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringSL_Minpack" 
-int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+PetscErrorCode MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   int        ncolors,i;
@@ -98,7 +98,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringLF_Minpack" 
-int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+PetscErrorCode MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   int        n1, none,ncolors,i;
@@ -146,7 +146,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringID_Minpack" 
-int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
+PetscErrorCode MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   int        ncolors,i;
@@ -192,7 +192,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoring_Natural" 
-int MatColoring_Natural(Mat mat,const MatColoringType color, ISColoring *iscoloring)
+PetscErrorCode MatColoring_Natural(Mat mat,const MatColoringType color, ISColoring *iscoloring)
 {
   int             start,end,ierr,i;
   ISColoringValue *colors;
@@ -220,9 +220,9 @@ PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringRegister" 
-int MatColoringRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,const MatColoringType,ISColoring*))
+PetscErrorCode MatColoringRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,const MatColoringType,ISColoring*))
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -244,9 +244,9 @@ int MatColoringRegister(const char sname[],const char path[],const char name[],i
 
 .seealso: MatColoringRegisterDynamic(), MatColoringRegisterAll()
 @*/
-int MatColoringRegisterDestroy(void)
+PetscErrorCode MatColoringRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (MatColoringList) {
@@ -256,7 +256,7 @@ int MatColoringRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatAdjustForInodes(Mat,IS *,IS *);
+EXTERN PetscErrorCode MatAdjustForInodes(Mat,IS *,IS *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColoring" 
@@ -302,10 +302,10 @@ $    -mat_coloring_view
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
            SNESDefaultComputeJacobianColor()
 @*/
-int MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
+PetscErrorCode MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
 {
   PetscTruth flag;
-  int        ierr,(*r)(Mat,const MatColoringType,ISColoring *);
+  PetscErrorCode ierr,(*r)(Mat,const MatColoringType,ISColoring *);
   char       tname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;

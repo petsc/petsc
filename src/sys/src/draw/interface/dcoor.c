@@ -24,9 +24,9 @@
 .seealso: PetscDrawGetCoordinates()
 
 @*/
-int PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
+PetscErrorCode PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   ierr = MatLoad(in,MATSEQAIJ,&inmat);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(in);CHKERRQ(ierr);
 
-  ierr = MatMerge(PETSC_COMM_WORLD,inmat,&outmat);CHKERRQ(ierr);
+  ierr = MatMerge(PETSC_COMM_WORLD,inmat,MAT_INITIAL_MATRIX,&outmat);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,outfile,PETSC_FILE_CREATE,&out);CHKERRQ(ierr);
   ierr = MatView(outmat,out);CHKERRQ(ierr);

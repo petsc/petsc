@@ -33,10 +33,10 @@ PetscFList PetscDrawList              = 0;
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawDestroy(), PetscDrawSetType()
 @*/
-int PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *indraw)
+PetscErrorCode PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscDraw *indraw)
 {
   PetscDraw draw;
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *indraw = 0;
@@ -94,9 +94,9 @@ int PetscDrawCreate(MPI_Comm comm,const char display[],const char title[],int x,
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
 @*/
-int PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
+PetscErrorCode PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
 {
-  int           ierr,(*r)(PetscDraw);
+  PetscErrorCode ierr,(*r)(PetscDraw);
   PetscTruth    match;
   PetscTruth    flg=PETSC_FALSE;
 
@@ -164,9 +164,9 @@ int PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
 
 .seealso: PetscDrawRegisterDynamic(), PetscDrawRegisterAll()
 @*/
-int PetscDrawRegisterDestroy(void)
+PetscErrorCode PetscDrawRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscDrawList) {
@@ -192,7 +192,7 @@ int PetscDrawRegisterDestroy(void)
    Level: advanced
 
 @*/
-int PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
+PetscErrorCode PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 {
   PetscFunctionBegin;
   *type = draw->type_name;
@@ -201,9 +201,9 @@ int PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawRegister" 
-int PetscDrawRegister(const char *sname,const char *path,const char *name,int (*function)(PetscDraw))
+PetscErrorCode PetscDrawRegister(const char *sname,const char *path,const char *name,int (*function)(PetscDraw))
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -239,9 +239,9 @@ int PetscDrawRegister(const char *sname,const char *path,const char *name,int (*
 .seealso: PetscDrawCreate(), PetscDrawSetType()
 
 @*/
-int PetscDrawSetFromOptions(PetscDraw draw)
+PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg,nox;
   char       vtype[256];
   const char *def;

@@ -19,10 +19,10 @@ static int logkey_matapplypapt_numeric  = 0;
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ"
-int MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
+PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   /* Note: This code is virtually identical to that of MatApplyPtAP_SeqAIJ_Symbolic */
   /*        and MatMatMult_SeqAIJ_SeqAIJ_Symbolic.  Perhaps they could be merged nicely. */
-  int            ierr;
+  PetscErrorCode ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
   int            *ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pti,*ptj,*ptjj;
@@ -150,8 +150,10 @@ int MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ"
-int MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
-  int        ierr,flops=0;
+PetscErrorCode MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
+{
+  PetscErrorCode ierr;
+  int        flops=0;
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
   Mat_SeqAIJ *c  = (Mat_SeqAIJ *) C->data;
@@ -245,8 +247,8 @@ int MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   
 #undef __FUNCT__
 #define __FUNCT__ "MatApplyPAPt_SeqAIJ_SeqAIJ"
-int MatApplyPAPt_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
-  int ierr;
+PetscErrorCode MatApplyPAPt_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!logkey_matapplypapt) {

@@ -12,9 +12,9 @@ typedef struct {
   
 #undef __FUNCT__  
 #define __FUNCT__ "PFView_Matlab"
-int PFView_Matlab(void *value,PetscViewer viewer)
+PetscErrorCode PFView_Matlab(void *value,PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
   PF_Matlab  *matlab = (PF_Matlab*)value;
 
@@ -28,9 +28,9 @@ int PFView_Matlab(void *value,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFDestroy_Matlab"
-int PFDestroy_Matlab(void *value)
+PetscErrorCode PFDestroy_Matlab(void *value)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PF_Matlab  *matlab = (PF_Matlab*)value;
 
   PetscFunctionBegin;
@@ -42,10 +42,10 @@ int PFDestroy_Matlab(void *value)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Matlab"
-int PFApply_Matlab(void *value,int n,PetscScalar *in,PetscScalar *out)
+PetscErrorCode PFApply_Matlab(void *value,int n,PetscScalar *in,PetscScalar *out)
 {
   PF_Matlab  *matlab = (PF_Matlab*)value;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!value) SETERRQ(1,"Need to set string for Matlab function, via -pf_matlab string");
@@ -57,9 +57,9 @@ int PFApply_Matlab(void *value,int n,PetscScalar *in,PetscScalar *out)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFSetFromOptions_Matlab"
-int PFSetFromOptions_Matlab(PF pf)
+PetscErrorCode PFSetFromOptions_Matlab(PF pf)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
   char       value[256];
   PF_Matlab  *matlab = (PF_Matlab*)pf->data;
@@ -78,9 +78,9 @@ int PFSetFromOptions_Matlab(PF pf)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Matlab"
-int PFCreate_Matlab(PF pf,void *value)
+PetscErrorCode PFCreate_Matlab(PF pf,void *value)
 {
-  int       ierr;
+  PetscErrorCode ierr;
   PF_Matlab *matlab;
 
   PetscFunctionBegin;

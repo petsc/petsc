@@ -7,9 +7,9 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_SYMMLQ"
-int KSPSetUp_SYMMLQ(KSP ksp)
+PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
@@ -23,9 +23,10 @@ int KSPSetUp_SYMMLQ(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_SYMMLQ"
-int  KSPSolve_SYMMLQ(KSP ksp)
+PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 {
-  int          ierr,i;
+  PetscErrorCode ierr;
+  int i;
   PetscScalar  alpha,malpha,beta,mbeta,ibeta,betaold,beta1,ceta,ceta_oold = 0.0, ceta_old = 0.0,ceta_bar;
   PetscScalar  c=1.0,cold=1.0,s=0.0,sold=0.0,coold,soold,ms,rho0,rho1,rho2,rho3;
   PetscScalar  mone = -1.0,zero = 0.0,dp = 0.0;
@@ -210,10 +211,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_SYMMLQ"
-int KSPCreate_SYMMLQ(KSP ksp)
+PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
 {
   KSP_SYMMLQ *symmlq;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 

@@ -5,7 +5,7 @@
 #include "src/vec/is/isimpl.h"               /*I  "petscis.h"     I*/
 #include "petscsys.h"
 
-EXTERN int VecInitializePackage(char *);
+EXTERN PetscErrorCode VecInitializePackage(char *);
 
 typedef struct {
   int        N,n;            /* number of blocks */
@@ -16,10 +16,10 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDestroy_Block" 
-int ISDestroy_Block(IS is)
+PetscErrorCode ISDestroy_Block(IS is)
 {
   IS_Block *is_block = (IS_Block*)is->data;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
@@ -30,7 +30,7 @@ int ISDestroy_Block(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_Block" 
-int ISGetIndices_Block(IS in,int **idx)
+PetscErrorCode ISGetIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block*)in->data;
   int      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj,ierr;
@@ -54,10 +54,10 @@ int ISGetIndices_Block(IS in,int **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISRestoreIndices_Block" 
-int ISRestoreIndices_Block(IS in,int **idx)
+PetscErrorCode ISRestoreIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block*)in->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (sub->bs != 1) {
@@ -72,7 +72,7 @@ int ISRestoreIndices_Block(IS in,int **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetSize_Block" 
-int ISGetSize_Block(IS is,int *size)
+PetscErrorCode ISGetSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
 
@@ -83,7 +83,7 @@ int ISGetSize_Block(IS is,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetLocalSize_Block" 
-int ISGetLocalSize_Block(IS is,int *size)
+PetscErrorCode ISGetLocalSize_Block(IS is,int *size)
 {
   IS_Block *sub = (IS_Block *)is->data;
 
@@ -94,7 +94,7 @@ int ISGetLocalSize_Block(IS is,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISInvertPermutation_Block" 
-int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
+PetscErrorCode ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
   int      i,ierr,*ii,n = sub->n,*idx = sub->idx,size;
@@ -110,14 +110,14 @@ int ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
     ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"No inversion written yet for block IS");
+    SETERRQ(PETSC_ERR_SUP,"No inversion written yet for block IS");
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISView_Block" 
-int ISView_Block(IS is, PetscViewer viewer)
+PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
 {
   IS_Block    *sub = (IS_Block *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
@@ -144,10 +144,10 @@ int ISView_Block(IS is, PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISSort_Block" 
-int ISSort_Block(IS is)
+PetscErrorCode ISSort_Block(IS is)
 {
   IS_Block *sub = (IS_Block *)is->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (sub->sorted) PetscFunctionReturn(0);
@@ -158,7 +158,7 @@ int ISSort_Block(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISSorted_Block" 
-int ISSorted_Block(IS is,PetscTruth *flg)
+PetscErrorCode ISSorted_Block(IS is,PetscTruth *flg)
 {
   IS_Block *sub = (IS_Block *)is->data;
 
@@ -169,9 +169,9 @@ int ISSorted_Block(IS is,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDuplicate_Block" 
-int ISDuplicate_Block(IS is,IS *newIS)
+PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
 {
-  int      ierr;
+  PetscErrorCode ierr;
   IS_Block *sub = (IS_Block *)is->data;
 
   PetscFunctionBegin;
@@ -181,7 +181,7 @@ int ISDuplicate_Block(IS is,IS *newIS)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity_Block" 
-int ISIdentity_Block(IS is,PetscTruth *ident)
+PetscErrorCode ISIdentity_Block(IS is,PetscTruth *ident)
 {
   IS_Block *is_block = (IS_Block*)is->data;
   int      i,n = is_block->n,*idx = is_block->idx,bs = is_block->bs;
@@ -245,7 +245,7 @@ static struct _ISOps myops = { ISGetSize_Block,
 
 .seealso: ISCreateStride(), ISCreateGeneral(), ISAllGather()
 @*/
-int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
+PetscErrorCode ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 {
   int        i,min,max,ierr;
   IS         Nindex;
@@ -309,7 +309,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
-int ISBlockGetIndices(IS in,int *idx[])
+PetscErrorCode ISBlockGetIndices(IS in,int *idx[])
 {
   IS_Block *sub;
 
@@ -344,7 +344,7 @@ int ISBlockGetIndices(IS in,int *idx[])
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
 @*/
-int ISBlockRestoreIndices(IS is,int *idx[])
+PetscErrorCode ISBlockRestoreIndices(IS is,int *idx[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -373,7 +373,7 @@ int ISBlockRestoreIndices(IS is,int *idx[])
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/
-int ISBlockGetBlockSize(IS is,int *size)
+PetscErrorCode ISBlockGetBlockSize(IS is,int *size)
 {
   IS_Block *sub;
 
@@ -407,7 +407,7 @@ int ISBlockGetBlockSize(IS is,int *size)
 
 .seealso: ISBlockGetSize(), ISGetSize(), ISBlockGetBlockSize(), ISCreateBlock()
 @*/
-int ISBlock(IS is,PetscTruth *flag)
+PetscErrorCode ISBlock(IS is,PetscTruth *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -437,7 +437,7 @@ int ISBlock(IS is,PetscTruth *flag)
 
 .seealso: ISBlockGetBlockSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/
-int ISBlockGetSize(IS is,int *size)
+PetscErrorCode ISBlockGetSize(IS is,int *size)
 {
   IS_Block *sub;
 

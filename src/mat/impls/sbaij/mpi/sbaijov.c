@@ -11,7 +11,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat,int*,int,int*,PetscBT*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ"
-int MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
+PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
 {
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
   int           i,ierr,N=C->N, bs=c->bs;
@@ -391,7 +391,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whose,int *nidx
   Mat_MPISBAIJ *c = (Mat_MPISBAIJ*)C->data;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)(c->A)->data;
   Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)(c->B)->data;
-  int          ierr,row,mbs,Mbs,*nidx_i,col,col_max,isz,isz0,*ai,*aj,*bi,*bj,*garray,rstart,l;
+  PetscErrorCode ierr;
+  int row,mbs,Mbs,*nidx_i,col,col_max,isz,isz0,*ai,*aj,*bi,*bj,*garray,rstart,l;
   int          a_start,a_end,b_start,b_end,i,j,k,is_max,*idx_i,n;
   PetscBT      table0;  /* mark the indices of input is[] for look up */
   PetscBT      table_i; /* poits to i-th table. When whose=OTHER, a single table is used for all is[] */

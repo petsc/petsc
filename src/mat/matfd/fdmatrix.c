@@ -10,7 +10,7 @@ int MAT_FDCOLORING_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringSetF"
-int MatFDColoringSetF(MatFDColoring fd,Vec F)
+PetscErrorCode MatFDColoringSetF(MatFDColoring fd,Vec F)
 {
   PetscFunctionBegin;
   fd->F = F;
@@ -22,7 +22,8 @@ int MatFDColoringSetF(MatFDColoring fd,Vec F)
 static int MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
 {
   MatFDColoring fd = (MatFDColoring)Aa;
-  int           ierr,i,j;
+  PetscErrorCode ierr;
+  int i,j;
   PetscReal     x,y;
 
   PetscFunctionBegin;
@@ -42,7 +43,7 @@ static int MatFDColoringView_Draw_Zoom(PetscDraw draw,void *Aa)
 #define __FUNCT__ "MatFDColoringView_Draw"
 static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  isnull;
   PetscDraw   draw;
   PetscReal   xr,yr,xl,yl,h,w;
@@ -92,7 +93,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 
 .keywords: Mat, finite differences, coloring, view
 @*/
-int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
+PetscErrorCode MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 {
   int               i,j,ierr;
   PetscTruth        isdraw,iascii;
@@ -162,7 +163,7 @@ int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 
 .seealso: MatFDColoringCreate()
 @*/
-int MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
+PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umin)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
@@ -199,7 +200,7 @@ int MatFDColoringSetParameters(MatFDColoring matfd,PetscReal error,PetscReal umi
 
 .seealso: MatFDColoringCreate(), MatFDColoringGetFrequency(), MatFDColoringSetRecompute()
 @*/
-int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
+PetscErrorCode MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
@@ -237,7 +238,7 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 
 .seealso: MatFDColoringSetFrequency()
 @*/
-int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
+PetscErrorCode MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
@@ -266,7 +267,7 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 
 .keywords: Mat, Jacobian, finite differences, set, function
 @*/
-int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
+PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
@@ -310,9 +311,9 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 .seealso: MatFDColoringCreate(), MatFDColoringView(), MatFDColoringSetParameters()
 
 @*/
-int MatFDColoringSetFromOptions(MatFDColoring matfd)
+PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring matfd)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
@@ -331,9 +332,9 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringView_Private"
-int MatFDColoringView_Private(MatFDColoring fd)
+PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -377,11 +378,12 @@ int MatFDColoringView_Private(MatFDColoring fd)
           MatFDColoringSetFrequency(), MatFDColoringSetRecompute(), MatFDColoringView(),
           MatFDColoringSetParameters()
 @*/
-int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
+PetscErrorCode MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 {
   MatFDColoring c;
   MPI_Comm      comm;
-  int           ierr,M,N;
+  PetscErrorCode ierr;
+  int M,N;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
@@ -425,7 +427,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 
 .seealso: MatFDColoringCreate()
 @*/
-int MatFDColoringDestroy(MatFDColoring c)
+PetscErrorCode MatFDColoringDestroy(MatFDColoring c)
 {
   int i,ierr;
 
@@ -476,7 +478,7 @@ int MatFDColoringDestroy(MatFDColoring c)
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring coloring,int *n,int *cols[])
+EXTERN PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring coloring,int *n,int *cols[])
 {
   PetscFunctionBegin;
   if (coloring->currentcolor >= 0) {
@@ -514,7 +516,7 @@ EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring coloring,int *n,int *c
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
+PetscErrorCode MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
   int           (*f)(void*,Vec,Vec,void*) = (int (*)(void*,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
@@ -714,7 +716,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 
 .keywords: coloring, Jacobian, finite differences
 @*/
-int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStructure *flag,void *sctx)
+PetscErrorCode MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStructure *flag,void *sctx)
 {
   int           (*f)(void*,PetscReal,Vec,Vec,void*)=(int (*)(void*,PetscReal,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow;
@@ -865,7 +867,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
 
 .keywords: Mat, finite differences, coloring
 @*/
-int MatFDColoringSetRecompute(MatFDColoring c)
+PetscErrorCode MatFDColoringSetRecompute(MatFDColoring c)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE,1);

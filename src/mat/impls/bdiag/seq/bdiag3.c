@@ -7,7 +7,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo_SeqBDiag"
-int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
+PetscErrorCode MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
 
@@ -38,7 +38,7 @@ int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_SeqBDiag"
-int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,PetscScalar **v)
+PetscErrorCode MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,PetscScalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          nd = a->nd,bs = a->bs;
@@ -157,7 +157,7 @@ int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_SeqBDiag"
-int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,PetscScalar **vals)
+PetscErrorCode MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,PetscScalar **vals)
 {
   PetscFunctionBegin;
   /* Work space is allocated during matrix creation and freed
@@ -172,7 +172,7 @@ int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,PetscScalar **val
  */
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_SeqBDiag_Columns"
-int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
+PetscErrorCode MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len,ierr;
@@ -227,11 +227,12 @@ int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_SeqBDiag"
-int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *nrm)
+PetscErrorCode MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *nrm)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscReal    sum = 0.0,*tmp;
-  int          ierr,d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len;
+  PetscErrorCode ierr;
+  int          d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len;
   PetscScalar  *dv;
 
   PetscFunctionBegin;
@@ -324,7 +325,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_SeqBDiag"
-int MatTranspose_SeqBDiag(Mat A,Mat *matout)
+PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
 { 
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data,*anew;
   Mat          tmat;
@@ -396,7 +397,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqBDiag_Binary"
-int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,ict,fd,*col_lens,*cval,*col,ierr,nz;
@@ -441,11 +442,12 @@ int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqBDiag_ASCII"
-int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
   char              *name;
-  int               ierr,*col,i,j,len,diag,nr = A->m,bs = a->bs,iprint,nz;
+  PetscErrorCode ierr;
+  int              *col,i,j,len,diag,nr = A->m,bs = a->bs,iprint,nz;
   PetscScalar       *val,*dv,zero = 0.0;
   PetscViewerFormat format;
 
@@ -628,7 +630,8 @@ static int MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
 {
   PetscDraw     draw;
   PetscReal     xl,yl,xr,yr,w,h;
-  int           ierr,nz,*col,i,j,nr = A->m;
+  PetscErrorCode ierr;
+  int   nz,*col,i,j,nr = A->m;
   PetscTruth    isnull;
 
   PetscFunctionBegin;
@@ -659,9 +662,9 @@ static int MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqBDiag"
-int MatView_SeqBDiag(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_SeqBDiag(Mat A,PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii,isbinary,isdraw;
 
   PetscFunctionBegin;

@@ -50,7 +50,7 @@ static FCN f1;
 
 static int ourdrawzoom(PetscDraw draw,void *ctx)
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
 
   (*f1)(&draw,ctx,&ierr);CHKERRQ(ierr);
   return 0;

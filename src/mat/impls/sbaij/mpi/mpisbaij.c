@@ -3,22 +3,22 @@
 #include "mpisbaij.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
-extern int MatSetUpMultiply_MPISBAIJ(Mat); 
-extern int MatSetUpMultiply_MPISBAIJ_2comm(Mat); 
-extern int DisAssemble_MPISBAIJ(Mat);
-extern int MatIncreaseOverlap_MPISBAIJ(Mat,int,IS[],int);
-extern int MatGetValues_SeqSBAIJ(Mat,int,const int[],int,const int[],PetscScalar []);
-extern int MatGetValues_SeqBAIJ(Mat,int,const int[],int,const int[],PetscScalar []);
-extern int MatSetValues_SeqSBAIJ(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
-extern int MatSetValuesBlocked_SeqSBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
-extern int MatSetValuesBlocked_SeqBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
-extern int MatGetRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
-extern int MatRestoreRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
-extern int MatPrintHelp_SeqSBAIJ(Mat);
-extern int MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*);
-extern int MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar *);
-extern int MatGetRowMax_MPISBAIJ(Mat,Vec);
-extern int MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
+EXTERN PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat); 
+EXTERN PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat); 
+EXTERN PetscErrorCode DisAssemble_MPISBAIJ(Mat);
+EXTERN PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat,int,IS[],int);
+EXTERN PetscErrorCode MatGetValues_SeqSBAIJ(Mat,int,const int[],int,const int[],PetscScalar []);
+EXTERN PetscErrorCode MatGetValues_SeqBAIJ(Mat,int,const int[],int,const int[],PetscScalar []);
+EXTERN PetscErrorCode MatSetValues_SeqSBAIJ(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
+EXTERN PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
+EXTERN PetscErrorCode MatGetRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatPrintHelp_SeqSBAIJ(Mat);
+EXTERN PetscErrorCode MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*);
+EXTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar *);
+EXTERN PetscErrorCode MatGetRowMax_MPISBAIJ(Mat,Vec);
+EXTERN PetscErrorCode MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
 
 /*  UGLY, ugly, ugly
    When MatScalar == PetscScalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
@@ -28,11 +28,11 @@ extern int MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec)
    into the single precision data structures.
 */
 #if defined(PETSC_USE_MAT_SINGLE)
-extern int MatSetValuesBlocked_SeqSBAIJ_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
-extern int MatSetValues_MPISBAIJ_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
-extern int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
-extern int MatSetValues_MPISBAIJ_HT_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
-extern int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
+EXTERN PetscErrorCode MatSetValuesBlocked_SeqSBAIJ_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
+EXTERN PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
+EXTERN PetscErrorCode MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
+EXTERN PetscErrorCode MatSetValues_MPISBAIJ_HT_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
+EXTERN PetscErrorCode MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat,int,const int[],int,const int[],const MatScalar[],InsertMode);
 #else
 #define MatSetValuesBlocked_SeqSBAIJ_MatScalar      MatSetValuesBlocked_SeqSBAIJ
 #define MatSetValues_MPISBAIJ_MatScalar             MatSetValues_MPISBAIJ
@@ -44,10 +44,10 @@ extern int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat,int,const int[],int,con
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatStoreValues_MPISBAIJ"
-int MatStoreValues_MPISBAIJ(Mat mat)
+PetscErrorCode MatStoreValues_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ *aij = (Mat_MPISBAIJ *)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatStoreValues(aij->A);CHKERRQ(ierr);
@@ -59,10 +59,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatRetrieveValues_MPISBAIJ"
-int MatRetrieveValues_MPISBAIJ(Mat mat)
+PetscErrorCode MatRetrieveValues_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ *aij = (Mat_MPISBAIJ *)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatRetrieveValues(aij->A);CHKERRQ(ierr);
@@ -231,10 +231,11 @@ EXTERN_C_END
 #if defined(PETSC_USE_MAT_SINGLE)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPISBAIJ"
-int MatSetValues_MPISBAIJ(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPISBAIJ *b = (Mat_MPISBAIJ*)mat->data;
-  int          ierr,i,N = m*n;
+  PetscErrorCode ierr;
+  int i,N = m*n;
   MatScalar    *vsingle;
 
   PetscFunctionBegin;  
@@ -254,10 +255,11 @@ int MatSetValues_MPISBAIJ(Mat mat,int m,const int im[],int n,const int in[],cons
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ"
-int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
-  int         ierr,i,N = m*n*b->bs2;
+  PetscErrorCode ierr;
+  int i,N = m*n*b->bs2;
   MatScalar   *vsingle;
 
   PetscFunctionBegin;  
@@ -276,10 +278,11 @@ int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,const int im[],int n,const int in
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPISBAIJ_HT"
-int MatSetValues_MPISBAIJ_HT(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValues_MPISBAIJ_HT(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
-  int         ierr,i,N = m*n;
+  PetscErrorCode ierr;
+  int i,N = m*n;
   MatScalar   *vsingle;
 
   PetscFunctionBegin;  
@@ -289,10 +292,11 @@ int MatSetValues_MPISBAIJ_HT(Mat mat,int m,const int im[],int n,const int in[],c
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_HT"
-int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
-  int         ierr,i,N = m*n*b->bs2;
+  PetscErrorCode ierr;
+  int i,N = m*n*b->bs2;
   MatScalar   *vsingle;
 
   PetscFunctionBegin;  
@@ -306,12 +310,13 @@ int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,const int im[],int n,const int
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIBAIJ_MatScalar"
-int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
+PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
   MatScalar    value;
   PetscTruth   roworiented = baij->roworiented;
-  int          ierr,i,j,row,col;
+  PetscErrorCode ierr;
+  int i,j,row,col;
   int          rstart_orig=baij->rstart_bs;
   int          rend_orig=baij->rend_bs,cstart_orig=baij->cstart_bs;
   int          cend_orig=baij->cend_bs,bs=baij->bs;
@@ -415,13 +420,14 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,const int
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_MatScalar"
-int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
 {
   Mat_MPISBAIJ    *baij = (Mat_MPISBAIJ*)mat->data;
   const MatScalar *value;
   MatScalar       *barray=baij->barray;
   PetscTruth      roworiented = baij->roworiented;
-  int             ierr,i,j,ii,jj,row,col,rstart=baij->rstart;
+  PetscErrorCode ierr;
+  int i,j,ii,jj,row,col,rstart=baij->rstart;
   int             rend=baij->rend,cstart=baij->cstart,stepval;
   int             cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
 
@@ -521,7 +527,7 @@ int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,const int im[],int n,co
 /* #define HASH(size,key,tmp) ((int)((size)*fmod(((key)*HASH_KEY),1))) */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPISBAIJ_HT_MatScalar"
-int MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
+PetscErrorCode MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not yet written for SBAIJ format"); 
@@ -530,7 +536,7 @@ int MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,const 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_HT_MatScalar"
-int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
+PetscErrorCode MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n,const int in[],const MatScalar v[],InsertMode addv)
 { 
   PetscFunctionBegin;
   SETERRQ(1,"Function not yet written for SBAIJ format"); 
@@ -539,7 +545,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,const int im[],int n
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPISBAIJ"
-int MatGetValues_MPISBAIJ(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
+PetscErrorCode MatGetValues_MPISBAIJ(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
   int          bs=baij->bs,ierr,i,j,bsrstart = baij->rstart*bs,bsrend = baij->rend*bs;
@@ -583,12 +589,12 @@ int MatGetValues_MPISBAIJ(Mat mat,int m,const int idxm[],int n,const int idxn[],
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_MPISBAIJ"
-int MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
+PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
   /* Mat_SeqSBAIJ *amat = (Mat_SeqSBAIJ*)baij->A->data; */
   /* Mat_SeqBAIJ  *bmat = (Mat_SeqBAIJ*)baij->B->data; */
-  int        ierr;
+  PetscErrorCode ierr;
   PetscReal  sum[2],*lnorm2;
 
   PetscFunctionBegin;
@@ -628,7 +634,7 @@ int MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateHashTable_MPISBAIJ_Private"
-int MatCreateHashTable_MPISBAIJ_Private(Mat mat,PetscReal factor)
+PetscErrorCode MatCreateHashTable_MPISBAIJ_Private(Mat mat,PetscReal factor)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not yet written for SBAIJ format");
@@ -637,10 +643,11 @@ int MatCreateHashTable_MPISBAIJ_Private(Mat mat,PetscReal factor)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyBegin_MPISBAIJ"
-int MatAssemblyBegin_MPISBAIJ(Mat mat,MatAssemblyType mode)
+PetscErrorCode MatAssemblyBegin_MPISBAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
-  int         ierr,nstash,reallocs;
+  PetscErrorCode ierr;
+  int nstash,reallocs;
   InsertMode  addv;
 
   PetscFunctionBegin;
@@ -666,7 +673,7 @@ int MatAssemblyBegin_MPISBAIJ(Mat mat,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_MPISBAIJ"
-int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
+PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPISBAIJ *baij=(Mat_MPISBAIJ*)mat->data;
   Mat_SeqSBAIJ  *a=(Mat_SeqSBAIJ*)baij->A->data;
@@ -775,7 +782,8 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
 static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPISBAIJ      *baij = (Mat_MPISBAIJ*)mat->data;
-  int               ierr,bs = baij->bs,size = baij->size,rank = baij->rank;
+  PetscErrorCode ierr;
+  int bs = baij->bs,size = baij->size,rank = baij->rank;
   PetscTruth        iascii,isdraw;
   PetscViewer       sviewer;
   PetscViewerFormat format;
@@ -883,9 +891,9 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPISBAIJ"
-int MatView_MPISBAIJ(Mat mat,PetscViewer viewer)
+PetscErrorCode MatView_MPISBAIJ(Mat mat,PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii,isdraw,issocket,isbinary;
 
   PetscFunctionBegin;
@@ -903,10 +911,10 @@ int MatView_MPISBAIJ(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPISBAIJ"
-int MatDestroy_MPISBAIJ(Mat mat)
+PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
@@ -947,10 +955,11 @@ int MatDestroy_MPISBAIJ(Mat mat)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_MPISBAIJ"
-int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int         ierr,nt,mbs=a->mbs,bs=a->bs;
+  PetscErrorCode ierr;
+  int nt,mbs=a->mbs,bs=a->bs;
   PetscScalar *x,*from,zero=0.0;
  
   PetscFunctionBegin;
@@ -988,10 +997,11 @@ int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_MPISBAIJ_2comm"
-int MatMult_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMult_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int         ierr,nt;
+  PetscErrorCode ierr;
+  int nt;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
@@ -1019,10 +1029,11 @@ int MatMult_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_MPISBAIJ"
-int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int          ierr,mbs=a->mbs,bs=a->bs;
+  PetscErrorCode ierr;
+  int mbs=a->mbs,bs=a->bs;
   PetscScalar  *x,*from,zero=0.0;
  
   PetscFunctionBegin;
@@ -1055,10 +1066,10 @@ int MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_MPISBAIJ_2comm"
-int MatMultAdd_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr); 
@@ -1078,9 +1089,9 @@ int MatMultAdd_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTranspose_MPISBAIJ"
-int MatMultTranspose_MPISBAIJ(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatMultTranspose_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatMult(A,xx,yy);CHKERRQ(ierr);
@@ -1089,9 +1100,9 @@ int MatMultTranspose_MPISBAIJ(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_MPISBAIJ"
-int MatMultTransposeAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultTransposeAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatMultAdd(A,xx,yy,zz);CHKERRQ(ierr);
@@ -1104,10 +1115,10 @@ int MatMultTransposeAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_MPISBAIJ"
-int MatGetDiagonal_MPISBAIJ(Mat A,Vec v)
+PetscErrorCode MatGetDiagonal_MPISBAIJ(Mat A,Vec v)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* if (a->M != a->N) SETERRQ(PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block"); */
@@ -1117,10 +1128,10 @@ int MatGetDiagonal_MPISBAIJ(Mat A,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPISBAIJ"
-int MatScale_MPISBAIJ(const PetscScalar *aa,Mat A)
+PetscErrorCode MatScale_MPISBAIJ(const PetscScalar *aa,Mat A)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatScale(aa,a->A);CHKERRQ(ierr);
@@ -1130,7 +1141,7 @@ int MatScale_MPISBAIJ(const PetscScalar *aa,Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPISBAIJ"
-int MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   PetscScalar    *vworkA,*vworkB,**pvA,**pvB,*v_p;
@@ -1212,7 +1223,7 @@ int MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPISBAIJ"
-int MatRestoreRow_MPISBAIJ(Mat mat,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatRestoreRow_MPISBAIJ(Mat mat,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
 
@@ -1226,7 +1237,7 @@ int MatRestoreRow_MPISBAIJ(Mat mat,int row,int *nz,int **idx,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetBlockSize_MPISBAIJ"
-int MatGetBlockSize_MPISBAIJ(Mat mat,int *bs)
+PetscErrorCode MatGetBlockSize_MPISBAIJ(Mat mat,int *bs)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
 
@@ -1237,10 +1248,10 @@ int MatGetBlockSize_MPISBAIJ(Mat mat,int *bs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroEntries_MPISBAIJ"
-int MatZeroEntries_MPISBAIJ(Mat A)
+PetscErrorCode MatZeroEntries_MPISBAIJ(Mat A)
 {
   Mat_MPISBAIJ *l = (Mat_MPISBAIJ*)A->data;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatZeroEntries(l->A);CHKERRQ(ierr);
@@ -1250,11 +1261,11 @@ int MatZeroEntries_MPISBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo_MPISBAIJ"
-int MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
+PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)matin->data;
   Mat         A = a->A,B = a->B;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscReal   isend[5],irecv[5];
 
   PetscFunctionBegin;
@@ -1300,10 +1311,10 @@ int MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPISBAIJ"
-int MatSetOption_MPISBAIJ(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (op) {
@@ -1358,9 +1369,9 @@ int MatSetOption_MPISBAIJ(Mat A,MatOption op)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_MPISBAIJ"
-int MatTranspose_MPISBAIJ(Mat A,Mat *B)
+PetscErrorCode MatTranspose_MPISBAIJ(Mat A,Mat *B)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MatDuplicate(A,MAT_COPY_VALUES,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1368,11 +1379,12 @@ int MatTranspose_MPISBAIJ(Mat A,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalScale_MPISBAIJ"
-int MatDiagonalScale_MPISBAIJ(Mat mat,Vec ll,Vec rr)
+PetscErrorCode MatDiagonalScale_MPISBAIJ(Mat mat,Vec ll,Vec rr)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
   Mat         a = baij->A,b = baij->B;
-  int         ierr,s1,s2,s3;
+  PetscErrorCode ierr;
+  int s1,s2,s3;
 
   PetscFunctionBegin;
   if (ll != rr) {
@@ -1403,7 +1415,7 @@ int MatDiagonalScale_MPISBAIJ(Mat mat,Vec ll,Vec rr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPISBAIJ"
-int MatZeroRows_MPISBAIJ(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_MPISBAIJ(Mat A,IS is,const PetscScalar *diag)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"No support for this function yet");
@@ -1411,12 +1423,12 @@ int MatZeroRows_MPISBAIJ(Mat A,IS is,const PetscScalar *diag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPrintHelp_MPISBAIJ"
-int MatPrintHelp_MPISBAIJ(Mat A)
+PetscErrorCode MatPrintHelp_MPISBAIJ(Mat A)
 {
   Mat_MPISBAIJ *a   = (Mat_MPISBAIJ*)A->data;
   MPI_Comm    comm = A->comm;
   static int  called = 0; 
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!a->rank) {
@@ -1430,10 +1442,10 @@ int MatPrintHelp_MPISBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUnfactored_MPISBAIJ"
-int MatSetUnfactored_MPISBAIJ(Mat A)
+PetscErrorCode MatSetUnfactored_MPISBAIJ(Mat A)
 {
   Mat_MPISBAIJ *a   = (Mat_MPISBAIJ*)A->data;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatSetUnfactored(a->A);CHKERRQ(ierr);
@@ -1444,12 +1456,12 @@ static int MatDuplicate_MPISBAIJ(Mat,MatDuplicateOption,Mat *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatEqual_MPISBAIJ"
-int MatEqual_MPISBAIJ(Mat A,Mat B,PetscTruth *flag)
+PetscErrorCode MatEqual_MPISBAIJ(Mat A,Mat B,PetscTruth *flag)
 {
   Mat_MPISBAIJ *matB = (Mat_MPISBAIJ*)B->data,*matA = (Mat_MPISBAIJ*)A->data;
   Mat         a,b,c,d;
   PetscTruth  flg;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   a = matA->A; b = matA->B;
@@ -1465,9 +1477,9 @@ int MatEqual_MPISBAIJ(Mat A,Mat B,PetscTruth *flag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_MPISBAIJ"
-int MatSetUpPreallocation_MPISBAIJ(Mat A)
+PetscErrorCode MatSetUpPreallocation_MPISBAIJ(Mat A)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatMPISBAIJSetPreallocation(A,1,PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
@@ -1476,7 +1488,7 @@ int MatSetUpPreallocation_MPISBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPISBAIJ"
-int MatGetSubMatrices_MPISBAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
+PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   int        i,ierr;
   PetscTruth flg;
@@ -1585,7 +1597,7 @@ static struct _MatOps MatOps_Values = {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonalBlock_MPISBAIJ"
-int MatGetDiagonalBlock_MPISBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+PetscErrorCode MatGetDiagonalBlock_MPISBAIJ(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
 {
   PetscFunctionBegin;
   *a      = ((Mat_MPISBAIJ *)A->data)->A;
@@ -1597,10 +1609,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJ"
-int MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
   Mat_MPISBAIJ *b;
-  int          ierr,i,mbs,Mbs;
+  PetscErrorCode ierr;
+  int i,mbs,Mbs;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(B->prefix,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -1690,10 +1703,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPISBAIJ"
-int MatCreate_MPISBAIJ(Mat B)
+PetscErrorCode MatCreate_MPISBAIJ(Mat B)
 {
   Mat_MPISBAIJ *b;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscTruth   flg;
 
   PetscFunctionBegin;
@@ -1805,8 +1818,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SBAIJ"
-int MatCreate_SBAIJ(Mat A) {
-  int ierr,size;
+PetscErrorCode MatCreate_SBAIJ(Mat A) 
+{
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSBAIJ);CHKERRQ(ierr);
@@ -1899,9 +1913,9 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
-int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,const int d_nnz[],int o_nz,const int o_nnz[])
+PetscErrorCode MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,const int d_nnz[],int o_nz,const int o_nnz[])
 {
-  int ierr,(*f)(Mat,int,int,const int[],int,const int[]);
+  PetscErrorCode ierr,(*f)(Mat,int,int,const int[],int,const int[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -2006,9 +2020,9 @@ int MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,const int d_nnz[],int o_nz
 .seealso: MatCreate(), MatCreateSeqSBAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
 
-int MatCreateMPISBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,const int d_nnz[],int o_nz,const int o_nnz[],Mat *A)
+PetscErrorCode MatCreateMPISBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,const int d_nnz[],int o_nz,const int o_nnz[],Mat *A)
 {
-  int ierr,size;
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
@@ -2030,7 +2044,8 @@ static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newm
 {
   Mat          mat;
   Mat_MPISBAIJ *a,*oldmat = (Mat_MPISBAIJ*)matin->data;
-  int          ierr,len=0,nt,bs=oldmat->bs,mbs=oldmat->mbs;
+  PetscErrorCode ierr;
+  int len=0,nt,bs=oldmat->bs,mbs=oldmat->mbs;
   PetscScalar  *array;
 
   PetscFunctionBegin;
@@ -2139,7 +2154,7 @@ static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newm
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPISBAIJ"
-int MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat          A;
   int          i,nz,ierr,j,rstart,rend,fd;
@@ -2390,7 +2405,7 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
 
 .seealso: MatSetOption()
 @*/
-int MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
+PetscErrorCode MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Function not yet written for SBAIJ format"); 
@@ -2399,13 +2414,14 @@ int MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowMax_MPISBAIJ"
-int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
+PetscErrorCode MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
   Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)(a->B)->data;
   PetscReal    atmp;
   PetscReal    *work,*svalues,*rvalues;
-  int          ierr,i,bs,mbs,*bi,*bj,brow,j,ncols,krow,kcol,col,row,Mbs,bcol;
+  PetscErrorCode ierr;
+  int i,bs,mbs,*bi,*bj,brow,j,ncols,krow,kcol,col,row,Mbs,bcol;
   int          rank,size,*rowners_bs,dest,count,source;
   PetscScalar  *va;
   MatScalar    *ba;
@@ -2505,10 +2521,11 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatRelax_MPISBAIJ"
-int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
+PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
-  int            ierr,mbs=mat->mbs,bs=mat->bs;
+  PetscErrorCode ierr;
+  int mbs=mat->mbs,bs=mat->bs;
   PetscScalar    mone=-1.0,*x,*b,*ptr,zero=0.0;
   Vec            bb1;
  
@@ -2566,10 +2583,10 @@ int MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal
 
 #undef __FUNCT__
 #define __FUNCT__ "MatRelax_MPISBAIJ_2comm"
-int MatRelax_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
+PetscErrorCode MatRelax_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
-  int            ierr;
+  PetscErrorCode ierr;
   PetscScalar    mone=-1.0;
   Vec            lvec1,bb1;
  

@@ -1431,7 +1431,7 @@ PetscTruth OptionsHasName(const char pre[],const char name[])
 /* ------------------------------------------------------------------- */
 {
   PetscTruth retval; 
-  int ierr;
+  PetscErrorCode ierr;
   ierr = PetscOptionsHasName(pre,name,&retval);//CHKERRQ(ierr);
   return retval;
 }

@@ -24,10 +24,10 @@
 .seealso: VecSetType(), VecSetSizes(), VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(),
           VecDuplicateVecs(), VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
-int VecCreate(MPI_Comm comm, Vec *vec)
+PetscErrorCode VecCreate(MPI_Comm comm, Vec *vec)
 {
   Vec v;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(vec,2);

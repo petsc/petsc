@@ -9,9 +9,9 @@ EXTERN_C_BEGIN
 #include "HYPRE_parcsr_ls.h"
 EXTERN_C_END
 
-extern int MatHYPRE_IJMatrixCreate(Mat,HYPRE_IJMatrix*);
-extern int MatHYPRE_IJMatrixCopy(Mat,HYPRE_IJMatrix);
-extern int VecHYPRE_IJVectorCreate(Vec,HYPRE_IJVector*);
+EXTERN PetscErrorCode MatHYPRE_IJMatrixCreate(Mat,HYPRE_IJMatrix*);
+EXTERN PetscErrorCode MatHYPRE_IJMatrixCopy(Mat,HYPRE_IJMatrix);
+EXTERN PetscErrorCode VecHYPRE_IJVectorCreate(Vec,HYPRE_IJVector*);
 
 /* 
    Private context (data structure) for the  preconditioner.  
@@ -68,7 +68,7 @@ typedef struct {
 static int PCSetUp_HYPRE(PC pc)
 {
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
-  int                ierr;
+  PetscErrorCode ierr;
   HYPRE_ParCSRMatrix hmat;
   HYPRE_ParVector    bv,xv;
 
@@ -108,7 +108,7 @@ static int PCSetUp_HYPRE(PC pc)
 static int PCApply_HYPRE(PC pc,Vec b,Vec x)
 {
   PC_HYPRE           *jac = (PC_HYPRE*)pc->data;
-  int                ierr;
+  PetscErrorCode ierr;
   HYPRE_ParCSRMatrix hmat;
   PetscScalar        *bv,*xv;
   HYPRE_ParVector    jbv,jxv;
@@ -144,7 +144,7 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
 static int PCDestroy_HYPRE(PC pc)
 {
   PC_HYPRE *jac = (PC_HYPRE*)pc->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = HYPRE_IJMatrixDestroy(jac->ij);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ static int PCDestroy_HYPRE(PC pc)
 static int PCSetFromOptions_HYPRE_Pilut(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -188,7 +188,7 @@ static int PCSetFromOptions_HYPRE_Pilut(PC pc)
 static int PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  iascii;
 
   PetscFunctionBegin;
@@ -220,7 +220,7 @@ static int PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 static int PCSetFromOptions_HYPRE_Euclid(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
   char       *args[2];
 
@@ -259,7 +259,7 @@ static int PCSetFromOptions_HYPRE_Euclid(PC pc)
 static int PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  iascii;
 
   PetscFunctionBegin;
@@ -285,7 +285,8 @@ static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Sei
 static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
-  int        ierr,n = 4,i,indx;
+  PetscErrorCode ierr;
+  int n = 4,i,indx;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -435,7 +436,7 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 static int PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  iascii;
 
   PetscFunctionBegin;
@@ -518,7 +519,7 @@ static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
 static int PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 {
   PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  iascii;
   char        *symt;
 
@@ -552,7 +553,7 @@ static int PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 static int PCHYPRESetType_HYPRE(PC pc,const char name[])
 {
   PC_HYPRE   *jac = (PC_HYPRE*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -662,9 +663,9 @@ static int PCSetFromOptions_HYPRE(PC pc)
            PCHYPRE
 
 @*/
-int PCHYPRESetType(PC pc,const char name[])
+PetscErrorCode PCHYPRESetType(PC pc,const char name[])
 {
-  int ierr,(*f)(PC,const char[]);
+  PetscErrorCode ierr,(*f)(PC,const char[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -698,10 +699,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_HYPRE"
-int PCCreate_HYPRE(PC pc)
+PetscErrorCode PCCreate_HYPRE(PC pc)
 {
   PC_HYPRE *jac;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr                     = PetscNew(PC_HYPRE,&jac);CHKERRQ(ierr);

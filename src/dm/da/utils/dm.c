@@ -25,9 +25,9 @@
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-int DMDestroy(DM dm)
+PetscErrorCode DMDestroy(DM dm)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*dm->bops->destroy)((PetscObject)dm);CHKERRQ(ierr);
@@ -50,9 +50,9 @@ int DMDestroy(DM dm)
 .seealso DMDestroy(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-int DMView(DM dm,PetscViewer v)
+PetscErrorCode DMView(DM dm,PetscViewer v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (dm->bops->view) {
@@ -79,9 +79,9 @@ int DMView(DM dm,PetscViewer v)
 .seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-int DMCreateGlobalVector(DM dm,Vec *vec)
+PetscErrorCode DMCreateGlobalVector(DM dm,Vec *vec)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*dm->ops->createglobalvector)(dm,vec);CHKERRQ(ierr);
@@ -108,9 +108,9 @@ int DMCreateGlobalVector(DM dm,Vec *vec)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix()
 
 @*/
-int DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
+PetscErrorCode DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*dm1->ops->getinterpolation)(dm1,dm2,mat,vec);CHKERRQ(ierr);
@@ -136,9 +136,9 @@ int DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix(), DMGetInterpolation()
 
 @*/
-int DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
+PetscErrorCode DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*dm1->ops->getinjection)(dm1,dm2,ctx);CHKERRQ(ierr);
@@ -164,9 +164,9 @@ int DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-int DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*dm->ops->getcoloring)(dm,ctype,coloring);CHKERRQ(ierr);
@@ -193,9 +193,9 @@ int DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-int DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
+PetscErrorCode DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*dm->ops->getmatrix)(dm,mtype,mat);CHKERRQ(ierr);
@@ -221,9 +221,9 @@ int DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-int DMRefine(DM dm,MPI_Comm comm,DM *dmf)
+PetscErrorCode DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);

@@ -2,17 +2,17 @@
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 EXTERN_C_BEGIN
-EXTERN int PetscViewerCreate_Socket(PetscViewer);
-EXTERN int PetscViewerCreate_ASCII(PetscViewer);
-EXTERN int PetscViewerCreate_Binary(PetscViewer);
-EXTERN int PetscViewerCreate_String(PetscViewer);
-EXTERN int PetscViewerCreate_Draw(PetscViewer);
-EXTERN int PetscViewerCreate_AMS(PetscViewer);
-EXTERN int PetscViewerCreate_VU(PetscViewer);
-EXTERN int PetscViewerCreate_Mathematica(PetscViewer);
-EXTERN int PetscViewerCreate_Netcdf(PetscViewer);
-EXTERN int PetscViewerCreate_HDF4(PetscViewer);
-EXTERN int PetscViewerCreate_Matlab(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_ASCII(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_AMS(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_HDF4(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
 EXTERN_C_END
   
 #undef __FUNCT__  
@@ -26,12 +26,11 @@ EXTERN_C_END
 
 .seealso:  PetscViewerRegisterDestroy()
 @*/
-int PetscViewerRegisterAll(const char *path)
+PetscErrorCode PetscViewerRegisterAll(const char *path)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_ASCII,      path,"PetscViewerCreate_ASCII",      PetscViewerCreate_ASCII);CHKERRQ(ierr);
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_BINARY,     path,"PetscViewerCreate_Binary",     PetscViewerCreate_Binary);CHKERRQ(ierr);
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_STRING,     path,"PetscViewerCreate_String",     PetscViewerCreate_String);CHKERRQ(ierr);

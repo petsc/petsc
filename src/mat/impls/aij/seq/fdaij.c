@@ -1,12 +1,12 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
-EXTERN int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
-EXTERN int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
+EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
+EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],int*[],PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_SeqAIJ"
-int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
+PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   int        i,*is,n,nrows,N = mat->N,j,k,m,*rows,ierr,*ci,*cj,ncols,col;
   int        nis = iscoloring->n,*rowhit,*columnsforrow,l;
@@ -160,7 +160,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringPatch_SeqAIJ_Inode"
-int MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,const ISColoringValue coloring[],ISColoring *iscoloring)
+PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,const ISColoringValue coloring[],ISColoring *iscoloring)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)mat->data;
   int             n = mat->n,ierr,m = a->inode.node_count,j,*ns = a->inode.size,row;

@@ -9,11 +9,12 @@
 
   Does not do preallocation so in general will be slow
  */
-int MatConvert_Basic(Mat mat,const MatType newtype,Mat *newmat)\
+PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,Mat *newmat)\
 {
   Mat                M;
   const PetscScalar  *vwork;
-  int                ierr,i,nz,m,n,rstart,rend,lm,ln;
+  PetscErrorCode ierr;
+  int i,nz,m,n,rstart,rend,lm,ln;
   const int          *cwork;
 
   PetscFunctionBegin;

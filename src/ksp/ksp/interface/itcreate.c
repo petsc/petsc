@@ -5,8 +5,8 @@
 #include "petscsys.h"
 
 /* Logging support */
-int KSP_COOKIE = 0;
-int KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
+PetscCookieCode KSP_COOKIE = 0;
+PetscLogCode    KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
 
 
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
@@ -42,10 +42,10 @@ PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PCView(), PetscViewerASCIIOpen()
 @*/
-int KSPView(KSP ksp,PetscViewer viewer)
+PetscErrorCode KSPView(KSP ksp,PetscViewer viewer)
 {
   char        *type;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  iascii;
 
   PetscFunctionBegin;
@@ -126,7 +126,7 @@ $   KSP_NATURAL_NORM - supported  by cg, cr, and cgs
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged()                               
 @*/
-int KSPSetNormType(KSP ksp,KSPNormType normtype)
+PetscErrorCode KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
 
   PetscFunctionBegin;
@@ -145,7 +145,7 @@ static int KSPPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   KSP          v = (KSP) obj;
-  int          ierr;
+  PetscErrorCode ierr;
 #endif
 
   PetscFunctionBegin;
@@ -225,9 +225,9 @@ $      Pmat does not have the same nonzero structure.
 
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators()
 @*/
-int KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
+PetscErrorCode KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -261,10 +261,10 @@ int KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSP
 @*/
-int KSPCreate(MPI_Comm comm,KSP *inksp)
+PetscErrorCode KSPCreate(MPI_Comm comm,KSP *inksp)
 {
   KSP ksp;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(inksp,2);
@@ -361,9 +361,9 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 .seealso: PCSetType(), KSPType
 
 @*/
-int KSPSetType(KSP ksp,const KSPType type)
+PetscErrorCode KSPSetType(KSP ksp,const KSPType type)
 {
-  int        ierr,(*r)(KSP);
+  PetscErrorCode ierr,(*r)(KSP);
   PetscTruth match;
 
   PetscFunctionBegin;
@@ -402,9 +402,9 @@ int KSPSetType(KSP ksp,const KSPType type)
 
 .seealso: KSPRegisterDynamic(), KSPRegisterAll()
 @*/
-int KSPRegisterDestroy(void)
+PetscErrorCode KSPRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (KSPList) {
@@ -434,7 +434,7 @@ int KSPRegisterDestroy(void)
 
 .seealso: KSPSetType()
 @*/
-int KSPGetType(KSP ksp,KSPType *type)
+PetscErrorCode KSPGetType(KSP ksp,KSPType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -487,9 +487,10 @@ $                    natural - see KSPSetNormType()
 
 .seealso: 
 @*/
-int KSPSetFromOptions(KSP ksp)
+PetscErrorCode KSPSetFromOptions(KSP ksp)
 {
-  int        ierr,indx;
+  PetscErrorCode ierr;
+  int indx;
   char       type[256];
   const char *stype[] = {"none","preconditioned","unpreconditioned","natural"};
   PetscTruth flg;
@@ -659,9 +660,9 @@ int KSPSetFromOptions(KSP ksp)
 
   Level: advanced
 @*/
-int KSPRegister(const char sname[],const char path[],const char name[],int (*function)(KSP))
+PetscErrorCode KSPRegister(const char sname[],const char path[],const char name[],int (*function)(KSP))
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -685,9 +686,9 @@ int KSPRegister(const char sname[],const char path[],const char name[],int (*fun
 
 .seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace()
 @*/
-int KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
+PetscErrorCode KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 {
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ksp->nullsp) {
@@ -713,7 +714,7 @@ int KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 
 .seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPSetNullSpace()
 @*/
-int KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
+PetscErrorCode KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
 {
   PetscFunctionBegin;
   *nullsp = ksp->nullsp;

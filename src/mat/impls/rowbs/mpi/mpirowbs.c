@@ -7,7 +7,7 @@
 #define __FUNCT__ "MatFreeRowbs_Private"
 static int MatFreeRowbs_Private(Mat A,int n,int *i,PetscScalar *v)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (v) {
@@ -40,7 +40,7 @@ static int MatMallocRowbs_Private(Mat A,int n,int **i,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIRowbs"
-int MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
+PetscErrorCode MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)inA->data;
   BSspmat      *A = a->A;
@@ -67,7 +67,8 @@ int MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
 static int MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)A->data;
-  int          ierr,i,len,m = A->m,*tnnz;
+  PetscErrorCode ierr;
+  int   i,len,m = A->m,*tnnz;
   BSspmat      *bsmat;
   BSsprow      *vs;
 
@@ -359,10 +360,11 @@ static int MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIRowbs"
-int MatSetValues_MPIRowbs(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode av)
+PetscErrorCode MatSetValues_MPIRowbs(Mat mat,int m,const int im[],int n,const int in[],const PetscScalar v[],InsertMode av)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
-  int          ierr,i,j,row,col,rstart = a->rstart,rend = a->rend;
+  PetscErrorCode ierr;
+  int   i,j,row,col,rstart = a->rstart,rend = a->rend;
   PetscTruth   roworiented = a->roworiented;
 
   PetscFunctionBegin;
@@ -400,11 +402,12 @@ int MatSetValues_MPIRowbs(Mat mat,int m,const int im[],int n,const int in[],cons
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyBegin_MPIRowbs"
-int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
+PetscErrorCode MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs  *a = (Mat_MPIRowbs*)mat->data;
   MPI_Comm      comm = mat->comm;
-  int           ierr,nstash,reallocs;
+  PetscErrorCode ierr;
+  int         nstash,reallocs;
   InsertMode    addv;
 
   PetscFunctionBegin;
@@ -424,14 +427,13 @@ int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#include "petscviewer.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIRowbs_ASCII"
 static int MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
 {
   Mat_MPIRowbs      *a = (Mat_MPIRowbs*)mat->data;
-  int               ierr,i,j;
+  PetscErrorCode ierr;
+  int               i,j;
   PetscTruth        iascii;
   BSspmat           *A = a->A;
   BSsprow           **rs = A->rows;
@@ -480,7 +482,8 @@ static int MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
 static int MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
-  int          ierr,i,M,m,rank,size,*sbuff,*rowlengths;
+  PetscErrorCode ierr;
+  int          i,M,m,rank,size,*sbuff,*rowlengths;
   int          *recvcts,*recvdisp,fd,*cols,maxnz,nz,j;
   BSspmat      *A = a->A;
   BSsprow      **rs = A->rows;
@@ -610,10 +613,10 @@ static int MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPIRowbs"
-int MatView_MPIRowbs(Mat mat,PetscViewer viewer)
+PetscErrorCode MatView_MPIRowbs(Mat mat,PetscViewer viewer)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscTruth   iascii,isbinary;
 
   PetscFunctionBegin;
@@ -842,10 +845,11 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_MPIRowbs_ForBlockSolve"
-int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
+PetscErrorCode MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
 { 
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
-  int          ierr,ldim,low,high,i;
+  PetscErrorCode ierr;
+  int          ldim,low,high,i;
   PetscScalar  *diag;
 
   PetscFunctionBegin;
@@ -893,7 +897,7 @@ int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_MPIRowbs"
-int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
+PetscErrorCode MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   int          i,n,row,col,*rows,*cols,ierr,rstart,nzcount,flg,j,ncols;
@@ -943,7 +947,7 @@ int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroEntries_MPIRowbs"
-int MatZeroEntries_MPIRowbs(Mat mat)
+PetscErrorCode MatZeroEntries_MPIRowbs(Mat mat)
 {
   Mat_MPIRowbs *l = (Mat_MPIRowbs*)mat->data;
   BSspmat      *A = l->A;
@@ -965,7 +969,7 @@ int MatZeroEntries_MPIRowbs(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIRowbs"
-int MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIRowbs   *l = (Mat_MPIRowbs*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -1085,7 +1089,7 @@ int MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_MPIRowbs"
-int MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
+PetscErrorCode MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   BSsprow      *vs,**rs;
@@ -1157,12 +1161,12 @@ int MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_MPIRowbs"
-int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
+PetscErrorCode MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)mat->data;
   BSprocinfo   *bspinfo = bsif->procinfo;
   PetscScalar  *xxa,*xworka,*yya;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!bsif->blocksolveassembly) {
@@ -1221,9 +1225,9 @@ int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_MPIRowbs"
-int MatMultAdd_MPIRowbs(Mat mat,Vec xx,Vec yy,Vec zz)
+PetscErrorCode MatMultAdd_MPIRowbs(Mat mat,Vec xx,Vec yy,Vec zz)
 {
-  int          ierr;
+  PetscErrorCode ierr;
   PetscScalar  one = 1.0;
 
   PetscFunctionBegin;
@@ -1234,11 +1238,11 @@ int MatMultAdd_MPIRowbs(Mat mat,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo_MPIRowbs"
-int MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,MatInfo *info)
+PetscErrorCode MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)A->data;
   PetscReal    isend[5],irecv[5];
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   info->rows_global    = (double)A->M;
@@ -1276,7 +1280,7 @@ int MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_MPIRowbs"
-int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
+PetscErrorCode MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   BSsprow      **rs = a->A->rows;
@@ -1302,7 +1306,7 @@ int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIRowbs"
-int MatDestroy_MPIRowbs(Mat mat)
+PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   BSspmat      *A = a->A;
@@ -1346,7 +1350,7 @@ int MatDestroy_MPIRowbs(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIRowbs"
-int MatSetOption_MPIRowbs(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
 
@@ -1410,7 +1414,7 @@ int MatSetOption_MPIRowbs(Mat A,MatOption op)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIRowbs"
-int MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)AA->data;
   BSspmat      *A = mat->A;
@@ -1428,7 +1432,7 @@ int MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPIRowbs"
-int MatRestoreRow_MPIRowbs(Mat A,int row,int *nz,int **idx,PetscScalar **v)
+PetscErrorCode MatRestoreRow_MPIRowbs(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1438,11 +1442,11 @@ int MatRestoreRow_MPIRowbs(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPrintHelp_MPIRowbs"
-int MatPrintHelp_MPIRowbs(Mat A)
+PetscErrorCode MatPrintHelp_MPIRowbs(Mat A)
 {
   static PetscTruth called = PETSC_FALSE; 
   MPI_Comm          comm = A->comm;
-  int               ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
@@ -1453,9 +1457,9 @@ int MatPrintHelp_MPIRowbs(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_MPIRowbs"
-int MatSetUpPreallocation_MPIRowbs(Mat A)
+PetscErrorCode MatSetUpPreallocation_MPIRowbs(Mat A)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr =  MatMPIRowbsSetPreallocation(A,PETSC_DEFAULT,0);CHKERRQ(ierr);
@@ -1555,9 +1559,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIRowbsSetPreallocation_MPIRowbs"
-int MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,const int nnz[])
+PetscErrorCode MatMPIRowbsSetPreallocation_MPIRowbs(Mat mat,int nz,const int nnz[])
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   mat->preallocated = PETSC_TRUE;
@@ -1583,7 +1587,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIRowbs"
-int MatCreate_MPIRowbs(Mat A)
+PetscErrorCode MatCreate_MPIRowbs(Mat A)
 {
   Mat_MPIRowbs *a;
   BSmapping    *bsmap;
@@ -1722,9 +1726,9 @@ EXTERN_C_END
   This routine is valid only for matrices stored in the MATMPIROWBS
   format.
 @ */
-int MatMPIRowbsSetPreallocation(Mat mat,int nz,const int nnz[])
+PetscErrorCode MatMPIRowbsSetPreallocation(Mat mat,int nz,const int nnz[])
 {
-  int ierr,(*f)(Mat,int,const int[]);
+  PetscErrorCode ierr,(*f)(Mat,int,const int[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMPIRowbsSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -1751,11 +1755,11 @@ int MatMPIRowbsSetPreallocation(Mat mat,int nz,const int nnz[])
   This routine is valid only for matrices stored in the MATMPIROWBS
   format.
 @ */
-int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
+PetscErrorCode MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   PetscTruth   ismpirowbs;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIROWBS,&ismpirowbs);CHKERRQ(ierr);
@@ -1766,7 +1770,7 @@ int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIRowbs"
-int MatLoad_MPIRowbs(PetscViewer viewer,const MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIRowbs(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat_MPIRowbs *a;
   BSspmat      *A;
@@ -1949,7 +1953,7 @@ static int MatDestroy_MPIRowbs_Factored(Mat mat)
 #define __FUNCT__ "MatView_MPIRowbs_Factored"
 static int MatView_MPIRowbs_Factored(Mat mat,PetscViewer viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatView((Mat) mat->data,viewer);CHKERRQ(ierr);
@@ -1958,12 +1962,12 @@ static int MatView_MPIRowbs_Factored(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncompleteCholeskyFactorSymbolic_MPIRowbs"
-int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,MatFactorInfo *info,Mat *newfact)
+PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,MatFactorInfo *info,Mat *newfact)
 {
   /* Note:  f is not currently used in BlockSolve */
   Mat          newmat;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscTruth   idn;
 
   PetscFunctionBegin;
@@ -2026,11 +2030,11 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,MatFactorInfo 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_MPIRowbs"
-int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactorInfo* info,Mat *newfact)
+PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactorInfo* info,Mat *newfact)
 {
   Mat          newmat;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
-  int          ierr;
+  PetscErrorCode ierr;
   PetscTruth   idn;
   PetscFunctionBegin;
 
@@ -2089,9 +2093,9 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactorInfo* info,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIRowbsGetColor"
-int MatMPIRowbsGetColor(Mat mat,ISColoring *coloring)
+PetscErrorCode MatMPIRowbsGetColor(Mat mat,ISColoring *coloring)
 {
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2156,9 +2160,9 @@ $     MatSetOption(mat,MAT_SYMMETRY_ETERNAL)
 
 .seealso: MatCreate(), MatSetValues()
 @*/
-int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,const int nnz[],Mat *newA)
+PetscErrorCode MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,const int nnz[],Mat *newA)
 {
-  int ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,m,M,M,newA);CHKERRQ(ierr);
@@ -2175,7 +2179,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,const int nnz[],Mat *newA
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIRowbs" 
-int MatGetSubMatrices_MPIRowbs(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
+PetscErrorCode MatGetSubMatrices_MPIRowbs(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
   int         nmax,nstages_local,nstages,i,pos,max_no,ierr;
 
@@ -2209,7 +2213,7 @@ int MatGetSubMatrices_MPIRowbs(Mat C,int ismax,const IS isrow[],const IS iscol[]
  */  
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIRowbs_Local" 
-int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
+PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 { 
   Mat_MPIRowbs  *c = (Mat_MPIRowbs *)(C->data);
   BSspmat       *A = c->A;
@@ -2819,7 +2823,7 @@ int MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[],const IS i
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MPIRowbs" 
 #include "src/vec/is/impls/general/general.h"
-int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Mat *submat)
+PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Mat *submat)
 { 
   Mat_MPIRowbs  *c = (Mat_MPIRowbs*)C->data;
   BSspmat       *A = c->A;

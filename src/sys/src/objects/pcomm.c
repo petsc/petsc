@@ -24,7 +24,7 @@
    Concepts: PETSC_COMM_WORLD^setting
 
 @*/
-int PetscSetCommWorld(MPI_Comm comm)
+PetscErrorCode PetscSetCommWorld(MPI_Comm comm)
 {
   PetscFunctionBegin;
   if (PetscInitializeCalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call before PetscInitialize()");

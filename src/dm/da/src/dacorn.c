@@ -28,9 +28,9 @@
 
 .seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates(). DAGetGhostCoordinates(), DAGetCoordinateDA()
 @*/
-int DASetCoordinates(DA da,Vec c)
+PetscErrorCode DASetCoordinates(DA da,Vec c)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -68,7 +68,7 @@ int DASetCoordinates(DA da,Vec c)
 
 .seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
 @*/
-int DAGetCoordinates(DA da,Vec *c)
+PetscErrorCode DAGetCoordinates(DA da,Vec *c)
 {
   PetscFunctionBegin;
  
@@ -99,7 +99,7 @@ int DAGetCoordinates(DA da,Vec *c)
 
 .seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetGhostedCoordinates()
 @*/
-int DAGetCoordinateDA(DA da,DA *cda)
+PetscErrorCode DAGetCoordinateDA(DA da,DA *cda)
 {
   DAStencilType  st;
   int            size,ierr;
@@ -206,7 +206,7 @@ int DAGetCoordinateDA(DA da,DA *cda)
 
 .seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
 @*/
-int DAGetGhostedCoordinates(DA da,Vec *c)
+PetscErrorCode DAGetGhostedCoordinates(DA da,Vec *c)
 {
   PetscFunctionBegin;
  
@@ -215,7 +215,7 @@ int DAGetGhostedCoordinates(DA da,Vec *c)
   if (!da->coordinates) SETERRQ(1,"You must call DASetCoordinates() before this call");
   if (!da->ghosted_coordinates) {
     DA  dac;
-    int ierr;
+    PetscErrorCode ierr;
     ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
     ierr = DACreateLocalVector(dac,&da->ghosted_coordinates);CHKERRQ(ierr);
     if (dac == da) {ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);}
@@ -246,9 +246,9 @@ int DAGetGhostedCoordinates(DA da,Vec *c)
 
 .seealso: DAGetFieldName()
 @*/
-int DASetFieldName(DA da,int nf,const char name[])
+PetscErrorCode DASetFieldName(DA da,int nf,const char name[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
  
@@ -282,7 +282,7 @@ int DASetFieldName(DA da,int nf,const char name[])
 
 .seealso: DASetFieldName()
 @*/
-int DAGetFieldName(DA da,int nf,char **name)
+PetscErrorCode DAGetFieldName(DA da,int nf,char **name)
 {
   PetscFunctionBegin;
  
@@ -323,7 +323,7 @@ int DAGetFieldName(DA da,int nf,char **name)
 
 .seealso: DAGetGhostCorners()
 @*/
-int DAGetCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
+PetscErrorCode DAGetCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p)
 {
   int w;
 

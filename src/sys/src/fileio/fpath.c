@@ -53,10 +53,11 @@
 
 .seealso: PetscGetRelativePath()
 @*/
-int PetscGetFullPath(const char path[],char fullpath[],int flen)
+PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
 {
   struct passwd *pwde;
-  int           ierr,ln;
+  PetscErrorCode ierr;
+  size_t        ln;
   PetscTruth    flg;
 
   PetscFunctionBegin;
@@ -81,7 +82,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
   if (fullpath[0] == '~') {
     char tmppath[PETSC_MAX_PATH_LEN];
     if (fullpath[1] == '/') {
-#if !defined(PETSC_MISSING_GETPWUID)
+#if defined(PETSC_HAVE_GETPWUID)
 	pwde = getpwuid(geteuid());
 	if (!pwde) PetscFunctionReturn(0);
 	ierr = PetscStrcpy(tmppath,pwde->pw_dir);CHKERRQ(ierr);
@@ -123,7 +124,7 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
 #elif defined (PARCH_win32)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
-int PetscGetFullPath(const char path[],char fullpath[],int flen)
+PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
 {
   PetscFunctionBegin;
   _fullpath(fullpath,path,flen);
@@ -132,9 +133,9 @@ int PetscGetFullPath(const char path[],char fullpath[],int flen)
 #else
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
-int PetscGetFullPath(const char path[],char fullpath[],int flen)
+PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscStrcpy(fullpath,path);CHKERRQ(ierr);

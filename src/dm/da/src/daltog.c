@@ -37,9 +37,9 @@
 .seealso: DAGlobalToLocalBegin(), DACreate2d(), DALocalToLocalBegin(),
            DALocalToLocalEnd(), DALocalToGlobalBegin(), DALocalToGlobalEnd()
 @*/
-int DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g)
+PetscErrorCode DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

@@ -32,7 +32,7 @@ typedef struct {
 #define __FUNCT__ "MatPartitioningApply_Jostle"
 static int MatPartitioningApply_Jostle(MatPartitioning part, IS * partitioning)
 {
-    int ierr, size, rank, i;
+    PetscErrorCode ierr, size, rank, i;
     Mat mat = part->adj, matMPI;
     Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
     MatPartitioning_Jostle *jostle_struct =
@@ -158,12 +158,12 @@ static int MatPartitioningApply_Jostle(MatPartitioning part, IS * partitioning)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningView_Jostle"
-int MatPartitioningView_Jostle(MatPartitioning part, PetscViewer viewer)
+PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer viewer)
 {
 
     MatPartitioning_Jostle *jostle_struct =
         (MatPartitioning_Jostle *) part->data;
-    int ierr;
+    PetscErrorCode ierr;
     PetscTruth iascii;
 
     PetscFunctionBegin;
@@ -193,7 +193,7 @@ int MatPartitioningView_Jostle(MatPartitioning part, PetscViewer viewer)
    Level: advanced
 
 @*/
-int MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscReal level)
+PetscErrorCode MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscReal level)
 {
     MatPartitioning_Jostle *jostle_struct =
         (MatPartitioning_Jostle *) part->data;
@@ -224,7 +224,7 @@ int MatPartitioningJostleSetCoarseLevel(MatPartitioning part, PetscReal level)
    Level: advanced
 
 @*/
-int MatPartitioningJostleSetCoarseSequential(MatPartitioning part)
+PetscErrorCode MatPartitioningJostleSetCoarseSequential(MatPartitioning part)
 {
     MatPartitioning_Jostle *jostle_struct =
         (MatPartitioning_Jostle *) part->data;
@@ -235,9 +235,9 @@ int MatPartitioningJostleSetCoarseSequential(MatPartitioning part)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Jostle"
-int MatPartitioningSetFromOptions_Jostle(MatPartitioning part)
+PetscErrorCode MatPartitioningSetFromOptions_Jostle(MatPartitioning part)
 {
-    int ierr;
+    PetscErrorCode ierr;
     PetscTruth flag;
     PetscReal level;
 
@@ -264,11 +264,11 @@ int MatPartitioningSetFromOptions_Jostle(MatPartitioning part)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningDestroy_Jostle"
-int MatPartitioningDestroy_Jostle(MatPartitioning part)
+PetscErrorCode MatPartitioningDestroy_Jostle(MatPartitioning part)
 {
     MatPartitioning_Jostle *jostle_struct =
         (MatPartitioning_Jostle *) part->data;
-    int ierr;
+    PetscErrorCode ierr;
 
     PetscFunctionBegin;
 
@@ -283,9 +283,9 @@ int MatPartitioningDestroy_Jostle(MatPartitioning part)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Jostle"
-int MatPartitioningCreate_Jostle(MatPartitioning part)
+PetscErrorCode MatPartitioningCreate_Jostle(MatPartitioning part)
 {
-    int ierr;
+    PetscErrorCode ierr;
     MatPartitioning_Jostle *jostle_struct;
 
     PetscFunctionBegin;

@@ -31,10 +31,11 @@
 .seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
 
 @*/
-int VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
+PetscErrorCode VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
-  int        ierr,N;
+  PetscErrorCode ierr;
+  int        N;
   IS         is;
 
   PetscFunctionBegin;
@@ -89,10 +90,11 @@ int VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
 .seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
 
 @*/
-int VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
+PetscErrorCode VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
 {
 
-  int        ierr,N,rank;
+  PetscErrorCode ierr;
+  int        N,rank;
   IS         is;
 
   PetscFunctionBegin;

@@ -23,9 +23,9 @@ extern int PETSC_Barrier;
 extern PetscLogDouble _TotalFlops;
 
 /* General logging of information; different from event logging */
-EXTERN int        PetscLogInfo(void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
-EXTERN int        PetscLogInfoDeactivateClass(int);
-EXTERN int        PetscLogInfoActivateClass(int);
+EXTERN PetscErrorCode        PetscLogInfo(void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode        PetscLogInfoDeactivateClass(int);
+EXTERN PetscErrorCode        PetscLogInfoActivateClass(int);
 extern PetscTruth PetscLogPrintInfo;  /* if true, indicates PetscLogInfo() is turned on */
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
@@ -51,8 +51,8 @@ extern PetscTruth PetscLogPrintInfo;  /* if true, indicates PetscLogInfo() is tu
 
 #if defined (PETSC_HAVE_MPE)
 #include "mpe.h"
-EXTERN int        PetscLogMPEBegin(void);
-EXTERN int        PetscLogMPEDump(const char[]);
+EXTERN PetscErrorCode        PetscLogMPEBegin(void);
+EXTERN PetscErrorCode        PetscLogMPEDump(const char[]);
 extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) \
   if(UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) \
@@ -67,10 +67,10 @@ extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_END(e)
 #endif
 
-EXTERN int (*_PetscLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-EXTERN int (*_PetscLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
-EXTERN int (*_PetscLogPHC)(PetscObject);
-EXTERN int (*_PetscLogPHD)(PetscObject);
+EXTERN PetscErrorCode (*_PetscLogPLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN PetscErrorCode (*_PetscLogPLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN PetscErrorCode (*_PetscLogPHC)(PetscObject);
+EXTERN PetscErrorCode (*_PetscLogPHD)(PetscObject);
 
 #define PetscLogObjectParent(p,c) \
   if (c) {\
@@ -84,40 +84,40 @@ EXTERN int (*_PetscLogPHD)(PetscObject);
 #define PetscLogObjectDestroy(h)     {if (_PetscLogPHD) (*_PetscLogPHD)((PetscObject)h);}
 #define PetscLogObjectMemory(p,m)    {PetscValidHeader((PetscObject)p,1);((PetscObject)(p))->mem += (m);}
 /* Initialization functions */
-EXTERN int PetscLogBegin(void);
-EXTERN int PetscLogAllBegin(void);
-EXTERN int PetscLogTraceBegin(FILE *);
-EXTERN int PetscLogActions(PetscTruth);
-EXTERN int PetscLogObjects(PetscTruth);
+EXTERN PetscErrorCode PetscLogBegin(void);
+EXTERN PetscErrorCode PetscLogAllBegin(void);
+EXTERN PetscErrorCode PetscLogTraceBegin(FILE *);
+EXTERN PetscErrorCode PetscLogActions(PetscTruth);
+EXTERN PetscErrorCode PetscLogObjects(PetscTruth);
 /* General functions */
-EXTERN int PetscLogGetRGBColor(const char*[]);
-EXTERN int PetscLogDestroy(void);
-EXTERN int PetscLogSet(int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
+EXTERN PetscErrorCode PetscLogGetRGBColor(const char*[]);
+EXTERN PetscErrorCode PetscLogDestroy(void);
+EXTERN PetscErrorCode PetscLogSet(int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
                    int (*)(int, int, PetscObject, PetscObject, PetscObject, PetscObject));
-EXTERN int PetscLogObjectState(PetscObject, const char[], ...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...)  PETSC_PRINTF_FORMAT_CHECK(2,3);
 /* Output functions */
-EXTERN int PetscLogPrintSummary(MPI_Comm, const char[]);
-EXTERN int PetscLogDump(const char[]);
+EXTERN PetscErrorCode PetscLogPrintSummary(MPI_Comm, const char[]);
+EXTERN PetscErrorCode PetscLogDump(const char[]);
 /* Counter functions */
-EXTERN int PetscGetFlops(PetscLogDouble *);
+EXTERN PetscErrorCode PetscGetFlops(PetscLogDouble *);
 /* Stage functions */
-EXTERN int PetscLogStageRegister(int*, const char[]);
-EXTERN int PetscLogStagePush(int);
-EXTERN int PetscLogStagePop(void);
-EXTERN int PetscLogStageSetActive(int, PetscTruth);
-EXTERN int PetscLogStageGetActive(int, PetscTruth *);
-EXTERN int PetscLogStageSetVisible(int, PetscTruth);
-EXTERN int PetscLogStageGetVisible(int, PetscTruth *);
-EXTERN int PetscLogStageGetId(const char [], int *);
+EXTERN PetscErrorCode PetscLogStageRegister(int*, const char[]);
+EXTERN PetscErrorCode PetscLogStagePush(int);
+EXTERN PetscErrorCode PetscLogStagePop(void);
+EXTERN PetscErrorCode PetscLogStageSetActive(int, PetscTruth);
+EXTERN PetscErrorCode PetscLogStageGetActive(int, PetscTruth *);
+EXTERN PetscErrorCode PetscLogStageSetVisible(int, PetscTruth);
+EXTERN PetscErrorCode PetscLogStageGetVisible(int, PetscTruth *);
+EXTERN PetscErrorCode PetscLogStageGetId(const char [], int *);
 /* Event functions */
-EXTERN int PetscLogEventRegister(int*, const char[], int);
-EXTERN int PetscLogEventActivate(int);
-EXTERN int PetscLogEventDeactivate(int);
-EXTERN int PetscLogEventSetActiveAll(int, PetscTruth);
-EXTERN int PetscLogEventActivateClass(int);
-EXTERN int PetscLogEventDeactivateClass(int);
+EXTERN PetscErrorCode PetscLogEventRegister(int*, const char[], int);
+EXTERN PetscErrorCode PetscLogEventActivate(int);
+EXTERN PetscErrorCode PetscLogEventDeactivate(int);
+EXTERN PetscErrorCode PetscLogEventSetActiveAll(int, PetscTruth);
+EXTERN PetscErrorCode PetscLogEventActivateClass(int);
+EXTERN PetscErrorCode PetscLogEventDeactivateClass(int);
 /* Class functions */
-EXTERN int PetscLogClassRegister(int*, const char []);
+EXTERN PetscErrorCode PetscLogClassRegister(int*, const char []);
 
 /* Global counters */
 extern PetscLogDouble irecv_ct,  isend_ct,  recv_ct,  send_ct;
@@ -161,16 +161,16 @@ typedef struct _ClassPerfInfo {
 
 /* The structures for logging registration */
 typedef struct _ClassRegInfo {
-  char *name;   /* The class name */
-  int   cookie; /* The integer identifying this class */
+  char            *name;   /* The class name */
+  PetscCookieCode cookie; /* The integer identifying this class */
 } ClassRegInfo;
 
 typedef struct _EventRegInfo {
-  char *name;   /* The name of this event */
-  int   cookie; /* The class id for this event (should maybe give class ID instead) */
+  char            *name;   /* The name of this event */
+  PetscCookieCode cookie; /* The class id for this event (should maybe give class ID instead) */
 #if defined (PETSC_HAVE_MPE)
-  int   mpe_id_begin; /* MPE IDs that define the event */
-  int   mpe_id_end;
+  int             mpe_id_begin; /* MPE IDs that define the event */
+  int             mpe_id_end;
 #endif
 } EventRegInfo;
 
@@ -264,20 +264,20 @@ struct _StageLog {
 } 
 
 /* Creation and destruction functions */
-EXTERN int StageLogCreate(StageLog *);
-EXTERN int StageLogDestroy(StageLog);
+EXTERN PetscErrorCode StageLogCreate(StageLog *);
+EXTERN PetscErrorCode StageLogDestroy(StageLog);
 /* Registration functions */
-EXTERN int StageLogRegister(StageLog, const char [], int *);
+EXTERN PetscErrorCode StageLogRegister(StageLog, const char [], int *);
 /* Runtime functions */
-EXTERN int PetscLogGetStageLog(StageLog *);
-EXTERN int StageLogPush(StageLog, int);
-EXTERN int StageLogPop(StageLog);
-EXTERN int StageLogGetCurrent(StageLog, int *);
-EXTERN int StageLogSetActive(StageLog, int, PetscTruth);
-EXTERN int StageLogGetActive(StageLog, int, PetscTruth *);
-EXTERN int StageLogSetVisible(StageLog, int, PetscTruth);
-EXTERN int StageLogGetVisible(StageLog, int, PetscTruth *);
-EXTERN int StageLogGetStage(StageLog, const char [], int *);
+EXTERN PetscErrorCode PetscLogGetStageLog(StageLog *);
+EXTERN PetscErrorCode StageLogPush(StageLog, int);
+EXTERN PetscErrorCode StageLogPop(StageLog);
+EXTERN PetscErrorCode StageLogGetCurrent(StageLog, int *);
+EXTERN PetscErrorCode StageLogSetActive(StageLog, int, PetscTruth);
+EXTERN PetscErrorCode StageLogGetActive(StageLog, int, PetscTruth *);
+EXTERN PetscErrorCode StageLogSetVisible(StageLog, int, PetscTruth);
+EXTERN PetscErrorCode StageLogGetVisible(StageLog, int, PetscTruth *);
+EXTERN PetscErrorCode StageLogGetStage(StageLog, const char [], int *);
 
 /*
      This does not work for MPI-Uni because our include/mpiuni/mpi.h file
@@ -287,7 +287,7 @@ EXTERN int StageLogGetStage(StageLog, const char [], int *);
    macros in a way that sometimes it double counts, hence 
    PETSC_HAVE_BROKEN_RECURSIVE_MACRO
 
-     It does not work with Windows NT because winmpich lacks MPI_Type_size()
+     It does not work with Windows because winmpich lacks MPI_Type_size()
 */
 #if !defined(_petsc_mpi_uni) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
 /*
@@ -427,7 +427,7 @@ EXTERN int StageLogGetStage(StageLog, const char [], int *);
 #define PetscLogEventRegister(a,b,c)        0
 #define PetscLogObjects(a)                  0
 #define PetscLogActions(a)                  0
-EXTERN int PetscLogObjectState(PetscObject,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
+EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
 #define MPI_Startall_irecv(count,number,requests) MPI_Startall(number,requests)

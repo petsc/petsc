@@ -48,85 +48,85 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 extern int TS_COOKIE;
 extern int TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
-EXTERN int TSInitializePackage(const char[]);
+EXTERN PetscErrorCode TSInitializePackage(const char[]);
 
-EXTERN int TSCreate(MPI_Comm,TS*);
-EXTERN int TSDestroy(TS);
+EXTERN PetscErrorCode TSCreate(MPI_Comm,TS*);
+EXTERN PetscErrorCode TSDestroy(TS);
 
-EXTERN int TSSetProblemType(TS,TSProblemType);
-EXTERN int TSGetProblemType(TS,TSProblemType*);
-EXTERN int TSSetMonitor(TS,int(*)(TS,int,PetscReal,Vec,void*),void *,int (*)(void*));
-EXTERN int TSClearMonitor(TS);
+EXTERN PetscErrorCode TSSetProblemType(TS,TSProblemType);
+EXTERN PetscErrorCode TSGetProblemType(TS,TSProblemType*);
+EXTERN PetscErrorCode TSSetMonitor(TS,int(*)(TS,int,PetscReal,Vec,void*),void *,int (*)(void*));
+EXTERN PetscErrorCode TSClearMonitor(TS);
 
-EXTERN int TSSetOptionsPrefix(TS,const char[]);
-EXTERN int TSAppendOptionsPrefix(TS,const char[]);
-EXTERN int TSGetOptionsPrefix(TS,char *[]);
-EXTERN int TSSetFromOptions(TS);
-EXTERN int TSSetUp(TS);
+EXTERN PetscErrorCode TSSetOptionsPrefix(TS,const char[]);
+EXTERN PetscErrorCode TSAppendOptionsPrefix(TS,const char[]);
+EXTERN PetscErrorCode TSGetOptionsPrefix(TS,char *[]);
+EXTERN PetscErrorCode TSSetFromOptions(TS);
+EXTERN PetscErrorCode TSSetUp(TS);
 
-EXTERN int TSSetSolution(TS,Vec);
-EXTERN int TSGetSolution(TS,Vec*);
+EXTERN PetscErrorCode TSSetSolution(TS,Vec);
+EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
-EXTERN int TSSetDuration(TS,int,PetscReal);
-EXTERN int TSGetDuration(TS,int*,PetscReal*);
+EXTERN PetscErrorCode TSSetDuration(TS,int,PetscReal);
+EXTERN PetscErrorCode TSGetDuration(TS,int*,PetscReal*);
 
-EXTERN int TSDefaultMonitor(TS,int,PetscReal,Vec,void*);
-EXTERN int TSVecViewMonitor(TS,int,PetscReal,Vec,void*);
-EXTERN int TSStep(TS,int *,PetscReal*);
+EXTERN PetscErrorCode TSDefaultMonitor(TS,int,PetscReal,Vec,void*);
+EXTERN PetscErrorCode TSVecViewMonitor(TS,int,PetscReal,Vec,void*);
+EXTERN PetscErrorCode TSStep(TS,int *,PetscReal*);
 
-EXTERN int TSSetInitialTimeStep(TS,PetscReal,PetscReal);
-EXTERN int TSGetTimeStep(TS,PetscReal*);
-EXTERN int TSGetTime(TS,PetscReal*);
-EXTERN int TSGetTimeStepNumber(TS,int*);
-EXTERN int TSSetTimeStep(TS,PetscReal);
+EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
+EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);
+EXTERN PetscErrorCode TSGetTime(TS,PetscReal*);
+EXTERN PetscErrorCode TSGetTimeStepNumber(TS,int*);
+EXTERN PetscErrorCode TSSetTimeStep(TS,PetscReal);
 
-EXTERN int TSSetRHSFunction(TS,int (*)(TS,PetscReal,Vec,Vec,void*),void*);
-EXTERN int TSSetRHSMatrix(TS,Mat,Mat,int (*)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void*);
-EXTERN int TSSetRHSJacobian(TS,Mat,Mat,int(*)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void*);
-EXTERN int TSSetRHSBoundaryConditions(TS,int (*)(TS,PetscReal,Vec,void*),void*);
+EXTERN PetscErrorCode TSSetRHSFunction(TS,int (*)(TS,PetscReal,Vec,Vec,void*),void*);
+EXTERN PetscErrorCode TSSetRHSMatrix(TS,Mat,Mat,int (*)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void*);
+EXTERN PetscErrorCode TSSetRHSJacobian(TS,Mat,Mat,int(*)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void*);
+EXTERN PetscErrorCode TSSetRHSBoundaryConditions(TS,int (*)(TS,PetscReal,Vec,void*),void*);
 
-EXTERN int TSDefaultComputeJacobianColor(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
-EXTERN int TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN PetscErrorCode TSDefaultComputeJacobianColor(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+EXTERN PetscErrorCode TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 
-EXTERN int TSGetRHSMatrix(TS,Mat*,Mat*,void**);
-EXTERN int TSGetRHSJacobian(TS,Mat*,Mat*,void**);
+EXTERN PetscErrorCode TSGetRHSMatrix(TS,Mat*,Mat*,void**);
+EXTERN PetscErrorCode TSGetRHSJacobian(TS,Mat*,Mat*,void**);
 
-extern int TSSetRhsBC(TS, int (*)(TS, Vec, void *));
-extern int TSSetSystemMatrixBC(TS, int (*)(TS, Mat, Mat, void *));
-extern int TSSetSolutionBC(TS, int (*)(TS, Vec, void *));
-extern int TSSetPreStep(TS, int (*)(TS));
-extern int TSSetUpdate(TS, int (*)(TS, PetscReal, PetscReal *));
-extern int TSSetPostStep(TS, int (*)(TS));
-extern int TSDefaultRhsBC(TS, Vec, void *);
-extern int TSDefaultSystemMatrixBC(TS, Mat, Mat, void *);
-extern int TSDefaultSolutionBC(TS, Vec, void *);
-extern int TSDefaultPreStep(TS);
-extern int TSDefaultUpdate(TS, PetscReal, PetscReal *);
-extern int TSDefaultPostStep(TS);
-extern int TSSetIdentity(TS, int (*)(TS, double, Mat *, void *));
+EXTERN PetscErrorCode TSSetRhsBC(TS, int (*)(TS, Vec, void *));
+EXTERN PetscErrorCode TSSetSystemMatrixBC(TS, int (*)(TS, Mat, Mat, void *));
+EXTERN PetscErrorCode TSSetSolutionBC(TS, int (*)(TS, Vec, void *));
+EXTERN PetscErrorCode TSSetPreStep(TS, int (*)(TS));
+EXTERN PetscErrorCode TSSetUpdate(TS, int (*)(TS, PetscReal, PetscReal *));
+EXTERN PetscErrorCode TSSetPostStep(TS, int (*)(TS));
+EXTERN PetscErrorCode TSDefaultRhsBC(TS, Vec, void *);
+EXTERN PetscErrorCode TSDefaultSystemMatrixBC(TS, Mat, Mat, void *);
+EXTERN PetscErrorCode TSDefaultSolutionBC(TS, Vec, void *);
+EXTERN PetscErrorCode TSDefaultPreStep(TS);
+EXTERN PetscErrorCode TSDefaultUpdate(TS, PetscReal, PetscReal *);
+EXTERN PetscErrorCode TSDefaultPostStep(TS);
+EXTERN PetscErrorCode TSSetIdentity(TS, int (*)(TS, double, Mat *, void *));
 
-EXTERN int TSPseudoSetTimeStep(TS,int(*)(TS,PetscReal*,void*),void*);
-EXTERN int TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
-EXTERN int TSPseudoComputeTimeStep(TS,PetscReal *);
+EXTERN PetscErrorCode TSPseudoSetTimeStep(TS,int(*)(TS,PetscReal*,void*),void*);
+EXTERN PetscErrorCode TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
+EXTERN PetscErrorCode TSPseudoComputeTimeStep(TS,PetscReal *);
 
-EXTERN int TSPseudoSetVerifyTimeStep(TS,int(*)(TS,Vec,void*,PetscReal*,int*),void*);
-EXTERN int TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,PetscReal*,int*);
-EXTERN int TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,int*);
-EXTERN int TSPseudoSetTimeStepIncrement(TS,PetscReal);
-EXTERN int TSPseudoIncrementDtFromInitialDt(TS);
+EXTERN PetscErrorCode TSPseudoSetVerifyTimeStep(TS,int(*)(TS,Vec,void*,PetscReal*,int*),void*);
+EXTERN PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,PetscReal*,int*);
+EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,int*);
+EXTERN PetscErrorCode TSPseudoSetTimeStepIncrement(TS,PetscReal);
+EXTERN PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS);
 
-EXTERN int TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
-EXTERN int TSComputeRHSBoundaryConditions(TS,PetscReal,Vec);
-EXTERN int TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
+EXTERN PetscErrorCode TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
+EXTERN PetscErrorCode TSComputeRHSBoundaryConditions(TS,PetscReal,Vec);
+EXTERN PetscErrorCode TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
 
 /* Dynamic creation and loading functions */
 extern PetscFList TSList;
 extern PetscTruth TSRegisterAllCalled;
-EXTERN int TSGetType(TS,TSType*);
-EXTERN int TSSetType(TS,const TSType);
-EXTERN int TSRegister(const char[], const char[], const char[], int (*)(TS));
-EXTERN int TSRegisterAll(const char[]);
-EXTERN int TSRegisterDestroy(void);
+EXTERN PetscErrorCode TSGetType(TS,TSType*);
+EXTERN PetscErrorCode TSSetType(TS,const TSType);
+EXTERN PetscErrorCode TSRegister(const char[], const char[], const char[], int (*)(TS));
+EXTERN PetscErrorCode TSRegisterAll(const char[]);
+EXTERN PetscErrorCode TSRegisterDestroy(void);
 
 /*MC
   TSRegisterDynamic - Adds a creation method to the TS package.
@@ -177,18 +177,18 @@ M*/
 #define TSRegisterDynamic(a,b,c,d) TSRegister(a,b,c,d)
 #endif
 
-EXTERN int TSGetSNES(TS,SNES*);
-EXTERN int TSGetKSP(TS,KSP*);
+EXTERN PetscErrorCode TSGetSNES(TS,SNES*);
+EXTERN PetscErrorCode TSGetKSP(TS,KSP*);
 
-EXTERN int TSView(TS,PetscViewer);
-EXTERN int TSViewFromOptions(TS,const char[]);
+EXTERN PetscErrorCode TSView(TS,PetscViewer);
+EXTERN PetscErrorCode TSViewFromOptions(TS,const char[]);
 
-EXTERN int TSSetApplicationContext(TS,void *);
-EXTERN int TSGetApplicationContext(TS,void **);
+EXTERN PetscErrorCode TSSetApplicationContext(TS,void *);
+EXTERN PetscErrorCode TSGetApplicationContext(TS,void **);
 
-EXTERN int TSLGMonitorCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
-EXTERN int TSLGMonitor(TS,int,PetscReal,Vec,void *);
-EXTERN int TSLGMonitorDestroy(PetscDrawLG);
+EXTERN PetscErrorCode TSLGMonitorCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
+EXTERN PetscErrorCode TSLGMonitor(TS,int,PetscReal,Vec,void *);
+EXTERN PetscErrorCode TSLGMonitorDestroy(PetscDrawLG);
 
 /*
        PETSc interface to PVode
@@ -196,17 +196,17 @@ EXTERN int TSLGMonitorDestroy(PetscDrawLG);
 #define PVODE_UNMODIFIED_GS PVODE_CLASSICAL_GS
 typedef enum { PVODE_ADAMS,PVODE_BDF } TSPVodeType;
 typedef enum { PVODE_MODIFIED_GS = 0,PVODE_CLASSICAL_GS = 1 } TSPVodeGramSchmidtType;
-EXTERN int TSPVodeSetType(TS,TSPVodeType);
-EXTERN int TSPVodeGetPC(TS,PC*);
-EXTERN int TSPVodeSetTolerance(TS,PetscReal,PetscReal);
-EXTERN int TSPVodeGetIterations(TS,int *,int *);
-EXTERN int TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
-EXTERN int TSPVodeSetGMRESRestart(TS,int);
-EXTERN int TSPVodeSetLinearTolerance(TS,PetscReal);
-EXTERN int TSPVodeSetExactFinalTime(TS,PetscTruth);
-EXTERN int TSPVodeGetParameters(TS,int *,long int*[],double*[]);
+EXTERN PetscErrorCode TSPVodeSetType(TS,TSPVodeType);
+EXTERN PetscErrorCode TSPVodeGetPC(TS,PC*);
+EXTERN PetscErrorCode TSPVodeSetTolerance(TS,PetscReal,PetscReal);
+EXTERN PetscErrorCode TSPVodeGetIterations(TS,int *,int *);
+EXTERN PetscErrorCode TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
+EXTERN PetscErrorCode TSPVodeSetGMRESRestart(TS,int);
+EXTERN PetscErrorCode TSPVodeSetLinearTolerance(TS,PetscReal);
+EXTERN PetscErrorCode TSPVodeSetExactFinalTime(TS,PetscTruth);
+EXTERN PetscErrorCode TSPVodeGetParameters(TS,int *,long int*[],double*[]);
 
-EXTERN int TSRKSetTolerance(TS,PetscReal);
+EXTERN PetscErrorCode TSRKSetTolerance(TS,PetscReal);
 
 PETSC_EXTERN_CXX_END
 #endif

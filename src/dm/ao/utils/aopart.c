@@ -23,7 +23,7 @@ int AODataKeyPartition(AOData aodata,const char key[])
   Mat             adj;
   MatPartitioning part;
   IS              is,isg;
-  int             ierr;
+  PetscErrorCode ierr;
   MPI_Comm        comm;
 
   PetscFunctionBegin;

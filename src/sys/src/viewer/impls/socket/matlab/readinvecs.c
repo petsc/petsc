@@ -30,7 +30,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "ReadInVecs"
-int ReadInVecs(mxArray *plhs[],int t,int dim,int *dims)
+PetscErrorCode ReadInVecs(mxArray *plhs[],int t,int dim,int *dims)
 {
   int    cookie = 0,M,compx = 0,i;
   

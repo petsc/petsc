@@ -7,13 +7,13 @@
 
 #if defined (PETSC_HAVE_AMS)
 EXTERN_C_BEGIN
-EXTERN int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
+EXTERN PetscErrorCode AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
 EXTERN_C_END
 #endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_1d"
-int DAView_1d(DA da,PetscViewer viewer)
+PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
 {
   int        rank,ierr;
   PetscTruth iascii,isdraw;
@@ -81,7 +81,7 @@ int DAView_1d(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN int DAPublish_Petsc(PetscObject);
+EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate1d"
@@ -125,7 +125,7 @@ EXTERN int DAPublish_Petsc(PetscObject);
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
-int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA *inra)
+PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA *inra)
 {
   int        rank,size,xs,xe,x,Xs,Xe,ierr,start,end,m;
   int        i,*idx,nn,left,refine_x = 2,tM = M;

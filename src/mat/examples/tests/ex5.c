@@ -10,7 +10,8 @@ int main(int argc,char **args)
 {
   Mat          C; 
   Vec          s,u,w,x,y,z;
-  int          ierr,i,j,m = 8,n,rstart,rend,vstart,vend;
+  PetscErrorCode ierr;
+  int i,j,m = 8,n,rstart,rend,vstart,vend;
   PetscScalar  one = 1.0,negone = -1.0,v,alpha=0.1;
   PetscReal    norm;
   PetscTruth   flg;

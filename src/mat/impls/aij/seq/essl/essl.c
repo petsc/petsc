@@ -25,13 +25,13 @@ typedef struct {
   PetscTruth CleanUpESSL;
 } Mat_Essl;
 
-EXTERN int MatDuplicate_Essl(Mat,MatDuplicateOption,Mat*);
+EXTERN PetscErrorCode MatDuplicate_Essl(Mat,MatDuplicateOption,Mat*);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Essl_SeqAIJ"
-int MatConvert_Essl_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
-  int      ierr;
+PetscErrorCode MatConvert_Essl_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
+  PetscErrorCode ierr;
   Mat      B=*newmat;
   Mat_Essl *essl=(Mat_Essl*)A->spptr;
   
@@ -54,8 +54,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_Essl"
-int MatDestroy_Essl(Mat A) {
-  int       ierr;
+PetscErrorCode MatDestroy_Essl(Mat A) 
+{
+  PetscErrorCode ierr;
   Mat_Essl *essl=(Mat_Essl*)A->spptr;
 
   PetscFunctionBegin;
@@ -69,10 +70,11 @@ int MatDestroy_Essl(Mat A) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_Essl"
-int MatSolve_Essl(Mat A,Vec b,Vec x) {
+PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x) {
   Mat_Essl    *essl = (Mat_Essl*)A->spptr;
   PetscScalar *xx;
-  int         ierr,m,zero = 0;
+  PetscErrorCode ierr;
+  int         m,zero = 0;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
@@ -85,7 +87,7 @@ int MatSolve_Essl(Mat A,Vec b,Vec x) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Essl"
-int MatLUFactorNumeric_Essl(Mat A,Mat *F) {
+PetscErrorCode MatLUFactorNumeric_Essl(Mat A,Mat *F) {
   Mat_SeqAIJ *aa=(Mat_SeqAIJ*)(A)->data;
   Mat_Essl   *essl=(Mat_Essl*)(*F)->spptr;
   int        i,ierr,one = 1;
@@ -113,10 +115,11 @@ int MatLUFactorNumeric_Essl(Mat A,Mat *F) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_Essl"
-int MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
+PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
   Mat        B;
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        ierr,len;
+  PetscErrorCode ierr;
+  int        len;
   Mat_Essl   *essl;
   PetscReal  f = 1.0;
 
@@ -153,8 +156,8 @@ int MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_Essl"
-int MatAssemblyEnd_Essl(Mat A,MatAssemblyType mode) {
-  int      ierr;
+PetscErrorCode MatAssemblyEnd_Essl(Mat A,MatAssemblyType mode) {
+  PetscErrorCode ierr;
   Mat_Essl *essl=(Mat_Essl*)(A->spptr);
 
   PetscFunctionBegin;
@@ -169,9 +172,9 @@ int MatAssemblyEnd_Essl(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Essl"
-int MatConvert_SeqAIJ_Essl(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_Essl(Mat A,const MatType type,Mat *newmat) {
   Mat      B=*newmat;
-  int      ierr;
+  PetscErrorCode ierr;
   Mat_Essl *essl;
 
   PetscFunctionBegin;
@@ -205,8 +208,8 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_Essl"
-int MatDuplicate_Essl(Mat A, MatDuplicateOption op, Mat *M) {
-  int      ierr;
+PetscErrorCode MatDuplicate_Essl(Mat A, MatDuplicateOption op, Mat *M) {
+  PetscErrorCode ierr;
   Mat_Essl *lu = (Mat_Essl *)A->spptr;
 
   PetscFunctionBegin;
@@ -240,8 +243,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Essl"
-int MatCreate_Essl(Mat A) {
-  int ierr;
+PetscErrorCode MatCreate_Essl(Mat A) 
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ and Essl types */

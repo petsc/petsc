@@ -34,7 +34,7 @@
 #include <limits.h>
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetCPUTime"
-int PetscGetCPUTime(PetscLogDouble *t)
+PetscErrorCode PetscGetCPUTime(PetscLogDouble *t)
 {
   struct tms temp;
 
@@ -51,7 +51,7 @@ int PetscGetCPUTime(PetscLogDouble *t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetCPUTime"
-int PetscGetCPUTime(PetscLogDouble *t)
+PetscErrorCode PetscGetCPUTime(PetscLogDouble *t)
 {
   PetscFunctionBegin;
   *t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
@@ -94,7 +94,7 @@ int PetscGetCPUTime(PetscLogDouble *t)
     use since it does not include the time for message passing etc.
     Also on many systems the accuracy is only on the order of microseconds.
 @*/
-int PetscGetCPUTime(PetscLogDouble *t)
+PetscErrorCode PetscGetCPUTime(PetscLogDouble *t)
 {
   static struct rusage temp;
   PetscLogDouble       foo,foo1;

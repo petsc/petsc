@@ -7,9 +7,10 @@
 /* Set Spooles' default and runtime options */
 #undef __FUNCT__  
 #define __FUNCT__ "SetSpoolesOptions"
-int SetSpoolesOptions(Mat A, Spooles_options *options)
+PetscErrorCode SetSpoolesOptions(Mat A, Spooles_options *options)
 {
-  int          ierr,indx;
+  PetscErrorCode ierr;
+  int          indx;
   const char   *ordertype[]={"BestOfNDandMS","MMD","MS","ND"};
   PetscTruth   flg;
 
@@ -92,10 +93,11 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
 /* used by -ksp_view */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_Spooles"
-int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
+PetscErrorCode MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
 {
   Mat_Spooles    *lu = (Mat_Spooles*)A->spptr; 
-  int            ierr,size;
+  PetscErrorCode ierr;
+  int            size;
   char           *s;
 
   PetscFunctionBegin;

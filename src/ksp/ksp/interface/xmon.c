@@ -31,10 +31,10 @@
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPLGTrueMonitorCreate()
 @*/
-int KSPLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode KSPLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw win;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
@@ -46,10 +46,10 @@ int KSPLGMonitorCreate(const char host[],const char label[],int x,int y,int m,in
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGMonitor"
-int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
+PetscErrorCode KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
   PetscDrawLG lg = (PetscDrawLG) monctx;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscReal   x,y;
 
   PetscFunctionBegin;
@@ -89,10 +89,10 @@ int KSPLGMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 
 .seealso: KSPLGMonitorCreate(), KSPLGTrueMonitorDestroy(), KSPSetMonitor()
 @*/
-int KSPLGMonitorDestroy(PetscDrawLG drawlg)
+PetscErrorCode KSPLGMonitorDestroy(PetscDrawLG drawlg)
 {
   PetscDraw draw;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
@@ -133,10 +133,11 @@ int KSPLGMonitorDestroy(PetscDrawLG drawlg)
 
 .seealso: KSPLGMonitorDestroy(), KSPSetMonitor(), KSPDefaultMonitor()
 @*/
-int KSPLGTrueMonitorCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode KSPLGTrueMonitorCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw win;
-  int       ierr,rank;
+  PetscErrorCode ierr;
+  int rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -151,11 +152,12 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,const char host[],const char label[],in
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPLGTrueMonitor"
-int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
+PetscErrorCode KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 {
   PetscDrawLG lg = (PetscDrawLG) monctx;
   PetscReal   x[2],y[2],scnorm;
-  int         ierr,rank;
+  PetscErrorCode ierr;
+  int rank;
   Vec         resid,work;
 
   PetscFunctionBegin;
@@ -207,9 +209,9 @@ int KSPLGTrueMonitor(KSP ksp,int n,PetscReal rnorm,void *monctx)
 
 .seealso: KSPLGTrueMonitorCreate(), KSPSetMonitor()
 @*/
-int KSPLGTrueMonitorDestroy(PetscDrawLG drawlg)
+PetscErrorCode KSPLGTrueMonitorDestroy(PetscDrawLG drawlg)
 {
-  int       ierr;
+  PetscErrorCode ierr;
   PetscDraw draw;
 
   PetscFunctionBegin;

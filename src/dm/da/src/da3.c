@@ -7,13 +7,13 @@
 
 #if defined (PETSC_HAVE_AMS)
 EXTERN_C_BEGIN
-EXTERN int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
+EXTERN PetscErrorCode AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
 EXTERN_C_END
 #endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_3d"
-int DAView_3d(DA da,PetscViewer viewer)
+PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
 {
   int        rank,ierr;
   PetscTruth iascii,isdraw;
@@ -145,7 +145,7 @@ int DAView_3d(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN int DAPublish_Petsc(PetscObject);
+EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate3d"
@@ -202,7 +202,7 @@ EXTERN int DAPublish_Petsc(PetscObject);
           DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
-int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
+PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
                int N,int P,int m,int n,int p,int dof,int s,int *lx,int *ly,int *lz,DA *inra)
 {
   int           rank,size,ierr,start,end,pm;

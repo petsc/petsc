@@ -52,14 +52,14 @@ esi::ErrorCode esi::petsc::Object::getInterface(const char* name, void *& iface)
 
 esi::ErrorCode esi::petsc::Object::addReference()
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   this->refcnt++;
   return ierr;
 }
 
 esi::ErrorCode esi::petsc::Object::deleteReference()
 {
-  int ierr = 0;
+  PetscErrorCode ierr = 0;
   this->refcnt--;
   if (this->refcnt <= 0) delete this;
   return ierr;

@@ -10,7 +10,7 @@ extern int test2(void);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,0,0);
  

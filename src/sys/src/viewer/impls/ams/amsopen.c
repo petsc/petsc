@@ -44,9 +44,9 @@
 .seealso: PetscObjectPublish(), PetscViewerDestroy(), PetscViewerStringSPrintf()
 
 @*/
-int PetscViewerAMSOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
+PetscErrorCode PetscViewerAMSOpen(MPI_Comm comm,const char name[],PetscViewer *lab)
 {
-  int ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);

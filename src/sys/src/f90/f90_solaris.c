@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array1dCreate"
-int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
+PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
   int size,ierr;
 
@@ -21,7 +21,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array2dCreate"
-int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
+PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
   int size,ierr;
 

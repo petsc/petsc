@@ -16,9 +16,9 @@
 #include "petscsys.h"
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
-EXTERN int ReceiveSparseMatrix(mxArray **,int);
-EXTERN int ReceiveDenseIntMatrix(mxArray **,int);
-EXTERN int ReceiveDenseMatrix(mxArray **,int);
+EXTERN PetscErrorCode ReceiveSparseMatrix(mxArray **,int);
+EXTERN PetscErrorCode ReceiveDenseIntMatrix(mxArray **,int);
+EXTERN PetscErrorCode ReceiveDenseMatrix(mxArray **,int);
 
 #define ERROR(a) {fprintf(stdout,"RECEIVE: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/

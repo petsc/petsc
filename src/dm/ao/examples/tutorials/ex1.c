@@ -25,7 +25,8 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            ierr,bs,zero = 0,edited = 0;
+  int            ierr,zero = 0,edited = 0;
+  size_t         bs;
   char           filename[PETSC_MAX_PATH_LEN],string[256],*segname,*value,keyname[256],*ikeyname;
   PetscViewer    binary;
   AOData         aodata;

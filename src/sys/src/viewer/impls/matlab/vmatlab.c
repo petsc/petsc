@@ -61,9 +61,9 @@ typedef struct {
      Notes: Only writes array values on processor 0.
 
 @*/
-int PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,PetscScalar *array,char *name)
+PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,PetscScalar *array,char *name)
 {
-  int                ierr;
+  PetscErrorCode     ierr;
   PetscViewer_Matlab *ml = (PetscViewer_Matlab*)mfile->data; 
   mxArray            *mat;
   
@@ -84,7 +84,7 @@ int PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,PetscScalar *array,c
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMatlabPutVariable"
-int PetscViewerMatlabPutVariable(PetscViewer viewer,const char* name,void* mat)
+PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer,const char* name,void* mat)
 {
   PetscViewer_Matlab *ml = (PetscViewer_Matlab*)viewer->data; ;
 
@@ -111,9 +111,9 @@ int PetscViewerMatlabPutVariable(PetscViewer viewer,const char* name,void* mat)
      Notes: Only reads in array values on processor 0.
 
 @*/
-int PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscScalar *array,char *name)
+PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscScalar *array,char *name)
 {
-  int                ierr;
+  PetscErrorCode     ierr;
   PetscViewer_Matlab *ml = (PetscViewer_Matlab*)mfile->data; 
   mxArray            *mat;
   
@@ -130,7 +130,7 @@ int PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscScalar *array,c
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFileType_Matlab" 
-int PetscViewerSetFileType_Matlab(PetscViewer viewer,PetscViewerFileType type)
+PetscErrorCode PetscViewerSetFileType_Matlab(PetscViewer viewer,PetscViewerFileType type)
 {
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab*)viewer->data;
 
@@ -146,7 +146,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFilename_Matlab" 
-int PetscViewerSetFilename_Matlab(PetscViewer viewer,const char name[])
+PetscErrorCode PetscViewerSetFilename_Matlab(PetscViewer viewer,const char name[])
 {
   PetscViewer_Matlab  *vmatlab = (PetscViewer_Matlab*)viewer->data;
   PetscViewerFileType type = vmatlab->btype;
@@ -173,9 +173,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_Matlab"
-int PetscViewerDestroy_Matlab(PetscViewer v)
+PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
 {
-  int                ierr;
+  PetscErrorCode     ierr;
   PetscViewer_Matlab *vf = (PetscViewer_Matlab*)v->data; 
 
   PetscFunctionBegin;
@@ -187,9 +187,9 @@ int PetscViewerDestroy_Matlab(PetscViewer v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Matlab"
-int PetscViewerCreate_Matlab(PetscViewer viewer)
+PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
 {
-  int                ierr;
+  PetscErrorCode     ierr;
   PetscViewer_Matlab *e;
 
   PetscFunctionBegin;
@@ -242,9 +242,9 @@ $    PETSC_FILE_WRONLY - open existing file for Matlab output
 .seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad()
 @*/
-int PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer *binv)
+PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm,const char name[],PetscViewerFileType type,PetscViewer *binv)
 {
-  int ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
@@ -286,10 +286,10 @@ $       XXXView(XXX object,PETSC_VIEWER_MATLAB_(comm));
 @*/
 PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm comm)
 {
-  int         ierr;
-  PetscTruth  flg;
-  PetscViewer viewer;
-  char        fname[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscViewer    viewer;
+  char           fname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Matlab_keyval == MPI_KEYVAL_INVALID) {

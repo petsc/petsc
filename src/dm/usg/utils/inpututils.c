@@ -31,9 +31,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOData2dGridToAOData"
-int AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
+PetscErrorCode AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   int        *keys,nmax,i;
   AOData     aodata;
 
@@ -68,7 +68,7 @@ int AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
 /*
        User input the cell by drawing them one at a time
 */
-int AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
+PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
 {
   PetscDraw       popup;                           /* help window */
   PetscDrawButton button;                          /* mouse button pressed */
@@ -168,7 +168,7 @@ int AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
    Changes the node numbering for the cell to make sure they are all in 
    clockwise ordering
 */
-int AOData2dGridFlipCells(AOData2dGrid agrid)
+PetscErrorCode AOData2dGridFlipCells(AOData2dGrid agrid)
 {
   int       i,*cell = agrid->cell_vertex, cell_n = agrid->cell_n;
   PetscReal *vertex = agrid->vertex, sign;
@@ -203,7 +203,7 @@ int AOData2dGridFlipCells(AOData2dGrid agrid)
 /*
      AOData2dGridAddNode - Maintains a list of nodes given so far
 */
-int AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal cy, int *cn)
+PetscErrorCode AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal cy, int *cn)
 {
   int i;
 
@@ -227,7 +227,7 @@ int AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal cy, int *cn)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOData2dGridComputeNeighbors"
-int AOData2dGridComputeNeighbors(AOData2dGrid agrid)
+PetscErrorCode AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 {
   int  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e,ierr;
 
@@ -335,7 +335,7 @@ int AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOData2dGridComputeVertexBoundary"
-int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
+PetscErrorCode AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 {
   int  i,j,*count,*cell_vertex = agrid->cell_vertex,ierr;
 
@@ -383,7 +383,7 @@ int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 /*
      Show the numbering of the vertex, cell and edge
 */
-int AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
+PetscErrorCode AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
 {
   int       i, *cell = agrid->cell_vertex, *edge = agrid->edge_vertex,ierr;
   char      str[5];
@@ -435,9 +435,9 @@ int AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
 /*
     Frees all the memory space allocated in AGrid
 */
-int AOData2dGridDestroy(AOData2dGrid agrid)
+PetscErrorCode AOData2dGridDestroy(AOData2dGrid agrid)
 {
-   int ierr;
+   PetscErrorCode ierr;
 
    PetscFunctionBegin;
    ierr = PetscFree(agrid->vertex);CHKERRQ(ierr);
@@ -456,9 +456,9 @@ int AOData2dGridDestroy(AOData2dGrid agrid)
 /*
     
 */
-int AOData2dGridCreate(AOData2dGrid *agrid)
+PetscErrorCode AOData2dGridCreate(AOData2dGrid *agrid)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscNew(struct _p_AOData2dGrid,agrid);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -2,7 +2,7 @@
 #include "petscmat.h"
 
 EXTERN_C_BEGIN
-EXTERN int MatConvertTo_MPIAdj(Mat,MatType,Mat*);
+EXTERN PetscErrorCode MatConvertTo_MPIAdj(Mat,MatType,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -20,9 +20,9 @@ EXTERN_C_END
 .seealso: MatRegister(), MatConvert()
 
 @*/
-int MatConvertRegisterAll(const char path[])
+PetscErrorCode MatConvertRegisterAll(const char path[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   MatConvertRegisterAllCalled = PETSC_TRUE;

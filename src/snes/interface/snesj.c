@@ -38,7 +38,7 @@
 
 .seealso: SNESSetJacobian(), SNESDefaultComputeJacobianColor()
 @*/
-int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec         j1a,j2a,x2;
   int         i,ierr,N,start,end,j;

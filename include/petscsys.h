@@ -6,24 +6,24 @@
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
 
-EXTERN int  PetscGetArchType(char[],int);
-EXTERN int  PetscGetHostName(char[],int);
-EXTERN int  PetscGetUserName(char[],int);
-EXTERN int  PetscGetProgramName(char[],int);
-EXTERN int  PetscSetProgramName(const char[]);
-EXTERN int  PetscGetDate(char[],int);
-EXTERN int  PetscSetInitialDate(void);
-EXTERN int  PetscGetInitialDate(char[],int);
+EXTERN PetscErrorCode  PetscGetArchType(char[],size_t);
+EXTERN PetscErrorCode  PetscGetHostName(char[],size_t);
+EXTERN PetscErrorCode  PetscGetUserName(char[],size_t);
+EXTERN PetscErrorCode  PetscGetProgramName(char[],size_t);
+EXTERN PetscErrorCode  PetscSetProgramName(const char[]);
+EXTERN PetscErrorCode  PetscGetDate(char[],size_t);
+EXTERN PetscErrorCode  PetscSetInitialDate(void);
+EXTERN PetscErrorCode  PetscGetInitialDate(char[],size_t);
 
-EXTERN int  PetscSortInt(int,int[]);
-EXTERN int  PetscSortIntWithPermutation(int,const int[],int[]);
-EXTERN int  PetscSortStrWithPermutation(int,const char*[],int[]);
-EXTERN int  PetscSortIntWithArray(int,int[],int[]);
-EXTERN int  PetscSortReal(int,PetscReal[]);
-EXTERN int  PetscSortRealWithPermutation(int,const PetscReal[],int[]);
+EXTERN PetscErrorCode  PetscSortInt(int,int[]);
+EXTERN PetscErrorCode  PetscSortIntWithPermutation(int,const int[],int[]);
+EXTERN PetscErrorCode  PetscSortStrWithPermutation(int,const char*[],int[]);
+EXTERN PetscErrorCode  PetscSortIntWithArray(int,int[],int[]);
+EXTERN PetscErrorCode  PetscSortReal(int,PetscReal[]);
+EXTERN PetscErrorCode  PetscSortRealWithPermutation(int,const PetscReal[],int[]);
 
-EXTERN int  PetscSetDisplay(void);
-EXTERN int  PetscGetDisplay(char[],int);
+EXTERN PetscErrorCode  PetscSetDisplay(void);
+EXTERN PetscErrorCode  PetscGetDisplay(char[],size_t);
 
 extern int PETSC_RANDOM_COOKIE;
 
@@ -41,29 +41,29 @@ typedef enum { RANDOM_DEFAULT,RANDOM_DEFAULT_REAL,
 S*/
 typedef struct _p_PetscRandom*   PetscRandom;
 
-EXTERN int PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
-EXTERN int PetscRandomGetValue(PetscRandom,PetscScalar*);
-EXTERN int PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScalar);
-EXTERN int PetscRandomDestroy(PetscRandom);
+EXTERN PetscErrorCode PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
+EXTERN PetscErrorCode PetscRandomGetValue(PetscRandom,PetscScalar*);
+EXTERN PetscErrorCode PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScalar);
+EXTERN PetscErrorCode PetscRandomDestroy(PetscRandom);
 
-EXTERN int PetscGetFullPath(const char[],char[],int);
-EXTERN int PetscGetRelativePath(const char[],char[],int);
-EXTERN int PetscGetWorkingDirectory(char[],int);
-EXTERN int PetscGetRealPath(char[],char[]);
-EXTERN int PetscGetHomeDirectory(char[],int);
-EXTERN int PetscTestFile(const char[],char,PetscTruth*);
-EXTERN int PetscTestDirectory(const char[],char,PetscTruth*);
-EXTERN int PetscBinaryRead(int,void*,int,PetscDataType);
-EXTERN int PetscSynchronizedBinaryRead(MPI_Comm,int,void*,int,PetscDataType);
-EXTERN int PetscBinaryWrite(int,void*,int,PetscDataType,int);
-EXTERN int PetscBinaryOpen(const char[],int,int *);
-EXTERN int PetscBinaryClose(int);
-EXTERN int PetscSharedTmp(MPI_Comm,PetscTruth *);
-EXTERN int PetscSharedWorkingDirectory(MPI_Comm,PetscTruth *);
-EXTERN int PetscGetTmp(MPI_Comm,char *,int);
-EXTERN int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
-EXTERN int PetscLs(MPI_Comm,const char[],char*,int,PetscTruth*);
-EXTERN int PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList*,const char[]);
+EXTERN PetscErrorCode PetscGetFullPath(const char[],char[],int);
+EXTERN PetscErrorCode PetscGetRelativePath(const char[],char[],int);
+EXTERN PetscErrorCode PetscGetWorkingDirectory(char[],int);
+EXTERN PetscErrorCode PetscGetRealPath(char[],char[]);
+EXTERN PetscErrorCode PetscGetHomeDirectory(char[],int);
+EXTERN PetscErrorCode PetscTestFile(const char[],char,PetscTruth*);
+EXTERN PetscErrorCode PetscTestDirectory(const char[],char,PetscTruth*);
+EXTERN PetscErrorCode PetscBinaryRead(int,void*,int,PetscDataType);
+EXTERN PetscErrorCode PetscSynchronizedBinaryRead(MPI_Comm,int,void*,int,PetscDataType);
+EXTERN PetscErrorCode PetscBinaryWrite(int,void*,int,PetscDataType,int);
+EXTERN PetscErrorCode PetscBinaryOpen(const char[],int,int *);
+EXTERN PetscErrorCode PetscBinaryClose(int);
+EXTERN PetscErrorCode PetscSharedTmp(MPI_Comm,PetscTruth *);
+EXTERN PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm,PetscTruth *);
+EXTERN PetscErrorCode PetscGetTmp(MPI_Comm,char *,int);
+EXTERN PetscErrorCode PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
+EXTERN PetscErrorCode PetscLs(MPI_Comm,const char[],char*,int,PetscTruth*);
+EXTERN PetscErrorCode PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList*,const char[]);
 
 /*
    In binary files variables are stored using the following lengths,
@@ -86,32 +86,32 @@ EXTERN int PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList*,const char[]);
 .seealso: PetscBinarySeek(), PetscSynchronizedBinarySeek()
 E*/
 typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
-EXTERN int PetscBinarySeek(int,int,PetscBinarySeekType,int*);
-EXTERN int PetscSynchronizedBinarySeek(MPI_Comm,int,int,PetscBinarySeekType,int*);
+EXTERN PetscErrorCode PetscBinarySeek(int,int,PetscBinarySeekType,int*);
+EXTERN PetscErrorCode PetscSynchronizedBinarySeek(MPI_Comm,int,int,PetscBinarySeekType,int*);
 
-EXTERN int PetscSetDebugger(const char[],PetscTruth);
-EXTERN int PetscSetDefaultDebugger(void);
-EXTERN int PetscSetDebuggerFromString(char*);
-EXTERN int PetscAttachDebugger(void);
-EXTERN int PetscStopForDebugger(void);
+EXTERN PetscErrorCode PetscSetDebugger(const char[],PetscTruth);
+EXTERN PetscErrorCode PetscSetDefaultDebugger(void);
+EXTERN PetscErrorCode PetscSetDebuggerFromString(char*);
+EXTERN PetscErrorCode PetscAttachDebugger(void);
+EXTERN PetscErrorCode PetscStopForDebugger(void);
 
-EXTERN int PetscGatherNumberOfMessages(MPI_Comm,int*,int*,int*);
-EXTERN int PetscGatherMessageLengths(MPI_Comm,int,int,int*,int**,int**);
-EXTERN int PetscPostIrecvInt(MPI_Comm,int,int,int*,int*,int***,MPI_Request**);
-EXTERN int PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,PetscScalar***,MPI_Request**);
+EXTERN PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm,int*,int*,int*);
+EXTERN PetscErrorCode PetscGatherMessageLengths(MPI_Comm,int,int,int*,int**,int**);
+EXTERN PetscErrorCode PetscPostIrecvInt(MPI_Comm,int,int,int*,int*,int***,MPI_Request**);
+EXTERN PetscErrorCode PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,PetscScalar***,MPI_Request**);
 
-EXTERN int PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
+EXTERN PetscErrorCode PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
 
 /* ParameterDict objects encapsulate arguments to generic functions, like mechanisms over interfaces */
-EXTERN int ParameterDictCreate(MPI_Comm, ParameterDict *);
-EXTERN int ParameterDictDestroy(ParameterDict);
-EXTERN int ParameterDictRemove(ParameterDict, const char []);
-EXTERN int ParameterDictSetInteger(ParameterDict, const char [], int);
-EXTERN int ParameterDictSetDouble(ParameterDict, const char [], double);
-EXTERN int ParameterDictSetObject(ParameterDict, const char [], void *);
-EXTERN int ParameterDictGetInteger(ParameterDict, const char [], int *);
-EXTERN int ParameterDictGetDouble(ParameterDict, const char [], double *);
-EXTERN int ParameterDictGetObject(ParameterDict, const char [], void **);
+EXTERN PetscErrorCode ParameterDictCreate(MPI_Comm, ParameterDict *);
+EXTERN PetscErrorCode ParameterDictDestroy(ParameterDict);
+EXTERN PetscErrorCode ParameterDictRemove(ParameterDict, const char []);
+EXTERN PetscErrorCode ParameterDictSetInteger(ParameterDict, const char [], int);
+EXTERN PetscErrorCode ParameterDictSetDouble(ParameterDict, const char [], double);
+EXTERN PetscErrorCode ParameterDictSetObject(ParameterDict, const char [], void *);
+EXTERN PetscErrorCode ParameterDictGetInteger(ParameterDict, const char [], int *);
+EXTERN PetscErrorCode ParameterDictGetDouble(ParameterDict, const char [], double *);
+EXTERN PetscErrorCode ParameterDictGetObject(ParameterDict, const char [], void **);
 
 /* Parallel communication routines */
 /*E
@@ -210,7 +210,76 @@ M*/
 
 M*/
 
-EXTERN int PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
+EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataType, int *, InsertMode, ScatterMode, void *, void *);
+
+/* 
+  Initialize a linked list 
+  Input Parameters:
+    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    nlnk      - max length of the list
+    lnk       - linked list(an integer array) that is allocated
+  output Parameters:
+    lnk       - the linked list with all values set as lnk_int
+*/
+#define PetscLLInitialize(lnk_init,nlnk,lnk) 0;\
+{\
+  int _i;\
+  for (_i=0; _i<nlnk; _i++) lnk[_i] = lnk_init;\
+}
+
+/*
+  Add a index set into a sorted linked list
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - interger array
+    lnk_head  - the header of the list
+    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    lnk       - linked list(an integer array) that is created
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+*/
+#define PetscLLAdd(nidx,indices,lnk_head,lnk_init,nlnk,lnk) 0;\
+{\
+  int _k,_entry,_location,_lnkdata;\
+  nlnk = 0;\
+  _k=nidx;\
+  while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
+    _entry = indices[--_k];\
+    /* search for insertion location */\
+    _lnkdata  = lnk_head;\
+    do {\
+      _location = _lnkdata;\
+      _lnkdata  = lnk[_location];\
+    } while (_entry > _lnkdata);\
+    /* insertion location is found, add entry into lnk if it is new */\
+    if (_entry <  _lnkdata){/* new entry */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
+      nlnk++;\
+    }\
+  }\
+}
+/*
+  Copy data on the list into an array, then initialize the list 
+  Input Parameters:
+    lnk_head  - the header of the list
+    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    nlnk      - number of data on the list to be copied
+    lnk       - linked list
+  output Parameters:
+    indices   - array that contains the copied data
+*/
+#define PetscLLClear(lnk_head,lnk_init,nlnk,lnk,indices) 0;\
+{\
+  int _j,_idx=lnk_head,_idx0;\
+  for (_j=0; _j<nlnk; _j++){\
+    _idx0 = _idx; _idx = lnk[_idx0];\
+    *(indices+_j) = _idx;\
+    lnk[_idx0] = lnk_init;\
+  }\
+  lnk[_idx] = lnk_init;\
+}
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

@@ -34,7 +34,7 @@ struct _p_Dict {
 .keywords: ParameterDict, create
 .seealso: ParameterDictDestroy(), ParameterDictSetObject(), ParameterDictGetObject()
 @*/ 
-int ParameterDictCreate(MPI_Comm comm, ParameterDict *dict)
+PetscErrorCode ParameterDictCreate(MPI_Comm comm, ParameterDict *dict)
 {
   ParameterDict d;
 
@@ -64,10 +64,10 @@ int ParameterDictCreate(MPI_Comm comm, ParameterDict *dict)
 .keywords: ParameterDict, destroy
 .seealso: ParameterDictCreate(), ParameterDictSetObject(), ParameterDictGetObject()
 @*/
-int ParameterDictDestroy(ParameterDict dict)
+PetscErrorCode ParameterDictDestroy(ParameterDict dict)
 {
   DictNode *node, *next;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
@@ -102,10 +102,10 @@ int ParameterDictDestroy(ParameterDict dict)
 .keywords: ParameterDict, set, integer
 .seealso: ParameterDictSetDouble(), ParameterDictSetObject(), ParameterDictGetInteger()
 @*/
-int ParameterDictSetInteger(ParameterDict dict, const char key[], int data)
+PetscErrorCode ParameterDictSetInteger(ParameterDict dict, const char key[], int data)
 {
   DictNode *node;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
@@ -138,10 +138,10 @@ int ParameterDictSetInteger(ParameterDict dict, const char key[], int data)
 .keywords: ParameterDict, set, double
 .seealso: ParameterDictSetInteger(), ParameterDictSetObject(), ParameterDictGetDouble()
 @*/
-int ParameterDictSetDouble(ParameterDict dict, const char key[], double data)
+PetscErrorCode ParameterDictSetDouble(ParameterDict dict, const char key[], double data)
 {
   DictNode *node;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
@@ -174,10 +174,10 @@ int ParameterDictSetDouble(ParameterDict dict, const char key[], double data)
 .keywords: ParameterDict, set, object
 .seealso: ParameterDictSetInteger(), ParameterDictSetDouble(), ParameterDictGetObject()
 @*/
-int ParameterDictSetObject(ParameterDict dict, const char key[], void *data)
+PetscErrorCode ParameterDictSetObject(ParameterDict dict, const char key[], void *data)
 {
   DictNode *node;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
@@ -209,11 +209,11 @@ int ParameterDictSetObject(ParameterDict dict, const char key[], void *data)
 .keywords: ParameterDict, remove
 .seealso: ParameterDictSetObject(), ParameterDictGetObject()
 @*/
-int ParameterDictRemove(ParameterDict dict, const char key[])
+PetscErrorCode ParameterDictRemove(ParameterDict dict, const char key[])
 {
   DictNode  *node, *prev;
   PetscTruth found;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
@@ -262,11 +262,11 @@ int ParameterDictRemove(ParameterDict dict, const char key[])
 .keywords: ParameterDict, get, integer
 .seealso: ParameterDictGetDouble(), ParameterDictGetObject(), ParameterDictSetInteger()
 @*/
-int ParameterDictGetInteger(ParameterDict dict, const char key[], int *data)
+PetscErrorCode ParameterDictGetInteger(ParameterDict dict, const char key[], int *data)
 {
   DictNode  *node;
   PetscTruth found;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
@@ -305,11 +305,11 @@ int ParameterDictGetInteger(ParameterDict dict, const char key[], int *data)
 .keywords: ParameterDict, get, double
 .seealso: ParameterDictGetInteger(), ParameterDictGetObject(), ParameterDictSetDouble()
 @*/
-int ParameterDictGetDouble(ParameterDict dict, const char key[], double *data)
+PetscErrorCode ParameterDictGetDouble(ParameterDict dict, const char key[], double *data)
 {
   DictNode  *node;
   PetscTruth found;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);
@@ -348,11 +348,11 @@ int ParameterDictGetDouble(ParameterDict dict, const char key[], double *data)
 .keywords: ParameterDict, get, object
 .seealso: ParameterDictGetInteger(), ParameterDictGetDouble(), ParameterDictSetObject()
 @*/
-int ParameterDictGetObject(ParameterDict dict, const char key[], void **data)
+PetscErrorCode ParameterDictGetObject(ParameterDict dict, const char key[], void **data)
 {
   DictNode  *node;
   PetscTruth found;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dict, DICT_COOKIE,1);

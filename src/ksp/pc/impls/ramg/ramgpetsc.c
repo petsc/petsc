@@ -49,10 +49,10 @@
      Output Parameter:
      shell - user-defined preconditioner context..*/
 
-int RamgShellPCCreate(RamgShellPC **shell)
+PetscErrorCode RamgShellPCCreate(RamgShellPC **shell)
 {
    RamgShellPC *newctx;
-   int         ierr;
+   PetscErrorCode ierr;
 
    PetscFunctionBegin;
    ierr              = PetscNew(RamgShellPC,&newctx);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ int RamgShellPCCreate(RamgShellPC **shell)
 
     This routine calls the setup phase of RAMG..*/
  
-int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
+PetscErrorCode RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 {
    int                numnodes, numnonzero, nnz_count; 
    int                j, I, J, ncols_getrow, *cols_getrow,*diag; 
@@ -104,7 +104,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    int              nwt, ntr; 
    double           ecg1, ecg2, ewt2; 
    /*..RAMG output..*/
-   int              ierr;
+   PetscErrorCode ierr;
 
    PetscFunctionBegin;
    /*..Get size and number of unknowns of preconditioner matrix..*/ 
@@ -295,9 +295,10 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 /*  VecRestoreArray. The values in vals_getarray are then copy to   */
 /*  rhs of the AMG code using memcpy.                               */
 
-int RamgShellPCApply(void *ctx, Vec r, Vec z)
+PetscErrorCode RamgShellPCApply(void *ctx, Vec r, Vec z)
 {
-   int               ierr, I, numnodes, *cols; 
+   PetscErrorCode ierr;
+   int  I, numnodes, *cols; 
    RamgShellPC       *shell = (RamgShellPC *) ctx; 
    double            *u_approx, *rhs, *Asky, *vals_getarray; 
    int               *ia, *ja; 
@@ -412,9 +413,9 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
     Input Parameter:
     shell - user-defined preconditioner context..*/
 
-int RamgShellPCDestroy(RamgShellPC *shell)
+PetscErrorCode RamgShellPCDestroy(RamgShellPC *shell)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*..Free PCShell context..*/
@@ -434,9 +435,10 @@ int RamgShellPCDestroy(RamgShellPC *shell)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ " RamgGetParam"
-int RamgGetParam(Mat A,struct RAMG_PARAM *ramg_param)
+PetscErrorCode RamgGetParam(Mat A,struct RAMG_PARAM *ramg_param)
 {
-  int        ierr,cycles; 
+  PetscErrorCode ierr;
+  int cycles; 
   PetscTruth flg;
 
    PetscFunctionBegin;
@@ -502,7 +504,7 @@ int RamgGetParam(Mat A,struct RAMG_PARAM *ramg_param)
 #define __FUNCT__ "PCSetUp_RAMG"
 static int PCSetUp_RAMG(PC pc)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = RamgShellPCSetUp((RamgShellPC*)(pc->data),pc->pmat);CHKERRQ(ierr);
@@ -513,7 +515,7 @@ static int PCSetUp_RAMG(PC pc)
 #define __FUNCT__ "PCApply_RAMG"
 static int PCApply_RAMG(PC pc,Vec x,Vec y)
 {
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = RamgShellPCApply(pc->data,x,y);CHKERRQ(ierr);
@@ -524,7 +526,7 @@ static int PCApply_RAMG(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCDestroy_RAMG"
 static int PCDestroy_RAMG(PC pc)
 {
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = RamgShellPCDestroy((RamgShellPC *)pc->data);CHKERRQ(ierr);
@@ -579,9 +581,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_RAMG"
-int PCCreate_RAMG(PC pc)
+PetscErrorCode PCCreate_RAMG(PC pc)
 {
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = RamgShellPCCreate((RamgShellPC **)&(pc->data));CHKERRQ(ierr);

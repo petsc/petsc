@@ -243,9 +243,9 @@ M*/
 #  define PETSC_SMALL                   1.e-10
 #endif
 
-extern int PetscGlobalMax(PetscReal*,PetscReal*,MPI_Comm);
-extern int PetscGlobalMin(PetscReal*,PetscReal*,MPI_Comm);
-extern int PetscGlobalSum(PetscScalar*,PetscScalar*,MPI_Comm);
+EXTERN PetscErrorCode PetscGlobalMax(PetscReal*,PetscReal*,MPI_Comm);
+EXTERN PetscErrorCode PetscGlobalMin(PetscReal*,PetscReal*,MPI_Comm);
+EXTERN PetscErrorCode PetscGlobalSum(PetscScalar*,PetscScalar*,MPI_Comm);
 
 
 /* ----------------------------------------------------------------------------*/

@@ -2,7 +2,7 @@
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
 
-EXTERN int VecInitializePackage(char *);
+EXTERN PetscErrorCode VecInitializePackage(char *);
 int IS_LTOGM_COOKIE = -1;
 
 #undef __FUNCT__  
@@ -24,7 +24,7 @@ int IS_LTOGM_COOKIE = -1;
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
-int ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,int *n)
+PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,int *n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
@@ -50,7 +50,7 @@ int ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,int *n)
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
-int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer)
+PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer)
 {
   int        i,ierr,rank;
   PetscTruth iascii;
@@ -94,7 +94,7 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,PetscViewer viewer
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
 @*/
-int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
+PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 {
   int      n,*indices,ierr;
   MPI_Comm comm;
@@ -135,7 +135,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreateNC()
 @*/
-int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
+PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
 {
   int *in,ierr;
 
@@ -173,9 +173,9 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate()
 @*/
-int ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
+PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidIntPointer(indices,3);
@@ -226,9 +226,9 @@ int ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indices[],ISLocal
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingCreateIS()
 @*/
-int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,int bs,ISLocalToGlobalMapping *outmap)
+PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,int bs,ISLocalToGlobalMapping *outmap)
 {
-  int ierr,*ii,i,n;
+  PetscErrorCode ierr,*ii,i,n;
 
   PetscFunctionBegin;
 
@@ -262,14 +262,14 @@ int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,int bs,ISLocalToGlo
 
 .seealso: ISLocalToGlobalMappingCreate()
 @*/
-int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
+PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 {
-  int ierr;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidPointer(mapping,1);
   if (--mapping->refct > 0) PetscFunctionReturn(0);
   if (mapping->refct < 0) {
-    SETERRQ(1,"Mapping already destroyed");
+    SETERRQ(PETSC_ERR_PLIB,"Mapping already destroyed");
   }
 
   ierr = PetscFree(mapping->indices);CHKERRQ(ierr);
@@ -302,9 +302,9 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy(), ISGlobalToLocalMappingApply()
 @*/
-int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
+PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
 {
-  int ierr,n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
+  PetscErrorCode ierr,n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
 
   PetscFunctionBegin;
   PetscValidPointer(mapping,1);
@@ -365,7 +365,7 @@ M*/
 */
 static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 {
-  int ierr,i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
+  PetscErrorCode ierr,i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
 
   PetscFunctionBegin;
   end   = 0;
@@ -430,7 +430,7 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
 @*/
-int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
+PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
                                   int n,const int idx[],int *nout,int idxout[])
 {
   int i,ierr,*globals,nf = 0,tmp,start,end;
@@ -503,7 +503,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMa
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingRestoreInfo()
 @*/
-int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int *procs[],int *numprocs[],int **indices[])
+PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int *procs[],int *numprocs[],int **indices[])
 {
   int         i,n = mapping->n,ierr,Ng,ng,max = 0,*lindices = mapping->indices;
   int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,nmax,nrecvs,*recvs,proc;
@@ -909,9 +909,9 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingGetInfo()
 @*/
-int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,int *nproc,int *procs[],int *numprocs[],int **indices[])
+PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,int *nproc,int *procs[],int *numprocs[],int **indices[])
 {
-  int ierr,i;
+  PetscErrorCode ierr,i;
 
   PetscFunctionBegin;
   if (*procs) {ierr = PetscFree(*procs);CHKERRQ(ierr);}

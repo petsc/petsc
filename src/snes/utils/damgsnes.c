@@ -14,10 +14,11 @@
 */
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobian_Multigrid"
-int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DMMG         *dmmg = (DMMG*)ptr;
-  int          ierr,i,nlevels = dmmg[0]->nlevels,it;
+  PetscErrorCode ierr;
+  int i,nlevels = dmmg[0]->nlevels,it;
   KSP          ksp,lksp;
   PC           pc;
   PetscTruth   ismg;
@@ -50,7 +51,7 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
       for (i=nlevels-2; i>-1; i--) {
         PetscTruth JeqB = (PetscTruth)( dmmg[i]->B == dmmg[i]->J);
         ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);
-        ierr = MatSeqAIJPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
+        ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,MAT_INITIAL_MATRIX,1.0,&dmmg[i]->B);CHKERRQ(ierr);
         if (JeqB) dmmg[i]->J = dmmg[i]->B;
 	ierr = MGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
 	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,*flag);CHKERRQ(ierr);
@@ -100,10 +101,10 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
 .  F - function vector
 
  */
-int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   DMMG             dmmg = (DMMG)ptr;
-  int              ierr;
+  PetscErrorCode ierr;
   Vec              localX;
   DA               da = (DA)dmmg->dm;
 
@@ -142,9 +143,9 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
           SNESSetFunction(), SNESSetJacobian()
 
 @*/
-int SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
-  int              ierr;
+  PetscErrorCode ierr;
   Vec              localX;
   DA               da = *(DA*)ptr;
 
@@ -165,9 +166,9 @@ int SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithFD"
-int DMMGComputeJacobianWithFD(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode DMMGComputeJacobianWithFD(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  int  ierr;
+  PetscErrorCode ierr;
   DMMG dmmg = (DMMG)ctx;
   
   PetscFunctionBegin;
@@ -177,9 +178,9 @@ int DMMGComputeJacobianWithFD(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithMF"
-int DMMGComputeJacobianWithMF(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+PetscErrorCode DMMGComputeJacobianWithMF(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  int  ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -193,10 +194,10 @@ int DMMGComputeJacobianWithMF(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,
     DMMGComputeJacobianWithAdic - Evaluates the Jacobian via Adic when the user has provided
     a local function evaluation routine.
 */
-int DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DMMG             dmmg = (DMMG) ptr;
-  int              ierr;
+  PetscErrorCode ierr;
   Vec              localX;
   DA               da = (DA) dmmg->dm;
 
@@ -238,10 +239,10 @@ int DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag
 .seealso: DASetLocalFunction(), DASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 @*/
-int SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DA   da = *(DA*) ptr;
-  int  ierr;
+  PetscErrorCode ierr;
   Vec  localX;
 
   PetscFunctionBegin;
@@ -282,10 +283,10 @@ int SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
 .seealso: DASetLocalFunction(), DASetLocalAdicFunction(), SNESSetFunction(), SNESSetJacobian()
 
 */
-int SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DA   da = *(DA*) ptr;
-  int  ierr;
+  PetscErrorCode ierr;
   Vec  localX;
 
   PetscFunctionBegin;
@@ -325,10 +326,10 @@ int SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *
 .seealso: DASetLocalFunction(), DASetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
 
 */
-int SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   DA   da = *(DA*) ptr;
-  int  ierr;
+  PetscErrorCode ierr;
   Vec  localX;
 
   PetscFunctionBegin;
@@ -349,9 +350,10 @@ int SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void 
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveSNES"
-int DMMGSolveSNES(DMMG *dmmg,int level)
+PetscErrorCode DMMGSolveSNES(DMMG *dmmg,int level)
 {
-  int  ierr,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr;
+  int     nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   dmmg[0]->nlevels = level+1;
@@ -361,12 +363,12 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 }
 
 EXTERN_C_BEGIN
-extern int NLFCreate_DAAD(NLF*);
-extern int NLFRelax_DAAD(NLF,MatSORType,int,Vec);
-extern int NLFDAADSetDA_DAAD(NLF,DA);
-extern int NLFDAADSetCtx_DAAD(NLF,void*);
-extern int NLFDAADSetResidual_DAAD(NLF,Vec);
-extern int NLFDAADSetNewtonIterations_DAAD(NLF,int);
+EXTERN PetscErrorCode NLFCreate_DAAD(NLF*);
+EXTERN PetscErrorCode NLFRelax_DAAD(NLF,MatSORType,int,Vec);
+EXTERN PetscErrorCode NLFDAADSetDA_DAAD(NLF,DA);
+EXTERN PetscErrorCode NLFDAADSetCtx_DAAD(NLF,void*);
+EXTERN PetscErrorCode NLFDAADSetResidual_DAAD(NLF,Vec);
+EXTERN PetscErrorCode NLFDAADSetNewtonIterations_DAAD(NLF,int);
 EXTERN_C_END
 
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
@@ -376,9 +378,10 @@ EXTERN_C_END
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveFAS"
-int DMMGSolveFAS(DMMG *dmmg,int level)
+PetscErrorCode DMMGSolveFAS(DMMG *dmmg,int level)
 {
-  int         ierr,i,j,k;
+  PetscErrorCode ierr;
+  int          i,j,k;
   PetscReal   norm;
   PetscScalar zero = 0.0,mone = -1.0,one = 1.0;
   MG          *mg;
@@ -524,9 +527,10 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal()
 
 @*/
-int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+PetscErrorCode DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
-  int         ierr,size,i,nlevels = dmmg[0]->nlevels,period = 1;
+  PetscErrorCode ierr;
+  int         size,i,nlevels = dmmg[0]->nlevels,period = 1;
   PetscTruth  snesmonitor,mffdoperator,mffd,fdjacobian;
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth  mfadoperator,mfad,adjacobian;
@@ -737,7 +741,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP()
 
 @*/
-int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
+PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
 {
   int i,nlevels = dmmg[0]->nlevels;
 
@@ -796,9 +800,9 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocal_Private"
-int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function,DALocalFunction1 admf_function)
+PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function,DALocalFunction1 admf_function)
 {
-  int ierr,i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr,i,nlevels = dmmg[0]->nlevels;
   int (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = 0;
 
 
@@ -824,7 +828,7 @@ static int DMMGFunctioni(int i,Vec u,PetscScalar* r,void* ctx)
 {
   DMMG       dmmg = (DMMG)ctx;
   Vec        U = dmmg->lwork1;
-  int        ierr;
+  PetscErrorCode ierr;
   VecScatter gtol;
 
   PetscFunctionBegin;
@@ -842,7 +846,7 @@ static int DMMGFunctioniBase(Vec u,void* ctx)
 {
   DMMG dmmg = (DMMG)ctx;
   Vec  U = dmmg->lwork1;
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DAGlobalToLocalBegin((DA)dmmg->dm,u,INSERT_VALUES,U);CHKERRQ(ierr);  
@@ -852,9 +856,9 @@ static int DMMGFunctioniBase(Vec u,void* ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocali_Private"
-int DMMGSetSNESLocali_Private(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),int (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*),int (*adimf)(DALocalInfo*,MatStencil*,void*,void*,void*))
+PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),int (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*),int (*adimf)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
-  int ierr,i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr,i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   for (i=0; i<nlevels; i++) {
@@ -876,7 +880,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscADView"
-int PetscADView(int N,int nc,double *ptr,PetscViewer viewer)
+PetscErrorCode PetscADView(int N,int nc,double *ptr,PetscViewer viewer)
 {
   int        i,j,nlen  = PetscADGetDerivTypeSize();
   char       *cptr = (char*)ptr;

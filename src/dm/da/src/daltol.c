@@ -15,7 +15,7 @@
 .  da - the distributed array
 
 */
-int DALocalToLocalCreate(DA da)
+PetscErrorCode DALocalToLocalCreate(DA da)
 {
   int *idx,left,j,ierr,count,up,down,i,bottom,top,k;
 
@@ -95,9 +95,9 @@ int DALocalToLocalCreate(DA da)
 
 .seealso: DALocalToLocalEnd(), DALocalToGlobal()
 @*/
-int DALocalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DALocalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -138,9 +138,9 @@ int DALocalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 
 .seealso: DALocalToLocalBegin(), DALocalToGlobal()
 @*/
-int DALocalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
+PetscErrorCode DALocalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

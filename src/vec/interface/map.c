@@ -5,7 +5,7 @@
 #include "vecimpl.h"    /*I "petscvec.h" I*/
 
 /* Logging support */
-int MAP_COOKIE = 0;
+PetscErrorCode MAP_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapSetTypeFromOptions_Private"
@@ -29,7 +29,7 @@ static int PetscMapSetTypeFromOptions_Private(PetscMap map)
   const char *defaultType;
   char       typeName[256];
   int        size;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (map->type_name != PETSC_NULL) {
@@ -77,10 +77,10 @@ static int PetscMapSetTypeFromOptions_Private(PetscMap map)
 .keywords: PetscMap, set, options, database
 .seealso: PetscMapCreate(), PetscMapPrintHelp(), PetscMaphSetOptionsPrefix()
 @*/
-int PetscMapSetFromOptions(PetscMap map)
+PetscErrorCode PetscMapSetFromOptions(PetscMap map)
 {
   PetscTruth opt;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map,MAP_COOKIE,1);
@@ -122,10 +122,10 @@ $  -help, -h
 .keywords: PetscMap, help
 .seealso: PetscMapSetFromOptions()
 @*/
-int PetscMapPrintHelp(PetscMap map)
+PetscErrorCode PetscMapPrintHelp(PetscMap map)
 {
   char p[64];
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map, MAP_COOKIE,1);
@@ -155,9 +155,9 @@ int PetscMapPrintHelp(PetscMap map)
 .seealso: PetscMapCreateMPI()
 
 @*/
-int PetscMapDestroy(PetscMap map)
+PetscErrorCode PetscMapDestroy(PetscMap map)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(map, MAP_COOKIE,1); 
@@ -189,7 +189,7 @@ int PetscMapDestroy(PetscMap map)
 .seealso: PetscMapSetSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
 Concepts: PetscMap^local size
 @*/
-int PetscMapSetLocalSize(PetscMap m,int n)
+PetscErrorCode PetscMapSetLocalSize(PetscMap m,int n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -217,7 +217,7 @@ int PetscMapSetLocalSize(PetscMap m,int n)
    Concepts: PetscMap^local size
 
 @*/
-int PetscMapGetLocalSize(PetscMap m,int *n)
+PetscErrorCode PetscMapGetLocalSize(PetscMap m,int *n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -242,7 +242,7 @@ int PetscMapGetLocalSize(PetscMap m,int *n)
 .seealso: PetscMapSetLocalSize(), PetscMapGetLocalRange(), PetscMapGetGlobalRange()
  Concepts: PetscMap^size
 @*/
-int PetscMapSetSize(PetscMap m,int N)
+PetscErrorCode PetscMapSetSize(PetscMap m,int N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -269,7 +269,7 @@ int PetscMapSetSize(PetscMap m,int N)
 
    Concepts: PetscMap^size
 @*/
-int PetscMapGetSize(PetscMap m,int *N)
+PetscErrorCode PetscMapGetSize(PetscMap m,int *N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -296,7 +296,7 @@ int PetscMapGetSize(PetscMap m,int *N)
 
 .seealso: PetscMapGetLocalSize(), PetscMapGetGlobalRange()
 @*/
-int PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
+PetscErrorCode PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 
@@ -327,7 +327,7 @@ int PetscMapGetLocalRange(PetscMap m,int *rstart,int *rend)
 .seealso: PetscMapGetSize(), PetscMapGetLocalRange()
 
 @*/
-int PetscMapGetGlobalRange(PetscMap m,int *range[])
+PetscErrorCode PetscMapGetGlobalRange(PetscMap m,int *range[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(m,MAP_COOKIE,1); 

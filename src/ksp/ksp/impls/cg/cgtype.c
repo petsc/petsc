@@ -29,9 +29,9 @@
 
 .keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
 @*/
-int KSPCGSetType(KSP ksp,KSPCGType type)
+PetscErrorCode KSPCGSetType(KSP ksp,KSPCGType type)
 {
-  int ierr,(*f)(KSP,KSPCGType);
+  PetscErrorCode ierr,(*f)(KSP,KSPCGType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);

@@ -4,12 +4,12 @@
 */
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
-extern int MatSetValues_SeqSBAIJ(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
+EXTERN PetscErrorCode MatSetValues_SeqSBAIJ(Mat,int,const int [],int,const int [],const PetscScalar [],InsertMode);
 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPISBAIJ"
-int MatSetUpMultiply_MPISBAIJ(Mat mat)
+PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ       *sbaij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(sbaij->B->data);  
@@ -168,7 +168,7 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPISBAIJ_2comm"
-int MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
+PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 {
   Mat_MPISBAIJ       *baij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
@@ -320,12 +320,13 @@ int MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DisAssemble_MPISBAIJ"
-int DisAssemble_MPISBAIJ(Mat A)
+PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
 {
   Mat_MPISBAIJ   *baij = (Mat_MPISBAIJ*)A->data;
   Mat           B = baij->B,Bnew;
   Mat_SeqBAIJ   *Bbaij = (Mat_SeqBAIJ*)B->data;
-  int           ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
+  PetscErrorCode ierr;
+  int i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
   int           k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
   MatScalar     *a = Bbaij->a;
   PetscScalar   *atmp;

@@ -30,11 +30,12 @@
 .seealso: MatGetRow(), MatGetDiagonal()
 
 @*/
-int MatGetColumnVector(Mat A,Vec yy,int col)
+PetscErrorCode MatGetColumnVector(Mat A,Vec yy,int col)
 {
   PetscScalar       *y,zero = 0.0;
   const PetscScalar *v;
-  int               ierr,i,j,nz,N,Rs,Re,rs,re;
+  PetscErrorCode ierr;
+  int i,j,nz,N,Rs,Re,rs,re;
   const int         *idx;
   MPI_Comm          comm;
   

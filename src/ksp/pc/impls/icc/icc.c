@@ -8,10 +8,10 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetMatOrdering_ICC"
-int PCICCSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
+PetscErrorCode PCICCSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
 {
   PC_ICC *dir = (PC_ICC*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
  
   PetscFunctionBegin;
   ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
@@ -23,7 +23,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetDamping_ICC"
-int PCICCSetDamping_ICC(PC pc,PetscReal damping)
+PetscErrorCode PCICCSetDamping_ICC(PC pc,PetscReal damping)
 {
   PC_ICC *dir;
 
@@ -37,7 +37,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetShift_ICC"
-int PCICCSetShift_ICC(PC pc,PetscTruth shift)
+PetscErrorCode PCICCSetShift_ICC(PC pc,PetscTruth shift)
 {
   PC_ICC *dir;
 
@@ -52,7 +52,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetSetZeroPivot_ICC"
-int PCICCSetZeroPivot_ICC(PC pc,PetscReal z)
+PetscErrorCode PCICCSetZeroPivot_ICC(PC pc,PetscReal z)
 {
   PC_ICC *lu;
 
@@ -66,7 +66,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetFill_ICC"
-int PCICCSetFill_ICC(PC pc,PetscReal fill)
+PetscErrorCode PCICCSetFill_ICC(PC pc,PetscReal fill)
 {
   PC_ICC *dir;
 
@@ -80,7 +80,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCICCSetLevels_ICC"
-int PCICCSetLevels_ICC(PC pc,int levels)
+PetscErrorCode PCICCSetLevels_ICC(PC pc,int levels)
 {
   PC_ICC *icc;
 
@@ -113,9 +113,9 @@ EXTERN_C_END
 .keywords: PC, ICC, set, matrix, reordering
 
 @*/
-int PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
+PetscErrorCode PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
 {
-  int ierr,(*f)(PC,MatOrderingType);
+  PetscErrorCode ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -145,9 +145,9 @@ int PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
    Concepts: ICC^setting levels of fill
 
 @*/
-int PCICCSetLevels(PC pc,int levels)
+PetscErrorCode PCICCSetLevels(PC pc,int levels)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -186,9 +186,9 @@ $  -pc_icc_fill <fill>
 
 .seealso: PCLUSetFill()
 @*/
-int PCICCSetFill(PC pc,PetscReal fill)
+PetscErrorCode PCICCSetFill(PC pc,PetscReal fill)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -224,9 +224,9 @@ int PCICCSetFill(PC pc,PetscReal fill)
 
 .seealso: PCICCSetFill(), PCLUSetDamping()
 @*/
-int PCICCSetDamping(PC pc,PetscReal damping)
+PetscErrorCode PCICCSetDamping(PC pc,PetscReal damping)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -261,9 +261,9 @@ int PCICCSetDamping(PC pc,PetscReal damping)
 
 .seealso: PCILUSetShift()
 @*/
-int PCICCSetShift(PC pc,PetscTruth shift)
+PetscErrorCode PCICCSetShift(PC pc,PetscTruth shift)
 {
-  int ierr,(*f)(PC,PetscTruth);
+  PetscErrorCode ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -294,9 +294,9 @@ int PCICCSetShift(PC pc,PetscTruth shift)
 
 .seealso: PCICCSetFill(), PCLUSetDamp(), PCLUSetZeroPivot()
 @*/
-int PCICCSetZeroPivot(PC pc,PetscReal zero)
+PetscErrorCode PCICCSetZeroPivot(PC pc,PetscReal zero)
 {
-  int ierr,(*f)(PC,PetscReal);
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -313,7 +313,7 @@ static int PCSetup_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
   IS     perm,cperm;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatGetOrdering(pc->pmat,icc->ordering,&perm,&cperm);CHKERRQ(ierr);
@@ -335,7 +335,7 @@ static int PCSetup_ICC(PC pc)
 static int PCDestroy_ICC(PC pc)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (icc->fact) {ierr = MatDestroy(icc->fact);CHKERRQ(ierr);}
@@ -349,7 +349,7 @@ static int PCDestroy_ICC(PC pc)
 static int PCApply_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatSolve(icc->fact,x,y);CHKERRQ(ierr);
@@ -360,7 +360,7 @@ static int PCApply_ICC(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplySymmetricLeft_ICC"
 static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   PC_ICC *icc = (PC_ICC*)pc->data;
 
   PetscFunctionBegin;
@@ -372,7 +372,7 @@ static int PCApplySymmetricLeft_ICC(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCApplySymmetricRight_ICC"
 static int PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   PC_ICC *icc = (PC_ICC*)pc->data;
 
   PetscFunctionBegin;
@@ -398,7 +398,7 @@ static int PCSetFromOptions_ICC(PC pc)
   PC_ICC     *icc = (PC_ICC*)pc->data;
   char       tname[256];
   PetscTruth flg;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscFList ordlist;
 
   PetscFunctionBegin;
@@ -430,7 +430,7 @@ static int PCSetFromOptions_ICC(PC pc)
 static int PCView_ICC(PC pc,PetscViewer viewer)
 {
   PC_ICC     *icc = (PC_ICC*)pc->data;
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isstring,iascii;
 
   PetscFunctionBegin;
@@ -489,9 +489,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ICC"
-int PCCreate_ICC(PC pc)
+PetscErrorCode PCCreate_ICC(PC pc)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   PC_ICC *icc;
 
   PetscFunctionBegin;

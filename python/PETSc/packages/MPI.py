@@ -17,9 +17,6 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     self.types        = self.framework.require('config.types',     self)
     self.libraries    = self.framework.require('config.libraries', self)
-##  Not sure how to make this work yet
-##    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
-##      self.libraries.libraries.extend([(['rt','nsl','aio'], 'exit')])
     return
 
   def __str__(self):
@@ -366,11 +363,18 @@ class Configure(config.base.Configure):
     include = [[os.path.join(installDir, 'include')]]
     return ('Downloaded MPICH', lib, include)
 
+  def fixSolaris(self):
+    '''I hate this. MPI should report this somehow.'''
+    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
+      self.executeTest(self.libraries.check, [['rt', 'nsl', 'aio'], 'exit'])
+    return
+
   def configureLibrary(self):
     '''Find all working MPI libraries and then choose one'''
     functionalMPI = []
     nonsharedMPI  = []
 
+    self.fixSolaris()
     for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
       self.framework.log.write('================================================================================\n')
       self.framework.log.write('Checking for a functional MPI in '+name+'\n')

@@ -6,7 +6,7 @@
 #include "petscmat.h"
 PETSC_EXTERN_CXX_BEGIN
 
-EXTERN int PCInitializePackage(const char[]);
+EXTERN PetscErrorCode PCInitializePackage(const char[]);
 
 /*
     PCList contains the list of preconditioners currently registered
@@ -77,25 +77,25 @@ extern int PC_ApplySymmetricRight, PC_ModifySubMatrices;
 E*/
 typedef enum { PC_LEFT,PC_RIGHT,PC_SYMMETRIC } PCSide;
 
-EXTERN int PCCreate(MPI_Comm,PC*);
-EXTERN int PCSetType(PC,const PCType);
-EXTERN int PCSetUp(PC);
-EXTERN int PCSetUpOnBlocks(PC);
-EXTERN int PCApply(PC,Vec,Vec);
-EXTERN int PCApplySymmetricLeft(PC,Vec,Vec);
-EXTERN int PCApplySymmetricRight(PC,Vec,Vec);
-EXTERN int PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
-EXTERN int PCApplyTranspose(PC,Vec,Vec);
-EXTERN int PCHasApplyTranspose(PC,PetscTruth*);
-EXTERN int PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
-EXTERN int PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
-EXTERN int PCApplyRichardsonExists(PC,PetscTruth*);
+EXTERN PetscErrorCode PCCreate(MPI_Comm,PC*);
+EXTERN PetscErrorCode PCSetType(PC,const PCType);
+EXTERN PetscErrorCode PCSetUp(PC);
+EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
+EXTERN PetscErrorCode PCApply(PC,Vec,Vec);
+EXTERN PetscErrorCode PCApplySymmetricLeft(PC,Vec,Vec);
+EXTERN PetscErrorCode PCApplySymmetricRight(PC,Vec,Vec);
+EXTERN PetscErrorCode PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
+EXTERN PetscErrorCode PCApplyTranspose(PC,Vec,Vec);
+EXTERN PetscErrorCode PCHasApplyTranspose(PC,PetscTruth*);
+EXTERN PetscErrorCode PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
+EXTERN PetscErrorCode PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
+EXTERN PetscErrorCode PCApplyRichardsonExists(PC,PetscTruth*);
 
-EXTERN int        PCRegisterDestroy(void);
-EXTERN int        PCRegisterAll(const char[]);
+EXTERN PetscErrorCode        PCRegisterDestroy(void);
+EXTERN PetscErrorCode        PCRegisterAll(const char[]);
 extern PetscTruth PCRegisterAllCalled;
 
-EXTERN int PCRegister(const char[],const char[],const char[],int(*)(PC));
+EXTERN PetscErrorCode PCRegister(const char[],const char[],const char[],int(*)(PC));
 
 /*MC
    PCRegisterDynamic - Adds a method to the preconditioner package.
@@ -144,105 +144,105 @@ M*/
 #define PCRegisterDynamic(a,b,c,d) PCRegister(a,b,c,d)
 #endif
 
-EXTERN int PCDestroy(PC);
-EXTERN int PCSetFromOptions(PC);
-EXTERN int PCESISetFromOptions(PC);
-EXTERN int PCGetType(PC,PCType*);
+EXTERN PetscErrorCode PCDestroy(PC);
+EXTERN PetscErrorCode PCSetFromOptions(PC);
+EXTERN PetscErrorCode PCESISetFromOptions(PC);
+EXTERN PetscErrorCode PCGetType(PC,PCType*);
 
-EXTERN int PCGetFactoredMatrix(PC,Mat*);
-EXTERN int PCSetModifySubMatrices(PC,int(*)(PC,int,const IS[],const IS[],Mat[],void*),void*);
-EXTERN int PCModifySubMatrices(PC,int,const IS[],const IS[],Mat[],void*);
+EXTERN PetscErrorCode PCGetFactoredMatrix(PC,Mat*);
+EXTERN PetscErrorCode PCSetModifySubMatrices(PC,int(*)(PC,int,const IS[],const IS[],Mat[],void*),void*);
+EXTERN PetscErrorCode PCModifySubMatrices(PC,int,const IS[],const IS[],Mat[],void*);
 
-EXTERN int PCSetOperators(PC,Mat,Mat,MatStructure);
-EXTERN int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
+EXTERN PetscErrorCode PCSetOperators(PC,Mat,Mat,MatStructure);
+EXTERN PetscErrorCode PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 
-EXTERN int PCView(PC,PetscViewer);
+EXTERN PetscErrorCode PCView(PC,PetscViewer);
 
-EXTERN int PCSetOptionsPrefix(PC,const char[]);
-EXTERN int PCAppendOptionsPrefix(PC,const char[]);
-EXTERN int PCGetOptionsPrefix(PC,char*[]);
+EXTERN PetscErrorCode PCSetOptionsPrefix(PC,const char[]);
+EXTERN PetscErrorCode PCAppendOptionsPrefix(PC,const char[]);
+EXTERN PetscErrorCode PCGetOptionsPrefix(PC,char*[]);
 
-EXTERN int PCComputeExplicitOperator(PC,Mat*);
+EXTERN PetscErrorCode PCComputeExplicitOperator(PC,Mat*);
 
 /*
       These are used to provide extra scaling of preconditioned 
    operator for time-stepping schemes like in PVODE 
 */
-EXTERN int PCDiagonalScale(PC,PetscTruth*);
-EXTERN int PCDiagonalScaleLeft(PC,Vec,Vec);
-EXTERN int PCDiagonalScaleRight(PC,Vec,Vec);
-EXTERN int PCDiagonalScaleSet(PC,Vec);
+EXTERN PetscErrorCode PCDiagonalScale(PC,PetscTruth*);
+EXTERN PetscErrorCode PCDiagonalScaleLeft(PC,Vec,Vec);
+EXTERN PetscErrorCode PCDiagonalScaleRight(PC,Vec,Vec);
+EXTERN PetscErrorCode PCDiagonalScaleSet(PC,Vec);
 
 /* ------------- options specific to particular preconditioners --------- */
 
-EXTERN int PCJacobiSetUseRowMax(PC);
-EXTERN int PCSORSetSymmetric(PC,MatSORType);
-EXTERN int PCSORSetOmega(PC,PetscReal);
-EXTERN int PCSORSetIterations(PC,int,int);
+EXTERN PetscErrorCode PCJacobiSetUseRowMax(PC);
+EXTERN PetscErrorCode PCSORSetSymmetric(PC,MatSORType);
+EXTERN PetscErrorCode PCSORSetOmega(PC,PetscReal);
+EXTERN PetscErrorCode PCSORSetIterations(PC,int,int);
 
-EXTERN int PCEisenstatSetOmega(PC,PetscReal);
-EXTERN int PCEisenstatNoDiagonalScaling(PC);
+EXTERN PetscErrorCode PCEisenstatSetOmega(PC,PetscReal);
+EXTERN PetscErrorCode PCEisenstatNoDiagonalScaling(PC);
 
 #define USE_PRECONDITIONER_MATRIX 0
 #define USE_TRUE_MATRIX           1
-EXTERN int PCBJacobiSetUseTrueLocal(PC);
-EXTERN int PCBJacobiSetTotalBlocks(PC,int,const int[]);
-EXTERN int PCBJacobiSetLocalBlocks(PC,int,const int[]);
+EXTERN PetscErrorCode PCBJacobiSetUseTrueLocal(PC);
+EXTERN PetscErrorCode PCBJacobiSetTotalBlocks(PC,int,const int[]);
+EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,int,const int[]);
 
-EXTERN int PCKSPSetUseTrue(PC);
+EXTERN PetscErrorCode PCKSPSetUseTrue(PC);
 
-EXTERN int PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*); 
-EXTERN int PCShellSetApplyTranspose(PC,int (*)(void*,Vec,Vec));
-EXTERN int PCShellSetSetUp(PC,int (*)(void*));
-EXTERN int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void*);
-EXTERN int PCShellSetView(PC,int (*)(void*,PetscViewer));
-EXTERN int PCShellSetName(PC,const char[]);
-EXTERN int PCShellGetName(PC,char*[]);
+EXTERN PetscErrorCode PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*); 
+EXTERN PetscErrorCode PCShellSetApplyTranspose(PC,int (*)(void*,Vec,Vec));
+EXTERN PetscErrorCode PCShellSetSetUp(PC,int (*)(void*));
+EXTERN PetscErrorCode PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void*);
+EXTERN PetscErrorCode PCShellSetView(PC,int (*)(void*,PetscViewer));
+EXTERN PetscErrorCode PCShellSetName(PC,const char[]);
+EXTERN PetscErrorCode PCShellGetName(PC,char*[]);
 
-EXTERN int PCLUSetMatOrdering(PC,MatOrderingType);
-EXTERN int PCLUSetReuseOrdering(PC,PetscTruth);
-EXTERN int PCLUSetReuseFill(PC,PetscTruth);
-EXTERN int PCLUSetUseInPlace(PC);
-EXTERN int PCLUSetFill(PC,PetscReal);
-EXTERN int PCLUSetDamping(PC,PetscReal);
-EXTERN int PCLUSetShift(PC,PetscTruth);
-EXTERN int PCLUSetPivoting(PC,PetscReal);
-EXTERN int PCLUSetPivotInBlocks(PC,PetscTruth);
-EXTERN int PCLUSetZeroPivot(PC,PetscReal);
+EXTERN PetscErrorCode PCLUSetMatOrdering(PC,MatOrderingType);
+EXTERN PetscErrorCode PCLUSetReuseOrdering(PC,PetscTruth);
+EXTERN PetscErrorCode PCLUSetReuseFill(PC,PetscTruth);
+EXTERN PetscErrorCode PCLUSetUseInPlace(PC);
+EXTERN PetscErrorCode PCLUSetFill(PC,PetscReal);
+EXTERN PetscErrorCode PCLUSetDamping(PC,PetscReal);
+EXTERN PetscErrorCode PCLUSetShift(PC,PetscTruth);
+EXTERN PetscErrorCode PCLUSetPivoting(PC,PetscReal);
+EXTERN PetscErrorCode PCLUSetPivotInBlocks(PC,PetscTruth);
+EXTERN PetscErrorCode PCLUSetZeroPivot(PC,PetscReal);
 
-EXTERN int PCCholeskySetMatOrdering(PC,MatOrderingType);
-EXTERN int PCCholeskySetReuseOrdering(PC,PetscTruth);
-EXTERN int PCCholeskySetReuseFill(PC,PetscTruth);
-EXTERN int PCCholeskySetUseInPlace(PC);
-EXTERN int PCCholeskySetFill(PC,PetscReal);
-EXTERN int PCCholeskySetDamping(PC,PetscReal);
-EXTERN int PCCholeskySetShift(PC,PetscTruth);
-EXTERN int PCCholeskySetPivotInBlocks(PC,PetscTruth);
+EXTERN PetscErrorCode PCCholeskySetMatOrdering(PC,MatOrderingType);
+EXTERN PetscErrorCode PCCholeskySetReuseOrdering(PC,PetscTruth);
+EXTERN PetscErrorCode PCCholeskySetReuseFill(PC,PetscTruth);
+EXTERN PetscErrorCode PCCholeskySetUseInPlace(PC);
+EXTERN PetscErrorCode PCCholeskySetFill(PC,PetscReal);
+EXTERN PetscErrorCode PCCholeskySetDamping(PC,PetscReal);
+EXTERN PetscErrorCode PCCholeskySetShift(PC,PetscTruth);
+EXTERN PetscErrorCode PCCholeskySetPivotInBlocks(PC,PetscTruth);
 
-EXTERN int PCILUSetMatOrdering(PC,MatOrderingType);
-EXTERN int PCILUSetUseInPlace(PC);
-EXTERN int PCILUSetFill(PC,PetscReal);
-EXTERN int PCILUSetLevels(PC,int);
-EXTERN int PCILUSetReuseOrdering(PC,PetscTruth);
-EXTERN int PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
-EXTERN int PCILUDTSetReuseFill(PC,PetscTruth);
-EXTERN int PCILUSetAllowDiagonalFill(PC);
-EXTERN int PCILUSetDamping(PC,PetscReal);
-EXTERN int PCILUSetShift(PC,PetscTruth);
-EXTERN int PCILUSetPivotInBlocks(PC,PetscTruth);
-EXTERN int PCILUSetZeroPivot(PC,PetscReal);
+EXTERN PetscErrorCode PCILUSetMatOrdering(PC,MatOrderingType);
+EXTERN PetscErrorCode PCILUSetUseInPlace(PC);
+EXTERN PetscErrorCode PCILUSetFill(PC,PetscReal);
+EXTERN PetscErrorCode PCILUSetLevels(PC,int);
+EXTERN PetscErrorCode PCILUSetReuseOrdering(PC,PetscTruth);
+EXTERN PetscErrorCode PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
+EXTERN PetscErrorCode PCILUDTSetReuseFill(PC,PetscTruth);
+EXTERN PetscErrorCode PCILUSetAllowDiagonalFill(PC);
+EXTERN PetscErrorCode PCILUSetDamping(PC,PetscReal);
+EXTERN PetscErrorCode PCILUSetShift(PC,PetscTruth);
+EXTERN PetscErrorCode PCILUSetPivotInBlocks(PC,PetscTruth);
+EXTERN PetscErrorCode PCILUSetZeroPivot(PC,PetscReal);
 
-EXTERN int PCICCSetMatOrdering(PC,MatOrderingType);
-EXTERN int PCICCSetFill(PC,PetscReal);
-EXTERN int PCICCSetLevels(PC,int);
-EXTERN int PCICCSetDamping(PC,PetscReal);
-EXTERN int PCICCSetShift(PC,PetscTruth);
-EXTERN int PCICCSetPivotInBlocks(PC,PetscTruth);
-EXTERN int PCICCSetZeroPivot(PC,PetscReal);
+EXTERN PetscErrorCode PCICCSetMatOrdering(PC,MatOrderingType);
+EXTERN PetscErrorCode PCICCSetFill(PC,PetscReal);
+EXTERN PetscErrorCode PCICCSetLevels(PC,int);
+EXTERN PetscErrorCode PCICCSetDamping(PC,PetscReal);
+EXTERN PetscErrorCode PCICCSetShift(PC,PetscTruth);
+EXTERN PetscErrorCode PCICCSetPivotInBlocks(PC,PetscTruth);
+EXTERN PetscErrorCode PCICCSetZeroPivot(PC,PetscReal);
 
-EXTERN int PCASMSetLocalSubdomains(PC,int,IS[]);
-EXTERN int PCASMSetTotalSubdomains(PC,int,IS[]);
-EXTERN int PCASMSetOverlap(PC,int);
+EXTERN PetscErrorCode PCASMSetLocalSubdomains(PC,int,IS[]);
+EXTERN PetscErrorCode PCASMSetTotalSubdomains(PC,int,IS[]);
+EXTERN PetscErrorCode PCASMSetOverlap(PC,int);
 /*E
     PCASMType - Type of additive Schwarz method to use
 
@@ -261,11 +261,11 @@ $                not very good.
 .seealso: PCASMSetType()
 E*/
 typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
-EXTERN int PCASMSetType(PC,PCASMType);
-EXTERN int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
-EXTERN int PCASMSetUseInPlace(PC);
-EXTERN int PCASMGetLocalSubdomains(PC,int*,IS*[]);
-EXTERN int PCASMGetLocalSubmatrices(PC,int*,Mat*[]);
+EXTERN PetscErrorCode PCASMSetType(PC,PCASMType);
+EXTERN PetscErrorCode PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
+EXTERN PetscErrorCode PCASMSetUseInPlace(PC);
+EXTERN PetscErrorCode PCASMGetLocalSubdomains(PC,int*,IS*[]);
+EXTERN PetscErrorCode PCASMGetLocalSubmatrices(PC,int*,Mat*[]);
 
 /*E
     PCCompositeType - Determines how two or more preconditioner are composed
@@ -282,29 +282,29 @@ $                         alpha I + R
 .seealso: PCCompositeSetType()
 E*/
 typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL} PCCompositeType;
-EXTERN int PCCompositeSetUseTrue(PC);
-EXTERN int PCCompositeSetType(PC,PCCompositeType);
-EXTERN int PCCompositeAddPC(PC,PCType);
-EXTERN int PCCompositeGetPC(PC pc,int n,PC *);
-EXTERN int PCCompositeSpecialSetAlpha(PC,PetscScalar);
+EXTERN PetscErrorCode PCCompositeSetUseTrue(PC);
+EXTERN PetscErrorCode PCCompositeSetType(PC,PCCompositeType);
+EXTERN PetscErrorCode PCCompositeAddPC(PC,PCType);
+EXTERN PetscErrorCode PCCompositeGetPC(PC pc,int n,PC *);
+EXTERN PetscErrorCode PCCompositeSpecialSetAlpha(PC,PetscScalar);
 
-EXTERN int PCRedundantSetScatter(PC,VecScatter,VecScatter);
-EXTERN int PCRedundantGetOperators(PC,Mat*,Mat*);
-EXTERN int PCRedundantGetPC(PC,PC*);
-EXTERN int MatGetOrderingList(PetscFList *list);
+EXTERN PetscErrorCode PCRedundantSetScatter(PC,VecScatter,VecScatter);
+EXTERN PetscErrorCode PCRedundantGetOperators(PC,Mat*,Mat*);
+EXTERN PetscErrorCode PCRedundantGetPC(PC,PC*);
+EXTERN PetscErrorCode MatGetOrderingList(PetscFList *list);
 
-EXTERN int PCSPAISetEpsilon(PC,double);
-EXTERN int PCSPAISetNBSteps(PC,int);
-EXTERN int PCSPAISetMax(PC,int);
-EXTERN int PCSPAISetMaxNew(PC,int);
-EXTERN int PCSPAISetBlockSize(PC,int);
-EXTERN int PCSPAISetCacheSize(PC,int);
-EXTERN int PCSPAISetVerbose(PC,int);
-EXTERN int PCSPAISetSp(PC,int);
+EXTERN PetscErrorCode PCSPAISetEpsilon(PC,double);
+EXTERN PetscErrorCode PCSPAISetNBSteps(PC,int);
+EXTERN PetscErrorCode PCSPAISetMax(PC,int);
+EXTERN PetscErrorCode PCSPAISetMaxNew(PC,int);
+EXTERN PetscErrorCode PCSPAISetBlockSize(PC,int);
+EXTERN PetscErrorCode PCSPAISetCacheSize(PC,int);
+EXTERN PetscErrorCode PCSPAISetVerbose(PC,int);
+EXTERN PetscErrorCode PCSPAISetSp(PC,int);
 
-EXTERN int PCHYPRESetType(PC,const char[]);
-EXTERN int PCBJacobiGetLocalBlocks(PC,int*,const int*[]);
-EXTERN int PCBJacobiGetTotalBlocks(PC,int*,const int*[]);
+EXTERN PetscErrorCode PCHYPRESetType(PC,const char[]);
+EXTERN PetscErrorCode PCBJacobiGetLocalBlocks(PC,int*,const int*[]);
+EXTERN PetscErrorCode PCBJacobiGetTotalBlocks(PC,int*,const int*[]);
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCPC_H */

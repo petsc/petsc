@@ -32,9 +32,10 @@
 .seealso DMMGDestroy() 
 
 @*/
-int DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
+PetscErrorCode DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
 {
-  int        ierr,i;
+  PetscErrorCode ierr;
+  int i;
   DMMG       *p;
   PetscTruth galerkin;
 
@@ -74,7 +75,7 @@ int DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
 .seealso DMMGCreate()
 
 @*/
-int DMMGSetUseGalerkinCoarse(DMMG* dmmg)
+PetscErrorCode DMMGSetUseGalerkinCoarse(DMMG* dmmg)
 {
   int  i,nlevels = dmmg[0]->nlevels;
 
@@ -102,9 +103,10 @@ int DMMGSetUseGalerkinCoarse(DMMG* dmmg)
 .seealso DMMGCreate()
 
 @*/
-int DMMGDestroy(DMMG *dmmg)
+PetscErrorCode DMMGDestroy(DMMG *dmmg)
 {
-  int     ierr,i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr;
+  int i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
@@ -150,9 +152,10 @@ int DMMGDestroy(DMMG *dmmg)
 .seealso DMMGCreate(), DMMGDestroy()
 
 @*/
-int DMMGSetDM(DMMG *dmmg,DM dm)
+PetscErrorCode DMMGSetDM(DMMG *dmmg,DM dm)
 {
-  int        ierr,i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr;
+  int i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as DMMG");
@@ -182,9 +185,10 @@ int DMMGSetDM(DMMG *dmmg,DM dm)
 .seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSolve()
 
 @*/
-int DMMGSetUp(DMMG *dmmg)
+PetscErrorCode DMMGSetUp(DMMG *dmmg)
 {
-  int        ierr,i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr;
+  int i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
 
@@ -226,7 +230,7 @@ int DMMGSetUp(DMMG *dmmg)
 .seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSetUp()
 
 @*/
-int DMMGSolve(DMMG *dmmg)
+PetscErrorCode DMMGSolve(DMMG *dmmg)
 {
   int        i,ierr,nlevels = dmmg[0]->nlevels;
   PetscTruth gridseq,vecmonitor,flg;
@@ -277,9 +281,9 @@ int DMMGSolve(DMMG *dmmg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolveKSP"
-int DMMGSolveKSP(DMMG *dmmg,int level)
+PetscErrorCode DMMGSolveKSP(DMMG *dmmg,int level)
 {
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
@@ -296,9 +300,10 @@ int DMMGSolveKSP(DMMG *dmmg,int level)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetUpLevel"
-int DMMGSetUpLevel(DMMG *dmmg,KSP ksp,int nlevels)
+PetscErrorCode DMMGSetUpLevel(DMMG *dmmg,KSP ksp,int nlevels)
 {
-  int         ierr,i;
+  PetscErrorCode ierr;
+  int i;
   PC          pc;
   PetscTruth  ismg,monitor,ismf,isshell,ismffd;
   KSP        lksp; /* solver internal to the multigrid preconditioner */
@@ -367,8 +372,6 @@ int DMMGSetUpLevel(DMMG *dmmg,KSP ksp,int nlevels)
   PetscFunctionReturn(0);
 }
 
-extern int MatSeqAIJPtAP(Mat,Mat,Mat*);
-
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetKSP"
 /*@C
@@ -391,9 +394,10 @@ extern int MatSeqAIJPtAP(Mat,Mat,Mat*);
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve()
 
 @*/
-int DMMGSetKSP(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
+PetscErrorCode DMMGSetKSP(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
 {
-  int        ierr,size,i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr;
+  int size,i,nlevels = dmmg[0]->nlevels;
   PetscTruth galerkin;
 
   PetscFunctionBegin;
@@ -405,7 +409,7 @@ int DMMGSetKSP(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
     ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
     ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->B);CHKERRQ(ierr);
     for (i=nlevels-2; i>-1; i--) {
-      ierr = MatSeqAIJPtAP(dmmg[i+1]->B,dmmg[i+1]->R,&dmmg[i]->B);CHKERRQ(ierr);
+      ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,MAT_INITIAL_MATRIX,1.0,&dmmg[i]->B);CHKERRQ(ierr);
     }
   }
 
@@ -460,9 +464,10 @@ int DMMGSetKSP(DMMG *dmmg,int (*rhs)(DMMG,Vec),int (*func)(DMMG,Mat))
 .seealso DMMGCreate(), DMMGDestroy
 
 @*/
-int DMMGView(DMMG *dmmg,PetscViewer viewer)
+PetscErrorCode DMMGView(DMMG *dmmg,PetscViewer viewer)
 {
-  int            ierr,i,nlevels = dmmg[0]->nlevels,flag;
+  PetscErrorCode ierr;
+  int i,nlevels = dmmg[0]->nlevels,flag;
   MPI_Comm       comm;
   PetscTruth     iascii,isbinary;
 

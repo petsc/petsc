@@ -25,9 +25,9 @@
    Concepts: MPI communicator^getting from object
 
 @*/
-int PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
+PetscErrorCode PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");

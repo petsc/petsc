@@ -29,10 +29,11 @@
 .seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutReal(), PetscViewerSocketPutScalar(),
       PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
-int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,PetscScalar *array)
+PetscErrorCode PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,PetscScalar *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
-  int                ierr,t = vmatlab->port,type = DENSEREAL,value;
+  PetscErrorCode     ierr;
+  int                t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);
@@ -77,10 +78,11 @@ int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,PetscScalar *array
 .seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutInt(), PetscViewerSocketPutReal(),
           PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
-int PetscViewerSocketPutReal(PetscViewer viewer,int m,int n,PetscReal *array)
+PetscErrorCode PetscViewerSocketPutReal(PetscViewer viewer,int m,int n,PetscReal *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
-  int                ierr,t = vmatlab->port,type = DENSEREAL,value;
+  PetscErrorCode     ierr;
+  int                t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);
@@ -119,10 +121,11 @@ int PetscViewerSocketPutReal(PetscViewer viewer,int m,int n,PetscReal *array)
 .seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutScalar(), PetscViewerSocketPutReal(),
        PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
-int PetscViewerSocketPutInt(PetscViewer viewer,int m,int *array)
+PetscErrorCode PetscViewerSocketPutInt(PetscViewer viewer,int m,int *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
-  int                ierr,t = vmatlab->port,type = DENSEINT;
+  PetscErrorCode     ierr;
+  int                t = vmatlab->port,type = DENSEINT;
 
   PetscFunctionBegin;
   ierr = PetscBinaryWrite(t,&type,1,PETSC_INT,0);CHKERRQ(ierr);

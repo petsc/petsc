@@ -8,11 +8,11 @@
 PetscFList      MatOrderingList = 0;
 PetscTruth MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-EXTERN int MatOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
+EXTERN PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Flow"
-int MatOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode MatOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"Cannot do default flow ordering for matrix type");
@@ -24,7 +24,7 @@ int MatOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Natural"
-int MatOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode MatOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   int        n,ierr,i,*ii;
   PetscTruth done;
@@ -67,9 +67,10 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_RowLength"
-int MatOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode MatOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
-  int        ierr,n,*ia,*ja,*permr,*lens,i;
+  PetscErrorCode ierr;
+  int n,*ia,*ja,*permr,*lens,i;
   PetscTruth done;
 
   PetscFunctionBegin;
@@ -95,9 +96,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrderingRegister" 
-int MatOrderingRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,const MatOrderingType,IS*,IS*))
+PetscErrorCode MatOrderingRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,const MatOrderingType,IS*,IS*))
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -119,9 +120,9 @@ int MatOrderingRegister(const char sname[],const char path[],const char name[],i
 
 .seealso: MatOrderingRegisterDynamic(), MatOrderingRegisterAll()
 @*/
-int MatOrderingRegisterDestroy(void)
+PetscErrorCode MatOrderingRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (MatOrderingList) {
@@ -131,7 +132,7 @@ int MatOrderingRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatAdjustForInodes(Mat,IS *,IS *);
+EXTERN PetscErrorCode MatAdjustForInodes(Mat,IS *,IS *);
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #undef __FUNCT__  
@@ -175,9 +176,10 @@ $      MATORDERING_QMD - Quotient Minimum Degree
 
 .seealso:   MatOrderingRegisterDynamic(), PCLUSetMatOrdering(), PCILUSetMatOrdering()
 @*/
-int MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
+PetscErrorCode MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
 {
-  int         ierr,mmat,nmat,mis,m;
+  PetscErrorCode ierr;
+  int mmat,nmat,mis,m;
   int         (*r)(Mat,const MatOrderingType,IS*,IS*);
   PetscTruth  flg,isseqdense,ismpidense;
 
@@ -258,7 +260,7 @@ int MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrderingList"
-int MatGetOrderingList(PetscFList *list)
+PetscErrorCode MatGetOrderingList(PetscFList *list)
 {
   PetscFunctionBegin;
   *list = MatOrderingList;

@@ -4,7 +4,7 @@
 */
 #include "src/vec/is/isimpl.h"             /*I   "petscis.h"   I*/
 
-EXTERN int VecInitializePackage(char *);
+EXTERN PetscErrorCode VecInitializePackage(char *);
 
 typedef struct {
   int N,n,first,step;
@@ -12,7 +12,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity_Stride" 
-int ISIdentity_Stride(IS is,PetscTruth *ident)
+PetscErrorCode ISIdentity_Stride(IS is,PetscTruth *ident)
 {
   IS_Stride *is_stride = (IS_Stride*)is->data;
 
@@ -28,9 +28,9 @@ int ISIdentity_Stride(IS is,PetscTruth *ident)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDuplicate_Stride" 
-int ISDuplicate_Stride(IS is,IS *newIS)
+PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
 {
-  int       ierr;
+  PetscErrorCode ierr;
   IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
@@ -40,10 +40,10 @@ int ISDuplicate_Stride(IS is,IS *newIS)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISInvertPermutation_Stride" 
-int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
+PetscErrorCode ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
 {
   IS_Stride *isstride = (IS_Stride*)is->data;
-  int       ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (is->isidentity) {
@@ -86,7 +86,7 @@ int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/
-int ISStrideGetInfo(IS is,int *first,int *step)
+PetscErrorCode ISStrideGetInfo(IS is,int *first,int *step)
 {
   IS_Stride *sub;
 
@@ -122,7 +122,7 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/
-int ISStride(IS is,PetscTruth *flag)
+PetscErrorCode ISStride(IS is,PetscTruth *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -136,9 +136,9 @@ int ISStride(IS is,PetscTruth *flag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDestroy_Stride" 
-int ISDestroy_Stride(IS is)
+PetscErrorCode ISDestroy_Stride(IS is)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(is->data);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ int ISDestroy_Stride(IS is)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_Stride" 
-int ISGetIndices_Stride(IS in,int **idx)
+PetscErrorCode ISGetIndices_Stride(IS in,int **idx)
 {
   IS_Stride *sub = (IS_Stride*)in->data;
   int       i,ierr;
@@ -166,9 +166,9 @@ int ISGetIndices_Stride(IS in,int **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISRestoreIndices_Stride" 
-int ISRestoreIndices_Stride(IS in,int **idx)
+PetscErrorCode ISRestoreIndices_Stride(IS in,int **idx)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(*idx);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ int ISRestoreIndices_Stride(IS in,int **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetSize_Stride" 
-int ISGetSize_Stride(IS is,int *size)
+PetscErrorCode ISGetSize_Stride(IS is,int *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
 
@@ -188,7 +188,7 @@ int ISGetSize_Stride(IS is,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetLocalSize_Stride" 
-int ISGetLocalSize_Stride(IS is,int *size)
+PetscErrorCode ISGetLocalSize_Stride(IS is,int *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
 
@@ -199,7 +199,7 @@ int ISGetLocalSize_Stride(IS is,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISView_Stride" 
-int ISView_Stride(IS is,PetscViewer viewer)
+PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
 {
   IS_Stride   *sub = (IS_Stride *)is->data;
   int         i,n = sub->n,ierr,rank,size;
@@ -236,7 +236,7 @@ int ISView_Stride(IS is,PetscViewer viewer)
   
 #undef __FUNCT__  
 #define __FUNCT__ "ISSort_Stride" 
-int ISSort_Stride(IS is)
+PetscErrorCode ISSort_Stride(IS is)
 {
   IS_Stride *sub = (IS_Stride*)is->data;
 
@@ -249,7 +249,7 @@ int ISSort_Stride(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISSorted_Stride" 
-int ISSorted_Stride(IS is,PetscTruth* flg)
+PetscErrorCode ISSorted_Stride(IS is,PetscTruth* flg)
 {
   IS_Stride *sub = (IS_Stride*)is->data;
 
@@ -301,7 +301,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
 .seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
 @*/
-int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
+PetscErrorCode ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 {
   int        min,max,ierr;
   IS         Nindex;

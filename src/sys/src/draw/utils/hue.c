@@ -15,7 +15,7 @@ static PetscReal Gamma = 2.0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawUtilitySetGamma"  
-int PetscDrawUtilitySetGamma(PetscReal g)
+PetscErrorCode PetscDrawUtilitySetGamma(PetscReal g)
 {
   PetscFunctionBegin;
   Gamma = g;
@@ -71,9 +71,10 @@ static int PetscDrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawUtilitySetCmapHue" 
-int PetscDrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize)
+PetscErrorCode PetscDrawUtilitySetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize)
 {
-  int        ierr,i,hue,lightness,saturation;
+  PetscErrorCode ierr;
+  int        i,hue,lightness,saturation;
   PetscReal  igamma = 1.0 / Gamma;
 
   PetscFunctionBegin;

@@ -26,7 +26,7 @@
 /*****************************************************************/
 #undef __FUNCT__  
 #define __FUNCT__ "SPARSEPACKdegree" 
-int SPARSEPACKdegree(int *root, int *xadj,int *adjncy,int *mask,int *deg,int *ccsize,int *ls)
+PetscErrorCode SPARSEPACKdegree(int *root, int *xadj,int *adjncy,int *mask,int *deg,int *ccsize,int *ls)
 {
     /* System generated locals */
     int i__1,i__2;

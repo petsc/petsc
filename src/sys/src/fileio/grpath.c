@@ -58,9 +58,9 @@
 
 .seealso: PetscGetFullPath()
 @*/
-int PetscGetRealPath(char path[],char rpath[])
+PetscErrorCode PetscGetRealPath(char path[],char rpath[])
 {
-  int        ierr;
+  PetscErrorCode ierr;
   char       tmp3[PETSC_MAX_PATH_LEN];
   PetscTruth flg;
 #if !defined(PETSC_HAVE_REALPATH) && !defined(PARCH_win32) && defined(PETSC_HAVE_READLINK)

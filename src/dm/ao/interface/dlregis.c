@@ -17,12 +17,12 @@
 .keywords: AO, DA, initialize, package
 .seealso: PetscInitialize()
 @*/
-int DMInitializePackage(const char path[]) {
+PetscErrorCode DMInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;
   PetscTruth        opt;
-  int               ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
@@ -77,9 +77,9 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
 */
-int PetscDLLibraryRegister(char *path)
+PetscErrorCode PetscDLLibraryRegister(char *path)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   ierr = PetscInitializeNoArguments();
   if (ierr) return(1);

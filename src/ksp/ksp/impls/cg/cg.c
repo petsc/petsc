@@ -42,8 +42,8 @@
     data used during the optional Lanczo process used to compute eigenvalues
 */
 #include "src/ksp/ksp/impls/cg/cgctx.h"       /*I "petscksp.h" I*/
-EXTERN int KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
-EXTERN int KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
+EXTERN PetscErrorCode KSPComputeExtremeSingularValues_CG(KSP,PetscReal *,PetscReal *);
+EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
 
 /*
      KSPSetUp_CG - Sets up the workspace needed by the CG method. 
@@ -53,7 +53,7 @@ EXTERN int KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,int *);
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_CG"
-int KSPSetUp_CG(KSP ksp)
+PetscErrorCode KSPSetUp_CG(KSP ksp)
 {
   KSP_CG *cgP = (KSP_CG*)ksp->data;
   int    maxit = ksp->max_it,ierr;
@@ -104,9 +104,10 @@ int KSPSetUp_CG(KSP ksp)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_CG"
-int  KSPSolve_CG(KSP ksp)
+PetscErrorCode  KSPSolve_CG(KSP ksp)
 {
-  int          ierr,i,stored_max_it,eigs;
+  PetscErrorCode ierr;
+  int          i,stored_max_it,eigs;
   PetscScalar  dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma;
   PetscReal    dp = 0.0;
   Vec          X,B,Z,R,P;
@@ -227,10 +228,10 @@ int  KSPSolve_CG(KSP ksp)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_CG" 
-int KSPDestroy_CG(KSP ksp)
+PetscErrorCode KSPDestroy_CG(KSP ksp)
 {
   KSP_CG *cg = (KSP_CG*)ksp->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* free space used for singular value calculations */
@@ -256,11 +257,11 @@ int KSPDestroy_CG(KSP ksp)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPView_CG" 
-int KSPView_CG(KSP ksp,PetscViewer viewer)
+PetscErrorCode KSPView_CG(KSP ksp,PetscViewer viewer)
 {
 #if defined(PETSC_USE_COMPLEX)
   KSP_CG     *cg = (KSP_CG *)ksp->data; 
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth iascii;
 
   PetscFunctionBegin;
@@ -286,10 +287,10 @@ int KSPView_CG(KSP ksp,PetscViewer viewer)
 */ 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_CG"
-int KSPSetFromOptions_CG(KSP ksp)
+PetscErrorCode KSPSetFromOptions_CG(KSP ksp)
 {
 #if defined(PETSC_USE_COMPLEX)
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth flg;
 #endif
 
@@ -315,7 +316,7 @@ int KSPSetFromOptions_CG(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCGSetType_CG" 
-int KSPCGSetType_CG(KSP ksp,KSPCGType type)
+PetscErrorCode KSPCGSetType_CG(KSP ksp,KSPCGType type)
 {
   KSP_CG *cg;
 
@@ -351,9 +352,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_CG"
-int KSPCreate_CG(KSP ksp)
+PetscErrorCode KSPCreate_CG(KSP ksp)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   KSP_CG *cg;
 
   PetscFunctionBegin;

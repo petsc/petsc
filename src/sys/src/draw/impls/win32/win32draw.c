@@ -777,7 +777,7 @@ static int PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
   PetscDraw_Win32 *pop;
   HANDLE          hThread = NULL;
   WindowNode      newnode;
-  int             ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = PetscNew(PetscDraw_Win32,&pop);CHKERRQ(ierr);
@@ -835,11 +835,11 @@ static int PetscDrawGetPopup_Win32(PetscDraw draw,PetscDraw *popdraw)
 
 
 EXTERN_C_BEGIN
-int PetscDrawCreate_Win32(PetscDraw draw)
+PetscErrorCode PetscDrawCreate_Win32(PetscDraw draw)
 {       
   PetscDraw_Win32 *windraw;
   HANDLE          hThread = NULL;
-  int             ierr;
+  PetscErrorCode ierr;
   WindowNode      newnode;
   
   ierr        = PetscNew(PetscDraw_Win32,&windraw);CHKERRQ(ierr);
@@ -983,7 +983,7 @@ static int  MouseRecord_Win32(HWND hWnd,PetscDrawButton button)
   WindowNode current = NULL;
   MouseNode  newnode;
   POINT      mousepos;
-  int        ierr; 
+  PetscErrorCode ierr; 
   
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
   current = WindowListHead;

@@ -19,9 +19,10 @@
 .keywords: log, class, create
 .seealso: ClassRegLogDestroy(), StageLogCreate()
 @*/
-int ClassRegLogCreate(ClassRegLog *classLog) {
+PetscErrorCode ClassRegLogCreate(ClassRegLog *classLog)
+{
   ClassRegLog l;
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _ClassRegLog, &l);CHKERRQ(ierr);
@@ -47,9 +48,10 @@ int ClassRegLogCreate(ClassRegLog *classLog) {
 .keywords: log, event, destroy
 .seealso: ClassRegLogCreate()
 @*/
-int ClassRegLogDestroy(ClassRegLog classLog) {
+PetscErrorCode ClassRegLogDestroy(ClassRegLog classLog)\
+{
   int c;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for(c = 0; c < classLog->numClasses; c++) {
@@ -75,8 +77,9 @@ int ClassRegLogDestroy(ClassRegLog classLog) {
 .keywords: log, class, destroy
 .seealso: StageLogDestroy(), EventLogDestroy()
 @*/
-int ClassRegInfoDestroy(ClassRegInfo *c) {
-  int ierr;
+PetscErrorCode ClassRegInfoDestroy(ClassRegInfo *c)
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (c->name != PETSC_NULL) {
@@ -100,9 +103,10 @@ int ClassRegInfoDestroy(ClassRegInfo *c) {
 .keywords: log, class, create
 .seealso: ClassPerfLogDestroy(), StageLogCreate()
 @*/
-int ClassPerfLogCreate(ClassPerfLog *classLog) {
+PetscErrorCode ClassPerfLogCreate(ClassPerfLog *classLog)
+{
   ClassPerfLog l;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _ClassPerfLog, &l);CHKERRQ(ierr);
@@ -128,8 +132,9 @@ int ClassPerfLogCreate(ClassPerfLog *classLog) {
 .keywords: log, event, destroy
 .seealso: ClassPerfLogCreate()
 @*/
-int ClassPerfLogDestroy(ClassPerfLog classLog) {
-  int ierr;
+PetscErrorCode ClassPerfLogDestroy(ClassPerfLog classLog)
+{
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(classLog->classInfo);CHKERRQ(ierr);
@@ -153,7 +158,8 @@ int ClassPerfLogDestroy(ClassPerfLog classLog) {
 .keywords: log, class, destroy
 .seealso: ClassPerfLogCreate()
 @*/
-int ClassPerfInfoClear(ClassPerfInfo *classInfo) {
+PetscErrorCode ClassPerfInfoClear(ClassPerfInfo *classInfo) 
+{
   PetscFunctionBegin;
   classInfo->id           = -1;
   classInfo->creations    = 0;
@@ -179,9 +185,10 @@ int ClassPerfInfoClear(ClassPerfInfo *classInfo) {
 .keywords: log, class, size, ensure
 .seealso: ClassPerfLogCreate()
 @*/
-int ClassPerfLogEnsureSize(ClassPerfLog classLog, int size) {
+PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog classLog, int size) 
+{
   ClassPerfInfo *classInfo;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   while(size > classLog->maxClasses) {
@@ -218,11 +225,12 @@ int ClassPerfLogEnsureSize(ClassPerfLog classLog, int size) {
 .keywords: log, class, register
 .seealso: PetscLogClassRegister()
 @*/
-int ClassRegLogRegister(ClassRegLog classLog, const char cname[], int *cookie) {
+PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], int *cookie)
+{
   ClassRegInfo *classInfo;
   char         *str;
   int           c;
-  int           ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidCharPointer(cname,2);
@@ -269,7 +277,8 @@ int ClassRegLogRegister(ClassRegLog classLog, const char cname[], int *cookie) {
 .keywords: log, class, register
 .seealso: PetscLogClassRegister(), PetscLogObjCreateDefault(), PetscLogObjDestroyDefault()
 @*/
-int ClassRegLogGetClass(ClassRegLog classLog, int cookie, int *oclass) {
+PetscErrorCode ClassRegLogGetClass(ClassRegLog classLog, int cookie, int *oclass)
+{
   int c;
 
   PetscFunctionBegin;
@@ -287,7 +296,8 @@ int ClassRegLogGetClass(ClassRegLog classLog, int cookie, int *oclass) {
 /* Default object create logger */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogObjCreateDefault"
-int PetscLogObjCreateDefault(PetscObject obj) {
+PetscErrorCode PetscLogObjCreateDefault(PetscObject obj) 
+{
   StageLog       stageLog;
   ClassRegLog    classRegLog;
   ClassPerfLog   classPerfLog;
@@ -296,7 +306,7 @@ int PetscLogObjCreateDefault(PetscObject obj) {
   PetscLogDouble start, end;
   int            oclass;
   int            stage;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Record stage info */
@@ -357,7 +367,8 @@ int PetscLogObjCreateDefault(PetscObject obj) {
 /* Default object destroy logger */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogObjDestroyDefault"
-int PetscLogObjDestroyDefault(PetscObject obj) {
+PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
+{
   StageLog       stageLog;
   ClassRegLog    classRegLog;
   ClassPerfLog   classPerfLog;
@@ -367,7 +378,7 @@ int PetscLogObjDestroyDefault(PetscObject obj) {
   PetscObject    parent;
   PetscTruth     exists;
   int            stage;
-  int            ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Record stage info */

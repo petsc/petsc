@@ -26,9 +26,9 @@
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray()
 @*/
-int DAVecGetArray(DA da,Vec vec,void *array)
+PetscErrorCode DAVecGetArray(DA da,Vec vec,void *array)
 {
-  int ierr,xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+  PetscErrorCode ierr,xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
@@ -80,9 +80,9 @@ int DAVecGetArray(DA da,Vec vec,void *array)
 
 .seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecGetArray()
 @*/
-int DAVecRestoreArray(DA da,Vec vec,void *array)
+PetscErrorCode DAVecRestoreArray(DA da,Vec vec,void *array)
 {
-  int ierr,xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
+  PetscErrorCode ierr,xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
   ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);

@@ -262,7 +262,7 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-int FormInitialGuess(AppCtx *user,Vec X)
+PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
   int         i,j,row,mx,my,ierr;
   PetscReal   lambda,temp1,temp,hx,hy;
@@ -316,7 +316,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
    Output Parameter:
 .  F - function vector
  */
-int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx       *user = (AppCtx*)ptr;
   int          ierr,i,j,row,mx,my;
@@ -382,7 +382,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx      *user = (AppCtx*)ptr;   /* user-defined applicatin context */
   Mat         jac = *J;                /* Jacobian matrix */

@@ -27,9 +27,9 @@
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerRestoreSingleton()
 @*/
-int PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
+PetscErrorCode PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
-  int ierr,size;
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -63,9 +63,9 @@ int PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
 
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerGetSingleton()
 @*/
-int PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outviewer)
+PetscErrorCode PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
-  int ierr,size;
+  PetscErrorCode ierr,size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);

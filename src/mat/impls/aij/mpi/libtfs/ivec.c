@@ -105,8 +105,7 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int *
-ivec_copy(register int *arg1, register int *arg2, register int n)
+int *ivec_copy(register int *arg1, register int *arg2, register int n)
 {
   while (n--)  {*arg1++ = *arg2++;}
   return(arg1);
@@ -451,8 +450,7 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int 
-ivec_sum(register int *arg1, register int n)
+int ivec_sum(register int *arg1, register int n)
 {
   register int tmp = 0;
 
@@ -471,8 +469,7 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int 
-ivec_reduce_and(register int *arg1, register int n)
+int ivec_reduce_and(register int *arg1, register int n)
 {
   register int tmp = ALL_ONES;
 
@@ -491,8 +488,7 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int 
-ivec_reduce_or(register int *arg1, register int n)
+int ivec_reduce_or(register int *arg1, register int n)
 {
   register int tmp = 0;
 
@@ -511,8 +507,7 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int 
-ivec_prod(register int *arg1, register int n)
+int ivec_prod(register int *arg1, register int n)
 {
   register int tmp = 1;
 
@@ -531,8 +526,7 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-int 
-ivec_u_sum(register unsigned *arg1, register int n)
+int ivec_u_sum(register unsigned *arg1, register int n)
 {
   register unsigned tmp = 0;
 

@@ -8,11 +8,6 @@ PETSC_MISSING_FORTRANSTAR Fortran cannot handle integer*4, real*4, Nag F90 compi
 
 PETSC_MISSING_DREAL Fortran missing dreal(); IRIX F90 compiler and Nag F90 compiler
 
-PETSC_MISSING_GETPWUID the function
-
-PETSC_MISSING_SOCKETS (only ASCIIred)
-
-
 PETSC_HAVE_UCBPS  /usr/ucb/ps exists
 
 PETSC_MISSING_SIGSYS

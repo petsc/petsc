@@ -6,10 +6,10 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqBDiag"
-int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
+PetscErrorCode MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
 {
   PetscTruth   idn;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (A->m != A->n) SETERRQ(PETSC_ERR_SUP,"Matrix must be square");
@@ -33,10 +33,10 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Ma
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactor_SeqBDiag"
-int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info)
 {
   PetscTruth   idn;
-  int          ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* For now, no fill is allocated in symbolic factorization phase, so we
@@ -58,7 +58,7 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info)
 /* --------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBDiag_N"
-int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
@@ -124,7 +124,7 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBDiag_1"
-int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
@@ -182,10 +182,11 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBDiag_1"
-int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          ierr,i,d,loc,mainbd = a->mainbd;
+  PetscErrorCode ierr;
+  int  i,d,loc,mainbd = a->mainbd;
   int          n = A->n,m = A->m,*diag = a->diag,col;
   PetscScalar  *x,*y,*dd = a->diagv[mainbd],sum,**dv = a->diagv;
 
@@ -218,12 +219,13 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBDiag_2"
-int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
-  int          ierr,m = A->m,*diag = a->diag,col;
+  PetscErrorCode ierr;
+  int  m = A->m,*diag = a->diag,col;
   PetscScalar  *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   PetscScalar  w0,w1,sum0,sum1;
 
@@ -277,12 +279,13 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBDiag_3"
-int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
-  int          ierr,m = A->m,*diag = a->diag,col;
+  PetscErrorCode ierr;
+  int   m = A->m,*diag = a->diag,col;
   PetscScalar  *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   PetscScalar  w0,w1,w2,sum0,sum1,sum2;
 
@@ -338,12 +341,13 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBDiag_4"
-int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
-  int          ierr,m = A->m,*diag = a->diag,col;
+  PetscErrorCode ierr;
+  int      m = A->m,*diag = a->diag,col;
   PetscScalar  *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   PetscScalar  w0,w1,w2,w3,sum0,sum1,sum2,sum3;
 
@@ -402,12 +406,13 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBDiag_5"
-int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
-  int          ierr,m = A->m,*diag = a->diag,col;
+  PetscErrorCode ierr;
+  int      m = A->m,*diag = a->diag,col;
   PetscScalar  *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
   PetscScalar  w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
 
@@ -475,12 +480,13 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqBDiag_N"
-int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
+PetscErrorCode MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
-  int          ierr,bs = a->bs,m = A->m,*diag = a->diag,col,bs2 = bs*bs;
+  PetscErrorCode ierr;
+  int   bs = a->bs,m = A->m,*diag = a->diag,col,bs2 = bs*bs;
   PetscScalar  *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv;
   PetscScalar  work[25];
 

@@ -392,7 +392,7 @@ static int PCSetFromOptions_ASM(PC pc)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetLocalSubdomains_ASM"
-int PCASMSetLocalSubdomains_ASM(PC pc,int n,IS is[])
+PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc,int n,IS is[])
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
 
@@ -413,7 +413,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetTotalSubdomains_ASM"
-int PCASMSetTotalSubdomains_ASM(PC pc,int N,IS *is)
+PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc,int N,IS *is)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
   int    rank,size,ierr,n;
@@ -441,7 +441,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetOverlap_ASM"
-int PCASMSetOverlap_ASM(PC pc,int ovl)
+PetscErrorCode PCASMSetOverlap_ASM(PC pc,int ovl)
 {
   PC_ASM *osm;
 
@@ -457,7 +457,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetType_ASM"
-int PCASMSetType_ASM(PC pc,PCASMType type)
+PetscErrorCode PCASMSetType_ASM(PC pc,PCASMType type)
 {
   PC_ASM *osm;
 
@@ -472,10 +472,10 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMGetSubKSP_ASM"
-int PCASMGetSubKSP_ASM(PC pc,int *n_local,int *first_local,KSP **ksp)
+PetscErrorCode PCASMGetSubKSP_ASM(PC pc,int *n_local,int *first_local,KSP **ksp)
 {
   PC_ASM   *jac = (PC_ASM*)pc->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (jac->n_local_true < 0) {
@@ -498,7 +498,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetUseInPlace_ASM"
-int PCASMSetUseInPlace_ASM(PC pc)
+PetscErrorCode PCASMSetUseInPlace_ASM(PC pc)
 {
   PC_ASM *dir;
 
@@ -534,9 +534,9 @@ EXTERN_C_END
 
 .seealso: PCILUSetUseInPlace(), PCLUSetUseInPlace ()
 @*/
-int PCASMSetUseInPlace(PC pc)
+PetscErrorCode PCASMSetUseInPlace(PC pc)
 {
-  int ierr,(*f)(PC);
+  PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -579,9 +579,9 @@ int PCASMSetUseInPlace(PC pc)
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains()
 @*/
-int PCASMSetLocalSubdomains(PC pc,int n,IS is[])
+PetscErrorCode PCASMSetLocalSubdomains(PC pc,int n,IS is[])
 {
-  int ierr,(*f)(PC,int,IS[]);
+  PetscErrorCode ierr,(*f)(PC,int,IS[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -629,9 +629,9 @@ int PCASMSetLocalSubdomains(PC pc,int n,IS is[])
 .seealso: PCASMSetLocalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D()
 @*/
-int PCASMSetTotalSubdomains(PC pc,int N,IS *is)
+PetscErrorCode PCASMSetTotalSubdomains(PC pc,int N,IS *is)
 {
-  int ierr,(*f)(PC,int,IS *);
+  PetscErrorCode ierr,(*f)(PC,int,IS *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -683,9 +683,9 @@ int PCASMSetTotalSubdomains(PC pc,int N,IS *is)
 .seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains()
 @*/
-int PCASMSetOverlap(PC pc,int ovl)
+PetscErrorCode PCASMSetOverlap(PC pc,int ovl)
 {
-  int ierr,(*f)(PC,int);
+  PetscErrorCode ierr,(*f)(PC,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -724,9 +724,9 @@ int PCASMSetOverlap(PC pc,int ovl)
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D()
 @*/
-int PCASMSetType(PC pc,PCASMType type)
+PetscErrorCode PCASMSetType(PC pc,PCASMType type)
 {
-  int ierr,(*f)(PC,PCASMType);
+  PetscErrorCode ierr,(*f)(PC,PCASMType);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -769,9 +769,9 @@ int PCASMSetType(PC pc,PCASMType type)
 .seealso: PCASMSetTotalSubdomains(), PCASMSetTotalSubdomains(), PCASMSetOverlap(),
           PCASMCreateSubdomains2D(),
 @*/
-int PCASMGetSubKSP(PC pc,int *n_local,int *first_local,KSP *ksp[])
+PetscErrorCode PCASMGetSubKSP(PC pc,int *n_local,int *first_local,KSP *ksp[])
 {
-  int ierr,(*f)(PC,int*,int*,KSP **);
+  PetscErrorCode ierr,(*f)(PC,int*,int*,KSP **);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -826,9 +826,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ASM"
-int PCCreate_ASM(PC pc)
+PetscErrorCode PCCreate_ASM(PC pc)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   PC_ASM *osm;
 
   PetscFunctionBegin;
@@ -906,7 +906,7 @@ EXTERN_C_END
 .seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubKSP(),
           PCASMSetOverlap()
 @*/
-int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsub,IS **is)
+PetscErrorCode PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsub,IS **is)
 {
   int i,j,height,width,ystart,xstart,yleft,yright,xleft,xright,loc_outter;
   int nidx,*idx,loc,ii,jj,ierr,count;
@@ -974,7 +974,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubmatrices()
 @*/
-int PCASMGetLocalSubdomains(PC pc,int *n,IS *is[])
+PetscErrorCode PCASMGetLocalSubdomains(PC pc,int *n,IS *is[])
 {
   PC_ASM *osm;
 
@@ -1014,7 +1014,7 @@ int PCASMGetLocalSubdomains(PC pc,int *n,IS *is[])
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubKSP(),
           PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains(), PCASMGetLocalSubdomains()
 @*/
-int PCASMGetLocalSubmatrices(PC pc,int *n,Mat *mat[])
+PetscErrorCode PCASMGetLocalSubmatrices(PC pc,int *n,Mat *mat[])
 {
   PC_ASM *osm;
 

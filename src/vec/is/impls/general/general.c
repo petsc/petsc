@@ -3,13 +3,13 @@
 */
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
-EXTERN int VecInitializePackage(char *);
+EXTERN PetscErrorCode VecInitializePackage(char *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDuplicate_General" 
-int ISDuplicate_General(IS is,IS *newIS)
+PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   IS_General *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
@@ -19,10 +19,10 @@ int ISDuplicate_General(IS is,IS *newIS)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDestroy_General" 
-int ISDestroy_General(IS is)
+PetscErrorCode ISDestroy_General(IS is)
 {
   IS_General *is_general = (IS_General*)is->data;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int ISDestroy_General(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity_General" 
-int ISIdentity_General(IS is,PetscTruth *ident)
+PetscErrorCode ISIdentity_General(IS is,PetscTruth *ident)
 {
   IS_General *is_general = (IS_General*)is->data;
   int        i,n = is_general->n,*idx = is_general->idx;
@@ -54,7 +54,7 @@ int ISIdentity_General(IS is,PetscTruth *ident)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_General" 
-int ISGetIndices_General(IS in,int **idx)
+PetscErrorCode ISGetIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General*)in->data;
 
@@ -65,7 +65,7 @@ int ISGetIndices_General(IS in,int **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISRestoreIndices_General" 
-int ISRestoreIndices_General(IS in,int **idx)
+PetscErrorCode ISRestoreIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General*)in->data;
 
@@ -78,7 +78,7 @@ int ISRestoreIndices_General(IS in,int **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetSize_General" 
-int ISGetSize_General(IS is,int *size)
+PetscErrorCode ISGetSize_General(IS is,int *size)
 {
   IS_General *sub = (IS_General *)is->data;
 
@@ -89,7 +89,7 @@ int ISGetSize_General(IS is,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetLocalSize_General" 
-int ISGetLocalSize_General(IS is,int *size)
+PetscErrorCode ISGetLocalSize_General(IS is,int *size)
 {
   IS_General *sub = (IS_General *)is->data;
 
@@ -100,7 +100,7 @@ int ISGetLocalSize_General(IS is,int *size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISInvertPermutation_General" 
-int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
+PetscErrorCode ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
   int        i,ierr,*ii,n = sub->n,*idx = sub->idx,size,nstart;
@@ -135,7 +135,7 @@ int ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISView_General" 
-int ISView_General(IS is,PetscViewer viewer)
+PetscErrorCode ISView_General(IS is,PetscViewer viewer)
 {
   IS_General  *sub = (IS_General *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
@@ -177,10 +177,10 @@ int ISView_General(IS is,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISSort_General" 
-int ISSort_General(IS is)
+PetscErrorCode ISSort_General(IS is)
 {
   IS_General *sub = (IS_General *)is->data;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (sub->sorted) PetscFunctionReturn(0);
@@ -191,7 +191,7 @@ int ISSort_General(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISSorted_General" 
-int ISSorted_General(IS is,PetscTruth *flg)
+PetscErrorCode ISSorted_General(IS is,PetscTruth *flg)
 {
   IS_General *sub = (IS_General *)is->data;
 
@@ -240,7 +240,7 @@ static struct _ISOps myops = { ISGetSize_General,
 
 .seealso: ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
-int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
+PetscErrorCode ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
 {
   int        i,min,max,ierr;
   PetscTruth sorted = PETSC_TRUE;

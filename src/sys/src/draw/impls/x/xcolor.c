@@ -44,8 +44,8 @@ static const char *(colornames[PETSC_DRAW_BASIC_COLORS]) = { "white",
                                                  "lavenderblush",
                                                  "plum"};
 
-EXTERN int XiInitCmap(PetscDraw_X*);
-EXTERN int XiGetVisualClass(PetscDraw_X *);
+EXTERN PetscErrorCode XiInitCmap(PetscDraw_X*);
+EXTERN PetscErrorCode XiGetVisualClass(PetscDraw_X *);
 
 /*
    Sets up a color map for a display. This is shared by all the windows
@@ -71,7 +71,7 @@ static PixVal    gCmapping[256];
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSetUpColormap_Shared" 
-int PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
+PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   XColor        colordef,ecolordef;
   unsigned char *red,*green,*blue;
@@ -124,10 +124,11 @@ static int        cmap_base = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSetUpColormap_Private" 
-int PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
+PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   Colormap      defaultmap = DefaultColormap(display,screen); 
-  int           ierr,found,i,ncolors;
+  PetscErrorCode ierr;
+  int           found,i,ncolors;
   XColor        colordef;
   unsigned char *red,*green,*blue;
   PetscTruth    fast;
@@ -196,9 +197,9 @@ int PetscDrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Co
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSetUpColormap_X" 
-int PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colormap)
+PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colormap)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscTruth  sharedcolormap;
   XVisualInfo vinfo;
 
@@ -235,9 +236,9 @@ int PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawSetColormap_X" 
-int PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap colormap)
+PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap colormap)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (XiWin->depth < 8) {
@@ -282,7 +283,7 @@ int PetscDrawSetColormap_X(PetscDraw_X* XiWin,char *host,Colormap colormap)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "XiSetVisualClass" 
-int XiSetVisualClass(PetscDraw_X* XiWin)
+PetscErrorCode XiSetVisualClass(PetscDraw_X* XiWin)
 {
   XVisualInfo vinfo;
 
@@ -306,7 +307,7 @@ int XiSetVisualClass(PetscDraw_X* XiWin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "XiGetVisualClass" 
-int XiGetVisualClass(PetscDraw_X* XiWin)
+PetscErrorCode XiGetVisualClass(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
 #if defined(__cplusplus)
@@ -319,7 +320,7 @@ int XiGetVisualClass(PetscDraw_X* XiWin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "XiSetColormap" 
-int XiSetColormap(PetscDraw_X* XiWin)
+PetscErrorCode XiSetColormap(PetscDraw_X* XiWin)
 {
   PetscFunctionBegin;
   XSetWindowColormap(XiWin->disp,XiWin->win,XiWin->cmap);
@@ -328,7 +329,7 @@ int XiSetColormap(PetscDraw_X* XiWin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "XiGetBaseColor" 
-int XiGetBaseColor(PetscDraw_X* XiWin,PixVal* white_pix,PixVal* black_pix)
+PetscErrorCode XiGetBaseColor(PetscDraw_X* XiWin,PixVal* white_pix,PixVal* black_pix)
 {
   PetscFunctionBegin;
   *white_pix  = XiWin->cmapping[PETSC_DRAW_WHITE];
@@ -344,7 +345,7 @@ int XiGetBaseColor(PetscDraw_X* XiWin,PixVal* white_pix,PixVal* black_pix)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "XiFindColor" 
-int XiFindColor(PetscDraw_X *XiWin,char *name,PixVal *pixval)
+PetscErrorCode XiFindColor(PetscDraw_X *XiWin,char *name,PixVal *pixval)
 {
   XColor   colordef;
   int      st;
@@ -423,7 +424,7 @@ PixVal XiSimColor(PetscDraw_X *XiWin,PixVal pixel,int intensity,int is_fore)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "XiSetCmapLight" 
-int XiSetCmapLight(unsigned char *red,unsigned char *green,unsigned char *blue,int mapsize)
+PetscErrorCode XiSetCmapLight(unsigned char *red,unsigned char *green,unsigned char *blue,int mapsize)
 {
   int     i ;
 

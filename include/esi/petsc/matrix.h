@@ -175,7 +175,7 @@ class Matrix<double,int> : public virtual esi::Operator<double,int>,
 
 
 
-EXTERN int MatESIWrap(Mat,esi::Operator<double,int>**);
+EXTERN PetscErrorCode MatESIWrap(Mat,esi::Operator<double,int>**);
 
 
 #endif

@@ -24,9 +24,9 @@
 .seealso: PetscDrawString(), PetscDrawStringVertical(), PetscDrawStringSetSize()
 
 @*/
-int PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal *height)
+PetscErrorCode PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal *height)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   PetscTruth isnull;
 
   PetscFunctionBegin;

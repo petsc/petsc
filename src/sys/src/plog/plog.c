@@ -54,10 +54,10 @@ PetscLogDouble sum_of_waits_ct = 0.0; /* The total number of waits */
 PetscLogDouble allreduce_ct    = 0.0; /* The number of reductions */
 
 /* Logging functions */
-int (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
-int (*_PetscLogPHD)(PetscObject) = PETSC_NULL;
-int (*_PetscLogPLB)(int, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
-int (*_PetscLogPLE)(int, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
+PetscErrorCode (*_PetscLogPHD)(PetscObject) = PETSC_NULL;
+PetscErrorCode (*_PetscLogPLB)(int, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode (*_PetscLogPLE)(int, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
 
 /* Tracing event logging variables */
 FILE          *tracefile       = PETSC_NULL;
@@ -83,16 +83,17 @@ PetscLogDouble tracetime       = 0.0;
 .keywords: log, destroy
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogStagePush(), PlogStagePop()
 @*/
-int PetscLogDestroy(void) {
+PetscErrorCode PetscLogDestroy(void) 
+{
   StageLog stageLog;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (actions != PETSC_NULL) {
+  if (actions) {
     ierr = PetscFree(actions);CHKERRQ(ierr);
     actions = PETSC_NULL;
   }
-  if (objects != PETSC_NULL) {
+  if (objects) {
     ierr = PetscFree(objects);CHKERRQ(ierr);
     objects =  PETSC_NULL;
   }
@@ -123,7 +124,7 @@ int PetscLogDestroy(void) {
 
 .seealso: PetscLogDump(), PetscLogBegin(), PetscLogAllBegin(), PetscLogTraceBegin()
 @*/
-int PetscLogSet(int (*b)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
+PetscErrorCode PetscLogSet(int (*b)(int, int, PetscObject, PetscObject, PetscObject, PetscObject),
             int (*e)(int, int, PetscObject, PetscObject, PetscObject, PetscObject))
 {
   PetscFunctionBegin;
@@ -135,11 +136,12 @@ int PetscLogSet(int (*b)(int, int, PetscObject, PetscObject, PetscObject, PetscO
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogBegin_Private"
-int PetscLogBegin_Private(void) {
+PetscErrorCode PetscLogBegin_Private(void) 
+{
   static int initialized = 0;
   int        stage;
   PetscTruth opt;
-  int        ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);
@@ -202,9 +204,9 @@ int PetscLogBegin_Private(void) {
 .keywords: log, begin
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogTraceBegin()
 @*/
-int PetscLogBegin(void)
+PetscErrorCode PetscLogBegin(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogSet(PetscLogEventBeginDefault, PetscLogEventEndDefault);CHKERRQ(ierr);
@@ -242,9 +244,9 @@ int PetscLogBegin(void)
 .keywords: log, all, begin
 .seealso: PetscLogDump(), PetscLogBegin(), PetscLogTraceBegin()
 @*/
-int PetscLogAllBegin(void)
+PetscErrorCode PetscLogAllBegin(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogSet(PetscLogEventBeginComplete, PetscLogEventEndComplete);CHKERRQ(ierr);
@@ -278,9 +280,9 @@ int PetscLogAllBegin(void)
 
 .seealso: PetscLogDump(), PetscLogAllBegin(), PetscLogPrintSummary(), PetscLogBegin()
 @*/
-int PetscLogTraceBegin(FILE *file)
+PetscErrorCode PetscLogTraceBegin(FILE *file)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   tracefile = file;
@@ -310,7 +312,8 @@ int PetscLogTraceBegin(FILE *file)
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
-int PetscLogActions(PetscTruth flag) {
+PetscErrorCode PetscLogActions(PetscTruth flag) 
+{
   PetscFunctionBegin;
   logActions = flag;
   PetscFunctionReturn(0);
@@ -337,7 +340,8 @@ int PetscLogActions(PetscTruth flag) {
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
-int PetscLogObjects(PetscTruth flag) {
+PetscErrorCode PetscLogObjects(PetscTruth flag) 
+{
   PetscFunctionBegin;
   logObjects = flag;
   PetscFunctionReturn(0);
@@ -362,10 +366,11 @@ int PetscLogObjects(PetscTruth flag) {
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
-int PetscLogStageRegister(int *stage, const char sname[]) {
+PetscErrorCode PetscLogStageRegister(int *stage, const char sname[]) 
+{
   StageLog stageLog;
   int      event;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -414,10 +419,10 @@ int PetscLogStageRegister(int *stage, const char sname[]) {
 .keywords: log, push, stage
 .seealso: PetscLogStagePop(), PetscLogStageRegister(), PetscBarrier()
 @*/
-int PetscLogStagePush(int stage)
+PetscErrorCode PetscLogStagePush(int stage)
 {
   StageLog stageLog;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -455,10 +460,10 @@ int PetscLogStagePush(int stage)
 .keywords: log, pop, stage
 .seealso: PetscLogStagePush(), PetscLogStageRegister(), PetscBarrier()
 @*/
-int PetscLogStagePop(void)
+PetscErrorCode PetscLogStagePop(void)
 {
   StageLog stageLog;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -481,9 +486,9 @@ int PetscLogStagePop(void)
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-int PetscLogStageSetActive(int stage, PetscTruth isActive) {
+PetscErrorCode PetscLogStageSetActive(int stage, PetscTruth isActive) {
   StageLog stageLog;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -508,9 +513,9 @@ int PetscLogStageSetActive(int stage, PetscTruth isActive) {
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-int PetscLogStageGetActive(int stage, PetscTruth *isActive) {
+PetscErrorCode PetscLogStageGetActive(int stage, PetscTruth *isActive) {
   StageLog stageLog;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -533,10 +538,10 @@ int PetscLogStageGetActive(int stage, PetscTruth *isActive) {
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
 @*/
-int PetscLogStageSetVisible(int stage, PetscTruth isVisible)
+PetscErrorCode PetscLogStageSetVisible(int stage, PetscTruth isVisible)
 {
   StageLog stageLog;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -561,10 +566,10 @@ int PetscLogStageSetVisible(int stage, PetscTruth isVisible)
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
 @*/
-int PetscLogStageGetVisible(int stage, PetscTruth *isVisible)
+PetscErrorCode PetscLogStageGetVisible(int stage, PetscTruth *isVisible)
 {
   StageLog stageLog;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -589,10 +594,10 @@ int PetscLogStageGetVisible(int stage, PetscTruth *isVisible)
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-int PetscLogStageGetId(const char name[], int *stage)
+PetscErrorCode PetscLogStageGetId(const char name[], int *stage)
 {
   StageLog stageLog;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -647,10 +652,11 @@ int PetscLogStageGetId(const char name[], int *stage)
           PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           PetscLogEventActivate(), PetscLogEventDeactivate()
 @*/
-int PetscLogEventRegister(int *event, const char name[],int cookie) {
+PetscErrorCode PetscLogEventRegister(PetscLogCode *event, const char name[],PetscCookieCode cookie) 
+{
   StageLog stageLog;
   int      stage;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *event = PETSC_DECIDE;
@@ -690,10 +696,11 @@ int PetscLogEventRegister(int *event, const char name[],int cookie) {
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventDeactivate()
 @*/
-int PetscLogEventActivate(int event) {
+PetscErrorCode PetscLogEventActivate(PetscLogCode event)
+{
   StageLog stageLog;
   int      stage;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -729,10 +736,11 @@ int PetscLogEventActivate(int event) {
 .keywords: log, event, deactivate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate()
 @*/
-int PetscLogEventDeactivate(int event) {
+PetscErrorCode PetscLogEventDeactivate(PetscLogCode event)
+{
   StageLog stageLog;
   int      stage;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -757,10 +765,11 @@ int PetscLogEventDeactivate(int event) {
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate(),PlogEventDeactivate()
 @*/
-int PetscLogEventSetActiveAll(int event, PetscTruth isActive) {
+PetscErrorCode PetscLogEventSetActiveAll(PetscLogCode event, PetscTruth isActive)
+{
   StageLog stageLog;
   int      stage;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -789,10 +798,11 @@ int PetscLogEventSetActiveAll(int event, PetscTruth isActive) {
 .keywords: log, event, activate, class
 .seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-int PetscLogEventActivateClass(int cookie) {
+PetscErrorCode PetscLogEventActivateClass(PetscCookieCode cookie) 
+{
   StageLog stageLog;
   int      stage;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -816,10 +826,11 @@ int PetscLogEventActivateClass(int cookie) {
 .keywords: log, event, deactivate, class
 .seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-int PetscLogEventDeactivateClass(int cookie) {
+PetscErrorCode PetscLogEventDeactivateClass(PetscCookieCode cookie)
+{
   StageLog stageLog;
   int      stage;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
@@ -840,7 +851,7 @@ int PetscLogEventDeactivateClass(int cookie) {
                        PetscObject o4)
 
    Fortran Synopsis:
-   void PetscLogEventEnd(int e,int ierr)
+   void PetscLogEventEnd(int e,PetscErrorCode ierr)
 
    Usage:
 .vb
@@ -882,7 +893,7 @@ M*/
                      PetscObject o4)
 
    Fortran Synopsis:
-   void PetscLogEventEnd(int e,int ierr)
+   void PetscLogEventEnd(int e,PetscErrorCode ierr)
 
    Usage:
 .vb
@@ -1001,11 +1012,11 @@ M*/
 .keywords: log, class, register
 .seealso: ClassLogRegister()
 @*/
-int PetscLogClassRegister(int *oclass, const char name[])
+PetscErrorCode PetscLogClassRegister(PetscCookieCode *oclass, const char name[])
 {
   StageLog stageLog;
   int      stage;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *oclass = PETSC_DECIDE;
@@ -1053,7 +1064,8 @@ $    Log.<rank>
 .keywords: log, dump
 .seealso: PetscLogBegin(), PetscLogAllBegin(), PetscLogPrintSummary()
 @*/
-int PetscLogDump(const char sname[]) {
+PetscErrorCode PetscLogDump(const char sname[]) 
+{
   StageLog       stageLog;
   EventPerfInfo *eventInfo;
   FILE          *fd;
@@ -1061,7 +1073,7 @@ int PetscLogDump(const char sname[]) {
   PetscLogDouble flops, _TotalTime;
   int            rank, curStage;
   int            action, object, event;
-  int            ierr;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   /* Calculate the total elapsed time */
@@ -1069,7 +1081,7 @@ int PetscLogDump(const char sname[]) {
   _TotalTime -= BaseTime;
   /* Open log file */
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
-  if (sname != PETSC_NULL) {
+  if (sname) {
     sprintf(file, "%s.%d", sname, rank);
   } else {
     sprintf(file, "Log.%d", rank);
@@ -1154,7 +1166,8 @@ int PetscLogDump(const char sname[]) {
 .keywords: log, dump, print
 .seealso: PetscLogBegin(), PetscLogDump()
 @*/
-int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
+PetscErrorCode PetscLogPrintSummary(MPI_Comm comm, const char filename[]) 
+{
   FILE          *fd   = stdout;
   PetscScalar    zero = 0.0;
   StageLog       stageLog;
@@ -1176,7 +1189,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   PetscTruth    *localStageVisible, *stageVisible;
   int            numStages, localNumEvents, numEvents;
   int            stage, event, oclass;
-  int            ierr;
+  PetscErrorCode ierr;
   char           version[256];
 
   PetscFunctionBegin;
@@ -1192,7 +1205,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   /* Get the total elapsed time */
   PetscTime(locTotalTime);  locTotalTime -= BaseTime;
   /* Open the summary file */
-  if (filename != PETSC_NULL) {
+  if (filename) {
     ierr = PetscFOpen(comm, filename, "w", &fd);CHKERRQ(ierr);
   }
 
@@ -1651,7 +1664,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
 
 .seealso: PetscGetTime(), PetscLogFlops()
 @*/
-int PetscGetFlops(PetscLogDouble *flops)
+PetscErrorCode PetscGetFlops(PetscLogDouble *flops)
 {
   PetscFunctionBegin;
   *flops = _TotalFlops;
@@ -1660,18 +1673,15 @@ int PetscGetFlops(PetscLogDouble *flops)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogObjectState"
-int PetscLogObjectState(PetscObject obj, const char format[], ...)
+PetscErrorCode PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
+  PetscErrorCode ierr;
   va_list Argp;
 
   PetscFunctionBegin;
-  if (logObjects == PETSC_FALSE) PetscFunctionReturn(0);
+  if (!logObjects) PetscFunctionReturn(0);
   va_start(Argp, format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vsprintf(objects[obj->id].info, format, (char *) Argp);
-#else
-  vsprintf(objects[obj->id].info, format, Argp);
-#endif
+  ierr = PetscVSNPrintf(objects[obj->id].info, 64,format, Argp);CHKERRQ(ierr);
   va_end(Argp);
   PetscFunctionReturn(0);
 }
@@ -1680,7 +1690,7 @@ int PetscLogObjectState(PetscObject obj, const char format[], ...)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogObjectState"
-int PetscLogObjectState(PetscObject obj, const char format[], ...)
+PetscErrorCode PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1721,7 +1731,7 @@ int PetscLogObjectState(PetscObject obj, const char format[], ...)
 
 .keywords:  get, time
 @*/
-int PetscGetTime(PetscLogDouble *t)
+PetscErrorCode PetscGetTime(PetscLogDouble *t)
 {
   PetscFunctionBegin;
   PetscTime(*t);
@@ -1743,7 +1753,7 @@ int PetscGetTime(PetscLogDouble *t)
 .keywords: log, stage
 .seealso: StageLogCreate()
 @*/
-int PetscLogGetStageLog(StageLog *stageLog)
+PetscErrorCode PetscLogGetStageLog(StageLog *stageLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(stageLog,1);
@@ -1884,9 +1894,9 @@ M*/
 .keywords: log, stack, destroy
 .seealso: StackCreate(), StackEmpty(), StackPush(), StackPop(), StackTop()
 @*/
-int StackDestroy(IntStack stack)
+PetscErrorCode StackDestroy(IntStack stack)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(stack->stack);CHKERRQ(ierr);
@@ -1912,7 +1922,7 @@ int StackDestroy(IntStack stack)
 .keywords: log, stack, empty
 .seealso: StackCreate(), StackDestroy(), StackPush(), StackPop(), StackTop()
 @*/
-int StackEmpty(IntStack stack, PetscTruth *empty)
+PetscErrorCode StackEmpty(IntStack stack, PetscTruth *empty)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(empty,2);
@@ -1942,7 +1952,7 @@ int StackEmpty(IntStack stack, PetscTruth *empty)
 .keywords: log, stack, top
 .seealso: StackCreate(), StackDestroy(), StackEmpty(), StackPush(), StackPop()
 @*/
-int StackTop(IntStack stack, int *top)
+PetscErrorCode StackTop(IntStack stack, int *top)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(top,2);
@@ -1966,10 +1976,10 @@ int StackTop(IntStack stack, int *top)
 .keywords: log, stack, push
 .seealso: StackCreate(), StackDestroy(), StackEmpty(), StackPop(), StackTop()
 @*/
-int StackPush(IntStack stack, int item)
+PetscErrorCode StackPush(IntStack stack, int item)
 {
   int *array;
-  int  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   stack->top++;
@@ -2002,7 +2012,7 @@ int StackPush(IntStack stack, int item)
 .keywords: log, stack, pop
 .seealso: StackCreate(), StackDestroy(), StackEmpty(), StackPush(), StackTop()
 @*/
-int StackPop(IntStack stack, int *item)
+PetscErrorCode StackPop(IntStack stack, int *item)
 {
   PetscFunctionBegin;
   PetscValidPointer(item,2);
@@ -2026,10 +2036,10 @@ int StackPop(IntStack stack, int *item)
 .keywords: log, stack, pop
 .seealso: StackDestroy(), StackEmpty(), StackPush(), StackPop(), StackTop()
 @*/
-int StackCreate(IntStack *stack)
+PetscErrorCode StackCreate(IntStack *stack)
 {
   IntStack s;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(stack,1);

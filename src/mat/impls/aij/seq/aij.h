@@ -58,47 +58,53 @@ typedef struct {
   Mat              XtoY;             /* used by MatAXPY() */
 } Mat_SeqAIJ;
 
-EXTERN int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
-EXTERN int MatICCFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat *);
-EXTERN int MatCholeskyFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat*);
-EXTERN int MatCholeskyFactorNumeric_SeqAIJ(Mat,Mat *);
-EXTERN int MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
-EXTERN int MatMissingDiagonal_SeqAIJ(Mat);
-EXTERN int MatMarkDiagonal_SeqAIJ(Mat);
+EXTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
+EXTERN PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat *);
+EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat,Mat *);
+EXTERN PetscErrorCode MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
+EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat);
+EXTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
 
-EXTERN int MatMult_SeqAIJ(Mat A,Vec,Vec);
-EXTERN int MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-EXTERN int MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
-EXTERN int MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-EXTERN int MatRelax_SeqAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
+EXTERN PetscErrorCode MatMult_SeqAIJ(Mat A,Vec,Vec);
+EXTERN PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
+EXTERN PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
+EXTERN PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
+EXTERN PetscErrorCode MatRelax_SeqAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
 
-EXTERN int MatSetColoring_SeqAIJ(Mat,ISColoring);
-EXTERN int MatSetValuesAdic_SeqAIJ(Mat,void*);
-EXTERN int MatSetValuesAdifor_SeqAIJ(Mat,int,void*);
+EXTERN PetscErrorCode MatSetColoring_SeqAIJ(Mat,ISColoring);
+EXTERN PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat,void*);
+EXTERN PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat,int,void*);
 
-EXTERN int MatGetSymbolicTranspose_SeqAIJ(Mat,int *[],int *[]);
-EXTERN int MatRestoreSymbolicTranspose_SeqAIJ(Mat,int *[],int *[]);
-EXTERN int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
-EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
-EXTERN int MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);
-EXTERN int MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
-EXTERN int MatLUFactor_SeqAIJ(Mat,IS,IS,MatFactorInfo*);
-EXTERN int MatSolve_SeqAIJ(Mat,Vec,Vec);
-EXTERN int MatSolveAdd_SeqAIJ(Mat,Vec,Vec,Vec);
-EXTERN int MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
-EXTERN int MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
-EXTERN int MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
-EXTERN int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN int MatILUDTFactor_SeqAIJ(Mat,MatFactorInfo*,IS,IS,Mat*);
-EXTERN int MatLoad_SeqAIJ(PetscViewer,const MatType,Mat*);
-EXTERN int RegisterApplyPtAPRoutines_Private(Mat);
-EXTERN int MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat,int *[],int *[]);
+EXTERN PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat,int *[],int *[]);
+EXTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
+EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
+EXTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
+EXTERN PetscErrorCode MatLUFactor_SeqAIJ(Mat,IS,IS,MatFactorInfo*);
+EXTERN PetscErrorCode MatSolve_SeqAIJ(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolveAdd_SeqAIJ(Mat,Vec,Vec,Vec);
+EXTERN PetscErrorCode MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
+EXTERN PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
+EXTERN PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
+EXTERN PetscErrorCode MatILUDTFactor_SeqAIJ(Mat,MatFactorInfo*,IS,IS,Mat*);
+EXTERN PetscErrorCode MatLoad_SeqAIJ(PetscViewer,const MatType,Mat*);
+EXTERN PetscErrorCode RegisterApplyPtAPRoutines_Private(Mat);
+EXTERN PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+EXTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+EXTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
+EXTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+
 EXTERN_C_BEGIN
-EXTERN int MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,Mat*);
-EXTERN int MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,Mat*);
-EXTERN int MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
-EXTERN int MatAdjustForInodes_SeqAIJ(Mat,IS*,IS*);
-EXTERN int MatSeqAIJGetInodeSizes_SeqAIJ(Mat,int*,int*[],int*);
+EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,Mat*);
+EXTERN PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat,PetscReal,IS,IS);
+EXTERN PetscErrorCode MatAdjustForInodes_SeqAIJ(Mat,IS*,IS*);
+EXTERN PetscErrorCode MatSeqAIJGetInodeSizes_SeqAIJ(Mat,int*,int*[],int*);
 EXTERN_C_END
 
 #endif

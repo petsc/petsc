@@ -3,9 +3,10 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_Draw" 
-int PetscViewerDestroy_Draw(PetscViewer v)
+PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
 {
-  int              ierr,i;
+  PetscErrorCode   ierr;
+  int              i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
@@ -26,9 +27,10 @@ int PetscViewerDestroy_Draw(PetscViewer v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFlush_Draw" 
-int PetscViewerFlush_Draw(PetscViewer v)
+PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 {
-  int              ierr,i;
+  PetscErrorCode   ierr;
+  int              i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
@@ -61,10 +63,10 @@ int PetscViewerFlush_Draw(PetscViewer v)
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
-int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
+PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
-  int              ierr;
+  PetscErrorCode   ierr;
   PetscTruth       isdraw;
   char             *title;
 
@@ -136,9 +138,9 @@ int PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
 
 .seealso: PetscViewerDrawGetDraw(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
-int PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *drawlg)
+PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *drawlg)
 {
-  int              ierr;
+  PetscErrorCode   ierr;
   PetscTruth       isdraw;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
 
@@ -186,9 +188,9 @@ int PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *dr
 
 .seealso: PetscViewerDrawGetDraw(), PetscViewerDrawGetLG(), PetscViewerDrawOpen()
 @*/
-int PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,PetscDrawAxis *drawaxis)
+PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,PetscDrawAxis *drawaxis)
 {
-  int              ierr;
+  PetscErrorCode   ierr;
   PetscTruth       isdraw;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;;
 
@@ -216,9 +218,9 @@ int PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,PetscDrawAxis
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDrawSetInfo" 
-int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[],int x,int y,int w,int h)
+PetscErrorCode PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[],int x,int y,int w,int h)
 {
-  int              ierr;
+  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
@@ -280,9 +282,9 @@ int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[]
 .seealso: PetscDrawCreate(), PetscViewerDestroy(), PetscViewerDrawGetDraw(), PetscViewerCreate(), PETSC_VIEWER_DRAW_,
           PETSC_VIEWER_DRAW_WORLD, PETSC_VIEWER_DRAW_SELF
 @*/
-int PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscViewer *viewer)
+PetscErrorCode PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscViewer *viewer)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
@@ -293,9 +295,10 @@ int PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],in
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerGetSingleton_Draw" 
-int PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
+PetscErrorCode PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 {
-  int              ierr,rank,i;
+  PetscErrorCode   ierr;
+  int              rank,i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data,*vsdraw;
 
   PetscFunctionBegin;
@@ -321,9 +324,10 @@ int PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerRestoreSingleton_Draw" 
-int PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
+PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 {
-  int              ierr,rank,i;
+  PetscErrorCode   ierr;
+  int              rank,i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data,*vsdraw;
 
   PetscFunctionBegin;
@@ -352,9 +356,10 @@ int PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *sviewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Draw" 
-int PetscViewerCreate_Draw(PetscViewer viewer)
+PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
 {
-  int              i,ierr;
+  int              i;
+  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
@@ -400,9 +405,10 @@ EXTERN_C_END
 .seealso: PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), 
 
 @*/
-int PetscViewerDrawClear(PetscViewer viewer)
+PetscErrorCode PetscViewerDrawClear(PetscViewer viewer)
 {
-  int              ierr,i;
+  PetscErrorCode   ierr;
+  int              i;
   PetscTruth       isdraw;
   PetscViewer_Draw *vdraw;
 
@@ -446,8 +452,9 @@ $       XXXView(XXX object,PETSC_VIEWER_DRAW_(comm));
 @*/
 PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
 {
-  int         ierr,flag;
-  PetscViewer viewer;
+  PetscErrorCode ierr;
+  int            flag;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Draw_keyval == MPI_KEYVAL_INVALID) {

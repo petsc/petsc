@@ -3,7 +3,7 @@
 */
 #include "src/ksp/pc/impls/mg/mgimpl.h"
 
-EXTERN int MGMCycle_Private(MG *,PetscTruth*);
+EXTERN PetscErrorCode MGMCycle_Private(MG *,PetscTruth*);
 
 /*
        MGFCycle_Private - Given an MG structure created with MGCreate() runs 
@@ -20,7 +20,7 @@ EXTERN int MGMCycle_Private(MG *,PetscTruth*);
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MGFCycle_Private"
-int MGFCycle_Private(MG *mg)
+PetscErrorCode MGFCycle_Private(MG *mg)
 {
   int    i,l = mg[0]->levels,ierr;
   PetscScalar zero = 0.0;
@@ -52,7 +52,7 @@ int MGFCycle_Private(MG *mg)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MGKCycle_Private"
-int MGKCycle_Private(MG *mg)
+PetscErrorCode MGKCycle_Private(MG *mg)
 {
   int    i,l = mg[0]->levels,ierr;
   PetscScalar zero = 0.0;

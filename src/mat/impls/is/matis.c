@@ -15,9 +15,9 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_IS" 
-int MatDestroy_IS(Mat A)
+PetscErrorCode MatDestroy_IS(Mat A)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   Mat_IS *b = (Mat_IS*)A->data;
 
   PetscFunctionBegin;
@@ -42,9 +42,9 @@ int MatDestroy_IS(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_IS" 
-int MatMult_IS(Mat A,Vec x,Vec y)
+PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   Mat_IS      *is = (Mat_IS*)A->data;
   PetscScalar zero = 0.0;
 
@@ -66,10 +66,10 @@ int MatMult_IS(Mat A,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_IS"
-int MatView_IS(Mat A,PetscViewer viewer)
+PetscErrorCode MatView_IS(Mat A,PetscViewer viewer)
 {
   Mat_IS      *a = (Mat_IS*)A->data;
-  int         ierr;
+  PetscErrorCode ierr;
   PetscViewer sviewer;
 
   PetscFunctionBegin;
@@ -81,9 +81,10 @@ int MatView_IS(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetLocalToGlobalMapping_IS" 
-int MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
+PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
 {
-  int    ierr,n;
+  PetscErrorCode ierr;
+  int n;
   Mat_IS *is = (Mat_IS*)A->data;
   IS     from,to;
   Vec    global;
@@ -116,9 +117,9 @@ int MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_IS" 
-int MatSetValuesLocal_IS(Mat A,int m,const int *rows, int n,const int *cols,const PetscScalar *values,InsertMode addv)
+PetscErrorCode MatSetValuesLocal_IS(Mat A,int m,const int *rows, int n,const int *cols,const PetscScalar *values,InsertMode addv)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   Mat_IS *is = (Mat_IS*)A->data;
 
   PetscFunctionBegin;
@@ -128,10 +129,11 @@ int MatSetValuesLocal_IS(Mat A,int m,const int *rows, int n,const int *cols,cons
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRowsLocal_IS" 
-int MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
+PetscErrorCode MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
 {
   Mat_IS      *is = (Mat_IS*)A->data;
-  int         ierr,i,n,*rows;
+  PetscErrorCode ierr;
+  int i,n,*rows;
   PetscScalar *array;
 
   PetscFunctionBegin;
@@ -174,10 +176,10 @@ int MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyBegin_IS" 
-int MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
+PetscErrorCode MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS *is = (Mat_IS*)A->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatAssemblyBegin(is->A,type);CHKERRQ(ierr);
@@ -186,10 +188,10 @@ int MatAssemblyBegin_IS(Mat A,MatAssemblyType type)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_IS" 
-int MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
+PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 {
   Mat_IS *is = (Mat_IS*)A->data;
-  int    ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd(is->A,type);CHKERRQ(ierr);
@@ -199,7 +201,7 @@ int MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatISGetLocalMat_IS"
-int MatISGetLocalMat_IS(Mat mat,Mat *local)
+PetscErrorCode MatISGetLocalMat_IS(Mat mat,Mat *local)
 {
   Mat_IS *is = (Mat_IS *)mat->data;
   
@@ -229,9 +231,9 @@ EXTERN_C_END
 
 .seealso: MATIS
 @*/ 
-int MatISGetLocalMat(Mat mat,Mat *local)
+PetscErrorCode MatISGetLocalMat(Mat mat,Mat *local)
 {
-  int ierr,(*f)(Mat,Mat *);
+  PetscErrorCode ierr,(*f)(Mat,Mat *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -273,9 +275,9 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_IS" 
-int MatCreate_IS(Mat A)
+PetscErrorCode MatCreate_IS(Mat A)
 {
-  int    ierr;
+  PetscErrorCode ierr;
   Mat_IS *b;
 
   PetscFunctionBegin;

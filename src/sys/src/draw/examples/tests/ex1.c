@@ -8,7 +8,8 @@ static char help[] = "Demonstrates opening and drawing a window\n";
 int main(int argc,char **argv)
 {
   PetscDraw draw;
-  int  ierr,x = 0,y = 0,width = 300,height = 300;
+  PetscErrorCode ierr;
+  int       x = 0,y = 0,width = 300,height = 300;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 

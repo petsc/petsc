@@ -261,7 +261,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *d
 */
 int MatrixFreePreconditioner(void *ctx,Vec x,Vec y)
 {
-  int ierr;
+  PetscErrorCode ierr;
   ierr = VecCopy(x,y);CHKERRQ(ierr);  
   return 0;
 }

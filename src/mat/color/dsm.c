@@ -7,7 +7,7 @@ static int c_n1 = -1;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKdsm" 
-int MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *maxgrp,
+PetscErrorCode MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *maxgrp,
                int *mingrp,int *info,int *ipntr,int *jpntr,int *iwa,int *liwa)
 {
     /* System generated locals */

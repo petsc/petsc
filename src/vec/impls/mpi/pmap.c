@@ -6,7 +6,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapDestroy_MPI"
-int PetscMapDestroy_MPI(PetscMap m)
+PetscErrorCode PetscMapDestroy_MPI(PetscMap m)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -20,11 +20,11 @@ static struct _PetscMapOps DvOps = {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapCreate_MPI"
-int PetscMapCreate_MPI(PetscMap m)
+PetscErrorCode PetscMapCreate_MPI(PetscMap m)
 {
   int rank,size;
   int p;
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(m->ops, &DvOps, sizeof(DvOps));CHKERRQ(ierr);
@@ -72,9 +72,9 @@ EXTERN_C_END
           PetscMapGetLocalRange()
 
 @*/ 
-int PetscMapCreateMPI(MPI_Comm comm,int n,int N,PetscMap *m)
+PetscErrorCode PetscMapCreateMPI(MPI_Comm comm,int n,int N,PetscMap *m)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMapCreate(comm, m);CHKERRQ(ierr);

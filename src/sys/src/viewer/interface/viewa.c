@@ -46,7 +46,7 @@
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerPushFormat(), PetscViewerPopFormat(), PetscViewerDrawOpenX(),PetscViewerSocketOpen()
 @*/
-int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
+PetscErrorCode PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -96,7 +96,7 @@ int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerSetFormat(), PetscViewerPopFormat()
 @*/
-int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
+PetscErrorCode PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -125,7 +125,7 @@ int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
 .seealso: PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), MatView(), VecView(),
           PetscViewerSetFormat(), PetscViewerPushFormat()
 @*/
-int PetscViewerPopFormat(PetscViewer viewer)
+PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -137,7 +137,7 @@ int PetscViewerPopFormat(PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerGetFormat" 
-int PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
+PetscErrorCode PetscViewerGetFormat(PetscViewer viewer,PetscViewerFormat *format)
 {
   PetscFunctionBegin;
   *format =  viewer->format;

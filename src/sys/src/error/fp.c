@@ -17,8 +17,8 @@
 #include <floatingpoint.h>
 
 EXTERN_C_BEGIN
-int ieee_flags(char*,char*,char*,char**);
-int ieee_handler(char *,char *,sigfpe_handler_type(int,int,struct sigcontext*,char *));
+PetscErrorCode ieee_flags(char*,char*,char*,char**);
+PetscErrorCode ieee_handler(char *,char *,sigfpe_handler_type(int,int,struct sigcontext*,char *));
 EXTERN_C_END
 
 struct { int code_no; char *name; } error_codes[] = {
@@ -82,7 +82,7 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
    Concepts: divide by zero
 
 @*/
-int PetscSetFPTrap(PetscFPTrap flag)
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   char *out; 
 
@@ -145,7 +145,7 @@ void PetscDefaultFPTrap(int sig,siginfo_t *scp,ucontext_t *uap)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetFPTrap"
-int PetscSetFPTrap(PetscFPTrap flag)
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   char *out; 
 
@@ -198,7 +198,7 @@ void PetscDefaultFPTrap(unsigned exception[],int val[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetFPTrap" 
-int PetscSetFPTrap(PetscFPTrap flag)
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {
@@ -241,7 +241,8 @@ struct { int code_no; char *name; } error_codes[] = {
 #define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
 {
-  int      ierr,err_ind,j;
+  PetscErrorCode ierr;
+  int      err_ind,j;
   fp_ctx_t flt_context;
 
   PetscFunctionBegin;
@@ -263,7 +264,7 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetFPTrap"
-int PetscSetFPTrap(PetscFPTrap on)
+PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
 {
   int flag;
 
@@ -307,7 +308,7 @@ void PetscDefaultFPTrap(int sig)
 EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetFPTrap"
-int PetscSetFPTrap(PetscFPTrap on)
+PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
 {
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {

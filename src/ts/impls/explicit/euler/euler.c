@@ -12,7 +12,7 @@ typedef struct {
 static int TSSetUp_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&euler->update);CHKERRQ(ierr);  
@@ -25,7 +25,8 @@ static int TSStep_Euler(TS ts,int *steps,PetscReal *ptime)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
   Vec      sol = ts->vec_sol,update = euler->update;
-  int      ierr,i,max_steps = ts->max_steps;
+  PetscErrorCode ierr;
+  int i,max_steps = ts->max_steps;
   PetscScalar   dt = ts->time_step;
   
   PetscFunctionBegin;
@@ -51,7 +52,7 @@ static int TSStep_Euler(TS ts,int *steps,PetscReal *ptime)
 static int TSDestroy_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (euler->update) {ierr = VecDestroy(euler->update);CHKERRQ(ierr);}
@@ -89,10 +90,10 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Euler"
-int TSCreate_Euler(TS ts)
+PetscErrorCode TSCreate_Euler(TS ts)
 {
   TS_Euler *euler;
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ts->ops->setup           = TSSetUp_Euler;

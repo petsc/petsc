@@ -8,9 +8,9 @@ EXTERN_C_BEGIN
 #include "IJ_mv.h"
 EXTERN_C_END
 
-int VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
+PetscErrorCode VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
 {
-  int         ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = HYPRE_IJVectorCreate(v->comm,v->map->rstart,v->map->rend-1,ij);CHKERRQ(ierr);
@@ -20,9 +20,9 @@ int VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
   PetscFunctionReturn(0);
 }
 
-int VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
+PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscScalar *array;
 
   PetscFunctionBegin;
@@ -34,9 +34,9 @@ int VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
   PetscFunctionReturn(0);
 }
 
-int VecHYPRE_IJVectorCopyFrom(HYPRE_IJVector ij,Vec v)
+PetscErrorCode VecHYPRE_IJVectorCopyFrom(HYPRE_IJVector ij,Vec v)
 {
-  int         ierr;
+  PetscErrorCode ierr;
   PetscScalar *array;
 
   PetscFunctionBegin;

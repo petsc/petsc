@@ -61,7 +61,7 @@ EXTERN_C_END
 static int PetscViewerDestroy_Socket(PetscViewer viewer)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
-  int                ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   if (vmatlab->port) {
@@ -75,17 +75,18 @@ static int PetscViewerDestroy_Socket(PetscViewer viewer)
 /*--------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "SOCKCall_Private" 
-int SOCKCall_Private(char *hostname,int portnum,int *t)
+PetscErrorCode SOCKCall_Private(char *hostname,int portnum,int *t)
 {
-#if !defined(PETSC_MISSING_SOCKETS)
+#if defined(PETSC_HAVE_SOCKETS)
   struct sockaddr_in sa;
   struct hostent     *hp;
-  int                s = 0,ierr;
+  int                s = 0;
+  PetscErrorCode     ierr;
   PetscTruth         flg = PETSC_TRUE;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_MISSING_SOCKETS)
+#if !defined(PETSC_HAVE_SOCKETS)
   SETERRQ(PETSC_ERR_SUP_SYS,"This system does not support Unix tcp/ip");
 #else
   if (!(hp=gethostbyname(hostname))) {
@@ -180,9 +181,9 @@ $    -viewer_socket_port <port>
           PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, 
           PETSC_VIEWER_SOCKET_SELF
 @*/
-int PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
+PetscErrorCode PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerCreate(comm,lab);CHKERRQ(ierr);
@@ -193,11 +194,12 @@ int PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewe
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFromOptions_Socket" 
-int PetscViewerSetFromOptions_Socket(PetscViewer v)
+PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
 {
-  int           ierr,def = -1;
-  char          sdef[256];
-  PetscTruth    tflg;
+  PetscErrorCode ierr;
+  int            def = -1;
+  char           sdef[256];
+  PetscTruth     tflg;
 
   PetscFunctionBegin;
   /*
@@ -225,10 +227,10 @@ int PetscViewerSetFromOptions_Socket(PetscViewer v)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Socket" 
-int PetscViewerCreate_Socket(PetscViewer v)
+PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscViewer_Socket *vmatlab;
-  int                ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr                   = PetscNew(PetscViewer_Socket,&vmatlab);CHKERRQ(ierr);
@@ -258,9 +260,10 @@ EXTERN_C_END
 
 .seealso: PetscViewerSocketOpen()
 @*/ 
-int PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
+PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v,const char machine[],int port)
 {
-  int                ierr,rank;
+  PetscErrorCode     ierr;
+  int                rank;
   char               mach[256];
   PetscTruth         tflg;
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket *)v->data;
@@ -338,9 +341,9 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
 @*/
 PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {
-  int         ierr;
-  PetscTruth  flg;
-  PetscViewer viewer;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) {
@@ -362,10 +365,9 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 
 #else /* defined (PARCH_win32) */
  
-#include "petscviewer.h"
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketOpen" 
-int PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
+PetscErrorCode PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -380,7 +382,7 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Socket" 
-int PetscViewerCreate_Socket(PetscViewer v)
+PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -25,7 +25,7 @@ PetscFList PetscViewerList              = 0;
 .seealso: PetscViewerDestroy(), PetscViewerSetType()
 
 @*/
-int PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
+PetscErrorCode PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 {
   PetscViewer viewer;
 
@@ -62,10 +62,10 @@ int PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 
 .seealso: PetscViewerCreate(), PetscViewerGetType()
 @*/
-int PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
+PetscErrorCode PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
 {
-  int        ierr,(*r)(PetscViewer);
-  PetscTruth match;
+  PetscErrorCode ierr,(*r)(PetscViewer);
+  PetscTruth     match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -105,9 +105,9 @@ int PetscViewerSetType(PetscViewer viewer,const PetscViewerType type)
 
 .seealso: PetscViewerRegisterDynamic(), PetscViewerRegisterAll()
 @*/
-int PetscViewerRegisterDestroy(void)
+PetscErrorCode PetscViewerRegisterDestroy(void)
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscViewerList) {
@@ -119,9 +119,9 @@ int PetscViewerRegisterDestroy(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerRegister" 
-int PetscViewerRegister(const char *sname,const char *path,const char *name,int (*function)(PetscViewer))
+PetscErrorCode PetscViewerRegister(const char *sname,const char *path,const char *name,int (*function)(PetscViewer))
 {
-  int  ierr;
+  PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -151,9 +151,9 @@ int PetscViewerRegister(const char *sname,const char *path,const char *name,int 
 .seealso: PetscViewerCreate(), PetscViewerSetType()
 
 @*/
-int PetscViewerSetFromOptions(PetscViewer viewer)
+PetscErrorCode PetscViewerSetFromOptions(PetscViewer viewer)
 {
-  int        ierr;
+  PetscErrorCode ierr;
   char       vtype[256];
   PetscTruth flg;
 

@@ -29,9 +29,10 @@ struct NLF_DAAD {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "NLFNewton_DAAD"
-int NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar residual)
+PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar residual)
 {
-  int           ierr,cnt = A->newton_its;
+  PetscErrorCode ierr;
+  int  cnt = A->newton_its;
   PetscScalar   ad_f[2],J,f;
 
   PetscFunctionBegin;
@@ -57,9 +58,10 @@ int NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,Petsc
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_DAAD"
-int NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
+PetscErrorCode NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
 {
-  int           ierr,j,gtdof,nI,gI;
+  PetscErrorCode ierr;
+  int j,gtdof,nI,gI;
   PetscScalar   *avu,*av,*ad_vustart,*residual;
   Vec           localxx;
   DALocalInfo   info;
@@ -145,9 +147,9 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDestroy_DAAD"
-int NLFDestroy_DAAD(NLF A)
+PetscErrorCode NLFDestroy_DAAD(NLF A)
 {
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DADestroy(A->da);CHKERRQ(ierr);
@@ -159,9 +161,9 @@ int NLFDestroy_DAAD(NLF A)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetDA_DAAD"
-int NLFDAADSetDA_DAAD(NLF A,DA da)
+PetscErrorCode NLFDAADSetDA_DAAD(NLF A,DA da)
 {
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   A->da = da;
@@ -173,7 +175,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetNewtonIterations_DAAD"
-int NLFDAADSetNewtonIterations_DAAD(NLF A,int its)
+PetscErrorCode NLFDAADSetNewtonIterations_DAAD(NLF A,int its)
 {
 
   PetscFunctionBegin;
@@ -185,7 +187,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetResidual_DAAD"
-int NLFDAADSetResidual_DAAD(NLF A,Vec residual)
+PetscErrorCode NLFDAADSetResidual_DAAD(NLF A,Vec residual)
 {
   PetscFunctionBegin;
   A->residual = residual;
@@ -197,7 +199,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetCtx_DAAD"
-int NLFDAADSetCtx_DAAD(NLF A,void *ctx)
+PetscErrorCode NLFDAADSetCtx_DAAD(NLF A,void *ctx)
 {
   PetscFunctionBegin;
   A->ctx = ctx;
@@ -208,9 +210,9 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "NLFCreate_DAAD"
-int NLFCreate_DAAD(NLF *A)
+PetscErrorCode NLFCreate_DAAD(NLF *A)
 {
-  int      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr    = PetscNew(struct NLF_DAAD,A);CHKERRQ(ierr);

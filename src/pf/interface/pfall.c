@@ -2,12 +2,12 @@
 #include "petscpf.h"          /*I   "petscpf.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN int PFCreate_Constant(PF,void*);
-EXTERN int PFCreate_String(PF,void*);
-EXTERN int PFCreate_Quick(PF,void*);
-EXTERN int PFCreate_Identity(PF,void*);
+EXTERN PetscErrorCode PFCreate_Constant(PF,void*);
+EXTERN PetscErrorCode PFCreate_String(PF,void*);
+EXTERN PetscErrorCode PFCreate_Quick(PF,void*);
+EXTERN PetscErrorCode PFCreate_Identity(PF,void*);
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN int PFCreate_Matlab(PF,void*);
+EXTERN PetscErrorCode PFCreate_Matlab(PF,void*);
 #endif
 EXTERN_C_END
 
@@ -27,9 +27,9 @@ EXTERN_C_END
 
 .seealso: PFRegisterDynamic(), PFRegisterDestroy()
 @*/
-int PFRegisterAll(const char path[])
+PetscErrorCode PFRegisterAll(const char path[])
 {
-  int ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PFRegisterAllCalled = PETSC_TRUE;
