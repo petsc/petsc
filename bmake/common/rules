@@ -174,7 +174,7 @@ libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 # Removes garbage files
 clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) \
-	       $(EXAMPLES_3) $(TESTS) \
+	       $(EXAMPLES_3) $(EXAMPLES_4) $(TESTS) \
 	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus

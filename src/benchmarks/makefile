@@ -15,11 +15,12 @@ EXAMPLES_2    =
 RUNEXAMPLES_2 = 
 EXAMPLES_3    = 
 RUNEXAMPLES_3 = 
-EXAMPLES_4    = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
-		PetscMemcpy PetscMemzero PetscMemcmp
+EXAMPLES_4    = 
 RUNEXAMPLES_4 = 
 EXAMPLESC     = 
 EXAMPLESF     = 
+TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
+		PetscMemcpy PetscMemzero PetscMemcmp
 
 PetscTime: PetscTime.o  chkopts 
 	-$(CLINKER) -o PetscTime PetscTime.o $(PETSC_LIB)
@@ -54,7 +55,7 @@ PetscMemcmp: PetscMemcmp.o  chkopts
 	$(RM) -f PetscMemcmp.o
 
 
-test: $(EXAMPLES_4)
+test: $(TESTS)
 
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
