@@ -284,6 +284,73 @@ class UsingPython(UsingCompiler):
   def getExecutableLinkTarget(self, project):
     return []
 
+class UsingMathematica(UsingCompiler):
+  '''This class handles all interaction specific to the Mathematica language'''
+  def __init__(self, usingSIDL):
+    UsingCompiler.__init__(self, usingSIDL)
+    bs.argDB.setType('MATHEMATICA_INCLUDE', nargs.ArgDir(1,'The directory containing mathlink.h'))
+    #TODO: bs.argDB.setType('MATHEMATICA_LIB', nargs.ArgLibrary(1, 'The library containing MathOpenEnv()'))
+    self.setupIncludeDirectories()
+    self.setupExtraLibraries()
+    return
+
+  def setupIncludeDirectories(self):
+    includeDir = bs.argDB['MATHEMATICA_INCLUDE']
+    if isinstance(includeDir, list):
+      self.includeDirs[self.getLanguage()].extend(includeDir)
+    else:
+      self.includeDirs[self.getLanguage()].append(includeDir)
+    return self.includeDirs
+
+  def setupExtraLibraries(self):
+    for package in self.usingSIDL.getPackages():
+      self.extraLibraries[package].append(bs.argDB['MATHEMATICA_LIB'])
+    return self.extraLibraries
+
+  def getLanguage(self):
+    '''The language name'''
+    return 'Mathematica'
+
+  def getCompileSuffixes(self):
+    '''The suffix for Mathematica files'''
+    return ['.m']
+
+  def getTagger(self, rootDir):
+    return compile.TagC(root = rootDir)
+
+  def getCompiler(self, library):
+    return compile.CompileC(library)
+
+  def getClientLibrary(self, project, lang, isArchive = 1, root = None):
+    '''Need to return empty fileset for Python client library'''
+    if lang == self.getLanguage():
+      return fileset.FileSet()
+    else:
+      return UsingCompiler.getClientLibrary(self, project, lang, isArchive, root)
+
+  def getServerCompileTarget(self, project, package):
+    rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
+    stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
+    library = self.getServerLibrary(project, self.getLanguage(), package)
+    # Server Filter
+    serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['c', 'old c'])
+    # IOR and server compile are both C
+    compiler = compile.CompileC(library)
+    compiler.defines.extend(self.getDefines())
+    compiler.includeDirs.append(rootDir)
+    compiler.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    # Server specific flags
+    compiler.includeDirs.append(stubDir)
+    compiler.includeDirs.extend(self.includeDirs[package])
+    compiler.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    return [compile.TagC(root = rootDir), serverFilter, compiler]
+
+  def getExecutableCompileTarget(self, project, sources, executable):
+    return []
+
+  def getExecutableLinkTarget(self, project):
+    return []
+
 class UsingF77 (UsingCompiler):
   '''This class handles all interaction specific to the Fortran 77 language'''
   def __init__(self, usingSIDL):
