@@ -1,16 +1,20 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: vinv.c,v 1.6 1995/03/06 03:58:54 bsmith Exp curfman $";
 #endif
 
 #include "vec.h"   /*I "vec.h" I*/
 #include "vecimpl.h"
 
 /*@
-     VecReciprocal - Replaces each component in a vector by 
-      its reciprocal.
+   VecReciprocal - Replaces each component of a vector by its reciprocal.
 
-  Input Parameters:
-.   v - the vector 
+   Input Parameter:
+.  v - the vector 
+
+   Output Parameter:
+.  v - the vector reciprocal
+
+.keywords: vector, reciprocal
 @*/
 int VecReciprocal(Vec v)
 {
@@ -26,13 +30,17 @@ int VecReciprocal(Vec v)
 }
 
 /*@
-     VecSum - Sum of all the components of a vector.
+   VecSum - Computes the sum of all the components of a vector.
 
-  Input Parameters:
-.   v - the vector 
+   Input Parameter:
+.  v - the vector 
 
-  Output Parameters:
-.   sum - the result
+   Output Parameter:
+.  sum - the result
+
+.keywords: vector, sum
+
+.seealso: VecASum()
 @*/
 int VecSum(Vec v,Scalar *sum)
 {
@@ -49,17 +57,22 @@ int VecSum(Vec v,Scalar *sum)
 }
 
 /*@
-     VecShift - Shift all of the components of a vector.
+   VecShift - Shifts all of the components of a vector by computing
+   x[i] <- x[i] + shift.
 
-  Input Parameters:
-.   v - the vector 
-.   sum - the shift
+   Input Parameters:
+.  v - the vector 
+.  sum - the shift
 
+   Output Parameter:
+.  v - the shifted vector 
+
+.keywords: vector, shift
 @*/
-int VecShift(Scalar *sum,Vec v)
+int VecShift(Scalar *shift,Vec v)
 {
   int    ierr, i,n;
-  Scalar *x,lsum = *sum;
+  Scalar *x,lsum = *shift;
   VALIDHEADER(v,VEC_COOKIE);
   if ((ierr = VecGetLocalSize(v,&n))) return ierr;
   if ((ierr = VecGetArray(v,&x))) return ierr;

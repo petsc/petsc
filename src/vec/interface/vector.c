@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.25 1995/04/27 01:04:23 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.26 1995/04/27 22:04:48 curfman Exp curfman $";
 #endif
 
 /* 
@@ -22,7 +22,7 @@ int VecValidVector(Vec v)
   return 1;
 }
 /*@
-   VecDot  - Computes vector dot product.
+   VecDot - Computes the vector dot product.
 
    Input Parameters:
 .  x, y - the vectors
@@ -68,7 +68,7 @@ int VecNorm(Vec x,double *val)
   return 0;
 }
 /*@
-   VecASum - Computes the vector one norm (sum of component's absolute values).
+   VecASum - Computes the vector one norm (sum of components' absolute values).
 
    Input Parameter:
 .  x - the vector
@@ -78,7 +78,7 @@ int VecNorm(Vec x,double *val)
 
 .keywords: vector, sum, absolute value, norm
 
-.seealso: VecNorm()
+.seealso: VecNorm(), VecSum()
 @*/
 int VecASum(Vec x,double *val)
 {
