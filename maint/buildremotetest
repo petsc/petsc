@@ -20,7 +20,7 @@ autoftp crabcake.larc.nasa.gov bsmith put ~/petsc.tar.Z petsc.tar.Z >>& ftp.log
 #
 #  Wait four hours then retrieve the results
 #
-sleep 3600
+sleep 13600
 autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/petsc/petsc/maint/solaris.log >>& ftp.log
 autoftp h4p.nersc.gov bsmith get buildtest.log /home/petsc/petsc/maint/t3d.log >>& ftp.log
 autoftp crabcake.larc.nasa.gov bsmith get buildtest.log /home/petsc/petsc/maint/paragon.log >>& ftp.log
