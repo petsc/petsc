@@ -483,7 +483,7 @@ int PCShellSetApplyRichardson(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,Pet
   PetscFunctionReturn(0);
 }
 
-/*S
+/*MC
    PCSHELL - Creates a new preconditioner class for use with your 
               own private data storage format.
 
@@ -503,7 +503,7 @@ $             PCShellSetSetUp(pc,setup);       (optional)
            KSPSHELL(), MATSHELL(), PCShellSetUp(), PCShellSetApply(), PCShellSetView(), 
            PCShellSetApplyTranpose(), PCShellSetName(), PCShellSetApplyRichardson(), 
            PCShellGetName()
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

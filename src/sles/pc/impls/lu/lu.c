@@ -627,7 +627,7 @@ int PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
 
 /* ------------------------------------------------------------------------ */
 
-/*S
+/*MC
    PCLU - Uses a direct solver, based on LU factorization, as a preconditioner
 
    Options Database Keys:
@@ -656,7 +656,7 @@ int PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
            PCILU, PCCHOLESKY, PCICC, PCLUSetReuseOrdering(), PCLUSetReuseFill(), PCGetFactoredMatrix(),
            PCLUSetFill(), PCLUSetDamping(), PCLUSetUseInPlace(), PCLUSetMatOrdering(), PCLUSetPivoting(),
            PCLUSetPivotingInBlocks()
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

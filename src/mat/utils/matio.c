@@ -148,26 +148,28 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   PetscTruth  isbinary,flg;
   MPI_Comm    comm;
   int         (*r)(PetscViewer,MatType,Mat*);
-  char        mtype[256];
+  char        mtype[256],*prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+
   *newmat  = 0;
 
   if (!MatLoadRegisterAllCalled) {
     ierr = MatLoadRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
 
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,&prefix);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     outtype = mtype;
   }
-  ierr = PetscOptionsGetString(PETSC_NULL,"-matload_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(prefix,"-matload_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     outtype = mtype;
   }
@@ -180,7 +182,7 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   ierr = (*r)(viewer,outtype,newmat);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-matload_symmetric",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(prefix,"-matload_symmetric",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(*newmat,MAT_SYMMETRIC);CHKERRQ(ierr);
   }

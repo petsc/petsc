@@ -32,7 +32,7 @@ static int PCDestroy_Mat(PC pc)
   PetscFunctionReturn(0);
 }
 
-/*S
+/*MC
      PCMAT - A preconditioner obtained by multiplying by the preconditioner matrix supplied
              in PCSetOperators() or SLESSetOperators()
 
@@ -44,7 +44,7 @@ static int PCDestroy_Mat(PC pc)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCSHELL
 
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

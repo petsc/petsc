@@ -291,7 +291,7 @@ int PCEisenstatNoDiagonalScaling(PC pc)
 
 /* --------------------------------------------------------------------*/
 
-/*S
+/*MC
      PCEISENSTAT - An implementation of SSOR (symmetric successive over relaxation, symmetric Gauss-Seidel)
            preconditioning that incorporates Eisenstat's trick to reduce the amount of computation needed.
 
@@ -309,7 +309,7 @@ int PCEisenstatNoDiagonalScaling(PC pc)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCEisenstatNoDiagonalScaling(), PCEisenstatSetOmega(), PCSOR
-S*/
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
