@@ -1,7 +1,7 @@
 
       integer function PVAR(xx,p,
      &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                      x,y,z,pprint,tcl,tcd)
+     &                      x,y,z,pprint,tcl,tcd,xcomm)
 c
 c PVAR - post-processes the solution for physical quanities of interest
 c This parallel version relies on the fact that currently each processor
@@ -57,37 +57,57 @@ c            DO 10 I=ITL,ITU+1
       endif
 
       btot = d_nk*d_ni
-      call MPI_Allreduce(cp21,btot,cp2,btot,MPI_DOUBLE_PRECISION,
+      call MPI_Allreduce(cp21,cp2,btot,MPI_DOUBLE_PRECISION,
      &                       MPI_SUM,comm,ierr)
 
       if (rank .eq. 0) then
-      IF (NI.EQ.49) WRITE (6,20) NCYC
+         DO 15 K=2,KTIP
+            ZLOC(K) = (Z(1,1,K)+Z(1,1,K-1))*p5
+            CHORD   = X(ITU,1,K)-X(ILE,1,K)
+            DO 15 I=ITL,ITU+1
+               S(I)      = ((X(I,1,K)+X(I-1,1,K))
+     &                     *p5-X(ILE,1,K))/CHORD
+ 15      CONTINUE
+
+      IF (NI.EQ.49) THEN
+         WRITE (6,20) NCYC
+         WRITE (6,21) (ZLOC(K),K=2,KTIP)
+         WRITE (6,30) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
+      ELSE IF (NI.EQ.97) THEN
+         WRITE (6,90) NCYC
+         WRITE (6,91) (ZLOC(K),K=2,KTIP)
+         WRITE (6,93) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
+      ELSE IF (NI.EQ.193) THEN
+         WRITE (6,80) NCYC
+         WRITE (6,81) (ZLOC(K),K=2,KTIP)
+         WRITE (6,83) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
+      ENDIF
+
+      endif
+      endif
+
    20 FORMAT (/,4X,'WING SURFACE PRESSURE COEFFICIENTS FOR',
      * ' NCYC =',I6,/,4X,'X/C',6X,
      * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP')
-      IF (NI.EQ.49) WRITE (6,21) (ZLOC(K),K=2,KTIP)
    21 FORMAT (4X,'Z = ',5F8.4,/)
-      IF (NI.EQ.49)
-     * WRITE (6,30) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
    30 FORMAT(6F8.4)
-      IF (NI.EQ.97) WRITE (6,90) NCYC
+
    90 FORMAT (/,4X,'WING SURFACE PRESSURE COEFFICIENTS FOR',
      * ' NCYC =',I6,/,4X,'X/C',6X,
      * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP',6X,
      * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP')
-      IF (NI.EQ.97) WRITE (6,91) (ZLOC(K),K=2,KTIP)
    91 FORMAT (4X,'Z = ',10F8.4,/)
-      IF (NI.EQ.97)
-     * WRITE (6,93) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
    93 FORMAT(11F8.4)
-      endif
-      endif
 
-      return 
+   80 FORMAT (/,4X,'WING SURFACE PRESSURE COEFFICIENTS FOR',
+     * ' NCYC =',I6,/,4X,'X/C',6X,
+     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP',6X,
+     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP',6X,
+     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP',6X,
+     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP')
+   81 FORMAT (4X,'Z = ',20F8.4,/)
+   83 FORMAT(21F8.4)
 
-c
-c  We MUST generate xcomm!
-c
       TCL=zero
       TCD=zero
       AREAS=zero
@@ -95,8 +115,11 @@ c
         DO 41 K=zsf2,KTIPP
 c        DO 41 K=2,KTIP
           CN1(K)=zero
+          CN(K)=zero
           CC1(K)=zero
+          CC(K)=zero
           AREA1(K)=zero
+          AREA(K)=zero
           DO 42 I=ITLP1,ITUP
 c          DO 42 I=ITL+1,ITU
             AREA1(K)=AREA1(K)+ABS(AJY(I,1,K))*p5
@@ -106,6 +129,10 @@ c          DO 42 I=ITL+1,ITU
 c            CN=CN-(PBODY-RGAM)*AJY(I,1,K)
 c            CC=CC-(PBODY-RGAM)*AJX(I,1,K)
  42       CONTINUE
+
+c
+c  Sum over each section of mesh, using the communicator xcomm
+c
           call MPI_Allreduce(cn1,cn,d_nk,MPI_DOUBLE_PRECISION,
      &                       MPI_SUM,xcomm,ierr)
           call MPI_Allreduce(cc1,cc,d_nk,MPI_DOUBLE_PRECISION,
@@ -114,11 +141,11 @@ c            CC=CC-(PBODY-RGAM)*AJX(I,1,K)
      &                       MPI_SUM,xcomm,ierr)
           CLS=CN(K)*COS(-BETA)-CC(K)*SIN(-BETA)
           CDS=CN(K)*SIN(-BETA)+CC(K)*COS(-BETA)
-          if (size .eq. 1) then
-            CL(K) = CLS/AREA(K)
-            CD(K) = CDS/AREA(K)
-          endif
-          AREAS=AREAS+AREA(K)
+          CL(K) = CLS/AREA(K)
+          CD(K) = CDS/AREA(K)
+          write(6,*) 'rank,k,cl,cd,area = ',
+     &                rank,k,cn(k),cc(k),area(k)
+          AREAS = AREAS+AREA(K)
           TCL=TCL+CLS
           TCD=TCD+CDS
  41     CONTINUE
@@ -166,3 +193,59 @@ c            CC=CC-(PBODY-RGAM)*AJX(I,1,K)
 
       RETURN
       END
+
+c -------------------------------------------------------------------
+c
+c  wingsurface - Determines whether this processor's local mesh
+c                includes part of the wing surface.  This routine
+c                is called by GetXCommunicator() in preparation
+c                for generating a subsidiary communicator that
+c                is used in pvar().
+c
+c  Output Parameter:
+c    surface - 1 if this processor owns part of wing surface;
+c              0 otherwise
+c
+      integer function wingsurface(surface)
+
+#include "param.h"
+#include "wing.h"
+
+      integer surface,itl1
+
+      wingsurface = 0
+
+      if (zsf2 .gt. ktip .or. ysf2 .ne. 2) then
+        surface = 0
+      else
+        itl1 = itl+1
+        if (itl1 .le. xsf2) then
+          if (itu .ge. xsf2) then
+            surface = 1
+          else
+            surface = 0
+          endif
+        else 
+          if (itl1 .le. xef01) then
+            surface = 1
+          else
+            surface = 0
+          endif
+        endif
+      endif
+
+      if (printg .eq. 1) then
+        if (surface .ne.0) then
+          write(6,*) 'part of wing surface: rank',rank
+        else 
+          write(6,*) 'NOT part of wing surface: rank ',rank
+        endif
+#ifdef PARCH_rs6000
+        call FLUSH_(6)
+#else
+        call flush(6)
+#endif
+      endif
+
+      return
+      end
