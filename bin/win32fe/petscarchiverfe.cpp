@@ -1,4 +1,4 @@
-/* $Id: petscarchiverfe.cpp,v 1.11 2001/04/18 15:37:30 buschelm Exp $ */
+/* $Id: petscarchiverfe.cpp,v 1.13 2001/05/03 11:03:30 buschelm Exp buschelm $ */
 #include <stdlib.h>
 #include <process.h>
 #include "petscarchiverfe.h"
@@ -52,8 +52,7 @@ void archiver::Archive(void) {
     /* Invoke archiver several times to limit arg length <512 chars */
     archive = header;
     Merge(archive,file,li);
-    if (verbose)
-      cout << archive << endl;
+    if (verbose) cout << archive << endl;
     system(archive.c_str());
   }
 }
