@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.2 1994/10/31 16:14:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.3 1994/11/21 06:45:11 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -65,7 +65,7 @@ dpold  = dp;
 VecDot(RP,R,&rhoold);
 VecCopy(R,U);
 VecCopy(R,P);
-MATOP(itP,P,V,T);
+PCApplyBAorAB(itP->B,itP->right_pre,P,V,T);
 VecSet(&zero,D);
 
 for (i=0; i<maxit; i++) {
@@ -73,7 +73,7 @@ for (i=0; i<maxit; i++) {
     a = rhoold / s;                        /* a <- rho / s        */
     tmp = -a; VecWAXPY(&tmp,V,U,Q);         /* q <- u - a v        */
     VecWAXPY(&one,U,Q,T);                   /* t <- u + q          */
-    MATOP(itP,T,AUQ,T1);
+    PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,T1);
     VecAXPY(&tmp,AUQ,R);                    /* r <- r - a K (u + q) */
     VecNorm(R,&dp);
     for (m=0; m<2; m++) {
@@ -109,7 +109,7 @@ for (i=0; i<maxit; i++) {
     VecWAXPY(&b,Q,R,U);                     /* u <- r + b q          */
     VecAXPY(&b,P,Q);                          
     VecWAXPY(&b,Q,U,P);                     /* p <- u + b(q + b p)   */
-    MATOP(itP,P,V,Q);                      /* v <- K p              */
+    PCApplyBAorAB(itP->B,itP->right_pre,P,V,Q);  /* v <- K p              */
 
     rhoold = rho;
     dpold  = dp;

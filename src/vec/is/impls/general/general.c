@@ -26,30 +26,6 @@ static int ISiSize(IS is,int *size)
   *size = sub->n; return 0;
 }
 
-static int ISiPosition(IS is,int ii,int *pos)
-{
-  IndexiGeneral *sub = (IndexiGeneral *)is->data;
-  int m,*idx = sub->idx, a, b, i, n = sub->n;
-  if (!sub->sorted) {
-    for (i=0; i<n; i++) {
-      if (idx[i] = ii) {*pos = i; return 0;}
-    }
-    *pos = -1; return 0;
-  }
-  else {
-    a = 0; b = n - 1;
-    if (idx[a] > ii || idx[b] < ii) {*pos = -1; return 0;}
-    while (b-a > 2) {
-      m = (a+b)/2;
-      if (idx[m] < ii) a = m;
-      else if (idx[m] > ii) b = m;
-      else {*pos = m; return 0;}
-    }
-    if (idx[a] == ii) {*pos = a; return 0;}
-    if (idx[b] == ii) {*pos = b; return 0;}
-    *pos = -1; return 0;
-  }
-}
 
 static int ISiInverse(IS is, IS *isout)
 {
@@ -59,7 +35,8 @@ static int ISiInverse(IS is, IS *isout)
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  if (ierr = ISCreateSequentialPermutation(n,ii,isout)) SETERR(ierr,0);
+  if (ierr = ISCreateSequential(n,ii,isout)) SETERR(ierr,0);
+  ISSetPermutation(*isout);
   FREE(ii);
   return 0;
 }
@@ -80,7 +57,7 @@ static int ISgview(PetscObject obj, Viewer viewer)
 }
   
 static struct _ISOps myops = { ISiSize,ISiSize,
-                               ISiPosition,ISiIndices,0,ISiInverse};
+                               ISiIndices,0,ISiInverse};
 /*@
     ISCreateSequential - creates data structure for 
      a index set containing a list of integers.
@@ -93,6 +70,7 @@ static struct _ISOps myops = { ISiSize,ISiSize,
 int ISCreateSequential(int n,int *idx,IS *is)
 {
   int     i, sorted = 1, size = sizeof(IndexiGeneral) + n*sizeof(int);
+  int     min, max;
   IS      Nindex;
   IndexiGeneral *sub;
 
@@ -104,34 +82,22 @@ int ISCreateSequential(int n,int *idx,IS *is)
   for ( i=1; i<n; i++ ) {
     if (idx[i] < idx[i-1]) {sorted = 0; break;}
   }
+  min = max = idx[0];
+  for ( i=1; i<n; i++ ) {
+    if (idx[i] < min) min = idx[i];
+    if (idx[i] > max) max = idx[i];
+  }
   MEMCPY(sub->idx,idx,n*sizeof(int));
   sub->sorted     = sorted;
+  Nindex->min     = min;
+  Nindex->max     = max;
   Nindex->data    = (void *) sub;
   Nindex->cookie  = IS_COOKIE;
-  Nindex->type    = GENERALSEQUENTIAL;
+  Nindex->type    = ISGENERALSEQUENTIAL;
   Nindex->ops     = &myops;
   Nindex->destroy = ISidestroy;
   Nindex->view    = ISgview;
   Nindex->isperm  = 0;
   *is = Nindex; return 0;
-}
-
-/*@
-    ISCreateSequentialPermutation - creates data structure for 
-     a index set containing a permutation. Special case of 
-     ISCreateSequential().
-
-  Input Parameters:
-.   n - the length of the index set
-.   idx - the list of integers.
-
-@*/
-int ISCreateSequentialPermutation(int n,int *idx,IS *is)
-{
-  int ierr;
-
-  if (ierr = ISCreateSequential(n,idx,is)) SETERR(ierr,0);
-  (*is)->isperm = 1;
-  return 0;
 }
 

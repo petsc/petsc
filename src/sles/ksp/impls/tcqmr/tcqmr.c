@@ -52,7 +52,7 @@ while ( !CONVERGED(itP,rnorm,it)) {
     if (itP->usr_monitor) {
         (*itP->usr_monitor)( itP, it, rnorm,itP->monP );
 	}
-    MATOP(itP, u, y, vtmp );                       /* y = A*u */
+    PCApplyBAorAB(itP->B,itP->right_pre, u, y, vtmp );   /* y = A*u */
     VecDot( v0, y, &dp11 );
     VecDot( v0, u, &dp2 );
     alpha = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
@@ -66,7 +66,7 @@ while ( !CONVERGED(itP,rnorm,it)) {
 					       (z-2*beta*p) + f*beta*
 					     beta*um1 */
     tmp = -2.0*beta;VecAXPY(&tmp,p,utmp);
-    MATOP(itP,utmp,up1,vtmp);
+    PCApplyBAorAB(itP->B,itP->right_pre,utmp,up1,vtmp);
     tmp = -alpha; VecAXPY(&tmp,utmp,up1);
     tmp = f*beta*beta; VecAXPY(&tmp,um1,up1);
     VecNorm(up1,&dp1);
@@ -78,7 +78,7 @@ while ( !CONVERGED(itP,rnorm,it)) {
     VecCopy(up1,u);
     beta  = beta/Gamma;
     eptmp = beta;
-    MATOP(itP,v,vp1,vtmp);
+    PCApplyBAorAB(itP->B,itP->right_pre,v,vp1,vtmp);
     tmp = -alpha; VecAXPY(&tmp,v,vp1);
     tmp = -beta;VecAXPY(&tmp,vm1,vp1);
     VecNorm(vp1,&Gamma);

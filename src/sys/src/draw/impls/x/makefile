@@ -11,9 +11,8 @@ OBJSF     =
 WSOURCEC  =   
 WOBJS     = 
 MANSEC    = 7
-
 LINCLUDE  = $(SOURCEH)
 LIBBASE   = libpetscdraw
 DIRS      = 
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -14,4 +14,4 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = dense aij
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -55,7 +55,7 @@ int KSPCreate(KSP *ksp)
   ctx->atol          = 1.e-50;
   ctx->divtol        = 1.e4;
 
-  ctx->guess_zero    = 0;
+  ctx->guess_zero    = 1;
   ctx->calc_eigs     = 0;
   ctx->calc_res      = 0;
   ctx->residual_history = 0;
@@ -69,12 +69,8 @@ int KSPCreate(KSP *ksp)
 
   ctx->vec_sol   = 0;
   ctx->vec_rhs   = 0;
-  ctx->amult     = 0;
-  ctx->binv      = 0;
-  ctx->matop     = 0;
-  ctx->tamult    = 0;
-  ctx->tbinv     = 0;
-  ctx->tmatop    = 0;
+  ctx->A         = 0;
+  ctx->B         = 0;
 
   ctx->solver    = 0;
   ctx->setup     = 0;
@@ -91,8 +87,6 @@ int KSPCreate(KSP *ksp)
   ctx->nvectors      = 0;
   ctx->nscalar       = 0;
 
-  ctx->amultP        = 0;
-  ctx->binvP         = 0;
   ctx->monP          = 0;
   ctx->cnvP          = 0;
 

@@ -4,6 +4,7 @@
       Example demonstrating some features of the vectors directory.
 */
 #include "petsc.h"
+#include "comm.h"
 #include "is.h"
 #include "vec.h"
 #include "sys.h"
@@ -11,7 +12,7 @@
 #include "sysio.h"
 #include <math.h>
 
-int worker(int argc,char **argv)
+int main(int argc,char **argv)
 {
   int      n = 20, ierr;
   Scalar   one = 1.0, two = 2.0, three = 3.0, dots[3],dot;

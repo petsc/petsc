@@ -61,11 +61,11 @@ for (i=0; i<maxit; i++) {
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);        /*     p <- p - w v   */
     VecAYPX(&beta,R,P);                      /*     p <- r + p beta */
-    MATOP(itP,P,V,T);                         /*     v <- K p       */
+    PCApplyBAorAB(itP->B,itP->right_pre,P,V,T);  /*     v <- K p       */
     VecDot(RP,V,&d1);
     alpha = rho / d1;                     /*     a <- rho / (rp' v) */
     tmp = -alpha; VecWAXPY(&tmp,V,R,S);       /*     s <- r - a v   */
-    MATOP(itP,S,T,R);                         /*     t <- K s       */
+    PCApplyBAorAB(itP->B,itP->right_pre,S,T,R); /*     t <- K s       */
     VecDot(S,T,&d1);
     VecDot(T,T,&d2);
     if (d2 == 0.0) {

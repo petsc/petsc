@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.2 1994/10/31 16:14:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.3 1994/11/21 06:45:06 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -21,9 +21,6 @@ static int KSPiLSQRSetUp(KSP itP)
 {
   int ierr;
   if (ierr = KSPCheckDef( itP )) return ierr;
-  if (!itP->tamult) {
-    SETERR(1,"LSQR requires matrix-transpose * vector");
-  }
   ierr = KSPiDefaultGetWork( itP,  6 );
   return ierr;
 }
@@ -62,7 +59,7 @@ if (history) history[0] = rnorm;
 VecCopy(B,U);
 VecNorm(U,&beta);
 tmp = 1.0/beta; VecScale( &tmp, U );
-TMM(itP,  U, V );
+MatMultTrans(itP->A,  U, V );
 VecNorm(V,&alpha);
 tmp = 1.0/alpha; VecScale(&tmp, V );
 
@@ -72,12 +69,12 @@ VecSet(&zero,X);
 phibar = beta;
 rhobar = alpha;
 for (i=0; i<maxit; i++) {
-    MM(itP,V,U1);
+    MatMult(itP->A,V,U1);
     tmp = -alpha; VecAXPY(&tmp,U,U1);
     VecNorm(U1,&beta);
     tmp = 1.0/beta; VecScale(&tmp, U1 );
 
-    TMM(itP,U1,V1);
+    MatMultTrans(itP->A,U1,V1);
     tmp = -beta; VecAXPY(&tmp,V,V1);
     VecNorm(V1,&alpha);
     tmp = 1.0 / alpha; VecScale(&tmp , V1 );

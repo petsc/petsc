@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: preonly.c,v 1.2 1994/10/31 16:14:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.3 1994/11/21 06:45:07 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -24,7 +24,7 @@ Vec      X,B;
 int      i = 0;
 X        = itP->vec_sol;
 B        = itP->vec_rhs;
-PRE(itP,B,X);
+PCApply(itP->B,B,X);
 
 itP->nmatop   += 1;
 itP->nvectors += 0;

@@ -3,6 +3,7 @@
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
 */
+#include "petsc.h"
 #include "sys.h"
 #include <signal.h>          /*I <signal.h> I*/
 
@@ -25,6 +26,7 @@ static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
 void PetscDefaultSignalHandler( int sig, int code,struct sigcontext * scp, 
                                 char *addr )
 {
+  int ierr;
   static char buf[128];
 
   signal( sig, SIG_DFL );
@@ -32,18 +34,19 @@ void PetscDefaultSignalHandler( int sig, int code,struct sigcontext * scp,
     sprintf( buf, "Error: Caught signal %s", SIGNAME[sig] );
   else
     strcpy( buf, "Error: Caught signal " );
-  SETERR(1,buf);
+  ierr = PetscError(0,"Unknown",buf,1);
+  if (ierr) exit(ierr); else return;
 }
 
 /*@
-   PetscSetDefaultSignals - Set up to catch the usual fatal errors and 
+   PetscSetSignalHandler - Set up to catch the usual fatal errors and 
    kill the job..
 
    Input parameter:
 .  routine - routine to call when a signal is received.  This should
              have a form that is compatible with "signal".
 @*/
-int PetscSetDefaultSignals( 
+int PetscSetSignalHandler( 
                        void (*routine)(int, int, struct sigcontext *,char*) )
 {
   if (routine == 0) routine = PetscDefaultSignalHandler;

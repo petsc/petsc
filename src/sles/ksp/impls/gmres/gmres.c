@@ -124,11 +124,11 @@ static int GMRESResidual(  KSP itP,int restart )
   if (itP->right_pre) {
     /* we want a * binv * b * x, or just a * x for the first step */
     /* a*x into temp */
-    MM(itP, VEC_SOLN, VEC_TEMP );
+    MatMult(itP->A, VEC_SOLN, VEC_TEMP );
   }
   else {
     /* else we do binv * a * x */
-    MATOP(itP, VEC_SOLN, VEC_TEMP, VEC_TEMP_MATOP );
+    PCApplyBAorAB(itP->B, itP->right_pre,VEC_SOLN, VEC_TEMP, VEC_TEMP_MATOP );
   }
   /* This is an extra copy for the right-inverse case */
   VecCopy( VEC_BINVF, VEC_VV(0) );
@@ -203,7 +203,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 	/* get more vectors */
 	GMRESGetNewVectors(  itP, it+1 );
 	}
-    MATOP(itP, VEC_VV(it), VEC_VV(it+1), VEC_TEMP_MATOP );
+    PCApplyBAorAB(itP->B,itP->right_pre,VEC_VV(it),VEC_VV(it+1),VEC_TEMP_MATOP);
 
     /* update hessenberg matrix and do Gram-Schmidt */
     (*gmresP->orthog)(  itP, it );
@@ -275,7 +275,7 @@ static int KSPiGMRESSolve(KSP itP,int *outits )
   /* Save binv*f */
   if (!itP->right_pre) {
     /* inv(b)*f */
-    PRE(itP, VEC_RHS, VEC_BINVF );
+    PCApply(itP->B, VEC_RHS, VEC_BINVF );
   }
   else 
     VecCopy( VEC_RHS, VEC_BINVF );
@@ -378,11 +378,11 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP itP, int it )
      the unpreconditioned problem */
   if (itP->right_pre) {
     if (vdest != vs) {
-	  PRE(itP, VEC_TEMP, vdest );
+	  PCApply(itP->B, VEC_TEMP, vdest );
 	  VecAXPY( &one, vs, vdest );
     }
     else {
-	  PRE(itP, VEC_TEMP, VEC_TEMP_MATOP );
+	  PCApply(itP->B, VEC_TEMP, VEC_TEMP_MATOP );
 	  VecAXPY( &one, VEC_TEMP_MATOP, vdest );
     }
   }

@@ -22,4 +22,4 @@ workers: fmain.c cmain.c
 	mv fmain.o $(LDIR)/fmain.o
 	mv cmain.o $(LDIR)/cmain.o
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

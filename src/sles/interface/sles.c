@@ -62,42 +62,20 @@ int SLESCreate(SLES *outsles)
 int SLESSolve(SLES sles,Vec b,Vec x)
 {
   int ierr;
-  KSP ksp; PC pc;Mat mat; int its;
-  SLESGetKSP(sles,&ksp);
-  if (ierr = SLESGetPC(sles,&pc)) SETERR(ierr,0);
+  KSP ksp = sles->ksp; PC pc = sles->pc;Mat mat; int its;
   KSPSetRhs(ksp,b);
   KSPSetSolution(ksp,x);
-  KSPSetAmult(ksp,(int (*)(void *,Vec,Vec))MatMult,(void *)sles->mat);
-  KSPSetBinv(ksp,(int (*)(void*,Vec,Vec))PCApply,(void*)pc);
+  KSPSetBinv(ksp,pc);
   if (!sles->setupcalled) {
-
-      if (ierr = PCSetVector(pc,b)) SETERR(ierr,0);
-      if (ierr = PCGetMatrix(pc,&mat)) SETERR(ierr,0);
-      if (!mat) {if (ierr = PCSetMatrix(pc,sles->mat)) SETERR(ierr,0);}
-      if (ierr = KSPSetUp(sles->ksp)) SETERR(ierr,0);
-      if (ierr = PCSetUp(sles->pc)) SETERR(ierr,0);
+    if (ierr = PCSetVector(pc,b)) SETERR(ierr,0);
+    if (ierr = KSPSetUp(sles->ksp)) SETERR(ierr,0);
+    if (ierr = PCSetUp(sles->pc)) SETERR(ierr,0);
+    sles->setupcalled = 1;
   }
   KSPSolve(ksp,&its);
 printf("number of its %d\n",its);
 
-  sles->setupcalled = 1;
-  return 0;
-}
 
-/*@
-   SLESSetSolverType - Sets basic type of solver to use. Either a 
-       direct solver, a preconditioned Krylov based solver or 
-       a simple iterative solver like SOR. For iterative methods
-       you will want SLES_ITERATIVE.
-
-  Input Paramters:
-.  sles - the solver context
-.  type - either SLES_DIRECT, SLES_ITERATIVE.
-@*/
-int SLESSetSolverType(SLES sles,int type)
-{
-  VALIDHEADER(sles,SLES_COOKIE);
-  sles->type = type;
   return 0;
 }
 
@@ -144,7 +122,8 @@ int SLESSetMat(SLES sles,Mat mat)
 {
   VALIDHEADER(sles,SLES_COOKIE);
   VALIDHEADER(mat,MAT_COOKIE);
-  sles->mat = mat;
+  KSPSetAmult(sles->ksp,mat);
+  PCSetMatrix(sles->pc,mat);
   return 0;
 }
 

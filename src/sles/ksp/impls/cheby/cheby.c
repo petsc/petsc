@@ -75,21 +75,21 @@ int  KSPiChebychevSolve(KSP itP,int *its)
   c[k] = mu;
 
   if (!itP->guess_zero) {
-    MM(itP,x,r);                           /*  r = b - Ax     */
+    MatMult(itP->A,x,r);                      /*  r = b - Ax     */
     VecAYPX(&mone,b,r);       
   }
   else VecCopy(b,r);
                   
-  PRE(itP,r,p[k]);                        /*  p[k] = scale B^{-1}r  + x */
+  PCApply(itP->B,r,p[k]);                    /*  p[k] = scale B^{-1}r  + x */
   VecAYPX(&scale,x,p[k]);                        
 
   for ( i=0; i<maxit; i++) {
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 
-    MM(itP,p[k],r);                           /*  r = b - Ap[k]    */
+    MatMult(itP->A,p[k],r);                     /*  r = b - Ap[k]    */
     VecAYPX(&mone,b,r);                        
-    PRE(itP,r,p[kp1]);                        /*  p[kp1] = B^{-1}z  */
+    PCApply(itP->B,r,p[kp1]);                   /*  p[kp1] = B^{-1}z  */
 
     /* calculate residual norm if requested */
     if (itP->calc_res) {
@@ -113,11 +113,11 @@ int  KSPiChebychevSolve(KSP itP,int *its)
     kp1  = ktmp;
   }
   if (!brokeout && itP->calc_res) {
-    MM(itP,p[k],r);                             /*  r = b - Ap[k]    */
+    MatMult(itP->A,p[k],r);                      /*  r = b - Ap[k]    */
     VecAYPX(&mone,b,r);                        
     if (!pres) VecNorm(r,&rnorm);
     else {
-      PRE(itP,r,p[kp1]);                        /*  p[kp1] = B^{-1}z  */
+      PCApply(itP->B,r,p[kp1]);                 /*  p[kp1] = B^{-1}z  */
       VecNorm(p[kp1],&rnorm);
     }
     if (history && hist_len > i) history[i] = rnorm;

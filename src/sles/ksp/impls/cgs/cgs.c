@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.3 1994/11/03 04:08:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.4 1994/11/21 06:44:58 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -59,7 +59,7 @@ if (ierr = VecCopy(R,RP)) SETERR(ierr,0);
 VecDot(RP,R,&rhoold);
 if (ierr = VecCopy(R,U)) SETERR(ierr,0);
 if (ierr = VecCopy(R,P)) SETERR(ierr,0);
-MATOP(itP,P,V,T);
+PCApplyBAorAB(itP->B,itP->right_pre,P,V,T);
 
 for (i=0; i<maxit; i++) {
     VecDot(RP,V,&s);                        /* s <- rp' v          */
@@ -67,7 +67,7 @@ for (i=0; i<maxit; i++) {
     tmp = -a;VecWAXPY(&tmp,V,U,Q);          /* q <- u - a v        */
     VecWAXPY(&one,U,Q,T);                   /* t <- u + q          */
     if (ierr = VecAXPY(&a,T,X)) SETERR(ierr,0);  /* x <- x + a (u + q)  */
-    MATOP(itP,T,AUQ,U);
+    PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,U);
     if (ierr = VecAXPY(&tmp,AUQ,R)) SETERR(ierr,0);/* r <- r - a K (u + q) */
     VecNorm(R,&dp);
 
@@ -80,7 +80,7 @@ for (i=0; i<maxit; i++) {
     VecWAXPY(&b,Q,R,U);                     /* u <- r + b q          */
     if (ierr = VecAXPY(&b,P,Q)) SETERR(ierr,0);;
     VecWAXPY(&b,Q,U,P);                     /* p <- u + b(q + b p)   */
-    MATOP(itP,P,V,Q);                      /* v <- K p              */
+    PCApplyBAorAB(itP->B,itP->right_pre,P,V,Q);    /* v <- K p              */
     rhoold = rho;
     }
 if (i == maxit) {i--; itP->nmatop++; itP->nvectors += 4;}

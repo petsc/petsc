@@ -56,19 +56,62 @@ int PCCreate(PC *newpc)
   pc->data        = 0;
   pc->namemethod  = "-pcmethod";
   pc->apply       = 0;
+  pc->applytrans  = 0;
+  pc->applyBA     = 0;
+  pc->applyBAtrans= 0;
   pc->applyrich   = 0;
   *newpc          = pc;
   /* this violates rule about seperating abstract from implementions*/
   return PCSetMethod(pc,PCJACOBI);
 }
 
-/*
-      Applies preconditioner to a vector 
-*/
-int PCApply(void *pcin,Vec x,Vec y)
+/*@
+     PCApply - Applies preconditioner to a vector 
+@*/
+int PCApply(PC pc,Vec x,Vec y)
 {
-  PC pc = (PC) pcin;
+  VALIDHEADER(pc,PC_COOKIE);
   return (*pc->apply)(pc,x,y);
+}
+/*@
+     PCApplyTrans - Applies transpose of preconditioner to a vector 
+@*/
+int PCApplyTrans(PC pc,Vec x,Vec y)
+{
+  VALIDHEADER(pc,PC_COOKIE);
+  if (pc->applytrans) return (*pc->applytrans)(pc,x,y);
+  SETERR(1,"No transpose for this precondition");
+}
+
+/*@
+     PCApplyBAorAB - Applies preconditioner and operator to a vector 
+@*/
+int PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work)
+{
+  int ierr;
+  VALIDHEADER(pc,PC_COOKIE);
+  if (pc->applyBA)  return (*pc->applyBA)(pc,right,x,y,work);
+  if (right) {
+    ierr = PCApply(pc,x,work); CHKERR(ierr);
+    return MatMult(pc->mat,work,y); 
+  }
+  ierr = MatMult(pc->mat,x,work); CHKERR(ierr);
+  return PCApply(pc,work,y);
+}
+/*@
+     PCApplyBAorABTrans - Applies preconditioner and operator to a vector 
+@*/
+int PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work)
+{
+  int ierr;
+  VALIDHEADER(pc,PC_COOKIE);
+  if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,right,x,y,work);
+  if (right) {
+    ierr = MatMultTrans(pc->mat,x,work); CHKERR(ierr);
+    return PCApplyTrans(pc,work,y);
+  }
+  ierr = PCApplyTrans(pc,x,work); CHKERR(ierr);
+  return MatMultTrans(pc->mat,work,y); 
 }
 
 int PCApplyRichardsonExists(PC pc)
@@ -76,9 +119,9 @@ int PCApplyRichardsonExists(PC pc)
   if (pc->applyrich) return 1; else return 0;
 }
 
-int PCApplyRichardson(void *pcin,Vec x,Vec y,Vec w,int its)
+int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 {
-  PC pc = (PC) pcin;
+  VALIDHEADER(pc,PC_COOKIE);
   return (*pc->applyrich)(pc,x,y,w,its);
 }
 

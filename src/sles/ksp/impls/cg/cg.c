@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.2 1994/10/29 02:41:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.3 1994/11/21 06:44:55 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -62,13 +62,13 @@ int  KSPiCGSolve(KSP itP,int *its)
   if (eigs) {e = cgP->e; d = cgP->d; e[0] = 0.0; b = 0.0; }
 
   if (!itP->guess_zero) {
-    MM(itP,X,R);                             /*   r <- b - Ax      */
+    MatMult(itP->A,X,R);                       /*   r <- b - Ax      */
     ierr = VecAYPX(&mone,B,R); CHKERR(ierr);
   }
   else { 
     VecCopy(B,R);                            /*     r <- b (x is 0)*/
   }
-  PRE(itP,R,Z);                               /*     z <- Br        */
+  PCApply(itP->B,R,Z);                         /*     z <- Br        */
   if (pres) {
       VecNorm(Z,&dp);                         /*    dp <- z'*z       */
       }
@@ -93,14 +93,14 @@ int  KSPiCGSolve(KSP itP,int *its)
          ierr = VecAYPX(&b,Z,P); CHKERR(ierr)    /*     p <- z + b* p   */
      }
      betaold = beta;
-     MM(itP,P,Z);                             /*     z <- Kp         */
+     MatMult(itP->A,P,Z);                          /*     z <- Kp         */
      VecDot(P,Z,&dpi);
      a = beta/dpi;                             /*     a = beta/p'z    */
      if (eigs)  d[i] = sqrt(b)*e[i] + 1.0/a;
      VecAXPY(&a,P,X);                           /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                 /*     r <- r - az     */
      if (pres) {
-       PRE(itP,R,Z);                          /*     z <- Br         */
+       MatMult(itP->A,R,Z);                    /*     z <- Br         */
        VecNorm(Z,&dp);                        /*    dp <- z'*z       */
      }
      else {
@@ -109,7 +109,7 @@ int  KSPiCGSolve(KSP itP,int *its)
      if (history && hist_len > i + 1) history[i+1] = dp;
      MONITOR(itP,dp,i+1);
      if (CONVERGED(itP,dp,i+1)) break;
-     if (!pres) PRE(itP,R,Z);                  /*     z <- Br         */
+     if (!pres) PCApply(itP->B,R,Z);              /*     z <- Br         */
   }
   if (i == maxit) i--;
   if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;

@@ -45,4 +45,4 @@ ex7: ex7.o
 	-$(CLINKER) -o ex7 ex7.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex7.o
 
-include $(ITOOLSDIR)/bmake/$(ARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

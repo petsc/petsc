@@ -14,4 +14,4 @@ OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

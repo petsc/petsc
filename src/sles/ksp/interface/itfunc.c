@@ -36,9 +36,11 @@ int KSPSetUp(KSP itP)
 @*/
 int KSPSolve(KSP itP, int *its) 
 {
-  int ierr;
+  int    ierr;
+  Scalar zero = 0.0;
   VALIDHEADER(itP,KSP_COOKIE);
   if (!itP->setupcalled){ ierr = KSPSetUp(itP); CHKERR(ierr);}
+  if (itP->guess_zero) { VecSet(&zero,itP->vec_sol);}
   return (*(itP)->solver)(itP,its);
 }
 
@@ -227,17 +229,16 @@ int KSPSetUsePreconditionedResidual(KSP itP)
 }
 
 /*@
-   KSPSetInitialGuessZero - Tells the iterative solver
-   that the initial guess is zero; otherwise it assumes it is 
-   non-zero. If the initial guess is zero, this saves one matrix 
-   multiply in the calculation of the initial residual.
+   KSPSetInitialGuessNonZero - Tells the iterative solver
+   that the initial guess is non-zero; otherwise it assumes it is 
+   to be zero and zeros it out before solving.
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
 @*/
-int KSPSetInitialGuessZero(KSP itP)
+int KSPSetInitialGuessNonZero(KSP itP)
 {
-  (itP)->guess_zero   = 1;
+  (itP)->guess_zero   = 0;
   return 0;
 }
 
@@ -318,199 +319,77 @@ int KSPGetSolution(KSP itP, Vec *v)
 }
 
 /*@
-   KSPSetAmult - Sets the function to be used to calculate the 
+   KSPSetAmult - Sets the matrix object to be used to calculate the 
    matrix vector product.  
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
-.  amult - pointer to int function
+.  A - the Matrix object
 .  amultP - pointer to amult context
 
-   Calling sequence of amult:
-.  amult (void *amultP, Vec x, Vec y)
-
-   Input Parameters of amult:
-.  amultP - pointer to the amult context, as set by KSPSetAmult()
-.  x - input vector
-
-   Output Parameter of amult:
-.  y - output vector
 
    Note:
-   Use KSPGetAmultContext() to retrieve the multiplication context, 
+   Use KSPGetAmult() to retrieve the matrix context, 
    say to free it at the end of the computations.
 @*/
-int KSPSetAmult(KSP itP, int (*amult)(void *,Vec,Vec), void *amultP)
+int KSPSetAmult(KSP itP, Mat A)
 {
-  VALIDHEADER(itP,KSP_COOKIE);  (itP)->amult = amult; (itP)->amultP = amultP;
+  VALIDHEADER(itP,KSP_COOKIE);
+  (itP)->A = A;
   return 0;
 }
 
 /*@
-   KSPGetAmultContext - Returns a pointer to the operator context
-   set with KSPSetAmult().
+   KSPGetAmult - returns the matrix object used for matrix-vector ops.
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
 
    Output Parameter:
-.  ctx - matrix multipler context
+.  A - the matrix
 @*/
-int KSPGetAmultContext(KSP itP, void **ctx)
+int KSPGetAmult(KSP itP, Mat *A)
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  *ctx = (itP)->amultP; return 0;
+  *A = (itP)->A; return 0;
 }
 
-/*@
-   KSPSetAmultTranspose - Sets the function to be used to 
-   calculate the transpose of the  matrix vector product.
-
-   Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
-.  tamult - pointer to int function
-
-   Calling sequence of tamult:
-.  tamult (void *amultP, Vec x, Vec y)
-
-   Input Parameters of tamult:
-.  amultP - pointer to the amult context, as set by KSPSetAmult()
-.  x - input vector
-
-   Output Parameter of tamult:
-.  y - ouput vector
-@*/
-int KSPSetAmultTranspose(KSP itP, int (*tamult)(void *,Vec,Vec))
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->tamult = tamult;
-  return 0;
-}
 
 /*@
-   KSPSetBinv - Sets the function to be used to calculate the 
+   KSPSetBinv - Sets the preconditioner to be used to calculate the 
    application of the preconditioner on a vector. 
 
    Input Parameters:
 .   itP - iterative context obtained from KSPCreate()
-.   binv - pointer to void function
-.   binvP - pointer to preconditioner context
- 
-   Calling sequence of binv:
-.  binv (void *binvP, Vec x, Vec y)
-
-   Input Parameters of binv:
-.  binvP - pointer to the binv context
-.  x - input vector
-
-   Output Parameter of binv:
-.  y - ouput vector
+.   B - the preconditioner object
 
    Notes:
-   Use KSPGetBinvContext() to retrive the preconditioner context,
+   Use KSPGetBinv() to retrive the preconditioner context,
    say to free it at the end of the computations.
 @*/
-int KSPSetBinv(KSP itP, int (*binv)(void *,Vec,Vec), void *binvP)
+int KSPSetBinv(KSP itP,PC B)
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->binv  = binv; (itP)->binvP = (void*)binvP;
+  (itP)->B = B;
   return 0;
 }
 
 /*@
-   KSPGetBinvContext - Returns a pointer to the preconditioner context
+   KSPGetBinv - Returns a pointer to the preconditioner context
    set with KSPSetBinv().
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
 
    Output Parameter:
-.  ctx - preconditioner context
+.  B - preconditioner context
 @*/
-int KSPGetBinvContext(KSP itP, void **ctx)
+int KSPGetBinv(KSP itP, PC *B)
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  *ctx = (itP)->binv; return 0;
+  *B = (itP)->B; return 0;
 }
 
-/*@
-   KSPSetBinvTranspose - Sets the function to be used to calculate the 
-   application of the transpose of the preconditioner on a vector. 
-
-   Input Parameters:
-.   itP - iterative context obtained from KSPCreate()
-.   tbinv - pointer to void function
-
-   Calling sequence of tbinv:
-.   tbinv (void *binvP, Vec x, Vec y)
-
-   Input Parameters of tbinv:
-.  binvP - pointer to the amult context, as set by KSPSetBinv()
-.  x - input vector
-
-   Output Parameter of tbinv:
-.  y - ouput vector
-@*/
-int KSPSetBinvTranspose(KSP itP, int (*tbinv)(void *,Vec,Vec))
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->tbinv  = tbinv;
-  return 0;
-}
-
-/*@
-   KSPSetMatop - Sets the function to be used to calculate the 
-   application of the preconditioner followed by the application of the 
-   matrix multiplier on a vector.  For left preconditioner the order 
-   is reversed.
-
-   Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
-.  matop - pointer to int function
-
-   Calling sequence of matop:
-.  matop (void *amultP, void *binvP, Vec x, Vec y)
-
-   Input Parameters of matop:
-.  amultP - pointer to the amult context, as set by KSPSetAmult()
-.  binvP - pointer to the binv context, as set by KSPSetBinv()
-.  x - input vector
-
-   Output Parameter of matop:
-.  y - output vector
-@*/
-int KSPSetMatop(KSP itP, int (*matop)(void *,void *,Vec,Vec))
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->matop      = matop;
-  return 0;
-}
-
-/*@
-   KSPSetMatopTranspose - Sets the function to be used to calculate
-   the action of the transpose of the Matop.
-
-   Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
-.  tmatop - pointer to void function
-
-   Calling sequence of tmatop:
-.  tmatop (void *amultP, void *binvP, Vec x, Vec y)
-
-   Input Parameters of tmatop:
-.  amultP - pointer to the amult context, as set by KSPSetAmult()
-.  binvP - pointer to the binv context, as set by KSPSetBinv()
-.  x - input vector
-
-   Output Parameter of tmatop:
-.  y - output vector
-@*/
-int KSPSetMatopTranspose(KSP itP, int (*tmatop)(void *,void *,Vec,Vec))
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->tmatop      = tmatop;
-  return 0;
-}
 
 /*@
    KSPSetMonitor - Sets the function to be used at every

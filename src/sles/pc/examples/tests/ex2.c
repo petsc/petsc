@@ -26,7 +26,7 @@ int main(int argc,char **args)
   ierr = VecSet(&one,ustar);            CHKERR(ierr);
   ierr = VecSet(&zero,u);               CHKERR(ierr);
 
-  ierr = MatCreateSequentialAIJ(n,n,1000,&mat); CHKERR(ierr);
+  ierr = MatCreateSequentialAIJ(n,n,3,0,&mat); CHKERR(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;

@@ -1,13 +1,10 @@
 
+#include "comm.h"
 #include "sys.h"
 #include "options.h"
 #include "sysio.h"
 #include "is.h"
 #include "vec.h"
-#include "comm.h"
-
-extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
-extern int VecCreateMPIBLAS(MPI_Comm,int,int,Vec *);  
 
 /*@C
       VecCreateInitialVector - Reads from command line to determine 

@@ -1,4 +1,3 @@
-
 /*  
    Defines the abstract operations on index sets 
 */
@@ -16,6 +15,18 @@ int ISIsPermutation(IS is)
   if (!is) {SETERR(-1,"Null pointer");}
   if (is->cookie != IS_COOKIE) {SETERR(-1,"Not indexset");}
   return is->isperm;
+}
+/*@
+    ISSetPermutation - Informs the index set that it is a permutation.
+
+  InputParmeters:
+.   is - the index set
+@*/
+int ISSetPermutation(IS is)
+{
+  VALIDHEADER(is,IS_COOKIE);
+  is->isperm = 1;
+  return 0;
 }
 
 /*@
@@ -81,23 +92,6 @@ int ISGetLocalSize(IS is,int *size)
   return (*is->ops->localsize)(is,size);
 }
 
-/*@
-    ISGetPosition - determines if an integer is in a index set
-         and returns its relative position. Returns -1 if not in.
-
-  Input Parameters:
-.   is - the index set
-.   i - the index to check
-
-  Output Parameters:
-.   pos - relative position in list or negative -1 if not in list.
-
-@*/
-int ISGetPosition(IS is,int i,int *pos)
-{
-  VALIDHEADER(is,IS_COOKIE);
-  return (*is->ops->position)(is,i,pos);
-}
 
 /*@ 
 
@@ -112,6 +106,7 @@ int ISGetPosition(IS is,int i,int *pos)
   Output Parameters:
 .  ptr - the location to put the pointer to the indices
 
+  Keywords: index set, indices
     Note: in a parallel enviroment this probably points to 
           only the local indices to that processor.
 @*/

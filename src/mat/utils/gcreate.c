@@ -21,7 +21,7 @@ int MatCreateInitialMatrix(int m,int n,Mat *V)
     fprintf(stdout,"Using BLAS+LAPACK sequential dense matrices\n");
     return MatCreateSequentialDense(m,n,V);
   }
-  fprintf(stdout,"Using standard sequential AIJ vectors\n");
-  return MatCreateSequentialAIJ(m,n,10,V);
+  fprintf(stdout,"Using standard sequential AIJ matrices\n");
+  return MatCreateSequentialAIJ(m,n,10,0,V);
 }
  

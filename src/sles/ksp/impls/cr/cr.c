@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.2 1994/10/29 02:41:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.3 1994/11/21 06:44:52 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -48,7 +48,7 @@ static int  KSPiCRSolve(KSP itP,int *its)
 
   bbotold = 1.0; /* a hack */
   if (!itP->guess_zero) {
-    MM(itP,X,R);                               /*   r <- b - Ax      */
+    MatMult(itP->A,X,R);                         /*   r <- b - Ax      */
     VecAYPX(&mone,B,R);
   }
   else { 
@@ -57,7 +57,7 @@ static int  KSPiCRSolve(KSP itP,int *its)
   VecSet(&zero,Pm1);                           /*    pm1 <- 0   */
   VecSet(&zero,Sm1);                           /*    sm1 <- 0   */
   VecSet(&zero,Qm1);                           /*    Qm1 <- 0   */
-  PRE(itP,R,P);                               /*     p <- Br        */
+  PCApply(itP->B,R,P);                          /*     p <- Br        */
   if (pres) {
       VecNorm(P,&dp);                          /*    dp <- z'*z       */
       }
@@ -67,10 +67,10 @@ static int  KSPiCRSolve(KSP itP,int *its)
   if (CONVERGED(itP,dp,0)) {*its = 0; return 0;}
   MONITOR(itP,dp,0);
   if (history) history[0] = dp;
-  MM(itP,P,Q);                                /*    q <- A p      */
+  MatMult(itP->A,P,Q);                        /*    q <- A p      */
 
   for ( i=0; i<maxit; i++) {
-     PRE(itP,Q,S);                            /*     s <- Bq        */
+     PCApply(itP->B,Q,S);                       /*     s <- Bq        */
      VecDot(R,S,&btop);                        /*                    */
      VecDot(Q,S,&bbot);                        /*     lambda =     */
      lambda = btop/bbot;
@@ -80,7 +80,7 @@ static int  KSPiCRSolve(KSP itP,int *its)
      if (history && hist_len > i + 1) history[i+1] = dp;
      MONITOR(itP,dp,i+1);
      if (CONVERGED(itP,dp,i+1)) break;
-     MM(itP,S,T);                               /* T <-   As */
+     MatMult(itP->A,S,T);                          /* T <-   As */
      VecDot(T,S,&btop);                          /*                    */
      alpha0 = btop/bbot;
      VecDot(T,Sm1,&btop);                          /*                    */

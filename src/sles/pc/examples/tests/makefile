@@ -33,4 +33,4 @@ ex4: ex4.o
 	-$(CLINKER) -o ex4 ex4.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex4.o
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -29,7 +29,7 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
     vbinvf = vb;
   }
   else {
-    PRE(itP,vb,vbinvf);
+    PCApply(itP->B,vb,vbinvf);
     itP->nbinv++;
   }
   if (!itP->guess_zero) {
@@ -38,12 +38,12 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
     if (itP->right_pre) {
         /* we want a * binv * b * x, or just a * x for the first step */
         /* a*x into temp */
-        MM(itP, vsoln, vt1 );
+        MatMult(itP->A, vsoln, vt1 );
 	itP->namult++;
     }
     else {
         /* else we do binv * a * x */
-        MATOP(itP, vsoln, vt1, vt2 );
+        PCApplyBAorAB(itP->B,itP->right_pre, vsoln, vt1, vt2 );
 	itP->nmatop++;
     }
     /* This is an extra copy for the right-inverse case */
@@ -75,7 +75,7 @@ int KSPUnwindPre( KSP itP, Vec vsoln, Vec vt1 )
 /* If we preconditioned on the right, we need to solve for the correction to
    the unpreconditioned problem.  Nothing needs to be done on the left. */
   if (itP->right_pre) {
-    PRE(itP, vsoln, vt1 );
+    PCApply(itP->B, vsoln, vt1 );
     VecCopy( vt1, vsoln );
     itP->nbinv++;
   }

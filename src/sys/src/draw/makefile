@@ -14,4 +14,4 @@ LIBBASE  = libpetscdraw
 LINCLUDE = $(SOURCEH)
 DIRS     = src impls tests examples
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

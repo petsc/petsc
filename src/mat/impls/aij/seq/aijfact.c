@@ -93,7 +93,7 @@ int MatiAIJLUFactorSymbolic(Mat mat,IS isrow,IS iscol,Mat *fact)
   ISDestroy(isicol); FREE(fill);
 
   /* put together the new matrix */
-  ierr = MatCreateSequentialAIJ(n, n, 0, fact); CHKERR(ierr);
+  ierr = MatCreateSequentialAIJ(n, n, 0, 0, fact); CHKERR(ierr);
   aijnew = (Matiaij *) (*fact)->data;
   FREE(aijnew->imax);
   aijnew->singlemalloc = 0;

@@ -8,6 +8,8 @@
 
   Input Parameter:
 .  v - the object to check
+
+  Keywords: vector, valid
 @*/
 int VecValidVector(Vec v)
 {
@@ -24,6 +26,7 @@ int VecValidVector(Vec v)
   Output Parameter:
 .  val - the dot product
 
+  Keywords: vector, dot product, inner product
 @*/
 int VecDot(Vec x, Vec y, Scalar *val)
 {
@@ -41,6 +44,7 @@ int VecDot(Vec x, Vec y, Scalar *val)
   Output Parameter:
 .  val - the norm 
 
+  Keywords: vector, norm
 @*/
 int VecNorm(Vec x,double *val)  
 {
@@ -56,6 +60,7 @@ int VecNorm(Vec x,double *val)
   Output Parameter:
 .  val - the sum 
 
+  Keywords: vector, sum
 @*/
 int VecASum(Vec x,double *val)
 {
@@ -72,6 +77,8 @@ int VecASum(Vec x,double *val)
   Output Parameter:
 .  val - the max 
 .  p - the location
+
+  Keywords: vector, max
 @*/
 int VecMax(Vec x,int *p,double *val)
 {
@@ -88,6 +95,8 @@ int VecMax(Vec x,int *p,double *val)
 
   Output Parameter:
 .  val - the dot product
+
+  Keywords: vector, dot product, inner product, non-hermitian
 @*/
 int VecTDot(Vec x,Vec y,Scalar *val) 
 {
@@ -101,6 +110,8 @@ int VecTDot(Vec x,Vec y,Scalar *val)
   Input Parameters:
 .  x - the vector
 .  alpha - the scalar
+
+  Keywords: vector, scale
 @*/
 int VecScale(Scalar *alpha,Vec x)
 {
@@ -116,6 +127,8 @@ int VecScale(Scalar *alpha,Vec x)
 
   Output Parameters:
 .  y  - the copy
+
+  Keywords: vector, copy
 @*/
 int VecCopy(Vec x,Vec y)
 {
@@ -132,6 +145,8 @@ int VecCopy(Vec x,Vec y)
 
   Output Parameters:
 .  x  - the vector
+
+  Keywords: vector, set
 @*/
 int VecSet(Scalar *alpha,Vec x) 
 {
@@ -145,6 +160,8 @@ int VecSet(Scalar *alpha,Vec x)
   Input Parameters:
 .  alpha - the scalar
 .  x,y  - the vectors
+
+  Keywords: vector, saxpy
 @*/
 int VecAXPY(Scalar *alpha,Vec x,Vec y)
 {
@@ -290,6 +307,14 @@ int VecFreeVecs(Vec *vv,int m)
 
 /*@
      VecScatterBegin  -  Scatters from one vector into another.
+                         This is far more general than the usual
+                         scatter. Depending on ix, iy it can be 
+                         a gather or a scatter or a combination.
+                         If x is a parallel vector and y sequential
+                         it can serve to gather values to a single
+                         processor. Similar if y is paralle and 
+                         x sequential it can scatter from one processor
+                         to many.
 
   Input Parameters:
 .  x - vector to scatter from
@@ -302,10 +327,10 @@ int VecFreeVecs(Vec *vv,int m)
   Notes:
 .   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
+int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,ISScatterCtx *ctx)
 {
   VALIDHEADER(y,VEC_COOKIE);
-  return (*y->ops->scatterbegin)( x, ix, y, iy,ctx);
+  if (x->ops->scatterbegin) return (*x->ops->scatterbegin)( x, ix, y, iy,ctx);
 }
 /*@
      VecScatterEnd  -  End scatter from one vector into another.
@@ -322,15 +347,15 @@ int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
   Notes:
 .   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
+int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,ISScatterCtx *ctx)
 {
   VALIDHEADER(y,VEC_COOKIE);
-  return (*y->ops->scatterend)( x, ix, y, iy,ctx);
+  if (x->ops->scatterend) return (*x->ops->scatterend)( x, ix, y, iy,ctx);
 }
 
 /*@
      VecScatterAddBegin  -  Scatters from one vector into another.
-
+                            See VecScatterBegin().
   Input Parameters:
 .  x - vector to scatter from
 .  ix - indices of elements in x to take
@@ -342,7 +367,7 @@ int VecScatterEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
   Notes:
 .   y[iy[i]] += x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterAddBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
+int VecScatterAddBegin(Vec x,IS ix,Vec y,IS iy,ISScatterCtx *ctx)
 {
   VALIDHEADER(y,VEC_COOKIE);
   return (*y->ops->scatteraddbegin)( x, ix, y, iy,ctx);
@@ -363,7 +388,7 @@ int VecScatterAddBegin(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
   Notes:
 .   y[iy[i]] += x[ix[i]], for i=0,...,ni-1
 @*/
-int VecScatterAddEnd(Vec x,IS ix,Vec y,IS iy,VecScatterCtx *ctx)
+int VecScatterAddEnd(Vec x,IS ix,Vec y,IS iy,ISScatterCtx *ctx)
 {
   VALIDHEADER(y,VEC_COOKIE);
   return (*y->ops->scatteraddend)( x, ix, y, iy,ctx);

@@ -15,8 +15,7 @@ DIRS     = is vec ksp sys pc mat sles options draw include/pinclude
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
 all:
-	-cd sys; make BOPT=$(BOPT) PARCH=$(PARCH) workers
-	-@$(MAKE) BOPT=$(BOPT) PARCH=$(PARCH) libfasttree 
+	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PARCH) libfasttree 
 
 ranlib:
 	$(RANLIB) $(LDIR)/$(COMPLEX)/*.a
