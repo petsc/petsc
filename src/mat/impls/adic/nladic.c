@@ -32,8 +32,8 @@ struct NLF_DAAD {
 PetscErrorCode NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar residual)
 {
   PetscErrorCode ierr;
-  int  cnt = A->newton_its;
-  PetscScalar   ad_f[2],J,f;
+  PetscInt       cnt = A->newton_its;
+  PetscScalar    ad_f[2],J,f;
 
   PetscFunctionBegin;
   ad_vustart[1+2*gI] = 1.0;
@@ -60,12 +60,12 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT NLFRelax_DAAD(NLF A,MatSORType flag,int its,Vec xx)
 {
   PetscErrorCode ierr;
-  int j,gtdof,nI,gI;
-  PetscScalar   *avu,*av,*ad_vustart,*residual;
-  Vec           localxx;
-  DALocalInfo   info;
-  MatStencil    stencil;
-  void*         *ad_vu;
+  PetscInt       j,gtdof,nI,gI;
+  PetscScalar    *avu,*av,*ad_vustart,*residual;
+  Vec            localxx;
+  DALocalInfo    info;
+  MatStencil     stencil;
+  void*          *ad_vu;
 
   PetscFunctionBegin;
   if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
@@ -176,7 +176,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "NLFDAADSetNewtonIterations_DAAD"
 PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetNewtonIterations_DAAD(NLF A,int its)
 {
-
   PetscFunctionBegin;
   A->newton_its = its;
   PetscFunctionReturn(0);

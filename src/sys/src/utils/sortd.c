@@ -4,9 +4,6 @@
    These are provided because the general sort routines incur a great deal
    of overhead in calling the comparision routines.
 
-   The word "register"  in this code is used to identify data that is not
-   aliased.  For some compilers, this can cause the compiler to fail to
-   place inner-loop variables into registers.
  */
 #include "petsc.h"                /*I  "petsc.h"  I*/
 #include "petscsys.h"             /*I  "petscsys.h"    I*/
@@ -14,9 +11,9 @@
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
    
 #undef __FUNCT__  
-#define __FUNCT__ "PetsciDqsort"
+#define __FUNCT__ "PetscSortReal_Private"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
-static PetscErrorCode PetsciDqsort(PetscReal *v,PetscInt right)
+static PetscErrorCode PetscSortReal_Private(PetscReal *v,PetscInt right)
 {
   PetscInt  i,last;
   PetscReal vl,tmp;
@@ -35,8 +32,8 @@ static PetscErrorCode PetsciDqsort(PetscReal *v,PetscInt right)
     if (v[i] < vl) {last++; SWAP(v[last],v[i],tmp);}
   }
   SWAP(v[0],v[last],tmp);
-  PetsciDqsort(v,last-1);
-  PetsciDqsort(v+last+1,right-(last+1));
+  PetscSortReal_Private(v,last-1);
+  PetscSortReal_Private(v+last+1,right-(last+1));
   PetscFunctionReturn(0);
 }
 
@@ -74,7 +71,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
       }
     }
   } else {
-    PetsciDqsort(v,n-1);
+    PetscSortReal_Private(v,n-1);
   }
   PetscFunctionReturn(0);
 }

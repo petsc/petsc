@@ -24,6 +24,10 @@
        parameter (MPI_ERR_INTERN = 21)
        integer MPI_SUM
        parameter (MPI_SUM=0)
+       integer MPI_STATUS_SIZE
+       parameter (MPI_STATUS_SIZE=4)
+       integer MPI_UNDEFINED
+       parameter (MPI_UNDEFINED=-32766)
 
        INTEGER MPI_SOURCE,MPI_TAG,MPI_ERROR
        PARAMETER(MPI_SOURCE=2,MPI_TAG=3,MPI_ERROR=4)
