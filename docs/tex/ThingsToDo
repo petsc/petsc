@@ -26,6 +26,8 @@ Additional Capabilities that PETSc Needs:
 
    - Complex versions of the Krylov subspace solvers
 
+   - Inplace ILU(0).
+
    * Upgrade tohtml and doc2tex
 
    * More nonlinear solvers, including those for unconstrained minimization
@@ -58,7 +60,7 @@ Additional Capabilities that PETSc Needs:
 
 ----------------------------------------------------------------------
 
-Possible projects for summer students:
+Possible projects for students:
 
  - Develop code to rebalance matrices (and vectors) for better 
    load balance during matrix vector multiplies.
