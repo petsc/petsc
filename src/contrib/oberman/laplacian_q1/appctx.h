@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: appctx.h,v 1.7 2000/01/16 03:22:15 bsmith Exp bsmith $*/
 /*
        Defines data structures for writing a simple cell (element) based PDE code
     for solving scalar PDE problems like the Laplacian.
@@ -130,8 +130,6 @@ extern int AppCtxSolve(AppCtx*);
 
 double pde_f(double, double);
 double pde_bc(double, double);
-double pde_uu(double, double);
-double pde_vv(double, double);
 
 extern int AppCtxCreateRhs(AppCtx*);
 extern int AppCtxCreateMatrix(AppCtx*);
