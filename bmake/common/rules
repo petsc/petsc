@@ -5,7 +5,7 @@ LIBNAME     = $(LDIR)/$(LIBBASE).a
 SOURCE      = $(SOURCEC) $(SOURCEF)
 OBJS        = $(OBJSC) $(OBJSF)
 INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(MPI_INCLUDE) \
-              $(X11_INCLUDE) -I$(ITOOLSDIR)/src
+              $(X11_INCLUDE) $(BS_INCLUDE) -I$(ITOOLSDIR)/src
 
 PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
                 -lpetscsnes -lpetscsles -lpetscksp -lpetscmat \
