@@ -68,6 +68,10 @@ def petsc_configure(configure_options):
     msg = '***** Error in command line argument to configure.py *****\n' \
     +str(e)+'\n******************************************************\n'
     se = ''
+  except ImportError, e:
+    msg = '******* Unable to find module for configure.py *******\n' \
+    +str(e)+'\n******************************************************\n'
+    se = ''
   except SystemExit, e:
     if e.code is None or e.code == 0:
       return

@@ -9,7 +9,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.arch          = self.framework.require('PETSc.utilities.arch', self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.framework.require('config.setCompilers',self)
     return
 
