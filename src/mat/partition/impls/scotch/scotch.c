@@ -305,13 +305,13 @@ int MatPartitioningView_Scotch(MatPartitioning part, PetscViewer viewer)
 {
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
     int ierr, rank;
-    PetscTruth isascii;
+    PetscTruth iascii;
 
     PetscFunctionBegin;
 
     ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &isascii);CHKERRQ(ierr);
-    if (isascii) {
+    ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+    if (iascii) {
         if (!rank && scotch->mesg_log) {
             ierr = PetscViewerASCIIPrintf(viewer, "%s\n", scotch->mesg_log);CHKERRQ(ierr);
         }

@@ -221,7 +221,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int *cols[],PetscScalar *vals[])
 int MatView(Mat mat,PetscViewer viewer)
 {
   int               ierr,rows,cols;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   char              *cstr;
   PetscViewerFormat format;
 
@@ -234,8 +234,8 @@ int MatView(Mat mat,PetscViewer viewer)
   PetscCheckSameComm(mat,1,viewer,2);
   if (!mat->assembled) SETERRQ(1,"Must call MatAssemblyBegin/End() before viewing matrix");
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       if (mat->prefix) {
@@ -259,10 +259,10 @@ int MatView(Mat mat,PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = (*mat->ops->view)(mat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else if (!isascii) {
+  } else if (!iascii) {
     SETERRQ1(1,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
   }
-  if (isascii) {
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

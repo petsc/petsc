@@ -164,12 +164,12 @@ int MatPartitioningView_Jostle(MatPartitioning part, PetscViewer viewer)
     MatPartitioning_Jostle *jostle_struct =
         (MatPartitioning_Jostle *) part->data;
     int ierr;
-    PetscTruth isascii;
+    PetscTruth iascii;
 
     PetscFunctionBegin;
 
-    ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &isascii);CHKERRQ(ierr);
-    if (isascii) {
+    ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+    if (iascii) {
         if (jostle_struct->mesg_log) {
             ierr = PetscViewerASCIIPrintf(viewer, "%s\n", jostle_struct->mesg_log);CHKERRQ(ierr);
         }

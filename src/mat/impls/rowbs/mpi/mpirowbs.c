@@ -432,14 +432,14 @@ static int MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
 {
   Mat_MPIRowbs      *a = (Mat_MPIRowbs*)mat->data;
   int               ierr,i,j;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   BSspmat           *A = a->A;
   BSsprow           **rs = A->rows;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
 
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     int ind_l,ind_g,clq_l,clq_g,color;
@@ -614,15 +614,15 @@ int MatView_MPIRowbs(Mat mat,PetscViewer viewer)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)mat->data;
   int          ierr;
-  PetscTruth   isascii,isbinary;
+  PetscTruth   iascii,isbinary;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!bsif->blocksolveassembly) {
     ierr = MatAssemblyEnd_MPIRowbs_ForBlockSolve(mat);CHKERRQ(ierr);
   }
-  if (isascii) {
+  if (iascii) {
     ierr = MatView_MPIRowbs_ASCII(mat,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_MPIRowbs_Binary(mat,viewer);CHKERRQ(ierr);

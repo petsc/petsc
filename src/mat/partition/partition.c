@@ -448,7 +448,7 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 int MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 {
   int                 ierr;
-  PetscTruth          isascii;
+  PetscTruth          iascii;
   MatPartitioningType name;
 
   PetscFunctionBegin;
@@ -457,8 +457,8 @@ int MatPartitioningView(MatPartitioning part,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(part,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = MatPartitioningGetType(part,&name);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);CHKERRQ(ierr);
     if (part->vertex_weights) {

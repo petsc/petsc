@@ -181,24 +181,24 @@ static int PCView_Composite(PC pc,PetscViewer viewer)
   PC_Composite     *jac = (PC_Composite*)pc->data;
   int              ierr;
   PC_CompositeLink next = jac->head;
-  PetscTruth       isascii;
+  PetscTruth       iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
   }
-  if (isascii) {
+  if (iascii) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   }
   while (next) {
     ierr = PCView(next->pc,viewer);CHKERRQ(ierr);
     next = next->next;
   }
-  if (isascii) {
+  if (iascii) {
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   }

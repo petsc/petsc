@@ -133,11 +133,11 @@ static int PCView_Eisenstat(PC pc,PetscViewer viewer)
 {
   PC_Eisenstat *eis = (PC_Eisenstat*)pc->data; 
   int          ierr;
-  PetscTruth   isascii;
+  PetscTruth   iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: omega = %g\n",eis->omega);CHKERRQ(ierr);
     if (eis->usediag) {
       ierr = PetscViewerASCIIPrintf(viewer,"Eisenstat: Using diagonal scaling (default)\n");CHKERRQ(ierr);

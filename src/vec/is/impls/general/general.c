@@ -139,11 +139,11 @@ int ISView_General(IS is,PetscViewer viewer)
 {
   IS_General  *sub = (IS_General *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
-  PetscTruth  isascii;
+  PetscTruth  iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     MPI_Comm comm;
     int      rank,size;
 

@@ -608,7 +608,7 @@ int MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatView_DSCPACK"
 int MatView_DSCPACK(Mat A,PetscViewer viewer) {
   int               ierr,size;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_DSC           *lu=(Mat_DSC*)A->spptr;
 
@@ -625,8 +625,8 @@ int MatView_DSCPACK(Mat A,PetscViewer viewer) {
 
   ierr = MatConvert(A,MATDSCPACK,&A);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
       ierr = MatFactorInfo_DSCPACK(A,viewer);CHKERRQ(ierr);

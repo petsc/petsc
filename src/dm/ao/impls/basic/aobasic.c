@@ -21,13 +21,13 @@ int AOView_Basic(AO ao,PetscViewer viewer)
 {
   int        rank,ierr,i;
   AO_Basic   *aodebug = (AO_Basic*)ao->data;
-  PetscTruth isascii;
+  PetscTruth iascii;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
   if (!rank){
-    ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-    if (isascii) { 
+    ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+    if (iascii) { 
       ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
       for (i=0; i<aodebug->N; i++) {

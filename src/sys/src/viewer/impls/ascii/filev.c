@@ -177,13 +177,13 @@ extern FILE *petsc_history;
 int PetscViewerASCIISetTab(PetscViewer viewer,int tabs)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   int               ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ascii->tab = tabs;
   }
   PetscFunctionReturn(0);
@@ -215,13 +215,13 @@ int PetscViewerASCIISetTab(PetscViewer viewer,int tabs)
 int PetscViewerASCIIPushTab(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   int               ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ascii->tab++;
   }
   PetscFunctionReturn(0);
@@ -254,12 +254,12 @@ int PetscViewerASCIIPopTab(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   int               ierr;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     if (ascii->tab <= 0) SETERRQ(1,"More tabs popped than pushed");
     ascii->tab--;
   }
@@ -292,13 +292,13 @@ int PetscViewerASCIIPopTab(PetscViewer viewer)
 int PetscViewerASCIIUseTabs(PetscViewer viewer,PetscTruth flg)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   int               ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     if (flg) {
       ascii->tab       = ascii->tab_store;
     } else {
@@ -344,13 +344,13 @@ int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
   int               rank,tab,ierr;
   FILE              *fd = ascii->fd;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidCharPointer(format,2);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(1,"Not ASCII PetscViewer");
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (!iascii) SETERRQ(1,"Not ASCII PetscViewer");
 
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (ascii->bviewer) {ierr = MPI_Comm_rank(ascii->bviewer->comm,&rank);CHKERRQ(ierr);}
@@ -680,13 +680,13 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
   int               ierr,rank,tab = vascii->tab;
   MPI_Comm          comm;
   FILE              *fp;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidCharPointer(format,2);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(1,"Not ASCII PetscViewer");
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (!iascii) SETERRQ(1,"Not ASCII PetscViewer");
 
   comm = viewer->comm;
   fp   = vascii->fd;

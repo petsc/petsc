@@ -95,7 +95,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,PetscViewer viewer)
 int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
 {
   int               i,j,ierr;
-  PetscTruth        isdraw,isascii;
+  PetscTruth        isdraw,iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -105,10 +105,10 @@ int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   PetscCheckSameComm(c,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (isdraw) { 
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
-  } else if (isascii) {
+  } else if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",c->error_rel);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);CHKERRQ(ierr);

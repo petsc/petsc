@@ -5,7 +5,13 @@ import commands
 
 
 if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
-  print '******** You must have Python version 2.2 or higher to run configure ********'
+  print '********* You must have Python version 2.2 or higher to run configure ***********'
+  print '* Python is easy to install for end users or sys-admin. We urge you to upgrade  *'
+  print '*                   http://www.python.org/download/                             *'
+  print '*                                                                               *'
+  print '* You can configure PETSc manually BUT please, please consider upgrading python *'
+  print '* http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html#Manual   *'
+  print '*********************************************************************************'
   sys.exit(4)
   
 def getarch():

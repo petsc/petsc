@@ -460,7 +460,7 @@ int DMMGView(DMMG *dmmg,PetscViewer viewer)
 {
   int            ierr,i,nlevels = dmmg[0]->nlevels,flag;
   MPI_Comm       comm;
-  PetscTruth     isascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   PetscValidPointer(dmmg,1);
@@ -471,8 +471,8 @@ int DMMGView(DMMG *dmmg,PetscViewer viewer)
     SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the DMMG and the PetscViewer");
   }
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"DMMG Object with %d levels\n",nlevels);CHKERRQ(ierr);
   }
   for (i=0; i<nlevels; i++) {
@@ -480,7 +480,7 @@ int DMMGView(DMMG *dmmg,PetscViewer viewer)
     ierr = DMView(dmmg[i]->dm,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
-  if (isascii) {
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"%s Object on finest level\n",dmmg[nlevels-1]->ksp ? "KSP" : "SNES");CHKERRQ(ierr);
     if (dmmg[nlevels-1]->galerkin) {
       ierr = PetscViewerASCIIPrintf(viewer,"Using Galerkin R^T*A*R process to compute coarser matrices");CHKERRQ(ierr);

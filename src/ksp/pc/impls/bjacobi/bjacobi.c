@@ -222,13 +222,13 @@ static int PCView_BJacobi(PC pc,PetscViewer viewer)
 {
   PC_BJacobi  *jac = (PC_BJacobi*)pc->data;
   int         rank,ierr,i;
-  PetscTruth  isascii,isstring;
+  PetscTruth  iascii,isstring;
   PetscViewer sviewer;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     if (jac->use_true_local) {
       ierr = PetscViewerASCIIPrintf(viewer,"  block Jacobi: using true local matrix, number of blocks = %d\n",jac->n);CHKERRQ(ierr);
     }

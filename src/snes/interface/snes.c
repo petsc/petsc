@@ -45,7 +45,7 @@ int SNESView(SNES snes,PetscViewer viewer)
   int                 ierr;
   KSP                 ksp;
   char                *type;
-  PetscTruth          isascii,isstring;
+  PetscTruth          iascii,isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -53,9 +53,9 @@ int SNESView(SNES snes,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(snes,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     if (snes->prefix) {
       ierr = PetscViewerASCIIPrintf(viewer,"SNES Object:(%s)\n",snes->prefix);CHKERRQ(ierr);
     } else {

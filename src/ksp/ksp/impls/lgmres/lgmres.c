@@ -796,10 +796,10 @@ int KSPView_LGMRES(KSP ksp,PetscViewer viewer)
   KSP_LGMRES   *lgmres = (KSP_LGMRES *)ksp->data; 
   const char   *cstr;
   int          ierr;
-  PetscTruth   isascii,isstring;
+  PetscTruth   iascii,isstring;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (lgmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
     if (lgmres->cgstype == KSP_GMRES_CGS_REFINE_NEVER) {
@@ -814,7 +814,7 @@ int KSPView_LGMRES(KSP ksp,PetscViewer viewer)
   } else {
     cstr = "unknown orthogonalization";
   }
-  if (isascii) {
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: restart=%d, using %s\n",lgmres->max_k,cstr);CHKERRQ(ierr);
     /*LGMRES_MOD */
     ierr = PetscViewerASCIIPrintf(viewer,"  LGMRES: aug. dimension=%d\n",lgmres->aug_dim);CHKERRQ(ierr);

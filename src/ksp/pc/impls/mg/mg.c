@@ -289,11 +289,11 @@ static int PCView_MG(PC pc,PetscViewer viewer)
   MG         *mg = (MG*)pc->data;
   int        ierr,levels = mg[0]->levels,i;
   const char *cstring;
-  PetscTruth isascii;
+  PetscTruth iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     if (mg[0]->am == MGMULTIPLICATIVE) cstring = "multiplicative";
     else if (mg[0]->am == MGADDITIVE)  cstring = "additive";
     else if (mg[0]->am == MGFULL)      cstring = "full";

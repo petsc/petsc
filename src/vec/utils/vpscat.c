@@ -16,11 +16,11 @@ int VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
   VecScatter_MPI_General *from=(VecScatter_MPI_General*)ctx->fromdata;
   int                    i,rank,ierr;
   PetscViewerFormat      format;
-  PetscTruth             isascii;
+  PetscTruth             iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = MPI_Comm_rank(ctx->comm,&rank);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format ==  PETSC_VIEWER_ASCII_INFO) {

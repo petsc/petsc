@@ -544,10 +544,10 @@ int VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 int VecView_MPI(Vec xin,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii,issocket,isbinary,isdraw,ismathematica,isnetcdf,ishdf4,ismatlab;
+  PetscTruth iascii,issocket,isbinary,isdraw,ismathematica,isnetcdf,ishdf4,ismatlab;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -555,7 +555,7 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
-  if (isascii){
+  if (iascii){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (issocket) {
     ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
