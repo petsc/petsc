@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.34 1998/06/14 22:27:08 curfman Exp balay $ 
+# $Id: makefile,v 1.35 1998/06/15 16:25:41 balay Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -12,9 +12,12 @@
 # Specify PETSc installation and user-defined compiler flags
 # -----------------------------------------------------------------------
 
+# Denali - Origin2k
+#  PETSC_DIR = /sandbox/petsc/petsc
 # Argonne Quad machine
-  PETSC_DIR = /home/petsc/petsc-2.0.22
-#  PETSC_DIR = /tmp/curfman/petsc/
+#  PETSC_DIR = /ccsthome/petsc/petsc
+#  PETSC_DIR = /home/petsc/petsc-2.0.22
+#  PETSC_DIR = /tmp/bsmith/petsc/
 #   PETSC_DIR = /ccsthome/petsc/petsc
 # Argonne tmp directories
 #   PETSC_DIR = /tmp/petsc
@@ -51,10 +54,15 @@
 # CFLAGS/FFLAGS    -  Additional compiler flags if required by the application
 # CPPFLAGS/FPPFLAGS - Additional preprocessor flags for c/fortran
 # 
-CFLAGS    = 
-FFLAGS    =
-CPPFLAGS  =
-FPPFLAGS  =
+# format for version 2.0.22:
+#  CFLAGS    = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' 
+
+# format for version 2.0.23 and higher
+ CFLAGS    = 
+ FFLAGS    =
+ CPPFLAGS  =
+ FPPFLAGS  =
+
 LOCDIR    = src/contrib/euler/
 
 
