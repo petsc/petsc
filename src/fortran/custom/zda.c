@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zda.c,v 1.5 1996/03/04 21:30:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: zda.c,v 1.6 1996/03/05 00:06:55 curfman Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -28,11 +28,11 @@ static char vcid[] = "$Id: zda.c,v 1.5 1996/03/04 21:30:31 bsmith Exp curfman $"
 extern "C" {
 #endif
 
-void dagetglobalindices_(DA da,int *n, int *indices, int *__ierr )
+void dagetglobalindices_(DA da,int *n, int *indices, int *ia,int *__ierr )
 {
   int *idx;
   *__ierr = DAGetGlobalIndices((DA)MPIR_ToPointer(*(int*)(da)),n,&idx);
-  PetscMemcpy(indices,idx,(*n)*sizeof(int));
+  *ia     = PetscIntAddressToFortran(indices,idx);
 }
 
 void dagetdistributedvector_(DA da,Vec* g, int *__ierr )
