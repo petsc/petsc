@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildlinks,v 1.26 1998/01/04 15:08:18 bsmith Exp balay $ 
+# $Id: buildlinks,v 1.27 1998/04/30 15:28:48 balay Exp balay $ 
 
 #
 # Builds PETSc shadow directory.  This is used in conjunction with addlinks.
@@ -14,7 +14,7 @@ set petscdir=/home/bsmith/petsc
 if ( ! -d $shadowdir ) then 
   echo Creating $shadowdir 
   mkdir -p $shadowdir 
-  chgrp pdetools $shadowdir 
+  chgrp petsc $shadowdir 
   chmod g+w $shadowdir 
   chmod g+s $shadowdir 
 endif

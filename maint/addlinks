@@ -1,5 +1,5 @@
 #!/usr/local/bin/tcsh
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: addlinks,v 1.14 1997/09/10 19:38:27 balay Exp balay $ 
 
 #!/bin/csh  #csh is unable to handle a VERY long list of files in the foreach loop (eg:adic/lapack)
 #
@@ -18,7 +18,7 @@ set shadowdir=`echo $petscdir | sed s%/home/bsmith/petsc%$shadowdir%`
 if (! -e $shadowdir) then
   echo "mkdir $shadowdir"
   mkdir $shadowdir
-  chgrp pdetools $shadowdir
+  chgrp petsc $shadowdir
   chmod g+ws $shadowdir
 endif
 

@@ -1,8 +1,8 @@
 #! /bin/sh
-# $Id: mkpdir,v 1.6 1998/03/16 21:05:06 balay Exp balay $ 
+# $Id: mkpdir,v 1.7 1998/04/23 13:22:05 balay Exp balay $ 
 
 mkdir $1
-chgrp pdetools $1
+chgrp petsc $1
 chmod g+w $1
 chmod g+s $1
 mkdir $1/RCS
