@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.242 2000/10/11 18:57:04 balay Exp bsmith $ 
+# $Id: makefile,v 1.243 2000/10/24 20:26:04 bsmith Exp bsmith $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -305,6 +305,10 @@ ex75: ex75.o chkopts
 ex76: ex76.o chkopts
 	-${CLINKER} -o ex76 ex76.o ${PETSC_MAT_LIB}
 	${RM} ex76.o
+
+ex77: ex77.o chkopts
+	-${CLINKER} -o ex77 ex77.o ${PETSC_MAT_LIB}
+	${RM} ex77.o
 
 ex80: ex80.o chkopts
 	-${CLINKER} -o ex80 ex80.o ${PETSC_MAT_LIB}

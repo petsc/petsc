@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.4 2000/09/28 21:11:49 bsmith Exp hzhang $*/
+/*$Id: ex76.c,v 1.5 2000/10/09 13:44:03 hzhang Exp bsmith $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -8,7 +8,7 @@ static char help[] = "Tests matrix permutation for factorization and solve on ma
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec     x,y,b,s1;      
+  Vec     x,y,b;
   Mat     A;           /* linear system matrix */ 
   Mat     sA,sC;         /* symmetric part of the matrices */ 
 
