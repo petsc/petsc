@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.59 2001/01/15 21:48:50 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.60 2001/01/17 19:47:36 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -16,9 +16,9 @@ typedef enum { DA_STENCIL_STAR,DA_STENCIL_BOX } DAStencilType;
 typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
                DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC} 
                DAPeriodicType;
-#define DAXPeriodic(pt) ((pt) == DA_XPERIODIC || (pt) == DA_XYPERIODIC || (pt) == DA_XZPERIODIC || (pt) == DA_XYZPERIODIC)
-#define DAYPeriodic(pt) ((pt) == DA_YPERIODIC || (pt) == DA_XYPERIODIC || (pt) == DA_YZPERIODIC || (pt) == DA_XYZPERIODIC)
-#define DAZPeriodic(pt) ((pt) == DA_ZPERIODIC || (pt) == DA_XZPERIODIC || (pt) == DA_YZPERIODIC || (pt) == DA_XYZPERIODIC)
+#define DAXPeriodic(pt) ((pt)==DA_XPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_XYZPERIODIC)
+#define DAYPeriodic(pt) ((pt)==DA_YPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
+#define DAZPeriodic(pt) ((pt)==DA_ZPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
 
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
@@ -77,6 +77,7 @@ EXTERN int   DAVecRestoreArray(DA,Vec,void **);
 EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 
 #include "petscmat.h"
+EXTERN int   DAGetColoring(DA,ISColoring *,Mat *);
 EXTERN int   DAGetColoring(DA,ISColoring *,Mat *);
 EXTERN int   DAGetInterpolation(DA,DA,Mat*,Vec*);
 

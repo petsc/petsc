@@ -1,17 +1,18 @@
-/*$Id: fdda.c,v 1.57 2001/01/15 21:49:13 bsmith Exp balay $*/
+/*$Id: fdda.c,v 1.58 2001/01/16 18:21:25 balay Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
 #include "src/dm/da/daimpl.h" 
 
-EXTERN int DAGetColoring1d(DA,ISColoring *,Mat *);
-EXTERN int DAGetColoring2d(DA,ISColoring *,Mat *);
-EXTERN int DAGetColoring3d(DA,ISColoring *,Mat *);
+EXTERN int DAGetColoring1d_MPIAIJ(DA,ISColoring *,Mat *);
+EXTERN int DAGetColoring2d_MPIAIJ(DA,ISColoring *,Mat *);
+EXTERN int DAGetColoring3d_MPIAIJ(DA,ISColoring *,Mat *);
+EXTERN int DAGetColoring3d_MPIBAIJ(DA,ISColoring *,Mat *);
 
 #undef __FUNC__  
 #define __FUNC__ "DAGetColoring" 
 /*@C
-    DAGetColoring - Gets the coloring required for computing the Jacobian via
+    DAGetColoring - Gets the coloring and nonzero structure required for computing the Jacobian via
     finite differences on a function defined using a stencil on the DA.
 
     Collective on DA
@@ -31,7 +32,7 @@ EXTERN int DAGetColoring3d(DA,ISColoring *,Mat *);
       2) after the matrix is created, for BAIJ matrices we need to set nc to 1 and
          use MatSetValuesBlockedLocal() instead of MatSetValuesLocal()
 
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate()
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DAGetColoringMPIBAIJ()
 
 @*/
 int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
@@ -70,11 +71,76 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
   */
 
   if (dim == 1) {
-    ierr = DAGetColoring1d(da,coloring,J);CHKERRQ(ierr);
+    ierr = DAGetColoring1d_MPIAIJ(da,coloring,J);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr =  DAGetColoring2d(da,coloring,J);CHKERRQ(ierr);
+    ierr =  DAGetColoring2d_MPIAIJ(da,coloring,J);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr =  DAGetColoring3d(da,coloring,J);CHKERRQ(ierr);
+    ierr =  DAGetColoring3d_MPIAIJ(da,coloring,J);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetColoringMPIBAIJ" 
+/*@C
+    DAGetColoringMPIBAIJ - Gets the coloring and nonzero structure required for computing the Jacobian via
+    finite differences on a function defined using a stencil on the DA.
+
+    Collective on DA
+
+    Input Parameter:
+.   da - the distributed array
+
+    Output Parameters:
++   coloring - matrix coloring for use in computing Jacobians (or PETSC_NULL if not needed)
+-   J  - matrix with the correct nonzero structure  (or PETSC_NULL if not needed)
+        (obviously without the correct Jacobian values)
+
+    Level: advanced
+
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DAGetColoring()
+
+@*/
+int DAGetColoringMPIBAIJ(DA da,ISColoring *coloring,Mat *J)
+{
+  int            ierr,dim;
+
+  PetscFunctionBegin;
+  /*
+                                  m
+          ------------------------------------------------------
+         |                                                     |
+         |                                                     |
+         |               ----------------------                |
+         |               |                    |                |
+      n  |           yn  |                    |                |
+         |               |                    |                |
+         |               .---------------------                |
+         |             (xs,ys)     xn                          |
+         |            .                                        |
+         |         (gxs,gys)                                   |
+         |                                                     |
+          -----------------------------------------------------
+  */
+
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  
+  */
+  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+
+  /*
+     We do not provide a getcoloring function in the DA operations because 
+   the basic DA does not know about matrices. We think of DA as being more 
+   more low-level then matrices.
+  */
+
+  if (dim == 3) {
+    ierr =  DAGetColoring3d_MPIBAIJ(da,coloring,J);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,"Not done for %d dimension, send use mail petsc-maint@mcs.anl.gov for code",dim);
   }
 
   PetscFunctionReturn(0);
@@ -83,8 +149,8 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring2d" 
-int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
+#define __FUNC__ "DAGetColoring2d_MPIAIJ" 
+int DAGetColoring2d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,ii,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,w,s,*cols,k,nc,*rows,col,cnt,l,p;
@@ -226,8 +292,8 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring3d" 
-int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
+#define __FUNC__ "DAGetColoring3d_MPIAIJ" 
+int DAGetColoring3d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
@@ -382,8 +448,8 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
 /* ---------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetColoring1d" 
-int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
+#define __FUNC__ "DAGetColoring1d_MPIAIJ" 
+int DAGetColoring1d_MPIAIJ(DA da,ISColoring *coloring,Mat *J)
 {
   int                    ierr,xs,nx,*colors,i,i1,slot,gxs,gnx;           
   int                    m,dim,s,*cols,nc,*rows,col,cnt,l;
@@ -477,3 +543,175 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "DAGetColoring3d_MPIBAIJ" 
+int DAGetColoring3d_MPIBAIJ(DA da,ISColoring *coloring,Mat *J)
+{
+  int                    ierr,xs,ys,nx,ny,*colors,i,j,slot,gxs,gys,gnx,gny;           
+  int                    m,n,dim,s,*cols,k,nc,col,cnt,l,lcol,lrow,p,*dnz,*onz;
+  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
+  MPI_Comm               comm;
+  Scalar                 *values;
+  DAPeriodicType         wrap;
+  DAStencilType          st;
+  ISLocalToGlobalMapping ltog;
+
+  PetscFunctionBegin;
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  
+  */
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
+  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,"Currently no support for periodic");
+  col    = 2*s + 1;
+
+  ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+
+  /* create the coloring */
+  if (coloring) {
+    ierr = PetscMalloc(nx*ny*nz*sizeof(int),&colors);CHKERRQ(ierr);
+    ii   = 0;
+    for (k=zs; k<zs+nz; k++) {
+      for (j=ys; j<ys+ny; j++) {
+        for (i=xs; i<xs+nx; i++) {
+          colors[ii++] = (i % col) + col*(j % col) + col*col*(k % col);
+        }
+      }
+    }
+    ierr = ISColoringCreate(comm,nx*ny*nz,colors,coloring);CHKERRQ(ierr);
+    ierr = PetscFree(colors);CHKERRQ(ierr);
+  }
+
+  /* create the matrix */
+  if (J) {
+
+    ierr  = PetscMalloc(col*col*col*nc*nc*sizeof(Scalar),&values);CHKERRQ(ierr);
+    ierr  = PetscMemzero(values,col*col*col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+    ierr  = PetscMalloc(col*col*col*sizeof(int),&cols);CHKERRQ(ierr);
+
+    ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);
+
+    /* determine the matrix preallocation information */
+    ierr = MatPreallocateInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
+    for (i=xs; i<xs+nx; i++) {
+      istart = PetscMax(-s,-i);
+      iend   = PetscMin(s,m-i-1);
+      for (j=ys; j<ys+ny; j++) {
+        jstart = PetscMax(-s,-j); 
+        jend   = PetscMin(s,n-j-1);
+        for (k=zs; k<zs+nz; k++) {
+          kstart = PetscMax(-s,-k); 
+          kend   = PetscMin(s,p-k-1);
+
+          slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+
+          /* Find block columns in block row */
+          cnt  = 0;
+          if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
+            for (ii=istart; ii<iend+1; ii++) {
+              for (jj=jstart; jj<jend+1; jj++) {
+                for (kk=kstart; kk<kend+1; kk++) {
+                  cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
+                }
+              }
+            }
+          }
+          else {  /* Star stencil */
+            cnt  = 0;
+            for (ii=istart; ii<iend+1; ii++) {
+              if (ii) {
+                /* jj and kk must be zero */
+                /* cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk; */
+                cols[cnt++]  = slot + ii;
+              }
+              else {
+                for (jj=jstart; jj<jend+1; jj++) {
+                  if (jj) {
+                  /* ii and kk must be zero */
+                    cols[cnt++]  = slot + gnx*jj;
+                  }
+                  else {
+                    /* ii and jj must be zero */
+                    for (kk=kstart; kk<kend+1; kk++) {
+                      cols[cnt++]  = slot + gnx*gny*kk;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          ierr = MatPreallocateSetLocal(ltog,1,&slot,cnt,cols,dnz,onz);CHKERRQ(ierr);
+        }
+      }
+    }
+
+        /* create empty Jacobian matrix */
+    ierr = MatCreateMPIBAIJ(comm,nc,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,
+                            PETSC_DECIDE,0,dnz,0,onz,J);CHKERRQ(ierr);
+
+    ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMappingBlock(*J,ltog);CHKERRQ(ierr);
+
+    /*
+      For each node in the grid: we get the neighbors in the local (on processor ordering
+    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
+    PETSc ordering.
+    */
+
+    for (i=xs; i<xs+nx; i++) {
+      istart = PetscMax(-s,-i);
+      iend   = PetscMin(s,m-i-1);
+      for (j=ys; j<ys+ny; j++) {
+        jstart = PetscMax(-s,-j); 
+        jend   = PetscMin(s,n-j-1);
+        for (k=zs; k<zs+nz; k++) {
+          kstart = PetscMax(-s,-k); 
+          kend   = PetscMin(s,p-k-1);
+
+          slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+
+          cnt  = 0;
+          if (st == DA_STENCIL_BOX) {   /* if using BOX stencil */
+            for (ii=istart; ii<iend+1; ii++) {
+              for (jj=jstart; jj<jend+1; jj++) {
+                for (kk=kstart; kk<kend+1; kk++) {
+                  cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk;
+                }
+              }
+            }
+          } else {  /* Star stencil */
+            cnt  = 0;
+            for (ii=istart; ii<iend+1; ii++) {
+              if (ii) {
+                /* jj and kk must be zero */
+                /* cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk; */
+                cols[cnt++]  = slot + ii;
+              } else {
+                for (jj=jstart; jj<jend+1; jj++) {
+                  if (jj) {
+                  /* ii and kk must be zero */
+                    cols[cnt++]  = slot + gnx*jj;
+                  } else {
+                    /* ii and jj must be zero */
+                    for (kk=kstart; kk<kend+1; kk++) {
+                      cols[cnt++]  = slot + gnx*gny*kk;
+                    }
+                  }
+                }
+              }
+            }
+          }
+          ierr = MatSetValuesBlockedLocal(*J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        }
+      }
+    }
+    ierr = PetscFree(values);CHKERRQ(ierr);
+    ierr = PetscFree(cols);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  }
+  PetscFunctionReturn(0);
+}
