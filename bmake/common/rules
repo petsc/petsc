@@ -1,4 +1,4 @@
-# $Id: common,v 1.192 1997/09/17 04:31:45 bsmith Exp bsmith $ 
+# $Id: common,v 1.193 1997/09/24 19:11:38 bsmith Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -131,7 +131,7 @@ libfast: chkpetsc_dir $(SOURCEC) $(SOURCEF)
 	     $(CC) -c $(CFLAGS) $(COPTFLAGS) $(SOURCEC) $(SSOURCE) ;\
 	fi
 	@-if [ "$(SOURCEF)" != "" ] ; then \
-	     $(FC) -c $(FFLAGS) $(FOPTFLAGS) $(SOURCEF) ;\
+	     $(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $(SOURCEF) ;\
 	fi
 	@-if [ "$(OBJS)" != " " ] ; then \
 	  $(AR) cr $(LIBNAME) $(OBJS) $(SOBJS); \
