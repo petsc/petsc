@@ -8,10 +8,11 @@ the MatRelax() routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat       mat;
-  Vec       b,u;
-  PC        pc;
-  int       ierr,n = 5,i,col[3];
+  Mat            mat;
+  Vec            b,u;
+  PC             pc;
+  PetscErrorCode ierr;
+  PetscInt       n = 5,i,col[3];
   PetscScalar    value[3],zero = 0.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);

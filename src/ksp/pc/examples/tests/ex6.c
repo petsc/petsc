@@ -7,7 +7,7 @@ static char help[] = "Creates a matrix using 9 pt stensil, and uses it to test M
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
-int FormElementStiffness(PetscReal H,PetscScalar *Ke)
+PetscErrorCode FormElementStiffness(PetscReal H,PetscScalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
   Ke[4]  = -.125*H;  Ke[5]  = H/6.0;   Ke[6]  = -.125*H;  Ke[7]  = H/12.0;
@@ -17,7 +17,7 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 }
 #undef __FUNCT__
 #define __FUNCT__ "FormElementRhs"
-int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
+PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 {
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
   return 0;
@@ -60,7 +60,6 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-
   for (ol=0; ol<m+2; ++ol) {
 
     ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,0,&Nsub1,&is1);CHKERRQ(ierr);
@@ -84,8 +83,8 @@ int main(int argc,char **args)
     ierr = PetscFree(is1);CHKERRQ(ierr);
     ierr = PetscFree(is2);CHKERRQ(ierr);
   }
-    ierr = MatDestroy(C);CHKERRQ(ierr);  
-    ierr = PetscFinalize();CHKERRQ(ierr);
-return 0;
+  ierr = MatDestroy(C);CHKERRQ(ierr);  
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  return 0;
 }
 

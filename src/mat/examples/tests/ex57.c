@@ -13,14 +13,16 @@ Options:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {  
-  char        fin[PETSC_MAX_PATH_LEN],fout[PETSC_MAX_PATH_LEN] ="default.mat";
-  PetscViewer fdin,fdout;               
-  Vec         b;   
-  MatType     mtype = MATSEQBAIJ;            
-  Mat         A,*B;             
-  int         ierr,start=0,size;
-  IS          isrow,iscol;
-  PetscTruth  flg;
+  char           fin[PETSC_MAX_PATH_LEN],fout[PETSC_MAX_PATH_LEN] ="default.mat";
+  PetscViewer    fdin,fdout;               
+  Vec            b;   
+  const MatType  mtype = MATSEQBAIJ;            
+  Mat            A,*B;             
+  PetscErrorCode ierr;
+  PetscInt       start=0;
+  PetscMPIInt    size;
+  IS             isrow,iscol;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

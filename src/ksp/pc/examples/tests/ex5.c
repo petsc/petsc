@@ -14,16 +14,16 @@ This example also demonstrates matrix-free methods\n\n";
 */
 #include "petscmg.h"
 
-int  residual(Mat,Vec,Vec,Vec);
-int  gauss_seidel(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
-int  jacobi(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
-int  interpolate(Mat,Vec,Vec,Vec);
-int  restrct(Mat,Vec,Vec);
-int  Create1dLaplacian(int,Mat*);
-int  CalculateRhs(Vec);
-int  CalculateError(Vec,Vec,Vec,PetscReal*);
-int  CalculateSolution(int,Vec*);
-int  amult(Mat,Vec,Vec);
+PetscErrorCode  residual(Mat,Vec,Vec,Vec);
+PetscErrorCode  gauss_seidel(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt);
+PetscErrorCode  jacobi(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt);
+PetscErrorCode  interpolate(Mat,Vec,Vec,Vec);
+PetscErrorCode  restrct(Mat,Vec,Vec);
+PetscErrorCode  Create1dLaplacian(PetscInt,Mat*);
+PetscErrorCode  CalculateRhs(Vec);
+PetscErrorCode  CalculateError(Vec,Vec,Vec,PetscReal*);
+PetscErrorCode  CalculateSolution(PetscInt,Vec*);
+PetscErrorCode  amult(Mat,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -55,7 +55,7 @@ int main(int Argc,char **Args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-j",&flg);CHKERRQ(ierr);
   if (flg) {use_jacobi = 1;}
          
-  ierr = PetscMalloc(levels*sizeof(int),&N);CHKERRQ(ierr);
+  ierr = PetscMalloc(levels*sizeof(PetscInt),&N);CHKERRQ(ierr);
   N[0] = x_mesh;
   for (i=1; i<levels; i++) {
     N[i] = N[i-1]/2;
@@ -172,10 +172,11 @@ int main(int Argc,char **Args)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "residual"
-int residual(Mat mat,Vec bb,Vec xx,Vec rr)
+PetscErrorCode residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
-  int         i,n1,ierr;
-  PetscScalar *b,*x,*r;
+  PetscInt       i,n1;
+  PetscErrorCode ierr;
+  PetscScalar    *b,*x,*r;
 
   PetscFunctionBegin;
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr);
@@ -195,10 +196,11 @@ int residual(Mat mat,Vec bb,Vec xx,Vec rr)
 }
 #undef __FUNCT__
 #define __FUNCT__ "amult"
-int amult(Mat mat,Vec xx,Vec yy)
+PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 {
-  int         i,n1,ierr;
-  PetscScalar *y,*x;
+  PetscInt       i,n1;
+  PetscErrorCode ierr;
+  PetscScalar    *y,*x;
 
   PetscFunctionBegin;
   ierr = VecGetSize(xx,&n1);CHKERRQ(ierr);
@@ -217,10 +219,11 @@ int amult(Mat mat,Vec xx,Vec yy)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "gauss_seidel"
-int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,int m)
+PetscErrorCode gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m)
 {
-  int         i,n1,ierr;
-  PetscScalar *x,*b;
+  PetscInt       i,n1;
+  PetscErrorCode ierr;
+  PetscScalar    *x,*b;
 
   PetscFunctionBegin;
   ierr = VecGetSize(bb,&n1);CHKERRQ(ierr); n1--;
@@ -244,10 +247,11 @@ int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,P
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "jacobi"
-int jacobi(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,int m)
+PetscErrorCode jacobi(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m)
 {
-  int         i,n,n1,ierr;
-  PetscScalar *r,*b,*x;
+  PetscInt       i,n,n1;
+  PetscErrorCode ierr;
+  PetscScalar    *r,*b,*x;
 
   PetscFunctionBegin;
   ierr = VecGetSize(bb,&n);CHKERRQ(ierr); n1 = n - 1;
@@ -274,10 +278,11 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscRe
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "interpolate"
-int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
+PetscErrorCode interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
-  int         i,n,N,i2,ierr;
-  PetscScalar *x,*y;
+  PetscInt       i,n,N,i2;
+  PetscErrorCode ierr;
+  PetscScalar    *x,*y;
 
   PetscFunctionBegin;
   ierr = VecGetSize(yy,&N);CHKERRQ(ierr);
@@ -297,10 +302,11 @@ int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "restrct"
-int restrct(Mat mat,Vec rr,Vec bb)
+PetscErrorCode restrct(Mat mat,Vec rr,Vec bb)
 {
-  int         i,n,N,i2,ierr;
-  PetscScalar *r,*b;
+  PetscInt       i,n,N,i2;
+  PetscErrorCode ierr;
+  PetscScalar    *r,*b;
 
   PetscFunctionBegin;
   ierr = VecGetSize(rr,&N);CHKERRQ(ierr);
@@ -319,10 +325,11 @@ int restrct(Mat mat,Vec rr,Vec bb)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "Create2dLaplacian"
-int Create1dLaplacian(int n,Mat *mat)
+PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
 {
-  PetscScalar mone = -1.0,two = 2.0;
-  int         ierr,i,idx;
+  PetscScalar    mone = -1.0,two = 2.0;
+  PetscInt       i,idx;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,mat);CHKERRQ(ierr);
@@ -342,11 +349,12 @@ int Create1dLaplacian(int n,Mat *mat)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "CalculateRhs"
-int CalculateRhs(Vec u)
+PetscErrorCode CalculateRhs(Vec u)
 {
-  int         i,n,ierr;
-  PetscReal   h,x = 0.0;
-  PetscScalar uu;
+  PetscErrorCode ierr;
+  PetscInt       i,n;
+  PetscReal      h,x = 0.0;
+  PetscScalar    uu;
 
   PetscFunctionBegin;
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
@@ -361,11 +369,12 @@ int CalculateRhs(Vec u)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "CalculateSolution"
-int CalculateSolution(int n,Vec *solution)
+PetscErrorCode CalculateSolution(PetscInt n,Vec *solution)
 {
-  int         i,ierr;
-  PetscReal   h,x = 0.0;
-  PetscScalar uu;
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscReal      h,x = 0.0;
+  PetscScalar    uu;
 
   PetscFunctionBegin;
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,solution);CHKERRQ(ierr);
@@ -379,10 +388,10 @@ int CalculateSolution(int n,Vec *solution)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "CalculateError"
-int CalculateError(Vec solution,Vec u,Vec r,PetscReal *e)
+PetscErrorCode CalculateError(Vec solution,Vec u,Vec r,PetscReal *e)
 {
-  PetscScalar mone = -1.0;
-  int    ierr;
+  PetscScalar    mone = -1.0;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecNorm(r,NORM_2,e+2);CHKERRQ(ierr);

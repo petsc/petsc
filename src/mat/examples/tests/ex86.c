@@ -7,10 +7,10 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         ierr;
-  PetscViewer in,out;
-  Mat         inmat,outmat;
-  char        *infile = "split", *outfile = "together";
+  PetscErrorCode ierr;
+  PetscViewer    in,out;
+  Mat            inmat,outmat;
+  const char     *infile = "split", *outfile = "together";
 
   PetscInitialize(&argc,&argv,(char*) 0,0);
 

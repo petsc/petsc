@@ -8,11 +8,12 @@ static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagon
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C,A; 
-  int         i,j,ierr;
-  PetscScalar v;
-  PC          pc;
-  Vec         xtmp;
+  Mat            C,A; 
+  PetscInt       i,j;
+  PetscErrorCode ierr;
+  PetscScalar    v;
+  PC             pc;
+  Vec            xtmp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -44,7 +45,6 @@ int main(int argc,char **args)
   ierr = PCDestroy(pc);CHKERRQ(ierr);
   ierr = VecDestroy(xtmp);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
-
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

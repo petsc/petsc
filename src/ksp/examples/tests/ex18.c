@@ -13,7 +13,8 @@ Input arguments are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int            ierr,its,m,n,mvec;
+  PetscErrorCode ierr;
+  PetscInt       its,m,n,mvec;
   PetscLogDouble time1,time2,time;
   PetscReal      norm;
   PetscScalar    zero = 0.0,none = -1.0;

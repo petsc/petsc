@@ -10,17 +10,19 @@ Input arguments are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat          A,A_save,B,P,C;
-  Vec          x,v1,v2;
-  PetscViewer  viewer;
-  int          i,ierr,m,n,size,rank,j,idxn[10],M,N,nzp;
-  PetscReal    norm,norm_tmp,tol=1.e-10,fill=4.0;
-  PetscRandom  rdm;
-  char         file[4][128];
-  PetscTruth   flg,preload = PETSC_TRUE;
-  PetscScalar  a[10],rval,alpha,none = -1.0;
-  PetscTruth   Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
-  Vec          v3,v4,v5;
+  Mat            A,A_save,B,P,C;
+  Vec            x,v1,v2;
+  PetscViewer    viewer;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscInt       i,m,n,j,idxn[10],M,N,nzp;
+  PetscReal      norm,norm_tmp,tol=1.e-10,fill=4.0;
+  PetscRandom    rdm;
+  char           file[4][128];
+  PetscTruth     flg,preload = PETSC_TRUE;
+  PetscScalar    a[10],rval,alpha,none = -1.0;
+  PetscTruth     Test_MatMatMult=PETSC_TRUE,Test_MatMatMultTr=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE;
+  Vec            v3,v4,v5;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -100,7 +102,7 @@ int main(int argc,char **args)
   /*----------------------------*/
   if (size>1) Test_MatMatMultTr = PETSC_FALSE;
   if (Test_MatMatMultTr){
-    int PN;
+    PetscInt PN;
     ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
     PN   = M/2;
     nzp  = 5;
@@ -171,7 +173,7 @@ int main(int argc,char **args)
   /* Test MatPtAP() */
   /*----------------------*/
   if (Test_MatPtAP){
-    int PN;
+    PetscInt PN;
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
     PN   = M/2; 

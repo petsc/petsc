@@ -23,15 +23,16 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  KSP         ksp;             /* linear solver context */
-  Mat         A,B;                /* matrix */
-  Vec         x,b,u;          /* approx solution, RHS, exact solution */
-  PetscViewer fd;               /* viewer */
-  char        file[2][PETSC_MAX_PATH_LEN];     /* input file name */
-  int         ierr,its;
-  PetscTruth  flg;
-  PetscReal   norm;
-  PetscScalar zero = 0.0,none = -1.0;
+  KSP            ksp;             /* linear solver context */
+  Mat            A,B;                /* matrix */
+  Vec            x,b,u;          /* approx solution, RHS, exact solution */
+  PetscViewer    fd;               /* viewer */
+  char           file[2][PETSC_MAX_PATH_LEN];     /* input file name */
+  PetscErrorCode ierr;
+  PetscInt       its;
+  PetscTruth     flg;
+  PetscReal      norm;
+  PetscScalar    zero = 0.0,none = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

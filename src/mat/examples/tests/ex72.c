@@ -13,14 +13,16 @@ output file. Input parameters are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A;
-  Vec         b;
-  char        filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
-  int         i,m,n,nnz,ierr,size,col,row;
-  PetscScalar val;
-  FILE*       file;
-  PetscViewer view;
-  PetscRandom r;
+  Mat            A;
+  Vec            b;
+  char           filein[PETSC_MAX_PATH_LEN],fileout[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
+  PetscInt       i,m,n,nnz,col,row;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  PetscScalar    val;
+  FILE*          file;
+  PetscViewer    view;
+  PetscRandom    r;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

@@ -34,8 +34,8 @@
 PetscErrorCode AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
 {
   PetscErrorCode ierr;
-  int        *keys,nmax,i;
-  AOData     aodata;
+  PetscInt       *keys,nmax,i;
+  AOData         aodata;
 
   PetscFunctionBegin;
   /*
@@ -43,7 +43,7 @@ PetscErrorCode AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
   */
   nmax = PetscMax(agrid->cell_n,agrid->vertex_n);
   nmax = PetscMax(nmax,agrid->edge_n);
-  ierr = PetscMalloc(nmax*sizeof(int),&keys);CHKERRQ(ierr);
+  ierr = PetscMalloc(nmax*sizeof(PetscInt),&keys);CHKERRQ(ierr);
   for (i=0; i<nmax; i++) {
     keys[i] = i;
   }
@@ -73,7 +73,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
   PetscDraw       popup;                           /* help window */
   PetscDrawButton button;                          /* mouse button pressed */
   PetscErrorCode ierr;
-  int             cn, *cell;
+  PetscInt             cn, *cell;
   PetscReal       *vertex,cx,cy;
   char            title[120];
 
@@ -92,7 +92,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
   */
   ierr   = PetscMalloc(2*agrid->vertex_max*sizeof(PetscReal),&agrid->vertex);CHKERRQ(ierr);
   vertex = agrid->vertex;
-  ierr   = PetscMalloc(4*agrid->cell_max*sizeof(int),&agrid->cell_vertex);CHKERRQ(ierr);
+  ierr   = PetscMalloc(4*agrid->cell_max*sizeof(PetscInt),&agrid->cell_vertex);CHKERRQ(ierr);
   cell   = agrid->cell_vertex;
 
 
@@ -107,7 +107,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
   ierr     = PetscDrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
   cell[0] = cn;
-  sprintf(title,"Input grid: Number vertex %d Number cell %d",agrid->vertex_n,agrid->cell_n);
+  sprintf(title,"Input grid: Number vertex %d Number cell %d",(int)agrid->vertex_n,(int)agrid->cell_n);
   ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
   while (button == BUTTON_LEFT) {
     /* wait for second vertex */
@@ -120,7 +120,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
     ierr = PetscDrawLine(draw,vertex[2*cell[4*agrid->cell_n]],vertex[1+2*cell[4*agrid->cell_n]],
                          vertex[2*cell[4*agrid->cell_n+1]],vertex[1+2*cell[4*agrid->cell_n+1]],
                          PETSC_DRAW_RED);CHKERRQ(ierr);
-    sprintf(title,"Input grid: Number vertex %d Number cell %d",agrid->vertex_n,agrid->cell_n);
+    sprintf(title,"Input grid: Number vertex %d Number cell %d",(int)agrid->vertex_n,(int)agrid->cell_n);
     ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
     /* wait for third vertex */
     ierr = PetscDrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
     ierr = PetscDrawLine(draw,vertex[2*cell[4*agrid->cell_n+1]],vertex[1+2*cell[4*agrid->cell_n+1]],
                          vertex[2*cell[4*agrid->cell_n+2]],vertex[1+2*cell[4*agrid->cell_n+2]],
                          PETSC_DRAW_RED);CHKERRQ(ierr);
-    sprintf(title,"Input grid: Number vertex %d Number cell %d",agrid->vertex_n,agrid->cell_n);
+    sprintf(title,"Input grid: Number vertex %d Number cell %d",(int)agrid->vertex_n,(int)agrid->cell_n);
     ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
     /* wait for fourth vertex */
     ierr = PetscDrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
                          vertex[2*cell[4*agrid->cell_n+3]],vertex[1+2*cell[4*agrid->cell_n+3]],
                          PETSC_DRAW_RED);CHKERRQ(ierr);
     agrid->cell_n++;
-    sprintf(title,"Input grid: Number vertex %d Number cell %d",agrid->vertex_n,agrid->cell_n);
+    sprintf(title,"Input grid: Number vertex %d Number cell %d",(int)agrid->vertex_n,(int)agrid->cell_n);
     ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
 
     /* Get the first for the next cellralateral, or BUTTON_CENTER to end */
@@ -157,7 +157,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
     ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
     cell[4*agrid->cell_n] = cn;
 
-    sprintf(title,"Input grid: Number vertex %d Number cell %d",agrid->vertex_n,agrid->cell_n);
+    sprintf(title,"Input grid: Number vertex %d Number cell %d",(int)agrid->vertex_n,(int)agrid->cell_n);
     ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -171,7 +171,7 @@ PetscErrorCode AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
 */
 PetscErrorCode AOData2dGridFlipCells(AOData2dGrid agrid)
 {
-  int       i,*cell = agrid->cell_vertex, cell_n = agrid->cell_n;
+  PetscInt       i,*cell = agrid->cell_vertex, cell_n = agrid->cell_n;
   PetscReal *vertex = agrid->vertex, sign;
 
   PetscFunctionBegin;
@@ -191,7 +191,7 @@ PetscErrorCode AOData2dGridFlipCells(AOData2dGrid agrid)
      if (sign == 0.0) {
        SETERRQ(PETSC_ERR_USER,"Bad cell, zero area");
      } else if (sign > 0) {
-       int q1tmp = cell[4*i+1];
+       PetscInt q1tmp = cell[4*i+1];
        cell[4*i+1] = cell[4*i+3];
        cell[4*i+3] = q1tmp;
      }
@@ -204,9 +204,9 @@ PetscErrorCode AOData2dGridFlipCells(AOData2dGrid agrid)
 /*
      AOData2dGridAddNode - Maintains a list of nodes given so far
 */
-PetscErrorCode AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal cy, int *cn)
+PetscErrorCode AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal cy, PetscInt *cn)
 {
-  int i;
+  PetscInt i;
 
   PetscFunctionBegin;
   for (i=0; i<agrid->vertex_n; i++) {
@@ -231,16 +231,16 @@ PetscErrorCode AOData2dGridAddNode(AOData2dGrid agrid, PetscReal cx, PetscReal c
 PetscErrorCode AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 {
   PetscErrorCode ierr;
-  int  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e;
+  PetscInt  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e;
 
   PetscFunctionBegin;
   agrid->edge_max = 2*agrid->vertex_n;
   agrid->edge_n   = 0;
-  ierr      = PetscMalloc(2*agrid->edge_max*sizeof(int),&agrid->edge_vertex);CHKERRQ(ierr);
+  ierr      = PetscMalloc(2*agrid->edge_max*sizeof(PetscInt),&agrid->edge_vertex);CHKERRQ(ierr);
   edge      = agrid->edge_vertex;
-  ierr      = PetscMalloc(4*agrid->cell_max*sizeof(int),agrid->cell_edge);CHKERRQ(ierr);
+  ierr      = PetscMalloc(4*agrid->cell_max*sizeof(PetscInt),agrid->cell_edge);CHKERRQ(ierr);
   cell_edge = agrid->cell_edge;
-  ierr      = PetscMalloc(2*agrid->edge_max*sizeof(int),&agrid->edge_cell);CHKERRQ(ierr);
+  ierr      = PetscMalloc(2*agrid->edge_max*sizeof(PetscInt),&agrid->edge_cell);CHKERRQ(ierr);
   edge_cell = agrid->edge_cell;
 
   cell      = agrid->cell_vertex;
@@ -320,7 +320,7 @@ PetscErrorCode AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 
   }
 
-  ierr = PetscMalloc(4*agrid->cell_n*sizeof(int),&agrid->cell_cell);CHKERRQ(ierr);
+  ierr = PetscMalloc(4*agrid->cell_n*sizeof(PetscInt),&agrid->cell_cell);CHKERRQ(ierr);
   neighbors = agrid->cell_cell;
   for (i=0; i<agrid->cell_n; i++) {
     for (j=0; j<4; j++) {
@@ -340,7 +340,7 @@ PetscErrorCode AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 PetscErrorCode AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 {
   PetscErrorCode ierr;
-  int  i,j,*count,*cell_vertex = agrid->cell_vertex;
+  PetscInt  i,j,*count,*cell_vertex = agrid->cell_vertex;
 
   PetscFunctionBegin;
   /*
@@ -351,8 +351,8 @@ PetscErrorCode AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
   /*
       count contains number of cell that contain the given vertex 
   */
-  ierr = PetscMalloc(agrid->vertex_n*sizeof(int),&count);CHKERRQ(ierr);
-  ierr = PetscMemzero(count,agrid->vertex_n*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMalloc(agrid->vertex_n*sizeof(PetscInt),&count);CHKERRQ(ierr);
+  ierr = PetscMemzero(count,agrid->vertex_n*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (i=0; i<agrid->cell_n; i++) {
     for (j=0; j<4; j++) {
@@ -389,7 +389,7 @@ PetscErrorCode AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 PetscErrorCode AOData2dGridDraw(AOData2dGrid agrid,PetscDraw draw)
 {
   PetscErrorCode ierr;
-  int       i, *cell = agrid->cell_vertex, *edge = agrid->edge_vertex;
+  PetscInt       i, *cell = agrid->cell_vertex, *edge = agrid->edge_vertex;
   char      str[5];
   PetscReal *vertex = agrid->vertex,xx,yy,xmin,xmax,ymin,ymax,h,w;
 

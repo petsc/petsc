@@ -7,12 +7,14 @@ static char help[] = "Tests MatGetSubMatrices() for SBAIJ matrices\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         BAIJ,SBAIJ,*subBAIJ,*subSBAIJ;
-  PetscViewer viewer;
-  char        file[PETSC_MAX_PATH_LEN];
-  PetscTruth  flg;
-  int         ierr,n = 2,rank,issize;
-  IS          is,iss[2];
+  Mat            BAIJ,SBAIJ,*subBAIJ,*subSBAIJ;
+  PetscViewer    viewer;
+  char           file[PETSC_MAX_PATH_LEN];
+  PetscTruth     flg;
+  PetscErrorCode ierr;
+  PetscInt       n = 2,issize;
+  PetscMPIInt    rank;
+  IS             is,iss[2];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);

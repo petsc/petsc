@@ -4,11 +4,13 @@ static char help[] = "Testing MatMerge_SeqsToMPI().\n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-int main(int argc,char **argv) {
-  Mat         A,B;
-  MatScalar   a[1],alpha;
-  int         ierr,size,rank,m,n,i,col;
-  int         prid;
+int main(int argc,char **argv) 
+{
+  Mat            A,B;
+  MatScalar      a[1],alpha;
+  PetscMPIInt    size,rank;
+  PetscInt       m,n,i,col, prid;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

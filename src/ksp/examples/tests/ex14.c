@@ -67,17 +67,17 @@ T*/
 */
 typedef struct {
    PetscReal   param;          /* test problem parameter */
-   int         mx,my;          /* discretization in x,y directions */
+   PetscInt    mx,my;          /* discretization in x,y directions */
    Vec         localX,localF; /* ghosted local vector */
    DA          da;             /* distributed array data structure */
-   int         rank;           /* processor rank */
+   PetscInt    rank;           /* processor rank */
 } AppCtx;
 
 /* 
    User-defined routines
 */
-extern int ComputeFunction(AppCtx*,Vec,Vec),FormInitialGuess(AppCtx*,Vec);
-extern int ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
+extern PetscErrorCode ComputeFunction(AppCtx*,Vec,Vec),FormInitialGuess(AppCtx*,Vec);
+extern PetscErrorCode ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -94,7 +94,6 @@ int main(int argc,char **argv)
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   PetscInt       m,N;
   PetscErrorCode ierr;
-  KSP            ksp;
 
   /* --------------- Data to define nonlinear solver -------------- */
   PetscReal      rtol = 1.e-8;        /* relative convergence tolerance */
@@ -305,7 +304,7 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-int FormInitialGuess(AppCtx *user,Vec X)
+PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
   PetscInt     i,j,row,mx,my,ierr,xs,ys,xm,ym,gxm,gym,gxs,gys;
   PetscReal    one = 1.0,lambda,temp1,temp,hx,hy;
@@ -374,12 +373,13 @@ int FormInitialGuess(AppCtx *user,Vec X)
    Output Parameter:
 .  F - function vector
  */
-int ComputeFunction(AppCtx *user,Vec X,Vec F)
+PetscErrorCode ComputeFunction(AppCtx *user,Vec X,Vec F)
 {
-  int          ierr,i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
-  PetscReal    two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar  u,uxx,uyy,*x,*f;
-  Vec          localX = user->localX,localF = user->localF; 
+  PetscErrorCode ierr;
+  PetscInt       i,j,row,mx,my,xs,ys,xm,ym,gxs,gys,gxm,gym;
+  PetscReal      two = 2.0,one = 1.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar    u,uxx,uyy,*x,*f;
+  Vec            localX = user->localX,localF = user->localF; 
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);
@@ -458,13 +458,14 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
-int ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
+PetscErrorCode ComputeJacobian(AppCtx *user,Vec X,Mat jac,MatStructure *flag)
 {
-  Vec     localX = user->localX;   /* local vector */
-  int     *ltog;                   /* local-to-global mapping */
-  int     ierr,i,j,row,mx,my,col[5];
-  int     nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
-  PetscScalar  two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
+  PetscErrorCode ierr;
+  Vec            localX = user->localX;   /* local vector */
+  PetscInt       *ltog;                   /* local-to-global mapping */
+  PetscInt       i,j,row,mx,my,col[5];
+  PetscInt       nloc,xs,ys,xm,ym,gxs,gys,gxm,gym,grow;
+  PetscScalar    two = 2.0,one = 1.0,lambda,v[5],hx,hy,hxdhy,hydhx,sc,*x;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(PetscReal)(mx-1);  hy = one/(PetscReal)(my-1);

@@ -630,8 +630,8 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)c->B->data,*mat;
   PetscInt       **irow,**icol,*nrow,*ncol,*w3,*w4,start;
   PetscErrorCode ierr;
-  PetscMPIInt    size,tag0,tag1,tag2,tag3,*w1,*w2,nrqr,idex,end;
-  PetscInt       **sbuf1,**sbuf2,rank,i,j,k,l,ct1,ct2,**rbuf1,row,proc;
+  PetscMPIInt    size,tag0,tag1,tag2,tag3,*w1,*w2,nrqr,idex,end,proc;
+  PetscInt       **sbuf1,**sbuf2,rank,i,j,k,l,ct1,ct2,**rbuf1,row;
   PetscInt       nrqs,msz,**ptr,*req_size,*ctr,*pa,*tmp,tcol;
   PetscInt       **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2;
   PetscInt       **lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;
