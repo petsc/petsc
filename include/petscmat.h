@@ -629,7 +629,7 @@ EXTERN int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
 EXTERN int MatFDColoringApplyTS(Mat,MatFDColoring,PetscReal,Vec,MatStructure*,void *);
 EXTERN int MatFDColoringSetRecompute(MatFDColoring);
 EXTERN int MatFDColoringSetF(MatFDColoring,Vec);
-
+EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring,int*,int**);
 /* 
     These routines are for partitioning matrices: currently used only 
   for adjacency matrix, MatCreateMPIAdj().

@@ -413,7 +413,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   c->freq              = 1;
   c->usersetsrecompute = PETSC_FALSE;
   c->recompute         = PETSC_FALSE;
-
+  c->currentcolor      = -1;
   ierr = MatFDColoringView_Private(c);CHKERRQ(ierr);
 
   *color = c;
@@ -463,6 +463,39 @@ int MatFDColoringDestroy(MatFDColoring c)
   }
   PetscLogObjectDestroy(c);
   PetscHeaderDestroy(c);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatFDColoringGetPerturbedColumns"
+/*@C
+    MatFDColoringGetPerturbedColumns - Returns the indices of the columns that
+      that are currently being perturbed.
+
+    Not Collective
+
+    Input Parameters:
+.   coloring - coloring context created with MatFDColoringCreate()
+
+    Output Parameters:
++   n - the number of local columns being perturbed
+-   cols - the column indices, in global numbering
+
+   Level: intermediate
+
+.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringApply()
+
+.keywords: coloring, Jacobian, finite differences
+@*/
+EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring coloring,int *n,int **cols)
+{
+  PetscFunctionBegin;
+  if (coloring->currentcolor >= 0) {
+    *n    = coloring->ncolumns[coloring->currentcolor];
+    *cols = coloring->columns[coloring->currentcolor];
+  } else {
+    *n = 0;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -601,6 +634,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       Loop over each color
     */
     for (k=0; k<coloring->ncolors; k++) { 
+      coloring->currentcolor = k;
       ierr = VecCopy(x1,w3);CHKERRQ(ierr);
       ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
       /*
@@ -644,6 +678,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       }
       ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
     }
+    coloring->currentcolor = -1;
     ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
     xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
     ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

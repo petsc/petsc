@@ -697,6 +697,10 @@ static int PCSetFromOptions_HYPRE(PC pc)
 /*@
      PCHYPRESetType - Sets which hypre preconditioner you wish to use
 
+   Input Parameters:
++     pc - the preconditioner context
+-     name - either  pilut, parasails, boomerAMG, euclid
+
    Options Database Keys:
    -pc_hypre_type - One of pilut, parasails, boomerAMG, euclid
  
@@ -705,7 +709,7 @@ static int PCSetFromOptions_HYPRE(PC pc)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCHYPRE
 
-S*/
+@*/
 int PCHYPRESetType(PC pc,char *name)
 {
   int ierr,(*f)(PC,char*);
