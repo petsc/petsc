@@ -50,14 +50,14 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
 {
   SNES_TR             *neP = (SNES_TR*)snes->data;
   Vec                 X,F,Y,G,TMP,Ytmp;
-  PetscErrorCode ierr;
-  int                 maxits,i,lits,breakout = 0;
+  PetscErrorCode      ierr;
+  PetscInt            maxits,i,lits;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,nrm,ynorm,norm1;
   PetscScalar         mone = -1.0,cnorm;
   KSP                 ksp;
   SNESConvergedReason reason;
-  PetscTruth          conv;
+  PetscTruth          conv,breakout = PETSC_FALSE;
 
   PetscFunctionBegin;
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -146,7 +146,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       if (reason) {
         /* We're not progressing, so return with the current iterate */
         SNESMonitor(snes,i+1,fnorm);
-        breakout = 1;
+        breakout = PETSC_TRUE;
         break;
       }
       snes->numFailures++;
@@ -359,7 +359,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESCreate_TR"
 PetscErrorCode SNESCreate_TR(SNES snes)
 {
-  SNES_TR *neP;
+  SNES_TR        *neP;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

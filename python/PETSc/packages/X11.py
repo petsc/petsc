@@ -215,7 +215,7 @@ acfindx:
     return
 
   def configure(self):
-    if not self.framework.argDB['with-x'] or self.framework.argDB['with-64-bit-ints']:
+    if not self.framework.argDB['with-x']:
       self.executeTest(self.emptySubstitutions)
       return
     self.executeTest(self.configureLibrary)

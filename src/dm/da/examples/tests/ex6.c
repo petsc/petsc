@@ -9,10 +9,11 @@ static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            rank,M = 3,N = 5,P=3,s=1,w=2,nloc,l,i,j,k,kk;
-  int            m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,ierr;
-  int            Xs,Xm,Ys,Ym,Zs,Zm,iloc,*ltog,*iglobal;
-  int            *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
+  PetscMPIInt    rank;
+  PetscInt       M = 3,N = 5,P=3,s=1,w=2,nloc,l,i,j,k,kk,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
+  PetscErrorCode ierr;
+  PetscInt       Xs,Xm,Ys,Ym,Zs,Zm,iloc,*ltog,*iglobal;
+  PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   PetscTruth     test_order;
   DA             da;
   PetscViewer    viewer;
@@ -42,15 +43,15 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(1,"Must set -m option with -distribute option");
-    ierr = PetscMalloc(m*sizeof(int),&lx);CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
     if (n == PETSC_DECIDE) SETERRQ(1,"Must set -n option with -distribute option");
-    ierr = PetscMalloc(n*sizeof(int),&ly);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
     for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
     if (p == PETSC_DECIDE) SETERRQ(1,"Must set -p option with -distribute option");
-    ierr = PetscMalloc(p*sizeof(int),&lz);CHKERRQ(ierr);
+    ierr = PetscMalloc(p*sizeof(PetscInt),&lz);CHKERRQ(ierr);
     for (i=0; i<p-1; i++) { lz[i] = 2;}
     lz[p-1] = P - 2*(p-1);
   }
@@ -107,7 +108,7 @@ int main(int argc,char **argv)
     ierr = DAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
     ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
     /* ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-    ierr = PetscMalloc(nloc*sizeof(int),&iglobal);CHKERRQ(ierr);
+    ierr = PetscMalloc(nloc*sizeof(PetscInt),&iglobal);CHKERRQ(ierr);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,
        using the DA ordering of grid points */
@@ -138,7 +139,7 @@ int main(int argc,char **argv)
           iloc = w*((k-Zs)*Xm*Ym + (j-Ys)*Xm + i-Xs); 
           for (l=0; l<w; l++) {
             if (iglobal[kk] != ltog[iloc+l]) {
-              fprintf(stdout,"[%d] Problem with mapping: z=%d, j=%d, i=%d, l=%d, petsc1=%d, petsc2=%d\n",
+              ierr = PetscPrintf(MPI_COMM_WORLD,"[%D] Problem with mapping: z=%D, j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",
                       rank,k,j,i,l,ltog[iloc+l],iglobal[kk]);
             }
             kk++;

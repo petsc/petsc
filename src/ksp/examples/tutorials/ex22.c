@@ -17,18 +17,18 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 #include "petscda.h"
 #include "petscksp.h"
 
-extern int ComputeJacobian(DMMG,Mat);
-extern int ComputeRHS(DMMG,Vec);
+extern PetscErrorCode ComputeJacobian(DMMG,Mat);
+extern PetscErrorCode ComputeRHS(DMMG,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         ierr;
-  DMMG        *dmmg;
-  PetscScalar mone = -1.0;
-  PetscReal   norm;
-  DA          da;
+  PetscErrorCode ierr;
+  DMMG           *dmmg;
+  PetscScalar    mone = -1.0;
+  PetscReal      norm;
+  DA             da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -54,10 +54,11 @@ int main(int argc,char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRHS"
-int ComputeRHS(DMMG dmmg,Vec b)
+PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
 {
-  int    ierr,mx,my,mz;
-  PetscScalar h;
+  PetscErrorCode ierr;
+  PetscInt       mx,my,mz;
+  PetscScalar    h;
 
   PetscFunctionBegin;
   ierr = DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -68,12 +69,13 @@ int ComputeRHS(DMMG dmmg,Vec b)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
-int ComputeJacobian(DMMG dmmg,Mat jac)
+PetscErrorCode ComputeJacobian(DMMG dmmg,Mat jac)
 {
-  DA           da = (DA)dmmg->dm;
-  int          ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
-  PetscScalar  v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
-  MatStencil   row,col[7];
+  DA             da = (DA)dmmg->dm;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
+  PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
+  MatStencil     row,col[7];
 
   ierr = DAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);

@@ -24,24 +24,26 @@ T*/
 /* 
    Declare user-defined routines
 */
-extern int CheckError(Vec,Vec,Vec,int,int);
-extern int MyKSPMonitor(KSP,int,PetscReal,void*);
+extern PetscErrorCode CheckError(Vec,Vec,Vec,PetscInt,PetscEvent);
+extern PetscErrorCode MyKSPMonitor(KSP,PetscInt,PetscReal,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec          x1,b1,x2,b2; /* solution and RHS vectors for systems #1 and #2 */
-  Vec          u;              /* exact solution vector */
-  Mat          C1,C2;         /* matrices for systems #1 and #2 */
-  KSP          ksp1,ksp2;   /* KSP contexts for systems #1 and #2 */
-  int          ntimes = 3;     /* number of times to solve the linear systems */
-  int          CHECK_ERROR;    /* event number for error checking */
-  int          ldim,ierr,low,high,iglobal,Istart,Iend,Istart2,Iend2;
-  int          I,J,i,j,m = 3,n = 2,rank,size,its,t;
-  int          stages[3];
-  PetscTruth   flg;
-  PetscScalar  v;
+  Vec            x1,b1,x2,b2; /* solution and RHS vectors for systems #1 and #2 */
+  Vec            u;              /* exact solution vector */
+  Mat            C1,C2;         /* matrices for systems #1 and #2 */
+  KSP            ksp1,ksp2;   /* KSP contexts for systems #1 and #2 */
+  PetscInt       ntimes = 3;     /* number of times to solve the linear systems */
+  PetscEvent     CHECK_ERROR;    /* event number for error checking */
+  PetscInt       ldim,low,high,iglobal,Istart,Iend,Istart2,Iend2;
+  PetscInt       I,J,i,j,m = 3,n = 2,its,t;
+  PetscErrorCode ierr;
+  int            stages[3];
+  PetscTruth     flg;
+  PetscScalar    v;
+  PetscMPIInt    rank,size;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -350,9 +352,9 @@ int main(int argc,char **args)
      are no longer needed.
   */
   ierr = KSPDestroy(ksp1);CHKERRQ(ierr); ierr = KSPDestroy(ksp2);CHKERRQ(ierr);
-  ierr = VecDestroy(x1);CHKERRQ(ierr);     ierr = VecDestroy(x2);CHKERRQ(ierr);
-  ierr = VecDestroy(b1);CHKERRQ(ierr);     ierr = VecDestroy(b2);CHKERRQ(ierr);
-  ierr = MatDestroy(C1);CHKERRQ(ierr);     ierr = MatDestroy(C2);CHKERRQ(ierr);
+  ierr = VecDestroy(x1);CHKERRQ(ierr);   ierr = VecDestroy(x2);CHKERRQ(ierr);
+  ierr = VecDestroy(b1);CHKERRQ(ierr);   ierr = VecDestroy(b2);CHKERRQ(ierr);
+  ierr = MatDestroy(C1);CHKERRQ(ierr);   ierr = MatDestroy(C2);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -383,7 +385,7 @@ int main(int argc,char **args)
     the event (the vectors u,x,b).  Such information is optional;
     we could instead just use 0 instead for all objects.
 */
-int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
+PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscEvent CHECK_ERROR)
 {
   PetscScalar    none = -1.0;
   PetscReal      norm;
@@ -414,7 +416,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
      rnorm - 2-norm (preconditioned) residual value (may be estimated)
      dummy - optional user-defined monitor context (unused here)
 */
-int MyKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
+PetscErrorCode MyKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   Vec            x;
   PetscErrorCode ierr;

@@ -396,7 +396,7 @@ int Monitor(TS ts,int step,PetscReal time,Vec u,void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  printf("Timestep %3d: step size = %-11g, time = %-11g, 2-norm error = %-11g, max norm error = %-11g\n",
+  printf("Timestep %3D: step size = %-11g, time = %-11g, 2-norm error = %-11g, max norm error = %-11g\n",
          step,dt,time,norm_2,norm_max);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;

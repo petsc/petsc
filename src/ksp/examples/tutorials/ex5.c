@@ -33,9 +33,10 @@ int main(int argc,char **args)
   PetscScalar    v,none = -1.0;
   PetscInt       I,J,ldim,low,high,iglobal,Istart,Iend;
   PetscErrorCode ierr;
-  PetscInt       i,j,m = 3,n = 2,rank,size,its;
+  PetscInt       i,j,m = 3,n = 2,its;
+  PetscMPIInt    size,rank;
   PetscTruth     mat_nonsymmetric;
-  PetscInt       stages[2];
+  int            stages[2];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

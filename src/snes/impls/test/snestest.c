@@ -13,14 +13,14 @@ typedef struct {
 #define __FUNCT__ "SNESSolve_Test"
 PetscErrorCode SNESSolve_Test(SNES snes)
 {
-  Mat          A = snes->jacobian,B;
-  Vec          x = snes->vec_sol;
+  Mat            A = snes->jacobian,B;
+  Vec            x = snes->vec_sol;
   PetscErrorCode ierr;
-  int i;
-  MatStructure flg;
-  PetscScalar  mone = -1.0,one = 1.0;
-  PetscReal    nrm,gnorm;
-  SNES_Test    *neP = (SNES_Test*)snes->data;
+  PetscInt       i;
+  MatStructure   flg;
+  PetscScalar    mone = -1.0,one = 1.0;
+  PetscReal      nrm,gnorm;
+  SNES_Test      *neP = (SNES_Test*)snes->data;
 
   PetscFunctionBegin;
 
@@ -80,7 +80,7 @@ PetscErrorCode SNESDestroy_Test(SNES snes)
 #define __FUNCT__ "SNESSetFromOptions_Test"
 static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
 {
-  SNES_Test  *ls = (SNES_Test *)snes->data;
+  SNES_Test      *ls = (SNES_Test *)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -97,7 +97,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "SNESCreate_Test"
 PetscErrorCode SNESCreate_Test(SNES  snes)
 {
-  SNES_Test *neP;
+  SNES_Test      *neP;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -8,10 +8,12 @@ static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            rank,M = 10,N = 8,m = PETSC_DECIDE,ierr;
-  int            s=2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
-  int            Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
-  int            *lx = PETSC_NULL,*ly = PETSC_NULL;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
+  PetscInt       M = 10,N = 8,m = PETSC_DECIDE;
+  PetscInt       s=2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
+  PetscInt       Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
+  PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL;
   PetscTruth     testorder,flg;
   DAPeriodicType wrap = DA_NONPERIODIC;
   DA             da;
@@ -43,11 +45,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(1,"Must set -m option with -distribute option");
-    ierr = PetscMalloc(m*sizeof(int),&lx);CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
     if (n == PETSC_DECIDE) SETERRQ(1,"Must set -n option with -distribute option");
-    ierr = PetscMalloc(n*sizeof(int),&ly);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
     for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
   }
@@ -101,7 +103,7 @@ int main(int argc,char **argv)
     ierr = DAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL);CHKERRQ(ierr);
     ierr = DAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
     ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
-    ierr = PetscMalloc(nloc*sizeof(int),&iglobal);CHKERRQ(ierr);
+    ierr = PetscMalloc(nloc*sizeof(PetscInt),&iglobal);CHKERRQ(ierr);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,
        using the DA ordering of grid points */

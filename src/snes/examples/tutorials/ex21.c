@@ -36,24 +36,25 @@ static char help[] = "Solves PDE optimization problem.\n\n";
 
 typedef struct {
   DA           da1,da2;
-  int          nredundant;
+  PetscInt     nredundant;
   VecPack      packer;
   PetscViewer  u_viewer,lambda_viewer;
   PetscViewer  fu_viewer,flambda_viewer;
 } UserCtx;
 
-extern int FormFunction(SNES,Vec,Vec,void*);
-extern int Monitor(SNES,int,PetscReal,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int     ierr,its;
-  Vec     U,FU;
-  SNES    snes;
-  UserCtx user;
+  PetscErrorCode ierr;
+  PetscInt       its;
+  Vec            U,FU;
+  SNES           snes;
+  UserCtx        user;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
@@ -101,12 +102,13 @@ int main(int argc,char **argv)
       Evaluates FU = Gradiant(L(w,u,lambda))
 
 */
-int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
+PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
-  UserCtx *user = (UserCtx*)dummy;
-  int     ierr,xs,xm,i,N;
-  PetscScalar  *u,*lambda,*w,*fu,*fw,*flambda,d,h;
-  Vec     vu,vlambda,vfu,vflambda;
+  UserCtx        *user = (UserCtx*)dummy;
+  PetscErrorCode ierr;
+  PetscInt       xs,xm,i,N;
+  PetscScalar    *u,*lambda,*w,*fu,*fw,*flambda,d,h;
+  Vec            vu,vlambda,vfu,vflambda;
 
   PetscFunctionBegin;
   ierr = VecPackGetLocalVectors(user->packer,&w,&vu,&vlambda);CHKERRQ(ierr);
@@ -154,12 +156,12 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscFunctionReturn(0);
 }
 
-int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
+PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
 {
-  UserCtx *user = (UserCtx*)dummy;
-  int     ierr;
-  PetscScalar  *w;
-  Vec     u,lambda,U,F;
+  UserCtx        *user = (UserCtx*)dummy;
+  PetscErrorCode ierr;
+  PetscScalar    *w;
+  Vec            u,lambda,U,F;
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);

@@ -116,7 +116,7 @@ int main(int argc,char **args)
     for (i=0; i<M; i++){
       for (j=0; j<nzp; j++){
         ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-        idxn[j] = (int)(PetscRealPart(rval)*PN);
+        idxn[j] = (PetscInt)(PetscRealPart(rval)*PN);
       }
       ierr = MatSetValues(P,1,&i,nzp,idxn,a,ADD_VALUES);CHKERRQ(ierr);
     }
@@ -188,7 +188,7 @@ int main(int argc,char **args)
     for (i=0; i<M; i++){
       for (j=0; j<nzp; j++){
         ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
-        idxn[j] = (int)(PetscRealPart(rval)*PN);
+        idxn[j] = (PetscInt)(PetscRealPart(rval)*PN);
       }
       ierr = MatSetValues(P,1,&i,nzp,idxn,a,ADD_VALUES);CHKERRQ(ierr);
     }

@@ -126,7 +126,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   ierr = ISCreateGeneral(comm,Bnbs,c->garray,&garray_local);CHKERRQ(ierr);
   ierr = ISAllGather(garray_local, &garray_gl);CHKERRQ(ierr);
   ierr = ISDestroy(garray_local);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&Bnbs,1,MPI_INT,Bowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&Bnbs,1,MPIU_INT,Bowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
   Bowners[0] = 0;
   for (i=0; i<size; i++) Bowners[i+1] += Bowners[i];
   

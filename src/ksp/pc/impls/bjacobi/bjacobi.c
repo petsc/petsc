@@ -295,7 +295,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiGetSubKSP_BJacobi"
-PetscErrorCode PCBJacobiGetSubKSP_BJacobi(PC pc,int *n_local,int *first_local,KSP **ksp)
+PetscErrorCode PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_local,PetscInt *first_local,KSP **ksp)
 {
   PC_BJacobi   *jac = (PC_BJacobi*)pc->data;;
 

@@ -109,9 +109,9 @@ EXTERN PetscErrorCode TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,voi
 EXTERN PetscErrorCode TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
 EXTERN PetscErrorCode TSPseudoComputeTimeStep(TS,PetscReal *);
 
-EXTERN PetscErrorCode TSPseudoSetVerifyTimeStep(TS,PetscErrorCode(*)(TS,Vec,void*,PetscReal*,PetscInt*),void*);
-EXTERN PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,PetscReal*,PetscInt*);
-EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,PetscInt*);
+EXTERN PetscErrorCode TSPseudoSetVerifyTimeStep(TS,PetscErrorCode(*)(TS,Vec,void*,PetscReal*,PetscTruth*),void*);
+EXTERN PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,PetscReal*,PetscTruth*);
+EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,PetscTruth*);
 EXTERN PetscErrorCode TSPseudoSetTimeStepIncrement(TS,PetscReal);
 EXTERN PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS);
 

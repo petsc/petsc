@@ -47,8 +47,8 @@ static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjo
 */
 
 
-extern int FormFunction(SNES,Vec,Vec,void*);
-extern int PDEFormFunctionLocal(DALocalInfo*,PetscScalar*,PetscScalar*,PassiveScalar*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode PDEFormFunctionLocal(DALocalInfo*,PetscScalar*,PetscScalar*,PassiveScalar*);
 
 typedef struct {
   Mat        J;           /* Jacobian of PDE system */
@@ -57,13 +57,13 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "myPCApply"
-int myPCApply(DMMG dmmg,Vec x,Vec y)
+PetscErrorCode myPCApply(DMMG dmmg,Vec x,Vec y)
 {
-  Vec          xu,xlambda,yu,ylambda;
-  PetscScalar  *xw,*yw;
-  int          ierr;
-  VecPack      packer = (VecPack)dmmg->dm;
-  AppCtx       *appctx = (AppCtx*)dmmg->user;
+  Vec            xu,xlambda,yu,ylambda;
+  PetscScalar    *xw,*yw;
+  PetscErrorCode ierr;
+  VecPack        packer = (VecPack)dmmg->dm;
+  AppCtx         *appctx = (AppCtx*)dmmg->user;
 
   PetscFunctionBegin;
   ierr = VecPackGetAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
@@ -83,10 +83,10 @@ int myPCApply(DMMG dmmg,Vec x,Vec y)
 
 #undef __FUNCT__
 #define __FUNCT__ "myPCView"
-int myPCView(DMMG dmmg,PetscViewer v)
+PetscErrorCode myPCView(DMMG dmmg,PetscViewer v)
 {
-  int     ierr;
-  AppCtx  *appctx = (AppCtx*)dmmg->user;
+  PetscErrorCode ierr;
+  AppCtx         *appctx = (AppCtx*)dmmg->user;
 
   PetscFunctionBegin;
   ierr = KSPView(appctx->ksp,v);CHKERRQ(ierr);
@@ -97,13 +97,14 @@ int myPCView(DMMG dmmg,PetscViewer v)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        ierr,nlevels,i,j;
-  DA         da;
-  DMMG       *dmmg;
-  VecPack    packer;
-  AppCtx     *appctx;
-  ISColoring iscoloring;
-  PetscTruth bdp;
+  PetscErrorCode ierr;
+  PetscInt       nlevels,i,j;
+  DA             da;
+  DMMG           *dmmg;
+  VecPack        packer;
+  AppCtx         *appctx;
+  ISColoring     iscoloring;
+  PetscTruth     bdp;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -201,9 +202,9 @@ int main(int argc,char **argv)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PDEFormFunctionLocal"
-int PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar *fu,PassiveScalar *w)
+PetscErrorCode PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar *fu,PassiveScalar *w)
 {
-  int          xs = info->xs,xm = info->xm,i,mx = info->mx;
+  PetscInt     xs = info->xs,xm = info->xm,i,mx = info->mx;
   PetscScalar  d,h;
 
   d    = mx-1.0;
@@ -234,16 +235,17 @@ int PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar *fu,Passiv
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
+PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
-  DMMG         dmmg = (DMMG)dummy;
-  int          ierr,xs,xm,i,N,nredundant;
-  PetscScalar  *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
-  Vec          vu,vlambda,vfu,vflambda,vglambda;
-  DA           da;
-  VecPack      packer = (VecPack)dmmg->dm;
-  AppCtx       *appctx = (AppCtx*)dmmg->user;
-  PetscTruth   skipadic;
+  DMMG           dmmg = (DMMG)dummy;
+  PetscErrorCode ierr;
+  PetscInt       xs,xm,i,N,nredundant;
+  PetscScalar    *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
+  Vec            vu,vlambda,vfu,vflambda,vglambda;
+  DA             da;
+  VecPack        packer = (VecPack)dmmg->dm;
+  AppCtx         *appctx = (AppCtx*)dmmg->user;
+  PetscTruth     skipadic;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(0,"-skipadic",&skipadic);CHKERRQ(ierr);

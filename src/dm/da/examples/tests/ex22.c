@@ -8,8 +8,8 @@ static char help[] = "Tests MatSetValuesBlockedStencil() in 3d.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            M = 3,N = 4,P = 2,s = 1,w = 2,i;
-  int            m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,ierr;
+  PetscInt       M = 3,N = 4,P = 2,s = 1,w = 2,i, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
+  PetscErrorCode ierr;
   DA             da;
   Mat            mat;
   DAStencilType  stencil_type = DA_STENCIL_BOX;

@@ -6,12 +6,13 @@ static char help[] = "Tests DAGetInterpolation for nonuniform DA coordinates.\n\
 
 #undef __FUNCT__
 #define __FUNCT__ "SetCoordinates1d"
-int SetCoordinates1d(DA da)
+PetscErrorCode SetCoordinates1d(DA da)
 {
-  int         ierr,i,start,m;
-  Vec         gc,global;
-  PetscScalar *coors;
-  DA          cda;
+  PetscErrorCode ierr;
+  PetscInt       i,start,m;
+  Vec            gc,global;
+  PetscScalar    *coors;
+  DA             cda;
 
   PetscFunctionBegin;
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -32,12 +33,13 @@ int SetCoordinates1d(DA da)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetCoordinates2d"
-int SetCoordinates2d(DA da)
+PetscErrorCode SetCoordinates2d(DA da)
 {
-  int         ierr,i,j,mstart,m,nstart,n;
-  Vec         gc,global;
-  DACoor2d    **coors;
-  DA          cda;
+  PetscErrorCode ierr;
+  PetscInt       i,j,mstart,m,nstart,n;
+  Vec            gc,global;
+  DACoor2d       **coors;
+  DA             cda;
 
   PetscFunctionBegin;
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -63,12 +65,13 @@ int SetCoordinates2d(DA da)
 
 #undef __FUNCT__
 #define __FUNCT__ "SetCoordinates3d"
-int SetCoordinates3d(DA da)
+PetscErrorCode SetCoordinates3d(DA da)
 {
-  int         ierr,i,j,mstart,m,nstart,n,pstart,p,k;
-  Vec         gc,global;
-  DACoor3d    ***coors;
-  DA          cda;
+  PetscErrorCode ierr;
+  PetscInt       i,j,mstart,m,nstart,n,pstart,p,k;
+  Vec            gc,global;
+  DACoor3d       ***coors;
+  DA             cda;
 
   PetscFunctionBegin;
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -101,7 +104,8 @@ int SetCoordinates3d(DA da)
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int            M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,ierr,dim = 1;
+  PetscInt       M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;
+  PetscErrorCode ierr;
   DA             dac,daf;
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;

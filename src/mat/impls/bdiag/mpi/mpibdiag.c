@@ -902,7 +902,7 @@ PetscErrorCode MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,PetscInt nd,PetscInt b
   b          = (Mat_MPIBDiag*)B->data;CHKERRQ(ierr);
   b->gnd     = nd;
 
-  ierr          = MPI_Allgather(&B->m,1,MPI_INT,b->rowners+1,1,MPI_INT,B->comm);CHKERRQ(ierr);
+  ierr          = MPI_Allgather(&B->m,1,MPIU_INT,b->rowners+1,1,MPIU_INT,B->comm);CHKERRQ(ierr);
   b->rowners[0] = 0;
   for (i=2; i<=b->size; i++) {
     b->rowners[i] += b->rowners[i-1];
@@ -1253,7 +1253,7 @@ PetscErrorCode MatLoad_MPIBDiag(PetscViewer viewer,const MatType type,Mat *newma
   MPI_Status     status;
   PetscErrorCode ierr;
   int            fd;
-  PetscMPIInt    tag = ((PetscObject)viewer)->tag,rank,size,*sndcounts = 0,*rowners,maxnz;
+  PetscMPIInt    tag = ((PetscObject)viewer)->tag,rank,size,*sndcounts = 0,*rowners,maxnz,mm;
   PetscInt       bs,i,nz,j,rstart,rend,*cols;
   PetscInt       header[4],*rowlengths = 0,M,N,m,Mbs;
   PetscInt       *ourlens,*procsnz = 0,jj,*mycols,*smycols;
@@ -1291,7 +1291,8 @@ PetscErrorCode MatLoad_MPIBDiag(PetscViewer viewer,const MatType type,Mat *newma
   /* determine ownership of all rows */
   m          = bs*(Mbs/size + ((Mbs % size) > rank));
   ierr       = PetscMalloc((size+2)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
-  ierr       = MPI_Allgather(&m,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
+  mm         = (PetscMPIInt)m;
+  ierr       = MPI_Allgather(&mm,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
   for (i=2; i<=size; i++) {
     rowners[i] += rowners[i-1];

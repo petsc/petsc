@@ -58,9 +58,9 @@ typedef struct {
 /* 
    User-defined routines
 */
-extern int FormInitialGuess(AppCtx*,Vec),FormFunctionMatlab(SNES,Vec,Vec,void*);
-extern int FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-extern int FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
+extern PetscErrorCode FormInitialGuess(AppCtx*,Vec),FormFunctionMatlab(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
+extern PetscErrorCode FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -70,11 +70,11 @@ int main(int argc,char **argv)
   Vec                    x,r;                  /* solution, residual vectors */
   Mat                    A,J;                    /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined work context */
-  int                    its;                  /* iterations for convergence */
+  PetscInt               its;                  /* iterations for convergence */
   PetscTruth             matlab_function = PETSC_FALSE;
   PetscTruth             fd_jacobian = PETSC_FALSE,adic_jacobian=PETSC_FALSE;
   PetscTruth             adicmf_jacobian = PETSC_FALSE;
-  int                    ierr;
+  PetscErrorCode         ierr;
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   MatFDColoring          matfdcoloring = 0;
   ISColoring             iscoloring;
@@ -234,11 +234,12 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-int FormInitialGuess(AppCtx *user,Vec X)
+PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
-  int         i,j,Mx,My,ierr,xs,ys,xm,ym;
-  PetscReal   lambda,temp1,temp,hx,hy;
-  PetscScalar **x;
+  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
+  PetscErrorCode ierr;
+  PetscReal      lambda,temp1,temp,hx,hy;
+  PetscScalar    **x;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
@@ -298,11 +299,12 @@ int FormInitialGuess(AppCtx *user,Vec X)
        Process adiC(36): FormFunctionLocal
 
  */
-int FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
+PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
-  int         ierr,i,j;
-  PetscReal   two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
-  PetscScalar u,uxx,uyy;
+  PetscErrorCode ierr;
+  PetscInt       i,j;
+  PetscReal      two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar    u,uxx,uyy;
 
   PetscFunctionBegin;
 
@@ -339,11 +341,12 @@ int FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *
 
 
 */
-int FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
+PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
 {
-  int          ierr,i,j;
-  MatStencil   col[5],row;
-  PetscScalar  lambda,v[5],hx,hy,hxdhy,hydhx,sc;
+  PetscErrorCode ierr;
+  PetscInt       i,j;
+  MatStencil     col[5],row;
+  PetscScalar    lambda,v[5],hx,hy,hxdhy,hydhx,sc;
 
   PetscFunctionBegin;
   lambda = user->param;
@@ -402,13 +405,14 @@ int FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
       Variant of FormFunction() that computes the function in Matlab
 */
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-int FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
+PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
-  AppCtx    *user = (AppCtx*)ptr;
-  int       ierr,Mx,My;
-  PetscReal lambda,hx,hy;
-  Vec       localX,localF;
-  MPI_Comm  comm;
+  AppCtx         *user = (AppCtx*)ptr;
+  PetscErrorCode ierr;
+  PetscInt       Mx,My;
+  PetscReal      lambda,hx,hy;
+  Vec            localX,localF;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(user->da,&localX);CHKERRQ(ierr);

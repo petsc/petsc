@@ -8,15 +8,16 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         rank,size,M = 60,ierr, time_steps = 100;
-  int         localsize,j,i,mybase,myend,width,xbase,*localnodes = PETSC_NULL;
-  DA          da;
-  PetscViewer viewer,viewer_private;
-  PetscDraw   draw;
-  Vec         local,global,copy;
-  PetscScalar *localptr,*copyptr;
-  PetscReal   a,h,k;
-  PetscTruth  flg;
+  PetscMPIInt    rank,size;
+  PetscErrorCode ierr;
+  PetscInt       M = 60,time_steps = 100, localsize,j,i,mybase,myend,width,xbase,*localnodes = PETSC_NULL;
+  DA             da;
+  PetscViewer    viewer,viewer_private;
+  PetscDraw      draw;
+  Vec            local,global,copy;
+  PetscScalar    *localptr,*copyptr;
+  PetscReal      a,h,k;
+  PetscTruth     flg;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -29,7 +30,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMalloc(size*sizeof(int),&localnodes);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(PetscInt),&localnodes);CHKERRQ(ierr);
     for (i=0; i<size-1; i++) { localnodes[i] = 2;}
     localnodes[size-1] = M - 2*(size-1);
   }

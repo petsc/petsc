@@ -11,14 +11,14 @@ typedef struct {  /* default context for matrix-free SNES */
   MatNullSpace sp;               /* null space context */
   PetscReal    error_rel;        /* square root of relative error in computing function */
   PetscReal    umin;             /* minimum allowable u'a value relative to |u|_1 */
-  int          jorge;            /* flag indicating use of Jorge's method for determining
+  PetscTruth   jorge;            /* flag indicating use of Jorge's method for determining
                                    the differencing parameter */
   PetscReal    h;                /* differencing parameter */
-  int          need_h;           /* flag indicating whether we must compute h */
-  int          need_err;         /* flag indicating whether we must currently compute error_rel */
-  int          compute_err;      /* flag indicating whether we must ever compute error_rel */
-  int          compute_err_iter; /* last iter where we've computer error_rel */
-  int          compute_err_freq; /* frequency of computing error_rel */
+  PetscTruth   need_h;           /* flag indicating whether we must compute h */
+  PetscTruth   need_err;         /* flag indicating whether we must currently compute error_rel */
+  PetscTruth   compute_err;      /* flag indicating whether we must ever compute error_rel */
+  PetscInt     compute_err_iter; /* last iter where we've computer error_rel */
+  PetscInt     compute_err_freq; /* frequency of computing error_rel */
   void         *data;            /* implementation-specific data */
 } MFCtx_Private;
 
@@ -27,7 +27,7 @@ typedef struct {  /* default context for matrix-free SNES */
 PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
 {
   PetscErrorCode ierr;
-  MFCtx_Private *ctx;
+  MFCtx_Private  *ctx;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);
@@ -216,12 +216,12 @@ $  -snes_mf_jorge
 @*/
 PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 {
-  MPI_Comm      comm;
-  MFCtx_Private *mfctx;
+  MPI_Comm       comm;
+  MFCtx_Private  *mfctx;
   PetscErrorCode ierr;
-  int           n,nloc;
-  PetscTruth    flg;
-  char          p[64];
+  PetscInt       n,nloc;
+  PetscTruth     flg;
+  char           p[64];
 
   PetscFunctionBegin;
   ierr = PetscNew(MFCtx_Private,&mfctx);CHKERRQ(ierr);
@@ -232,15 +232,15 @@ PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   mfctx->error_rel        = PETSC_SQRT_MACHINE_EPSILON;
   mfctx->umin             = 1.e-6;
   mfctx->h                = 0.0;
-  mfctx->need_h           = 1;
-  mfctx->need_err         = 0;
-  mfctx->compute_err      = 0;
+  mfctx->need_h           = PETSC_TRUE;
+  mfctx->need_err         = PETSC_FALSE;
+  mfctx->compute_err      = PETSC_FALSE;
   mfctx->compute_err_freq = 0;
   mfctx->compute_err_iter = -1;
   ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_jorge",(PetscTruth*)&mfctx->jorge);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_compute_err",(PetscTruth*)&mfctx->compute_err);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
   if (flg) {
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
@@ -312,7 +312,7 @@ $
 @*/
 PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,PetscReal umin,PetscReal h)
 {
-  MFCtx_Private *ctx;
+  MFCtx_Private  *ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -322,7 +322,7 @@ PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,Petsc
     if (umin  != PETSC_DEFAULT) ctx->umin = umin;
     if (h     != PETSC_DEFAULT) {
       ctx->h = h;
-      ctx->need_h = 0;
+      ctx->need_h = PETSC_FALSE;
     }
   }
   PetscFunctionReturn(0);
@@ -330,14 +330,14 @@ PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat mat,PetscReal error,Petsc
 
 PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes)
 {
-  MFCtx_Private *ctx;
+  MFCtx_Private  *ctx;
   PetscErrorCode ierr;
-  Mat           mat;
+  Mat            mat;
 
   PetscFunctionBegin;
   ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (ctx) ctx->need_h = 1;
+  if (ctx) ctx->need_h = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
      

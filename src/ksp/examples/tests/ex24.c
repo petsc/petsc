@@ -8,14 +8,16 @@ static char help[] = "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBA
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C;
-  PetscScalar v,none = -1.0;
-  int         i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size,its,k;
-  PetscReal   err_norm,res_norm;
-  Vec         x,b,u,u_tmp;
-  PetscRandom r;
-  PC          pc;          
-  KSP         ksp;  
+  Mat            C;
+  PetscScalar    v,none = -1.0;
+  PetscInt       i,j,I,J,Istart,Iend,N,m = 4,n = 4,its,k;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscReal      err_norm,res_norm;
+  Vec            x,b,u,u_tmp;
+  PetscRandom    r;
+  PC             pc;          
+  KSP            ksp;  
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -105,7 +107,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(&none,b,u_tmp);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
   
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A;",res_norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %A.\n",err_norm);CHKERRQ(ierr);
 

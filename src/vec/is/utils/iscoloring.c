@@ -243,7 +243,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm,PetscInt n,const ISColoringValue c
     if (ncwork < colors[i]) ncwork = colors[i];
   }
   ncwork++;
-  ierr = MPI_Allreduce(&ncwork,&nc,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = 0;
   (*iscoloring)->colors = (ISColoringValue *)colors;
@@ -558,13 +558,13 @@ PetscErrorCode ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lindi
   ISColoringValue *indices;
   PetscErrorCode  ierr;
   PetscInt        i,N;
-  PetscMPIInt     size,*offsets,*sizes;
+  PetscMPIInt     size,*offsets,*sizes, nn = n;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&offsets);CHKERRQ(ierr);
   
-  ierr = MPI_Allgather(&n,1,MPIU_INT,sizes,1,MPIU_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
   for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
   N    = offsets[size-1] + sizes[size-1];

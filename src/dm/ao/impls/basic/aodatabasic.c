@@ -999,7 +999,7 @@ PetscErrorCode AODataLoadBasic(PetscViewer viewer,AOData *aoout)
 
     /* determine Nlocal and rowners for key */
     key->nlocal  = key->N/size + ((key->N % size) > rank);
-    ierr = PetscMalloc((size+1)*sizeof(int),&key->rowners);CHKERRQ(ierr);
+    ierr = PetscMalloc((size+1)*sizeof(PetscInt),&key->rowners);CHKERRQ(ierr);
     ierr = MPI_Allgather(&key->nlocal,1,MPI_INT,key->rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
     key->rowners[0] = 0;
     for (j=2; j<=size; j++) {

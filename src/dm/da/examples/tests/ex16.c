@@ -8,13 +8,15 @@ static char help[] = "Tests VecPack routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         ierr,nredundant1 = 5,nredundant2 = 2,rank,i,*ridx1,*ridx2,*lidx1,*lidx2,nlocal;
-  PetscScalar *redundant1,*redundant2;
-  VecPack     packer;
-  Vec         global,local1,local2;
-  PF          pf;
-  DA          da1,da2;
-  PetscViewer sviewer;
+  PetscErrorCode ierr;
+  PetscInt       nredundant1 = 5,nredundant2 = 2,i,*ridx1,*ridx2,*lidx1,*lidx2,nlocal;
+  PetscMPIInt    rank;
+  PetscScalar    *redundant1,*redundant2;
+  VecPack        packer;
+  Vec            global,local1,local2;
+  PF             pf;
+  DA             da1,da2;
+  PetscViewer    sviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

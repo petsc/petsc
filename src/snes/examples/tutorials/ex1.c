@@ -20,23 +20,25 @@ T*/
 /* 
    User-defined routines
 */
-extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormFunction1(SNES,Vec,Vec,void*);
-extern int FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormFunction2(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction2(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  SNES         snes;         /* nonlinear solver context */
-  KSP          ksp;         /* linear solver context */
-  PC           pc;           /* preconditioner context */
-  Vec          x,r;         /* solution, residual vectors */
-  Mat          J;            /* Jacobian matrix */
-  int          ierr,its,size;
-  PetscScalar  pfive = .5,*xx;
-  PetscTruth   flg;
+  SNES           snes;         /* nonlinear solver context */
+  KSP            ksp;         /* linear solver context */
+  PC             pc;           /* preconditioner context */
+  Vec            x,r;         /* solution, residual vectors */
+  Mat            J;            /* Jacobian matrix */
+  PetscErrorCode ierr;
+  PetscInt       its;
+  PetscMPIInt    size;
+  PetscScalar    pfive = .5,*xx;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -156,10 +158,10 @@ int main(int argc,char **argv)
    Output Parameter:
 .  f - function vector
  */
-int FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
+PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
 {
-  int    ierr;
-  PetscScalar *xx,*ff;
+  PetscErrorCode ierr;
+  PetscScalar    *xx,*ff;
 
   /*
      Get pointers to vector data.
@@ -201,10 +203,11 @@ int FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-int FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
-  PetscScalar *xx,A[4];
-  int    ierr,idx[2] = {0,1};
+  PetscScalar    *xx,A[4];
+  PetscErrorCode ierr;
+  PetscInt       idx[2] = {0,1};
 
   /*
      Get pointer to vector data
@@ -239,10 +242,10 @@ int FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction2"
-int FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
+PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 {
-  int    ierr;
-  PetscScalar *xx,*ff;
+  PetscErrorCode ierr;
+  PetscScalar    *xx,*ff;
 
   /*
      Get pointers to vector data.
@@ -271,10 +274,11 @@ int FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian2"
-int FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
-  PetscScalar *xx,A[4];
-  int    ierr,idx[2] = {0,1};
+  PetscScalar    *xx,A[4];
+  PetscErrorCode ierr;
+  PetscInt       idx[2] = {0,1};
 
   /*
      Get pointer to vector data

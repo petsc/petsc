@@ -39,21 +39,21 @@ T*/
    whether they define __FUNCT__ in application codes; this macro merely
    provides the added traceback detail of the application routine names.
 */
-int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int FormFunction(SNES,Vec,Vec,void*);
-int FormInitialGuess(Vec);
-int Monitor(SNES,int,PetscReal,void *);
-int StepCheck(SNES,void *,Vec,PetscTruth *);
+PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+PetscErrorCode FormInitialGuess(Vec);
+PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void *);
+PetscErrorCode StepCheck(SNES,void *,Vec,PetscTruth *);
 
 /* 
    User-defined application context
 */
 typedef struct {
-   DA        da;     /* distributed array */
-   Vec       F;      /* right-hand-side of PDE */
-   int       rank;   /* rank of processor */
-   int       size;   /* size of communicator */
-   PetscReal h;      /* mesh spacing */
+   DA          da;     /* distributed array */
+   Vec         F;      /* right-hand-side of PDE */
+   PetscMPIInt rank;   /* rank of processor */
+   PetscMPIInt size;   /* size of communicator */
+   PetscReal   h;      /* mesh spacing */
 } ApplicationCtx;
 
 /*
@@ -85,7 +85,8 @@ int main(int argc,char **argv)
   PetscTruth     step_check;           /* flag indicating whether we're checking
                                           candidate iterates */
   PetscScalar    xp,*FF,*UU,none = -1.0;
-  int            ierr,its,N = 5,i,maxit,maxf,xs,xm;
+  PetscErrorCode ierr;
+  PetscInt       its,N = 5,i,maxit,maxf,xs,xm;
   PetscReal      abstol,rtol,stol,norm;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -274,10 +275,10 @@ int main(int argc,char **argv)
    Input/Output Parameter:
 .  x - the solution vector
 */
-int FormInitialGuess(Vec x)
+PetscErrorCode FormInitialGuess(Vec x)
 {
-   int    ierr;
-   PetscScalar pfive = .50;
+   PetscErrorCode ierr;
+   PetscScalar    pfive = .50;
 
    PetscFunctionBegin;
    ierr = VecSet(&pfive,x);CHKERRQ(ierr);
@@ -301,12 +302,13 @@ int FormInitialGuess(Vec x)
    The user-defined context can contain any application-specific
    data needed for the function evaluation.
 */
-int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
+PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   DA             da = user->da;
   PetscScalar    *xx,*ff,*FF,d;
-  int            i,ierr,M,xs,xm;
+  PetscErrorCode ierr;
+  PetscInt       i,M,xs,xm;
   Vec            xlocal;
 
   PetscFunctionBegin;
@@ -385,11 +387,12 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
+PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
 {
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   PetscScalar    *xx,d,A[3];
-  int            i,j[3],ierr,M,xs,xm;
+  PetscErrorCode ierr;           
+  PetscInt       i,j[3],M,xs,xm;
   DA             da = user->da;
 
   PetscFunctionBegin;
@@ -467,11 +470,11 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
    See the manpage for PetscViewerDrawOpen() for useful runtime options,
    such as -nox to deactivate all x-window output.
  */
-int Monitor(SNES snes,int its,PetscReal fnorm,void *ctx)
+PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
 {
-  int        ierr;
-  MonitorCtx *monP = (MonitorCtx*) ctx;
-  Vec        x;
+  PetscErrorCode ierr;
+  MonitorCtx     *monP = (MonitorCtx*) ctx;
+  Vec            x;
 
   PetscFunctionBegin;
   ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %D,SNES Function norm %g\n",its,fnorm);CHKERRQ(ierr);
@@ -497,9 +500,10 @@ int Monitor(SNES snes,int its,PetscReal fnorm,void *ctx)
    flg - flag indicating whether x has been modified (either
           PETSC_TRUE of PETSC_FALSE)
  */
-int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
+PetscErrorCode StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flg)
 {
-  int            ierr,i,iter,xs,xm;
+  PetscErrorCode ierr;
+  PetscInt       i,iter,xs,xm;
   ApplicationCtx *user;
   StepCheckCtx   *check = (StepCheckCtx*) ctx;
   PetscScalar    *xa,*xa_last,tmp;

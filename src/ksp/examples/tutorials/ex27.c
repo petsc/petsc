@@ -26,7 +26,8 @@ int main(int argc,char **args)
   Vec            x,b,u,Ab;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
   char           file[PETSC_MAX_PATH_LEN];     /* input file name */
-  int            ierr,its,ierrp,n,m;
+  PetscErrorCode ierr,ierrp;
+  PetscInt       its,n,m;
   PetscReal      norm;
   PetscScalar    zero = 0.0,none = -1.0;
 
@@ -85,7 +86,7 @@ int main(int argc,char **args)
        to match the block size of the system), then create a new padded vector.
     */
     { 
-      int         j,mvec,start,end,idex;
+      PetscInt    j,mvec,start,end,idex;
       Vec         tmp;
       PetscScalar *bold;
 
@@ -170,7 +171,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
     ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
 
     /* 

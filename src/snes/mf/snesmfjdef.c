@@ -65,7 +65,7 @@ static PetscErrorCode MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Pets
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
   PetscReal        nrm,sum,umin = hctx->umin;
   PetscScalar      dot;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   if (!(ctx->count % ctx->recomputeperiod)) {
@@ -116,7 +116,7 @@ static PetscErrorCode MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Pets
 static PetscErrorCode MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault *)ctx->hctx;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   PetscTruth       iascii;
 
   PetscFunctionBegin;
@@ -146,7 +146,7 @@ static PetscErrorCode MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
 */
 static PetscErrorCode MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
 
   PetscFunctionBegin;
@@ -246,7 +246,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatSNESMFCreate_Default(MatSNESMFCtx ctx)
 {
   MatSNESMFDefault *hctx;
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
 

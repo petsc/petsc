@@ -32,18 +32,19 @@ T*/
 #include "petscda.h"
 #include "petscmg.h"
 
-extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG        *dmmg;
-  SNES        snes;                      
-  int         ierr,its,lits;
-  PetscReal   litspit;
-  DA          da;
+  DMMG           *dmmg;
+  SNES           snes;                      
+  PetscErrorCode ierr;
+  PetscInt       its,lits;
+  PetscReal      litspit;
+  DA             da;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -94,14 +95,15 @@ int main(int argc,char **argv)
 /* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-int FormFunction(SNES snes,Vec T,Vec F,void* ptr)
+PetscErrorCode FormFunction(SNES snes,Vec T,Vec F,void* ptr)
 {
-  DMMG         dmmg = (DMMG)ptr;
-  int          ierr,i,j,mx,my,xs,ys,xm,ym;
-  PetscScalar  hx,hy;
-  PetscScalar  **t,**f,gradup,graddown,gradleft,gradright,gradx,grady;
-  PetscScalar  coeffup,coeffdown,coeffleft,coeffright;
-  Vec          localT;
+  DMMG           dmmg = (DMMG)ptr;
+  PetscErrorCode ierr;
+  PetscInt       i,j,mx,my,xs,ys,xm,ym;
+  PetscScalar    hx,hy;
+  PetscScalar    **t,**f,gradup,graddown,gradleft,gradright,gradx,grady;
+  PetscScalar    coeffup,coeffdown,coeffleft,coeffright;
+  Vec            localT;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
@@ -151,9 +153,9 @@ int FormFunction(SNES snes,Vec T,Vec F,void* ptr)
   PetscFunctionReturn(0);
 } 
 
-int FormFunctionLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)
+PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)
 {
-  int          i,j;
+  PetscInt     i,j;
   PetscScalar  hx,hy;
   PetscScalar  gradup,graddown,gradleft,gradright,gradx,grady;
   PetscScalar  coeffup,coeffdown,coeffleft,coeffright;

@@ -52,20 +52,21 @@ typedef struct {
 
 #define POWFLOP 5 /* assume a pow() takes five flops */
 
-extern int FormInitialGuess(DMMG,Vec);
-extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormInitialGuess(DMMG,Vec);
+extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG      *dmmg;
-  SNES      snes;                      
-  AppCtx    user;
-  int       ierr,its,lits;
-  PetscReal litspit;
-  DA        da;
+  DMMG           *dmmg;
+  SNES           snes;                      
+  AppCtx         user;
+  PetscErrorCode ierr;
+  PetscInt       its,lits;
+  PetscReal      litspit;
+  DA             da;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -124,12 +125,13 @@ int main(int argc,char **argv)
 /* --------------------  Form initial approximation ----------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-int FormInitialGuess(DMMG dmmg,Vec X)
+PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
-  AppCtx      *user = (AppCtx*)dmmg->user;
-  int         i,j,k,ierr,xs,ys,xm,ym,zs,zm;
-  PetscReal   tleft = user->tleft;
-  PetscScalar ***x;
+  AppCtx         *user = (AppCtx*)dmmg->user;
+  PetscInt       i,j,k,xs,ys,xm,ym,zs,zm;
+  PetscErrorCode ierr;
+  PetscReal      tleft = user->tleft;
+  PetscScalar    ***x;
 
   PetscFunctionBegin;
 
@@ -151,17 +153,18 @@ int FormInitialGuess(DMMG dmmg,Vec X)
 /* --------------------  Evaluate Function F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
+PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 {
-  DMMG         dmmg = (DMMG)ptr;
-  AppCtx       *user = (AppCtx*)dmmg->user;
-  int          ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
-  PetscScalar  zero = 0.0,one = 1.0;
-  PetscScalar  hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
-  PetscScalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  PetscScalar  tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu;
-  PetscScalar  ***x,***f;
-  Vec          localX;
+  DMMG           dmmg = (DMMG)ptr;
+  AppCtx         *user = (AppCtx*)dmmg->user;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
+  PetscScalar    zero = 0.0,one = 1.0;
+  PetscScalar    hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
+  PetscScalar    t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
+  PetscScalar    tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu;
+  PetscScalar    ***x,***f;
+  Vec            localX;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
@@ -466,19 +469,20 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian"
-int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
+PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 {
-  DMMG         dmmg = (DMMG)ptr;
-  AppCtx       *user = (AppCtx*)dmmg->user;
-  int          ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
-  PetscScalar  zero = 0.0,one = 1.0;
-  PetscScalar  hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
-  PetscScalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  PetscScalar  tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu,v[7],bm1,coef;
-  PetscScalar  ***x,bn,bs,be,bw,bu,bd,gn,gs,ge,gw,gu,gd;
-  Vec          localX;
-  MatStencil   c[7],row;
-  Mat          jac = *B;
+  DMMG           dmmg = (DMMG)ptr;
+  AppCtx         *user = (AppCtx*)dmmg->user;
+  PetscErrorCode ierr;
+  PetscInt       i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
+  PetscScalar    one = 1.0;
+  PetscScalar    hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
+  PetscScalar    t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw;
+  PetscScalar    tleft,tright,beta,td,ad,dd,tu,au,du,v[7],bm1,coef;
+  PetscScalar    ***x,bn,bs,be,bw,bu,bd,gn,gs,ge,gw,gu,gd;
+  Vec            localX;
+  MatStencil     c[7],row;
+  Mat            jac = *B;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);

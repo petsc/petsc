@@ -22,13 +22,14 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  KSP        ksp;      /* linear solver context */
-  Mat         A,B;      /* linear system matrix, preconditioning matrix */
-  PetscRandom rctx;      /* random number generator context */
-  Vec         x,b,u;   /* approx solution, RHS, exact solution */
-  Vec         tmp;       /* work vector */
-  PetscScalar v,one = 1.0,scale = 0.0;
-  int         i,j,m = 15,n = 17,I,J,ierr,Istart,Iend;
+  KSP            ksp;      /* linear solver context */
+  Mat            A,B;      /* linear system matrix, preconditioning matrix */
+  PetscRandom    rctx;      /* random number generator context */
+  Vec            x,b,u;   /* approx solution, RHS, exact solution */
+  Vec            tmp;       /* work vector */
+  PetscScalar    v,one = 1.0,scale = 0.0;
+  PetscInt       i,j,m = 15,n = 17,I,J,Istart,Iend;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -180,8 +181,8 @@ int main(int argc,char **args)
      are no longer needed.
   */
   ierr = KSPDestroy(ksp);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);     ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);     ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr);   ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);   ierr = VecDestroy(b);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

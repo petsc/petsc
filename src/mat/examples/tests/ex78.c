@@ -18,7 +18,8 @@ int main(int argc,char **args)
   Vec            b,u,u_tmp;
   char           Ain[PETSC_MAX_PATH_LEN],bin[PETSC_MAX_PATH_LEN],uin[PETSC_MAX_PATH_LEN]; 
   PetscErrorCode ierr;
-  PetscInt       i,m,n,nz,*ib=0,col_i,row_i,dummy,*nnz,*col=0,*row=0;
+  int            m,n,nz,dummy,*col=0,*row=0; /* these are fscaned so kept as int */
+  PetscInt       i,col_i,row_i,*nnz,*ib;
   PetscScalar    val_i,*work=0,mone=-1.0;
   PetscReal      res_norm,*val=0,*bval=0,*uval=0;
   FILE           *Afile,*bfile,*ufile;
@@ -68,7 +69,7 @@ int main(int argc,char **args)
       /* fscanf(bfile,"%d %le\n",ib+i,bval+i); ib[i]--;  */  /* modify according to data file! */
       fscanf(bfile,"%d %le\n",&dummy,(double*)(bval+i)); ib[i] = i;         /* modify according to data file! */
     }
-    printf("bval[0]: %g, bval[%d]: %g\n",bval[0],ib[n-1],bval[n-1]);
+    printf("bval[0]: %g, bval[%d]: %g\n",bval[0],(int)ib[n-1],bval[n-1]);
     fflush(stdout);
     fclose(bfile);
   }

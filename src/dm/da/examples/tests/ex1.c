@@ -8,11 +8,13 @@ static char help[] = "Tests various DA routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         rank,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE,ierr;
-  DA          da;
-  PetscViewer viewer;
-  Vec         local,global;
-  PetscScalar value;
+  PetscMPIInt    rank;
+  PetscInt       M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE;
+  PetscErrorCode ierr;
+  DA             da;
+  PetscViewer    viewer;
+  Vec            local,global;
+  PetscScalar    value;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
