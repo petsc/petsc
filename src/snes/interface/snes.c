@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.185 1999/05/04 20:35:43 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.186 1999/05/12 03:32:27 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1595,7 +1595,11 @@ int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
   snes->fmin = ftol;
   PetscFunctionReturn(0);
 }
-
+/* 
+   Duplicate the lg monitors for SNES from KSP; for some reason with 
+   dynamic libraries things don't work under Sun4 if we just use 
+   macros instead of functions
+*/
 #undef __FUNC__  
 #define __FUNC__ "SNESLGMonitor"
 int SNESLGMonitor(SNES snes,int it,double norm,void *ctx)
@@ -1604,6 +1608,28 @@ int SNESLGMonitor(SNES snes,int it,double norm,void *ctx)
 
   PetscFunctionBegin;
   ierr = KSPLGMonitor((KSP)snes,it,norm,ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESLGMonitorCreate"
+int SNESLGMonitorCreate(char *host,char *label,int x,int y,int m,int n, DrawLG *draw)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPLGMonitorCreate(host,label,x,y,m,n,draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESLGMonitorDestroy"
+int SNESLGMonitorDestroy(DrawLG draw)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPLGMonitorDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
