@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.1 1996/01/30 04:28:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: daview.c,v 1.2 1996/02/15 22:11:01 curfman Exp curfman $";
 #endif
  
 /*
@@ -39,7 +39,7 @@ $      s - stencil width
 
 .keywords: distributed array, view, visualize
 
-.seealso: ViewerFileOpenASCII(), DrawOpenX(), 
+.seealso: ViewerFileOpenASCII(), DrawOpenX(), DAGetInfo()
 @*/
 int DAView(DA da, Viewer v)
 {
@@ -48,20 +48,24 @@ int DAView(DA da, Viewer v)
 }  
 
 /*@
-   DAGetDimension - Gets the dimension of a given distributed array.
+   DAGetInfo - Gets information about a given distributed array.
 
    Input Parameter:
 .  da - the distributed array
 
-   Output Parameter
-.  dim - dimension of distributed array (1, 2, or 3)
+   Output Parameters:
+.  m, n, p - number of processors in each dimension of distributed array
 
-.keywords: distributed array, get, dimension
+.keywords: distributed array, get, information
+
+.seealso: DAView()
 @*/
-int DAGetDimension(DA da,int *dim)
+int DAGetInfo(DA da,int *m,int *n,int *p)
 {
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
-  *dim = da->dim;
+  *m   = da->m;
+  *n   = da->n;
+  *p   = da->p;
   return 0;
 }  
 
