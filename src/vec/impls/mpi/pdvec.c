@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.68 1997/01/22 18:41:31 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.69 1997/02/05 21:56:45 bsmith Exp curfman $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -56,10 +56,11 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
   if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d] \n",rank);
   for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
-    if (imag(x->array[i]) != 0.0) {
+    if (imag(x->array[i]) > 0.0) {
       fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
-    }
-    else {
+    } else if (imag(x->array[i]) < 0.0) {
+      fprintf(fd,"%g - %g i\n",real(x->array[i]),-imag(x->array[i]));
+    } else {
       fprintf(fd,"%g\n",real(x->array[i]));
     }
 #else
@@ -99,10 +100,11 @@ static int VecView_MPI_Files(Vec xin, Viewer viewer )
     }
     for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
-      if (imag(x->array[i]) != 0.0) {
+      if (imag(x->array[i]) > 0.0) {
         fprintf(fd,"%g + %g i\n",real(x->array[i]),imag(x->array[i]));
-      }
-      else {
+      } else if (imag(x->array[i]) < 0.0) {
+        fprintf(fd,"%g - %g i\n",real(x->array[i]),-imag(x->array[i]));
+      } else {
         fprintf(fd,"%g\n",real(x->array[i]));
       }
 #else
