@@ -421,7 +421,7 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   lu = (Mat_SuperLU_DIST*)(B->spptr);
 
   /* Set the input options */
-  set_default_options(&options);
+  set_default_options_dist(&options);
   lu->MatInputMode = GLOBAL;
   ierr = MPI_Comm_dup(A->comm,&(lu->comm_superlu));CHKERRQ(ierr);
 
