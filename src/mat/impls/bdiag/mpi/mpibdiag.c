@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.197 2001/03/23 22:05:27 bsmith Exp balay $*/
+/*$Id: mpibdiag.c,v 1.198 2001/03/23 23:22:05 balay Exp buschelm $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -578,30 +578,37 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)A->data;
   int          ierr;
 
-  if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
-      op == MAT_YES_NEW_NONZERO_LOCATIONS ||
-      op == MAT_NEW_NONZERO_LOCATION_ERR ||
-      op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
-      op == MAT_NO_NEW_DIAGONALS ||
-      op == MAT_YES_NEW_DIAGONALS) {
-        ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
-  } else if (op == MAT_ROW_ORIENTED) {
+  switch (op) {
+  case MAT_NO_NEW_NONZERO_LOCATIONS:
+  case MAT_YES_NEW_NONZERO_LOCATIONS:
+  case MAT_NEW_NONZERO_LOCATION_ERR:
+  case MAT_NEW_NONZERO_ALLOCATION_ERR:
+  case MAT_NO_NEW_DIAGONALS:
+  case MAT_YES_NEW_DIAGONALS:
+    ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
+    break;
+  case MAT_ROW_ORIENTED:
     mbd->roworiented = PETSC_TRUE;
     ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
-  } else if (op == MAT_COLUMN_ORIENTED) {
+    break;
+  case MAT_COLUMN_ORIENTED:
     mbd->roworiented = PETSC_FALSE;
     ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
-  } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
+    break;
+  case MAT_IGNORE_OFF_PROC_ENTRIES:
     mbd->donotstash = PETSC_TRUE;
-  } else if (op == MAT_ROWS_SORTED || 
-             op == MAT_ROWS_UNSORTED || 
-             op == MAT_COLUMNS_SORTED || 
-             op == MAT_COLUMNS_UNSORTED || 
-             op == MAT_YES_NEW_DIAGONALS ||
-             op == MAT_USE_HASH_TABLE) {
+    break;
+  case MAT_ROWS_SORTED:
+  case MAT_ROWS_UNSORTED:
+  case MAT_COLUMNS_SORTED:
+  case MAT_COLUMNS_UNSORTED:
+  case MAT_YES_NEW_DIAGONALS:
+  case MAT_USE_HASH_TABLE:
     PetscLogInfo(A,"MatSetOption_MPIBDiag:Option ignored\n");
-  } else {
+    break;
+  default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
+    break;
   }
   PetscFunctionReturn(0);
 }

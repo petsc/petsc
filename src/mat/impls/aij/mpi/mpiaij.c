@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.336 2001/06/01 14:57:20 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.337 2001/06/03 02:51:04 bsmith Exp buschelm $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1033,36 +1033,44 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
   int        ierr;
 
   PetscFunctionBegin;
-  if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
-      op == MAT_YES_NEW_NONZERO_LOCATIONS ||
-      op == MAT_COLUMNS_UNSORTED ||
-      op == MAT_COLUMNS_SORTED ||
-      op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
-      op == MAT_KEEP_ZEROED_ROWS ||
-      op == MAT_NEW_NONZERO_LOCATION_ERR ||
-      op == MAT_USE_INODES ||
-      op == MAT_DO_NOT_USE_INODES ||
-      op == MAT_IGNORE_ZERO_ENTRIES) {
-        ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-        ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
-  } else if (op == MAT_ROW_ORIENTED) {
+  switch (op) {
+  case MAT_NO_NEW_NONZERO_LOCATIONS:
+  case MAT_YES_NEW_NONZERO_LOCATIONS:
+  case MAT_COLUMNS_UNSORTED:
+  case MAT_COLUMNS_SORTED:
+  case MAT_NEW_NONZERO_ALLOCATION_ERR:
+  case MAT_KEEP_ZEROED_ROWS:
+  case MAT_NEW_NONZERO_LOCATION_ERR:
+  case MAT_USE_INODES:
+  case MAT_DO_NOT_USE_INODES:
+  case MAT_IGNORE_ZERO_ENTRIES:
+    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
+    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
+    break;
+  case MAT_ROW_ORIENTED:
     a->roworiented = PETSC_TRUE; 
     ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
-  } else if (op == MAT_ROWS_SORTED || 
-             op == MAT_ROWS_UNSORTED ||
-             op == MAT_YES_NEW_DIAGONALS) {
+    break;
+  case MAT_ROWS_SORTED:
+  case MAT_ROWS_UNSORTED:
+  case MAT_YES_NEW_DIAGONALS:
     PetscLogInfo(A,"MatSetOption_MPIAIJ:Option ignored\n");
-  } else if (op == MAT_COLUMN_ORIENTED) {
+    break;
+  case MAT_COLUMN_ORIENTED:
     a->roworiented = PETSC_FALSE;
     ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
-  } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
+    break;
+  case MAT_IGNORE_OFF_PROC_ENTRIES:
     a->donotstash = PETSC_TRUE;
-  } else if (op == MAT_NO_NEW_DIAGONALS){
+    break;
+  case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
-  } else {
+    break;
+  default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
+    break;
   }
   PetscFunctionReturn(0);
 }
