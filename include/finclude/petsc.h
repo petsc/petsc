@@ -1,4 +1,6 @@
 C
+C  "$Id: somefort.F,v 1.8 1996/01/30 00:40:19 bsmith Exp bsmith $";
+C
 C  Base include file for Fortran use of the PETSc package
 C
 #define MPI_Comm integer
@@ -60,7 +62,7 @@ C     Prototypes for functions which return a value.
 C
       external PetscGetTime, PetscGetFlops
 
-C     On the Cray T3D this should be real not double precision!
+C     On the Cray T3D this should be "real" not "double precision"!
 #if defined(PARCH_t3d)
       real PetscGetTime, PetscGetFlops
 #else
