@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.7 1995/03/21 23:19:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.8 1995/04/01 21:29:16 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -31,6 +31,9 @@ int MatCreateInitialMatrix(int m,int n,Mat *V)
   if (numtid > 1 || OptionsHasName(0,0,"-mpi_objects")) {
     if (OptionsHasName(0,0,"-row_mat")) {
       return MatCreateMPIRow(MPI_COMM_WORLD,-1,-1,m,n,5,0,0,0,V);
+    }
+    if (OptionsHasName(0,0,"-rowbs_mat")) {
+      return MatCreateMPIRowbs(MPI_COMM_WORLD,-1,m,n,5,0,V);
     }
     return MatCreateMPIAIJ(MPI_COMM_WORLD,-1,-1,m,n,5,0,0,0,V);
   }
