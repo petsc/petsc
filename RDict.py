@@ -10,7 +10,9 @@ import string
 import sys
 import types
 import UserDict
-import readline
+try:
+  import readline
+except ImportError: pass
 import socket
 import SocketServer
 import socket
