@@ -25,6 +25,17 @@ PetscErrorCode PetscFormatConvert(const char *format,char *newformat)
       newformat[j++] = 'd';
 #endif
       i += 2;
+    } else if (format[i] == '%' && format[i+1] >= '1' && format[i+1] <= '9' && format[i+2] == 'D') {
+      newformat[j++] = '%';
+      newformat[j++] = format[i+1];
+#if defined(PETSC_USE_32BIT_INT)
+      newformat[j++] = 'd';
+#else
+      newformat[j++] = 'l';
+      newformat[j++] = 'l';
+      newformat[j++] = 'd';
+#endif
+      i += 3;
     }else {
       newformat[j++] = format[i++];
     }

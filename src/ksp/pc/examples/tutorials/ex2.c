@@ -116,7 +116,7 @@ int main(int argc,char **argv)
     printf("\nOther kind of divergence: this should not happen.\n");
   } else {
     ierr = KSPGetIterationNumber(solver,&its);CHKERRQ(ierr);
-    printf("\nConvergence in %D iterations.\n",its);
+    printf("\nConvergence in %d iterations.\n",(int)its);
   }
   printf("\n");
 

@@ -397,6 +397,8 @@ PetscErrorCode PetscOptionsEList(const char opt[],const char ltext[],const char 
   } else if (set) {
     ierr = PetscFree(svalue);CHKERRQ(ierr);
     *set = PETSC_FALSE;
+  } else {
+    ierr = PetscFree(svalue);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
