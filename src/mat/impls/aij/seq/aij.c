@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.234 1997/08/28 14:23:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.235 1997/09/17 23:14:41 bsmith Exp balay $";
 #endif
 
 /*
@@ -869,6 +868,9 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   idx  = a->j;
   v    = a->a + shift; /* shift for Fortran start by 1 indexing */
   ii   = a->i;
+#if defined(USE_FORTRAN_KERNELS)
+  fortranmultaddaij_(&m,x,ii,idx,v,y,z);
+#else
   for ( i=0; i<m; i++ ) {
     jrow = ii[i];
     n    = ii[i+1] - jrow;
@@ -878,6 +880,7 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
      }
     z[i] = sum;
   }
+#endif
   PLogFlops(2*a->nz);
   return 0;
 }
