@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.18 2000/07/17 21:08:12 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.19 2000/07/20 20:44:57 bsmith Exp balay $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -158,7 +158,7 @@ int DAMGSetGrid(DAMG *damg,int dim,DAPeriodicType pt,DAStencilType st,int M,int 
       ierr = DACreate3d(damg[i]->comm,pt,st,M,N,P,m,n,p,dof,sw,0,0,0,&damg[i]->da);CHKERRQ(ierr);
     } else if (dim == 2) {
       if (split) {
-        ierr = DAMGSplitComm2d(damg[i]->comm,M,N,sw,&damg[i]->comm);CHKERRQ(ierr);
+        ierr = DASplitComm2d(damg[i]->comm,M,N,sw,&damg[i]->comm);CHKERRQ(ierr);
       }
       ierr = DACreate2d(damg[i]->comm,pt,st,M,N,m,n,dof,sw,0,0,&damg[i]->da);CHKERRQ(ierr);
     } else {
