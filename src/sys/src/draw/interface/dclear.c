@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dclear.c,v 1.6 1996/07/08 22:21:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dclear.c,v 1.7 1996/08/08 14:44:45 bsmith Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dclear.c,v 1.6 1996/07/08 22:21:15 bsmith Exp bsmith 
 /*@
    DrawClear - Clears graphical output.
 
-   Input Parameters:
+   Input Parameter:
 .  draw - the drawing context
 
 .keywords: draw, clear
@@ -23,9 +23,9 @@ int DrawClear(Draw draw)
 }
 
 /*@
-  DrawBOP - Begins a new page or frame on the selected graphical device
+   DrawBOP - Begins a new page or frame on the selected graphical device.
 
-   Input Parameters:
+   Input Parameter:
 .  draw - the drawing context
 
 .keywords: draw, page, frame
@@ -39,9 +39,9 @@ int DrawBOP( Draw draw )
 }
 
 /*@
-  DrawEOP - Ends a page or frame on the selected graphical device
+   DrawEOP - Ends a page or frame on the selected graphical device.
 
-   Input Parameters:
+   Input Parameter:
 .  draw - the drawing context
 
 .keywords: draw, page, frame
