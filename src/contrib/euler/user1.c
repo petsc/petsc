@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.67 1997/10/17 19:46:37 curfman Exp $";
+static char vcid[] = "$Id: user1.c,v 1.68 1997/10/17 22:12:29 keyes Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -39,7 +39,7 @@ Runtime options include:\n\
   -Nx <nx> -Ny <ny> -Nz <nz> : Number of processors in the x-, y-, z-directions\n\
   -problem <1,2,3,4,5,6>       : 1(50x10x10 grid), 2(98x18x18 grid), 3(194x34x34 grid),\n\
                                4(data structure test)\n\
-                               5(duct flow 50x10x10),6(98x18x18)\n\
+                               5(duct flow 50x10x10), 6(98x18x18)\n\
   -mm_type <euler,fp,hybrid,hybrid_e,hybrid_f> : multi-model variant\n\
   -dim2                      : use 2D problem only\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
@@ -58,6 +58,8 @@ Runtime options include:\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
   -eps_jac <eps>             : Choose differencing parameter for FD Jacobian approx\n\
   -jac_no_wake               : Don't use wake boundary conditions in the preconditioning Jacobian\n\
+  -jac_snes_fd               : Use PETSc sparse finite difference approximation of Jacobian\n\
+                               (the default for problems 5 and higher)\n\
   -no_output                 : Do not print any output during SNES solve (intended for use\n\
                                during timing runs)\n\n";
 
@@ -652,7 +654,7 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
   if (app->mmtype != MMEULER && app->mmtype != MMHYBRID_E) {
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-          Full potential code   DAVID!DAVID!DAVID
+          Full potential code
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     /* fv_array[0] = 1.e-13; */
@@ -842,7 +844,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       ni1 = 50; nj1 = 10; nk1 = 10;
     /* wing points, used to define BC scatters.  These are analogs
        in C of Fortran points in input (shifted by -2 for explicit formulation) 
-       from m6c_duct: Fortran: itl=-1, itu=33, ile=17, ktip=-1 */
+       from m6c_bump: Fortran: itl=-1, itu=33, ile=17, ktip=-1 */
       app->ktip = -3; app->itl = -3; app->itu = 31; app->ile = 15;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.0e-6;
@@ -860,7 +862,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       ni1 = 98; nj1 = 18; nk1 = 18;
     /* wing points, used to define BC scatters.  These are analogs
        in C of Fortran points in input (shifted by -2 for explicit formulation) 
-       from m6c_duct: Fortran: itl=-1, itu=33, ile=17, ktip=-1 */
+       from m6c_bump: Fortran: itl=-1, itu=33, ile=17, ktip=-1 */
       app->ktip = -3; app->itl = -3; app->itu = 63; app->ile = 31;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.0e-6;
@@ -872,7 +874,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->bump = 0.10;     /* default max bump height relative to channel height */
       ierr = OptionsGetDouble(PETSC_NULL,"-bump",&app->bump,&flg); CHKERRQ(ierr);
       PetscPrintf(app->comm,"Duct problem: bump = %g\n",app->bump);
-
       ierr = OptionsGetInt(PETSC_NULL,"-nk1",&nk1,&flg); CHKERRQ(ierr);
       break;
     default:
