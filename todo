@@ -131,6 +131,11 @@
 
    We should have performance benchmarking to make sure code performance is not decreased by changes
 
+  ------------
+  PR 
+  ------------
+  Add all PETSc user publications we find from scholar.google.com
+  
   -------------
   Documentation
   -------------
