@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.205 1997/03/20 18:58:05 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.206 1997/03/29 00:41:41 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4561,9 +4561,18 @@ PLogPrintSummary()}.
 We print performance data for each routine, organized by PETSc
 components, followed by any user-defined events (discussed in
 Section~\ref{sec:profileuser}).  For each routine, the output data
-include the maximum time and flop rate over all processors.
-Information about parallel performance is also included, as
-discussed in the following section.
+include the maximum time and floating point operation (flop) rate over
+all processors.  Information about parallel performance is also
+included, as discussed in the following section.
+
+For the purpose of PETSc floating point operation counting, we define
+one {\em flop} as one operation of any of the following types:
+multiplication, division, addition, or subtraction.  For example, one
+{\tt VecAXPY()} operation, which computes $y = \alpha x + y$ for
+vectors of length $N$, requires $2N$ flops (consisting of $N$
+additions and $N$ multiplications).  Bear in mind that flop rates
+present only a limited view of performance, since loads and stores are
+the real performance barrier.
 
 For simplicity, the remainder of this discussion focuses on
 interpreting profile data for the {\tt SLES} component, 
