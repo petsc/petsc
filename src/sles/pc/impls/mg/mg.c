@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.119 2001/01/16 18:19:02 balay Exp bsmith $*/
+/*$Id: mg.c,v 1.120 2001/02/12 22:13:31 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -277,13 +277,13 @@ static int PCView_MG(PC pc,PetscViewer viewer)
 #define __FUNC__ "PCSetUp_MG"
 static int PCSetUp_MG(PC pc)
 {
-  MG         *mg = (MG*)pc->data;
-  int        ierr,i,n = mg[0]->levels;
-  KSP        ksp;
-  PC         cpc;
-  PetscTruth preonly,lu,redundant,monitor = PETSC_FALSE;
-  PetscViewer     ascii;
-  MPI_Comm   comm;
+  MG          *mg = (MG*)pc->data;
+  int         ierr,i,n = mg[0]->levels;
+  KSP         ksp;
+  PC          cpc;
+  PetscTruth  preonly,lu,redundant,monitor = PETSC_FALSE,dump;
+  PetscViewer ascii;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
   /*
@@ -363,6 +363,22 @@ static int PCSetUp_MG(PC pc)
   }
 
   ierr = SLESSetUp(mg[0]->smoothd,mg[0]->b,mg[0]->x);CHKERRQ(ierr);
+
+  /*
+     Dump the interpolation/restriction matrices to matlab plus the 
+   Jacobian/stiffness on each level. This allows Matlab users to 
+   easily check if the Galerkin condition A_c = R A_f R^T is satisfied */
+  ierr = PetscOptionsHasName(pc->prefix,"-pc_mg_dump_matlab",&dump);CHKERRQ(ierr);
+  if (dump) {
+    for (i=1; i<n; i++) {
+      ierr = MatView(mg[i]->restrct,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
+    }
+    for (i=0; i<n; i++) {
+      ierr = SLESGetPC(mg[i]->smoothd,&pc);CHKERRQ(ierr);
+      ierr = MatView(pc->mat,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
+    }
+  }
+
   PetscFunctionReturn(0);
 }
 
