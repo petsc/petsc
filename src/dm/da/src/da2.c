@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.138 2000/04/09 04:39:49 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.139 2000/04/12 04:26:20 bsmith Exp curfman $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
@@ -202,7 +202,8 @@ int DAPublish_Petsc(PetscObject obj)
 -  lx, ly - arrays containing the number of nodes in each cell along
            the x and y coordinates, or PETSC_NULL. If non-null, these
            must be of length as m and n, and the corresponding
-           m and n cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum of the ly[] entries N
+           m and n cannot be PETSC_DECIDE. The sum of the lx[] entries
+           must be M, and the sum of the ly[] entries must be N.
 
    Output Parameter:
 .  inra - the resulting distributed array object
