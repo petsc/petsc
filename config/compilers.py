@@ -545,8 +545,17 @@ class Configure(config.base.Configure):
 
   def checkFortranPreprocessor(self):
     '''Determine if Fortran handles preprocessing properly'''
-    # IBM xlF chokes on this
-    self.fortranPreprocess = self.checkFortranFlag('-DPTesting')
+    self.pushLanguage('F77')
+            # Does Fortran compiler need special flag for using CPP
+    for flag in ['', '-cpp', '-xpp=cpp', '-F', '-Cpp', '-fpp:-m']:
+      try:
+        self.addCompilerFlag(flag, body = '#define dummy \n           dummy')
+        self.fortranPreprocess = 1
+        self.popLanguage()
+        return
+      except RuntimeError: pass
+    self.popLanguage()
+    self.fortranPreprocess = 0
     return
 
   def checkFortran90Interface(self):
