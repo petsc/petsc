@@ -1,4 +1,4 @@
-# $Id: base,v 1.7 1998/04/22 16:20:27 balay Exp balay $ 
+# $Id: base,v 1.8 1998/04/22 18:54:51 balay Exp balay $ 
 
 PARCH    = solaris
 #
@@ -38,6 +38,10 @@ libf: ${LIBNAME}(${OBJSF})
 #	${FC} -c ${FFLAGS} ${CFLAGS} ${FOPTFLAGS} $*.F
 #	${AR} cr ${LIBNAME} $*.o
 #	${RM} $*.o
+#
+#  .F.f: target is nolonger required, but retained, as it is
+#  useful to check what the preprocessor output.
+#
 .F.f:
 	-${RM} __$*.f
 	-/usr/ucb/cc -E  ${CFLAGS} $*.F  > __$*.f
