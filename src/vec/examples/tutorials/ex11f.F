@@ -1,5 +1,5 @@
 !
-! "$Id: ex11f.F,v 1.2 1999/01/12 23:13:48 bsmith Exp balay $";
+! "$Id: ex11f.F,v 1.3 1999/03/25 23:40:53 balay Exp balay $";
 !
 !
 ! Program usage:  mpirun ex1 [-help] [all PETSc options] 
@@ -67,29 +67,34 @@
 
       call VecNorm(x,NORM_2,norm,ierr) 
       if (rank .eq. 0) then
-        print*,'Norm of entire vector',norm
+         write (6,100) norm
+ 100     format ('Norm of entire vector ',1pe8.2)
       endif
 
       call VecSetBlockSize(x,2,ierr)
       call VecStrideNorm(x,0,NORM_2,norm,ierr) 
       if (rank .eq. 0) then
-        print*,'Norm of subvector',norm
+         write (6,200) norm
+ 200     format ('Norm of subvector ',1pe8.2)
       endif
 
 
       call VecStrideNorm(x,1,NORM_2,norm,ierr) 
       if (rank .eq. 0) then
-        print*,'Norm of subvector',norm
+         write (6,300) norm
+ 300     format ('Norm of subvector ',1pe8.2)
       endif
 
       call VecStrideNorm(x,1,NORM_1,norm,ierr) 
       if (rank .eq. 0) then
-        print*,'Norm of subvector',norm
+         write (6,400) norm
+ 400     format ('Norm of subvector ',1pe8.2)
       endif
 
       call VecStrideNorm(x,1,NORM_INFINITY,norm,ierr) 
       if (rank .eq. 0) then
-        print*,'Norm of subvector',norm
+         write (6,500) norm
+ 500     format ('Norm of subvector ',1pe8.2)
       endif
 
 !
