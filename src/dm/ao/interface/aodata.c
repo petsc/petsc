@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.5 1997/10/04 04:03:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.6 1997/10/08 01:41:21 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -208,6 +208,121 @@ int AODataRestoreSegmentIS(AOData aodata,char *name,char *segment,IS is,void **d
   return 0;
 }
 
+/* ------------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ "AODataGetLocalSegment" 
+/*@
+   AODataGetLocalsegment - Get data from a particular segment of a database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  n - the number of data items needed by this processor
+.  keys - the keys provided by this processor
+
+   Output Parameters:
+.  data - the actual data
+
+.keywords: database transactions
+
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataAddKey(), AODataRestoreSegment(),
+          AODataGetSegmentIS(), AODataRestoreSegmentIS(), AODataAddSegment(), 
+          AODataGetInfoKey(), AODataGetInfoSegment(), AODataAddSegment()
+@*/
+int AODataGetLocalSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+{
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  return (*aodata->ops.getlocalsegment)(aodata,name,segment,n,keys,data);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataRestoreLocalSegment" 
+/*@
+   AODataRestoreLocalSegment - Restores data from a particular segment of a database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  n - the number of data items needed by this processor
+.  keys - the keys provided by this processor
+
+   Output Parameters:
+.  data - the actual data
+
+.keywords: database transactions
+
+.seealso: 
+@*/
+int AODataRestoreLocalSegment(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+{
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  return (*aodata->ops.restorelocalsegment)(aodata,name,segment,n,keys,data);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataGetLocalSegmentIS" 
+/*@
+   AODataGetLocalSegmentIS - Get data from a particular segment of a database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  is - the keys for data requested on this processor
+
+   Output Parameters:
+.  data - the actual data
+
+.keywords: database transactions
+
+.seealso:
+@*/
+int AODataGetLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
+{
+  int ierr,n,*keys;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+
+  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
+  ierr = (*aodata->ops.getlocalsegment)(aodata,name,segment,n,keys,data); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataRestoreLocalSegmentIS" 
+/*@
+   AODataRestoreLocalSegmentIS - Restores data from a particular segment of a database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the data key
+.  segment - the name of the segment
+.  is - the keys provided by this processor
+
+   Output Parameters:
+.  data - the actual data
+
+.keywords: database transactions
+
+.seealso:
+@*/
+int AODataRestoreLocalSegmentIS(AOData aodata,char *name,char *segment,IS is,void **data)
+{
+  int ierr,n,*keys;
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+
+  ierr = ISGetSize(is,&n); CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&keys); CHKERRQ(ierr);
+
+  ierr = (*aodata->ops.restorelocalsegment)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&keys); CHKERRQ(ierr);
+  return 0;
+}
 
 /* ------------------------------------------------------------------------------------*/
 
@@ -332,6 +447,37 @@ int AODataRestoreReducedSegmentIS(AOData aodata,char *name,char *segment,IS is,i
 
 
 /* ------------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "AODataAddKey" 
+/*@
+   AODataAddKey - Add another data key to a AOData database.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  N - the number of indices in the key
+.  nlocal - number of indices to be associated with this processor
+.  nsegments - the number of segments associated with the key
+
+.keywords: database additions
+
+.seealso:
+@*/
+int AODataAddKeyLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping map)
+{
+  int       ierr,ikey,flag;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+
+  ierr = AODataFindKey_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
+  if (flag)  SETERRQ(1,1,"Key does not exist");
+
+  aodata->keys[ikey].ltog = map;
+  PetscObjectReference((PetscObject) map);
+
+  return 0;
+
+}
 
 #undef __FUNC__  
 #define __FUNC__ "AODataAddKey" 
