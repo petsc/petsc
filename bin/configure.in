@@ -514,9 +514,7 @@ dnl Note that the input and output filenames are not handled correctly
 dnl by configure in the case where configure lives in a subdirectory.
 dnl To work around this, we use the output:input file name options
 dnl
-AC_OUTPUT(bmake/config/base.site:../bmake/config/base.site.in)
-AC_OUTPUT(bmake/config/base:../bmake/config/base.in)
-AC_OUTPUT(bmake/config/base_variables:../bmake/config/base_variables.in)
+AC_OUTPUT(bmake/config/base.site:../bmake/config/base.site.in bmake/config/base:../bmake/config/base.in bmake/config/base_variables:../bmake/config/base_variables.in)
 dnl
 dnl If the user asked us, move the files into the bmake area in their own
 dnl directory
