@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.44 1998/03/19 02:09:53 balay Exp balay $ 
+# $Id: makefile,v 1.45 1998/03/24 16:45:22 balay Exp balay $ 
 
 ALL: ex1
 
@@ -14,7 +14,8 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex14.PETSc runex14 runex14_2 ex14.rm \
                    ex15.PETSc runex15 ex15.rm \
                    ex16.PETSc runex16 ex16.rm clean
-TESTEXAMPLES_2   = ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc runex5_5 ex5.rm ex8.rm clean
+TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
+	           runex5_5 ex5.rm ex8.rm clean
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
                    ex6f.PETSc ex6f.rm ex15f.PETSc runex15f ex15f.rm clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
@@ -205,7 +206,11 @@ runex2_4:
 	   if (diff output/ex2_4.out ex2_4.tmp) then true; \
 	   else echo "Possible problem with ex2_4, diffs above"; fi; \
 	   ${RM} -f ex2_4.tmp
-
+runex2_5:
+	-@${MPIRUN} -np 2 ex2 -ksp_smonitor -m 5 -n 5 -mat_view_draw > ex2_5.tmp 2>&1; \
+	   if (diff output/ex2_2.out ex2_5.tmp) then true; \
+	   else echo "Possible problem with ex2_5, diffs above"; fi; \
+	   ${RM} -f ex2_4.tmp
 runex2f:
 	-@${MPIRUN} -np 2 ex2f -pc_type jacobi -ksp_smonitor > ex2f_1.tmp 2>&1; \
 	   if (diff output/ex2f_1.out ex2f_1.tmp) then true; \
