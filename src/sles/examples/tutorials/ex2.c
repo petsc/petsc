@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.75 1998/06/16 01:25:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.76 1998/07/14 00:04:41 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
@@ -110,7 +110,7 @@ int main(int argc,char **args)
   /* 
      Create parallel vectors.
       - We form 1 vector from scratch and then duplicate as needed.
-      - When using VecCreate() in this example, we specify only the
+      - When using VecCreate() and VecSetFromOptions() in this example, we specify only the
         vector's global dimension; the parallel partitioning is determined
         at runtime. 
       - When solving a linear system, the vectors and matrices MUST
@@ -123,6 +123,7 @@ int main(int argc,char **args)
         below).
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
+  ierr = VecSetFromOptions(u);CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 

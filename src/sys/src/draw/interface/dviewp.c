@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.20 1998/12/03 04:03:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dviewp.c,v 1.21 1999/01/04 21:52:23 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -27,7 +27,6 @@ int DrawSetViewPort(Draw draw,double xl,double yl,double xr,double yr)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
   if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) {
     SETERRQ4(PETSC_ERR_ARG_OUTOFRANGE,0,"ViewPort values must be >= 0 and <= 1: Instead %g %g %g %g",xl,yl,xr,yr); 
   }
@@ -59,7 +58,7 @@ int DrawSplitViewPort(Draw draw)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
+  if (PetscTypeCompare(draw->type_name,DRAW_NULL)) PetscFunctionReturn(0);
 
   MPI_Comm_rank(draw->comm,&rank);
   MPI_Comm_size(draw->comm,&size);
@@ -77,7 +76,7 @@ int DrawSplitViewPort(Draw draw)
   ierr = DrawLine(draw,xl,yr,xr,yr,DRAW_BLACK); CHKERRQ(ierr);
   ierr = DrawLine(draw,xr,yr,xr,yl,DRAW_BLACK); CHKERRQ(ierr);
   ierr = DrawLine(draw,xr,yl,xl,yl,DRAW_BLACK); CHKERRQ(ierr);
-  DrawSynchronizedFlush(draw);
+  ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   draw->port_xl = xl;
   draw->port_xr = xr;

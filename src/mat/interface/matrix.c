@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.310 1999/01/04 21:49:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.311 1999/01/12 20:44:41 curfman Exp bsmith $";
 #endif
 
 /*
@@ -155,9 +155,9 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
          specified file; corresponding input uses MatLoad()
 .    ViewerDrawOpen() - Outputs nonzero matrix structure to 
          an X window display
--    ViewerMatlabOpen() - Outputs matrix to Matlab viewer.
+-    ViewerSocketOpen() - Outputs matrix to Socket viewer.
          Currently only the sequential dense and AIJ
-         matrix types support the Matlab viewer.
+         matrix types support the Socket viewer.
 
    The user can call ViewerSetFormat() to specify the output
    format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
@@ -177,7 +177,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 .keywords: matrix, view, visualize, output, print, write, draw
 
 .seealso: ViewerSetFormat(), ViewerASCIIOpen(), ViewerDrawOpen(), 
-          ViewerMatlabOpen(), ViewerBinaryOpen(), MatLoad()
+          ViewerSocketOpen(), ViewerBinaryOpen(), MatLoad()
 @*/
 int MatView(Mat mat,Viewer viewer)
 {
@@ -2793,7 +2793,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
 .seealso: MatDestroyMatrices(), MatGetSubMatrix()
 @*/
-int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,Mat **submat)
+int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **submat)
 {
   int ierr;
 
@@ -3323,7 +3323,7 @@ M*/
 .seealso: MatGetSubMatrices()
 
 @*/
-int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCall cll,Mat *newmat)
+int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat)
 {
   int     ierr, size;
   Mat     *local;

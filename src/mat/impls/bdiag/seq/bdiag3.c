@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag3.c,v 1.3 1998/12/03 04:00:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag3.c,v 1.4 1998/12/17 22:10:29 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -665,8 +665,8 @@ int MatView_SeqBDiag(Mat A,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
-    SETERRQ(PETSC_ERR_SUP,0,"Matlab viewer");
+  if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+    SETERRQ(PETSC_ERR_SUP,0,"Socket viewer");
   } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = MatView_SeqBDiag_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex19.F,v 1.30 1998/03/24 16:41:47 balay Exp balay $";
+!    "$Id: ex19.F,v 1.31 1998/04/15 18:00:32 balay Exp bsmith $";
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -22,6 +22,7 @@
 
 ! Create a vector, then duplicate it
        call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+       call VecSetFromOptions(x,ierr)
        call VecDuplicate(x,y,ierr)
        call VecDuplicate(x,w,ierr)
 

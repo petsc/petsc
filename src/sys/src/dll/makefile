@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 1998/06/12 22:16:35 balay Exp balay $ 
+# $Id: makefile,v 1.5 1998/06/15 15:41:40 balay Exp bsmith $ 
 
 ALL: lib 
 CFLAGS    =
@@ -11,7 +11,7 @@ SOURCEH	  =
 OBJSC	  = dl.o   reg.o
 OBJSF	  =
 MANSEC	  = 7
-LIBBASE	  = libpetscsys
+LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/dll/
 

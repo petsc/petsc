@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.90 1998/09/25 03:14:21 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.91 1998/10/09 19:21:45 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -58,7 +58,7 @@ struct _MatOps {
 /*40*/      (*ilufactor)(Mat,IS,IS,double,int),
             (*incompletecholeskyfactor)(Mat,IS,double),
             (*axpy)(Scalar *,Mat,Mat),
-            (*getsubmatrices)(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **),
+            (*getsubmatrices)(Mat,int,IS *,IS *,MatReuse,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
 /*45*/      (*getvalues)(Mat,int,int *,int,int *,Scalar *),
             (*copy)(Mat,Mat,MatStructure),
@@ -77,7 +77,7 @@ struct _MatOps {
             (*setunfactored)(Mat),
 /*60*/      (*permute)(Mat,IS,IS,Mat*),
             (*setvaluesblocked)(Mat,int,int *,int,int *,Scalar *,InsertMode),
-            (*getsubmatrix)(Mat,IS,IS,int,MatGetSubMatrixCall,Mat*),
+            (*getsubmatrix)(Mat,IS,IS,int,MatReuse,Mat*),
             (*destroy)(Mat),
             (*view)(Mat,Viewer),
             (*getmaps)(Mat,Map*,Map*);

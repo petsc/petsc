@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtextgs.c,v 1.16 1998/04/13 17:46:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: dtextgs.c,v 1.17 1998/04/27 14:40:31 curfman Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -27,8 +27,8 @@ int DrawStringGetSize(Draw draw,double *width,double *height)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
-  ierr = (*draw->ops->textgetsize)(draw,width,height);CHKERRQ(ierr);
+  if (PetscTypeCompare(draw->type_name,DRAW_NULL)) PetscFunctionReturn(0);
+  ierr = (*draw->ops->stringgetsize)(draw,width,height);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -156,7 +156,7 @@ extern void             lam_F_maketype(int*,int*,void*);
 #define VIEWER_DRAWX_WORLD_1_FORTRAN  -5
 #define VIEWER_DRAWX_WORLD_2_FORTRAN  -6
 #define VIEWER_DRAWX_SELF_FORTRAN     -7
-#define VIEWER_MATLAB_WORLD_FORTRAN   -8 
+#define VIEWER_SOCKET_WORLD_FORTRAN   -8 
 
 #define PetscPatchDefaultViewers_Fortran(vin,v) \
 { \
@@ -168,8 +168,8 @@ extern void             lam_F_maketype(int*,int*,void*);
       v = VIEWER_DRAWX_WORLD_2; \
     } else if ( (*(PetscFortranAddr*)vin) == VIEWER_DRAWX_SELF_FORTRAN) { \
       v = VIEWER_DRAWX_SELF; \
-    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_MATLAB_WORLD_FORTRAN) { \
-      v = VIEWER_MATLAB_WORLD; \
+    } else if ( (*(PetscFortranAddr*)vin) == VIEWER_SOCKET_WORLD_FORTRAN) { \
+      v = VIEWER_SOCKET_WORLD; \
     } else { \
       v = *vin; \
     } \

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.19 1998/03/30 22:03:31 balay Exp balay $";
+!    "$Id: ex11f.F,v 1.20 1998/04/15 18:02:10 balay Exp bsmith $";
 !
 !/*T
 !  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -176,6 +176,7 @@
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,u,ierr)
+      call VecSetFromOptions(u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zviewer.c,v 1.14 1998/10/19 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zviewer.c,v 1.15 1998/12/03 03:53:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: zviewer.c,v 1.14 1998/10/19 22:15:08 bsmith Exp bsmit
 #define viewerpushformat_     VIEWERPUSHFORMAT
 #define viewerpopformat_      VIEWERPOPFORMAT
 #define viewerbinaryopen_     VIEWERBINARYOPEN
-#define viewermatlabopen_     VIEWERMATLABOPEN
+#define viewersocketopen_     VIEWERSOCKETOPEN
 #define viewerstringopen_     VIEWERSTRINGOPEN
 #define viewerdrawopen_       VIEWERDRAWOPEN
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
@@ -22,19 +22,19 @@ static char vcid[] = "$Id: zviewer.c,v 1.14 1998/10/19 22:15:08 bsmith Exp bsmit
 #define viewerpushformat_     viewerpushformat
 #define viewerpopformat_      viewerpopformat
 #define viewerbinaryopen_     viewerbinaryopen
-#define viewermatlabopen_     viewermatlabopen
+#define viewersocketopen_     viewersocketopen
 #define viewerstringopen_     viewerstringopen
 #define viewerdrawopen_       viewerdrawopen
 #endif
 
 EXTERN_C_BEGIN
 
-void viewermatlabopen_(MPI_Comm *comm,CHAR name,int *port,Viewer *lab, 
+void viewersocketopen_(MPI_Comm *comm,CHAR name,int *port,Viewer *lab, 
                        int *__ierr,int len1 )
 {
   char   *c1;
   FIXCHAR(name,len1,c1);
-  *__ierr = ViewerMatlabOpen((MPI_Comm)PetscToPointerComm(*comm),
+  *__ierr = ViewerSocketOpen((MPI_Comm)PetscToPointerComm(*comm),
      c1,*port,lab);
   FREECHAR(name,c1);
 }

@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.19 1998/05/29 20:35:31 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.20 1998/12/17 22:08:41 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -39,7 +39,7 @@ extern int VecView_MPI_File(Vec, Viewer);
 extern int VecView_MPI_Files(Vec, Viewer);
 extern int VecView_MPI_Binary(Vec , Viewer);
 extern int VecView_MPI_Draw_LG(Vec ,Viewer);
-extern int VecView_MPI_Matlab(Vec , Viewer);
+extern int VecView_MPI_Socket(Vec , Viewer);
 extern int VecView_MPI(Vec,Viewer);
 extern int VecGetSize_MPI(Vec,int *);
 extern int VecSetValues_MPI(Vec, int, int *, Scalar*,InsertMode);
@@ -47,7 +47,7 @@ extern int VecSetValuesBlocked_MPI(Vec, int, int *, Scalar*,InsertMode);
 extern int VecAssemblyBegin_MPI(Vec);
 extern int VecAssemblyEnd_MPI(Vec);
 
-extern int VecCreateMPI_Private(MPI_Comm,int,int,int,int,int,Scalar *,Map,Vec *);
+extern int VecCreate_MPI_Private(Vec,int,int,int,Scalar *,Map);
 
 #endif
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.167 1998/12/03 04:00:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.168 1998/12/17 22:10:29 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -286,8 +286,7 @@ int MatGetSize_SeqBDiag(Mat A,int *m,int *n)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqBDiag"
-int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,
-                                    Mat *submat)
+int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          nznew, *smap, i, j, ierr, oldcols = a->n;
@@ -337,8 +336,7 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqBDiag"
-int MatGetSubMatrices_SeqBDiag(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
-                                    Mat **B)
+int MatGetSubMatrices_SeqBDiag(Mat A,int n, IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   int ierr,i;
 

@@ -1,11 +1,11 @@
 !
-!      "$Id: ex3f.F,v 1.8 1998/12/03 03:57:16 bsmith Exp balay $";
+!      "$Id: ex3f.F,v 1.9 1998/12/05 21:02:56 balay Exp bsmith $";
 !
 !  Description: Displays a vector visually.
 !
 !/*T
 !   Concepts: Vectors^Drawing vectors;
-!   Routines: VecCreate(); VecSetValues(); VecView(); VecDestroy();
+!   Routines: VecCreate(); VecSetFromOptions(); VecSetValues(); VecView(); VecDestroy();
 !   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
 !   Routines: ViewerDrawOpen(); ViewerDestroy();
 !   Processors: n
@@ -43,10 +43,11 @@
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
 !  Create a vector, specifying only its global dimension.
-!  When using VecCreate(), the vector format (currently parallel
+!  When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
 !  or sequential) is determined at runtime.  Also, the parallel
 !  partitioning of the vector is determined by PETSc at runtime.
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+      call VecSetFromOptions(x,ierr)
 
 !  Currently, all PETSc parallel vectors are partitioned by
 !  contiguous chunks of rows across the processors.  Determine

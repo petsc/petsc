@@ -1,7 +1,5 @@
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.121 1998/12/17 22:11:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.122 1999/01/04 21:52:39 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -485,11 +483,8 @@ int DrawDestroy_X(Draw ctx)
 
   PetscFunctionBegin;
   if (ctx->popup) {ierr = DrawDestroy(ctx->popup); CHKERRQ(ierr);}
-  if (ctx->title) PetscFree(ctx->title);
   PetscFree(win->font);
   PetscFree(win);
-  PLogObjectDestroy(ctx);
-  PetscHeaderDestroy(ctx);
   PetscFunctionReturn(0);
 }
 
@@ -519,67 +514,21 @@ int DrawXGetDisplaySize_Private(const char name[],int *width,int *height)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "DrawOpenX" 
-/*@C
-   DrawOpenX - Opens an X-window for use with the Draw routines.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - the communicator that will share X-window
-.  display - the X display on which to open, or null for the local machine
-.  title - the title to put in the title bar, or null for no title
-.  x, y - the screen coordinates of the upper left corner of window
-          may use PETSC_DECIDE for these two arguments, then PETSc places the 
-          window
--  w, h - the screen width and height in pixels
-
-   Output Parameters:
-.  ctx - the drawing context.
-
-   Options Database Keys:
-+  -nox - Disables all x-windows output
-.  -display <name> - Sets name of machine for the X display
-.  -draw_pause <pause> - Sets time (in seconds) that the
-       program pauses after DrawPause() has been called
-       (0 is default, -1 implies until user input).
-.  -draw_x_shared_colormap - Causes PETSc to use a shared
-       colormap. By default PETSc creates a seperate color 
-       for its windows, you must put the mouse into the graphics 
-       window to see  the correct colors. This options forces
-       PETSc to use the default colormap which will usually result
-       in bad contour plots.
-.  -draw_double_buffer - Uses double buffering for smooth animation.
--  -geometry - Indicates location and size of window
-
-   Note:
-   When finished with the drawing context, it should be destroyed
-   with DrawDestroy().
-
-   Note for Fortran Programmers:
-   Whenever indicating null character data in a Fortran code,
-   PETSC_NULL_CHARACTER must be employed; using PETSC_NULL is not
-   correct for character data!  Thus, PETSC_NULL_CHARACTER can be
-   used for the display and title input parameters.
-
-.keywords: draw, open, x
-
-.seealso: DrawSynchronizedFlush(), DrawDestroy()
-@*/
-int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
-              int x,int y,int w,int h,Draw* inctx)
+#define __FUNC__ "DrawCreate_X" 
+int DrawCreate_X(Draw ctx)
 {
-  Draw       ctx;
   Draw_X     *Xwin;
   int        ierr,size,rank,flg,xywh[4],osize = 4;
-  char       string[128];
+  int        x = ctx->x, y = ctx->y, w = ctx->w, h = ctx->h;
   static int xavailable = 0,yavailable = 0,xmax = 0,ymax = 0, ybottom = 0;
 
   PetscFunctionBegin;
+
   ierr = OptionsHasName(PETSC_NULL,"-nox",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = DrawOpenNull(comm,inctx);CHKERRQ(ierr);
+    ierr = DrawSetType(ctx,DRAW_NULL);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -588,19 +537,19 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
   ierr = OptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,&flg);CHKERRQ(ierr);
   x = xywh[0]; y = xywh[1]; w = xywh[2]; h = xywh[3];
 
-  if (!display) {
-    ierr    = PetscGetDisplay(string,128);CHKERRQ(ierr);
-    display = string;
+  if (!ctx->display) {
+    ctx->display = (char *) PetscMalloc(128*sizeof(char));CHKPTRQ(ctx->display);
+    ierr    = PetscGetDisplay(ctx->display,128);CHKERRQ(ierr);
   }
 
   /*
       Initialize the display size
   */
   if (xmax == 0) {
-    ierr = DrawXGetDisplaySize_Private(display,&xmax,&ymax); CHKERRQ(ierr);
+    ierr = DrawXGetDisplaySize_Private(ctx->display,&xmax,&ymax); CHKERRQ(ierr);
   }
 
-  if (x == PETSC_DECIDE || y == PETSC_DECIDE) {
+  if (ctx->x == PETSC_DECIDE || ctx->y == PETSC_DECIDE) {
     /*
        PETSc tries to place windows starting in the upper left corner and 
        moving across to the right. 
@@ -641,9 +590,6 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
     ybottom    = 0;
   }
 
-  *inctx = 0;
-  PetscHeaderCreate(ctx,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_XWINDOW,"Draw",comm,DrawDestroy,0);
-  PLogObjectCreate(ctx);
   PetscMemcpy(ctx->ops,&DvOps,sizeof(DvOps));
   ctx->ops->destroy = DrawDestroy_X;
   ctx->ops->view    = 0;
@@ -654,14 +600,6 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
   ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
   ctx->popup   = 0;
 
-  if (title) {
-    int len    = PetscStrlen(title);
-    ctx->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(ctx->title);
-    PLogObjectMemory(ctx,(len+1)*sizeof(char*));
-    PetscStrcpy(ctx->title,title);
-  } else {
-    ctx->title = 0;
-  }
 
   ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&ctx->pause,&flg);CHKERRQ(ierr);
 
@@ -669,18 +607,18 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) ); CHKPTRQ(Xwin);
   PLogObjectMemory(ctx,sizeof(Draw_X)+sizeof(struct _p_Draw));
   PetscMemzero(Xwin,sizeof(Draw_X));
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
+  MPI_Comm_size(ctx->comm,&size);
+  MPI_Comm_rank(ctx->comm,&rank);
 
   if (rank == 0) {
     if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative window width or height");
-    ierr = XiQuickWindow(Xwin,(char *)display,(char *)title,x,y,w,h); CHKERRQ(ierr);
-    ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);
+    ierr = XiQuickWindow(Xwin,ctx->display,ctx->title,x,y,w,h); CHKERRQ(ierr);
+    ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,ctx->comm);CHKERRQ(ierr);
   } else {
     unsigned long win;
-    ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);
-    ierr = XiQuickWindowFromWindow( Xwin,(char *)display, win); CHKERRQ(ierr);
+    ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,ctx->comm);CHKERRQ(ierr);
+    ierr = XiQuickWindowFromWindow( Xwin,ctx->display, win); CHKERRQ(ierr);
   }
 
   Xwin->x      = x;
@@ -689,8 +627,11 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
   Xwin->h      = h;
   ctx->data    = (void *) Xwin;
 
+  ctx->type_name = (char *) PetscMalloc((PetscStrlen(DRAW_X)+1)*sizeof(char));CHKPTRQ(ctx->type_name);
+  PetscStrcpy(ctx->type_name,DRAW_X);
+
   /*
-      Need barrier here so processor 0 doesn't destroy the window before other 
+    Need barrier here so processor 0 doesn't destroy the window before other 
     processors have completed XiQuickWindow()
   */
   ierr = DrawClear(ctx);CHKERRQ(ierr);
@@ -700,32 +641,21 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
   if (flg) {
      ierr = DrawSetDoubleBuffer(ctx); CHKERRQ(ierr);
   } 
-  *inctx       = ctx;
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #else
 
 #undef __FUNC__  
-#define __FUNC__ "DrawOpenX" 
-int DrawOpenX(MPI_Comm comm,const char disp[],const char ttl[],
-              int x,int y,int w,int h,Draw* ctx)
+#define __FUNC__ "dummy9" 
+int dummy9(void)
 {
-  int rank,flag,ierr;
-
-  PetscFunctionBegin;
-  MPI_Comm_rank(comm,&rank);
-  OptionsHasName(PETSC_NULL,"-nox",&flag);
-  if (!flag && !rank) {
-    (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
-  }
-  ierr = DrawOpenNull(comm,ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  return 0;  /* some compilers hate empty files */
 }
 
 #endif
-
 
 
 

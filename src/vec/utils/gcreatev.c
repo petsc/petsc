@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.53 1998/12/17 22:08:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.54 1999/01/04 21:47:15 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -90,9 +90,10 @@ int VecRegisterDestroy(void)
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     VecCreate("my_vector_name",Vec *)
+$     VecCreate(MPI_Comm,int n,int N,Vec *);
+$     VecSetType(Vec,"my_vector_name");
    or at runtime via the option
-$     -Vec_type my_vector_name
+$     -vec_type my_vector_name
 
 .keywords: Vec, register
 
@@ -101,9 +102,9 @@ M*/
 
 #undef __FUNC__  
 #define __FUNC__ "VecRegister_Private"
-int VecRegister_Private(char *sname,char *path,char *name,int (*function)(MPI_Comm,int,int,Vec*))
+int VecRegister_Private(char *sname,char *path,char *name,int (*function)(Vec))
 {
-  int ierr;
+  int  ierr;
   char fullname[256];
 
   PetscFunctionBegin;
@@ -114,28 +115,16 @@ int VecRegister_Private(char *sname,char *path,char *name,int (*function)(MPI_Co
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreateWithType"
+#define __FUNC__ "VecSetType"
 /*@C
-    VecCreateWithType - Creates a vector, where the vector type is determined 
-    from type name passed in.  
+    VecSetType - Builds a vector, for a particular vector implementation.
 
-    Collective on MPI_Comm
+    Collective on Vec
 
     Input Parameters:
-+   comm - MPI communicator
-.   type_name - name of the vector type (can be overwritten from the command line)
-.   n - local vector length (or PETSC_DECIDE)
--   N - global vector length (or PETSC_DETERMINE)
++   vec - the vector object
+-   type_name - name of the vector type
  
-    Output Parameter:
-.   V - location to stash resulting vector
-
-    Options Database Keys:
-+   -vec_type mpi - Activates use of MPI vectors, even for the uniprocessor case
-               by internally calling VecCreateMPI()
--   -vec_type shared - Activates use of shared memory parallel vectors
-               by internally calling VecCreateShared()
-
     Notes:
     Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
     of the same type as an existing vector.
@@ -145,89 +134,34 @@ int VecRegister_Private(char *sname,char *path,char *name,int (*function)(MPI_Co
 .seealso: VecCreateSeq(), VecCreateMPI(), VecCreateShared(), VecDuplicate(), VecDuplicateVecs(),
           VecCreate()
 @*/
-int VecCreateWithType(MPI_Comm comm,VecType type_name,int n,int N,Vec *v)
+int VecSetType(Vec vec,VecType type_name)
 {
-  int  flg,ierr,(*r)(MPI_Comm,int,int,Vec *);
-  char vectype[256];
+  int  ierr,(*r)(Vec);
 
   PetscFunctionBegin;
+  if (PetscTypeCompare(vec->type_name,type_name)) PetscFunctionReturn(0);
+
   /* Get the function pointers for the vector requested */
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
 
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
-  if (flg) {
-    ierr = FListPrintTypes(comm,stdout,PETSC_NULL,"vec_type",VecList);CHKERRQ(ierr);
+  ierr =  FListFind(vec->comm, VecList, type_name,(int (**)(void *)) &r );CHKERRQ(ierr);
+
+  if (!r) SETERRQ1(1,1,"Unknown vector type given: %s",type_name);
+
+  if (vec->ops->destroy) {
+    ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
   }
-  ierr = OptionsGetString(PETSC_NULL,"-vec_type",vectype,128,&flg); CHKERRQ(ierr);
-  if (!flg) {
-    PetscStrncpy(vectype,type_name,256);
+  if (vec->type_name) {
+    PetscFree(vec->type_name);
   }
 
-  ierr =  FListFind(comm, VecList, vectype,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr = (*r)(vec); CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(1,1,"Unknown vector type given: %s",vectype);
-
-  ierr = (*r)(comm,n,N,v); CHKERRQ(ierr);
-
-  if (!(*v)->type_name) {
-    (*v)->type_name = (char *) PetscMalloc((PetscStrlen(vectype)+1)*sizeof(char));CHKPTRQ((*v)->type_name);
-    PetscStrcpy((*v)->type_name,vectype);
+  if (!(vec)->type_name) {
+    (vec)->type_name = (char *) PetscMalloc((PetscStrlen(type_name)+1)*sizeof(char));CHKPTRQ((vec)->type_name);
+    PetscStrcpy((vec)->type_name,type_name);
   }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ "VecCreate"
-/*@C
-    VecCreate - Creates a vector, where the vector type is determined 
-    from the options database.  Generates a parallel MPI vector if the 
-    communicator has more than one processor.
-
-    Collective on MPI_Comm
-
-    Input Parameters:
-+   comm - MPI communicator
-.   n - local vector length (or PETSC_DECIDE)
--   N - global vector length (or PETSC_DETERMINE)
- 
-    Output Parameter:
-.   V - location to stash resulting vector
-
-    Options Database Keys:
-+   -vec_type mpi - Activates use of MPI vectors, even for the uniprocessor case
-               by internally calling VecCreateMPI()
--   -vec_type shared - Activates use of shared memory parallel vectors
-               by internally calling VecCreateShared()
-
-    Notes:
-    If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor,
-    then it must be used on all processors that share the object for that argument.
-
-    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
-    of the same type as an existing vector.
-
-.keywords: vector, create, initial
-
-.seealso: VecCreateSeq(), VecCreateMPI(), VecCreateShared(), VecDuplicate(), VecDuplicateVecs(),
-          VecCreateWithType()
-@*/
-int VecCreate(MPI_Comm comm,int n,int N,Vec *v)
-{
-  int  ierr,size;
-  char vectype[16];
-
-  PetscFunctionBegin;
-
-  /* set the default types */
-  MPI_Comm_size(comm,&size);
-  if (size > 1) {
-    PetscStrcpy(vectype,"PETSc#VecMPI");
-  } else {
-    PetscStrcpy(vectype,"PETSc#VecSeq");
-  }
-
-  ierr =  VecCreateWithType(comm,vectype,n,N,v);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: closeport.c,v 1.9 1998/06/11 19:57:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: closeport.c,v 1.10 1998/12/03 04:04:50 bsmith Exp bsmith $";
 #endif
 /* This was part of the MatlabSockettool package. 
  
@@ -22,7 +22,7 @@ typedef unsigned long   u_long;
 #include <netdb.h>
 #include <fcntl.h>
 #include <stropts.h>
-#include "src/viewer/impls/matlab/matlab.h"
+#include "src/viewer/impls/socket/socket.h"
 #include "mex.h"
 #define ERROR(a) {fprintf(stderr,"CLOSEPORT: %s \n",a); return ;}
 typedef struct { int onoff; int time; } Linger;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.24 1998/12/17 21:56:46 balay Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.25 1999/01/04 21:48:44 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -753,6 +753,8 @@ int AliceInitialize(int *argc,char ***args,const char file[],const char help[])
   ierr = PetscCommDuplicate_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
   ierr = PetscCommDuplicate_Private(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); CHKERRQ(ierr);
 
+  ierr = PetscInitialize_DynamicLibraries(); CHKERRQ(ierr);
+
   /*
       Initialize all the default viewers
   */
@@ -834,7 +836,7 @@ int AliceFinalize(void)
   */
   ierr = ViewerDestroyASCII_Private();CHKERRQ(ierr);
   ierr = ViewerDestroyDrawX_Private();CHKERRQ(ierr);
-  ierr = ViewerDestroyMatlab_Private();CHKERRQ(ierr);
+  ierr = ViewerDestroySocket_Private();CHKERRQ(ierr);
 #if defined(HAVE_AMS)
   ierr = PetscStackDepublish();CHKERRQ(ierr);
   ierr = ViewerDestroyAMS_Private();CHKERRQ(ierr);

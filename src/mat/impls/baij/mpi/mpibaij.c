@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.142 1999/01/08 21:25:39 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.143 1999/01/11 16:22:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: mpibaij.c,v 1.142 1999/01/08 21:25:39 balay Exp bsmit
 extern int MatSetUpMultiply_MPIBAIJ(Mat); 
 extern int DisAssemble_MPIBAIJ(Mat);
 extern int MatIncreaseOverlap_MPIBAIJ(Mat,int,IS *,int);
-extern int MatGetSubMatrices_MPIBAIJ(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
+extern int MatGetSubMatrices_MPIBAIJ(Mat,int,IS *,IS *,MatReuse,Mat **);
 extern int MatGetValues_SeqBAIJ(Mat,int,int *,int,int *,Scalar *);
 
 /* 
@@ -1008,8 +1008,8 @@ static int MatView_MPIBAIJ_Binary(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIBAIJ_ASCIIorDraworMatlab"
-static int MatView_MPIBAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
+#define __FUNC__ "MatView_MPIBAIJ_ASCIIorDraworSocket"
+static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ *) mat->data;
   int          ierr, format,bs = baij->bs, size = baij->size, rank = baij->rank;
@@ -1124,8 +1124,8 @@ int MatView_MPIBAIJ(Mat mat,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER) || PetscTypeCompare(vtype,DRAW_VIEWER) || 
-      PetscTypeCompare(vtype,MATLAB_VIEWER)) { 
-    ierr = MatView_MPIBAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
+      PetscTypeCompare(vtype,SOCKET_VIEWER)) { 
+    ierr = MatView_MPIBAIJ_ASCIIorDraworSocket(mat,viewer); CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = MatView_MPIBAIJ_Binary(mat,viewer);CHKERRQ(ierr);
   } else {

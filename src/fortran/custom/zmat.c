@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.59 1998/10/30 15:00:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.60 1998/10/31 19:17:48 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -409,7 +409,7 @@ void matfdcoloringsetfunction_(MatFDColoring *fd,void (*f)(TS*,double*,Vec*,Vec*
     Fortran provides the array to hold the submatrix objects, while in C that 
     array is allocated by the MatGetSubmatrices()
 */
-void matgetsubmatrices_(Mat *mat, int *n, IS *isrow, IS *iscol,MatGetSubMatrixCall *scall,
+void matgetsubmatrices_(Mat *mat, int *n, IS *isrow, IS *iscol,MatReuse *scall,
                         Mat *smat, int *__ierr)
 {
   Mat *lsmat;

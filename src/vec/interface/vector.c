@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.155 1998/12/03 03:56:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.156 1999/01/04 21:47:24 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -688,7 +688,18 @@ int VecDestroy(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
+  if (--v->refct > 0) PetscFunctionReturn(0);
+  /* destroy the internal part */
   ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
+  /* destroy the external/common part */
+  if (v->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(v->mapping); CHKERRQ(ierr);
+  }
+  if (v->map) {
+    ierr = MapDestroy(v->map);CHKERRQ(ierr);
+  }
+  PLogObjectDestroy(v);
+  PetscHeaderDestroy(v); 
   PetscFunctionReturn(0);
 }
 
@@ -1483,7 +1494,7 @@ int VecRestoreArray(Vec x,Scalar **a)
 .    ViewerBinaryOpen() - Outputs vector in binary to a
          specified file; corresponding input uses VecLoad()
 .    ViewerDrawOpen() - Outputs vector to an X window display
--    ViewerMatlabOpen() - Outputs vector to Matlab viewer
+-    ViewerSocketOpen() - Outputs vector to Socket viewer
 
    The user can call ViewerSetFormat() to specify the output
    format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
@@ -1501,7 +1512,7 @@ int VecRestoreArray(Vec x,Scalar **a)
 .keywords: Vec, view, visualize, output, print, write, draw
 
 .seealso: ViewerASCIIOpen(), ViewerDrawOpen(), DrawLGCreate(),
-          ViewerMatlabOpen(), ViewerBinaryOpen(), VecLoad()
+          ViewerSocketOpen(), ViewerBinaryOpen(), VecLoad()
 @*/
 int VecView(Vec v,Viewer viewer)
 {

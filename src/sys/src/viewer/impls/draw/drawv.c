@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.27 1998/12/04 23:29:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.28 1998/12/17 22:12:13 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -72,8 +72,9 @@ int ViewerDrawGetDraw(Viewer v, int windownumber, Draw *draw)
 
   vdraw = (Viewer_Draw *) v->data;
   if (!vdraw->draw[windownumber]) {
-    ierr = DrawOpenX(v->comm,vdraw->display,0,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,
+    ierr = DrawCreate(v->comm,vdraw->display,0,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,
                      &vdraw->draw[windownumber]);CHKERRQ(ierr);
+    ierr = DrawSetFromOptions(vdraw->draw[windownumber]);CHKERRQ(ierr);
   }
   *draw = vdraw->draw[windownumber];
   PetscFunctionReturn(0);
@@ -195,9 +196,10 @@ int ViewerDrawGetDrawAxis(Viewer v, int windownumber, DrawAxis *drawaxis)
 -  VIEWER_FORMAT_DRAW_LG    - displays using a line graph
 
    Options Database Keys:
-   ViewerDrawOpen() calls DrawOpenX(), so see the man page for
-   DrawOpenX() for runtime options, including
-+  -nox - Disables all x-windows output
+   ViewerDrawOpen() calls DrawOpen(), so see the manual page for
+   DrawOpen() for runtime options, including
++  -draw_type x or null
+.  -nox - Disables all x-windows output
 .  -display <name> - Specifies name of machine for the X display
 -  -draw_pause <pause> - Sets time (in seconds) that the
      program pauses after DrawPause() has been called
@@ -211,7 +213,7 @@ int ViewerDrawGetDrawAxis(Viewer v, int windownumber, DrawAxis *drawaxis)
 
 .keywords: draw, open, x, viewer
 
-.seealso: DrawOpenX()
+.seealso: DrawOpen()
 @*/
 int ViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,
                     int w,int h,Viewer *viewer)
@@ -247,7 +249,8 @@ int ViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,i
   } else {
     vdraw->display = 0;
   } 
-  ierr      = DrawOpenX(comm,display,title,x,y,w,h,&vdraw->draw[0]);CHKERRQ(ierr);
+  ierr      = DrawCreate(comm,display,title,x,y,w,h,&vdraw->draw[0]);CHKERRQ(ierr);
+  ierr      = DrawSetFromOptions(vdraw->draw[0]);CHKERRQ(ierr);
   PLogObjectParent(ctx,vdraw->draw[0]);
   *viewer         = ctx;
   PetscFunctionReturn(0);

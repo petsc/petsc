@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.234 1998/12/17 22:13:20 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.235 1998/12/21 01:06:07 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -147,13 +147,11 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define LARGEST_PETSC_COOKIE_ALLOWED    PETSC_COOKIE + 50
 extern int LARGEST_PETSC_COOKIE;
 
+typedef struct _FList *FList;
+
 #include "viewer.h"
 #include "options.h"
 
-/*
-    Defines basic graphics available from PETSc.
-*/
-#include "draw.h"
 
 extern int PetscGetTime(PLogDouble*);
 extern int PetscGetCPUTime(PLogDouble*);
@@ -223,7 +221,6 @@ extern int OListDuplicate(OList,OList *);
     Dynamic library lists. Lists of names of routines in dynamic 
   link libraries that will be loaded as needed.
 */
-typedef struct _FList *FList;
 extern int FListAdd_Private(FList*,const char[],const char[],int (*)(void *));
 extern int FListDestroy(FList);
 extern int FListFind(MPI_Comm,FList,const char[],int (**)(void*));
@@ -253,6 +250,11 @@ typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
 #define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
 extern int PetscObjectComposeLanguage(PetscObject,PetscLanguage,void *);
 extern int PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
+
+/*
+    Defines basic graphics available from PETSc.
+*/
+#include "draw.h"
 
 /*
     Defines the base data structures for all PETSc objects

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.13 1998/06/12 21:34:44 balay Exp balay $
+# $Id: makefile,v 1.14 1998/06/15 15:48:45 balay Exp bsmith $
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = ts.o tsreg.o tsregall.o tsfd.o dlregis.o
 OBJSF    =
-LIBBASE  = libpetscts
+LIBBASE  = libpetsc
 MANSEC   = t
 LOCDIR   = src/ts/interface/
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 1998/03/19 02:14:44 balay Exp balay $ 
+# $Id: makefile,v 1.7 1998/06/13 05:25:32 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -16,11 +16,11 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 PETSC_CONTRIB = -L${LDIR} -lpetsccontrib
 
 ex1: ex1.o  chkopts
-	-${CLINKER} -o ex1 ex1.o ${PETSC_CONTRIB}  ${SLES_LIB}
+	-${CLINKER} -o ex1 ex1.o ${PETSC_CONTRIB}  ${PETSC_LIB}
 	${RM} -f ex1.o
 
 ex2: ex2.o  chkopts
 	-${FLINKER} -o ex2 ex2.o  ${PETSC_FORTRAN_LIB} ${PETSC_CONTRIB} \
-                    ${SLES_LIB}
+                    ${PETSC_LIB}
 	${RM} -f ex2.o
 

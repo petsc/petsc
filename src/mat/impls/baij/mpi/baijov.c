@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.30 1999/01/02 00:07:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.31 1999/01/04 03:44:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -676,12 +676,12 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
   PetscFunctionReturn(0);
 }  
 
-static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat *);
+static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,IS *,IS *,MatReuse,Mat *);
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_MPIBAIJ"
 int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
-                             MatGetSubMatrixCall scall,Mat **submat)
+                             MatReuse scall,Mat **submat)
 { 
   IS          *isrow_new,*iscol_new;
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *) C->data;
@@ -728,7 +728,7 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_MPIBAIJ_local"
 static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
-                             MatGetSubMatrixCall scall,Mat *submats)
+                             MatReuse scall,Mat *submats)
 { 
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ *) C->data;
   Mat         A = c->A;

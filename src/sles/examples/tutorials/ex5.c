@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.73 1997/09/22 15:20:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.74 1997/10/19 03:27:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -123,6 +123,7 @@ int main(int argc,char **args)
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
+  ierr = VecSetFromOptions(u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 

@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.120 1998/06/09 20:36:21 balay Exp balay $ 
+% $Id: part1.tex,v 1.121 1998/09/28 19:08:49 balay Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -354,7 +354,9 @@ command \findex{VecCreate()} \sindex{vectors}
 \begin{verbatim}
    ierr = VecCreate(MPI_Comm comm,int m,int M,Vec *x);
 \end{verbatim}
-where {\tt comm} denotes the MPI communicator.
+where {\tt comm} denotes the MPI communicator. The type of storage
+for the vector may be set with either calls to 
+{\tt VecSetType()} or {\tt VecSetFromOptions()}. \findex{VecSetType()} \findex{VecSetFromOptions}
 Additional vectors of the same type can be formed with
 \findex{VecDuplicate()}
 \begin{verbatim}

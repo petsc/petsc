@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlinegw.c,v 1.15 1998/04/13 17:46:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: dlinegw.c,v 1.16 1998/04/27 14:40:31 curfman Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -33,7 +33,7 @@ int DrawLineGetWidth(Draw draw,double *width)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
+  if (PetscTypeCompare(draw->type_name,DRAW_NULL)) PetscFunctionReturn(0);
   if (!draw->ops->linegetwidth) SETERRQ(PETSC_ERR_SUP,1,0);
   ierr = (*draw->ops->linegetwidth)(draw,width);CHKERRQ(ierr);
   PetscFunctionReturn(0);

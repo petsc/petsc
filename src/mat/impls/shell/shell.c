@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.62 1998/12/17 22:10:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.63 1999/01/12 20:28:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -200,8 +200,9 @@ static struct _MatOps MatOps_Values = {0,
 .  A - the matrix
 
   Usage:
+$    extern int mult(Mat,Vec,Vec);
 $    MatCreateShell(comm,m,n,M,N,ctx,&mat);
-$    MatShellSetOperation(mat,MATOP_MULT,mult);
+$    MatShellSetOperation(mat,MATOP_MULT,(void *)mult);
 $    [ Use matrix for operations that have been set ]
 $    MatDestroy(mat);
 
@@ -222,6 +223,7 @@ $    MatDestroy(mat);
 
 $
 $     Vec x, y
+$     extern int mult(Mat,Vec,Vec);
 $     Mat A
 $
 $     VecCreateMPI(comm,PETSC_DECIDE,M,&y);
@@ -229,7 +231,7 @@ $     VecCreateMPI(comm,PETSC_DECIDE,N,&x);
 $     VecGetLocalSize(y,&m);
 $     VecGetLocalSize(x,&n);
 $     MatCreateShell(comm,m,n,M,N,ctx,&A);
-$     MatShellSetOperation(mat,MATOP_MULT,mult);
+$     MatShellSetOperation(mat,MATOP_MULT,(void *)mult);
 $     MatMult(A,x,y);
 $     MatDestroy(A);
 $     VecDestroy(y); VecDestroy(x);

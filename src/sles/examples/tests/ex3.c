@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.51 1997/10/19 03:27:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.52 1997/11/28 16:20:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -65,6 +65,7 @@ int main(int argc,char **args)
 
   /* Create right-hand-side and solution vectors */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&u); CHKERRA(ierr); 
+  ierr = VecSetFromOptions(u);CHKERRA(ierr);
   PetscObjectSetName((PetscObject)u,"Approx. Solution");
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)b,"Right hand side");

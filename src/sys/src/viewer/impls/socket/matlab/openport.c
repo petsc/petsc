@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: openport.c,v 1.9 1998/10/02 03:47:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: openport.c,v 1.10 1998/12/03 04:04:50 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
@@ -27,7 +27,7 @@ typedef unsigned long   u_long;
 #include <fcntl.h>
 #include <stropts.h>
 #include <sys/utsname.h>
-#include "src/viewer/impls/matlab/matlab.h"
+#include "src/viewer/impls/socket/socket.h"
 #include "mex.h"
 
 extern int SOCKConnect_Private(int);
@@ -47,7 +47,7 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   /* figure out portnumber user wants to use; default to 5005 */
   if (nrhs == 0) {
     char *str;
-    str = getenv("PETSC_VIEWER_MATLAB_PORT");
+    str = getenv("PETSC_VIEWER_SOCKET_PORT");
     if (str) portnumber = atoi(str);
     else portnumber = DEFAULTPORT;  
   } else {

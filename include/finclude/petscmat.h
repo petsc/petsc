@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.45 1998/03/27 21:17:57 balay Exp balay $;
+!  $Id: mat.h,v 1.46 1998/03/30 21:14:41 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -13,7 +13,7 @@
 #define MatReorderingType   integer
 #define MatSORType          integer
 #define MatInfoType         integer
-#define MatGetSubMatrixCall integer
+#define MatReuse            integer
 #define MatOperation        integer
 #define MatColoringType     integer
 #define MatInfo             double precision

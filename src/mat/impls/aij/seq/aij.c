@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.291 1998/12/21 01:00:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.292 1999/01/05 19:08:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -597,8 +597,8 @@ int MatView_SeqAIJ(Mat A,Viewer viewer)
 
   PetscFunctionBegin;  
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
-    ierr = ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);CHKERRQ(ierr);
+  if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+    ierr = ViewerSocketPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = MatView_SeqAIJ_ASCII(A,viewer); CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
@@ -1404,7 +1404,7 @@ int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqAIJ"
-int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatGetSubMatrixCall scall,Mat *B)
+int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat *B)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ *) A->data,*c;
   int          *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
@@ -1589,7 +1589,7 @@ int MatScale_SeqAIJ(Scalar *alpha,Mat inA)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqAIJ"
-int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,Mat **B)
+int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   int ierr,i;
 
@@ -2285,9 +2285,7 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
 
   *B = C;
-  ierr = PetscObjectComposeFunction((PetscObject)C,"MatSeqAIJSetColumnIndices_C",
-                                     "MatSeqAIJSetColumnIndices_SeqAIJ",
-                                     (void*)MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);
+  ierr = FListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

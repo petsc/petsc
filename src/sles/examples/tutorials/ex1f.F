@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.19 1998/03/30 22:03:22 balay Exp balay $";
+!    "$Id: ex1f.F,v 1.20 1998/04/15 18:01:53 balay Exp bsmith $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -134,6 +134,7 @@
 !  then duplicate as needed.
 
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+      call VecSetFromOptions(x,ierr)
       call VecDuplicate(x,b,ierr)
       call VecDuplicate(x,u,ierr)
 

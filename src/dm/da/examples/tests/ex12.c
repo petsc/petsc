@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.19 1998/11/30 20:00:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.20 1998/12/03 04:05:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = VecGetArray (copy,&copyptr); CHKERRA(ierr);
 
   /* Set Up Display to Show Heat Graph */
-  viewer = VIEWER_MATLAB_WORLD; 
+  viewer = VIEWER_SOCKET_WORLD; 
 
   /* determine starting point of each processor */
   ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.50 1998/06/11 19:55:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.51 1998/12/03 03:57:16 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -8,7 +8,7 @@ static char help[] = "Demonstrates various vector routines.\n\n";
 
 /*T
    Concepts: Vectors^Using basic vector routines;
-   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); 
+   Routines: VecCreate(); VecSetFromOptions(); VecDuplicate(); VecSet(); VecValid(); 
    Routines: VecDot(); VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); 
    Routines: VecAYPX(); VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); 
    Routines: VecSwap(); VecMAXPY(); VecDestroy(); VecDestroyVecs(); VecDuplicateVecs();
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
 
   /* 
      Create a vector, specifying only its global dimension.
-     When using VecCreate(), the vector format (currently parallel,
+     When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel,
      shared, or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
 
@@ -49,11 +49,12 @@ int main(int argc,char **argv)
                             (available only on the SGI); otherwise,
                             is the same as VecCreateMPI()
 
-     With VecCreate() the option -vec_type mpi or -vec_type shared causes the 
+     With VecCreate() and VecSetFromOptions() the option -vec_type mpi or -vec_type shared causes the 
      particular type of vector to be formed.
 
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+  ierr = VecSetFromOptions(x);CHKERRA(ierr);
 
   /*
      Duplicate some work vectors (of the same format and

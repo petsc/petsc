@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.54 1998/12/10 15:54:01 bsmith Exp balay $";
+static char vcid[] = "$Id: binv.c,v 1.55 1998/12/17 21:56:05 balay Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -141,8 +141,7 @@ int ViewerBinaryOpen(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewe
       /* possibly get the file from remote site or compressed file */
       ierr  = PetscFileRetrieve(comm,name,bname,1024,&found);CHKERRQ(ierr);
       if (!found) {
-        fprintf(stderr,"filename: %s\n",name);
-        SETERRQ(1,1,"Cannot locate file");
+        SETERRQ1(1,1,"Cannot locate file: %s",name);
       }
       fname = bname;
     } else {

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.24 1998/06/13 05:06:48 balay Exp balay $ 
+# $Id: makefile,v 1.25 1998/12/07 21:49:34 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -26,31 +26,31 @@ EXAMPLESF       =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts 
-	-${CLINKER} -o ex1 ex1.o ${SLES_LIB}
+	-${CLINKER} -o ex1 ex1.o ${PETSC_LIB}
 	${RM} -f ex1.o
 
 ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o ${SLES_LIB}
+	-${CLINKER} -o ex2 ex2.o ${PETSC_LIB}
 	${RM} -f ex2.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o  ${SLES_LIB}
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
 	${RM} -f ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o  ${SLES_LIB}
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
 	${RM} -f ex4.o
 
 ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o  ${SLES_LIB}
+	-${CLINKER} -o ex5 ex5.o  ${PETSC_LIB}
 	${RM} -f ex5.o
 
 ex6: ex6.o  chkopts
-	-${CLINKER} -o ex6 ex6.o  ${SLES_LIB}
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_LIB}
 	${RM} -f ex6.o
 
 ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o  ${SLES_LIB}
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_LIB}
 	${RM} -f ex7.o
 
 runex1:

@@ -1,5 +1,5 @@
 !
-!  $Id: draw.h,v 1.16 1998/03/27 21:18:16 balay Exp balay $;
+!  $Id: draw.h,v 1.17 1998/03/30 20:13:04 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
@@ -13,8 +13,9 @@
 !
 !  types of draw context
 !
-      integer DRAW_XWINDOW, DRAW_NULLWINDOW, DRAW_VRML
-      parameter (DRAW_XWINDOW=0, DRAW_NULLWINDOW=1, DRAW_VRML=2)
+#define DRAW_X    'x'
+#define DRAW_NULL 'null'
+#define DRAW_VRML 'vrml'
 !
 !  Colors for drawing
 !

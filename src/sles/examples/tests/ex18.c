@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex18.c,v 1.6 1998/04/01 00:14:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.7 1998/12/03 04:02:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -51,10 +51,11 @@ int main(int argc,char **args)
     Scalar *bold,*bnew;
     /* create a new vector b by padding the old one */
     ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m,&tmp); CHKERRA(ierr);
+    ierr = VecSetFromOptions(tmp);CHKERRA(ierr);
     ierr = VecGetArray(tmp,&bnew); CHKERRA(ierr);
     ierr = VecGetArray(b,&bold); CHKERRA(ierr);
     PetscMemcpy(bnew,bold,mvec*sizeof(Scalar)); CHKERRA(ierr);
-    VecDestroy(b);
+    ierr = VecDestroy(b);CHKERRA(ierr);
     b = tmp;
   }
 

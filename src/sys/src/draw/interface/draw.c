@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.51 1998/04/27 14:40:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.52 1998/12/17 22:11:20 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -170,6 +171,10 @@ int DrawDestroy(Draw draw)
   if (draw->ops->destroy) {
     ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
   }
+  if (draw->title) PetscFree(draw->title);
+  if (draw->display) PetscFree(draw->display);
+  PLogObjectDestroy(draw);
+  PetscHeaderDestroy(draw);
   PetscFunctionReturn(0);
 }
 
@@ -206,9 +211,6 @@ int DrawGetPopup(Draw draw,Draw *popup)
 int DrawDestroy_Null(Draw draw)
 {
   PetscFunctionBegin;
-  if (draw->title) PetscFree(draw->title);
-  PLogObjectDestroy((PetscObject)draw);
-  PetscHeaderDestroy((PetscObject)draw); 
   PetscFunctionReturn(0);
 }
 
@@ -223,11 +225,28 @@ int DrawDestroy_Null(Draw draw)
 */
 int DrawOpenNull(MPI_Comm comm,Draw *win)
 {
-  Draw draw;
+  int ierr;
+
   PetscFunctionBegin;
-  *win = 0;
-  PetscHeaderCreate(draw,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_NULLWINDOW,"Draw",comm,DrawDestroy,0);
-  PLogObjectCreate(draw);
+  ierr = DrawCreate(comm,PETSC_NULL,PETSC_NULL,0,0,1,1,win);CHKERRQ(ierr);
+  ierr = DrawSetType(*win,DRAW_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "DrawCreate_Null" 
+/*
+  DrawCreate_Null - Opens a null drawing context. All draw commands to 
+  it are ignored.
+
+  Input Parameter:
+. win - the drawing context
+*/
+int DrawCreate_Null(Draw draw)
+{
+  PetscFunctionBegin;
+
   PetscMemzero(draw->ops,sizeof(struct _DrawOps));
   draw->ops->destroy = DrawDestroy_Null;
   draw->ops->view    = 0;
@@ -237,10 +256,12 @@ int DrawOpenNull(MPI_Comm comm,Draw *win)
   draw->port_xl = 0.0;  draw->port_xr = 1.0;
   draw->port_yl = 0.0;  draw->port_yr = 1.0;
   draw->popup   = 0;
-  *win = draw;
+
+  draw->type_name = (char *) PetscMalloc((PetscStrlen(DRAW_NULL)+1)*sizeof(char));CHKPTRQ(draw->type_name);
+  PetscStrcpy(draw->type_name,DRAW_NULL);
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.22 1998/04/13 17:44:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.23 1998/12/03 04:02:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -36,6 +36,7 @@ int main(int argc,char **args)
 
   /* Create vectors */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,dim,&x); CHKERRA(ierr);
+  ierr = VecSetFromOptions(x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
 

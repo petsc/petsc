@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.99 1998/12/03 03:59:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.100 1998/12/17 22:10:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -877,7 +877,7 @@ int MatScale_MPIDense(Scalar *alpha,Mat inA)
 }
 
 static int MatDuplicate_MPIDense(Mat,MatDuplicateOption,Mat *);
-extern int MatGetSubMatrices_MPIDense(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
+extern int MatGetSubMatrices_MPIDense(Mat,int,IS *,IS *,MatReuse,Mat **);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.116 1998/12/21 00:59:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.117 1998/12/23 22:51:12 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -8,32 +8,19 @@ static char vcid[] = "$Id: bjacobi.c,v 1.116 1998/12/21 00:59:18 bsmith Exp bsmi
 #include "src/pc/pcimpl.h"              /*I "pc.h" I*/
 #include "src/pc/impls/bjacobi/bjacobi.h"
 
-extern int PCSetUp_BJacobi_AIJ(PC);
-extern int PCSetUp_BJacobi_BAIJ(PC);
-extern int PCSetUp_BJacobi_MPIBDiag(PC);
-
-static int (*setups[])(PC) = {0,
-                              PCSetUp_BJacobi_AIJ,
-                              PCSetUp_BJacobi_AIJ,
-                              0,
-                              0,
-                              0,   
-                              PCSetUp_BJacobi_MPIBDiag,
-                              0,
-                              PCSetUp_BJacobi_BAIJ,
-                              PCSetUp_BJacobi_BAIJ,
-                              0};
-
 #undef __FUNC__  
 #define __FUNC__ "PCSetUp_BJacobi"
 static int PCSetUp_BJacobi(PC pc)
 {
-  int ierr;
+  int ierr,(*setup)(PC);
   Mat pmat = pc->pmat;
 
   PetscFunctionBegin;
-  if (!setups[pmat->type]) SETERRQ(PETSC_ERR_SUP,0,"");
-  ierr = (*setups[pmat->type])(pc);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pmat,"PCSetUp_BJacobi_C",(void**)&setup);CHKERRQ(ierr);
+  if (!setup) {
+    SETERRQ(PETSC_ERR_SUP,0,"This matrix does not support BJacobi");
+  }
+  ierr = (*setup)(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

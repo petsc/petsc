@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1998/06/12 21:15:39 balay Exp balay $ 
+# $Id: makefile,v 1.24 1998/06/15 15:44:57 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = drawimpl.h
 OBJSC    =
 OBJSF    =
-LIBBASE  = libpetscsys
+LIBBASE  = libpetsc
 DIRS     = interface impls examples utils
 LOCDIR   = src/draw/
 

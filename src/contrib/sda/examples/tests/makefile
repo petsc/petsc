@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.13 1998/06/13 05:24:40 balay Exp bsmith $ 
+# $Id: makefile,v 1.14 1998/12/17 22:13:00 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -16,12 +16,12 @@ EXAMPLESF     = ex2.F
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts
-	-${CLINKER} -o ex1 ex1.o ${PETSC_CONTRIB}  ${SLES_LIB}
+	-${CLINKER} -o ex1 ex1.o ${PETSC_CONTRIB}  ${PETSC_LIB}
 	${RM} -f ex1.o
 
 ex2: ex2.o  chkopts
 	-${FLINKER} -o ex2 ex2.o  ${PETSC_FORTRAN_LIB} ${PETSC_CONTRIB} \
-                    ${SLES_LIB}
+                    ${PETSC_LIB}
 	${RM} -f ex2.o
 
 runex1:

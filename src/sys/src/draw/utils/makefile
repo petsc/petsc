@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.30 1998/06/12 21:15:45 balay Exp balay $
+# $Id: makefile,v 1.31 1998/06/15 15:49:16 balay Exp bsmith $
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = axis.o lg.o dscatter.o hists.o zoom.o
 OBJSF    =
-LIBBASE  = libpetscsys
+LIBBASE  = libpetsc
 MANSEC   = x
 LOCDIR   = src/draw/utils/
 

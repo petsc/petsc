@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.37 1998/06/15 15:46:22 balay Exp balay $ 
+# $Id: makefile,v 1.38 1999/01/08 16:26:46 balay Exp bsmith $ 
 
 ALL: lib 
 CFLAGS    =
@@ -8,7 +8,7 @@ SOURCEF   =
 SOURCEH   = nreg.h ctable.h
 OBJSC     =
 OBJSF     =
-LIBBASE   = libpetscsys
+LIBBASE   = libpetsc
 DIRS      = src examples
 LOCDIR    = src/sys/
 

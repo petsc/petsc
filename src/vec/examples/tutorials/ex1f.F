@@ -1,11 +1,11 @@
 !
-!    "$Id: ex1f.F,v 1.17 1998/04/20 18:11:27 balay Exp bsmith $"
+!    "$Id: ex1f.F,v 1.18 1998/06/11 19:55:03 bsmith Exp bsmith $"
 !
 !   Program usage:  mpirun ex1f [-help] [all PETSc options] 
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
-!   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); 
+!   Routines: VecCreate(); VecSetFromOptions(); VecDuplicate(); VecSet(); VecValid(); 
 !   Routines: VecDot(); VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); 
 !   Routines: VecAYPX(); VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); 
 !   Routines: VecSwap(); VecMAXPY(); VecDestroy(); VecDestroyVecs(); VecDuplicateVecs();
@@ -59,7 +59,7 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Create a vector, specifying only its global dimension.
-!  When using VecCreate(), the vector format (currently parallel
+!  When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
 !  or sequential) is determined at runtime.  Also, the parallel
 !  partitioning of the vector is determined by PETSc at runtime.
 !
@@ -71,10 +71,11 @@
 !                         (available only on the SGI); otherwise,
 !                         is the same as VecCreateMPI()
 !
-!     VecCreate() allows one to determine at runtime which version to use
+!     VecCreate() and VecSetFromOptions() allows one to determine at runtime which version to use
 !                 with the options -vec_type mpi or -vec_type shared
 !
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+      call VecSetFromOptions(x,ierr)
 
 !  Duplicate some work vectors (of the same format and
 !  partitioning as the initial vector).

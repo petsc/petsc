@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: receive.c,v 1.9 1998/06/01 03:33:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: receive.c,v 1.10 1998/10/09 19:25:23 bsmith Exp bsmith $";
 #endif
 /*
  
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: receive.c,v 1.9 1998/06/01 03:33:05 bsmith Exp bsmith
 #include <stdio.h>
 #include "petsc.h"
 #include "sys.h"
-#include "src/viewer/impls/matlab/matlab.h"
+#include "src/viewer/impls/socket/socket.h"
 #include "mex.h"
 extern int ReceiveSparseMatrix(Matrix **,int);
 extern int ReceiveIntDenseMatrix(Matrix **,int);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.27 1998/12/21 00:58:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.28 1999/01/05 18:18:16 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -56,6 +56,10 @@ int PetscInitialize_DynamicLibraries(void)
     ierr = DLLibraryPrepend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     PetscFree(libname[i]);
   }
+
+  ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,"/libpetsc"); CHKERRQ(ierr);
+  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscvec"); CHKERRQ(ierr);

@@ -1,10 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.46 1998/10/19 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.47 1998/12/14 17:06:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "vec.h"
 #ifdef HAVE_FORTRAN_CAPS
+#define vecsetfromoptions_        VECSETFROMOPTIONS
+#define vecsettype_               VECSETTYPE
 #define vecsetvalue_              VECSETVALUE
 #define vecmaxpy_                 VECMAXPY
 #define vecmdot_                  VECMDOT
@@ -40,6 +42,8 @@ static char vcid[] = "$Id: zvec.c,v 1.46 1998/10/19 22:15:08 bsmith Exp bsmith $
 #define vecstridenorm_            VECSTRIDENORM
 #define vecmax_                   VECMAX
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define vecsetfromoptions_        vecsetfromoptions
+#define vecsettype_               vecsettype
 #define vecstridenorm_            vecstridenorm
 #define vecghostrestorelocalform_ vecghostrestorelocalform
 #define vecghostgetlocalform_     vecghostgetlocalform
@@ -77,6 +81,20 @@ static char vcid[] = "$Id: zvec.c,v 1.46 1998/10/19 22:15:08 bsmith Exp bsmith $
 #endif
 
 EXTERN_C_BEGIN
+
+void vecsetfromoptions_(Vec *x,int *__ierr)
+{
+  *__ierr = VecSetFromOptions(*x);
+}
+
+void vecsettype_(Vec *x,char *type_name,int *__ierr,int len)
+{
+  char *t;
+
+  FIXCHAR(type_name,len,t);
+  *__ierr = VecSetType(*x,t);
+  FREECHAR(type_name,t);
+}
 
 void vecgetmap_(Vec *x,Map *map, int *__ierr )
 {

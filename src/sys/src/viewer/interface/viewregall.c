@@ -1,75 +1,49 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.27 1998/12/03 04:05:14 bsmith Exp $";
+static char vcid[] = "$Id: viewregall.c,v 1.1 1999/01/12 21:21:06 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
-#undef __FUNC__  
-#define __FUNC__ "ViewerDestroy"
-/*@C
-   ViewerDestroy - Destroys a viewer.
-
-   Collective on Viewer
-
-   Input Parameters:
-.  viewer - the viewer to be destroyed.
-
-.seealso: ViewerMatlabOpen(), ViewerASCIIOpen()
-
-.keywords: Viewer, destroy
-@*/
-int ViewerDestroy(Viewer v)
-{
-  int         ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (--v->refct > 0) PetscFunctionReturn(0);
-  if (v->ops->destroy) {
-    ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
-  }
-  PLogObjectDestroy((PetscObject)v);
-  PetscHeaderDestroy((PetscObject)v);
-  PetscFunctionReturn(0);
-}
+EXTERN_C_BEGIN
+extern int ViewerCreate_Socket(Viewer);
+extern int ViewerCreate_ASCII(Viewer);
+extern int ViewerCreate_Binary(Viewer);
+extern int ViewerCreate_String(Viewer);
+extern int ViewerCreate_Draw(Viewer);
+extern int ViewerCreate_AMS(Viewer);
+EXTERN_C_END
+  
+/*
+    This is used by ViewerSetType() to make sure that at least one 
+    ViewerRegisterAll() is called. In general, if there is more than one
+    DLL, then ViewerRegisterAll() may be called several times.
+*/
+extern int ViewerRegisterAllCalled;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetType"
+#define __FUNC__ "ViewerRegisterAll"
 /*@C
-   ViewerGetType - Returns the type of a viewer.
+  ViewerRegisterAll - Registers all of the graphics methods in the Viewer package.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.   v - the viewer
+.keywords: Viewer, register, all
 
-   Output Parameter:
-.  type - viewer type (see below)
-
-   Available Types Include:
-.  MATLAB_VIEWER - Matlab viewer
-.  ASCII_VIEWER - ASCII viewer
-.  BINARY_VIEWER - binary file viewer
-.  STRING_VIEWER - string viewer
-.  DRAW_VIEWER - drawing viewer
-
-   Note:
-   See petsc/include/viewer.h for a complete list of viewers.
-
-   ViewerType is actually a string
-
-.keywords: Viewer, get, type
+.seealso:  ViewerRegisterDestroy()
 @*/
-int ViewerGetType(Viewer v,ViewerType *type)
+int ViewerRegisterAll(char *path)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  *type = (ViewerType) v->type_name;
+  ViewerRegisterAllCalled = 1;
+  
+  ierr = ViewerRegister(ASCII_VIEWER,    path,"ViewerCreate_ASCII",      ViewerCreate_ASCII);CHKERRQ(ierr);
+
+  /*  ierr = ViewerRegister(SOCKET_VIEWER,   path,"ViewerCreate_Socket",     ViewerCreate_Socket);CHKERRQ(ierr);
+  ierr = ViewerRegister(BINARY_VIEWER,   path,"ViewerCreate_Binary",     ViewerCreate_Binary);CHKERRQ(ierr);
+  ierr = ViewerRegister(STRING_VIEWER,   path,"ViewerCreate_String",     ViewerCreate_String);CHKERRQ(ierr);
+  ierr = ViewerRegister(DRAW_VIEWER,     path,"ViewerCreate_Draw",       ViewerCreate_Draw);CHKERRQ(ierr);
+  ierr = ViewerRegister(AMS_VIEWER,      path,"ViewerCreate_AMS",        ViewerCreate_AMS);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-

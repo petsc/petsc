@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.24 1998/03/24 16:44:59 balay Exp balay $";
+!    "$Id: ex6f.F,v 1.25 1998/04/15 18:01:45 balay Exp bsmith $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -112,6 +112,7 @@
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
+      call VecSetFromOptions(u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 

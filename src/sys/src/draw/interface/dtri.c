@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.21 1998/04/24 02:16:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: dtri.c,v 1.22 1998/04/27 14:40:31 curfman Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -26,7 +26,7 @@ int DrawTriangle(Draw draw,double x1,double y_1,double x2,double y2,
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
+  if (PetscTypeCompare(draw->type_name,DRAW_NULL)) PetscFunctionReturn(0);
   ierr = (*draw->ops->triangle)(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.78 1998/09/25 03:16:46 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.79 1998/12/17 22:13:20 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -29,7 +29,8 @@ extern int VecCreateSeqWithArray(MPI_Comm,int,Scalar*,Vec*);
 extern int VecCreateMPIWithArray(MPI_Comm,int,int,Scalar*,Vec*);  
 extern int VecCreateShared(MPI_Comm,int,int,Vec*);  
 extern int VecCreate(MPI_Comm,int,int,Vec*); 
-extern int VecCreateWithType(MPI_Comm,VecType,int,int,Vec*); 
+extern int VecSetType(Vec,VecType); 
+extern int VecSetFromOptions(Vec);
 
 extern int VecDestroy(Vec);        
 
@@ -87,7 +88,7 @@ extern int VecSetValuesBlocked(Vec,int,int*,Scalar*,InsertMode);
 
 extern int VecRegisterAllCalled;
 extern int VecRegisterAll(char *);
-extern int VecRegister_Private(char*,char*,char*,int(*)(MPI_Comm,int,int,Vec*));
+extern int VecRegister_Private(char*,char*,char*,int(*)(Vec));
 #if defined(USE_DYNAMIC_LIBRARIES)
 #define VecRegister(a,b,c,d) VecRegister_Private(a,b,c,0)
 #else

@@ -1,28 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecreg.c,v 1.3 1998/10/19 22:16:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecreg.c,v 1.4 1998/12/23 22:50:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
 
-/*
-    We need these stubs since with C++ we need to compile with 
-  extern "C"
-*/
 EXTERN_C_BEGIN
-int VecCreate_Seq(MPI_Comm comm, int n, int N, Vec *v)
-{
-  return VecCreateSeq(comm,PetscMax(n,N),v);
-}
-int VecCreate_MPI(MPI_Comm comm, int n, int N, Vec *v)
-{
-  return VecCreateMPI(comm,n,N,v);
-}
-int VecCreate_Shared(MPI_Comm comm, int n, int N, Vec *v)
-{
-  return VecCreateShared(comm,n,N,v);
-}
+extern int VecCreate_Seq(Vec);
+extern int VecCreate_MPI(Vec);
+extern int VecCreate_Shared(Vec);
 EXTERN_C_END
-
 
 
 /*
@@ -52,10 +38,10 @@ int VecRegisterAll(char *path)
 
   ierr = VecRegister("PETSc#VecMPI",    path,"VecCreate_MPI",     VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegister("PETSc#VecShared", path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);
-  ierr = VecRegister("PETSc#VecSeq",    path,"VecCreate_Seq",VecCreate_Seq);CHKERRQ(ierr);
+  ierr = VecRegister("PETSc#VecSeq",    path,"VecCreate_Seq",     VecCreate_Seq);CHKERRQ(ierr);
 
   ierr = VecRegister(VEC_MPI,           path,"VecCreate_MPI",     VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegister(VEC_SHARED,        path,"VecCreate_Shared",  VecCreate_Shared);CHKERRQ(ierr);
-  ierr = VecRegister(VEC_SEQ,           path,"VecCreate_Seq",VecCreate_Seq);CHKERRQ(ierr);
+  ierr = VecRegister(VEC_SEQ,           path,"VecCreate_Seq",     VecCreate_Seq);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

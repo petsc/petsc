@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.10 1998/03/06 00:17:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.11 1998/12/03 04:04:09 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -47,7 +47,8 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
     
   /* set initial conditions */
-  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global); CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global); CHKERRA(ierr);
+  ierr = VecSetFromOptions(global);CHKERRA(ierr);
   ierr = Initial(global,NULL); CHKERRA(ierr);
  
   /* make timestep context */
@@ -75,7 +76,7 @@ int main(int argc,char **argv)
   ierr = TSStep(ts,&steps,&ftime); CHKERRA(ierr);
 
   ierr = ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer); CHKERRA(ierr);
-  ierr = TSView(ts,viewer); CHKERRQ(ierr);
+  ierr = TSView(ts,viewer); CHKERRA(ierr);
 
   ierr = ViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.17 1998/12/17 22:08:48 bsmith Exp balay $";
+static char vcid[] = "$Id: shvec.c,v 1.18 1998/12/17 22:49:01 balay Exp bsmith $";
 #endif
 
 /*
@@ -29,13 +29,15 @@ int VecDuplicate_Shared( Vec win, Vec *v)
   /* first processor allocates entire array and sends it's address to the others */
   array = (Scalar *) PetscSharedMalloc(w->n*sizeof(Scalar),w->N*sizeof(Scalar),win->comm);CHKPTRQ(array);
 
-  ierr = VecCreateMPI_Private(win->comm,w->n,w->N,w->nghost,w->size,rank,array,win->map,v);CHKERRQ(ierr);
+  ierr = VecCreate(win->comm,w->n,w->N,v);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*v,w->nghost,w->size,rank,array,win->map);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
 
   /* New vector should inherit stashing property of parent */
   vw->stash.donotstash = w->stash.donotstash;
   
   ierr = OListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
+  ierr = FListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);
 
   if (win->mapping) {
     (*v)->mapping = win->mapping;
@@ -45,62 +47,39 @@ int VecDuplicate_Shared( Vec win, Vec *v)
   PetscFunctionReturn(0);
 }
 
+
+EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "VecCreateShared"
-/*@C
-   VecCreateShared - Creates a parallel vector that uses shared memory.
-
-   Input Parameters:
-.  comm - the MPI communicator to use
-.  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
-.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
-
-   Output Parameter:
-.  vv - the vector
-
-   Collective on MPI_Comm
- 
-   Notes:
-   Currently VecCreateShared() is available only on the SGI; otherwise,
-   this routine is the same as VecCreateMPI().
-
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
-
-.keywords: vector, create, shared
-
-.seealso: VecCreateSeq(), VecCreate(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(), 
-          VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()
-
-@*/ 
-int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
+#define __FUNC__ "VecCreate_Shared"
+int VecCreate_Shared(Vec vv)
 {
-  int     sum, work = n, size, rank,ierr,i;
+  int     sum, work = vv->n, size, rank,ierr,i;
   Scalar  *array;
 
   PetscFunctionBegin;
-  *vv = 0;
 
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank); 
-  if (N == PETSC_DECIDE) { 
-    ierr = MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);
-    N = sum;
+  MPI_Comm_size(vv->comm,&size);
+  MPI_Comm_rank(vv->comm,&rank); 
+  if (vv->N == PETSC_DECIDE) { 
+    ierr = MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,vv->comm );CHKERRQ(ierr);
+    vv->N = sum;
   }
-  if (n == PETSC_DECIDE) { 
-    n = N/size + ((N % size) > rank);
+  if (vv->n == PETSC_DECIDE) { 
+    vv->n = vv->N/size + ((vv->N % size) > rank);
   }
 
-  array = (Scalar *) PetscSharedMalloc(n*sizeof(Scalar),N*sizeof(Scalar),comm);CHKPTRQ(array); 
+  array = (Scalar *) PetscSharedMalloc(vv->n*sizeof(Scalar),vv->N*sizeof(Scalar),vv->comm);CHKPTRQ(array); 
 
-  ierr = VecCreateMPI_Private(comm,n,N,0,size,rank,array,PETSC_NULL,vv);CHKERRQ(ierr);
-  (*vv)->ops->duplicate = VecDuplicate_Shared;
-  PetscFree((*vv)->type_name);
-  (*vv)->type_name   = (char *) PetscMalloc((1+PetscStrlen(VEC_SHARED))*sizeof(char));CHKPTRQ((*vv)->type_name);
-  PetscStrcpy((*vv)->type_name,VEC_SHARED);
+  ierr = VecCreate_MPI_Private(vv,0,size,rank,array,PETSC_NULL);CHKERRQ(ierr);
+  vv->ops->duplicate = VecDuplicate_Shared;
+  PetscFree(vv->type_name);
+  vv->type_name   = (char *) PetscMalloc((1+PetscStrlen(VEC_SHARED))*sizeof(char));CHKPTRQ(vv->type_name);
+  PetscStrcpy(vv->type_name,VEC_SHARED);
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
+
 
 /* ----------------------------------------------------------------------------------------
      Code to manage shared memory allocation under the SGI with MPI
@@ -259,7 +238,10 @@ void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
 
 #else
 
-int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "VecCreate_Shared"
+int VecCreate_Shared(MPI_Comm comm,int n,int N,Vec *vv)
 {
   int ierr,size;
 
@@ -271,8 +253,49 @@ int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
   ierr = VecCreateSeq(comm,PetscMax(n,N),vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #endif
+
+#undef __FUNC__  
+#define __FUNC__ "VecCreateShared"
+/*@C
+   VecCreateShared - Creates a parallel vector that uses shared memory.
+
+   Input Parameters:
+.  comm - the MPI communicator to use
+.  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
+.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+
+   Output Parameter:
+.  vv - the vector
+
+   Collective on MPI_Comm
+ 
+   Notes:
+   Currently VecCreateShared() is available only on the SGI; otherwise,
+   this routine is the same as VecCreateMPI().
+
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   same type as an existing vector.
+
+.keywords: vector, create, shared
+
+.seealso: VecCreateSeq(), VecCreate(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(), 
+          VecCreateGhost(), VecCreateMPIWithArray(), VecCreateGhostWithArray()
+
+@*/ 
+int VecCreateShared(MPI_Comm comm, int n, int N, Vec *v)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCreate(comm,n,N,v); CHKERRQ(ierr);
+  ierr = VecSetType(*v,"PETSc#VecShared");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 
 
 

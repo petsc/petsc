@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.142 1998/12/03 03:56:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.143 1998/12/17 22:08:37 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -231,8 +231,8 @@ int VecView_Seq(Vec xin,Viewer viewer)
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
-    ierr = ViewerMatlabPutScalar_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
+  } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+    ierr = ViewerSocketPutScalar_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else {
@@ -314,17 +314,12 @@ int VecDestroy_Seq(Vec v)
   int     ierr;
 
   PetscFunctionBegin;
-  if (--v->refct > 0) PetscFunctionReturn(0);
 
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",((Vec_Seq *)v->data)->n);
 #endif
   if (vs->array_allocated) PetscFree(vs->array_allocated);
   PetscFree(vs);
-  if (v->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(v->mapping); CHKERRQ(ierr);
-  }
-  ierr = MapDestroy(v->map);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
 #if defined(HAVE_AMS)
@@ -333,8 +328,6 @@ int VecDestroy_Seq(Vec v)
   }
 #endif
 
-  PLogObjectDestroy(v);
-  PetscHeaderDestroy(v); 
   PetscFunctionReturn(0);
 }
 
@@ -405,6 +398,35 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecPlaceArray_Seq,
             VecGetMap_Seq};
 
+/*
+      This is called by VecCreate_Seq() (i.e. VecCreateSeq()) and VecCreateSeqWithArray()
+*/
+#undef __FUNC__  
+#define __FUNC__ "VecCreate_Seq_Private"
+static int VecCreate_Seq_Private(Vec v,Scalar *array)
+{
+  Vec_Seq *s;
+  int     ierr;
+
+  PetscFunctionBegin;
+  PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
+  s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
+  v->data            = (void *) s;
+  v->bops->publish   = VecPublish_Seq;
+  s->n               = PetscMax(v->n,v->N);
+  v->n               = PetscMax(v->n,v->N);; 
+  v->N               = PetscMax(v->n,v->N);; 
+  s->array           = array;
+  s->array_allocated = 0;
+  if (!v->map) {
+    ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map); CHKERRQ(ierr);
+  }
+  v->type_name       = (char *) PetscMalloc((1+PetscStrlen(VEC_SEQ))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,VEC_SEQ);
+  PetscPublishAll(v);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "VecCreateSeqWithArray"
 /*@C
@@ -438,74 +460,33 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
 @*/
 int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 {
-  Vec_Seq *s;
-  Vec     v;
-  int     flag,ierr;
+  int  ierr;
 
   PetscFunctionBegin;
-  *V             = 0;
-  ierr = MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);CHKERRQ(ierr);
-  if (flag == MPI_UNEQUAL) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must call with MPI_ or PETSC_COMM_SELF");
-  PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,0,"Vec",comm,VecDestroy,VecView);
-  PLogObjectCreate(v);
-  PLogObjectMemory(v,sizeof(struct _p_Vec)+n*sizeof(Scalar));
-  PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
-  s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
-  v->data            = (void *) s;
-  v->bops->publish   = VecPublish_Seq;
-  s->n               = n;
-  v->n               = n; 
-  v->N               = n;
-  v->mapping         = 0;
-  v->bmapping        = 0;
-  v->bs              = 0;
-  s->array           = array;
-  s->array_allocated = 0;
-  v->type_name       = (char *) PetscMalloc((1+PetscStrlen(VEC_SEQ))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,VEC_SEQ);
-
-  ierr = MapCreateMPI(comm,n,n,&v->map);CHKERRQ(ierr);
-  *V = v; 
-  PetscPublishAll(v);
+  ierr = VecCreate(comm,n,n,V);CHKERRQ(ierr);
+  ierr = VecCreate_Seq_Private(*V,array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "VecCreateSeq"
-/*@C
-   VecCreateSeq - Creates a standard, sequential array-style vector.
-
-   Collective on MPI_Comm
-
-   Input Parameter:
-+  comm - the communicator, should be PETSC_COMM_SELF
--  n - the vector length 
-
-   Output Parameter:
-.  V - the vector
-
-   Notes:
-   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
-
-.keywords: vector, sequential, create, BLAS
-
-.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
-@*/
-int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
+#define __FUNC__ "VecCreate_Seq"
+int VecCreate_Seq(Vec V)
 {
   Vec_Seq *s;
   Scalar  *array;
-  int     ierr;
+  int     ierr, n = PetscMax(V->n,V->N);
 
   PetscFunctionBegin;
   array              = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(array);
   PetscMemzero(array,n*sizeof(Scalar));
-  ierr               = VecCreateSeqWithArray(comm,n,array,V);CHKERRQ(ierr);
-  s                  = (Vec_Seq *) (*V)->data;
+  ierr               = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
+  s                  = (Vec_Seq *) V->data;
   s->array_allocated = array;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
+
 
 #undef __FUNC__  
 #define __FUNC__ "VecGetMap_Seq"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex19.c,v 1.6 1998/03/16 18:55:54 bsmith Exp balay $";
+static char vcid[] = "$Id: ex19.c,v 1.7 1998/05/29 22:49:19 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
@@ -70,6 +70,7 @@ int main(int argc,char **args)
 
   /* Create test vectors */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&u); CHKERRA(ierr); 
+  ierr = VecSetFromOptions(u); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
 

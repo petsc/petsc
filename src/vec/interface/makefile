@@ -1,15 +1,15 @@
-# $Id: makefile,v 1.33 1998/06/12 21:34:49 balay Exp balay $
+# $Id: makefile,v 1.34 1998/06/15 15:48:52 balay Exp bsmith $
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = vector.c map.c
+SOURCEC  = vector.c map.c vnake.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = vector.o map.o
+OBJSC    = vector.o map.o vnake.o
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetsc
 MANSEC   = 1
 LOCDIR   = src/vec/interface/
 

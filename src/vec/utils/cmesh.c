@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.54 1998/05/29 23:50:52 balay Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.55 1998/10/09 19:19:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -75,7 +75,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 #endif
 
   PetscFunctionBegin;
-  if (vobj->cookie == DRAW_COOKIE && vobj->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
+  if (vobj->cookie == DRAW_COOKIE && PetscTypeCompare(vobj->type_name,DRAW_NULL)) PetscFunctionReturn(0);
   MPI_Comm_rank(win->comm,&rank);
 
   /* move entire vector to first processor */

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.71 1998/06/12 22:16:14 balay Exp balay $ 
+# $Id: makefile,v 1.72 1998/06/15 15:47:24 balay Exp bsmith $ 
 
 ALL: lib 
 
@@ -9,7 +9,7 @@ SOURCEF	  =
 SOURCEH	  = 
 OBJSC	  = 
 OBJSF	  =
-LIBBASE	  = libpetscsys
+LIBBASE	  = libpetsc
 DIRS	  = error dll fileio memory objects time utils plog mpiuni
 LOCDIR	  = src/sys/src/
 

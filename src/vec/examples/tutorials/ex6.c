@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.14 1998/07/15 22:10:58 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.15 1998/12/03 03:57:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -54,6 +54,7 @@ int main(int argc,char **args)
 
   /* Create vector and get pointer to data space */
   ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,m,&vec); CHKERRA(ierr);
+  ierr = VecSetFromOptions(vec);CHKERRA(ierr);
   ierr = VecGetArray(vec,&avec); CHKERRA(ierr);
 
   /* Read data into vector */

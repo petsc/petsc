@@ -1,18 +1,18 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sendsparse.c,v 1.21 1997/10/19 03:29:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sendsparse.c,v 1.22 1998/12/03 04:04:50 bsmith Exp bsmith $";
 #endif
 
-#include "src/viewer/impls/matlab/matlab.h"
+#include "src/viewer/impls/socket/socket.h"
 
 /*--------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "ViewerMatlabPutSparse_Private"
+#define __FUNC__ "ViewerSocketPutSparse_Private"
 /*
-   ViewerMatlabPutSparse_Private - Passes a sparse matrix in AIJ format
-             to a Matlab viewer. 
+   ViewerSocketPutSparse_Private - Passes a sparse matrix in AIJ format
+             to a Socket viewer. 
 
    Input Parameters:
-.  vw - obtained from ViewerMatlabOpen()
+.  vw - obtained from ViewerSocketOpen()
 .  m, n - number of rows and columns of matrix
 .  nnz - number of nonzeros in matrix
 .  v - the nonzero entries
@@ -24,16 +24,16 @@ static char vcid[] = "$Id: sendsparse.c,v 1.21 1997/10/19 03:29:04 bsmith Exp bs
 $     MatView(Mat matrix,Viewer viewer)
 
    Notes for Advanced Users:
-   ViewerMatlabPutSparse_Private() actually passes the matrix transpose, since 
+   ViewerSocketPutSparse_Private() actually passes the matrix transpose, since 
    Matlab prefers column oriented storage.
 
-.keywords: Viewer, Matlab, put, sparse, AIJ
+.keywords: Viewer, Socket, put, sparse, AIJ
 
-.seealso: ViewerMatlabOpen(), MatView()
+.seealso: ViewerSocketOpen(), MatView()
 */
-int ViewerMatlabPutSparse_Private(Viewer vw,int m,int n,int nnz,Scalar *v,int *r,int *c)
+int ViewerSocketPutSparse_Private(Viewer vw,int m,int n,int nnz,Scalar *v,int *r,int *c)
 {
-  Viewer_Matlab *vmatlab = (Viewer_Matlab *) vw->data;
+  Viewer_Socket *vmatlab = (Viewer_Socket *) vw->data;
   int           ierr,t = vmatlab->port,type = SPARSEREAL,value;
 
   PetscFunctionBegin;

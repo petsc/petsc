@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.49 1997/11/28 16:22:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.50 1998/12/03 04:05:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -65,6 +65,7 @@ int main( int argc, char **argv )
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+  ierr = VecSetFromOptions(x);CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
 

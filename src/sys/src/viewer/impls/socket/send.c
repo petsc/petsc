@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.79 1998/12/17 22:12:07 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.80 1998/12/17 22:48:58 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -35,7 +35,7 @@ typedef unsigned long   u_long;
 #include <stropts.h>
 #endif
 
-#include "src/viewer/impls/matlab/matlab.h"
+#include "src/viewer/impls/socket/socket.h"
 #include "pinclude/petscfix.h"
 
 /*
@@ -95,10 +95,10 @@ extern int close(int);
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_Matlab"
-static int ViewerDestroy_Matlab(Viewer viewer)
+#define __FUNC__ "ViewerDestroy_Socket"
+static int ViewerDestroy_Socket(Viewer viewer)
 {
-  Viewer_Matlab *vmatlab = (Viewer_Matlab *) viewer->data;
+  Viewer_Socket *vmatlab = (Viewer_Socket *) viewer->data;
 
   PetscFunctionBegin;
   if (close(vmatlab->port)) {
@@ -159,9 +159,9 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMatlabOpen"
+#define __FUNC__ "ViewerSocketOpen"
 /*@C
-   ViewerMatlabOpen - Opens a connection to a Matlab server.
+   ViewerSocketOpen - Opens a connection to a Matlab server.
 
    Collective on MPI_Comm
 
@@ -177,38 +177,38 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
    Most users should employ the following commands to access the 
    Matlab viewers
 $
-$    ViewerMatlabOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
+$    ViewerSocketOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
 $    MatView(Mat matrix,Viewer viewer)
 $
 $                or
 $
-$    ViewerMatlabOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
+$    ViewerSocketOpen(MPI_Comm comm, char *machine,int port,Viewer &viewer)
 $    VecView(Vec vector,Viewer viewer)
 
    Options Database Keys:
-   For use with the default Matlab viewer, VIEWER_MATLAB_WORLD or if 
+   For use with the default Matlab viewer, VIEWER_SOCKET_WORLD or if 
     PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
-$    -viewer_matlab_machine <machine>
-$    -viewer_matlab_port <port>
+$    -viewer_socket_machine <machine>
+$    -viewer_socket_port <port>
 
    Environmental variables:
-.   PETSC_VIEWER_MATLAB_PORT portnumber
+.   PETSC_VIEWER_SOCKET_PORT portnumber
 
-.keywords: Viewer, Matlab, open
+.keywords: Viewer, Socket, open
 
 .seealso: MatView(), VecView()
 @*/
-int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
+int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
   Viewer        v;
   int           t,rank,ierr,flag;
   char          mach[256];
   PetscTruth    tflag;
-  Viewer_Matlab *vmatlab;
+  Viewer_Socket *vmatlab;
 
   PetscFunctionBegin;
   if (!machine) {
-    ierr = OptionsGetString(PETSC_NULL,"-viewer_matlab_machine",mach,128,&flag);CHKERRQ(ierr);
+    ierr = OptionsGetString(PETSC_NULL,"-viewer_socket_machine",mach,128,&flag);CHKERRQ(ierr);
     if (!flag) {
       ierr = PetscGetHostName(mach,256); CHKERRQ(ierr);
     }
@@ -217,10 +217,10 @@ int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
   }
 
   if (port <= 0) {
-    ierr = OptionsGetInt(PETSC_NULL,"-viewer_matlab_port",&port,&flag); CHKERRQ(ierr);
+    ierr = OptionsGetInt(PETSC_NULL,"-viewer_socket_port",&port,&flag); CHKERRQ(ierr);
     if (!flag) {
       char portn[16];
-      ierr = OptionsGetenv(comm,"PETSC_VIEWER_MATLAB_PORT",portn,16,&tflag);CHKERRQ(ierr);
+      ierr = OptionsGetenv(comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflag);CHKERRQ(ierr);
       if (tflag) {
         port = OptionsAtoi(portn);
       } else {
@@ -231,67 +231,67 @@ int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 
   PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
   PLogObjectCreate(v);
-  vmatlab = PetscNew(Viewer_Matlab);CHKPTRQ(vmatlab);
+  vmatlab = PetscNew(Viewer_Socket);CHKPTRQ(vmatlab);
   v->data = (void *) vmatlab;
 
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
-    PLogInfo(0,"Connecting to matlab process on port %d machine %s\n",port,mach);
+    PLogInfo(0,"Connecting to socket process on port %d machine %s\n",port,mach);
     ierr          = SOCKCall_Private(mach,port,&t);CHKERRQ(ierr);
     vmatlab->port = t;
   }
-  v->ops->destroy = ViewerDestroy_Matlab;
+  v->ops->destroy = ViewerDestroy_Socket;
   v->ops->flush   = 0;
-  v->type_name    = (char *)PetscMalloc((1+PetscStrlen(MATLAB_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,MATLAB_VIEWER);
+  v->type_name    = (char *)PetscMalloc((1+PetscStrlen(SOCKET_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,SOCKET_VIEWER);
 
   *lab             = v;
   PetscFunctionReturn(0);
 }
 
-Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
+Viewer VIEWER_SOCKET_WORLD_PRIVATE = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeMatlabWorld_Private"
-int ViewerInitializeMatlabWorld_Private(void)
+#define __FUNC__ "ViewerInitializeSocketWorld_Private"
+int ViewerInitializeSocketWorld_Private(void)
 {
   int  ierr;
 
   PetscFunctionBegin;
-  if (VIEWER_MATLAB_WORLD_PRIVATE) PetscFunctionReturn(0);
-  ierr = ViewerMatlabOpen(PETSC_COMM_WORLD,0,0,&VIEWER_MATLAB_WORLD_PRIVATE); CHKERRQ(ierr);
+  if (VIEWER_SOCKET_WORLD_PRIVATE) PetscFunctionReturn(0);
+  ierr = ViewerSocketOpen(PETSC_COMM_WORLD,0,0,&VIEWER_SOCKET_WORLD_PRIVATE); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroyMatlab_Private"
-int ViewerDestroyMatlab_Private(void)
+#define __FUNC__ "ViewerDestroySocket_Private"
+int ViewerDestroySocket_Private(void)
 {
   int ierr;
 
   PetscFunctionBegin;
-  if (VIEWER_MATLAB_WORLD_PRIVATE) {
-    ierr = ViewerDestroy(VIEWER_MATLAB_WORLD_PRIVATE); CHKERRQ(ierr);
+  if (VIEWER_SOCKET_WORLD_PRIVATE) {
+    ierr = ViewerDestroy(VIEWER_SOCKET_WORLD_PRIVATE); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 #else /* defined (PARCH_win32) */
  
 #include "viewer.h"
-Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
+Viewer VIEWER_SOCKET_WORLD_PRIVATE = 0;
 
-int ViewerInitializeMatlabWorld_Private(void)
+int ViewerInitializeSocketWorld_Private(void)
 { 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
+int ViewerSocketOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-int ViewerDestroyMatlab_Private(void)
+int ViewerDestroySocket_Private(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.151 1998/12/17 22:10:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.152 1998/12/21 01:00:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -400,7 +400,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     ViewerASCIIPrintf(viewer,"  block size is %d\n",bs);
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-    SETERRQ(PETSC_ERR_SUP,0,"Matlab format not supported");
+    SETERRQ(PETSC_ERR_SUP,0,"Socket format not supported");
   } else if (format == VIEWER_FORMAT_ASCII_COMMON) {
     for ( i=0; i<a->mbs; i++ ) {
       for ( j=0; j<bs; j++ ) {
@@ -562,8 +562,8 @@ int MatView_SeqBAIJ(Mat A,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
-    SETERRQ(PETSC_ERR_SUP,0,"Matlab viewer not supported");
+  if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+    SETERRQ(PETSC_ERR_SUP,0,"Socket viewer not supported");
   } else if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = MatView_SeqBAIJ_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
@@ -1008,8 +1008,8 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
 extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,Mat*);
 extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
 extern int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
-extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatGetSubMatrixCall,Mat*);
-extern int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatGetSubMatrixCall,Mat**);
+extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
+extern int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
 extern int MatMultTrans_SeqBAIJ(Mat,Vec,Vec);
 extern int MatMultTransAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
 extern int MatScale_SeqBAIJ(Scalar*,Mat);
@@ -1246,6 +1246,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        0,
        MatGetMaps_Petsc};
 
+#include "pc.h"
+EXTERN_C_BEGIN                                
+extern int PCSetUp_BJacobi_BAIJ(PC);
+EXTERN_C_END
+
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqBAIJ"
 /*@C
@@ -1417,7 +1422,10 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",
                                      "MatSeqBAIJSetColumnIndices_SeqBAIJ",
                                      (void*)MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
-  
+  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
+                                     "PCSetUp_BJacobi_BAIJ",
+                                     (void*)PCSetUp_BJacobi_BAIJ);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -1496,9 +1504,7 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
   c->mult_work          = 0;
   *B = C;
-  ierr = PetscObjectComposeFunction((PetscObject)C,"MatSeqBAIJSetColumnIndices_C",
-                                     "MatSeqBAIJSetColumnIndices_SeqBAIJ",
-                                     (void*)MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
+  ierr = FListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

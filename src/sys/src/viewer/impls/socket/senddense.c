@@ -1,16 +1,16 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.29 1998/11/30 19:45:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: senddense.c,v 1.30 1998/12/03 04:04:50 bsmith Exp bsmith $";
 #endif
 
-#include "src/viewer/impls/matlab/matlab.h"
+#include "src/viewer/impls/socket/socket.h"
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMatlabPutScalar_Private"
+#define __FUNC__ "ViewerSocketPutScalar_Private"
 /*
-   ViewerMatlabPutScalar_Private - Passes an Scalar array to a Matlab viewer.
+   ViewerSocketPutScalar_Private - Passes an Scalar array to a Socket viewer.
 
   Input Parameters:
-.  viewer - obtained from ViewerMatlabOpen()
+.  viewer - obtained from ViewerSocketOpen()
 .  m, n - number of rows and columns of array
 .  array - the array stored in Fortran 77 style (matrix or vector data) 
 
@@ -25,11 +25,11 @@ static char vcid[] = "$Id: senddense.c,v 1.29 1998/11/30 19:45:59 curfman Exp bs
 
 .keywords: Viewer, Matlab, put, dense, array, vector
 
-.seealso: ViewerMatlabOpen(), MatView(), VecView()
+.seealso: ViewerSocketOpen(), MatView(), VecView()
 */
-int ViewerMatlabPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
+int ViewerSocketPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 {
-  Viewer_Matlab *vmatlab = (Viewer_Matlab *) viewer->data;
+  Viewer_Socket *vmatlab = (Viewer_Socket *) viewer->data;
   int           ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
@@ -47,11 +47,11 @@ int ViewerMatlabPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
 }
 
 /*
-   ViewerMatlabPutDouble_Private - Passes a double precision array to 
+   ViewerSocketPutDouble_Private - Passes a double precision array to 
    a Matlab viewer.
 
   Input Parameters:
-.  viewer - obtained from ViewerMatlabOpen()
+.  viewer - obtained from ViewerSocketOpen()
 .  m, n - number of rows and columns of array
 .  array - the array stored in Fortran 77 style (matrix or vector data) 
 
@@ -64,13 +64,13 @@ int ViewerMatlabPutScalar_Private(Viewer viewer,int m,int n,Scalar *array)
      VecView(Vec vector,Viewer viewer)
 .ve
 
-.keywords: Viewer, Matlab, put, dense, array, vector
+.keywords: Viewer, Socket, put, dense, array, vector
 
-.seealso: ViewerMatlabOpen(), MatView(), VecView()
+.seealso: ViewerSocketOpen(), MatView(), VecView()
 */
-int ViewerMatlabPutDouble_Private(Viewer viewer,int m,int n,double *array)
+int ViewerSocketPutDouble_Private(Viewer viewer,int m,int n,double *array)
 {
-  Viewer_Matlab *vmatlab = (Viewer_Matlab *) viewer->data;
+  Viewer_Socket *vmatlab = (Viewer_Socket *) viewer->data;
   int           ierr,t = vmatlab->port,type = DENSEREAL,value;
 
   PetscFunctionBegin;
@@ -85,12 +85,12 @@ int ViewerMatlabPutDouble_Private(Viewer viewer,int m,int n,double *array)
 
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMatlabPutInt_Private"
+#define __FUNC__ "ViewerSocketPutInt_Private"
 /*
-   ViewerMatlabPutInt_Private - Passes an integer array to a Matlab viewer.
+   ViewerSocketPutInt_Private - Passes an integer array to a Socket viewer.
 
    Input Parameters:
-+  viewer - obtained from ViewerMatlabOpen()
++  viewer - obtained from ViewerSocketOpen()
 .  m - number of rows of array
 -  array - the array stored in Fortran 77 style (matrix or vector data) 
 
@@ -102,13 +102,13 @@ int ViewerMatlabPutDouble_Private(Viewer viewer,int m,int n,double *array)
      VecView(Vec vector,Viewer viewer)
 .ve
 
-.keywords: Viewer, Matlab, put, dense, array, vector
+.keywords: Viewer, Socket, put, dense, array, vector
 
-.seealso: ViewerMatlabOpen(), MatView(), VecView()
+.seealso: ViewerSocketOpen(), MatView(), VecView()
 */
-int ViewerMatlabPutInt_Private(Viewer viewer,int m,int *array)
+int ViewerSocketPutInt_Private(Viewer viewer,int m,int *array)
 {
-  Viewer_Matlab *vmatlab = (Viewer_Matlab *) viewer->data;
+  Viewer_Socket *vmatlab = (Viewer_Socket *) viewer->data;
   int           ierr,t = vmatlab->port,type = DENSEINT;
 
   PetscFunctionBegin;

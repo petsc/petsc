@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.272 1999/01/08 21:33:56 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.273 1999/01/11 16:21:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -843,8 +843,8 @@ extern int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIAIJ_ASCIIorDraworMatlab"
-extern int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
+#define __FUNC__ "MatView_MPIAIJ_ASCIIorDraworSocket"
+extern int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
@@ -950,8 +950,8 @@ int MatView_MPIAIJ(Mat mat,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER) || PetscTypeCompare(vtype,DRAW_VIEWER) || 
-      PetscTypeCompare(vtype,MATLAB_VIEWER)) { 
-    ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
+      PetscTypeCompare(vtype,SOCKET_VIEWER)) { 
+    ierr = MatView_MPIAIJ_ASCIIorDraworSocket(mat,viewer); CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = MatView_MPIAIJ_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
@@ -1580,8 +1580,8 @@ int MatCopy_MPIAIJ(Mat A,Mat B,MatStructure str)
 extern int MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
 extern int MatIncreaseOverlap_MPIAIJ(Mat , int, IS *, int);
 extern int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
-extern int MatGetSubMatrices_MPIAIJ (Mat ,int , IS *,IS *,MatGetSubMatrixCall,Mat **);
-extern int MatGetSubMatrix_MPIAIJ (Mat ,IS,IS,int,MatGetSubMatrixCall,Mat *);
+extern int MatGetSubMatrices_MPIAIJ (Mat ,int , IS *,IS *,MatReuse,Mat **);
+extern int MatGetSubMatrix_MPIAIJ (Mat ,IS,IS,int,MatReuse,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
@@ -2216,7 +2216,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   in local and then by concatenating the local matrices the end result.
   Writing it directly would be much like MatGetSubMatrices_MPIAIJ()
 */
-int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCall call,Mat *newmat)
+int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat *newmat)
 {
   int        ierr, i, m,n,rstart,row,rend,nz,*cwork,size,rank,j;
   Mat        *local,M, Mreuse;

@@ -1,5 +1,5 @@
 !
-! "$Id: ex11.c,v 1.1 1998/07/21 20:39:22 bsmith Exp bsmith $";
+! "$Id: ex11f.F,v 1.1 1998/07/23 22:46:13 bsmith Exp bsmith $";
 !
 !
 ! Program usage:  mpirun ex1 [-help] [all PETSc options] 
@@ -7,7 +7,7 @@
 !
 !/*T
 !   Concepts: Vectors^Norms of sub-vectors;
-!   Routines: VecCreate(); VecSet(); VecSetBlockSize(); VecStrideNorm(); VecNorm(); 
+!   Routines: VecCreate(); VecSetFromOptions(); VecSet(); VecSetBlockSize(); VecStrideNorm(); VecNorm(); 
 !   Processors: n
 !T*/
 
@@ -42,7 +42,7 @@
 
 !
 !     Create a vector, specifying only its global dimension.
-!     When using VecCreate(), the vector format (currently parallel,
+!     When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel,
 !     shared, or sequential) is determined at runtime.  Also, the parallel
 !     partitioning of the vector is determined by PETSc at runtime.
 !
@@ -54,10 +54,11 @@
 !                            (available only on the SGI); otherwise,
 !                            is the same as VecCreateMPI()
 !
-!     With VecCreate() the option -vec_type mpi or -vec_type shared causes the 
+!     With VecCreate() and VecSetFromOptions() the option -vec_type mpi or -vec_type shared causes the 
 !     particular type of vector to be formed.
 
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+      call VecSetFromOptions(x,ierr)
 
 !
 !     Set the vectors to entries to a constant value.

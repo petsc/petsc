@@ -1,5 +1,5 @@
 
-!    "$Id: ex2f.F,v 1.49 1998/04/21 18:31:00 balay Exp bsmith $";
+!    "$Id: ex2f.F,v 1.50 1998/07/14 00:05:19 bsmith Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -192,6 +192,7 @@
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
       call VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,u,ierr)
+      call VecSetFromOptions(u,ierr)
       call VecDuplicate(u,b,ierr)
       call VecDuplicate(b,x,ierr)
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.7 1997/10/19 03:27:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.8 1997/11/28 16:20:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
@@ -102,11 +102,12 @@ int slesex(int argc,char **args)
 
   /* 
      Create parallel vectors.
-      - When using VecCreate(), we specify only the vector's global
+      - When using VecCreate() and VecSetFromOptions(), we specify only the vector's global
         dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
+  ierr = VecSetFromOptions(u);CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 

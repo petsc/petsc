@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.295 1998/12/03 04:07:20 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.296 1999/01/12 20:44:06 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -6984,7 +6984,7 @@ we recommend skipping this chapter during an initial reading.
 
 One can extract a (parallel) submatrix from a given (parallel) using
 \begin{verbatim}
-   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatGetSubMatrixCall call,Mat *B);
+   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatReuse call,Mat *B);
 \end{verbatim}
 This extracts the {\tt rows} and {\tt col}umns of the matrix {\tt A} into {\tt B}. If 
 call is  {\tt MAT\_INITIAL\_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix
@@ -6995,7 +6995,7 @@ format supports this concept. Often one can use the default by passing in {\tt P
 To create a {\tt B} matrix that may be multiplied with a vector {\tt x} one can use
 \begin{verbatim}
    ierr = VecGetLocalSize(x,&csize);
-   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatGetSubMatrixCall call,Mat *B);
+   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatReuse call,Mat *B);
 \end{verbatim}
 
 

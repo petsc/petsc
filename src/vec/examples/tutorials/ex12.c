@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.2 1998/07/23 21:19:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.3 1998/12/03 03:57:16 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -8,7 +8,7 @@ static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather().\n\n
 
 /*T
    Concepts: Vectors^Sub-vectors;
-   Routines: VecCreate(); VecSet(); VecSetBlockSize(); VecStrideScatter(), VecStrideGather(); 
+   Routines: VecCreate(); VecSetFromOptions(); VecSet(); VecSetBlockSize(); VecStrideScatter(), VecStrideGather(); 
    Processors: n
 T*/
 
@@ -34,12 +34,14 @@ int main(int argc,char **argv)
       Create multi-component vector with 2 components
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&v); CHKERRA(ierr);
+  ierr = VecSetFromOptions(v);CHKERRA(ierr);
   ierr = VecSetBlockSize(v,2);CHKERRA(ierr);
 
   /* 
       Create single-component vector
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n/2,&s); CHKERRA(ierr);
+  ierr = VecSetFromOptions(s);CHKERRA(ierr);
 
   /*
      Set the vectors to entries to a constant value.

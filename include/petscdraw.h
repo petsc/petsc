@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.59 1998/08/26 22:04:55 balay Exp bsmith $ */
+/* $Id: draw.h,v 1.60 1998/12/03 04:07:00 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -9,11 +9,27 @@
 #define DRAW_COOKIE PETSC_COOKIE+6
 
 /* types of draw contexts */
-#define DRAW_XWINDOW    0
-#define DRAW_NULLWINDOW 1
-#define DRAW_VRML       2
+#define DRAW_X    "x"
+#define DRAW_NULL "null"
+#define DRAW_VRML "vrml"
  
 typedef struct _p_Draw* Draw;
+
+typedef char* DrawType;
+extern FList DrawList;
+extern int DrawRegisterAll(char *);
+extern int DrawRegisterDestroy(void);
+
+extern int DrawRegister_Private(char*,char*,char*,int(*)(Draw));
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define DrawRegister(a,b,c,d) DrawRegister_Private(a,b,c,0)
+#else
+#define DrawRegister(a,b,c,d) DrawRegister_Private(a,b,c,d)
+#endif
+extern int DrawGetType(Draw,DrawType*);
+extern int DrawSetType(Draw,DrawType);
+extern int DrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
+extern int DrawSetFromOptions(Draw);
 
 /*
    Number of basic colors in the draw routines, the others are used
@@ -209,6 +225,7 @@ int DrawTensorSurface(Draw, DrawMesh, int);
 /*int DrawTensorMapSurfaceContourAndMesh_VRML(Draw,DrawMesh,int); */
 
 #endif
+
 
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.14 1998/08/26 22:02:27 balay Exp balay $";
+static char vcid[] = "$Id: mmdense.c,v 1.15 1998/09/09 21:10:00 balay Exp bsmith $";
 #endif
 
 /*
@@ -40,11 +40,11 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   PetscFunctionReturn(0);
 }
 
-int MatGetSubMatrices_MPIDense_Local(Mat,int,IS*,IS*,MatGetSubMatrixCall,Mat*);
+extern int MatGetSubMatrices_MPIDense_Local(Mat,int,IS*,IS*,MatReuse,Mat*);
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_MPIDense" 
 int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,
-                             MatGetSubMatrixCall scall,Mat **submat)
+                             MatReuse scall,Mat **submat)
 { 
   Mat_MPIDense  *c = (Mat_MPIDense *) C->data;
   int           nmax,nstages_local,nstages,i,pos,max_no,ierr;
@@ -75,23 +75,22 @@ int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,
 /* -------------------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_MPIDense_Local" 
-int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,
-                             MatGetSubMatrixCall scall,Mat *submats)
+int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
 { 
   Mat_MPIDense  *c = (Mat_MPIDense *) C->data;
   Mat            A = c->A;
   Mat_SeqDense  *a = (Mat_SeqDense*)A->data, *mat;
-  int         N = c->N, rstart = c->rstart,count;
-  int         **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
-  int         **sbuf1, rank, m,i,j,k,l,ct1,ierr, **rbuf1,row,proc;
-  int         nrqs, msz, **ptr,index,*ctr,*pa,*tmp,bsz,nrqr;
-  int         is_no,jmax,*irow_i,**rmap,*rmap_i;
-  int         len,ctr_j,*sbuf1_j,*rbuf1_i;
-  int         tag0,tag1;
-  MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2;
-  MPI_Status  *r_status1,*r_status2,*s_status1,*s_status2;
-  MPI_Comm    comm;
-  Scalar      **rbuf2,**sbuf2;
+  int           N = c->N, rstart = c->rstart,count;
+  int           **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
+  int           **sbuf1, rank, m,i,j,k,l,ct1,ierr, **rbuf1,row,proc;
+  int           nrqs, msz, **ptr,index,*ctr,*pa,*tmp,bsz,nrqr;
+  int           is_no,jmax,*irow_i,**rmap,*rmap_i;
+  int           len,ctr_j,*sbuf1_j,*rbuf1_i;
+  int           tag0,tag1;
+  MPI_Request   *s_waits1,*r_waits1,*s_waits2,*r_waits2;
+  MPI_Status    *r_status1,*r_status2,*s_status1,*s_status2;
+  MPI_Comm      comm;
+  Scalar        **rbuf2,**sbuf2;
 
   PetscFunctionBegin;
   comm   = C->comm;

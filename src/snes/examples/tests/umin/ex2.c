@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.43 1998/12/03 04:05:51 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.44 1998/12/09 16:01:21 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -84,6 +84,7 @@ int main(int argc,char **argv)
 
   /* Allocate vectors */
   ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,user.ndim,&user.y); CHKERRA(ierr);
+  ierr = VecSetFromOptions(user.y);CHKERRA(ierr);
   ierr = VecDuplicate(user.y,&user.s); CHKERRA(ierr);
   ierr = VecDuplicate(user.y,&g); CHKERRA(ierr);
   ierr = VecDuplicate(user.y,&x); CHKERRA(ierr);

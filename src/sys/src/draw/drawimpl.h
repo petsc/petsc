@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.26 1998/04/03 23:16:19 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.27 1998/12/03 04:03:08 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -16,18 +16,18 @@ struct _DrawOps {
   int (*linegetwidth)(Draw,double*);
   int (*point)(Draw,double,double,int);
   int (*pointsetsize)(Draw,double);
-  int (*text)(Draw,double,double,int,char*);
-  int (*textvertical)(Draw,double,double,int,char*);
-  int (*textsetsize)(Draw,double,double);
-  int (*textgetsize)(Draw,double*,double*);
+  int (*string)(Draw,double,double,int,char*);
+  int (*stringvertical)(Draw,double,double,int,char*);
+  int (*stringsetsize)(Draw,double,double);
+  int (*stringgetsize)(Draw,double*,double*);
   int (*setviewport)(Draw,double,double,double,double);
   int (*clear)(Draw);
-  int (*syncflush)(Draw);
+  int (*synchronizedflush)(Draw);
   int (*rectangle)(Draw,double,double,double,double,int,int,int,int);
   int (*triangle)(Draw,double,double,double,double,double,double,int,int,int);
   int (*getmousebutton)(Draw,DrawButton*,double *,double *,double*,double*);
   int (*pause)(Draw);
-  int (*syncclear)(Draw);
+  int (*synchronizedclear)(Draw);
   int (*beginpage)(Draw);
   int (*endpage)(Draw);
   int (*getpopup)(Draw,Draw*);
@@ -40,11 +40,13 @@ struct _DrawOps {
 
 struct _p_Draw {
   PETSCHEADER(struct _DrawOps)
-  int             pause;       /* sleep time after a sync flush */
+  int             pause;       /* sleep time after a synchronized flush */
   double          port_xl,port_yl,port_xr,port_yr;
   double          coor_xl,coor_yl,coor_xr,coor_yr;
   char            *title;
+  char            *display;
   Draw            popup;
+  int             x,y,h,w;
   void            *data;
 };
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.36 1997/10/19 03:27:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.37 1997/11/28 16:20:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -128,6 +128,7 @@ int main(int argc,char **args)
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&b); CHKERRA(ierr);
+  ierr = VecSetFromOptions(b);CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.89 1998/12/21 00:59:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.90 1998/12/23 22:51:19 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -86,15 +86,15 @@ static int PCView_ASM(PC pc,Viewer viewer)
 #define __FUNC__ "PCSetUp_ASM"
 static int PCSetUp_ASM(PC pc)
 {
-  PC_ASM              *osm  = (PC_ASM *) pc->data;
-  int                 i,ierr,m,n_local = osm->n_local,n_local_true = osm->n_local_true;
-  int                 start, start_val, end_val, size, sz, bs;
-  MatGetSubMatrixCall scall = MAT_REUSE_MATRIX;
-  IS                  isl;
-  SLES                sles;
-  KSP                 subksp;
-  PC                  subpc;
-  char                *prefix;
+  PC_ASM   *osm  = (PC_ASM *) pc->data;
+  int      i,ierr,m,n_local = osm->n_local,n_local_true = osm->n_local_true;
+  int      start, start_val, end_val, size, sz, bs;
+  MatReuse scall = MAT_REUSE_MATRIX;
+  IS       isl;
+  SLES     sles;
+  KSP      subksp;
+  PC       subpc;
+  char     *prefix;
 
   PetscFunctionBegin;
   if (pc->setupcalled == 0) {

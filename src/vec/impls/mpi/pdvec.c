@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.101 1998/12/03 03:57:00 bsmith Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.102 1998/12/17 22:08:41 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -25,25 +25,19 @@ int VecDestroy_MPI(Vec v)
   int     ierr;
 
   PetscFunctionBegin;
-  if (--v->refct > 0) PetscFunctionReturn(0);
 
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)v,"Length=%d",x->N);
 #endif  
   if (x->stash.array) PetscFree(x->stash.array);
   if (x->array_allocated) PetscFree(x->array_allocated);
-  if (v->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(v->mapping); CHKERRQ(ierr);
-  }
+
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {
     ierr = VecDestroy(x->localrep); CHKERRQ(ierr);
     if (x->localupdate) {ierr = VecScatterDestroy(x->localupdate);CHKERRQ(ierr);}
   }
-  PetscFree(v->data);
-  ierr = MapDestroy(v->map);
-  PLogObjectDestroy(v);
-  PetscHeaderDestroy(v);
+  PetscFree(x);
   PetscFunctionReturn(0);
 }
 
@@ -359,8 +353,8 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Matlab"
-int VecView_MPI_Matlab(Vec xin, Viewer viewer )
+#define __FUNC__ "VecView_MPI_Socket"
+int VecView_MPI_Socket(Vec xin, Viewer viewer )
 {
 #if !defined(USE_PETSC_COMPLEX)
   Vec_MPI     *x = (Vec_MPI *) xin->data;
@@ -382,7 +376,7 @@ int VecView_MPI_Matlab(Vec xin, Viewer viewer )
     }
     ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,xx,lens,xin->map->range,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
     PetscFree(lens);
-    ierr = ViewerMatlabPutScalar_Private(viewer,N,1,xx);CHKERRQ(ierr);
+    ierr = ViewerSocketPutScalar_Private(viewer,N,1,xx);CHKERRQ(ierr);
     PetscFree(xx);
   } else {
     ierr = MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);CHKERRQ(ierr);
@@ -402,8 +396,8 @@ int VecView_MPI(Vec xin,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
-    ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
+  } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+    ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {

@@ -1,10 +1,10 @@
 !
-!    "$Id: ex1f90.F,v 1.11 1998/04/15 18:00:22 balay Exp balay $"
+!    "$Id: ex1f90.F,v 1.12 1998/06/11 15:24:45 balay Exp bsmith $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
 !   Concepts: Fortran90;
-!   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); VecDot();
+!   Routines: VecCreate(); VecSetFromOptions(); VecDuplicate(); VecSet(); VecValid(); VecDot();
 !   Routines: VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); VecAYPX();
 !   Routines: VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); VecSwap();
 !   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecsF90(); VecDuplicateVecsF90();
@@ -62,7 +62,7 @@
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
 !  Create a vector, specifying only its global dimension.
-!  When using VecCreate(), the vector format (currently parallel
+!  When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
 !  or sequential) is determined at runtime.  Also, the parallel
 !  partitioning of the vector is determined by PETSc at runtime.
 !
@@ -72,6 +72,7 @@
 !                      determine the parallel partitioning
 
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+      call VecSetFromOptions(x,ierr)
 
 !  Duplicate some work vectors (of the same format and
 !  partitioning as the initial vector).

@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.33 1997/11/28 16:18:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.34 1998/12/03 03:57:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Displays a vector visually.\n\n";
 
 /*T
    Concepts: Vectors^Drawing vectors;
-   Routines: VecCreate(); VecSetValues(); VecView(); VecDestroy(); 
+   Routines: VecCreate(); VecSetFromOptions(); VecSetValues(); VecView(); VecDestroy(); 
    Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecGetOwnershipRange();
    Routines: ViewerDrawOpen(); ViewerDestroy();
    Processors: n
@@ -32,11 +32,12 @@ int main(int argc,char **argv)
 
   /* 
      Create a vector, specifying only its global dimension.
-     When using VecCreate(), the vector format (currently parallel
+     When using VecCreate() and VecSetFromOptions(), the vector format (currently parallel
      or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+  ierr = VecSetFromOptions(x); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel vectors are partitioned by

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.70 1998/04/28 03:49:10 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.71 1998/06/16 01:25:14 curfman Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -81,6 +81,7 @@ int main(int argc,char **args)
      then duplicate as needed.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+  ierr = VecSetFromOptions(x);CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
 

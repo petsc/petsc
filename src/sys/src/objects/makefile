@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.5 1998/06/12 22:14:22 balay Exp balay $ 
+# $Id: makefile,v 1.6 1998/06/15 15:42:20 balay Exp bsmith $ 
 
 ALL: lib 
 
@@ -13,7 +13,7 @@ OBJSC	  = cookie.o  gcomm.o   gtype.o   olist.o   pcomm.o  pname.o  tagm.o \
             destroy.o gcookie.o inherit.o options.o pgname.o prefix.o init.o pinit.o
 OBJSF	  =
 MANSEC	  = 7
-LIBBASE	  = libpetscsys
+LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/objects/
 

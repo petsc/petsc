@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.26 1998/04/27 14:26:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.27 1998/12/03 04:05:14 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: view.c,v 1.26 1998/04/27 14:26:01 curfman Exp bsmith 
    Input Parameters:
 .  viewer - the viewer to be destroyed.
 
-.seealso: ViewerMatlabOpen(), ViewerASCIIOpen()
+.seealso: ViewerSocketOpen(), ViewerASCIIOpen()
 
 .keywords: Viewer, destroy
 @*/
@@ -47,7 +47,7 @@ int ViewerDestroy(Viewer v)
 .  type - viewer type (see below)
 
    Available Types Include:
-.  MATLAB_VIEWER - Matlab viewer
+.  SOCKET_VIEWER - Socket viewer
 .  ASCII_VIEWER - ASCII viewer
 .  BINARY_VIEWER - binary file viewer
 .  STRING_VIEWER - string viewer

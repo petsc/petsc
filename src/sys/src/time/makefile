@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.4 1998/06/12 22:17:31 balay Exp balay $ 
+# $Id: makefile,v 1.5 1998/06/15 15:42:35 balay Exp bsmith $ 
 
 ALL: lib 
 
@@ -10,7 +10,7 @@ SOURCEH	  =
 OBJSC	  = cputime.o fdate.o nt_time.o 
 OBJSF	  =
 MANSEC	  = 7
-LIBBASE	  = libpetscsys
+LIBBASE	  = libpetsc
 DIRS	  = 
 LOCDIR	  = src/sys/src/time/
 

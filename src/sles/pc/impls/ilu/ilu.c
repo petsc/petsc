@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.114 1998/12/21 00:59:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.115 1998/12/23 22:51:16 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -7,23 +7,6 @@ static char vcid[] = "$Id: ilu.c,v 1.114 1998/12/21 00:59:26 bsmith Exp bsmith $
 #include "src/pc/pcimpl.h"                 /*I "pc.h"  I*/
 #include "src/pc/impls/ilu/ilu.h"
 #include "src/mat/matimpl.h"
-
-extern int PCSetUp_ILU_MPIRowbs(PC);
-
-static int (*setups[])(PC) = {0,
-                              0,
-                              0,
-                              0,
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-                              PCSetUp_ILU_MPIRowbs,
-#else
-                              0,
-#endif
-                              0,
-                              0,
-                              0,   
-                              0,
-                              0,0,0,0,0};
 
 /* ------------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
@@ -457,12 +440,13 @@ static int PCView_ILU(PC pc,Viewer viewer)
 #define __FUNC__ "PCSetUp_ILU"
 static int PCSetUp_ILU(PC pc)
 {
-  int         ierr,flg;
+  int         ierr,flg, (*setup)(PC);
   PC_ILU      *ilu = (PC_ILU *) pc->data;
 
   PetscFunctionBegin;
   if (ilu->inplace) {
     if (!pc->setupcalled) {
+
       /* In-place factorization only makes sense with the natural ordering,
          so we only need to get the ordering once, even if nonzero structure changes */
       ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
@@ -470,9 +454,11 @@ static int PCSetUp_ILU(PC pc)
       if (ilu->row) PLogObjectParent(pc,ilu->row);
       if (ilu->col) PLogObjectParent(pc,ilu->col);
     }
-    if (setups[pc->pmat->type]) {
-      ierr = (*setups[pc->pmat->type])(pc);
+    ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"PCSetUp_ILU_C",(void**)&setup);CHKERRQ(ierr);
+    if (setup) {
+      ierr = (*setup)(pc);CHKERRQ(ierr);
     }
+
     /* In place ILU only makes sense with fill factor of 1.0 because 
        cannot have levels of fill */
     ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,1.0,ilu->levels); CHKERRQ(ierr);
@@ -519,8 +505,9 @@ static int PCSetUp_ILU(PC pc)
         ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,&flg);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
-      if (setups[pc->pmat->type]) {
-        ierr = (*setups[pc->pmat->type])(pc);
+      ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"PCSetUp_ILU_C",(void**)&setup);CHKERRQ(ierr);
+      if (setup) {
+        ierr = (*setup)(pc);CHKERRQ(ierr);
       }
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,ilu->fill,ilu->levels,&ilu->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);

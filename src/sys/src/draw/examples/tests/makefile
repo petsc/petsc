@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.61 1998/06/12 20:23:34 bsmith Exp balay $ 
+# $Id: makefile,v 1.62 1998/06/12 21:03:35 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -9,7 +9,7 @@ FPPFLAGS        =
 LOCDIR          = src/draw/examples/tests/
 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-		  runex3 ex3.rm ex4.PETSc runex4 runex4_2 ex4.rm \
+		  runex3 ex3.rm ex4.PETSc runex4 runex4_2 ex4.rm ex10.petsc runex10 ex10.rm \
 		  ex7.PETSc runex7 runex7_2 ex7.rm ex8.PETSc runex8 ex8.rm clean
 TESTEXAMPLES_3  = ex5.PETSc ex5.rm clean
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex4.PETSc ex4.rm ex7.PETSc runex7 ex7.rm clean
@@ -17,7 +17,7 @@ BUILDEXAMPLES_2 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc \
 		  ex3.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm clean
 BUILDEXAMPLES_3 = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm clean
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c ex10.c
 EXAMPLESF       = ex5.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -41,6 +41,8 @@ runex7_2:
 runex8:
 	-@${MPIRUN} -np 4 ex8
 	-@${RM} -f junk.0.vrml
+runex10:
+	-@${MPIRUN} -np 1 ex10
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -77,4 +79,8 @@ ex8: ex8.o  chkopts
 ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_LIB}
 	${RM} -f ex9.o
+
+ex10: ex10.o  chkopts
+	-${CLINKER} -o ex10 ex10.o  ${PETSC_LIB}
+	${RM} -f ex10.o
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.160 1998/12/03 03:59:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.161 1998/12/17 22:10:07 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -777,8 +777,8 @@ int MatView_SeqDense(Mat A,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
-    ierr = ViewerMatlabPutScalar_Private(viewer,a->m,a->n,a->v); CHKERRQ(ierr);
+  if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+    ierr = ViewerSocketPutScalar_Private(viewer,a->m,a->n,a->v); CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
@@ -1111,7 +1111,7 @@ int MatRestoreArray_SeqDense(Mat A,Scalar **array)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqDense"
-static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatrixCall scall,Mat *B)
+static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          i, j, ierr, m = mat->m, *irow, *icol, nrows, ncols;
@@ -1158,7 +1158,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatr
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqDense"
-int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,Mat **B)
+int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   int ierr,i;
 

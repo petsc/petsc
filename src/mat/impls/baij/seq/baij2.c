@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.36 1999/01/06 15:12:20 balay Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.37 1999/01/06 15:55:07 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -76,7 +76,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqBAIJ_Private"
-int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatrixCall scall,Mat *B)
+int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ *) A->data,*c;
   int          *smap, i, k, kstart, kend, ierr, oldcols = a->nbs,*lens;
@@ -155,7 +155,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatr
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqBAIJ"
-int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatrixCall scall,Mat *B)
+int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   IS          is1,is2;
@@ -200,7 +200,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatrixCall s
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqBAIJ"
-int MatGetSubMatrices_SeqBAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,Mat **B)
+int MatGetSubMatrices_SeqBAIJ(Mat A,int n, IS *irow,IS *icol,MatReuse scall,Mat **B)
 {
   int ierr,i;
 

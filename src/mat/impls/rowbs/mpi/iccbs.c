@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.29 1998/04/03 23:15:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.30 1998/10/19 22:18:01 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -117,6 +117,7 @@ int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCSetUp_ICC_MPIRowbs"
 int PCSetUp_ICC_MPIRowbs(PC pc)
@@ -161,6 +162,7 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* 
    KSPMonitor_MPIRowbs - Prints the actual (unscaled) residual norm as

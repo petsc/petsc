@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.59 1998/12/04 23:31:39 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.60 1998/12/21 01:06:07 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -17,23 +17,37 @@ typedef struct _p_Viewer*            Viewer;
 #define VIEWER_COOKIE              PETSC_COOKIE+1
 typedef char* ViewerType;
 
-#define MATLAB_VIEWER       "matlab"
+#define SOCKET_VIEWER       "socket"
 #define ASCII_VIEWER        "ascii"
 #define BINARY_VIEWER       "binary"
 #define STRING_VIEWER       "string"
 #define DRAW_VIEWER         "draw"
 #define AMS_VIEWER          "ams"
 
+extern FList ViewerList;
+extern int ViewerRegisterAll(char *);
+extern int ViewerRegisterDestroy(void);
+
+extern int ViewerRegister_Private(char*,char*,char*,int(*)(Viewer));
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define ViewerRegister(a,b,c,d) ViewerRegister_Private(a,b,c,0)
+#else
+#define ViewerRegister(a,b,c,d) ViewerRegister_Private(a,b,c,d)
+#endif
+extern int ViewerCreate(MPI_Comm,Viewer*);
+extern int ViewerSetFromOptions(Viewer);
+
+
 extern int ViewerASCIIOpen(MPI_Comm,const char[],Viewer*);
 typedef enum {BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE} ViewerBinaryType;
 extern int ViewerBinaryOpen(MPI_Comm,const char[],ViewerBinaryType,Viewer*);
-extern int ViewerMatlabOpen(MPI_Comm,const char[],int,Viewer*);
+extern int ViewerSocketOpen(MPI_Comm,const char[],int,Viewer*);
 extern int ViewerStringOpen(MPI_Comm,char[],int, Viewer*);
 extern int ViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,Viewer*);
-extern int ViewerDrawOpenVRML(MPI_Comm,const char[],const char[],Viewer*);
 
 extern int ViewerGetOutputname(Viewer,char**);  
 extern int ViewerGetType(Viewer,ViewerType*);
+extern int ViewerSetType(Viewer,ViewerType);
 extern int ViewerDestroy(Viewer);
 
 #define VIEWER_FORMAT_ASCII_DEFAULT       0
@@ -87,14 +101,14 @@ extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_0;
 extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_1;
 extern Viewer VIEWER_DRAWX_WORLD_PRIVATE_2;
 extern Viewer VIEWER_DRAWX_SELF_PRIVATE; 
-extern Viewer VIEWER_MATLAB_WORLD_PRIVATE;
-extern Viewer VIEWER_MATLAB_SELF_PRIVATE;  /* not yet used */
+extern Viewer VIEWER_SOCKET_WORLD_PRIVATE;
+extern Viewer VIEWER_SOCKET_SELF_PRIVATE;  /* not yet used */
 
 extern int    ViewerInitializeDrawXWorld_Private_0(void);
 extern int    ViewerInitializeDrawXWorld_Private_1(void);
 extern int    ViewerInitializeDrawXWorld_Private_2(void);
 extern int    ViewerInitializeDrawXSelf_Private(void);
-extern int    ViewerInitializeMatlabWorld_Private(void);
+extern int    ViewerInitializeSocketWorld_Private(void);
 extern Viewer VIEWER_DRAWX_(MPI_Comm);
 extern int    VIEWER_DRAWX_Destroy(MPI_Comm);
 
@@ -109,8 +123,8 @@ extern int    VIEWER_DRAWX_Destroy(MPI_Comm);
               (ViewerInitializeDrawXSelf_Private(),VIEWER_DRAWX_SELF_PRIVATE) 
 #define VIEWER_DRAWX_WORLD VIEWER_DRAWX_WORLD_0
 
-#define VIEWER_MATLAB_WORLD \
-        (ViewerInitializeMatlabWorld_Private(),VIEWER_MATLAB_WORLD_PRIVATE) 
+#define VIEWER_SOCKET_WORLD \
+        (ViewerInitializeSocketWorld_Private(),VIEWER_SOCKET_WORLD_PRIVATE) 
 
 /*
     Viewer based on the ALICE Memory Snooper
@@ -130,14 +144,14 @@ extern int    ViewerInitializeAMSWorld_Private(void);
     Viewer utility routines used by PETSc that are not normally used
    by users.
 */
-extern int  ViewerMatlabPutScalar_Private(Viewer,int,int,Scalar*);
-extern int  ViewerMatlabPutDouble_Private(Viewer,int,int,double*);
-extern int  ViewerMatlabPutInt_Private(Viewer,int,int*);
-extern int  ViewerMatlabPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
+extern int  ViewerSocketPutScalar_Private(Viewer,int,int,Scalar*);
+extern int  ViewerSocketPutDouble_Private(Viewer,int,int,double*);
+extern int  ViewerSocketPutInt_Private(Viewer,int,int*);
+extern int  ViewerSocketPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
 extern int  ViewerInitializeASCII_Private(void);
 extern int  ViewerDestroyASCII_Private(void);
 extern int  ViewerDestroyDrawX_Private(void);
-extern int  ViewerDestroyMatlab_Private(void);
+extern int  ViewerDestroySocket_Private(void);
 extern int  ViewerDestroyAMS_Private(void);
 
 #endif

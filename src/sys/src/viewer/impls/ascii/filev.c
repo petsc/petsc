@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.79 1998/12/17 22:12:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.80 1998/12/21 01:04:03 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -380,6 +380,31 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "ViewerSetFilename"
+int ViewerSetFilename(Viewer viewer,const char name[])
+{
+  int          ierr;
+  char         fname[256];
+  Viewer_ASCII *vascii = (Viewer_ASCII *) viewer->data;
+
+  PetscFunctionBegin;
+  if (!name) PetscFunctionReturn(0);
+
+  if (!PetscStrcmp(name,"stderr"))      vascii->fd = stderr;
+  else if (!PetscStrcmp(name,"stdout")) vascii->fd = stdout;
+  else {
+    ierr         = PetscFixFilename(name,fname);CHKERRQ(ierr);
+    vascii->fd   = fopen(fname,"w"); 
+    if (!vascii->fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open viewer file");
+  }
+#if defined(USE_PETSC_LOG)
+  PLogObjectState((PetscObject)viewer,"File: %s",name);
+#endif
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "ViewerASCIIOpen"
 /*@C
    ViewerASCIIOpen - Opens an ASCII file as a viewer.
@@ -417,13 +442,27 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 @*/
 int ViewerASCIIOpen(MPI_Comm comm,const char name[],Viewer *lab)
 {
-  Viewer       v;
-  Viewer_ASCII *vascii;
-  int          ierr;
-  char         fname[256];
+  int ierr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
+  ierr = ViewerCreate(comm,lab);CHKERRQ(ierr);
+  ierr = ViewerSetType(*lab,ASCII_VIEWER);CHKERRQ(ierr);
+  if (name) {
+    ierr = ViewerSetFilename(*lab,name);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "ViewerCreate_ASCII"
+int ViewerCreate_ASCII(Viewer v)
+{
+  Viewer_ASCII *vascii;
+  int          ierr;
+
+  PetscFunctionBegin;
   vascii  = PetscNew(Viewer_ASCII);CHKPTRQ(vascii);
   v->data = (void *) vascii;
 
@@ -431,25 +470,17 @@ int ViewerASCIIOpen(MPI_Comm comm,const char name[],Viewer *lab)
   v->ops->destroy     = ViewerDestroy_ASCII;
   v->ops->flush       = ViewerFlush_ASCII;
 
-  if (!PetscStrcmp(name,"stderr"))      vascii->fd = stderr;
-  else if (!PetscStrcmp(name,"stdout")) vascii->fd = stdout;
-  else {
-    ierr         = PetscFixFilename(name,fname);CHKERRQ(ierr);
-    vascii->fd   = fopen(fname,"w"); 
-    if (!vascii->fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open viewer file");
-  }
+  /* defaults to stdout unless set with ViewerSetFilename() */
+  vascii->fd         = stdout;
   v->format          = VIEWER_FORMAT_ASCII_DEFAULT;
   v->iformat         = 0;
   v->outputname      = 0;
   vascii->tab        = 0;
-#if defined(USE_PETSC_LOG)
-  PLogObjectState((PetscObject)v,"File: %s",name);
-#endif
   v->type_name    = (char *) PetscMalloc((1+PetscStrlen(ASCII_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
   PetscStrcpy(v->type_name,ASCII_VIEWER);
-  *lab           = v;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* ------------------------------------------------------------------------------------*/
 /*
@@ -494,7 +525,7 @@ int ViewerASCIIOpen(MPI_Comm comm,const char name[],Viewer *lab)
 .keywords: Viewer, file, set, format
 
 .seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
-          ViewerPushFormat(), ViewerPopFormat(), ViewerDrawOpenX(),ViewerMatlabOpen()
+          ViewerPushFormat(), ViewerPopFormat(), ViewerDrawOpenX(),ViewerSocketOpen()
 @*/
 int ViewerSetFormat(Viewer v,int format,char *name)
 {

@@ -1,248 +1,258 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.52 1998/12/17 22:11:20 bsmith Exp $";
+static char vcid[] = "$Id: drawreg.c,v 1.1 1999/01/11 04:51:07 bsmith Exp bsmith $";
 #endif
 /*
-       Provides the calling sequences for all the basic Draw routines.
+       Provides the registration process for PETSc Draw routines
 */
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "DrawResizeWindow"
-/*@
-   DrawResizeWindow - Allows one to resize a window from a program.
-
-   Collective on Draw
-
-   Input Parameter:
-+  draw - the window
--  w,h - the new width and height of the window
-
-@*/
-int DrawResizeWindow(Draw draw,int w,int h)
-{
-  int ierr;
-  PetscFunctionBegin;
-  if (draw->ops->resizewindow) {
-    ierr = (*draw->ops->resizewindow)(draw,w,h);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
+/*
+   Contains the list of registered Draw routines
+*/
+FList DrawList              = 0;
+int   DrawRegisterAllCalled = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "DrawCheckResizedWindow" 
-/*@
-   DrawCheckResizedWindow - Checks if the user has resized the window.
-
-   Collective on Draw
-
-   Input Parameter:
-.  draw - the window
-
-@*/
-int DrawCheckResizedWindow(Draw draw)
-{
-  int ierr;
-  PetscFunctionBegin;
-  if (draw->ops->checkresizedwindow) {
-    ierr = (*draw->ops->checkresizedwindow)(draw);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "DrawGetTitle" 
+#define __FUNC__ "DrawCreate"
 /*@C
-   DrawGetTitle - Gets pointer to title of a Draw context.
+   DrawCreate - Creates a graphics context.
 
-   Not collective
+   Collective on MPI_Comm
 
    Input Parameter:
-.  draw - the graphics context
+.  comm - MPI communicator
 
    Output Parameter:
-.  title - the title
+.  draw - location to put the Draw context
 
+.keywords: Draw, create, context
+
+.seealso: DrawSetFromOptions(), DrawDestroy(), DrawSetType()
 @*/
-int DrawGetTitle(Draw draw,char **title)
+int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,Draw *indraw)
 {
+  Draw draw;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  *title = draw->title;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "DrawSetTitle" 
-/*@C
-   DrawSetTitle - Sets the title of a Draw context.
-
-   Not collective (any processor or all may call this)
-
-   Input Parameters:
-+  draw - the graphics context
--  title - the title
-
-   Note:
-   A copy of the string is made, so you may destroy the 
-   title string after calling this routine.
-@*/
-int DrawSetTitle(Draw draw,char *title)
-{
-  int ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->title) PetscFree(draw->title);
+  *indraw = 0;
+  PetscHeaderCreate(draw,_p_Draw,struct _DrawOps,DRAW_COOKIE,-1,"Draw",comm,DrawDestroy,0);
+  PLogObjectCreate(draw);
+  *indraw             = draw;
+  draw->type          = -1;
+  draw->data          = 0;
   if (title) {
-    int len = PetscStrlen(title);
+    int len     = PetscStrlen(title);
     draw->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->title);
-    PLogObjectMemory(draw,(len+1)*sizeof(char*))
+    PLogObjectMemory(draw,(len+1)*sizeof(char*));
     PetscStrcpy(draw->title,title);
   } else {
     draw->title = 0;
   }
-  if (draw->ops->settitle) {
-    ierr = (*draw->ops->settitle)(draw,title);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "DrawAppendTitle" 
-/*@C
-   DrawAppendTitle - Appends to the title of a Draw context.
-
-   Not collective (any processor or all can call this)
-
-   Input Parameters:
-+  draw - the graphics context
--  title - the title
-
-   Note:
-   A copy of the string is made, so you may destroy the 
-   title string after calling this routine.
-@*/
-int DrawAppendTitle(Draw draw,char *title)
-{
-  int  ierr;
-  char *newtitle;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (!title) PetscFunctionReturn(0);
-
-  if (draw->title) {
-    int len  = PetscStrlen(title) + PetscStrlen(draw->title);
-    newtitle = (char *) PetscMalloc( (len + 1)*sizeof(char*) );CHKPTRQ(newtitle);
+  if (display) {
+    int len     = PetscStrlen(display);
+    draw->display = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->display);
     PLogObjectMemory(draw,(len+1)*sizeof(char*));
-    PetscStrcpy(newtitle,draw->title);
-    PetscStrcat(newtitle,title);
-    PetscFree(draw->title);
-    draw->title = newtitle;
+    PetscStrcpy(draw->display,display);
   } else {
-    int len     = PetscStrlen(title);
-    draw->title = (char *) PetscMalloc((len + 1)*sizeof(char*));CHKPTRQ(draw->title);
-    PLogObjectMemory(draw,(len+1)*sizeof(char*));
-    PetscStrcpy(draw->title,title);
+    draw->display = 0;
   }
-  if (draw->ops->settitle) {
-    ierr = (*draw->ops->settitle)(draw,draw->title);CHKERRQ(ierr);
-  }
+  draw->x = x;
+  draw->y = y;
+  draw->w = w;
+  draw->h = h;
   PetscFunctionReturn(0);
 }
-
+ 
 #undef __FUNC__  
-#define __FUNC__ "DrawDestroy" 
+#define __FUNC__ "DrawSetType"
 /*@C
-   DrawDestroy - Deletes a draw context.
-
-   Collective on Draw
-
-   Input Parameters:
-.  draw - the drawing context
-
-.keywords: draw, destroy
-@*/
-int DrawDestroy(Draw draw)
-{
-  int ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (--draw->refct > 0) PetscFunctionReturn(0);
-  if (draw->ops->destroy) {
-    ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "DrawGetPopup" 
-/*@C
-   DrawGetPopup - Creates a popup window associated with a Draw window.
+   DrawSetType - Builds graphics object for a particular implementation 
 
    Collective on Draw
 
    Input Parameter:
-.  draw - the original window
++  draw      - the graphics context
+-  type      - for example, DRAW_X
 
-   Output Parameter:
-.  popup - the new popup window
+   Options Database Command:
+.  -draw_type  <type> - Sets the type; use -help for a list 
+    of available methods (for instance, x)
 
+   Notes:  
+   See "petsc/include/draw.h" for available methods (for instance,
+   DRAW_X)
+
+.keywords: Draw, set, method
+
+.seealso: DrawSetFromOptions(), DrawCreate(), DrawDestroy()
 @*/
-int DrawGetPopup(Draw draw,Draw *popup)
+int DrawSetType(Draw draw,DrawType type)
 {
-  int ierr;
+  int ierr,(*r)(Draw);
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  PetscValidPointer(popup);
 
-  if (draw->popup) {*popup = draw->popup; PetscFunctionReturn(0);}
-  if (draw->ops->getpopup) {
-    ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
+  if (PetscTypeCompare(draw->type_name,type)) PetscFunctionReturn(0);
+
+  if (draw->data) {
+    /* destroy the old private Draw context */
+    ierr = (*draw->ops->destroy)(draw); CHKERRQ(ierr);
+    if (draw->type_name) PetscFree(draw->type_name);
+    draw->data      = 0;
+    draw->type_name = 0;
+  }
+  /* Get the function pointers for the graphics method requested */
+  if (!DrawRegisterAllCalled) {ierr = DrawRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
+
+  ierr =  FListFind(draw->comm, DrawList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+
+  if (!r) SETERRQ1(1,1,"Unknown Draw type given: %s",type);
+
+  draw->data        = 0;
+  ierr = (*r)(draw); CHKERRQ(ierr);
+
+  if (!draw->type_name) {
+    draw->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(draw->type_name);
+    PetscStrcpy(draw->type_name,type);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawDestroy_Null" 
-int DrawDestroy_Null(Draw draw)
+#define __FUNC__ "DrawRegisterDestroy"
+/*@C
+   DrawRegisterDestroy - Frees the list of Draw methods that were
+   registered by DrawRegister().
+
+   Not Collective
+
+.keywords: Draw, register, destroy
+
+.seealso: DrawRegister(), DrawRegisterAll()
+@*/
+int DrawRegisterDestroy(void)
 {
+  int ierr;
+
   PetscFunctionBegin;
-  if (draw->title) PetscFree(draw->title);
-  PLogObjectDestroy((PetscObject)draw);
-  PetscHeaderDestroy((PetscObject)draw); 
+  if (DrawList) {
+    ierr = FListDestroy( DrawList );CHKERRQ(ierr);
+    DrawList = 0;
+  }
+  DrawRegisterAllCalled = 0;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawOpenNull" 
-/*
-  DrawOpenNull - Opens a null drawing context. All draw commands to 
-  it are ignored.
+#define __FUNC__ "DrawGetType"
+/*@C
+   DrawGetType - Gets the Draw type as a string from the Draw object.
 
-  Output Parameter:
-. win - the drawing context
-*/
-int DrawOpenNull(MPI_Comm comm,Draw *win)
+   Not Collective
+
+   Input Parameter:
+.  draw - Krylov context 
+
+   Output Parameters:
+.  name - name of Draw method 
+
+.keywords: Draw, get, method, name
+@*/
+int DrawGetType(Draw draw,DrawType *type)
 {
-  Draw draw;
   PetscFunctionBegin;
-  *win = 0;
-  PetscHeaderCreate(draw,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_NULLWINDOW,"Draw",comm,DrawDestroy,0);
-  PLogObjectCreate(draw);
-  PetscMemzero(draw->ops,sizeof(struct _DrawOps));
-  draw->ops->destroy = DrawDestroy_Null;
-  draw->ops->view    = 0;
-  draw->pause   = 0;
-  draw->coor_xl = 0.0;  draw->coor_xr = 1.0;
-  draw->coor_yl = 0.0;  draw->coor_yr = 1.0;
-  draw->port_xl = 0.0;  draw->port_xr = 1.0;
-  draw->port_yl = 0.0;  draw->port_yr = 1.0;
-  draw->popup   = 0;
-  *win = draw;
+  *type = draw->type_name;
   PetscFunctionReturn(0);
 }
 
+/*MC
+   DrawRegister - Adds a method to the Krylov subspace solver package.
 
+   Synopsis:
+   DrawRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(Draw))
 
+   Not Collective
 
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
 
+   Notes:
+   DrawRegister() may be called multiple times to add several user-defined solvers.
 
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   DrawRegister("my_draw_type",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyDrawCreate",MyDrawCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     DrawSetType(ksp,"my_draw_type")
+   or at runtime via the option
+$     -draw_type my_draw_type
+
+.keywords: KSP, register
+
+.seealso: DrawRegisterAll(), DrawRegisterDestroy()
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "DrawRegister_Private"
+int DrawRegister_Private(char *sname,char *path,char *name,int (*function)(Draw))
+{
+  int ierr;
+  char fullname[256];
+
+  PetscFunctionBegin;
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListAdd_Private(&DrawList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawSetFromOptions"
+/*@C
+   DrawSetFromOptions - Sets the graphics type from the options database.
+      Defaults to a PETSc X windows graphics.
+
+   Collective on Draw
+
+   Input Parameter:
+.     draw - the graphics context
+
+   Notes: 
+    Must be called after DrawCreate() before the Drawtor is used.
+
+.keywords: draw
+
+.seealso: DrawCreate(), DrawSetType()
+
+@*/
+int DrawSetFromOptions(Draw draw)
+{
+  int     ierr,flg;
+  char    vtype[256];
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+
+  if (!DrawRegisterAllCalled) {ierr = DrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  ierr = OptionsGetString(draw->prefix,"-draw_type",vtype,256,&flg);
+  if (flg) {
+    ierr = DrawSetType(draw,vtype); CHKERRQ(ierr);
+  }
+
+  /* type has not been set? */
+  if (!draw->type_name) {
+    ierr = DrawSetType(draw,DRAW_X); CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex16.c,v 1.5 1997/11/28 16:20:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex16.c,v 1.6 1998/06/26 21:01:48 curfman Exp bsmith $";
 #endif
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
@@ -91,7 +91,7 @@ int main(int argc,char **args)
 
   /* 
      Create parallel vectors.
-      - When using VecCreate(), we specify only the vector's global
+      - When using VecCreate() and VecSetFromOptions(), we specify only the vector's global
         dimension; the parallel partitioning is determined at runtime. 
       - When solving a linear system, the vectors and matrices MUST
         be partitioned accordingly.  PETSc automatically generates
@@ -100,6 +100,7 @@ int main(int argc,char **args)
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
+  ierr = VecSetFromOptions(u);CHKERRA(ierr);
   ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsflush.c,v 1.16 1998/04/13 17:46:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: dsflush.c,v 1.17 1998/04/27 14:40:31 curfman Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -26,9 +26,8 @@ int DrawSynchronizedFlush(Draw draw)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->type == DRAW_NULLWINDOW) PetscFunctionReturn(0);
-  if (draw->ops->syncflush) {
-    ierr = (*draw->ops->syncflush)(draw);CHKERRQ(ierr);
+  if (draw->ops->synchronizedflush) {
+    ierr = (*draw->ops->synchronizedflush)(draw);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
