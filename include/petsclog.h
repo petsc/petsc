@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.106 1997/05/20 03:06:12 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.107 1997/07/02 22:28:35 bsmith Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -160,7 +160,7 @@ extern int (*_PLogPHC)(PetscObject);
 extern int (*_PLogPHD)(PetscObject);
 
 #if defined(HAVE_MPE)
-#define PLogEventBegin(e,o1,o2,o3,o4) { \
+#define PLogEventBegin(e,o1,o2,o3,o4)  \
   {  \
    if (_PLogPLB && PLogEventFlags[e]) \
      (*_PLogPLB)(e,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
@@ -168,7 +168,7 @@ extern int (*_PLogPHD)(PetscObject);
      MPE_Log_event(MPEBEGIN+2*e,0,"");\
   }
 #else
-#define PLogEventBegin(e,o1,o2,o3,o4) { \
+#define PLogEventBegin(e,o1,o2,o3,o4)  \
   {  \
    if (_PLogPLB && PLogEventFlags[e]) \
      (*_PLogPLB)(e,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
@@ -181,12 +181,12 @@ extern int (*_PLogPHD)(PetscObject);
     (*_PLogPLE)(e,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   if (UseMPE && PLogEventMPEFlags[e])\
      MPE_Log_event(MPEBEGIN+2*e+1,0,"");\
-  }  }
+  }  
 #else
 #define PLogEventEnd(e,o1,o2,o3,o4) {\
   if (_PLogPLE && PLogEventFlags[e]) \
     (*_PLogPLE)(e,0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
-  } }
+  } 
 #endif
 
 
