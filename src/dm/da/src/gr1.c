@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.4 1999/01/04 21:54:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.5 1999/02/25 22:55:10 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -178,7 +178,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,Viewer v)
 #if !defined(USE_PETSC_COMPLEX)
       ierr = DrawLine(draw,xgtmp,tmp,xg[0],array[j],DRAW_RED);CHKERRQ(ierr);
 #else
-      ierr = DrawLine(draw,PetscReal(xgtmp,tmp,PetscReal(xg[0]),PetscReal(array[j]),
+      ierr = DrawLine(draw,xgtmp,tmp,PetscReal(xg[0]),PetscReal(array[j]),
                       DRAW_RED);CHKERRQ(ierr);
 #endif
     }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.117 1999/02/01 18:48:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.118 1999/02/27 04:49:03 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -1032,7 +1032,7 @@ int KSPSetResidualHistory(KSP ksp, double *a, int na,PetscTruth reset)
 #undef __FUNC__  
 #define __FUNC__ "KSPGetResidualHistory"
 /*@C
-   KSPSetResidualHistory - Gets the array used to hold the residual history
+   KSPGetResidualHistory - Gets the array used to hold the residual history
    and the number of residuals it contains.
 
    Not Collective

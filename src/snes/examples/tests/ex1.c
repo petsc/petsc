@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.59 1998/12/03 04:05:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.60 1999/01/12 23:17:53 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
@@ -79,7 +79,7 @@ int main( int argc, char **argv )
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
   Draw           draw;                 /* drawing context */
-  int            i, ierr, its, N, flg, matrix_free, size, fd_coloring; 
+  int            i, ierr, its, N, flg, matrix_free, size, fd_coloring, hist_its[50]; 
   double         bratu_lambda_max = 6.81, bratu_lambda_min = 0., history[50];
   MatFDColoring  fdcoloring;           
 
@@ -205,7 +205,7 @@ int main( int argc, char **argv )
      when the user wants to save the convergence history for later use
      rather than just to view the function norms via -snes_monitor.
   */
-  ierr = SNESSetConvergenceHistory(snes,history,50); CHKERRA(ierr);
+  ierr = SNESSetConvergenceHistory(snes,history,hist_its,50,PETSC_TRUE);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
@@ -234,7 +234,7 @@ int main( int argc, char **argv )
   */
   ierr = OptionsHasName(PETSC_NULL,"-print_history",&flg); CHKERRA(ierr);
   if (flg) for (i=0; i<its; i++)
-    PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Function norm = %g\n",i,history[i]);
+    PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Linear iterations %d Function norm = %g\n",i,hist_its[i],history[i]);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
