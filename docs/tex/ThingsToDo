@@ -11,6 +11,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
   
+  - MatZeroRows_MPIAIJ/MPIUNI -> causes calls to MPI_Isend/recv
+
   - PetscSortIntAndPermute()/PetscSortIntAndGetPermutation()
 
   - petsc-maint #1067:  Fix MatTranspose for parallel cases according
