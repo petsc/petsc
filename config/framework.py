@@ -336,8 +336,12 @@ class Framework(config.base.Configure):
   def configureHelp(self, help):
     import nargs
 
-    searchdirs = [os.getenv('HOME')]
-    packagedirs = [os.getenv('HOME')]
+    searchdirs  = []
+    packagedirs = []
+    home = os.getenv('HOME')
+    if home and os.path.isdir(home):
+      packagedirs.append(home)
+      searchdirs.append(home)
     list = self.listDirs('/opt/ibmcmp/vacpp/','[0-9.]*/bin')
     if list: searchdirs.append(list[-1])
     list = self.listDirs('/opt/ibmcmp/xlf/','[0-9.]*/bin')
