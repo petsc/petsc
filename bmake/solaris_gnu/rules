@@ -1,4 +1,4 @@
-# $Id: base,v 1.23 1998/12/04 23:49:36 balay Exp balay $ 
+# $Id: base,v 1.24 1998/12/04 23:58:42 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -32,7 +32,7 @@ CXX_CLINKER      = /home/alice/software/egcs/solaris/bin/g++ ${COPTFLAGS} \
 CXX_FLINKER      = /home/alice/software/egcs/solaris/bin/g++ ${COPTFLAGS} \
 		   -Wl,-R,${LDIR}:${DYLIBPATH}
 CXX_CCV          = ${CXX_CC} --version
-CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl
+CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -lcomplex -ldl
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g
 GCXX_FOPTFLAGS   = -g
