@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.39 2001/02/20 16:52:13 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.40 2001/04/10 19:37:22 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -37,24 +37,26 @@ struct _DAOps {
 
 struct _p_DA {
   PETSCHEADER(struct _DAOps)
-  int            M,N,P;                 /* array dimensions */
-  int            m,n,p;                 /* processor layout */
-  int            w;                     /* degrees of freedom per node */
-  int            s;                     /* stencil width */
-  int            xs,xe,ys,ye,zs,ze;     /* range of local values */
-  int            Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values */
-                                        /* values above already scaled by w */
-  int            *idx,Nl;               /* local to global map */
-  int            base;                  /* global number of 1st local node */
-  DAPeriodicType wrap;                  /* indicates type of periodic boundaries */
-  VecScatter     gtol,ltog,ltol;        /* scatters, see below for details */
-  Vec            global,local;          /* vectors that are discrete functions */
-  DAStencilType  stencil_type;          /* stencil, either box or star */
-  int            dim;                   /* DA dimension (1,2, or 3) */
-  int            *gtog1;                /* mapping from global ordering to
-                                            ordering that would be used for 1
-                                            proc; intended for internal use only */
-  AO             ao;                    /* application ordering context */
+  int                 M,N,P;                 /* array dimensions */
+  int                 m,n,p;                 /* processor layout */
+  int                 w;                     /* degrees of freedom per node */
+  int                 s;                     /* stencil width */
+  int                 xs,xe,ys,ye,zs,ze;     /* range of local values */
+  int                 Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values
+                                                   values above already scaled by w */
+  int                 *idx,Nl;               /* local to global map */
+  int                 base;                  /* global number of 1st local node */
+  DAPeriodicType      wrap;                  /* indicates type of periodic boundaries */
+  VecScatter          gtol,ltog,ltol;        /* scatters, see below for details */
+  Vec                 global,local;          /* vectors that are discrete functions */
+  DAStencilType       stencil_type;          /* stencil, either box or star */
+  int                 dim;                   /* DA dimension (1,2, or 3) */
+  DAInterpolationType interptype;
+
+  int                 *gtog1;                /* mapping from global ordering to
+                                                  ordering that would be used for 1
+                                                  proc; intended for internal use only */
+  AO                  ao;                    /* application ordering context */
 
   ISLocalToGlobalMapping ltogmap,ltogmapb;   /* local to global mapping for associated vectors */
   Vec                    coordinates;        /* coordinates (x,y,x) of local nodes, not including ghosts*/
@@ -63,8 +65,25 @@ struct _p_DA {
   int                    *lx,*ly,*lz;        /* number of nodes in each partition block along 3 axis */
   Vec                    natural;            /* global vector for storing items in natural order */
   VecScatter             gton;               /* vector scatter from global to natural */
-  Vec                    localin[10],localout[10];   /* work vectors available to users */
-  Vec                    globalin[10],globalout[10]; /* work vectors available to users */
+
+  ISColoring            localcoloring;       /* set by DAGetColoring() */
+  ISColoring            ghostedcoloring;  
+
+#define DA_MAX_WORK_VECTORS 10 /* work vectors available to users  via DAVecGetArray() */
+  Vec                    localin[DA_MAX_WORK_VECTORS],localout[DA_MAX_WORK_VECTORS];   
+  Vec                    globalin[DA_MAX_WORK_VECTORS],globalout[DA_MAX_WORK_VECTORS]; 
+
+  int                    refine_x,refine_y,refine_z; /* ratio used in refining */
+
+#define DA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DAGetADArray() */
+  void                   *adarrayin[DA_MAX_AD_ARRAYS],*adarrayout[DA_MAX_AD_ARRAYS]; 
+  void                   *adarrayghostedin[DA_MAX_AD_ARRAYS],*adarrayghostedout[DA_MAX_AD_ARRAYS];
+  void                   *adstartin[DA_MAX_AD_ARRAYS],*adstartout[DA_MAX_AD_ARRAYS]; 
+  void                   *adstartghostedin[DA_MAX_AD_ARRAYS],*adstartghostedout[DA_MAX_AD_ARRAYS];
+  int                    tdof,ghostedtdof;
+
+  DALocalFunction1       lf;
+  DALocalFunction1       lj;
 };
 
 /*
