@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.22 1995/12/23 21:57:35 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.23 1996/01/24 05:45:53 bsmith Exp bsmith $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -40,6 +40,8 @@ typedef struct {
   void             *spptr;           /* pointer for special library like SuperLU */
   int              indexshift;       /* zero or -one for C or Fortran indexing */
   Mat_SeqAIJ_Inode inode;            /* identical node informaton */
+  int              reallocs;         /* number of mallocs done during MatSetValues() 
+                                        as more values are set then were prealloced for */
 } Mat_SeqAIJ;
 
 extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,double,int,Mat *);
