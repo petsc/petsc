@@ -126,6 +126,7 @@ class FileChanged (Transform):
           self.changed.append(source)
         else:
           self.unchanged.append(source)
+          bs.sourceDB.setUpdateFlag(source)
     except KeyError:
       self.debugPrint(source+' does not exist in source database', 3, 'sourceDB')
       self.changed.append(source)

@@ -48,6 +48,11 @@ class SourceDB (dict, logging.Logger):
     self.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
     self[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies, 1)
 
+  def setUpdateFlag(self, source):
+    self.debugPrint('Setting update flag for '+source+' in source database', 4, 'sourceDB')
+    (checksum, mtime, timestamp, dependencies, updated) = self[source]
+    self[source] = (checksum, mtime, timestamp, dependencies, 1)
+
   def clearUpdateFlag(self, source):
     self.debugPrint('Clearing update flag for '+source+' in source database', 4, 'sourceDB')
     (checksum, mtime, timestamp, dependencies, updated) = self[source]
