@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.20 1996/01/01 01:02:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: shellpc.c,v 1.21 1996/01/26 01:42:02 curfman Exp bsmith $";
 #endif
 
 /*
@@ -20,8 +20,11 @@ typedef struct {
 static int PCApply_Shell(PC pc,Vec x,Vec y)
 {
   PC_Shell *shell;
+  int      ierr;
+
   shell = (PC_Shell *) pc->data;
-  return (*shell->apply)(shell->ctx,x,y);
+  ierr = (*shell->apply)(shell->ctx,x,y); CHKERRQ(ierr);
+  return 0;
 }
 static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 {

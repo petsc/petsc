@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.11 1995/11/25 19:47:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.12 1996/02/13 23:28:56 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,0,0,help);
 
-  PLogEventRegister(&USER_EVENT,"User event      ");
+  PLogEventRegister(&USER_EVENT,"User event      ","Red");
   PLogEventBegin(USER_EVENT,0,0,0,0);
     icount = 0;
     for (i=0; i<imax; i++) icount++;

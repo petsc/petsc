@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.54 1996/02/13 18:30:23 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.55 1996/02/15 02:05:56 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -745,6 +745,9 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   *flg = DIFFERENT_NONZERO_PATTERN;
   ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP); CHKERRQ(ierr);
   PLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);
+  /* make sure user returned a correct Jacobian and preconditioner */
+  PETSCVALIDHEADERSPECIFIC(*A,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(*B,MAT_COOKIE);  
   return 0;
 }
 

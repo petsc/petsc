@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.31 1996/02/08 18:26:46 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.32 1996/02/19 03:50:47 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -67,7 +67,10 @@ static int PCDestroy_ICC(PetscObject obj)
 static int PCApply_ICC(PC pc,Vec x,Vec y)
 {
   PC_ICC *icc = (PC_ICC *) pc->data;
-  return MatSolve(icc->fact,x,y);
+  int    ierr;
+
+  ierr = MatSolve(icc->fact,x,y); CHKERRQ(ierr);
+  return 0;  
 }
 
 static int PCApplySymmLeft_ICC(PC pc,Vec x,Vec y)

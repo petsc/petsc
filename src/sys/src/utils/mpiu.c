@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.34 1996/01/24 05:45:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.35 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -191,10 +191,10 @@ int MPIU_Seq_end(MPI_Comm comm,int ng )
   /* Send to the first process in the next group OR to the first process
      in the processor set */
   if ( (lidx % ng) == ng - 1 || lidx == np - 1) {
-    MPI_Send( (void*)0, 0, MPI_INT, (lidx + 1) % np, 0, local_comm );
+    MPI_Send( 0, 0, MPI_INT, (lidx + 1) % np, 0, local_comm );
   }
   if (lidx == 0) {
-    MPI_Recv( (void*)0, 0, MPI_INT, np-1, 0, local_comm, &status );
+    MPI_Recv( 0, 0, MPI_INT, np-1, 0, local_comm, &status );
   }
   return 0;
 }

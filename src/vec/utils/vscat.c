@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.53 1996/01/19 21:15:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.54 1996/01/26 04:32:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -368,7 +368,7 @@ int StoPScatterCreate(int,int *,int,int *,Vec,VecScatter);
 int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter ctx;
-  int        len,size; 
+  int        len,size,cando,islocal,totalv; 
   MPI_Comm   comm = xin->comm;
 
   /* next 2 lines insure that we use parallel comm if it exists */
@@ -381,6 +381,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   PLogObjectMemory(ctx,sizeof(struct _VecScatter));
   ctx->inuse = 0;
 
+  /* ---------------------------------------------------------------------------*/
   if (xin->type == VECSEQ && yin->type == VECSEQ) {
     if (ix->type == IS_SEQ && iy->type == IS_SEQ){
       int                nx,ny,*idx,*idy;
@@ -479,11 +480,13 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       SETERRQ(1,"VecScatterCreate:Cannot generate such a scatter context yet");
     }
   }
+  /* ---------------------------------------------------------------------------*/
   if (xin->type == VECMPI && yin->type == VECSEQ) {
+    islocal = 0;
     /* special case extracting (subset of) local portion */ 
     if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
       Vec_MPI            *x = (Vec_MPI *)xin->data;
-      int                nx,ny,to_first,to_step,from_first,from_step,islocal,cando;
+      int                nx,ny,to_first,to_step,from_first,from_step;
       int                start = x->ownership[x->rank], end = x->ownership[x->rank+1];
       VecScatter_Stride  *from,*to;
 
@@ -493,7 +496,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (ix->min >= start && ix->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);
       if (cando) {
-        to = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride)); CHKPTRQ(to);
+        to = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride));CHKPTRQ(to);
         to->n = nx; to->first = to_first; to->step = to_step;
         from = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride));CHKPTRQ(from);
         PLogObjectMemory(ctx,2*sizeof(VecScatter_Stride));
@@ -508,25 +511,25 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       }
     }
     else {
-      int cando,islocal = 0;
-      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
+      MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);
     }
     /* test for special case of all processors getting entire vector */
+    totalv = 0;
     if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
       Vec_MPI             *x = (Vec_MPI *)xin->data;
-      int                 i,nx,ny,to_first,to_step,from_first,from_step,totalv,cando,*count;
+      int                 i,nx,ny,to_first,to_step,from_first,from_step,*count;
       VecScatter_MPIToAll *sto;
 
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetLocalSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
       if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
-      if (from_first==0 && from_step==1 && from_first==to_first && from_step==to_step) {
+      if (from_first==0 && from_step==1 && from_first==to_first && from_step==to_step){
         totalv = 1; 
       } else totalv = 0;
       MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);
 
       if (cando) {
-        sto = (VecScatter_MPIToAll *) PetscMalloc(sizeof(VecScatter_MPIToAll)); CHKPTRQ(sto);
+        sto = (VecScatter_MPIToAll *) PetscMalloc(sizeof(VecScatter_MPIToAll));CHKPTRQ(sto);
         MPI_Comm_size(ctx->comm,&size);
         count = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(count);
         for ( i=0; i<size; i++ ) {
@@ -546,8 +549,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       }
     }
     else {
-      int cando,totalv = 0;
-      MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,yin->comm);
+      MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,xin->comm);
     }
     /* left over general case */
     {
@@ -561,12 +563,14 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       return 0;
     }
   }
+  /* ---------------------------------------------------------------------------*/
   if (xin->type == VECSEQ && yin->type == VECMPI) {
     /* special case local copy portion */ 
+    islocal = 0;
     if (ix->type == IS_STRIDE_SEQ && iy->type == IS_STRIDE_SEQ){
       Vec_MPI            *y = (Vec_MPI *)yin->data;
-      int                nx,ny,to_first,to_step,from_step, start = y->ownership[y->rank];
-      int                end = y->ownership[y->rank+1],islocal,cando,from_first;
+      int                nx,ny,to_first,to_step,from_step,start=y->ownership[y->rank];
+      int                end = y->ownership[y->rank+1],from_first;
       VecScatter_Stride  *from,*to;
 
       ISGetLocalSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
@@ -575,7 +579,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (iy->min >= start && iy->max < end ) islocal = 1; else islocal = 0;
       MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
       if (cando) {
-        to = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride)); CHKPTRQ(to);
+        to = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride));CHKPTRQ(to);
         to->n = nx; to->first = to_first-start; to->step = to_step;
         from = (VecScatter_Stride *) PetscMalloc(sizeof(VecScatter_Stride));CHKPTRQ(from);
         PLogObjectMemory(ctx,2*sizeof(VecScatter_Stride));
@@ -590,9 +594,9 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       }
     }
     else {
-      int cando,islocal = 0;
       MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,yin->comm);
     }
+    /* general case */
     {
       int ierr,nx,ny,*idx,*idy;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.21 1996/01/11 20:13:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.22 1996/02/08 18:26:34 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -55,8 +55,8 @@ static int PCSetUp_Jacobi(PC pc)
 static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
-
-  VecPMult(x,jac->diag,y);
+  int       ierr;
+  ierr = VecPMult(x,jac->diag,y); CHKERRQ(ierr);
   return 0;
 }
 

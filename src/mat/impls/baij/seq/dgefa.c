@@ -9,7 +9,8 @@
 int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
 {
     int     a_offset, i__1, i__2, i__3, kp1, nm1, j, k, l,ll;
-    Scalar  t,*aa,tmp,max,*ax,*ay;
+    Scalar  t,*aa,*ax,*ay;
+    double  tmp,max;
 
 /*     gaussian elimination with partial pivoting */
 

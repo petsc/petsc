@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.19 1996/02/27 14:52:12 balay Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.20 1996/02/27 14:55:00 balay Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -52,20 +52,20 @@ static int PCSetUp_ASM(PC pc)
     n_local      = osm->n_local;
     n_local_true = osm->n_local_true;  
     if( !osm->is){ /* build the index sets */
-      osm->is    = (IS *) PetscMalloc( n_local_true*sizeof(IS **) ); CHKPTRQ(osm->is);
+      osm->is    = (IS *) PetscMalloc( n_local_true*sizeof(IS **) );CHKPTRQ(osm->is);
       MatGetOwnershipRange(pc->pmat,&start_val,&end_val);
       sz    = end_val - start_val;
       start = start_val;
       for ( i=0; i<n_local_true; i++){
         size     = sz/n_local_true + (( sz % n_local_true) > i);
-        ierr     = ISCreateStrideSeq(MPI_COMM_SELF,size,start,1,&isl); CHKERRQ(ierr);
+        ierr     = ISCreateStrideSeq(MPI_COMM_SELF,size,start,1,&isl);CHKERRQ(ierr);
         start    += size;
         osm->is[i] = isl;
       }
       osm->is_flg = PETSC_TRUE;
     }
 
-    osm->sles = (SLES *) PetscMalloc(n_local*sizeof(SLES **)); CHKPTRQ(osm->sles);
+    osm->sles = (SLES *) PetscMalloc(n_local_true*sizeof(SLES **));CHKPTRQ(osm->sles);
     osm->scat = (VecScatter *) PetscMalloc(n_local*sizeof(VecScatter **));CHKPTRQ(osm->scat);
     osm->x    = (Vec *) PetscMalloc(2*n_local*sizeof(Vec **)); CHKPTRQ(osm->x);
     osm->y    = osm->x + n_local;
@@ -91,14 +91,12 @@ static int PCSetUp_ASM(PC pc)
       ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&isl); CHKERRQ(ierr);
       ierr = VecScatterCreate(pc->vec,isl,osm->x[i],isl,&osm->scat[i]); CHKERRQ(ierr);
       ierr = ISDestroy(isl); CHKERRQ(ierr);   
-      ierr = MatCreateSeqAIJ(MPI_COMM_SELF,0,PETSC_NULL,0,PETSC_NULL,&osm->pmat[i]);CHKERRQ(ierr); 
     }
 
     /* 
-       Create the local solvers, we create SLES objects even for "fake" local subdomains
-       simply to simplify the loops in the code for the actual solves
+       Create the local solvers.
     */
-    for ( i=0; i<n_local; i++ ) {
+    for ( i=0; i<n_local_true; i++ ) {
       ierr = SLESCreate(MPI_COMM_SELF,&sles); CHKERRQ(ierr);
       PLogObjectParent(pc,sles);
       ierr = SLESGetKSP(sles,&subksp); CHKERRQ(ierr);
@@ -129,9 +127,9 @@ static int PCSetUp_ASM(PC pc)
 static int PCSetUpOnBlocks_ASM(PC pc)
 {
   PC_ASM *osm = (PC_ASM *) pc->data;
-  int    i,n_local = osm->n_local,ierr;
+  int    i,ierr;
 
-  for ( i=0; i<n_local; i++ ) {
+  for ( i=0; i<osm->n_local_true; i++ ) {
     ierr = SLESSetUp(osm->sles[i],osm->x[i],osm->y[i]);CHKERRQ(ierr);
   }
   return 0;
@@ -140,16 +138,23 @@ static int PCSetUpOnBlocks_ASM(PC pc)
 static int PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM *osm = (PC_ASM *) pc->data;
-  int    i,n_local = osm->n_local,ierr,its;
+  int    i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr,its;
   Scalar zero = 0.0;
 
   for ( i=0; i<n_local; i++ ) {
     ierr = VecScatterBegin(x,osm->x[i],INSERT_VALUES,SCATTER_ALL,osm->scat[i]);CHKERRQ(ierr);
   }
   ierr = VecSet(&zero,y); CHKERRQ(ierr);
-  for ( i=0; i<n_local; i++ ) {
+  /* do the local solves */
+  for ( i=0; i<n_local_true; i++ ) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,SCATTER_ALL,osm->scat[i]);CHKERRQ(ierr);
     ierr = SLESSolve(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
+    ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,(ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),
+                           osm->scat[i]);CHKERRQ(ierr);
+  }
+  /* handle the rest of the scatters that do not have local solves */
+  for ( i=n_local_true; i<n_local; i++ ) {
+    ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,SCATTER_ALL,osm->scat[i]);CHKERRQ(ierr);
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,(ScatterMode)(SCATTER_ALL|SCATTER_REVERSE),
                            osm->scat[i]);CHKERRQ(ierr);
   }
@@ -164,17 +169,19 @@ static int PCDestroy_ASM(PetscObject obj)
 {
   PC     pc = (PC) obj;
   PC_ASM *osm = (PC_ASM *) pc->data;
-  int    i,n_local = osm->n_local,ierr;
+  int    i, ierr;
 
-  for ( i=0; i<n_local; i++ ) {
+  for ( i=0; i<osm->n_local; i++ ) {
     ierr = VecScatterDestroy(osm->scat[i]);
     ierr = VecDestroy(osm->x[i]);
     ierr = VecDestroy(osm->y[i]);
+  }
+  for ( i=0; i<osm->n_local_true; i++ ) {
     ierr = MatDestroy(osm->pmat[i]);
     ierr = SLESDestroy(osm->sles[i]);
   }
   if (osm->is_flg) {
-     for ( i=0; i<n_local; i++ ) ISDestroy(osm->is[i]);
+     for ( i=0; i<osm->n_local_true; i++ ) ISDestroy(osm->is[i]);
      PetscFree(osm->is);
   }
   PetscFree(osm->sles);
@@ -188,7 +195,7 @@ static int PCDestroy_ASM(PetscObject obj)
 static int PCPrintHelp_ASM(PC pc,char *p)
 {
   MPIU_printf(pc->comm," Options for PCASM preconditioner:\n");
-  MPIU_printf(pc->comm," %spc_asm_blocks blks: subdomain blocks per processor\n",p);
+  MPIU_printf(pc->comm," %spc_asm_blocks blks: total subdomain blocks\n",p);
   MPIU_printf(pc->comm, " %spc_asm_overlap ovl: amount of overlap between subdomains\n",p); 
   MPIU_printf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (i.e., %ssub_ksp_type\
@@ -201,7 +208,7 @@ static int PCSetFromOptions_ASM(PC pc)
   int  blocks,flg, ovl,ierr;
 
   ierr = OptionsGetInt(pc->prefix,"-pc_asm_blocks",&blocks,&flg); CHKERRQ(ierr);
-  if (flg) {ierr = PCASMSetSubdomains(pc,blocks,PETSC_NULL); CHKERRQ(ierr); }
+  if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL); CHKERRQ(ierr); }
   ierr = OptionsGetInt(pc->prefix,"-pc_asm_overlap", &ovl, &flg); CHKERRQ(ierr);
   if (flg) { ierr = PCASMSetOverlap( pc, ovl); CHKERRQ(ierr); }
 
@@ -232,7 +239,7 @@ int PCCreate_ASM(PC pc)
 
 /*@
 
-     PCASMSetSubdomains - Sets the subdomains for this processor for the 
+     PCASMSetLocalSubdomains - Sets the subdomains for this processor for the 
            additive Schwarz preconditioner. Note: all or no processors in the
            pc must call this. 
 
@@ -242,17 +249,53 @@ int PCCreate_ASM(PC pc)
 .   is - the index sets that define the subdomains for this processor
          or PETSC_NULL for PETSc to determine. 
 @*/
-int PCASMSetSubdomains(PC pc, int n, IS *is)
+int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 {
   PC_ASM *osm;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCASM) return 0;  
-
+  if (n <= 0) SETERRQ(1,"PCASMSetLocalSubdomains:Each process must have 1+ blocks");
   osm               = (PC_ASM *) pc->data;
   osm->n_local_true = n;
   osm->is           = is;
   return 0;
 }
+
+/*@
+
+     PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
+           additive Schwarz preconditioner. Note: all or no processors in the
+           pc must call this. 
+
+  Input Parameters:
+.   pc - the preconditioner context
+.   n - the number of subdomains for all processor. 
+.   is - the index sets that define the subdomains for all processor
+         or PETSC_NULL for PETSc to determine. 
+@*/
+int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
+{
+  PC_ASM *osm;
+  int    rank,size;
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  if (pc->type != PCASM) return 0;  
+
+  if (is) SETERRQ(1,"PCASMSetTotalSubdomains:Use PCASMSetLocalSubdomains to \
+set specific index sets\n they cannot be set globally yet.");
+
+  osm               = (PC_ASM *) pc->data;
+  /*
+     Split the subdomains equally amoung all processors 
+  */
+  MPI_Comm_rank(pc->comm,&rank);
+  MPI_Comm_size(pc->comm,&size);
+  osm->n_local_true = N/size + ((N % size) > rank);
+  if (osm->n_local_true <= 0) 
+    SETERRQ(1,"PCASMSetTotalSubdomains:Each process must have 1+ blocks");
+  osm->is           = 0;
+  return 0;
+}
+
 /*@
 
      PCASMSetOverlap - Sets the overlap between a pair of subdomains for the

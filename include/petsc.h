@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.100 1996/02/29 22:33:45 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.101 1996/03/01 01:53:04 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -161,9 +161,10 @@ extern int PetscSetFPTrap(int);
 #include "phead.h"
 #include "plog.h"
 
-#define PetscBarrier(MPI_Comm comm) \
-  {PLogEventBegin(Petsc_Barrier,0,0,0,0); \
-   MPI_Barrier(comm); \
-   PLogEventEnd(Petsc_Barrier,0,0,0,0);}
+#define PetscBarrier(A) \
+  {PETSCVALIDHEADER(A); \
+   PLogEventBegin(Petsc_Barrier,A,0,0,0); \
+   MPI_Barrier(((PetscObject)A)->comm); \
+   PLogEventEnd(Petsc_Barrier,A,0,0,0);}
 
 #endif

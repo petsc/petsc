@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.70 1996/01/26 04:34:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.71 1996/02/13 23:29:39 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -85,7 +85,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   Scalar       *rvalues,*svalues;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce((void *) &mbd->insertmode,(void *) &addv,1,MPI_INT,MPI_BOR,comm);
+  MPI_Allreduce(&mbd->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
     "MatAssemblyBegin_MPIBDiag:Cannot mix adds/inserts on different procs");
   }
@@ -107,9 +107,9 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 
   /* inform other processors of number of messages and max length*/
   work = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce((void *) procs,(void *) work,size,MPI_INT,MPI_SUM,comm);
+  MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);
   nreceives = work[rank]; 
-  MPI_Allreduce((void *) nprocs,(void *) work,size,MPI_INT,MPI_MAX,comm);
+  MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);
   nmax = work[rank];
   PetscFree(work);
 
@@ -128,7 +128,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));
   CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
-    MPI_Irecv((void *)(rvalues+3*nmax*i),3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
+    MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
   }
 
@@ -154,7 +154,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   count = 0;
   for ( i=0; i<size; i++ ) {
     if (procs[i]) {
-      MPI_Isend((void*)(svalues+3*starts[i]),3*nprocs[i],MPIU_SCALAR,i,tag,
+      MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,
                 comm,send_waits+count++);
     }
   }
@@ -228,7 +228,7 @@ static int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
     tmp[mlocal->diag[i] + mbd->brstart + Mblock] = 1;
   }
   PetscFree(tmp);
-  MPI_Allreduce((void*)tmp,(void*)tmp2,len,MPI_INT,MPI_SUM,mat->comm);
+  MPI_Allreduce(tmp,tmp2,len,MPI_INT,MPI_SUM,mat->comm);
   ict = 0;
   for (i=0; i<len; i++) {
     if (tmp2[i]) {
@@ -295,9 +295,9 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
 
   /* inform other processors of number of messages and max length*/
   work = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce((void *) procs,(void *) work,size,MPI_INT,MPI_SUM,comm);
+  MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);
   nrecvs = work[rank]; 
-  MPI_Allreduce((void *) nprocs,(void *) work,size,MPI_INT,MPI_MAX,comm);
+  MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);
   nmax = work[rank];
   PetscFree(work);
 
@@ -307,7 +307,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   recv_waits = (MPI_Request *) PetscMalloc((nrecvs+1)*sizeof(MPI_Request));
   CHKPTRQ(recv_waits);
   for ( i=0; i<nrecvs; i++ ) {
-    MPI_Irecv((void *)(rvalues+nmax*i),nmax,MPI_INT,MPI_ANY_SOURCE,tag,
+    MPI_Irecv(rvalues+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
   }
 
@@ -331,7 +331,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   count = 0;
   for ( i=0; i<size; i++ ) {
     if (procs[i]) {
-      MPI_Isend((void*)(svalues+starts[i]),nprocs[i],MPI_INT,i,tag,
+      MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,
                 comm,send_waits+count++);
     }
   }
@@ -449,10 +449,10 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,int *nz,
   if (flag == MAT_LOCAL) {
     *nz = isend[0]; *nzalloc = isend[1]; *mem = isend[2];
   } else if (flag == MAT_GLOBAL_MAX) {
-    MPI_Allreduce((void *) isend,(void *) irecv,3,MPI_INT,MPI_MAX,matin->comm);
+    MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_MAX,matin->comm);
     *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
   } else if (flag == MAT_GLOBAL_SUM) {
-    MPI_Allreduce((void *) isend,(void *) irecv,3,MPI_INT,MPI_SUM,matin->comm);
+    MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_SUM,matin->comm);
     *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
   }
   return 0;
@@ -698,7 +698,7 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
 #endif
       }
     }
-    MPI_Allreduce((void*)&sum,(void*)norm,1,MPI_DOUBLE,MPI_SUM,A->comm);
+    MPI_Allreduce(&sum,norm,1,MPI_DOUBLE,MPI_SUM,A->comm);
     *norm = sqrt(*norm);
     PLogFlops(2*mbd->n*mbd->m);
   }
@@ -708,7 +708,7 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
   else if (type == NORM_INFINITY) { /* max row norm */
     double normtemp;
     ierr = MatNorm(mbd->A,type,&normtemp); CHKERRQ(ierr);
-    MPI_Allreduce((void*)&normtemp,(void*)norm,1,MPI_DOUBLE,MPI_MAX,A->comm);
+    MPI_Allreduce(&normtemp,norm,1,MPI_DOUBLE,MPI_MAX,A->comm);
   }
   return 0;
 }

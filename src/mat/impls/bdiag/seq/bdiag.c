@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.88 1996/02/01 18:53:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.89 1996/02/13 23:29:35 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1024,6 +1024,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
           fprintf(fd,"%d %d  %18.16e\n", i+1, col[j]+1, val[j]);
 #endif
       }
+      ierr = MatRestoreRow(A,i,&nz,&col,&val); CHKERRQ(ierr);
     }
     fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
   } 

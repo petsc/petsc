@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.45 1996/01/28 14:29:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.46 1996/02/13 23:30:02 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -203,8 +203,9 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
    for (j=0; j<nz; j++) {
      if (vwork[j] != 0) {vw2[ict] = vwork[j]; cw2[ict] = cwork[j]; ict++;}
    }
-   if (ict) 
-     {ierr = MatSetValues(*B,1,&i,ict,cw2,vw2,INSERT_VALUES); CHKERRQ(ierr);}
+   if (ict) {
+     ierr = MatSetValues(*B,1,&i,ict,cw2,vw2,INSERT_VALUES); CHKERRQ(ierr);
+   }
    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
   }
   PetscFree(cw2); PetscFree(vw2);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.41 1996/01/23 00:18:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.42 1996/01/26 04:33:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -51,8 +51,11 @@ static int PCMult_Eisenstat(void *ptr,Vec b,Vec x)
 static int PCApply_Eisenstat(PC ptr,Vec x,Vec y)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *) ptr->data;
-  if (eis->usediag)  return VecPMult(x,eis->diag,y); 
-  else return VecCopy(x,y); 
+  int          ierr;
+
+  if (eis->usediag)  {ierr = VecPMult(x,eis->diag,y); CHKERRQ(ierr);}
+  else               {ierr = VecCopy(x,y);  CHKERRQ(ierr);}
+  return 0; 
 }
 
 /* this cheats and looks inside KSP to determine if nonzero initial guess*/

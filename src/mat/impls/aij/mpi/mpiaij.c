@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.128 1996/02/27 23:21:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.129 1996/02/28 00:12:20 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -1088,7 +1088,10 @@ static int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
   return 0;
 }
 
-static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
+extern int MatGetRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
+extern int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,Scalar**);
+
+int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   Scalar     *vworkA, *vworkB, **pvA, **pvB,*v_p;
@@ -1121,8 +1124,8 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
   if (!v)   {pvA = 0; pvB = 0;}
   if (!idx) {pcA = 0; if (!v) pcB = 0;}
-  ierr = MatGetRow(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
-  ierr = MatGetRow(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
+  ierr = MatGetRow_SeqAIJ(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
+  ierr = MatGetRow_SeqAIJ(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
   nztot = nzA + nzB;
 
   cmap  = mat->garray;
@@ -1160,12 +1163,12 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
     else {*idx = 0; *v=0;}
   }
   *nz = nztot;
-  ierr = MatRestoreRow(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
-  ierr = MatRestoreRow(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
+  ierr = MatRestoreRow_SeqAIJ(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
+  ierr = MatRestoreRow_SeqAIJ(mat->B,lrow,&nzB,pcB,pvB); CHKERRQ(ierr);
   return 0;
 }
 
-static int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
+int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   if (aij->getrowactive == PETSC_FALSE) {
@@ -1203,7 +1206,7 @@ static int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
         sum += (*v)*(*v); v++;
 #endif
       }
-      MPI_Allreduce((void*)&sum,(void*)norm,1,MPI_DOUBLE,MPI_SUM,mat->comm);
+      MPI_Allreduce(&sum,norm,1,MPI_DOUBLE,MPI_SUM,mat->comm);
       *norm = sqrt(*norm);
     }
     else if (type == NORM_1) { /* max column norm */
@@ -1221,7 +1224,7 @@ static int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
       for ( j=0; j<bmat->nz; j++ ) {
         tmp[garray[*jj++ + shift]] += PetscAbsScalar(*v); v++;
       }
-      MPI_Allreduce((void*)tmp,(void*)tmp2,aij->N,MPI_DOUBLE,MPI_SUM,mat->comm);
+      MPI_Allreduce(tmp,tmp2,aij->N,MPI_DOUBLE,MPI_SUM,mat->comm);
       for ( j=0; j<aij->N; j++ ) {
         if (tmp2[j] > *norm) *norm = tmp2[j];
       }
@@ -1241,7 +1244,7 @@ static int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
         }
         if (sum > ntemp) ntemp = sum;
       }
-      MPI_Allreduce((void*)&ntemp,(void*)norm,1,MPI_DOUBLE,MPI_MAX,mat->comm);
+      MPI_Allreduce(&ntemp,norm,1,MPI_DOUBLE,MPI_MAX,mat->comm);
     }
     else {
       SETERRQ(1,"MatNorm_MPIAIJ:No support for two norm");

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.27 1996/01/26 04:33:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.28 1996/02/01 18:52:35 curfman Exp bsmith $";
 #endif
 
 /*
@@ -88,8 +88,7 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   Scalar       *rvalues,*svalues;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce((void *) &mdn->insertmode,(void *) &addv,1,MPI_INT,
-                MPI_BOR,comm);
+  MPI_Allreduce(&mdn->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
     "MatAssemblyBegin_MPIDense:Cannot mix adds/inserts on different procs");
     }
@@ -111,9 +110,9 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 
   /* inform other processors of number of messages and max length*/
   work = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce((void *) procs,(void *) work,size,MPI_INT,MPI_SUM,comm);
+  MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);
   nreceives = work[rank]; 
-  MPI_Allreduce((void *) nprocs,(void *) work,size,MPI_INT,MPI_MAX,comm);
+  MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);
   nmax = work[rank];
   PetscFree(work);
 
@@ -132,7 +131,7 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));
   CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
-    MPI_Irecv((void *)(rvalues+3*nmax*i),3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
+    MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
   }
 
@@ -158,7 +157,7 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   count = 0;
   for ( i=0; i<size; i++ ) {
     if (procs[i]) {
-      MPI_Isend((void*)(svalues+3*starts[i]),3*nprocs[i],MPIU_SCALAR,i,tag,
+      MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,
                 comm,send_waits+count++);
     }
   }
@@ -670,7 +669,7 @@ static int MatNorm_MPIDense(Mat A,NormType type,double *norm)
         sum += (*v)*(*v); v++;
 #endif
       }
-      MPI_Allreduce((void*)&sum,(void*)norm,1,MPI_DOUBLE,MPI_SUM,A->comm);
+      MPI_Allreduce(&sum,norm,1,MPI_DOUBLE,MPI_SUM,A->comm);
       *norm = sqrt(*norm);
       PLogFlops(2*mat->n*mat->m);
     }
@@ -686,7 +685,7 @@ static int MatNorm_MPIDense(Mat A,NormType type,double *norm)
           tmp[j] += PetscAbsScalar(*v);  v++;
         }
       }
-      MPI_Allreduce((void*)tmp,(void*)tmp2,mdn->N,MPI_DOUBLE,MPI_SUM,A->comm);
+      MPI_Allreduce(tmp,tmp2,mdn->N,MPI_DOUBLE,MPI_SUM,A->comm);
       for ( j=0; j<mdn->N; j++ ) {
         if (tmp2[j] > *norm) *norm = tmp2[j];
       }
@@ -696,7 +695,7 @@ static int MatNorm_MPIDense(Mat A,NormType type,double *norm)
     else if (type == NORM_INFINITY) { /* max row norm */
       double ntemp;
       ierr = MatNorm(mdn->A,type,&ntemp); CHKERRQ(ierr);
-      MPI_Allreduce((void*)&ntemp,(void*)norm,1,MPI_DOUBLE,MPI_MAX,A->comm);
+      MPI_Allreduce(&ntemp,norm,1,MPI_DOUBLE,MPI_MAX,A->comm);
     }
     else {
       SETERRQ(1,"MatNorm_MPIDense:No support for two norm");

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.16 1995/11/09 22:26:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.17 1995/12/06 00:23:44 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -56,9 +56,9 @@ int VecSum(Vec v,Scalar *sum)
     lsum += x[i];
   }
 #if defined(PETSC_COMPLEX)
-  MPI_Allreduce((void *) &lsum,(void *)sum,2,MPI_DOUBLE,MPI_SUM,v->comm);
+  MPI_Allreduce(&lsum,sum,2,MPI_DOUBLE,MPI_SUM,v->comm);
 #else
-  MPI_Allreduce((void *) &lsum,(void *)sum,1,MPI_DOUBLE,MPI_SUM,v->comm);
+  MPI_Allreduce(&lsum,sum,1,MPI_DOUBLE,MPI_SUM,v->comm);
 #endif
   return 0;
 }

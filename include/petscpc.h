@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.53 1996/02/08 18:28:49 bsmith Exp curfman $ */
+/* $Id: pc.h,v 1.54 1996/02/08 19:37:51 curfman Exp bsmith $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -22,6 +22,7 @@ typedef enum { PC_LEFT, PC_RIGHT, PC_SYMMETRIC } PCSide;
 extern int    PCCreate(MPI_Comm,PC*);
 extern int    PCSetType(PC,PCType);
 extern int    PCSetUp(PC);
+extern int    PCSetUpOnBlocks(PC);
 extern int    PCApply(PC,Vec,Vec);
 extern int    PCApplySymmLeft(PC,Vec,Vec);
 extern int    PCApplySymmRight(PC,Vec,Vec);
@@ -91,7 +92,8 @@ extern int PCILUSetLevels(PC,int);
 extern int PCEisenstatUseDiagonalScaling(PC);
 
 extern int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
-extern int PCASMSetSubdomains(PC, int, IS *);
+extern int PCASMSetLocalSubdomains(PC, int, IS *);
+extern int PCASMSetTotalSubdomains(PC, int, IS *);
 extern int PCASMSetOverlap(PC, int);
 #endif
 

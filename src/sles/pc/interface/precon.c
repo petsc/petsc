@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.72 1996/02/15 17:23:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.73 1996/02/19 03:50:33 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -354,6 +354,27 @@ int PCSetUp(PC pc)
 }
 
 /*@
+   PCSetUpOnBlocks - For block Jacobi, Gauss-Seidel and overlapping Schwarz 
+        block methods sets up the preconditioner for each block.
+
+   Input parameters:
+.  pc - the preconditioner context
+
+.keywords: PC, setup
+
+.seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
+@*/
+int PCSetUpOnBlocks(PC pc)
+{
+  int ierr;
+  if (!pc->setuponblocks) return 0;
+  PLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);
+  ierr = (*pc->setuponblocks)(pc); CHKERRQ(ierr);
+  PLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0);
+  return 0;
+}
+
+/*@
    PCSetOperators - Sets the matrix associated with the linear system and 
    a (possibly) different one associated with the preconditioner.
 
@@ -393,19 +414,13 @@ $      Pmat does not have the same nonzero structure.
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  pc->mat         = Amat;
-  if (pc->setupcalled == 0 && !Pmat) {
-    pc->pmat = Amat;
-  }
-  else if (pc->setupcalled == 0) {
-    pc->pmat = Pmat;
-  }
-  else if (flag == SAME_PRECONDITIONER) {
-    pc->pmat = 0;
-  }
-  else {
-    pc->pmat        = Pmat;
-    pc->setupcalled = 1;  
+  PETSCVALIDHEADERSPECIFIC(Amat,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(Pmat,MAT_COOKIE);
+
+  pc->mat  = Amat;
+  pc->pmat = Pmat;
+  if (pc->setupcalled == 2 && flag != SAME_PRECONDITIONER) {
+    pc->setupcalled = 1;
   }
   pc->flag = flag;
   return 0;

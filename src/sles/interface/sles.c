@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.54 1996/02/08 20:41:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.55 1996/02/26 19:00:24 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -279,7 +279,6 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 
   PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   if (b == x) SETERRQ(1,"SLESSolve:b and x must be different vectors");
-  PLogEventBegin(SLES_Solve,sles,b,x,0);
   ksp = sles->ksp; pc = sles->pc;
   KSPSetRhs(ksp,b);
   KSPSetSolution(ksp,x);
@@ -287,6 +286,8 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   if (!sles->setupcalled) {
     ierr = SLESSetUp(sles,b,x); CHKERRQ(ierr);
   }
+  ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
+  PLogEventBegin(SLES_Solve,sles,b,x,0);
   ierr = PCPreSolve(pc,ksp); CHKERRQ(ierr);
   ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
   ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
@@ -385,8 +386,30 @@ int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 {
   PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
   PETSCVALIDHEADERSPECIFIC(Amat,MAT_COOKIE);
-  if (Pmat) {PETSCVALIDHEADERSPECIFIC(Pmat,MAT_COOKIE);}
+  PETSCVALIDHEADERSPECIFIC(Pmat,MAT_COOKIE);
   PCSetOperators(sles->pc,Amat,Pmat,flag);
   sles->setupcalled = 0;  /* so that next solve call will call setup */
+  return 0;
+}
+
+/*@
+   SLESSetUpOnBlocks - For block Jacobi, Gauss-Seidel and overlapping Schwarz 
+        block methods sets up the preconditioner for each block. Same as 
+        calling PCSetUpOnBlocks() on the PC inside the SLES.
+
+   Input parameters:
+.  pc - the preconditioner context
+
+.keywords: PC, setup
+
+.seealso: PCSetUpOnBlocks(), SLESSetUp(), PCSetUp()
+@*/
+int SLESSetUpOnBlocks(SLES sles)
+{
+  int ierr;
+  PC  pc;
+
+  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
+  ierr = PCSetUpOnBlocks(pc); CHKERRQ(ierr);
   return 0;
 }

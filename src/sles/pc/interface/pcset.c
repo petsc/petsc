@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.35 1996/01/12 03:52:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.36 1996/01/12 22:06:20 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -42,6 +42,7 @@ int PCSetType(PC ctx,PCType type)
     if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
     else {if (ctx->data) PetscFree(ctx->data);}
     ctx->data = 0;
+    ctx->setupcalled = 0;
   }
   /* Get the function pointers for the method requested */
   if (!__PCList) {PCRegisterAll();}

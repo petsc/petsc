@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.39 1996/02/13 20:28:51 curfman Exp curfman $ */
+/* $Id: pdvec.c,v 1.40 1996/02/19 22:36:08 curfman Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -384,7 +384,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   MPI_Request *send_waits,*recv_waits;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,MPI_BOR,comm);
+  MPI_Allreduce(&x->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { SETERRQ(1,
     "VecAssemblyBegin_MPI:Some processors inserted values while others added");
   }
@@ -406,9 +406,9 @@ static int VecAssemblyBegin_MPI(Vec xin)
 
   /* inform other processors of number of messages and max length*/
   work = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
-  MPI_Allreduce((void *) procs,(void *) work,size,MPI_INT,MPI_SUM,comm);
+  MPI_Allreduce(procs, work,size,MPI_INT,MPI_SUM,comm);
   nreceives = work[rank]; 
-  MPI_Allreduce((void *) nprocs,(void *) work,size,MPI_INT,MPI_MAX,comm);
+  MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);
   nmax = work[rank];
   PetscFree(work);
 
@@ -426,7 +426,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));
   CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
-    MPI_Irecv((void *)(rvalues+2*nmax*i),2*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
+    MPI_Irecv(rvalues+2*nmax*i,2*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
   }
 
@@ -450,7 +450,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   count = 0;
   for ( i=0; i<size; i++ ) {
     if (procs[i]) {
-      MPI_Isend((void*)(svalues+2*starts[i]),2*nprocs[i],MPIU_SCALAR,i,tag,
+      MPI_Isend(svalues+2*starts[i],2*nprocs[i],MPIU_SCALAR,i,tag,
                 comm,send_waits+count++);
     }
   }
