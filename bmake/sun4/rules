@@ -42,7 +42,7 @@ shared: chkopts_basic
 	for LIBNAME in $(SHLIBS) ; \
 	do \
 	  $(AR) x ../$$LIBNAME.a ;\
-	  gcc -fPIC -shared  *.o  -o ../$$LIBNAME.$(SLSUFFIX) ; \
+	  gcc $(COPTFLAGS) -fPIC -shared  *.o  -o ../$$LIBNAME.$(SLSUFFIX) ; \
 	  $(RM) -f * ; \
 	done ;\
 	cd ../ ; \
