@@ -160,11 +160,9 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
 
 #else /* not using dynamic libraries */
 
-EXTERN PetscErrorCode PetscInitializePackage(char *);
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitalize_DynamicLibraries"
-PetscErrorCode PetscInitialize_DynamicLibraries(void)
+PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
 {
   PetscErrorCode ierr;
 

@@ -14,7 +14,7 @@
 #include "src/fortran/custom/zpetsc.h" 
 #include "petscsys.h"
 
-extern PetscTruth PetscBeganMPI;
+extern PETSC_DLLEXPORT PetscTruth PetscBeganMPI;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitialize_              PETSCINITIALIZE
@@ -104,16 +104,16 @@ EXTERN_C_BEGIN
 extern void PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 #endif
-extern MPI_Op PetscMaxSum_Op;
+extern PETSC_DLLEXPORT MPI_Op PetscMaxSum_Op;
 
 EXTERN_C_BEGIN
 extern void PetscMaxSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 
-EXTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
-EXTERN PetscErrorCode PetscOptionsCheckInitial_Components(void);
-EXTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
-EXTERN PetscErrorCode PetscLogBegin_Private(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Components(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void);
 
 /*
     Reads in Fortran command line argments and sends them to 
@@ -186,11 +186,11 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 
 /* -----------------------------------------------------------------------------------------------*/
 
-extern MPI_Op PetscADMax_Op;
-extern MPI_Op PetscADMin_Op;
+extern PETSC_DLLEXPORT MPI_Op PetscADMax_Op;
+extern PETSC_DLLEXPORT MPI_Op PetscADMin_Op;
 EXTERN_C_BEGIN
-extern void PetscADMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
-extern void PetscADMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+extern void PETSC_DLLEXPORT PetscADMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+extern void PETSC_DLLEXPORT PetscADMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 
 

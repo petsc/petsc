@@ -49,8 +49,26 @@
 #if !defined(PETSC_TEMPLATE)
 #define PETSC_TEMPLATE
 #endif
-#if !defined(PETSC_DLLEXPORT)
-#define PETSC_DLLEXPORT
+#if !defined(PETSCVEC_DLLEXPORT)
+#define PETSCVEC_DLLEXPORT
+#endif
+#if !defined(PETSCMAT_DLLEXPORT)
+#define PETSCMAT_DLLEXPORT
+#endif
+#if !defined(PETSCDM_DLLEXPORT)
+#define PETSCDM_DLLEXPORT
+#endif
+#if !defined(PETSCKSP_DLLEXPORT)
+#define PETSCKSP_DLLEXPORT
+#endif
+#if !defined(PETSCSNES_DLLEXPORT)
+#define PETSCSNES_DLLEXPORT
+#endif
+#if !defined(PETSCTS_DLLEXPORT)
+#define PETSCTS_DLLEXPORT
+#endif
+#if !defined(PETSCFORTRAN_DLLEXPORT)
+#define PETSCFORTRAN_DLLEXPORT
 #endif
 /* ========================================================================== */
 
@@ -266,12 +284,13 @@ extern PETSC_DLLEXPORT MPI_Comm PETSC_COMM_WORLD;
 M*/
 extern PETSC_DLLEXPORT MPI_Comm PETSC_COMM_SELF;
 
-extern PetscTruth PetscInitializeCalled;
-extern PetscTruth PetscFinalizeCalled;
-EXTERN PetscErrorCode PETSC_DLLEXPORT        PetscSetCommWorld(MPI_Comm);
-EXTERN PetscErrorCode PETSC_DLLEXPORT        PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
-EXTERN PetscErrorCode PETSC_DLLEXPORT        PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT        PetscCommDestroy(MPI_Comm*);
+extern PETSC_DLLEXPORT PetscTruth PetscInitializeCalled;
+extern PETSC_DLLEXPORT PetscTruth PetscFinalizeCalled;
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetCommWorld(MPI_Comm);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm*);
 
 /*MC
    PetscMalloc - Allocates memory
@@ -814,16 +833,16 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSleep(int);
 /*
     Initialization of PETSc
 */
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscInitialize(int*,char***,const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int*,char***,const char[],const char[]);
 PetscPolymorphicSubroutine(PetscInitialize,(int *argc,char ***args),(argc,args,PETSC_NULL,PETSC_NULL))
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscInitializeNoArguments(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscInitialized(PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscFinalized(PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscFinalize(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializeNoArguments(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitialized(PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFinalized(PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void);
 EXTERN PetscErrorCode PetscInitializeFortran(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscGetArgs(int*,char ***);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscEnd(void);
-
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int*,char ***);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEnd(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *); 
 typedef void (**PetscVoidFunction)(void);
 
 /*
@@ -1030,8 +1049,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE*);
     The code here is provided to allow PETSc to work with MPI 1.1
     standard MPI libraries.
 */
-EXTERN PetscErrorCode PETSC_DLLEXPORT  MPICCommToFortranComm(MPI_Comm,int *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  MPIFortranCommToCComm(int,MPI_Comm*);
+EXTERN PetscErrorCode MPICCommToFortranComm(MPI_Comm,int *);
+EXTERN PetscErrorCode MPIFortranCommToCComm(int,MPI_Comm*);
 
 /*
       Simple PETSc parallel IO for ASCII printing

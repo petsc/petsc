@@ -138,7 +138,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogSet(PetscErrorCode (*b)(PetscEvent, int, 
 /*------------------------------------------- Initialization Functions ----------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogBegin_Private"
-PetscErrorCode PetscLogBegin_Private(void) 
+PetscErrorCode PETSC_DLLEXPORT PetscLogBegin_Private(void) 
 {
   static PetscTruth initialized = PETSC_FALSE;
   int               stage;

@@ -3,7 +3,6 @@
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 PetscFList PetscViewerList              = 0;
-extern PetscErrorCode PetscInitializePackage(char*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate" 

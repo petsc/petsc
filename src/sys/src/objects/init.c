@@ -22,9 +22,9 @@
      Indicates if PETSc started up MPI, or it was 
    already started before PETSc was initialized.
 */
-PetscTruth  PetscBeganMPI         = PETSC_FALSE;
-PetscTruth  PetscInitializeCalled = PETSC_FALSE;
-PetscTruth  PetscFinalizeCalled   = PETSC_FALSE;
+PetscTruth  PETSC_DLLEXPORT PetscBeganMPI         = PETSC_FALSE;
+PetscTruth  PETSC_DLLEXPORT PetscInitializeCalled = PETSC_FALSE;
+PetscTruth  PETSC_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
 PetscMPIInt PETSC_DLLEXPORT PetscGlobalRank = -1;
 PetscMPIInt PETSC_DLLEXPORT PetscGlobalSize = -1;
 MPI_Comm    PETSC_DLLEXPORT PETSC_COMM_WORLD = 0;
@@ -370,7 +370,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetHelpVersionFunctions(PetscErrorCode (*hel
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
-PetscErrorCode PetscOptionsCheckInitial_Private(void)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;

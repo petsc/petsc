@@ -28,7 +28,7 @@ PetscErrorCode __gierr = 0;
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Components"
-PetscErrorCode PetscOptionsCheckInitial_Components(void)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Components(void)
 {
   MPI_Comm   comm = PETSC_COMM_WORLD;
   PetscTruth flg1;
@@ -159,7 +159,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[]
 }
 
 /* ----------------------------------------------------------------------------*/
-MPI_Op PetscADMax_Op = 0;
+MPI_Op PETSC_DLLEXPORT PetscADMax_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -187,7 +187,7 @@ void PETSC_DLLEXPORT PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Da
 }
 EXTERN_C_END
 
-MPI_Op PetscADMin_Op = 0;
+MPI_Op PETSC_DLLEXPORT PetscADMin_Op = 0;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
