@@ -4256,7 +4256,7 @@ to guide your development. We give a short summary here.
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
   ierr = DADestroy(da);CHKERRQ(ierr);\\
 \end{verse}
-\findex{DMMGCreate()} \findex{DMMGSolve()} \findex{DMMGGetx()} \findex{DMMGDestroy()} \findex{DMMGSetDM()} \findex{DMMGSetDA()
+\findex{DMMGCreate()} \findex{DMMGSolve()} \findex{DMMGGetx()} \findex{DMMGDestroy()} \findex{DMMGSetDM()} \findex{DMMGSetDA()}
 The option \trl{-dmmg\_ksp\_monitor} \findex{-dmmg_ksp_monitor} 
  causes the DMMG code to print the residual norms for each level of the solver to the screen so that
 the coarse the grid the more indented the print out. The option \trl{-dmmg\_grid\_sequence} \findex{-dmmg_grid_sequence} causes the 
@@ -4272,9 +4272,9 @@ For nonlinear problems one replaces the \trl{DMMGSetSLES()} with
 or the prefered approach
 \begin{verse}
   DMMGSetSNESLocal(DMMG *dmmg,int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),
-     int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),ad_function,ad_mf_function);
+     int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),ad\_function,ad\_mf\_function);
 \end{verse}
-The \trl{ad_function} and \trl{ad_mf_function} are described in the next chapter. \findex{DMMGSetSNES()} \findex{DMMGSetSNESLocal()}
+The \trl{ad\_function} and \trl{ad\_mf\_function} are described in the next chapter. \findex{DMMGSetSNES()} \findex{DMMGSetSNESLocal()}
 See examples \trl{src/snes/examples/tutorials/ex18.c} and \trl{ex19.c} for complete details.
 
 The \trl{localfunction} \trl{x} and \trl{f} arguments are for scalar problems (problems with one degree of freedom per node)

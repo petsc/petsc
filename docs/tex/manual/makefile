@@ -9,7 +9,7 @@ SHELL     = csh
 # Build the entire manual as well as the intro part
 manual.pdf: intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex
 # First build the manual
-	${PDFELATEX} manual >& /dev/null
+	${PDFELATEX} manual
 	bibtex manual
 	${PDFELATEX} manual >& /dev/null
 	makeindex manual
