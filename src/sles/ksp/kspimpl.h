@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.48 2001/01/15 21:47:09 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.49 2001/02/05 21:18:58 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -18,8 +18,8 @@ struct _KSPOps {
   int  (*setup)(KSP);
   int  (*setfromoptions)(KSP);
   int  (*publishoptions)(KSP);
-  int  (*computeextremesingularvalues)(KSP,double*,double*);
-  int  (*computeeigenvalues)(KSP,int,double*,double*,int *);
+  int  (*computeextremesingularvalues)(KSP,PetscReal*,PetscReal*);
+  int  (*computeeigenvalues)(KSP,int,PetscReal*,PetscReal*,int *);
   int  (*destroy)(KSP);
   int  (*view)(KSP,PetscViewer);
 };
@@ -42,30 +42,30 @@ struct _p_KSP {
                 use_pres;                    /* use preconditioned residual */
   PCSide pc_side;                  /* flag for left, right, or symmetric 
                                       preconditioning */
-  double rtol,                     /* relative tolerance */
+  PetscReal rtol,                     /* relative tolerance */
          atol,                     /* absolute tolerance */
          ttol,                     /* (not set by user)  */
          divtol;                   /* divergence tolerance */
-  double rnorm0;                   /* initial residual norm (used for divergence testing) */
-  double rnorm;                    /* current residual norm */
+  PetscReal rnorm0;                   /* initial residual norm (used for divergence testing) */
+  PetscReal rnorm;                    /* current residual norm */
   KSPConvergedReason reason;     
 
   Vec vec_sol,vec_rhs;            /* pointer to where user has stashed 
                                       the solution and rhs, these are 
                                       never touched by the code, only 
                                       passed back to the user */ 
-  double     *res_hist;            /* If !0 stores residual at iterations*/
+  PetscReal     *res_hist;            /* If !0 stores residual at iterations*/
   int        res_hist_len;         /* current size of residual history array */
   int        res_hist_max;         /* actual amount of data in residual_history */
   PetscTruth res_hist_reset;       /* reset history to size zero for each new solve */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
-  int  (*monitor[MAXKSPMONITORS])(KSP,int,double,void*); /* returns control to user after */
+  int  (*monitor[MAXKSPMONITORS])(KSP,int,PetscReal,void*); /* returns control to user after */
   int  (*monitordestroy[MAXKSPMONITORS])(void*);         /* */
   void *monitorcontext[MAXKSPMONITORS];                  /* residual calculation, allows user */
   int  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
 
-  int  (*converged)(KSP,int,double,KSPConvergedReason*,void*);
+  int  (*converged)(KSP,int,PetscReal,KSPConvergedReason*,void*);
   void       *cnvP; 
 
   PC         B;
