@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.172 2000/10/24 20:26:51 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.173 2000/10/25 14:15:40 bsmith Exp balay $ 
 
 CFLAGS	  = 
 FFLAGS    =
@@ -108,6 +108,9 @@ ex22: ex22.o  chkopts
 ex24: ex24.o  chkopts
 	-${CLINKER} -o ex24 ex24.o  ${PETSC_SLES_LIB}
 	${RM} ex24.o
+ex25: ex25.o  chkopts
+	-${CLINKER} -o ex25 ex25.o  ${PETSC_SLES_LIB}
+	${RM} ex25.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -pc_type jacobi -ksp_smonitor -ksp_gmres_irorthog > ex1_1.tmp 2>&1;	  \
@@ -323,8 +326,18 @@ runex24_4:
 	-@${MPIRUN} -np 2 ex24 -pc_type bjacobi -sub_pc_type icc -sub_pc_icc_levels 1 -mat_type mpisbaij > ex24_4.tmp 2>&1; \
            if (diff output/ex24_4.out ex24_4.tmp) then true; \
            else echo "Possible problem with ex24_4, diffs above"; fi; \
-           ${RM} -f ex24_4.tmp   
-
+           ${RM} -f ex24_4.tmp
+runex25:
+	-@${MPIRUN} -np 1 ex25 -fload /home/petsc/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
+           if (diff output/ex25_1.out ex25_1.tmp) then true; \
+           else echo "Possible problem with ex25_1, diffs above"; fi; \
+           ${RM} -f ex25_1.tmp
+runex25_2:
+	-@${MPIRUN} -np 1 ex25 -fload /home/petsc/matrices/indefinite/afiro \
+		-pc_type jacobi -pc_jacobi_rowmax > ex25_2.tmp 2>&1; \
+           if (diff output/ex25_2.out ex25_2.tmp) then true; \
+           else echo "Possible problem with ex25_2, diffs above"; fi; \
+           ${RM} -f ex25_2.tmp  
 
 TESTEXAMPLES_1  = ex1.PETSc ex1.rm \
                   ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\

@@ -1,8 +1,8 @@
-/*$Id: ex25.c,v 1.1 2000/11/09 20:14:27 balay Exp hzhang $*/
+/*$Id: ex25.c,v 1.2 2000/11/14 20:52:07 hzhang Exp balay $*/
 
 static char help[] = 
-"Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro and golan\n
-Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_rowmax 
+"Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro and golan\n\
+Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_rowmax\n\
 See ~petsc/matrices/indefinite/readme \n\n";
 
 #include "petscsles.h"
