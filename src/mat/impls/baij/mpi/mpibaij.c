@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.76 1997/08/02 18:04:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.77 1997/08/07 14:40:00 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -566,8 +566,8 @@ int CreateHashTable(Mat mat)
   Mat         A = baij->A, B=baij->B;
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data, *b=(Mat_SeqBAIJ *)B->data;
   int         i,j,k,nz=a->nz+b->nz,h1,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  int         size=1.5*nz,ct=0,max=0;
-  Scalar      *aa=a->a,*ba=b->a;
+  int         size=(int)(1.5*nz),ct=0,max=0;
+  /* Scalar      *aa=a->a,*ba=b->a; */
   double      key;
   static double *HT;
   static      int flag=1;
