@@ -1,77 +1,107 @@
-/* $Id: win32draw.c,v 1.1 2000/06/07 17:44:51 balay Exp balay $ */
-
+/* $Id: win32draw.c,v 1.2 2000/06/07 17:49:05 balay Exp balay $ */
+#include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
-#include "src/sys/src/draw/impls/win32/win32draw.h"
+#include "win32draw.h"
 
 #define IDC_FOUR       109
 #define IDI_FOUR       107
-#define IDM_ABOUT      104
 #define IDM_EXIT       105
 #define IDR_POPUP      103
-#define MAX_LOADSTRING 100  
+#define MAX_LOADSTRING 100
 
-#define SelectPen(hdc, hpen) ((HPEN)SelectObject((hdc), (HGDIOBJ)(HPEN)(hpen)))
+#define SelectPen(hdc, hpen)  ((HPEN)SelectObject((hdc),  (HGDIOBJ)(HPEN)(hpen)))
 #define SelectFont(hdc,hfont) ((HFONT)SelectObject((hdc), (HGDIOBJ)(HFONT)(hfont)))
-#define GetStockBrush(i)        ((HBRUSH)GetStockObject(i))
+#define GetStockBrush(i)      ((HBRUSH)GetStockObject(i))
 
+#define XTRANS(draw,win,x) \
+   (int)(((win)->w)*((draw)->port_xl + (((x - (draw)->coor_xl)*\
+                                   ((draw)->port_xr - (draw)->port_xl))/\
+                                   ((draw)->coor_xr - (draw)->coor_xl))))
+#define YTRANS(draw,win,y) \
+   (int)(((win)->h)*(1.0-(draw)->port_yl - (((y - (draw)->coor_yl)*\
+                                   ((draw)->port_yr - (draw)->port_yl))/\
+                                   ((draw)->coor_yr - (draw)->coor_yl))))
 
 HINSTANCE     hInst;
 HANDLE        g_hWindowListMutex = NULL;
-WindowNode    WindowListHead = NULL;
-PetscTruth    quitflag = PETSC_TRUE;
-static double Gamma = 2.0;
-const int     mapsize = 255;
-unsigned char RedMap[]  = {255,0,255,0,0,0,255,127,34,255,238,165,255,255,190,255,255,238,0,255,105,154,135,0,0,244,152,176,220,216,50,255};
+WindowNode    WindowListHead     = NULL;
+
+/*Hard coded color hue until hue.c works with this*/
+unsigned char RedMap[]   = {255,0,255,0,0,0,255,127,34,255,238,165,255,255,190,255,255,238,0,255,105,154,135,0,0,244,152,176,220,216,50,255};
 unsigned char GreenMap[] = {255,0,0,255,255,0,0,255,139,165,130,42,182,127,190,255,215,162,197,246,105,205,206,100,0,164,245,224,17,191,205,240};
-unsigned char BlueMap[] = {255,0,0,0,255,255,225,212,34,0,238,42,193,80,190,0,0,173,205,143,105,50,235,0,128,96,255,230,120,216,50,245};
+unsigned char BlueMap[]  = {255,0,0,0,255,255,225,212,34,0,238,42,193,80,190,0,0,173,205,143,105,50,235,0,128,96,255,230,120,216,50,245};
 
 /* Foward declarations of functions included in this code module: */
 LRESULT CALLBACK  WndProc(HWND, UINT, WPARAM, LPARAM);
-extern int DrawRectangle_Win32(Draw,double,double,double,double,int,int,int,int);
-extern int DrawLine_Win32(Draw,double,double,double,double,int);
-extern int DrawLineSetWidth_Win32(Draw ,double);
-extern int DrawLineGetWidth_Win32(Draw,double *);
-extern int DrawPoint_Win32(Draw,double,double,int);
-extern int DrawPointSetSize_Win32(Draw,double);
-extern int TranslateColor_Win32(Draw,int);
-extern int AverageColorRectangle_Win32(Draw,int,int,int,int);
-extern int AverageColorTriangle_Win32(Draw,int,int,int);
-extern int DrawString_Win32(Draw,double,double,int,char *);
-extern int DrawStringVertical_Win32(Draw,double,double,int,char *);
-extern int DrawStringSetSize_Win32(Draw,double,double);
-extern int DrawStringGetSize_Win32(Draw,double *,double *);
-extern int DrawSetCoordinates_Win32(Draw,double,double,double,double);
-extern int DrawGetCoordinates_Win32(Draw,double *, double *, double *, double *);
-extern int DrawResizeWindow_Win32(Draw,int,int);
-extern int DrawCheckResizedWindow_Win32(Draw);
-extern int DrawGetTitle_Win32(Draw, char **);
-extern int DrawSetTitle_Win32(Draw, char *);
-extern int DrawGetPopup_Win32(Draw,Draw *);
-extern int DrawClear_Win32(Draw);
-extern int DrawSetPause_Win32(Draw,int);
-extern int DrawCreate_Win32(Draw);
-extern int DrawDestroy_Win32(Draw);
-extern int DrawPause_Win32(Draw);
-extern int DrawGetMouseButton_Win32(Draw, DrawButton *,double *,double *,double *,double *);
-extern int DrawGetPause_Win32(Draw,int *);
-extern int DrawTriangle_Win32(Draw,double,double,double,double,double,double,int,int,int);
-extern int DrawScalePopup_Win32(Draw,double,double);
+extern int  TranslateColor_Win32(Draw,int);
+extern int  AverageColorRectangle_Win32(Draw,int,int,int,int);
+extern int  AverageColorTriangle_Win32(Draw,int,int,int);
 extern void MessageLoopThread(Draw_Win32 *);
-extern int deletemouselist_Win32(WindowNode);
+extern int  deletemouselist_Win32(WindowNode);
+extern void OnPaint_Win32(HWND);
+extern void OnDestroy_Win32(HWND);
+extern void OnSize_Win32(HWND,UINT,int,int);
+extern int  MouseRecord_Win32(HWND,DrawButton);
+extern int  DrawGetPopup_Win32(Draw,Draw *);
 
-/*
-FUNCTION: deletemouselist_Win32
-        
-          input:*deletelist  //pointer to a window node 
-                        
-          description: At the destruction(closing) of a window this function is 
-                       called to release the memory for the linked list of recorded
-                       mouse actions
-*/
-int deletemouselist_Win32(WindowNode deletelist)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawSetDoubleBuffer_Win32"></a> */"DrawSetDoubleBuffer_Win32" 
+static int DrawSetDoubleBuffer_Win32(Draw draw)
 {
+	Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+	HDC        hdc      = GetDC(windraw->hWnd);
+
+	PetscFunctionBegin;
+	windraw->node->DoubleBuffer = CreateCompatibleDC(hdc);
+    windraw->node->DoubleBufferBit = CreateCompatibleBitmap(hdc,windraw->w,windraw->h);
+    windraw->node->dbstore = SelectObject(windraw->node->DoubleBuffer,windraw->node->DoubleBufferBit);
+    /*Fill background of second buffer*/
+	ExtFloodFill(windraw->node->DoubleBuffer,0,0,COLOR_WINDOW,FLOODFILLBORDER);
+    /*Copy current buffer into seconf buffer and set window data as double buffered*/
+    BitBlt(windraw->node->DoubleBuffer,
+			  0,0,
+		      windraw->w,windraw->h,
+		      windraw->node->Buffer,
+		      0,0,
+		      SRCCOPY);
+
+	windraw->node->DoubleBuffered = 1;
+    ReleaseDC(windraw->hWnd,hdc);
+    PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawFlush_Win32"></a> */"DrawFlush_Win32" 
+static int DrawFlush_Win32(Draw draw)
+{
+	Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+    HDC        hdc = GetDC(windraw->hWnd);
+    
+	PetscFunctionBegin;
+	/*flush double buffer into primary buffer*/
+	BitBlt(windraw->node->Buffer,
+			  0,0,
+		      windraw->w,windraw->h,
+		      windraw->node->DoubleBuffer,
+		      0,0,
+		      SRCCOPY);
+    /*flush double buffer into window*/
+	BitBlt(hdc,
+			  0,0,
+		      windraw->w,windraw->h,
+		      windraw->node->DoubleBuffer,
+		      0,0,
+		      SRCCOPY);
+    ReleaseDC(windraw->hWnd,hdc);
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /* <a name="deletemouselist_Win32"></a> */"deletemouselist_Win32" 
+static int deletemouselist_Win32(WindowNode deletelist)
+{ 
+  /*Called upon window close. Frees memory of linked list of stored mouse commands*/
   MouseNode node;
-  
+ 
   while(deletelist->MouseListHead != NULL) {       
     node = deletelist->MouseListHead;
     if(deletelist->MouseListHead->mnext != NULL) {
@@ -80,7 +110,6 @@ int deletemouselist_Win32(WindowNode deletelist)
     PetscFree(node);
   }
   deletelist->MouseListHead = deletelist->MouseListTail = NULL;
-  
   if (deletelist->wprev != NULL) {
     deletelist->wprev->wnext = deletelist->wnext;
   }
@@ -91,370 +120,259 @@ int deletemouselist_Win32(WindowNode deletelist)
   return 0;
 }
 
-/*
-FUNCTION: DrawGetMouseButton_Win32
-        
-          input:*x_user,*y_user  //pointer to screen coordinates of received mouse action
-                        *x_phys,*y_phys  //pointer to window coordinates of received mouse action
-                        *button          //pointer to what mouse button was pressed in action
-                        *ctx                     //pointer to structure for window that is being used
-
-          description: Looks at global linked list to retreive information on requested mouse 
-                                   action. If none has happened yet, wait for a mouse action to occur.
-*/
-int DrawGetMouseButton_Win32(Draw ctx, DrawButton *button,double *x_user,double *y_user, \
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawGetMouseButton_Win32"></a> */"DrawGetMouseButton_Win32" 
+static int DrawGetMouseButton_Win32(Draw draw, DrawButton *button,double *x_user,double *y_user, \
                              double *x_phys,double *y_phys)
 {
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  WindowNode current;
-  MouseNode  node;
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  WindowNode  current;
+  MouseNode   node;
 
-  /*Make sure no other code is using the linked list at this moment*/
+  PetscFunctionBegin;
+  /* Make sure no other code is using the linked list at this moment */
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
-  /*Look for the node that matches the window you are using*/
+  /* Look for the node that matches the window you are using */
   current = WindowListHead;
   while (current != NULL) {
-    if(current->hWnd == draw->hWnd) {       
+    if(current->hWnd == windraw->hWnd) {       
       current->IsGetMouseOn = TRUE;
       break;
     } else {
       current = current->wnext;
     }
   }
-  /*If no actions have occured, wait for one*/
+  /* If no actions have occured, wait for one */
   node = current->MouseListHead;
   if (node == NULL) {
     ReleaseMutex(g_hWindowListMutex);
     WaitForSingleObject(current->event, INFINITE);
     WaitForSingleObject(g_hWindowListMutex, INFINITE);
   }
-  /*once we have the information, assign the pointers to it */
+  /* once we have the information, assign the pointers to it */
   *button = current->MouseListHead->Button;
   *x_user = current->MouseListHead->user.x;
   *y_user = current->MouseListHead->user.y;
   *x_phys = current->MouseListHead->phys.x;
   *y_phys = current->MouseListHead->phys.y;
-  /*remove set of information from sub linked-list, delete the node*/
+  /* remove set of information from sub linked-list, delete the node */
   current->MouseListHead = current->MouseListHead->mnext;
   if (current->MouseListHead == NULL) {
     ResetEvent(current->event);
     current->MouseListTail = NULL;
   }
   PetscFree(node);
-
-  /*Release mutex so that  other code can use
-    the linked list now that we are done with it*/
+  /* Release mutex so that  other code can use
+    the linked list now that we are done with it */
   ReleaseMutex(g_hWindowListMutex);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
-/*
-FUNCTION: DrawSetPause_Win32
-        
-          input:*ctx            //pointer to a window  
-                        pausetime       //integer value in seconds
-          description: Access the window strucure and stores the desired
-                                        pausetime. This value is what will be used for the
-                                        length of the pause when DrawPause_Win32 is called.
-*/
-
-int DrawSetPause_Win32(Draw ctx,int pausetime)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawPause_Win32"></a> */"DrawPause_Win32" 
+static int DrawPause_Win32(Draw draw)
 {
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  draw->pause = pausetime;
-  return 0;
+  PetscFunctionBegin;
+  PetscSleep(draw->pause);
+  PetscFunctionReturn(0);
 }
 
-/*
-FUNCTION: DrawGetPause_Win32
-        
-          input:*ctx            //pointer to a window  
-                        &pausetime      //referenced integer variable
-          description:  Access the window strucure and retrieves the current set
-                                        pausetime for that window, returns it by reference through 
-                                        pausetime
-*/
-int DrawGetPause_Win32(Draw ctx, int *pausetime)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="TranslateColor_Win32"></a> */"TranslateColor_Win32" 
+static int TranslateColor_Win32(Draw draw,int color)
 {
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  *pausetime = draw->pause;
+  /*Maps single color value into the RGB colors in our tables*/
+  Draw_Win32 *windraw   = (Draw_Win32*)draw->data;
+  windraw->currentcolor = RGB(RedMap[color],GreenMap[color],BlueMap[color]);
   return 0;
 }
-/*
-FUNCTION: DrawPause_Win32
-        
-          input:*ctx            //pointer to a window  
-                        
-          description: Access the window strucure and determined the 
-                                        value that was set by the user for that window
-                                        and waits for that amount of seconds before
-                                        continuing.
-*/
-int DrawPause_Win32(Draw ctx)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="AverageColorRectangle_Win32"></a> */"AverageColorRectangle_Win32"
+static int AverageColorRectangle_Win32(Draw draw,int c1,int c2, int c3, int c4)
 {
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  clock_t goal;
-  goal = ((clock_t)(draw->pause * CLOCKS_PER_SEC)) + clock();   
-  while( goal > clock() )  ;
-  return 0;
-}
-
-/*
-FUNCTION: TranslateColor_Win32
-        
-          input:*ctx            //pointer to a window  
-                        color   //integer value from 1 to 32
-          description: Since the existing code for PETSc handels color
-                                        from a hue table that takes values 1 to 32. Since here 
-                                        that was not available we are currently taking the integer
-                                        value, comparing to a Red,Green and Blue array we have
-                                        previously put in the RGB values of that corresponding
-                                        hue number. It retreives these values from the array and
-                                        calls the RGB internal translator, retreving a single number
-                                        and stores this number in the currentcolor field of that
-                                        window
-*/
-int TranslateColor_Win32(Draw ctx,int color)
-{
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  draw->currentcolor = RGB(RedMap[color],GreenMap[color],BlueMap[color]);
-  return 0;
-}
-
-/*
-FUNCTION: AverageColorRectangle_Win32
-        
-          input:*ctx            //pointer to a window  
-                        c1,c2,c3,c4     //integer value from 1 to 32 corresponding
-                                                to the color value at each point of a rectangle
-          description: A simple function removing this code from the DrawRectangle_Win32
-                                        function. Averages and translates the inputed color points for a 
-                                        rectangle. Will be changed because the desired effect is a gradient
-                                        thoughout the rectangle based on the color value at each point
-          Overload : Does the same for the three points of a triangle
-*/
-int AverageColorRectangle_Win32(Draw ctx,int c1,int c2, int c3, int c4)
-{
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-
-  draw->currentcolor = RGB(((RedMap[c1]+RedMap[c2]+RedMap[c3]+RedMap[c4])/4),
+  /*Averages colors given at points of rectangle and sets color from color table
+	will be changed once the color gradient problem is worked out*/
+  Draw_Win32 *windraw   = (Draw_Win32*)draw->data;
+  windraw->currentcolor = RGB(((RedMap[c1]+RedMap[c2]+RedMap[c3]+RedMap[c4])/4),
                            ((GreenMap[c1]+GreenMap[c2]+GreenMap[c3]+GreenMap[c4])/4),
                            ((BlueMap[c1]+BlueMap[c2]+BlueMap[c3]+BlueMap[c4])/4));
   return 0;
 }
-
-int AverageColorTriangle_Win32(Draw ctx,int c1,int c2,int c3)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="AverageColorTriangle_Win32"></a> */"AverageColorTriangle_Win32"
+static int AverageColorTriangle_Win32(Draw draw,int c1,int c2,int c3)
 {
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  draw->currentcolor = RGB((RedMap[c1]+RedMap[c2]+RedMap[c3])/3,
+  /*Averages colors given at points of rectangle and sets color from color table
+	will be changed once the color gradient problem is worked out*/
+  Draw_Win32 *windraw   = (Draw_Win32*)draw->data;
+  windraw->currentcolor = RGB((RedMap[c1]+RedMap[c2]+RedMap[c3])/3,
                            (GreenMap[c1]+GreenMap[c2]+GreenMap[c3])/3,
                            (BlueMap[c1]+BlueMap[c2]+BlueMap[c3])/3); 
   return 0;
 }
-/*
-FUNCTION: DrawRectangle_Win32
-
-        inputs: xl,xr,yl,yr             //coordinates for the lower-left and upper-right hand corners
-                        c1,c2,c3,c4             //color assigned to each point
-                         *ctx                                   //pointer to window
-        description: Retrieves the given windows device context, 
-                                draws a rectangle from the upper-left corner
-                                to the lower-right corner in that context, 
-                                then calls previous functions to set color 
-                                and paints in the region with that color.Since in the
-                                original PETSc code you supply DrawRectangle with the 
-                                lower-left corner and upper-right hand corner we kept
-                                the syntax of the function the same, however since windows
-                                takes there dimensions differently we flip the values through
-                                assignment to gain correct perspective
-*/
-int DrawRectangle_Win32(Draw ctx,double xl,double yl,double xr,double yr,int c1,int c2,int c3,int c4)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawRectangle_Win32"></a> */"DrawRectangle_Win32"
+static int DrawRectangle_Win32(Draw draw,double xl,double yl,double xr,double yr,int c1,int c2,int c3,int c4)
 {
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  HBRUSH      hbrush;
+  RECT        rect;
+  int         x1,y1,x2,y2;
+  HDC         hdc;
   
-  HBRUSH hbrush;
-  
-  RECT rect;  /* retrieve tag for a rect, then make it */
-  /* assigning values this way flips to correct prespective */
-  SetRect(&rect,(int)xl,(int)yr,(int)xr,(int)yl); 
-  
-  draw->hdc = GetDC(draw->hWnd);          
-  if (c1==c2 && c2==c3 && c3==c4) {         /* if all colors equal, use that color */
-    TranslateColor_Win32(ctx,c1);
-  } else {                                   /* else get average of the colors */
-    AverageColorRectangle_Win32(ctx,c1,c2,c3,c4);
+  PetscFunctionBegin;
+  x1 = XTRANS(draw,windraw,xl);
+  x2 = XTRANS(draw,windraw,xr);
+  y1 = YTRANS(draw,windraw,yl);
+  y2 = YTRANS(draw,windraw,yr);
+  SetRect(&rect,x1,y2,x2,y1);        
+  if (c1==c2 && c2==c3 && c3==c4) {         
+    TranslateColor_Win32(draw,c1);
+  } else {                                   
+    AverageColorRectangle_Win32(draw,c1,c2,c3,c4);
   }
-  hbrush = CreateSolidBrush(draw->currentcolor);
-  FillRect(draw->hdc,&rect,hbrush);
-  ReleaseDC(draw->hWnd,draw->hdc);
-  return 0;
-}
-
-/*
-FUNCTION: DrawLine_Win32
-
-        inputs: xl,xr,yl,yr     //coordinates for the left and right hand points of the line
-                        color           //color assigned to line
-                        *ctx            //pointer to window
-        description: Retrieves the given windows device context, 
-                                draws a rectangle from the upper-left corner
-                                to the lower-right corner in that context, 
-                                then calls previous functions to set color 
-                                and paints in the region with that color
-*/
-int DrawLine_Win32(Draw ctx,double xl,double yl,double xr,double yr,int color)
-{
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  HPEN hpen;
-  TranslateColor_Win32(ctx,color);
-  hpen = CreatePen (PS_SOLID, draw->linewidth, draw->currentcolor);
-  draw->hdc = GetDC(draw->hWnd);
-  SelectPen(draw->hdc,hpen);
-  MoveToEx(draw->hdc,(int)xl,(int)yl,NULL);
-  LineTo(draw->hdc,(int)xr,(int)yr);
-  ReleaseDC(draw->hWnd, draw->hdc);
-  return 0;
-}
-
-/*
-FUNCTION: DrawLineSetWidth_Win32
-
-        inputs: width   //double value corresponding to the desired 
-                                        percentage of viewport the width of the line should
-                                        take up
-                        *ctx    //pointer to window
-        description: Retrieves the given windows current size, both width and 
-                                 height, in pixels then calculates the average, finds the 
-                                 desired percent of those pixels and stores that number of
-                                 pixels in linewidth variable of the window struct 
-*/
-int DrawLineSetWidth_Win32(Draw ctx,double width)
-{
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  int averagesize,finalwidth;
-  
-  RECT rect;
-  GetClientRect(draw->hWnd,&rect);
-  /*this takes the horizontal and vertical size of the 
-    viewport and averages them, then takes our percent*/
-  averagesize = ((rect.right - rect.left)+(rect.bottom - rect.top))/2;
-  finalwidth = (int)floor(averagesize*width);
-  if (finalwidth < 1) {
-    finalwidth = 1; /* this is the minimum size that DrawLine can except */
-  }
-  draw->linewidth = finalwidth;
-  return 0;
-}
-
-/*
-FUNCTION: DrawLineGetWidth_Win32
-
-        inputs: &width  //referenced double variable through which the currently
-                                          stored linewidth value will be passed
-                        *ctx    //pointer to window
-        description: Retrieves the given windows current linewidth setting
-                                 and passes to the referenced variable width
-*/
-int DrawLineGetWidth_Win32(Draw ctx,PetscReal *width)
-{
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-
-  *width = (PetscReal)draw->linewidth;
-  return 0;
-}
-/*
-FUNCTION: DrawPoint_Win32
-
-        inputs: x,y       // position for center of point
-                        color // number from 1 to 32 representing color to be created
-                        *ctx    //pointer to window
-        description: Retrieves the given windows current pointdiameter setting. If 1 
-                                it colors in one pixel, otherwise it draws a circle the desired 
-                                amount of pixels in diameter around the point and colors it in
-*/
-int DrawPoint_Win32(Draw ctx,double x,double y,int color)
-{       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  HBRUSH hbrush;
-  HRGN hrgn;
-  int radius;
-
-  radius = (int)floor(draw->pointdiameter/2);
-  TranslateColor_Win32(ctx,color);
-
-  hbrush = CreateSolidBrush(draw->currentcolor);
-        
-  draw->hdc = GetDC(draw->hWnd);
-  /*If requested percentage of the viewport is less than or
-    one pixel, then make it one pixel and set it*/
-  if (draw->pointdiameter == 1) {
-    SetPixelV(draw->hdc,(int)x,(int)y,draw->currentcolor);  
+  hbrush = CreateSolidBrush(windraw->currentcolor);
+ 
+  if(windraw->node->DoubleBuffered) {
+	  hdc = windraw->node->DoubleBuffer;
   } else {
-    /*else make a circle around the point requested that is the correct
-      percentage of the viewport*/
-    hrgn = CreateEllipticRgn((int)x-radius,(int)y-radius,(int)x+radius,(int)y+radius);
-    FillRgn(draw->hdc,hrgn,hbrush);
+	  hdc = windraw->node->Buffer;
   }
-  ReleaseDC(draw->hWnd,draw->hdc);
-  return 0;
+  FillRect(hdc,&rect,hbrush);
+  /*Forces a WM_PAINT message and erases background*/
+  InvalidateRect(windraw->hWnd,NULL,TRUE);
+  UpdateWindow(windraw->hWnd);
+  PetscFunctionReturn(0);
 }
-
-/*
-FUNCTION: DrawPointSetSize_Win32
-
-        inputs: width   //double value corresponding to the desired 
-                                        percentage of viewport the diameter of the point should
-                                        take up
-                        *ctx    //pointer to window
-        description: Retrieves the given windows current size, calculates the given
-                                 percentage of this and stores it in the windows pointdiameter setting
-*/
-int DrawPointSetSize_Win32(Draw ctx,double width)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawLine_Win32"></a> */"DrawLine_Win32"
+static int DrawLine_Win32(Draw draw,double xl,double yl,double xr,double yr,int color)
 {
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  int averagesize,diameter;
-  RECT rect;
-  GetClientRect(draw->hWnd,&rect);
-  /*This takes the horizontal and vertical sizes of the viewport 
-    and averages them,then takes the correct percentage of them*/
-  averagesize = ((rect.right - rect.left)+(rect.bottom - rect.top))/2;
-  
-  diameter = (int)floor(averagesize*width);
-  if (diameter < 1) diameter = 1;
-  draw->pointdiameter = diameter;
-  return 0;
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  HPEN       hpen;
+  int        x1,y1,x2,y2;
+  HDC        hdc;
+
+  PetscFunctionBegin;
+  TranslateColor_Win32(draw,color);
+  x1   = XTRANS(draw,windraw,xl);x2  = XTRANS(draw,windraw,xr); 
+  y1   = YTRANS(draw,windraw,yl);y2  = YTRANS(draw,windraw,yr); 
+  hpen = CreatePen (PS_SOLID, windraw->linewidth, windraw->currentcolor);
+  if(windraw->node->DoubleBuffered) {
+	  hdc = windraw->node->DoubleBuffer;
+  } else {
+	  hdc = windraw->node->Buffer;
+  }
+  SelectPen(hdc,hpen);
+  MoveToEx(hdc,x1,y1,NULL);
+  LineTo(hdc,x2,y2);
+  /*Forces a WM_PAINT message and erases background*/
+  InvalidateRect(windraw->hWnd,NULL,TRUE);
+  UpdateWindow(windraw->hWnd);
+  PetscFunctionReturn(0);
 }
-/*
-FUNCTION: DrawString_Win32
 
-        inputs: color   //1 to 32 value for the color
-                        x,y             //coordinated that upper-left hand corner of 
-                                          string box will start
-                        *text   //text that will be drawn on screen
-                        *ctx    //pointer to window
-        description: Creates a minimized rectangle to draw text within
-                                 then creates a font using mostly default paramaters
-                                 except for height and width and then writes it in the color
-                                 asked for
-*/
-int DrawString_Win32(Draw ctx,double x,double y,int color,char *text)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawLineSetWidth_Win32"></a> */"DrawLineSetWidth_Win32"
+static int DrawLineSetWidth_Win32(Draw draw,double width)
+{
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  int         averagesize,finalwidth;
+  RECT        rect;
+
+  PetscFunctionBegin;
+  GetClientRect(windraw->hWnd,&rect);
+  averagesize = ((rect.right - rect.left)+(rect.bottom - rect.top))/2;
+  finalwidth  = (int)floor(averagesize*width);
+  if (finalwidth < 1) {
+    finalwidth = 1; /* minimum size DrawLine can except */
+  }
+  windraw->linewidth = finalwidth;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawLineGetWidth_Win32"></a> */"DrawLineGetWidth_Win32"
+static int DrawLineGetWidth_Win32(Draw draw,PetscReal *width)
+{
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+
+  PetscFunctionBegin;
+  *width = (PetscReal)windraw->linewidth;
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawPoint_Win32"></a> */"DrawPoint_Win32"
+static int DrawPoint_Win32(Draw draw,double x,double y,int color)
 {       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  RECT r;
-  HFONT hfont;                                                                    
-  LOGFONT logfont;                                                                        
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  HBRUSH     hbrush;
+  HRGN       hrgn;
+  int        radius;
+  int        x1,y1,left,right,top,bottom;
+  HDC        hdc;
 
+  PetscFunctionBegin;
+  TranslateColor_Win32(draw,color);
+  x1     = XTRANS(draw,windraw,x);   
+  y1     = YTRANS(draw,windraw,y);
+  hbrush = CreateSolidBrush(windraw->currentcolor);
+  if(windraw->node->DoubleBuffered) {
+	  hdc = windraw->node->DoubleBuffer;
+  } else {
+	  hdc = windraw->node->Buffer;
+  }
+  /*desired size is one logical pixel so just turn it on*/
+  if (windraw->pointdiameter == 1) {
+	  SetPixelV(hdc,x1,y1,windraw->currentcolor);
+  } else {
+	  /*draw point around position determined*/
+	  radius = (int)floor(windraw->pointdiameter/2);
+      hrgn   = CreateEllipticRgn(x1-radius,y1-radius,x1+radius,y1+radius);
+      FillRgn(hdc,hrgn,hbrush);
+  }
+  /*Forces a WM_PAINT and erases background*/
+  InvalidateRect(windraw->hWnd,NULL,TRUE);
+  UpdateWindow(windraw->hWnd);
+  PetscFunctionReturn(0);
+}
 
-  r.bottom        = (int)x;
-  r.left          = (int)y;
-  r.right         = (int)x + 1; 
-  r.top           = (int)y + 1;/*Because of the DT_NOCLIP parameter
-                                 in the DrawText call below, all we 
-                                 need is a non-zero rect*/
-  draw->hdc = GetDC(draw->hWnd);
-        
-  logfont.lfHeight         = draw->stringheight;/*sets the height according to % of viewport*/
-  logfont.lfWidth          = draw->stringwidth;/*set the width the same way*/
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawPointSetSize_Win32"></a> */"DrawPointSetSize_Win32"
+static int DrawPointSetSize_Win32(Draw draw,double width)
+{
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  int         averagesize,diameter;
+  RECT        rect;
+
+  PetscFunctionBegin
+  GetClientRect(windraw->hWnd,&rect);
+  averagesize = ((rect.right - rect.left)+(rect.bottom - rect.top))/2;
+  diameter    = (int)floor(averagesize*width);
+  if (diameter < 1) diameter = 1;
+  windraw->pointdiameter     = diameter;
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawString_Win32"></a> */"DrawString_Win32"
+static int DrawString_Win32(Draw draw,double x,double y,int color,char *text)
+{       
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  RECT        r;
+  HFONT       hfont;                                                                    
+  LOGFONT     logfont; 
+  int         x1,y1;
+  HDC         hdc;
+  
+  PetscFunctionBegin;
+  x1              = XTRANS(draw,windraw,x);
+  y1              = YTRANS(draw,windraw,y);
+  r.bottom        = y1;
+  r.left          = x1;
+  r.right         = x1 + 1; 
+  r.top           = y1 + 1;
+  logfont.lfHeight         = windraw->stringheight;
+  logfont.lfWidth          = windraw->stringwidth;
   logfont.lfEscapement     = 0;
   logfont.lfOrientation    = 0;
   logfont.lfCharSet        = 0;
@@ -466,44 +384,43 @@ int DrawString_Win32(Draw ctx,double x,double y,int color,char *text)
   logfont.lfStrikeOut      = 0;
   logfont.lfUnderline      = 0;
   logfont.lfWeight         = FW_NORMAL;
-  
-  hfont = CreateFontIndirect(&logfont); /* creates font from our parameters */
-  SelectFont(draw->hdc,hfont);
-        
-  TranslateColor_Win32(ctx,color);
-  SetTextColor(draw->hdc,draw->currentcolor);
-  DrawText(draw->hdc,text,lstrlen(text),&r,DT_NOCLIP);
+  hfont = CreateFontIndirect(&logfont); 
+  TranslateColor_Win32(draw,color);
+  if(windraw->node->DoubleBuffered) {
+	  hdc = windraw->node->DoubleBuffer;
+  } else {
+	  hdc = windraw->node->Buffer;
+  }
+  SelectFont(hdc,hfont);
+  SetTextColor(hdc,windraw->currentcolor);
+  DrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP);
   DeleteObject(hfont);
-  ReleaseDC(draw->hWnd,draw->hdc);
-  return 0;
+  /*Forces a WM_PAINT message and erases background*/
+  InvalidateRect(windraw->hWnd,NULL,TRUE);
+  UpdateWindow(windraw->hWnd);
+  PetscFunctionReturn(0);
 }
-/*
-FUNCTION: DrawStringVertical_Win32
-
-        inputs: color   //1 to 32 value for the color
-                        x,y             //coordinated that upper-left hand corner of 
-                                          string box will start
-                        *text   //text that will be drawn on screen
-                        *ctx    //pointer to window
-        description: The same as DrawString_Win32 except for the text is drawn vertical
-*/
-int DrawStringVertical_Win32(Draw ctx,double x,double y,int color,char *text)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawStringVertical_Win32"></a> */"DrawStringVertical_Win32"
+static int DrawStringVertical_Win32(Draw draw,double x,double y,int color,char *text)
 {       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  RECT r;
-  HFONT hfont;                                                                                    
-  LOGFONT logfont;                                                                                
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  RECT        r;
+  HFONT       hfont;                                                                                    
+  LOGFONT     logfont;
+  int         x1,y1;
+  HDC         hdc;
 
-  r.bottom = (int)x;
-  r.left   = (int)y + 30;
-  r.right  = (int)x + 1; /*Because of NO_CLIP all we need is a non-zero rect*/
-  r.top    = (int)y - 30;
-
-  draw->hdc = GetDC(draw->hWnd);
-        
-  logfont.lfEscapement     = 2700; /*Causes verticle text drawing*/
-  logfont.lfHeight         = draw->stringheight;/*sets the height according to % of viewport*/
-  logfont.lfWidth          = draw->stringwidth;/*set the width the same way*/ 
+  PetscFunctionBegin;
+  x1           = XTRANS(draw,windraw,x);
+  y1           = XTRANS(draw,windraw,y);
+  r.bottom     = x1;
+  r.left       = y1 + 30;
+  r.right      = x1 + 1;
+  r.top        = y1 - 30;
+  logfont.lfEscapement     = 2700; /* Causes verticle text drawing */
+  logfont.lfHeight         = windraw->stringheight;
+  logfont.lfWidth          = windraw->stringwidth;
   logfont.lfOrientation    = 0;
   logfont.lfCharSet        = DEFAULT_CHARSET;
   logfont.lfClipPrecision  = 0;
@@ -514,219 +431,173 @@ int DrawStringVertical_Win32(Draw ctx,double x,double y,int color,char *text)
   logfont.lfStrikeOut      = 0;
   logfont.lfUnderline      = 0;
   logfont.lfWeight         = FW_NORMAL;
-
-  hfont = CreateFontIndirect(&logfont);//creates font according to our parameters
-  SelectFont(draw->hdc,hfont);
-
-  TranslateColor_Win32(ctx,color);
-  SetTextColor(draw->hdc,draw->currentcolor);
-  DrawText(draw->hdc,text,lstrlen(text),&r,DT_NOCLIP | DT_SINGLELINE );
-
+  hfont = CreateFontIndirect(&logfont);
+  TranslateColor_Win32(draw,color);
+  if(windraw->node->DoubleBuffered) {
+	  hdc = windraw->node->DoubleBuffer;
+  } else {
+	  hdc = windraw->node->Buffer;
+  }
+  SelectFont(hdc,hfont);
+  SetTextColor(hdc,windraw->currentcolor);
+  DrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP | DT_SINGLELINE );
   DeleteObject(hfont);
-  ReleaseDC(draw->hWnd,draw->hdc);
-  return 0;
+  /*Forces a WM_PAINT message and erases background*/
+  InvalidateRect(windraw->hWnd,NULL,TRUE);
+  UpdateWindow(windraw->hWnd);
+  PetscFunctionReturn(0);
 }
-
-/*
-FUNCTION: DrawStringSetSize_Win32
-
-        inputs: width   //percentage of windows width the text font will be set to
-                        height  //percentage of windows height the text font will be set to 
-                        *ctx    //pointer to window
-        description: Retreives the windows size and calculates the percentage of the
-                                 windows dimensions by pixels, then stores them in the windows struct
-*/
-int DrawStringSetSize_Win32(Draw ctx,double width,double height)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawStringSetSize_Win32"></a> */"DrawStringSetSize_Win32"
+static int DrawStringSetSize_Win32(Draw draw,double width,double height)
 {       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  int sizeheight, sizewidth;
-  /*Here we get the dimensions of the current user window
-    so that we can apply our given percentage to the number
-    of pixels for the value of stringheight and stringwidth*/
-  RECT r;
-  GetWindowRect(draw->hWnd,&r);
-  sizeheight = (int)floor(height*(r.bottom - r.top));
-  sizewidth  = (int)floor(width*(r.right - r.left));
-  if (sizeheight < 1) sizeheight = 1;
-  if (sizewidth < 1)  sizewidth = 1;
-  draw->stringheight = sizeheight;
-  draw->stringwidth  = sizewidth;
-  return 0;
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  int         w,h;
+
+  PetscFunctionBegin;
+  w = (int)((windraw->w)*width *(draw->port_xr - draw->port_xl)/(draw->coor_xr - draw->coor_xl));
+  h = (int)((windraw->h)*height*(draw->port_yr - draw->port_yl)/(draw->coor_yr - draw->coor_yl));
+  if (h < 1) h = 1;
+  if (w < 1) w = 1;
+  windraw->stringheight = h;
+  windraw->stringwidth  = w;
+  PetscFunctionReturn(0);
 }
-
-/*
-FUNCTION: DrawStringGetSize_Win32
-
-        inputs: *width  //reference variable current width setting will be passed to
-                        *height //reference variable current height setting will be passed to
-                        *ctx    //pointer to window
-        description: Retreives the windows string height and width setting and passes 
-        them back through the given reference variables
-*/
-int DrawStringGetSize_Win32(Draw ctx,double *width,double *height)
+#undef __FUNC__  
+#define __FUNC__ /* a name="DrawStringGetSize_Win32"></a> */"DrawStringGetSize_Win32"
+static int DrawStringGetSize_Win32(Draw draw,double *width,double *height)
 {       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  *height = (double)draw->stringheight;
-  *width  = (double)draw->stringwidth;
-  return 0;
-}
-/*
-FUNCTION: DrawSetCoordinates_Win32
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
 
-        inputs: xl,yl,xr,yr     //upper-left and lower-right point that window will be
-                                                  placed at
-                        *ctx    //pointer to window
-        description: Moves windows start and end points to desired locations
-*/
-int DrawSetCoordinates_Win32(Draw ctx,double xl,double yl,double xr,double yr)
+  PetscFunctionBegin;
+  *height = (double)windraw->stringheight;
+  *width  = (double)windraw->stringwidth;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawResizeWindow_Win32"></a> */"DrawResizeWindow_Win32"
+static int DrawResizeWindow_Win32(Draw draw,int w,int h)
 {       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  MoveWindow(draw->hWnd,(int)xl,(int)yr,(int)(xr-xl),(int)(yl-yr),TRUE);
-  return 0;
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  RECT        r;
+
+  PetscFunctionBegin;
+  GetWindowRect(windraw->hWnd,&r);
+  MoveWindow(windraw->hWnd,r.left,r.top,(int)w,(int)h,TRUE);
+  /*set all variable dealing with window dimensions*/
+  windraw->node->bitheight = windraw->h = draw->h = h;
+  windraw->node->bitwidth  = windraw->w = draw->w = w;
+  /*set up graphic buffers with the new size of window*/
+  SetBitmapDimensionEx(windraw->node->BufferBit,w,h,NULL);
+  if(windraw->node->DoubleBuffered) {
+	  SetBitmapDimensionEx(windraw->node->DoubleBufferBit,w,h,NULL);
+  }
+  windraw->haveresized = 1;
+  PetscFunctionReturn(0);
 }
 
-/*
-FUNCTION: DrawGetCoordinates_Win32
-
-        inputs: *xl,*yl,*xr,*yr //reference variables that are passed the windows position
-                        *ctx                    //pointer to window
-        description: Retreives current window position and passes back through reference 
-                                 variables
-*/
-int DrawGetCoordinates_Win32(Draw ctx,double *xl, double *yl, double *xr, double *yr)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawCheckResizeWindow_Win32"></a> */"DrawCheckResizeWindow_Win32"
+static int DrawCheckResizedWindow_Win32(Draw draw)
 {       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  RECT r;
-  GetWindowRect(draw->hWnd,&r);
-  *xl = (double)r.left;
-  *yl = (double)r.bottom;
-  *xr = (double)r.right;
-  *yr = (double)r.top;
-  return 0;
-}
-/*
-FUNCTION: DrawResizeWindow_Win32
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
 
-        inputs: w,h             // width and height in pixels that window will be resized to
-                        *ctx    //pointer to window
-        description: Resizes window from original point with given height and width. 
-                                 Since windows are drawn from upper-left to lower-right corners,
-                                to change the size we will grab the curent value of the upper left 
-                                corner and redraw the window with the desired height and width from 
-                                that point.It also turns the haveresized flag for that window to true
-*/
-int DrawResizeWindow_Win32(Draw ctx,int w,int h)
-{       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  RECT r;
-  GetWindowRect(draw->hWnd,&r);
-  MoveWindow(draw->hWnd,r.left,r.top,(int)w,(int)h,TRUE);
-  draw->haveresized = 1;//throw the flag that we have resized this window
-  return 0;
-}
-/*
-FUNCTION: DrawCheckResizeWindow_Win32
+  PetscFunctionBegin;
+  if (windraw->haveresized == 1) {
+	  PetscFunctionReturn(1);
+  } else {
+	  PetscFunctionReturn(0);
+  }
 
-        inputs:         *ctx    //pointer to window
-        description: Returns a 1 if this windows has a recorded resizing and 0 if not.
-*/
-int DrawCheckResizedWindow_Win32(Draw ctx)
-{       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  if (draw->haveresized == 1) return 1;
-  else return 0;
 }
-/*
-FUNCTION: DrawGetTitle_Win32
 
-        inputs:         *ctx    //pointer to window
-                                **title //pointer for title chars
-        description: returns a pointer to the pointer for the windows title
-*/
-int DrawGetTitle_Win32(Draw ctx, char **title)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawSetTitle_Win32"></a> */"DrawSetTitle_Win32"
+static int DrawSetTitle_Win32(Draw draw, char *title)
 {
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  GetWindowText(draw->hWnd,*title, 30);/*title shouldn't be more than 30 characters???*/
-  return 0;
-}
-/*
-FUNCTION: DrawSetTitle_Win32
-
-        inputs:         *ctx    //pointer to window
-                                *title //pointer for chars that will be set as the new window title
-        description: Sets the current windows title to chars it was passed
-*/
-int DrawSetTitle_Win32(Draw ctx, char *title)
-{
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  SetWindowText(draw->hWnd,title);
-  return 0;
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  
+  PetscFunctionBegin;
+  draw->title = title;
+  SetWindowText(windraw->hWnd,title);
+  PetscFunctionReturn(0);
 }
 
-/*
-FUNCTION: DrawClear_Win32
-
-        inputs:         *ctx    //pointer to window
-        description: Redraws window blank
-*/
-int DrawClear_Win32(Draw ctx)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawClear_Win32"></a> */"DrawClear_Win32"
+static int DrawClear_Win32(Draw draw)
 {       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  RECT r;
-  GetClientRect(draw->hWnd,&r);
-  RedrawWindow(draw->hWnd,&r,NULL,RDW_INVALIDATE | RDW_ERASE);
-  UpdateWindow(draw->hWnd);
-  return 0;
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+
+  PetscFunctionBegin;
+  /*clear primary buffer*/
+  ExtFloodFill(windraw->node->Buffer,0,0,COLOR_WINDOW,FLOODFILLBORDER);
+  /*if exists clear secondary buffer*/
+  if(windraw->node->DoubleBuffered) {
+	  ExtFloodFill(windraw->node->DoubleBuffer,0,0,COLOR_WINDOW,FLOODFILLBORDER);
+  }
+  /*force WM_PAINT message so cleared buffer will show */
+  InvalidateRect(windraw->hWnd,NULL,TRUE);
+  UpdateWindow(windraw->hWnd);
+  PetscFunctionReturn(0);
 }
-/*
-FUNCTION: DrawTriangle_Win32
 
- inputs: x1,x2,x3,y1,y2,y3      //coordinates for the three points
-                 c1,c2,c3                       //color assigned to each point
-                 *ctx                           //pointer to stucture for window being used
-
- description: Uses points given to create a triangle out of lines,
-                          averages assigned colors and fills in are with a solid
-                          brush of that color.
-*/
-int DrawTriangle_Win32(Draw ctx,double x1,double y1,double x2,double y2,double x3,double y3,
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawTriangle_Win32"></a> */"DrawTriangle_Win32"
+static int DrawTriangle_Win32(Draw draw,double x1,double y1,double x2,double y2,double x3,double y3,
                        int c1,int c2,int c3)
 {       
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  HBRUSH hbrush;
-  HPEN hpen;
-  AverageColorTriangle_Win32(ctx,c1,c2,c3); 
-        
-  hbrush = CreateSolidBrush(draw->currentcolor);
-  hpen = CreatePen(PS_SOLID,0,draw->currentcolor);
-  /*Retrieve the correct windows device context 
-    and draw lines connecting the three points*/
-  draw->hdc = GetDC(draw->hWnd);
-  BeginPath(draw->hdc);
-  MoveToEx(draw->hdc,(int)x1,(int)y1,NULL);
-  LineTo(draw->hdc,(int)x2,(int)y2);
-  LineTo(draw->hdc,(int)x3,(int)y3);
-  LineTo(draw->hdc, (int)x1,(int)y1);
-  EndPath(draw->hdc);
-  /*Fill the Triangle with averaged color 
-    and release handle to device context*/
-  SelectPen(draw->hdc,hpen);
-  SelectBrush(draw->hdc,hbrush);
-  StrokeAndFillPath(draw->hdc);
-  ReleaseDC(draw->hWnd,draw->hdc);
-  return 0;
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  HBRUSH      hbrush;
+  HPEN        hpen;
+  int         p1x,p1y,p2x,p2y,p3x,p3y;
+  HDC         bit;
+   
+  PetscFunctionBegin;
+  AverageColorTriangle_Win32(draw,c1,c2,c3); 
+  hbrush = CreateSolidBrush(windraw->currentcolor);
+  hpen   = CreatePen(PS_SOLID,0,windraw->currentcolor);
+  p1x = XTRANS(draw,windraw,x1);
+  p2x = XTRANS(draw,windraw,x2);
+  p3x = XTRANS(draw,windraw,x3);
+  p1y = YTRANS(draw,windraw,y1);
+  p2y = YTRANS(draw,windraw,y2);
+  p3y = YTRANS(draw,windraw,y3);
+  
+  if(windraw->node->DoubleBuffered) {
+	  bit = windraw->node->DoubleBuffer;
+  } else {
+	  bit = windraw->node->Buffer;
+  }
+  BeginPath(bit);
+  MoveToEx(bit,p1x,p1y,NULL);
+  LineTo(bit,p2x,p2y);
+  LineTo(bit,p3x,p3y);
+  LineTo(bit,p1x,p1y);
+  EndPath(bit);
+  SelectPen(bit,hpen);
+  SelectBrush(bit,hbrush);
+  StrokeAndFillPath(bit);
+  /*Forces a WM_PAINT message and erases background*/
+  InvalidateRect(windraw->hWnd,NULL,TRUE);
+  UpdateWindow(windraw->hWnd);
+  PetscFunctionReturn(0);
 }
-
+#undef __FUNC__  
+#define __FUNC__ /* <a name="PopMessageLoopThread_Win32"></a> */"PopMessageLoopThread_Win32"
 void PopMessageLoopThread_Win32(Draw popdraw)
 {
   Draw_Win32 *pop = (Draw_Win32*)popdraw->data;
-  MSG msg;
+  MSG         msg;
+  HWND        hWnd = NULL;
+  char        PopClassName [MAX_LOADSTRING + 1]; 
+  RECT        r;
+  int         width,height;
+  WNDCLASSEX  myclass;
+  LPVOID      lpMsgBuf;
 
-  TCHAR PopClassName [MAX_LOADSTRING + 1]; 
-  RECT r;
-  int width,height;
-  POINT origin;
-  WNDCLASSEX myclass;
+  /*initialize window class parameters*/
   myclass.cbSize        = sizeof(WNDCLASSEX);
   myclass.style         = CS_OWNDC;
   myclass.lpfnWndProc   = (WNDPROC)WndProc;
@@ -739,19 +610,38 @@ void PopMessageLoopThread_Win32(Draw popdraw)
   myclass.lpszMenuName  = NULL;
   myclass.lpszClassName = PopClassName;
   myclass.hIconSm       = NULL;
+
   RegisterClassEx(&myclass);
 
   SetRect(&r,0,0,450,450);
         
   width    = (r.right - r.left) / 3;
   height   = (r.bottom - r.top) / 3;
-  origin.x = 0;
-  origin.y = 0;
-        
-  pop->hWnd = CreateWindow(PopClassName,NULL, WS_POPUPWINDOW | WS_CAPTION,
-                           0, 0, width,height, NULL, NULL,NULL, NULL);
+  
+  hWnd = CreateWindowEx(0,
+	                         PopClassName,
+							 NULL, 
+							 WS_POPUPWINDOW | WS_CAPTION,
+                             0,0, 
+							 width,height,
+							 NULL,
+							 NULL,
+							 hInst,
+							 NULL);
+  pop->x = 0;
+  pop->y = 0;
+  pop->w = width;
+  pop->h = height;
                                         
-  ShowWindow(pop->hWnd, SW_SHOWNOACTIVATE);
+  if(hWnd == NULL) {
+	  lpMsgBuf = "Window Not Succesfully Created";
+	  MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
+      LocalFree( lpMsgBuf );
+      exit(0);
+  }
+  pop->hWnd = hWnd;
+  /*display and update new popup window*/
+  ShowWindow(pop->hWnd, SW_SHOWNORMAL);
   UpdateWindow(pop->hWnd);
   SetEvent(pop->hReadyEvent);
         
@@ -760,106 +650,116 @@ void PopMessageLoopThread_Win32(Draw popdraw)
     DispatchMessage(&msg);
   }
 }
-/*
-FUNCTION: DrawGetPopup_Win32
 
-        inputs:         *ctx     //pointer to window that pop-up window will belong to
-                                *popdraw //pointer to the created popup window
-        description: Creates all the same structures and definition for a regular window.
-                                Creates the pop-up window within its own new thread. How it is the ctx
-                                window has no control or ownership of the pop-up window.Mutex is used
-                                to ensure that nothing can access the structs for the window before
-                                it is done setting them up
-*/
-int DrawGetPopup_Win32(Draw ctx,Draw *popdraw)
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawDestroy_Win32"></a> */"DrawDestroy_Win32"
+static int DrawDestroy_Win32(Draw draw)
 {
-  Draw_Win32 *pop;
-  HANDLE hThread;
-  WindowNode newnode;
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  
+  PetscFunctionBegin;
+  SendMessage(windraw->hWnd,WM_DESTROY,0,0);
+  PetscFree(windraw);
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawSynchronizedFlush_Win32"></a> */"DrawSynchronizedFlush_Win32"
+static int DrawSynchronizedFlush_Win32(Draw draw)
+{
+	/* Multi Processor is not implemeted yet */
+  PetscFunctionBegin;
+  DrawFlush_Win32(draw);
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ /* <a name="DrawSynchronizedClear_Win32"></a> */"DrawSynchronizedClear_Win32"
+static int DrawSynchronizedClear_Win32(Draw draw)
+{
+	/* Multi Processor is not implemeted yet */
+  PetscFunctionBegin;
+  DrawClear_Win32(draw);
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ /* <a name="MessageLoopThread_Win32"></a> */"MessageLoopThread_Win32"
+void MessageLoopThread_Win32(Draw draw)
+{
+  Draw_Win32 *windraw = (Draw_Win32*)draw->data;
+  MSG        msg;
+  HWND       hWnd = NULL;
+  char       classname[MAX_LOADSTRING + 1];
+  WNDCLASSEX wclass;
+  LPVOID     lpMsgBuf;
 
-  pop = (Draw_Win32 *) PetscMalloc(sizeof (Draw_Win32));
-  (*popdraw)->data = pop;
+  /*initialize window class parameters*/
+  wclass.cbSize         = sizeof(WNDCLASSEX);
+  wclass.style          = CS_SAVEBITS | CS_HREDRAW | CS_VREDRAW;
+  wclass.lpfnWndProc    = (WNDPROC)WndProc;
+  wclass.cbClsExtra     = 0;
+  wclass.cbWndExtra     = 0;
+  wclass.hInstance      = NULL;
+  wclass.hIcon          = LoadIcon(NULL,IDI_APPLICATION);
+  wclass.hCursor        = LoadCursor(NULL,IDC_ARROW);
+  wclass.hbrBackground  = GetStockBrush(WHITE_BRUSH);
+  wclass.lpszMenuName   = NULL;
+  wclass.lpszClassName  = classname;
+  wclass.hIconSm        = NULL;
 
-  pop->hReadyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-        
-  hThread = CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)PopMessageLoopThread_Win32,*popdraw,0, NULL);
-  CloseHandle(hThread);
-  WaitForSingleObject(pop->hReadyEvent, INFINITE);
-  CloseHandle(pop->hReadyEvent);
-
-  WaitForSingleObject(g_hWindowListMutex, INFINITE);
-  newnode = (WindowNode)PetscMalloc(sizeof(struct _p_WindowNode));CHKPTRQ(newnode);
-
-/* WindowNode newnode = new _p_WindowNode; */
-  newnode->MouseListHead = NULL;
-  newnode->MouseListTail = NULL;
-  newnode->wnext = WindowListHead;
-  newnode->wprev = NULL;
-  newnode->hWnd = pop->hWnd;
-  if(WindowListHead != NULL) {
-    WindowListHead->wprev = newnode;
+  RegisterClassEx(&wclass);
+  
+  
+  hWnd = CreateWindowEx(0,
+	                    classname,
+	                    NULL,
+		                WS_OVERLAPPEDWINDOW,
+                        draw->x,
+						draw->y, 
+                        draw->w,
+   				        draw->h, 
+					    NULL,
+				        NULL,
+					    hInst,
+					    NULL);
+  
+  if(hWnd == NULL) {
+  lpMsgBuf = "Window Not Succesfully Created";
+  MessageBox( NULL, (LPCTSTR)lpMsgBuf, "Error", MB_OK | MB_ICONINFORMATION );
+  LocalFree( lpMsgBuf );
+  exit(0);
   }
-  newnode->event = CreateEvent(NULL, TRUE, FALSE, NULL);
-  WindowListHead = newnode;
-  ReleaseMutex(g_hWindowListMutex);
-  return 0;
+  windraw->hWnd = hWnd;
+  /*display and update new window*/
+  ShowWindow(hWnd,SW_SHOWNORMAL);
+  UpdateWindow(hWnd);
+  SetEvent(windraw->hReadyEvent);
+
+  while (GetMessage(&msg,hWnd, 0, 0)) {
+	  TranslateMessage(&msg);
+	  DispatchMessage(&msg);
+  }
 }
 
 
-
-void MessageLoopThread_Win32(Draw ctx)
-{
-  Draw_Win32 *draw    = (Draw_Win32*)ctx->data;
-  TCHAR classname[MAX_LOADSTRING];
-  MSG msg;
-        
-  WNDCLASSEX wcex;
-  wcex.cbSize         = sizeof(WNDCLASSEX); 
-  wcex.style          = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-  wcex.lpfnWndProc    = (WNDPROC)WndProc;
-  wcex.cbClsExtra     = 0;
-  wcex.cbWndExtra     = 0;
-  wcex.hInstance      = NULL;
-  wcex.hIcon          = LoadIcon(NULL, (LPCTSTR)IDI_FOUR);
-  wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
-  wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-  wcex.lpszMenuName   = (LPCSTR)IDC_FOUR;
-  wcex.lpszClassName  = classname;
-  wcex.hIconSm        = NULL;
-
-  RegisterClassEx(&wcex);
-        
-  draw->hWnd = CreateWindow(classname,NULL, WS_OVERLAPPEDWINDOW,CW_USEDEFAULT, 0, 
-                            CW_USEDEFAULT, 0, NULL, NULL,NULL, NULL);
-
-  ShowWindow(draw->hWnd, SW_SHOW);
-  UpdateWindow(draw->hWnd);
-  SetEvent(draw->hReadyEvent);
-        
-  while (GetMessage(&msg, draw->hWnd, 0, 0)) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-  }
-}
-static struct _DrawOps DvOps = { 0,
-                                 0,DrawLine_Win32,
+static struct _DrawOps DvOps = { DrawSetDoubleBuffer_Win32,
+                                 DrawFlush_Win32,
+								 DrawLine_Win32,
                                  DrawLineSetWidth_Win32,
-                                 0,
+                                 DrawLineGetWidth_Win32,
                                  DrawPoint_Win32,
-                                 0,
+                                 DrawPointSetSize_Win32,
                                  DrawString_Win32,
                                  DrawStringVertical_Win32,
                                  DrawStringSetSize_Win32,
                                  DrawStringGetSize_Win32,
                                  0,
                                  DrawClear_Win32,
-                                 0,
+                                 DrawSynchronizedFlush_Win32,
                                  DrawRectangle_Win32,
                                  DrawTriangle_Win32,
                                  DrawGetMouseButton_Win32,
                                  DrawPause_Win32,
-                                 0,
-				 0,
+                                 DrawSynchronizedClear_Win32,
+				                 0,
                                  0,
                                  DrawGetPopup_Win32,
                                  DrawSetTitle_Win32,
@@ -868,238 +768,284 @@ static struct _DrawOps DvOps = { 0,
                                  DrawDestroy_Win32,
                                  0,
                                  0,
-                                 0 };
+								 0,
+                                 0};
 
 
-/*
-FUNCTION: DrawCreate_Win32
-
-        inputs:         *ctx     //pointer to window that will be created
-        description: Creates a window in a new thread
-*/
-int DrawCreate_Win32(Draw ctx)
-{       
-  Draw_Win32  *draw;
-  HANDLE      hThread;
+static int DrawGetPopup_Win32(Draw draw,Draw *popdraw)
+{
+  Draw_Win32 *pop;
+  HANDLE      hThread = NULL;
+  WindowNode  newnode;
   int         ierr;
-  WindowNode newnode;
-  draw      = (Draw_Win32*)PetscMalloc(sizeof(Draw_Win32));CHKPTRQ(draw);
-  ctx->data = draw;
+
+  PetscFunctionBegin;
+  pop = (Draw_Win32 *) PetscMalloc(sizeof (Draw_Win32));
+  (*popdraw)->data = pop;
 
   /* the following is temporary fix for initializing a global datastructure */
-  if (!g_hWindowListMutex) {
-  g_hWindowListMutex = CreateMutex(NULL, FALSE, NULL);
+  if(!g_hWindowListMutex){
+	  g_hWindowListMutex = CreateMutex(NULL,FALSE,NULL);
   }
+  ierr = PetscMemcpy((*popdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(ctx->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  
-  draw->hReadyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-        
-  hThread = CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)MessageLoopThread_Win32, ctx,0, NULL);
+  pop->hReadyEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  CreateThread(NULL, 0,(LPTHREAD_START_ROUTINE)PopMessageLoopThread_Win32,*popdraw,0,hThread);
   CloseHandle(hThread);
-  WaitForSingleObject(draw->hReadyEvent, INFINITE);
-  CloseHandle(draw->hReadyEvent);
-
+  WaitForSingleObject(pop->hReadyEvent, INFINITE);
+  CloseHandle(pop->hReadyEvent);
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
 
-  newnode = (WindowNode)PetscMalloc(sizeof(struct _p_WindowNode));CHKPTRQ(newnode);
-  newnode->MouseListHead = NULL;
-  newnode->MouseListTail = NULL;
-  newnode->wnext = WindowListHead;
-  newnode->wprev = NULL;
-  newnode->hWnd = draw->hWnd;
+  draw->popup             = (*popdraw);
+  newnode                 = (WindowNode)PetscMalloc(sizeof(struct _p_WindowNode));CHKPTRQ(newnode);
+  newnode->MouseListHead  = NULL;
+  newnode->MouseListTail  = NULL;
+  newnode->wnext          = WindowListHead;
+  newnode->wprev          = NULL;
+  newnode->hWnd           = pop->hWnd;
   if(WindowListHead != NULL) {
     WindowListHead->wprev = newnode;
   }
-  newnode->event = CreateEvent(NULL, TRUE, FALSE, NULL);
-  WindowListHead = newnode;
+  WindowListHead          = newnode;
+  pop->hdc                = GetDC(pop->hWnd);
 
+  pop->stringheight   = 10; 
+  pop->stringwidth    = 6;
+  pop->linewidth      = 1;   /* default pixel sizes of graphics until user changes them */
+  pop->pointdiameter  = 1;
+  pop->node           = newnode;
+
+  newnode->bitwidth  = pop->w;
+  newnode->bitheight = pop->h;
+ 
+  /*Create and initialize primary graphics buffer*/
+  newnode->Buffer = CreateCompatibleDC(pop->hdc);
+  newnode->BufferBit = CreateCompatibleBitmap(pop->hdc,pop->w,pop->h);
+  newnode->store = SelectObject(newnode->Buffer,newnode->BufferBit);
+  ExtFloodFill(newnode->Buffer,0,0,COLOR_WINDOW,FLOODFILLBORDER);
+ 
+
+  newnode->event          = CreateEvent(NULL, TRUE, FALSE, NULL);
+  newnode->DoubleBuffered = 0;
+
+  ReleaseDC(pop->hWnd,pop->hdc);
+  ReleaseMutex(g_hWindowListMutex);
+  PetscFunctionReturn(0);
+}
+
+
+EXTERN_C_BEGIN
+int DrawCreate_Win32(Draw draw)
+{       
+  Draw_Win32  *windraw;
+  HANDLE      hThread = NULL;
+  int         ierr;
+  WindowNode  newnode;
+
+  windraw     = (Draw_Win32*)PetscMalloc(sizeof(Draw_Win32));CHKPTRQ(windraw);
+  draw->data  = windraw;
+   
+  /* the following is temporary fix for initializing a global datastructure */
+  if(!g_hWindowListMutex){
+	  g_hWindowListMutex = CreateMutex(NULL,FALSE,NULL);
+  }
+  ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+
+  windraw->hReadyEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+  /*makes call to MessageLoopThread to creat window and attach a thread*/
+  CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)MessageLoopThread_Win32,draw,0,hThread);
+  CloseHandle(hThread);
+  WaitForSingleObject(windraw->hReadyEvent,INFINITE);
+  CloseHandle(windraw->hReadyEvent);
+  WaitForSingleObject(g_hWindowListMutex,INFINITE);
+  
+  newnode                 = (WindowNode)PetscMalloc(sizeof(struct _p_WindowNode));CHKPTRQ(newnode);
+  newnode->MouseListHead  = NULL;
+  newnode->MouseListTail  = NULL;
+  newnode->wnext          = WindowListHead;
+  newnode->wprev          = NULL;
+  newnode->hWnd           = windraw->hWnd;
+  if(WindowListHead != NULL){
+    WindowListHead->wprev = newnode;
+  }
+  WindowListHead          = newnode;
+  windraw->hdc            = GetDC(windraw->hWnd);
+  
+  windraw->stringheight   = 10; 
+  windraw->stringwidth    = 6;
+  windraw->linewidth      = 1;   /* default pixel sizes of graphics until user changes them */
+  windraw->pointdiameter  = 1;
+  windraw->node           = newnode;
+
+  windraw->x         = draw->x;
+  windraw->y         = draw->y;
+  windraw->w     = newnode->bitwidth    = draw->w;
+  windraw->h     = newnode->bitheight   = draw->h;  
+  
+  /*Create and initialize primary graphics buffer*/
+  newnode->Buffer = CreateCompatibleDC(windraw->hdc);
+  newnode->BufferBit = CreateCompatibleBitmap(windraw->hdc,windraw->w,windraw->h);
+  newnode->store = SelectObject(newnode->Buffer,newnode->BufferBit);
+  ExtFloodFill(newnode->Buffer,0,0,COLOR_WINDOW,FLOODFILLBORDER);
+ 
+  newnode->event          = CreateEvent(NULL,TRUE,FALSE,NULL);
+  newnode->DoubleBuffered = 0;
+
+  ReleaseDC(windraw->hWnd,windraw->hdc);
   ReleaseMutex(g_hWindowListMutex);
   return 0;
 }
+EXTERN_C_END
 
-/*
-FUNCTION: DrawDestroy_Win32
 
-        inputs:         *ctx     //pointer to window that will be destoyed
-        description: Releases all memory and threads to that window and removes it
-*/
-int DrawDestroy_Win32(Draw ctx)
+/* FUNCTION: WndProc(HWND, unsigned, WORD, LONG)
+   PURPOSE:  Processes messages for the main window.
+   WM_COMMAND  - process the application menu
+   WM_PAINT    - Paint the main window
+   WM_DESTROY  - post a quit message and return */
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-  Draw_Win32 *draw = (Draw_Win32*)ctx->data;
-  SendMessage(draw->hWnd,WM_DESTROY,0,0);
-  PetscFree(draw);
+  int         wmId, wmEvent;
+  PAINTSTRUCT ps;
+  
+  switch (message){
+	HANDLE_MSG(hWnd,WM_PAINT,OnPaint_Win32);
+	HANDLE_MSG(hWnd,WM_DESTROY,OnDestroy_Win32);
+	case WM_COMMAND:
+		wmId    = LOWORD(wParam); 
+		wmEvent = HIWORD(wParam); 
+		/* Parse the menu selections:*/
+		switch (wmId){
+		  case IDM_EXIT:
+			 DestroyWindow(hWnd);
+			 break;
+		  default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+        break;
+    case WM_LBUTTONUP:
+		MouseRecord_Win32(hWnd,BUTTON_LEFT);
+		break;
+    case WM_RBUTTONUP:
+		MouseRecord_Win32(hWnd,BUTTON_RIGHT);
+		break;
+	case WM_MBUTTONUP:
+		MouseRecord_Win32(hWnd,BUTTON_CENTER);
+		break;
+
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+  }
   return 0;
 }
 
+static void OnPaint_Win32(HWND hWnd) {
+	PAINTSTRUCT ps;
+	HDC         hdc;
+    WindowNode  current = NULL;
+	InvalidateRect(hWnd,NULL,TRUE);	
+	WaitForSingleObject(g_hWindowListMutex, INFINITE);
+	current = WindowListHead;
+	hdc     = BeginPaint(hWnd, &ps);
+	
+	while(current != NULL)
+	{
+      if (current->hWnd == hWnd)
+	  { 
+	      /*flushes primary buffer to window*/
+		  BitBlt(hdc,
+			  0,0,
+		      GetDeviceCaps(hdc,HORZRES),
+			  GetDeviceCaps(hdc,VERTRES),
+		      current->Buffer,
+		      0,0,
+		      SRCCOPY);
+		  
+		  /*StretchBlt(hdc,
+			        0,0,
+					w,h,
+					current->Buffer,
+					0,0,
+					current->bitwidth,
+					current->bitheight,
+					SRCCOPY);*/
+	  	   break;
+	  }
+	  current = current->wnext;
+	}
+	
+	
+	EndPaint(hWnd, &ps);
+	ReleaseMutex(g_hWindowListMutex);
+}
 
-//  FUNCTION: WndProc(HWND, unsigned, WORD, LONG)
-//
-//  PURPOSE:  Processes messages for the main window.
-//
-//  WM_COMMAND  - process the application menu
-//  WM_PAINT    - Paint the main window
-//  WM_DESTROY  - post a quit message and return
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-  int wmId, wmEvent;
-  PAINTSTRUCT ps;
-  HDC hdc;
-  POINT mousepos;
-  WindowNode current = NULL; 
-  MouseNode newnode;
-
-  switch (message) {
-  case WM_COMMAND:
-    wmId    = LOWORD(wParam); 
-    wmEvent = HIWORD(wParam); 
-    // Parse the menu selections:
-    switch (wmId) {
-    case IDM_EXIT:
-      DestroyWindow(hWnd);         
-      break;
-    default:
-      return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    break;
-    /*What is happening here is that once a window has been opened
-      every mouse click action is stored in a global linked list. Then when 
-      GetMouseButton is called the first occurence is used then deleted. If 
-      there has not been an action performed than it waits.
-      We have set up the mouse actions this way so that mouse clicks are
-      not lost in the message loops or execution time.Also this way we are 
-      able to throw the IsGetMouseOn flag so that actions that come before
-      you want to record them are not recorded or used at a later time*/
-  case WM_LBUTTONUP:
-    WaitForSingleObject(g_hWindowListMutex, INFINITE);
+static int  MouseRecord_Win32(HWND hWnd,DrawButton button) {
+	
+	/*Called by all three mouse button actions
+	  Records needed mouse data in windows data structure*/
+	WindowNode current = NULL;
+	MouseNode  newnode;
+	POINT      mousepos;
+	
+	
+	WaitForSingleObject(g_hWindowListMutex, INFINITE);
     current = WindowListHead;
+	if(current->IsGetMouseOn == TRUE){
+	
     SetEvent(current->event);
-    while (current != NULL) {   
-      if(current->hWnd == hWnd) {       
-        if(current->IsGetMouseOn == TRUE) {
+    while (current != NULL){   
+      if(current->hWnd == hWnd){       
+        
           newnode = (MouseNode)PetscMalloc(sizeof(struct _p_MouseNode));CHKPTRQ(newnode);
-
-          newnode->Button = BUTTON_LEFT;
+          newnode->Button = button;
           GetCursorPos(&mousepos);
           newnode->user.x = mousepos.x;
           newnode->user.y = mousepos.y;
           ScreenToClient(hWnd,&mousepos);
           newnode->phys.x = mousepos.x;
           newnode->phys.y = mousepos.y;
-
-          if (current->MouseListTail == NULL) {
-            current->MouseListHead = newnode;
-            current->MouseListTail = newnode;
-          } else {
-            current->MouseListTail->mnext = newnode;
-            current->MouseListTail = newnode;
+          if(current->MouseListTail == NULL){
+			 current->MouseListHead = newnode;
+             current->MouseListTail = newnode;
+          }else{
+			  current->MouseListTail->mnext = newnode;
+              current->MouseListTail = newnode;
           }
           newnode->mnext = NULL;
-          ReleaseMutex(g_hWindowListMutex);
-        }
-        break;
-      } else {
-        current = current->wnext;
-      }
-    }
-    break;
-  case WM_MBUTTONUP:
-    WaitForSingleObject(g_hWindowListMutex, INFINITE);
-    current = WindowListHead;
-    SetEvent(current->event);
-    while (current != NULL) {   
-      if(current->hWnd == hWnd) {       
-        if(current->IsGetMouseOn == TRUE) {
-          newnode = (MouseNode)PetscMalloc(sizeof(struct _p_MouseNode));CHKPTRQ(newnode);
+          
+		  break;
+	  } 
+	  current = current->wnext;
+	}
+	}
+	ReleaseMutex(g_hWindowListMutex);
+	return 0;
+}
 
-          newnode->Button = BUTTON_CENTER;
-          GetCursorPos(&mousepos);
-          newnode->user.x = mousepos.x;
-          newnode->user.y = mousepos.y;
-          ScreenToClient(hWnd,&mousepos);
-          newnode->phys.x = mousepos.x;
-          newnode->phys.y = mousepos.y;
-
-          if (current->MouseListTail == NULL) {
-            current->MouseListHead = newnode;
-            current->MouseListTail = newnode;
-          } else {
-            current->MouseListTail->mnext = newnode;
-            current->MouseListTail = newnode;
-          }
-          newnode->mnext = NULL;
-          ReleaseMutex(g_hWindowListMutex);
-        }
-        break;
-      }
-      else {
-        current = current->wnext;
-      }
-    }
-    break;
-  case WM_RBUTTONUP:
-    WaitForSingleObject(g_hWindowListMutex, INFINITE);
-    current = WindowListHead;
-    SetEvent(current->event);
-    while (current != NULL) {   
-      if(current->hWnd == hWnd) {       
-        if(current->IsGetMouseOn == TRUE) {
-          newnode = (MouseNode)PetscMalloc(sizeof(struct _p_MouseNode));CHKPTRQ(newnode);
-
-          newnode->Button = BUTTON_RIGHT;
-          GetCursorPos(&mousepos);
-          newnode->user.x = mousepos.x;
-          newnode->user.y = mousepos.y;
-          ScreenToClient(hWnd,&mousepos);
-          newnode->phys.x = mousepos.x;
-          newnode->phys.y = mousepos.y;
-
-          if (current->MouseListTail == NULL) {
-            current->MouseListHead = newnode;
-            current->MouseListTail = newnode;
-          } else {
-            current->MouseListTail->mnext = newnode;
-            current->MouseListTail = newnode;
-          }
-          newnode->mnext = NULL;
-          ReleaseMutex(g_hWindowListMutex);
-        }
-        break;
-      }
-      else {
-        current = current->wnext;
-      }
-    }
-    break;
-  case WM_PAINT:
-    hdc = BeginPaint(hWnd, &ps);
-    EndPaint(hWnd, &ps);
-    break;
-    /*Since each window now has several linked lists associated with it
-      we destroy these when a window is closed to free the memory. Both the 
-      list for the window and the mouse action list are destroyed*/
-  case WM_DESTROY:
-    WaitForSingleObject(g_hWindowListMutex, INFINITE);
-    current = WindowListHead;
-    while (current != NULL) {   
-      if((current->hWnd != NULL) && (current->hWnd == hWnd)) {       
-        break;
-      } else {
-        current = current->wnext;
-      }
-    }
-    if(current != NULL) {
-      deletemouselist_Win32(current);
-    } else {
-      PetscFree(current);
-    }
-    ReleaseMutex(g_hWindowListMutex);
-    quitflag = PETSC_FALSE;
+static void OnDestroy_Win32(HWND hWnd) {
+	/*searches linked list of window data and frees corresponding memory*/
+	WindowNode current;
+	
+	WaitForSingleObject(g_hWindowListMutex, INFINITE);
+	current = WindowListHead;
+	
+	SetEvent(current->event);
+    while (current != NULL) { 
+	  if(current->hWnd == hWnd){
+		  if(current->wprev != NULL){
+			  current->wprev->wnext = current->wnext;
+		  }else{
+			  WindowListHead = current->wnext;
+		  }
+	 	  if(current->MouseListHead){
+			  deletemouselist_Win32(current);
+		  }else{
+	          PetscFree(current);
+		  }
+		break;
+	  }
+	  current = current->wnext;
+	}
+	ReleaseMutex(g_hWindowListMutex);
     PostQuitMessage(0);
-    break;
-
-  default:
-    return DefWindowProc(hWnd, message, wParam, lParam);
-  }
-  return 0;
 }

@@ -10,21 +10,6 @@
 #include <stdlib.h>
 #include "petscdraw.h"
 
-/* Nodes that hold all information about a windows device context */
-typedef struct  {
-  HDC      hdc;
-  HWND     hWnd;
-  int      linewidth;
-  int      pointdiameter;
-  COLORREF currentcolor;
-  int      stringheight;
-  int      stringwidth;
-  int      pause;
-  int      haveresized;  /* change to bool */
-  int      repaintDC;
-  HANDLE   hReadyEvent;
-}Draw_Win32;
-
 /* Nodes that record mouse actions when needed */
 typedef struct _p_MouseNode *MouseNode;
 struct _p_MouseNode{
@@ -44,6 +29,31 @@ struct _p_WindowNode {
   MouseNode  MouseListHead;
   MouseNode  MouseListTail;
   BOOL       IsGetMouseOn;
+  PetscTruth DoubleBuffered;
+  HDC        Buffer,DoubleBuffer;
+  HBITMAP    BufferBit,DoubleBufferBit;
+  HGDIOBJ    store,dbstore;
+  int        bitwidth,bitheight;
 };
+
+/* Nodes that hold all information about a windows device context */
+typedef struct  {
+  HDC        hdc;
+  HWND       hWnd;
+  int        linewidth;
+  int        pointdiameter;
+  COLORREF   currentcolor;
+  int        stringheight;
+  int        stringwidth;
+  int        pause;
+  PetscTruth haveresized;
+  HANDLE     hReadyEvent;
+  int        x,y,w,h;  /* Size and location of window */
+  WindowNode node;/* so we can grab windownode info if needed */
+  DWORD      popup,caption,overlapped;
+ 
+}Draw_Win32;
+
+
 
 #endif
