@@ -5,7 +5,6 @@ petsc/bmake/solaris_uni
 petsc/bmake/IRIX64_uni
 petsc/bmake/alpha/base.g_pointer
 petsc/bin/petscopt
-petsc/bin/petscoptsinfo.text
 petsc/bin/petscconf.h.in.sav
 petsc/src/contrib/sif
 petsc/bin/configure.in.old

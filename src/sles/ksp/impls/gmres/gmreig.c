@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmreig.c,v 1.6 1997/12/01 01:53:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmreig.c,v 1.7 1998/05/05 19:40:13 bsmith Exp balay $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"
@@ -174,7 +174,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
   if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in LAPACK routine");
   perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
   for ( i=0; i<n; i++ ) { perm[i] = i;}
-  for ( i=0; i<n; i++ ) { r[i]    = real(eigs[i]);}
+  for ( i=0; i<n; i++ ) { r[i]    = PetscReal(eigs[i]);}
   ierr = PetscSortDoubleWithPermutation(n,r,perm); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     r[i] = PetscReal(eigs[perm[i]]);
