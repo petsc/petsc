@@ -44,7 +44,6 @@ struct _Mat {
   struct _MatOps *ops;
   void           *data;
   int            factor;   /* 0, FACTOR_LU or FACTOR_CHOLESKY */
-  IS             row, col; /* possible row or column mappings */
 };
 
 #endif
