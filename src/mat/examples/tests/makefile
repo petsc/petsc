@@ -33,6 +33,9 @@ EXAMPLES_4    = ex1 ex2 ex4 ex5 ex6 ex10 ex14\
 RUNEXAMPLES_4 = runex1 runex2 runex4 runex5 runex6 \
 		runex10 runex14 runex15 runex20 runex21 runex35
 
+TESTEXAMPLES_1 = ex1.PETSc runex1 clean ex3.PETSc runex3  \
+		clean ex36 runex36 clean
+
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB) 
 	$(RM) ex1.o
