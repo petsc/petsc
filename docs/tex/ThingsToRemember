@@ -51,7 +51,7 @@ login: bsmith
 passwd: petsc-password
 
 machine mcurie.nersc.gov
-
+scheduler : cqsub (mpirun also works)
 help : consult@nersc.gov
 1 800 666 3772 select option 3
 ---------------
