@@ -57,7 +57,7 @@ int PetscMallocAlign(size_t mem,int line,char *func,char *file,char *dir,void** 
     }
   }
 #endif
-  if (!*result)  SETERRQ1(PETSC_ERR_MEM,"Memory requested %u",mem); 
+  if (!*result)  SETERRQ1(PETSC_ERR_MEM,"Memory requested %lu",(long)mem); 
   return 0;
 }
 
