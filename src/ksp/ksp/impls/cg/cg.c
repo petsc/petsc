@@ -98,10 +98,6 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
    Input Parameter:
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
-
-   Output Parameter:
-.     its - number of iterations used
-
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_CG"
@@ -192,6 +188,11 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);      /*     z <- Kp         */
      ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
+     if (dpi <= 0) {
+       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
+       ierr = PetscLogInfo((ksp,"KSPSolve_CG:diverging due to indefinite or negative definite matrix\n"));CHKERRQ(ierr);
+       break;
+     }
      a = beta/dpi;                                 /*     a = beta/p'z    */
      if (eigs) {
        d[i] = sqrt(PetscAbsScalar(b))*e[i] + 1.0/a;

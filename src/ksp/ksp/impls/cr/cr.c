@@ -49,7 +49,13 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   ierr = KSP_MatMult(ksp,Amat,P,AP);CHKERRQ(ierr);      /*   AP  <- A*P         */
   ierr = VecCopy(P,RT);CHKERRQ(ierr);                   /*   RT  <- P           */
   ierr = VecCopy(AP,ART);CHKERRQ(ierr);                 /*   ART <- AP          */
-  ierr   = VecDot(RT,ART,&btop);CHKERRQ(ierr);          /*   (RT,ART)           */
+  ierr = VecDot(RT,ART,&btop);CHKERRQ(ierr);          /*   (RT,ART)           */
+  if (btop < 0) {
+    ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
+    ierr = PetscLogInfo((ksp,"KSPSolve_CR:diverging due to indefinite or negative definite matrix\n"));CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+    
   if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
     ierr = VecNorm(RT,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
   } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
@@ -69,9 +75,13 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   i = 0;
   do {
     ierr   = KSP_PCApply(ksp,AP,Q);CHKERRQ(ierr);/*   Q <- B* AP          */
-                                                        /* Step 3                */
 
     ierr   = VecDot(AP,Q,&apq);CHKERRQ(ierr);  
+    if (apq <= 0.0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      ierr = PetscLogInfo((ksp,"KSPSolve_CR:diverging due to indefinite or negative definite PC\n"));CHKERRQ(ierr);
+      break;
+    }
     ai = btop/apq;                                      /* ai = (RT,ART)/(AP,Q)  */
 
     ierr   = VecAXPY(&ai,P,X);CHKERRQ(ierr);            /*   X   <- X + ai*P     */
@@ -80,6 +90,11 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr   = KSP_MatMult(ksp,Amat,RT,ART);CHKERRQ(ierr);/*   ART <-   A*RT       */
     bbot = btop;
     ierr   = VecDot(RT,ART,&btop);CHKERRQ(ierr);
+    if (btop < 0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
+      ierr = PetscLogInfo((ksp,"KSPSolve_CR:diverging due to indefinite or negative definite matrix\n"));CHKERRQ(ierr);
+      break;
+    }
 
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
       ierr = VecNorm(RT,NORM_2,&dp);CHKERRQ(ierr);      /*   dp <- || RT ||      */
@@ -124,7 +139,8 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
 
    Level: beginner
 
-   Notes: The operator and the preconditioner must be symmetric for this method
+   Notes: The operator and the preconditioner must be symmetric for this method. The 
+          preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
 M*/

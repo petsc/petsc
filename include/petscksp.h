@@ -341,11 +341,12 @@ typedef enum {/* converged */
               KSP_DIVERGED_NULL                = -2,
               KSP_DIVERGED_ITS                 = -3,
               KSP_DIVERGED_DTOL                = -4,
-              KSP_DIVERGED_NAN                 = -9,
               KSP_DIVERGED_BREAKDOWN           = -5,
               KSP_DIVERGED_BREAKDOWN_BICG      = -6,
               KSP_DIVERGED_NONSYMMETRIC        = -7,
               KSP_DIVERGED_INDEFINITE_PC       = -8,
+              KSP_DIVERGED_NAN                 = -9,
+              KSP_DIVERGED_INDEFINITE_MAT      = -10,
  
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 
