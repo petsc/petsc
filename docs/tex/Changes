@@ -41,6 +41,9 @@ it removes the locations from the nonzero structure
 
   IS
 
+   Added second arguement to ISInvertPermutation() that indicates how many indices are to be 
+  stored on that processor; ignored for one processor code. If you use ISInvertPermutation() 
+  simply add a second argument of PETSC_DECIDE.
     
   Draw
 
