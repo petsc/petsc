@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.20 1995/03/27 22:58:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.21 1995/03/28 19:11:57 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -942,6 +942,28 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,int flag,double shift,
   }
   return 0;
 } 
+
+static int MatGetInfo_MPIAIJ(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
+{
+  Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
+  Mat        A = mat->A, B = mat->B;
+  int        ierr, isend[3], irecv[3], nzA, nzallocA, memA;
+
+  ierr = MatGetInfo(A,MAT_LOCAL,&nzA,&nzallocA,&memA); CHKERR(ierr);
+  ierr = MatGetInfo(B,MAT_LOCAL,&isend[0],&isend[1],&isend[2]); CHKERR(ierr);
+  isend[0] += nzA; isend[1] += nzallocA; isend[2] += memA;
+  if (flag == MAT_LOCAL) {
+    *nz = isend[0]; *nzalloc = isend[1]; *mem = isend[2];
+  } else if (flag == MAT_GLOBAL_MAX) {
+    MPI_Allreduce((void *) isend,(void *) irecv,3,MPI_INT,MPI_MAX,matin->comm);
+    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+  } else if (flag == MAT_GLOBAL_SUM) {
+    MPI_Allreduce((void *) isend,(void *) irecv,3,MPI_INT,MPI_SUM,matin->comm);
+    *nz = irecv[0]; *nzalloc = irecv[1]; *mem = irecv[2];
+  }
+  return 0;
+}
+
 static int MatInsOpt_MPIAIJ(Mat aijin,int op)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) aijin->data;
@@ -1055,7 +1077,7 @@ static struct _MatOps MatOps = {MatInsertValues_MPIAIJ,
        0,0,
        MatRelax_MPIAIJ,
        0,
-       0,0,0,
+       MatGetInfo_MPIAIJ,0,
        MatCopy_MPIAIJ,
        MatGetDiag_MPIAIJ,0,0,
        MatBeginAssemble_MPIAIJ,MatEndAssemble_MPIAIJ,
