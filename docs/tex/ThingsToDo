@@ -10,6 +10,9 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - add info about help message printout to section 12.1 (version 2.0.15)
+    of users manual.
+
   - Consider adding test for NaNs to convegence tests.
 
   - Consider changing the default parallel solver from
