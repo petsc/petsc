@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.28 1996/02/09 01:56:42 bsmith Exp bsmith $ */
+/* $Id: phead.h,v 1.29 1996/03/19 21:30:28 bsmith Exp curfman $ */
 
 /*
     Defines the basic format of all data types. 
@@ -14,12 +14,12 @@ extern int  PetscCommFree_Private(MPI_Comm*);
 extern int PetscRegisterCookie(int *);
 
 /*
-     All Major PETSc Data structures have a common core; this 
+   All Major PETSc Data structures have a common core; this 
    is defined below by PETSCHEADER. 
 
-     PetscHeaderCreate should be used whenever you create a PETSc structure.
+   PetscHeaderCreate() should be used whenever you create a PETSc structure.
 
-     PetscCheckSameType checks if your PETSc structures are of same type.
+   PetscCheckSameType() checks if your PETSc structures are of same type.
 */
 
 #define PETSCHEADER                        \
@@ -113,8 +113,8 @@ extern void *PetscLow,*PetscHigh;
   if ((a)->type != (b)->type) SETERRQ(3,"Objects not of same type");
 
 /*
-      All PETSc objects begin with the fields defined in PETSCHEADER,
-   the PetscObject is a way of examining these fields regardless of 
+   All PETSc objects begin with the fields defined in PETSCHEADER.
+   The PetscObject is a way of examining these fields regardless of 
    the specific object. In C++ this could be a base abstract class
    from which all objects are derived.
 */
