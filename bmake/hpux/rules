@@ -1,62 +1,71 @@
-# $Id: base,v 1.46 1998/09/25 00:25:01 balay Exp balay $ 
+# $Id: base,v 1.47 1998/09/25 19:10:51 balay Exp balay $ 
+
+# $Id: base,v 1.42 1998/12/04 19:34:49 bsmith Exp bsmith $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+RANLIB           = true
+OMAKE            = /bin/make
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = cc -Aa +z -Ae
+C_FC             = f90
+C_CLINKER        = cc
+C_FLINKER        = f90
+C_CCV            = unknown
+C_SYS_LIB        = -lV3 -lU77 -lail -lcnx_syscall \
+	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
+
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g 
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O
+O_FOPTFLAGS      = -O
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = CC -Aa +z -ext +eh 
+CXX_FC           = f90
+CXX_CLINKER      = CC
+CXX_FLINKER      = f90
+CXX_CCV          = unknown
+CXX_SYS_LIB      = -lV3 -lU77 -lail -lcnx_syscall -lcomplex -lC \
+	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g
+GCXX_FOPTFLAGS   = -g
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O 
+OCXX_FOPTFLAGS   = -O 
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g 
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+#
+G_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+O_PETSCFLAGS     = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O
+GCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS
+OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX -DUSE_FORTRAN_KERNELS
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
 
 PARCH    = hpux
-#
-#   The name of the C compiler to use, the -Aa option is mandatory
-#  and indicates the we are compiling with ANSI C.
-#
-CC       = cc -Aa +z -Ae
-#
-# If building shared libraries, use the following instead.
-# You MUST use +z for shared libraries.
-# CC       = cc -Aa +z
-# Do similar modifcations for other base.* files which define "CC"
-#
-#
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then use: unknown
-#
-CCV      = unknown
-#
-#   Fortran compiler to use
-#
-FC       = f90
-AR       = ar
-RM       = rm -f
-RANLIB   = true
-#
-# The native make on HP-UX is garbage; you must use Gnu make, which is
-# probably already installed on your machine (called gnumake). On our 
-# machine the Gnu make is installed as make; if yours is called gnumake
-# then edit the line below. On newer versions of HP-UX the make may be
-# OK, in that case you must remove --no-print-directory from below. It
-# is only for Gnu make.
-#
-#OMAKE    = make --no-print-directory
-OMAKE    = /bin/make
-SHELL    = /bin/sh
-CLINKER  = cc ${COPTFLAGS}
-#
-#  One must use fort77 rather then f77 because f77 has a different 
-#  meaning for the -L option!
-#
-# use fort77 to link f77 programs
-#FLINKER  = fort77 ${FOPTFLAGS} 
-#
-FLINKER  = f90 ${FOPTFLAGS}
-#
-# For HPUX 9.* use the following instead
-#SYS_LIB  =  -lV3 -lU77 
-#
-# On some HP 10.20 Machines use
-# SYS_LIB  =  -lV3 -lU77 
-#
-# The following is for HP/Convex Exemplar
-SYS_LIB  =  -lV3 -lU77 -lail -lcnx_syscall
-
-
-
-SHELL    = /bin/sh
 
 include ${PETSC_DIR}/bmake/common
 
@@ -70,13 +79,6 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ##############
 SLSUFFIX = sl
-
-#shared: chkopts_basic
-#	-echo making shared libraries in ${LDIR} ;\
-#	cd ${LDIR}; \
-#	for LIBNAME in ${SHLIBS} ; \
-#	  do ${LD} -o $$LIBNAME.${SLSUFFIX} -b -B immediate -B nonfatal -a archive  $$LIBNAME.a ; \
-#	done
 
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\
@@ -103,5 +105,23 @@ shared: chkopts_basic
 	${RM} -rf tmp 
 
 
-
-
+#
+# Notes:
+#
+#  The name of the C compiler to use, the -Aa option is mandatory
+#  and indicates the we are compiling with ANSI C.
+#
+# For HPUX 9.* use the following instead
+# C_SYS_LIB  =  -lV3 -lU77 
+#
+# On some HP 10.20 Machines use
+# C_SYS_LIB  =  -lV3 -lU77 
+#
+# Alternative FC_LIB which worked for some users
+#
+# FC_LIB = -L/opt/fortran90/lib/pa2.0 -L/opt/fortran90/lib \
+# -L/opt/langtools/lib -lF90 -lcl -lc -lisamstub
+#
+# Use this if using f77 instead of f90 compiler
+#FC_LIB		=  -lf -L/opt/fortran/lib  -lU77
+#
