@@ -458,6 +458,14 @@ class Configure(config.base.Configure):
         del self.framework.argDB['FC']
     return
 
+  def checkFortranComments(self):
+    '''Make sure fortran comment "!" works'''
+    self.pushLanguage('FC')
+    if not self.checkCompile('! comment'):
+      raise RuntimeError(self.getCompiler()+' cannot process fortran comments.')
+    self.popLanguage()
+    return
+
   def checkPIC(self):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
@@ -753,6 +761,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCxxCompiler)
     self.executeTest(self.checkFortranCompiler)
+    self.executeTest(self.checkFortranComments)
     self.executeTest(self.checkPIC)
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
