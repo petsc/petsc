@@ -1,9 +1,9 @@
-/* $Id: draw.h,v 1.56 1998/05/13 17:58:24 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.57 1998/05/13 18:01:51 bsmith Exp bsmith $ */
 /*
-  Interface to the graphics
+  Interface to the PETSc graphics (currently only support for X-windows
 */
-#if !defined(__DRAW_PACKAGE)
-#define __DRAW_PACKAGE
+#if !defined(__DRAW_H)
+#define __DRAW_H
 #include "petsc.h"
 
 #define DRAW_COOKIE PETSC_COOKIE+6
@@ -161,7 +161,6 @@ extern int DrawSPSetLimits(DrawSP,double,double,double,double);
     Routines to draw histograms
 */
 typedef struct _p_DrawHist*   DrawHist;
-
 extern int DrawHistCreate(Draw, int, DrawHist *);
 extern int DrawHistDestroy(DrawHist);
 extern int DrawHistAddValue(DrawHist, double);
@@ -210,3 +209,7 @@ int DrawTensorSurface(Draw, DrawMesh, int);
 /*int DrawTensorMapSurfaceContourAndMesh_VRML(Draw,DrawMesh,int); */
 
 #endif
+
+
+
+

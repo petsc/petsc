@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.18 1998/04/09 04:19:44 bsmith Exp curfman $ */
+/* $Id: petscerror.h,v 1.19 1998/05/14 00:41:04 curfman Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -118,7 +118,7 @@ extern PetscStack *petscstack;
   {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
     petscstack->function[petscstacksize]  = __FUNC__; \
     petscstack->file[petscstacksize]      = __FILE__; \
-    petscstack->directory[petscstacksize] = __SDIR__;  \
+    petscstack->directory[petscstacksize] = __SDIR__; \
     petscstack->line[petscstacksize]      = __LINE__; \
     petscstacksize++; \
   }}
@@ -127,17 +127,17 @@ extern PetscStack *petscstack;
   {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
     petscstack->function[petscstacksize]  = n; \
     petscstack->file[petscstacksize]      = 0; \
-    petscstack->directory[petscstacksize] = 0;  \
+    petscstack->directory[petscstacksize] = 0; \
     petscstack->line[petscstacksize]      = 0; \
     petscstacksize++; \
   }}
 
 #define PetscStackPop \
-  {if (petscstack && petscstacksize > 0) {    \
+  {if (petscstack && petscstacksize > 0) {     \
     petscstacksize--; \
     petscstack->function[petscstacksize]  = 0; \
     petscstack->file[petscstacksize]      = 0; \
-    petscstack->directory[petscstacksize] = 0;  \
+    petscstack->directory[petscstacksize] = 0; \
     petscstack->line[petscstacksize]      = 0; \
   }};
 
