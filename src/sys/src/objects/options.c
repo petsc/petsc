@@ -192,10 +192,12 @@ int PetscOptionsInsertFile(const char file[])
       if (string[0] == '#') continue;
       if (string[0] == '!') continue;
       if (string[0] == '%') continue;
-      /* replace tabs with " " */
+
       ierr = PetscStrlen(string,&len);CHKERRQ(ierr);
+
+      /* replace tabs, ^M with " " */
       for (i=0; i<len; i++) {
-        if (string[i] == '\t') {
+        if (string[i] == '\t' || string[i] == '\r') {
           string[i] = ' ';
         }
       }
