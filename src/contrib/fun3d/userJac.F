@@ -1,4 +1,3 @@
-/*$Id: vector.c,v 1.191 2000/01/11 21:00:09 bsmith Exp $*/
 c---------------------------------------------------------------
 c The following subroutines are from node6t.f in the original
 c code.
@@ -27,7 +26,7 @@ c
 #include "include/finclude/pc.h"
 #include "include/finclude/snes.h"
       integer nnodes, nedge,
-     &        nsface, nvface, nfface,
+     &        nsface,
      &        nsnode, nvnode, nfnode,
      &        irank,nvertices
 
@@ -81,7 +80,7 @@ c     integer ia(1),ja(1),iau(1),fhelp(nedge,2)
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
       integer irow(16), icol(16)
-      integer i,j,k,n,in,ic,ierr,ir,node1,node2,inode
+      integer i,j,k,n,ic,ierr,ir,node1,node2,inode
       integer flops
       Scalar val(32), val1(8,4)
       Scalar xnorm,ynorm,znorm,rlen,dot,temp,
@@ -96,7 +95,7 @@ c     integer ia(1),ja(1),iau(1),fhelp(nedge,2)
      &       rhs2,rhs2p,rhs2u,rhs2v,rhs2w,
      &       rhs3,rhs3p,rhs3u,rhs3v,rhs3w,
      &       rhs4,rhs4p,rhs4u,rhs4v,rhs4w,
-     &       const,
+     &       c2inv,
      &       y11,y21,y31,y41,y12,y22,y32,y42,
      &       y13,y23,y33,y43,y14,y24,y34,y44,
      &       t11,t21,t31,t41,t12,t22,t32,t42,
@@ -187,20 +186,20 @@ c in the direction of the face normal. If the inner product of
 c {1,0,0} is close to unity, use {0,1,0}
 c
          dot = xnorm
-         if(dabs(dot).lt.0.95)then
-          X1 = 1. - dot*xnorm
+         if(abs(dot).lt.0.95d0)then
+          X1 = 1.d0 - dot*xnorm
           Y1 =    - dot*ynorm
           Z1 =    - dot*znorm
          else
           dot = ynorm
           X1 =    - dot*xnorm
-          Y1 = 1. - dot*ynorm
+          Y1 = 1.d0 - dot*ynorm
           Z1 =    - dot*znorm
          end if
 c
 c Normalize the first vector
 c
-         size = dsqrt(X1*X1 + Y1*Y1 + Z1*Z1)
+         size = sqrt(X1*X1 + Y1*Y1 + Z1*Z1)
          X1 = X1/size
          Y1 = Y1/size
          Z1 = Z1/size
@@ -219,7 +218,7 @@ c
           wL    = qnode(4,node1)
           ubarL = xnorm*uL + ynorm*vL + znorm*wL
           c2L   = ubarL*ubarL + beta
-          cL    = dsqrt(c2L)
+          cL    = sqrt(c2L)
 c
 c Variables on right
 c
@@ -229,11 +228,11 @@ c
           wR    = qnode(4,node2)
           ubarR = xnorm*uR + ynorm*vR + znorm*wR
           c2R   = ubarR*ubarR + beta
-          cR    = dsqrt(c2R)
+          cR    = sqrt(c2R)
 c
 c Regular Jacobians on left
 c
-          dfp(1,1) = 0.0
+          dfp(1,1) = 0.0d0
           dfp(1,2) = rlen*beta*xnorm
           dfp(1,3) = rlen*beta*ynorm
           dfp(1,4) = rlen*beta*znorm
@@ -256,22 +255,22 @@ c
 c Now compute eigenvalues and |A| from averaged variables
 c Avergage variables
 c
-          p  = .5*(pL + pR)
-          u  = .5*(uL + uR)
-          v  = .5*(vL + vR)
-          w  = .5*(wL + wR)
+          p  = .5d0*(pL + pR)
+          u  = .5d0*(uL + uR)
+          v  = .5d0*(vL + vR)
+          w  = .5d0*(wL + wR)
           ubar = xnorm*u + ynorm*v + znorm*w
           c2   = ubar*ubar + beta
-          c    = dsqrt(c2)
+          c    = sqrt(c2)
 c
-          eig1 = dabs(ubar)
-          eig2 = dabs(ubar)
-          eig3 = dabs(ubar + c)
-          eig4 = dabs(ubar - c)
+          eig1 = abs(ubar)
+          eig2 = abs(ubar)
+          eig3 = abs(ubar + c)
+          eig4 = abs(ubar - c)
 c
 c Put in the eigenvalue smoothing stuff
 c
-          eigeps  = .1*(dabs(ubar) + dabs(c))
+          eigeps  = .1d0*(abs(ubar) + abs(c))
 c 
 c         if(eig1.lt.eigeps)eig1 = .5*(eig1**2/eigeps + eigeps)
 c         if(eig2.lt.eigeps)eig2 = .5*(eig2**2/eigeps + eigeps)
@@ -295,35 +294,35 @@ c
 c
 c Components of T(inverse) (call this y)
 c
-          const = 1./c2
-          y11 = -const*(u*phi4 + v*phi5 + w*phi6)/beta
-          y21 = -const*(u*phi7 + v*phi8 + w*phi9)/beta
-          y31 =  .5*const*(c-ubar)/beta
-          y41 = -.5*const*(c+ubar)/beta
+          c2inv = 1.d0/c2
+          y11 = -c2inv*(u*phi4 + v*phi5 + w*phi6)/beta
+          y21 = -c2inv*(u*phi7 + v*phi8 + w*phi9)/beta
+          y31 =  .5d0*c2inv*(c-ubar)/beta
+          y41 = -.5d0*c2inv*(c+ubar)/beta
 
-          y12 =  const*phi4
-          y22 =  const*phi7
-          y32 =  const*.5*xnorm
-          y42 =  const*.5*xnorm
+          y12 =  c2inv*phi4
+          y22 =  c2inv*phi7
+          y32 =  c2inv*.5d0*xnorm
+          y42 =  c2inv*.5d0*xnorm
 
-          y13 =  const*phi5
-          y23 =  const*phi8
-          y33 =  const*.5*ynorm
-          y43 =  const*.5*ynorm
+          y13 =  c2inv*phi5
+          y23 =  c2inv*phi8
+          y33 =  c2inv*.5d0*ynorm
+          y43 =  c2inv*.5d0*ynorm
 
-          y14 =  const*phi6
-          y24 =  const*phi9
-          y34 =  const*.5*znorm
-          y44 =  const*.5*znorm
+          y14 =  c2inv*phi6
+          y24 =  c2inv*phi9
+          y34 =  c2inv*.5d0*znorm
+          y44 =  c2inv*.5d0*znorm
 c
 c Now get elements of T 
 c
-          t11 = 0.0
+          t11 = 0.0d0
           t21 = X1
           t31 = Y1
           t41 = Z1
 
-          t12 = 0.0
+          t12 = 0.0d0
           t22 = X2
           t32 = Y2
           t42 = Z2
@@ -362,29 +361,29 @@ c
 c
 c Form .5*(A + |A|) 
 c
-          dfp(1,1) = .5*(dfp(1,1) + a11)
-          dfp(1,2) = .5*(dfp(1,2) + a12)
-          dfp(1,3) = .5*(dfp(1,3) + a13)
-          dfp(1,4) = .5*(dfp(1,4) + a14)
+          dfp(1,1) = .5d0*(dfp(1,1) + a11)
+          dfp(1,2) = .5d0*(dfp(1,2) + a12)
+          dfp(1,3) = .5d0*(dfp(1,3) + a13)
+          dfp(1,4) = .5d0*(dfp(1,4) + a14)
 c
-          dfp(2,1) = .5*(dfp(2,1) + a21)
-          dfp(2,2) = .5*(dfp(2,2) + a22)
-          dfp(2,3) = .5*(dfp(2,3) + a23)
-          dfp(2,4) = .5*(dfp(2,4) + a24)
+          dfp(2,1) = .5d0*(dfp(2,1) + a21)
+          dfp(2,2) = .5d0*(dfp(2,2) + a22)
+          dfp(2,3) = .5d0*(dfp(2,3) + a23)
+          dfp(2,4) = .5d0*(dfp(2,4) + a24)
 c
-          dfp(3,1) = .5*(dfp(3,1) + a31)
-          dfp(3,2) = .5*(dfp(3,2) + a32)
-          dfp(3,3) = .5*(dfp(3,3) + a33)
-          dfp(3,4) = .5*(dfp(3,4) + a34)
+          dfp(3,1) = .5d0*(dfp(3,1) + a31)
+          dfp(3,2) = .5d0*(dfp(3,2) + a32)
+          dfp(3,3) = .5d0*(dfp(3,3) + a33)
+          dfp(3,4) = .5d0*(dfp(3,4) + a34)
 c
-          dfp(4,1) = .5*(dfp(4,1) + a41)
-          dfp(4,2) = .5*(dfp(4,2) + a42)
-          dfp(4,3) = .5*(dfp(4,3) + a43)
-          dfp(4,4) = .5*(dfp(4,4) + a44)
+          dfp(4,1) = .5d0*(dfp(4,1) + a41)
+          dfp(4,2) = .5d0*(dfp(4,2) + a42)
+          dfp(4,3) = .5d0*(dfp(4,3) + a43)
+          dfp(4,4) = .5d0*(dfp(4,4) + a44)
 c
 c Now get regular Jacobians on right
 c
-          dfm(1,1) = 0.0
+          dfm(1,1) = 0.0d0
           dfm(1,2) = rlen*beta*xnorm
           dfm(1,3) = rlen*beta*ynorm
           dfm(1,4) = rlen*beta*znorm
@@ -406,25 +405,25 @@ c
 c
 c Form .5*(A - |A|) 
 c
-          dfm(1,1) = .5*(dfm(1,1) - a11)
-          dfm(1,2) = .5*(dfm(1,2) - a12)
-          dfm(1,3) = .5*(dfm(1,3) - a13)
-          dfm(1,4) = .5*(dfm(1,4) - a14)
+          dfm(1,1) = .5d0*(dfm(1,1) - a11)
+          dfm(1,2) = .5d0*(dfm(1,2) - a12)
+          dfm(1,3) = .5d0*(dfm(1,3) - a13)
+          dfm(1,4) = .5d0*(dfm(1,4) - a14)
 c
-          dfm(2,1) = .5*(dfm(2,1) - a21)
-          dfm(2,2) = .5*(dfm(2,2) - a22)
-          dfm(2,3) = .5*(dfm(2,3) - a23)
-          dfm(2,4) = .5*(dfm(2,4) - a24)
+          dfm(2,1) = .5d0*(dfm(2,1) - a21)
+          dfm(2,2) = .5d0*(dfm(2,2) - a22)
+          dfm(2,3) = .5d0*(dfm(2,3) - a23)
+          dfm(2,4) = .5d0*(dfm(2,4) - a24)
 c
-          dfm(3,1) = .5*(dfm(3,1) - a31)
-          dfm(3,2) = .5*(dfm(3,2) - a32)
-          dfm(3,3) = .5*(dfm(3,3) - a33)
-          dfm(3,4) = .5*(dfm(3,4) - a34)
+          dfm(3,1) = .5d0*(dfm(3,1) - a31)
+          dfm(3,2) = .5d0*(dfm(3,2) - a32)
+          dfm(3,3) = .5d0*(dfm(3,3) - a33)
+          dfm(3,4) = .5d0*(dfm(3,4) - a34)
 c
-          dfm(4,1) = .5*(dfm(4,1) - a41)
-          dfm(4,2) = .5*(dfm(4,2) - a42)
-          dfm(4,3) = .5*(dfm(4,3) - a43)
-          dfm(4,4) = .5*(dfm(4,4) - a44)
+          dfm(4,1) = .5d0*(dfm(4,1) - a41)
+          dfm(4,2) = .5d0*(dfm(4,2) - a42)
+          dfm(4,3) = .5d0*(dfm(4,3) - a43)
+          dfm(4,4) = .5d0*(dfm(4,4) - a44)
 c         call PLogFlops(465)
           flops = flops + 465
 c
@@ -639,7 +638,7 @@ c
          xnorm = sxn(i)
          ynorm = syn(i)
          znorm = szn(i)
-         area  = dsqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
+         area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
          xnorm = xnorm/area
          ynorm = ynorm/area
          znorm = znorm/area
@@ -740,7 +739,7 @@ c
          xnorm = fxn(i)
          ynorm = fyn(i)
          znorm = fzn(i)
-         area  = dsqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
+         area  = sqrt(xnorm*xnorm + ynorm*ynorm + znorm*znorm)
          xnorm = xnorm/area
          ynorm = ynorm/area
          znorm = znorm/area
@@ -751,20 +750,20 @@ c in the direction of the face normal. If the inner product of
 c {1,0,0} is close to unity, use {0,1,0}
 c
          dot = xnorm
-         if(dabs(dot).lt.0.95)then
-          X1 = 1. - dot*xnorm
+         if(abs(dot).lt.0.95d0)then
+          X1 = 1.d0 - dot*xnorm
           Y1 =    - dot*ynorm
           Z1 =    - dot*znorm
          else
           dot = ynorm
           X1 =    - dot*xnorm
-          Y1 = 1. - dot*ynorm
+          Y1 = 1.d0 - dot*ynorm
           Z1 =    - dot*znorm
          end if
 c
 c Normalize the first vector (V1)
 c
-         size = dsqrt(X1*X1 + Y1*Y1 + Z1*Z1)
+         size = sqrt(X1*X1 + Y1*Y1 + Z1*Z1)
          X1 = X1/size
          Y1 = Y1/size
          Z1 = Z1/size
@@ -779,7 +778,7 @@ c Calculate elements of T and T(inverse) evaluated at freestream
 c
          ubar0 = xnorm*u0 + ynorm*v0 + znorm*w0
          c20   = ubar0*ubar0 + beta
-         c0    = dsqrt(c20)
+         c0    = sqrt(c20)
          phi1  = xnorm*beta + u0*ubar0
          phi2  = ynorm*beta + v0*ubar0
          phi3  = znorm*beta + w0*ubar0
@@ -790,12 +789,12 @@ c
          phi8  = X1*phi3 - Z1*phi1
          phi9  = Y1*phi1 - X1*phi2
 
-         t11 = 0.0
+         t11 = 0.0d0
          t21 = X1
          t31 = Y1
          t41 = Z1
 
-         t12 = 0.0
+         t12 = 0.0d0
          t22 = X2
          t32 = Y2
          t42 = Z2
@@ -812,23 +811,23 @@ c
 
          ti11 = -(u0*phi4 + v0*phi5 + w0*phi6)/beta/c20
          ti21 = -(u0*phi7 + v0*phi8 + w0*phi9)/beta/c20
-         ti31 = (c0 - ubar0)/(2.*beta*c20)
-         ti41 = -(c0 + ubar0)/(2.*beta*c20)
+         ti31 = (c0 - ubar0)/(2.d0*beta*c20)
+         ti41 = -(c0 + ubar0)/(2.d0*beta*c20)
 
          ti12 = phi4/c20
          ti22 = phi7/c20
-         ti32 = .5*xnorm/c20
-         ti42 = .5*xnorm/c20
+         ti32 = .5d0*xnorm/c20
+         ti42 = .5d0*xnorm/c20
 
          ti13 = phi5/c20
          ti23 = phi8/c20
-         ti33 = .5*ynorm/c20
-         ti43 = .5*ynorm/c20
+         ti33 = .5d0*ynorm/c20
+         ti43 = .5d0*ynorm/c20
 
          ti14 = phi6/c20
          ti24 = phi9/c20
-         ti34 = .5*znorm/c20
-         ti44 = .5*znorm/c20
+         ti34 = .5d0*znorm/c20
+         ti44 = .5d0*znorm/c20
 c
 c Now, get the variables on the "inside"
 c
@@ -841,24 +840,24 @@ c
 c If ubar is negative, take the reference condition from outside
 c
 c
-         if(unorm.gt.0.0)then
+         if(unorm.gt.0.0d0)then
           pr = pi
-           prp = 1.0
+           prp = 1.0d0
           ur = ui
-           uru = 1.0
+           uru = 1.0d0
           vr = vi
-           vrv = 1.0
+           vrv = 1.0d0
           wr = wi
-           wrw = 1.0
+           wrw = 1.0d0
          else
           pr = p0
-           prp = 0.0
+           prp = 0.0d0
           ur = u0
-           uru = 0.0
+           uru = 0.0d0
           vr = v0
-           vrv = 0.0
+           vrv = 0.0d0
           wr = w0
-           wrw = 0.0
+           wrw = 0.0d0
          end if
 c
 c Set rhs
@@ -879,10 +878,10 @@ c
           rhs3v = ti33
           rhs3w = ti34
          rhs4 = ti41*p0 + ti42*u0 + ti43*v0 + ti44*w0
-          rhs4p = 0.0
-          rhs4u = 0.0 
-          rhs4v = 0.0
-          rhs4w = 0.0
+          rhs4p = 0.0d0
+          rhs4u = 0.0d0
+          rhs4v = 0.0d0
+          rhs4w = 0.0d0
 c
 c Now do matrix multiplication to get values on boundary
 c
