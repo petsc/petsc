@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.104 2000/05/05 22:17:34 balay Exp bsmith $*/
+/*$Id: cg.c,v 1.105 2000/05/10 16:42:06 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -160,8 +160,11 @@ int  KSPSolve_CG(KSP ksp,int *its)
   for (i=0; i<maxit; i++) {
      ksp->its = i+1;
      ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
+     if (beta == 0.0) {
+       ksp->reason = KSP_CONVERGED_ATOL;
+       break;
+     }
      if (!i) {
-       if (beta == 0.0) break;
        ierr = VecCopy(Z,P);CHKERRQ(ierr);         /*     p <- z          */
      } else {
          b = beta/betaold;
