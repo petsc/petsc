@@ -1,6 +1,6 @@
 #! /usr/local/tcl/bin/tclsh
 #!/gnuwin32/b18/tcl/bin/tclsh76.exe
-# $Id: makecpp.tcl,v 1.8 1998/03/19 18:20:27 balay Exp balay $ 
+# $Id: makecpp.tcl,v 1.9 1998/03/19 20:02:36 balay Exp balay $ 
 
 
 proc movefilesin { dir } {
@@ -77,9 +77,8 @@ proc updatemakefile { makefile } {
         regsub -all {\$\{PETSC_ARCH\}} $databuff "nt" databuff         
         #
         # Just in case some of these are still lying arround
-        $
+        #
         regsub -all {\$\(PETSC_ARCH\)} $databuff "nt" databuff         
-
         #
         # All ${VAR} to $(VAR)
         #
