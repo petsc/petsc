@@ -1,9 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-/* $Id: signal.c,v 1.53 1998/04/13 17:30:26 bsmith Exp $" */
+"$Id: petscconf.h,v 1.6 1998/04/25 23:16:52 balay Exp balay $"
+"Defines the configuration for this machine"
 
-/*
-    Defines the configuration for this machine
-*/
 #endif
 
 #if !defined(INCLUDED_PETSCCONF_H)
