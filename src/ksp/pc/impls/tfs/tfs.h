@@ -23,11 +23,16 @@ File Description:
 
 ***********************************const.h************************************/
 #include "petsc.h"
-#include <limits.h>
-#include <float.h>
+#include "petscsys.h"
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
+#include "petscblaslapack.h"
+#include <limits.h>
+#include <float.h>
 
 #define X          0
 #define Y          1

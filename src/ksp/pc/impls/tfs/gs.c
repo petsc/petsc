@@ -21,8 +21,6 @@ File Description:
 ************************************gs.c**************************************/
 
 #include "src/ksp/pc/impls/tfs/tfs.h"
-#include <float.h>
-#include <limits.h>
 
 /* default length of number of items via tree - doubles if exceeded */
 #define TREE_BUF_SZ 2048;
@@ -310,19 +308,9 @@ static
 gs_id *
 gsi_new(void)
 {
-  int size=sizeof(gs_id);
   gs_id *gs;
-
-  
-  gs = (gs_id *) malloc(size);
-  
-  if (!(size%sizeof(PetscScalar)))
-    {rvec_zero((PetscScalar *)gs,size/sizeof(PetscScalar));}
-  else if (!(size%sizeof(PetscInt)))
-    {ivec_zero((PetscInt*)gs,size/sizeof(PetscInt));}
-  else 
-    {memset((char *)gs,0,size/sizeof(char));}
-
+  gs = (gs_id *) malloc(sizeof(gs_id));
+  PetscMemzero(gs,sizeof(gs_id));
   return(gs);
 }
 
