@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.292 1998/11/02 19:31:13 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.293 1998/11/09 19:43:09 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1658,6 +1658,10 @@ default LU factorization routine supplied within PETSc for the
 changes to use caution, since it would be very easy to
 accidentally create a bug in the new routine that could affect
 other routines as well.
+
+See also Section~\ref{sec:nlmatrixfree} for details on one set of
+helpful utilities for using the matrix-free approach for nonlinear
+solvers.
 
 \section{Other Matrix Operations}
 \label{sec:othermat}
@@ -3608,7 +3612,7 @@ Or, one can retain the user-provided Jacobian preconditioner, but replace the
 user-provided Jacobian matrix with the default matrix free variant with the
 option {\tt -snes\_mf\_operator}. \findex{-snes_mf_operator}
 
-The user can set two parameters to control the Jacobian-vector
+The user can set one parameter to control the Jacobian-vector
 product approximation with the command
 \begin{verbatim}
    ierr = MatSNESFDMFSetFunctionError(Mat mat,double rerror);
@@ -3616,15 +3620,25 @@ product approximation with the command
 \findex{MatSNESFDMFSetFunctionError()}
 The parameter {\tt rerror} should be set to the square root of the 
 relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $ , 
-which assumes
-that the functions are evaluated to full double precision accuracy. 
+which assumes that the functions are evaluated to full double precision accuracy. 
+This parameter can also be set from the options database with 
+\begin{verbatim}
+   -snes_mf_err <err>
+\end{verbatim}
+\findex{-snes_mf_err}
 
+SNES provides a way to register new routines to compute the h-differencing parameter;
+see the manual page for MatSNESFDMFSetType() and MatSNESFDMFRegister(). \findex{MatSNESFDMFSetType()}
+\findex{MatSNESFDMFRegister()}. We currently provide two default routines accessible via
+\begin{verbatim}
+  -snes_mf_type <default or wp>
+\end{verbatim}
+For the default approach there is one ``tuning'' parameter, set with 
 \begin{verbatim}
    ierr = MatSNESFDMFDefaultSetUmin(Mat mat,double );
 \end{verbatim}
 \findex{MatSNESFDMFDefaultSetUmin()}
-The 
-second parameter, {\tt umin} (or $u_{min}$), is a bit more involved; its default is 
+This parameter, {\tt umin} (or $u_{min}$), is a bit involved; its default is 
 $ 10^{-6} $ . The Jacobian-vector product is approximated via the formula
 \[
     F'(u) a \approx \frac{F(u + h*a) - F(u)}{h}
@@ -3635,14 +3649,32 @@ where $ h $ is computed via
           = e_{rel}*u_{min}*sign(u^{T}a)*||a||_{1}/||a||^2_2  &    \hbox{otherwise}.
 \end{eqnarray*}
 This approach is taken from Brown and Saad \cite{brownsaad:90}.
-These parameters can also be set from the options database with 
+The parameter can also be set from the options database with 
 \begin{verbatim}
-   -snes_mf_err <err>
    -snes_mf_umin <umin>
 \end{verbatim}
-\findex{-snes_mf_err} \findex{-snes_mf_umin}
-Note that setting these parameter appropriately is crucial for achieving
-fast convergence with matrix-free Newton-Krylov methods.  
+\findex{-snes_mf_umin}
+
+The second approach, taken from Walker and Pernice, \cite{?}, computes $ h $ via
+\begin{eqnarray*}
+        h = \frac{\sqrt{1 + ||u||}e_{rel}}{||a||}
+\end{eqnarray*}
+This has no tunable parameters, but note that (a) for GMRES with left preconditioning
+$ ||a|| = 1 $ and (b) for the entire {\bf linear} iterative process $ u $ does not change hence
+$\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the 
+options
+\begin{verbatim}
+   ierr = MatSNESFDMFWPSetComputeNormA(Mat mat,PetscTruth );
+   ierr = MatSNESFDMFWPSetComputeNormU(Mat mat,PetscTruth );
+\end{verbatim}
+or 
+\begin{verbatim}
+   -snes_mf_compute_norma <true or false>
+   -snes_mf_compute_normu <true or false>
+\end{verbatim}
+This information is used to eliminate the redundant computation of these parameters,
+therefor reducing the number of collective operations and improving the efficiency of the 
+application code.
 
 It is also possible to monitor the differencing parameters h that are computed
 via the routines
