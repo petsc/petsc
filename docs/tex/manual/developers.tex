@@ -1,4 +1,4 @@
-% $Id: developers.tex,v 1.8 1998/05/04 19:39:08 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.9 1998/06/01 21:38:07 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -23,13 +23,13 @@
 
 \begin{document}
 
-\ANLTitle{PETSc 2.0 Developers Manual}{\em Satish Balay\\
+\ANLTitle{ALICE Component Developers Manual}{\em Satish Balay\\
 William Gropp\\ Lois Curfman McInnes\\ Barry Smith\\
 \hspace{0.3in}\\
 Mathematics and Computer Science Division \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This manual is intended for use with PETSc 2.0.22}}
+{\rm This document is intended for use with PETSc 2.0.22}}
 %{98/?? - Revision 2.0.22}{1998}
 {\Large This is not yet an official ANL document}{1998}
 
@@ -43,7 +43,7 @@ http://www.mcs.anl.gov/petsc
 % Blank page makes double sided printout look bettter.
 \newpage
 
-% Abstract for users manual
+
 \addcontentsline{toc}{chapter}{Abstract}
 
 \medskip \medskip
@@ -55,8 +55,12 @@ http://www.mcs.anl.gov/petsc
 \noindent {\bf Abstract:} 
 
 \medskip \medskip
-This manual discusses the PETSc component library design and describes
-how to develop new library codes that are compatible with PETSc 2.0.
+The Advanced Large-Scale Integrated Computational Environment (ALICE) is 
+a component-based set of extensible software libraries for scientific computation.
+
+This manual discusses the ALICE component library design and describes
+how to develop new library codes that are compatible with other ALICE components 
+including PETSc 2.0.
 The idea is not to develop one massive library that everyone shoves code 
 into; rather, to develop an architecture that allows many people
 to (as painlessly as possible) contribute (and maintain) their own libraries,
@@ -67,14 +71,14 @@ that you are familar with PETSc, have a copy of the PETSc users
 manual, and have access to all PETSc source code and documentation
 (available via {\tt http://www.mcs.anl.gov/petsc}).
 
-PETSc is designed using a component-based object-oriented
+ALICE is designed using a component-based object-oriented
 architecture. This means that libraries consist of {\em objects} that
 have a certain, defined functionality. This document defines how these
 objects are implemented.
 
 \vspace{1cm}
 
-This is the first draft of the PETSc developers manual;
+This is the first draft of the ALICE developers manual;
 therefore, it is very sketchy and incomplete. Please
 direct all comments and questions regarding PETSc design and
 development to {\tt petsc-developers@mcs.anl.gov}.  Note that all {\em
@@ -128,6 +132,12 @@ Each of these is discussed in a section below.
 PETSc error handling uses a ``call error handler; then (depending on result) return
 error code'' model when problems are detected in the running code. 
 
+The public include file for error handling is {\tt include/petscerror.h} the 
+source code for the PETSc error handling is in  
+{\tt src/sys/src/error/}.
+
+\subsection{Simplified Interface}
+
 The simplified C/C++ macro-based interface consists of the following three calls
 \begin{itemize}
 \item SETERRQ(generic,specific,''Error message'');
@@ -135,7 +145,7 @@ The simplified C/C++ macro-based interface consists of the following three calls
 \item CHKPTRQ(ptr);
 \end{itemize}
 
-The macro {\tt SETERRQ()} is defined in {\tt include/petscerror.h} 
+The macro {\tt SETERRQ()} is given by 
 \begin{verbatim}
   {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,generic,specific,''Error message'');}
 \end{verbatim}
@@ -147,10 +157,16 @@ file and directory.
 \end{verbatim}
 and {\tt CHKPTRQ()} by 
 \begin{verbatim}
-\end{verbatim}
   if (!ptr) SETERRQ(PETSC_ERR_MEM,0,(char*)0);
 \end{verbatim}
 
+Different versions of the macros must be used in the {\tt main()} program:
+{\tt SETERRA(), CHKERRA()}, and {\tt CHKPTRA()}. The reason for the different versions
+is that when an error is detected in the main program one cannot return, because 
+this would not call the {\tt MPI\_Abort()} routine and would leave MPI processes hanging.
+Hence these versions of the macros call {\tt MPI\_Abort()}, rather than returning.
+
+\subsection{Error Handlers}
 The error handling function {\tt PetscError()} calls the ``current'' error handler
 with the code
 \begin{verbatim}
@@ -198,6 +214,19 @@ int PetscPopErrorHandler(void)
   PetscFunctionReturn(0);
 }
 \end{verbatim}
+
+PETSc provides several default error handlers
+{\tt PetscTraceBackErrorHandler()}, {\tt PetscAbortErrorHandler()}, 
+{\tt PetscStopErrorHandler()}, and {\tt PetscAttachDebuggerErrorHandler()}. 
+
+\subsection{Error Codes}
+
+The PETSc error handlers take two error codes: a generic and a specific.
+The generic error codes are defined in {\tt include/petscerror.h}, the same generic
+error code would be used many times in the libraries. For example the 
+generic error code {\tt PETSC_ERR_MEM} is used whenever requested memory allocation
+is not available. Specific error codes are not yet used, it is intended that 
+these be unique integers, one for each error condition in the entire library.
 
 
 
@@ -290,7 +319,7 @@ Each components consists of three parts:
 \item another common part shared by all PETSc implementations of the component and
 \item a private part used by only one particular implementation written in PETSc.
 \end{itemize}
-For example, all matrix (Mat) components shared a function table of operations that 
+For example, all matrix (Mat) components share a function table of operations that 
 may be performed on the matrix; all PETSc matrix implementations share some additional
 data fields,including matrix size; while a particular matrix implementation in PETSc
 (say compressed sparse row) has its own data fields for storing the actual
@@ -366,6 +395,7 @@ typedef struct {
    int (*reference)(PetscObject);
    int (*composefunction)(PetscObject,char *,char *,void *);
    int (*queryfunction)(PetscObject,char *, void **);
+   int (*composelanguage(PetscObject,PetscLanguage,void *);
    int (*querylanguage(PetscObject,PetscLanguage,void **);
 } PetscOps;
 
@@ -488,7 +518,7 @@ specified object.
 We now discuss the specific functions in the common function table.
 
 \begin{itemize}
-\item {\tt getcomm(PetscObject,MPI_Comm *)} obtains the MPI communicator associated
+\item {\tt getcomm(PetscObject,MPI\_Comm *)} obtains the MPI communicator associated
       with this object.
 
 \item {\tt view(PetscObject,Viewer)} allows one to store or visualize the data inside
@@ -712,7 +742,7 @@ preconditioning (PC) method.
 \chapter{Style Guide}
 
 The PETSc team uses certain conventions to make our source code consistent. Groups
-developing components compatible with PETSc are, of course, free to organize their
+developing components compatible with ALICE are, of course, free to organize their
 own source code anyway they like.
 
 \section{Names}
