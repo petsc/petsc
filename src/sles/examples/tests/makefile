@@ -274,10 +274,10 @@ runex6_4:
 runex6_5:
 	-@$(MPIRUN) ex6 -pc_type bgs -pc_bgs_blocks 5 -mat_aij_oneindex \
 	   -f $(PETSC_DIR)/src/mat/examples/matrices/arco1 \
-	   -ksp_gmres_restart 100  -ksp_smonitor  > ex6_4.tmp 2>&1; \
-	   if (diff output/ex6_4.out ex6_4.tmp) then true; \
+	   -ksp_gmres_restart 100  -ksp_smonitor  > ex6_5.tmp 2>&1; \
+	   if (diff output/ex6_4.out ex6_5.tmp) then true; \
 	   else echo "Possible problem with ex6_5, diffs above"; fi; \
-	   $(RM) -f ex6_4.tmp
+	   $(RM) -f ex6_5.tmp
 
 # Note: We test these BlockSolve95 examples differently from the usual
 # because the coloring heuristic is machine-dependent; convergence rates

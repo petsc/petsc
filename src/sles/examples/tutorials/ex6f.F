@@ -1,5 +1,5 @@
 
-C    "$Id: ex20.F,v 1.4 1996/04/12 23:41:07 curfman Exp balay $";
+C    "$Id: ex20.F,v 1.5 1996/04/16 14:05:36 balay Exp curfman $";
 C
 C  This example demonstrates repeated linear solves as well as the use of
 C  different preconditioner and linear system matrices.  This example also
@@ -120,7 +120,7 @@ C First time thorough: Create new matrix to define the linear system
         pflag = 0
         call OptionsHasName(PETSC_NULL_CHAR,"-mat_view",pflag,ierr)
         if (pflag .ne. 0) then
-          if (rank .eq. 0) write(6,*) 'previous matrix: preconditioning'
+          if (rank .eq. 0) write(6,100)
         endif
         call MatConvert(A,MATSAME,A2,ierr)
 C All other times: Set previous solution as initial guess for next solve.
@@ -137,7 +137,7 @@ C Alter the matrix A a bit
  20   continue
       call MatAssemblyBegin(A,FINAL_ASSEMBLY,ierr)
       if (pflag .ne. 0) then
-        if (rank .eq. 0) write(6,*) 'next matrix: defines linear system'
+        if (rank .eq. 0) write(6,110)
       endif
       call MatAssemblyEnd(A,FINAL_ASSEMBLY,ierr)
 
@@ -156,6 +156,9 @@ C Solve linear system
 
 C Destroy the preconditioner matrix on the last time through
       if (count .eq. nsteps) call MatDestroy(A2,ierr)
+
+ 100  format('previous matrix: preconditioning')
+ 110  format('next matrix: defines linear system')
 
       end
 
