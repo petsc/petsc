@@ -65,6 +65,7 @@ class Configure:
     else:
       value = defaultValue
     if not value is None:
+      name = name.replace('-', '_')
       if not conversion is None:
         setattr(self, name, conversion(value))
       else:
@@ -90,14 +91,44 @@ class Configure:
   # Preprocessor, Compiler, and Linker Operations
   def pushLanguage(self, language):
     self.language.append(language)
-    return self.setLanguage(language)
+    return self.setLanguage(self.language[-1])
 
   def popLanguage(self):
     self.language.pop()
     return self.setLanguage(self.language[-1])
 
   def setLanguage(self, language):
-    self.language[-1] = language
+    if language == 'C':
+      self.compilerDefines = 'confdefs.h'
+    elif language == 'C++':
+      self.compilerDefines = 'confdefs.hh'
+    elif language == 'F77':
+      self.compilerDefines = 'confdefs.h'
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    return
+
+  def getCppCmd(self):
+    language = self.language[-1]
+    self.getCompiler()
+    if language == 'C':
+      self.cpp      = self.framework.argDB['CPP']
+      self.cppFlags = self.framework.argDB['CPPFLAGS']
+      self.cppCmd   = self.cpp+' '+self.cppFlags
+    elif language == 'C++':
+      self.cpp      = self.framework.argDB['CXXCPP']
+      self.cppFlags = self.framework.argDB['CPPFLAGS']
+      self.cppCmd   = self.cpp+' '+self.cppFlags
+    elif language == 'F77':
+      self.cpp      = self.framework.argDB['CPP']
+      self.cppFlags = self.framework.argDB['CPPFLAGS']
+      self.cppCmd   = self.cpp+' '+self.cppFlags
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    return self.cppCmd
+
+  def getCompiler(self):
+    language = self.language[-1]
     if language == 'C':
       self.compilerName = 'CC'
     elif language == 'C++':
@@ -106,59 +137,54 @@ class Configure:
       self.compilerName = 'FC'
     else:
       raise RuntimeError('Unknown language: '+language)
-
     self.compiler = self.framework.argDB[self.compilerName]
+    return self.compiler
 
+  def getCompilerCmd(self):
+    language = self.language[-1]
+    self.getCompiler()
     if language == 'C':
-      # Interaction with the preprocessor
-      self.cpp        = self.framework.argDB['CPP']
-      self.cppFlags   = self.framework.argDB['CPPFLAGS']
-      self.cppCmd     = self.cpp+' '+self.cppFlags
-      # Interaction with the compiler
       self.compilerDefines = 'confdefs.h'
       self.compilerSource  = 'conftest.c'
       self.compilerObj     = 'conftest.o'
       self.compilerFlags   = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']
       self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-      # Interaction with the linker
+    elif language == 'C++':
+      self.compilerDefines = 'confdefs.hh'
+      self.compilerSource  = 'conftest.cc'
+      self.compilerObj     = 'conftest.o'
+      self.compilerFlags   = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
+      self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+    elif language == 'F77':
+      self.compilerSource = 'conftest.f'
+      self.compilerObj    = 'conftest.o'
+      self.compilerFlags  = self.framework.argDB['FFLAGS']
+      self.compilerCmd    = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
+    else:
+      raise RuntimeError('Unknown language: '+language)
+    return self.compilerCmd
+
+  def getLinkerCmd(self):
+    language = self.language[-1]
+    self.getCompiler()
+    if language == 'C':
       self.linker      = self.compiler
       self.linkerObj   = 'conftest'
       self.linkerFlags = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
       self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
     elif language == 'C++':
-      # Interaction with the preprocessor
-      self.cpp        = self.framework.argDB['CXXCPP']
-      self.cppFlags   = self.framework.argDB['CPPFLAGS']
-      self.cppCmd     = self.cpp+' '+self.cppFlags
-      # Interaction with the compiler
-      self.compilerDefines = 'confdefs.h'
-      self.compilerSource  = 'conftest.cc'
-      self.compilerObj     = 'conftest.o'
-      self.compilerFlags   = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
-      self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-      # Interaction with the linker
       self.linker      = self.compiler
       self.linkerObj   = 'conftest'
       self.linkerFlags = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']+' '+self.framework.argDB['LDFLAGS']
       self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
     elif language == 'F77':
-      # Interaction with the preprocessor
-      self.cpp        = self.framework.argDB['CXXCPP']
-      self.cppFlags   = self.framework.argDB['CPPFLAGS']
-      self.cppCmd     = self.cpp+' '+self.cppFlags
-      # Interaction with the compiler
-      self.compilerSource = 'conftest.f'
-      self.compilerObj    = 'conftest.o'
-      self.compilerFlags  = self.framework.argDB['FFLAGS']
-      self.compilerCmd    = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
-      # Interaction with the linker
       self.linker      = self.compiler
       self.linkerObj   = 'conftest'
       self.linkerFlags = self.framework.argDB['FFLAGS']+' '+self.framework.argDB['LDFLAGS']
       self.linkerCmd   = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' conftest.o '+self.framework.argDB['LIBS']
     else:
       raise RuntimeError('Unknown language: '+language)
-    return
+    return self.linkerCmd
 
   def getCode(self, includes, body = None):
     language = self.language[-1]
@@ -176,9 +202,10 @@ class Configure:
     return codeStr
 
   def outputPreprocess(self, codeStr):
+    command = self.getCppCmd()
     self.framework.outputHeader(self.compilerDefines)
-    self.framework.log.write('Executing: '+self.cppCmd+'\n')
-    (input, output, err) = os.popen3(self.cppCmd)
+    self.framework.log.write('Executing: '+command+'\n')
+    (input, output, err) = os.popen3(command)
     input.write(self.getCode(codeStr))
     input.close()
     out   = ''
@@ -191,9 +218,10 @@ class Configure:
     return out
 
   def checkPreprocess(self, codeStr):
+    command = self.getCppCmd()
     self.framework.outputHeader(self.compilerDefines)
-    self.framework.log.write('Executing: '+self.cppCmd+'\n')
-    (input, output, err) = os.popen3(self.cppCmd)
+    self.framework.log.write('Executing: '+command+'\n')
+    (input, output, err) = os.popen3(command)
     input.write(self.getCode(codeStr))
     input.close()
     out   = ''
@@ -208,12 +236,13 @@ class Configure:
     return not len(out)
 
   def outputCompile(self, includes = '', body = '', cleanup = 1):
+    command = self.getCompilerCmd()
     self.framework.outputHeader(self.compilerDefines)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body))
     f.close()
-    self.framework.log.write('Executing: '+self.compilerCmd+'\n')
-    (input, output, err) = os.popen3(self.compilerCmd)
+    self.framework.log.write('Executing: '+command+'\n')
+    (input, output, err) = os.popen3(command)
     input.close()
     out   = ''
     ready = select.select([err], [], [], 0.1)
@@ -236,8 +265,8 @@ class Configure:
   def outputLink(self, includes, body, cleanup = 1):
     out = self.outputCompile(includes, body, cleanup = 0)
     if len(out): return out
-    self.framework.log.write('Executing: '+self.linkerCmd+'\n')
-    (input, output, err) = os.popen3(self.linkerCmd)
+    self.framework.log.write('Executing: '+self.getLinkerCmd()+'\n')
+    (input, output, err) = os.popen3(self.getLinkerCmd())
     input.write(self.getCode(includes, body))
     input.close()
     out   = ''
@@ -247,7 +276,7 @@ class Configure:
       out = ready[0][0].read()
       if out:
         self.framework.log.write('ERR (linker): '+out)
-        self.framework.log.write(' in '+self.linkerCmd+'\n')
+        self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
     err.close()
     output.close()
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)

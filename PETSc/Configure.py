@@ -23,6 +23,7 @@ class Configure(configure.Configure):
     self.functions = self.framework.require('config.functions', self)
     self.libraries = self.framework.require('config.libraries', self)
     self.lapack    = self.framework.require('PETSc.LAPACK',     self)
+    self.mpi       = self.framework.require('PETSc.MPI',        self)
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
@@ -295,6 +296,8 @@ class Configure(configure.Configure):
     return
 
   def mpiuniWarning(self):
+    if self.mpi.foundInclude and self.mpi.foundLib: return
+    raise RuntimeError('Could not find MPI!')
 ##    if self.mpiuni:
 ##      print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
 ##      print '**********     Use --with-mpi option to specify a full MPI     **********'
