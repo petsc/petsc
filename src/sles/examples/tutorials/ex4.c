@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.22 1996/08/18 19:26:40 curfman Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.23 1996/08/18 19:36:00 curfman Exp balay $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -13,7 +13,7 @@ can be used for the different matrices.\n\n";
    Routines: SLESSolve(), SLESView()
    Routines: PetscRandomCreate(), PetscRandomDestroy()
    Routines: VecSetRandom()
-   Multiprocessor code
+   Processors: n
 T*/
 
 /* 

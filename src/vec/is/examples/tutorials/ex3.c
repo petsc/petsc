@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.1 1996/08/14 15:36:59 bsmith Exp bsmith $"; */
+/*      "$Id: ex3.c,v 1.2 1996/08/17 14:35:33 bsmith Exp balay $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -9,10 +9,9 @@ static char help[] = "Demonstrates creating a blocked index set.\n\n";
     Routines: ISGetIndices(), ISRestoreIndices(), ISBlockGetSize()
     Routines: ISBlockGetBlockSize(), ISBlockGetIndices(), ISBlockRestoreIndices()
     Routines: ISBlock()
-    
-      Creates an index set based on blocks of integers. Views that index set
-  and then destroys it.
 
+    Comment:  Creates an index set based on blocks of integers. Views that index set
+  and then destroys it.
 
 T*/
 

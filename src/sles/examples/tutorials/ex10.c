@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex21.c,v 1.4 1996/08/08 22:49:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex21.c,v 1.5 1996/08/18 20:44:06 curfman Exp balay $";
 #endif
 
 static char help[] = 
@@ -23,7 +23,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
    Routines: MatGetTypeFromOptions(), MatLoad()
    Routines: VecLoad()
    Routines: ViewerFileOpenBinary(), ViewerStringOpen(), ViewerDestroy()
-   Multiprocessor code
+   Processors: 1
 T*/
 
 /* 

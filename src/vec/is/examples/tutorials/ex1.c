@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1996/08/14 02:57:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.2 1996/08/17 14:35:33 bsmith Exp balay $";
 #endif
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
@@ -10,7 +10,7 @@ static char help[] = "Demonstrates creating a general index set.\n\n";
     Routines: ISCreateGeneral(), ISDestroy(), ISView()
     Routines: ISGetIndices(), ISRestoreIndices()
     
-     Creates an index set based on a set of integers. Views that index set
+    Comment: Creates an index set based on a set of integers. Views that index set
   and then destroys it.
 T*/
  
