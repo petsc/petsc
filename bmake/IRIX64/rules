@@ -1,4 +1,4 @@
-# $Id: base,v 1.33 1998/03/24 17:06:59 balay Exp balay $ 
+# $Id: base,v 1.34 1998/03/26 19:55:21 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
@@ -8,7 +8,7 @@ CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
 #
 CCV      = unknown
 #
-FC       = f77 -64 -DHAVE_IRIXF90
+FC       = f90 -cpp -64 -DHAVE_IRIXF90
 LD       = ld -64
 AR       = ar
 RM       = rm -f
@@ -16,7 +16,7 @@ RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
 CLINKER  = cc  -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
-FLINKER  = f77 -64 ${FOPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
+FLINKER  = f90 -cpp -64 ${FOPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
 LD       = ld -64
 
 SYS_LIB  = 

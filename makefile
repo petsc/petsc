@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.216 1998/03/25 17:36:25 balay Exp balay $ 
+# $Id: makefile,v 1.217 1998/03/27 20:06:26 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -53,7 +53,7 @@ info:
 	-@echo "=========================================="
 
 # Builds PETSc libraries for a given BOPT and architecture
-all: info chkpetsc_dir deletelibs build_kernels build_c build_shared build_fortran
+all: info chkpetsc_dir deletelibs build_kernels build_c build_shared build_fortran build_fortran90
 
 build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
@@ -113,6 +113,27 @@ build_fortran:
 	-@echo "========================================="
 
 #
+# Builds PETSc Fortran90 interface libary
+# Note:	 libfast cannot run on .F files on certain machines, so we
+# use lib and check for errors here.
+# Note: F90 interface currently only supported in NAG F90 compiler
+fortran90: fortran build_fortran90
+
+build_fortran90: 
+	-@echo "BEGINNING TO COMPILE FORTRAN90 INTERFACE LIBRARY"
+	-@echo "========================================="
+	-@cd src/fortran/f90; \
+	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib > trashz 2>&1; \
+	  grep -v clog trashz | grep -v "information sections" | \
+	  egrep -i '(Error|warning|Can)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; ${RM} trashz
+	${RANLIB} ${PDIR}/libpetscfortran.a
+	-@chmod g+w  ${PDIR}/*.a
+	-@echo "Completed compiling Fortran90 interface library"
+	-@echo "========================================="
+
+#
 # Builds PETSc Fortran kernels; some numerical kernels have
 # a Fortran version that may give better performance on certain 
 # machines. These always provide better performance for complex numbers.
@@ -146,25 +167,6 @@ testfortran: info chkopts
 	   ACTION=testexamples_3  tree 
 	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "========================================="
-#
-# Builds PETSc Fortran90 interface libary
-# Note:	 libfast cannot run on .F files on certain machines, so we
-# use lib and check for errors here.
-# Note: F90 interface currently only supported in NAG F90 compiler
-fortran90: info chkpetsc_dir fortran
-	-@echo "BEGINNING TO COMPILE FORTRAN90 INTERFACE LIBRARY"
-	-@echo "========================================="
-	-@cd src/fortran/f90; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} lib > trashz 2>&1; \
-	  grep -v clog trashz | grep -v "information sections" | \
-	  egrep -i '(Error|warning|Can)' >> /dev/null;\
-	  if [ "$$?" != 1 ]; then \
-	  cat trashz ; fi; ${RM} trashz
-	${RANLIB} ${PDIR}/libpetscfortran.a
-	-@chmod g+w  ${PDIR}/*.a
-	-@echo "Completed compiling Fortran90 interface library"
-	-@echo "========================================="
-
 # Builds noise routines (not yet publically available)
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
