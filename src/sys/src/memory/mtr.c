@@ -1,4 +1,4 @@
-/*$Id: mtr.c,v 1.139 2000/04/09 04:34:35 bsmith Exp bsmith $*/
+/*$Id: mtr.c,v 1.140 2000/04/12 04:21:28 bsmith Exp bsmith $*/
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
@@ -399,7 +399,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n",a);
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscTrSpace"
+#define __FUNC__ /*<a name="PetscTrSpace"></a>*/"PetscTrSpace"
 /*@
     PetscTrSpace - Returns space statistics.
    

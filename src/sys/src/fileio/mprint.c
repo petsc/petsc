@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.45 2000/04/12 04:21:24 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.46 2000/04/13 22:19:31 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -295,7 +295,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetscPrintf" 
+#define __FUNC__ /*<a name="PetscPrintf"></a>*/"PetscPrintf" 
 /*@C
     PetscPrintf - Prints to standard out, only from the first
     processor in the communicator.
@@ -320,8 +320,8 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 @*/
 int PetscPrintf(MPI_Comm comm,const char format[],...)
 {
-  int    rank,ierr,len;
-  char   *nformat,*sub1,*sub2;
+  int       rank,ierr,len;
+  char      *nformat,*sub1,*sub2;
   PetscReal value;
 
   PetscFunctionBegin;
