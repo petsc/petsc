@@ -1,0 +1,48 @@
+#! /bin/csh
+# $Id: buildtest,v 1.1 2000/02/20 21:34:27 bsmith Exp bsmith $ 
+#
+# Defines the configuration for maint/buildtest, this is sourced by that script
+#
+# This handles tests for solaris_uni, solaris_gun, and solaris64
+#
+set TMP=/sandbox/petsc/petsc
+set MACH=lava
+set TEST=testexamples_
+set NICE=''
+#
+set day=`date | cut -f1 -d" "`
+if ($day == Sun) then
+  set ARCH=solaris_uni
+  set BOPT=O
+  set JOBS=(4 9 13)
+else if ($day == Mon) then
+  set ARCH=solaris_gnu
+  set BOPT=O_complex
+  set JOBS=(1 2 3)
+else if ($day == Tue) then
+  set ARCH=solaris_gnu
+  set BOPT=g
+  set JOBS=(1 2 3 8)
+else if ($day == Wed) then
+  set ARCH=solaris_uni
+  set BOPT=O_c++
+  set JOBS=(4 9 13)
+else if ($day == Thu) then
+  set ARCH=solaris64
+  set BOPT=O_complex
+  set JOBS=(1 2 3 5 10 13)
+else if ($day == Fri) then
+  set ARCH=solaris64
+  set BOPT=O
+  set JOBS=(1 2 3 8 13)
+else if ($day == Sat) then
+  set ARCH=solaris_uni
+  set BOPT=g_complex
+  set JOBS=(4 9 10 11 13)
+endif
+
+
+
+
+
+
