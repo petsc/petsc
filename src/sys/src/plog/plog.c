@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.199 1999/01/04 21:49:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.200 1999/02/03 03:11:48 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1006,15 +1006,15 @@ int PLogDestroy(void)
 #define __FUNC__ "PLogBegin"
 /*@C
     PLogBegin - Turns on logging of objects and events. This logs flop
-    rates and object creation and should not slow programs down too much.
-    This routine may be called more than once.
+       rates and object creation and should not slow programs down too much.
+       This routine may be called more than once.
 
     Collective over PETSC_COMM_WORLD
 
     Options Database Keys:
-+   -log - Prints basic log information (for code compiled with USE_PETSC_LOG)
--   -log_summary - Prints summary of flop and timing information to the 
++   -log_summary - Prints summary of flop and timing information to the 
                    screen (for code compiled with USE_PETSC_LOG)
+-   -log - Prints detailed log information (for code compiled with USE_PETSC_LOG)
 
     Usage:
 .vb
@@ -2012,7 +2012,7 @@ M*/
 
    Synopsis:
    void PLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
-                  PetscObject o4)
+                       PetscObject o4)
 
    Usage:
 .vb
@@ -2027,7 +2027,7 @@ M*/
 
    Notes:
    You should also register each integer event with the command 
-   PLogRegisterEvent().  The source code must be compiled with 
+   PLogEventRegister().  The source code must be compiled with 
    -DUSE_PETSC_LOG, which is the default.
 
    PETSc automatically logs library events if the code has been
@@ -2051,7 +2051,7 @@ M*/
 
    Synopsis:
    void PLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
-                PetscObject o4)
+                     PetscObject o4)
 
    Usage:
 .vb
@@ -2066,7 +2066,7 @@ M*/
 
    Notes:
    You should also register each additional integer event with the command 
-   PLogRegisterEvent(). Source code must be compiled with 
+   PLogEventRegister(). Source code must be compiled with 
    -DUSE_PETSC_LOG, which is the default.
 
    PETSc automatically logs library events if the code has been
