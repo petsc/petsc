@@ -260,7 +260,7 @@ class Configure(config.base.Configure):
     oldFlags = self.framework.argDB['LDFLAGS']
     self.framework.argDB['LDFLAGS'] += ' -v'
     self.pushLanguage('F77')
-    output = self.outputLink('', '')
+    (output, returnCode) = self.outputLink('', '')
     self.framework.argDB['LDFLAGS'] = oldFlags
     self.popLanguage()
 

@@ -306,6 +306,9 @@ class Configure:
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     return not ret or not len(out)
 
+  def filterCompileOutput(self, output):
+    return self.framework.filterCompileOutput(output)
+
   def outputCompile(self, includes = '', body = '', cleanup = 1):
     command = self.getCompilerCmd()
     self.framework.outputHeader(self.compilerDefines)
@@ -323,15 +326,7 @@ class Configure:
     if len(ready[0]):
       # Log failure of compiler
       out = ready[0][0].read()
-    if out and self.framework.argDB['ignoreWarnings']:
-      out = reduce(lambda s, t: s+t, filter(lambda s: not self.framework.warningRE.search(s), out.split('\n')), '')
-    if ret and not out:
-      out = str(ret)
-    # Ignore stupid warning from gcc about builtins
-    #   This should maybe be a general mechanism for ignoring certain warnings
-    if not ret and out and out.find('warning: conflicting types for built-in function') >= 0:
-      out = ''
-    if out:
+    if out or ret:
       self.framework.log.write('ERR (compiler): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
       self.framework.log.write('Source:\n'+self.getCode(includes, body))
@@ -340,16 +335,22 @@ class Configure:
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    return out
+    return (out, ret)
 
   def checkCompile(self, includes = '', body = '', cleanup = 1):
-    return not len(self.outputCompile(includes, body, cleanup))
+    '''Returns True if the compile was successful'''
+    (output, returnCode) = self.outputCompile(includes, body, cleanup)
+    output = self.filterCompileOutput(output)
+    return not (returnCode or len(output))
+
+  def filterLinkOutput(self, output):
+    return self.framework.filterLinkOutput(output)
 
   def outputLink(self, includes, body, cleanup = 1):
     import sys
 
-    out = self.outputCompile(includes, body, cleanup = 0)
-    if len(out): return out
+    (out, ret) = self.outputCompile(includes, body, cleanup = 0)
+    if ret or len(out): return (out, ret)
     command = self.getLinkerCmd()
     self.framework.log.write('Executing: '+command+'\n')
     (input, output, err, pipe) = self.openPipe(command)
@@ -362,11 +363,7 @@ class Configure:
     if len(ready[0]):
       # Log failure of linker
       out = ready[0][0].read()
-    if out and self.framework.argDB['ignoreWarnings']:
-      out = reduce(lambda s, t: s+t, filter(lambda s: not self.framework.warningRE.search(s), out.split('\n')), '')
-    if ret and not out:
-      out = str(ret)
-    if out:
+    if out or ret:
       self.framework.log.write('ERR (linker): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
       self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
@@ -376,10 +373,12 @@ class Configure:
       self.linkerObj = self.linkerObj+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
-    return out
+    return (out, ret)
 
   def checkLink(self, includes, body, cleanup = 1):
-    return not len(self.outputLink(includes, body, cleanup))
+    (output, returnCode) = self.outputLink(includes, body, cleanup)
+    output = self.filterLinkOutput(output)
+    return not (returnCode or len(output))
 
   def checkRun(self, includes, body):
     if not self.checkLink(includes, body, cleanup = 0): return 0

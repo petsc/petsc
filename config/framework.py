@@ -18,10 +18,10 @@ class Help:
     if self.options.has_key(section):
       if self.options[section].has_key(name):
         raise RuntimeError('Duplicate configure option '+name+' in section '+section)
-      self.options[section][name] = comment
     else:
       self.sections.append(section)
-      self.options[section] = {name: comment}
+      self.options[section] = {}
+    self.options[section][name] = (comment, len(self.options[section]))
     varName = name.split('=')[0]
     self.framework.argDB.setLocalType(varName, argType('Print help message', **kwargs))
     return
@@ -36,20 +36,20 @@ class Help:
     descLen = 1
     for section in self.sections:
       nameLen = max([nameLen, max(map(len, self.options[section].keys()))+1])
-      descLen = max([descLen, max(map(len, self.options[section].values()))+1])
+      descLen = max([descLen, max(map(lambda t: len(t[0]), self.options[section].values()))+1])
     format    = '  -%-'+str(nameLen)+'s: %s'
     formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  current: %s'
     for section in self.sections:
       print section+':'
-      for item in self.options[section].items():
-        # SHOULD BE varName = item[0].split('=')[0].strip('-')
-        varName = item[0].split('=')[0]
-        while varName[0] == '-': varName = varName[1:]
+      items = self.options[section].items()
+      items.sort(lambda a, b: a[1][1].__cmp__(b[1][1]))
+      for item in items:
+        varName = item[0].split('=')[0].strip('-')
 
         if self.framework.argDB.has_key(varName):
-          print formatDef % (item[0], item[1], str(self.framework.argDB[varName]))
+          print formatDef % (item[0], item[1][0], str(self.framework.argDB[varName]))
         else:
-          print format % item
+          print format % (item[0], item[1][0])
     return
 
 class Framework(config.base.Configure):
@@ -83,6 +83,19 @@ class Framework(config.base.Configure):
       else:
         self.log     = file(self.logName, 'w')
     return self.log
+
+  def setupArguments(self, clArgs = None):
+    '''Set initial arguments into the database, and setup initial types'''
+    self.help = Help(self)
+    self.help.setTitle('Python Configure Help')
+
+    self.configureHelp(self.help)
+    for child in self.children:
+      if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
+
+    self.argDB.insertArgs(os.environ)
+    self.argDB.insertArgs(clArgs)
+    return
 
   def setupChildren(self):
     self.argDB['configModules'] = nargs.findArgument('configModules', self.clArgs)
@@ -276,18 +289,27 @@ class Framework(config.base.Configure):
     f.close()
     return
 
-  def setupArguments(self, clArgs = None):
-    '''Set initial arguments into the database, and setup initial types'''
-    self.help = Help(self)
-    self.help.setTitle('Python Configure Help')
+  def filterCompileOutput(self, output):
+    if self.argDB['ignoreCompileOutput']:
+      output = ''
+    elif output:
+      lines = output.splitlines()
+      if self.framework.argDB['ignoreWarnings']:
+        lines = filter(lambda s: not self.warningRE.search(s), lines)
+      # Ignore stupid warning from gcc about builtins
+      lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
+      output = reduce(lambda s, t: s+t, lines, '')
+    return output
 
-    self.configureHelp(self.help)
-    for child in self.children:
-      if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
-
-    self.argDB.insertArgs(os.environ)
-    self.argDB.insertArgs(clArgs)
-    return
+  def filterLinkOutput(self, output):
+    if self.argDB['ignoreLinkOutput']:
+      output = ''
+    elif output:
+      lines = output.splitlines()
+      if self.framework.argDB['ignoreWarnings']:
+        lines = filter(lambda s: not self.warningRE.search(s), lines)
+      output = reduce(lambda s, t: s+t, lines, '')
+    return output
 
   def outputBanner(self):
     import time
@@ -304,12 +326,16 @@ class Framework(config.base.Configure):
     help.addOption('Framework', 'help', 'Print this help message', nargs.ArgBool)
     help.addOption('Framework', 'h', 'Print this help message', nargs.ArgBool)
     help.addOption('Framework', 'log', 'The filename for the configure log', nargs.ArgString)
-    help.addOption('Framework', 'ignoreWarnings', 'Flag to ignore compiler and linker warnings', nargs.ArgBool)
+    help.addOption('Framework', 'ignoreCompileOutput', 'Ignore compiler output', nargs.ArgBool)
+    help.addOption('Framework', 'ignoreLinkOutput', 'Ignore linker output', nargs.ArgBool)
+    help.addOption('Framework', 'ignoreWarnings', 'Ignore compiler and linker warnings', nargs.ArgBool)
 
-    self.argDB['h']               = 0
-    self.argDB['help']            = 0
-    self.argDB['log']             = 'configure.log'
-    self.argDB['ignoreWarnings']  = 0
+    self.argDB['h']                   = 0
+    self.argDB['help']                = 0
+    self.argDB['log']                 = 'configure.log'
+    self.argDB['ignoreCompileOutput'] = 1
+    self.argDB['ignoreLinkOutput']    = 1
+    self.argDB['ignoreWarnings']      = 0
     return
 
   def configure(self):
