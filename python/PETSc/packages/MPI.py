@@ -472,8 +472,8 @@ class Configure(config.base.Configure):
   def configureTypes(self):
     '''Checking for MPI types'''
     oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS           += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
-    self.framework.batchIncludeDirs   += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
+    self.framework.batchIncludeDirs.extend([self.libraries.getIncludeArgument(inc) for inc in self.include])
     self.types.checkSizeof('MPI_Comm', 'mpi.h')
     if 'HAVE_MPI_FINT' in self.defines:
       self.types.checkSizeof('MPI_Fint', 'mpi.h')
