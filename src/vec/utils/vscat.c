@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.97 1997/08/22 15:10:22 bsmith Exp gropp $";
+static char vcid[] = "$Id: vscat.c,v 1.98 1997/08/29 18:24:01 gropp Exp bsmith $";
 #endif
 
 /*
@@ -1014,11 +1014,15 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 @*/
 int VecScatterView(VecScatter ctx, Viewer viewer)
 {
+  int ierr;
+
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
   if (!viewer) { viewer = VIEWER_STDOUT_SELF;}
   else {PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);}
-  if (ctx->view) return (*ctx->view)((PetscObject)ctx,viewer);
-  else SETERRQ(PETSC_ERR_SUP,0,"Cannot view this type of scatter context yet");
+  if (!ctx->view) SETERRQ(PETSC_ERR_SUP,0,"Cannot view this type of scatter context yet");
+
+  ierr = (*ctx->view)((PetscObject)ctx,viewer); CHKERRQ(ierr);
+  return 0;
 }
 
 #undef __FUNC__  
