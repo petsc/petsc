@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.72 1998/03/24 21:13:17 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.73 1998/04/13 17:44:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -95,7 +95,7 @@ int main(int argc,char **args)
  */
 int GetElasticityMatrix(int m,Mat *newmat)
 {
-  int        i,j,k,i1,i2,j1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
+  int        i,j,k,i1,i2,j_1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
   int        ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr;
   PetscTruth set;
   IS         iskeep;
@@ -123,10 +123,10 @@ int GetElasticityMatrix(int m,Mat *newmat)
 	h1 = 0; 
         base = 2*k*shiftz + 2*j*shifty + 2*i*shiftx;
 	for ( k1=0; k1<3; k1++ ) {
-	  for ( j1=0; j1<3; j1++ ) {
+	  for ( j_1=0; j_1<3; j_1++ ) {
 	    for ( i1=0; i1<3; i1++ ) {
 	      h2 = 0;
-	      r1 = base + i1*shiftx + j1*shifty + k1*shiftz;
+	      r1 = base + i1*shiftx + j_1*shifty + k1*shiftz;
 	      for ( k2=0; k2<3; k2++ ) {
 	        for ( j2=0; j2<3; j2++ ) {
 	          for ( i2=0; i2<3; i2++ ) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa.c,v 1.8 1997/07/09 20:55:07 balay Exp bsmith $";
+static char vcid[] = "$Id: dgefa.c,v 1.9 1997/10/19 03:26:08 bsmith Exp bsmith $";
 #endif
 /*
        This routine was converted by f2c from Linpack source
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: dgefa.c,v 1.8 1997/07/09 20:55:07 balay Exp bsmith $"
 #define __FUNC__ "Linpack_DGEFA"
 int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
 {
-    int     i__2, i__3, kp1, nm1, j, k, l,ll,kn,knp1,jn;
+    int     i__2, i__3, kp1, nm1, j, k, l,ll,kn,knp1,jn1;
     Scalar  t,*aa,*ax,*ay;
     double  tmp,max;
 
@@ -68,15 +68,15 @@ int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
 
 	ax = aa;
         for (j = kp1; j <= n; ++j) {
-            jn = j*n;
-	    t = a[l + jn];
+            jn1 = j*n;
+	    t = a[l + jn1];
 	    if (l != k) {
-	      a[l + jn] = a[k + jn];
-	      a[k + jn] = t;
+	      a[l + jn1] = a[k + jn1];
+	      a[k + jn1] = t;
             }
 
 	    i__3 = n - k;
-            ay = &a[1+k+jn];
+            ay = &a[1+k+jn1];
             for ( ll=0; ll<i__3; ll++ ) {
               ay[ll] += t*ax[ll];
             }
