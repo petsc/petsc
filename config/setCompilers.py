@@ -99,7 +99,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-vendor-compilers'] == 'true': self.framework.argDB['with-vendor-compilers'] = ''      
 
     if 'PETSC_DIR' in self.framework.argDB:
-      self.framework.searchdirs.append(os.path.join(self.framework.argDB['PETSC_DIR'],'bin','win32fe'))
+      self.framework.argDB['search-dirs'].append(os.path.join(self.framework.argDB['PETSC_DIR'],'bin','win32fe'))
         
     if self.framework.argDB.has_key('with-cc'):
       yield self.framework.argDB['with-cc']
