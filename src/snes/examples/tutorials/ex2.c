@@ -23,7 +23,7 @@ int main( int argc, char **argv )
   Vec          x,r,F,U;
   Mat          J;                  /* Jacobian matrix */
   int          ierr, its, n = 5,i;
-  double       h,xp = 0.0,v;
+  Scalar       h,xp = 0.0,v;
   MonitorCtx   monP;               /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0 );
@@ -43,7 +43,7 @@ int main( int argc, char **argv )
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {
-    v = 6.0*xp + pow(xp,6.0);
+    v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     ierr = VecSetValues(F,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
     v= xp*xp*xp;
     ierr = VecSetValues(U,1,&i,&v,INSERTVALUES); CHKERRA(ierr);

@@ -1,6 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.9 1995/05/29 15:59:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.10 1995/06/08 03:10:40 bsmith Exp bsmith $";
 #endif
+
+#if defined(HAVE_X11)
 #include "ximpl.h"
 
 static char *(colornames[]) = { "white", "black", "red", "yellow", "green", 
@@ -495,3 +497,4 @@ int XiGetNumcolors( DrawCtx_X *XiWin )
 {
   return XiWin->numcolors;
 }
+#endif

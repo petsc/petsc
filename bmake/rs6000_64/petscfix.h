@@ -48,6 +48,7 @@ extern int     getdomainname(char *,int);
 extern char   *realpath(char *,char *);
 extern char   *getenv( char *);
 extern int    vfprintf(FILE*,char*,...);
+extern int    vsprintf(char*,char*,...);
 extern void   perror(char *);
 extern int    atoi(char*);
 extern double atof(const char*);

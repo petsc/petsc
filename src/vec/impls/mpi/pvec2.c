@@ -1,4 +1,5 @@
-/* $Id: pvec2.c,v 1.6 1995/06/08 03:07:10 bsmith Exp bsmith $ */
+
+/* $Id: pvec2.c,v 1.7 1995/06/20 01:45:52 bsmith Exp bsmith $ */
 
 #include <math.h>
 #include "pvecimpl.h" 

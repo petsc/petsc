@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.26 1995/06/18 16:23:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.27 1995/06/20 22:36:25 curfman Exp bsmith $";
 #endif
 
 /*  
@@ -112,6 +112,7 @@ int PCApply(PC pc,Vec x,Vec y)
   PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_Apply,pc,x,y,0);
+  return 0;
 }
 /*@
    PCApplyTrans - Applies the transpose of preconditioner to a vector.

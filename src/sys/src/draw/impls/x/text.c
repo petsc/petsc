@@ -1,7 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: text.c,v 1.7 1995/05/29 15:59:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.8 1995/06/08 03:10:40 bsmith Exp bsmith $";
 #endif
 
+#if defined(HAVE_X11)
 /*
    This file contains simple code to manage access to fonts, insuring that
    library routines access/load fonts only once
@@ -146,3 +147,4 @@ int XiMatchFontSize( XiFont *font, int w, int h )
   font->font_descent  = nfonts[imax].descent;
   return 0;
 }
+#endif

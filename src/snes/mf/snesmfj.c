@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.9 1995/06/08 03:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.10 1995/06/14 17:25:06 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -20,7 +20,8 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   MFCtx_Private *ctx = (MFCtx_Private* ) ptr;
   SNES          snes = ctx->snes;
   double        norm,epsilon = 1.e-8; /* assumes double precision */
-  Scalar        h,dot,sum;
+  Scalar        h,dot;
+  double        sum;
   Scalar        mone = -1.0;
   Vec           w = ctx->w,U,F;
   int           ierr;
@@ -30,8 +31,13 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   /* determine a "good" step size */
   VecDot(U,dx,&dot); VecASum(dx,&sum); VecNorm(dx,&norm);
   if (sum == 0.0) {dot = 1.0; norm = 1.0;}
+#if defined(PETSC_COMPLEX)
+  else if (abs(dot) < 1.e-16*sum && real(dot) >= 0.0) dot = 1.e-16*sum;
+  else if (abs(dot) < 0.0 && real(dot) > 1.e-16*sum) dot = -1.e-16*sum;
+#else
   else if (dot < 1.e-16*sum && dot >= 0.0) dot = 1.e-16*sum;
   else if (dot < 0.0 && dot > 1.e-16*sum) dot = -1.e-16*sum;
+#endif
   h = epsilon*dot/(norm*norm);
   
   /* evaluate function at F(x + dx) */

@@ -4,7 +4,6 @@ parallel matrix assembly, the matrix is intentionally distributed across the\n\
 processors differently from the way it is assembled.\n\n";
 
 #include "sles.h"
-#include "petsc.h"
 #include <stdio.h>
 
 int main(int argc,char **args)
@@ -13,7 +12,6 @@ int main(int argc,char **args)
   Scalar    v, zero = 0.0, one = 1.0, none = -1.0;
   Vec       x, u, b;                       Mat       A; 
   SLES      sles;                          double    norm;
-
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,"-m",&m);
@@ -35,10 +33,9 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
 
   ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
+  ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
-  ierr = VecSet(&one,u); CHKERRA(ierr);     
-  ierr = VecSet(&zero,x); CHKERRA(ierr);
+  ierr = VecSet(&one,u); CHKERRA(ierr);ierr = VecSet(&zero,x); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);

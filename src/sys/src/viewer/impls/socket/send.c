@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.12 1995/06/08 03:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.13 1995/06/14 17:25:01 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -73,7 +73,7 @@ int byteswapint(int *,int),byteswapdouble(double*,int);
 #endif
 
 typedef struct { int onoff; int time; } Linger;
-static int MatlabDestroy(PetscObject obj)
+static int ViewerDestroy_Matlab(PetscObject obj)
 {
   Linger linger;
   Viewer viewer = (Viewer) obj; 
@@ -232,7 +232,7 @@ int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
   PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,MPI_COMM_SELF);
   PLogObjectCreate(v);
   v->port        = t;
-  v->destroy     = MatlabDestroy;
+  v->destroy     = ViewerDestroy_Matlab;
   *lab           = v;
   return 0;
 }

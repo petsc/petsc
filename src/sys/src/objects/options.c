@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.15 1995/06/18 16:23:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.16 1995/06/20 01:46:42 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -85,6 +85,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
   }
 #if defined(PETSC_COMPLEX)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
+  MPI_Type_commit(&MPIU_COMPLEX);
 #endif
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   ierr = OptionsCreate_Private(argc,args,file,env); CHKERRQ(ierr);

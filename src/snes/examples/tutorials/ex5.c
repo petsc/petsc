@@ -26,7 +26,6 @@ is solved.  The command line options are:\n\
 */
 
 #include "draw.h"
-#include "petsc.h"
 #include "snes.h"
 #include "da.h"
 #include <math.h>
@@ -35,14 +34,12 @@ is solved.  The command line options are:\n\
 
 typedef struct {
       double      param;         /* test problem parameter */
-      int         mx;            /* Discretization in x-direction */
-      int         my;            /* Discretization in y-direction */
+      int         mx,my;         /* Discretization in x,y-direction */
       Vec         localX,localF; /* ghosted local vector */
       DA          da;            /* regular array datastructure */
 } AppCtx;
 
-int  FormFunction1(SNES,Vec,Vec,void*),
-     FormInitialGuess1(SNES,Vec,void*);
+int  FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(SNES,Vec,void*);
 
 int main( int argc, char **argv )
 {
@@ -58,11 +55,8 @@ int main( int argc, char **argv )
   PetscInitialize( &argc, &argv, 0,0 );
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
 
-  user.mx    = 4;
-  user.my    = 4;
-  user.param = 6.0;
-  OptionsGetInt(0,"-mx",&user.mx);
-  OptionsGetInt(0,"-my",&user.my);
+  user.mx    = 4; user.my    = 4; user.param = 6.0;
+  OptionsGetInt(0,"-mx",&user.mx); OptionsGetInt(0,"-my",&user.my);
   OptionsGetDouble(0,"-par",&user.param);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRA(1,"Lambda is out of range");
@@ -110,26 +104,18 @@ int main( int argc, char **argv )
   PetscFinalize();
 
   return 0;
-}
-/* --------------------  Form initial approximation ----------------- */
+}/* --------------------  Form initial approximation ----------------- */
 int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int     i, j, row, mx, my, ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
-  double  one = 1.0, lambda;
-  double  temp1, temp, hx, hy, hxdhy, hydhx;
-  double  sc;
-  double  *x;
+  double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc,*x;
   Vec     localX = user->localX;
 
-  mx	 = user->mx; 
-  my	 = user->my;
-  lambda = user->param;
-  hx     = one / (double)(mx-1);
-  hy     = one / (double)(my-1);
+  mx	 = user->mx; my	 = user->my; lambda = user->param;
+  hx     = one / (double)(mx-1);     hy     = one / (double)(my-1);
   sc     = hx*hy;
-  hxdhy  = hx/hy;
-  hydhx  = hy/hx;
+  hxdhy  = hx/hy; hydhx  = hy/hx;
 
   ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);
@@ -150,25 +136,19 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   /* stick values into global vector */
   ierr = DALocalToGlobal(user->da,localX,INSERTVALUES,X);
   return 0;
-}
-/* --------------------  Evaluate Function F(x) --------------------- */
+}/* --------------------  Evaluate Function F(x) --------------------- */
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
-  double  two = 2.0, one = 1.0, lambda;
-  double  hx, hy, hxdhy, hydhx;
+  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx;
   double  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
   Vec     localX = user->localX, localF = user->localF; 
 
-  mx	 = user->mx; 
-  my	 = user->my;
-  lambda = user->param;
+  mx	 = user->mx; my	 = user->my;lambda = user->param;
   hx     = one / (double)(mx-1);
   hy     = one / (double)(my-1);
-  sc     = hx*hy;
-  hxdhy  = hx/hy;
-  hydhx  = hy/hx;
+  sc     = hx*hy; hxdhy  = hx/hy; hydhx  = hy/hx;
 
   ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX);
@@ -185,10 +165,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
         continue;
       }
       u = x[row];
-      ub = x[row - Xm];
-      ul = x[row - 1];
-      ut = x[row + Xm];
-      ur = x[row + 1];
+      ub = x[row - Xm]; ul = x[row - 1];
+      ut = x[row + Xm]; ur = x[row + 1];
       uxx = (-ur + two*u - ul)*hydhx;
       uyy = (-ut + two*u - ub)*hxdhy;
       f[row] = uxx + uyy - sc*lambda*exp(u);

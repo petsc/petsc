@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.14 1995/05/16 00:36:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.15 1995/06/08 03:11:42 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -54,8 +54,13 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
     ierr = VecCopy(x1,x2); CHKERRQ(ierr);
     if ( i>= start && i<end) {
       dx = xx[i-start];
+#if !defined(PETSC_COMPLEX)
       if (dx < 1.e-16 && dx >= 0.0) dx = 1.e-1;
       else if (dx < 0.0 && dx > -1.e-16) dx = -1.e-1;
+#else
+      if (abs(dx) < 1.e-16 && real(dx) >= 0.0) dx = 1.e-1;
+      else if (real(dx) < 0.0 && abs(dx) > -1.e-16) dx = -1.e-1;
+#endif
       dx *= epsilon;
       scale = -1.0/dx;
       VecSetValues(x2,1,&i,&dx,ADDVALUES); 
@@ -66,7 +71,11 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
     VecGetArray(j2,&y);
     VecAMax(j2,0,&amax); amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {
+#if defined(PETSC_COMPLEX)
+      if (abs(y[j-start]) > amax) {
+#else
       if (y[j-start] > amax || y[j-start] < -amax) {
+#endif
         ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERTVALUES); CHKERRQ(ierr);
       }
     }

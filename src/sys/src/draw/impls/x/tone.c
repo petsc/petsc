@@ -1,7 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: tone.c,v 1.3 1995/04/28 02:24:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.4 1995/05/05 03:49:54 bsmith Exp bsmith $";
 #endif
 
+#if defined(HAVE_X11)
 #include "ximpl.h"
 
 #define SHIFT_VAL 6
@@ -133,3 +134,4 @@ int XiDrawInterpolatedTriangle(DrawCtx_X* win, int x1, int y1, int t1,
   }
   return 0;
 }
+#endif

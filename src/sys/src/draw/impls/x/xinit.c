@@ -1,7 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.8 1995/05/29 16:02:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.9 1995/06/08 03:10:40 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
+
+#if defined(HAVE_X11)
 #include "ximpl.h"
 
 extern int  XiUniformHues(DrawCtx_X *,int);
@@ -272,6 +274,7 @@ int XiSetToBackground(DrawCtx_X* XiWin )
   return 0;
 }
 
+#endif
 
 
 

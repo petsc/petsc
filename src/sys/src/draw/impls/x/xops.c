@@ -1,7 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.19 1995/05/29 16:03:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.20 1995/06/08 03:10:40 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
+
+#if defined(HAVE_X11)
 #include "ximpl.h"
 
 #define XTRANS(win,xwin,x) \
@@ -310,4 +312,13 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   return 0;
 }
 
+#else
 
+#include "draw.h"
+int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
+              DrawCtx* inctx)
+{
+  return DrawOpenNull(comm,inctx);
+}
+
+#endif

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.6 1995/06/20 22:36:16 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.7 1995/06/21 00:11:20 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -437,7 +437,7 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   double maxo,mino,aveo;
   int    numtid,i;
   double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
-  double fmin,fmax,ftot,wdou,flops,totts;
+  double fmin,fmax,ftot,wdou,totts;
 
   MPI_Comm_size(comm,&numtid);
 

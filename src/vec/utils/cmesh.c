@@ -54,6 +54,7 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
   ISDestroy(from); ISDestroy(to); VecScatterCtxDestroy(ctx);
 
   if (mytid == 0) {
+#if !defined(PETSC_COMPLEX)
     VecGetArray(W,&v);
 
     /* scale the color values between 32 and 256 */
@@ -91,6 +92,7 @@ int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
     VecRestoreArray(W,&v);
     if (!xin) PETSCFREE(x); 
     if (!yin) PETSCFREE(y);
+#endif
   }
   VecDestroy(W);
   return 0;

@@ -1,7 +1,6 @@
 static char help[] = "This example solves a tridiagonal linear system with SLES.\n\n";
 
 #include "sles.h"
-#include "petsc.h"
 #include <stdio.h>
 
 int main(int argc,char **args)
@@ -12,7 +11,6 @@ int main(int argc,char **args)
   Mat     A;
   SLES    sles;
   double  norm;
-
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,"-n",&n);
@@ -49,10 +47,8 @@ int main(int argc,char **args)
   else 
     MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12: Iterations %d\n",its);
 
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = VecDestroy(b); CHKERRA(ierr);ierr = MatDestroy(A); CHKERRA(ierr);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   PetscFinalize();
   return 0;

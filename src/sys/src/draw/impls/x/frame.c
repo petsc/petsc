@@ -1,7 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: frame.c,v 1.4 1995/03/06 04:29:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: frame.c,v 1.5 1995/03/25 01:27:20 bsmith Exp bsmith $";
 #endif
 
+#if defined(HAVE_X11)
 /*
    This file contains routines to draw a 3-d like frame about a given 
    box with a given width.  Note that we might like to use a high/low
@@ -111,3 +112,4 @@ int XiFrameColorsByName(DrawCtx_X* XiWin, char *Hi, char *Lo )
   }
   return 0;
 }
+#endif

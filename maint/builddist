@@ -3,8 +3,8 @@
 #  Makes distribution version of Petsc 2.0
 #
 echo "Have you rebuilt: manpages, wwwpages, latexpages,"
-echo "the users manual in .ps and .html"
-echo "and run maint/wwwman to make www manpage indices"
+echo "by running make allmanpages"
+echo "and the users manual (and intro) in .ps and .html"
 #
 pushd ~/petsc; make ACTION=clean tree; popd
 #
