@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 1999/11/05 14:48:08 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.8 2000/08/17 04:52:16 bsmith Exp bsmith $ 
 
 ALL: lib
 #
@@ -12,7 +12,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = ispai.o dspai.o
 OBJSF    =
-LIBBASE  = libpetscslesspai
+LIBBASE  = libpetscsles
 DIRS     = 
 LOCDIR   = src/contrib/pc/spai/src/
 
