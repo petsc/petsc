@@ -886,7 +886,7 @@ int PetscOptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth
   PetscValidIntPointer(ivalue);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (!value) {if (flg) *flg = PETSC_FALSE; *ivalue = 0;}
+    if (!value) {if (flg) *flg = PETSC_FALSE;}
     else {
       if (flg) *flg = PETSC_TRUE; 
       ierr = PetscOptionsAtoi(value,ivalue);CHKERRQ(ierr);
@@ -1017,7 +1017,7 @@ int PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,Pet
   PetscValidDoublePointer(dvalue);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
-    if (!value) {if (flg) *flg = PETSC_FALSE; *dvalue = 0.0;}
+    if (!value) {if (flg) *flg = PETSC_FALSE;}
     else        {if (flg) *flg = PETSC_TRUE; ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);}
   } else {
     if (flg) *flg = PETSC_FALSE;
@@ -1067,7 +1067,7 @@ int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {
-      if (flg) *flg = PETSC_FALSE; *dvalue = 0.0;
+      if (flg) *flg = PETSC_FALSE;
     } else { 
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);

@@ -441,7 +441,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   int          *pj,ndamp = 0;
   PetscScalar  *rtmp,*v,*pc,multiplier,*pv,*rtmps;
   PetscReal    damping = b->lu_damping, zeropivot = b->lu_zeropivot,rs;
-  PetscTruth   damp = PETSC_FALSE;
+  PetscTruth   damp;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -451,6 +451,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   rtmps = rtmp + shift; ics = ic + shift;
 
   do {
+    damp = PETSC_FALSE;
     for (i=0; i<n; i++) {
       nz    = ai[i+1] - ai[i];
       ajtmp = aj + ai[i] + shift;
@@ -462,7 +463,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       v        = a->a + a->i[r[i]] + shift;
       for (j=0; j<nz; j++) {
         rtmp[ics[ajtmpold[j]]] = v[j];
-        if (damp && ajtmpold[j] == r[i]) { /* damp the diagonal of the matrix */
+        if (ndamp && ajtmpold[j] == r[i]) { /* damp the diagonal of the matrix */
           rtmp[ics[ajtmpold[j]]] += damping;
         }
       }
@@ -494,7 +495,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       }
       if (PetscAbsScalar(pv[diag]) < zeropivot*rs) {
         if (damping) {
-          if (damp) damping *= 2.0;
+          if (ndamp) damping *= 2.0;
           damp = PETSC_TRUE;
           ndamp++;
           break;
