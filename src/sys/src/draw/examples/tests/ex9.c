@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.5 1999/10/24 14:01:18 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.6 1999/11/05 14:44:01 bsmith Exp bsmith $*/
 
 static char help[] = "Makes a simple histogram\n";
 
@@ -20,16 +20,18 @@ int main(int argc,char **argv)
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-width",&width,PETSC_NULL); 
-  OptionsGetInt(PETSC_NULL,"-height",&height,PETSC_NULL);
-  OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);
-  OptionsGetInt(PETSC_NULL,"-bins",&bins,PETSC_NULL); 
-  OptionsGetInt(PETSC_NULL,"-color",&color,PETSC_NULL); 
-  OptionsHasName(PETSC_NULL,"-nolabels",&flg); 
+  ierr = OptionsGetInt(PETSC_NULL,"-width",&width,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-height",&height,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-bins",&bins,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-color",&color,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-nolabels",&flg);CHKERRA(ierr);
   if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
-  ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
+  /* ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);*/
+  ierr = DrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
+  ierr = DrawSetType(draw,DRAW_X);CHKERRA(ierr);
   ierr = DrawHistCreate(draw,bins,&hist);CHKERRA(ierr);
   ierr = DrawHistGetAxis(hist,&axis);CHKERRA(ierr);
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);CHKERRA(ierr);

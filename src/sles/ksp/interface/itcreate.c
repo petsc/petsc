@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.176 1999/11/05 14:46:35 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.177 1999/11/10 03:20:38 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -271,7 +271,7 @@ int KSPSetType(KSP ksp,KSPType type)
   ierr = PetscTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (ksp->setupcalled) {
+  if (ksp->data) {
     /* destroy the old private KSP context */
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
     ksp->data = 0;
@@ -283,8 +283,6 @@ int KSPSetType(KSP ksp,KSPType type)
 
   if (!r) SETERRQ1(1,1,"Unknown KSP type given: %s",type);
 
-  if (ksp->data) {ierr = PetscFree(ksp->data);CHKERRQ(ierr);}
-  ksp->data        = 0;
   ksp->setupcalled = 0;
   ierr = (*r)(ksp);CHKERRQ(ierr);
 
@@ -533,11 +531,7 @@ int KSPSetFromOptions(KSP ksp)
     */
   ierr = OptionsHasName(ksp->prefix,"-ksp_monitor",&flg);CHKERRQ(ierr);
   if (flg) {
-    int rank;
-    ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,0,0);CHKERRQ(ierr);
-    }
+    ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,0,0);CHKERRQ(ierr);
   }
   /*
     Plots the vector solution 
@@ -566,11 +560,7 @@ int KSPSetFromOptions(KSP ksp)
     */
   ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor",&flg);CHKERRQ(ierr); 
   if (flg) {
-    int rank;
-    ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = KSPSetMonitor(ksp,KSPDefaultSMonitor,0,0);CHKERRQ(ierr);
-    }
+    ierr = KSPSetMonitor(ksp,KSPDefaultSMonitor,0,0);CHKERRQ(ierr);
   }
   /*
     Graphically plots preconditioned residual norm
@@ -578,11 +568,7 @@ int KSPSetFromOptions(KSP ksp)
   nmax = 4;
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
-    int    rank;
-    ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = KSPSetMonitor(ksp,KSPLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    }
+    ierr = KSPSetMonitor(ksp,KSPLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   /*
     Graphically plots preconditioned and true residual norm
@@ -590,11 +576,7 @@ int KSPSetFromOptions(KSP ksp)
   nmax = 4;
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xtruemonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg){
-    int    rank;
-    ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = KSPSetMonitor(ksp,KSPLGTrueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    } 
+    ierr = KSPSetMonitor(ksp,KSPLGTrueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   /* -----------------------------------------------------------------------*/
   ierr = OptionsHasName(ksp->prefix,"-ksp_preres",&flg);CHKERRQ(ierr);

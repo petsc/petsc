@@ -1,9 +1,6 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: modpcf.c,v 1.1 1999/11/08 22:21:02 bsmith Exp bsmith $";
-#endif
+/* $Id: modpcf.c,v 1.2 1999/11/10 03:20:57 bsmith Exp bsmith $*/
 
-#include "/home/baker/working/fgmresp.h"
-/*#include "src/sles/ksp/impls/fgmres/fgmresp.h" */      /*I  "ksp.h"  I*/
+#include "src/sles/ksp/impls/fgmres/fgmresp.h"      /*I  "ksp.h"  I*/
 #include "/home/baker/working/allisonpc.h"
 #include "src/sles/pc/pcimpl.h"   /*I "pc.h" I*/
 #include "src/sles/slesimpl.h"   /*I "sles.h" I*/
@@ -82,7 +79,7 @@ You can use this as a template!
 #define __FUNC__ "KSPFGMRESModifyPCNoChange"
 int KSPFGMRESModifyPCNoChange( KSP ksp, int total_its, int max_total_its, int loc_its, int max_loc_its, double res_norm)
 {
-  PC         pc, pcfamilypc;
+  PC         pc;
   int        ierr;
   PCType     familytype;
   PetscTruth isfamily;
@@ -146,7 +143,7 @@ Input:
 */
 #undef __FUNC__  
 #define __FUNC__ "KSPFGMRESModifyPCGMRESVariableEx"
-KSPFGMRESModifyPCGMRESVariableEx( KSP ksp, int total_its, int max_total_its, int loc_its, int max_loc_its, double res_norm)
+int KSPFGMRESModifyPCGMRESVariableEx( KSP ksp, int total_its, int max_total_its, int loc_its, int max_loc_its, double res_norm)
 {
   PC         pc, pcfamilypc;
   int        ierr;
@@ -218,7 +215,7 @@ Input:
 */
 #undef __FUNC__  
 #define __FUNC__ "KSPFGMRESModifyPCEx"
-KSPFGMRESModifyPCEx( KSP ksp, int total_its, int max_total_its, int loc_its, int max_loc_its, double res_norm)
+int KSPFGMRESModifyPCEx( KSP ksp, int total_its, int max_total_its, int loc_its, int max_loc_its, double res_norm)
 {
   PC         pc, pcfamilypc;
   int        ierr;

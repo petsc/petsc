@@ -1,4 +1,4 @@
-/*$Id: dcoor.c,v 1.17 1999/03/17 23:21:11 bsmith Exp bsmith $*/
+/*$Id: dcoor.c,v 1.18 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -26,10 +26,15 @@
 @*/
 int DrawSetCoordinates(Draw draw,double xl,double yl,double xr, double yr)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   draw->coor_xl = xl; draw->coor_yl = yl;
   draw->coor_xr = xr; draw->coor_yr = yr;
+  if (draw->ops->setcoordinates) {
+    ierr = (*draw->ops->setcoordinates)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

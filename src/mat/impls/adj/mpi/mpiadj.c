@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.31 1999/10/24 14:02:36 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.32 1999/11/05 14:45:40 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -109,8 +109,8 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
 */
 
 #undef __FUNC__  
-#define __FUNC__ "MatMarkDiag_MPIAdj"
-int MatMarkDiag_MPIAdj(Mat A)
+#define __FUNC__ "MatMarkDiagonal_MPIAdj"
+int MatMarkDiagonal_MPIAdj(Mat A)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *) A->data; 
   int        i,j, *diag, m = a->m;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.6 1999/09/16 19:00:45 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.7 1999/11/05 14:42:55 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,6 +7,7 @@
 #define INCLUDED_PETSCCONF_H
 
 #define PARCH_alpha
+#define PETSC_ARCH_NAME "alpha"
 #define PETSC_USE_GETCLOCK
 
 #define PETSC_HAVE_LIMITS_H
@@ -36,4 +37,6 @@
 #define PETSC_NEED_SOCKET_PROTO
 #define PETSC_HAVE_ENDIAN_H
 
+#define PETSC_NEED_KILL_FOR_DEBUGGER
+#define PETSC_USE_PID_FOR_DEBUGGER
 #endif

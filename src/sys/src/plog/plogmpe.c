@@ -1,4 +1,4 @@
-/*$Id: plogmpe.c,v 1.45 1999/10/24 14:01:36 bsmith Exp bsmith $*/
+/*$Id: plogmpe.c,v 1.46 1999/11/05 14:44:24 bsmith Exp bsmith $*/
 /*
       PETSc code to log PETSc events using MPE
 */
@@ -31,7 +31,7 @@ int PLogEventMPEFlags[] = {  1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,1, /* 75 - 99 */
                         1,1,1,1,1,
                         1,1,0,0,0,
-                        1,1,0,0,0,
+                        1,1,1,1,0,
                         0,0,0,0,0,
                         1,0,0,0,0, /* 100 - 124 */ 
                         0,0,0,0,0,

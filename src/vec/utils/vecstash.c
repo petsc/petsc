@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.14 1999/10/24 14:01:50 bsmith Exp bsmith $*/
+/*$Id: vecstash.c,v 1.15 1999/11/05 14:44:46 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"
 
@@ -263,8 +263,9 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(nprocs);
-  ierr = PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;CHKERRQ(ierr);
-  owner = (int *) PetscMalloc( (stash->n+1)*sizeof(int) );CHKPTRQ(owner);
+  procs  = nprocs + size;
+  ierr   = PetscMemzero(nprocs,2*size*sizeof(int)); CHKERRQ(ierr);
+  owner  = (int *) PetscMalloc( (stash->n+1)*sizeof(int) );CHKPTRQ(owner);
 
   for ( i=0; i<stash->n; i++ ) {
     idx = stash->idx[i];
@@ -291,10 +292,8 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
   rindices   = (int *) (rvalues + bs*nreceives*nmax);
   recv_waits = (MPI_Request *)PetscMalloc((nreceives+1)*2*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for ( i=0,count=0; i<nreceives; i++ ) {
-    ierr = MPI_Irecv(rvalues+bs*nmax*i,bs*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,
-                     recv_waits+count++);CHKERRQ(ierr);
-    ierr = MPI_Irecv(rindices+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag2,comm,
-                     recv_waits+count++);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rvalues+bs*nmax*i,bs*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag1,comm,recv_waits+count++);CHKERRQ(ierr);
+    ierr = MPI_Irecv(rindices+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag2,comm,recv_waits+count++);CHKERRQ(ierr);
   }
 
   /* do sends:
@@ -313,21 +312,19 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
   for ( i=0; i<stash->n; i++ ) {
     j = owner[i];
     if (bs == 1) {
-      svalues[start[j]]              = stash->array[i];
+      svalues[start[j]] = stash->array[i];
     } else {
       ierr = PetscMemcpy(svalues+bs*start[j],stash->array+bs*i,bs*sizeof(Scalar));CHKERRQ(ierr);
     }
-    sindices[start[j]]             = stash->idx[i];
+    sindices[start[j]]  = stash->idx[i];
     start[j]++;
   }
   start[0] = 0;
   for ( i=1; i<size; i++ ) { start[i] = start[i-1] + nprocs[i-1];} 
   for ( i=0,count=0; i<size; i++ ) {
     if (procs[i]) {
-      ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[i],MPIU_SCALAR,i,tag1,comm,
-                       send_waits+count++);CHKERRQ(ierr);
-      ierr = MPI_Isend(sindices+start[i],nprocs[i],MPI_INT,i,tag2,comm,
-                       send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[i],MPIU_SCALAR,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(sindices+start[i],nprocs[i],MPI_INT,i,tag2,comm, send_waits+count++);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(owner);CHKERRQ(ierr);

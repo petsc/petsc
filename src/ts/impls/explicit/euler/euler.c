@@ -1,4 +1,4 @@
-/*$Id: euler.c,v 1.17 1999/06/30 23:54:38 balay Exp bsmith $*/
+/*$Id: euler.c,v 1.18 1999/10/24 14:03:50 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with explicit Euler.
 */
@@ -55,7 +55,7 @@ static int TSDestroy_Euler(TS ts)
   int      ierr;
 
   PetscFunctionBegin;
-  VecDestroy(euler->update);
+  ierr = VecDestroy(euler->update);CHKERRQ(ierr);
   ierr = PetscFree(euler);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

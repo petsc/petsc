@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.132 1999/11/05 14:47:52 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.133 1999/11/10 03:22:06 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
@@ -301,7 +301,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
      Determine locally owned region 
      xs is the first local node number, x is the number of local nodes 
   */
-  if (lx != PETSC_NULL) { /* user sets distribution */
+  if (lx) { /* user sets distribution */
     x  = lx[rank % m];
     xs = 0;
     for ( i=0; i<(rank % m); i++ ) {
@@ -340,7 +340,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
      Determine locally owned region 
      ys is the first local node number, y is the number of local nodes 
   */
-  if (ly != PETSC_NULL) { /* user sets distribution */
+  if (ly) { /* user sets distribution */
     y  = ly[rank/m];
     ys = 0;
     for ( i=0; i<(rank/m); i++ ) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.4 1999/05/12 03:24:58 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.5 1999/06/30 22:48:03 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,7 +7,7 @@
 #define INCLUDED_PETSCCONF_H
 
 #define PARCH_ascired
-
+#define PETSC_ARCH_NAME "ascired"
 #define PETSC_HAVE_SYS_WAIT_H
 #define PETSC_HAVE_VPRINTF
 #define STDC_HEADERS
@@ -41,5 +41,8 @@
 #define PETSC_NEED_SETSOCKETOPT_PROTO
 #define PETSC_NEED_CONNECT_PROTO
 #define PETSC_NEED_SOCKET_PROTO
+
+#define PETSC_HAVE_STAT_NO_CONST
+#define PETSC_USE_KBYTES_FOR_SIZE
 
 #endif

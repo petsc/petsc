@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.24 1999/04/21 18:17:08 bsmith Exp curfman $ */
+/* $Id: pcimpl.h,v 1.25 1999/08/23 19:14:07 curfman Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -12,8 +12,8 @@ struct _PCOps {
   int          (*apply)(PC,Vec,Vec);
   int          (*applyrichardson)(PC,Vec,Vec,Vec,int);
   int          (*applyBA)(PC,int,Vec,Vec,Vec);
-  int          (*applytrans)(PC,Vec,Vec);
-  int          (*applyBAtrans)(PC,int,Vec,Vec,Vec);
+  int          (*applytranspose)(PC,Vec,Vec);
+  int          (*applyBAtranspose)(PC,int,Vec,Vec,Vec);
   int          (*setfromoptions)(PC);
   int          (*printhelp)(PC,char*);
   int          (*presolve)(PC,KSP,Vec,Vec);

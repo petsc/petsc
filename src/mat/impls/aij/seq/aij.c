@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.333 1999/11/10 03:19:11 bsmith Exp bsmith $*/
+/*$Id: aij.c,v 1.334 1999/11/22 03:06:20 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -812,8 +812,8 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 /* Should check that shapes of vectors and matrices match */
 /* -------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans_SeqAIJ"
-int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
+#define __FUNC__ "MatMultTranspose_SeqAIJ"
+int MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, alpha, zero = 0.0;
@@ -838,8 +838,8 @@ int MatMultTrans_SeqAIJ(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd_SeqAIJ"
-int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
+#define __FUNC__ "MatMultTransposeAdd_SeqAIJ"
+int MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *y, *v, alpha;
@@ -1246,8 +1246,8 @@ extern int MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
 extern int MatLUFactor_SeqAIJ(Mat,IS,IS,double);
 extern int MatSolve_SeqAIJ(Mat,Vec,Vec);
 extern int MatSolveAdd_SeqAIJ(Mat,Vec,Vec,Vec);
-extern int MatSolveTrans_SeqAIJ(Mat,Vec,Vec);
-extern int MatSolveTransAdd_SeqAIJ(Mat,Vec,Vec,Vec);
+extern int MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
+extern int MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 
 #undef __FUNC__  
 #define __FUNC__ "MatZeroRows_SeqAIJ"
@@ -1886,12 +1886,12 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatRestoreRow_SeqAIJ,
        MatMult_SeqAIJ,
        MatMultAdd_SeqAIJ,
-       MatMultTrans_SeqAIJ,
-       MatMultTransAdd_SeqAIJ,
+       MatMultTranspose_SeqAIJ,
+       MatMultTransposeAdd_SeqAIJ,
        MatSolve_SeqAIJ,
        MatSolveAdd_SeqAIJ,
-       MatSolveTrans_SeqAIJ,
-       MatSolveTransAdd_SeqAIJ,
+       MatSolveTranspose_SeqAIJ,
+       MatSolveTransposeAdd_SeqAIJ,
        MatLUFactor_SeqAIJ,
        0,
        MatRelax_SeqAIJ,

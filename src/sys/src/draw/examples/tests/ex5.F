@@ -1,5 +1,5 @@
 !
-!    "$Id: ex5.F,v 1.20 1998/03/30 22:03:47 balay Exp balay $";
+!    "$Id: ex5.F,v 1.21 1998/04/15 18:03:01 balay Exp bsmith $";
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/draw.h"
@@ -25,8 +25,11 @@
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-height',height,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-      call DrawOpenX(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,              &
+!     call DrawOpenX(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,              
+!                   PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
+      call DrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,             &
      &               PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr)
+      call DrawSetType(draw,DRAW_X,ierr)
 
       call DrawLGCreate(draw,1,lg,ierr)
       call DrawLGGetAxis(lg,axis,ierr)

@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.32 1999/11/05 14:47:52 bsmith Exp bsmith $*/
+/*$Id: gr2.c,v 1.33 1999/11/10 03:22:06 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -72,15 +72,16 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
 int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 {
   DA             da,dac,dag;
-  int            rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
+  int            rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w,format;
   double         coors[4],ymin,ymax,xmin,xmax;
   Draw           draw,popup;
-  PetscTruth     isnull;
+  PetscTruth     isnull,useports;
   MPI_Comm       comm;
   Vec            xlocal,xcoor,xcoorl;
   DAPeriodicType periodic;
   DAStencilType  st;
   ZoomCtx        zctx;
+  DrawViewPorts  *ports;
 
   PetscFunctionBegin;
   ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -187,13 +188,22 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 
   ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid);CHKERRQ(ierr);
 
+  ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-draw_ports",&useports);CHKERRQ(ierr);
+  if (useports || format == VIEWER_FORMAT_DRAW_PORTS){
+    ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
+    ierr = DrawViewPortsCreate(draw,zctx.step,&ports);CHKERRQ(ierr);
+  }
   /*
      Loop over each field; drawing each in a different window
   */
   for ( zctx.k=0; zctx.k<zctx.step; zctx.k++ ) {
-    ierr = ViewerDrawGetDraw(viewer,zctx.k,&draw);CHKERRQ(ierr);
-    ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
-    ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
+    if (useports) {
+      ierr = DrawViewPortsSet(ports,zctx.k);CHKERRQ(ierr);
+    } else {
+      ierr = ViewerDrawGetDraw(viewer,zctx.k,&draw);CHKERRQ(ierr);
+      ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
+    }
 
     /*
         Determine the min and max color in plot 
@@ -217,12 +227,16 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
     PLogInfo(da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",zctx.min,zctx.max);
 
     ierr = DrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    ierr = DrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);
+    if (popup) {ierr = DrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);}
 
     zctx.scale = (245.0 - DRAW_BASIC_COLORS)/(zctx.max - zctx.min);
 
     ierr = DrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
   }
+  if (useports){
+    ierr = DrawViewPortsDestroy(ports);CHKERRQ(ierr);
+  }
+
   ierr = VecRestoreArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
   ierr = VecRestoreArray(xlocal,&zctx.v);CHKERRQ(ierr);
   PetscFunctionReturn(0);

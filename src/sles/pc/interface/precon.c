@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.184 1999/10/24 14:02:56 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.185 1999/11/05 14:46:16 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -139,9 +139,9 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 
   pc->ops->destroy             = 0;
   pc->ops->apply               = 0;
-  pc->ops->applytrans          = 0;
+  pc->ops->applytranspose      = 0;
   pc->ops->applyBA             = 0;
-  pc->ops->applyBAtrans        = 0;
+  pc->ops->applyBAtranspose    = 0;
   pc->ops->applyrichardson     = 0;
   pc->ops->view                = 0;
   pc->ops->getfactoredmatrix   = 0;
@@ -182,7 +182,7 @@ static int apply_double_count = 0;
 
 .keywords: PC, apply
 
-.seealso: PCApplyTrans(), PCApplyBAorAB()
+.seealso: PCApplyTranspose(), PCApplyBAorAB()
 @*/
 int PCApply(PC pc,Vec x,Vec y)
 {
@@ -295,9 +295,9 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApplyTrans"
+#define __FUNC__ "PCApplyTranspose"
 /*@
-   PCApplyTrans - Applies the transpose of preconditioner to a vector.
+   PCApplyTranspose - Applies the transpose of preconditioner to a vector.
 
    Collective on PC and Vec
 
@@ -312,9 +312,9 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 
 .keywords: PC, apply, transpose
 
-.seealso: PCApplyTrans(), PCApplyBAorAB(), PCApplyBAorABTrans()
+.seealso: PCApplyTranspose(), PCApplyBAorAB(), PCApplyBAorABTranspose()
 @*/
-int PCApplyTrans(PC pc,Vec x,Vec y)
+int PCApplyTranspose(PC pc,Vec x,Vec y)
 {
   int ierr;
 
@@ -323,14 +323,14 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
-  if (!pc->ops->applytrans) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!pc->ops->applytranspose) SETERRQ(PETSC_ERR_SUP,0,"");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
   if (!apply_double_count) {PLogEventBegin(PC_Apply,pc,x,y,0);}apply_double_count++;
-  ierr = (*pc->ops->applytrans)(pc,x,y);CHKERRQ(ierr);
+  ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   if (apply_double_count == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);}apply_double_count--;
   PetscFunctionReturn(0);
 }
@@ -355,7 +355,7 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 
 .keywords: PC, apply, operator
 
-.seealso: PCApply(), PCApplyTrans(), PCApplyBAorABTrans()
+.seealso: PCApply(), PCApplyTranspose(), PCApplyBAorABTranspose()
 @*/
 int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
 {
@@ -400,9 +400,9 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApplyBAorABTrans"
+#define __FUNC__ "PCApplyBAorABTranspose"
 /*@ 
-   PCApplyBAorABTrans - Applies the transpose of the preconditioner
+   PCApplyBAorABTranspose - Applies the transpose of the preconditioner
    and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
    not tr(B*A) = tr(A)*tr(B).
 
@@ -421,9 +421,9 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
 
 .keywords: PC, apply, operator, transpose
 
-.seealso: PCApply(), PCApplyTrans(), PCApplyBAorAB()
+.seealso: PCApply(), PCApplyTranspose(), PCApplyBAorAB()
 @*/
-int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
+int PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
 
@@ -433,8 +433,8 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(work,VEC_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
-  if (pc->ops->applyBAtrans) {
-    ierr = (*pc->ops->applyBAtrans)(pc,side,x,y,work);CHKERRQ(ierr);
+  if (pc->ops->applyBAtranspose) {
+    ierr = (*pc->ops->applyBAtranspose)(pc,side,x,y,work);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (side != PC_LEFT && side != PC_RIGHT) {
@@ -446,11 +446,11 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
   }
 
   if (side == PC_RIGHT) {
-    ierr = PCApplyTrans(pc,x,work);CHKERRQ(ierr);
-    ierr = MatMultTrans(pc->mat,work,y);CHKERRQ(ierr);
+    ierr = PCApplyTranspose(pc,x,work);CHKERRQ(ierr);
+    ierr = MatMultTranspose(pc->mat,work,y);CHKERRQ(ierr);
   } else if (side == PC_LEFT) {
-    ierr = MatMultTrans(pc->mat,x,work);CHKERRQ(ierr);
-    ierr = PCApplyTrans(pc,work,y);CHKERRQ(ierr);
+    ierr = MatMultTranspose(pc->mat,x,work);CHKERRQ(ierr);
+    ierr = PCApplyTranspose(pc,work,y);CHKERRQ(ierr);
   }
   /* add support for PC_SYMMETRIC */
   PetscFunctionReturn(0); /* actually will never get here */

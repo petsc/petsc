@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.40 1999/10/24 14:01:25 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.41 1999/11/05 14:44:09 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -204,7 +204,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
   ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
   /* First processor waits for messages from all other processors */
   if (!rank) {
-    if (queuefile != PETSC_NULL) {
+    if (queuefile) {
       fd = queuefile;
     } else {
       fd = stdout;

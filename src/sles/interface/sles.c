@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.128 1999/10/24 14:02:54 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.129 1999/11/05 14:46:14 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 
@@ -571,9 +571,9 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESSolveTrans"
+#define __FUNC__ "SLESSolveTranspose"
 /*@
-   SLESSolveTrans - Solves the transpose of a linear system.
+   SLESSolveTranspose - Solves the transpose of a linear system.
 
    Collective on SLES
 
@@ -629,7 +629,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
           KSPDefaultConverged(), KSPSetInitialGuessNonzero(), KSPGetResidualNorm(),
           KSPSolve()
 @*/
-int SLESSolveTrans(SLES sles,Vec b,Vec x,int *its)
+int SLESSolveTranspose(SLES sles,Vec b,Vec x,int *its)
 {
   int        ierr;
   PetscTruth flg;
@@ -653,7 +653,7 @@ int SLESSolveTrans(SLES sles,Vec b,Vec x,int *its)
   }
   ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
   if (!slesdoublecount) {PLogEventBegin(SLES_Solve,sles,b,x,0);} slesdoublecount++;
-  ierr = KSPSolveTrans(ksp,its);CHKERRQ(ierr);
+  ierr = KSPSolveTranspose(ksp,its);CHKERRQ(ierr);
   if (slesdoublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} slesdoublecount--;
   ierr = OptionsHasName(sles->prefix,"-sles_view", &flg);CHKERRQ(ierr); 
   if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }

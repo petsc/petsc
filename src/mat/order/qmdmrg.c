@@ -1,3 +1,4 @@
+/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
 /* qmdmrg.f -- translated by f2c (version 19931217).*/
 
 #include "petsc.h"

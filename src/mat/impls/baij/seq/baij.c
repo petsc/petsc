@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.192 1999/11/20 18:36:47 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.193 1999/11/22 03:06:12 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1103,8 +1103,8 @@ extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
 extern int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
 extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
 extern int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
-extern int MatMultTrans_SeqBAIJ(Mat,Vec,Vec);
-extern int MatMultTransAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
+extern int MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
+extern int MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
 extern int MatScale_SeqBAIJ(Scalar*,Mat);
 extern int MatNorm_SeqBAIJ(Mat,NormType,double *);
 extern int MatEqual_SeqBAIJ(Mat,Mat, PetscTruth*);
@@ -1121,13 +1121,13 @@ extern int MatSolve_SeqBAIJ_4(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_5(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_6(Mat,Vec,Vec);
 extern int MatSolve_SeqBAIJ_7(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_7(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_6(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_5(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_4(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_3(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_2(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_1(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_7(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_6(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_5(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_4(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_3(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_2(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_1(Mat,Vec,Vec);
 
 extern int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
 extern int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
@@ -1184,41 +1184,41 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   */
   switch (a->bs) {
   case 1:
-    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_2_NaturalOrdering;
+    inA->ops->solvetranspose   = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
   case 2:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_2_NaturalOrdering;
-    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_2_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
     break;
   case 3:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_3_NaturalOrdering;
-    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_3_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=3\n");
     break; 
   case 4:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
-    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_4_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
     break;
   case 5:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_5_NaturalOrdering;
-    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_5_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
     break;
   case 6: 
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_6_NaturalOrdering;
-    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_6_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
     break; 
   case 7:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
-    inA->ops->solvetrans      = MatSolveTrans_SeqBAIJ_7_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqBAIJ_7_NaturalOrdering;
     PLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
     break; 
@@ -1324,8 +1324,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatRestoreRow_SeqBAIJ,
        MatMult_SeqBAIJ_N,
        MatMultAdd_SeqBAIJ_N,
-       MatMultTrans_SeqBAIJ,
-       MatMultTransAdd_SeqBAIJ,
+       MatMultTranspose_SeqBAIJ,
+       MatMultTransposeAdd_SeqBAIJ,
        MatSolve_SeqBAIJ_N,
        0,
        0,
@@ -1514,49 +1514,49 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
     case 1:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
       B->ops->solve           = MatSolve_SeqBAIJ_1;
-      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_1;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_1;
       B->ops->mult            = MatMult_SeqBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
       break;
     case 2:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
       B->ops->solve           = MatSolve_SeqBAIJ_2;
-      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_2;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_2;
       B->ops->mult            = MatMult_SeqBAIJ_2;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
       break;
     case 3:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
       B->ops->solve           = MatSolve_SeqBAIJ_3;
-      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_3;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3;
       B->ops->mult            = MatMult_SeqBAIJ_3;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
       break;
     case 4:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
       B->ops->solve           = MatSolve_SeqBAIJ_4;
-      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_4;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4;
       B->ops->mult            = MatMult_SeqBAIJ_4;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
       break;
     case 5:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
       B->ops->solve           = MatSolve_SeqBAIJ_5; 
-      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_5;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_5;
       B->ops->mult            = MatMult_SeqBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
       break;
     case 6:
       B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;  
       B->ops->solve           = MatSolve_SeqBAIJ_6; 
-      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_6;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_6;
       B->ops->mult            = MatMult_SeqBAIJ_6;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
       break;
     case 7:
       B->ops->mult            = MatMult_SeqBAIJ_7; 
       B->ops->solve           = MatSolve_SeqBAIJ_7;
-      B->ops->solvetrans      = MatSolveTrans_SeqBAIJ_7;
+      B->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_7;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
       break;
     }

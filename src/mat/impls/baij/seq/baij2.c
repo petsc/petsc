@@ -1,4 +1,4 @@
-/*$Id: baij2.c,v 1.52 1999/10/24 14:02:28 bsmith Exp bsmith $*/
+/*$Id: baij2.c,v 1.53 1999/11/05 14:45:32 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -901,8 +901,8 @@ int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans_SeqBAIJ"
-int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
+#define __FUNC__ "MatMultTranspose_SeqBAIJ"
+int MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
   Scalar          *xg,*zg,*zb,zero = 0.0;
@@ -1069,8 +1069,8 @@ int MatMultTrans_SeqBAIJ(Mat A,Vec xx,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd_SeqBAIJ"
-int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+#define __FUNC__ "MatMultTransposeAdd_SeqBAIJ"
+int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;

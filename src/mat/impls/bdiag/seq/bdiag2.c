@@ -1,4 +1,4 @@
-/*$Id: bdiag2.c,v 1.8 1999/06/30 23:51:28 balay Exp bsmith $*/
+/*$Id: bdiag2.c,v 1.9 1999/10/24 14:02:21 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -741,11 +741,11 @@ int MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 /*
-     MatMultTrans ----------------------------------------------
+     MatMultTranspose ----------------------------------------------
  */
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans_SeqBDiag_1"
-int MatMultTrans_SeqBDiag_1(Mat A,Vec xx,Vec yy)
+#define __FUNC__ "MatMultTranspose_SeqBDiag_1"
+int MatMultTranspose_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
   int             ierr,nd = a->nd, diag;
@@ -779,8 +779,8 @@ int MatMultTrans_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans_SeqBDiag_N"
-int MatMultTrans_SeqBDiag_N(Mat A,Vec xx,Vec yy)
+#define __FUNC__ "MatMultTranspose_SeqBDiag_N"
+int MatMultTranspose_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
   int             ierr,nd = a->nd, bs = a->bs, diag,kshift, kloc;
@@ -821,11 +821,11 @@ int MatMultTrans_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 }
 
 /*
-     MatMultTransAdd ----------------------------------------------
+     MatMultTransposeAdd ----------------------------------------------
  */
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd_SeqBDiag_1"
-int MatMultTransAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
+#define __FUNC__ "MatMultTransposeAdd_SeqBDiag_1"
+int MatMultTransposeAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
   int             ierr, nd = a->nd, diag;
@@ -859,8 +859,8 @@ int MatMultTransAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd_SeqBDiag_N"
-int MatMultTransAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
+#define __FUNC__ "MatMultTransposeAdd_SeqBDiag_N"
+int MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
   int             ierr, nd = a->nd, bs = a->bs, diag,kshift, kloc;

@@ -1,7 +1,7 @@
-/*$Id: ex5.c,v 1.14 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.15 1999/11/05 14:45:44 bsmith Exp bsmith $*/
  
-static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTrans(),\n\
-MatMultTransAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
+static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose(),\n\
+MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
 
 #include "mat.h"
 
@@ -93,7 +93,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);CHKERRA(ierr);
   }
 
-  /* ------- Test MatMultTrans(), MatMultTransAdd() ------- */
+  /* ------- Test MatMultTranspose(), MatMultTransposeAdd() ------- */
 
   for (i=rstart; i<rend; i++) {
     v = one*((double)i);
@@ -101,12 +101,12 @@ int main(int argc,char **args)
   }
   ierr = VecAssemblyBegin(x);CHKERRA(ierr);
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTrans()\n");CHKERRA(ierr);
-  ierr = MatMultTrans(C,x,y);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTranspose()\n");CHKERRA(ierr);
+  ierr = MatMultTranspose(C,x,y);CHKERRA(ierr);
   ierr = VecView(y,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransAdd()\n");CHKERRA(ierr);
-  ierr = MatMultTransAdd(C,x,u,s);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransposeAdd()\n");CHKERRA(ierr);
+  ierr = MatMultTransposeAdd(C,x,u,s);CHKERRA(ierr);
   ierr = VecAXPY(&one,u,y);CHKERRA(ierr);
   ierr = VecAXPY(&negone,s,y);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);

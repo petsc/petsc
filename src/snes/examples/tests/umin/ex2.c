@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.55 1999/10/24 14:03:41 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.56 1999/11/05 14:47:19 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
@@ -96,8 +96,7 @@ int main(int argc,char **argv)
   ierr = SNESSetType(snes,type);CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
-         (void *)&user);CHKERRA(ierr);
+  ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,(void *)&user);CHKERRA(ierr);
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user);CHKERRA(ierr);
 
   /* Form Hessian matrix approx, using one of three methods:
@@ -111,11 +110,9 @@ int main(int argc,char **argv)
     ierr = MatCreateShell(PETSC_COMM_SELF,ldim,user.ndim,user.ndim,user.ndim,
            (void*)&user,&H);CHKERRA(ierr);
     if (user.problem == 1) {
-      ierr = MatShellSetOperation(H,MATOP_MULT,(void *)HessianProductMat1);
-     CHKERRA(ierr);
+      ierr = MatShellSetOperation(H,MATOP_MULT,(void *)HessianProductMat1);CHKERRA(ierr);
     } else if (user.problem == 2) {
-      ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat2);
-     CHKERRA(ierr);
+      ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat2);CHKERRA(ierr);
     }
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user);CHKERRA(ierr);
 

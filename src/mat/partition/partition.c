@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.38 1999/10/24 14:02:37 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.39 1999/11/05 14:46:04 bsmith Exp bsmith $*/
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
 
@@ -437,7 +437,7 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
   part->view         = ( int (*)(MatPartitioning,Viewer) ) 0;
   ierr = (*r)(part);CHKERRQ(ierr);
 
-  if (part->type_name) {ierr = PetscFree(part->type_name);CHKERRQ(ierr);}
+  ierr = PetscStrfree(part->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type,&part->type_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

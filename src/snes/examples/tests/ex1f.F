@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.39 1999/03/10 19:29:25 bsmith Exp bsmith $";
+! "$Id: ex4f.F,v 1.40 1999/04/16 16:10:23 bsmith Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -260,8 +260,12 @@
 
 !  Draw contour plot of solution
 
-      call DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  &
+!      call DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',  
+!                   300,0,300,300,draw,ierr)
+      call DrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution', &
      &               300,0,300,300,draw,ierr)
+      call DrawSetType(draw,DRAW_X,ierr)
+
       call VecGetArray(x,lx_v,lx_i,ierr)
       call DrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
      &     PETSC_NULL_DOUBLE,lx_v(lx_i+1),ierr)

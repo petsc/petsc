@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fgmres.c,v 1.1 1999/11/08 22:21:01 bsmith Exp bsmith $";
-#endif
+/* $Id: fgmres.c,v 1.2 1999/11/10 03:20:57 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -18,8 +16,7 @@ static char vcid[] = "$Id: fgmres.c,v 1.1 1999/11/08 22:21:01 bsmith Exp bsmith 
  */
 
 
-#include "/home/baker/working/fgmresp.h"       /*I  "ksp.h"  I*/
-/* #include "src/sles/ksp/impls/gmres/fgmresp.h" */      /*I  "ksp.h"  I*/
+#include "src/sles/ksp/impls/fgmres/fgmresp.h"       /*I  "ksp.h"  I*/
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
 static int    FGMRESGetNewVectors( KSP ,int );
@@ -190,9 +187,6 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
   Mat          Amat, Pmat;
   MatStructure pflag;
 
-  PC           temp_pc;
-  Vec          temp_vec; 
-
   PetscFunctionBegin;
 
   /* Number of pseudo iterations since last restart is the number 
@@ -266,9 +260,9 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
   }
 
   /* FYI: AMS calls are for memory snooper */
-  PetscObjectTakeAccess( ksp );
+  ierr = PetscObjectTakeAccess( ksp );CHKERRQ(ierr);
   ksp->rnorm = res_norm;
-  PetscObjectGrantAccess( ksp );
+  ierr = PetscObjectGrantAccess( ksp );CHKERRQ(ierr);
 
 
   /* note: (fgmres->it) is always set one less than (loc_it) It is used in 
@@ -346,10 +340,10 @@ int FGMREScycle(int *  itcount, int itsSoFar, int restart, KSP ksp, int *converg
     loc_it++;
     fgmres->it  = (loc_it-1);  /* Add this here in case it has converged */
  
-    PetscObjectTakeAccess( ksp );
+    ierr = PetscObjectTakeAccess( ksp );CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res_norm;
-    PetscObjectGrantAccess( ksp );
+    ierr = PetscObjectGrantAccess( ksp );CHKERRQ(ierr);
 
     /* Catch error in happy breakdown and signal convergence and break from loop */
     if (hapend) {
@@ -429,9 +423,9 @@ int KSPSolve_FGMRES(KSP ksp,int *outits )
 
   PetscFunctionBegin;
 
-  PetscObjectTakeAccess(ksp);
+  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
-  PetscObjectGrantAccess(ksp);
+  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
   /* initialize */
   restart  = 0;
@@ -478,29 +472,29 @@ int KSPDestroy_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */
-  if (fgmres->hh_origin) PetscFree( fgmres->hh_origin );
+  if (fgmres->hh_origin) {ierr = PetscFree( fgmres->hh_origin );CHKERRQ(ierr);}
 
   /* Free pointers to user variables */
-  if (fgmres->vecs) PetscFree( fgmres->vecs );
-  if (fgmres->prevecs) PetscFree ( fgmres->prevecs);
+  if (fgmres->vecs) {ierr = PetscFree( fgmres->vecs );CHKERRQ(ierr);}
+  if (fgmres->prevecs) {ierr = PetscFree ( fgmres->prevecs);CHKERRQ(ierr);}
 
   /* free work vectors */
   for (i=0; i < fgmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs( fgmres->user_work[i], fgmres->mwork_alloc[i] ); CHKERRQ(ierr);
   }
-  if (fgmres->user_work)  PetscFree( fgmres->user_work );
+  if (fgmres->user_work)  {ierr = PetscFree( fgmres->user_work );CHKERRQ(ierr);}
 
   for (i=0; i < fgmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs( fgmres->prevecs_user_work[i], fgmres->mwork_alloc[i] ); CHKERRQ(ierr);
   }
-  if (fgmres->prevecs_user_work) PetscFree( fgmres->prevecs_user_work );
+  if (fgmres->prevecs_user_work) {ierr = PetscFree( fgmres->prevecs_user_work );CHKERRQ(ierr);}
 
-  if (fgmres->mwork_alloc) PetscFree( fgmres->mwork_alloc );
-  if (fgmres->nrs) PetscFree( fgmres->nrs );
+  if (fgmres->mwork_alloc) {ierr = PetscFree( fgmres->mwork_alloc );CHKERRQ(ierr);}
+  if (fgmres->nrs) {ierr = PetscFree( fgmres->nrs );CHKERRQ(ierr);}
   if (fgmres->sol_temp) {ierr = VecDestroy( fgmres->sol_temp ); CHKERRQ(ierr);}
-  if (fgmres->Rsvd) PetscFree( fgmres->Rsvd );
-  if (fgmres->Dsvd) PetscFree( fgmres->Dsvd );
-  PetscFree( fgmres ); 
+  if (fgmres->Rsvd) {ierr = PetscFree( fgmres->Rsvd );CHKERRQ(ierr);}
+  if (fgmres->Dsvd) {ierr = PetscFree( fgmres->Dsvd );CHKERRQ(ierr);}
+  ierr = PetscFree( fgmres ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

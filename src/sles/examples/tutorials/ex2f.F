@@ -1,5 +1,5 @@
 !
-!    "$Id: ex2f.F,v 1.55 1999/04/23 15:10:13 bsmith Exp bsmith $";
+!    "$Id: ex2f.F,v 1.56 1999/11/05 14:46:58 bsmith Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -86,7 +86,8 @@
 !  
       double precision  norm
       integer     i, j, II, JJ, ierr, m, n
-      integer     rank, size, its, Istart, Iend, flg
+      integer     rank, size, its, Istart, Iend
+      PetscTruth  flg
       Scalar      v, one, neg_one
       Vec         x, b, u
       Mat         A 
@@ -102,7 +103,7 @@
 !  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
 !  MUST be declared as external.
 
-      external MyKSPMonitor
+      external MyKSPMonitor,MyKSPConverged
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -257,7 +258,6 @@
 
 !  Set user-defined monitoring routine if desired
 
-      flg = 0
       call OptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',       &
      &                    flg,ierr)
       if (flg .eq. 1) then
@@ -265,6 +265,7 @@
         call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
      &                     PETSC_NULL_FUNCTION,ierr)
       endif
+
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
@@ -274,6 +275,16 @@
 
       call SLESSetFromOptions(sles,ierr)
 
+!  Set convergence test routine if desired
+
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_convergence',   &
+     &                    flg,ierr)
+      if (flg .eq. 1) then
+        call SLESGetKSP(sles,ksp,ierr)
+        call KSPSetConvergenceTest(ksp,MyKSPConverged,                  &
+     &          PETSC_NULL_OBJECT,ierr)
+      endif
+!
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -326,7 +337,7 @@
 !    rnorm - 2-norm (preconditioned) residual value (may be estimated)
 !    dummy - optional user-defined monitor context (unused here)
 !
-      subroutine MyKSPMonitor(ksp,n,rnorm,dummy)
+      subroutine MyKSPMonitor(ksp,n,rnorm,dummy,ierr)
 
       implicit none
 
@@ -356,3 +367,37 @@
  100  format('iteration ',i5,' solution vector:')
  200  format('iteration ',i5,' residual norm ',e10.4)
       end
+
+! --------------------------------------------------------------
+!
+!  MyKSPConverged - This is a user-defined routine for testing
+!  convergence of the SLES iterative solvers.
+!
+!  Input Parameters:
+!    ksp   - iterative context
+!    n     - iteration number
+!    rnorm - 2-norm (preconditioned) residual value (may be estimated)
+!    dummy - optional user-defined monitor context (unused here)
+!
+      subroutine MyKSPConverged(ksp,n,rnorm,dummy,flag,ierr)
+
+      implicit none
+
+#include "include/finclude/petsc.h"
+#include "include/finclude/vec.h"
+#include "include/finclude/ksp.h"
+
+      KSP              ksp
+      integer          ierr, n, dummy, flag
+      double precision rnorm
+
+      if (rnorm .le. .05) then 
+        flag = 1
+      else
+        flag = 0
+      endif
+        
+      end
+
+
+

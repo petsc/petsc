@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.352 1999/11/05 14:45:11 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.353 1999/11/10 03:19:04 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -882,7 +882,7 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
 
 .keywords: matrix, multiply, matrix-vector product
 
-.seealso: MatMultTrans(), MatMultAdd(), MatMultTransAdd()
+.seealso: MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
 @*/
 int MatMult(Mat mat,Vec x,Vec y)
 {
@@ -909,9 +909,9 @@ int MatMult(Mat mat,Vec x,Vec y)
 }   
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans"
+#define __FUNC__ "MatMultTranspose"
 /*@
-   MatMultTrans - Computes matrix transpose times a vector.
+   MatMultTranspose - Computes matrix transpose times a vector.
 
    Collective on Mat and Vec
 
@@ -924,15 +924,15 @@ int MatMult(Mat mat,Vec x,Vec y)
 
    Notes:
    The vectors x and y cannot be the same.  I.e., one cannot
-   call MatMultTrans(A,y,y).
+   call MatMultTranspose(A,y,y).
 
    Level: beginner
 
 .keywords: matrix, multiply, matrix-vector product, transpose
 
-.seealso: MatMult(), MatMultAdd(), MatMultTransAdd()
+.seealso: MatMult(), MatMultAdd(), MatMultTransposeAdd()
 @*/
-int MatMultTrans(Mat mat,Vec x,Vec y)
+int MatMultTranspose(Mat mat,Vec x,Vec y)
 {
   int ierr;
 
@@ -948,9 +948,9 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
   if (mat->M != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim %d %d",mat->M,x->N); 
   if (mat->N != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec y: global dim %d %d",mat->N,y->N);
  
-  PLogEventBegin(MAT_MultTrans,mat,x,y,0);
-  ierr = (*mat->ops->multtrans)(mat,x,y);CHKERRQ(ierr);
-  PLogEventEnd(MAT_MultTrans,mat,x,y,0);
+  PLogEventBegin(MAT_MultTranspose,mat,x,y,0);
+  ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
+  PLogEventEnd(MAT_MultTranspose,mat,x,y,0);
   PetscFunctionReturn(0);
 }   
 
@@ -976,7 +976,7 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
 
 .keywords: matrix, multiply, matrix-vector product, add
 
-.seealso: MatMultTrans(), MatMult(), MatMultTransAdd()
+.seealso: MatMultTranspose(), MatMult(), MatMultTransposeAdd()
 @*/
 int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 {
@@ -1006,9 +1006,9 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 }   
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd"
+#define __FUNC__ "MatMultTransposeAdd"
 /*@
-   MatMultTransAdd - Computes v3 = v2 + A' * v1.
+   MatMultTransposeAdd - Computes v3 = v2 + A' * v1.
 
    Collective on Mat and Vec
 
@@ -1021,15 +1021,15 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 
    Notes:
    The vectors v1 and v3 cannot be the same.  I.e., one cannot
-   call MatMultTransAdd(A,v1,v2,v1).
+   call MatMultTransposeAdd(A,v1,v2,v1).
 
    Level: beginner
 
 .keywords: matrix, multiply, matrix-vector product, transpose, add
 
-.seealso: MatMultTrans(), MatMultAdd(), MatMult()
+.seealso: MatMultTranspose(), MatMultAdd(), MatMult()
 @*/
-int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
+int MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 {
   int ierr;
 
@@ -1043,15 +1043,15 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   PetscCheckSameComm(mat,v3);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
-  if (!mat->ops->multtransadd) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!mat->ops->multtransposeadd) SETERRQ(PETSC_ERR_SUP,0,"");
   if (v1 == v3) SETERRQ(PETSC_ERR_ARG_IDN,0,"v1 and v3 must be different vectors");
   if (mat->M != v1->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v1: global dim %d %d",mat->M,v1->N);
   if (mat->N != v2->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v2: global dim %d %d",mat->N,v2->N);
   if (mat->N != v3->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec v3: global dim %d %d",mat->N,v3->N);
 
-  PLogEventBegin(MAT_MultTransAdd,mat,v1,v2,v3);
-  ierr = (*mat->ops->multtransadd)(mat,v1,v2,v3);CHKERRQ(ierr);
-  PLogEventEnd(MAT_MultTransAdd,mat,v1,v2,v3); 
+  PLogEventBegin(MAT_MultTransposeAdd,mat,v1,v2,v3);
+  ierr = (*mat->ops->multtransposeadd)(mat,v1,v2,v3);CHKERRQ(ierr);
+  PLogEventEnd(MAT_MultTransposeAdd,mat,v1,v2,v3); 
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------*/
@@ -1548,7 +1548,7 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 
 .keywords: matrix, linear system, solve, LU, Cholesky, triangular solve
 
-.seealso: MatSolveAdd(), MatSolveTrans(), MatSolveTransAdd()
+.seealso: MatSolveAdd(), MatSolveTranspose(), MatSolveTransposeAdd()
 @*/
 int MatSolve(Mat mat,Vec b,Vec x)
 {
@@ -1709,7 +1709,7 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
 
 .keywords: matrix, linear system, solve, LU, Cholesky, add
 
-.seealso: MatSolve(), MatSolveTrans(), MatSolveTransAdd()
+.seealso: MatSolve(), MatSolveTranspose(), MatSolveTransposeAdd()
 @*/
 int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 {
@@ -1755,9 +1755,9 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSolveTrans"
+#define __FUNC__ "MatSolveTranspose"
 /*@
-   MatSolveTrans - Solves A' x = b, given a factored matrix.
+   MatSolveTranspose - Solves A' x = b, given a factored matrix.
 
    Collective on Mat and Vec
 
@@ -1770,7 +1770,7 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 
    Notes:
    The vectors b and x cannot be the same.  I.e., one cannot
-   call MatSolveTrans(A,x,x).
+   call MatSolveTranspose(A,x,x).
 
    Most users should employ the simplified SLES interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -1780,9 +1780,9 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 
 .keywords: matrix, linear system, solve, LU, Cholesky, transpose
 
-.seealso: MatSolve(), MatSolveAdd(), MatSolveTransAdd()
+.seealso: MatSolve(), MatSolveAdd(), MatSolveTransposeAdd()
 @*/
-int MatSolveTrans(Mat mat,Vec b,Vec x)
+int MatSolveTranspose(Mat mat,Vec b,Vec x)
 {
   int ierr;
 
@@ -1794,20 +1794,20 @@ int MatSolveTrans(Mat mat,Vec b,Vec x)
   PetscCheckSameComm(mat,x);
   if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Unfactored matrix");
   if (x == b) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and b must be different vectors");
-  if (!mat->ops->solvetrans) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!mat->ops->solvetranspose) SETERRQ(PETSC_ERR_SUP,0,"");
   if (mat->M != x->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim %d %d",mat->M,x->N);
   if (mat->N != b->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: global dim %d %d",mat->N,b->N);
 
-  PLogEventBegin(MAT_SolveTrans,mat,b,x,0); 
-  ierr = (*mat->ops->solvetrans)(mat,b,x);CHKERRQ(ierr);
-  PLogEventEnd(MAT_SolveTrans,mat,b,x,0); 
+  PLogEventBegin(MAT_SolveTranspose,mat,b,x,0); 
+  ierr = (*mat->ops->solvetranspose)(mat,b,x);CHKERRQ(ierr);
+  PLogEventEnd(MAT_SolveTranspose,mat,b,x,0); 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSolveTransAdd"
+#define __FUNC__ "MatSolveTransposeAdd"
 /*@
-   MatSolveTransAdd - Computes x = y + inv(trans(A)) b, given a 
+   MatSolveTransposeAdd - Computes x = y + inv(Transpose(A)) b, given a 
                       factored matrix. 
 
    Collective on Mat and Vec
@@ -1822,7 +1822,7 @@ int MatSolveTrans(Mat mat,Vec b,Vec x)
 
    Notes:
    The vectors b and x cannot be the same.  I.e., one cannot
-   call MatSolveTransAdd(A,x,y,x).
+   call MatSolveTransposeAdd(A,x,y,x).
 
    Most users should employ the simplified SLES interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -1832,9 +1832,9 @@ int MatSolveTrans(Mat mat,Vec b,Vec x)
 
 .keywords: matrix, linear system, solve, LU, Cholesky, transpose, add  
 
-.seealso: MatSolve(), MatSolveAdd(), MatSolveTrans()
+.seealso: MatSolve(), MatSolveAdd(), MatSolveTranspose()
 @*/
-int MatSolveTransAdd(Mat mat,Vec b,Vec y,Vec x)
+int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 {
   Scalar one = 1.0;
   int    ierr;
@@ -1855,24 +1855,24 @@ int MatSolveTransAdd(Mat mat,Vec b,Vec y,Vec x)
   if (mat->N != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec y: global dim %d %d",mat->N,y->N);
   if (x->n != y->n)   SETERRQ2(PETSC_ERR_ARG_SIZ,0,"Vec x,Vec y: local dim %d %d",x->n,y->n);
 
-  PLogEventBegin(MAT_SolveTransAdd,mat,b,x,y); 
-  if (mat->ops->solvetransadd) {
-    ierr = (*mat->ops->solvetransadd)(mat,b,y,x);CHKERRQ(ierr);
+  PLogEventBegin(MAT_SolveTransposeAdd,mat,b,x,y); 
+  if (mat->ops->solvetransposeadd) {
+    ierr = (*mat->ops->solvetransposeadd)(mat,b,y,x);CHKERRQ(ierr);
   } else {
     /* do the solve then the add manually */
     if (x != y) {
-      ierr = MatSolveTrans(mat,b,x);CHKERRQ(ierr);
+      ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(&one,y,x);CHKERRQ(ierr);
     } else {
       ierr = VecDuplicate(x,&tmp);CHKERRQ(ierr);
       PLogObjectParent(mat,tmp);
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
-      ierr = MatSolveTrans(mat,b,x);CHKERRQ(ierr);
+      ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(&one,tmp,x);CHKERRQ(ierr);
       ierr = VecDestroy(tmp);CHKERRQ(ierr);
     }
   }
-  PLogEventEnd(MAT_SolveTransAdd,mat,b,x,y); 
+  PLogEventEnd(MAT_SolveTransposeAdd,mat,b,x,y); 
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
@@ -2219,7 +2219,7 @@ int MatGetDiagonal(Mat mat,Vec v)
 
 .keywords: matrix, transpose
 
-.seealso: MatMultTrans(), MatMultTransAdd()
+.seealso: MatMultTranspose(), MatMultTransposeAdd()
 @*/
 int MatTranspose(Mat mat,Mat *B)
 {
@@ -2735,6 +2735,9 @@ int MatCompress(Mat mat)
    should be used with MAT_USE_HASH_TABLE flag. This option is currently
    supported by MATMPIBAIJ format only.
 
+   MAT_KEEP_ZEROED_ROWS indicates when MatZeroRows() is called the zeroed entries
+   are kept in the nonzero structure
+
    Level: intermediate
 
 .keywords: matrix, option, row-oriented, column-oriented, sorted, nonzero
@@ -2797,9 +2800,13 @@ int MatZeroEntries(Mat mat)
           pointer to a single value.
 
    Notes:
-   For the AIJ matrix formats this removes the old nonzero structure,
+   For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
+
+   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS) the nonzero structure
+   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
+   merely zeroed.
 
    The user can set a value in the diagonal entry (or for the AIJ and
    row formats can optionally remove the main diagonal entry from the
@@ -2811,11 +2818,12 @@ int MatZeroEntries(Mat mat)
    routine, regardless of whether any rows being zeroed are owned by
    them.
 
+  
    Level: intermediate
 
 .keywords: matrix, zero, rows, boundary conditions 
 
-.seealso: MatZeroEntries(), MatZeroRowsLocal()
+.seealso: MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
 int MatZeroRows(Mat mat,IS is, Scalar *diag)
 {
@@ -3904,5 +3912,118 @@ int MatSetStashInitialSize(Mat mat,int size, int bsize)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   ierr = MatStashSetInitialSize_Private(&mat->stash,size);CHKERRQ(ierr);
   ierr = MatStashSetInitialSize_Private(&mat->bstash,bsize);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatInterpolateAdd"
+/*@
+   MatInterpolateAdd - w = y + A*x or A'*x depending on the shape of 
+     the matrix
+
+   Collective on Mat
+
+   Input Parameters:
++  mat   - the matrix
+.  x,y - the vectors
+-  w - where the result is stored
+
+   Level: intermediate
+
+   Notes: 
+    w may be the same vector as y. 
+
+    This allows one to use either the restriction or interpolation (its transpose)
+    matrix to do the interpolation
+
+.keywords: interpolate, 
+
+.seealso: MatMultAdd(), MatMultTransposeAdd(), MatRestrict()
+
+@*/
+int MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
+{
+  int M,N,ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  if (N > M) {
+    ierr = MatMultTransposeAdd(A,x,y,w);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultAdd(A,x,y,w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatInterpolate"
+/*@
+   MatInterpolate - y = A*x or A'*x depending on the shape of 
+     the matrix
+
+   Collective on Mat
+
+   Input Parameters:
++  mat   - the matrix
+-  x,y - the vectors
+
+   Level: intermediate
+
+   Notes: 
+    This allows one to use either the restriction or interpolation (its transpose)
+    matrix to do the interpolation
+
+.keywords: interpolate, 
+
+.seealso: MatMultAdd(), MatMultTransposeAdd(), MatRestrict()
+
+@*/
+int MatInterpolate(Mat A,Vec x,Vec y)
+{
+  int M,N,ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  if (N > M) {
+    ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatRestrict"
+/*@
+   MatRestrict - y = A*x or A'*x
+
+   Collective on Mat
+
+   Input Parameters:
++  mat   - the matrix
+-  x,y - the vectors
+
+   Level: intermediate
+
+   Notes: 
+    This allows one to use either the restriction or interpolation (its transpose)
+    matrix to do the restriction
+
+.keywords: interpolate, 
+
+.seealso: MatMultAdd(), MatMultTransposeAdd(), MatInterpolate()
+
+@*/
+int MatRestrict(Mat A,Vec x,Vec y)
+{
+  int M,N,ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  if (N > M) {
+    ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTranspose(A,x,y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: pname.c,v 1.30 1999/10/13 20:36:45 bsmith Exp bsmith $*/
+/*$Id: pname.c,v 1.31 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
@@ -136,7 +136,7 @@ int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
 
   PetscFunctionBegin;
   ierr = PetscObjectTakeAccess(obj);CHKERRQ(ierr);
-  if (obj->type_name) {ierr = PetscFree(obj->type_name);CHKERRQ(ierr);}
+  ierr = PetscStrfree(obj->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type_name,&obj->type_name);CHKERRQ(ierr);
   ierr = PetscObjectGrantAccess(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.6 1999/09/16 18:45:56 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.7 1999/11/05 14:42:55 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,6 +7,7 @@
 #define INCLUDED_PETSCCONF_H
 
 #define PARCH_solaris 
+#define PETSC_ARCH_NAME "solaris"
 
 #define PETSC_HAVE_STROPTS_H 
 #define PETSC_HAVE_LIMITS_H
@@ -37,6 +38,7 @@
 #define PETSC_HAVE_SYS_RESOURCE_H
 
 #define PETSC_HAVE_SYS_PROCFS_H
+#define PETSC_USE_PROCFS_FOR_SIZE
 #define PETSC_HAVE_FCNTL_H
 #define PETSC_SIZEOF_VOIDP 4
 #define PETSC_SIZEOF_INT 4
@@ -47,5 +49,6 @@
 
 #define PETSC_USE_DYNAMIC_LIBRARIES 1
 #define PETSC_HAVE_RTLD_GLOBAL 1
+#define PETSC_HAVE_TIMES
 
 #endif

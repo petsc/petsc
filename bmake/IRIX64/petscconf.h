@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.29 1999/11/03 01:35:19 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.30 1999/11/05 14:42:55 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,7 +7,7 @@
 #define INCLUDED_PETSCCONF_H
  
 #define PARCH_IRIX64 
-
+#define PETSC_ARCH_NAME "IRIX64"
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_PWD_H 
 #define PETSC_HAVE_STRING_H 
@@ -48,5 +48,8 @@
 #define PETSC_CAN_SLEEP_AFTER_ERROR
 
 #define PETSC_HAVE_4ARG_SIGNAL_HANDLER
+
+#define PETSC_USE_KBYTES_FOR_SIZE
+#define PETSC_USE_P_FOR_DEBUGGER
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.16 1999/03/18 00:43:27 balay Exp bsmith $ */
+/* $Id: mpiaij.h,v 1.17 1999/10/24 14:02:16 bsmith Exp bsmith $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
@@ -19,7 +19,7 @@ typedef struct {
 
   /* The following variables are used for matrix assembly */
 
-  int           donotstash;             /* 1 if off processor entries dropped */
+  PetscTruth    donotstash;             /* PETSC_TRUE if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends, nrecvs;         /* numbers of sends and receives */
@@ -36,7 +36,7 @@ typedef struct {
 
   Vec           lvec;              /* local vector */
   VecScatter    Mvctx;             /* scatter context for vector */
-  int           roworiented;       /* if true, row-oriented input, default true */
+  PetscTruth    roworiented;       /* if true, row-oriented input, default true */
 
   /* The following variables are for MatGetRow() */
 

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.101 1999/03/18 00:35:40 balay Exp balay $ */
+/* $Id: matimpl.h,v 1.102 1999/03/19 01:00:53 balay Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -20,12 +20,12 @@ struct _MatOps {
             (*restorerow)(Mat,int,int *,int **,Scalar **),
             (*mult)(Mat,Vec,Vec),
 /* 4*/      (*multadd)(Mat,Vec,Vec,Vec),
-            (*multtrans)(Mat,Vec,Vec),
-            (*multtransadd)(Mat,Vec,Vec,Vec),
+            (*multtranspose)(Mat,Vec,Vec),
+            (*multtransposeadd)(Mat,Vec,Vec,Vec),
             (*solve)(Mat,Vec,Vec),
             (*solveadd)(Mat,Vec,Vec,Vec),
-            (*solvetrans)(Mat,Vec,Vec),
-/*10*/      (*solvetransadd)(Mat,Vec,Vec,Vec),
+            (*solvetranspose)(Mat,Vec,Vec),
+/*10*/      (*solvetransposeadd)(Mat,Vec,Vec,Vec),
             (*lufactor)(Mat,IS,IS,double),
             (*choleskyfactor)(Mat,IS,double),
             (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),

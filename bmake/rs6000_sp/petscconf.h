@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.20 1999/09/16 19:03:01 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.21 1999/11/05 14:42:55 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,6 +7,7 @@
 #define INCLUDED_PETSCCONF_H
 
 #define PARCH_rs6000
+#define PETSC_ARCH_NAME "rs6000"
 #define PETSC_USE_READ_REAL_TIME
 
 #define PETSC_HAVE_LIMITS_H
@@ -54,4 +55,9 @@
 #define PETSC_HAVE_ACCEPT_SIZE_T
 
 #define PETSC_HAVE_SYS_UTSNAME_H
+
+#define PETSC_HAVE_SLEEP_RETURNS_EARLY
+#define PETSC_USE_KBYTES_FOR_SIZE
+
+#define PETSC_USE_A_FOR_DEBUGGER
 #endif

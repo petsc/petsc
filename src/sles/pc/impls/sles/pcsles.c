@@ -1,4 +1,4 @@
-/*$Id: pcsles.c,v 1.25 1999/10/24 14:03:04 bsmith Exp bsmith $*/
+/*$Id: pcsles.c,v 1.26 1999/11/05 14:46:29 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of any SLES solver.
     This allows embedding a Krylov method inside a preconditioner.
@@ -26,14 +26,14 @@ static int PCApply_SLES(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApplyTrans_SLES"
-static int PCApplyTrans_SLES(PC pc,Vec x,Vec y)
+#define __FUNC__ "PCApplyTranspose_SLES"
+static int PCApplyTranspose_SLES(PC pc,Vec x,Vec y)
 {
   int     ierr,its;
   PC_SLES *jac = (PC_SLES *) pc->data;
 
   PetscFunctionBegin;
-  ierr      = SLESSolveTrans(jac->sles,x,y,&its);CHKERRQ(ierr);
+  ierr      = SLESSolveTranspose(jac->sles,x,y,&its);CHKERRQ(ierr);
   jac->its += its;
   PetscFunctionReturn(0);
 }
@@ -245,7 +245,7 @@ int PCCreate_SLES(PC pc)
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_SLES));
   pc->ops->apply              = PCApply_SLES;
-  pc->ops->applytrans         = PCApplyTrans_SLES;
+  pc->ops->applytranspose     = PCApplyTranspose_SLES;
   pc->ops->setup              = PCSetUp_SLES;
   pc->ops->destroy            = PCDestroy_SLES;
   pc->ops->setfromoptions     = PCSetFromOptions_SLES;

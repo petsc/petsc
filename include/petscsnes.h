@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.94 1999/10/23 00:02:04 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.95 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -81,7 +81,7 @@ extern int MatSNESMFWPSetComputeNormU(Mat,PetscTruth);
 extern int SNESGetType(SNES,SNESType*);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESVecViewMonitor(SNES,int,double,void *);
-extern int SNESVecViewMonitorUpdate(SNES,int,double,void *);
+extern int SNESVecViewUpdateMonitor(SNES,int,double,void *);
 extern int SNESDefaultSMonitor(SNES,int,double,void *);
 extern int SNESSetTolerances(SNES,double,double,double,int,int);
 extern int SNESGetTolerances(SNES,double*,double*,double*,int*,int*);

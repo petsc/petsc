@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.132 1999/10/05 19:12:41 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.133 1999/10/13 20:39:18 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -12,8 +12,6 @@
   Lists all PETSc events that are logged/profiled.
 
   If you add an event here, make sure you add it to 
-  petsc/bin/petscview.cfg,
-  petsc/bin/petscview,
   petsc/src/plog/src/plog.c,  
   petsc/src/plog/src/plogmpe.c, and
   petsc/include/finclude/petsclog.h!!!
@@ -23,9 +21,9 @@
 #define MAT_AssemblyBegin                       2
 #define MAT_AssemblyEnd                         3
 #define MAT_GetOrdering                         4
-#define MAT_MultTrans                           5
+#define MAT_MultTranspose                       5
 #define MAT_MultAdd                             6
-#define MAT_MultTransAdd                        7
+#define MAT_MultTransposeAdd                    7
 #define MAT_LUFactor                            8
 #define MAT_CholeskyFactor                      9
 #define MAT_LUFactorSymbolic                    10
@@ -41,8 +39,8 @@
 #define MAT_ZeroEntries                         20
 #define MAT_Solve                               21
 #define MAT_SolveAdd                            22
-#define MAT_SolveTrans                          23
-#define MAT_SolveTransAdd                       24
+#define MAT_SolveTranspose                      23
+#define MAT_SolveTransposeAdd                   24
 #define MAT_SetValues                           25
 #define MAT_ForwardSolve                        26
 #define MAT_BackwardSolve                       27
@@ -116,6 +114,8 @@
 
 #define TS_Step                                 90
 #define TS_PseudoComputeTimeStep                91
+#define TS_FunctionEval                         92
+#define TS_JacobianEval                         93
 
 #define Petsc_Barrier                           100
 

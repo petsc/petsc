@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.16 1999/05/04 20:33:03 balay Exp bsmith $*/
+/*$Id: ex12.c,v 1.18 1999/10/24 14:02:39 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";
@@ -79,11 +79,17 @@ int main(int argc,char **args)
 #define __FUNC__ "TestMatZeroRows_Basic"
 int TestMatZeroRows_Basic(Mat A,IS is, Scalar *diag)
 {
-  Mat         B;
-  int         ierr;
+  Mat        B;
+  int        ierr;
+  PetscTruth keepzeroedrows;
 
   /* Now copy A into B, and test it with MatZeroRows() */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+
+  ierr = OptionsHasName(PETSC_NULL,"-keep_zeroed_rows",&keepzeroedrows);CHKERRA(ierr);
+  if (keepzeroedrows) {
+    ierr = MatSetOption(B,MAT_KEEP_ZEROED_ROWS);CHKERRA(ierr);
+  }
 
   ierr = MatZeroRows(B,is,diag);CHKERRQ(ierr);
   ierr = MatView(B,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 

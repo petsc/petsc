@@ -1,4 +1,4 @@
-/*$Id: prefix.c,v 1.21 1999/10/01 21:20:38 bsmith Exp bsmith $*/
+/*$Id: prefix.c,v 1.22 1999/10/24 14:01:28 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -26,11 +26,13 @@ int PetscObjectSetOptionsPrefix(PetscObject obj,const char prefix[])
   int ierr;
 
   PetscFunctionBegin;
-  if (obj->prefix) {ierr = PetscFree(obj->prefix);CHKERRQ(ierr);}
-  if (prefix == PETSC_NULL) {obj->prefix = PETSC_NULL; PetscFunctionReturn(0);}
-  if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
-
-  ierr  = PetscStrallocpy(prefix,&obj->prefix);CHKERRQ(ierr);
+  ierr = PetscStrfree(obj->prefix);CHKERRQ(ierr);
+  if (!prefix) {
+    obj->prefix = PETSC_NULL;
+  } else {
+     if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
+    ierr  = PetscStrallocpy(prefix,&obj->prefix);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

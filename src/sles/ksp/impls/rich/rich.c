@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.84 1999/10/24 14:03:16 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.85 1999/11/05 14:46:46 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -185,7 +185,6 @@ int KSPCreate_Richardson(KSP ksp)
   ksp->ops->setup                  = KSPSetUp_Richardson;
   ksp->ops->solve                  = KSPSolve_Richardson;
   ksp->ops->destroy                = KSPDefaultDestroy;
-  ksp->converged                   = KSPDefaultConverged;
   ksp->ops->buildsolution          = KSPDefaultBuildSolution;
   ksp->ops->buildresidual          = KSPDefaultBuildResidual;
   ksp->ops->view                   = KSPView_Richardson;

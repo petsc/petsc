@@ -1,4 +1,4 @@
-/*$Id: cg.c,v 1.97 1999/10/24 14:03:12 bsmith Exp bsmith $*/
+/*$Id: cg.c,v 1.98 1999/11/05 14:46:40 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of
@@ -363,7 +363,6 @@ int KSPCreate_CG(KSP ksp)
   ksp->ops->view                 = KSPView_CG;
   ksp->ops->printhelp            = KSPPrintHelp_CG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_CG;
-  ksp->converged                 = KSPDefaultConverged;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
 

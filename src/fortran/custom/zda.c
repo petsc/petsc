@@ -1,10 +1,11 @@
-/*$Id: zda.c,v 1.33 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.34 1999/11/05 14:48:14 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "mat.h"
 #include "da.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define dagetinterpolation_          DAGETINTERPOLATION
 #define dacreate1d_                  DACREATE1D
 #define dacreate3d_                  DACREATE3D
 #define dacreate2d_                  DACREATE2D
@@ -21,6 +22,7 @@
 #define dasetfieldname_              DASETFIELDNAME
 #define dagetfieldname_              DAGETFIELDNAME
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dagetinterpolation_          dagetinterpolation
 #define daload_                      daload
 #define dacreateglobalvector_        dacreateglobalvector
 #define dacreatelocalvector_         dacreatelocalvector
@@ -39,6 +41,12 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL dagetinterpolation_(DA *dac,DA *daf,Mat *A,Vec *scale,int *__ierr)
+{
+  if (FORTRANNULLOBJECT(scale)) scale = PETSC_NULL;
+  *__ierr = DAGetInterpolation(*dac,*daf,A,scale);
+}
 
 void PETSC_STDCALL dasetfieldname_(DA *da,int *nf, CHAR name PETSC_MIXED_LEN(len),
                                    int *__ierr PETSC_END_LEN(len) )

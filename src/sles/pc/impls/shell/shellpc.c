@@ -1,4 +1,4 @@
-/*$Id: shellpc.c,v 1.63 1999/10/24 14:02:59 bsmith Exp bsmith $*/
+/*$Id: shellpc.c,v 1.64 1999/11/05 14:46:21 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -12,7 +12,7 @@ typedef struct {
   void *ctx, *ctxrich;    /* user provided contexts for preconditioner */
   int  (*setup)(void *);
   int  (*apply)(void *,Vec,Vec);
-  int  (*applytrans)(void *,Vec,Vec);
+  int  (*applytranspose)(void *,Vec,Vec);
   int  (*applyrich)(void *,Vec,Vec,Vec,int);
   char *name;
 } PC_Shell;
@@ -47,16 +47,16 @@ static int PCApply_Shell(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApplyTrans_Shell"
-static int PCApplyTrans_Shell(PC pc,Vec x,Vec y)
+#define __FUNC__ "PCApplyTranspose_Shell"
+static int PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 {
   PC_Shell *shell;
   int      ierr;
 
   PetscFunctionBegin;
   shell = (PC_Shell *) pc->data;
-  if (!shell->applytrans) SETERRQ(1,1,"No applytrans() routine provided to Shell PC");
-  ierr  = (*shell->applytrans)(shell->ctx,x,y);CHKERRQ(ierr);
+  if (!shell->applytranspose) SETERRQ(1,1,"No applytranspose() routine provided to Shell PC");
+  ierr  = (*shell->applytranspose)(shell->ctx,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -136,14 +136,14 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCShellSetApplyTrans_Shell"
-int PCShellSetApplyTrans_Shell(PC pc, int (*applytrans)(void*,Vec,Vec))
+#define __FUNC__ "PCShellSetApplyTranspose_Shell"
+int PCShellSetApplyTranspose_Shell(PC pc, int (*applytranspose)(void*,Vec,Vec))
 {
   PC_Shell *shell;
 
   PetscFunctionBegin;
-  shell             = (PC_Shell *) pc->data;
-  shell->applytrans = applytrans;
+  shell                 = (PC_Shell *) pc->data;
+  shell->applytranspose = applytranspose;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -257,7 +257,7 @@ int PCShellSetSetUp(PC pc, int (*setup)(void*))
 
 .keywords: PC, shell, set, apply, user-provided
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTrans()
+.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose()
 @*/
 int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 {
@@ -273,9 +273,9 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCShellSetApplyTrans"
+#define __FUNC__ "PCShellSetApplyTranspose"
 /*@C
-   PCShellSetApplyTrans - Sets routine to use as preconditioner transpose.
+   PCShellSetApplyTranspose - Sets routine to use as preconditioner transpose.
 
    Collective on PC
 
@@ -285,7 +285,7 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 
    Calling sequence of apply:
 .vb
-   int applytrans (void *ptr,Vec xin,Vec xout)
+   int applytranspose (void *ptr,Vec xin,Vec xout)
 .ve
 
 +  ptr - the application context
@@ -301,15 +301,15 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 
 .seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApply()
 @*/
-int PCShellSetApplyTrans(PC pc, int (*applytrans)(void*,Vec,Vec))
+int PCShellSetApplyTranspose(PC pc, int (*applytranspose)(void*,Vec,Vec))
 {
   int ierr, (*f)(PC,int (*)(void*,Vec,Vec));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyTrans_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyTranspose_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,applytrans);CHKERRQ(ierr);
+    ierr = (*f)(pc,applytranspose);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -456,26 +456,26 @@ int PCCreate_Shell(PC pc)
   pc->name         = 0;
 
   pc->ops->apply           = PCApply_Shell;
-  pc->ops->applytrans      = PCApplyTrans_Shell;
+  pc->ops->applytranspose  = PCApplyTranspose_Shell;
   pc->ops->applyrichardson = 0;
   pc->ops->setup           = PCSetUp_Shell;
   pc->ops->view            = PCView_Shell;
 
-  shell->apply     = 0;
-  shell->applytrans= 0;
-  shell->name      = 0;
-  shell->applyrich = 0;
-  shell->ctxrich   = 0;
-  shell->ctx       = 0;
-  shell->setup     = 0;
+  shell->apply          = 0;
+  shell->applytranspose = 0;
+  shell->name           = 0;
+  shell->applyrich      = 0;
+  shell->ctxrich        = 0;
+  shell->ctx            = 0;
+  shell->setup          = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetSetUp_C","PCShellSetSetUp_Shell",
                     (void*)PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApply_C","PCShellSetApply_Shell",
                     (void*)PCShellSetApply_Shell);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyTrans_C",
-                    "PCShellSetApplyTrans_Shell",
-                    (void*)PCShellSetApplyTrans_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyTranspose_C",
+                    "PCShellSetApplyTranspose_Shell",
+                    (void*)PCShellSetApplyTranspose_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetName_C","PCShellSetName_Shell",
                     (void*)PCShellSetName_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellGetName_C","PCShellGetName_Shell",

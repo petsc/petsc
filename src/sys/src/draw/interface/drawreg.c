@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.22 1999/11/05 14:43:51 bsmith Exp bsmith $*/
+/*$Id: drawreg.c,v 1.23 1999/11/10 03:17:35 bsmith Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -42,15 +42,26 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
   *indraw = 0;
   PetscHeaderCreate(draw,_p_Draw,struct _DrawOps,DRAW_COOKIE,-1,"Draw",comm,DrawDestroy,0);
   PLogObjectCreate(draw);
-  *indraw    = draw;
-  draw->type = -1;
-  draw->data = 0;
-  ierr       = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
-  ierr       = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
-  draw->x    = x;
-  draw->y    = y;
-  draw->w    = w;
-  draw->h    = h;
+  draw->type    = -1;
+  draw->data    = 0;
+  ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
+  ierr          = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
+  draw->x       = x;
+  draw->y       = y;
+  draw->w       = w;
+  draw->h       = h;
+  draw->pause   = 0;
+  draw->coor_xl = 0.0;  
+  draw->coor_xr = 1.0;
+  draw->coor_yl = 0.0;  
+  draw->coor_yr = 1.0;
+  draw->port_xl = 0.0;  
+  draw->port_xr = 1.0;
+  draw->port_yl = 0.0;  
+  draw->port_yr = 1.0;
+  draw->popup   = 0;
+  ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&draw->pause,PETSC_NULL);CHKERRQ(ierr);
+  *indraw       = draw;
   PetscFunctionReturn(0);
 }
  

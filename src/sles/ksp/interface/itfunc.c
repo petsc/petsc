@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.134 1999/11/05 14:46:35 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.135 1999/11/10 03:20:38 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -192,7 +192,7 @@ int KSPSetUp(KSP ksp)
 .keywords: KSP, solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
-          SLESSolve(), KSPSolveTrans(), SLESGetKSP()
+          SLESSolve(), KSPSolveTranspose(), SLESGetKSP()
 @*/
 int KSPSolve(KSP ksp, int *its) 
 {
@@ -285,10 +285,10 @@ int KSPSolve(KSP ksp, int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSolveTrans"
+#define __FUNC__ "KSPSolveTranspose"
 /*@
-   KSPSolveTrans - Solves the transpose of a linear system. Usually
-   accessed through SLESSolveTrans().
+   KSPSolveTranspose - Solves the transpose of a linear system. Usually
+   accessed through SLESSolveTranspose().
 
    Collective on KSP
 
@@ -313,7 +313,7 @@ int KSPSolve(KSP ksp, int *its)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           SLESSolve(), SLESGetKSP()
 @*/
-int KSPSolveTrans(KSP ksp, int *its) 
+int KSPSolveTranspose(KSP ksp, int *its) 
 {
   int        ierr;
   Scalar     zero = 0.0;
@@ -1090,8 +1090,7 @@ int KSPGetResidualHistory(KSP ksp, double **a, int *na)
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
 .  converge - pointer to int function
--  cctx    - context for private data for the convergence routine (may be 
-              null)
+-  cctx    - context for private data for the convergence routine (may be null)
 
    Calling sequence of converge:
 $     converge (KSP ksp, int it, double rnorm, void *mctx)
@@ -1126,7 +1125,8 @@ int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,double,void*),void *cc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->converged = converge;	ksp->cnvP = (void*)cctx;
+  ksp->converged = converge;	
+  ksp->cnvP      = (void*)cctx;
   PetscFunctionReturn(0);
 }
 

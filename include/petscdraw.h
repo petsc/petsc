@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.67 1999/10/23 00:02:04 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.68 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -11,6 +11,7 @@
 /* types of draw contexts */
 #define DRAW_X    "x"
 #define DRAW_NULL "null"
+#define DRAW_PS   "ps"
  
 typedef struct _p_Draw* Draw;
 
@@ -73,6 +74,7 @@ extern int DrawSetFromOptions(Draw);
 
 
 extern int DrawOpenX(MPI_Comm,const char[],const char[],int,int,int,int,Draw*);
+extern int DrawOpenPS(MPI_Comm,char *,Draw *);
 #define DRAW_FULL_SIZE    -3
 #define DRAW_HALF_SIZE    -4
 #define DRAW_THIRD_SIZE   -5
@@ -134,6 +136,17 @@ extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double
 extern int DrawSynchronizedGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);
 
 extern int DrawZoom(Draw,int (*)(Draw,void *),void *);
+
+/*   Allows one to maintain a subset of viewports for a single window */
+typedef struct {
+  int    nports;
+  double *xl,*xr,*yl,*yr;
+  Draw   draw;
+} DrawViewPorts;
+extern int DrawViewPortsCreate(Draw,int,DrawViewPorts**);
+extern int DrawViewPortsDestroy(DrawViewPorts*);
+extern int DrawViewPortsSet(DrawViewPorts*,int);
+
 /*
     Routines for drawing X-Y axises in a Draw object
 */
@@ -201,6 +214,9 @@ extern int DrawHistSetColor(DrawHist,int);
 extern int ViewerDrawGetDraw(Viewer,int, Draw*);
 extern int ViewerDrawGetDrawLG(Viewer,int, DrawLG*);
 extern int ViewerDrawGetDrawAxis(Viewer,int, DrawAxis*);
+
+extern int DrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
+extern int DrawUtilitySetGamma(double);
 
 /* Mesh management routines */
 typedef struct _p_DrawMesh* DrawMesh;

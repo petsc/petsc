@@ -1,4 +1,4 @@
-/*$Id: cr.c,v 1.52 1999/10/24 14:03:11 bsmith Exp bsmith $*/
+/*$Id: cr.c,v 1.53 1999/11/05 14:46:39 bsmith Exp bsmith $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       
@@ -132,7 +132,6 @@ int KSPCreate_CR(KSP ksp)
   ksp->ops->setup                = KSPSetUp_CR;
   ksp->ops->solve                = KSPSolve_CR;
   ksp->ops->destroy              = KSPDefaultDestroy;
-  ksp->converged                 = KSPDefaultConverged;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = 0;

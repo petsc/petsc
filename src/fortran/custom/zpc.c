@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.31 1999/10/24 14:04:19 bsmith Exp bsmith $*/
+/*$Id: zpc.c,v 1.32 1999/11/05 14:48:14 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "sles.h"
@@ -142,6 +142,8 @@ void PETSC_STDCALL pcbjacobigetsubsles_(PC *pc,int *n_local,int *first_local,SLE
 {
   SLES *tsles;
   int  i;
+  if (FORTRANNULLINTEGER(n_local)) n_local = PETSC_NULL;
+  if (FORTRANNULLINTEGER(first_local)) first_local = PETSC_NULL;
   *__ierr = PCBJacobiGetSubSLES(*pc,n_local,first_local,&tsles);
   for ( i=0; i<*n_local; i++ ){
     sles[i] = tsles[i];
@@ -152,6 +154,8 @@ void PETSC_STDCALL pcasmgetsubsles_(PC *pc,int *n_local,int *first_local,SLES *s
 {
   SLES *tsles;
   int  i;
+  if (FORTRANNULLINTEGER(n_local)) n_local = PETSC_NULL;
+  if (FORTRANNULLINTEGER(first_local)) first_local = PETSC_NULL;
   *__ierr = PCASMGetSubSLES(*pc,n_local,first_local,&tsles);
   for ( i=0; i<*n_local; i++ ){
     sles[i] = tsles[i];

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.19 1999/09/16 19:03:26 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.20 1999/11/05 14:42:55 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,6 +7,7 @@
 #define INCLUDED_PETSCCONF_H
 
 #define PARCH_t3d 
+#define PETSC_ARCH_NAME "t3d"
 
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_PWD_H 
@@ -44,4 +45,5 @@
 #define PETSC_WORDS_BIGENDIAN 1
 
 #define PETSC_CAN_SLEEP_AFTER_ERROR
+#define PETSC_USE_SBREAK_FOR_SIZE
 #endif

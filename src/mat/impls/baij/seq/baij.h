@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.18 1999/11/05 14:45:32 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.19 1999/11/19 20:35:49 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -42,24 +42,24 @@ extern int MatConvert_SeqBAIJ(Mat,MatType,Mat *);
 extern int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption, Mat*);
 extern int MatMarkDiagonal_SeqBAIJ(Mat);
 
-extern int MatSolveTrans_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
-extern int MatSolveTrans_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolveTranspose_SeqBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 
 #endif

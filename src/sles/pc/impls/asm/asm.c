@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.106 1999/11/05 14:46:28 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.107 1999/11/10 03:20:29 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -274,8 +274,8 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApplyTrans_ASM"
-static int PCApplyTrans_ASM(PC pc,Vec x,Vec y)
+#define __FUNC__ "PCApplyTranspose_ASM"
+static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM *) pc->data;
   int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr,its;
@@ -308,7 +308,7 @@ static int PCApplyTrans_ASM(PC pc,Vec x,Vec y)
   /* do the local solves */
   for ( i=0; i<n_local_true; i++ ) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
-    ierr = SLESSolveTrans(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
+    ierr = SLESSolveTranspose(osm->sles[i],osm->x[i],osm->y[i],&its);CHKERRQ(ierr); 
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
@@ -825,7 +825,7 @@ int PCCreate_ASM(PC pc)
   pc->data               = (void *) osm;
 
   pc->ops->apply             = PCApply_ASM;
-  pc->ops->applytrans        = PCApplyTrans_ASM;
+  pc->ops->applytranspose    = PCApplyTranspose_ASM;
   pc->ops->setup             = PCSetUp_ASM;
   pc->ops->destroy           = PCDestroy_ASM;
   pc->ops->printhelp         = PCPrintHelp_ASM;

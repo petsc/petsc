@@ -1,4 +1,4 @@
-/*$Id: dtexts.c,v 1.23 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: dtexts.c,v 1.25 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -7,16 +7,14 @@
 #undef __FUNC__  
 #define __FUNC__ "DrawStringSetSize" 
 /*@
-   DrawStringSetSize - Sets the size for charactor text.  The width is
-   relative to the user coordinates of the window; 0.0 denotes the natural
-   width; 1.0 denotes the entire viewport. 
+   DrawStringSetSize - Sets the size for charactor text.
 
    Not Collective
 
    Input Parameters:
 +  draw - the drawing context
 .  width - the width in user coordinates
--  height - the charactor height
+-  height - the charactor height in user coordinates
 
    Level: advanced
 

@@ -1,4 +1,4 @@
-/*$Id: arch.c,v 1.34 1999/04/21 20:43:38 bsmith Exp bsmith $*/
+/*$Id: arch.c,v 1.35 1999/10/24 14:01:32 bsmith Exp bsmith $*/
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
 
@@ -28,36 +28,8 @@ int PetscGetArchType(char str[],int slen)
   PetscFunctionBegin;
 #if defined(PETSC_ARCH_NAME)
   ierr = PetscStrncpy(str,PETSC_ARCH_NAME,slen);CHKERRQ(ierr);
-#elif defined(PARCH_solaris)
-  ierr = PetscStrncpy(str,"solaris",slen);CHKERRQ(ierr);
-#elif defined(PARCH_sun4) 
-  ierr = PetscStrncpy(str,"sun4",slen);CHKERRQ(ierr);
-#elif defined(PARCH_IRIX64)
-  ierr = PetscStrncpy(str,"IRIX64",slen);CHKERRQ(ierr);
-#elif defined(PARCH_IRIX)
-  ierr = PetscStrncpy(str,"IRIX",slen);CHKERRQ(ierr);
-#elif defined(PARCH_IRIX5)
-  ierr = PetscStrncpy(str,"IRIX5",slen);CHKERRQ(ierr);
-#elif defined(PARCH_hpux)
-  ierr = PetscStrncpy(str,"hpux",slen);CHKERRQ(ierr);
-#elif defined(PARCH_rs6000)
-  ierr = PetscStrncpy(str,"rs6000",slen);CHKERRQ(ierr);
-#elif defined(PARCH_paragon)
-  ierr = PetscStrncpy(str,"paragon",slen);CHKERRQ(ierr);
-#elif defined(PARCH_t3d)
-  ierr = PetscStrncpy(str,"t3d",slen);CHKERRQ(ierr);
-#elif defined(PARCH_alpha)
-  ierr = PetscStrncpy(str,"alpha",slen);CHKERRQ(ierr);
-#elif defined(PARCH_freebsd)
-  ierr = PetscStrncpy(str,"freebsd",slen);CHKERRQ(ierr);
-#elif defined(PARCH_win32)
-  ierr = PetscStrncpy(str,"win32",slen);CHKERRQ(ierr);
-#elif defined(PARCH_win32_gnu)
-  ierr = PetscStrncpy(str,"win32_gnu",slen);CHKERRQ(ierr);
-#elif defined(PARCH_linux)
-  ierr = PetscStrncpy(str,"linux",slen);CHKERRQ(ierr);
 #else
-  ierr = PetscStrncpy(str,"Unknown",slen);CHKERRQ(ierr);
+#error "bmake/$PETSC_ARCH/petscconf.h is missing PETSC_ARCH_NAME"
 #endif
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: aosetlocal.c,v 1.2 1999/09/27 21:32:28 bsmith Exp bsmith $*/
+/*$Id: aosetlocal.c,v 1.4 1999/10/24 14:04:03 bsmith Exp bsmith $*/
 
 #include "ao.h"       /*I  "ao.h"  I*/
 
@@ -21,6 +21,8 @@
                          contiguous from rstart to rend
 .  issegment     - the local indices in global numbering of the segment entries (vertices)
 -  ltog          - the local to global mapping for the segment entries (vertices)
+
+  Level: advanced
 
   Notes: this renumbers the key and segment entries in the AO database to reflect the new partitioning.
   The ltog mapping is a mapping for the issegment indices, that is ltog applied to the indices

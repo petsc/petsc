@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.24 1996/08/22 20:06:47 curfman Exp bsmith $ */
+/* $Id: bdiag.h,v 1.25 1998/12/03 04:00:32 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -39,7 +39,7 @@ extern int MatConvert_SeqBDiag(Mat,MatType,Mat *);
 extern int MatNorm_SeqBDiag_Columns(Mat,double*,int);
 extern int MatMult_SeqBDiag_N(Mat A,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
-extern int MatMultTrans_SeqBDiag_N(Mat A,Vec,Vec);
-extern int MatMultTransAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
+extern int MatMultTranspose_SeqBDiag_N(Mat A,Vec,Vec);
+extern int MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec,Vec,Vec);
 
 #endif

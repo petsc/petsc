@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.54 1999/10/24 14:03:48 bsmith Exp bsmith $*/
+/*$Id: tsreg.c,v 1.55 1999/11/05 14:47:28 bsmith Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
 
@@ -249,13 +249,10 @@ int TSSetFromOptions(TS ts)
   nmax = 4;
   ierr = OptionsGetIntArray(ts->prefix,"-ts_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
-    int    rank = 0;
-    DrawLG lg;
+    int    rank;
     ierr = MPI_Comm_rank(ts->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = TSLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
-      PLogObjectParent(ts,(PetscObject) lg);
-      ierr = TSSetMonitor(ts,TSLGMonitor,(void *)lg);CHKERRQ(ierr);
+      ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL);CHKERRQ(ierr);
     }
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);

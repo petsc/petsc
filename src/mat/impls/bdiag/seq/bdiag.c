@@ -1,4 +1,4 @@
-/*$Id: bdiag.c,v 1.180 1999/11/05 14:45:27 bsmith Exp bsmith $*/
+/*$Id: bdiag.c,v 1.181 1999/11/10 03:19:22 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -23,10 +23,10 @@ extern int MatMultAdd_SeqBDiag_3(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_4(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_5(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
-extern int MatMultTrans_SeqBDiag_1(Mat,Vec,Vec);
-extern int MatMultTrans_SeqBDiag_N(Mat,Vec,Vec);
-extern int MatMultTransAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
-extern int MatMultTransAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
+extern int MatMultTranspose_SeqBDiag_1(Mat,Vec,Vec);
+extern int MatMultTranspose_SeqBDiag_N(Mat,Vec,Vec);
+extern int MatMultTransposeAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
+extern int MatMultTransposeAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
 extern int MatRelax_SeqBDiag_N(Mat,Vec,double,MatSORType,double,int,Vec);
 extern int MatRelax_SeqBDiag_1(Mat,Vec,double,MatSORType,double,int,Vec);
 extern int MatView_SeqBDiag(Mat,Viewer);
@@ -440,8 +440,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        MatRestoreRow_SeqBDiag,
        MatMult_SeqBDiag_N,
        MatMultAdd_SeqBDiag_N, 
-       MatMultTrans_SeqBDiag_N,
-       MatMultTransAdd_SeqBDiag_N, 
+       MatMultTranspose_SeqBDiag_N,
+       MatMultTransposeAdd_SeqBDiag_N, 
        MatSolve_SeqBDiag_N,
        0,
        0,
@@ -587,8 +587,8 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
         B->ops->getdiagonal     = MatGetDiagonal_SeqBDiag_1;
         B->ops->mult            = MatMult_SeqBDiag_1;
         B->ops->multadd         = MatMultAdd_SeqBDiag_1;
-        B->ops->multtrans       = MatMultTrans_SeqBDiag_1;
-        B->ops->multtransadd    = MatMultTransAdd_SeqBDiag_1;
+        B->ops->multtranspose   = MatMultTranspose_SeqBDiag_1;
+        B->ops->multtransposeadd= MatMultTransposeAdd_SeqBDiag_1;
         B->ops->relax           = MatRelax_SeqBDiag_1;
         B->ops->solve           = MatSolve_SeqBDiag_1;
         B->ops->lufactornumeric = MatLUFactorNumeric_SeqBDiag_1;
@@ -636,7 +636,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
   b->diagv  = (Scalar**)PetscMalloc(nda*sizeof(Scalar*));CHKPTRQ(b->diagv);
   sizetot   = 0;
 
-  if (diagv != PETSC_NULL) { /* user allocated space */
+  if (diagv) { /* user allocated space */
     b->user_alloc = 1;
     for (i=0; i<nd; i++) b->diagv[i] = diagv[i];
   } else b->user_alloc = 0;

@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.15 1999/11/05 14:47:28 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.16 1999/11/10 03:21:40 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  
@@ -15,25 +15,27 @@ int TSComputeRHSFunction(TS ts,double t,Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  PetscValidHeader(x);  PetscValidHeader(y);
+  PetscValidHeader(x);
+  PetscValidHeader(y);
 
+  PLogEventBegin(TS_FunctionEval,ts,x,y,0);
   if (ts->rhsfunction) {
     PetscStackPush("TS user right-hand-side function");
     ierr = (*ts->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
     PetscStackPop;
-    PetscFunctionReturn(0);
+  } else {
+    if (ts->rhsmatrix) { /* assemble matrix for this timestep */
+      MatStructure flg;
+      PetscStackPush("TS user right-hand-side matrix function");
+      ierr = (*ts->rhsmatrix)(ts,t,&ts->A,&ts->B,&flg,ts->jacP);CHKERRQ(ierr);
+      PetscStackPop;
+    }
+    ierr = MatMult(ts->A,x,y);CHKERRQ(ierr);
   }
-
-  if (ts->rhsmatrix) { /* assemble matrix for this timestep */
-    MatStructure flg;
-    PetscStackPush("TS user right-hand-side matrix function");
-    ierr = (*ts->rhsmatrix)(ts,t,&ts->A,&ts->B,&flg,ts->jacP);CHKERRQ(ierr);
-    PetscStackPop;
-  }
-  ierr = MatMult(ts->A,x,y);CHKERRQ(ierr);
 
   /* apply user-provided boundary conditions (only needed if these are time dependent) */
   ierr = TSComputeRHSBoundaryConditions(ts,t,y);CHKERRQ(ierr);
+  PLogEventEnd(TS_FunctionEval,ts,x,y,0);
 
   PetscFunctionReturn(0);
 }
@@ -985,8 +987,7 @@ int TSMonitor(TS ts,int step,double time,Vec x)
    Input Parameters:
 +  host - the X display to open, or null for the local machine
 .  label - the title to put in the title bar
-.  x, y - the screen coordinates of the upper left coordinate of
-          the window
+.  x, y - the screen coordinates of the upper left coordinate of the window
 -  m, n - the screen width and height in pixels
 
    Output Parameter:
@@ -1000,9 +1001,10 @@ int TSMonitor(TS ts,int step,double time,Vec x)
 
    Level: intermediate
 
-.keywords: TS, monitor, line graph, residual, create
+.keywords: TS, monitor, line graph, residual, seealso
 
 .seealso: TSLGMonitorDestroy(), TSSetMonitor()
+
 @*/
 int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n, DrawLG *draw)
 {
@@ -1028,6 +1030,15 @@ int TSLGMonitor(TS ts,int n,double time,Vec v,void *monctx)
   int    ierr;
 
   PetscFunctionBegin;
+  if (!monctx) {
+    MPI_Comm comm;
+    Viewer   viewer;
+
+    ierr   = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
+    viewer = VIEWER_DRAW_(comm);
+    ierr   = ViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
+  }
+
   if (!n) {ierr = DrawLGReset(lg);CHKERRQ(ierr);}
   x = (double) n;
   ierr = DrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.183 1999/11/05 14:45:37 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.184 1999/11/10 03:19:32 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -131,7 +131,7 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
           ierr = PetscFree(a->j);CHKERRQ(ierr);\
         } \
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j;  \
-        a->singlemalloc = 1; \
+        a->singlemalloc = PETSC_TRUE; \
  \
         rp   = aj + ai[brow]; ap = aa + bs2*ai[brow]; \
         rmax = aimax[brow] = aimax[brow] + CHUNKSIZE; \
@@ -209,7 +209,7 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
           ierr = PetscFree(b->j);CHKERRQ(ierr); \
         } \
         ba = b->a = new_a; bi = b->i = new_i; bj = b->j = new_j;  \
-        b->singlemalloc = 1; \
+        b->singlemalloc = PETSC_TRUE; \
  \
         rp   = bj + bi[brow]; ap = ba + bs2*bi[brow]; \
         rmax = bimax[brow] = bimax[brow] + CHUNKSIZE; \
@@ -829,7 +829,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   Mat_MPIBAIJ *baij=(Mat_MPIBAIJ *) mat->data;
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ*)baij->A->data,*b=(Mat_SeqBAIJ*)baij->B->data;
   int         i,j,rstart,ncols,n,ierr,flg,bs2=baij->bs2;
-  int         *row,*col,other_disassembled,r1,r2,r3;
+  int         *row,*col,other_disassembled;
+  PetscTruth  r1,r2,r3;
   Scalar      *val;
   InsertMode  addv = mat->insertmode;
 
@@ -856,9 +857,9 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     r1 = baij->roworiented;
     r2 = a->roworiented;
     r3 = b->roworiented;
-    baij->roworiented = 0;
-    a->roworiented    = 0;
-    b->roworiented    = 0;
+    baij->roworiented = PETSC_FALSE;
+    a->roworiented    = PETSC_FALSE;
+    b->roworiented    = PETSC_FALSE;
     while (1) {
       ierr = MatStashScatterGetMesg_Private(&mat->bstash,&n,&row,&col,&val,&flg);CHKERRQ(ierr);
       if (!flg) break;
@@ -1151,19 +1152,19 @@ int MatMultAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans_MPIBAIJ"
-int MatMultTrans_MPIBAIJ(Mat A,Vec xx,Vec yy)
+#define __FUNC__ "MatMultTranspose_MPIBAIJ"
+int MatMultTranspose_MPIBAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *) A->data;
   int         ierr;
 
   PetscFunctionBegin;
   /* do nondiagonal part */
-  ierr = (*a->B->ops->multtrans)(a->B,xx,a->lvec);CHKERRQ(ierr);
+  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   /* do local part */
-  ierr = (*a->A->ops->multtrans)(a->A,xx,yy);CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtranspose)(a->A,xx,yy);CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
@@ -1172,19 +1173,19 @@ int MatMultTrans_MPIBAIJ(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd_MPIBAIJ"
-int MatMultTransAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+#define __FUNC__ "MatMultTransposeAdd_MPIBAIJ"
+int MatMultTransposeAdd_MPIBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *) A->data;
   int         ierr;
 
   PetscFunctionBegin;
   /* do nondiagonal part */
-  ierr = (*a->B->ops->multtrans)(a->B,xx,a->lvec);CHKERRQ(ierr);
+  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   /* do local part */
-  ierr = (*a->A->ops->multtransadd)(a->A,xx,yy,zz);CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtransposeadd)(a->A,xx,yy,zz);CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
@@ -1438,11 +1439,12 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
       op == MAT_COLUMNS_UNSORTED ||
       op == MAT_COLUMNS_SORTED ||
       op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
+      op == MAT_KEEP_ZEROED_ROWS ||
       op == MAT_NEW_NONZERO_LOCATION_ERR) {
         ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
         ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_ROW_ORIENTED) {
-        a->roworiented = 1;
+        a->roworiented = PETSC_TRUE;
         ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
         ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_ROWS_SORTED || 
@@ -1453,15 +1455,15 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
              op == MAT_USE_HASH_TABLE) {
     PLogInfo(A,"Info:MatSetOption_MPIBAIJ:Option ignored\n");
   } else if (op == MAT_COLUMN_ORIENTED) {
-    a->roworiented = 0;
+    a->roworiented = PETSC_FALSE;
     ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
-    a->donotstash = 1;
+    a->donotstash = PETSC_TRUE;
   } else if (op == MAT_NO_NEW_DIAGONALS) {
     SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");
   } else if (op == MAT_USE_HASH_TABLE) {
-    a->ht_flag = 1;
+    a->ht_flag = PETSC_TRUE;
   } else { 
     SETERRQ(PETSC_ERR_SUP,0,"unknown option");
   }
@@ -1480,9 +1482,8 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   Scalar     *a;
   
   PetscFunctionBegin;
-  if (matout == PETSC_NULL && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Square matrix only for in-place");
-  ierr = MatCreateMPIBAIJ(A->comm,baij->bs,baij->n,baij->m,N,M,0,PETSC_NULL,0,PETSC_NULL,&B); 
-CHKERRQ(ierr);
+  if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Square matrix only for in-place");
+  ierr = MatCreateMPIBAIJ(A->comm,baij->bs,baij->n,baij->m,N,M,0,PETSC_NULL,0,PETSC_NULL,&B);CHKERRQ(ierr);
   
   /* copy over the A part */
   Aloc = (Mat_SeqBAIJ*) baij->A->data;
@@ -1518,7 +1519,7 @@ CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
-  if (matout != PETSC_NULL) {
+  if (matout) {
     *matout = B;
   } else {
     PetscOps *Abops;
@@ -1801,8 +1802,8 @@ static struct _MatOps MatOps_Values = {
   MatRestoreRow_MPIBAIJ,
   MatMult_MPIBAIJ,
   MatMultAdd_MPIBAIJ,
-  MatMultTrans_MPIBAIJ,
-  MatMultTransAdd_MPIBAIJ,
+  MatMultTranspose_MPIBAIJ,
+  MatMultTransposeAdd_MPIBAIJ,
   0,
   0,
   0,
@@ -2020,7 +2021,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   ierr = MPI_Comm_rank(comm,&b->rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&b->size);CHKERRQ(ierr);
 
-  if ( m == PETSC_DECIDE && (d_nnz != PETSC_NULL || o_nnz != PETSC_NULL)) {
+  if ( m == PETSC_DECIDE && (d_nnz || o_nnz)) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");
   }
   if ( M == PETSC_DECIDE && m == PETSC_DECIDE) {
@@ -2110,10 +2111,10 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(comm,1,&B->stash);CHKERRQ(ierr);
   ierr = MatStashCreate_Private(comm,bs,&B->bstash);CHKERRQ(ierr);
-  b->donotstash  = 0;
-  b->colmap      = 0;
-  b->garray      = 0;
-  b->roworiented = 1;
+  b->donotstash  = PETSC_FALSE;
+  b->colmap      = PETSC_NULL;
+  b->garray      = PETSC_NULL;
+  b->roworiented = PETSC_TRUE;
 
   /* stuff used in block assembly */
   b->barray       = 0;
@@ -2131,7 +2132,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   b->ht           = 0;
   b->hd           = 0;
   b->ht_size      = 0;
-  b->ht_flag      = 0;
+  b->ht_flag      = PETSC_FALSE;
   b->ht_fact      = 0;
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;

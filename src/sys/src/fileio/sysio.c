@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.62 1999/10/24 14:01:25 bsmith Exp bsmith $*/
+/*$Id: sysio.c,v 1.63 1999/11/05 14:44:09 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -297,9 +297,10 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 @*/
 int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 {
-  int  err, maxblock, wsize,m = n,ierr;
   char *pp = (char *) p;
+  int  err, maxblock, wsize,m = n;
 #if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8)
+  int  ierr;
   void *ptmp = p; 
 #endif
 

@@ -1,4 +1,4 @@
-/*$Id: zoom.c,v 1.9 1999/10/24 14:01:20 bsmith Exp bsmith $*/
+/*$Id: zoom.c,v 1.10 1999/11/11 20:15:50 bsmith Exp bsmith $*/
 
 #include "draw.h"     /*I "draw.h"  I*/
 
@@ -47,21 +47,23 @@ int DrawZoom(Draw draw,int (*func)(Draw,void *),void *ctx)
   w    = xr - xl; xmin = xl; ymin = yl; xmax = xr; ymax = yr;
   h    = yr - yl;
 
-  while (button != BUTTON_RIGHT) {
+  if (button != BUTTON_NONE) {
+    while (button != BUTTON_RIGHT) {
 
-    ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
-    if (button == BUTTON_LEFT)        scale = .5;
-    else if (button == BUTTON_CENTER) scale = 2.;
-    xl = scale*(xl + w - xc) + xc - w*scale;
-    xr = scale*(xr - w - xc) + xc + w*scale;
-    yl = scale*(yl + h - yc) + yc - h*scale;
-    yr = scale*(yr - h - yc) + yc + h*scale;
-    w *= scale; h *= scale;
-    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+      ierr = DrawSynchronizedClear(draw);CHKERRQ(ierr);
+      if (button == BUTTON_LEFT)        scale = .5;
+      else if (button == BUTTON_CENTER) scale = 2.;
+      xl = scale*(xl + w - xc) + xc - w*scale;
+      xr = scale*(xr - w - xc) + xc + w*scale;
+      yl = scale*(yl + h - yc) + yc - h*scale;
+      yr = scale*(yr - h - yc) + yc + h*scale;
+      w *= scale; h *= scale;
+      ierr = DrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
 
-    ierr = (*func)(draw,ctx);CHKERRQ(ierr);
-    ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
-    ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
+      ierr = (*func)(draw,ctx);CHKERRQ(ierr);
+      ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
+      ierr = DrawSynchronizedGetMouseButton(draw,&button,&xc,&yc,0,0);CHKERRQ(ierr);
+    }
   }
 
   ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);

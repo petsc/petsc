@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.178 1999/11/05 14:45:14 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.179 1999/11/10 03:19:07 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -201,8 +201,8 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSolveTrans_SeqDense"
-int MatSolveTrans_SeqDense(Mat A,Vec xx,Vec yy)
+#define __FUNC__ "MatSolveTranspose_SeqDense"
+int MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          ierr,one = 1, info;
@@ -261,8 +261,8 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSolveTransAdd_SeqDense"
-int MatSolveTransAdd_SeqDense(Mat A,Vec xx,Vec zz, Vec yy)
+#define __FUNC__ "MatSolveTransposeAdd_SeqDense"
+int MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz, Vec yy)
 {
   Mat_SeqDense  *mat = (Mat_SeqDense *) A->data;
   int           one = 1, info,ierr;
@@ -360,8 +360,8 @@ int MatRelax_SeqDense(Mat A,Vec bb,double omega,MatSORType flag,
 
 /* -----------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans_SeqDense"
-int MatMultTrans_SeqDense(Mat A,Vec xx,Vec yy)
+#define __FUNC__ "MatMultTranspose_SeqDense"
+int MatMultTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v = mat->v, *x, *y;
@@ -418,8 +418,8 @@ int MatMultAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd_SeqDense"
-int MatMultTransAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
+#define __FUNC__ "MatMultTransposeAdd_SeqDense"
+int MatMultTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   Scalar       *v = mat->v, *x, *y;
@@ -830,7 +830,7 @@ int MatView_SeqDense_Draw_Zoom(Draw draw, void *Aa)
     }
     scale = (245.0 - DRAW_BASIC_COLORS)/maxv; 
     ierr  = DrawGetPopup(draw, &popup);CHKERRQ(ierr);
-    ierr  = DrawScalePopup(popup, 0.0, maxv);CHKERRQ(ierr);
+    if (popup) {ierr  = DrawScalePopup(popup, 0.0, maxv);CHKERRQ(ierr);}
     for(j = 0; j < n; j++) {
       x_l = j;
       x_r = x_l + 1.0;
@@ -939,7 +939,7 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
 
   PetscFunctionBegin;
   v = mat->v; m = mat->m; n = mat->n;
-  if (matout == PETSC_NULL) { /* in place transpose */
+  if (!matout) { /* in place transpose */
     if (m != n) { /* malloc temp to hold transpose */
       Scalar *w = (Scalar *) PetscMalloc((m+1)*(n+1)*sizeof(Scalar));CHKPTRQ(w);
       for ( j=0; j<m; j++ ) {
@@ -1305,12 +1305,12 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatRestoreRow_SeqDense,
        MatMult_SeqDense, 
        MatMultAdd_SeqDense, 
-       MatMultTrans_SeqDense, 
-       MatMultTransAdd_SeqDense, 
+       MatMultTranspose_SeqDense, 
+       MatMultTransposeAdd_SeqDense, 
        MatSolve_SeqDense,
        MatSolveAdd_SeqDense,
-       MatSolveTrans_SeqDense,
-       MatSolveTransAdd_SeqDense,
+       MatSolveTranspose_SeqDense,
+       MatSolveTransposeAdd_SeqDense,
        MatLUFactor_SeqDense,
        MatCholeskyFactor_SeqDense,
        MatRelax_SeqDense,
@@ -1429,7 +1429,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
 
   b->pivots       = 0;
   b->roworiented  = 1;
-  if (data == PETSC_NULL) {
+  if (!data) {
     b->v = (Scalar*) PetscMalloc((m*n+1)*sizeof(Scalar));CHKPTRQ(b->v);
     ierr = PetscMemzero(b->v,m*n*sizeof(Scalar));CHKERRQ(ierr);
     b->user_alloc = 0;

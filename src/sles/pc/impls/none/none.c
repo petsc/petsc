@@ -1,4 +1,4 @@
-/*$Id: none.c,v 1.23 1999/05/04 20:33:59 balay Exp bsmith $*/
+/*$Id: none.c,v 1.24 1999/10/24 14:02:58 bsmith Exp bsmith $*/
 /*
     Identity preconditioner, simply copies vector x to y.
 */
@@ -22,7 +22,7 @@ int PCCreate_None(PC pc)
 {
   PetscFunctionBegin;
   pc->ops->apply               = PCApply_None;
-  pc->ops->applytrans          = PCApply_None;
+  pc->ops->applytranspose      = PCApply_None;
   pc->ops->destroy             = 0;
   pc->ops->setup               = 0;
   pc->ops->view                = 0;

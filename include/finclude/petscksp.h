@@ -1,5 +1,5 @@
 !
-!  "$Id: ksp.h,v 1.20 1999/09/14 15:58:23 balay Exp bsmith $";
+!  "$Id: ksp.h,v 1.21 1999/11/10 03:22:55 bsmith Exp bsmith $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
@@ -41,6 +41,8 @@
 !
 !   Possible arguments to KSPSetMonitor()
 !
+      external KSPDEFAULTCONVERGED
+
       external KSPDEFAULTMONITOR
       external KSPTRUEMONITOR
       external KSPLGMONITOR

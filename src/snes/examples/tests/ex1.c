@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.71 1999/10/24 14:03:42 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.72 1999/11/05 14:47:20 bsmith Exp bsmith $*/
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
 
@@ -229,7 +229,10 @@ int main( int argc, char **argv )
   /*
      Draw contour plot of solution
   */
-  ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
+  /* ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr); */
+  ierr = DrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
+  ierr = DrawSetType(draw,DRAW_X);CHKERRA(ierr);
+
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   ierr = DrawTensorContour(draw,user.mx,user.my,0,0,array);CHKERRA(ierr);
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);

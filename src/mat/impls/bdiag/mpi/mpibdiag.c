@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.178 1999/11/05 14:45:30 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.179 1999/11/10 03:19:25 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -339,8 +339,8 @@ int MatMultAdd_MPIBDiag(Mat mat,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans_MPIBDiag"
-int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
+#define __FUNC__ "MatMultTranspose_MPIBDiag"
+int MatMultTranspose_MPIBDiag(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag *) A->data;
   int          ierr;
@@ -348,22 +348,22 @@ int MatMultTrans_MPIBDiag(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
-  ierr = (*a->A->ops->multtrans)(a->A,xx,a->lvec);CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtranspose)(a->A,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd_MPIBDiag"
-int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
+#define __FUNC__ "MatMultTransposeAdd_MPIBDiag"
+int MatMultTransposeAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag *) A->data;
   int          ierr;
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
-  ierr = (*a->A->ops->multtrans)(a->A,xx,a->lvec);CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtranspose)(a->A,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -767,8 +767,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        MatRestoreRow_MPIBDiag,
        MatMult_MPIBDiag,
        MatMultAdd_MPIBDiag, 
-       MatMultTrans_MPIBDiag,
-       MatMultTransAdd_MPIBDiag, 
+       MatMultTranspose_MPIBDiag,
+       MatMultTransposeAdd_MPIBDiag, 
        0,
        0,
        0,
@@ -920,7 +920,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_diags",&flg2);CHKERRQ(ierr);
-  if (nd && diag == PETSC_NULL) {
+  if (nd && !diag) {
     diag = (int *)PetscMalloc(nd * sizeof(int));CHKPTRQ(diag);
     nd2 = nd; dset = 1;
     ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2,PETSC_NULL);CHKERRQ(ierr);
@@ -981,7 +981,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   k = 0;
   PLogObjectMemory(B,(nd+1)*sizeof(int) + (b->size+2)*sizeof(int)
                         + sizeof(struct _p_Mat) + sizeof(Mat_MPIBDiag));
-  if (diagv != PETSC_NULL) {
+  if (diagv) {
     ldiagv = (Scalar **)PetscMalloc((nd+1)*sizeof(Scalar*));CHKPTRQ(ldiagv); 
   }
   for (i=0; i<nd; i++) {
@@ -989,20 +989,20 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
     if (diag[i] > 0) { /* lower triangular */
       if (diag[i] < b->brend) {
         ldiag[k] = diag[i] - b->brstart;
-        if (diagv != PETSC_NULL) ldiagv[k] = diagv[i];
+        if (diagv) ldiagv[k] = diagv[i];
         k++;
       }
     } else { /* upper triangular */
       if (b->M/bs - diag[i] > b->N/bs) {
         if (b->M/bs + diag[i] > b->brstart) {
           ldiag[k] = diag[i] - b->brstart;
-          if (diagv != PETSC_NULL) ldiagv[k] = diagv[i];
+          if (diagv) ldiagv[k] = diagv[i];
           k++;
         }
       } else {
         if (b->M/bs > b->brstart) {
           ldiag[k] = diag[i] - b->brstart;
-          if (diagv != PETSC_NULL) ldiagv[k] = diagv[i];
+          if (diagv) ldiagv[k] = diagv[i];
           k++;
         }
       }

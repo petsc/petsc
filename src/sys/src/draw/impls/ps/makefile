@@ -1,21 +1,19 @@
-# $Id: makefile,v 1.37 1999/11/05 14:43:58 bsmith Exp $
-
-#requirespackage '-DPETSC_HAVE_X11'
+# $Id: makefile,v 1.1 1999/11/15 19:46:45 bsmith Exp bsmith $
 
 ALL: lib 
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = ${X11_INCLUDE} 
-SOURCEC   = xinit.c  frame.c wmap.c xcolor.c xops.c text.c tone.c drawopenx.c
+CPPFLAGS  = 
+SOURCEC   = pops.c
 SOURCEF   =
-SOURCEH   = ximpl.h
-OBJSC     = xinit.o frame.o wmap.o xcolor.o xops.o text.o tone.o drawopenx.o
+SOURCEH   = psimpl.h
+OBJSC     = pops.o
 OBJSF     =
 MANSEC    = Draw
 LIBBASE   = libpetsc
 DIRS      = 
-LOCDIR    = src/sys/src/draw/impls/x/
+LOCDIR    = src/sys/src/draw/impls/ps/
 NOADIC    = true
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

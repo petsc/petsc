@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.32 1999/10/24 14:01:18 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.33 1999/11/05 14:44:01 bsmith Exp bsmith $*/
 
 static char help[] = "Plots a simple line graph\n";
 
@@ -8,13 +8,14 @@ static char help[] = "Plots a simple line graph\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  Draw       draw;
-  DrawLG     lg;
-  DrawAxis   axis;
-  int        n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300;
-  PetscTruth flg;
-  char       *xlabel, *ylabel, *toplabel;
-  double     xd, yd;
+  Draw           draw;
+  DrawLG         lg;
+  DrawAxis       axis;
+  int            n = 20, i, ierr, x = 0, y = 0, width = 300, height = 300,nports = 1;
+  PetscTruth     flg;
+  char           *xlabel, *ylabel, *toplabel;
+  double         xd, yd;
+  DrawViewPorts  *ports;
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
@@ -26,7 +27,14 @@ int main(int argc,char **argv)
   if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
-  ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
+  /* ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);*/
+  ierr = DrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
+  ierr = DrawSetFromOptions(draw);CHKERRA(ierr);
+  
+  ierr = OptionsGetInt(PETSC_NULL,"-nports",&nports,PETSC_NULL);CHKERRA(ierr);
+  ierr = DrawViewPortsCreate(draw,nports,&ports);CHKERRA(ierr);
+  ierr = DrawViewPortsSet(ports,0);CHKERRA(ierr);
+
   ierr = DrawLGCreate(draw,1,&lg);CHKERRA(ierr);
   ierr = DrawLGGetAxis(lg,&axis);CHKERRA(ierr);
   ierr = DrawAxisSetColors(axis,DRAW_BLACK,DRAW_RED,DRAW_BLUE);CHKERRA(ierr);
@@ -40,6 +48,7 @@ int main(int argc,char **argv)
   ierr = DrawLGDraw(lg);CHKERRA(ierr);
   ierr = DrawFlush(draw);CHKERRA(ierr); PetscSleep(2);
 
+  ierr = DrawViewPortsDestroy(ports);CHKERRA(ierr);
   ierr = DrawLGDestroy(lg);CHKERRA(ierr);
   ierr = DrawDestroy(draw);CHKERRA(ierr);
   PetscFinalize();

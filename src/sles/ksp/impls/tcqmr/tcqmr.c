@@ -1,4 +1,4 @@
-/*$Id: tcqmr.c,v 1.48 1999/10/24 14:03:18 bsmith Exp bsmith $*/
+/*$Id: tcqmr.c,v 1.49 1999/11/05 14:46:49 bsmith Exp bsmith $*/
 
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.
@@ -169,7 +169,6 @@ int KSPCreate_TCQMR(KSP ksp)
   PetscFunctionBegin;
   ksp->data               = (void *) 0;
   ksp->pc_side            = PC_LEFT;
-  ksp->converged          = KSPDefaultConverged;
   ksp->ops->buildsolution = KSPDefaultBuildSolution;
   ksp->ops->buildresidual = KSPDefaultBuildResidual;
   ksp->ops->setup         = KSPSetUp_TCQMR;

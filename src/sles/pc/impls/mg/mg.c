@@ -1,56 +1,9 @@
-/*$Id: mg.c,v 1.100 1999/11/05 14:46:23 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.101 1999/11/10 03:20:25 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
 #include "src/sles/pc/impls/mg/mgimpl.h"                    /*I "mg.h" I*/
 
-#undef __FUNC__  
-#define __FUNC__ "MGInterpolateAdd"
-int MGInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
-{
-  int M,N,ierr;
-
-  PetscFunctionBegin;
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  if (N > M) {
-    ierr = MatMultTransAdd(A,x,y,w);CHKERRQ(ierr);
-  } else {
-    ierr = MatMultAdd(A,x,y,w);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MGInterpolate"
-int MGInterpolate(Mat A,Vec x,Vec y)
-{
-  int M,N,ierr;
-
-  PetscFunctionBegin;
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  if (N > M) {
-    ierr = MatMultTrans(A,x,y);CHKERRQ(ierr);
-  } else {
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MGRestrict"
-int MGRestrict(Mat A,Vec x,Vec y)
-{
-  int M,N,ierr;
-
-  PetscFunctionBegin;
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  if (N > M) {
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  } else {
-    ierr = MatMultTrans(A,x,y);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 /*
        MGMCycle_Private - Given an MG structure created with MGCreate() runs 
@@ -75,10 +28,10 @@ int MGMCycle_Private(MG *mglevels)
     while (cycles--) {
       ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its);CHKERRQ(ierr);
       ierr = (*mg->residual)(mg->A, mg->b, mg->x, mg->r );CHKERRQ(ierr);
-      ierr = MGRestrict(mg->restrct,  mg->r, mgc->b );CHKERRQ(ierr);
+      ierr = MatRestrict(mg->restrct,  mg->r, mgc->b );CHKERRQ(ierr);
       ierr = VecSet(&zero,mgc->x);CHKERRQ(ierr);
       ierr = MGMCycle_Private(mglevels-1);CHKERRQ(ierr); 
-      ierr = MGInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
+      ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
       ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
     }
   }

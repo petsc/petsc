@@ -1,6 +1,6 @@
-/*$Id: ex17.c,v 1.10 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex17.c,v 1.11 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
-static char help[] = "Tests the use of MatSolveTrans().\n\n";
+static char help[] = "Tests the use of MatSolveTranspose().\n\n";
 
 #include "mat.h"
 
@@ -43,7 +43,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRA(ierr);
   ierr = VecSet(&one,u);CHKERRA(ierr);
 
-  ierr = MatMultTrans(C,u,b);CHKERRA(ierr);
+  ierr = MatMultTranspose(C,u,b);CHKERRA(ierr);
 
   /* Set default ordering to be Quotient Minimum Degree; also read
      orderings from the options database */
@@ -51,7 +51,7 @@ int main(int argc,char **args)
 
   ierr = MatLUFactorSymbolic(C,row,col,1.0,&A);CHKERRA(ierr);
   ierr = MatLUFactorNumeric(C,&A);CHKERRA(ierr);
-  ierr = MatSolveTrans(A,b,x);CHKERRA(ierr);
+  ierr = MatSolveTranspose(A,b,x);CHKERRA(ierr);
 
   ierr = ISView(row,VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.137 1999/10/24 14:03:00 bsmith Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.138 1999/11/05 14:46:22 bsmith Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -538,7 +538,7 @@ int PCCreate_BJacobi(PC pc)
   PLogObjectMemory(pc,sizeof(PC_BJacobi));
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
   pc->ops->apply              = 0;
-  pc->ops->applytrans         = 0;
+  pc->ops->applytranspose     = 0;
   pc->ops->setup              = PCSetUp_BJacobi;
   pc->ops->destroy            = PCDestroy_BJacobi;
   pc->ops->setfromoptions     = PCSetFromOptions_BJacobi;
@@ -647,8 +647,8 @@ int PCApply_BJacobi_Singleblock(PC pc,Vec x, Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApplyTrans_BJacobi_Singleblock"
-int PCApplyTrans_BJacobi_Singleblock(PC pc,Vec x, Vec y)
+#define __FUNC__ "PCApplyTranspose_BJacobi_Singleblock"
+int PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x, Vec y)
 {
   int                    ierr,its;
   PC_BJacobi             *jac = (PC_BJacobi *) pc->data;
@@ -666,7 +666,7 @@ int PCApplyTrans_BJacobi_Singleblock(PC pc,Vec x, Vec y)
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->x,x_array);CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array);CHKERRQ(ierr); 
-  ierr = SLESSolveTrans(jac->sles[0],bjac->x,bjac->y,&its);CHKERRQ(ierr); 
+  ierr = SLESSolveTranspose(jac->sles[0],bjac->x,bjac->y,&its);CHKERRQ(ierr); 
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr); 
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -714,7 +714,7 @@ static int PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat)
 
     pc->ops->destroy       = PCDestroy_BJacobi_Singleblock;
     pc->ops->apply         = PCApply_BJacobi_Singleblock;
-    pc->ops->applytrans    = PCApplyTrans_BJacobi_Singleblock;
+    pc->ops->applytranspose= PCApplyTranspose_BJacobi_Singleblock;
     pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Singleblock;
 
     bjac         = (PC_BJacobi_Singleblock *) PetscMalloc(sizeof(PC_BJacobi_Singleblock));CHKPTRQ(bjac);
@@ -838,8 +838,8 @@ int PCApply_BJacobi_Multiblock(PC pc,Vec x, Vec y)
       Preconditioner for block Jacobi 
 */
 #undef __FUNC__  
-#define __FUNC__ "PCApplyTrans_BJacobi_Multiblock"
-int PCApplyTrans_BJacobi_Multiblock(PC pc,Vec x, Vec y)
+#define __FUNC__ "PCApplyTranspose_BJacobi_Multiblock"
+int PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x, Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi *) pc->data;
   int                   ierr,its,i,n_local = jac->n_local;
@@ -849,7 +849,7 @@ int PCApplyTrans_BJacobi_Multiblock(PC pc,Vec x, Vec y)
 
   PetscFunctionBegin;
   if (flag) {
-    ierr = PLogEventRegister(&SUBSlesSolve,"SubSlesSolveTrans","black:");CHKERRQ(ierr);
+    ierr = PLogEventRegister(&SUBSlesSolve,"SubSlesSolveTranspose","black:");CHKERRQ(ierr);
     flag=0;
   }
   ierr = VecGetArray(x,&xin);CHKERRQ(ierr);
@@ -864,7 +864,7 @@ int PCApplyTrans_BJacobi_Multiblock(PC pc,Vec x, Vec y)
     ierr = VecPlaceArray(bjac->y[i],yin+bjac->starts[i]);CHKERRQ(ierr);
 
     PLogEventBegin(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);
-    ierr = SLESSolveTrans(jac->sles[i],bjac->x[i],bjac->y[i],&its);CHKERRQ(ierr);
+    ierr = SLESSolveTranspose(jac->sles[i],bjac->x[i],bjac->y[i],&its);CHKERRQ(ierr);
     PLogEventEnd(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);
   }
   ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);
@@ -901,7 +901,7 @@ static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     scall                  = MAT_INITIAL_MATRIX;
     pc->ops->destroy       = PCDestroy_BJacobi_Multiblock;
     pc->ops->apply         = PCApply_BJacobi_Multiblock;
-    pc->ops->applytrans    = PCApplyTrans_BJacobi_Multiblock;
+    pc->ops->applytranspose= PCApplyTranspose_BJacobi_Multiblock;
     pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiblock;
 
     bjac         = (PC_BJacobi_Multiblock *) PetscMalloc(sizeof(PC_BJacobi_Multiblock));CHKPTRQ(bjac);

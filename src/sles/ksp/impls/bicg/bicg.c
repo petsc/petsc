@@ -1,4 +1,4 @@
-/*$Id: bicg.c,v 1.14 1999/10/24 14:03:20 bsmith Exp bsmith $*/
+/*$Id: bicg.c,v 1.15 1999/11/05 14:46:53 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method
@@ -61,7 +61,7 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   }
   ierr = VecCopy(Rr,Rl);CHKERRQ(ierr);
   ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);     /*     z <- Br         */
-  ierr = KSP_PCApplyTrans(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
+  ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
   if (pres) {
       ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
   } else {
@@ -89,7 +89,7 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      }
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,Pr,Zr);CHKERRQ(ierr);    /*     z <- Kp         */
-     ierr = KSP_MatMultTrans(ksp,Amat,Pl,Zl);CHKERRQ(ierr);
+     ierr = KSP_MatMultTranspose(ksp,Amat,Pl,Zl);CHKERRQ(ierr);
      ierr = VecDot(Pl,Zr,&dpi);CHKERRQ(ierr);               /*     dpi <- z'p      */
      a = beta/dpi;                                 /*     a = beta/p'z    */
      ierr = VecAXPY(&a,Pr,X);CHKERRQ(ierr);       /*     x <- x + ap     */
@@ -97,7 +97,7 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      ierr = VecAXPY(&ma,Zl,Rl);CHKERRQ(ierr);
      if (pres) {
        ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
-       ierr = KSP_PCApplyTrans(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
+       ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
        ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
      } else {
        ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
@@ -112,7 +112,7 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      if (cerr) break;
      if (!pres) {
        ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
-       ierr = KSP_PCApplyTrans(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
+       ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
      }
   }
   if (i == maxit) {i--; ksp->its--;}
@@ -148,7 +148,6 @@ int KSPCreate_BiCG(KSP ksp)
   ksp->ops->view                 = 0;
   ksp->ops->printhelp            = 0;
   ksp->ops->setfromoptions       = 0;
-  ksp->converged                 = KSPDefaultConverged;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
 

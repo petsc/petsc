@@ -1,29 +1,16 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.24 1999/03/26 20:49:04 bsmith Exp bsmith $";
-#endif
+/* "$Id: ex19.c,v 1.1 1999/03/26 21:15:43 bsmith Exp bsmith $" */
 
-static char help[] =
-"This program demonstrates use of the SNES package to solve systems of\n\
-nonlinear equations in parallel, using 2-dimensional distributed arrays.\n\
-The 2-dim Bratu (SFI - solid fuel ignition) test problem is used, where\n\
-analytic formation of the Jacobian is the default.  \n\
-\n\
-  Solves the linear systems via 2 level additive Schwarz \n\
-\n\
-The command line\n\
-options are:\n\
-  -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
-     problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
+static char help[] ="\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
 /*  
-    1) Solid Fuel Ignition (SFI) problem.  This problem is modeled by
+    This problem is modeled by
     the partial differential equation
   
-            -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1 ,
+            -Laplacian u  = g,  0 < x,y < 1 ,
   
     with boundary conditions
    
@@ -34,7 +21,7 @@ options are:\n\
     system of equations.
 */
 
-#include "snes.h"
+#include "sles.h"
 #include "da.h"
 #include "mg.h"
 
@@ -49,7 +36,6 @@ typedef struct {
 } GridCtx;
 
 typedef struct {
-   double      param;           /* test problem parameter */
    GridCtx     fine;
    GridCtx     coarse;
    SLES        sles_coarse;
@@ -60,9 +46,7 @@ typedef struct {
 #define COARSE_LEVEL 0
 #define FINE_LEVEL   1
 
-extern int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
-extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormInterpolation(AppCtx *);
+extern int FormJacobian_Grid(AppCtx *,GridCtx *, Mat *);
 
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
@@ -71,35 +55,30 @@ extern int FormInterpolation(AppCtx *);
 #define __FUNC__ "main"
 int main( int argc, char **argv )
 {
-  SNES          snes;                      
   AppCtx        user;                      
   int           ierr, its, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
-  int           size, flg,nlocal,Nlocal;
-  double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  int           size, nlocal,Nlocal;
   SLES          sles,sles_fine;
   PC            pc;
+  Scalar        one = 1.0;
 
-  PetscInitialize( &argc, &argv,(char *)0,help );
+  PetscInitialize( &argc, &argv,PETSC_NULL,help );
 
   user.ratio = 2;
-  user.coarse.mx = 5; user.coarse.my = 5; user.param = 6.0;
-  ierr = OptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,&flg); CHKERRA(ierr);
+  user.coarse.mx = 5; user.coarse.my = 5; 
+  ierr = OptionsGetInt(PETSC_NULL,"-Mx",&user.coarse.mx,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-My",&user.coarse.my,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL); CHKERRA(ierr);
   user.fine.mx = user.ratio*(user.coarse.mx-1)+1; user.fine.my = user.ratio*(user.coarse.my-1)+1;
 
   PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.coarse.mx,user.coarse.my);
   PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %d by %d\n",user.fine.mx,user.fine.my);
 
-  ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
-  if (user.param >= bratu_lambda_max || user.param < bratu_lambda_min) {
-    SETERRA(1,0,"Lambda is out of range");
-  }
   n = user.fine.mx*user.fine.my; N = user.coarse.mx*user.coarse.my;
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL); CHKERRA(ierr);
 
   /* Set up distributed array for fine grid */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.fine.mx,
@@ -122,19 +101,17 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(user.coarse.localX,&user.coarse.localF); CHKERRA(ierr);
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,Nlocal,Nlocal,N,N,5,PETSC_NULL,3,PETSC_NULL,&user.coarse.J); CHKERRA(ierr);
 
-  /* Create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-
-  /* provide user function and Jacobian */
-  ierr = SNESSetFunction(snes,user.fine.b,FormFunction,&user); CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,user.fine.J,user.fine.J,FormJacobian,&user);CHKERRA(ierr);
+  /* Create linear solver */
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
 
   /* set two level additive Schwarz preconditioner */
-  ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
   ierr = PCSetType(pc,PCMG); CHKERRA(ierr);
   ierr = MGSetLevels(pc,2); CHKERRA(ierr);
   ierr = MGSetType(pc,MGADDITIVE); CHKERRA(ierr);
+
+  ierr = FormJacobian_Grid(&user,&user.coarse,&user.coarse.J);CHKERRA(ierr);
+  ierr = FormJacobian_Grid(&user,&user.fine,&user.fine.J);CHKERRA(ierr);
 
   /* Create coarse level */
   ierr = MGGetCoarseSolve(pc,&user.sles_coarse); CHKERRA(ierr);
@@ -153,23 +130,25 @@ int main( int argc, char **argv )
   ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J); CHKERRA(ierr);
 
   /* Create interpolation between the levels */
-  ierr = FormInterpolation(&user);CHKERRA(ierr);
+  ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&user.I,PETSC_NULL);CHKERRA(ierr);
   ierr = MGSetInterpolate(pc,FINE_LEVEL,user.I);CHKERRA(ierr);
   ierr = MGSetRestriction(pc,FINE_LEVEL,user.I);CHKERRA(ierr);
 
-  /* Set options, then solve nonlinear system */
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = FormInitialGuess1(&user,user.fine.x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,user.fine.x,&its); CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  ierr = SLESSetOperators(sles,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
 
-  {Scalar one = 1.0;
-  ierr = VecSet(&one,user.fine.x);CHKERRA(ierr);
-  ierr = MatMult(user.I,user.fine.x,user.coarse.x);CHKERRA(ierr);
-  ierr = MatMultTransAdd(user.I,user.coarse.x,user.fine.x,user.fine.x);CHKERRA(ierr);
-  VecView(user.coarse.x,0);CHKERRA(ierr);
-  VecView(user.fine.x,0);CHKERRA(ierr);
+  ierr = VecSet(&one,user.fine.b);CHKERRQ(ierr);
+  {
+    PetscRandom rand;
+    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
+    ierr = VecSetRandom(rand,user.fine.b);CHKERRA(ierr);
+    ierr = PetscRandomDestroy(rand);CHKERRA(ierr);
   }
+
+  /* Set options, then solve nonlinear system */
+  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+
+  ierr = SLESSolve(sles,user.fine.b,user.fine.x,&its); CHKERRA(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n", its );
 
   /* Free data structures */
   ierr = MatDestroy(user.fine.J); CHKERRA(ierr);
@@ -187,121 +166,30 @@ int main( int argc, char **argv )
   ierr = VecDestroy(user.coarse.localX); CHKERRA(ierr);
   ierr = VecDestroy(user.coarse.localF); CHKERRA(ierr);
 
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = MatDestroy(user.I);CHKERRA(ierr); 
   PetscFinalize();
 
   return 0;
-}/* --------------------  Form initial approximation ----------------- */
-#undef __FUNC__
-#define __FUNC__ "FormInitialGuess1"
-int FormInitialGuess1(AppCtx *user,Vec X)
-{
-  int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
-  double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
-  Scalar  *x;
-  Vec     localX = user->fine.localX;
-
-  mx = user->fine.mx;       my = user->fine.my;            lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
-  sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
-
-  temp1 = lambda/(lambda + one);
-
-  /* Get ghost points */
-  ierr = DAGetCorners(user->fine.da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->fine.da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-
-  /* Compute initial guess */
-  for (j=ys; j<ys+ym; j++) {
-    temp = (double)(PetscMin(j,my-j-1))*hy;
-    for (i=xs; i<xs+xm; i++) {
-      row = i - Xs + (j - Ys)*Xm; 
-      if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        x[row] = 0.0; 
-        continue;
-      }
-      x[row] = temp1*sqrt( PetscMin( (double)(PetscMin(i,mx-i-1))*hx,temp) ); 
-    }
-  }
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-
-ierr = VecSet(&one,localX);CHKERRQ(ierr);
-
-  /* Insert values into global vector */
-  ierr = DALocalToGlobal(user->fine.da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
-  return 0;
-} /* --------------------  Evaluate Function F(x) --------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormFunction"
-int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
-{
-  AppCtx  *user = (AppCtx *) ptr;
-  int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym;
-  double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx,sc;
-  Scalar  u, uxx, uyy, *x,*f;
-  Vec     localX = user->fine.localX, localF = user->fine.localF; 
-
-  mx = user->fine.mx;       my = user->fine.my;       lambda = user->param;
-  hx = one/(double)(mx-1);  hy = one/(double)(my-1);
-  sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
-
-  /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(user->fine.da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(user->fine.da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGetCorners(user->fine.da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->fine.da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
-
-  /* Evaluate function */
-  for (j=ys; j<ys+ym; j++) {
-    row = (j - Ys)*Xm + xs - Xs - 1; 
-    for (i=xs; i<xs+xm; i++) {
-      row++;
-      if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
-        u = x[row];
-        uxx = (two*u - x[row-1] - x[row+1])*hydhx;
-        uyy = (two*u - x[row-Xm] - x[row+Xm])*hxdhy;
-        f[row] = uxx + uyy - sc*exp(u);
-      } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)){
-        f[row] = .5*two*(hydhx + hxdhy)*x[row];
-      } else {
-        f[row] = .25*two*(hydhx + hxdhy)*x[row];
-      }
-    }
-  }
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
-
-  /* Insert values into global vector */
-  ierr = DALocalToGlobal(user->fine.da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
-  PLogFlops(11*ym*xm);
-  return 0; 
-} 
+}
 
 #undef __FUNC__
 #define __FUNC__ "FormJacobian_Grid"
-int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
+int FormJacobian_Grid(AppCtx *user,GridCtx *grid, Mat *J)
 {
   Mat     jac = *J;
   int     ierr, i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   int     nloc, *ltog, grow;
-  Scalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x, value;
-  Vec     localX = grid->localX;
+  Scalar  two = 2.0, one = 1.0, v[5], hx, hy, hxdhy, hydhx, value;
 
-  mx = grid->mx;            my = grid->my;            lambda = user->param;
+  mx = grid->mx;            my = grid->my;            
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
-  sc = hx*hy;               hxdhy = hx/hy;            hydhx = hy/hx;
+  hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(grid->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(grid->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
   ierr = DAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
   ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog); CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
@@ -312,7 +200,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
         v[0] = -hxdhy; col[0] = ltog[row - Xm];
         v[1] = -hydhx; col[1] = ltog[row - 1];
-        v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = grow;
+        v[2] = two*(hydhx + hxdhy); col[2] = grow;
         v[3] = -hydhx; col[3] = ltog[row + 1];
         v[4] = -hxdhy; col[4] = ltog[row + Xm];
         ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
@@ -326,197 +214,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
     }
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   return 0;
 }
-
-/* --------------------  Evaluate Jacobian F'(x) --------------------- */
-#undef __FUNC__
-#define __FUNC__ "FormJacobian"
-int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
-{
-  AppCtx  *user = (AppCtx *) ptr;
-  int     ierr;
-  PCType  pctype;
-  SLES    sles;
-  PC      pc;
-
-  *flag = SAME_NONZERO_PATTERN;
-  ierr = FormJacobian_Grid(user,&user->fine,X,J,B); CHKERRQ(ierr);
-
-  /* create coarse grid jacobian for preconditioner */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
-  ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
-  if (PetscTypeCompare(pctype,PCMG)) {
-    /* restrict X to coarse grid */
-    ierr = MatMult(user->I,X,user->coarse.x);CHKERRQ(ierr);
-    /* form Jacobian on coarse grid */
-    ierr = FormJacobian_Grid(user,&user->coarse,user->coarse.x,&user->coarse.J,&user->coarse.J);CHKERRQ(ierr);
-  }
-
-  return 0;
-}
-
-/* 
-   Unfortunately the PETSc multigrid interface expects the interpolation to 
-   be provided as a multtrans() and the restriction as a mult() so we need
-   to provide a shell matrix that reverses the roles
-*/
-typedef struct {
-  Vec vec;
-  Mat mat;
-} Mat_Ours;
-
-/* this is our interpolation add routine */
-int MatMultTransAdd_Ours(Mat shell,Vec x, Vec y, Vec z)
-{
-  Mat_Ours *ours;
-  int      ierr;
-
-  ierr = MatShellGetContext(shell,(void **)&ours);CHKERRQ(ierr);
-  ierr = MatMultAdd(ours->mat,x,y,z);CHKERRQ(ierr);
-  return 0;
-}
-/* this is our restriction routine */
-int MatMult_Ours(Mat shell,Vec x, Vec y)
-{
-  Mat_Ours *ours;
-  int      ierr;
-
-  ierr = MatShellGetContext(shell,(void **)&ours);CHKERRQ(ierr);
-  ierr = MatMultTrans(ours->mat,x,y);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(ours->vec,y,y);CHKERRQ(ierr);
-  return 0;
-}
-int MatDestroy_Ours(Mat shell)
-{
-  Mat_Ours *ours;
-  int      ierr;
-
-  ierr = MatShellGetContext(shell,(void **)&ours);CHKERRQ(ierr);
-  ierr = MatDestroy(ours->mat);CHKERRQ(ierr);
-  ierr = VecDestroy(ours->vec);CHKERRQ(ierr);
-  PetscFree(ours);
-  return 0;
-}
-
-
-#undef __FUNC__
-#define __FUNC__ "FormInterpolation"
-/*
-      Forms the interpolation (and restriction) operator from 
-coarse grid to fine.
-*/
-int FormInterpolation(AppCtx *user)
-{
-  int      ierr,i,j,i_start,m_fine,j_start,m,n,M,Mx = user->coarse.mx,My = user->coarse.my,*idx;
-  int      m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,m_coarse;
-  int      row,i_start_ghost,j_start_ghost,cols[4],mx = user->fine.mx, m_c,my = user->fine.my;
-  int      c0,c1,c2,c3,nc,ratio = user->ratio,i_end,i_end_ghost,m_c_local,m_fine_local;
-  int      i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
-  Scalar   v[4],x,y;
-  Mat      mat;
-  Mat_Ours *ours;
-  Vec      vec;
-  
-  ierr = DAGetCorners(user->fine.da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->fine.da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(user->fine.da,PETSC_NULL,&idx); CHKERRQ(ierr);
-
-  ierr = DAGetCorners(user->coarse.da,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(user->coarse.da,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(user->coarse.da,PETSC_NULL,&idx_c); CHKERRQ(ierr);
-
-  /* create interpolation matrix */
-  ierr = VecGetLocalSize(user->fine.x,&m_fine_local);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(user->coarse.x,&m_c_local);CHKERRQ(ierr);
-  ierr = VecGetSize(user->fine.x,&m_fine);CHKERRQ(ierr);
-  ierr = VecGetSize(user->coarse.x,&m_coarse);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m_fine_local,m_c_local,m_fine,m_coarse,
-                         5,0,3,0,&mat);CHKERRQ(ierr);
-
-  /* create restriction scale vector */
-  ierr = VecDuplicate(user->coarse.x,&vec);CHKERRQ(ierr);
-
-  /* loop over local fine grid nodes setting interpolation for those*/
-  for ( j=j_start; j<j_start+n; j++ ) {
-    for ( i=i_start; i<i_start+m; i++ ) {
-      row    = idx[m_ghost*(j-j_start_ghost) + (i-i_start_ghost)];
-
-      i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
-      j_c = (j/ratio);    /* coarse grid node below fine grid node */
-
-      /* 
-         Only include those interpolation points that are truly 
-         nonzero. Note this is very important for final grid lines
-         in x and y directions; since they have no right/top neighbors
-      */
-      x  = ((double)(i - i_c*ratio))/((double)ratio);
-      y  = ((double)(j - j_c*ratio))/((double)ratio);
-      /* printf("i j %d %d %g %g\n",i,j,x,y); */
-      nc = 0;
-      /* one left and below; or we are right on it */
-      cols[nc] = Mx*j_c + i_c;
-      v[nc++]  = x*y - x - y + 1.0;
-      /* one right and below */
-      if (i_c*ratio != i) { 
-        cols[nc] = Mx*j_c + i_c + 1;
-        v[nc++]  = -x*y + x;
-      }
-      /* one left and above */
-      if (j_c*ratio != j) { 
-        cols[nc] = Mx*j_c + i_c + Mx;
-        v[nc++]  = -x*y + y;
-      }
-      /* one right and above */
-      if (j_c*ratio != j && i_c*ratio != i) { 
-        cols[nc] = Mx*j_c + i_c + Mx + 1;
-        v[nc++]  = x*y;
-      }
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES); CHKERRQ(ierr); 
-    }
-  }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-
-  /* loop over local coarse grid nodes setting restriction scaling*/
-  for ( j=j_start_c; j<j_start_c+n_c; j++ ) {
-    for ( i=i_start_c; i<i_start_c+m_c; i++ ) {
-      if (i > 0 && i < Mx-1 && j > 0 && j < My-1) {
-        v[0] = .25;
-      } else if ( i > 0 && i < Mx-1) {
-        v[0] = 1.0/3.0;
-      } else if ( j > 0 && j < My-1) {
-        v[0] = 1.0/3.0;
-      } else {
-        v[0] = 4.0/9.0;
-      }
-
-      row  = idx_c[m_ghost_c*(j-j_start_ghost_c) + (i-i_start_ghost_c)];
-      ierr = VecSetValues(vec,1,&row,v,INSERT_VALUES); CHKERRQ(ierr); 
-    }
-  }
-  ierr = VecAssemblyBegin(vec); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(vec); CHKERRQ(ierr);
-  {
-     Scalar t = 4.0;
-     ierr = VecScale(&t,vec);CHKERRQ(ierr);
-  }
-
-  ours      = (Mat_Ours *) PetscMalloc(sizeof(Mat_Ours));CHKPTRQ(ours);
-  ours->mat = mat;
-  ours->vec = vec;
-  ierr = MatCreateShell(PETSC_COMM_WORLD,m_c_local,m_fine_local,m_coarse,m_fine,
-                        ours,&user->I);CHKERRA(ierr);
-  ierr = MatShellSetOperation(user->I,MATOP_MULT,(void*)MatMult_Ours);CHKERRA(ierr);
-  ierr = MatShellSetOperation(user->I,MATOP_MULT_TRANS_ADD,(void*)MatMultTransAdd_Ours);CHKERRA(ierr);
-  ierr = MatShellSetOperation(user->I,MATOP_DESTROY,(void*)MatDestroy_Ours);CHKERRA(ierr);
-  return 0;
-}
-
-
-
-

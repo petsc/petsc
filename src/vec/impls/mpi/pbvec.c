@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.143 1999/10/24 14:01:56 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.144 1999/11/05 14:44:55 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -622,7 +622,8 @@ int VecDuplicate_MPI( Vec win, Vec *v)
     (*v)->bmapping = win->bmapping;
     ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
   }
-  (*v)->bs = win->bs;
+  (*v)->bs        = win->bs;
+  (*v)->bstash.bs = win->bstash.bs;
 
 #if defined(PETSC_HAVE_AMS)
   /*

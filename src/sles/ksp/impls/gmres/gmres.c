@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.131 1999/11/05 14:46:42 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.132 1999/11/10 03:20:46 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -51,6 +51,8 @@
 static int    GMRESGetNewVectors( KSP ,int );
 static int    GMRESUpdateHessenberg( KSP , int,double * );
 static int    BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
+
+extern int KSPDefaultConverged_GMRES(KSP,int,double,void*);
 
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_GMRES"
@@ -383,6 +385,10 @@ int KSPDestroy_GMRES(KSP ksp)
   if (gmres->Rsvd) {ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);}
   if (gmres->Dsvd) {ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);}
   ierr = PetscFree( gmres ); CHKERRQ(ierr);
+
+  if (ksp->converged == KSPDefaultConverged_GMRES) {
+    ksp->converged = KSPDefaultConverged;
+  }
   PetscFunctionReturn(0);
 }
 /*
@@ -678,7 +684,6 @@ int KSPSetFromOptions_GMRES(KSP ksp)
 
 extern int KSPComputeExtremeSingularValues_GMRES(KSP,double *,double *);
 extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *,int *);
-extern int KSPDefaultConverged_GMRES(KSP,int,double,void*);
 
 EXTERN_C_BEGIN
 #undef __FUNC__  

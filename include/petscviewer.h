@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.70 1999/10/19 20:14:26 balay Exp bsmith $ */
+/* $Id: viewer.h,v 1.71 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -69,6 +69,7 @@ extern int ViewerRestoreSingleton(Viewer,Viewer*);
 #define VIEWER_FORMAT_DRAW_BASIC          11
 #define VIEWER_FORMAT_DRAW_LG             12
 #define VIEWER_FORMAT_DRAW_CONTOUR        13
+#define VIEWER_FORMAT_DRAW_PORTS          15
 
 #define VIEWER_FORMAT_NATIVE              14
 
@@ -97,6 +98,7 @@ extern int ViewerDrawSetInfo(Viewer,const char[],const char[],int,int,int,int);
 extern int ViewerSocketSetConnection(Viewer,const char[],int);
 
 extern int ViewerSetFilename(Viewer,const char[]);
+extern int ViewerGetFilename(Viewer,char**);
 
 /*
      These are all the default viewers that do not have 

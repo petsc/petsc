@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.34 1999/01/27 19:47:15 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.35 1999/03/08 22:39:44 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -22,10 +22,10 @@ typedef struct {
 */
 
 typedef struct {
-  int              sorted;           /* if true, rows are sorted by increasing columns */
-  int              roworiented;      /* if true, row-oriented input, default */
+  PetscTruth       sorted;           /* if true, rows are sorted by increasing columns */
+  PetscTruth       roworiented;      /* if true, row-oriented input, default */
   int              nonew;            /* 1 don't add new nonzeros, -1 generate error on new */
-  int              singlemalloc;     /* if true a, i, and j have been obtained with
+  PetscTruth       singlemalloc;     /* if true a, i, and j have been obtained with
                                         one big malloc */
   int              m, n;             /* rows, columns */
   int              nz, maxnz;        /* nonzeros, allocated nonzeros */
@@ -45,17 +45,19 @@ typedef struct {
   PetscTruth       ilu_preserve_row_sums;
   Scalar           *saved_values;    /* location for stashing nonzero values of matrix */
   Scalar           *idiag,*ssor;     /* inverse of diagonal entries; space for eisen */
+
+  PetscTruth       keepzeroedrows;   /* keeps matrix structure same in calls to MatZeroRows()*/
 } Mat_SeqAIJ;
 
 extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
 extern int MatConvert_SeqAIJ(Mat,MatType,Mat *);
 extern int MatDuplicate_SeqAIJ(Mat,MatDuplicateOption, Mat*);
-extern int MatMarkDiag_SeqAIJ(Mat);
+extern int MatMarkDiagonal_SeqAIJ(Mat);
 
 extern int MatMult_SeqAIJ(Mat A,Vec,Vec);
 extern int MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-extern int MatMultTrans_SeqAIJ(Mat A,Vec,Vec);
-extern int MatMultTransAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
+extern int MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
+extern int MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
 extern int MatRelax_SeqAIJ(Mat,Vec,double,MatSORType,double,int,Vec);
 
 #endif

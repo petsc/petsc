@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.49 1999/10/24 14:03:31 bsmith Exp bsmith $*/
+/*$Id: snesut.c,v 1.50 1999/11/10 03:21:14 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
 
@@ -41,9 +41,9 @@ int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESVecViewMonitorUpdate"
+#define __FUNC__ "SNESVecViewUpdateMonitor"
 /*@C
-   SNESVecViewMonitorUpdate - Monitors progress of the SNES solvers by calling 
+   SNESVecViewUpdateMonitor - Monitors progress of the SNES solvers by calling 
    VecView() for the UPDATE to the solution at each iteration.
 
    Collective on SNES
@@ -60,7 +60,7 @@ int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
 
 .seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
 @*/
-int SNESVecViewMonitorUpdate(SNES snes,int its,double fgnorm,void *dummy)
+int SNESVecViewUpdateMonitor(SNES snes,int its,double fgnorm,void *dummy)
 {
   int    ierr;
   Vec    x;
@@ -106,13 +106,16 @@ int SNESVecViewMonitorUpdate(SNES snes,int its,double fgnorm,void *dummy)
 @*/
 int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 {
-  int ierr;
+  int    ierr;
+  Viewer viewer = (Viewer) dummy;
 
   PetscFunctionBegin;
+  if (!viewer) viewer = VIEWER_STDOUT_(snes->comm);
+
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    ierr = PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer, "iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-    ierr = PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   PetscFunctionReturn(0);
 }

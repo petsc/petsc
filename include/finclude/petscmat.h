@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.55 1999/04/02 19:06:13 bsmith Exp balay $;
+!  $Id: mat.h,v 1.56 1999/09/14 15:58:26 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -81,7 +81,7 @@
       integer MAT_ROWS_UNSORTED,MAT_COLUMNS_UNSORTED
       integer MAT_NEW_NONZERO_LOCATION_ERR
       integer MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE
-
+      integer MAT_KEEP_ZEROED_ROWS
       
       parameter (MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2)
       parameter (MAT_ROWS_SORTED=4,MAT_COLUMNS_SORTED=8)
@@ -96,7 +96,7 @@
       parameter (MAT_NEW_NONZERO_LOCATION_ERR=76)
       parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=77)
       parameter (MAT_USE_HASH_TABLE=78)
-
+      parameter (MAT_KEEP_ZEROED_ROWS=79)
 !
 !  MatDuplicateOption
 !
@@ -188,12 +188,12 @@
       integer MATOP_RESTORE_ROW
       integer MATOP_MULT
       integer MATOP_MULT_ADD
-      integer MATOP_MULT_TRANS
-      integer MATOP_MULT_TRANS_ADD
+      integer MATOP_MULT_TRANSPOSE
+      integer MATOP_MULT_TRANSPOSE_ADD
       integer MATOP_SOLVE
       integer MATOP_SOLVE_ADD
-      integer MATOP_SOLVE_TRANS
-      integer MATOP_SOLVE_TRANS_ADD
+      integer MATOP_SOLVE_TRANSPOSE
+      integer MATOP_SOLVE_TRANSPOSE_ADD
       integer MATOP_LUFACTOR
       integer MATOP_CHOLESKYFACTOR
       integer MATOP_RELAX
@@ -256,12 +256,12 @@
       parameter(MATOP_RESTORE_ROW=2)
       parameter(MATOP_MULT=3)
       parameter(MATOP_MULT_ADD=4)
-      parameter(MATOP_MULT_TRANS=5)
-      parameter(MATOP_MULT_TRANS_ADD=6)
+      parameter(MATOP_MULT_TRANSPOSE=5)
+      parameter(MATOP_MULT_TRANSPOSE_ADD=6)
       parameter(MATOP_SOLVE=7)
       parameter(MATOP_SOLVE_ADD=8)
-      parameter(MATOP_SOLVE_TRANS=9)
-      parameter(MATOP_SOLVE_TRANS_ADD=10)
+      parameter(MATOP_SOLVE_TRANSPOSE=9)
+      parameter(MATOP_SOLVE_TRANSPOSE_ADD=10)
       parameter(MATOP_LUFACTOR=11)
       parameter(MATOP_CHOLESKYFACTOR=12)
       parameter(MATOP_RELAX=13)

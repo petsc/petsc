@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.99 1999/11/05 14:43:41 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.100 1999/11/10 03:17:24 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "pinclude/petscfix.h"
@@ -10,6 +10,7 @@ typedef struct {
   int           tab_store;      /* store tabs value while tabs are turned off */
   Viewer        bviewer;        /* if viewer is a singleton, this points to mother */
   Viewer        sviewer;        /* if viewer has a singleton, this points to singleton */
+  char          *filename;
 } Viewer_ASCII;
 
 /* ----------------------------------------------------------------------*/
@@ -26,6 +27,7 @@ int ViewerDestroy_ASCII(Viewer viewer)
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != stdout) fclose(vascii->fd);
+  ierr = PetscStrfree(vascii->filename);CHKERRQ(ierr);
   ierr = PetscFree(vascii);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -348,6 +350,51 @@ int ViewerSetFilename(Viewer viewer,const char name[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "ViewerGetFilename"
+/*@C
+     ViewerGetFilename - Gets the name of the file the viewer uses.
+
+    Not Collective
+
+  Input Parameter:
+.  viewer - the viewer; either ASCII or binary
+
+  Output Parameter:
+.  name - the name of the file it is using
+
+    Level: advanced
+
+.seealso: ViewerCreate(), ViewerSetType(), ViewerASCIIOpen(), ViewerBinaryOpen(), ViewerSetFilename()
+
+@*/
+int ViewerGetFilename(Viewer viewer,char **name)
+{
+  int ierr, (*f)(Viewer,char **);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)viewer,"ViewerGetFilename_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(viewer,name);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "ViewerGetFilename_ASCII"
+int ViewerGetFilename_ASCII(Viewer viewer,char **name)
+{
+  Viewer_ASCII *vascii = (Viewer_ASCII *) viewer->data;
+
+  PetscFunctionBegin;
+  *name = vascii->filename;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "ViewerSetFilename_ASCII"
@@ -361,6 +408,7 @@ int ViewerSetFilename_ASCII(Viewer viewer,const char name[])
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
 
+  ierr = PetscStrallocpy(name,&vascii->filename);CHKERRQ(ierr);
   ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
   ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
   if (isstderr)      vascii->fd = stderr;
@@ -462,9 +510,12 @@ int ViewerCreate_ASCII(Viewer viewer)
   viewer->outputname     = 0;
   vascii->tab            = 0;
   vascii->tab_store      = 0;
+  vascii->filename       = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"ViewerSetFilename_C","ViewerSetFilename_ASCII",
                                      (void*)ViewerSetFilename_ASCII);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"ViewerGetFilename_C","ViewerGetFilename_ASCII",
+                                     (void*)ViewerGetFilename_ASCII);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

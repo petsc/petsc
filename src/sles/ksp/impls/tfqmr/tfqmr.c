@@ -1,4 +1,4 @@
-/*$Id: tfqmr.c,v 1.50 1999/10/24 14:03:19 bsmith Exp bsmith $*/
+/*$Id: tfqmr.c,v 1.51 1999/11/05 14:46:51 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the TFQMR (Transpose-free variant of Quasi-Minimal
@@ -150,7 +150,6 @@ int KSPCreate_TFQMR(KSP ksp)
   ksp->ops->setup                = KSPSetUp_TFQMR;
   ksp->ops->solve                = KSPSolve_TFQMR;
   ksp->ops->destroy              = KSPDefaultDestroy;
-  ksp->converged                 = KSPDefaultConverged;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = 0;

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.181 1999/09/02 14:52:11 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.182 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -74,7 +74,8 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_INODE_LIMIT_3=70,MAT_INODE_LIMIT_4=71,MAT_INODE_LIMIT_5=72,
               MAT_IGNORE_OFF_PROC_ENTRIES=73,MAT_ROWS_UNSORTED=74,
               MAT_COLUMNS_UNSORTED=75,MAT_NEW_NONZERO_LOCATION_ERR=76,
-              MAT_NEW_NONZERO_ALLOCATION_ERR=77,MAT_USE_HASH_TABLE=78} MatOption;
+              MAT_NEW_NONZERO_ALLOCATION_ERR=77,MAT_USE_HASH_TABLE=78,
+              MAT_KEEP_ZEROED_ROWS=79} MatOption;
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*,char**);
 extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,PetscTruth*);
@@ -91,8 +92,8 @@ extern int MatGetBlockSize(Mat,int *);
 
 extern int MatMult(Mat,Vec,Vec);
 extern int MatMultAdd(Mat,Vec,Vec,Vec);
-extern int MatMultTrans(Mat,Vec,Vec);
-extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
+extern int MatMultTranspose(Mat,Vec,Vec);
+extern int MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 
 typedef enum {MAT_DO_NOT_COPY_VALUES, MAT_COPY_VALUES} MatDuplicateOption;
 
@@ -176,6 +177,31 @@ extern int MatSetValuesBlockedLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
 extern int MatSetStashInitialSize(Mat,int, int);
 
+extern int MatInterpolateAdd(Mat,Vec,Vec,Vec);
+extern int MatInterpolate(Mat,Vec,Vec);
+extern int MatRestrict(Mat,Vec,Vec);
+
+/*
+      These three macros MUST be used together. The third one closes the open { of the first one
+*/
+#define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) \
+{ \
+  int __ierr,__tmp = (nrows),__ctmp = (ncols), __rstart,__start,__end; \
+  dnz = (int *) PetscMalloc(2*__tmp*sizeof(int));CHKPTRQ(dnz);onz = dnz + __tmp;\
+  __ierr = PetscMemzero(dnz,2*__tmp*sizeof(int));CHKERRQ(__ierr);\
+  __ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __start = __end - __ctmp;\
+  __ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __rstart = __rstart - __tmp;
+
+#define MatPreallocateSet(row,nc,cols,dnz,onz)\
+{ int __i; \
+  for ( __i=0; __i<nc; __i++) {\
+    if (cols[__i] < __start || cols[__i] >= __end) onz[row - __rstart]++; \
+  }\
+  dnz[row - __rstart] = nc - onz[row - __rstart];\
+}
+
+#define MatPreallocateFinalize(dnz,onz) __ierr = PetscFree(dnz);CHKERRQ(__ierr);}
+
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 extern int MatSeqAIJSetColumnIndices(Mat,int *);
@@ -240,8 +266,8 @@ extern int MatSolve(Mat,Vec,Vec);
 extern int MatForwardSolve(Mat,Vec,Vec);
 extern int MatBackwardSolve(Mat,Vec,Vec);
 extern int MatSolveAdd(Mat,Vec,Vec,Vec);
-extern int MatSolveTrans(Mat,Vec,Vec);
-extern int MatSolveTransAdd(Mat,Vec,Vec,Vec);
+extern int MatSolveTranspose(Mat,Vec,Vec);
+extern int MatSolveTransposeAdd(Mat,Vec,Vec,Vec);
 
 extern int MatSetUnfactored(Mat);
 
@@ -338,12 +364,12 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_RESTORE_ROW=2,
                MATOP_MULT=3,
                MATOP_MULT_ADD=4,
-               MATOP_MULT_TRANS=5,
-               MATOP_MULT_TRANS_ADD=6,
+               MATOP_MULT_TRANSPOSE=5,
+               MATOP_MULT_TRANSPOSE_ADD=6,
                MATOP_SOLVE=7,
                MATOP_SOLVE_ADD=8,
-               MATOP_SOLVE_TRANS=9,
-               MATOP_SOLVE_TRANS_ADD=10,
+               MATOP_SOLVE_TRANSPOSE=9,
+               MATOP_SOLVE_TRANSPOSE_ADD=10,
                MATOP_LUFACTOR=11,
                MATOP_CHOLESKYFACTOR=12,
                MATOP_RELAX=13,

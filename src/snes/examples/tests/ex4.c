@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.49 1999/10/24 14:03:39 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.50 1999/11/05 14:47:16 bsmith Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -66,7 +66,9 @@ int main( int argc, char **argv )
   Scalar     *xvalues;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
+  /* ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr); */
+  ierr = DrawCreate(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
+  ierr = DrawSetType(draw,DRAW_X);CHKERRA(ierr);
 
   user.mx    = 4;
   user.my    = 4;

@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.23 1999/10/24 14:01:25 bsmith Exp bsmith $*/
+/*$Id: ftest.c,v 1.24 1999/11/05 14:44:09 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -75,10 +75,10 @@ int PetscTestFile( const char fname[], char mode,PetscTruth *flg)
   uid = geteuid();
   gid = getegid();
 
-#if !defined (PARCH_ascired)  
-  err = stat( fname, &statbuf );
-#else
+#if defined(PETSC_HAVE_STAT_NO_CONST)
   err = stat( (char*)fname, &statbuf );
+#else
+  err = stat( fname, &statbuf );
 #endif
   if (err != 0) PetscFunctionReturn(0);
 

@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.202 1999/11/05 14:47:05 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.203 1999/11/10 03:21:14 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
 
@@ -282,14 +282,10 @@ int SNESSetFromOptions(SNES snes)
   ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor",&flg);CHKERRQ(ierr);
   if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0,0);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor_update",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitorUpdate,0,0);CHKERRQ(ierr);}
+  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewUpdateMonitor,0,0);CHKERRQ(ierr);}
   ierr = OptionsGetIntArray(snes->prefix,"-snes_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
-    int rank;
-    ierr = MPI_Comm_rank(snes->comm,&rank);CHKERRQ(ierr);
-    if (!rank) {
-      ierr = SNESSetMonitor(snes,SNESLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);  
-    }
+    ierr = SNESSetMonitor(snes,SNESLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);  
   }
 
   ierr = OptionsHasName(snes->prefix,"-snes_fd", &flg);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.55 1999/11/05 14:43:58 bsmith Exp bsmith $*/
+/*$Id: xcolor.c,v 1.56 1999/11/17 19:12:28 bsmith Exp bsmith $*/
 
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -46,9 +46,6 @@ static char *(colornames[DRAW_BASIC_COLORS]) = { "white",
 
 extern int XiInitCmap( Draw_X* );
 extern int XiGetVisualClass( Draw_X * );
-extern int XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
-extern int XiUniformHues( Draw_X *, int);
-extern int XiSetCmapHue(unsigned char*,unsigned char*,unsigned char*,int);
 
 /*
    Sets up a color map for a display. This is shared by all the windows
@@ -99,7 +96,7 @@ int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap
   red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
   green = red   + ncolors;
   blue  = green + ncolors;
-  ierr = XiSetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
+  ierr = DrawUtilitySetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
   if (!fast) {
     for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {
@@ -169,7 +166,7 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
   red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
   green = red   + ncolors;
   blue  = green + ncolors;
-  ierr = XiSetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
+  ierr = DrawUtilitySetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
   if (!fast) {
     for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {

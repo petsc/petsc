@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.3 1999/09/27 21:28:17 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.4 1999/10/24 14:01:18 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of DrawZoom()\n";
 
@@ -25,7 +25,9 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
+  /* ierr = DrawOpenX(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);*/
+  ierr = DrawCreate(PETSC_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);
+  ierr = DrawSetFromOptions(draw);CHKERRA(ierr);
   ierr = DrawZoom(draw,zoomfunction,PETSC_NULL);CHKERRA(ierr);
   ierr = DrawDestroy(draw);CHKERRA(ierr);
   PetscFinalize();

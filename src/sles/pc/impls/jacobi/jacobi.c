@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.61 1999/06/30 23:52:46 balay Exp bsmith $*/
+/*$Id: jacobi.c,v 1.62 1999/10/24 14:02:57 bsmith Exp bsmith $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -320,7 +320,7 @@ int PCCreate_Jacobi(PC pc)
       not needed.
   */
   pc->ops->apply               = PCApply_Jacobi;
-  pc->ops->applytrans          = PCApply_Jacobi;
+  pc->ops->applytranspose      = PCApply_Jacobi;
   pc->ops->setup               = PCSetUp_Jacobi;
   pc->ops->destroy             = PCDestroy_Jacobi;
   pc->ops->view                = 0;

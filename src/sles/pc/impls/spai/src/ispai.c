@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ispai.c,v 1.6 1999/04/05 22:24:25 bsmith Exp bsmith $";
-#endif
+/* $Id: ispai.c,v 1.7 1999/11/05 14:48:08 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 

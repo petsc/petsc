@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.13 1999/10/13 20:37:25 bsmith Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.15 1999/10/24 14:02:21 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -23,10 +23,10 @@ extern int MatMultAdd_SeqBDiag_3(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_4(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_5(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
-extern int MatMultTrans_SeqBDiag_1(Mat,Vec,Vec);
-extern int MatMultTrans_SeqBDiag_N(Mat,Vec,Vec);
-extern int MatMultTransAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
-extern int MatMultTransAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
+extern int MatMultTranspose_SeqBDiag_1(Mat,Vec,Vec);
+extern int MatMultTranspose_SeqBDiag_N(Mat,Vec,Vec);
+extern int MatMultTransposeAdd_SeqBDiag_1(Mat,Vec,Vec,Vec);
+extern int MatMultTransposeAdd_SeqBDiag_N(Mat,Vec,Vec,Vec);
 extern int MatRelax_SeqBDiag_N(Mat,Vec,double,MatSORType,double,int,Vec);
 extern int MatRelax_SeqBDiag_1(Mat,Vec,double,MatSORType,double,int,Vec);
 
@@ -400,7 +400,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   }
   ierr = MatAssemblyBegin(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(tmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (matout != PETSC_NULL) {
+  if (matout) {
     *matout = tmat;
   } else {
     /* This isn't really an in-place transpose ... but free data 

@@ -1,8 +1,10 @@
-/*$Id: zdraw.c,v 1.33 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zdraw.c,v 1.34 1999/11/10 03:22:34 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define drawsettype_         DRAWSETTYPE
+#define drawcreate_          DRAWCREATE
 #define drawaxisdestroy_     DRAWAXISDESTROY
 #define drawaxiscreate_      DRAWAXISCREATE
 #define drawaxissetlabels_   DRAWAXISSETLABELS
@@ -22,6 +24,8 @@
 #define drawgetpopup_        DRAWGETPOPUP
 #define drawzoom_            DRAWZOOM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define drawcreate_          drawcreate
+#define drawsettype_         drawsettype
 #define drawzoom_            drawzoom
 #define drawaxisdestroy_     drawaxisdestroy
 #define drawaxiscreate_      drawaxiscreate
@@ -73,6 +77,14 @@ void PETSC_STDCALL viewerdrawgetdrawlg_(Viewer *vin,int *win,DrawLG *drawlg, int
   *__ierr = ViewerDrawGetDrawLG(v,*win,drawlg);
 }
 
+void PETSC_STDCALL drawsettype_(Draw *ctx,CHAR text PETSC_MIXED_LEN(len),
+               int *__ierr PETSC_END_LEN(len)){
+  char *t;
+  FIXCHAR(text,len,t);
+  *__ierr = DrawSetType(*ctx,t);
+  FREECHAR(text,t);
+}
+
 void PETSC_STDCALL drawstring_(Draw *ctx,double* xl,double* yl,int* cl,CHAR text PETSC_MIXED_LEN(len),
                int *__ierr PETSC_END_LEN(len)){
   char *t;
@@ -92,6 +104,19 @@ void PETSC_STDCALL drawstringvertical_(Draw *ctx,double *xl,double *yl,int *cl,
 void PETSC_STDCALL drawdestroy_(Draw *ctx, int *__ierr )
 {
   *__ierr = DrawDestroy(*ctx);
+}
+
+void PETSC_STDCALL drawcreate_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
+                    CHAR title PETSC_MIXED_LEN(len2),int *x,int *y,int *w,int *h,Draw* inctx, 
+                    int *__ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+{
+  char *t1,*t2;
+
+  FIXCHAR(display,len1,t1);
+  FIXCHAR(title,len2,t2);
+  *__ierr = DrawCreate((MPI_Comm)PetscToPointerComm( *comm),t1,t2,*x,*y,*w,*h,inctx);
+  FREECHAR(display,t1);
+  FREECHAR(title,t2);
 }
 
 #if defined(PETSC_HAVE_X11)

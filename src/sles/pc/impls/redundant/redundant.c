@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.13 1999/10/24 14:03:05 bsmith Exp bsmith $*/
+/*$Id: redundant.c,v 1.14 1999/11/05 14:46:30 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -19,22 +19,30 @@ typedef struct {
 static int PCView_Redundant(PC pc,Viewer viewer)
 {
   PC_Redundant *red = (PC_Redundant *) pc->data;
-  int          ierr;
+  int          ierr,rank;
   PetscTruth   isascii,isstring;
+  Viewer       sviewer;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
-  if (isascii) {
-    ierr = ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
-    ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
-    ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else if (isstring) {
-    ierr = ViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
-    ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
+  ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+    if (isascii) {
+      ierr = ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
+      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PCView(red->pc,sviewer);CHKERRQ(ierr);
+      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    } else if (isstring) {
+      ierr = ViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
+      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = PCView(red->pc,sviewer);CHKERRQ(ierr);
+      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    } else {
+      SETERRQ1(1,1,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -256,7 +264,7 @@ int PCCreate_Redundant(PC pc)
   ierr = PCAppendOptionsPrefix(red->pc,"redundant_");CHKERRQ(ierr);
 
   pc->ops->apply             = PCApply_Redundant;
-  pc->ops->applytrans        = 0;
+  pc->ops->applytranspose    = 0;
   pc->ops->setup             = PCSetUp_Redundant;
   pc->ops->destroy           = PCDestroy_Redundant;
   pc->ops->printhelp         = PCPrintHelp_Redundant;

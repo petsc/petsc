@@ -1,9 +1,10 @@
-/*$Id: zksp.c,v 1.37 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zksp.c,v 1.38 1999/11/10 03:22:34 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ksp.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define kspdefaultconverged_      KSPDEFAULTCONVERGED
 #define kspdefaultmonitor_        KSPDEFAULTMONITOR
 #define ksptruemonitor_           KSPTRUEMONITOR
 #define kspvecviewmonitor_        KSPVECVIEWMONITOR
@@ -29,6 +30,7 @@
 #define kspgetresidualhistory_    KSPGETRESIDUALHISTORY
 #define kspgetoptionsprefix_      KSPGETOPTIONSPREFIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define kspdefaultconverged_      kspdefaultconverged
 #define kspsingularvaluemonitor_  kspsingularvaluemonitor
 #define kspdefaultmonitor_        kspdefaultmonitor
 #define ksptruemonitor_           ksptruemonitor
@@ -56,6 +58,12 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void kspdefaultconverged_(KSP *ksp,int *n, double *rnorm,void *dummy,int *flag,int *__ierr)
+{
+  if (FORTRANNULLOBJECT(dummy)) dummy = PETSC_NULL;
+  *flag = KSPDefaultConverged(*ksp,*n,*rnorm,dummy);
+}
 
 void PETSC_STDCALL kspgetresidualhistory_(KSP *ksp,int *na,int *__ierr)
 {
@@ -114,18 +122,22 @@ void PETSC_STDCALL kspcreate_(MPI_Comm *comm,KSP *ksp, int *__ierr ){
   *__ierr = KSPCreate((MPI_Comm)PetscToPointerComm( *comm ),ksp);
 }
 
-static int (*f2)(KSP*,int*,double*,void*,int*);
+static void (*f2)(KSP*,int*,double*,void*,int*,int*);
 static int ourtest(KSP ksp,int i,double d,void* ctx)
 {
-  int ierr = 0;
-  (*f2)(&ksp,&i,&d,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
+  int ierr = 0,flag;
+  (*f2)(&ksp,&i,&d,ctx,&flag,&ierr);CHKERRQ(ierr);
+  return flag;
 }
 void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
-      int (*converge)(KSP*,int*,double*,void*,int*),void *cctx, int *__ierr)
+      void (*converge)(KSP*,int*,double*,void*,int*,int*),void *cctx, int *__ierr)
 {
-  f2 = converge;
-  *__ierr = KSPSetConvergenceTest(*ksp,ourtest,cctx);
+  if ((void *)converge == (void *)kspdefaultconverged_) {
+    *__ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,0);
+  } else {
+    f2 = converge;
+    *__ierr = KSPSetConvergenceTest(*ksp,ourtest,cctx);
+  }
 }
 
 /*

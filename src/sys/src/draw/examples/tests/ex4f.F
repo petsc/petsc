@@ -1,5 +1,5 @@
 !
-!    "$Id: ex4f.F,v 1.2 1999/09/08 18:56:43 bsmith Exp bsmith $";
+!    "$Id: ex4f.F,v 1.3 1999/09/27 21:28:17 bsmith Exp bsmith $";
 !
 !
 !  This example demonstrates use of DrawZoom()
@@ -33,8 +33,10 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call DrawOpenX(PETSC_COMM_SELF,0,'Title',x,y,width,height,draw,   &
+!     call DrawOpenX(PETSC_COMM_SELF,0,'Title',x,y,width,height,draw,ierr)
+      call DrawCreate(PETSC_COMM_SELF,0,'Title',x,y,width,height,draw,   &
      &               ierr)
+      call DrawSetType(draw,DRAW_X,ierr)
       call DrawZoom(draw,zoomfunction,PETSC_NULL_INTEGER,ierr)
       call DrawDestroy(draw,ierr)
       call PetscFinalize(ierr)

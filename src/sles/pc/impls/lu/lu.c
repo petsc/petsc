@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.122 1999/10/24 14:02:59 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.123 1999/11/05 14:46:20 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -223,15 +223,15 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApply_LU"
-static int PCApplyTrans_LU(PC pc,Vec x,Vec y)
+#define __FUNC__ "PCApplyTranspose_LU"
+static int PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU *) pc->data;
   int   ierr;
 
   PetscFunctionBegin;
-  if (dir->inplace) {ierr = MatSolveTrans(pc->pmat,x,y);CHKERRQ(ierr);}
-  else              {ierr = MatSolveTrans(dir->fact,x,y);CHKERRQ(ierr);}
+  if (dir->inplace) {ierr = MatSolveTranspose(pc->pmat,x,y);CHKERRQ(ierr);}
+  else              {ierr = MatSolveTranspose(dir->fact,x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -491,7 +491,7 @@ int PCCreate_LU(PC pc)
 
   pc->ops->destroy           = PCDestroy_LU;
   pc->ops->apply             = PCApply_LU;
-  pc->ops->applytrans        = PCApplyTrans_LU;
+  pc->ops->applytranspose    = PCApplyTranspose_LU;
   pc->ops->setup             = PCSetUp_LU;
   pc->ops->setfromoptions    = PCSetFromOptions_LU;
   pc->ops->printhelp         = PCPrintHelp_LU;

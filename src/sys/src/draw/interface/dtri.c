@@ -1,4 +1,4 @@
-/*$Id: dtri.c,v 1.37 1999/10/24 14:01:10 bsmith Exp bsmith $*/
+/*$Id: dtri.c,v 1.38 1999/11/05 14:43:51 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -170,7 +170,7 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
   if (ctx.max - ctx.min < 1.e-7) {ctx.min -= 5.e-8; ctx.max += 5.e-8;}
 
   /* Draw the scale window */
-  ierr = DrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);
+  if (popup) {ierr = DrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);}
 
   ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",&ctx.showgrid);CHKERRQ(ierr);
 

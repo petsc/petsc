@@ -1,4 +1,4 @@
-/*$Id: dtextgs.c,v 1.22 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: dtextgs.c,v 1.24 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -34,6 +34,7 @@ int DrawStringGetSize(Draw draw,double *width,double *height)
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
+  if (!draw->ops->stringgetsize) SETERRQ1(1,1,"This draw object %s does not support getting string size",draw->type_name);
   ierr = (*draw->ops->stringgetsize)(draw,width,height);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.131 1999/11/05 14:45:15 bsmith Exp bsmith $*/
+/*$Id: mpidense.c,v 1.132 1999/11/10 03:19:09 bsmith Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -416,8 +416,8 @@ int MatMultAdd_MPIDense(Mat mat,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans_MPIDense"
-int MatMultTrans_MPIDense(Mat A,Vec xx,Vec yy)
+#define __FUNC__ "MatMultTranspose_MPIDense"
+int MatMultTranspose_MPIDense(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIDense *a = (Mat_MPIDense *) A->data;
   int          ierr;
@@ -425,22 +425,22 @@ int MatMultTrans_MPIDense(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
-  ierr = MatMultTrans_SeqDense(a->A,xx,a->lvec);CHKERRQ(ierr);
+  ierr = MatMultTranspose_SeqDense(a->A,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd_MPIDense"
-int MatMultTransAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
+#define __FUNC__ "MatMultTransposeAdd_MPIDense"
+int MatMultTransposeAdd_MPIDense(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIDense *a = (Mat_MPIDense *) A->data;
   int          ierr;
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
-  ierr = MatMultTrans_SeqDense(a->A,xx,a->lvec);CHKERRQ(ierr);
+  ierr = MatMultTranspose_SeqDense(a->A,xx,a->lvec);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -674,8 +674,8 @@ int MatGetInfo_MPIDense(Mat A,MatInfoType flag,MatInfo *info)
    extern int MatLUFactor_MPIDense(Mat,IS,IS,double);
    extern int MatSolve_MPIDense(Mat,Vec,Vec);
    extern int MatSolveAdd_MPIDense(Mat,Vec,Vec,Vec);
-   extern int MatSolveTrans_MPIDense(Mat,Vec,Vec);
-   extern int MatSolveTransAdd_MPIDense(Mat,Vec,Vec,Vec); */
+   extern int MatSolveTranspose_MPIDense(Mat,Vec,Vec);
+   extern int MatSolveTransposeAdd_MPIDense(Mat,Vec,Vec,Vec); */
 
 #undef __FUNC__  
 #define __FUNC__ "MatSetOption_MPIDense"
@@ -879,7 +879,7 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
   Scalar       *v;
 
   PetscFunctionBegin;
-  if (matout == PETSC_NULL && M != N) {
+  if (!matout && M != N) {
     SETERRQ(PETSC_ERR_SUP,0,"Supports square matrix only in-place");
   }
   ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,PETSC_NULL,&B);CHKERRQ(ierr);
@@ -894,7 +894,7 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
   ierr = PetscFree(rwork);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (matout != PETSC_NULL) {
+  if (matout) {
     *matout = B;
   } else {
     PetscOps *Abops;
@@ -948,8 +948,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatRestoreRow_MPIDense,
        MatMult_MPIDense,
        MatMultAdd_MPIDense,
-       MatMultTrans_MPIDense,
-       MatMultTransAdd_MPIDense,
+       MatMultTranspose_MPIDense,
+       MatMultTransposeAdd_MPIDense,
        0,
        0,
        0,

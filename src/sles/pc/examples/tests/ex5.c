@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.60 1999/10/24 14:03:06 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.61 1999/11/05 14:46:31 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -87,7 +87,7 @@ int main(int Argc, char **Args)
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);CHKERRA(ierr);
     ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void *)0,&mat[i]);CHKERRA(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void*)restrct);CHKERRA(ierr);
-    ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANS_ADD,(void*)interpolate);CHKERRA(ierr);
+    ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void*)interpolate);CHKERRA(ierr);
     ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);CHKERRA(ierr);
     ierr = MGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRA(ierr);
     ierr = MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRA(ierr);

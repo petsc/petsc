@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.33 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.34 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -196,7 +196,7 @@ int main(int argc,char **args)
     */
     ierr = PetscGetTime(&tsolve1);CHKERRA(ierr);
     if (trans) {
-      ierr = SLESSolveTrans(sles,b,x,&its);CHKERRA(ierr);
+      ierr = SLESSolveTranspose(sles,b,x,&its);CHKERRA(ierr);
     } else {
       ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
     }
@@ -217,7 +217,7 @@ int main(int argc,char **args)
        Check error
     */
     if (trans) {
-      ierr = MatMultTrans(A,x,u);CHKERRA(ierr);
+      ierr = MatMultTranspose(A,x,u);CHKERRA(ierr);
     } else {
       ierr = MatMult(A,x,u);CHKERRA(ierr);
     }

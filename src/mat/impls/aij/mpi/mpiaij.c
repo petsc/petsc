@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.306 1999/10/24 14:02:16 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.307 1999/11/05 14:45:21 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -96,7 +96,7 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
            ierr = PetscFree(a->j);CHKERRQ(ierr); \
         } \
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j;  \
-        a->singlemalloc = 1; \
+        a->singlemalloc = PETSC_TRUE; \
  \
         rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift; \
         rmax = aimax[row] = aimax[row] + CHUNKSIZE; \
@@ -170,7 +170,7 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
           ierr = PetscFree(b->j);CHKERRQ(ierr); \
         } \
         ba = b->a = new_a; bi = b->i = new_i; bj = b->j = new_j;  \
-        b->singlemalloc = 1; \
+        b->singlemalloc = PETSC_TRUE; \
  \
         rp   = bj + bi[row] + shift; ap = ba + bi[row] + shift; \
         rmax = bimax[row] = bimax[row] + CHUNKSIZE; \
@@ -600,19 +600,19 @@ int MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTrans_MPIAIJ"
-int MatMultTrans_MPIAIJ(Mat A,Vec xx,Vec yy)
+#define __FUNC__ "MatMultTranspose_MPIAIJ"
+int MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
 
   PetscFunctionBegin;
   /* do nondiagonal part */
-  ierr = (*a->B->ops->multtrans)(a->B,xx,a->lvec);CHKERRQ(ierr);
+  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   /* do local part */
-  ierr = (*a->A->ops->multtrans)(a->A,xx,yy);CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtranspose)(a->A,xx,yy);CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
@@ -621,19 +621,19 @@ int MatMultTrans_MPIAIJ(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatMultTransAdd_MPIAIJ"
-int MatMultTransAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+#define __FUNC__ "MatMultTransposeAdd_MPIAIJ"
+int MatMultTransposeAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   int        ierr;
 
   PetscFunctionBegin;
   /* do nondiagonal part */
-  ierr = (*a->B->ops->multtrans)(a->B,xx,a->lvec);CHKERRQ(ierr);
+  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
   /* do local part */
-  ierr = (*a->A->ops->multtransadd)(a->A,xx,yy,zz);CHKERRQ(ierr);
+  ierr = (*a->A->ops->multtransposeadd)(a->A,xx,yy,zz);CHKERRQ(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
@@ -708,8 +708,8 @@ int MatDestroy_MPIAIJ(Mat mat)
   if (aij->colmap) {ierr = PetscFree(aij->colmap);CHKERRQ(ierr);}
 #endif
   if (aij->garray) {ierr = PetscFree(aij->garray);CHKERRQ(ierr);}
-  if (aij->lvec)   VecDestroy(aij->lvec);
-  if (aij->Mvctx)  VecScatterDestroy(aij->Mvctx);
+  if (aij->lvec)   {ierr = VecDestroy(aij->lvec);CHKERRQ(ierr);}
+  if (aij->Mvctx)  {ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr);}
   if (aij->rowvalues) {ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);}
   ierr = PetscFree(aij);CHKERRQ(ierr);
   PLogObjectDestroy(mat);
@@ -871,7 +871,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   int        n = mat->n, m = mat->m, i,shift = A->indexshift;
 
   PetscFunctionBegin;
-  if (!A->diag) {ierr = MatMarkDiag_SeqAIJ(AA);CHKERRQ(ierr);}
+  if (!A->diag) {ierr = MatMarkDiagonal_SeqAIJ(AA);CHKERRQ(ierr);}
   diag = A->diag;
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1062,11 +1062,12 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
       op == MAT_COLUMNS_UNSORTED ||
       op == MAT_COLUMNS_SORTED ||
       op == MAT_NEW_NONZERO_ALLOCATION_ERR ||
+      op == MAT_KEEP_ZEROED_ROWS ||
       op == MAT_NEW_NONZERO_LOCATION_ERR) {
         ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
         ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_ROW_ORIENTED) {
-    a->roworiented = 1; 
+    a->roworiented = PETSC_TRUE; 
     ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_ROWS_SORTED || 
@@ -1076,11 +1077,11 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
              op == MAT_YES_NEW_DIAGONALS)
     PLogInfo(A,"MatSetOption_MPIAIJ:Option ignored\n");
   else if (op == MAT_COLUMN_ORIENTED) {
-    a->roworiented = 0;
+    a->roworiented = PETSC_FALSE;
     ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
-    a->donotstash = 1;
+    a->donotstash = PETSC_TRUE;
   } else if (op == MAT_NO_NEW_DIAGONALS){
     SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");
   } else {
@@ -1306,7 +1307,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   Scalar     *array;
 
   PetscFunctionBegin;
-  if (matout == PETSC_NULL && M != N) {
+  if (!matout && M != N) {
     SETERRQ(PETSC_ERR_ARG_SIZ,0,"Square matrix only for in-place");
   }
 
@@ -1337,7 +1338,7 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   ierr = PetscFree(ct);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (matout != PETSC_NULL) {
+  if (matout) {
     *matout = B;
   } else {
     PetscOps       *Abops;
@@ -1353,8 +1354,8 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     if (a->colmap) {ierr = PetscFree(a->colmap);CHKERRQ(ierr);}
 #endif
     if (a->garray) {ierr = PetscFree(a->garray);CHKERRQ(ierr);}
-    if (a->lvec) VecDestroy(a->lvec);
-    if (a->Mvctx) VecScatterDestroy(a->Mvctx);
+    if (a->lvec)   {ierr = VecDestroy(a->lvec);CHKERRQ(ierr);}
+    if (a->Mvctx)  {ierr = VecScatterDestroy(a->Mvctx);CHKERRQ(ierr);}
     ierr = PetscFree(a);CHKERRQ(ierr);
 
     /*
@@ -1497,8 +1498,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatRestoreRow_MPIAIJ,
        MatMult_MPIAIJ,
        MatMultAdd_MPIAIJ,
-       MatMultTrans_MPIAIJ,
-       MatMultTransAdd_MPIAIJ,
+       MatMultTranspose_MPIAIJ,
+       MatMultTransposeAdd_MPIAIJ,
        0,
        0,
        0,
@@ -1804,7 +1805,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   b->size            = size;
   ierr = MPI_Comm_rank(comm,&b->rank);CHKERRQ(ierr);
 
-  if (m == PETSC_DECIDE && (d_nnz != PETSC_NULL || o_nnz != PETSC_NULL)) {
+  if (m == PETSC_DECIDE && (d_nnz || o_nnz)) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");
   }
 
@@ -1848,14 +1849,14 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
 
   /* build cache for off array entries formed */
   ierr = MatStashCreate_Private(comm,1,&B->stash);CHKERRQ(ierr);
-  b->donotstash  = 0;
+  b->donotstash  = PETSC_FALSE;
   b->colmap      = 0;
   b->garray      = 0;
-  b->roworiented = 1;
+  b->roworiented = PETSC_TRUE;
 
   /* stuff used for matrix vector multiply */
-  b->lvec      = 0;
-  b->Mvctx     = 0;
+  b->lvec      = PETSC_NULL;
+  b->Mvctx     = PETSC_NULL;
 
   /* stuff for MatGetRow() */
   b->rowindices   = 0;

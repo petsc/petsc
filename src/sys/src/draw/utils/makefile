@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.33 1999/01/31 16:05:12 bsmith Exp balay $
+# $Id: makefile,v 1.34 1999/02/02 21:22:54 balay Exp bsmith $
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = axis.c lg.c dscatter.c hists.c zoom.c
+SOURCEC  = axis.c lg.c dscatter.c hists.c zoom.c hue.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = axis.o lg.o dscatter.o hists.o zoom.o
+OBJSC    = axis.o lg.o dscatter.o hists.o zoom.o hue.o
 OBJSF    =
 LIBBASE  = libpetsc
 MANSEC   = Draw

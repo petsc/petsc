@@ -1,17 +1,12 @@
-# $Id: makefile,v 1.1 1998/10/23 19:25:03 oberman Exp oberman $ 
+# $Id: makefile,v 1.1 1999/11/15 16:01:45 bsmith Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags
 # -----------------------------------------------------------------------
-CFLAGS    = $(CPPFLAGS)  -D__SDIR__='"$(LOCDIR)"'
+CFLAGS    = 
 # -----------------------------------------------------------------------
 # Define application source and examples
 # -----------------------------------------------------------------------
-#
-# Note: "make clean" removes the files
-#    *.o 
-#    CLEANFILES - variable to specify other files to delete via "make clean"
-#    
 
 ALL: main
 
@@ -22,9 +17,11 @@ OBJSC      =
 CLEANFILES = 
 LOCDIR     =/nfs/mcs-homes37/oberman/src/tns_q2q1/
 
-main: chkopts main.o appload.o appcreate.o appsetref.o appsetalg.o integrator.o functions.o appview.o 
-	-$(CLINKER) -o main main.o appview.o appload.o integrator.o appcreate.o appsetalg.o appsetref.o functions.o $(PETSC_LIB)
-	-$(RM) main.o appview.o appload.o functions.o integrator.o appcreate.o appsetalg.o appsetref.o 
+main: chkopts main.o appload.o appcreate.o appsetref.o integrator.o functions.o appview.o 
+	-$(RM) main
+	-$(CLINKER) -o main main.o appview.o appload.o integrator.o appcreate.o appsetalg.o appsetref.o \
+          functions.o $(PETSC_LIB)
+	-$(RM) main.o appview.o appload.o functions.o integrator.o appcreate.o  appsetref.o 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

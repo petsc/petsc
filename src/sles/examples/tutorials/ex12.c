@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.12 1999/10/24 14:03:24 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.13 1999/11/05 14:46:58 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
 
@@ -13,7 +13,7 @@ Input parameters include:\n\
    Concepts: PC^Registering preconditioners
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
-   Routines: PCRegisterDynamic(); PCSetType(); PCRegister()
+   Routines: PCRegisterDynamic(); PCSetType();
    Processors: n
 T*/
 

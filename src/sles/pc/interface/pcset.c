@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.95 1999/10/24 14:02:56 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.96 1999/11/05 14:46:16 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -84,8 +84,8 @@ int PCSetType(PC pc,PCType type)
   pc->ops->applyBA             = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
   pc->ops->setfromoptions      = ( int (*)(PC) ) 0;
   pc->ops->printhelp           = ( int (*)(PC,char*) ) 0;
-  pc->ops->applytrans          = ( int (*)(PC,Vec,Vec) ) 0;
-  pc->ops->applyBAtrans        = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
+  pc->ops->applytranspose      = ( int (*)(PC,Vec,Vec) ) 0;
+  pc->ops->applyBAtranspose    = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
   pc->ops->presolve            = ( int (*)(PC,KSP,Vec,Vec) ) 0;
   pc->ops->postsolve           = ( int (*)(PC,KSP,Vec,Vec) ) 0;
   pc->ops->getfactoredmatrix   = ( int (*)(PC,Mat*) ) 0;

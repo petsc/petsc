@@ -1,4 +1,4 @@
-/*$Id: dviewp.c,v 1.28 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: dviewp.c,v 1.30 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -52,6 +52,9 @@ int DrawSetViewPort(Draw draw,double xl,double yl,double xr,double yr)
    Level: advanced
 
 .keywords:  draw, set, view, port, split
+
+.seealso: DrawDivideViewPort(), DrawSetViewPort()
+
 @*/
 int DrawSplitViewPort(Draw draw)
 {
@@ -82,13 +85,146 @@ int DrawSplitViewPort(Draw draw)
   ierr = DrawLine(draw,xr,yl,xl,yl,DRAW_BLACK);CHKERRQ(ierr);
   ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
-  draw->port_xl = xl;
-  draw->port_xr = xr;
-  draw->port_yl = yl;
-  draw->port_yr = yr;
+  draw->port_xl = xl + .1*h;
+  draw->port_xr = xr - .1*h;
+  draw->port_yl = yl + .1*h;
+  draw->port_yr = yr - .1*h;
 
   if (draw->ops->setviewport) {
     ierr =  (*draw->ops->setviewport)(draw,xl,yl,xr,yr);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawViewPortsCreate" 
+/*@C
+   DrawViewPortsCreate - Splits a window into smaller
+       view ports. Each processor shares all the viewports.
+
+   Collective on Draw
+
+   Input Parameter:
+.  draw - the drawing context
+
+   Output Parameter:
+.  divide - a DrawViewPorts context (C structure)
+
+   Level: advanced
+
+.keywords:  draw, set, view, port, split
+
+.seealso: DrawSplitViewPort(), DrawSetViewPort(), DrawViewPortsSet(), DrawViewPortsDestroy()
+
+@*/
+int DrawViewPortsCreate(Draw draw,int nports,DrawViewPorts **ports)
+{
+  int        i,ierr,n;
+  PetscTruth isnull;
+  double     *xl,*xr,*yl,*yr,h;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
+  *ports = PetscNew(DrawViewPorts);CHKPTRQ(*ports);
+  (*ports)->draw   = draw;
+  (*ports)->nports = nports;
+
+  ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
+
+  n = (int) (.1 + sqrt((double) nports));
+  while ( n*n < nports) {n++;}
+  
+  (*ports)->xl = xl = (double *) PetscMalloc(n*n*sizeof(double));CHKPTRQ(xl);
+  (*ports)->xr = xr = (double *) PetscMalloc(n*n*sizeof(double));CHKPTRQ(xr);
+  (*ports)->yl = yl = (double *) PetscMalloc(n*n*sizeof(double));CHKPTRQ(yl);
+  (*ports)->yr = yr = (double *) PetscMalloc(n*n*sizeof(double));CHKPTRQ(yr);
+
+  h  = 1.0/n;
+
+  for (i=0; i<n*n; i++) {
+    xl[i] = (i % n)*h;
+    xr[i] = xl[i] + h;
+    yl[i] = (i/n)*h;
+    yr[i] = yl[i] + h;
+
+    ierr = DrawLine(draw,xl[i],yl[i],xl[i],yr[i],DRAW_BLACK);CHKERRQ(ierr);
+    ierr = DrawLine(draw,xl[i],yr[i],xr[i],yr[i],DRAW_BLACK);CHKERRQ(ierr);
+    ierr = DrawLine(draw,xr[i],yr[i],xr[i],yl[i],DRAW_BLACK);CHKERRQ(ierr);
+    ierr = DrawLine(draw,xr[i],yl[i],xl[i],yl[i],DRAW_BLACK);CHKERRQ(ierr);
+
+    xl[i] += .1*h;
+    xr[i] -= .1*h;
+    yl[i] += .1*h;
+    yr[i] -= .1*h;
+  }
+  ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawViewPortsDestroy" 
+/*@C
+   DrawViewPortsDestroy - frees a DrawViewPorts object
+
+   Collective on Draw inside DrawViewPorts
+
+   Input Parameter:
+.  ports - the DrawViewPorts object
+
+   Level: advanced
+
+.keywords:  draw, set, view, port, split
+
+.seealso: DrawSplitViewPort(), DrawSetViewPort(), DrawViewPortsSet(), DrawViewPortsCreate()
+
+@*/
+int DrawViewPortsDestroy(DrawViewPorts *ports)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  
+  ierr = DrawDestroy(ports->draw);CHKERRQ(ierr);
+  ierr = PetscFree(ports->xl);CHKERRQ(ierr);
+  ierr = PetscFree(ports->xr);CHKERRQ(ierr);
+  ierr = PetscFree(ports->yl);CHKERRQ(ierr);
+  ierr = PetscFree(ports->yr);CHKERRQ(ierr);
+  ierr = PetscFree(ports);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawViewPortsSet" 
+/*@C
+   DrawViewPortsSet - sets a draw object to use a particular subport
+
+   Collective on Draw inside DrawViewPorts
+
+   Input Parameter:
++  ports - the DrawViewPorts object
+-  port - the port number, from 0 to nports-1
+
+   Level: advanced
+
+.keywords:  draw, set, view, port, split
+
+.seealso: DrawSplitViewPort(), DrawSetViewPort(), DrawViewPortsDestroy(), DrawViewPortsCreate()
+
+@*/
+int DrawViewPortsSet(DrawViewPorts *ports,int port)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  if (port < 0 || port > ports->nports-1) {
+    SETERRQ2(1,1,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
+  }
+  ierr = DrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }

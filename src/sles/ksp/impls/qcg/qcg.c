@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.67 1999/10/24 14:03:20 bsmith Exp bsmith $*/
+/*$Id: qcg.c,v 1.68 1999/11/05 14:46:52 bsmith Exp bsmith $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -322,7 +322,6 @@ int KSPCreate_QCG(KSP ksp)
   ksp->ops->setup                = KSPSetUp_QCG;
   ksp->ops->solve                = KSPSolve_QCG;
   ksp->ops->destroy              = KSPDestroy_QCG;
-  ksp->converged                 = KSPDefaultConverged;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = 0;

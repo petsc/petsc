@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.47 1999/03/31 03:46:07 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.48 1999/04/11 20:23:56 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -64,5 +64,6 @@ extern int   DAGetFieldName(DA,int,char **);
 
 #include "mat.h"
 extern int   DAGetColoring(DA,ISColoring *,Mat *);
+extern int   DAGetInterpolation(DA,DA,Mat*,Vec*);
 
 #endif

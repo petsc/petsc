@@ -1,4 +1,4 @@
-/*$Id: vinv.c,v 1.56 1999/10/13 20:37:01 bsmith Exp bsmith $*/
+/*$Id: vinv.c,v 1.58 1999/10/24 14:01:50 bsmith Exp bsmith $*/
 /*
      Some useful vector utility functions.
 */
@@ -23,7 +23,7 @@
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information.
+   information, or use a vector created from a multicomponent DA.
 
    If x is the array representing the vector x then this computes the norm 
    of the array (x[start],x[start+stride],x[start+2*stride], ....)
@@ -110,7 +110,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information; or use a vector associated with a DA.
+   information, or use a vector created from a multicomponent DA.
 
    If xa is the array representing the vector x, then this computes the max
    of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
@@ -191,7 +191,7 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information; or use a vector associated with a DA.
+   information, or use a vector created from a multicomponent DA.
 
    If xa is the array representing the vector x, then this computes the min
    of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
@@ -250,6 +250,177 @@ int VecStrideMin(Vec v,int start,int *index,double *norm)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "VecStrideGatherAll"
+/*@
+   VecStrideGatherAll - Gathers all the single components from a multi-component vector into
+   seperate vectors.
+
+   Collective on Vec
+
+   Input Parameter:
++  v - the vector 
+-  addv - one of ADD_VALUES,SET_VALUES,MAX_VALUES
+
+   Output Parameter:
+.  s - the location where the subvectors are stored
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information, or use a vector created from a multicomponent DA.
+
+   If x is the array representing the vector x then this gathers
+   the arrays (x[start],x[start+stride],x[start+2*stride], ....)
+   for start=0,1,2,...bs-1
+
+   The parallel layout of the vector and the subvector must be the same;
+   i.e., nlocal of v = stride*(nlocal of s) 
+
+   Level: advanced
+
+.keywords: vector, subvector
+
+.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
+          VecStrideScatterAll()
+@*/
+int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
+{
+  int      i,n,ierr,bs,ns,j;
+  Scalar   *x,**y;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(*s,VEC_COOKIE);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(*s,&ns);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  bs   = v->bs;
+
+  y = (Scalar **) PetscMalloc(bs*sizeof(double*));CHKPTRQ(y);
+  for (i=0; i<bs; i++) {
+    ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
+  }
+
+  if (n != ns*bs) {
+    SETERRQ2(1,1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
+  }
+  n =  n/bs;
+
+  if (addv == INSERT_VALUES) {
+    for ( j=0; j<bs; j++ ) {
+      for ( i=0; i<n; i++ ) {
+        y[j][i] = x[bs*i+j];
+      }
+    }
+  } else if (addv == ADD_VALUES) {
+    for ( j=0; j<bs; j++ ) {
+      for ( i=0; i<n; i++ ) {
+        y[j][i] += x[bs*i+j];
+      }
+    }
+#if !defined(PETSC_USE_COMPLEX)
+  } else if (addv == MAX_VALUES) {
+    for ( j=0; j<bs; j++ ) {
+      for ( i=0; i<n; i++ ) {
+        y[j][i] = PetscMax(y[j][i],x[bs*i+j]);
+      }
+    }
+#endif
+  } else {
+    SETERRQ(1,1,"Unknown insert type");
+  }
+
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  for (i=0; i<bs; i++) {
+    ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ "VecStrideScatterAll"
+/*@
+   VecStrideScatterAll - Scatters all the single components from seperate vectors into 
+     a multi-component vector.
+
+   Collective on Vec
+
+   Input Parameter:
++  s - the location where the subvectors are stored
+-  addv - one of ADD_VALUES,SET_VALUES,MAX_VALUES
+
+   Output Parameter:
+.  v - the multicomponent vector 
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information, or use a vector created from a multicomponent DA.
+
+   The parallel layout of the vector and the subvector must be the same;
+   i.e., nlocal of v = stride*(nlocal of s) 
+
+   Level: advanced
+
+.keywords: vector, subvector
+
+.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
+          VecStrideScatterAll()
+@*/
+int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
+{
+  int      i,n,ierr,bs,ns,j;
+  Scalar   *x,**y;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(*s,VEC_COOKIE);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(*s,&ns);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  bs   = v->bs;
+
+  y = (Scalar **) PetscMalloc(bs*sizeof(double*));CHKPTRQ(y);
+  for (i=0; i<bs; i++) {
+    ierr = VecGetArray(s[i],&y[i]);CHKERRQ(ierr);
+  }
+
+  if (n != ns*bs) {
+    SETERRQ2(1,1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
+  }
+  n =  n/bs;
+
+  if (addv == INSERT_VALUES) {
+    for ( j=0; j<bs; j++ ) {
+      for ( i=0; i<n; i++ ) {
+        x[bs*i+j] = y[j][i];
+      }
+    }
+  } else if (addv == ADD_VALUES) {
+    for ( j=0; j<bs; j++ ) {
+      for ( i=0; i<n; i++ ) {
+        x[bs*i+j] += y[j][i];
+      }
+    }
+#if !defined(PETSC_USE_COMPLEX)
+  } else if (addv == MAX_VALUES) {
+    for ( j=0; j<bs; j++ ) {
+      for ( i=0; i<n; i++ ) {
+        x[bs*i+j] = PetscMax(y[j][i],x[bs*i+j]);
+      }
+    }
+#endif
+  } else {
+    SETERRQ(1,1,"Unknown insert type");
+  }
+
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  for (i=0; i<bs; i++) {
+    ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "VecStrideGather"
 /*@
    VecStrideGather - Gathers a single component from a multi-component vector into
@@ -267,7 +438,7 @@ int VecStrideMin(Vec v,int start,int *index,double *norm)
 
    Notes:
    One must call VecSetBlockSize() before this routine to set the stride 
-   information.
+   information, or use a vector created from a multicomponent DA.
 
    If x is the array representing the vector x then this gathers
    the array (x[start],x[start+stride],x[start+2*stride], ....)
@@ -279,7 +450,8 @@ int VecStrideMin(Vec v,int start,int *index,double *norm)
 
 .keywords: vector, subvector
 
-.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
+.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
+          VecStrideScatterAll()
 @*/
 int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 {
@@ -345,7 +517,7 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 
    Notes:
    One must call VecSetBlockSize() on the multi-component vector before this
-   routine to set the stride  information.
+   routine to set the stride  information, or use a vector created from a multicomponent DA.
 
    The parallel layout of the vector and the subvector must be the same;
    i.e., nlocal of v = stride*(nlocal of s) 
@@ -354,7 +526,8 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 
 .keywords: vector, subvector
 
-.seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax()
+.seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax(), VecStrideGatherAll(),
+          VecStrideScatterAll()
 @*/
 int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 {

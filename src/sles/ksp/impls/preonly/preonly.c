@@ -1,4 +1,4 @@
-/*$Id: preonly.c,v 1.30 1999/10/24 14:03:18 bsmith Exp bsmith $*/
+/*$Id: preonly.c,v 1.31 1999/11/05 14:46:48 bsmith Exp bsmith $*/
 
 /*                       
        This implements a stub method that applies ONLY the preconditioner.
@@ -41,7 +41,6 @@ int KSPCreate_PREONLY(KSP ksp)
   ksp->ops->setup                = KSPSetUp_PREONLY;
   ksp->ops->solve                = KSPSolve_PREONLY;
   ksp->ops->destroy              = KSPDefaultDestroy;
-  ksp->converged                 = KSPDefaultConverged;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = 0;

@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.220 1999/10/08 21:12:39 balay Exp bsmith $*/
+/*$Id: plog.c,v 1.222 1999/10/24 14:01:36 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -250,7 +250,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "MatAssemblyBegin",
                          "MatAssemblyEnd  ",
                          "MatGetOrdering  ",
-                         "MatMultTrans    ",
+                         "MatMultTranspose",
                          "MatMultAdd      ",
                          "MatMultTransAdd ",
                          "MatLUFactor     ",
@@ -268,7 +268,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "MatZeroEntries  ",
                          "MatSolve        ",
                          "MatSolveAdd     ",
-                         "MatSolveTrans   ",
+                         "MatSolveTranspos",
                          "MatSolveTransAdd",
                          "MatSetValues    ",
                          "MatForwardSolve ",
@@ -337,8 +337,8 @@ char *(PLogEventName[]) = {"MatMult         ",
                          " ",
                          "TSStep          ",
                          "TSPseudoCmptTStp",
-                         " ",
-                         " ",
+                         "TSFunctionEval  ",
+                         "TSJacobianEval  ",
                          " ",
                          " ",
                          " ",
@@ -1258,7 +1258,7 @@ int PLogEventRegister(int *e,const char string[],const char color[])
     char* ccolor;
 
     PLogEventMPEFlags[*e]       = 1;
-    if (color != PETSC_NULL) {
+    if (color) {
      ierr = PetscStrallocpy(color,&ccolor);CHKERRQ(ierr);
       PLogEventColor[*e]         = ccolor;
       PLogEventColorMalloced[*e] = 1;
@@ -1760,9 +1760,9 @@ int PLogEventActivateClass(int cookie)
     PLogEventActivate(MAT_AssemblyBegin);
     PLogEventActivate(MAT_AssemblyEnd);
     PLogEventActivate(MAT_GetOrdering);
-    PLogEventActivate(MAT_MultTrans);
+    PLogEventActivate(MAT_MultTranspose);
     PLogEventActivate(MAT_MultAdd);
-    PLogEventActivate(MAT_MultTransAdd);
+    PLogEventActivate(MAT_MultTransposeAdd);
     PLogEventActivate(MAT_LUFactor);
     PLogEventActivate(MAT_CholeskyFactor);
     PLogEventActivate(MAT_LUFactorSymbolic);
@@ -1779,8 +1779,8 @@ int PLogEventActivateClass(int cookie)
     PLogEventActivate(MAT_ZeroEntries);
     PLogEventActivate(MAT_Solve);
     PLogEventActivate(MAT_SolveAdd);
-    PLogEventActivate(MAT_SolveTrans);
-    PLogEventActivate(MAT_SolveTransAdd);
+    PLogEventActivate(MAT_SolveTranspose);
+    PLogEventActivate(MAT_SolveTransposeAdd);
     PLogEventActivate(MAT_SetValues);
     PLogEventActivate(MAT_ForwardSolve);
     PLogEventActivate(MAT_BackwardSolve);
@@ -1862,9 +1862,9 @@ int PLogEventDeactivateClass(int cookie)
     PLogEventDeactivate(MAT_AssemblyBegin);
     PLogEventDeactivate(MAT_AssemblyEnd);
     PLogEventDeactivate(MAT_GetOrdering);
-    PLogEventDeactivate(MAT_MultTrans);
+    PLogEventDeactivate(MAT_MultTranspose);
     PLogEventDeactivate(MAT_MultAdd);
-    PLogEventDeactivate(MAT_MultTransAdd);
+    PLogEventDeactivate(MAT_MultTransposeAdd);
     PLogEventDeactivate(MAT_LUFactor);
     PLogEventDeactivate(MAT_CholeskyFactor);
     PLogEventDeactivate(MAT_LUFactorSymbolic);
@@ -1881,8 +1881,8 @@ int PLogEventDeactivateClass(int cookie)
     PLogEventDeactivate(MAT_ZeroEntries);
     PLogEventDeactivate(MAT_Solve);
     PLogEventDeactivate(MAT_SolveAdd);
-    PLogEventDeactivate(MAT_SolveTrans);
-    PLogEventDeactivate(MAT_SolveTransAdd);
+    PLogEventDeactivate(MAT_SolveTranspose);
+    PLogEventDeactivate(MAT_SolveTransposeAdd);
     PLogEventDeactivate(MAT_SetValues);
     PLogEventDeactivate(MAT_ForwardSolve);
     PLogEventDeactivate(MAT_BackwardSolve);

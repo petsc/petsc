@@ -1,4 +1,4 @@
-/*$Id: ex48.c,v 1.11 1999/10/24 14:02:39 bsmith Exp bsmith $*/
+/*$Id: ex48.c,v 1.12 1999/11/05 14:45:44 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Tests the vatious routines in MatBAIJ format.\n";
@@ -141,29 +141,29 @@ int main(int argc,char **args)
     } 
   }
   
-  /* Test MatMultTrans() */
+  /* Test MatMultTranspose() */
   for ( i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
-    ierr = MatMultTrans(A,xx,s1);CHKERRA(ierr);
-    ierr = MatMultTrans(B,xx,s2);CHKERRA(ierr);
+    ierr = MatMultTranspose(A,xx,s1);CHKERRA(ierr);
+    ierr = MatMultTranspose(B,xx,s2);CHKERRA(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRA(ierr);
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRA(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultTrans - Norm1=%16.14e Norm2=%16.14e bs = %d\n",s1norm,s2norm,bs);CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultTranspose - Norm1=%16.14e Norm2=%16.14e bs = %d\n",s1norm,s2norm,bs);CHKERRA(ierr);
     } 
   }
-  /* Test MatMultTransAdd() */
+  /* Test MatMultTransposeAdd() */
   for ( i=0; i<40; i++) {
     ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
     ierr = VecSetRandom(rand,yy);CHKERRA(ierr);
-    ierr = MatMultTransAdd(A,xx,yy,s1);CHKERRA(ierr);
-    ierr = MatMultTransAdd(B,xx,yy,s2);CHKERRA(ierr);
+    ierr = MatMultTransposeAdd(A,xx,yy,s1);CHKERRA(ierr);
+    ierr = MatMultTransposeAdd(B,xx,yy,s2);CHKERRA(ierr);
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRA(ierr);
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRA(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultTransAdd - Norm1=%16.14e Norm2=%16.14e bs = %d\n",s1norm,s2norm,bs);CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultTransposeAdd - Norm1=%16.14e Norm2=%16.14e bs = %d\n",s1norm,s2norm,bs);CHKERRA(ierr);
     } 
   }
   
@@ -222,17 +222,17 @@ int main(int argc,char **args)
     } 
   }
   
-  /* Test MatSolveTrans() */
+  /* Test MatSolveTranspose() */
   if (bs < 8) {
     for ( i=0; i<40; i++) {
       ierr = VecSetRandom(rand,xx);CHKERRA(ierr);
-      ierr = MatSolveTrans(B,xx,s2);CHKERRA(ierr);
-      ierr = MatSolveTrans(A,xx,s1);CHKERRA(ierr);
+      ierr = MatSolveTranspose(B,xx,s2);CHKERRA(ierr);
+      ierr = MatSolveTranspose(A,xx,s1);CHKERRA(ierr);
       ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRA(ierr);
       ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRA(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) { 
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolveTrans - Norm1=%16.14e Norm2=%16.14e bs = %d\n",s1norm,s2norm,bs);CHKERRA(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatSolveTranspose - Norm1=%16.14e Norm2=%16.14e bs = %d\n",s1norm,s2norm,bs);CHKERRA(ierr);
       }
     } 
   }

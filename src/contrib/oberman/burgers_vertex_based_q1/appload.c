@@ -159,11 +159,14 @@ int AppCtxGraphics(AppCtx *appctx)
   ierr = OptionsHasName(PETSC_NULL,"-show_grid",&appctx->view.show_grid);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-show_solution",&appctx->view.show_solution);CHKERRQ(ierr);
 
-  if ((appctx)->view.show_grid) {
-    ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
+  if (appctx->view.show_grid || appctx->view.show_solution) {
+    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawglobal); CHKERRQ(ierr);
-    ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
+    ierr = DrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
+
+    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
                      &appctx->view.drawlocal);CHKERRQ(ierr);
+    ierr = DrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
     ierr = DrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
 
     /*
@@ -177,6 +180,9 @@ int AppCtxGraphics(AppCtx *appctx)
     /*
        Visualize the grid 
     */
+  }
+
+  if (appctx->view.show_grid) {
     ierr = DrawZoom((appctx)->view.drawglobal,AppCtxView,appctx); CHKERRA(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-matlab_graphics",&(appctx)->view.matlabgraphics); CHKERRQ(ierr);
@@ -217,7 +223,7 @@ int AppCtxDestroy(AppCtx *appctx)
   ierr = VecScatterDestroy(appctx->algebra.dgtol);CHKERRQ(ierr);
   ierr = VecScatterDestroy(appctx->algebra.gtol);CHKERRQ(ierr);
 
-  if (appctx->view.show_grid) {
+  if (appctx->view.show_grid || appctx->view.show_solution) {
     ierr = DrawDestroy(appctx->view.drawglobal); CHKERRQ(ierr);
     ierr = DrawDestroy(appctx->view.drawlocal); CHKERRQ(ierr);
   }

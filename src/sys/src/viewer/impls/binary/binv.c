@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.75 1999/10/24 14:01:05 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.76 1999/11/05 14:43:42 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -14,6 +14,8 @@ typedef struct  {
   int              fdes;            /* file descriptor */
   ViewerBinaryType btype;           /* read or write? */
   FILE             *fdes_info;      /* optional file containing info on binary file*/
+  PetscTruth       storecompressed; /* gzip the write binary file when closing it*/
+  char             *filename;
 } Viewer_Binary;
 
 #undef __FUNC__  
@@ -90,8 +92,28 @@ int ViewerDestroy_Binary(Viewer v)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
-  if (!rank && vbinary->fdes) close(vbinary->fdes);
+  if (!rank && vbinary->fdes) {
+    close(vbinary->fdes);
+    if (vbinary->storecompressed) {
+      char par[1024],buf[1024];
+      FILE *fp;
+      /* compress the file */
+      ierr = PetscStrcpy(par,"gzip ");CHKERRQ(ierr);
+      ierr = PetscStrcat(par,vbinary->filename);CHKERRQ(ierr);
+#if defined (PARCH_win32)
+      SETERRQ(1,1,"Cannot compress files on NT");
+#else 
+      if (!(fp = popen(par,"r"))) {
+        SETERRQ1(1,1,"Cannot run command %s",par);
+      }
+      if (fgets(buf,1024,fp)) {
+        SETERRQ2(1,1,"Error from command %s\n%s",par,buf);
+      }
+#endif
+    }
+  }
   if (vbinary->fdes_info) fclose(vbinary->fdes_info);
+  ierr = PetscStrfree(vbinary->filename);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -117,9 +139,15 @@ $    BINARY_WRONLY - open existing file for binary output
    Level: beginner
 
    Note:
-   This viewer can be destroyed with ViewerDestroy().
+   This viewer should be destroyed with ViewerDestroy().
 
-.keywords: binary, file, open, input, output
+    For reading files, the filename may begin with ftp:// or http:// and/or
+    end with .gz; in this case file is brought over and uncompressed.
+
+    For creating files, if the file name ends with .gz it is automatically 
+    compressed when closed.
+
+.keywords: binary, file, open, input, output, url, gzip, compression
 
 .seealso: ViewerASCIIOpen(), ViewerSetFormat(), ViewerDestroy(),
           VecView(), MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor(),
@@ -248,10 +276,10 @@ EXTERN_C_BEGIN
 #define __FUNC__ "ViewerSetFilename_Binary"
 int ViewerSetFilename_Binary(Viewer viewer,const char name[])
 {
-  int              rank,ierr;
+  int              rank,ierr,len;
   Viewer_Binary    *vbinary = (Viewer_Binary *) viewer->data;
   const char       *fname;
-  char             bname[1024];
+  char             bname[1024],*gz;
   PetscTruth       found;
   ViewerBinaryType type = vbinary->btype;
 
@@ -261,18 +289,35 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
 
+  /* copy name so we can edit it */
+  ierr = PetscStrallocpy(name,&vbinary->filename);CHKERRQ(ierr);
+
+  /* if ends in .gz strip that off and note user wants file compressed */
+  vbinary->storecompressed = PETSC_FALSE;
+  if (!rank && type == BINARY_CREATE) {
+    /* remove .gz if it ends library name */
+    ierr = PetscStrstr(vbinary->filename,".gz",&gz);CHKERRQ(ierr);
+    if (gz) {
+      ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
+      if (len == 3) {
+        *gz = 0;
+        vbinary->storecompressed = PETSC_TRUE;
+      } 
+    }
+  }
+
   /* only first processor opens file if writeable */
   if (!rank || type == BINARY_RDONLY) {
 
     if (type == BINARY_RDONLY){
       /* possibly get the file from remote site or compressed file */
-      ierr  = PetscFileRetrieve(viewer->comm,name,bname,1024,&found);CHKERRQ(ierr);
+      ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,1024,&found);CHKERRQ(ierr);
       if (!found) {
-        SETERRQ1(1,1,"Cannot locate file: %s",name);
+        SETERRQ1(1,1,"Cannot locate file: %s",vbinary->filename);
       }
       fname = bname;
     } else {
-      fname = name;
+      fname = vbinary->filename;
     }
 
 #if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
@@ -308,21 +353,19 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
   viewer->format    = 0;
 
   /* 
-      try to open info file: all processors open this file
+      try to open info file: all processors open this file if read only
   */
   if (!rank || type == BINARY_RDONLY) {
-    char infoname[256],iname[256],*gz;
+    char infoname[256],iname[256];
   
     ierr = PetscStrcpy(infoname,name);CHKERRQ(ierr);
     /* remove .gz if it ends library name */
     ierr = PetscStrstr(infoname,".gz",&gz);CHKERRQ(ierr);
     if (gz) {
-      int len;
-
       ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
       if (len == 3) {
         *gz = 0;
-      }
+      } 
     }
     
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
@@ -369,6 +412,8 @@ int ViewerCreate_Binary(Viewer v)
   vbinary->fdes_info = 0;
   vbinary->fdes      = 0;
   vbinary->btype     = (ViewerBinaryType) -1; 
+  vbinary->storecompressed = PETSC_FALSE;
+  vbinary->filename        = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerSetFilename_C",
                                     "ViewerSetFilename_Binary",

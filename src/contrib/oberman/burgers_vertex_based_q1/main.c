@@ -305,7 +305,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
     
     /* loop over vertices */
     for ( j=0; j<four; j += 1 ) {
-      cproc = PetscReal(procs[vertices[j]]);
+      cproc = (int) PetscReal(procs[vertices[j]]);
       
       /* 1st neighbor, -adjacent */
       if (cells[j] >= 0) wght = .5; else wght = 1.0;

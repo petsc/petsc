@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.36 1999/10/13 20:38:58 bsmith Exp bsmith $*/
+/*$Id: daview.c,v 1.37 1999/10/24 14:04:04 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -104,22 +104,21 @@ int DAView(DA da, Viewer viewer)
 
 .seealso: DAView()
 @*/
-int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,
-              DAStencilType *st)
+int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *dof,int *s,DAPeriodicType *wrap,DAStencilType *st)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (dim != PETSC_NULL)  *dim  = da->dim;
-  if (M != PETSC_NULL)    *M    = da->M;
-  if (N != PETSC_NULL)    *N    = da->N;
-  if (P != PETSC_NULL)    *P    = da->P;
-  if (m != PETSC_NULL)    *m    = da->m;
-  if (n != PETSC_NULL)    *n    = da->n;
-  if (p != PETSC_NULL)    *p    = da->p;
-  if (dof != PETSC_NULL)  *dof  = da->w;
-  if (s != PETSC_NULL)    *s    = da->s;
-  if (wrap != PETSC_NULL) *wrap = da->wrap;
-  if (st != PETSC_NULL)   *st   = da->stencil_type;
+  if (dim)  *dim  = da->dim;
+  if (M)    *M    = da->M;
+  if (N)    *N    = da->N;
+  if (P)    *P    = da->P;
+  if (m)    *m    = da->m;
+  if (n)    *n    = da->n;
+  if (p)    *p    = da->p;
+  if (dof)  *dof  = da->w;
+  if (s)    *s    = da->s;
+  if (wrap) *wrap = da->wrap;
+  if (st)   *st   = da->stencil_type;
   PetscFunctionReturn(0);
 }  
 

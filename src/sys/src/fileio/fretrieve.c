@@ -1,4 +1,4 @@
-/*$Id: fretrieve.c,v 1.20 1999/11/05 14:44:09 bsmith Exp bsmith $*/
+/*$Id: fretrieve.c,v 1.21 1999/11/10 03:17:57 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */
@@ -42,7 +42,7 @@ EXTERN_C_END
 #undef __FUNC__  
 #define __FUNC__ "PetscSharedTmp"
 /*@C
-   PetscSharedTmp _ Determines if all processors in a communicator share a
+   PetscSharedTmp - Determines if all processors in a communicator share a
          /tmp or have different ones.
 
    Collective on MPI_Comm
@@ -55,7 +55,8 @@ EXTERN_C_END
 
    Options Database Keys:
 +    -petsc_shared_tmp 
--    -petsc_not_shared_tmp
+.    -petsc_not_shared_tmp
+-    -petsc_tmp tmpdir
 
    Environmental Variables:
 +     PETSC_SHARED_TMP
@@ -204,7 +205,7 @@ int PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 @*/
 int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,PetscTruth *found)
 {
-  char              *par,buf[1024];
+  char              *par,buf[1024],tmpdir[256];
   FILE              *fp;
   int               i,rank,ierr,len = 0;
   PetscTruth        flg1,flg2,sharedtmp;
@@ -235,6 +236,18 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     ierr = PetscStrcpy(par,"python1.5 ");CHKERRQ(ierr);
     ierr = PetscStrcat(par,PETSC_DIR);CHKERRQ(ierr);
     ierr = PetscStrcat(par,"/bin/urlget.py ");CHKERRQ(ierr);
+
+    /* are we using an alternative /tmp? */
+    ierr = OptionsGetString(PETSC_NULL,"-petsc_tmp",tmpdir,256,&flg1);CHKERRQ(ierr);
+    if (!flg1) {
+      ierr = OptionsGetenv(comm,"PETSC_TMP",tmpdir,256,&flg1);CHKERRQ(ierr);
+    }
+    if (flg1) {
+      ierr = PetscStrcat(par,"-tmp ");CHKERRQ(ierr);
+      ierr = PetscStrcat(par,tmpdir);CHKERRQ(ierr);
+      ierr = PetscStrcat(par," ");CHKERRQ(ierr);
+    }
+
     ierr = PetscStrcat(par,libname);CHKERRQ(ierr);
     ierr = PetscStrcat(par," 2>&1 ");CHKERRQ(ierr);
 
@@ -246,10 +259,10 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
       SETERRQ(1,1,"Cannot Execute python1.5 on ${PETSC_DIR}/bin/urlget.py\n\
         Check if python1.5 is in your path");
     }
-#endif
     if (!fgets(buf,1024,fp)) {
       SETERRQ1(1,1,"No output from ${PETSC_DIR}/bin/urlget.py in getting file %s",libname);
     }
+#endif
     /* Check for \n and make it 0 */
     for ( i=0; i<1024; i++ ) {
       if ( buf[i] == '\n') {

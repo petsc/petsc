@@ -1,4 +1,4 @@
-/* $Id: dense.h,v 1.4 1996/08/08 14:42:39 bsmith Exp bsmith $ */
+/* $Id: dense.h,v 1.5 1998/12/03 03:59:50 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -20,7 +20,7 @@ typedef struct {
 
 extern int MatMult_SeqDense(Mat A,Vec,Vec);
 extern int MatMultAdd_SeqDense(Mat A,Vec,Vec,Vec);
-extern int MatMultTrans_SeqDense(Mat A,Vec,Vec);
-extern int MatMultTransAdd_SeqDense(Mat A,Vec,Vec,Vec);
+extern int MatMultTranspose_SeqDense(Mat A,Vec,Vec);
+extern int MatMultTransposeAdd_SeqDense(Mat A,Vec,Vec,Vec);
 
 #endif

@@ -1,4 +1,4 @@
-/*$Id: dmouse.c,v 1.24 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: dmouse.c,v 1.26 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -27,8 +27,7 @@
 
 .seealso: DrawSynchronizedGetMouseButton()
 @*/
-int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,
-                       double *x_phys,double *y_phys)
+int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,double *x_phys,double *y_phys)
 {
   int        ierr;
   PetscTruth isnull;
@@ -63,8 +62,7 @@ int DrawGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_use
 
 .seealso: DrawGetMouseButton()
 @*/
-int DrawSynchronizedGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,
-                       double *x_phys,double *y_phys)
+int DrawSynchronizedGetMouseButton(Draw draw,DrawButton *button,double* x_user,double *y_user,double *x_phys,double *y_phys)
 {
   double bcast[4];
   int    ierr,rank;

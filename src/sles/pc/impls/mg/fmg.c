@@ -1,4 +1,4 @@
-/*$Id: fmg.c,v 1.15 1999/10/13 20:37:56 bsmith Exp bsmith $*/
+/*$Id: fmg.c,v 1.17 1999/10/24 14:03:01 bsmith Exp bsmith $*/
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
@@ -29,14 +29,14 @@ int MGFCycle_Private(MG *mg)
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
   for ( i=l-1; i>0; i-- ){
-    ierr = MGRestrict(mg[i]->restrct, mg[i]->b, mg[i-1]->b );CHKERRQ(ierr);
+    ierr = MatRestrict(mg[i]->restrct, mg[i]->b, mg[i-1]->b );CHKERRQ(ierr);
   }
   
   /* work our way up through the levels */
   ierr = VecSet(&zero, mg[0]->x );CHKERRQ(ierr);
   for ( i=0; i<l-1; i++ ) {
     ierr = MGMCycle_Private(&mg[i]);CHKERRQ(ierr);
-    ierr = MGInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr); 
+    ierr = MatInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr); 
   }
   ierr = MGMCycle_Private(&mg[l-1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -61,14 +61,14 @@ int MGKCycle_Private(MG *mg)
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
   for ( i=l-1; i>0; i-- ){
-    ierr = MGRestrict(mg[i]->restrct,mg[i]->b, mg[i-1]->b);CHKERRQ(ierr); 
+    ierr = MatRestrict(mg[i]->restrct,mg[i]->b, mg[i-1]->b);CHKERRQ(ierr); 
   }
   
   /* work our way up through the levels */
   ierr = VecSet(&zero,mg[0]->x);CHKERRQ(ierr); 
   for ( i=0; i<l-1; i++ ) {
     ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its);CHKERRQ(ierr);
-    ierr = MGInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr);
+    ierr = MatInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr);
   }
   ierr = SLESSolve(mg[l-1]->smoothd,mg[l-1]->b,mg[l-1]->x,&its);CHKERRQ(ierr);
 

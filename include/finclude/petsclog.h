@@ -1,5 +1,5 @@
 !
-!  $Id: petsclog.h,v 1.12 1999/04/01 20:21:00 balay Exp balay $;
+!  $Id: petsclog.h,v 1.13 1999/09/14 15:58:38 balay Exp bsmith $;
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
@@ -17,12 +17,12 @@
        parameter (MAT_AssemblyEnd = 3)
        integer    MAT_GetOrdering
        parameter (MAT_GetOrdering = 4)
-       integer    MAT_MultTrans
-       parameter (MAT_MultTrans = 5)
+       integer    MAT_MultTranspose
+       parameter (MAT_MultTranspose = 5)
        integer    MAT_MultAdd
        parameter (MAT_MultAdd = 6)
-       integer    MAT_MultTransAdd
-       parameter (MAT_MultTransAdd = 7)
+       integer    MAT_MultTransposeAdd
+       parameter (MAT_MultTransposeAdd = 7)
        integer    MAT_LUFactor
        parameter (MAT_LUFactor = 8)
        integer    MAT_CholeskyFactor
@@ -53,10 +53,10 @@
        parameter (MAT_Solve = 21)
        integer    MAT_SolveAdd
        parameter (MAT_SolveAdd = 22)
-       integer    MAT_SolveTrans   
-       parameter (MAT_SolveTrans = 23 )
-       integer    MAT_SolveTransAdd  
-       parameter (MAT_SolveTransAdd = 24)
+       integer    MAT_SolveTranspose   
+       parameter (MAT_SolveTranspose = 23 )
+       integer    MAT_SolveTransposeAdd  
+       parameter (MAT_SolveTransposeAdd = 24)
        integer    MAT_SetValues
        parameter (MAT_SetValues = 25)
        integer    MAT_ForwardSolve
@@ -186,6 +186,10 @@
        parameter (TS_Step = 90)
        integer    TS_PseudoComputeTimeStep
        parameter (TS_PseudoComputeTimeStep = 91)
+       integer    TS_FunctionEval
+       parameter (TS_FunctionEval = 92)
+       integer    TS_JacobianEval
+       parameter (TS_JacobianEval = 93)
 
        integer    Petsc_Barrier
        parameter (Petsc_Barrier = 100)

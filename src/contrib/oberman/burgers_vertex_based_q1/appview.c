@@ -207,14 +207,12 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
 
   int                    ierr,i;
 
-  Draw                   drawglobal = appctx->view.drawglobal;
-  Draw                   drawlocal = appctx->view.drawlocal,popup;
+  Draw                   drawglobal = appctx->view.drawglobal,popup;
   double                 x0,x1,x2,y0,y1,y2,vmin,vmax;
   int                    c0,c1,c2;
   Scalar                 *values;
 
   ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
-  ierr = DrawCheckResizedWindow(drawlocal); CHKERRQ(ierr);
 
   cell_n        = grid->cell_n;
   ierr = ISGetIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);
@@ -229,7 +227,7 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
   ierr = VecCopy(algebra->w_local,appctx->algebra.x_local);CHKERRQ(ierr);
   ierr = VecContourScale(algebra->x_local,vmin,vmax);CHKERRQ(ierr);
   ierr = DrawGetPopup(drawglobal,&popup);CHKERRQ(ierr);
-  ierr = DrawScalePopup(popup,vmin,vmax);CHKERRQ(ierr);
+  if (popup) {ierr = DrawScalePopup(popup,vmin,vmax);CHKERRQ(ierr);}
 
   ierr = VecGetArray(algebra->x_local,&values);CHKERRQ(ierr);
 
@@ -251,7 +249,6 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
   }
 
   ierr = DrawSynchronizedFlush(drawglobal);CHKERRQ(ierr);
-  ierr = DrawSynchronizedFlush(drawlocal);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(algebra->x_local,&values);CHKERRQ(ierr);
   ierr = ISRestoreIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);

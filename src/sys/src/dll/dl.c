@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.53 1999/11/05 14:44:08 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.54 1999/11/10 03:17:56 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -276,14 +276,6 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
   if (!foundlibrary) {
     SETERRQ2(1,1,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
   }
-#endif
-
-  /*
-    Under linux open the executable itself in the hope it will
-    resolve some symbols; doesn't seem to matter.
-  */
-#if defined(PARCH_linux)
-  *handle = dlopen(0,RTLD_LAZY  |  RTLD_GLOBAL);
 #endif
 
   /*

@@ -1,12 +1,25 @@
-/*$Id: zsnes.c,v 1.40 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zsnes.c,v 1.41 1999/11/10 03:22:34 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "snes.h"
 
+#ifdef PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
+#define snesconverged_eq_tr_         snesconverged_eq_tr__
+#define snesconverged_eq_ls_         snesconverged_eq_ls__
+#define snesconverged_um_tr_         snesconverged_um_tr__
+#define snesconverged_um_ls_         snesconverged_um_ls__
+#endif
+
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define snesconverged_eq_tr_         SNESCONVERGED_EQ_TR
+#define snesconverged_eq_ls_         SNESCONVERGED_EQ_LS
+#define snesconverged_um_tr_         SNESCONVERGED_UM_TR
+#define snesconverged_um_ls_         SNESCONVERGED_UM_LS
+#define snesgetconvergedreason_      SNESGETCONVERGEDREASON
 #define snesdefaultmonitor_          SNESDEFAULTMONITOR
 #define snesvecviewmonitor_          SNESVECVIEWMONITOR
-#define snesvecviewmonitorupdate_    SNESVECVIEWMONITORUPDATE
+#define sneslgmonitor_               SNESLGMONITOR
+#define snesvecviewupdatemonitor_    SNESVECVIEWUPDATEMONITOR
 #define snesregisterdestroy_         SNESREGISTERDESTROY
 #define snessetjacobian_             SNESSETJACOBIAN
 #define snescreate_                  SNESCREATE
@@ -39,9 +52,15 @@
 #define snessetlinesearchparams_         SNESSETLINESEARCHPARAMS
 #define snesgetlinesearchparams_         SNESGETLINESEARCHPARAMS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define snesconverged_eq_tr_         snesconverged_eq_tr
+#define snesconverged_eq_ls_         snesconverged_eq_ls
+#define snesconverged_um_tr_         snesconverged_um_tr
+#define snesconverged_um_ls_         snesconverged_um_ls
+#define snesgetconvergedreason_      snesgetconvergedreason
+#define sneslgmonitor_               sneslgmonitor
 #define snesdefaultmonitor_          snesdefaultmonitor
 #define snesvecviewmonitor_          snesvecviewmonitor
-#define snesvecviewmonitorupdate_    snesvecviewmonitorupdate
+#define snesvecviewupdatemonitor_    snesvecviewupdatemonitor
 #define matsnesmfsetfunction_        matsnesmfsetfunction
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetjacobian_             snessetjacobian
@@ -76,6 +95,11 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL snesgetconvergedreason(SNES *snes,SNESConvergedReason *r,int *__ierr)
+{
+  *__ierr = SNESGetConvergedReason(*snes,r);
+}
 
 void PETSC_STDCALL snessetlinesearchparams_(SNES *snes, double *alpha, double *maxstep, double *steptol,int *__ierr)
 {
@@ -137,6 +161,11 @@ void PETSC_STDCALL matcreatesnewsmf_(SNES *snes,Vec *x,Mat *J, int *__ierr )
   *__ierr = MatCreateSNESMF(*snes,*x,J);
 }
 
+void PETSC_STDCALL sneslgmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *__ierr)
+{
+  *__ierr = SNESLGMonitor(*snes,*its,*fgnorm,dummy);
+}
+
 void PETSC_STDCALL snesdefaultmonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *__ierr)
 {
   *__ierr = SNESDefaultMonitor(*snes,*its,*fgnorm,dummy);
@@ -147,9 +176,9 @@ void PETSC_STDCALL snesvecviewmonitor_(SNES *snes,int *its,double *fgnorm,void *
   *__ierr = SNESVecViewMonitor(*snes,*its,*fgnorm,dummy);
 }
 
-void PETSC_STDCALL snesvecviewmonitorupdate_(SNES *snes,int *its,double *fgnorm,void *dummy,int *__ierr)
+void PETSC_STDCALL snesvecviewupdatemonitor_(SNES *snes,int *its,double *fgnorm,void *dummy,int *__ierr)
 {
-  *__ierr = SNESVecViewMonitorUpdate(*snes,*its,*fgnorm,dummy);
+  *__ierr = SNESVecViewUpdateMonitor(*snes,*its,*fgnorm,dummy);
 }
 
 static void (*f7)(SNES*,int*,double*,void*,int*);
@@ -168,12 +197,40 @@ void PETSC_STDCALL snessetmonitor_(SNES *snes,void (*func)(SNES*,int*,double*,vo
     *__ierr = SNESSetMonitor(*snes,SNESDefaultMonitor,0,0);
   } else if ((void *)func == (void *)snesvecviewmonitor_) {
     *__ierr = SNESSetMonitor(*snes,SNESVecViewMonitor,0,0);
-  } else if ((void *)func == (void *)snesvecviewmonitorupdate_) {
-    *__ierr = SNESSetMonitor(*snes,SNESVecViewMonitorUpdate,0,0);
+  } else if ((void *)func == (void *)snesvecviewupdatemonitor_) {
+    *__ierr = SNESSetMonitor(*snes,SNESVecViewUpdateMonitor,0,0);
+  } else if ((void *)func == (void *)sneslgmonitor_) {
+    *__ierr = SNESSetMonitor(*snes,SNESLGMonitor,0,0);
   } else {
     f7 = func;
     *__ierr = SNESSetMonitor(*snes,oursnesmonitor,mctx,0);
   }
+}
+
+
+/*--------------------------------------------------------------------------------------------*/
+void PETSC_STDCALL snesconverged_um_ls_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
+                                       void *ct,int *__ierr)
+{
+  *__ierr = SNESConverged_UM_LS(*snes,*a,*b,*c,r,ct);
+}
+
+void PETSC_STDCALL snesconverged_um_tr_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
+                                       void *ct,int *__ierr)
+{
+  *__ierr = SNESConverged_UM_TR(*snes,*a,*b,*c,r,ct);
+}
+
+void PETSC_STDCALL snesconverged_eq_tr_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
+                                       void *ct,int *__ierr)
+{
+  *__ierr = SNESConverged_EQ_TR(*snes,*a,*b,*c,r,ct);
+}
+
+void PETSC_STDCALL snesconverged_eq_ls_(SNES *snes,double *a,double *b,double *c,SNESConvergedReason *r,
+                                       void *ct,int *__ierr)
+{
+  *__ierr = SNESConverged_EQ_LS(*snes,*a,*b,*c,r,ct);
 }
 
 static void (*f8)(SNES*,double*,double*,double*,SNESConvergedReason*,void*,int*);
@@ -189,9 +246,21 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
        void (*func)(SNES*,double*,double*,double*,SNESConvergedReason*,void*,int*),
        void *cctx, int *__ierr )
 {
-  f8 = func;
-  *__ierr = SNESSetConvergenceTest(*snes,oursnestest,cctx);
+  if ((void *) func == (void *)snesconverged_eq_ls_){
+    *__ierr = SNESSetConvergenceTest(*snes,SNESConverged_EQ_LS,0);
+  } else if ((void *) func == (void *)snesconverged_eq_tr_){
+    *__ierr = SNESSetConvergenceTest(*snes,SNESConverged_EQ_TR,0);
+  } else if ((void *) func == (void *)snesconverged_um_tr_){
+    *__ierr = SNESSetConvergenceTest(*snes,SNESConverged_UM_TR,0);
+  } else if ((void *) func == (void *)snesconverged_um_ls_){
+    *__ierr = SNESSetConvergenceTest(*snes,SNESConverged_UM_LS,0);
+  } else {
+    f8 = func;
+    *__ierr = SNESSetConvergenceTest(*snes,oursnestest,cctx);
+  }
 }
+
+/*--------------------------------------------------------------------------------------------*/
 
 void PETSC_STDCALL snesgetsolution_(SNES *snes,Vec *x, int *__ierr )
 {

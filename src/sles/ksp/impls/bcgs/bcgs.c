@@ -1,4 +1,4 @@
-/*$Id: bcgs.c,v 1.65 1999/10/24 14:03:12 bsmith Exp bsmith $*/
+/*$Id: bcgs.c,v 1.66 1999/11/05 14:46:40 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate
@@ -139,7 +139,6 @@ int KSPCreate_BCGS(KSP ksp)
   ksp->ops->setup           = KSPSetUp_BCGS;
   ksp->ops->solve           = KSPSolve_BCGS;
   ksp->ops->destroy         = KSPDefaultDestroy;
-  ksp->converged            = KSPDefaultConverged;
   ksp->ops->buildsolution   = KSPDefaultBuildSolution;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->view            = 0;

@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.94 1999/06/30 22:52:56 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.95 1999/11/05 14:48:27 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -51,8 +51,8 @@ extern int PCApply(PC,Vec,Vec);
 extern int PCApplySymmetricLeft(PC,Vec,Vec);
 extern int PCApplySymmetricRight(PC,Vec,Vec);
 extern int PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
-extern int PCApplyTrans(PC,Vec,Vec);
-extern int PCApplyBAorABTrans(PC,PCSide,Vec,Vec,Vec);
+extern int PCApplyTranspose(PC,Vec,Vec);
+extern int PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
 extern int PCApplyRichardson(PC,Vec,Vec,Vec,int);
 extern int PCApplyRichardsonExists(PC,PetscTruth*);
 

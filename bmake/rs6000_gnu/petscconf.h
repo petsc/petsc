@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.16 1999/06/30 22:48:03 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.17 1999/09/16 19:02:40 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -7,6 +7,7 @@
 #define INCLUDED_PETSCCONF_H
 
 #define PARCH_rs6000 
+#define PETSC_ARCH_NAME "rs6000"
 #define PETSC_USE_IBM_ASM_CLOCK
 
 #define PETSC_HAVE_LIMITS_H
@@ -47,4 +48,7 @@
 #define PETSC_NEED_SOCKET_PROTO
 #define PETSC_HAVE_ACCEPT_SIZE_T
 
+#define PETSC_HAVE_SLEEP_RETURNS_EARLY
+#define PETSC_USE_KBYTES_FOR_SIZE
+#define PETSC_USE_A_FOR_DEBUGGER
 #endif

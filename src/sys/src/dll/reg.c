@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.49 1999/11/05 14:44:08 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.50 1999/11/10 03:17:56 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -231,8 +231,8 @@ int FListAdd( FList *fl,const char name[],const char rname[],int (*fnc)(void *))
       ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
       if (founddup) { /* found duplicate */
         ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
-        if (ne->path) {ierr = PetscFree(ne->path);CHKERRQ(ierr);}
-        if (ne->rname) {ierr = PetscFree(ne->rname);CHKERRQ(ierr);}
+        ierr = PetscStrfree(ne->path);CHKERRQ(ierr);
+        ierr = PetscStrfree(ne->rname);CHKERRQ(ierr);
         ne->path    = fpath;
         ne->rname   = fname;
         ne->routine = fnc;
@@ -297,7 +297,7 @@ int FListDestroy(FList fl)
   entry = fl;
   while (entry) {
     next = entry->next;
-    if (entry->path) {ierr = PetscFree(entry->path);CHKERRQ(ierr);}
+    ierr = PetscStrfree(entry->path);CHKERRQ(ierr);
     ierr = PetscFree( entry->name );CHKERRQ(ierr);
     ierr = PetscFree( entry->rname );CHKERRQ(ierr);
     ierr = PetscFree( entry );CHKERRQ(ierr);
@@ -384,7 +384,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 
       if (entry->routine) {
         *r = entry->routine; 
-        if (path) {ierr = PetscFree(path);CHKERRQ(ierr);}
+        ierr = PetscStrfree(path);CHKERRQ(ierr);
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
@@ -396,7 +396,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
       ierr = DLLibrarySym(comm,&DLLibrariesLoaded,newpath,entry->rname,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
-        if (path) {ierr = PetscFree(path);CHKERRQ(ierr);}
+        ierr = PetscStrfree(path);CHKERRQ(ierr);
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else {
@@ -412,7 +412,7 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   /* Function never registered; try for it anyway */
   ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
-  if (path) {ierr = PetscFree(path);CHKERRQ(ierr);}
+  ierr = PetscStrfree(path);CHKERRQ(ierr);
   if (*r) {
     ierr = FListAddDynamic(&fl,name,name,r);CHKERRQ(ierr);
     ierr = PetscFree(function);CHKERRQ(ierr);
@@ -511,7 +511,7 @@ int FListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[]
 #undef __FUNC__  
 #define __FUNC__ "FListDuplicate"
 /*
-    FListDuplicate - Creates a new list from a give object list.
+    FListDuplicate - Creates a new list from a given object list.
 
     Input Parameters:
 .   fl   - pointer to list
@@ -537,14 +537,14 @@ int FListDuplicate(FList fl, FList *nl)
       ierr = PetscStrcpy(path,fl->name);CHKERRQ(ierr);
     }       
     ierr = FListAddDynamic(nl,path,fl->rname,fl->routine);CHKERRQ(ierr);
-    fl = fl->next;
+    fl   = fl->next;
   }
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNC__  
-#define __FUNC__ "FListDuplicate"
+#define __FUNC__ "FListConcat"
 /*
     FListConcat - joins name of a libary, and the path where it is located
     into a single string.

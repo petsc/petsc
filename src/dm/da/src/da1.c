@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.105 1999/10/24 14:04:04 bsmith Exp bsmith $*/
+/*$Id: da1.c,v 1.106 1999/11/05 14:47:52 bsmith Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -163,7 +163,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
      Determine locally owned region 
      xs is the first local node number, x is the number of local nodes 
   */
-  if (lc == PETSC_NULL) {
+  if (!lc) {
     ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */

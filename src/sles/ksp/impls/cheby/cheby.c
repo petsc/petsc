@@ -1,4 +1,4 @@
-/*$Id: cheby.c,v 1.80 1999/10/24 14:03:16 bsmith Exp bsmith $*/
+/*$Id: cheby.c,v 1.81 1999/11/05 14:46:45 bsmith Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
@@ -214,7 +214,6 @@ int KSPCreate_Chebychev(KSP ksp)
   ksp->ops->setup                = KSPSetUp_Chebychev;
   ksp->ops->solve                = KSPSolve_Chebychev;
   ksp->ops->destroy              = KSPDefaultDestroy;
-  ksp->converged                 = KSPDefaultConverged;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = KSPView_Chebychev;

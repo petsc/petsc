@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.67 1999/10/23 00:01:06 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.68 1999/11/10 03:21:30 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -12,21 +12,24 @@ TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
 		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc  \
                    ex5.rm ex8.PETSc runex8 ex8.rm ex12.PETSc ex12.rm \
-                   ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc ex15.rm ex16.PETSc ex16.rm clean
+                   ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc ex15.rm \
+                   ex9.PETSc ex9.rm clean
 TESTEXAMPLES_2	 = ex5.PETSc runex5_8 runex5_9 \
 		   runex5_10 ex5.rm ex8.PETSc runex8_2 ex8.rm clean
 TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f_2 runex4f_3 ex4f.rm clean
+TESTEXAMPLES_6   = ex16.PETSc ex16.rm clean
 TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm clean
 TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm clean
 TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
 		   runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
 		   ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc ex5.rm \
                    ex14.PETSc ex14.rm ex15.PETSc ex15.rm clean
+TESTEXAMPLES_6   = ex16.PETSc runex16 runex16_2 ex16.rm 
 TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm clean
 TESTEXAMPLES_13  = ex7.PETSc ex7.rm ex13.PETSc ex13.rm clean
 TESTEXAMPLES_15  = ex12.PETSc runex12 runex12_2 ex12.rm clean
 BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
-		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm \
+		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm ex16.PETSc ex16.rm clean \
 		   ex12.PETSc ex12.rm clean
 BUILDEXAMPLES_2	 = ex3.PETSc ex3.rm clean
 BUILDEXAMPLES_3	 = ex1f.PETSc ex1f.rm clean
@@ -287,13 +290,13 @@ runex8:
 runex8_2:
 	-@${MPIRUN} -np 2 ex8 -snes_vecmonitor > /dev/null 2>&1 
 runex9:
-	-@${MPIRUN} -np 4 ex9 -nox -mx 4 -my 4 -ncycles 4 -snes_smonitor \
+	-@${MPIRUN} -np 4 ex9 -nox -mx 4 -my 4 -nlevels 4 -snes_smonitor \
                     -lidvelocity 0. -grashof 1000. > ex9_1.tmp 2>&1; \
            if (diff output/ex9_1.out ex9_1.tmp) then true; \
            else echo "Possible problem with ex9_1, diffs above"; fi; \
            ${RM} -f ex9_1.tmp
 runex9_2:
-	-@${MPIRUN} -np 6 ex9 -nox -Nx 3 -Ny 2 -mx 7 -my 7 -ncycles 3 -snes_smonitor \
+	-@${MPIRUN} -np 6 ex9 -nox -Nx 3 -Ny 2 -mx 7 -my 7 -nlevels 3 -snes_smonitor \
                     -lidvelocity 10. -grashof 1000. > ex9_2.tmp 2>&1; \
            if (diff output/ex9_2.out ex9_2.tmp) then true; \
            else echo "Possible problem with ex9_2, diffs above"; fi; \
@@ -318,5 +321,15 @@ runex14_2:
 	   if (diff output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp
+runex16:
+	-@${MPIRUN} -np 1 ex16 -options_file ex16options -snes_smonitor -ksp_smonitor > ex16_1.tmp 2>&1; \
+	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
+	   else echo "Possible problem with ex16_1, diffs above"; fi; \
+	   ${RM} -f ex16_1.tmp
+runex16_2:
+	-@${MPIRUN} -np 4 ex16 -options_file ex16options_2 -snes_smonitor -ksp_smonitor > ex16_2.tmp 2>&1; \
+	   if (diff output/ex16_2.out ex16_2.tmp) then true; \
+	   else echo "Possible problem with ex16_2, diffs above"; fi; \
+	   ${RM} -f ex16_2.tmp
 
 

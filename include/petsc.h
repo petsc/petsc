@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.260 1999/11/05 14:48:27 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.261 1999/11/10 03:22:47 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -126,7 +126,7 @@ extern int   PetscStrrchr(const char[],char,char **);
 extern int   PetscStrstr(const char[],const char[],char **);
 extern int   PetscStrtok(const char[],const char[],char **);
 extern int   PetscStrallocpy(const char[],char **);
-
+#define PetscStrfree(a) ( (a) ? PetscFree(a) : 0 ) 
 
 extern MPI_Op PetscMaxSum_Op;
 #if defined(PETSC_USE_COMPLEX)

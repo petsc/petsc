@@ -1,4 +1,4 @@
-/* $Id: sles.h,v 1.30 1999/05/11 19:17:17 bsmith Exp bsmith $ */
+/* $Id: sles.h,v 1.31 1999/11/10 03:22:47 bsmith Exp bsmith $ */
 /*
    Defines PETSc interface to the linear solvers. The details of Krylov methods
   and preconditioners are handled in the ksp.h and pc.h files
@@ -19,7 +19,7 @@ extern int SLESGetPC(SLES,PC*);
 extern int SLESGetKSP(SLES,KSP*);
 extern int SLESSetOperators(SLES,Mat,Mat,MatStructure);
 extern int SLESSolve(SLES,Vec,Vec,int*);
-extern int SLESSolveTrans(SLES,Vec,Vec,int*);
+extern int SLESSolveTranspose(SLES,Vec,Vec,int*);
 extern int SLESSetFromOptions(SLES);
 extern int SLESSetTypesFromOptions(SLES);
 extern int SLESPrintHelp(SLES);

@@ -1,4 +1,4 @@
-/*$Id: smg.c,v 1.16 1999/10/13 20:37:56 bsmith Exp bsmith $*/
+/*$Id: smg.c,v 1.17 1999/10/24 14:03:01 bsmith Exp bsmith $*/
 /*
      Additive Multigrid V Cycle routine    
 */
@@ -23,7 +23,7 @@ int MGACycle_Private(MG *mg)
   PetscFunctionBegin;
   /* compute RHS on each level */
   for ( i=l-1; i>0; i-- ) {
-    ierr = MGRestrict(mg[i]->restrct,  mg[i]->b, mg[i-1]->b);CHKERRQ(ierr);
+    ierr = MatRestrict(mg[i]->restrct,  mg[i]->b, mg[i-1]->b);CHKERRQ(ierr);
   }
   /* solve seperately on each level */
   for ( i=0; i<l; i++ ) {
@@ -31,7 +31,7 @@ int MGACycle_Private(MG *mg)
     ierr = SLESSolve(mg[i]->smoothd, mg[i]->b, mg[i]->x,&its);CHKERRQ(ierr); 
   }
   for ( i=1; i<l; i++ ) {  
-    ierr = MGInterpolateAdd(mg[i]->interpolate,mg[i-1]->x,mg[i]->x,mg[i]->x);CHKERRQ(ierr);
+    ierr = MatInterpolateAdd(mg[i]->interpolate,mg[i-1]->x,mg[i]->x,mg[i]->x);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,3 +1,4 @@
+/*$Id: color.c,v 1.42 1999/11/05 14:46:11 bsmith Exp $*/
 
 /*
    Defines the interface to the SparsePack routines, translated into C.

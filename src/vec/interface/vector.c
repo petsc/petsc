@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.187 1999/10/24 13:47:11 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.188 1999/11/05 14:44:51 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1290,11 +1290,18 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
 @*/
 int VecAssemblyBegin(Vec vec)
 {
-  int ierr;
+  int        ierr;
+  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   PetscValidType(vec);
+
+  ierr = OptionsHasName(vec->prefix,"-vec_view_stash",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = VecStashView(vec,VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+  }
+
   PLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);
   if (vec->ops->assemblybegin) {
     ierr = (*vec->ops->assemblybegin)(vec);CHKERRQ(ierr);
@@ -2347,3 +2354,44 @@ int VecSetStashInitialSize(Vec vec,int size, int bsize)
   ierr = VecStashSetInitialSize_Private(&vec->bstash,bsize);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+int VecStashView(Vec v,Viewer viewer)
+{
+  int        ierr,rank,i,j;
+  PetscTruth match;
+  VecStash   *s;
+
+  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscCheckSameComm(v,viewer);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&match);CHKERRQ(ierr);
+  if (!match) SETERRQ1(1,1,"Stash viewer only works with ASCII viewer not %s\n",((PetscObject)v)->type_name);
+  ierr = ViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
+  s = &v->bstash;
+
+  /* print block stash */
+  ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %d block size %d\n",rank,s->n,s->bs);CHKERRQ(ierr);
+  for ( i=0; i<s->n; i++ ) {
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d ",rank,s->idx[i]);CHKERRQ(ierr);
+    for ( j=0; j<s->bs; j++ ) {
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"%g ",s->array[i*s->bs+j]);CHKERRQ(ierr);
+    }
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
+  }
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+
+
+  s = &v->stash;
+
+  /* print basic stash */
+  ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %d\n",rank,s->n);CHKERRQ(ierr);
+  for ( i=0; i<s->n; i++ ) {
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %g\n",rank,s->idx[i],s->array[i]);CHKERRQ(ierr);
+  }
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+
+  ierr = ViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}  

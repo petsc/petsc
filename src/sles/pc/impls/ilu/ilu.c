@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.133 1999/11/05 14:46:26 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.134 1999/11/10 03:20:27 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -634,14 +634,14 @@ static int PCApply_ILU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCApplyTrans_ILU"
-static int PCApplyTrans_ILU(PC pc,Vec x,Vec y)
+#define __FUNC__ "PCApplyTranspose_ILU"
+static int PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 {
   PC_ILU *ilu = (PC_ILU *) pc->data;
   int    ierr;
 
   PetscFunctionBegin;
-  ierr = MatSolveTrans(ilu->fact,x,y);CHKERRQ(ierr);
+  ierr = MatSolveTranspose(ilu->fact,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -685,7 +685,7 @@ int PCCreate_ILU(PC pc)
 
   pc->ops->destroy           = PCDestroy_ILU;
   pc->ops->apply             = PCApply_ILU;
-  pc->ops->applytrans        = PCApplyTrans_ILU;
+  pc->ops->applytranspose    = PCApplyTranspose_ILU;
   pc->ops->setup             = PCSetUp_ILU;
   pc->ops->setfromoptions    = PCSetFromOptions_ILU;
   pc->ops->printhelp         = PCPrintHelp_ILU;

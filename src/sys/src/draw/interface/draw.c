@@ -1,4 +1,4 @@
-/*$Id: draw.c,v 1.61 1999/10/13 20:36:30 bsmith Exp bsmith $*/
+/*$Id: draw.c,v 1.63 1999/10/24 14:01:10 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -103,7 +103,7 @@ int DrawSetTitle(Draw draw,char *title)
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (draw->title) {ierr = PetscFree(draw->title);CHKERRQ(ierr);}
+  ierr = PetscStrfree(draw->title);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   if (draw->ops->settitle) {
     ierr = (*draw->ops->settitle)(draw,title);CHKERRQ(ierr);
@@ -187,8 +187,8 @@ int DrawDestroy(Draw draw)
   if (draw->ops->destroy) {
     ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
   }
-  if (draw->title) {ierr = PetscFree(draw->title);CHKERRQ(ierr);}
-  if (draw->display) {ierr = PetscFree(draw->display);CHKERRQ(ierr);}
+  ierr = PetscStrfree(draw->title);CHKERRQ(ierr);
+  ierr = PetscStrfree(draw->display);CHKERRQ(ierr);
   PLogObjectDestroy(draw);
   PetscHeaderDestroy(draw);
   PetscFunctionReturn(0);
@@ -217,9 +217,12 @@ int DrawGetPopup(Draw draw,Draw *popup)
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   PetscValidPointer(popup);
 
-  if (draw->popup) {*popup = draw->popup; PetscFunctionReturn(0);}
-  if (draw->ops->getpopup) {
-    ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
+  if (draw->popup) {
+    *popup = draw->popup; 
+  } else if (draw->ops->getpopup) {
+      ierr = (*draw->ops->getpopup)(draw,popup);CHKERRQ(ierr);
+  } else {
+    *popup = PETSC_NULL;
   }
   PetscFunctionReturn(0);
 }

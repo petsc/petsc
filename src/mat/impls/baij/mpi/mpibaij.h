@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.20 1999/05/12 03:29:54 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.21 1999/10/13 20:37:30 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -23,7 +23,7 @@ typedef struct {
 
   /* The following variables are used for matrix assembly */
 
-  int           donotstash;             /* if 1, off processor entries dropped */
+  PetscTruth    donotstash;             /* if 1, off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   int           nsends, nrecvs;         /* numbers of sends and receives */
@@ -43,7 +43,7 @@ typedef struct {
 
   Vec           lvec;              /* local vector */
   VecScatter    Mvctx;             /* scatter context for vector */
-  int           roworiented;       /* if true, row-oriented input, default true */
+  PetscTruth    roworiented;       /* if true, row-oriented input, default true */
 
   /* The following variables are for MatGetRow() */
 
@@ -58,7 +58,7 @@ typedef struct {
   Scalar        **hd;                     /* Hash table data */
   int           ht_size;
   int           ht_total_ct,ht_insert_ct; /* Hash table statistics */
-  int           ht_flag;                  /* Flag to indicate if hash tables are used */
+  PetscTruth    ht_flag;                  /* Flag to indicate if hash tables are used */
   double        ht_fact;                  /* Factor to determine the HT size */
 } Mat_MPIBAIJ;
 

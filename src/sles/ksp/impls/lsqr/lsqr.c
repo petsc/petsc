@@ -1,4 +1,4 @@
-/*$Id: lsqr.c,v 1.58 1999/10/24 14:03:17 bsmith Exp bsmith $*/
+/*$Id: lsqr.c,v 1.59 1999/11/05 14:46:47 bsmith Exp bsmith $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -100,7 +100,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   ierr = VecCopy(B,U);CHKERRQ(ierr);
   ierr = VecNorm(U,NORM_2,&beta);CHKERRQ(ierr);
   tmp = 1.0/beta; ierr = VecScale(&tmp,U);CHKERRQ(ierr);
-  ierr = KSP_MatMultTrans(ksp,Amat,U,V);CHKERRQ(ierr);
+  ierr = KSP_MatMultTranspose(ksp,Amat,U,V);CHKERRQ(ierr);
   ierr = VecNorm(V,NORM_2,&alpha);CHKERRQ(ierr);
   tmp = 1.0/alpha; ierr = VecScale(&tmp,V);CHKERRQ(ierr);
 
@@ -116,7 +116,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     ierr = VecNorm(U1,NORM_2,&beta);CHKERRQ(ierr);
     tmp  = 1.0/beta; ierr = VecScale(&tmp,U1);CHKERRQ(ierr);
 
-    ierr = KSP_MatMultTrans(ksp,Amat,U1,V1);CHKERRQ(ierr);
+    ierr = KSP_MatMultTranspose(ksp,Amat,U1,V1);CHKERRQ(ierr);
     tmp  = -beta; ierr = VecAXPY(&tmp,V,V1);CHKERRQ(ierr);
     ierr = VecNorm(V1,NORM_2,&alpha);CHKERRQ(ierr);
     tmp  = 1.0 / alpha; ierr = VecScale(&tmp,V1);CHKERRQ(ierr);
@@ -199,7 +199,6 @@ int KSPCreate_LSQR(KSP ksp)
   ksp->ops->setup                = KSPSetUp_LSQR;
   ksp->ops->solve                = KSPSolve_LSQR;
   ksp->ops->destroy              = KSPDestroy_LSQR;
-  ksp->converged                 = KSPDefaultConverged;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = 0;
