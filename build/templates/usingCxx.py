@@ -33,6 +33,10 @@ class UsingCxx (base.Base):
     '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
     return project.ProjectPath(os.path.join('lib', 'lib'+self.project.getName()+'-'+self.language.lower()+'-'+package+'-server.a'), self.project.getUrl())
 
+  def getExecutableLibrary(self, program):
+    '''Executable libraries follow the naming scheme: lib<project>-<lang>-<program>-exec.a'''
+    return project.ProjectPath(os.path.join('lib', 'lib'+self.project.getName()+'-'+self.language.lower()+'-'+program+'-exec.a'), self.project.getUrl())
+
   def getGenericCompileTarget(self, action):
     '''All purposes are in Cxx, so only a Cxx compiler is necessary.'''
     import build.compile.Cxx
@@ -98,6 +102,28 @@ class UsingCxx (base.Base):
     sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(sharedLinker)
     linker.addEdges(build.transform.Remover(compiler.output.tag), [sharedLinker])
+    target.appendGraph(linker)
+    return target
+
+  def getExecutableCompileTarget(self, program):
+    '''All source should be Cxx'''
+    name         = os.path.basename(program)
+    prefix       = 'executable '+name
+    (target, compiler) = self.getGenericCompileTarget([prefix])
+    sharedTag    = self.language.lower()+' '+prefix+' shared library'
+    clientTag    = self.language.lower()+' client shared library'
+    library      = self.getExecutableLibrary(name)
+    linker       = build.buildGraph.BuildGraph()
+    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag, isSetwise = 1, library = library)
+    sharedLinker.extraLibraries.extend(self.extraLibraries)
+    sharedAdder  = build.processor.LibraryAdder([clientTag, 'old '+clientTag], sharedLinker)
+    progLinker   = build.processor.Linker(self.sourceDB, compiler.processor, sharedTag, prefix, isSetwise = 1, library = program)
+    progAdder    = build.processor.LibraryAdder([clientTag, 'old '+clientTag], progLinker)
+    linker.addVertex(sharedAdder)
+    linker.addEdges(sharedLinker, [sharedAdder])
+    linker.addEdges(progAdder,    [sharedLinker])
+    linker.addEdges(progLinker,   [progAdder])
+    linker.addEdges(build.transform.Remover(compiler.output.tag), [progLinker])
     target.appendGraph(linker)
     return target
 

@@ -97,6 +97,15 @@ class Template(base.Base):
     target.appendGraph(build.buildGraph.BuildGraph([build.fileState.Update(self.sourceDB)]))
     return target
 
+  def getExecutableTarget(self, program):
+    '''Return a BuildGraph which will compile user provided source into an executable'''
+    target = build.buildGraph.BuildGraph()
+    for lang in self.usingSIDL.clientLanguages:
+      using = getattr(self, 'using'+lang.capitalize())
+      graph = self.setupExtraOptions(lang, using.getExecutableCompileTarget(program))
+      target.appendGraph(graph)
+    return target
+
   def install(self):
     for lang in self.usingSIDL.clientLanguages:
       getattr(self, 'using'+lang.capitalize()).installClient()
