@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Change config stuff to use petscconf.h
+
   - Add RCS header to all makefiles and scripts in maint
 
   - MatZeroColumns()
