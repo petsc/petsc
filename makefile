@@ -308,13 +308,9 @@ etags:
 etags_noexamples:
 	-@${RM} ${TAGSDIR}/TAGS_NO_EXAMPLES
 	-@touch ${TAGSDIR}/TAGS_NO_EXAMPLES
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_sourcec alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_sourcej alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_sourceh alltree
+	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION="etags_sourcec etags_sourcej etags_sourceh etags_makefile etags_docs" alltree
 	-@cd src/fortran; ${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_sourcef alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_makefile alltree
 	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES etags_bmakefiles
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_NO_EXAMPLES ACTION=etags_docs alltree
 # Builds the etags file for makefiles
 etags_makefiles: 
 	-@${RM} ${TAGSDIR}/TAGS_MAKEFILES
@@ -325,15 +321,11 @@ etags_makefiles:
 etags_examples: 
 	-@${RM} ${TAGSDIR}/TAGS_EXAMPLES
 	-@touch ${TAGSDIR}/TAGS_EXAMPLES
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION=etags_examplesc alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION=etags_examplesch alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION=etags_examplesf alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION=etags_examplesfh alltree
+	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION="etags_examplesc etags_examplesch etags_examplesf etags_examplesfh" alltree
 etags_fexamples: 
 	-@${RM} ${TAGSDIR}/TAGS_FEXAMPLES
 	-@touch ${TAGSDIR}/TAGS_FEXAMPLES
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_FEXAMPLES ACTION=etags_examplesf alltree
-	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_EXAMPLES ACTION=etags_examplesfh alltree
+	-@${OMAKE} PETSC_DIR=${PETSC_DIR} TAGSFILE=${TAGSDIR}/TAGS_FEXAMPLES ACTION="etags_examplesf etags_examplesfh" alltree
 #
 # These are here for the target allci and allco, and etags
 #
