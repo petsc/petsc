@@ -290,7 +290,7 @@ runex19:
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex20:
-	-@${MPIRUN} -np 1 ex20 -ksp_gmres_irorthog -pc_type jacobi -mat_view -ksp_smonitor > ex20_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex20 -ksp_gmres_irorthog -pc_type jacobi -mat_view -ksp_smonitor -ksp_atol 1.0e-13 > ex20_1.tmp 2>&1; \
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   ${RM} -f ex20_1.tmp
