@@ -1,4 +1,3 @@
-petsc/src/snes/interface/noise
 petsc/src/mat/impls/baij/seq/dgedi.ff
 petsc/src/mat/impls/baij/seq/dgefa.ff
 petsc/src/contrib/reusememory

@@ -3,7 +3,7 @@
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
-SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.
+SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c
 SOURCEF  = snesdnest.F
 SOURCEH  = 
 OBJSC    = snesregi.o snes.o snesj.o snesmfj.o snesut.o snesj2.o
