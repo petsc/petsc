@@ -1,0 +1,133 @@
+# $Id: base,v 1.49 1999/02/07 20:04:13 bsmith Exp $ 
+#
+#     See the file .... for a complete explanation of all these fields
+#
+AR               = ar
+RM               = rm -f
+OMAKE            = make
+RANLIB           = ranlib
+SHELL            = /bin/sh
+# ######################### C and Fortran compiler ########################
+#
+C_CC             = gcc   -D__USE_FIXED_PROTOTYPES__ -fPIC
+C_FC             = f77   -PIC -u  -dalign
+C_CLINKER        = gcc ${COPTFLAGS} 
+C_FLINKER        = f77 ${FOPTFLAGS} 
+C_CCV            = gcc   --version
+C_SYS_LIB        = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
+                   /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/lib/sun4/libm.a
+# change /home/petsc/lib/sun4/libm.a to /usr/lang/SC1.0.1/libm.a
+# ---------------------------- BOPT=g options ----------------------------
+G_COPTFLAGS      = -g  -Wshadow -fomit-frame-pointer
+G_FOPTFLAGS      = -g
+# ----------------------------- BOPT=O options -----------------------------
+O_COPTFLAGS      = -O  -Wshadow -fomit-frame-pointer
+O_FOPTFLAGS      = -O
+# ########################## C++ compiler ##################################
+#
+CXX_CC           = g++   -fPIC
+CXX_FC           = f77   -PIC -u -dalign
+CXX_CLINKER      = g++   ${COPTFLAGS} 
+CXX_FLINKER      = g++   ${COPTFLAGS} 
+CXX_CCV          = g++   --version
+CXX_SYS_LIB      = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
+                   /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/lib/sun4/libm.a
+# ------------------------- BOPT=g_c++ options ------------------------------
+GCXX_COPTFLAGS   = -g -fomit-frame-pointer
+GCXX_FOPTFLAGS   = -g 
+# ------------------------- BOPT=O_c++ options ------------------------------
+OCXX_COPTFLAGS   = -O -fomit-frame-pointer
+OCXX_FOPTFLAGS   = -O 
+# -------------------------- BOPT=g_complex options ------------------------
+GCOMP_COPTFLAGS  = -g -fomit-frame-pointer
+GCOMP_FOPTFLAGS  = -g
+# --------------------------- BOPT=O_complex options -------------------------
+OCOMP_COPTFLAGS  = -O -fomit-frame-pointer
+OCOMP_FOPTFLAGS  = -O
+# ########################### PETSc install options ###########################
+G_PETSCFLAGS     =   -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK -DUSE_DYNAMIC_LIBRARIES  
+O_PETSCFLAGS     =   -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG
+GCXX_PETSCFLAGS  =   -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_STACK
+OCXX_PETSCFLAGS  =    -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O
+GCOMP_PETSCFLAGS =   -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
+OCOMP_PETSCFLAGS =   -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_O \
+                   -DUSE_PETSC_COMPLEX  -DUSE_FORTRAN_KERNELS
+
+##################################################################################
+#
+#   PETSc installers should very rarely ever need to edit anything below this 
+#
+##################################################################################
+
+PARCH            = sun4
+
+include ${PETSC_DIR}/bmake/common
+
+libc: ${LIBNAME}(${OBJSC} ${SOBJSC})
+libadic: ${LIBNAME}(${OBJSADIC})
+libf: ${LIBNAME}(${OBJSF})
+
+#############
+#
+#   These are alternative rules for Fortran compilers that 
+#   do not understand the .F suffix
+
+#.F.f:
+#	-${RM} __$*.f
+#	-${CC} -E -P -traditional-cpp -x c ${FCPPFLAGS} $*.F | grep -v '^C' > __$*.f
+#.F.o:
+#	-${RM} __$*.f
+#	-${CC} -E -P -traditional-cpp -x c ${FCPPFLAGS} $*.F | grep -v '^C' > __$*.f
+#	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
+#	-${RM} __$*.f
+#
+#.F.a:
+#	-${RM} __$*.f
+#	-${CC} -E -P -traditional-cpp -x c ${FCPPFLAGS}  $*.F | grep -v '^C' > __$*.f
+#	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
+#	-${AR} cr ${LIBNAME} $*.o
+#	-${RM} __$*.f
+#
+SLSUFFIX = so.1.0 
+shared: chkopts_basic
+	-@ if [ "${BOPT}" != "Opg" ] && [ "${BOPT}" != "Opg_c++" ] \
+	&&  [ "${BOPT}" != "Opg_complex" ] ; then \
+	echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+	for LIBNAME in ${SHLIBS} ; \
+	do \
+          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
+	    flag=""; \
+	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	    else \
+	      flag="true"; \
+	    fi; \
+            if [ "$$flag" != "" ]; then \
+	      echo "building $$LIBNAME.${SLSUFFIX}"; \
+	      ${AR} x ../$$LIBNAME.a ;\
+	      gcc ${COPTFLAGS} -fPIC -shared  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
+	      ${RM} -f * ; \
+	    fi; \
+	  fi; \
+	done; \
+	cd ../ ; \
+	${RM} -rf tmp; \
+	fi
+
+oshared: chkopts_basic
+	-${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+        echo "building ${LIBNAME}.${SLSUFFIX}"; \
+	${AR} x ${LIBNAME}.a ;\
+	gcc ${COPTFLAGS} -fPIC -shared *.o  -o ${LIBNAME}.${SLSUFFIX}; \
+	cd ../ ; \
+	${RM} -rf tmp
+
