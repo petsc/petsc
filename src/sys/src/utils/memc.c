@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.15 1996/02/29 22:22:38 balay Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.16 1996/03/13 01:16:26 bsmith Exp curfman $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -28,7 +28,7 @@ void PetscMemcpy(void *a,void *b,int n)
 }
 #else
 /*@C
-   PetscMemcpy - Copies n bytes, beginning at location b to the space
+   PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a.
 
    Input Parameters:
@@ -69,21 +69,21 @@ void PetscMemzero(void *a,int n)
 }
 
 /*@C
-  PetscMemcmp  - Compares two byte streams in memory.
+   PetscMemcmp - Compares two byte streams in memory.
 
-  Input Parameters:
+   Input Parameters:
 .  str1 - Pointer to the first byte stream
 .  str2 - Pointer to the second byte stream
 .  len  - The length of the byte stream
-         (boyh str1, str2 are addumed to be of length 'len')
+         (both str1 and str2 are assumed to be of length 'len')
 
-  Output Parameters:
-.    returns integer less than, equal to, or 
-     greater than 0, according as str11 is 
-     less than, equal to, or greater than str2.
+   Output Parameters:
+.  returns integer less than, equal to, or 
+   greater than 0, according to whether str11 is 
+   less than, equal to, or greater than str2.
 
-  Note: 
-  This routine is anologous to memcmp()
+   Note: 
+   This routine is anologous to memcmp()
 @*/
 int PetscMemcmp(void * str1, void *str2, int len)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fwd.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fwd.c,v 1.3 1996/03/19 21:24:22 bsmith Exp curfman $";
 #endif
 /*
       Code for manipulating files.
@@ -7,9 +7,9 @@ static char vcid[] = "$Id: fwd.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #include "files.h"
 
 /*@C
-   PetscGetWorkingDirectory - Get the current working directory.
+   PetscGetWorkingDirectory - Gets the current working directory.
 
-   Input paramters:
+   Input Paramters:
 .  path - use to hold the result value
 .  len  - maximum length of path
 

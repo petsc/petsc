@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.39 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.40 1996/03/19 21:24:22 bsmith Exp curfman $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -235,6 +235,9 @@ int PetscStopErrorHandler(int line,char *dir,char *file,int number,
 .  message - an error text string, usually just printed to the screen
 .  number - the user-provided error number
 
+   Fortran Note:
+   This routine is not supported in Fortran.
+
 .seealso: PetscPopErrorHandler()
 @*/
 int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,char*,void*),
@@ -251,6 +254,9 @@ int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,char*,void*),
 /*@C
    PetscPopErrorHandler - Removes the latest error handler that was 
    pushed with PetscPushErrorHandler().
+
+   Fortran Note:
+   This routine is not supported in Fortran.
 
 .keywords: pop, error, handler
 
@@ -285,7 +291,7 @@ $     SETERRQ(number,message)
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
-.keywords: error, SETERRQ
+.keywords: error, SETERRQ, SETERRA
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler()
 @*/
