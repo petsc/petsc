@@ -15,7 +15,7 @@ typedef struct {
 /* --------------- Parameters used by line search method ----------------- */
   int    max_kspiter_factor; /* computes max KSP iterations */
   double maxstep;	     /* maximum step size */
-  double gamma;		     /* damping parameter */
+  Scalar gamma;		     /* damping parameter */
   double gamma_factor;	     /* damping parameter */
   double rtol;		     /* relative tol for acceptable step (rtol>0) */
   double ftol;		     /* tol for sufficient decrease condition (ftol>0) */

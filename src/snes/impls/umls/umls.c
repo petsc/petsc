@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.26 1996/02/23 02:24:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.27 1996/03/10 17:29:44 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -534,7 +534,7 @@ int SNESCreate_UMLS(SNES snes)
 
 .keywords: SNES, nonlinear, get, line search, damping parameter
 @ */
-int SNESGetLineSearchDampingParameter(SNES snes,double *damp)
+int SNESGetLineSearchDampingParameter(SNES snes,Scalar *damp)
 {
   SNES_UMLS *neP;
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
