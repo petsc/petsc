@@ -309,7 +309,7 @@ class CompileCxx (Compile):
 class CompileMatlabCxx (CompileCxx):
   def __init__(self, sourceDB, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-g -Wall -Wundef -Wpointer-arith -Wbad-function-cast -Wcast-align -Wwrite-strings -Wconversion -Wsign-compare -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wredundant-decls -Wnested-externs -Winline', archiver = 'ar', archiverFlags = 'crv'):
     CompileCxx.__init__(self, sourceDB, None, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
-    self.includeDirs.append(bs.argDB['MATLAB_INCLUDE'])
+    self.includeDirs.append(self.argDB['MATLAB_INCLUDE'])
     self.products = []
 
   def getLibraryName(self, source = None):
