@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.42 1999/12/10 17:28:03 balay Exp bsmith $";
+! "$Id: ex4f.F,v 1.43 2000/01/11 21:02:45 bsmith Exp curfman $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -556,7 +556,7 @@
 !  This routine merely accesses the local vector data via
 !  VecGetArray() and VecRestoreArray().
 !
-      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy)
+      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy,ierr)
       implicit none
 
 #include "include/finclude/petsc.h"
@@ -570,15 +570,12 @@
       Vec          X
       Mat          jac,jac_prec
       MatStructure flag
-      integer      dummy
+      integer      dummy,ierr
 
 !  Common blocks:
       double precision   lambda
       integer  mx,my
       common /params/ lambda,mx,my
-
-!  Local variables:
-      integer      ierr
 
 !  Declarations for use with local array:
       Scalar      lx_v(0:1)
