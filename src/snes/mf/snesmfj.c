@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.14 1995/08/02 20:23:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.15 1995/08/07 22:01:29 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
@@ -94,6 +94,7 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   MatShellSetMult(*J,SNESMatrixFreeMult_Private);
   MatShellSetDestroy(*J,SNESMatrixFreeDestroy_Private);
   PLogObjectParent(*J,mfctx->w);
+  PLogObjectParent(snes,*J);
   return 0;
 }
 
