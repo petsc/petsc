@@ -298,7 +298,7 @@ namespace esi{namespace petsc{
 };
 }}
 
-::esi::petsc::OperatorFactory<double,int> OFInstForIntel64CompilerBug;
+/* ::esi::petsc::OperatorFactory<double,int> OFInstForIntel64CompilerBug; */
 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_CCA)

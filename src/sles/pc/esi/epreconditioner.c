@@ -170,7 +170,7 @@ namespace esi{namespace petsc{
 };
 }}
 
-::esi::petsc::PreconditionerFactory<double,int> PFInstForIntel64CompilerBug;
+/* ::esi::petsc::PreconditionerFactory<double,int> PFInstForIntel64CompilerBug; */
 
 EXTERN_C_BEGIN
 ::esi::PreconditionerFactory<double,int> *create_esi_petsc_preconditionerfactory(void)

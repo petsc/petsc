@@ -272,7 +272,7 @@ namespace esi{namespace petsc{
 };
 }}
 
-::esi::petsc::VectorFactory<double,int> VFInstForIntel64CompilerBug;
+/* ::esi::petsc::VectorFactory<double,int> VFInstForIntel64CompilerBug; */
 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_CCA)
