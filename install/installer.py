@@ -2,28 +2,42 @@
 import install.base
 import install.build
 import install.retrieval
-import nargs
 
 import os
 import sys
 
 class Installer(install.base.Base):
-  def __init__(self, clArgs = None):
-    self.argDB = nargs.ArgDict('ArgDict')
-    self.argDB.setLocalType('backup',       nargs.ArgBool('Backup makes a tar archive of the generated source rather than installing'))
-    self.argDB.setLocalType('forceInstall', nargs.ArgBool('Forced installation overwrites any existing project'))
-    self.argDB.insertArgs(clArgs)
-
-    install.base.Base.__init__(self, self.argDB)
+  def __init__(self, clArgs = None, localDict = 0, initDict = None):
+    install.base.Base.__init__(self, self.setupArgDB(clArgs, localDict, initDict))
     self.retriever = install.retrieval.Retriever(self.argDB)
     self.builder   = install.build.Builder(self.argDB)
-    self.force     = self.argDB.has_key('forceInstall') and self.argDB['forceInstall']
+    self.force     = self.argDB['forceInstall']
     return
+
+  def setupArgDB(self, clArgs, localDict, initDict):
+    import nargs
+    argDB = nargs.ArgDict('ArgDict', localDict = localDict)
+
+    argDB.setLocalType('backup',       nargs.ArgBool('Backup makes a tar archive of the generated source rather than installing'))
+    argDB.setLocalType('forceInstall', nargs.ArgBool('Forced installation overwrites any existing project'))
+
+    argDB['backup']       = 0
+    argDB['forceInstall'] = 0
+
+    argDB.insertArgs(clArgs)
+    argDB.insertArgs(initDict)
+    return argDB
 
   def install(self, projectUrl):
     self.debugPrint('Installing '+projectUrl, 3, 'install')
     root = self.retriever.retrieve(projectUrl, force = self.force);
     self.builder.build(root)
+    return
+
+  def bootstrapInstall(self, projectUrl):
+    self.debugPrint('Installing '+projectUrl+' from bootstrap', 3, 'install')
+    root = self.retriever.retrieve(projectUrl, force = self.force);
+    self.builder.build(root, setupTarget = 'setupBootstrap')
     return
 
   def backup(self, projectUrl):
@@ -36,11 +50,15 @@ class Installer(install.base.Base):
     return
 
 if __name__ == '__main__':
-  installer = Installer(sys.argv[1:])
+  installer   = Installer(sys.argv[1:])
+  compilerUrl = 'bk://sidl.bkbits.net/Compiler'
   for url in installer.argDB.target:
     if url == 'default':
-      url = 'bk://sidl.bkbits.net/Compiler'
-    if installer.argDB.has_key('backup') and installer.argDB['backup']:
+      url = compilerUrl
+    if installer.argDB['backup']:
       installer.backup(url)
     else:
+      if installer.checkBootstrap():
+        booter = Installer(localDict = 1, initDict = installer.argDB)
+        booter.bootstrapInstall('bk://sidl.bkbits.net/Compiler')
       installer.install(url)

@@ -10,9 +10,7 @@ urlparse.uses_netloc.extend(['bk', 'ssh'])
 
 class Retriever(install.base.Base):
   def __init__(self, argDB, base = ''):
-    install.base.Base.__init__(self, argDB)
-    self.argDB = argDB
-    self.base  = base
+    install.base.Base.__init__(self, argDB, base)
     return
 
   def getInstallRoot(self, url):

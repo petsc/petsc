@@ -5,8 +5,7 @@ import imp
 class Base (maker.Maker):
   def __init__(self, argDB, base = ''):
     maker.Maker.__init__(self, argDB)
-    self.argDB = argDB
-    self.base  = base
+    self.base = base
     return
 
   def checkBootstrap(self):

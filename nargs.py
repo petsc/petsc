@@ -139,7 +139,7 @@ class ArgString(ArgEmpty):
   def getValue(self,key):
     if not hasattr(self,'value'):
       if self.help: print self.help
-      try:                      self.value = parseValue(raw_input('Please enter value for '+key+': '))
+      try:                      self.value = parseValue(raw_input('Please enter value for '+str(key)+': '))
       except KeyboardInterrupt:	sys.exit(1)
       return (1,self.value)
     else: return (0,self.value)
@@ -234,11 +234,6 @@ class ArgDict (RDict.RArgs):
     RDict.RArgs.__init__(self, name, addr = addr, purelocal = self.purelocal)
     self.local  = {}
     self.target = ['default']
-    #  the list of targets is always local
-    #  These should not be listed here, but need to be set
-    #  before the command line is parse, hence put here
-    self.setLocalType('install',ArgInt())
-    self.setLocalType('fileset',ArgString())
     self.insertArgs(argList)
     return
 
@@ -331,14 +326,19 @@ class ArgDict (RDict.RArgs):
     return
 
   def insertArgs(self, args):
+    import UserDict
+
     if isinstance(args, list):
       for arg in args:
         (key, value) = parseArgument(arg)
         self.insertArg(key, value, arg)
-    elif isinstance(args, dict):
-      for key in args:
-        value = parseValue(args[key])
-        self.insertArg(key, value, arg)
+    elif isinstance(args, dict) or isinstance(args, UserDict.UserDict):
+      for key in args.keys():
+        if isinstance(args[key], str):
+          value = parseValue(args[key])
+        else:
+          value = args[key]
+        self.insertArg(key, value, None)
     return
 
 if __name__ ==  '__main__':

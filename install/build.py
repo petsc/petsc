@@ -6,12 +6,11 @@ import sys
 class Builder(install.base.Base):
   def __init__(self, argDB):
     install.base.Base.__init__(self, argDB)
-    self.argDB     = argDB
     self.retriever = install.retrieval.Retriever(argDB)
     return
 
-  def build(self, root, target = 'default'):
-    self.debugPrint('Building in '+root, 1, 'install')
+  def build(self, root, target = 'default', setupTarget = ''):
+    self.debugPrint('Building '+str(target)+' in '+root, 1, 'install')
     try:
       maker = self.getMakeModule(root).PetscMake(sys.argv[1:])
     except ImportError:
@@ -20,6 +19,9 @@ class Builder(install.base.Base):
     root  = maker.getRoot()
     for url in maker.executeTarget('getDependencies'):
       self.debugPrint('  Building dependency '+url, 2, 'install')
-      self.build(self.retriever.retrieve(url), target = target)
+      self.build(self.retriever.retrieve(url), target, setupTarget)
     self.debugPrint('Compiling in '+root, 2, 'install')
+    if not isinstance(setupTarget, list): setupTarget = [setupTarget]
+    for t in setupTarget:
+      maker.executeTarget(t)
     return maker.main(target)
