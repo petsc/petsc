@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.1 2000/06/03 20:40:01 bsmith Exp bsmith $*/
+/*$Id: nn.c,v 1.2 2000/06/05 03:52:13 bsmith Exp bsmith $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -12,16 +12,7 @@
 
 */
 
-#include "src/mat/matimpl.h"
-
-typedef struct {
-  Mat                    A;             /* the local Neumann matrix */
-  VecScatter             ctx;           /* update ghost points for matrix vector product */
-  Vec                    x,y;           /* work space for ghost values for matrix vector product */
-  ISLocalToGlobalMapping mapping;
-  int                    rstart,rend;   /* local row ownership */
-  int                    *zeroedrows,nzeroedrows;
-} Mat_NN;
+#include "src/mat/impls/nn/nn.h"      /*I "mat.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatDestroy_NN"></a>*/"MatDestroy_NN" 
@@ -130,7 +121,7 @@ int MatSetValuesLocal_NN(Mat A,int m,int *rows,int n,int *cols,Scalar *values,In
 int MatZeroRowsLocal_NN(Mat A,IS isrows,Scalar *diag)
 {
   Mat_NN *nn = (Mat_NN*)A->data;
-  int    ierr,i,rstart = nn->rstart,rend = nn->rend,*global,*nonlocal,n,cnt,*rows;
+  int    ierr,i,rstart = nn->rstart,rend = nn->rend,*global,n,cnt,*rows;
   IS     isglobal;
 
   PetscFunctionBegin;
