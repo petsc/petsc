@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.35 2000/10/30 17:31:38 balay Exp bsmith $ 
+# $Id: wwwindex.py,v 1.36 2001/03/20 16:50:37 bsmith Exp bsmith $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -291,7 +291,7 @@ def main():
       for dirname in mandirs:
             outfilename  = dirname + '/index.html'
             dname,secname  = posixpath.split(dirname)
-            headfilename = dname + '/sec/bop.' + secname
+            headfilename = PETSC_DIR + 'docs/manualpages/sec/bop.' + secname
             table        = createtable(dirname,levels,secname)
             if not table: continue
             singlelist   = addtolist(dirname,singlelist)
