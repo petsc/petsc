@@ -14,6 +14,7 @@ from urlparse import *
 from string   import *
 import commands
 import re
+import string
 import sys
 
 #=========================Handles getting files =================================================
@@ -320,7 +321,7 @@ class Bootstrap:
           return packages
         elif self.transfermode == "ssh":
           (status,output) = commands.getstatusoutput('ssh terra.mcs.anl.gov \"cd /sandbox/bsmith/petsc-3.0; ls -1 -p | grep / \"')
-          packages = string.split(output,"\n")
+          packages = string.split(output,"/\n")
           return packages
         
 
@@ -347,17 +348,17 @@ class Bootstrap:
         except:
             pass
 
-        installdir = os.getcwd()
-        print "Directory to install (hit return for current) "+installdir
+        self.installdir = os.getcwd()
+        print "Directory to install (hit return for current) "+self.installdir
         c = stdin.readline()
         if not len(c) == 1:
             if c[0] == '/':
-                installdir = c[:-1]
+                self.installdir = c[:-1]
             else:
-                installdir = installdir+"/"+c[:-1]
-        print "Intalling in directory: "+installdir
+                self.installdir = self.installdir+"/"+c[:-1]
+        print "Intalling in directory: "+self.installdir
         try:
-            os.makedirs(installdir)
+            os.makedirs(self.installdir)
         except:
             pass
 
@@ -378,13 +379,13 @@ class Bootstrap:
         print "Initializing the database in the build system"
         self.compilePackage("bs","-debugLevel=0 -debugSections=[] -restart=0 -SIDLRUNTIME_DIR="+
                             self.srcdir+"/SIDLRuntimeANL -JAVA_INCLUDE="+JAVA_INCLUDE+" -JAVA_RUNTIME_LIB="+JAVA_LIB+
-                            " -installh="+installdir+"/include -installlib="+installdir+"/lib -installexamples="+
-                            installdir+"/examples -srcdir="+self.srcdir+" printTargets")
+                            " -installh="+self.installdir+"/include -installlib="+self.installdir+"/lib -installexamples="+
+                            self.installdir+"/examples -srcdir="+self.srcdir+" -installdir="+self.installdir+"                                          printTargets")
     
         if os.environ.has_key('PYTHONPATH'):
-            os.environ['PYTHONPATH'] = self.srcdir+"/bs:"+installdir+"/lib:"+os.environ['PYTHONPATH']
+            os.environ['PYTHONPATH'] = self.srcdir+"/bs:"+self.installdir+"/lib:"+os.environ['PYTHONPATH']
         else:
-            os.environ['PYTHONPATH'] = self.srcdir+"/bs:"+installdir+"/lib"
+            os.environ['PYTHONPATH'] = self.srcdir+"/bs:"+self.installdir+"/lib"
         
         self.getPackage("SIDLRuntimeANL")
         print 'Compiling SIDLRuntimeANL package'
@@ -401,16 +402,24 @@ class Bootstrap:
         self.initializePackage("gui")
         self.compilePackage("gui"," -install=1 compile")
 
+        print "Copying root database to install directory "+self.installdir+"/lib"
+        (status,output) = commands.getstatusoutput("cp -f "+self.srcdir+"/bs/bsArg.db "+self.installdir+"/lib")
+        self.logfile.write(output)
+        if not status == 0:
+            print "Failed copying root database"
+            print output
+            return
+
         print "Running installer"
-        (status,output) = commands.getstatusoutput(installdir+"/examples/python/installer.py")
+        (status,output) = commands.getstatusoutput(self.installdir+"/examples/python/installer.py")
         self.logfile.write(output)
         if not status == 0:
             print "Failed running installer"
             print output
             return
 
-        print "Do setenv PYTHONPATH "+installdir+"/lib (csh) export PYTHONPATH="+installdir+"/lib (sh)"
-        print "and try the examples in "+installdir+"/examples/[python,c++]"
+        print "Do setenv PYTHONPATH "+self.installdir+"/lib (csh) export PYTHONPATH="+self.installdir+"/lib (sh)"
+        print "and try the examples in "+self.installdir+"/examples/[python,c++]"
         self.logfile.close()
     
 # The classes in this file can also
