@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.33 2001/01/15 21:48:25 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.34 2001/01/26 19:00:36 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNC__  
@@ -224,7 +224,7 @@ int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,double,Mat*,Mat*,MatStructure*,
          Jacobian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$     func (TS ts,double t,Vec u,Mat *A,Mat *B,int *flag,void *ctx);
+$     func (TS ts,double t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 
 +  t - current timestep
 .  u - input vector
