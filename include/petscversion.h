@@ -10,16 +10,36 @@
     docs/tex/manual/intro.tex,
     docs/tex/manual/manual.tex.
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.1.1, Patch 22, Released December 19, 2001"
-
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    1
 #define PETSC_VERSION_SUBMINOR 1
-#define PETSC_PATCH_LEVEL      22
+#define PETSC_VERSION_PATCH    22
 #define PETSC_VERSION_DATE     "December 19, 2001"
 #define PETSC_AUTHOR_INFO      "\
-       The PETSc Team\
+       The PETSc Team\n\
     petsc-maint@mcs.anl.gov\n\
  http://www.mcs.anl.gov/petsc/\n"
 
+#define PetscGetVersion(version) (sprintf(*(version),"Petsc Version %d.%d.%d, Patch %d, Released ", \
+                                         PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
+                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_DATE),0)
 #endif
+
+/*M
+    PetscGetVersion - Gets the Petsc Version information in a string.
+
+    Output Parameter:
+.   version - version string
+
+    Level: developer
+
+    Usage:
+    char version[256];
+    PetscGetVersion(&version);
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.seealso: PetscGetProgramName()
+
+M*/
