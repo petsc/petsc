@@ -14,16 +14,25 @@ builddist >>& /dev/null
 /bin/rm -f ~/petsc.tar.gz
 /usr/local/bin/gzip ~/petsc.tar
 chmod ug+w ~/petsc.tar.gz
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S'
 autoftp joshua.math.ucla.edu bsmith put ~/petsc.tar.gz petsc.tar.gz >>& nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S'
 autoftp h4p.llnl.gov bsmith put ~/petsc.tar.gz petsc.tar.gz >>& nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S'
 autoftp ursula.cs.msstate.edu curfman put ~/petsc.tar.gz petsc.tar.gz >>& nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S'
 #
 #  Wait 6.5 hours then retrieve the results
 #
 sleep 30000
+echo sleeping >> nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S'
 autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/bsmith/petsc/maint/nightlylogs/solaris.log >>& nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S'
 autoftp h4p.llnl.gov bsmith get buildtest.log /home/bsmith/petsc/maint/nightlylogs/t3d.log >>& nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S'
 autoftp ursula.cs.msstate.edu curfman get buildtest.log /home/bsmith/petsc/maint/nightlylogs/linux.log >>& nightlylogs/ftp.log
+/bin/date '+DATE: %m/%d/%y TIME: %H:%M:%S'
 
 chmod -f g+rw /home/bsmith/petsc/maint/nightlylogs/solaris.log /home/bsmith/petsc/maint/nightlylogs/t3d.log /home/bsmith/petsc/maint/nightlylogs/linux.log >>& nightlylogs/ftp.log
 echo "ftp logging complete: `date` " >> nightlylogs/ftp.log
