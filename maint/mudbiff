@@ -1,34 +1,51 @@
-#! /usr/local/tcl/bin/tclsh
-#
-#  Determines where a PETSc team member is
-#
-set swho   [lindex $argv 0]
+#! /home/bsmith/bin/sun4/wish4.1 -f
+#! /usr/local/bin/wish -f
 
-set str [exec finger @eagle | grep $swho]
-set time [string range $str 36 40]
 
-if {[string compare [string range $str 57 60] ":0.0"] == 0} {
-  set locate "At ANL workstation"
-} elseif {[string compare [string range $str 57 61] "elvis"] == 0} { 
-  set locate "At ANL workstation"
-} else {
-  set locate "Unknown"
+wm title . "PETSc Demo"
+set petsc_dir $env(PETSC_DIR)
+set display $env(DISPLAY)
+
+
+set gety   [lindex $argv 0]
+set swho   [lindex $argv 1]
+
+
+frame .menu
+
+button .menu.exit -relief raised -bd 2 -text "Exit" -command exit_biff
+
+pack .menu.exit -fill both -side left
+
+frame .stuff
+
+image create photo .image -format gif -file $petsc_dir/bin/demos/petsc_pog.gif
+canvas .stuff.canvas -height 340 -width 360
+.stuff.canvas create image 0 0 -image .image -anchor nw
+
+
+text .stuff.memo -wrap word -width 52 -padx 4m -pady 2m  -bd 2 -font *-times-medium-r-normal--*-140-*-*-*-*-*-*
+
+.stuff.memo insert end "
+$gety, you are wanted in the Petsc room on the MUD by $swho
+"
+
+
+
+.stuff.memo tag configure big \
+        -font *-times-bold-r-normal--*-140-*-*-*-*-*-*
+.stuff.memo configure -state disabled
+
+pack .stuff.canvas .stuff.memo -side left
+
+pack .menu .stuff -side top
+
+
+# --------------------------------------------------------------------------
+
+
+proc exit_biff {} {
+    exit
 }
 
-if {[string compare $time "     "] == 0} {
-  set doing " actively typing"
-} else {
-  set hours [string range $str 36 37]
-  set minutes [string range $str 39 40]
-    if {$hours == 0 && $minutes < 10} {
-      set doing " idle $minutes minutes"
-    } elseif {$hours == 0} {
-      set locate "Maybe in office"
-      set doing    " idle $minutes minutes"
-    } else {
-      set locate "Unknown"
-      set doing  " idle in office $hours hours $minutes minutes"
-    }
-}
-
-puts $locate$doing
+ 

@@ -2,6 +2,21 @@
 #
 #  Simple PETSc MUD demon
 #
+proc mud_biff {swho gety} {
+  puts $gety
+  if {[string compare $gety "Barry"] == 0} {
+    exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "eagle.mcs.anl.gov:0.0" &
+  }
+  if {[string compare $gety "BillG"] == 0} {
+    exec /home/bsmith/petsc/maint/mudbiff $gety $swho -geometry +200+200 -display "godzilla.mcs.anl.gov:0.0" &
+  }
+  if {[string compare $gety "Lois"] == 0} {
+    exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "elvis.mcs.anl.gov:0.0" &
+  }
+  if {[string compare $gety "Satish"] == 0} {
+    exec /home/bsmith/petsc/maint/mudbiff $gety $swho -display "maverick.mcs.anl.gov:0.0" &
+  }
+}
 
 #
 #   Get the most recent petsc-maint added
@@ -31,6 +46,12 @@
                    "* pages you.*\r\n" { 
                                    scan $expect_out(buffer) "%s pages," swho  
                                    send "page $swho I have received your page\r"
+                 } "* whispers to you, *get *\r\n" { 
+                                   scan $expect_out(buffer) "%s whispers to you, \"get %s\"\r\n" swho gety
+#                                  patch for bug in scan
+                                   set gety [string range $gety 0 [expr [string length $gety] - 3]]
+                                   send "mu $swho paging $gety\r"
+                                   mud_biff $swho $gety
                  } "* whispers to you, *\r\n" {
                                    scan $expect_out(buffer) "%s whispers to you, %s\r\n" swho message
                                    send "mu $swho I have received your whisper\r" 
@@ -60,10 +81,10 @@
                                    send "eye $swho\r"
                  } "* nudges you.\r\n" { 
                                    scan $expect_out(buffer) "%s nudges you.\r\n" swho
-                                   send "mu $who What is up?\r"
+                                   send "mu $swho What is up?\r"
                  } "* pokes you.\r\n" { 
                                    scan $expect_out(buffer) "%s pokes you.\r\n" swho
-                                   send "mu $who What is up?\r"
+                                   send "mu $swho What is up?\r"
                  } "* peers at you suspiciously.\r\n" { 
                                    scan $expect_out(buffer) "%s peers at you suspiciously.\r\n" swho
                                    send "peer $swho\r"
@@ -93,3 +114,5 @@
 #    tell us about nightly build problems
 #    tell us were members of the PETSc team are
 #
+
+
