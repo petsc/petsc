@@ -2,27 +2,30 @@
 Additional Capabilities that PETSc Needs:
 
   X - denotes accomplishment!
+  * - denotes work in progress
 
- o High priorities - should be done before the general release, June 20:
+ o High priorities:
 
-   - Upgrade WWW pages, especially installation information.  Use MPICH 
+   - Develop more thorough test program suite.
+
+   * Upgrade tohtml and doc2tex
+
+   * More nonlinear solvers, including those for unconstrained minimization
+
+   X Upgrade WWW pages, especially installation information.  Use MPICH 
      format as a model.
 
-   - Upgrade tohtml and doc2tex
+   X Build new picture clipper for petsc homepage
 
-   - More nonlinear solvers, including those for unconstrained minimization
-
-   - Build new picture clipper for petsc homepage
-
-   - make HTML summary to be pointed to by map.
+   X make HTML summary to be pointed to by map.
 
    X Build wrapper for html manpages
 
  o Lower Priority issues:
 
-   - Fortran interface
+   * Fortran interface
 
-   - Automatic collection of information about the solution process
+   * Automatic collection of information about the solution process
 
    - Finite difference approximations of derivatives using coloring
 
@@ -30,13 +33,14 @@ Additional Capabilities that PETSc Needs:
 
    - make the back issues of PETSc mailing list available from the 
      PETSc homepage. As well as subscribing to the group.
+
 ----------------------------------------------------------------------
 
 Possible projects for summer students:
 
- - Develop TK interfaces for options and monitoring 
+ * Develop TK interfaces for options and monitoring 
 
- - Develop 1 and 3D distributed array code
+ * Develop 1 and 3D distributed array code
 
  - Develop code to rebalance matrices (and vectors) for better 
    load balance during matrix vector multiplies.
@@ -56,12 +60,7 @@ Possible projects for summer students:
 
  - Complex versions of the Krylov subspace solvers
 
- - 1d wave equation, heat equation, etc examples with seperate graphics 
+ * 1d wave equation, heat equation, etc examples with seperate graphics 
    for each processor.
 
-----------------------------------------------------------------------
-
-Changes that should be made to PETSc 
-  - massive changes that require access to all files or changes that 
-    break the structures
 
