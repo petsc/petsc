@@ -183,12 +183,14 @@ PETSc</strong></a></td>
 
             <td>
 
-            <form name="search"
- action="http://breeze.mcs.anl.gov:8765/query.html" method="get"> <input
- type="hidden" value="url:petsc" name="qp">
-              <p><input maxlength="2033" size="35" name="qt"> <input
- type="submit" value="Search PETSc" name="B1"></p>
-            </form>
+<form name="search" method="post" action="http://tiger.mcs.anl.gov/htdig/cgi-bin/htsearch.cgi">
+<input type="hidden" name="config" value="mcs">
+<input type="hidden" name="restrict" value="/petsc"><p>
+</strong></font><input type="text" size="35" name="words" value>
+<input type="submit" value="Search PETSc"> </p>
+</form>
+
+
             </td>
 
             <td align="right"><a href="http://www.mcs.anl.gov/"> <img
