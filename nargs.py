@@ -8,16 +8,26 @@ class Arg(object):
 provided by getValue() and setValue(). These objects can be thought of as type objects for the
 values themselves. It is possible to set an Arg in the RDict which has not yet been assigned a value
 in order to declare the type of that option.'''
-  def __init__(self, key, value = None, help = ''):
-    self.key  = key
-    self.help = help
+  def __init__(self, key, value = None, help = '', isTemporary = 0):
+    self.key = key
     if not value is None:
       self.setValue(value)
+    self.help        = help
+    self.isTemporary = isTemporary
     return
 
   def isValueSet(self):
     '''Determines whether the value of this argument has been set'''
     return hasattr(self, 'value')
+
+  def getTemporary(self):
+    '''Retrieve the flag indicating whether the item should be persistent'''
+    return self.isTemporary
+
+  def setTemporary(self, isTemporary):
+    '''Set the flag indicating whether the item should be persistent'''
+    self.isTemporary = isTemporary
+    return
 
   def parseValue(arg):
     '''Return the object represented by the value portion of a string argument'''
@@ -106,8 +116,8 @@ in order to declare the type of that option.'''
 
 class ArgBool(Arg):
   '''Arguments that represent boolean values'''
-  def __init__(self, key, value = None, help = ''):
-    Arg.__init__(self, key, value, help)
+  def __init__(self, key, value = None, help = '', isTemporary = 0):
+    Arg.__init__(self, key, value, help, isTemporary)
     return
 
   def getEntryPrompt(self):
@@ -124,8 +134,8 @@ class ArgBool(Arg):
 
 class ArgInt(Arg):
   '''Arguments that represent integer numbers'''
-  def __init__(self, key, value = None, help = '', min = -2147483647L, max = 2147483648L):
-    Arg.__init__(self, key, value, help)
+  def __init__(self, key, value = None, help = '', min = -2147483647L, max = 2147483648L, isTemporary = 0):
+    Arg.__init__(self, key, value, help, isTemporary)
     self.min = min
     self.max = max
     return
@@ -146,8 +156,8 @@ class ArgInt(Arg):
 
 class ArgReal(Arg):
   '''Arguments that represent floating point numbers'''
-  def __init__(self, key, value = None, help = '', min = -1.7976931348623157e308, max = 1.7976931348623157e308):
-    Arg.__init__(self, key, value, help)
+  def __init__(self, key, value = None, help = '', min = -1.7976931348623157e308, max = 1.7976931348623157e308, isTemporary = 0):
+    Arg.__init__(self, key, value, help, isTemporary)
     self.min = min
     self.max = max
     return
@@ -168,8 +178,8 @@ class ArgReal(Arg):
 
 class ArgDir(Arg):
   '''Arguments that represent directories'''
-  def __init__(self, key, value = None, help = '', mustExist = 1):
-    Arg.__init__(self, key, value, help)
+  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
+    Arg.__init__(self, key, value, help, isTemporary)
     self.mustExist = mustExist
     return
 
@@ -201,8 +211,8 @@ class ArgDir(Arg):
 
 class ArgLibrary(Arg):
   '''Arguments that represent libraries'''
-  def __init__(self, key, value = None, help = '', mustExist = 1):
-    Arg.__init__(self, key, value, help)
+  def __init__(self, key, value = None, help = '', mustExist = 1, isTemporary = 0):
+    Arg.__init__(self, key, value, help, isTemporary)
     self.mustExist = mustExist
     return
 

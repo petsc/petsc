@@ -402,7 +402,7 @@ Arg class, which wraps the usual value.'''
       self.saveTimer = None
       # This should be a critical section
       dbFile = file(self.saveFilename, 'w')
-      data   = dict(self.localitems())
+      data   = dict(filter(lambda i: not i[1].getTemporary(), self.localitems()))
       cPickle.dump(data, dbFile)
       dbFile.close()
       self.writeLogLine('Saved local dictionary to '+os.path.abspath(self.saveFilename))
