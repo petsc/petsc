@@ -8,9 +8,15 @@
 #define IDR_POPUP      103
 #define MAX_LOADSTRING 100
 
+#if !defined(SelectPen)
 #define SelectPen(hdc, hpen)  ((HPEN)SelectObject((hdc),  (HGDIOBJ)(HPEN)(hpen)))
+#endif
+#if !defined(SelectFont)
 #define SelectFont(hdc,hfont) ((HFONT)SelectObject((hdc), (HGDIOBJ)(HFONT)(hfont)))
+#endif
+#if !defined(GetStockBrush)
 #define GetStockBrush(i)      ((HBRUSH)GetStockObject(i))
+#endif
 
 #define XTRANS(draw,win,x) \
    (int)(((win)->w)*((draw)->port_xl + (((x - (draw)->coor_xl)*\

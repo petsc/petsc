@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
-                                            'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip'])
+                                            'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
@@ -409,45 +409,59 @@ class Configure(config.base.Configure):
 
   def configureWin32(self):
     '''Win32 non-cygwin specific stuff'''
-    if not self.functions.haveFunction('GetComputerName'):
-      if self.libraries.check('Kernel32.lib','GetComputerName',prototype='#include <Windows.h>',
+    kernel32=0
+    if self.libraries.check('Kernel32.lib','GetComputerName',prototype='#include <Windows.h>',
+                            call='GetComputerName(NULL,NULL);'):
+      self.addDefine('HAVE_WINDOWS_H',1)
+      self.addDefine('HAVE_GETCOMPUTERNAME',1)
+      kernel32=1
+    elif self.libraries.check('kernel32','GetComputerName',prototype='#include <Windows.h>',
                               call='GetComputerName(NULL,NULL);'):
-        self.addDefine('HAVE_WINDOWS_H',1)
-        self.addDefine('HAVE_GETCOMPUTERNAME',1)
-      if self.base.checkLink('#include <Windows.h>','GetProcAddress(0,0)'):
+      self.addDefine('HAVE_WINDOWS_H',1)
+      self.addDefine('HAVE_GETCOMPUTERNAME',1)
+      kernel32=1
+    if kernel32:  
+      if self.checkLink('#include <Windows.h>','GetProcAddress(0,0)'):
         self.addDefine('HAVE_GETPROCADDRESS',1)
-      if self.base.checkLink('#include <Windows.h>','LoadLibrary(0)'):
+      if self.checkLink('#include <Windows.h>','LoadLibrary(0)'):
         self.addDefine('HAVE_LOADLIBRARY',1)
-    if not self.functions.haveFunction('GetUserName'):
-      if self.libraries.check('Advapi32.lib','GetUserName',prototype='#include <Windows.h>',
+      if self.checkLink('#include <Windows.h>\n','QueryPerformanceCounter(0);\n'):
+        self.addDefine('USE_NT_TIME',1)
+    if self.libraries.check('Advapi32.lib','GetUserName',prototype='#include <Windows.h>',
+                            call='GetUserName(NULL,NULL);'):
+      self.addDefine('HAVE_GET_USER_NAME',1)
+    elif self.libraries.check('advapi32','GetUserName',prototype='#include <Windows.h>',
                               call='GetUserName(NULL,NULL);'):
-        self.addDefine('HAVE_GET_USER_NAME',1)
-    self.libraries.check('User32.lib','GetDC',prototype='#include <Windows.h>',call='GetDC(0);')
-    self.libraries.check('Gdi32.lib','CreateCompatibleDC',prototype='#include <Windows.h>',call='CreateCompatibleDC(0);')
+      self.addDefine('HAVE_GET_USER_NAME',1)
+        
+    if not self.libraries.check('User32.lib','GetDC',prototype='#include <Windows.h>',call='GetDC(0);'):
+      self.libraries.check('user32','GetDC',prototype='#include <Windows.h>',call='GetDC(0);')
+    if not self.libraries.check('Gdi32.lib','CreateCompatibleDC',prototype='#include <Windows.h>',call='CreateCompatibleDC(0);'):
+      self.libraries.check('gdi32','CreateCompatibleDC',prototype='#include <Windows.h>',call='CreateCompatibleDC(0);')
+      
+    if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
+      self.missingPrototypes.append('typedef int uid_t;')
+      self.missingPrototypes.append('typedef int gid_t;')
+    if not self.checkCompile('#include <sys/stat.h>\n#include <io.h>\n','int a=R_OK;\n'):
+      self.missingPrototypes.append('#define R_OK 04')
+      self.missingPrototypes.append('#define W_OK 02')
+      self.missingPrototypes.append('#define X_OK 01')
+    if not self.checkLink('#include <sys/stat.h>\n','int a=0;\nif (S_ISDIR(a)){}\n'):
+      self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
+      self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
+    if self.checkCompile('#include <Windows.h>\n','LARGE_INTEGER a;\nDWORD b=a.u.HighPart;\n'):
+      self.addDefine('HAVE_LARGE_INTEGER_U',1)
+
+    # Windows requires a Binary file creation flag when creating/opening binary files.  Is a better test in order?
+    if self.checkCompile('#include <Windows.h>\n',''):
+      self.addDefine('HAVE_O_BINARY',1)
+
     if self.framework.argDB['CC'].find('win32fe') >= 0:
-      self.addDefine('CANNOT_START_DEBUGGER',1)
-      self.addDefine('USE_NT_TIME',1)
-      if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
-        self.missingPrototypes.append('typedef int uid_t;')
-        self.missingPrototypes.append('typedef int gid_t;')
-      if not self.checkCompile('#include <sys/stat.h>\n','int a=R_OK;\n'):
-        self.missingPrototypes.append('#define R_OK 04')
-        self.missingPrototypes.append('#define W_OK 02')
-        self.missingPrototypes.append('#define X_OK 01')
-      if not self.checkLink('#include <sys/stat.h>\n','int a=0;\nif (S_ISDIR(a)){}\n'):
-        self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
-        self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
-      if not self.checkCompile('#include <sys/types.h>\n','off_t a;\n'):
-        self.framework.addDefine('off_t','long')
-      # This really needs to be tested for properly, but I'm lazy while travelling
       self.addDefine('PATH_SEPARATOR','\';\'')
       self.addDefine('DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
-      self.addDefine('HAVE_O_BINARY',1)
+      self.addDefine('CANNOT_START_DEBUGGER',1)
     else:
-      if self.checkCompile('#include <sys/cygwin.h>\n',''):
-        self.addDefine('HAVE_O_BINARY',1)
-        self.addDefine('USE_NT_TIME',1)
       self.addDefine('PATH_SEPARATOR','\':\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
@@ -461,7 +475,10 @@ class Configure(config.base.Configure):
       else:
         raise RuntimeError('********** Error: Unable to locate a functional MPI. Please consult configure.log. **********')
     self.framework.addDefine('HAVE_MPI', 1)
-    self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/include/mpiuni')
+    if 'STDCALL' in self.compilers.defines:
+      self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/include/mpiuni'+' -D'+'MPIUNI_USE_STDCALL')
+    else:
+      self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/include/mpiuni')
     self.framework.addSubstitution('MPI_LIB',     '-L${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH} -lmpiuni')
     self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/bin/mpirun.uni')
     self.framework.addSubstitution('MPE_INCLUDE', '')

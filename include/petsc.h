@@ -969,7 +969,9 @@ M*/
 #if defined(PETSC_HAVE_SYS_PARAM_H)
 #include <sys/param.h>
 #endif
-
+#if defined(PETSC_HAVE_SYS_TYPES_H)
+#include <sys/types.h>
+#endif
 #if defined(MAXPATHLEN)
 #  define PETSC_MAX_PATH_LEN     MAXPATHLEN
 #elif defined(MAX_PATH)

@@ -150,7 +150,9 @@ class Options(config.base.Configure):
     elif re.match(r'i[3-9]86', self.framework.host_cpu):
       # Portland Group Fortran 90
       if compiler == 'pgf90':
-        if bopt == 'O':
+        if bopt == '':
+          flags.append('-Mfree')
+        elif bopt == 'O':
           flags.extend(['-fast', '-tp p6', '-Mnoframe'])
       # Linux Intel
       elif compiler in ['ifc', 'ifort']:
