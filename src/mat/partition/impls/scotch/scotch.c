@@ -633,7 +633,11 @@ PetscErrorCode MatPartitioningDestroy_Scotch(MatPartitioning part)
     PetscFunctionReturn(0);
 }
 
-/*MC
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Scotch"
+/*@C
    MAT_PARTITIONING_SCOTCH - Creates a partitioning context via the external package SCOTCH.
 
    Collective on MPI_Comm
@@ -660,10 +664,6 @@ PetscErrorCode MatPartitioningDestroy_Scotch(MatPartitioning part)
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
 @*/
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Scotch"
 PetscErrorCode MatPartitioningCreate_Scotch(MatPartitioning part)
 {
     PetscErrorCode ierr;
