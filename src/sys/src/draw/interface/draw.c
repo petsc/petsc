@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.26 1995/12/21 18:33:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: draw.c,v 1.27 1996/01/03 14:23:20 curfman Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -321,8 +321,9 @@ int DrawSetDoubleBuffer(Draw ctx)
    Input Parameter:
 .  ctx - the drawing context
 
+.keywords: draw, pause
 
-.keywords: 
+.seealso: DrawSetPause(), DrawGetPause()
 @*/
 int DrawPause(Draw ctx)
 {
