@@ -16,6 +16,42 @@ EXTERN int DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *);
 #define SetInRange(i,m) ((i < 0) ? m+i:((i >= m) ? i-m:i))
 
 #undef __FUNCT__  
+#define __FUNCT__ "DASetBlockFills"
+/*@C
+    DASetBlockFills - Sets the fill pattern in each block for a multi-component problem
+    of the matrix returned by DAGetMatrix().
+
+    Collective on DA
+
+    Input Parameter:
++   da - the distributed array
+.   dfill - the fill pattern in the diagonal block (may be PETSC_NULL, means use dense block)
+-   ofill the fill pattern in the off-diagonal blocks
+
+
+    Level: developer
+
+    Notes: This only makes sense when you are doing multicomponent problems but using the
+       MPIAIJ matrix format
+
+           The arrays ofill and dfill MUST be obtained with PetscMalloc() and should NOT
+       be freed by the user (they will be freed when the DA is destroyed).
+
+           The format for dfill and ofill is the modified CSR format
+       http://dutepp0.et.tudelft.nl/~robbert/sparse_matrix_compression.html
+
+.seealso DAGetMatrix()
+
+@*/
+int DASetBlockFills(DA da,int *dfill,int *ofill)
+{
+  PetscFunctionBegin;
+  da->dfill = dfill;
+  da->ofill = ofill;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring" 
 /*@C
     DAGetColoring - Gets the coloring required for computing the Jacobian via
@@ -371,6 +407,7 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 EXTERN int DAGetMatrix1d_MPIAIJ(DA,Mat *);
 EXTERN int DAGetMatrix2d_MPIAIJ(DA,Mat *);
 EXTERN int DAGetMatrix3d_MPIAIJ(DA,Mat *);
+EXTERN int DAGetMatrix3d_MPIAIJ_Fill(DA,Mat *);
 EXTERN int DAGetMatrix3d_MPIBAIJ(DA,Mat *);
 EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat *);
 
@@ -442,7 +479,11 @@ int DAGetMatrix(DA da,MatType mtype,Mat *J)
     } else if (dim == 2) {
       ierr =  DAGetMatrix2d_MPIAIJ(da,J);CHKERRQ(ierr);
     } else if (dim == 3) {
-      ierr =  DAGetMatrix3d_MPIAIJ(da,J);CHKERRQ(ierr);
+      if (da->ofill) {
+	ierr =  DAGetMatrix3d_MPIAIJ_Fill(da,J);CHKERRQ(ierr);
+      } else {
+	ierr =  DAGetMatrix3d_MPIAIJ(da,J);CHKERRQ(ierr);
+      }
     }
   } else if(baij) {
     if (dim == 3) {
@@ -1087,3 +1128,175 @@ int DAGetMatrix3d_MPISBAIJ(DA da,Mat *J)
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
+
+
+/* ---------------------------------------------------------------------------------*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetMatrix3d_MPIAIJ_Fill" 
+int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat *J)
+{
+  int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
+  int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
+  int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk,size;
+  int                    ifill_col,*dfill = da->dfill,*ofill = da->ofill;
+  int                    dims[3],starts[3];
+  MPI_Comm               comm;
+  PetscScalar            *values;
+  DAPeriodicType         wrap;
+  ISLocalToGlobalMapping ltog;
+  DAStencilType          st;
+
+  PetscFunctionBegin;
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  
+  */
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
+  col    = 2*s + 1;
+  if (DAXPeriodic(wrap) && (m % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
+  if (DAYPeriodic(wrap) && (n % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
+  if (DAZPeriodic(wrap) && (p % col)){ 
+    SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
+                 by 2*stencil_width + 1\n");
+  }
+
+  ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+
+  /* create the matrix */
+  /* create empty Jacobian matrix */
+  ierr = MatCreate(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
+  ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(col*col*col*nc*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
+
+  /* determine the matrix preallocation information */
+  ierr = MatPreallocateInitialize(comm,nc*nx*ny*nz,nc*nx*ny*nz,dnz,onz);CHKERRQ(ierr); 
+
+
+  for (i=xs; i<xs+nx; i++) {
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
+    for (j=ys; j<ys+ny; j++) {
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
+      for (k=zs; k<zs+nz; k++) {
+        kstart = DAZPeriodic(wrap) ? -s : (PetscMax(-s,-k)); 
+        kend   = DAZPeriodic(wrap) ?  s : (PetscMin(s,p-k-1));
+	
+        slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+	
+	for (l=0; l<nc; l++) {
+	  cnt  = 0;
+	  for (ii=istart; ii<iend+1; ii++) {
+	    for (jj=jstart; jj<jend+1; jj++) {
+	      for (kk=kstart; kk<kend+1; kk++) {
+		if (ii || jj || kk) {
+		  if ((st == DA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+		    for (ifill_col=ofill[l]; ifill_col<ofill[l+1]; ifill_col++)
+		      cols[cnt++]  = ofill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+		  }
+		} else {
+		  if (dfill) {
+		    for (ifill_col=dfill[l]; ifill_col<dfill[l+1]; ifill_col++)
+		      cols[cnt++]  = dfill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+		  } else {
+		    for (ifill_col=0; ifill_col<nc; ifill_col++)
+		      cols[cnt++]  = ifill_col + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+		  }
+		}
+	      }
+	    }
+	  }
+	  rows[0] = l + nc*(slot);
+	  ierr = MatPreallocateSetLocal(ltog,1,rows,cnt,cols,dnz,onz);CHKERRQ(ierr); 
+	}
+      }
+    }
+  }
+  /* set matrix type and preallocation */
+  if (size > 1) {
+    ierr = MatSetType(*J,MATMPIAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
+  }
+  ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);  
+  ierr = MatSeqBAIJSetPreallocation(*J,nc,0,dnz);CHKERRQ(ierr);  
+  ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);  
+  ierr = MatMPIBAIJSetPreallocation(*J,nc,0,dnz,0,onz);CHKERRQ(ierr);  
+
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr); 
+
+  ierr = MatSetLocalToGlobalMapping(*J,ltog);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
+  ierr = MatSetStencil(*J,3,dims,starts,nc);CHKERRQ(ierr);
+
+  /*
+    For each node in the grid: we get the neighbors in the local (on processor ordering
+    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
+    PETSc ordering.
+  */
+  for (i=xs; i<xs+nx; i++) {
+    istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
+    iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));
+    for (j=ys; j<ys+ny; j++) {
+      jstart = DAYPeriodic(wrap) ? -s : (PetscMax(-s,-j)); 
+      jend   = DAYPeriodic(wrap) ?  s : (PetscMin(s,n-j-1));
+      for (k=zs; k<zs+nz; k++) {
+        kstart = DAZPeriodic(wrap) ? -s : (PetscMax(-s,-k)); 
+        kend   = DAZPeriodic(wrap) ?  s : (PetscMin(s,p-k-1));
+	
+        slot = i - gxs + gnx*(j - gys) + gnx*gny*(k - gzs);
+	
+	for (l=0; l<nc; l++) {
+	  cnt  = 0;
+	  for (ii=istart; ii<iend+1; ii++) {
+	    for (jj=jstart; jj<jend+1; jj++) {
+	      for (kk=kstart; kk<kend+1; kk++) {
+		if (ii || jj || kk) {
+		  if ((st == DA_STENCIL_BOX) || ((!ii && !jj) || (!jj && !kk) || (!ii && !kk))) {/* entries on star*/
+		    for (ifill_col=ofill[l]; ifill_col<ofill[l+1]; ifill_col++)
+		      cols[cnt++]  = ofill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+		  }
+		} else {
+		  if (dfill) {
+		    for (ifill_col=dfill[l]; ifill_col<dfill[l+1]; ifill_col++)
+		      cols[cnt++]  = dfill[ifill_col] + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+		  } else {
+		    for (ifill_col=0; ifill_col<nc; ifill_col++)
+		      cols[cnt++]  = ifill_col + nc*(slot + ii + gnx*jj + gnx*gny*kk);
+		  }
+		}
+	      }
+	    }
+	  }
+	  rows[0] = l + nc*(slot);
+	  ierr = MatSetValuesLocal(*J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+	}
+      }
+    }
+  }
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = PetscFree(rows);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
+
+
+
+

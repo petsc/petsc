@@ -107,6 +107,9 @@ struct _p_DA {
   int                    (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
   int                    (*adic_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
   int                    (*adicmf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
+
+  /* this is used by DASetBlockFills() */
+  int                    *ofill,*dfill;
 };
 
 /*

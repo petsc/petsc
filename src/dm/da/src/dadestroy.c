@@ -134,6 +134,11 @@ int DADestroy(DA da)
   }
 
   if (da->coordinates) {ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);}
+
+  if (da->dfill) {ierr = PetscFree(da->dfill);CHKERRQ(ierr);}
+  if (da->ofill) {ierr = PetscFree(da->ofill);CHKERRQ(ierr);
+  }
+
   PetscHeaderDestroy(da);
   PetscFunctionReturn(0);
 }

@@ -194,6 +194,7 @@ EXTERN int DAGetMatrix(DA,MatType,Mat *);
 EXTERN int DASetGetMatrix(DA,int (*)(DA,MatType,Mat *));
 EXTERN int DAGetInterpolation(DA,DA,Mat*,Vec*);
 EXTERN int DAGetInjection(DA,DA,VecScatter*);
+EXTERN int DASetBlockFills(DA,int*,int*);
 
 EXTERN int DAGetAdicArray(DA,PetscTruth,void**,void**,int*);
 EXTERN int DARestoreAdicArray(DA,PetscTruth,void**,void**,int*);
