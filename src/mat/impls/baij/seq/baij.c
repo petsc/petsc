@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.85 1997/01/27 21:42:54 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.86 1997/01/29 19:45:09 balay Exp bsmith $";
 #endif
 
 /*
@@ -466,6 +466,109 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
       low = i;
     }
     ailen[brow] = nrow;
+  }
+  return 0;
+} 
+
+#undef __FUNC__  
+#define __FUNC__ "MatSetValues_SeqBAIJ"
+int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
+  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented;
+  int         *aj=a->j,nonew=a->nonew,bs=a->bs;
+  int          ridx,cidx,bs2=a->bs2;
+  Scalar      *ap,value,*aa=a->a,*bap;
+
+  for ( k=0; k<m; k++ ) { /* loop over added rows */
+    row  = im[k]; 
+#if defined(PETSC_BOPT_g)  
+    if (row < 0) SETERRQ(1,0,"Negative row");
+    if (row >= a->m) SETERRQ(1,0,"Row too large");
+#endif
+    rp   = aj + ai[row]; 
+    ap   = aa + bs2*ai[row];
+    rmax = imax[row]; 
+    nrow = ailen[row]; 
+    low  = 0;
+    for ( l=0; l<n; l++ ) { /* loop over added columns */
+#if defined(PETSC_BOPT_g)  
+      if (in[l] < 0) SETERRQ(1,0,"Negative column");
+      if (in[l] >= a->n) SETERRQ(1,0,"Column too large");
+#endif
+      col = in[l]; 
+      ridx = row % bs; cidx = col % bs;
+      if (roworiented) {
+        value = *v++; 
+      }
+      else {
+        value = v[k + l*m];
+      }
+      if (!sorted) low = 0; high = nrow;
+      while (high-low > 7) {
+        t = (low+high)/2;
+        if (rp[t] > col) high = t;
+        else             low  = t;
+      }
+      for ( i=low; i<high; i++ ) {
+        if (rp[i] > col) break;
+        if (rp[i] == col) {
+          bap  = ap +  bs2*i + bs*cidx + ridx;
+          if (is == ADD_VALUES) *bap += value;  
+          else                  *bap  = value; 
+          goto noinsert;
+        }
+      } 
+      if (nonew) goto noinsert;
+      if (nrow >= rmax) {
+        /* there is no extra room in row, therefore enlarge */
+        int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
+        Scalar *new_a;
+
+        /* malloc new storage space */
+        len     = new_nz*(sizeof(int)+bs2*sizeof(Scalar))+(a->mbs+1)*sizeof(int);
+        new_a   = (Scalar *) PetscMalloc( len ); CHKPTRQ(new_a);
+        new_j   = (int *) (new_a + bs2*new_nz);
+        new_i   = new_j + new_nz;
+
+        /* copy over old data into new slots */
+        for ( ii=0; ii<row+1; ii++ ) {new_i[ii] = ai[ii];}
+        for ( ii=row+1; ii<a->mbs+1; ii++ ) {new_i[ii] = ai[ii]+CHUNKSIZE;}
+        PetscMemcpy(new_j,aj,(ai[row]+nrow)*sizeof(int));
+        len = (new_nz - CHUNKSIZE - ai[row] - nrow);
+        PetscMemcpy(new_j+ai[row]+nrow+CHUNKSIZE,aj+ai[row]+nrow,
+                                                           len*sizeof(int));
+        PetscMemcpy(new_a,aa,(ai[row]+nrow)*bs2*sizeof(Scalar));
+        PetscMemzero(new_a+bs2*(ai[row]+nrow),bs2*CHUNKSIZE*sizeof(Scalar));
+        PetscMemcpy(new_a+bs2*(ai[row]+nrow+CHUNKSIZE),
+                    aa+bs2*(ai[row]+nrow),bs2*len*sizeof(Scalar)); 
+        /* free up old matrix storage */
+        PetscFree(a->a); 
+        if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);}
+        aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j; 
+        a->singlemalloc = 1;
+
+        rp   = aj + ai[row]; ap = aa + bs2*ai[row];
+        rmax = imax[row] = imax[row] + CHUNKSIZE;
+        PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(Scalar)));
+        a->maxnz += bs2*CHUNKSIZE;
+        a->reallocs++;
+        a->nz++;
+      }
+      N = nrow++ - 1; 
+      /* shift up all the later entries in this row */
+      for ( ii=N; ii>=i; ii-- ) {
+        rp[ii+1] = rp[ii];
+        PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(Scalar));
+      }
+      if (N >= i) PetscMemzero(ap+bs2*i,bs2*sizeof(Scalar)); 
+      rp[i]                      = col; 
+      ap[bs2*i + bs*cidx + ridx] = value; 
+      noinsert:;
+      low = i;
+    }
+    ailen[row] = nrow;
   }
   return 0;
 } 
@@ -1790,7 +1893,9 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatPrintHelp_SeqBAIJ,MatScale_SeqBAIJ,
        0,0,0,MatGetBlockSize_SeqBAIJ,
        MatGetRowIJ_SeqBAIJ,
-       MatRestoreRowIJ_SeqBAIJ};
+       MatRestoreRowIJ_SeqBAIJ,
+       0,0,0,0,0,0,
+       MatSetValuesBlocked_SeqBAIJ};
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqBAIJ"
