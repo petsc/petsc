@@ -54,6 +54,8 @@ else if ("$LARCH" == "Linux" ) then
   set LARCH = "linux"
 else if ("$LARCH" == "CRAY Y-MP" ) then 
   set LARCH = "t3d"
+else if ("$LARCH" == "CRAY T3E" ) then
+  set LARCH = "t3e"
 endif
 #
 echo $LARCH
