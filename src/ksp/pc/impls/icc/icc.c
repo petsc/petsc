@@ -29,7 +29,11 @@ PetscErrorCode PCICCSetDamping_ICC(PC pc,PetscReal damping)
 
   PetscFunctionBegin;
   dir = (PC_ICC*)pc->data;
-  dir->info.damping = damping;
+  if (damping == (PetscReal) PETSC_DECIDE) {
+    dir->info.damping = 1.e-12;
+  } else {
+    dir->info.damping = damping;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -419,8 +423,11 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     ierr = PetscOptionsName("-pc_icc_shift","Manteuffel shift applied to diagonal","PCICCSetShift",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCICCSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+    } else {
+      ierr = PCICCSetShift(pc,PETSC_FALSE);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_icc_zeropivot","Pivot is considered zero if less than","PCICCSetSetZeroPivot",icc->info.zeropivot,&icc->info.zeropivot,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_icc_zeropivot","Pivot is considered zero if less than","PCICCSetZeroPivot",icc->info.zeropivot,&icc->info.zeropivot,0);CHKERRQ(ierr);
+ 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
