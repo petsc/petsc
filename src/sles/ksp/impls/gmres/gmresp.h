@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.8 1996/08/08 14:41:03 bsmith Exp bsmith $ */
+/* $Id: gmresp.h,v 1.9 1996/09/12 16:25:24 bsmith Exp bsmith $ */
 /*
    Private data structure used by the GMRES method.
 */
@@ -40,12 +40,24 @@ typedef struct {
 
     /* In order to allow the solution to be constructed during the solution
        process, we need some additional information: */
+
     int    it;              /* Current iteration */
     Scalar *nrs;            /* temp that holds the coefficients of the 
                                Krylov vectors that form the minimum residual
                                solution */
-    Vec    sol_temp;       /* used to hold temporary solution */
-    } KSP_GMRES;
+    Vec    sol_temp;        /* used to hold temporary solution */
+
+    /*
+       Supported for David Keye's request for prestarted GMRES. The Krylov space
+       is augmented by additional vectors that are either
+         1) provided initially by the user via KSPGMRESGetPrestartVectors() or
+         2) computed during the first iteration
+    */
+
+    int    nprestart_requested; /* number of prestart directions that are to be computed in
+                                   the first solver */
+    int    nprestart;           /* number of prestart directions */     
+} KSP_GMRES;
 
 #define HH(a,b)  (gmres->hh_origin + (b)*(gmres->max_k+2)+(a))
 #define HES(a,b) (gmres->hes_origin + (b)*(gmres->max_k+1)+(a))

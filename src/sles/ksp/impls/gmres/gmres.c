@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.104 1998/07/29 04:03:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.105 1998/07/29 14:27:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -155,8 +155,8 @@ static int GMRESResidual(  KSP ksp,int restart )
     ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
   }
   /* This is an extra copy for the right-inverse case */
-  ierr = VecCopy( VEC_BINVF, VEC_VV(0) ); CHKERRQ(ierr);
-  ierr = VecAXPY( &mone, VEC_TEMP, VEC_VV(0) ); CHKERRQ(ierr);
+  ierr = VecCopy( VEC_BINVF, VEC_VV(gmres->nprestart) ); CHKERRQ(ierr);
+  ierr = VecAXPY( &mone, VEC_TEMP, VEC_VV(gmres->nprestart) ); CHKERRQ(ierr);
       /* inv(b)(f - a*x) into dest */
   PetscFunctionReturn(0);
 }
@@ -193,8 +193,6 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   /* Note that hapend is ignored in the code */
 
   PetscFunctionBegin;
-  /* Question: on restart, compute the residual?  No; provide a restart 
-     driver */
 
   /*
     Number of pseudo iterations since last restart is the number of prestart directions
@@ -202,19 +200,44 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   it         = gmres->nprestart;
   *converged = 0;
 
-  /* dest . dest */
-  ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm); CHKERRQ(ierr);
-  res    = res_norm;
-  *RS(0) = res_norm;
 
-  /* Do-nothing case: */
-  if (res_norm == 0.0) {
-    if (itcount) *itcount = 0;
-    *converged = 1;
-    PetscFunctionReturn(0);
+  if (it > 0) {
+    /* orthogonalize input against previous directions and update Hessenberg matrix */
+
+    /* update hessenberg matrix and do Gram-Schmidt */
+    ierr = (*gmres->orthog)(  ksp, it-1 );CHKERRQ(ierr);
+
+    /* vv(i) . vv(i) */
+    ierr = VecNorm(VEC_VV(it),NORM_2,&tt); CHKERRQ(ierr);
+    /* save the magnitude */
+    *HH(it,it-1)    = tt;
+    *HES(it,it-1)   = tt;
+
+    /* check for the convergence */
+    if (!tt) {
+      if (itcount) *itcount = 0;
+      *converged = 1;
+      PetscFunctionReturn(0);
+    }
+    tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it) ); CHKERRQ(ierr);
+
+    ierr = GMRESUpdateHessenberg( ksp, it-1, &res ); CHKERRQ(ierr);
+  } else {
+
+    ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm); CHKERRQ(ierr);
+    res    = res_norm;
+    *RS(0) = res_norm;
+
+    /* check for the convergence */
+    if (!res) {
+      if (itcount) *itcount = 0;
+      *converged = 1;
+      PetscFunctionReturn(0);
+    }
+
+    /* scale VEC_VV (the initial residual) */
+    tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(ierr);
   }
-  /* scale VEC_VV (the initial residual) */
-  tmp = 1.0/res_norm; ierr = VecScale(&tmp , VEC_VV(0) ); CHKERRQ(ierr);
 
   if (!restart) {
     ksp->ttol = PetscMax(ksp->rtol*res_norm,ksp->atol);
@@ -317,7 +340,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   if (!ksp->guess_zero) {
     ierr = GMRESResidual(  ksp, restart ); CHKERRQ(ierr);
   } else {
-    ierr = VecCopy( VEC_BINVF, VEC_VV(0) ); CHKERRQ(ierr);
+    ierr = VecCopy( VEC_BINVF, VEC_VV(gmres->nprestart) ); CHKERRQ(ierr);
   }
     
   ierr    = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
