@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.59 1998/05/06 20:10:36 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.60 1998/05/08 00:19:17 bsmith Exp curfman $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -18,19 +18,24 @@ extern int PetscRegisterCookie(int *);
    below by PETSCHEADER. 
 
    PetscHeaderCreate() should be used whenever creating a PETSc structure.
+*/
 
-      destroy()         is the routine for destroying the entire PETSc object; 
+/*
+   PetscOps: structure of core operations that all PETSc objects support.
+   
+      getcomm()         - Gets the object's communicator.
+      view()            - Is the routine for viewing the entire PETSc object; for
+                          example, MatView() is the general matrix viewing routine.
+      destroy()         - Is the routine for destroying the entire PETSc object; 
                           for example, MatDestroy() is the general matrix 
                           destruction routine.
-      view()            is the routine for viewing the entire PETSc object; for
-                          example, MatView() is the general matrix viewing routine.
-      query()           returns a different PETSc object that has been associated
-                          with the first
-      compose()         associates a PETSc object with another PETSc object
-      reference()       increases the reference count for a PETSc object, when
-                          a reference count reaches zero it is destroyed
-      queryfunction()   Request a registered function
-      composefunction() Attach an additional registered function
+      query()           - Returns a different PETSc object that has been associated
+                          with the first object.
+      compose()         - Associates a PETSc object with another PETSc object.
+      composefunction() - Attaches an additional registered function.
+      reference()       - Increases the reference count for a PETSc object; when
+                          a reference count reaches zero it is destroyed.
+      queryfunction()   - Requests a registered function that has been registered.
 */
 
 typedef struct {
@@ -72,15 +77,17 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 /*
     PetscHeaderCreate - Creates a PETSc object
 
-   Input Parameters:
-.   tp - the data structure type of the object
+    Input Parameters:
++   tp - the data structure type of the object
 .   pops - the data structure type of the objects operations (for example _VecOps)
-.   cookie - the cooki associated with this object
-.   t - type no longer should be used
+.   cook - the cookie associated with this object
+.   t - type (no longer should be used)
 .   com - the MPI Communicator
 .   des - the destroy routine for this object
-.   vie - the view routine for this object
+-   vie - the view routine for this object
 
+    Output Parameter:
+.   h - the newly created object
 */ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,com,des,vie)                                     \
   { int _ierr;                                                                              \
@@ -102,8 +109,8 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 /* ---------------------------------------------------------------------------------------*/
 
 /* 
-  PetscLow and PetscHigh are a way of checking if an address is 
-  out of range. They are set in src/sys/src/tr.c
+  PetscLow and PetscHigh are a way of checking whether an address is 
+  out of range.  These are set in src/sys/src/tr.c
 */
 extern void *PetscLow,*PetscHigh;
 

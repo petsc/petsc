@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.17 1998/03/23 21:27:32 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.18 1998/04/09 04:19:44 bsmith Exp curfman $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -24,14 +24,14 @@
 #endif
 
 /* 
-     These are the generic error codes. The same error code is used in
-     many different places in the code.
+     These are the generic error codes. These error codes are used
+     many different places in the PETSc source code.
 
      In addition, each specific error in the code has an error
      message: a specific, unique error code.  (The specific error
      code is not yet in use; these will be generated automatically and
      embed an integer into the PetscError() calls. For non-English
-     error messages that integer will be extracted and used to look up the
+     error messages, that integer will be extracted and used to look up the
      appropriate error message in the local language from a file.)
 
 */
@@ -41,8 +41,8 @@
 #define PETSC_ERR_FP              72   /* floating point exception */
 #define PETSC_ERR_COR             74   /* corrupted PETSc object */
 #define PETSC_ERR_LIB             76   /* error in library called by PETSc */
-#define PETSC_ERR_PLIB            77   /* PETSC library generated inconsistent data */
-#define PETSC_ERR_MEMC            78   /* Memory corruption */
+#define PETSC_ERR_PLIB            77   /* PETSc library generated inconsistent data */
+#define PETSC_ERR_MEMC            78   /* memory corruption */
 
 #define PETSC_ERR_ARG_SIZ         60   /* nonconforming object sizes used in operation */
 #define PETSC_ERR_ARG_IDN         61   /* two arguments not allowed to be the same */
@@ -59,10 +59,10 @@
 #define PETSC_ERR_FILE_WRITE      67   /* unable to write to file */
 #define PETSC_ERR_FILE_UNEXPECTED 79   /* unexpected data in file */
 
-#define PETSC_ERR_KSP_BRKDWN      70   /* Break down in a Krylov method */
+#define PETSC_ERR_KSP_BRKDWN      70   /* break down in a Krylov method */
 
-#define PETSC_ERR_MAT_LU_ZRPVT    71   /* Detected a zero pivot during LU factorization */
-#define PETSC_ERR_MAT_CH_ZRPVT    71   /* Detected a zero pivot during Cholesky factorization */
+#define PETSC_ERR_MAT_LU_ZRPVT    71   /* detected a zero pivot during LU factorization */
+#define PETSC_ERR_MAT_CH_ZRPVT    71   /* detected a zero pivot during Cholesky factorization */
 
 #if defined(USE_PETSC_DEBUG)
 #define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,n,p,s);}
