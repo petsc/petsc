@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: concepts.py,v 1.1 2000/09/22 00:43:20 balay Exp balay $ 
+# $Id: concepts.py,v 1.2 2000/09/22 17:59:21 balay Exp balay $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
@@ -77,12 +77,37 @@ def printdata(fd,dict):
       prim_keys = dict.keys()
       prim_keys.sort(comptxt)
 
+      alphabet_index = {}
+      for key in prim_keys:
+            alphabet_index[upper(key[0])] = 'junk'
+      alphabet_keys = alphabet_index.keys()
+      alphabet_keys.sort()
+
+      a_key_tmp = ''
       for prim_key in prim_keys:
+            # First check and print the alphabet index
+            a_key = upper(prim_key[0])
+            if not a_key == a_key_tmp:
+                  a_key_tmp = a_key
+                  # Print the HTML tag for this section
+                  fd.write('<A NAME="' + a_key + '"></A>\n' )
+                  # Print the HTML index at the begining of each section
+                  fd.write('<H3> <CENTER> | ')
+                  for key_tmp in alphabet_keys:
+                        if a_key == key_tmp:
+                              fd.write( '<FONT COLOR="#CC3333">' + upper(key_tmp) + '</FONT> | \n' )
+                        else:
+                              fd.write('<A HREF="help.html#' + key_tmp + '"> ' + \
+                                       upper(key_tmp) + ' </A> | \n')
+                  fd.write('</CENTER></H3> \n')
+                 
+
+                  
             fd.write("<TABLE>")
             fd.write("<TD WIDTH=4 ><BR></TD>")
-            fd.write("<TD WIDTH=1000 ><B><H3>")
+            fd.write("<TD WIDTH=1000 ><B><FONT SIZE=4>")
             fd.write(prim_key)
-            fd.write("<H3></B></TD>")
+            fd.write("</FONT></B></TD>")
             fd.write("</TR>")
             fd.write("</TABLE>")
 
@@ -90,22 +115,30 @@ def printdata(fd,dict):
             sub_keys.sort(comptxt)
 
             for sub_key in sub_keys:
+                  link_names = dict[prim_key][sub_key].keys()
+                  link_names.sort(comptxt)
+
                   if not sub_key == 'PetscNoKey':
+                        # Extract the first element from link_names
+                        link_name = link_names[0]
+                        link_names = link_names[1:]
+                        temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
                         fd.write("<TABLE>")
                         fd.write("<TD WIDTH=60 ><BR></TD>")
-                        fd.write("<TD WIDTH=1000><FONT COLOR=\"#CC3333\"><B>")
+                        fd.write("<TD WIDTH=210><FONT COLOR=\"#CC3333\"><B>")
                         fd.write(sub_key)
                         fd.write("</B></FONT></TD>")
+                        fd.write("<TD WIDTH=300 >")
+                        fd.write(temp)
+                        fd.write("</TD>")
                         fd.write("</TR>")
                         fd.write("</TABLE>")
 
-                  link_names = dict[prim_key][sub_key].keys()
-                  link_names.sort(comptxt)
                   for link_name in link_names:
                         filename = dict[prim_key][sub_key][link_name]
                         temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
                         fd.write("<TABLE>")
-                        fd.write("<TD WIDTH=192 ><BR></TD>")
+                        fd.write("<TD WIDTH=270><BR></TD>")
                         fd.write("<TD WIDTH=300 >")
                         fd.write(temp)
                         fd.write("</TD>")
