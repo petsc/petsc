@@ -83,6 +83,20 @@ class Base(logging.Logger):
     '''Raise an error if the exit status is nonzero'''
     if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output)
 
+  def openPipe(self, command):
+    '''We need to use the asynchronous version here since we want to avoid blocking reads'''
+    import popen2
+
+    pipe = None
+    if hasattr(popen2, 'Popen3'):
+      pipe   = popen2.Popen3(command, 1)
+      input  = pipe.tochild
+      output = pipe.fromchild
+      err    = pipe.childerr
+    else:
+      (input, output, err) = os.popen3(command)
+    return (input, output, err, pipe)
+
   def executeShellCommand(self, command, checkCommand = None):
     '''Execute a shell command returning the output, and optionally provide a custom error checker'''
     import commands
@@ -95,6 +109,52 @@ class Base(logging.Logger):
     else:
       self.defaultCheckCommand(command, status, output)
     return output
+
+  def executeShellCommandSafely(self, command, checkCommand = None):
+    '''If the command is interrupted by a password request, raise an exception instead of hanging'''
+    import select
+
+    self.debugPrint('sh: '+command, 3, 'shell')
+    ret        = None
+    out        = ''
+    err        = ''
+    loginError = 0
+    (input, output, error, pipe) = self.openPipe(command)
+    input.close()
+    outputClosed = 0
+    errorClosed  = 0
+    while 1:
+      ready = select.select([output, error], [], [])
+      if len(ready[0]):
+        if error in ready[0]:
+          msg = error.read()
+          if msg:
+            err += msg
+          else:
+            errorClosed = 1
+        if output in ready[0]:
+          msg = output.read()
+          if msg:
+            out += msg
+          else:
+            outputClosed = 1
+        if out.find('password:') >= 0 or err.find('password:') >= 0:
+          loginError = 1
+          break
+      if outputClosed and errorClosed:
+        break
+    output.close()
+    error.close()
+    if pipe:
+      # We would like the NOHANG argument here
+      ret = pipe.wait()
+    if loginError:
+      raise RuntimeError('Could not login to site')
+    if checkCommand:
+      checkCommand(command, ret, out)
+    else:
+      self.defaultCheckCommand(command, ret, out)
+    return out
 
   def getInstalledProject(self, url, returnAll = 0):
     if returnAll:

@@ -372,6 +372,5 @@ if __name__ ==  '__main__':
   sys.path.insert(0, os.path.join(installer.installPath, 'sidl','BuildSystem'))
   import install.installer
   args = ['-debugSections=[install]','-debugLevel=2']
-  if os.getenv('USER') == 'bsmith': args.append('-userRepositories=1')
   install.installer.runinstaller(args)
       

@@ -72,9 +72,12 @@ class Retriever(install.urlMapping.UrlMapping):
         wasAuth = 1
       else:
         login   = location.split('.')[0]
-        authUrl = urlparse.urlunparse((scheme, login+'@'+location, path, parameters, query, fragment))
+        authUrl = urlparse.urlunparse((scheme, login+'foo@'+location, path, parameters, query, fragment))
         wasAuth = 0
     return (url, authUrl, wasAuth)
+
+  def testAuthorizedUrl(self, authUrl):
+    return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+authUrl)
 
   def getBKParentURL(self, root):
     '''Return the parent URL for the BK repository at "root"'''
@@ -83,12 +86,12 @@ class Retriever(install.urlMapping.UrlMapping):
   def bkRetrieve(self, url, root, canExist = 0, force = 0):
     self.debugPrint('Retrieving '+url+' --> '+root+' via bk', 3, 'install')
     if os.path.exists(root):
-      if self.argDB['userRepositories']:
-        (url, authUrl, wasAuth) = self.getAuthorizedUrl(self.getBKParentURL(root))
-        if not wasAuth:
-          self.debugPrint('Changing parent from '+url+' --> '+authUrl, 1, 'install')
-          output = self.executeShellCommand('cd '+root+'; bk parent '+authUrl)
+      (url, authUrl, wasAuth) = self.getAuthorizedUrl(self.getBKParentURL(root))
+      if not wasAuth:
+        self.debugPrint('Changing parent from '+url+' --> '+authUrl, 1, 'install')
+        output = self.executeShellCommand('cd '+root+'; bk parent '+authUrl)
       try:
+        self.testAuthorizedUrl(authUrl)
         output = self.executeShellCommand('cd '+root+'; bk pull')
       except RuntimeError, e:
         (url, authUrl, wasAuth) = self.getAuthorizedUrl(self.getBKParentURL(root))
@@ -100,14 +103,15 @@ class Retriever(install.urlMapping.UrlMapping):
           raise e
     else:
       (url, authUrl, wasAuth) = self.getAuthorizedUrl(url)
-      if wasAuth or self.argDB['userRepositories']:
-        # Try an authorized login first
-        try:
-          output = self.executeShellCommand('bk clone '+authUrl+' '+root)
-        except RuntimeError:
-          pass
-        else:
-          return root
+      # Try an authorized login first
+      try:
+        self.testAuthorizedUrl(authUrl)
+        self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+authUrl)
+        output = self.executeShellCommand('bk clone '+authUrl+' '+root)
+      except RuntimeError:
+        pass
+      else:
+        return root
       output = self.executeShellCommand('bk clone '+url+' '+root)
     return root
 
