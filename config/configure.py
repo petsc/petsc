@@ -98,7 +98,7 @@ def petsc_configure(configure_options):
   # if language is C then should not be checking C++
   usingcxx = 0
   for j in sys.argv:
-    if j.replace('++','xx') == '--with-language=cxx':
+    if j.replace('++','xx') == '--with-language=cxx' or j == '--with-scalar-type=complex':
       usingcxx = 1
       break
 
