@@ -16,6 +16,17 @@ class Configure(config.base.Configure):
     self.libraries.append(('dl', 'dlopen'))
     return
 
+  def getIncludeArgument(self, include):
+    '''Return the proper include line argument for the given filename
+       - If the path is empty, return it unchanged
+       - If starts with - then return unchanged
+       - Otherwise return -I<include>'''
+    if not include:
+      return ''
+    if include[0] == '-':
+      return include
+    return '-I'+include
+
   def getLibArgument(self, library):
     '''Return the proper link line argument for the given filename library
        - If the path is empty, return it unchanged
@@ -29,6 +40,8 @@ class Configure(config.base.Configure):
        - Otherwise return -l<library>'''
     if not library:
       return ''
+    if library[0] == '-':
+      return library
     if len(library) > 3 and library[-4:] == '.lib':
       return library
     if os.path.basename(library).startswith('lib'):
@@ -47,8 +60,6 @@ class Configure(config.base.Configure):
     if os.path.splitext(library)[1] == '.so':
       return library
     if os.path.isabs(library):
-      return library
-    if library[0] == '-':
       return library
     return '-l'+library
 
