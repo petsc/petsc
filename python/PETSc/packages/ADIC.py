@@ -1,24 +1,52 @@
 import config.base
+import os.path
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.foundADIC    = 0
+    return
+
+  def __str__(self):
+    if self.foundADIC: return 'ADIC: Using '+self.adiC+'\n'
+    return ''
+    
+  def configureHelp(self, help):
+    import nargs
+    help.addArgument('ADIC', '-with-adic',              nargs.ArgBool(None, 1, 'Activate ADIC'))
+    help.addArgument('ADIC', '-with-adic-path',         nargs.Arg(None, None, 'Full path of adic executable'))    
+    return
+
+  def generateGuesses(self):
+    '''Generate list of possible locations of ADIC'''
+    if 'with-adic-path' in self.framework.argDB:
+      yield self.framework.argDB['with-adic-path']
+      raise RuntimeError('You set a value for --with-adic-path, but '+self.framework.argDB['with-adic-path']+' cannot be used\n')
+    if self.getExecutable('adiC', getFullPath = 1):
+      # follow any symbolic link of this path
+      self.adiC = os.path.realpath(self.adiC)
+      yield os.path.dirname(os.path.dirname(self.adiC))
     return
 
   def configureLibrary(self):
     '''Find an ADIC installation and check if it can work with PETSc'''
-    return
-
-  def setOutput(self):
-    #self.addDefine('HAVE_ADIC', 0)
-    #self.addDefine('HAVE_ADIFOR', 0)
+    for adic in self.generateGuesses():
+      self.addSubstitution('ADIC_DEFINES', '')
+      self.addSubstitution('ADIC_CC',self.adiC+' -a -d gradient')
+      self.addDefine('HAVE_ADIC', 1)
+      self.foundADIC = 1
+      return
     self.addSubstitution('ADIC_DEFINES', '')
     self.addSubstitution('ADIC_CC', '')
     return
 
   def configure(self):
-    self.executeTest(self.configureLibrary)
-    self.setOutput()
+    if self.framework.argDB['with-adic']:
+      self.executeTest(self.configureLibrary)
+    else:
+      self.addSubstitution('ADIC_DEFINES', '')
+      self.addSubstitution('ADIC_CC', '')
+      
     return
