@@ -82,6 +82,7 @@ PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
 #elif defined(PETSC_USE_PROC_FOR_SIZE)
   FILE                   *file;
   char                   proc[PETSC_MAX_PATH_LEN];
+  int                    mm,rss;
 #elif defined(PETSC_HAVE_TASK_INFO)
   task_basic_info_data_t ti;
   unsigned int           count;
@@ -108,10 +109,12 @@ PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
 
 #elif defined(PETSC_USE_PROC_FOR_SIZE)
 
-  sprintf(proc,"/proc/%d/status",(int)getpid());
+  sprintf(proc,"/proc/%d/statm",(int)getpid());
   if (!(file = fopen(proc,"r"))) {
     SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to access system file %s to get memory usage data",proc);
   }
+  fscanf(file,"%d %d",&mm,&rss);
+  *mem = rss * (getpagesize());
   fclose(file);
 
 #elif defined(PETSC_HAVE_TASK_INFO)

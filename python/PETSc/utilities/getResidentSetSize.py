@@ -35,7 +35,7 @@ class Configure(config.base.Configure):
       return
     # /proc is used on Linux systems
     if os.path.isfile(os.path.join('/proc',str(os.getpid()),'stat')):
-      self.addDefine('PETSC_USE_PROC_FOR_SIZE', 1)
+      self.addDefine('USE_PROC_FOR_SIZE', 1)
       try:
         fd = open(os.path.join('/proc',str(os.getpid()),'stat'))
         l  = fd.readline().split(' ')
