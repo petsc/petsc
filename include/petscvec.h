@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.26 1995/07/26 23:53:34 bsmith Exp curfman $ */
+/* $Id: vec.h,v 1.27 1995/08/17 20:56:10 curfman Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -76,6 +76,7 @@ typedef enum {PIPELINEDOWN=0,PIPELINEUP=1} PipelineMode;
 extern int VecPipelineBegin(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
 extern int VecPipelineEnd(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx); 
 
+extern int VecShift(Scalar *,Vec);
 extern int VecGetArray(Vec,Scalar**);
 extern int VecRestoreArray(Vec,Scalar**);
 extern int VecGetArrays(Vec*,int,Scalar***);

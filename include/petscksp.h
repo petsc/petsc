@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.21 1995/07/20 21:14:30 curfman Exp curfman $ */
+/* $Id: ksp.h,v 1.22 1995/08/14 16:49:17 curfman Exp bsmith $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -60,11 +60,16 @@ extern int KSPGMRESSetRestart(KSP, int);
 extern int KSPGMRESSetUseUnmodifiedGramSchmidt(KSP);
 extern int KSPSetFromOptions(KSP);
 
-extern int KSPDefaultCGMonitor(KSP,int,double, void * );
-extern int KSPDefaultCGConverged(KSP,int,double, void *);
+extern int KSPCGDefaultMonitor(KSP,int,double, void * );
+extern int KSPCGDefaultConverged(KSP,int,double, void *);
 extern int KSPDefaultMonitor(KSP,int,double, void *);
 extern int KSPDefaultSMonitor(KSP,int,double, void *);
 extern int KSPDefaultConverged(KSP,int,double, void *);
+
+extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
+extern int KSPUnwindPre(KSP,Vec,Vec);
+extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);
+extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 
 extern int KSPPrintHelp(KSP);
 

@@ -2,7 +2,7 @@ IPETSCDIR = ../../../..
 
 
 ALL: lib 
-CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
+CFLAGS    = $(OPT) -I../.. $(PETSC_INCLUDE) -I$(IPETSCDIR)/pinclude \
             $(XINCLUDEDIR) $(CONF) -D__DIR__='"viewer/impls/file/"'
 SOURCEC   = filev.c
 SOURCEF   =

@@ -2,7 +2,7 @@ IPETSCDIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../..  \
+CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../../..  \
            -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"mat/impls/dense/seq/"'
 SOURCEC  = dense.c 
 SOURCEF  =

@@ -3,7 +3,7 @@ IPETSCDIR = ../../../..
 ALL: lib
 
 # This matrix dependency should be fixed!
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(IPETSCDIR)/pinclude \
+CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../.. -I$(IPETSCDIR)/pinclude \
            $(BS_INCLUDE) -I../../../../src/mat \
            $(CONF) -D__DIR__='"pc/impls/icc/"'
 SOURCEC  = icc.c iccbs.c

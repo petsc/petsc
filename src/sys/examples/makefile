@@ -1,9 +1,9 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS        = $(OPT) $(INCLUDEDIRS) $(COPT) $(CONF) \
+CFLAGS        = $(OPT) $(PETSC_INCLUDE) $(COPT) $(CONF) \
                  -D__DIR__='"sys/examples/"'
-FFLAGS        = $(MPI_INCLUDE)
+FFLAGS        = $(MPI_INCLUDE) -I$(IPETSCDIR)
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       =
@@ -11,7 +11,9 @@ OBJSC         =
 OBJSF         =
 LIBBASE       = libpetscsys
 RUNEXAMPLES_2 = runex1 runex2 runex3 runex4
-EXAMPLES_2    = ex1 ex2 ex3 ex4 ex5
+EXAMPLES_2    = ex1 ex2 ex3 ex4
+RUNEXAMPLES_3 = 
+EXAMPLES_3    = ex5
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF     = ex5.f
 

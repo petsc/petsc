@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.50 1995/08/17 20:55:58 curfman Exp curfman $ */
+/* $Id: mat.h,v 1.51 1995/08/18 22:24:57 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -132,6 +132,7 @@ extern int MatGetSubMatrix(Mat,IS,IS,Mat*);
 extern int MatGetSubMatrixInPlace(Mat,IS,IS);
 
 extern int MatAXPY(Scalar *,Mat,Mat);
+extern int MatCompress(Mat);
 
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);

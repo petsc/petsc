@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.29 1995/08/02 04:19:29 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.30 1995/08/03 21:58:37 curfman Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -36,6 +36,7 @@ extern int SNESDestroy(SNES);
 extern int SNESSetUp(SNES);
 extern int SNESSolve(SNES,int*);
 extern int SNESRegister(int,char*,int(*)(SNES));
+extern int SNESRegisterDestroy();
 extern int SNESRegisterAll();
 extern int SNESGetSLES(SNES,SLES*);
 extern int SNESNoLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
@@ -55,8 +56,7 @@ extern int SNESGetMethodFromContext(SNES,SNESMethod*);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESDefaultSMonitor(SNES,int,double,void *);
 extern int SNESDefaultConverged(SNES,double,double,double,void*);
-extern int SNESDefaultTrustRegionConverged(SNES,double,double,double,void*);
-
+extern int SNESTrustRegionDefaultConverged(SNES,double,double,double,void*);
 extern int SNESSetSolutionTolerance(SNES,double);
 extern int SNESSetAbsoluteTolerance(SNES,double);
 extern int SNESSetRelativeTolerance(SNES,double);
@@ -84,6 +84,10 @@ extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
 extern int SNESComputeFunction(SNES,Vec,Vec);
 extern int SNESDestroy(SNES);
 
+extern int SNESSetApplicationContext(SNES,void *);
+extern int SNESGetApplicationContext(SNES,void **);
+extern int SNESSetConvergenceTest(SNES,
+                  int (*)(SNES,double,double,double,void*),void*);
 
 /* Unconstrained minimization routines */
 

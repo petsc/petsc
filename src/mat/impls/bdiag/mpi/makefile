@@ -2,7 +2,7 @@ IPETSCDIR = ../../../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. -I../seq \
+CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../../.. -I../seq \
            -I$(IPETSCDIR)/pinclude $(CONF)
 SOURCEC  = mmbdiag.c mpibdiag.c
 SOURCEF  =

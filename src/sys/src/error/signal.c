@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.14 1995/07/28 04:19:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.15 1995/08/04 01:51:30 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
 */
-#include "petsc.h"
+#include "petsc.h"             /*I   "petsc.h"   I*/
 #include "sys.h"
 #include <signal.h>
 #if defined(HAVE_STRING_H)

@@ -1,7 +1,7 @@
 ALL: lib 
 IPETSCDIR = ../../../..
 
-CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
+CFLAGS   = $(OPT) $(CONF) $(PETSC_INCLUDE) \
            -I$(IPETSCDIR)/pinclude  -I../../ -D__DIR__='"ksp/impls/lsqr/"'
 SOURCEC  = lsqr.c
 SOURCEF  =

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.13 1995/08/04 01:52:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.14 1995/08/07 18:52:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -61,7 +61,7 @@ static struct _MatOps MatOps = {0,0,
        0,0 };
 
 /*@
-   Mat_ShellCreate - Creates a new matrix class for use with a user-defined
+   MatShellCreate - Creates a new matrix class for use with a user-defined
    private data storage format. 
 
    Input Parameters:

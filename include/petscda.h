@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.11 1995/07/31 15:34:34 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.12 1995/08/02 04:19:29 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallism of simple grid 
@@ -20,6 +20,9 @@ typedef enum { DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC,
 extern int   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,
                                                            int,int,int,DA *);
 extern int   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,DA *);
+extern int   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType, 
+                        int,int,int,int,int,int,int,int, DA *);
+
 extern int   DADestroy(DA);
 extern int   DAView(DA,Viewer);
 extern int   DAGlobalToLocalBegin(DA,Vec, InsertMode,Vec);

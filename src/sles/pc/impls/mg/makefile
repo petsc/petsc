@@ -2,7 +2,7 @@ IPETSCDIR = ../../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  -I../..\
+CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I..  -I../..\
           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"pc/impls/mg/"'
 SOURCEC  = mg.c fmg.c smg.c mgfunc.c 
 SOURCEF  =

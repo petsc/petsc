@@ -4,7 +4,6 @@
     Also tests MatRelax routines.
 */
 
-#include "ksp.h"
 #include "pc.h"
 #include "petsc.h"
 #include <stdio.h>

@@ -5,14 +5,14 @@
 # LIBNAME - library name
 # SOURCE - source files
 # OBJS - object files
-# INCLUDEDIRS - locations of include files
+# PETSC_INCLUDE - locations of include files
 #
 LDIR        = $(IPETSCDIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 PDIR        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 LIBNAME     = $(PDIR)/$(LIBBASE).a
 SOURCE      = $(SOURCEC) $(SOURCEF)
 OBJS        = $(OBJSC) $(OBJSF)
-INCLUDEDIRS = -I$(IPETSCDIR) -I$(IPETSCDIR)/include $(MPI_INCLUDE) \
+PETSC_INCLUDE = -I$(IPETSCDIR) -I$(IPETSCDIR)/include $(MPI_INCLUDE) \
                -I$(IPETSCDIR)/src
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 

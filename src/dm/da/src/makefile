@@ -2,7 +2,7 @@ IPETSCDIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR) \
+CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I.. -I$(IPETSCDIR) \
            -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"da/src/"'
 SOURCEC  = da2.c da1.c da3.c
 SOURCEF  = 

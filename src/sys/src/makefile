@@ -1,7 +1,7 @@
 IPETSCDIR = ../../..
 
 ALL: lib 
-CFLAGS    = $(OPT) $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude $(CONF)\
+CFLAGS    = $(OPT) $(PETSC_INCLUDE) -I$(IPETSCDIR)/pinclude $(CONF)\
             -D__DIR__='"sys/src/"'
 SOURCEC   = adebug.c err.c signal.c fp.c tr.c arch.c file.c nreg.c \
             mpiu.c comsort.c destroy.c plog.c options.c mal.c foptions.c \

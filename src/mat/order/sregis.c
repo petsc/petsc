@@ -1,5 +1,5 @@
 
-#include "../../../../matimpl.h"
+#include "../../../../matimpl.h"     /*I       "mat.h"   I*/
 
 extern int MatOrderNatural(int*,int*,int*,int*,int*);
 extern int MatOrderND(int*,int*,int*,int*,int*);
@@ -8,7 +8,7 @@ extern int MatOrderQMD(int*,int*,int*,int*,int*);
 extern int MatOrderRCM(int*,int*,int*,int*,int*);
 
 /*@
-  MatReorderRegisterAll - Registers all of the sequential matrix 
+  MatReorderingRegisterAll - Registers all of the sequential matrix 
                           reordering routines in PETSc.
 
   Adding new methods:

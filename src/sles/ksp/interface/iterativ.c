@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.27 1995/07/27 21:15:54 curfman Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.28 1995/08/07 18:51:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -24,7 +24,7 @@ int KSPiDefaultFreeWork( KSP itP )
   return 0;
 }
 
-/*@
+/*
    KSPCheckDef - Checks the definition of the KSP quantities 
    necessary for most of the solvers.
 
@@ -35,7 +35,7 @@ int KSPiDefaultFreeWork( KSP itP )
    the number of errors encountered.
 
 .keywords: KSP, errors, check, definition
- @*/
+ */
 int KSPCheckDef( KSP itP )
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);

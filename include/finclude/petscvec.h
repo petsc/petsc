@@ -1,13 +1,15 @@
 
-C      Include file for for Fortran use of the PETSc package
+C      Include file for for Fortran use of the Vec package
 C
-      integer PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE, PETSC_DEFAULT
-      integer FP_TRAP_OFF, FP_TRAP_ON, FP_TRAP_ALWAYS
+      integer INSERTVALUES, ADDVALUES
+      integer SCATTERREVERSE,SCATTERDOWN,SCATTERUP,SCATTERALL,
+     *        SCATTERALLREVERSE
+      integer PIPELINEDOWN,PIPELINEUP
 
-      parameter (PETSC_TRUE = 1, PETSC_FALSE = 0, PETSC_DECIDE = -1,
-     *           PETSC_DEFAULT = -2)
-      parameter (FP_TRAP_OFF = 0, FP_TRAP_ON = 1, FP_TRAP_ALWAYS = 2)
-
+      parameter (INSERTVALUES = 1, ADDVALUES = 2)
+      parameter (SCATTERREVERSE = 1,SCATTERDOWN = 2,SCATTERUP = 4,
+     *           SCATTERALL = 8, SCATTERALLREVERSE = 9)
+      parameter (PIPELINEDOWN = 0,PIPELINEUP = 1)
 C
-C      End of Fortran include file for the PETSc package
+C      End of Fortran include file for the Vec package
 

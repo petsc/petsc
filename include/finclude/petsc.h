@@ -1,26 +1,15 @@
 
-C      Include file for for Fortran use of the SNES package
+C      Include file for for Fortran use of the PETSc package
 C
-       INTEGER NLE_NLS1, NLE_NTR1, NLE_NTR2_DOG, NLE_NTR2_LIN
-       INTEGER NLE_NBASIC, NLM_NLS1, NLM_NTR1
-       PARAMETER( NLE_NLS1 = 0, NLE_NTR1 = 1, NLE_NTR2_DOG = 2, 
-     *            NLE_NTR2_LIN = 3, NLE_NBASIC = 4, NLM_NLS1 = 5, 
-     *            NLM_NTR1 = 6 )
+#include "mpif.h"
 
-       integer nlcreate
-       external nlcreate
+      integer PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE, PETSC_DEFAULT
+      integer FP_TRAP_OFF, FP_TRAP_ON, FP_TRAP_ALWAYS
+
+      parameter (PETSC_TRUE = 1, PETSC_FALSE = 0, PETSC_DECIDE = -1,
+     *           PETSC_DEFAULT = -2)
+      parameter (FP_TRAP_OFF = 0, FP_TRAP_ON = 1, FP_TRAP_ALWAYS = 2)
+
 C
-C      Note:  Be sure that the following SpMat types correspond to the
-C      definitions in "sparse/sppriv.h"
-C
-       INTEGER MATROW, MATAIJ, MATBLOCK, MATROWDIST, MATDIAG, MATDENSE
-       INTEGER MATPDERIVED, MATBDIAG
-       PARAMETER( MATROW = 1, MATAIJ = 3, MATBLOCK = 4, MATROWDIST = 5,
-     *            MATDIAG = 6, MATDENSE = 7, MATPDERIVED = 8, 
-     *            MATBDIAG = 9 )
-C
-C      Include file for SLES and KSP (linear solvers)
-       include "../solvers/svfort.h"
-C
-C      End of Fortran include file for the SNES package
+C      End of Fortran include file for the PETSc package
 

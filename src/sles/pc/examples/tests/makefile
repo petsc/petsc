@@ -1,7 +1,7 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS   = $(OPT)  $(CONF) $(INCLUDEDIRS) $(BS_INCLUDE)
+CFLAGS   = $(OPT)  $(CONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
 
 SOURCEC       = 
 SOURCEF       =
@@ -10,7 +10,7 @@ OBJSC         =
 OBJSF         =
 LIBBASE       = libpetscvec
 EXAMPLES_1    = ex1 ex2 ex3 ex4
-RUNEXAMPLES_1 = runex1 runex2 runex3 runex4 runex4_2
+RUNEXAMPLES_1 = runex1 runex2 runex3 runex4
 EXAMPLES_2    = ex5 ex6
 RUNEXAMPLES_2 = runex5 runex6
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
@@ -56,15 +56,10 @@ runex3:
            else echo "Possible problem with ex3_1, diffs above"; fi; \
            $(RM) -f ex3_1.tmp 
 runex4:
-	-@$(MPIRUN) ex4 -ksp_method cg -ksp_monitor  > ex4_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex4  > ex4_1.tmp 2>&1;   \
            if (diff output/ex4_1.out ex4_1.tmp) then true; \
            else echo "Possible problem with ex4_1, diffs above"; fi; \
            $(RM) -f ex4_1.tmp 
-runex4_2:
-	-@$(MPIRUN) ex4 -ksp_method bcgs -ksp_monitor  > ex4_2.tmp 2>&1;   \
-           if (diff output/ex4_2.out ex4_2.tmp) then true; \
-           else echo "Possible problem with ex4_2, diffs above"; fi; \
-           $(RM) -f ex4_2.tmp 
 
 runex5:
 	-@$(MPIRUN) ex5 > ex5_1.tmp 2>&1;   \

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.23 1995/07/17 20:42:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.24 1995/08/15 20:29:00 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_X11)
@@ -51,6 +51,7 @@ static int DrawRectangle_X(DrawCtx Win, double xl, double yl, double xr, double 
   XiSetColor( XiWin, c );
   x1 = XTRANS(Win,XiWin,xl);   w  = XTRANS(Win,XiWin,xr) - x1; 
   y1 = YTRANS(Win,XiWin,yr);   h  = YTRANS(Win,XiWin,yl) - y1;
+  if (w <= 0) w = 1; if (h <= 0) h = 1;
   XFillRectangle( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, x1, y1, w, h);
   return 0;
 }
@@ -142,13 +143,6 @@ int DrawTextVertical_X(DrawCtx Win,double x,double  y,int c,char *chrs )
   return 0;
 }
 
-static int DrawFlush_X(DrawCtx Win )
-{
-  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
-  XFlush( XiWin->disp ); XSync(XiWin->disp,False);
-  return 0;
-}
-
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -156,6 +150,15 @@ extern void sleep(int);
 #if defined(__cplusplus)
 };
 #endif
+
+static int DrawFlush_X(DrawCtx Win )
+{
+  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  XFlush( XiWin->disp ); XSync(XiWin->disp,False);
+  if (Win->pause > 0) sleep(Win->pause);
+  if (Win->pause < 0) getc(stdin);
+  return 0;
+}
 
 static int DrawSyncFlush_X(DrawCtx Win )
 {

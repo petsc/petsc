@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: comsort.c,v 1.5 1995/05/14 16:32:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: comsort.c,v 1.6 1995/07/30 14:57:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -15,8 +15,8 @@ static char vcid[] = "$Id: comsort.c,v 1.5 1995/05/14 16:32:28 bsmith Exp bsmith
    aliased.  For some compilers, this can cause the compiler to fail to
    place inner-loop variables into registers.
  */
-#include "petsc.h"
-#include "sys.h"
+#include "petsc.h"           /*I  "petsc.h"  I*/
+#include "sys.h"             /*I  "sys.h"    I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 

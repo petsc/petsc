@@ -1,5 +1,6 @@
 
-#include "mpif.h"
+#include "finclude/petsc.h"
+#include "finclude/vec.h"
 
        integer          n, ierr
        double precision one, two, three, dot, norm
@@ -9,8 +10,9 @@
        one   = 1.0
        two   = 2.0
        three = 3.0
+
        call  PetscInitialize(ierr)
-       call  OptionsGetInt(0,'-n',n)
+       call  OptionsGetInt('','-n',n,ierr)
 
 C      /* create a vector */
        call VecCreate(MPI_COMM_WORLD,n,x)
@@ -35,7 +37,7 @@ C      /* create a vector */
        call VecNorm(y,norm)
        print*,'Result of axpy ',norm
 
-       call PetscFinalize()
+       call PetscFinalize(ierr)
        stop 
        end
 

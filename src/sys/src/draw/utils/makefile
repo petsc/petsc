@@ -2,7 +2,7 @@ IPETSCDIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../impls -I.. -I$(IPETSCDIR)/pinclude\
+CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I../impls -I.. -I$(IPETSCDIR)/pinclude\
            $(COPT) $(CONF) -D__DIR__='"draw/utils/"'
 SOURCEC  = axis.c lg.c
 SOURCEF  =

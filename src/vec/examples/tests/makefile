@@ -1,8 +1,8 @@
 IPETSCDIR = ../../..
 ALL: ex1
 
-CFLAGS        = $(OPT) $(INCLUDEDIRS) $(COPT) $(CONF) -I$(IPETSCDIR)/include
-FFLAGS        = $(MPI_INCLUDE)
+CFLAGS        = $(OPT) $(PETSC_INCLUDE) $(COPT) $(CONF) -I$(IPETSCDIR)/include
+FFLAGS        = -I$(IPETSCDIR) $(MPI_INCLUDE)
 SOURCEC       = 
 SOURCEF       =
 SOURCEH       =
@@ -10,10 +10,10 @@ OBJSC         =
 OBJSF         =
 LIBBASE       = libpetscvec
 EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
-                ex16 ex17
+                ex16 ex17 ex20
 RUNEXAMPLES_1 = runex1 runex1_2 runex2 runex3 runex4 runex5 runex6 runex7 \
                 runex8 runex9 runex10 runex11 runex12 runex13 runex14 runex16\
-                runex17
+                runex17 runex20 runex20_2
 EXAMPLES_2    = ex15 ex19
 RUNEXAMPLES_2 = runex15
 EXAMPLES_3    = ex19
@@ -193,6 +193,16 @@ runex17:
            if (diff output/ex17_1.out ex17_1.tmp) then true; \
            else echo "Possible problem with ex17_1, diffs above"; fi;\
            $(RM) -f ex17_1.tmp
+runex20:
+	-@$(MPIRUN) ex20 > ex20_1.tmp 2>&1;\
+           if (diff output/ex20_1.out ex20_1.tmp) then true; \
+           else echo "Possible problem with ex20_1, diffs above"; fi;\
+           $(RM) -f ex20_1.tmp vector.dat
+runex20_2:
+	-@$(MPIRUN) -np 2 ex20 > ex20_2.tmp 2>&1;\
+           if (diff output/ex20_2.out ex20_2.tmp) then true; \
+           else echo "Possible problem with ex20_2, diffs above"; fi;\
+           $(RM) -f ex20_2.tmp vector.dat
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
