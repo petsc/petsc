@@ -1,3 +1,5 @@
+petsc/bmake/freebsd
+petsc/bmake/paragon
 petsc/bmake/IRIX64_uni
 petsc/bin/petscopt
 petsc/bin/petscoptsinfo.text
