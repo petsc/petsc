@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.33 1997/12/03 04:37:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.34 1997/12/03 04:52:43 bsmith Exp bsmith $";
 #endif
 
 
@@ -94,7 +94,7 @@ static int      cmap_base = 0;
 int XiInitCmap(Draw_X* XiWin )
 {
   XColor   colordef;
-  int      i;
+  int      i,found;
   Colormap defaultmap = DefaultColormap( XiWin->disp, XiWin->screen );
 
   PetscFunctionBegin;
@@ -112,22 +112,27 @@ int XiInitCmap(Draw_X* XiWin )
   */
   for (i=0; i<DRAW_BASIC_COLORS; i++) {
     XParseColor( XiWin->disp, XiWin->cmap, colornames[i], &colordef );
-    if (defaultmap != XiWin->cmap) { 
-      /* allocate the color in the default-map in case it is already not there */
-      XAllocColor( XiWin->disp, defaultmap, &colordef );
-      /*  force the new color map to use the same slot as the default colormap  */
-      XStoreColor( XiWin->disp, XiWin->cmap, &colordef );
+    if (defaultmap == XiWin->cmap) { 
+      XAllocColor( XiWin->disp, XiWin->cmap, &colordef ); 
     } else {
-      XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
-    } 
-    XiWin->cmapping[i]                  = colordef.pixel;
-    if (colordef.pixel < 256) {
-      cmap_pixvalues_used[colordef.pixel] = 1;
+      /* try to allocate the color in the default-map */
+      found = XAllocColor( XiWin->disp, defaultmap, &colordef ); 
+      /* use it, if it it exists and is not already used in the new colormap */
+      if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
+        cmap_pixvalues_used[colordef.pixel] = 1; 
+	/* otherwise search for the next available slot */
+      } else {
+        while (cmap_pixvalues_used[cmap_base]) cmap_base++;
+        colordef.pixel                   = cmap_base;
+        cmap_pixvalues_used[cmap_base++] = 1;
+      }
+      XStoreColor( XiWin->disp, XiWin->cmap, &colordef ); 
     }
   }
   XiWin->background = XiWin->cmapping[DRAW_WHITE];
   XiWin->foreground = XiWin->cmapping[DRAW_BLACK];
   XiWin->maxcolors  = DRAW_BASIC_COLORS;
+  PLogInfo(0,"Successfully allocated basic colors\n");
   PetscFunctionReturn(0);
 }
 
@@ -159,7 +164,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
       /* try to allocate the color in the default-map */
       found = XAllocColor( XiWin->disp, defaultmap, &colordef ); 
       /* use it, if it it exists and is not already used in the new colormap */
-      if (found && !cmap_pixvalues_used[colordef.pixel]) {
+      if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
         cmap_pixvalues_used[colordef.pixel] = 1; 
 	/* otherwise search for the next available slot */
       } else {
@@ -187,6 +192,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
    We could detect this only by seeing if there are any duplications
    among the XiWin->cmap values.
   */
+  PLogInfo(0,"Successfully allocated spectrum colors\n");
   PetscFunctionReturn(0);
 }
 
