@@ -20,8 +20,7 @@ class Configure(config.base.Configure):
     return
 
   def configureSharedLibraries(self):
-    if not self.arch.hostOsBase.startswith('aix') and not self.arch.hostOsBase.startswith('darwin'):
-      self.useShared = self.framework.argDB['with-shared']
+    self.useShared = self.framework.argDB['with-shared']
     if self.useShared:
       self.addMakeRule('shared_arch','shared_'+self.arch.hostOsBase)
     else:
