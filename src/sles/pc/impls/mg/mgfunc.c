@@ -2,36 +2,38 @@
 #include "mgimpl.h"
 
 /*@
-      MGCycle - Runs either an additive or multiplicative cycle of 
+      MGCycle - Runs either an additive, multiplicative or full cycle of 
                 multigrid. 
 
   Input Parameters:
 .   mg - the multigrid context 
-.   am - either Multiplicative or Additive or FullMultigrid 
+.   am - either Multiplicative, Additive or FullMultigrid 
 
 
-  Note: a simple  wrapper which calls MGMycle() or MGACycle(). 
+  Note: a simple  wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
 @*/ 
 int MGCycle(MG *mg,int am)
 {
    if (am == Multiplicative)      return MGMCycle(mg); 
    else if (am == Additive)       return MGACycle(mg);
-   else                           return MGFMG(mg);
+   else                           return MGFCycle(mg);
    return 0;
 }
 
 /*@
-      MGSetCoarseSolve - Sets the solver function to be used on the 
-
+      MGGetCoarseSolve - Gets the solver contex to be used on the 
+                         coarse grid.
 
   Input Parameters:
 .   mg - the multigrid context 
+
+  Output Parameters:
 .   sles - the coarse grid solver context 
 
 @*/ 
-int MGSetCoarseSolve(MG *mg,SLES sles)  
+int MGGetCoarseSolve(MG *mg,SLES *sles)  
 { 
-  mg[mg[0]->level]->csles = sles;  
+  *sles =  mg[mg[0]->level]->csles;  
   return 0;
 }
 
@@ -105,34 +107,64 @@ int MGSetRestriction(MG *mg,int l,Mat mat)
 }
 
 /*@
-      MGSetSmootherUp - Sets the function to be used as smoother after 
-                        coarse grid correction (post-smoother). 
+      MGGetSmoother - Gets the SLES context to be used as smoother for 
+                      both pre and post smoothing. If you want a different
+                      function for each call both MGGetSmootherUp() and 
+                      MGGetSmootherDown().
 
   Input Parameters:
 .   mg - the multigrid context 
-.   sles - the smoother
 .  l - the level to supply
 
+  Ouput Parameters:
+.   sles - the smoother
 @*/
-int MGSetSmootherUp(MG *mg,int l,SLES sles)
+int MGGetSmoother(MG *mg,int l,SLES *sles)
 {
-  mg[mg[0]->level - l]->smoothu  = sles;  
+  *sles = mg[mg[0]->level - l]->smoothu;  
   return 0;
 }
 
 /*@
-      MGSetSmootherDown - Sets the function to be used as smoother before 
+      MGGetSmootherUp - Gets the SLES context to be used as smoother after 
                         coarse grid correction (post-smoother). 
 
   Input Parameters:
 .   mg - the multigrid context 
+.  l - the level to supply
+
+  Ouput Parameters:
 .   sles - the smoother
+@*/
+int MGGetSmootherUp(MG *mg,int l,SLES *sles)
+{
+  *sles = mg[mg[0]->level - l]->smoothu;  
+  return 0;
+}
+
+/*@
+      MGGetSmootherDown - Gets the SLES context to be used as smoother before 
+                        coarse grid correction (pre-smoother). 
+
+  Input Parameters:
+.   mg - the multigrid context 
 .   l - the level to supply
 
+  Ouput Parameters:
+.   sles - the smoother
 @*/
-int MGSetSmootherDown(MG *mg,int l,SLES sles)
+int MGGetSmootherDown(MG *mg,int l,SLES *sles)
 {
-  mg[mg[0]->level - l]->smoothd  = sles;  
+  int ierr;
+  /*
+     This is called only if user wants a different pre-smoother from post.
+     Thus we check if a different one has already been allocated, 
+     if not we allocate it.
+  */
+  if (mg[mg[0]->level - 1]->smoothd == mg[mg[0]->level -1]->smoothu) {
+    ierr = SLESCreate(&mg[mg[0]->level - 1]->smoothd); CHKERR(ierr);
+  }
+  *sles = mg[mg[0]->level - l]->smoothd;
   return 0;
 }
 

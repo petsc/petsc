@@ -37,7 +37,7 @@ int main(int Argc, char **Args)
   DrawLGCtx   lg;
   DrawCtx     win;
   int         ierr;
-  Vec         x,solution,X,R,B;
+  Vec         x,solution,X[20],R[20],B[20];
   Scalar      zero = 0.0;
   PC          pc;
   KSP         ksp;
@@ -67,16 +67,15 @@ int main(int Argc, char **Args)
   }
 
   Create1dLaplacian(N[levels-1],&cmat);
-  SLESCreate(&csles);
-  SLESSetMat(csles,cmat);
-
-  SLESGetPC(csles,&pc); PCSetMethod(pc,PCDIRECT);
-  SLESGetKSP(csles,&ksp); KSPSetMethod(ksp,KSPPREONLY);
 
   ierr = MGCreate(levels,&mg);
 
+  MGGetCoarseSolve(mg,&csles);
+  SLESSetMat(csles,cmat);
+  SLESGetPC(csles,&pc); PCSetMethod(pc,PCDIRECT);
+  SLESGetKSP(csles,&ksp); KSPSetMethod(ksp,KSPPREONLY);
+
   /* zero is finest level */
-  MGSetCoarseSolve(mg,csles);
   for ( i=0; i<levels-1; i++ ) {
       MGSetResidual(mg,levels - 1 - i,residual,(Mat)0);
       MatShellCreate(N[i],N[i+1],(void *)0,&mat[i]);
@@ -85,7 +84,9 @@ int main(int Argc, char **Args)
       MGSetInterpolate(mg,levels - 1 - i,mat[i]);
       MGSetRestriction(mg,levels - 1 - i,mat[i]);
       MGSetCyclesOnLevel(mg,levels - 1 - i,cycles);
-      SLESCreate(&sles[i]);
+
+      /* set smoother */
+      MGGetSmoother(mg,levels - 1 - i,&sles[i]);
       SLESGetPC(sles[i],&pc);
       PCSetMethod(pc,PCSHELL);
       SLESSetMat(sles[i],mat[i]); /* this is a dummy! */
@@ -95,40 +96,39 @@ int main(int Argc, char **Args)
       KSPSetMethod(ksp,KSPRICHARDSON);
       KSPSetInitialGuessNonZero(ksp);
       KSPSetIterations(ksp,smooths);
-      MGSetSmootherDown(mg,levels - 1 - i,sles[i]);
-      MGSetSmootherUp(mg,levels - 1 - i,sles[i]);
-      VecCreateSequential(N[i],&x); if (!i) X = x;
+
+      VecCreateSequential(N[i],&x); X[levels - 1 - i] = x;
       MGSetX(mg,levels - 1 - i,x);
-      VecCreateSequential(N[i],&x); if (!i) B = x;
+      VecCreateSequential(N[i],&x); B[levels -1 - i] = x;
       MGSetRhs(mg,levels - 1 - i,x);
-      VecCreateSequential(N[i],&x); if (!i) R = x;
+      VecCreateSequential(N[i],&x); R[levels - 1 - i] = x;
       MGSetR(mg,levels - 1 - i,x);
   } 
   /* create coarse level vectors */
-  VecCreateSequential(N[levels-1],&x); MGSetX(mg,0,x); if (levels==1) X = x;
-  VecCreateSequential(N[levels-1],&x); MGSetRhs(mg,0,x);if (levels==1) B = x;
-  VecCreateSequential(N[levels-1],&x); MGSetR(mg,0,x);if (levels==1) R = x;
+  VecCreateSequential(N[levels-1],&x); MGSetX(mg,0,x); X[0] = x;
+  VecCreateSequential(N[levels-1],&x); MGSetRhs(mg,0,x); B[0] = x;
+  VecCreateSequential(N[levels-1],&x); MGSetR(mg,0,x); R[0] = x;
 
   CalculateSolution(N[0],&solution);
-  CalculateRhs(B);
-  VecSet(&zero,X);
+  CalculateRhs(B[levels-1]);
+  VecSet(&zero,X[levels-1]);
 
   if (MGCheck(mg)) {SETERR(1,0);}
      
-  residual((void*)0,B,X,R);
-  CalculateError(solution,X,R,e); i = 0; s = e[0];
+  residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
+  CalculateError(solution,X[levels-1],R[levels-1],e); i = 0; s = e[0];
   d[0] = d[1] = d[2] = (double) i;
   printf("l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
   e[0] = log10(e[0]);e[1] = log10(e[1]);e[2] = log10(e[2]);
 /*
-  awLGAddPoint(lg,d,e); 
+  DrawLGAddPoint(lg,d,e); 
 */
 
   while (s > 1.e-13) {
     ierr = MGCycle(mg,am); CHKERR(ierr);
     i++;
-    residual((void*)0,B,X,R);
-    CalculateError(solution,X,R,e); 
+    residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
+    CalculateError(solution,X[levels-1],R[levels-1],e); 
     d[0] = d[1] = d[2] = (double) i;
     printf("l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
     s = e[0];
@@ -143,7 +143,17 @@ int main(int Argc, char **Args)
   DrawLGDestroy(lg);
   DrawDestroy(win);
 */
+  FREE(N);
+  VecDestroy(solution);
+
+  /* note we have to keep a list of all vectors allocated, this is 
+     not ideal, but putting it in MGDestroy is not so good either*/
+  for ( i=0; i<levels; i++ ) {
+    VecDestroy(X[i]); VecDestroy(B[i]); VecDestroy(R[i]);
+  }
+  MatDestroy(cmat);
   MGDestroy(mg);
+  PetscFinalize();
   return 0;
 }
 

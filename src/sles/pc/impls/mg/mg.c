@@ -54,15 +54,22 @@ int MGMCycle(MG *mglevels)
 int MGCreate(int levels,MG **result)
 {
   MG  *mg;
-  int i;
+  int i,ierr;
 
   mg = (MG *) MALLOC( levels*sizeof(MG) ); CHKPTR(mg);
   
   for ( i=0; i<levels; i++ ) {
-    mg[i]        = (MG) MALLOC( sizeof(struct _MG) ); CHKPTR(mg[i]);
+    mg[i]         = (MG) MALLOC( sizeof(struct _MG) ); CHKPTR(mg[i]);
     MEMSET(mg[i],0,sizeof(MG));
     mg[i]->level  = levels - i - 1;
     mg[i]->cycles = 1;
+    if ( i==levels-1) {
+      ierr = SLESCreate(&mg[i]->csles); CHKERR(ierr);
+    }
+    else {
+      ierr = SLESCreate(&mg[i]->smoothd); CHKERR(ierr);
+      mg[i]->smoothu = mg[i]->smoothd;
+    }
   }
   *result = mg;
   return 0;
@@ -79,7 +86,16 @@ int MGCreate(int levels,MG **result)
 int MGDestroy(MG *mg)
 {
   int i, n = mg[0]->level + 1;
-  for ( i=0; i<n; i++ ) FREE(mg[i]);
+  for ( i=0; i<n; i++ ) {
+    if ( i==n-1 ) {
+      SLESDestroy(mg[i]->csles);
+    }
+    else {
+      if (mg[i]->smoothd != mg[i]->smoothu) SLESDestroy(mg[i]->smoothd);
+      SLESDestroy(mg[i]->smoothu);
+    }
+     FREE(mg[i]);
+  }
   FREE(mg);
   return 0;
 }
