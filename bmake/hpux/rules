@@ -1,4 +1,4 @@
-# $Id: base,v 1.45 1998/09/18 15:25:34 balay Exp balay $ 
+# $Id: base,v 1.46 1998/09/25 00:25:01 balay Exp balay $ 
 
 PARCH    = hpux
 #
@@ -20,7 +20,7 @@ CCV      = unknown
 #
 #   Fortran compiler to use
 #
-FC       = f77
+FC       = f90
 AR       = ar
 RM       = rm -f
 RANLIB   = true
@@ -40,7 +40,10 @@ CLINKER  = cc ${COPTFLAGS}
 #  One must use fort77 rather then f77 because f77 has a different 
 #  meaning for the -L option!
 #
-FLINKER  = fort77 ${FOPTFLAGS} 
+# use fort77 to link f77 programs
+#FLINKER  = fort77 ${FOPTFLAGS} 
+#
+FLINKER  = f90 ${FOPTFLAGS}
 #
 # For HPUX 9.* use the following instead
 #SYS_LIB  =  -lV3 -lU77 
