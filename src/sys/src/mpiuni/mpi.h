@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.26 1996/03/18 15:20:14 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.27 1996/06/23 22:39:05 bsmith Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -198,6 +198,16 @@ typedef char*   MPI_Errhandler;
                      MPIUNI_TMP = (void *) (array_of_indices), \
                      MPIUNI_TMP = (void *) (array_of_statuses), \
                      MPI_SUCCESS)
+#define MPI_Comm_group(comm, group) \
+                     (MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (group), \
+                     MPI_SUCCESS)
+#define MPI_Group_incl(group, n, ranks, newgroup) \
+                     (MPIUNI_TMP = (void *) (group), \
+                     MPIUNI_TMP = (void *) (n), \
+                     MPIUNI_TMP = (void *) (ranks), \
+                     MPIUNI_TMP = (void *) (newgroup), \
+                     MPI_SUCCESS)
 #define MPI_Testsome(incount, array_of_requests, outcount, \
 		 array_of_indices, array_of_statuses) MPI_SUCCESS
 #define MPI_Iprobe(source, tag, comm, flag, status)  \
@@ -326,11 +336,9 @@ typedef char*   MPI_Errhandler;
 			       group2, ranks2) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Group_compare(group1, group2, result) \
                 (*(result)=1,MPI_SUCCESS)
-#define MPI_Comm_group(comm, group) MPI_SUCCESS
 #define MPI_Group_union(group1, group2, newgroup) MPI_SUCCESS
 #define MPI_Group_intersection(group1, group2, newgroup) MPI_SUCCESS
 #define MPI_Group_difference(group1, group2, newgroup) MPI_SUCCESS
-#define MPI_Group_incl(group, n, ranks, newgroup) MPI_SUCCESS
 #define MPI_Group_excl(group, n, ranks, newgroup) MPI_SUCCESS
 #define MPI_Group_range_incl(group, n, ranges,newgroup) MPI_SUCCESS
 #define MPI_Group_range_excl(group, n, ranges, newgroup) MPI_SUCCESS
@@ -348,7 +356,12 @@ typedef char*   MPI_Errhandler;
                       MPIUNI_TMP = (void *) (comm2), \
                       *(result)=MPI_IDENT, \
                       MPI_SUCCESS )
-#define MPI_Comm_create(comm, group, newcomm) MPI_SUCCESS
+#define MPI_Comm_create(comm, group, newcomm)  \
+                      (MPIUNI_TMP = (void *) (comm), \
+                      MPIUNI_TMP = (void *) (group), \
+                      MPIUNI_TMP = (void *) (newcomm), \
+                      MPI_SUCCESS )
+
 #define MPI_Comm_split(comm, color, key, newcomm) MPI_SUCCESS
 #define MPI_Comm_free(comm) \
                       (MPIUNI_TMP = (void *) (comm), \
