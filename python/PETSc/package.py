@@ -29,6 +29,7 @@ class Package(config.base.Configure):
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
     self.version      = ''
+    self.license      = None
     # ***********  these are optional items set in the particular packages file
     self.complex      = 0   # 1 means cannot use complex
     self.cxx          = 0   # 1 means requires C++
@@ -87,12 +88,21 @@ class Package(config.base.Configure):
   def generateLibList(self,dir):
     '''Generates full path list of libraries from self.liblist'''
     alllibs = []
-    for l in liblist:
+    for l in self.liblist:
       alllibs.append(os.path.join(dir,l))
     return alllibs
 
   def generateGuesses(self):
     if self.download and self.framework.argDB['download-'+self.package] == 1:
+      if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
+        self.framework.logClear()
+        self.logPrint("**************************************************************************************************", debugSection='screen')
+        self.logPrint('You must register to use '+self.name+' at '+self.license, debugSection='screen')
+        self.logPrint('    Once you have registered, config/configure.py will continue and download and install '+self.name+' for you', debugSection='screen')
+        self.logPrint("**************************************************************************************************\n", debugSection='screen')
+        fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
+        fd.close()
+
       dir = os.path.join(self.Install(),self.arch.arch)
       yield('Download '+self.PACKAGE,self.generateLibList(os.path.join(dir,self.libdir)) ,os.path.join(dir,self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')

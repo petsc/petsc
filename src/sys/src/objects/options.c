@@ -779,9 +779,9 @@ static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char n
   for (i=0; i<N; i++) {
     ierr = PetscStrcmp(names[i],tmp,&match);CHKERRQ(ierr);
     if (match) {
-       *value = options->values[i];
-       options->used[i]++;
-       *flg = PETSC_TRUE;
+       *value           = options->values[i];
+       options->used[i] = PETSC_TRUE;
+       *flg             = PETSC_TRUE;
        break;
      }
   }

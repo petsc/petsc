@@ -109,7 +109,7 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
 
   PetscFunctionBegin;
   if (!jac->work1) {
-     ierr = MatGetVecs(pc->pmat,&jac->work1,0);CHKERRQ(ierr);
+   ierr = MatGetVecs(pc->pmat,&jac->work1,0);CHKERRQ(ierr);
   }
   while (next) {
     ierr = PCSetOperators(next->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);

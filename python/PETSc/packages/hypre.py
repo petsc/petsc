@@ -14,6 +14,7 @@ class Configure(PETSc.package.Package):
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['HYPRE_IJMatrixCreate']
     self.includes     = ['HYPRE.h']
+    self.license      = 'http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html'
     return
 
 
@@ -51,13 +52,6 @@ class Configure(PETSc.package.Package):
           
         
   def Install(self):
-    if not os.path.isfile(os.path.expanduser(os.path.join('~','.hypre_license'))):
-      print "**************************************************************************************************"
-      print "You must register to use hypre at http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html"
-      print "    Once you have registered, configure will continue and download and install hypre for you      "
-      print "**************************************************************************************************"
-      fd = open(os.path.expanduser(os.path.join('~','.hypre_license')),'w')
-      fd.close()
     hypreDir = self.getDir()
 
     # Get the HYPRE directories
@@ -105,12 +99,18 @@ class Configure(PETSc.package.Package):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild HYPRE oldargs = '+oldargs+' new args '+args+'\n')
       try:
-        self.logPrint("Configuring hypre; this may take several minutes\n", debugSection='screen')
+        self.framework.logClear()
+        self.logPrint('=================================================================================', debugSection='screen')
+        self.logPrint("                 Configuring hypre; this may take several minutes\n", debugSection='screen')
+        self.logPrint('=================================================================================', debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
-        self.logPrint("Compiling hypre; this may take several minutes\n", debugSection='screen')
+        self.framework.logClear()
+        self.logPrint('=================================================================================', debugSection='screen')
+        self.logPrint("                 Compiling hypre; this may take several minutes\n", debugSection='screen')
+        self.logPrint('=================================================================================', debugSection='screen')        
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))

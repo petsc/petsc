@@ -14,22 +14,11 @@ class Configure(PETSc.package.Package):
     self.deps         = [self.mpi,self.blasLapack]
     self.functions    = ['ML_Set_PrintLevel']
     self.includes     = ['ml_include.h']
+    self.liblist      = ['libml.a']    
+    self.license      = 'http://software.sandia.gov/trilinos/downloads.html'
     return
-
-  def generateLibList(self,dir):
-    alllibs = []
-    alllibs.append(os.path.join(dir,'libml.a'))  
-    return alllibs
           
   def Install(self):
-    if not os.path.isfile(os.path.expanduser(os.path.join('~','.ml_license'))):
-      print "**************************************************************************************************"
-      print "You must register to use ml at http://software.sandia.gov/trilinos/downloads.html"
-      print "    Once you have registered, configure will continue and download and install ml for you"
-      print "**************************************************************************************************"
-      fd = open(os.path.expanduser(os.path.join('~','.ml_license')),'w')
-      fd.close()
-      
     # Get the ML directories
     mlDir = self.getDir()
     installDir  = os.path.join(mlDir, self.arch.arch)
