@@ -51,3 +51,4 @@ BS_INCLUDE = -I/home/petsc/BlockSolve95/include
 BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 
+DYLIBPATH  = 
