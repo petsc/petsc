@@ -3,13 +3,17 @@ import fileset
 import logging
 import transform
 
+import copy
 import types
 
 class Target (transform.Transform):
   "Targets are entry points into the build process, and provide higher level control flow"
   def __init__(self, sources = None, transforms = []):
     transform.Transform.__init__(self, sources)
-    self.transforms = transforms[:]
+    if isinstance(transforms, transform.Transform):
+      self.transforms = transforms
+    else:
+      self.transforms = copy.copy(transforms)
 
   def executeSingleTransform(self, sources, transform):
     self.debugPrint('Executing transform '+str(transform)+' with sources '+self.debugFileSetStr(sources), 1, 'target')
