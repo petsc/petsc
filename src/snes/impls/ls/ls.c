@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.5 1995/04/16 22:12:25 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.6 1995/04/17 03:33:14 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -202,6 +202,9 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
    Returns:
    1, indicating success of the step.
 
+.keywords: SNES, nonlinear, line search, cubic
+
+.seealso: SNESCubicLineSearch()
 @*/
 int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                              double fnorm, double *ynorm, double *gnorm )
@@ -242,6 +245,9 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
    This line search is taken from "Numerical Methods for Unconstrained 
    Optimization and Nonlinear Equations" by Dennis and Schnabel, page 325.
 
+.keywords: SNES, nonlinear, line search, cubic
+
+.seealso: SNESNoLineSearch()
 @*/
 int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
                               double fnorm, double *ynorm, double *gnorm )
