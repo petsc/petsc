@@ -16,20 +16,26 @@ Additional Capabilities that PETSc Needs:
    - Design better ILU/ICC interface for mpirowbs format (so that PC 
      selection is correct and symmetric matrix can use ILU).
 
-   - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix
-    
-   - Add flag where user can announce that matrix is structurally symmetric and 
-     that they are inserting all values for MPIRowbs, this prevents unneeded 
-     communication.
-
    - Change all CAPS macro to use _ between words, for example INSERT_VALUES
 
    - Fix bug in MatCreateMPIAIJ() for rectangular matrices (not square)
 
    - Fix bug in MatTranspose_AIJ for rectangular matrices.
 
+   - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix
+    
+   X Add flag where user can announce that matrix is structurally symmetric and 
+     that they are inserting all values for MPIRowbs, this prevents unneeded 
+     communication.
 
    To do sometime soon:
+
+   - Parallel dense matrix implementation.
+
+   - Block compressed row storage format implementation.
+
+   - Add iterative refinement or some similar technique to Unmodified Gram-Schmidt
+     code to cheaply stablize.
 
    - Incorporate SPARSKIT strategy of Saad for managing AIJ data structure.
      (requested by Xiao Chuan Cai; this is supposedly much faster than
