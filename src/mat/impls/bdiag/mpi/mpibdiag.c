@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.80 1996/04/07 22:46:36 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.81 1996/04/09 02:21:12 curfman Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -716,7 +716,17 @@ static int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
     PLogFlops(2*mbd->n*mbd->m);
   }
   else if (type == NORM_1) { /* max column norm */
-    SETERRQ(1,"MatNorm_MPIBDiag:Not yet coded for NORM_1");
+    double *tmp, *tmp2;
+    int    j;
+    tmp  = (double *) PetscMalloc( a->n*sizeof(double) ); CHKPTRQ(tmp);
+    tmp2 = (double *) PetscMalloc( a->n*sizeof(double) ); CHKPTRQ(tmp2);
+    ierr = MatNorm_SeqBDiag_Columns(mbd->A,tmp); CHKERRQ(ierr);
+    *norm = 0.0;
+    MPI_Allreduce(tmp,tmp2,a->n,MPI_DOUBLE,MPI_SUM,A->comm);
+    for ( j=0; j<a->n; j++ ) {
+      if (tmp2[j] > *norm) *norm = tmp2[j];
+    }
+    PetscFree(tmp); PetscFree(tmp2);
   }
   else if (type == NORM_INFINITY) { /* max row norm */
     double normtemp;
