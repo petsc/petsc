@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.25 1997/11/28 16:22:00 bsmith Exp curfman $ 
+# $Id: makefile,v 1.26 1997/12/06 01:46:32 curfman Exp curfman $ 
 
 ALL: ex1
 
@@ -226,17 +226,24 @@ runex6_2:
 	   $(RM) -f ex6_2.tmp
 
 runex8:
-	-@$(MPIRUN) -np 4 ex8 -nox -mx 4 -my 4 -ncycles 4 -snes_smonitor \
+	-@$(MPIRUN) -np 2 ex8 -nox -mx 16 -my 16 -snes_smonitor \
                     -lidvelocity 0. -grashof 1000. > ex8_1.tmp 2>&1; \
            if (diff output/ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \
            $(RM) -f ex8_1.tmp
 
-runex8_2:
-	-@$(MPIRUN) -np 6 ex8 -nox -Nx 3 -Ny 2 -mx 7 -my 7 -ncycles 3 -snes_smonitor \
-                    -lidvelocity 10. -grashof 1000. > ex8_2.tmp 2>&1; \
-           if (diff output/ex8_2.out ex8_2.tmp) then true; \
-           else echo "Possible problem with ex8_2, diffs above"; fi; \
-           $(RM) -f ex8_2.tmp
+runex9:
+	-@$(MPIRUN) -np 4 ex9 -nox -mx 4 -my 4 -ncycles 4 -snes_smonitor \
+                    -lidvelocity 0. -grashof 1000. > ex9_1.tmp 2>&1; \
+           if (diff output/ex9_1.out ex9_1.tmp) then true; \
+           else echo "Possible problem with ex9_1, diffs above"; fi; \
+           $(RM) -f ex9_1.tmp
+
+runex9_2:
+	-@$(MPIRUN) -np 6 ex9 -nox -Nx 3 -Ny 2 -mx 7 -my 7 -ncycles 3 -snes_smonitor \
+                    -lidvelocity 10. -grashof 1000. > ex9_2.tmp 2>&1; \
+           if (diff output/ex9_2.out ex9_2.tmp) then true; \
+           else echo "Possible problem with ex9_2, diffs above"; fi; \
+           $(RM) -f ex9_2.tmp
 
 
