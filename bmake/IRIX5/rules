@@ -12,8 +12,8 @@ SHELL    = /bin/sh
 # -rpath is requied to specify the location of any dynamic libraries
 # which are not found in the standard locations (/lib:/usr/lib:) etc
 #
-CLINKER  = cc $(COPTFLAGS) -rpath $(LDIR)
-FLINKER  = f77 $(FOPTFLAGS) -rpath $(LDIR)
+CLINKER  = cc $(COPTFLAGS) -rpath $(LDIR):$(DYLIBPATH)
+FLINKER  = f77 $(FOPTFLAGS) -rpath $(LDIR):$(DYLIBPATH)
 
 SYS_LIB    = -lfpe -lsun 
 #
