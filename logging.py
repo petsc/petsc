@@ -60,7 +60,7 @@ class Logger(args.ArgumentProcessor):
     argDB.setType('debugLevel',    nargs.ArgInt(None, 3, 'Integer 0 to 4, where a higher level means more detail', 0, 5))
     argDB.setType('debugSections', nargs.Arg(None, [], 'Message types to print, e.g. [compile,link,bk,install]'))
     argDB.setType('debugIndent',   nargs.Arg(None, '  ', 'The string used for log indentation'))
-    argDB.setType('scrollOutput',  nargs.ArgBool(None, 1, 'Flag to allow output to scroll rather than overwriting a single line'))
+    argDB.setType('scrollOutput',  nargs.ArgBool(None, 0, 'Flag to allow output to scroll rather than overwriting a single line'))
     argDB.setType('noOutput',      nargs.ArgBool(None, 0, 'Flag to suppress output to the terminal'))
     return argDB
 
