@@ -40,6 +40,11 @@ West Bethesda, Md.  20817-5700
 (301) 227-5753 (fax)
 rcheng@oasys.dt.navy.mil
 
+  - Change MatLUFactorNumeric_SeqBAIJ_2,3,... to not malloc a huge block row
+    matrix rather malloc an integer array to contain indices into a much smaller
+    block row array. Note with BS and n = 125000 the block row is 4 meg which is
+    a lot.
+
   - Add NaN initialization to eigenvalue computations (else what seem to be zero e-values
     can be just uninitialized yet uncomputed data -- misleading, comment by Frank Elliott).
 
