@@ -637,7 +637,7 @@ class Configure(config.base.Configure):
   def checkSharedLinker(self):
     '''Check that the linker can produce shared libraries'''
     self.sharedLibraries = 0
-    self.framework.argDB['SHARED_LIBRARY_FLAG'] = ''
+    self.framework.argDB['sharedLibraryFlags'] = ''
     for linker, flags, ext in self.generateSharedLinkerGuesses():
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
@@ -659,7 +659,7 @@ class Configure(config.base.Configure):
             self.sharedLibraries = 1
             self.sharedLinker = linker
             self.sharedLibraryFlags = goodFlags
-            self.framework.argDB['SHARED_LIBRARY_FLAG'] = ' '.join(self.sharedLibraryFlags)
+            self.framework.argDB['sharedLibraryFlags'] = ' '.join(self.sharedLibraryFlags)
             self.sharedLibraryExt = ext
             self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
             break

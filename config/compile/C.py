@@ -102,7 +102,7 @@ class SharedLinker(config.compile.processor.Processor):
   def __init__(self, argDB):
     self.compiler = Compiler(argDB)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(argDB = argDB))
-    config.compile.processor.Processor.__init__(self, argDB, ['LD_SHARED', self.compiler.name], ['LDFLAGS', 'SHARED_LIBRARY_FLAG'], '.o', None)
+    config.compile.processor.Processor.__init__(self, argDB, ['LD_SHARED', self.compiler.name], ['LDFLAGS', 'sharedLibraryFlags'], '.o', None)
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
     return
