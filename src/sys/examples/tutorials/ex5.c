@@ -8,6 +8,10 @@ T*/
 #include "petsc.h"
 #include "petscbag.h"
 
+typedef enum {
+  THIS = 0, THAT = 1, THE_OTHER = 2
+} YourChoice;
+
 typedef struct {
   PetscReal   x1,x2;
 } TwoVec;
@@ -26,6 +30,7 @@ typedef struct {
   PetscTruth    T;
   TwoVec        pos; 
   PetscDataType dt;
+  YourChoice    which;
 } Parameter;
  
 
