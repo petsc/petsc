@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.16 1996/03/04 21:31:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.17 1996/03/05 04:29:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -351,7 +351,7 @@ int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
     tmp2  = (tmp1 - tmp3)/sizeof(Scalar);
     itmp2 = -((int) tmp2);
   }
-  if (base + tmp2 != addr) {
+  if (base + itmp2 != addr) {
     fprintf(stderr,"PetscScalarAddressToFortran:C and Fortran arrays are\n");
     fprintf(stderr,"too far apart to be indexed by an integer.\n");
     MPI_Abort(MPI_COMM_WORLD,1);
