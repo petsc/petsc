@@ -1111,7 +1111,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *B)
   PetscInt       *rip,i,j,mbs=A->m,*bi=b->i,*bj=b->j,*bcol;
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
-  MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
+  MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi,*baval;
   PetscReal      damping=b->factor_damping,zeropivot=b->factor_zeropivot,shift_amount;
   PetscTruth     damp,chshift;
   PetscInt       nshift=0,ndamp=0;
@@ -1135,8 +1135,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *B)
  
     for (k = 0; k<mbs; k++){
       /*initialize k-th row by the perm[k]-th row of A */
-      jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
-      PetscScalar *baval = ba + bi[k];
+      jmin  = ai[rip[k]]; jmax = ai[rip[k]+1];
+      baval = ba + bi[k];
       for (j = jmin; j < jmax; j++){
         col = rip[aj[j]];
         if (col >= k){ /* only take upper triangular entry */

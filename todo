@@ -54,7 +54,8 @@ SNES
    Add _SNESOps function table, dang I can't beleive we don't have it yet
 
 Vectors
-   Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
+   Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input allow setting type before sizes
+   provide VecSetMap()
 
    Handle special cases of VecAXPBY
 
@@ -68,6 +69,8 @@ Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 
 PC/Mat
+
+  Change MatLoad() to take a matrix, move sizes out of MatCreate(), add MatSetMaps(), allow setting type before sizes
 
   Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
   in ASM.

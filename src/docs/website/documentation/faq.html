@@ -84,8 +84,8 @@
     </menu>
     <p><a href="#usage"><b>Usage</b></a></p>
     <ul>
-      <li><a href="#domaindecomposition">How do I use PETSc for domain
-        decomposition?</a></li>
+      <li><a href="#domaindecomposition">How do I use PETSc for domain decomposition?</a></li>
+      <li><a href="#blocks">Can I create BAIJ matrices with different size blocks for different block rows?</a></li>
     </ul>
     <h4><a href="faq.html#Execution">Execution</a></h4>
     <menu>
@@ -127,6 +127,8 @@
         libraries)</a></li>
     </menu>
     <hr>
+
+
     <h3><a name="General">General</a></h3>
     <p><strong><a name="bug-reports"><font color="#FF0000">Where should I send PETSc bug
     reports and questions?</font></a> </strong></p>
@@ -329,6 +331,8 @@ Note that this simply concatenates in the
 
 </p>
     <hr>
+
+
     <h3><a name="Using">Using</a></h3>
     <p>&nbsp;<strong><a name="long-link-time"><font color="#FF0000">How do I use
     P</font></a></strong><strong><a name="domaindecomposition"><font color="#FF0000">ETSc
@@ -351,6 +355,15 @@ Note that this simply concatenates in the
     The program petsc/src/contrib/oberman/laplacian_ql contains an example of its use.<br>
 
 </p>
+    <hr>
+
+    <p>&nbsp;<strong><a name="blocks"><font color="#FF0000">Can I create BAIJ matrices with different size
+    blocks for different block rows?</font></a></strong></p>
+
+    Sorry, this is not possible, the BAIJ format only supports a single fixed block size on the entire matrix.
+    But the AIJ format automatically searches for matching rows and thus still takes advantage of the natural
+    blocks in your matrix to obtain good performance. Unfortunately you cannot use the MatSetValuesBlocked().
+
     <hr>
     <h3><a name="Execution">Execution</a></h3>
     <p><strong><a name="long-link-time"><font color="#FF0000">PETSc executables are SO big and
