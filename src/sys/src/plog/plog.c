@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.25 1995/08/04 21:26:42 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.26 1995/08/05 20:41:51 curfman Exp curfman $";
 #endif
 
 #include "ptscimpl.h"    /*I "petsc.h"  I*/
@@ -631,19 +631,21 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   }
 
   MPIU_fprintf(comm,fd,
-    "-----------------------------------------------------------------\
+    "\n-----------------------------------------------------------------\
 -------------\n"); 
+  MPIU_fprintf(comm,fd,"Memory usage is given in bytes:\n\n");
 
   /* loop over objects looking for interesting ones */
-  MPIU_fprintf(comm,fd,"Object Type    Creations    Destroys  Memory Descendants Mem.\n");
+  MPIU_fprintf(comm,fd,"Object Type      Creations   Destructions   Memory  Descendants' Mem.\n");
   for ( i=0; i<15; i++ ) {
     if (ObjectsType[i][0]) {
-      MPIU_fprintf(comm,fd,"%s %3d          %3d  %7d     %g\n",oname[i],(int) 
+      MPIU_fprintf(comm,fd,"%s %5d          %5d  %9d     %g\n",oname[i],(int) 
           ObjectsType[i][0],(int)ObjectsType[i][1],(int)ObjectsType[i][2],
           ObjectsType[i][3]);
     }
 
   }
+  MPIU_fprintf(comm,fd,"\n");
   return 0;
 }
 
