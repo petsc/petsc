@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.15 2000/08/30 19:38:21 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.16 2000/08/30 20:48:25 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -40,10 +40,10 @@ extern int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat,int,int*,int,int*,MatSc
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatStoreValues_MPIBAIJ"></a>*/"MatStoreValues_MPIBAIJ"
+#define __FUNC__ /*<a name="MatStoreValues_MPISBAIJ"></a>*/"MatStoreValues_MPISBAIJ"
 int MatStoreValues_MPISBAIJ(Mat mat)
 {
-  Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *)mat->data;
+  Mat_MPISBAIJ *aij = (Mat_MPISBAIJ *)mat->data;
   int         ierr;
 
   PetscFunctionBegin;
@@ -55,10 +55,10 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ /*<a name="MatRetrieveValues_MPIBAIJ"></a>*/"MatRetrieveValues_MPIBAIJ"
+#define __FUNC__ /*<a name="MatRetrieveValues_MPISBAIJ"></a>*/"MatRetrieveValues_MPISBAIJ"
 int MatRetrieveValues_MPISBAIJ(Mat mat)
 {
-  Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *)mat->data;
+  Mat_MPISBAIJ *aij = (Mat_MPISBAIJ *)mat->data;
   int         ierr;
 
   PetscFunctionBegin;
@@ -83,17 +83,7 @@ static int CreateColmap_MPISBAIJ_Private(Mat mat)
   int         nbs = B->nbs,i,bs=B->bs,ierr;
 
   PetscFunctionBegin;
-#if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableCreate(baij->nbs/5,&baij->colmap);CHKERRQ(ierr); 
-  for (i=0; i<nbs; i++){
-    ierr = PetscTableAdd(baij->colmap,baij->garray[i]+1,i*bs+1);CHKERRQ(ierr);
-  }
-#else
-  baij->colmap = (int*)PetscMalloc((baij->Nbs+1)*sizeof(int));CHKPTRQ(baij->colmap);
-  PLogObjectMemory(mat,baij->Nbs*sizeof(int));
-  ierr = PetscMemzero(baij->colmap,baij->Nbs*sizeof(int));CHKERRQ(ierr);
-  for (i=0; i<nbs; i++) baij->colmap[baij->garray[i]] = i*bs+1;
-#endif
+  SETERRQ(1,1,"Function not yet written for SBAIJ format");
   PetscFunctionReturn(0);
 }
 
@@ -308,16 +298,7 @@ int MatSetValues_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Inser
   MatScalar   *vsingle;
 
   PetscFunctionBegin;  
-  if (N > b->setvalueslen) {
-    if (b->setvaluescopy) {ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);}
-    b->setvaluescopy = (MatScalar*)PetscMalloc(N*sizeof(MatScalar));CHKPTRQ(b->setvaluescopy);
-    b->setvalueslen  = N;
-  }
-  vsingle = b->setvaluescopy;
-  for (i=0; i<N; i++) {
-    vsingle[i] = v[i];
-  }
-  ierr = MatSetValues_MPIBAIJ_HT_MatScalar(mat,m,im,n,in,vsingle,addv);CHKERRQ(ierr);
+  SETERRQ(1,1,"Function not yet written for SBAIJ format");
   PetscFunctionReturn(0);
 } 
 
@@ -330,16 +311,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *
   MatScalar   *vsingle;
 
   PetscFunctionBegin;  
-  if (N > b->setvalueslen) {
-    if (b->setvaluescopy) {ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);}
-    b->setvaluescopy = (MatScalar*)PetscMalloc(N*sizeof(MatScalar));CHKPTRQ(b->setvaluescopy);
-    b->setvalueslen  = N;
-  }
-  vsingle = b->setvaluescopy;
-  for (i=0; i<N; i++) {
-    vsingle[i] = v[i];
-  }
-  ierr = MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(mat,m,im,n,in,vsingle,addv);CHKERRQ(ierr);
+  SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
   PetscFunctionReturn(0);
 } 
 #endif
@@ -467,91 +439,7 @@ int MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,M
   int         cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
   
   PetscFunctionBegin;
-  if(!barray) {
-    baij->barray = barray = (MatScalar*)PetscMalloc(bs2*sizeof(MatScalar));CHKPTRQ(barray);
-  }
-
-  if (roworiented) { 
-    stepval = (n-1)*bs;
-  } else {
-    stepval = (m-1)*bs;
-  }
-  for (i=0; i<m; i++) {
-    if (im[i] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
-    if (im[i] >= baij->Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large, row %d max %d",im[i],baij->Mbs);
-#endif
-    if (im[i] >= rstart && im[i] < rend) {
-      row = im[i] - rstart;
-      for (j=0; j<n; j++) {
-        /* If NumCol = 1 then a copy is not required */
-        if ((roworiented) && (n == 1)) {
-          barray = v + i*bs2;
-        } else if((!roworiented) && (m == 1)) {
-          barray = v + j*bs2;
-        } else { /* Here a copy is required */
-          if (roworiented) { 
-            value = v + i*(stepval+bs)*bs + j*bs;
-          } else {
-            value = v + j*(stepval+bs)*bs + i*bs;
-          }
-          for (ii=0; ii<bs; ii++,value+=stepval) {
-            for (jj=0; jj<bs; jj++) {
-              *barray++  = *value++; 
-            }
-          }
-          barray -=bs2;
-        }
-          
-        if (in[j] >= cstart && in[j] < cend){
-          col  = in[j] - cstart;
-          ierr = MatSetValuesBlocked_SeqSBAIJ_MatScalar(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
-        }
-        else if (in[j] < 0) continue;
-#if defined(PETSC_USE_BOPT_g)
-        else if (in[j] >= baij->Nbs) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large, col %d max %d",in[j],baij->Nbs);}
-#endif
-        else {
-          if (mat->was_assembled) {
-            if (!baij->colmap) {
-              ierr = CreateColmap_MPISBAIJ_Private(mat);CHKERRQ(ierr);
-            }
-
-#if defined(PETSC_USE_BOPT_g)
-#if defined (PETSC_USE_CTABLE)
-            { int data;
-              ierr = PetscTableFind(baij->colmap,in[j]+1,&data);CHKERRQ(ierr);
-              if ((data - 1) % bs) SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");
-            }
-#else
-            if ((baij->colmap[in[j]] - 1) % bs) SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");
-#endif
-#endif
-#if defined (PETSC_USE_CTABLE)
-	    ierr = PetscTableFind(baij->colmap,in[j]+1,&col);CHKERRQ(ierr);
-            col  = (col - 1)/bs;
-#else
-            col = (baij->colmap[in[j]] - 1)/bs;
-#endif
-            if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
-              ierr = DisAssemble_MPISBAIJ(mat);CHKERRQ(ierr); 
-              col =  in[j];              
-            }
-          }
-          else col = in[j];
-          ierr = MatSetValuesBlocked_SeqSBAIJ_MatScalar(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
-        }
-      }
-    } else {
-      if (!baij->donotstash) {
-        if (roworiented) {
-          ierr = MatStashValuesRowBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
-        } else {
-          ierr = MatStashValuesColBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
-        }
-      }
-    }
-  }
+  SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
   PetscFunctionReturn(0);
 }
 
@@ -575,64 +463,7 @@ int MatSetValues_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *in,MatSc
 #endif
 
   PetscFunctionBegin;
-
-  for (i=0; i<m; i++) {
-#if defined(PETSC_USE_BOPT_g)
-    if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
-    if (im[i] >= baij->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
-#endif
-      row = im[i];
-    if (row >= rstart_orig && row < rend_orig) {
-      for (j=0; j<n; j++) {
-        col = in[j];          
-        if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
-        /* Look up into the Hash Table */
-        key = (row/bs)*Nbs+(col/bs)+1;
-        h1  = HASH(size,key,tmp);
-
-        
-        idx = h1;
-#if defined(PETSC_USE_BOPT_g)
-        insert_ct++;
-        total_ct++;
-        if (HT[idx] != key) {
-          for (idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++);
-          if (idx == size) {
-            for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++);
-            if (idx == h1) {
-              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
-            }
-          }
-        }
-#else
-        if (HT[idx] != key) {
-          for (idx=h1; (idx<size) && (HT[idx]!=key); idx++);
-          if (idx == size) {
-            for (idx=0; (idx<h1) && (HT[idx]!=key); idx++);
-            if (idx == h1) {
-              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
-            }
-          }
-        }
-#endif
-        /* A HASH table entry is found, so insert the values at the correct address */
-        if (addv == ADD_VALUES) *(HD[idx]+ (col % bs)*bs + (row % bs)) += value;
-        else                    *(HD[idx]+ (col % bs)*bs + (row % bs))  = value;
-      }
-    } else {
-      if (!baij->donotstash) {
-        if (roworiented) {
-          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
-        } else {
-          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
-        }
-      }
-    }
-  }
-#if defined(PETSC_USE_BOPT_g)
-  baij->ht_total_ct = total_ct;
-  baij->ht_insert_ct = insert_ct;
-#endif
+  SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
   PetscFunctionReturn(0);
 }
 
@@ -653,101 +484,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *i
 #endif
  
   PetscFunctionBegin;
-
-  if (roworiented) { 
-    stepval = (n-1)*bs;
-  } else {
-    stepval = (m-1)*bs;
-  }
-  for (i=0; i<m; i++) {
-#if defined(PETSC_USE_BOPT_g)
-    if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
-    if (im[i] >= baij->Mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
-#endif
-    row   = im[i];
-    v_t   = v + i*bs2;
-    if (row >= rstart && row < rend) {
-      for (j=0; j<n; j++) {
-        col = in[j];          
-
-        /* Look up into the Hash Table */
-        key = row*Nbs+col+1;
-        h1  = HASH(size,key,tmp);
-      
-        idx = h1;
-#if defined(PETSC_USE_BOPT_g)
-        total_ct++;
-        insert_ct++;
-       if (HT[idx] != key) {
-          for (idx=h1; (idx<size) && (HT[idx]!=key); idx++,total_ct++);
-          if (idx == size) {
-            for (idx=0; (idx<h1) && (HT[idx]!=key); idx++,total_ct++);
-            if (idx == h1) {
-              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
-            }
-          }
-        }
-#else  
-        if (HT[idx] != key) {
-          for (idx=h1; (idx<size) && (HT[idx]!=key); idx++);
-          if (idx == size) {
-            for (idx=0; (idx<h1) && (HT[idx]!=key); idx++);
-            if (idx == h1) {
-              SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
-            }
-          }
-        }
-#endif
-        baij_a = HD[idx];
-        if (roworiented) { 
-          /*value = v + i*(stepval+bs)*bs + j*bs;*/
-          /* value = v + (i*(stepval+bs)+j)*bs; */
-          value = v_t;
-          v_t  += bs;
-          if (addv == ADD_VALUES) {
-            for (ii=0; ii<bs; ii++,value+=stepval) {
-              for (jj=ii; jj<bs2; jj+=bs) {
-                baij_a[jj]  += *value++; 
-              }
-            }
-          } else {
-            for (ii=0; ii<bs; ii++,value+=stepval) {
-              for (jj=ii; jj<bs2; jj+=bs) {
-                baij_a[jj]  = *value++; 
-              }
-            }
-          }
-        } else {
-          value = v + j*(stepval+bs)*bs + i*bs;
-          if (addv == ADD_VALUES) {
-            for (ii=0; ii<bs; ii++,value+=stepval,baij_a+=bs) {
-              for (jj=0; jj<bs; jj++) {
-                baij_a[jj]  += *value++; 
-              }
-            }
-          } else {
-            for (ii=0; ii<bs; ii++,value+=stepval,baij_a+=bs) {
-              for (jj=0; jj<bs; jj++) {
-                baij_a[jj]  = *value++; 
-              }
-            }
-          }
-        }
-      }
-    } else {
-      if (!baij->donotstash) {
-        if (roworiented) {
-          ierr = MatStashValuesRowBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
-        } else {
-          ierr = MatStashValuesColBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
-        }
-      }
-    }
-  }
-#if defined(PETSC_USE_BOPT_g)
-  baij->ht_total_ct = total_ct;
-  baij->ht_insert_ct = insert_ct;
-#endif
+  SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
   PetscFunctionReturn(0);
 }
 
@@ -755,7 +492,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *i
 #define __FUNC__ /*<a name=""></a>*/"MatGetValues_MPISBAIJ"
 int MatGetValues_MPISBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 {
-  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
+  Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
   int        bs=baij->bs,ierr,i,j,bsrstart = baij->rstart*bs,bsrend = baij->rend*bs;
   int        bscstart = baij->cstart*bs,bscend = baij->cend*bs,row,col,data;
 
@@ -858,78 +595,7 @@ int MatCreateHashTable_MPISBAIJ_Private(Mat mat,PetscReal factor)
 #endif
 
   PetscFunctionBegin;
-  baij->ht_size=(int)(factor*nz);
-  size = baij->ht_size;
-
-  if (baij->ht) {
-    PetscFunctionReturn(0);
-  }
-  
-  /* Allocate Memory for Hash Table */
-  baij->hd = (MatScalar**)PetscMalloc((size)*(sizeof(int)+sizeof(MatScalar*))+1);CHKPTRQ(baij->hd);
-  baij->ht = (int*)(baij->hd + size);
-  HD = baij->hd;
-  HT = baij->ht;
-
-
-  ierr = PetscMemzero(HD,size*(sizeof(int)+sizeof(Scalar*)));CHKERRQ(ierr);
-  
-
-  /* Loop Over A */
-  for (i=0; i<a->mbs; i++) {
-    for (j=ai[i]; j<ai[i+1]; j++) {
-      row = i+rstart;
-      col = aj[j]+cstart;
-       
-      key = row*Nbs + col + 1;
-      h1  = HASH(size,key,tmp);
-      for (k=0; k<size; k++){
-        if (HT[(h1+k)%size] == 0.0) {
-          HT[(h1+k)%size] = key;
-          HD[(h1+k)%size] = a->a + j*bs2;
-          break;
-#if defined(PETSC_USE_BOPT_g)
-        } else {
-          ct++;
-#endif
-        }
-      }
-#if defined(PETSC_USE_BOPT_g)
-      if (k> max) max = k;
-#endif
-    }
-  }
-  /* Loop Over B */
-  for (i=0; i<b->mbs; i++) {
-    for (j=bi[i]; j<bi[i+1]; j++) {
-      row = i+rstart;
-      col = garray[bj[j]];
-      key = row*Nbs + col + 1;
-      h1  = HASH(size,key,tmp);
-      for (k=0; k<size; k++){
-        if (HT[(h1+k)%size] == 0.0) {
-          HT[(h1+k)%size] = key;
-          HD[(h1+k)%size] = b->a + j*bs2;
-          break;
-#if defined(PETSC_USE_BOPT_g)
-        } else {
-          ct++;
-#endif
-        }
-      }
-#if defined(PETSC_USE_BOPT_g)
-      if (k> max) max = k;
-#endif
-    }
-  }
-  
-  /* Print Summary */
-#if defined(PETSC_USE_BOPT_g)
-  for (i=0,j=0; i<size; i++) {
-    if (HT[i]) {j++;}
-  }
-  PLogInfo(0,"MatCreateHashTable_MPIBAIJ_Private: Average Search = %5.2f,max search = %d\n",(j== 0)? 0.0:((PetscReal)(ct+j))/j,max);
-#endif
+  SETERRQ(1,1,"Function not yet written for SBAIJ format");
   PetscFunctionReturn(0);
 }
 
@@ -1308,16 +974,7 @@ int MatMultTranspose_MPISBAIJ(Mat A,Vec xx,Vec yy)
   int         ierr;
 
   PetscFunctionBegin;
-  /* do nondiagonal part */
-  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
-  /* send it on its way */
-  ierr = VecScatterBegin(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-  /* do local part */
-  ierr = (*a->A->ops->multtranspose)(a->A,xx,yy);CHKERRQ(ierr);
-  /* receive remote parts: note this assumes the values are not actually */
-  /* inserted in yy until the next line, which is true for my implementation*/
-  /* but is not perhaps always true. */
-  ierr = VecScatterEnd(a->lvec,yy,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+  SETERRQ(1,1,"Matrix is symmetric. Call MatMult().");
   PetscFunctionReturn(0);
 }
 
@@ -1329,16 +986,7 @@ int MatMultTransposeAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   int         ierr;
 
   PetscFunctionBegin;
-  /* do nondiagonal part */
-  ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
-  /* send it on its way */
-  ierr = VecScatterBegin(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
-  /* do local part */
-  ierr = (*a->A->ops->multtransposeadd)(a->A,xx,yy,zz);CHKERRQ(ierr);
-  /* receive remote parts: note this assumes the values are not actually */
-  /* inserted in yy until the next line, which is true for my implementation*/
-  /* but is not perhaps always true. */
-  ierr = VecScatterEnd(a->lvec,zz,ADD_VALUES,SCATTER_REVERSE,a->Mvctx);CHKERRQ(ierr);
+  SETERRQ(1,1,"Matrix is symmetric. Call MatMultAdd().");
   PetscFunctionReturn(0);
 }
 
@@ -1633,76 +1281,7 @@ int MatTranspose_MPISBAIJ(Mat A,Mat *matout)
   MatScalar   *a;
   
   PetscFunctionBegin;
-  if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Square matrix only for in-place");
-  ierr = MatCreateMPIBAIJ(A->comm,baij->bs,baij->n,baij->m,N,M,0,PETSC_NULL,0,PETSC_NULL,&B);CHKERRQ(ierr);
-  
-  /* copy over the A part */
-  Aloc = (Mat_SeqBAIJ*)baij->A->data;
-  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-  rvals = (int*)PetscMalloc(bs*sizeof(int));CHKPTRQ(rvals);
-  
-  for (i=0; i<mbs; i++) {
-    rvals[0] = bs*(baij->rstart + i);
-    for (j=1; j<bs; j++) { rvals[j] = rvals[j-1] + 1; }
-    for (j=ai[i]; j<ai[i+1]; j++) {
-      col = (baij->cstart+aj[j])*bs;
-      for (k=0; k<bs; k++) {
-        ierr = MatSetValues_MPISBAIJ_MatScalar(B,1,&col,bs,rvals,a,INSERT_VALUES);CHKERRQ(ierr);
-        col++; a += bs;
-      }
-    }
-  } 
-  /* copy over the B part */
-  Aloc = (Mat_SeqBAIJ*)baij->B->data;
-  ai = Aloc->i; aj = Aloc->j; a = Aloc->a;
-  for (i=0; i<mbs; i++) {
-    rvals[0] = bs*(baij->rstart + i);
-    for (j=1; j<bs; j++) { rvals[j] = rvals[j-1] + 1; }
-    for (j=ai[i]; j<ai[i+1]; j++) {
-      col = baij->garray[aj[j]]*bs;
-      for (k=0; k<bs; k++) { 
-        ierr = MatSetValues_MPISBAIJ_MatScalar(B,1,&col,bs,rvals,a,INSERT_VALUES);CHKERRQ(ierr);
-        col++; a += bs;
-      }
-    }
-  } 
-  ierr = PetscFree(rvals);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
-  if (matout) {
-    *matout = B;
-  } else {
-    PetscOps *Abops;
-    MatOps   Aops;
-
-    /* This isn't really an in-place transpose .... but free data structures from baij */
-    ierr = PetscFree(baij->rowners);CHKERRQ(ierr);
-    ierr = MatDestroy(baij->A);CHKERRQ(ierr);
-    ierr = MatDestroy(baij->B);CHKERRQ(ierr);
-#if defined (PETSC_USE_CTABLE)
-    if (baij->colmap) {ierr = PetscTableDelete(baij->colmap);CHKERRQ(ierr);}
-#else
-    if (baij->colmap) {ierr = PetscFree(baij->colmap);CHKERRQ(ierr);}
-#endif
-    if (baij->garray) {ierr = PetscFree(baij->garray);CHKERRQ(ierr);}
-    if (baij->lvec) {ierr = VecDestroy(baij->lvec);CHKERRQ(ierr);}
-    if (baij->Mvctx) {ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr);}
-    ierr = PetscFree(baij);CHKERRQ(ierr);
-
-    /*
-       This is horrible, horrible code. We need to keep the 
-      A pointers for the bops and ops but copy everything 
-      else from C.
-    */
-    Abops   = A->bops;
-    Aops    = A->ops;
-    ierr    = PetscMemcpy(A,B,sizeof(struct _p_Mat));CHKERRQ(ierr);
-    A->bops = Abops;
-    A->ops  = Aops;
-
-    PetscHeaderDestroy(B);
-  }
+  SETERRQ(1,1,"Matrix is symmetric. MatTranspose() should not be called");
   PetscFunctionReturn(0);
 }
 
@@ -1916,7 +1495,7 @@ int MatPrintHelp_MPISBAIJ(Mat A)
 #define __FUNC__ /*<a name=""></a>*/"MatSetUnfactored_MPISBAIJ"
 int MatSetUnfactored_MPISBAIJ(Mat A)
 {
-  Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*)A->data;
+  Mat_MPISBAIJ *a   = (Mat_MPISBAIJ*)A->data;
   int         ierr;
 
   PetscFunctionBegin;
@@ -2664,11 +2243,6 @@ int MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
   Mat_MPIBAIJ *baij;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->type != MATMPIBAIJ) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,1,"Incorrect matrix type. Use MPIBAIJ only.");
-  }
-  baij = (Mat_MPIBAIJ*)mat->data;
-  baij->ht_fact = fact;
+  SETERRQ(1,1,"Function not yet written for SBAIJ format"); 
   PetscFunctionReturn(0);
 }
