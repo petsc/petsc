@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.53 1999/03/01 19:30:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.54 1999/03/01 19:36:29 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -24,6 +24,7 @@ extern int Xi_wait_map( Draw_X*);
 extern int XiInitColors(Draw_X*,Colormap);
 extern int XiFontFixed(Draw_X*,int,int,XiFont** );
 extern int XiInitCmap(Draw_X*);
+extern int DrawSetColormap_X(Draw_X*,Colormap);
 
 /*
   XiOpenDisplay - Open a display
@@ -43,58 +44,6 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
   PetscFunctionReturn(0);
 }
 
-/*  
-    XiSetVisual - set the visual class for a window and colormap
-*/
-#undef __FUNC__  
-#define __FUNC__ "XiSetVisual" 
-int XiSetVisual(Draw_X* XiWin,Colormap colormap)
-{
-  int ierr,flag;
-  XVisualInfo vinfo;
-
-  PetscFunctionBegin;
-
-
-  /*
-       As a test due to problems on SGI reported in petsc-maint 1534 change
-    to always use default visual
-  */
-
-
-  /* this is slow */
-  ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&flag); CHKERRQ(ierr);
-  /*
-        Need to determine if window supports allocating a private colormap,
-    if not, set flag to 1
-  */
-  if (XMatchVisualInfo( XiWin->disp, XiWin->screen, 24, StaticColor, &vinfo) ||
-      XMatchVisualInfo( XiWin->disp, XiWin->screen, 24, TrueColor, &vinfo) ||
-      XMatchVisualInfo( XiWin->disp, XiWin->screen, 16, StaticColor, &vinfo) ||
-      XMatchVisualInfo( XiWin->disp, XiWin->screen, 16, TrueColor, &vinfo)) {
-    flag = 1;
-  }
-
-  if (colormap) {
-    XiWin->cmap = colormap;
-  } else if (flag) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
-  else {
-    XiWin->cmap = XCreateColormap(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),
-                                  XiWin->vis,AllocAll);CHKPTRQ(XiWin->cmap);
-  }
-
-  if (XiWin->depth < 8) {
-    SETERRQ(1,1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
-  }
-  PLogInfo(0,"XiSetVisual:Always opening default visual X window\n");
-
-  XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
-
-  /* reset the number of colors from info on the display, the colormap */
-  ierr = XiInitCmap( XiWin);CHKERRQ(ierr);
-  ierr = XiUniformHues(XiWin,256-DRAW_BASIC_COLORS); CHKERRQ(ierr); 
-  PetscFunctionReturn(0);
-}
 
 /* 
    XiSetGC - set the GC structure in the base window
@@ -241,7 +190,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
   w->vis    = DefaultVisual( w->disp, w->screen );
   w->depth  = DefaultDepth(w->disp,w->screen);
 
-  ierr = XiSetVisual( w, (Colormap)0); CHKERRQ(ierr);
+  ierr = DrawSetColormap_X(w,(Colormap)0); CHKERRQ(ierr);
 
   ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 ); CHKERRQ(ierr);
   XiSetGC( w, w->cmapping[1] );
@@ -277,7 +226,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 
   w->vis    = DefaultVisual( w->disp, w->screen );
   w->depth  = DefaultDepth(w->disp,w->screen);
-  ierr = XiSetVisual( w,attributes.colormap); CHKERRQ(ierr);
+  ierr = DrawSetColormap_X( w,attributes.colormap); CHKERRQ(ierr);
 
   XGetGeometry( w->disp, w->win, &root, &d, &d, 
 	      (unsigned int *)&w->w, (unsigned int *)&w->h,&ud, &ud );

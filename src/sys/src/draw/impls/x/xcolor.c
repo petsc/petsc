@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.43 1999/02/27 05:18:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.44 1999/03/01 04:52:38 bsmith Exp bsmith $";
 #endif
 
 
@@ -156,25 +156,55 @@ int XSetUpColorMap_X(Display *display,int screen,Visual *visual)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiInitColors" 
-int XiInitColors(Draw_X* XiWin,Colormap cmap)
+#define __FUNC__ "DrawSetColormap_X"
+int DrawSetColormap_X(Draw_X* XiWin,Colormap colormap)
 {
-  int ierr;
+  int ierr,flag;
+  XVisualInfo vinfo;
 
   PetscFunctionBegin;
-  /* 
-     Reset the number of colors from info on the display 
-  
-     This is wrong; it needs to take the value from the visual 
+
+
+  /*
+       As a test due to problems on SGI reported in petsc-maint 1534 change
+    to always use default visual
   */
+
+
+  /* this is slow */
+  ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&flag); CHKERRQ(ierr);
+  /*
+        Need to determine if window supports allocating a private colormap,
+    if not, set flag to 1
+  */
+  if (XMatchVisualInfo( XiWin->disp, XiWin->screen, 24, StaticColor, &vinfo) ||
+      XMatchVisualInfo( XiWin->disp, XiWin->screen, 24, TrueColor, &vinfo) ||
+      XMatchVisualInfo( XiWin->disp, XiWin->screen, 16, StaticColor, &vinfo) ||
+      XMatchVisualInfo( XiWin->disp, XiWin->screen, 16, TrueColor, &vinfo)) {
+    flag = 1;
+  }
+
+  if (colormap) {
+    XiWin->cmap = colormap;
+  } else if (flag) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
+  else {
+    XiWin->cmap = XCreateColormap(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),
+                                  XiWin->vis,AllocAll);CHKPTRQ(XiWin->cmap);
+  }
+
+  if (XiWin->depth < 8) {
+    SETERRQ(1,1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
+  }
+  PLogInfo(0,"XiSetVisual:Always opening default visual X window\n");
+
   XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
 
-
-  /* get the initial colormap */
-  ierr = XiInitCmap( XiWin );CHKERRQ(ierr);
-  
+  /* reset the number of colors from info on the display, the colormap */
+  ierr = XiInitCmap( XiWin);CHKERRQ(ierr);
+  ierr = XiUniformHues(XiWin,256-DRAW_BASIC_COLORS); CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
+
 
 /*
     Keep a record of which pixel numbers in the cmap have been 
