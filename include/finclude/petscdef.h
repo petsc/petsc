@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.6 1998/08/27 15:02:26 balay Exp balay $;
+!  $Id: petscdef.h,v 1.7 1998/11/06 23:40:21 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -15,7 +15,7 @@
 ! The real*8,complex*16 notatiton is used so that the 
 ! PETSc double/complex variables are not affected by 
 ! compiler options like -r4,-r8, sometimes invoked 
-! by the user. NAG compiler doesn't like integer*4,real*8
+! by the user. NAG compiler does not like integer*4,real*8
 !
 ! ???? All integers should also be chnaged to PetscFortranInt ?????
 !
