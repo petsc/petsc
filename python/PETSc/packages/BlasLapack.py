@@ -162,6 +162,13 @@ class Configure(config.base.Configure):
     else:
       MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
     yield ('Microsoft Windows, Intel MKL library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'))
+    # Try MKL61 on windows (copy code from above)
+    MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', 'MKL61')
+    if self.framework.argDB['with-64-bit']:
+      MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
+    else:
+      MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
+    yield ('Microsoft Windows, Intel MKL61 library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'))
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None
