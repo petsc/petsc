@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.57 1996/05/11 04:04:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.58 1996/07/02 18:05:21 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -33,8 +33,10 @@ int  TrMallocUsed = 0;
 int PetscSetUseTrMalloc_Private()
 {
   int ierr;
+#if !defined(PETSC_INSIGHT)
   PetscLow  = (void *) 0xEEEEEEEE;
   PetscHigh = (void *) 0x0;
+#endif
   ierr = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault); CHKERRQ(ierr);
   TrMallocUsed = 1;
   return 0;
@@ -265,10 +267,13 @@ int PetscTrFreeDefault( void *aa, int line, char *file )
     ierr = PetscTrValid(line,file); CHKERRQ(ierr);
   }
 
+#if !defined(PETSC_INSIGHT)
   if (PetscLow > aa || PetscHigh < aa){
     fprintf(stderr,"PetscTrFree called with address not allocated by PetscTrMalloc\n");
     SETERRQ(1,"PetscTrFree:Invalid Address");
   } 
+#endif
+
   ahead = a;
   a     = a - sizeof(TrSPACE);
   head  = (TRSPACE *)a;
@@ -373,7 +378,7 @@ int PetscTrDump( FILE *fp )
     fprintf( fp, "[%d]%d bytes at address [%p], id = ",rank, 
 	     (int) head->size, head + sizeof(TrSPACE) );
     head->fname[TR_FNAME_LEN-1] = 0;
-    fprintf( fp, "%d, %s[%d]\n", head->id, head->fname, head->lineno );
+    fprintf(fp, "%d, %s line number %d\n",head->id,head->fname,head->lineno);
     head = head->next;
   }
   return 0;
