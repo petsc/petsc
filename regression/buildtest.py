@@ -5,7 +5,7 @@ import base
 import os
 
 class Machine (object):
-  def __init__(self, host, dir = os.path.join('/sandbox', 'petsc', 'petsc-3'), rsh = 'ssh -1', rcp = 'scp -q -B -oProtocol=1'):
+  def __init__(self, host, dir = os.path.join('/sandbox', 'petsc', 'petsc-3'), rsh = 'ssh', rcp = 'scp -q -B'):
     '''Creates a machine description
        - "host" is the host account, e.g. petsc@smash.mcs.anl.gov
        - "dir" is the root directory of the install
@@ -72,7 +72,7 @@ class RemoteBuild (base.Base):
 
   def install(self, package, args = []):
     '''Install a normal package'''
-    command = [self.rsh, self.host, '-n', '"cd '+self.dir+';', os.path.join('.', 'BuildSystem', 'install', 'installer.py'), package]+args+['|& tee installer.log"']
+    command = [self.rsh, self.host, '-n', '"cd '+self.dir+';', os.path.join('.', 'sidl', 'BuildSystem', 'install', 'installer.py'), package]+args+['|& tee installer.log"']
     output  = self.executeShellCommand(' '.join(command))
     return
 
