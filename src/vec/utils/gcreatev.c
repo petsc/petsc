@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.13 1995/04/27 01:39:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.14 1995/05/03 13:15:19 bsmith Exp curfman $";
 #endif
 
 
@@ -10,9 +10,9 @@ static char vcid[] = "$Id: gcreate.c,v 1.13 1995/04/27 01:39:07 curfman Exp bsmi
 #include "vec.h"
 
 /*@C
-    VecCreate - Creates a vector, where the vector type 
-    is determined from the options database.  Generates a parallel MPI 
-    vector if the communicator has more than one processor.
+    VecCreate - Creates a vector, where the vector type is determined 
+    from the options database.  Generates a parallel MPI vector if the 
+    communicator has more than one processor.
 
     Input Parameters:
 .   comm - MPI communicator
@@ -24,9 +24,13 @@ static char vcid[] = "$Id: gcreate.c,v 1.13 1995/04/27 01:39:07 curfman Exp bsmi
     Options Database Key:
 $   -mpi_objects : use MPI vectors, even for the uniprocessor case
 
+    Notes:
+    Use VecDuplicate() or VecGetVecs() to form additional vectors
+    of the same type as an existing vector.
+
 .keywords: vector, create, initial
 
-.seealso: VecCreateSequential(), VecCreateMPI()
+.seealso: VecCreateSequential(), VecCreateMPI(), VecDuplicate(), VecGetVecs()
 @*/
 int VecCreate(MPI_Comm comm,int n,Vec *V)
 {

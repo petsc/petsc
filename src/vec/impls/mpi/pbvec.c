@@ -1,7 +1,5 @@
-
-
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.21 1995/05/02 23:37:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.22 1995/05/03 13:15:31 bsmith Exp curfman $";
 #endif
 
 #include "ptscimpl.h"
@@ -21,7 +19,6 @@ static char vcid[] = "$Id: pbvec.c,v 1.21 1995/05/02 23:37:20 bsmith Exp bsmith 
    subset to allow the vectors to be distributed across any 
    subset of the processors.
  */
-
 
 static int VecDot_MPIBlas( Vec xin, Vec yin, Scalar *z )
 {
@@ -101,16 +98,20 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
 }
 
 /*@
-   VecCreateMPI - Creates parallel vector.
+   VecCreateMPI - Creates a parallel vector.
 
    Input Parameters:
 .  comm - the MPI communicator to use
-.  n - length of local piece of vector (or PETSC_DECIDE if N is given)
-.  N - global length of vector (or PETSC_DECIDE if n is given)
+.  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
+.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 
    Output Parameter:
 .  vv - the vector
  
+   Notes:
+   Use VecDuplicate() or VecGetVecs() to form additional vectors of the
+   same type as an existing vector.
+
 .keywords: vector, create, MPI
 
 .seealso: VecCreateSequential(), VecCreate()

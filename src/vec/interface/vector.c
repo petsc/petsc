@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.31 1995/05/03 04:03:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.32 1995/05/03 13:15:25 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -217,6 +217,8 @@ int VecScale(Scalar *alpha,Vec x)
 .  y  - the copy
 
 .keywords: vector, copy
+
+.seealso: VecDuplicate()
 @*/
 int VecCopy(Vec x,Vec y)
 {
@@ -385,7 +387,7 @@ int VecPDiv(Vec x,Vec y,Vec w)
   return (*x->ops->pdiv)(x,y,w);
 }
 /*@
-   VecCreate - Creates a vector from another vector. 
+   VecDuplicate - Creates a new vector of the same type as an existing vector.
 
    Input Parameters:
 .  v - a vector to mimic
@@ -394,12 +396,15 @@ int VecPDiv(Vec x,Vec y,Vec w)
 .  newv - location to put new vector
 
    Notes:
+   VecDuplicate() does not copy the vector, but rather allocates storage
+   for the new vector.  Use VecCopy() to copy a vector.
+
    Use VecDestroy() to free the space. Use VecGetVecs() to get several
    vectors. 
 
-.keywords: vector, create
+.keywords: vector, duplicate, create
 
-.seealso: VecDestroy(), VecGetVecs(), VecCreate()
+.seealso: VecDestroy(), VecGetVecs(), VecCreate(), VecCopy()
 @*/
 int VecDuplicate(Vec v,Vec *newv) 
 {
@@ -407,7 +412,7 @@ int VecDuplicate(Vec v,Vec *newv)
   return   (*v->ops->create)(v,newv);
 }
 /*@
-   VecDestroy - Destroys  a vector created with VecDuplicate().
+   VecDestroy - Destroys a vector created with VecDuplicate().
 
    Input Parameters:
 .  v  - the vector
@@ -423,7 +428,7 @@ int VecDestroy(Vec v)
 }
 
 /*@
-   VecGetVecs - Creates several vectors from another vector. 
+   VecGetVecs - Creates several vectors of the same type as an existing vector.
 
    Input Parameters:
 .  m - the number of vectors to obtain
@@ -433,7 +438,7 @@ int VecDestroy(Vec v)
 .  V - location to put pointer to array of vectors
 
    Notes:
-   Use VecFreeVecs() to free the space. Use VecDuplicate() to get a single
+   Use VecFreeVecs() to free the space. Use VecDuplicate() to form a single
    vector.
 
 .keywords: vector, get 
