@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.14 1999/01/31 16:04:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.15 1999/03/17 23:21:05 bsmith Exp balay $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -14,50 +14,6 @@ typedef struct {
   char       *ams_name;
   AMS_Comm   ams_comm;
 } Viewer_AMS;
-
-#undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_AMS"
-static int ViewerDestroy_AMS(Viewer viewer)
-{
-  Viewer_AMS *vams = (Viewer_AMS*)viewer->data;
-  int        ierr;
-
-  PetscFunctionBegin;
-
-  ierr = AMS_Comm_destroy(vams->ams_comm);
-  if (ierr) {
-    char *err;
-    AMS_Explain_error(ierr,&err);
-    SETERRQ(ierr,0,err);
-  }
-  PetscFree(vams);
-  PetscFunctionReturn(0);
-}
-
-EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "ViewerCreate_AMS"
-int ViewerCreate_AMS(Viewer v)
-{
-  Viewer_AMS *vams;
-  int        ierr;
-
-  PetscFunctionBegin;
-  v->ops->destroy = ViewerDestroy_AMS;
-  v->type_name    = (char *) PetscMalloc((1+PetscStrlen(AMS_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,AMS_VIEWER);
-  vams            = PetscNew(Viewer_AMS);CHKPTRQ(vams);
-  v->data         = (void *) vams;
-  vams->ams_comm  = -1;
-  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerAMSSetCommName_C",
-                                    "ViewerAMSSetCommName_AMS",
-                                     (void*)ViewerAMSSetCommName_AMS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerAMSGetAMSComm_C",
-                                    "ViewerAMSGetAMSComm_AMS",
-                                     (void*)ViewerAMSGetAMSComm_AMS);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -260,6 +216,50 @@ int ViewerDestroyAMS_Private(void)
   ierr = VIEWER_AMS_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerDestroy_AMS"
+static int ViewerDestroy_AMS(Viewer viewer)
+{
+  Viewer_AMS *vams = (Viewer_AMS*)viewer->data;
+  int        ierr;
+
+  PetscFunctionBegin;
+
+  ierr = AMS_Comm_destroy(vams->ams_comm);
+  if (ierr) {
+    char *err;
+    AMS_Explain_error(ierr,&err);
+    SETERRQ(ierr,0,err);
+  }
+  PetscFree(vams);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "ViewerCreate_AMS"
+int ViewerCreate_AMS(Viewer v)
+{
+  Viewer_AMS *vams;
+  int        ierr;
+
+  PetscFunctionBegin;
+  v->ops->destroy = ViewerDestroy_AMS;
+  v->type_name    = (char *) PetscMalloc((1+PetscStrlen(AMS_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,AMS_VIEWER);
+  vams            = PetscNew(Viewer_AMS);CHKPTRQ(vams);
+  v->data         = (void *) vams;
+  vams->ams_comm  = -1;
+  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerAMSSetCommName_C",
+                                    "ViewerAMSSetCommName_AMS",
+                                     (void*)ViewerAMSSetCommName_AMS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)v,"ViewerAMSGetAMSComm_C",
+                                    "ViewerAMSGetAMSComm_AMS",
+                                     (void*)ViewerAMSGetAMSComm_AMS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #else
 
