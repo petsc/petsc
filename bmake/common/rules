@@ -487,8 +487,15 @@ fortranstubs:
 
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
+
+# configure generated targets:
+shared_irix6: shared_irix
+shared_osf5: shared_alpha
+shared_solaris9: shared_solaris
+shared_darwin6: 
+
 shared_irix:
-	-@${LD} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
+	-@${C_CC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
 
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
