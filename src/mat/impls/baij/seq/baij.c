@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.107 1997/07/09 20:55:07 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.108 1997/07/21 02:29:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -486,10 +486,8 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
-  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
-  int         roworiented=a->roworiented; 
-  int         *aj=a->j,nonew=a->nonew;
-  int          bs2=a->bs2,bs=a->bs,stepval;
+  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen, roworiented=a->roworiented; 
+  int         *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=a->bs,stepval;
   Scalar      *ap,*value=v,*aa=a->a,*bap;
 
   if (roworiented) { 
@@ -531,23 +529,31 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
           bap  = ap +  bs2*i;
           if (roworiented) { 
             if (is == ADD_VALUES) {
-              for ( ii=0; ii<bs; ii++,value+=stepval )
-                for (jj=ii; jj<bs2; jj+=bs )
+              for ( ii=0; ii<bs; ii++,value+=stepval ) {
+                for (jj=ii; jj<bs2; jj+=bs ) {
                   bap[jj] += *value++; 
+                }
+              }
             } else {
-              for ( ii=0; ii<bs; ii++,value+=stepval )
-                for (jj=ii; jj<bs2; jj+=bs )
+              for ( ii=0; ii<bs; ii++,value+=stepval ) {
+                for (jj=ii; jj<bs2; jj+=bs ) {
                   bap[jj] = *value++; 
+                }
+              }
             }
           } else {
             if (is == ADD_VALUES) {
-              for ( ii=0; ii<bs; ii++,value+=stepval )
-                for (jj=0; jj<bs; jj++ )
+              for ( ii=0; ii<bs; ii++,value+=stepval ) {
+                for (jj=0; jj<bs; jj++ ) {
                   *bap++ += *value++; 
+                }
+              }
             } else {
-              for ( ii=0; ii<bs; ii++,value+=stepval )
-                for (jj=0; jj<bs; jj++ )
+              for ( ii=0; ii<bs; ii++,value+=stepval ) {
+                for (jj=0; jj<bs; jj++ ) {
                   *bap++  = *value++; 
+                }
+              }
             }
           }
           goto noinsert2;
@@ -573,12 +579,10 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
         for ( ii=row+1; ii<a->mbs+1; ii++ ) {new_i[ii] = ai[ii]+CHUNKSIZE;}
         PetscMemcpy(new_j,aj,(ai[row]+nrow)*sizeof(int));
         len = (new_nz - CHUNKSIZE - ai[row] - nrow);
-        PetscMemcpy(new_j+ai[row]+nrow+CHUNKSIZE,aj+ai[row]+nrow,
-                                                           len*sizeof(int));
+        PetscMemcpy(new_j+ai[row]+nrow+CHUNKSIZE,aj+ai[row]+nrow,len*sizeof(int));
         PetscMemcpy(new_a,aa,(ai[row]+nrow)*bs2*sizeof(Scalar));
         PetscMemzero(new_a+bs2*(ai[row]+nrow),bs2*CHUNKSIZE*sizeof(Scalar));
-        PetscMemcpy(new_a+bs2*(ai[row]+nrow+CHUNKSIZE),
-                    aa+bs2*(ai[row]+nrow),bs2*len*sizeof(Scalar)); 
+        PetscMemcpy(new_a+bs2*(ai[row]+nrow+CHUNKSIZE),aa+bs2*(ai[row]+nrow),bs2*len*sizeof(Scalar)); 
         /* free up old matrix storage */
         PetscFree(a->a); 
         if (!a->singlemalloc) {PetscFree(a->i);PetscFree(a->j);}
@@ -602,13 +606,17 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
       rp[i] = col; 
       bap   = ap +  bs2*i;
       if (roworiented) { 
-        for ( ii=0; ii<bs; ii++,value+=stepval)
-          for (jj=ii; jj<bs2; jj+=bs )
+        for ( ii=0; ii<bs; ii++,value+=stepval) {
+          for (jj=ii; jj<bs2; jj+=bs ) {
             bap[jj] = *value++; 
+          }
+        }
       } else {
-        for ( ii=0; ii<bs; ii++,value+=stepval )
-          for (jj=0; jj<bs; jj++ )
+        for ( ii=0; ii<bs; ii++,value+=stepval ) {
+          for (jj=0; jj<bs; jj++ ) {
             *bap++  = *value++; 
+          }
+        }
       }
       noinsert2:;
       low = i;
