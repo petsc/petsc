@@ -240,7 +240,7 @@ wwwpages:
 	-@$(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
           grep -v "preempts that definition" | grep -v EXTERNAL trashz |\
-          grep -v inconsistent | grep -v "multiply defined" | \
+          grep -v inconsistent | \
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz
