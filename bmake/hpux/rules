@@ -60,6 +60,14 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(RM) $*.o
 
 SLSUFFIX = sl
+
+#shared: chkopts_basic
+#	-echo making shared libraries in $(LDIR) ;\
+#	cd $(LDIR); \
+#	for LIBNAME in $(SHLIBS) ; \
+#	  do $(LD) -o $$LIBNAME.$(SLSUFFIX) -b -B immediate -B nonfatal -a archive  $$LIBNAME.a ; \
+#	done
+
 shared: chkopts_basic
 	-@echo making shared libraries in $(LDIR) ;\
 	cd $(LDIR); \
