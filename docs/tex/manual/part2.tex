@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.175 1996/12/09 17:08:34 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.176 1996/12/15 16:46:12 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3731,23 +3731,34 @@ The routine \findex{PCGetOperators()}
 \end{verbatim}
 returns the values set with {\tt PCSetOperators()}.
 
-The preconditioner can be used in one of five ways: 
-\findex{PCApply()} \findex{PCApplyTrans()} \findex{PCApplyBAorAB()}
-\findex{PCApplyBAorABTrans()} \findex{PCApplyRichardson()}
+\findex{PCApply()} \findex{PCApplyTrans()} 
+The preconditioners in PETSc can be used in several ways.  The two
+most basic routines simply apply the preconditioner or its transpose
+and are given, respectively, by
 \begin{verbatim}
    ierr = PCApply(PC pc,Vec x,Vec y);
    ierr = PCApplyTrans(PC pc,Vec x,Vec y);
+\end{verbatim}
+In particular, for a preconditioner matrix, {\tt B}, that has
+been set via {\tt PCSetOperators(pc,A,B,flag)},
+the routine {\tt PCApply(pc,x,y)} computes $y = B^{-1} x$
+by solving the linear system $By = x$ with the specified preconditioner
+method.
+
+\findex{PCApplyBAorAB()}
+\findex{PCApplyBAorABTrans()} \findex{PCApplyRichardson()}
+Additional preconditioner routines are
+\begin{verbatim}
    ierr = PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work,int its);
    ierr = PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work,int its);
    ierr = PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,int its);
 \end{verbatim}
-The first two routines apply the preconditioner and its transpose. The 
-next two apply the action of the matrix followed by the preconditioner 
-or the preconditioner followed by the matrix depending on whether 
-the \sindex{Richardson's method}
-integer {\tt right} is zero or one. The final routine applies 
-{\tt its} iterations of Richardson's method. The last three routines 
-are provided to improve efficiency for certain Krylov subspace methods.
+The first two routines apply the action of the matrix followed by the
+preconditioner or the preconditioner followed by the matrix depending
+on whether the \sindex{Richardson's method} integer {\tt right} is
+zero or one. The final routine applies {\tt its} iterations of
+Richardson's method. The last three routines are provided to improve
+efficiency for certain Krylov subspace methods.
 
 A PC context that is no longer needed can be destroyed with the 
 command \findex{PCDestroy()}
