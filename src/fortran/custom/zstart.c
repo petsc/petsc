@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.17 1996/11/25 19:37:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.18 1996/12/05 14:01:02 bsmith Exp balay $";
 #endif
 
 /*
@@ -13,6 +13,7 @@ static char vcid[] = "$Id: zstart.c,v 1.17 1996/11/25 19:37:42 bsmith Exp bsmith
   C subroutine. 
 */
 #define T3DMPI_FORTRAN
+#define T3EMPI_FORTRAN
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
 #include <stdio.h>
