@@ -1,6 +1,6 @@
 
 
-/* $Id: dvec2.c,v 1.52 1998/05/30 00:05:42 balay Exp bsmith $ */
+/* $Id: dvec2.c,v 1.53 1998/07/10 20:12:27 bsmith Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -16,7 +16,7 @@
 
 #undef __FUNC__  
 #define __FUNC__ "VecMDot_Seq"
-#if defined(USE_FORTRAN_KERNELS)
+#if defined(USE_FORTRAN_KERNEL_MDOT)
 int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;

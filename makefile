@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.244 1998/06/15 15:11:15 balay Exp balay $ 
+# $Id: makefile,v 1.245 1998/06/15 16:07:19 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -16,7 +16,7 @@ include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 # fortran : builds the fortran libary
 # f90     : builds the fortran and the f90 libraries.
 #
-all       : info chkpetsc_dir deletelibs build_kernels build_c \
+all       : info chkpetsc_dir deletelibs build_fortrankernels build_c \
 	    shared build_fortran build_fortran90
 fortran   : info chkpetsc_dir build_fortran
 fortran90 : fortran build_fortran90
@@ -111,8 +111,7 @@ build_fortran90:
 # a Fortran version that may give better performance on certain 
 # machines. These always provide better performance for complex numbers.
 #
-fortrankernels: chkpetsc_dir 
-	-${RM} -f ${PDIR}/libpetsckernels.*
+build_fortrankernels: chkpetsc_dir 
 	-@echo "BEGINNING TO COMPILE FORTRAN KERNELS LIBRARY"
 	-@echo "========================================="
 	-@cd src/fortran/kernels; \
@@ -120,12 +119,6 @@ fortrankernels: chkpetsc_dir
 	-@chmod g+w  ${PDIR}/*.a
 	-@echo "Completed compiling Fortran kernels library"
 	-@echo "========================================="
-
-# If fortrankernels are used, build them.
-build_kernels:
-	-@kernel_var=`echo "${PETSCFLAGS}" | sed 's/-DUSE_FORTRAN_KERNELS//g'`; \
-	if [ "${PETSCFLAGS}" != "$$kernel_var" ] ; then \
-	${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} fortrankernels; fi
 
 petscblas: info chkpetsc_dir
 	-${RM} -f ${PDIR}/libpetscblas.*

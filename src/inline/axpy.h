@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.11 1997/10/19 03:21:57 bsmith Exp bsmith $ */
+/* $Id: axpy.h,v 1.12 1998/05/08 16:11:49 bsmith Exp balay $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -15,7 +15,7 @@
 
 #include "include/pinclude/blaslapack.h"
 
-#if defined(USE_FORTRAN_KERNELS)
+#if defined(USE_FORTRAN_KERNEL_MAXPY)
 
 #if defined(HAVE_FORTRAN_CAPS)
 #define fortranmaxpy4_ FORTRANMAXPY4

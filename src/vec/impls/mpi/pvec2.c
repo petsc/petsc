@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.32 1997/12/12 19:36:34 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.33 1998/06/08 20:03:45 bsmith Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -101,7 +101,7 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
   PetscFunctionBegin;
   if (type == NORM_2) {
 
-#if defined(USE_FORTRAN_KERNELS)
+#if defined(USE_FORTRAN_KERNEL_NORMSQR)
     fortrannormsqr_(xx,&n,&work);
 #else
     /* int i; for ( i=0; i<n; i++ ) work += xx[i]*xx[i];   */
