@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2f.c,v 1.6 1997/02/05 22:05:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2f.c,v 1.7 1997/02/07 23:31:26 bsmith Exp gropp $";
 #endif
 /*
      Fortran interface for SDA routines.
@@ -46,33 +46,33 @@ void sdalocaltolocalend_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l,
   *__ierr = SDALocalToLocalEnd((SDA)PetscToPointer(*(int*)sda),g,*mode,l);
 }
 
-void sdacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
+void sdacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                   *stencil_type,int *M,int *N,int *m,int *n,int *w,
                   int *s,int *lx,int *ly,SDA *inra, int *__ierr )
 {
   SDA da;
   *__ierr = SDACreate2d(
-	    (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,
+	    (MPI_Comm)PetscToPointerComm( *comm ),*wrap,
             *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 
-void sdacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
+void sdacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
                  int *lc,SDA *inra, int *__ierr )
 {
   SDA da;
   *__ierr = SDACreate1d(
-	   (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,*M,*w,*s,lc,&da);
+	   (MPI_Comm)PetscToPointerComm( *comm ),*wrap,*M,*w,*s,lc,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 
-void sdacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType 
+void sdacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
                  *stencil_type,int *M,int *N,int *P,int *m,int *n,int *p,
                  int *w,int *s,int *lx,int *ly,int *lz,SDA *inra, int *__ierr )
 {
   SDA da;
   *__ierr = SDACreate3d(
-	   (MPI_Comm)PetscToPointerComm(*(int*)(comm)),*wrap,*stencil_type,
+	   (MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
            *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
   *(int*) inra = PetscFromPointer(da);
 }
