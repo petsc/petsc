@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.243 2000/10/24 20:26:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.244 2000/10/25 14:23:06 bsmith Exp balay $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -309,6 +309,9 @@ ex76: ex76.o chkopts
 ex77: ex77.o chkopts
 	-${CLINKER} -o ex77 ex77.o ${PETSC_MAT_LIB}
 	${RM} ex77.o
+ex78: ex78.o chkopts
+	-${CLINKER} -o ex78 ex78.o ${PETSC_MAT_LIB}
+	${RM} ex78.o
 
 ex80: ex80.o chkopts
 	-${CLINKER} -o ex80 ex80.o ${PETSC_MAT_LIB}
@@ -760,6 +763,13 @@ runex77:
 	else echo "Possible problem with ex77_1, diffs above"; fi; \
 	${RM} -f ex77_1.tmp
 
+runex78:
+	-@${MPIRUN} -np 1  ex78 -Ain ~/matrices/indefinite/afiro_A.dat -bin \
+	   ~/matrices/indefinite/afiro_b.dat -uin ~/matrices/indefinite/afiro_u.dat > ex78_1.tmp 2>&1;   \
+	   if (diff output/ex78_1.out ex78_1.tmp) then true; \
+	   else echo "Possible problem with ex78_1, diffs above"; fi; \
+	   ${RM} -f ex78_1.tmp
+
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		   runex5 runex5_2 ex5.rm ex6.PETSc runex6 ex6.rm ex8.PETSc \
 		   runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm \
@@ -783,7 +793,8 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 \
 		   runex56_2  runex56_3  runex56_4 runex56_5 ex56.rm \
 		   ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm \
-		   ex76.PETSc runex76 ex76.rm ex77.PETSc runex77 ex77.rm
+		   ex76.PETSc runex76 ex76.rm ex77.PETSc runex77 ex77.rm \
+		  ex78.PETSc ex78.rm
 TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm ex63.PETSc runex63 ex63.rm \
                    ex67f.PETSc ex67f.rm
 TESTEXAMPLES_9	 = ex36.PETSc runex36 ex36.rm
