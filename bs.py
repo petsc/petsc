@@ -61,8 +61,7 @@ class BS (install.base.Base):
   filesets    = {}
 
   def __init__(self, project, clArgs = None):
-    self.setupArgDB(clArgs)
-    install.base.Base.__init__(self, argDB)
+    install.base.Base.__init__(self, self.setupArgDB(clArgs))
     self.project          = project
     self.sourceDBFilename = os.path.join(self.project.getRoot(), 'bsSource.db')
     self.setupSourceDB()
@@ -70,8 +69,12 @@ class BS (install.base.Base):
 
   def setupArgDB(self, clArgs):
     global argDB
-    argDB = nargs.ArgDict('ArgDict', clArgs)
-    return
+    argDB = nargs.ArgDict('ArgDict')
+
+    argDB.setLocalType('help', nargs.ArgBool('Print help message'))
+
+    argDB.insertArgs(clArgs)
+    return argDB
 
   def setupSourceDB(self):
     self.debugPrint('Reading source database from '+self.sourceDBFilename, 2, 'sourceDB')
@@ -162,6 +165,8 @@ class BS (install.base.Base):
     if argDB.has_key('noConfigure') and int(argDB['noConfigure']):
       return
     framework = config.framework.Framework(sys.argv[1:])
+    for arg in ['debugLevel', 'debugSections']:
+      framework.argDB[arg] = argDB[arg]
     # Perhaps these initializations should just be local arguments
     framework.argDB['CPPFLAGS'] = ''
     framework.argDB['LIBS']     = ''

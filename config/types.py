@@ -10,6 +10,10 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
+  def configureHelp(self, help):
+    help.addOption('Types', '-enable-complex', 'Complex arithmetic flag')
+    return
+
   def check(self, typeName, defaultType = None):
     '''Checks that "typeName" exists, and if not defines it to "defaultType" if given'''
     code = '''
@@ -63,7 +67,10 @@ class Configure(config.base.Configure):
       found = 1
     self.popLanguage()
 
-    self.getArgument('complex', '0', '-enable-', int, 'Complex arithemtic flag')
+    if self.framework.argDB.has_key('enable-complex'):
+      self.complex = int(self.framework.argDB['enable-complex'])
+    else:
+      self.complex = 0
     if found and self.complex:
       self.addDefine('PETSC_USE_COMPLEX', 1)
     return

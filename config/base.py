@@ -62,28 +62,6 @@ class Configure:
     self.help[name] = comment
     return
 
-  ##################
-  # Argument Support
-  def getArgument(self, name, defaultValue = None, prefix = '', conversion = None, comment = ''):
-    '''Define "self.name" to be the argument "name" if it was given, otherwise use "defaultValue"
-    - "prefix" is just a string prefix for "name"
-    - "conversion" is an optional conversion function for the string value
-    '''
-    if comment: self.addHelp(name, comment)
-    argName = prefix+name
-    value   = None
-    if self.framework.argDB.has_key(argName):
-      value = self.framework.argDB[argName]
-    else:
-      value = defaultValue
-    if not value is None:
-      name = name.replace('-', '_')
-      if not conversion is None:
-        setattr(self, name, conversion(value))
-      else:
-        setattr(self, name, value)
-    return
-
   ################
   # Program Checks
   def getExecutable(self, name, path = '', getFullPath = 0, comment = '', resultName = ''):
