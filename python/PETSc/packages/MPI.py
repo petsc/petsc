@@ -140,7 +140,7 @@ class Configure(config.base.Configure):
       self.mpirun = 'mpirun'
     path = os.path.join(os.path.dirname(self.dir), 'bin')+':'+os.path.dirname(self.mpirun)
     if not path[-1] == ':': path += ':'
-    self.getExecutable('mpirun', path = path, getFullPath = 1, comment = 'The utility for launching MPI jobs')
+    self.getExecutable('mpirun', path = path, getFullPath = 1)
     return
 
   def configureMPE(self):
