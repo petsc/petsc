@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.7 2001/07/20 21:21:22 bsmith Exp bsmith $*/
+/*$Id: matadic.c,v 1.8 2001/07/26 19:57:18 bsmith Exp bsmith $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -84,8 +84,8 @@ iField;
 int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
 {
   Mat_DAAD    *a = (Mat_DAAD*)A->data;
-  int         ierr,rstart,rend,j,gtdof;
-  Scalar      *aa,result,*x,*avu,*av,*ad_vustart,ad_f[2],zero = 0.0;
+  int         ierr,rstart,rend,j,gtdof,nI;
+  Scalar      *aa,result,*x,*avu,*av,*ad_vustart,ad_f[2],zero = 0.0,*D;
   Vec         localxx,dd;
   DALocalInfo info;
   MatStencil  stencil;
@@ -121,17 +121,22 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
   my_AD_IncrementTotalGradSize(1);
   my_AD_SetIndepDone();
 
+  ierr = VecGetArray(dd,&D);CHKERRQ(ierr);
+  ierr = VecRestoreArray(dd,0);CHKERRQ(ierr);
   ierr = DAVecGetArray(a->da,bb,(void**)&b);CHKERRQ(ierr);
   ierr = DAVecGetArray(a->da,dd,(void**)&d);CHKERRQ(ierr);
 
   ierr = DAGetLocalInfo(a->da,&info);CHKERRQ(ierr);
   if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    nI = 0;
     for (stencil.j = info.ys; stencil.j<info.ys+info.ym; stencil.j++) {
       for (stencil.i = info.xs; stencil.i<info.xs+info.xm; stencil.i++) {
         for (stencil.c = 0; stencil.c<info.dof; stencil.c++) {
           ierr = (*a->da->adicmf_lfi)(&info,&stencil,ad_vu,ad_f,a->ctx);CHKERRQ(ierr);
 
           ad_vu[stencil.j][stencil.i].u[2*stencil.c+1] += (b[stencil.j][stencil.i].u[stencil.c] - ad_f[1])/d[stencil.j][stencil.i].u[stencil.c];
+          if (d[stencil.j][stencil.i].u[stencil.c] != D[nI]) SETERRQ(1,"");
+          nI++;
         }
       }
     }
@@ -139,6 +144,7 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
 
   ierr = DAVecRestoreArray(a->da,bb,(void**)&b);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(a->da,dd,(void**)&d);CHKERRQ(ierr);
+  /*  ierr = VecRestoreArray(dd,&D);CHKERRQ(ierr); */
   ierr = DARestoreGlobalVector(a->da,&dd);CHKERRQ(ierr);
 
   ierr = VecGetArray(localxx,&av);CHKERRQ(ierr);
