@@ -2766,44 +2766,7 @@ PetscErrorCode MatMerge(MPI_Comm comm,Mat inmat,MatReuse scall,Mat *outmat)
   ierr = MatDestroy(inmat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#ifdef OLD  
-  ierr = MatGetSize(inmat,&m,&n);CHKERRQ(ierr);
 
-  /* count nonzeros in each row, for diagonal and off diagonal portion of matrix */
-  ierr = PetscMapCreate(comm,&columnmap);CHKERRQ(ierr);
-  ierr = PetscMapSetSize(columnmap,n);CHKERRQ(ierr);
-  ierr = PetscMapSetType(columnmap,MAP_MPI);CHKERRQ(ierr);
-  ierr = PetscMapGetLocalSize(columnmap,&n);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(columnmap);CHKERRQ(ierr);
-
-  ierr = PetscMapCreate(comm,&rowmap);CHKERRQ(ierr);
-  ierr = PetscMapSetLocalSize(rowmap,m);CHKERRQ(ierr);
-  ierr = PetscMapSetType(rowmap,MAP_MPI);CHKERRQ(ierr);
-  ierr = PetscMapGetLocalRange(rowmap,&rstart,0);CHKERRQ(ierr);
-  ierr = PetscMapDestroy(rowmap);CHKERRQ(ierr);
-
-  ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
-  for (i=0;i<m;i++) {
-    ierr = MatGetRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
-    ierr = MatPreallocateSet(i+rstart,nnz,indx,dnz,onz);CHKERRQ(ierr);
-    ierr = MatRestoreRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
-  }
-  /* This routine will ONLY return MPIAIJ type matrix */
-  ierr = MatCreate(comm,m,n,PETSC_DETERMINE,PETSC_DETERMINE,outmat);CHKERRQ(ierr);
-  ierr = MatSetType(*outmat,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(*outmat,0,dnz,0,onz);CHKERRQ(ierr);
-  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-
-  for (i=0;i<m;i++) {
-    ierr = MatGetRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
-    I    = i + rstart;
-    ierr = MatSetValues(*outmat,1,&I,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
-  }
-  ierr = MatDestroy(inmat);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -2846,5 +2809,42 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   ierr = MatView(B,out);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(out);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMerge_SeqsToMPI"
+/*@C
+      MatMerge - Creates a single large PETSc matrix by concatinating sequential
+                 matrices from each processor
+
+    Collective on MPI_Comm
+
+   Input Parameters:
++    comm - the communicators the parallel matrix will live on
+.    inmat - the input sequential matrices
+-    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.    outmat - the parallel matrix generated
+
+    Level: advanced
+
+   Notes: The number of columns of the matrix in EACH of the seperate files
+      MUST be the same.
+
+@*/
+PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat inmat,MatReuse scall,Mat *outmat)
+{
+  PetscErrorCode    ierr,size,rank;
+  int               m,n,i;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF," [%d] call MatMerge_SeqsToMPI...\n",rank);
+  
+  ierr = MatGetSize(inmat,&m,&n);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }

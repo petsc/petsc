@@ -153,7 +153,7 @@ PetscErrorCode MatDestroy_SeqAIJ_PtAP(Mat A)
   ierr = MatDestroy(ptap->symAP);CHKERRQ(ierr);
   ierr = PetscFree(ptap);CHKERRQ(ierr);
 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
