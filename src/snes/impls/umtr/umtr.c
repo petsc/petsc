@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.10 1995/08/29 23:06:26 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.11 1995/08/30 01:45:05 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -87,15 +87,15 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
       if (delta <= 0) {
         if (xnorm > zero) delta = neP->factor1*xnorm;
         else delta = neP->delta0;
-        ierr = MatHasNorm_Private(snes->jacobian,&has_norm); CHKERRQ(ierr);
-        if (has_norm) {   /* Compute L-1 matrix norm */
-          ierr = MatNorm(snes->jacobian,NORM_1,&max_val); CHKERRQ(ierr);
+        ierr = MatNorm(snes->jacobian,NORM_1,&max_val);
+        if (ierr == PETSC_ERR_SUP) {
+          PLogInfo((PetscObject)snes,
+            "Initial delta computed without matrix norm information.");
+        } else {
+          CHKERRQ(ierr);
           if (PETSCABS(max_val) < 1.e-14) 
             SETERRQ(1,"SNESSolve_UMTR: Hessian norm is too small");
           delta = PETSCMAX(delta,*gnorm/max_val);
-        } else {
-          PLogInfo((PetscObject)snes,
-            "Initial delta computed without matrix norm information.");
         }
       } else { 
         delta = neP->delta0;
