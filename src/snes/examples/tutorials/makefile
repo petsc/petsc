@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.96 2001/04/09 21:07:48 balay Exp bsmith $ 
+# $Id: makefile,v 1.97 2001/04/11 03:12:24 bsmith Exp bsmith $ 
 
 # This directory contains SNES example programs for solving systems of
 # nonlinear equations.  Examples of unconstrained minimization problems
@@ -7,7 +7,7 @@
 # of problems, so the user may benefit from examining programs in 
 # both directories.
 
-CFLAGS		 = 
+CFLAGS		 = ${ADIC_INCLUDE}
 FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
@@ -91,9 +91,11 @@ ex17: ex17.o chkopts
 ex18: ex18.o chkopts
 	-${CLINKER} -o ex18 ex18.o ${PETSC_SNES_LIB}
 	${RM} ex18.o
-ex19: ex19.o chkopts
-	-${CLINKER} -o ex19 ex19.o ${PETSC_SNES_LIB}
-	${RM} ex19.o
+ex19lf.ad.c: ex19lf.c
+	-${ADIC_CC}   ex19lf.c
+ex19: ex19.o ex19lf.ad.o chkopts
+	-${CLINKER} -o ex19 ex19.o ex19lf.ad.o ${PETSC_SNES_LIB}
+	${RM} ex19.o ex19lf.ad.o
 ex20: ex20.o chkopts
 	-${CLINKER} -o ex20 ex20.o ${PETSC_SNES_LIB}
 	${RM} ex20.o
@@ -280,12 +282,29 @@ runex14_2:
 	   if (${DIFF} output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp
+runex21:
+	-@${MPIRUN} -np 4 ex21  -snes_mf -snes_monitor -nox > ex21_1.tmp 2>&1; \
+	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
+	   else echo "Possible problem with ex21_1, diffs above"; fi; \
+	   ${RM} -f ex21_1.tmp
+runex22:
+	-@${MPIRUN} -np 1 ex22 -da_grid_x 10 -nox > ex22_1.tmp 2>&1; \
+	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
+	   else echo "Possible problem with ex22_1, diffs above"; fi; \
+	   ${RM} -f ex22_1.tmp
+runex23:
+	-@${MPIRUN} -np 2 ex23 -dmmg_snes_monitor -nox > ex23_1.tmp 2>&1; \
+	   if (${DIFF} output/ex23_1.out ex23_1.tmp) then true; \
+	   else echo "Possible problem with ex23_1, diffs above"; fi; \
+	   ${RM} -f ex23_1.tmp
+
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
 		   ex6.rm ex5.PETSc  \
                    ex5.rm \
                    ex14.PETSc runex14 runex14_2 ex14.rm ex21.PETSc ex21.rm \
-                   ex22.PETSc ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex23.PETSc ex23.rm ex24.PETSc ex24.rm
+                   ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex21.PETSc runex21 ex21.rm \
+                   ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm
 TESTEXAMPLES_2	 = ex5.PETSc runex5_8 runex5_9 \
 		   runex5_10 ex5.rm 
 TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm
