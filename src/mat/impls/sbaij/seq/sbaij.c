@@ -855,69 +855,8 @@ static int MatZeroRows_SeqSBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[],
 #define __FUNCT__ "MatZeroRows_SeqSBAIJ"
 int MatZeroRows_SeqSBAIJ(Mat A,IS is,PetscScalar *diag)
 {
-  Mat_SeqSBAIJ  *sbaij=(Mat_SeqSBAIJ*)A->data;
-  int           ierr,i,j,k,count,is_n,*is_idx,*rows;
-  int           bs=sbaij->bs,bs2=sbaij->bs2,*sizes,row,bs_max;
-  PetscScalar   zero = 0.0;
-  MatScalar     *aa;
-
   PetscFunctionBegin;
-  /* Make a copy of the IS and  sort it */
-  ierr = ISGetSize(is,&is_n);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&is_idx);CHKERRQ(ierr);
-
-  /* allocate memory for rows,sizes */
-  ierr = PetscMalloc((3*is_n+1)*sizeof(int),&rows);CHKERRQ(ierr);
-  sizes = rows + is_n;
-
-  /* initialize copy IS values to rows, and sort them */
-  for (i=0; i<is_n; i++) { rows[i] = is_idx[i]; }
-  ierr = PetscSortInt(is_n,rows);CHKERRQ(ierr);
-  if (sbaij->keepzeroedrows) { /* do not change nonzero structure */
-    for (i=0; i<is_n; i++) { sizes[i] = 1; } /* sizes: size of blocks, = 1 or bs */
-    bs_max = is_n;            /* bs_max: num. of contiguous block row in the row */
-  } else {
-    ierr = MatZeroRows_SeqSBAIJ_Check_Blocks(rows,is_n,bs,sizes,&bs_max);CHKERRQ(ierr);
-  }
-  ierr = ISRestoreIndices(is,&is_idx);CHKERRQ(ierr);
-
-  for (i=0,j=0; i<bs_max; j+=sizes[i],i++) {
-    row   = rows[j];                  /* row to be zeroed */
-    if (row < 0 || row > A->m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %d out of range",row);
-    count = (sbaij->i[row/bs +1] - sbaij->i[row/bs])*bs; /* num. of elements in the row */
-    aa    = sbaij->a + sbaij->i[row/bs]*bs2 + (row%bs);
-    if (sizes[i] == bs && !sbaij->keepzeroedrows) {
-      if (diag) {
-        if (sbaij->ilen[row/bs] > 0) {
-          sbaij->ilen[row/bs] = 1;
-          sbaij->j[sbaij->i[row/bs]] = row/bs;
-          ierr = PetscMemzero(aa,count*bs*sizeof(MatScalar));CHKERRQ(ierr);
-        } 
-        /* Now insert all the diagoanl values for this bs */
-        for (k=0; k<bs; k++) {
-          ierr = (*A->ops->setvalues)(A,1,rows+j+k,1,rows+j+k,diag,INSERT_VALUES);CHKERRQ(ierr);
-        } 
-      } else { /* (!diag) */
-        sbaij->ilen[row/bs] = 0;
-      } /* end (!diag) */
-    } else { /* (sizes[i] != bs), broken block */
-#if defined (PETSC_USE_DEBUG)
-      if (sizes[i] != 1) SETERRQ(1,"Internal Error. Value should be 1");
-#endif
-      for (k=0; k<count; k++) { 
-        aa[0] = zero; 
-        aa+=bs;
-      }
-      if (diag) {
-        ierr = (*A->ops->setvalues)(A,1,rows+j,1,rows+j,diag,INSERT_VALUES);CHKERRQ(ierr);
-      }
-    }
-  }
-
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  SETERRQ(PETSC_ERR_SUP,"No support for this function yet");
 }
 
 /* Only add/insert a(i,j) with i<=j (blocks). 
