@@ -423,7 +423,7 @@ class Configure(config.base.Configure):
        - Solaris: -R
        - FreeBSD: -Wl,-R,'''
     found = 0
-    for flag in ['-rpath ', '-Wl,-rpath,', '-R', '-Wl,-R,']:
+    for flag in ['-Wl,-rpath,', '-rpath ', '-R', '-Wl,-R,']:
       if self.checkLinkerFlag(flag+os.path.abspath(os.getcwd())):
         found = 1
         break
