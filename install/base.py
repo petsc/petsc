@@ -66,10 +66,12 @@ class Base (maker.Maker):
     if noBase: pathname = os.path.dirname(pathname)
     return os.path.join(sitename, pathname)
 
-  def getInstallRoot(self, url):
+  def getInstallRoot(self, url, isBackup = 0):
     '''Guess the install root from the project URL. Note this method automatically remaps the URL.'''
     url  = self.getMappedUrl(url)
     root = self.getRepositoryName(url)
+    if isBackup:
+      root = os.path.join('backup', root)
     if self.base:
       root = os.path.join(self.base, root)
     return os.path.abspath(root)
