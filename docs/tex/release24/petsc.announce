@@ -1,0 +1,31 @@
+
+
+  Announcement for news-groups.
+
+
+  We are pleased to announce the release of PETSc 2.0 for MPI.
+The Portable, Extensible Toolkit for Scientific computation (PETSc)
+has been completely rewritten for MPI. 
+
+  PETSc provides many tools for the parallel, numerical solution of 
+PDEs discretized via finite differences or finite elements;
+including scalable nonlinear and linear equation solvers that 
+employ a variety of Newton and Krylov subspace methods.
+
+  One of the unique features of PETSc is that it allows the user 
+to easily and efficiently assembly parallel vectors and sparse matrices
+without the requiring the user to write any message passing code.
+Complete application codes for the solution of nonlinear PDEs may be
+written with very  little (or no) explict message passing code needed from 
+the application programmer.
+
+  PETSc also contains code for the parallel numerical solution of 
+large scale minimization problems
+
+  Information on PETSc as well as the software may be obtained from 
+http:\\www.mcs.anl.gov/petsc/petsc.html or 
+ftp:\\info.mcs.anl.gov/pub/petsc
+
+  The PETSc Team
+
+  Barry Smith, Lois C. McInnes, and Bill Gropp
