@@ -941,7 +941,7 @@ int AttachNullSpace(KSP ksp,Vec model)
   PetscFunctionBegin;
   ierr  = VecDuplicate(model,&v);CHKERRQ(ierr);
   ierr  = VecGetSize(model,&N);CHKERRQ(ierr);
-  scale = 2.0/sqrt(N); 
+  scale = 2.0/sqrt((PetscReal)N); 
   ierr  = VecGetArray(v,&vx);CHKERRQ(ierr);
   ierr  = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
