@@ -372,6 +372,35 @@ int StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "StageLogGetEventPerfLog"
+/*@C
+  StageLogGetEventPerfLog - This function returns the EventPerfLog for the given stage.
+
+  Not Collective
+
+  Input Parameters:
++ stageLog - The StageLog
+- stage    - The stage
+
+  Output Parameter:
+. eventLog - The EventPerfLog
+
+  Level: intermediate
+
+.keywords: log, stage
+.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+@*/
+int StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog) {
+  PetscFunctionBegin;
+  PetscValidPointer(eventLog);
+  if ((stage < 0) || (stage >= stageLog->numStages)) {
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
+  }
+  *eventLog = stageLog->stageInfo[stage].eventLog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "StageLogSetVisible"
 /*@C
   StageLogSetVisible - This function determines whether a stage is printed during PetscLogPrintSummary()

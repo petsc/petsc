@@ -35,7 +35,7 @@ int EventRegLogCreate(EventRegLog *eventLog) {
   ierr = PetscNew(struct _EventRegLog, l);                                                                CHKERRQ(ierr);
   l->numEvents   = 0;
   l->maxEvents   = 100;
-  ierr = PetscMalloc(l->maxEvents * sizeof(PerfInfo), &l->eventInfo);                                     CHKERRQ(ierr);
+  ierr = PetscMalloc(l->maxEvents * sizeof(EventRegInfo), &l->eventInfo);                                 CHKERRQ(ierr);
   *eventLog = l;
   PetscFunctionReturn(0);
 }
@@ -56,6 +56,58 @@ int EventRegLogCreate(EventRegLog *eventLog) {
 .seealso: EventRegLogCreate()
 */
 int EventRegLogDestroy(EventRegLog eventLog) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(eventLog->eventInfo);                                                                  CHKERRQ(ierr);
+  ierr = PetscFree(eventLog);                                                                             CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "EventPerfLogCreate"
+/*
+  EventPerfLogCreate - This creates a EventPerfLog object.
+
+  Not collective
+
+  Input Parameter:
+. eventLog - The EventPerfLog
+
+  Level: beginner
+
+.keywords: log, event, create
+.seealso: EventPerfLogDestroy(), StageLogCreate()
+*/
+int EventPerfLogCreate(EventPerfLog *eventLog) {
+  EventPerfLog l;
+  int          ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(struct _EventPerfLog, l);                                                               CHKERRQ(ierr);
+  l->numEvents   = 0;
+  l->maxEvents   = 100;
+  ierr = PetscMalloc(l->maxEvents * sizeof(PerfInfo), &l->eventInfo);                                     CHKERRQ(ierr);
+  *eventLog = l;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "EventPerfLogDestroy"
+/*
+  EventPerfLogDestroy - This destroys a EventPerfLog object.
+
+  Not collective
+
+  Input Paramter:
+. eventLog - The EventPerfLog
+
+  Level: beginner
+
+.keywords: log, event, destroy
+.seealso: EventPerfLogCreate()
+*/
+int EventPerfLogDestroy(EventPerfLog eventLog) {
   int ierr;
 
   PetscFunctionBegin;
