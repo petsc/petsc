@@ -63,7 +63,7 @@ class Configure(config.base.Configure):
     self.fullLib = self.mpi_lib
     self.include = ''
     if os.path.dirname(self.fullLib):
-      self.include = os.path.join(os.path.dirname(self.fullLib), 'include')
+      self.include = os.path.join(os.path.dirname(os.path.dirname(self.fullLib)), 'include')
     if self.checkLib(self.fullLib): return 1
     self.fullLib = 'libmpi.a'
     if self.checkLib(self.fullLib): return 1
