@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.103 1997/04/05 17:48:11 curfman Exp bsmith $ 
+% $Id: part1.tex,v 1.104 1997/10/19 03:32:18 bsmith Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -76,8 +76,7 @@ appropriate for a particular problem.
 
 \section{Suggested Reading}
 
-The {\em PETSc 2.0 Users Manual} replaces all of the previous PETSc users
-guides, including the SLES, KSP, and SNES manuals.  The manual is
+The manual is
 divided into three parts:
 \begin{itemize}
 \item Part I - Introduction to PETSc
@@ -127,14 +126,13 @@ routines that support direct use of Fortran90 pointers.
 \medskip \medskip
 
 Man pages for all PETSc functions can be
-accessed in HTML format with the command {\tt \$(PETSC\_DIR)\-/bin\-/petscman
-[-xmosaic]}.  The option {\tt -xmosaic} indicates viewing man pages
-via Mosaic.  The HTML man pages
+accessed in HTML format with the command {\tt \$(PETSC\_DIR)\-/bin\-/petscman.
+The HTML manual pages
 provide hyperlinked indices (organized by
 both concepts and routine names) to the tutorial examples and enables
 easy movement among related topics.  Within the PETSc distribution, the directory
 {\tt \$(PETSC\_DIR)/docs} contains all documentation, including this
-manual and the man pages in PostScript and HTML
+manual and the manual pages in PostScript and HTML
 formats. Note that one can also view the man pages in HTML format
 by loading the file {\tt \$(PETSC\_DIR)/docs/www/www.html}
 into a HTML browser session that has been independently initiated.
@@ -145,9 +143,6 @@ Section~\ref{sec:emacs}. Similarly, VI users may find the
 {\em ctags} option to be extremely useful. Details of this 
 feature are provided in Section~\ref{sec:vi}.
 
-The PETSc source code is available by anonymous ftp
-from {\tt ftp://info.mcs.anl.gov/pub/petsc} in the compressed tar files
-{\tt petsc.tar.Z} and {\tt petsc.tar.gz}.  
 The file {\tt manual.ps} contains the PostScript form of
 the {\em PETSc 2.0 Users Manual} in its entirety, while {\tt intro.ps} 
 includes only the introductory segment, Part I.  \sindex{installing PETSc} 
@@ -631,18 +626,17 @@ custom application programs.  We suggest that new PETSc
 users examine some programs in the directories {\tt
 \$(PETSC\_DIR)/src/<component>/examples/tutorials}, where {\tt <component>}
 denotes any of the PETSc component directories (listed in the following
-section), such as {\tt snes} or {\tt sles}.  Note that we are in
-the process of organizing the examples in tutorial and test categories.
+section), such as {\tt snes} or {\tt sles}.  
 Currently some PETSc components have examples only in the directory
 {\tt \$(PETSC\_DIR)/src/<component>/examples/tests}; more tutorial examples
-will be forthcoming.  The HTML version of the man pages provides indices
+will be forthcoming.  The HTML version of the manual pages provides indices
 (organized by both routine names and concepts) to the tutorial examples.
 
 To write a new application program using PETSc, we suggest the
 following procedure:
 \begin{enumerate}
 \item Install and test PETSc according to the instructions in the file
-      {\tt \$(PETSC\_DIR)/Installation}.
+      {\tt \$(PETSC\_DIR)/docs/installation.html}.
 \item Copy one of the many PETSc examples in the component directory
       that corresponds to the class of problem of interest (e.g.,
       for linear solvers, see {\tt \$(PETSC\_DIR)/src/sles/examples/tutorials}).
@@ -664,7 +658,7 @@ the root directory of PETSc contains the following directories:
                    and {\tt manual.html} contain the users manual in
                    PostScript and HTML formats, respectively. Includes
                    the subdirectories
- \subitem - {\tt www} (HTML man pages).
+ \subitem - {\tt www} (HTML manual pages).
 \item {\tt bin} - Utilities and short scripts for use with PETSc, including
  \begin{itemize}
  \item {\tt petscman} (man page viewer),
