@@ -1370,7 +1370,8 @@ precomputing the information by using a segment of code similar to
 that for the regular matrix assembly.  The overhead of determining the
 \trl{nnz} array will be quite small compared with the overhead of the
 inherently expensive mallocs and moves of data that are needed for
-dynamic allocation during matrix assembly.
+dynamic allocation during matrix assembly. Always guess high if exact
+value is not known (since extra space is cheaper than too little).
 
 Thus, when assembling a sparse matrix with very different
 numbers of nonzeros in various rows, one could proceed 
@@ -1430,9 +1431,12 @@ format can be created with the command \findex{MatCreateMPIAIJ()}
   MatCreateMPIAIJ(MPI\_Comm comm,int m,int n,int M,int N,int d\_nz,\\
                           int *d\_nnz, int o\_nz,int *o\_nnz,Mat *A);
 \end{tabbing}
-\trl{A} is the newly created matrix, while the arguments \trl{m}, \trl{n}, 
-\trl{M}, and \trl{N}, indicate the number of local rows and columns and
-the number of global rows and columns, respectively. Either the local or
+\trl{A} is the newly created matrix, while the arguments \trl{m}, 
+\trl{M}, and \trl{N}, indicate the number of local rows and
+the number of global rows and columns, respectively. In the PETSc partitioning scheme,
+all the matrix columns are local and \trl{n} is the number of columns 
+corresponding to local part of a parallel vector.
+Either the local or
 global parameters can be replaced with PETSC\_DECIDE, so that 
 PETSc will determine \findex{PETSC_DECIDE} them.
 The matrix is stored with a fixed number of rows on 
@@ -1652,7 +1656,7 @@ command
 \begin{tabbing}
   MatView(Mat mat,PETSC\_VIEWER\_DRAW\_WORLD);
 \end{tabbing}
-Use \findex{PETSC_VIEWER_DRAW_WORLD}
+Also one can use \findex{PETSC_VIEWER_DRAW_WORLD}
 \begin{tabbing}
   MatView(Mat mat,PetscViewer viewer);
 \end{tabbing}
@@ -1661,7 +1665,7 @@ where \trl{viewer} was obtained with PetscViewerDrawOpenX().
 Additional viewers \findex{MatCopy()} and options are given in the MatView() man
 page and Section~\ref{sec_viewers}.
 
-\begin{table}[H]
+\begin{table}[tb]
 \begin{center}
 \begin{tabular}{ll}
 {\bf Function Name} & {\bf Operation} \\
@@ -1687,12 +1691,10 @@ MatShift(PetscScalar *a,Mat Y); & $ Y =  Y + a*I $ \\
 \label{fig_matrixops}
 \end{table}
 The NormType argument to MatNorm() is one of \findex{MatNorm()}
-\findex{NormType} \trl{NORM_1} or \trl{NORM_INFINITY}.
-\findex{NORM_1}  \findex{NORM_INFINITY}
-\sindex{1-norm} \sindex{infinity norm}
-
+\findex{NormType} \trl{NORM_1}, \trl{NORM_INFINITY}, and \trl{NORM_FROBENIUS}.
+\findex{NORM_1}  \findex{NORM_INFINITY} \findex{NORM_FROBENIUS}
+\sindex{1-norm} \sindex{infinity norm} \sindex {Frobenius norm}
 \section{Matrix-Free Matrices} \sindex{matrix-free methods}
-
 \label{sec_matrixfree}
 Some people like to use matrix-free methods, which do not require
 explicit storage of the matrix, for the numerical solution of partial
@@ -1735,11 +1737,11 @@ operations, which have the form \trl{MATOP_<OPERATION>}, where \trl{
 interface routine (for example, MatMult() $ \rightarrow $ \trl{MATOP_MULT}).  All
 user-provided functions have the same calling sequence as the
 usual matrix interface routines, since the user-defined functions are
-intended to be accessed through interface, e.g., 
+intended to be accessed through the same interface, e.g., 
 \trl{MatMult(Mat,Vec,Vec)} $ \rightarrow$ \trl{UserMult(Mat,Vec,Vec)}.
 The final argument for MatShellSetOperation() needs to be cast
 to a \trl{void *}, since the final argument could (depending on the 
-MatOperation be a variety of different functions.
+MatOperation) be a variety of different functions.
 
 Note that MatShellSetOperation() can also be used as a
 ``backdoor'' means of introducing user-defined changes in matrix
@@ -1784,6 +1786,7 @@ by calling MatSetValues().
 %without repeating the ordering or the symbolic factorization. 
 %This option can save some computational time, although it
 %does require that the factorization is not done in-place.
+
 
 In the numerical solution of elliptic partial differential equations,
 it can be cumbersome to deal with Dirichlet boundary 
