@@ -105,14 +105,14 @@ int AppCtxSetLocal(AppCtx *appctx)
  /*       Get the list of Degrees of Freedom associated with those cells  (global numbering) */
  ierr = AODataSegmentGetReducedIS(ao,"cell","df",grid->cell_global,&grid->df_global);CHKERRQ(ierr);
  if(appctx->view.show_griddata){  
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n df_global \n");CHKERRQ(ierr);  
+   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n [%d], df_global \n",rank);CHKERRQ(ierr);  
    ISView(grid->df_global, VIEWER_STDOUT_WORLD);
  }
 
  /*    Get the coords corresponding to each cell */
  ierr = AODataSegmentGetIS(ao, "cell", "coords", grid->cell_global , (void **)&grid->cell_coords);CHKERRQ(ierr);
    if(appctx->view.show_griddata ){  
-     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n cell_coords\n");CHKERRQ(ierr);   
+     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], cell_coords\n",    rank);CHKERRQ(ierr);   
      PetscDoubleView(grid->cell_n*8, grid->cell_coords, VIEWER_STDOUT_SELF);
    }
   /*      Make local to global mapping of cells and vertices  */
@@ -121,7 +121,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = ISLocalToGlobalMappingCreateIS(grid->vertex_global,&grid->ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(grid->df_global,&grid->dfltog);CHKERRQ(ierr);
   if(appctx->view.show_griddata){ 
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n grid->dfltog, the local to global mapping \n");CHKERRQ(ierr);  
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->dfltog, the local to global mapping \n", rank);CHKERRQ(ierr);  
     ierr = ISLocalToGlobalMappingView(grid->dfltog, VIEWER_STDOUT_SELF);
   }
 
@@ -141,10 +141,9 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = ISGetSize(grid->cell_global,&grid->cell_n); CHKERRQ(ierr);
   ierr = ISGetSize(grid->vertex_global,&grid->vertex_n_ghosted); CHKERRQ(ierr);
   ierr = ISGetSize(grid->df_global, &grid->df_count); CHKERRQ(ierr);
-  if(1){ printf("the number of cells on processor %d: %d\n ", rank, grid->cell_n);}
-
- if(appctx->view.show_griddata ){  
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n grid->cell_df\n");CHKERRQ(ierr);   
+  if(appctx->view.show_griddata){ 
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], the number of cells on this processor is %d\n ", rank, grid->cell_n);CHKERRQ(ierr);
+   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n [%d], grid->cell_df\n",rank);CHKERRQ(ierr);   
    PetscIntView(grid->cell_n*8, grid->cell_df, VIEWER_STDOUT_SELF);
  }
   /*       Get the numerical values/coords of all vertices for local vertices  */
