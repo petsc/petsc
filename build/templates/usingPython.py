@@ -66,9 +66,11 @@ class UsingPython (base.Base):
         self.extraLibraries.append('lib'+lib[2:]+'.so')
     return self.extraLibraries
 
-  def getServerLibrary(self, package):
+  def getServerLibrary(self, package, proj = None, lang = None):
+    if proj is None: proj = self.project
+    if lang is None: lang = self.language
     '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return project.ProjectPath(os.path.join('lib', 'lib'+self.project.getName()+'-'+self.language.lower()+'-'+package+'-server.a'), self.project.getUrl())
+    return project.ProjectPath(os.path.join('lib', 'lib'+proj.getName()+'-'+lang.lower()+'-'+package+'-server.a'), proj.getUrl())
 
   def getGenericCompileTarget(self, action):
     '''Python code does not need compilation, so only a C compiler is necessary.'''
@@ -91,6 +93,9 @@ class UsingPython (base.Base):
     linker       = build.buildGraph.BuildGraph()
     archiver     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
     sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag, isSetwise = 1, library = library)
+    if not (self.project.getUrl() == 'bk://sidl.bkbits.net/Compiler' and package == 'pythonGenerator'):
+      # Also need pythonGenerator library
+      sharedLinker.extraLibraries.append(self.getServerLibrary('pythonGenerator', proj = self.getInstalledProject('bk://sidl.bkbits.net/Compiler')))
     sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(archiver)
     linker.addEdges(sharedLinker, [archiver])

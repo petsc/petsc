@@ -3,13 +3,13 @@ import base
 import os
 
 class FileSet(list):
-  def __init__(self, filenames = None, tag = None, filesets = []):
+  def __init__(self, filenames = None, tag = None, filesets = [], mustExist = 1):
     list.__init__(self)
-    if not filenames is None:
-      list.extend(self, filenames)
     self.children  = filesets[:]
     self.tag       = tag
-    self.mustExist = 1
+    self.mustExist = mustExist
+    if not filenames is None:
+      self.extend(filenames)
     return
 
   def checkFile(self, filename):
@@ -78,9 +78,11 @@ class ExtensionFileSet (TreeFileSet):
 
 class RootedFileSet(FileSet, base.Base):
   def __init__(self, projectUrl, filenames = None, tag = None, filesets = []):
-    FileSet.__init__(self, filenames, tag, filesets)
+    FileSet.__init__(self, tag = tag, filesets = filesets)
     base.Base.__init__(self)
     self.projectUrl = projectUrl
+    if not filenames is None:
+      self.extend(filenames)
     return
 
   def __str__(self):
@@ -155,7 +157,7 @@ class RootedExtensionFileSet (RootedFileSet, ExtensionFileSet):
   def __init__(self, projectUrl, roots, exts, tag = None):
     self.exts = exts
     if not isinstance(self.exts, list): self.exts = [self.exts]
-    TreeFileSet.__init__(self, roots, self.extTest, tag = tag)
     base.Base.__init__(self)
     self.projectUrl = projectUrl
+    TreeFileSet.__init__(self, roots, self.extTest, tag = tag)
     return

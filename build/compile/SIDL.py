@@ -39,7 +39,6 @@ class Compiler(build.processor.Processor):
       self.action  = 'client'
     self.usingSIDL = usingSIDL
     self.repositoryDirs = []
-    self.output    = build.fileset.RootedFileSet(self.usingSIDL.project.getUrl())
     self.outputTag = self.language.lower()+' '+self.action
     return
 
@@ -92,10 +91,6 @@ class Compiler(build.processor.Processor):
     '''Return a list of the compiler flags specifying the output directories'''
     if isinstance(source, build.fileset.FileSet): source = source[0]
     (package, ext) = os.path.splitext(os.path.basename(source))
-    if self.isServer:
-      self.output.tag = self.outputTag+' '+package
-    else:
-      self.output.tag = self.outputTag
     if not self.outputDir is None:
       if self.isServer:
         outputDir = os.path.join(self.outputDir, self.usingSIDL.getServerRootDir(self.language, package))
@@ -133,7 +128,11 @@ class Compiler(build.processor.Processor):
       compiler.run()
     self.debugPrint('Reporting on '+str(set)+' for a '+self.language+' '+self.action, 3, 'compile')
     compiler.report()
-    self.output.extend(compiler.outputFiles)
+    tag = self.outputTag
+    if self.isServer:
+      (package, ext) = os.path.splitext(os.path.basename(set[0]))
+      tag           += ' '+package
+    self.output.children.append(build.fileset.RootedFileSet(self.usingSIDL.project.getUrl(), compiler.outputFiles, tag = tag))
     return self.output
 
   def processFile(self, source, tag):

@@ -122,7 +122,8 @@ class Update (build.transform.Transform):
   def handleFile(self, f, tag):
     '''If the file tag starts with "update", then update it in the source database'''
     if (self.tags and tag in self.tags) or (tag and tag[:6] == 'update'):
-      self.sourceDB.updateSource(f)
+      if os.path.isfile(f):
+        self.sourceDB.updateSource(f)
     else:
       build.transform.Transform.handleFile(self, f, tag)
     return self.output

@@ -1,20 +1,28 @@
 class Logger(object):
-  debugLevel    = 1
-  debugSections = []
+  setupArgs     = 0
+  debugLevel    = None
+  debugSections = None
   debugIndent   = '  '
 
   def __init__(self, argDB = None):
     self.setFromArgs(argDB)
-    self.debugLevel    = argDB['debugLevel']
-    self.debugSections = argDB['debugSections']
+    if Logger.debugLevel is None:
+      Logger.debugLevel    = argDB['debugLevel']
+    self.debugLevel        = Logger.debugLevel
+    if Logger.debugSections is None:
+      Logger.debugSections = argDB['debugSections']
+    self.debugSections     = Logger.debugSections
+    self.debugIndent       = Logger.debugIndent
     return
 
   def setFromArgs(self, argDB):
     '''Setup types in the argument database'''
-    import nargs
+    if not Logger.setupArgs:
+      import nargs
 
-    argDB.setType('debugLevel',    nargs.ArgInt(None, None, 'Integer 0 to 4, where a higher level means more detail', 0, 5))
-    argDB.setType('debugSections', nargs.Arg(None, None, 'Message types to print, e.g. [compile,link,bk,install]'))
+      argDB.setType('debugLevel',    nargs.ArgInt(None, None, 'Integer 0 to 4, where a higher level means more detail', 0, 5))
+      argDB.setType('debugSections', nargs.Arg(None, None, 'Message types to print, e.g. [compile,link,bk,install]'))
+      Logger.setupArgs = 1
     return argDB
 
   def debugListStr(self, l):
