@@ -6,4 +6,4 @@ libmpi: mpi.o
 	$(RM) *.o
 
 clean:
-	$(RM) *.
+	$(RM) *.o
