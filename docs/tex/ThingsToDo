@@ -11,6 +11,10 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
+  - Make sure all Fortran examples run for complex on all machines, note
+    this means the bmake files must insure that -DPETSC_COMPLEX is 
+    properly set.
+
   - Test MATMPIROWBS for nonsymmetric matrices by building another 
     set of ARCO matrices by removing small values from them.
 
