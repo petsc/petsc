@@ -1,4 +1,4 @@
-/*$Id: baijfact2.c,v 1.65 2001/07/16 04:51:58 buschelm Exp buschelm $*/
+/*$Id: baijfact2.c,v 1.66 2001/07/17 18:10:07 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -2871,7 +2871,7 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
       with natural ordering
   */
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)inA->data;
-  PetscTruth  sse_enabled;
+  PetscTruth  sse_enabled_local,sse_enabled_global;
   int         ierr;
 
   PetscFunctionBegin;
@@ -2891,8 +2891,8 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
     PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=3\n");
     break; 
   case 4:
-    ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
-    if (sse_enabled) {
+    ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,&sse_enabled_global);CHKERRQ(ierr);
+    if (sse_enabled_local) {
 #if defined(PETSC_HAVE_SSE)
       inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
       PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");

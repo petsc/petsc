@@ -1,4 +1,4 @@
-/* $Id: sseenabled.c,v 1.13 2001/07/20 19:57:05 buschelm Exp buschelm $ */
+/* $Id: sseenabled.c,v 1.14 2001/07/20 20:25:12 buschelm Exp buschelm $ */
 #include "petscsys.h" /*I "petscsys.h" I*/
 
 #ifdef PETSC_HAVE_SSE
@@ -119,6 +119,7 @@ int PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag,PetscTruth *gflag) {
   int ierr;
   PetscFunctionBegin;
   *lflag = PETSC_FALSE;
+  *gflag = PETSC_FALSE;
   ierr = PetscSSEHardwareTest(lflag);CHKERRQ(ierr);
   if (*lflag) {
     ierr = PetscSSEOSEnabledTest(lflag);CHKERRQ(ierr);
