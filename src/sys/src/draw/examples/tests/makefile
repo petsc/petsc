@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.55 1998/03/19 02:10:51 balay Exp balay $ 
+# $Id: makefile,v 1.56 1998/03/31 17:21:08 balay Exp balay $ 
 
 ALL: ex1
 
@@ -36,14 +36,14 @@ runex4:
 runex4_2:
 	-@${MPIRUN} -np 2 ex4
 runex7:
-	-@${MPIRUN} -np 1 ex7 -nc 2 -dfvec_vrml_basefile junk 
-	-@${RM} -f junk.0.vrml junk.1.vrml
+	-@${MPIRUN} -np 1 ex7 -nc 2 -dfvec_vrml_basefile junk ; \
+	${RM} -f junk.0.vrml junk.1.vrml
 runex7_2:
-	-@${MPIRUN} -np 2 ex7 -nc 3 -dfvec_vrml_basefile junk 
-	-@${RM} -f junk.0.vrml junk.1.vrml junk.2.vrml
+	-@${MPIRUN} -np 2 ex7 -nc 3 -dfvec_vrml_basefile junk ; \
+	${RM} -f junk.0.vrml junk.1.vrml junk.2.vrml
 runex8:
-	-@${MPIRUN} -np 4 ex8 -dfvec_vrml_basefile junk
-	-@${RM} -f junk.0.vrml
+	-@${MPIRUN} -np 4 ex8 -dfvec_vrml_basefile junk ; \
+	${RM} -f junk.0.vrml
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
