@@ -262,22 +262,47 @@ PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrix */
-  if (gmres->hh_origin) {ierr = PetscFree(gmres->hh_origin);CHKERRQ(ierr);}
+  if (gmres->hh_origin) {
+    ierr = PetscFree(gmres->hh_origin);CHKERRQ(ierr);
+    gmres->hh_origin = 0;
+  }
 
   /* Free the pointer to user variables */
-  if (gmres->vecs) {ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);}
+  if (gmres->vecs) {
+    ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);
+    gmres->vecs = 0;
+  }
 
   /* free work vectors */
   for (i=0; i<gmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs(gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
-  if (gmres->user_work)  {ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);}
-  if (gmres->mwork_alloc) {ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);}
-  if (gmres->nrs) {ierr = PetscFree(gmres->nrs);CHKERRQ(ierr);}
-  if (gmres->sol_temp) {ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);}
-  if (gmres->Rsvd) {ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);}
-  if (gmres->Dsvd) {ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);}
+  if (gmres->user_work)  {
+    ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);
+    gmres->user_work = 0;
+  }
+  if (gmres->mwork_alloc) { 
+    ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);
+    gmres->mwork_alloc = 0;
+  }
+  if (gmres->nrs) {
+    ierr = PetscFree(gmres->nrs);CHKERRQ(ierr);
+    gmres->nrs = 0;
+  }
+  if (gmres->sol_temp) {
+    ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);
+    gmres->sol_temp = 0;
+  }
+  if (gmres->Rsvd) {
+    ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);
+    gmres->Rsvd = 0;
+  }
+  if (gmres->Dsvd) {
+    ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);
+    gmres->Dsvd = 0;
+  }
 
+  gmres->nwork_alloc    = 0;
   gmres->vv_allocated   = 0;
   gmres->vecs_allocated = 0;
   gmres->nrs            = 0;

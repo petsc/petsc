@@ -148,12 +148,11 @@ PetscErrorCode PetscByteSwapDouble(double *buff,PetscInt n)
 @*/
 PetscErrorCode PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 {
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT) || !defined(PETSC_WORDS_BIGENDIAN)
   PetscErrorCode    ierr;
 #endif
   int               maxblock = 65536,wsize,err,m = (int) n;
   char              *pp = (char*)p;
-  PetscErrorCode    ierr;
 #if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INT)
   void              *ptmp = p; 
 #endif
