@@ -672,3 +672,6 @@ find /home/bsmith/petsc -name man -prune -o -name manual -prune -o \
 surplus:
 now located on mcshsm.mcs.anl.gov in ~bsmith/petscsurplus/surplus
 ----------------------------------------------------------------------
+https://www.mpi-softtech.com/
+email-address: balay@mcs.anl.gov
+passwd: F15ds25
