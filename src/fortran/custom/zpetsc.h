@@ -1,4 +1,6 @@
 
+/* This file contains information for the use of PETSc Fortran interface stubs */
+
        int   PetscDoubleAddressToFortran(void*);
        int   PetscIntAddressToFortran(void*);
 extern void *PetscNull_Fortran;
