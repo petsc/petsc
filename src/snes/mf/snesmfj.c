@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.80 1999/03/17 23:24:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.81 1999/03/19 21:22:38 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -9,18 +8,25 @@ static char vcid[] = "$Id: snesmfj.c,v 1.80 1999/03/17 23:24:23 bsmith Exp bsmit
 FList MatSNESMFList              = 0;
 int   MatSNESMFRegisterAllCalled = 0;
 
-
 #undef __FUNC__  
 #define __FUNC__ "MatSNESMFSetType"
 /*@
-      MatSNESMFSetType - Sets the method that is used to compute the h in the 
-            finite difference matrix free formulation. 
+    MatSNESMFSetType - Sets the method that is used to compute the 
+    differencing parameter for finite difference matrix-free formulations. 
 
-   Input Parameters:
-+     mat - the matrix free matrix created via MatCreateSNESMF()
--     ftype - the type requested
+    Input Parameters:
++   mat - the matrix free matrix created via MatCreateSNESMF()
+-   ftype - the type requested
 
-   Level: advanced
+    Level: advanced
+
+    Notes:
+    For example, such routines can compute h for use in
+    Jacobian-vector products of the form
+
+                            F(x+ha) - F(x)
+          F'(u)a  =approx  ----------------
+                                 h
 
 .seealso: MatCreateSNESMF(), MatSNESMFRegister()
 @*/
@@ -30,7 +36,7 @@ int MatSNESMFSetType(Mat mat,char *ftype)
   MatSNESMFCtx ctx;
   
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
 
   /* already set, so just return */
   if (PetscTypeCompare(ctx->type_name,ftype)) PetscFunctionReturn(0);
@@ -40,7 +46,7 @@ int MatSNESMFSetType(Mat mat,char *ftype)
     ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);
   }
 
-  /* Get the function pointers for the iterative method requested */
+  /* Get the function pointers for the requrested method */
   if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
 
   ierr =  FListFind(ctx->comm, MatSNESMFList, ftype,(int (**)(void *)) &r );CHKERRQ(ierr);
@@ -54,7 +60,7 @@ int MatSNESMFSetType(Mat mat,char *ftype)
 }
 
 /*MC
-   MatSNESMFRegister - Adds a method to the MatSNESMF registry
+   MatSNESMFRegister - Adds a method to the MatSNESMF registry.
 
    Synopsis:
    MatSNESMFRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(MatSNESMF))
@@ -186,11 +192,10 @@ int MatSNESMFView_Private(Mat J,Viewer viewer)
 #define __FUNC__ "MatSNESMFAssemblyEnd_Private"
 /*
    MatSNESMFAssemblyEnd_Private - Resets the ctx->ncurrenth to zero. This 
-     allows the user to indicate the beginning of a new linear solve by call
-     MatAssemblyXXX() on the matrix free matrix. This then allows the 
-     MatSNESMFCreate_WP() to properly compute the || U|| only the first 
-     time in the linear solver rather than every time
-
+   allows the user to indicate the beginning of a new linear solve by calling
+   MatAssemblyXXX() on the matrix free matrix. This then allows the 
+   MatSNESMFCreate_WP() to properly compute ||U|| only the first time
+   in the linear solver rather than every time.
 */
 int MatSNESMFAssemblyEnd_Private(Mat J)
 {
@@ -276,9 +281,9 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSNESMF"
 /*@C
-   MatCreateSNESMF - Creates a matrix-free matrix
-   context for use with a SNES solver.  This matrix can be used as
-   the Jacobian argument for the routine SNESSetJacobian().
+   MatCreateSNESMF - Creates a matrix-free matrix context for use with
+   a SNES solver.  This matrix can be used as the Jacobian argument for
+   the routine SNESSetJacobian().
 
    Collective on SNES and Vec
 
@@ -294,12 +299,12 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
    Notes:
    The matrix-free matrix context merely contains the function pointers
    and work space for performing finite difference approximations of
-   Jacobian-vector products, J(u)*a, 
+   Jacobian-vector products, F'(u)*a, 
 
    The default code uses the following approach to compute h
 
 .vb
-     J(u)*a = [J(u+h*a) - J(u)]/h where
+     F'(u)*a = [F(u+h*a) - F(u)]/h where
      h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
        = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
  where
@@ -308,8 +313,8 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
 .ve
 
    The user can set the error_rel via MatSNESMFSetFunctionError() and 
-   umin via MatSNESMFDefaultSetUmin()
-   See the nonlinear solvers chapter of the users manual for details.
+   umin via MatSNESMFDefaultSetUmin(); see the nonlinear solvers chapter
+   of the users manual for details.
 
    The user should call MatDestroy() when finished with the matrix-free
    matrix context.
@@ -380,23 +385,23 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
 #define __FUNC__ "MatSNESMFSetFromOptions"
 /*@
    MatSNESMFSetFromOptions - Sets the MatSNESMF options from the command line
-     parameter.
+   parameter.
 
    Collective on Mat
 
    Input Parameters:
-.   mat - the matrix obtained with MatCreateSNESMF()
+.  mat - the matrix obtained with MatCreateSNESMF()
 
-      Options Database Keys:
-+   -snes_mf_type - <default,wp>
--   -snes_mf_err - square root of estimated relative error in function evaluation
+   Options Database Keys:
++  -snes_mf_type - <default,wp>
+-  -snes_mf_err - square root of estimated relative error in function evaluation
 
    Level: advanced
 
 .keywords: SNES, matrix-free, parameters
 
 .seealso: MatCreateSNESMF(),MatSNESMFSetHHistory(), 
-          MatSNESMFResetHHistory(),MatSNESMFKSPMonitor()
+          MatSNESMFResetHHistory(), MatSNESMFKSPMonitor()
 @*/
 int MatSNESMFSetFromOptions(Mat mat)
 {
@@ -434,13 +439,13 @@ int MatSNESMFSetFromOptions(Mat mat)
 #undef __FUNC__  
 #define __FUNC__ "MatSNESMFGetH"
 /*@
-   MatSNESMFGetH - Gets the last h that was used as the differencing 
-     parameter.
+   MatSNESMFGetH - Gets the last value that was used as the differencing 
+   parameter.
 
    Not Collective
 
    Input Parameters:
-.   mat - the matrix obtained with MatCreateSNESMF()
+.  mat - the matrix obtained with MatCreateSNESMF()
 
    Output Paramter:
 .  h - the differencing step size
@@ -469,9 +474,8 @@ int MatSNESMFGetH(Mat mat,Scalar *h)
 #define __FUNC__ "MatSNESMFKSPMonitor"
 /*
    MatSNESMFKSPMonitor - A KSP monitor for use with the default PETSc
-      SNES matrix free routines. Prints the h differencing parameter used at each
-      timestep.
-
+   SNES matrix free routines. Prints the differencing parameter used at 
+   each step.
 */
 int MatSNESMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
@@ -483,9 +487,9 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
   PetscTruth     nonzeroinitialguess;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)ksp,&comm); CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
-  ierr = KSPGetInitialGuessNonzero(ksp,&nonzeroinitialguess);CHKERRQ(ierr);
+  ierr = KSPGetInitialGuessNonzero(ksp,&nonzeroinitialguess); CHKERRQ(ierr);
   ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   if (!ctx) {
@@ -525,11 +529,10 @@ int MatSNESMFKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
    Notes:
    The default matrix-free matrix-vector product routine computes
 .vb
-     J(u)*a = [J(u+h*a) - J(u)]/h where
+     F'(u)*a = [F(u+h*a) - F(u)]/h where
      h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
        = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
 .ve
-
 
 .keywords: SNES, matrix-free, parameters
 
@@ -553,16 +556,16 @@ int MatSNESMFSetFunctionError(Mat mat,double error)
 #undef __FUNC__  
 #define __FUNC__ "MatSNESMFAddNullSpace"
 /*@
-   MatSNESMFAddNullSpace - Provides a null space that 
-   an operator is supposed to have.  Since roundoff will create a 
-   small component in the null space, if you know the null space 
-   you may have it automatically removed.
+   MatSNESMFAddNullSpace - Provides a null space that an operator is
+   supposed to have.  Since roundoff will create a small component in
+   the null space, if you know the null space you may have it
+   automatically removed.
 
    Collective on Mat 
 
    Input Parameters:
 +  J - the matrix-free matrix context
-.  has_cnst - PETSC_TRUE or PETSC_FALSE, indicating if null space has constants
+.  has_cnst - PETSC_TRUE or PETSC_FALSE, indicating whether null space has constants
 .  n - number of vectors (excluding constant vector) in null space
 -  vecs - the vectors that span the null space (excluding the constant vector);
           these vectors must be orthonormal
@@ -595,22 +598,22 @@ int MatSNESMFAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
 #undef __FUNC__  
 #define __FUNC__ "MatSNESMFSetHHistory"
 /*@
-   MatSNESMFSetHHistory - Sets an array to collect a history
-      of the differencing values h computed for the matrix free product
+   MatSNESMFSetHHistory - Sets an array to collect a history of the
+   differencing values (h) computed for the matrix-free product.
 
    Collective on Mat 
 
    Input Parameters:
 +  J - the matrix-free matrix context
-.  histroy - space to hold the h history
--  nhistory - number of entries in history, if more h are generated than
-              nhistory the later ones are discarded
+.  histroy - space to hold the history
+-  nhistory - number of entries in history, if more entries are generated than
+              nhistory, then the later ones are discarded
 
    Level: advanced
 
    Notes:
-    Use MatSNESMFResetHHistory() to reset the history counter
-    and collect a new batch of h.
+   Use MatSNESMFResetHHistory() to reset the history counter and collect
+   a new batch of differencing parameters, h.
 
 .keywords: SNES, matrix-free, h history, differencing history
 
@@ -640,7 +643,7 @@ int MatSNESMFSetHHistory(Mat J,Scalar *history,int nhistory)
 #define __FUNC__ "MatSNESMFResetHHistory"
 /*@
    MatSNESMFResetHHistory - Resets the counter to zero to begin 
-      collecting a new set of differencing histories.
+   collecting a new set of differencing histories.
 
    Collective on Mat 
 
@@ -650,7 +653,7 @@ int MatSNESMFSetHHistory(Mat J,Scalar *history,int nhistory)
    Level: advanced
 
    Notes:
-    Use MatSNESMFSetHHistory() to create the original history counter
+   Use MatSNESMFSetHHistory() to create the original history counter.
 
 .keywords: SNES, matrix-free, h history, differencing history
 

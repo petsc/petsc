@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.42 1999/03/02 22:28:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.43 1999/03/17 23:23:40 bsmith Exp curfman $";
 #endif
 
 /*
@@ -145,7 +145,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
 
    The Jacobian is estimated with the differencing approximation
 .vb
-       J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
+       F'(u)_{:,i} = [F(u+h*dx_{i}) - F(u)]/h where
        h = error_rel*u[i]                 if  abs(u[i]) > umin
          = +/- error_rel*umin             otherwise, with +/- determined by the sign of u[i]
        dx_{i} = (0, ... 1, .... 0)
@@ -286,9 +286,9 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
 
    Collective on MatFDColoring
 
-   The Jacobian is estimated with the differencing approximation
+   The Jacobian, F'(u), is estimated with the differencing approximation
 .vb
-       J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
+       F'(u)_{:,i} = [F(u+h*dx_{i}) - F(u)]/h where
        h = error_rel*u[i]                 if  abs(u[i]) > umin
          = +/- error_rel*umin             otherwise, with +/- determined by the sign of u[i]
        dx_{i} = (0, ... 1, .... 0)
