@@ -21,6 +21,9 @@ EXTERN int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,int,int*,int,int*,MatScalar
 #else
 #define MatSetValuesBlocked_SeqBAIJ_MatScalar MatSetValuesBlocked_SeqBAIJ
 #endif
+#if defined(PETSC_HAVE_DSCPACK)
+EXTERN int MatUseDSCPACK_MPIBAIJ(Mat);
+#endif
 
 #define CHUNKSIZE  10
 
@@ -420,6 +423,8 @@ static int MatView_SeqBAIJ_Binary(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+extern int MatMPIBAIJFactorInfo_DSCPACK(Mat,PetscViewer);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_SeqBAIJ_ASCII"
 static int MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
@@ -434,6 +439,11 @@ static int MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %d\n",bs);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     SETERRQ(PETSC_ERR_SUP,"Matlab format not supported");
+  } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+     ierr = MatMPIBAIJFactorInfo_DSCPACK(A,viewer);CHKERRQ(ierr);
+#endif
+     PetscFunctionReturn(0); 
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<a->mbs; i++) {
@@ -831,7 +841,7 @@ int MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat A,int m,int *im,int n,int *in,MatS
   PetscFunctionReturn(0);
 } 
 
-EXTERN int MatUseDSCPACK_MPIBAIJ(Mat);
+/* EXTERN int MatUseDSCPACK_MPIBAIJ(Mat); */
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqBAIJ"
 int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
@@ -1561,7 +1571,7 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->nz                 = a->nz;
   c->maxnz              = a->maxnz;
   c->solve_work         = 0;
-  c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
+  c->spptr              = 0;     /* Dangerous -I'm throwing away a->spptr */
   c->mult_work          = 0;
   C->preallocated       = PETSC_TRUE;
   C->assembled          = PETSC_TRUE;
