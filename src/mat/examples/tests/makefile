@@ -192,4 +192,8 @@ ex22: ex22.o
 	-$(CLINKER) -o ex22 ex22.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex22.o
 
+ex23: ex23.o
+	-$(CLINKER) -o ex23 ex23.o $(LIBNAME) $(SYSLIB)
+	$(RM) ex23.o
+
 include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
