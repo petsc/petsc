@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.74 1998/04/28 04:00:19 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.75 1998/06/16 01:25:50 curfman Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
@@ -82,6 +82,12 @@ int main(int argc,char **args)
         locally (but any non-local elements will be sent to the
         appropriate processor during matrix assembly). 
       - Always specify global rows and columns of matrix entries.
+
+     Note: this uses the less common natural ordering that orders first
+     all the unknowns for x = h then for x = 2h etc; Hence you see J = I +- n
+     instead of J = I +- m as you might expect. The more standard ordering
+     would first do all variables for y = h, then y = 2h etc.
+
    */
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  

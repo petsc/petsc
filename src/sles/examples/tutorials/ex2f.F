@@ -1,5 +1,5 @@
 
-!    "$Id: ex2f.F,v 1.48 1998/04/16 04:14:42 curfman Exp balay $";
+!    "$Id: ex2f.F,v 1.49 1998/04/21 18:31:00 balay Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -143,6 +143,11 @@
 !   - Always specify global row and columns of matrix entries.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
+
+!     Note: this uses the less common natural ordering that orders first
+!     all the unknowns for x = h then for x = 2h etc; Hence you see JH = II +- n
+!     instead of JJ = II +- m as you might expect. The more standard ordering
+!     would first do all variables for y = h, then y = 2h etc.
 
       do 10, II=Istart,Iend-1
         v = -1.0
