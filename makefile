@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.192 1997/09/30 16:12:27 balay Exp balay $ 
+# $Id: makefile,v 1.193 1997/10/07 20:04:13 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -53,8 +53,7 @@ info:
 	-@echo "=========================================="
 
 # Builds PETSc libraries for a given BOPT and architecture
-all: info chkpetsc_dir
-	-$(RM) -f $(PDIR)/*
+all: info chkpetsc_dir deletelibs build_kernels
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
@@ -192,13 +191,18 @@ petscblas: info chkpetsc_dir
 	-@echo "Completed compiling C version of BLAS and LAPACK"
 	-@echo "========================================="
 
+# If fortrankernels are used, build them.
+build_kernels:
+	-@if [ $(KERNEL_LIB) != none  ] ; then \
+	$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) fortrankernels; fi
 
+# Ranlib on the libraries
 ranlib:
 	$(RANLIB) $(PDIR)/*.a
 
 # Deletes PETSc libraries
-deletelibs:
-	-$(RM) -f $(PDIR)/*.a $(PDIR)/complex/* $(PDIR)/c++/*
+deletelibs: chkopts_basic
+	-$(RM) -f $(PDIR)/*
 
 # Deletes man pages (HTML version)
 deletewwwpages:
