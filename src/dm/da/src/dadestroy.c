@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.25 1999/03/05 04:03:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.26 1999/03/17 23:25:10 bsmith Exp curfman $";
 #endif
  
 /*
@@ -77,12 +77,12 @@ int DADestroy(DA da)
 #undef __FUNC__  
 #define __FUNC__ "DAGetISLocalToGlobalMapping"
 /*@C
-   DAGetISLocalToGlobalMapping - Accesses the local to global mapping in a DA.
+   DAGetISLocalToGlobalMapping - Accesses the local-to-global mapping in a DA.
 
    Not Collective
 
    Input Parameter:
-.  da - the distributed array to get the mapping from
+.  da - the distributed array that provides the mapping 
 
    Output Parameter:
 .  ltog - the mapping
@@ -90,13 +90,16 @@ int DADestroy(DA da)
    Level: intermediate
 
    Notes:
-     This mapping can them be used by VecSetLocalToGlobalMapping() or 
-   MatSetLocalToGlobalMapping()
+   This mapping can them be used by VecSetLocalToGlobalMapping() or 
+   MatSetLocalToGlobalMapping().
+
+   Essentially the same data is returned in the form of an integer array
+   with the routine DAGetGlobalIndices().
 
 .keywords: distributed array, destroy
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), VecSetLocalToGlobalMapping(),
-     MatSetLocalToGlobalMapping()
+          MatSetLocalToGlobalMapping(), DAGetGlobalIndices()
 @*/
 int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 {

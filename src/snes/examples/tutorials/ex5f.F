@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.46 1999/01/13 21:47:26 bsmith Exp balay $";
+! "$Id: ex5f.F,v 1.47 1999/02/15 21:56:55 balay Exp curfman $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -20,7 +20,8 @@
 !  Routines: SNESSolve(); SNESSetFromOptions(); DAView();
 !  Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
 !  Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-!  Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
+!  Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetISLocalToGlobalMapping();
+!  Routines: MatSetLocalToGlobalMapping();
 !  Processors: n
 !T*/
 !
@@ -73,8 +74,6 @@
       ISLocalToGlobalMapping isltog
       integer                its, Nx, Ny, matrix_free, flg, N, ierr, m
       double precision       lambda_max, lambda_min
-      integer                ltog_a(0:1), nloc
-      PetscOffset            ltog_i
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -209,17 +208,12 @@
         call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,   &
      &       ierr)
 
-!       Get the global node numbers for all local nodes, including ghost points.
-!       Associate this mapping with the matrix for later use in setting matrix
-!       entries via MatSetValuesLocal().
-!        - Note that the Fortran interface to DAGetGlobalIndices() differs from
-!          the C version.  See the Fortran chapter of the users manual for details.
+!       Get the mapping from local-to-global node numbers for all local nodes,
+!       including ghost points.  Associate this mapping with the matrix for later
+!       use in setting matrix entries via MatSetValuesLocal().
 
-        call DAGetGlobalIndices(da,nloc,ltog_a,ltog_i,ierr)
-        call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,         &
-     &       ltog_a(ltog_i),isltog,ierr)
+        call DAGetISLocalToGlobalMapping(da,isltog,ierr)
         call MatSetLocalToGlobalMapping(J,isltog,ierr)
-        call ISLocalToGlobalMappingDestroy(isltog,ierr)
 
       endif
 
@@ -542,10 +536,12 @@
 !  when setting matrix entries:
 !    (A) MatSetValuesLocal(), using the local ordering (including
 !        ghost points!)
-!        - Use DAGetGlobalIndices() to extract the local-to-global map
-!        - Associate this map with the matrix by calling
-!          MatSetLocalToGlobalMapping() once
-!        - Set matrix entries using the local ordering
+!         - Do the following two steps once, before calling SNESSolve()
+!           - Use DAGetISLocalToGlobalMapping() to extract the
+!             local-to-global map from the DA
+!           - Associate this map with the matrix by calling
+!             MatSetLocalToGlobalMapping() 
+!        - Then set matrix entries using the local ordering
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering 
 !        - Use DAGetGlobalIndices() to extract the local-to-global map

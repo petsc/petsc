@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.103 1999/02/15 21:57:06 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.104 1999/03/15 01:55:32 bsmith Exp curfman $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -22,7 +22,8 @@ The command line options include:\n\
    Routines: SNESSolve(); SNESSetFromOptions(); DAView();
    Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
    Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
-   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
+   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetISLocalToGlobalMapping();
+   Routines: MatSetLocalToGlobalMapping();
    Processors: n
 T*/
 
@@ -79,14 +80,15 @@ int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 int main( int argc, char **argv )
 {
-  SNES     snes;                /* nonlinear solver */
-  Vec      x, r;                /* solution, residual vectors */
-  Mat      J;                   /* Jacobian matrix */
-  AppCtx   user;                /* user-defined work context */
-  int      its;                 /* iterations for convergence */
-  int      Nx, Ny;              /* number of preocessors in x- and y- directions */
-  int      matrix_free;         /* flag - 1 indicates matrix-free version */
-  int      size;                /* number of processors */
+  SNES     snes;                 /* nonlinear solver */
+  Vec      x, r;                 /* solution, residual vectors */
+  Mat      J;                    /* Jacobian matrix */
+  AppCtx   user;                 /* user-defined work context */
+  ISLocalToGlobalMapping isltog; /* mapping from local-to-global indices */
+  int      its;                  /* iterations for convergence */
+  int      Nx, Ny;               /* number of preocessors in x- and y- directions */
+  int      matrix_free;          /* flag - 1 indicates matrix-free version */
+  int      size;                 /* number of processors */
   int      m, flg, N, ierr, nloc, *ltog;
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.,fnorm;
 
@@ -188,17 +190,12 @@ int main( int argc, char **argv )
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user); CHKERRA(ierr);
 
     /*
-       Get the global node numbers for all local nodes, including ghost points.
-       Associate this mapping with the matrix for later use in setting matrix
-       entries via MatSetValuesLocal().
+       Get the mapping from local-to-global node numbers for all local nodes,
+       including ghost points.  Associate this mapping with the matrix for later
+       use in setting matrix entries via MatSetValuesLocal().
     */
-    ierr = DAGetGlobalIndices(user.da,&nloc,&ltog); CHKERRA(ierr);
-    {
-      ISLocalToGlobalMapping isltog;
-      ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog,&isltog); CHKERRA(ierr);
-      ierr = MatSetLocalToGlobalMapping(J,isltog); CHKERRA(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(isltog); CHKERRA(ierr);
-    }
+    ierr = DAGetISLocalToGlobalMapping(user.da,&isltog); CHKERRA(ierr);
+    ierr = MatSetLocalToGlobalMapping(J,isltog); CHKERRA(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -416,10 +413,12 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
    when setting matrix entries:
      (A) MatSetValuesLocal(), using the local ordering (including
          ghost points!)
-         - Use DAGetGlobalIndices() to extract the local-to-global map
-         - Associate this map with the matrix by calling
-           MatSetLocalToGlobalMapping() once
-         - Set matrix entries using the local ordering
+         - Do the following two steps once, before calling SNESSolve()
+           - Use DAGetISLocalToGlobalMapping() to extract the
+             local-to-global map from the DA
+           - Associate this map with the matrix by calling
+             MatSetLocalToGlobalMapping() 
+         - Then set matrix entries using the local ordering
            by calling MatSetValuesLocal()
      (B) MatSetValues(), using the global ordering 
          - Use DAGetGlobalIndices() to extract the local-to-global map

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.50 1999/03/03 22:41:59 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.51 1999/03/04 14:47:06 bsmith Exp curfman $ 
 
 ALL: ex1
 
@@ -11,8 +11,9 @@ LOCDIR		 = src/snes/examples/tutorials/
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
 		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc  \
-                   ex5.rm ex8.PETSc runex8 runex8 ex8.rm clean 
-TESTEXAMPLES_2	 = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex5.PETSc runex5_8 ex5.rm ex10.PETSc runex10 ex10.rm clean
+                   ex5.rm ex8.PETSc runex8 ex8.rm clean 
+TESTEXAMPLES_2	 = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex5.PETSc runex5_8 ex5.rm \
+                   ex8.PETSc runex8_2 ex8.rm clean
 TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f_2 runex4f_3 ex4f.rm clean
 TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm clean
 TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm clean
@@ -29,9 +30,9 @@ BUILDEXAMPLES_4	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc 
 BUILDEXAMPLES_8	 = ex5f.PETSc ex5f.rm clean
 BUILDEXAMPLES_12 = ex5f90.PETSc ex5f90.rm clean
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
-                   common8and9.c common10and11.c ex10.c ex12.c
+                   common8and9.c ex12.c
 EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5f.h ex5fs.F
-EXAMPLESCH	 = ex8and9.h ex10and11.h 
+EXAMPLESCH	 = ex8and9.h 
 EXAMPLESFH       = ex5f.h
 DOCS		 = readme
 DIRS		 = 
@@ -275,6 +276,8 @@ runex8:
            if (diff output/ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \
            ${RM} -f ex8_1.tmp
+runex8_2:
+	-@${MPIRUN} -np 2 ex8 -snes_vecmonitor > /dev/null 2>&1 
 runex9:
 	-@${MPIRUN} -np 4 ex9 -nox -mx 4 -my 4 -ncycles 4 -snes_smonitor \
                     -lidvelocity 0. -grashof 1000. > ex9_1.tmp 2>&1; \
@@ -287,7 +290,5 @@ runex9_2:
            if (diff output/ex9_2.out ex9_2.tmp) then true; \
            else echo "Possible problem with ex9_2, diffs above"; fi; \
            ${RM} -f ex9_2.tmp
-runex10:
-	-@${MPIRUN} -np 2 ex10 -snes_vecmonitor > /dev/null 2>&1 
 
 
