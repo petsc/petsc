@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.13 2001/03/16 21:44:21 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.14 2001/03/16 22:18:51 bsmith Exp bsmith $*/
 
 static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
@@ -419,7 +419,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
         uxx           = (two*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
         uyy           = (two*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
 	f[j][i].temp =  uxx + uyy  + prandtl * (
-			(vxp*(u - x[j][j-1].temp) +
+			(vxp*(u - x[j][i-1].temp) +
 			  vxm*(x[j][i+1].temp - u)) * hy +
 		        (vyp*(u - x[j-1][i].temp) +
 		       	  vym*(x[j+1][i].temp - u)) * hx);
@@ -433,7 +433,6 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
 
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  VecView(F,PETSC_VIEWER_STDOUT_WORLD);
 
   /*
      Flop count (multiply-adds are counted as 2 operations)
