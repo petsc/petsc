@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.50 1996/02/26 02:57:21 balay Exp balay $ */
+/* $Id: plog.h,v 1.51 1996/02/26 03:05:24 balay Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -10,7 +10,8 @@
 
 /*
   If you add an event here, make sure you add to petsc/bin/petscview.cfg,
-  petsc/bin/petscview  and petsc/src/sys/src/plog.c!!
+  petsc/bin/petscview, petsc/src/sys/src/plog.c, and 
+  petsc/src/sys/src/plgmpe.c!!!
 */
 #define MAT_Mult                                0
 #define MAT_MatrixFreeMult                      1
@@ -145,14 +146,16 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 .keywords:  Petsc, log, flops, floating point operations
 M*/
 
-extern int PLogPrint(MPI_Comm,FILE *);
+extern int PLogPrintSummary(MPI_Comm,FILE *);
 extern int PLogBegin();
 extern int PLogAllBegin();
 extern int PLogDump(char*);
 
 #if defined (HAVE_MPE)
-extern int PLogUpshotBegin();
-extern int PLogAllUpshotBegin();
+extern int PLogMPEBegin();
+extern int PLogMPEDestroy();
+extern int UseMPE,MPEFlags[];
+#define MPEBEGIN    1000 
 #endif
 
 #if defined(PETSC_LOG)
@@ -197,9 +200,21 @@ $     PLogEventEnd(&USER_EVENT,0,0,0,0);
 
 .keywords: log, event, begin
 M*/
-#define PLogEventBegin(e,o1,o2,o3,o4) {static int _tacky = 0;\
-          { _tacky++;if (_PLB) (*_PLB)(e,_tacky,(PetscObject)o1,\
-           (PetscObject)o2,(PetscObject)o3,(PetscObject)o4);};
+#if defined(HAVE_MPE)
+#define PLogEventBegin(e,o1,o2,o3,o4) {static int _tacky = 0; \
+  { _tacky++; \
+   if (_PLB) \
+     (*_PLB)(e,_tacky,(PetscObject)o1,(PetscObject)o2,(PetscObject)o3,(PetscObject)o4);\
+   if (tacky == 1 && && UseMPE && MPEFlag[e])\
+     MPE_Log_event(MPEBEGIN+2*e,0,"");\
+  }
+#else
+#define PLogEventBegin(e,o1,o2,o3,o4) {static int _tacky = 0; \
+  { _tacky++; \
+   if (_PLB) \
+     (*_PLB)(e,_tacky,(PetscObject)o1,(PetscObject)o2,(PetscObject)o3,(PetscObject)o4);\
+  }
+#endif
 
 /*M   
    PLogEventEnd - Log the end of a user event.
@@ -235,9 +250,21 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .keywords: log, event, end
 M*/
-#define PLogEventEnd(e,o1,o2,o3,o4) {if (_PLE) (*_PLE)(e,_tacky,(PetscObject)o1,\
-                                    (PetscObject)o2,(PetscObject)o3,(PetscObject)o4);}\
-                                    _tacky--;}
+#if defined(HAVE_MPE)
+#define PLogEventEnd(e,o1,o2,o3,o4) {\
+  if (_PLE) \
+    (*_PLE)(e,_tacky,(PetscObject)o1,(PetscObject)o2,(PetscObject)o3,(PetscObject)o4);\
+  if (tacky == 1 && && UseMPE && MPEFlag[e])\
+     MPE_Log_event(MPEBEGIN+2*e+1,0,"");\
+  }  _tacky--;}
+#else
+#define PLogEventEnd(e,o1,o2,o3,o4) {\
+  if (_PLE) \
+    (*_PLE)(e,_tacky,(PetscObject)o1,(PetscObject)o2,(PetscObject)o3,(PetscObject)o4);\
+  } _tacky--;}
+#endif
+
+
 #define PLogObjectParent(p,c)       {PETSCVALIDHEADER((PetscObject)c); \
                                      PETSCVALIDHEADER((PetscObject)p);\
                                      ((PetscObject)(c))->parent = (PetscObject) p;}
