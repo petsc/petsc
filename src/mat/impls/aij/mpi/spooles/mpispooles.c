@@ -17,7 +17,7 @@ extern int SetSpoolesOptions(Mat, Spooles_options *);
 int MatDestroy_MPIAIJ_Spooles(Mat A)
 {
   Mat_Spooles   *lu = (Mat_Spooles*)A->spptr; 
-  int           ierr,(*destroy)(Mat);
+  int           ierr;
   
   PetscFunctionBegin;
   if (lu->CleanUpSpooles) {
@@ -32,16 +32,15 @@ int MatDestroy_MPIAIJ_Spooles(Mat A)
     DenseMtx_free(lu->mtxX) ;
     DenseMtx_free(lu->mtxY) ;
     ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
+    if ( lu->scat ){
+      ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
+      ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
+      ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
+    }
   }
-  if ( lu->scat ){
-    ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
-    ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
-    ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
-  }
-  destroy = lu->MatDestroy;
-  ierr    = PetscFree(lu);CHKERRQ(ierr); 
-  ierr    = (*destroy)(A);CHKERRQ(ierr);
+  ierr = MatConvert_Spooles_Base(A,lu->basetype,&A);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -585,24 +584,55 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPIAIJ_Spooles"
-int MatCreate_MPIAIJ_Spooles(Mat A) {
-  int ierr;
+#define __FUNCT__ "MatConvert_MPIAIJ_Spooles"
+int MatConvert_MPIAIJ_Spooles(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert a MATMPIAIJ matrix */
+  /* to a MATMPIAIJSPOOLES matrix, so we will ignore 'MatType type'. */
+  int         ierr;
+  Mat         B=*newmat;
   Mat_Spooles *lu;
 
   PetscFunctionBegin;
-  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatUseSpooles_MPIAIJ(A);CHKERRQ(ierr);
+  if (B != A) {
+    /* This routine is inherited, so we know the type is correct. */
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
 
-  ierr                = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
-  lu->MatView         = A->ops->view;
-  lu->MatAssemblyEnd  = A->ops->assemblyend;
-  lu->MatDestroy      = A->ops->destroy;
-  lu->CleanUpSpooles  = PETSC_FALSE;
-  A->spptr            = (void*)lu;
-  A->ops->view        = MatView_SeqAIJ_Spooles;
-  A->ops->assemblyend = MatAssemblyEnd_MPIAIJ_Spooles;
-  A->ops->destroy     = MatDestroy_MPIAIJ_Spooles;
+  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
+  B->spptr = (void*)lu;
+
+  lu->basetype                  = MATMPIAIJ;
+  lu->CleanUpSpooles            = PETSC_FALSE;
+  lu->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
+  lu->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
+  lu->MatView                   = A->ops->view;
+  lu->MatAssemblyEnd            = A->ops->assemblyend;
+  lu->MatDestroy                = A->ops->destroy;
+  B->ops->lufactorsymbolic      = MatLUFactorSymbolic_MPIAIJ_Spooles;  
+  B->ops->view                  = MatView_SeqAIJ_Spooles;
+  B->ops->assemblyend           = MatAssemblyEnd_MPIAIJ_Spooles;
+  B->ops->destroy               = MatDestroy_MPIAIJ_Spooles;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_spooles_mpiaij_C",
+                                           "MatConvert_Spooles_Base",MatConvert_Spooles_Base);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_spooles_C",
+                                           "MatConvert_MPIAIJ_Spooles",MatConvert_MPIAIJ_Spooles);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJSPOOLES);CHKERRQ(ierr);
+  *newmat = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_MPIAIJ_Spooles"
+int MatCreate_MPIAIJ_Spooles(Mat A) {
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatConvert_MPIAIJ_Spooles(A,MATMPIAIJSPOOLES,&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+

@@ -35,7 +35,15 @@ int MatAssemblyEnd_SeqAIJ_Spooles(Mat A,MatAssemblyType mode) {
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  ierr = MatUseSpooles_SeqAIJ(A);CHKERRQ(ierr);
+
+  lu->MatLUFactorSymbolic          = A->ops->lufactorsymbolic;
+  lu->MatCholeskyFactorSymbolic    = A->ops->choleskyfactorsymbolic;
+  if (lu->useQR){
+    A->ops->lufactorsymbolic       = MatQRFactorSymbolic_SeqAIJ_Spooles;  
+  } else {
+    A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ_Spooles;
+    A->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJ_Spooles; 
+  }
   PetscFunctionReturn(0);
 }
 
@@ -126,23 +134,3 @@ int MatCholeskyFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Mat 
   *F = B;
   PetscFunctionReturn(0); 
 }
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseSpooles_SeqAIJ"
-int MatUseSpooles_SeqAIJ(Mat A)
-{
-  int          ierr;
-  PetscTruth   useQR=PETSC_FALSE;
- 
-  PetscFunctionBegin;
-  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_spooles_qr",&useQR);CHKERRQ(ierr);
-  if (useQR){
-    A->ops->lufactorsymbolic = MatQRFactorSymbolic_SeqAIJ_Spooles;  
-  } else {
-    A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ_Spooles;
-    A->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJ_Spooles; 
-  } 
-  PetscFunctionReturn(0);
-}
-
-

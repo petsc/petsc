@@ -15,7 +15,8 @@ int MatAssemblyEnd_MPIAIJ_Spooles(Mat A,MatAssemblyType mode) {
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  ierr = MatUseSpooles_MPIAIJ(A);CHKERRQ(ierr);
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_Spooles;  
   PetscFunctionReturn(0);
 }
 
@@ -52,13 +53,4 @@ int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   }
   *F = B;
   PetscFunctionReturn(0); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseSpooles_MPIAIJ"
-int MatUseSpooles_MPIAIJ(Mat A)
-{
-  PetscFunctionBegin;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_Spooles;  
-  PetscFunctionReturn(0);
 }

@@ -38,7 +38,7 @@ typedef struct {
   /* Followings are used for MPI Spooles */
   MPI_Comm        comm_spooles;          /* communicator to be passed to spooles */
   IV              *ownersIV,*ownedColumnsIV,*vtxmapIV;
-  SolveMap        *solvemap ;
+  SolveMap        *solvemap;
   DenseMtx        *mtxY, *mtxX;
   double          *entX;
   int             *rowindX,rstart,firsttag,nmycol;
@@ -47,12 +47,14 @@ typedef struct {
   VecScatter      scat;
   
   /* A few function pointers for inheritance */
+  int (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
+  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
   int (*MatDestroy)(Mat);
 
-  /* Flag to clean up Spooles objects during Destroy */
-  PetscTruth CleanUpSpooles;
+  MatType    basetype;
+  PetscTruth CleanUpSpooles,useQR;
 } Mat_Spooles;
 
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
@@ -63,12 +65,22 @@ EXTERN int MatSolve_SeqAIJ_Spooles(Mat,Vec,Vec);
 EXTERN int MatFactorNumeric_SeqAIJ_Spooles(Mat,Mat*); 
 EXTERN int MatView_SeqAIJ_Spooles(Mat,PetscViewer);
 EXTERN int MatAssemblyEnd_SeqAIJ_Spooles(Mat,MatAssemblyType);
+EXTERN int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatCholeskyFactorSymbolic_SeqAIJ_Spooles(Mat,IS,MatFactorInfo*,Mat*);
 
 EXTERN int MatDestroy_MPIAIJ_Spooles(Mat);
 EXTERN int MatSolve_MPIAIJ_Spooles(Mat,Vec,Vec);
 EXTERN int MatFactorNumeric_MPIAIJ_Spooles(Mat,Mat*); 
 EXTERN int MatAssemblyEnd_MPIAIJ_Spooles(Mat,MatAssemblyType);
+EXTERN int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 
 EXTERN int MatDestroy_SeqSBAIJ_Spooles(Mat);
 EXTERN int MatGetInertia_SeqSBAIJ_Spooles(Mat,int*,int*,int*);
+EXTERN int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat,IS,MatFactorInfo*,Mat*);
+
+EXTERN int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN_C_BEGIN
+EXTERN int MatConvert_Spooles_Base(Mat,MatType,Mat*);
+EXTERN_C_END
 #endif

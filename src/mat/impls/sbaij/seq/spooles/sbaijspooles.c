@@ -6,32 +6,32 @@
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_SeqAIJ_Spooles"
-int MatDestroy_SeqSBAIJ_Spooles(Mat A)
-{
-  Mat_Spooles *lu = (Mat_Spooles*)A->spptr; 
-  int         ierr,(*destroy)(Mat);
+#define __FUNCT__ "MatDestroy_SeqSBAIJ_Spooles"
+int MatDestroy_SeqSBAIJ_Spooles(Mat A) {
+  int         ierr;
   
   PetscFunctionBegin;
-  /* SeqSBAIJ_Spooles isn't really the spooles type matrix, */
-  /* so we don't have to clean up the stuff set by spooles */
-  /* as in MatDestroy_SeqAIJ_Spooles */
-  destroy = lu->MatDestroy;
-  ierr    = PetscFree(lu);CHKERRQ(ierr); 
-  ierr    = (*destroy)(A);CHKERRQ(ierr);
-
+  /* SeqSBAIJ_Spooles isn't really the matrix that USES spooles, */
+  /* rather it is a factory class for creating a symmetric matrix that can */
+  /* invoke Spooles' sequential cholesky solver. */
+  /* As a result, we don't have to clean up the stuff set by spooles */
+  /* as in MatDestroy_SeqAIJ_Spooles. */
+  ierr = MatConvert_Spooles_Base(A,MATSEQSBAIJ,&A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SeqSBAIJ_Spooles"
 int MatAssemblyEnd_SeqSBAIJ_Spooles(Mat A,MatAssemblyType mode) {
-  int         ierr;
+  int         ierr,bs;
   Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  ierr = MatUseSpooles_SeqSBAIJ(A);CHKERRQ(ierr);
+  if (bs > 1) SETERRQ1(1,"Block size %d not supported by Spooles",bs);
+  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
+  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles;  
   PetscFunctionReturn(0);
 }
 
@@ -86,36 +86,54 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Ma
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseSpooles_SeqSBAIJ"
-int MatUseSpooles_SeqSBAIJ(Mat A)
-{
-  int ierr,bs;
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqSBAIJ_Spooles"
+int MatConvert_SeqSBAIJ_Spooles(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert a MATSEQSBAIJ matrix */
+  /* to a MATSEQSBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
+  int         ierr;
+  Mat         B=*newmat;
+  Mat_Spooles *lu;
 
   PetscFunctionBegin;
-  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
-  if (bs > 1) SETERRQ1(1,"Block size %d not supported by Spooles",bs);
-  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles;  
+  if (B != A) {
+    /* This routine is inherited, so we know the type is correct. */
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+
+  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
+  B->spptr                       = (void*)lu;
+
+  lu->basetype                   = MATSEQSBAIJ;
+  lu->CleanUpSpooles             = PETSC_FALSE;
+  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
+  lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
+  lu->MatView                    = A->ops->view;
+  lu->MatAssemblyEnd             = A->ops->assemblyend;
+  lu->MatDestroy                 = A->ops->destroy;
+  B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles;
+  B->ops->assemblyend            = MatAssemblyEnd_SeqSBAIJ_Spooles;
+  B->ops->destroy                = MatDestroy_SeqSBAIJ_Spooles;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_spooles_seqsbaij_C",
+                                           "MatConvert_Spooles_Base",MatConvert_Spooles_Base);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaij_spooles_C",
+                                           "MatConvert_SeqSBAIJ_Spooles",MatConvert_SeqSBAIJ_Spooles);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
+  *newmat = B;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqSBAIJ_Spooles"
 int MatCreate_SeqSBAIJ_Spooles(Mat A) {
   int ierr;
-  Mat_Spooles *lu;
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatUseSpooles_SeqSBAIJ(A);CHKERRQ(ierr);
-
-  ierr                = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
-  lu->MatAssemblyEnd  = A->ops->assemblyend;
-  lu->MatDestroy      = A->ops->destroy;
-  A->spptr            = (void*)lu;
-  A->ops->assemblyend = MatAssemblyEnd_SeqSBAIJ_Spooles;
-  A->ops->destroy     = MatDestroy_SeqSBAIJ_Spooles;
+  ierr = MatConvert_SeqSBAIJ_Spooles(A,MATSEQSBAIJSPOOLES,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
