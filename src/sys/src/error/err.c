@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.61 1997/04/10 00:01:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.62 1997/05/20 03:01:19 bsmith Exp curfman $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -327,16 +327,16 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
 #undef __FUNC__  
 #define __FUNC__ "PetscIntView" /* ADIC Ignore */
 /*@C
-    PetscIntView - Prints an array of integers, useful for debugging.
+    PetscIntView - Prints an array of integers; useful for debugging.
 
-  Input Parameters:
+    Input Parameters:
 .   N - number of integers in array
 .   idx - array of integers
 .   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
 
-  Notes:
-    If using a viewer with more then one processor you must call PetscSynchronizedFlush()
-   after this call to get all processors to print to the screen.
+    Notes:
+    If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
+    after this call to get all processors to print to the screen.
 
 .seealso: PetscDoubleView() 
 @*/
@@ -372,15 +372,15 @@ int PetscIntView(int N,int* idx,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ "PetscDoubleView" /* ADIC Ignore */
 /*@C
-    PetscDoubleView - Prints an array of double, useful for debugging.
+    PetscDoubleView - Prints an array of doubles; useful for debugging.
 
-  Input Parameters:
+    Input Parameters:
 .   N - number of doubles in array
 .   idx - array of doubles
 .   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
 
-  Notes:
-    If using a viewer with more then one processor you must call PetscSynchronizedFlush()
+   Notes:
+   If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
    after this call to get all processors to print to the screen.
 
 .seealso: PetscIntView() 
