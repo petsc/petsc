@@ -81,7 +81,6 @@ Arg class, which wraps the usual value.'''
 
   def setType(self, key, value, forceLocal = 0):
     '''Checks for the key locally, and if not found consults the parent. Sets the type for this key.'''
-    self.save()
     if not isinstance(value, nargs.Arg):
       raise TypeError('An argument type must be a subclass of Arg')
     value.setKey(key)
@@ -91,13 +90,13 @@ Arg class, which wraps the usual value.'''
         if isinstance(value, v.__class__) and v.isValueSet():
           value.setValue(v.getValue())
       dict.__setitem__(self, key, value)
+      self.save()
     else:
       return self.send(key, value)
     return
 
   def __setitem__(self, key, value):
     '''Checks for the key locally, and if not found consults the parent. Sets the value of the Arg.'''
-    self.save()
     if not dict.has_key(self, key):
       if not self.parent is None:
         return self.send(key, value)
@@ -105,21 +104,23 @@ Arg class, which wraps the usual value.'''
         dict.__setitem__(self, key, nargs.Arg(key))
     dict.__getitem__(self, key).setValue(value)
     self.writeLogLine('__setitem__: Set value for '+key+' to '+str(dict.__getitem__(self, key)))
+    self.save()
     return
 
   def __delitem__(self, key):
     '''Checks for the key locally, and if not found consults the parent. Deletes the Arg completely.'''
-    self.save()
     if dict.has_key(self, key):
-      return dict.__delitem__(self, key)
+      dict.__delitem__(self, key)
+      self.save()
     elif not self.parent is None:
       self.send(key)
     return
 
   def clear(self):
     '''Clears both the local and parent dictionaries'''
-    self.save()
-    dict.clear(self)
+    if dict.__len__(self):
+      dict.clear(self)
+      self.save()
     if not self.parent is None:
       self.send()
     return
