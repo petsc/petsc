@@ -125,12 +125,12 @@ int main(int argc,char **args)
   }
 
   /* solve linear system */
-  if ((ierr = SLESCreate(MPI_COMM_WORLD,&sles))) SETERRA(ierr,0);
-  if ((ierr = SLESSetOperators(sles,C,C,0))) SETERRA(ierr,0);
-  if ((ierr = SLESSetFromOptions(sles))) SETERRA(ierr,0);
+  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERR(ierr);
+  ierr = SLESSetOperators(sles,C,C,0); CHKERR(ierr);
+  ierr = SLESSetFromOptions(sles); CHKERR(ierr);
   SLESGetKSP(sles,&ksp);
   KSPSetInitialGuessNonzero(ksp);
-  if ((ierr = SLESSolve(sles,b,u,&its))) SETERRA(ierr,0);
+  ierr = SLESSolve(sles,b,u,&its); CHKERR(ierr);
 
   /* check error */
   VecGetOwnershipRange(ustar,&start,&end);
@@ -141,8 +141,8 @@ int main(int argc,char **args)
   }
   VecBeginAssembly(ustar); VecEndAssembly(ustar);
 
-  if ((ierr = VecAXPY(&none,ustar,u))) SETERRA(ierr,0);
-  if ((ierr = VecNorm(u,&norm))) SETERRA(ierr,0);
+  ierr = VecAXPY(&none,ustar,u); CHKERR(ierr);
+  ierr = VecNorm(u,&norm); CHKERR(ierr);
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g Number iterations %d\n",norm*h,its);
 
   sleep(2);

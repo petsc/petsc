@@ -19,12 +19,12 @@ int main(int argc,char **args)
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
 
-  ierr = VecCreateInitialVector(MPI_COMM_WORLD,n,&x); CHKERR(ierr);
-  ierr = VecCreate(x,&b); CHKERR(ierr);
-  ierr = VecCreate(x,&u); CHKERR(ierr);
-  ierr = VecSet(&one,u); CHKERR(ierr);
+  ierr = VecCreateInitialVector(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
+  ierr = VecCreate(x,&b); CHKERRA(ierr);
+  ierr = VecCreate(x,&u); CHKERRA(ierr);
+  ierr = VecSet(&one,u); CHKERRA(ierr);
 
-  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,n,n,&A); CHKERR(ierr);
+  ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,n,n,&A); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -37,16 +37,16 @@ int main(int argc,char **args)
   ierr = MatBeginAssembly(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatEndAssembly(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   
-  ierr = MatMult(A,u,b); CHKERR(ierr);
+  ierr = MatMult(A,u,b); CHKERRA(ierr);
 
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERR(ierr);
-  ierr = SLESSetOperators(sles,A,A,0); CHKERR(ierr);
-  ierr = SLESSetFromOptions(sles); CHKERR(ierr);
-  ierr = SLESSolve(sles,b,x,&its); CHKERR(ierr);
+  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,A,A,0); CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
   /* check error */
-  ierr = VecAXPY(&none,u,x); CHKERR(ierr);
-  ierr  = VecNorm(x,&norm); CHKERR(ierr);
+  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
+  ierr  = VecNorm(x,&norm); CHKERRA(ierr);
   MPE_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm,its);
  
   VecDestroy(x); VecDestroy(u); VecDestroy(b);
