@@ -32,6 +32,15 @@ class BS (maker.Maker):
     global argDB
     argDB = nargs.ArgDict("ArgDict",sys.argv[1:])
     self.setupDefaultArgs()
+    # put current package name into the database
+    package = re.split('/',os.getcwd())[-1]
+    if argDB.has_key("installedpackages"):
+      packages = argDB['installedpackages']
+      if package not in packages:
+        packages.append(package)
+        argDB['installedpackages'] = packages
+    else:
+      argDB['installedpackages'] = [package]
 
   def saveSourceDB(self):
     self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')

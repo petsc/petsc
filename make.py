@@ -49,10 +49,11 @@ class PetscMake(bs.BS):
     self.targets['default'] = self.targets['compile']
 
 if __name__ ==  '__main__':
-  try:
+#  try:
     pm = PetscMake(sys.argv[1:])
     pm.main()
     pm.install()
-  except Exception, e:
-    print 'ERROR: '+str(e)
-    sys.exit(1)
+#  except Exception, e:
+#    print 'ERROR: '+str(e)
+#    sys.exit(1)
+    sys.exit(0)

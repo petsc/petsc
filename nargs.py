@@ -1,6 +1,5 @@
 #
-#   Provides a demon dictionary that requests entries interactively from the
-#  user if they are not yet in the dictionay
+#   Provides the BS build system dictionary
 #
 import atexit
 import os
@@ -10,28 +9,33 @@ import sys
 import types
 import UserDict
 import readline
-import rargs
 
+import RDict
+
+#===============================================================================
 def parseArg(arg):
   if arg and arg[0] == '[' and arg[-1] == ']':
     if len(arg) > 2: arg = string.split(arg[1:-1], ',')
     else:            arg = []
   return arg
 
-def insertArgList(list,argList):
+def insertArgList(dict,argList):
   if not type(argList) == types.ListType: return
   for arg in argList:
     if arg[0] == '-':
       (key, val) = string.split(arg[1:], '=')
-      list[key]  = parseArg(val)
+      dict[key]  = parseArg(val)
     else:
-      if list.has_key('target') and not list['target'] == ['default']:
-        list['target'].append(arg)
+      if dict.has_key('target') and not dict['target'] == ['default']:
+        dict['target'].append(arg)
       else:
-        list['target'] = [arg]
-        
+        dict['target'] = [arg]
     
+#===============================================================================
 #  The base class of objects that are stored in the ArgDict
+# The dictionary actual contains objects, the actual option is
+# is obtained from the object with getValue(), this allows
+# us to provide properties of the option before the option is set
 class Arg:
   def __init__(self,value):
     self.value = value
@@ -55,7 +59,7 @@ class ArgDir:
         db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
       except:
         # default to getting directory as string
-        return (1,ArgString(self.help).getValue(key))
+        return ArgString(self.help).getValue(key)
       if self.help: db.setTitle(self.help)
       else:         db.setTitle('Select the directory for'+key)
       db.setMustExist(self.exist)
@@ -95,52 +99,73 @@ class ArgInt:
     else: return (0,self.value)
 
 #=======================================================================================================
-#   Dictionary of actual command line arguements, etc.
+#   Dictionary of actual command line arguments, etc.
 #
-class ArgDict (rargs.RArgs):
+class ArgDict (RDict.RArgs):
   def __init__(self, name = "ArgDict",argList = None):
-    rargs.RArgs.__init__(self,name)
+    RDict.RArgs.__init__(self,name)
+    self.local = {}
+    #  the list of targets is always local
+    #  These should not be listed here, but need to be set
+    #  before the command line is parse, hence put here
+    self.setLocalType('target',Arg(['default']))
+    self.setLocalType('install',ArgInt())
+    self.setLocalType('fileset',ArgString())
     insertArgList(self,argList)
 
   def __setitem__(self,key,value):
-    rargs.RArgs.__setitem__(self,key,Arg(value))
+    if self.local.has_key(key):
+      self.local[key].value = value
+    else:
+      # set the value into the remote dictionary
+      RDict.RArgs.__setitem__(self,key,Arg(value))
 
   def __getitem__(self,key):
-    # get the remote object
-    try: rval = rargs.RArgs.__getitem__(self,key)
-    except: rval = ArgString()
-    # get the value from it
-    tup  = rval.getValue(key)
-    # if needed, save the value back to the server
-    if tup[0]: rargs.RArgs.__setitem__(self,key,rval)
-    return tup[1]
+    if self.local.has_key(key):
+      rval = self.local[key]
+      return rval.getValue(key)[1]
+    else:
+      # get the remote object
+      try: rval = RDict.RArgs.__getitem__(self,key)
+      except: rval = ArgString()
+      # get the value from it
+      tup  = rval.getValue(key)
+      # if needed, save the value back to the server
+      if tup[0]: RDict.RArgs.__setitem__(self,key,rval)
+      return tup[1]
 
   def __delitem__(self,key):
-    rargs.RArgs.__delitem__(self,key)
+    if self.local.has_key(key): del self.local[key]
+    else:  RDict.RArgs.__delitem__(self,key)
     
   def has_key(self,key):
-    # get the remote object
-    try: rval = rargs.RArgs.__getitem__(self,key)
-    except: return 0
-    return hasattr(rval,'value')
+    if self.local.has_key(key): return hasattr(self.local[key],'value')
+    else:
+      # get the remote object
+      try: rval = RDict.RArgs.__getitem__(self,key)
+      except: return 0
+      return hasattr(rval,'value')
   
-  def setType(self,key,arg):
-    if not rargs.RArgs.has_key(self,key): rargs.RArgs.__setitem__(self,key,arg)
+  def keys(self):
+    return self.local.keys()+RDict.RArgs.keys(self)
 
+  def setType(self,key,arg):
+    # sets properties of the option that will be requested later
+    if not RDict.RArgs.has_key(self,key): RDict.RArgs.__setitem__(self,key,arg)
+
+  def setLocalType(self,key,arg):
+    # sets properties of the option that will be requested later
+    if not self.local.has_key(key): self.local[key] = arg
 
 if __name__ ==  '__main__':
-  a = ArgDict("ArgDict",sys.argv[1:])
-  a['hi'] = 22
-  print a.dicts()
-  print a['hi']
-  print a['joe']
-#  a.setType('mpi_dir',ArgDir())
-#  print a['mpi_dir']
-#  a.setType('string',ArgString('enter a string'))
-  print a['string']
-  print a['newstring']
-  a.setType('mpi',ArgInt('greetings',0))
-  print a['mpi']
-  print a.has_key('mpi')
-  print a.has_key('does not')
+  print "Entries in BS build system options dictionary"
+  try:
+    keys = ArgDict("ArgDict",sys.argv[1:]).keys()
+    if keys:
+      for k in keys:
+        print str(k)
+  except Exception, e:
+    print 'ERROR: '+str(e)
+    sys.exit(1)
+  sys.exit(0)
   

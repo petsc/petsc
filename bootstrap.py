@@ -277,7 +277,9 @@ def getjavalib():
      return ''
 
 class Bootstrap:
-    
+    def __init__(self):
+      pass
+  
     def getPackage(self,package):
         print "Getting "+package
         if self.transfermode == "ftp":
@@ -296,11 +298,13 @@ class Bootstrap:
         if not status == 0:
             print "Failed compiling "+package
             print output
-
+        
     def initializePackage(self,package):
         self.compilePackage(package," -fileset=sidl update")
         
     def getPackageList(self):
+        import nargs
+        self.argDB = nargs.ArgDict()
         if self.transfermode == "ftp":
           print "Retreiving list of packages"
           try:
@@ -319,7 +323,7 @@ class Bootstrap:
           return packages
         elif self.transfermode == "ssh":
           (status,output) = commands.getstatusoutput('ssh terra.mcs.anl.gov \"cd /sandbox/bsmith/petsc-3.0; ls -1 -p | grep / \"')
-          packages = string.split(output,"/\n")
+          packages = string.split(output+"\n","/\n")
           return packages
         
 
@@ -369,65 +373,54 @@ class Bootstrap:
             os.environ['PYTHONPATH'] = self.installdir+"/lib"
 
         self.getPackage("bs")
-        print "Copying over build system scripts to "+self.installdir
+        print "Copying over build system scripts to "+self.installdir+"/lib"
         try: os.makedirs(self.installdir+"/lib")
         except: pass
         (status,output) = commands.getstatusoutput("cp -f "+self.srcdir+"/bs/*.py "+self.installdir+"/lib")
+        # have to remove this or make.py uses the wrong one and cannot find DArgs.loc
+        (status,output) = commands.getstatusoutput("rm -f "+self.srcdir+"/bs/RDict.py")
 
-        print "Starting up database demon"
-        os.spawnvp(os.P_NOWAIT,"python",["python",self.installdir+"/lib/dargs.py"])
+        print "Starting up dictionary server"
+        os.spawnvp(os.P_NOWAIT,"python",["python",self.installdir+"/lib/RDict.py","server"])
         (status,output) = commands.getstatusoutput("sleep 2")
 
         print "Initializing the database in the build system"
         sys.path.append(self.installdir+"/lib")
         import nargs
-        argDB = nargs.ArgDict()
-        argDB['debugLevel']       = 4
-        argDB['debugSections']    = []
-        argDB['restart']          = 0
-        argDB['SIDLRUNTIME_DIR']  = self.srcdir+"/SIDLRuntimeANL"
-        argDB['JAVA_INCLUDE']     = JAVA_INCLUDE
-        argDB['JAVA_RUNTIME_LIB'] = JAVA_LIB
-        argDB['installh']         = self.installdir+"/include"
-        argDB['installlib']       = self.installdir+"/lib"
-        argDB['installexamples']  = self.installdir+"/examples"
-        argDB['installdir']       = self.installdir
-        argDB['srcdir']           = self.srcdir
+        self.argDB = nargs.ArgDict()
+        self.argDB['debugLevel']        = 4
+        self.argDB['debugSections']     = []
+        self.argDB['restart']           = 0
+        self.argDB['SIDLRUNTIME_DIR']   = self.srcdir+"/SIDLRuntimeANL"
+        self.argDB['JAVA_INCLUDE']      = JAVA_INCLUDE
+        self.argDB['JAVA_RUNTIME_LIB']  = JAVA_LIB
+        self.argDB['installh']          = self.installdir+"/include"
+        self.argDB['installlib']        = self.installdir+"/lib"
+        self.argDB['installexamples']   = self.installdir+"/examples"
+        self.argDB['installdir']        = self.installdir
+        self.argDB['srcdir']            = self.srcdir
         
         self.getPackage("SIDLRuntimeANL")
         print 'Compiling SIDLRuntimeANL package'
-        del argDB['target']
         self.initializePackage("SIDLRuntimeANL")
-        del argDB['fileset']
-        del argDB['target']
         self.compilePackage("SIDLRuntimeANL","-install=1 compile")
-        del argDB['install']
-        del argDB['target']
                 
         print 'Compiling bs package'
         self.initializePackage("bs")
-        del argDB['fileset']
-        del argDB['target']
         self.compilePackage("bs"," -install=1 compile")
-        del argDB['install']
-        del argDB['target']
         
         self.getPackage("gui")
         print 'Compiling gui package'
         self.initializePackage("gui")
-        del argDB['fileset']
-        del argDB['target']
         self.compilePackage("gui"," -install=1 compile")
-        del argDB['install']
-        del argDB['target']
         
-#        print "Running installer"
-#        (status,output) = commands.getstatusoutput(self.installdir+"/examples/python/installer.py")
-#        self.logfile.write(output)
-#        if not status == 0:
-#            print "Failed running installer"
-#            print output
-#            return
+        print "Running installer"
+        (status,output) = commands.getstatusoutput(self.installdir+"/examples/python/installer.py")
+        self.logfile.write(output)
+        if not status == 0:
+            print "Failed running installer"
+            print output
+            return
 
         print "Do setenv PYTHONPATH "+self.installdir+"/lib (csh) export PYTHONPATH="+self.installdir+"/lib (sh)"
         print "and try the examples in "+self.installdir+"/examples/[python,c++]"
