@@ -61,7 +61,7 @@ splitmanual: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../manualpages/manualpages.cit -quietlatex
 	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
-	       -mapref ../../manualpages/manualpages.cit -quietlatex
+	       -useimg -mapref ../../manualpages/manualpages.cit -quietlatex
 	-@chmod g+w manual.hux latex.err 
 	-@chmod -R ug+w splitmanual
 	-@/bin/rm -f ../../splitmanual
