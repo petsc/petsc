@@ -7,8 +7,7 @@
 #define __FUNCT__ "PetscDrawStringGetSize" 
 /*@
    PetscDrawStringGetSize - Gets the size for character text.  The width is 
-   relative to the user coordinates of the window; 0.0 denotes the natural
-   width; 1.0 denotes the entire viewport. 
+   relative to the user coordinates of the window.
 
    Not Collective
 
