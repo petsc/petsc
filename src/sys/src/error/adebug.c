@@ -432,7 +432,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
   int ierr,rank;
 
   PetscFunctionBegin;
-  if (!fun)  fun = "unknownfunction";
+  if (!fun)  fun = "User provided function";
   if (!dir)  dir = " ";
   if (!mess) mess = " ";
 

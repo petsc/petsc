@@ -1704,6 +1704,8 @@ int SNESSolve(SNES snes,Vec x,int *its)
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_(snes->comm));CHKERRQ(ierr); }
+  ierr = PetscOptionsHasName(snes->prefix,"-snes_test_local_min",&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) { ierr = SNESTestLocalMin(snes);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -2073,5 +2075,40 @@ int SNESRegister(char *sname,char *path,char *name,int (*function)(SNES))
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = PetscFListAdd(&SNESList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESTestLocalMin"
+int SNESTestLocalMin(SNES snes)
+{
+  int         ierr,N,i,j;
+  Vec         u,uh,fh;
+  PetscScalar value;
+  PetscReal   norm;
+
+  PetscFunctionBegin;
+  ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&uh);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&fh);CHKERRQ(ierr);
+
+  /* currently only works for sequential */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Testing FormFunction() for local min\n");
+  ierr = VecGetSize(u,&N);CHKERRQ(ierr);
+  for (i=0; i<N; i++) {
+    ierr = VecCopy(u,uh);CHKERRQ(ierr);
+    ierr  = PetscPrintf(PETSC_COMM_WORLD,"i = %d\n",i);CHKERRQ(ierr);
+    for (j=-10; j<11; j++) {
+      value = PetscSign(j)*exp10(PetscAbs(j)-10.0);
+      ierr  = VecSetValue(uh,i,value,ADD_VALUES);CHKERRQ(ierr);
+      ierr  = (*snes->computefunction)(snes,uh,fh,snes->funP);CHKERRQ(ierr);
+      ierr  = VecNorm(fh,NORM_2,&norm);CHKERRQ(ierr);
+      ierr  = PetscPrintf(PETSC_COMM_WORLD,"       j norm %d %18.16e\n",j,norm);CHKERRQ(ierr);
+      value = -value;
+      ierr  = VecSetValue(uh,i,value,ADD_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = VecDestroy(uh);CHKERRQ(ierr);
+  ierr = VecDestroy(fh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

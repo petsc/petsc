@@ -27,7 +27,7 @@
    in printing error messages.
 */
 #if !defined(__FUNCT__)
-#define __FUNCT__ "unknownfunction"
+#define __FUNCT__ "User provided function"
 #endif
 
 /* 
