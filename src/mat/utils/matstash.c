@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matstash.c,v 1.29 1999/03/19 01:00:45 balay Exp balay $";
+static char vcid[] = "$Id: matstash.c,v 1.30 1999/03/19 01:01:55 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -112,7 +112,7 @@ int MatStashScatterEnd_Private(MatStash *stash)
      wastage of space is reduced the next time this stash is used.
      Also update the oldmax, only if it increases */
   bs2      = stash->bs*stash->bs;
-  oldnmax  = ((int)(stash->n * 1.1) + 5)*stash->bs2;
+  oldnmax  = ((int)(stash->n * 1.1) + 5)*bs2;
   if (oldnmax > stash->oldnmax) stash->oldnmax = oldnmax;
 
   stash->nmax       = 0;

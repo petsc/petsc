@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.155 1999/03/18 01:59:10 balay Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.156 1999/03/18 15:34:47 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -432,6 +432,7 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
   s->n               = PetscMax(v->n,v->N);
   v->n               = PetscMax(v->n,v->N);; 
   v->N               = PetscMax(v->n,v->N);; 
+  v->bs              = -1;
   s->array           = (Scalar *)array;
   s->array_allocated = 0;
   if (!v->map) {

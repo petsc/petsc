@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.114 1999/03/18 03:40:10 bsmith Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.115 1999/03/18 03:43:43 bsmith Exp balay $ 
 #endif
 
 /*
@@ -580,7 +580,7 @@ int VecAssemblyBegin_MPI(Vec xin)
   
   bs = xin->bs;
   ierr = MPI_Comm_size(xin->comm,&size); CHKERRQ(ierr);
-  if (!x->browners) {
+  if (!x->browners && xin->bs != -1) {
     bowners = (int*) PetscMalloc((size+1)*sizeof(int)); CHKPTRQ(bowners);
     for ( i=0; i<size+1; i++ ){ bowners[i] = owners[i]/bs;}
     x->browners = bowners;
