@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.26 1998/04/27 14:27:41 curfman Exp curfman $";
+static char vcid[] = "$Id: aodata.c,v 1.27 1998/05/03 22:08:33 curfman Exp balay $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -766,7 +766,7 @@ int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,vo
       if the segment contains ->      1  2  1  3  1   4  2  0
 
   and you request keys 0 1 2 5 7, AODataSegmentGetReducedIS() will return 1 2 4 0
-.vb
+.ve
 
 .keywords: database transactions
 
