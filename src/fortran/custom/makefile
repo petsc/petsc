@@ -1,6 +1,7 @@
-# $Id: makefile,v 1.26 1999/02/02 21:35:49 balay Exp bsmith $ 
+# $Id: makefile,v 1.27 2000/08/17 04:53:40 bsmith Exp bsmith $ 
 
 ALL: lib
+
 
 CFLAGS   =
 FFLAGS   =
