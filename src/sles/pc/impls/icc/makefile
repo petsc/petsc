@@ -6,10 +6,10 @@ ALL: lib
 CFLAGS   =  $(PETSC_INCLUDE) -I../..  \
            $(BS_INCLUDE) -I../../../../src/mat \
            $(CONF) -D__DIR__='"pc/impls/icc/"'
-SOURCEC  = icc.c iccbs.c
+SOURCEC  = icc.c
 SOURCEF  =
 SOURCEH  = icc.h
-OBJSC    = icc.o iccbs.o
+OBJSC    = icc.o
 OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 

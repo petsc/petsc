@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../.. $(BS_INCLUDE) -I../.. \
            $(CONF) -I../../../../src/mat -D__DIR__='"pc/impls/ilu/"' 
-SOURCEC  = ilu.c ilubs.c
+SOURCEC  = ilu.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = ilu.o ilubs.o
+OBJSC    = ilu.o
 OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 

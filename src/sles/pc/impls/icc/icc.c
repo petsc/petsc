@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.20 1995/09/12 03:25:03 bsmith Exp curfman $ ";
+static char vcid[] = "$Id: icc.c,v 1.21 1995/09/12 18:04:08 curfman Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -9,10 +9,23 @@ static char vcid[] = "$Id: icc.c,v 1.20 1995/09/12 03:25:03 bsmith Exp curfman $
 #include "mat/matimpl.h"
 #include "icc.h"
 
+extern int PCSetUp_ICC_MPIRowbs(PC);
+
+static int (*setups[])(PC) = {0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-extern int PCImplCreate_ICC_MPIRowbs(PC pc);
-extern int PCImplDestroy_ICC_MPIRowbs(PC pc);
+                              PCSetUp_ICC_MPIRowbs,
+#else
+                              0,
 #endif
+                              0,   
+                              0,
+                              0,0,0,0,0};
+
 
 static int PCSetup_ICC(PC pc)
 {
@@ -25,12 +38,9 @@ static int PCSetup_ICC(PC pc)
   perm = 0;
 
   if (!pc->setupcalled) {
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-    if (pc->pmat->type == MATMPIROWBS) {
-      icc->ImplCreate = PCImplCreate_ICC_MPIRowbs;
+    if (setups[pc->pmat->type]) {
+      ierr = (*setups[pc->pmat->type])(pc); CHKERRQ(ierr);
     }
-#endif
-    if (icc->ImplCreate) {ierr = (*icc->ImplCreate)(pc); CHKERRQ(ierr);}
     ierr = MatIncompleteCholeskyFactorSymbolic(pc->pmat,perm,1.0,
 				icc->levels,&icc->fact); CHKERRQ(ierr);
   }
@@ -47,9 +57,7 @@ static int PCDestroy_ICC(PetscObject obj)
 {
   PC     pc = (PC) obj;
   PC_ICC *icc = (PC_ICC *) pc->data;
-  int    ierr;
 
-  if (icc->ImplDestroy) {ierr = (*icc->ImplDestroy)(pc); CHKERRQ(ierr);}
   MatDestroy(icc->fact);
   PETSCFREE(icc);
   return 0;

@@ -1,13 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.44 1995/09/06 03:05:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.45 1995/10/01 21:52:09 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
-
-   This is far from object oriented. We include the matrix 
-  details in the code. This is because otherwise we would have to 
-  include knowledge of SLES in the matrix code. In other words,
-  it is a loop of objects, not a tree, so inheritence is a bad joke.
 */
 #include "src/mat/matimpl.h"
 #include "pcimpl.h"
@@ -18,22 +13,23 @@ extern int PCSetUp_BJacobiMPIAIJ(PC);
 extern int PCSetUp_BJacobiMPIRow(PC);
 extern int PCSetUp_BJacobiMPIBDiag(PC);
 
+static int (*setups[])(PC) = {0,
+                              0,
+                              PCSetUp_BJacobiMPIAIJ,
+                              0,
+                              0,
+                              PCSetUp_BJacobiMPIRow,
+                              0,
+                              0,   
+                              PCSetUp_BJacobiMPIBDiag,
+                              0,0,0,0,0};
+
 static int PCSetUp_BJacobi(PC pc)
 {
-  Mat        mat = pc->mat, pmat = pc->pmat;
-  PC_BJacobi *jac = (PC_BJacobi *) pc->data;
+  Mat pmat = pc->pmat;
 
-  if (pmat->type == MATMPIAIJ) {
-    if (!jac->use_true_local || mat->type == MATMPIAIJ)
-      return PCSetUp_BJacobiMPIAIJ(pc);
-  } else if (pmat->type == MATMPIROW) {
-    if (!jac->use_true_local || mat->type == MATMPIROW)
-      return PCSetUp_BJacobiMPIRow(pc);
-  } else if (pmat->type == MATMPIBDIAG) {
-    if (!jac->use_true_local || mat->type == MATMPIBDIAG)
-      return PCSetUp_BJacobiMPIBDiag(pc);
-  } 
-  SETERRQ(1,"PCSetUp_BJacobi:Cannot use block Jacobi on this matrix type\n");
+  if (!setups[pmat->type]) SETERRQ(PETSC_ERR_SUP,"PCSetUp_BJacobi");
+  return (*setups[pmat->type])(pc);
 }
 
 /* Default destroy, if it has never been setup */
@@ -86,6 +82,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   jac->use_true_local = 1;
   return 0;
 }
+
 /*@C
    PCBJacobiGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.
@@ -99,9 +96,9 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 .  sles - the array of SLES contexts
 
    Note:  
-   Currently only 1 block per processor is supported.
+   Currently for some matrix implementations only 1 block per processor is supported.
    
-   You must call SLESSetUp() before caling PCBJacobiGetSubSLES().
+   You must call SLESSetUp() before calling PCBJacobiGetSubSLES().
 
 .keywords:  block, Jacobi, get, sub, SLES, context
 
