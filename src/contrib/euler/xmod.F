@@ -223,7 +223,8 @@ c  in param.h: Common block, pgrid, for local grid data:
 
 c -------------------------------------------------------------------
 
-      integer function jform(iskip,b1,b2,b3,b4,b5,b6,d,dt,
+      integer function jform(eps,epsi,
+     &                       b1,b2,b3,b4,b5,b6,d,dt,
      &                       r,ru,rv,rw,e,p, 
      &                       br,bl,be,sadai,sadaj,sadak,
      &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
@@ -248,27 +249,19 @@ c
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
 c      COMMON /FREQ/ IFREQ,ISGS
-      Double  qer(5),qel(5),eps,dql,dqr
-      integer ISKIP,i,j,k,l,m
+      Double  qer(5),qel(5),eps,epsi,dql,dqr
+      integer i,j,k,l,m
 
       jform = 0
-      ISKIP = 0
-      NCYC=NCYC+1
-      IF (NCYC.NE.1.AND.MOD(NCYC,IFREQ).NE.0) THEN
-         ISKIP = 1
-         GO TO 40
-      ENDIF
-
       do 10 m=1,5
          qel(m)=zero
          qer(m)=zero
  10   continue
 
-      eps = PetscDoubleExp(1.0,-7)
       do 30 m=1,5
       qel(m)=eps
 c Form Jacobian elements in left part of matrix
-      call nd (m,eps,qer,qel,b1,b2,b3,r,ru,rv,rw,e,p,
+      call nd (m,epsi,qer,qel,b1,b2,b3,r,ru,rv,rw,e,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
@@ -278,7 +271,7 @@ c Form Jacobian elements in left part of matrix
       do 31 m=1,5
       qer(m)=eps
 c Form Jacobian elements in right part of matrix
-      call nd (m,eps,qer,qel,b4,b5,b6,
+      call nd (m,epsi,qer,qel,b4,b5,b6,
      &         r,ru,rv,rw,e,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
@@ -302,14 +295,13 @@ c      DO 21 I=2,NI
       D(L,M,I,J,K)=dql-dqr
       IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+1.0/DT(I,J,K)
    21 CONTINUE
-   40 continue
 
       return
       end
 
 c -------------------------------------------------------------------
 
-      integer function jform2(iskip,ltog,nloc,mat,d,dt,
+      integer function jform2(eps,epsi,ltog,nloc,mat,d,dt,
      &                       r,ru,rv,rw,e,p, 
      &                       br,bl,be,sadai,sadaj,sadak,
      &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
@@ -333,30 +325,22 @@ c
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
 c      COMMON /FREQ/ IFREQ,ISGS
-      Double  qer(5),qel(5),eps,dti
+      Double  qer(5),qel(5),eps,epsi,dti
       integer nloc,ltog(0:nloc-1)
-      integer ISKIP,m,ierr,nd2,ijk,jk,rc(5),nc,i,j,k
+      integer m,ierr,nd2,ijk,jk,rc(5),nc,i,j,k
       Mat     mat
 
       jform2 = 0
-      ISKIP = 0
-      NCYC=NCYC+1
-      IF (NCYC.NE.1.AND.MOD(NCYC,IFREQ).NE.0) THEN
-         ISKIP = 1
-         GO TO 40
-      ENDIF
       nc = 5
-
       do 10 m=1,5
          qel(m)=zero
          qer(m)=zero
  10   continue
 
-      eps = PetscDoubleExp(1.0,-7)
       do 30 m=1,5
       qel(m)=eps
 c Form Jacobian elements in left part of matrix
-      ierr = nd2 (m,eps,qer,qel,1,mat,ltog,nloc,d,
+      ierr = nd2 (m,epsi,qer,qel,1,mat,ltog,nloc,d,
      &         r,ru,rv,rw,e,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
@@ -371,7 +355,7 @@ c Form Jacobian elements in left part of matrix
       do 31 m=1,5
       qer(m)=eps
 c Form Jacobian elements in right part of matrix
-      ierr = nd2 (m,eps,qer,qel,2,mat,ltog,nloc,d,
+      ierr = nd2 (m,epsi,qer,qel,2,mat,ltog,nloc,d,
      &         r,ru,rv,rw,e,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
@@ -419,8 +403,6 @@ c      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+1.0/DT(I,J,K)
 C  The rest of the input is row-oriented.
       call MatSetOption(mat,MAT_ROW_ORIENTED,ierr)
 
-   40 continue
-
       return
       end
 
@@ -453,7 +435,7 @@ c      DO 15 I=2,NI
 c Update pressure through equation of state
       RQDQ=(RU(I,J,K)**2+RV(I,J,K)**2+
      1 RW(I,J,K)**2)/R(I,J,K)
-      P(I,J,K)=GM1*(E(I,J,K)-0.5*RQDQ)
+      P(I,J,K)=GM1*(E(I,J,K)-p5*RQDQ)
    15 CONTINUE
 
       RETURN
@@ -496,9 +478,10 @@ c      COMMON /FREQ/ IFREQ,ISGS
       Double  area,pbody,cls,cds,xl2,work(*),cfl_new
       integer i,j,k,ierr,nsup
 
+      ncyc     = ncyc + 1
       jmonitor = 0
-      cfl = cfl_new
-      xl2=log10(fnorm)
+      cfl      = cfl_new
+      xl2      = log10(fnorm)
       if (no_output .eq. 0) then
          write(29,*) ncyc, xl2
 #ifdef PARCH_rs6000
@@ -570,7 +553,7 @@ c        DO 41 K=2,KTIP
           DO 42 I=ITLP1,ITUP
 c          DO 42 I=ITL+1,ITU
             AREA=AREA+ABS(AJY(I,1,K))*.5
-            PBODY=0.5*(P(I,1,K)+P(I,2,K))
+            PBODY=p5*(P(I,1,K)+P(I,2,K))
             CN=CN-(PBODY-RGAM)*AJY(I,1,K)
    42       CC=CC-(PBODY-RGAM)*AJX(I,1,K)
           CLS=CN*COS(-BETA)-CC*SIN(-BETA)
@@ -598,6 +581,7 @@ c          DO 42 I=ITL+1,ITU
       if (no_output .eq. 0 .and. rank .eq. 0) then
         WRITE (6,200) NCYC,RTMAX,RTRMS,ETRMS,XL2,TCL,TCD,NSUP
       endif
+
   200 FORMAT(I5,1P6E11.3,I5)
       RETURN
       END

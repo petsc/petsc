@@ -32,12 +32,12 @@ c      COMMON /WING/ ITL,ITU,ILE,KTIP
       pvar = 0
 
       DO 10 K=2,KTIP
-      ZLOC(K) = (Z(1,1,K)+Z(1,1,K-1))*0.5
+      ZLOC(K) = (Z(1,1,K)+Z(1,1,K-1))*p5
       CHORD   = X(ITU,1,K)-X(ILE,1,K)
       DO 10 I=ITL,ITU+1
-      PBODY    = 0.5*(P(I,1,K)+P(I,2,K))
+      PBODY    = p5*(P(I,1,K)+P(I,2,K))
       CP2(I,K) = (PBODY-RGAM)/FSMACH**2*2.
-   10 S(I)     = ((X(I,1,K)+X(I-1,1,K))*0.5-X(ILE,1,K))/CHORD
+   10 S(I)     = ((X(I,1,K)+X(I-1,1,K))*p5-X(ILE,1,K))/CHORD
       IF (NI.EQ.49) WRITE (6,20) NCYC
    20 FORMAT (/,4X,'WING SURFACE PRESSURE COEFFICIENTS FOR',
      * ' NCYC =',I6,/,4X,'X/C',6X,
@@ -126,28 +126,28 @@ C  (i=1,j=2,k=<anything>) are used to set the (i=49,j=1,k=<anything>) boundary.
       DO 8 K=2,NK
       DO 8 J=2,NJ
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC OUTFLOW B.C.s
-      R0=0.5*(R(NI1,J,K)+R(NI,J,K))
+      R0=p5*(R(NI1,J,K)+R(NI,J,K))
       C0=SQRT(GAM*PINIT/R0)
       R(NI1,J,K)=R(NI,J,K)+2.*(PINIT-P(NI,J,K))/C0**2
-      CON=-2.*(PINIT-P(NI,J,K))/(SADAI(NI,J,K)*R0*C0)
+      CON=-two*(PINIT-P(NI,J,K))/(SADAI(NI,J,K)*R0*C0)
       U=RU(NI,J,K)/R(NI,J,K)+AIX(NI,J,K)*CON
       V=RV(NI,J,K)/R(NI,J,K)+AIY(NI,J,K)*CON
       W=RW(NI,J,K)/R(NI,J,K)+AIZ(NI,J,K)*CON
       RU(NI1,J,K)=U*R(NI1,J,K)
       RV(NI1,J,K)=V*R(NI1,J,K)
       RW(NI1,J,K)=W*R(NI1,J,K)
-      E(NI1,J,K)=PINIT*RGM1+0.5*R(NI1,J,K)*(U**2+V**2+W**2)
-      R0=0.5*(R(1,J,K)+R(2,J,K))
+      E(NI1,J,K)=PINIT*RGM1+p5*R(NI1,J,K)*(U**2+V**2+W**2)
+      R0=p5*(R(1,J,K)+R(2,J,K))
       C0=SQRT(GAM*PINIT/R0)
       R(1,J,K)=R(2,J,K)+2.*(PINIT-P(2,J,K))/C0**2
-      CON=+2.*(PINIT-P(2,J,K))/(SADAI(1,J,K)*R0*C0)
+      CON=two*(PINIT-P(2,J,K))/(SADAI(1,J,K)*R0*C0)
       U=RU(2,J,K)/R(2,J,K)+AIX(1,J,K)*CON
       V=RV(2,J,K)/R(2,J,K)+AIY(1,J,K)*CON
       W=RW(2,J,K)/R(2,J,K)+AIZ(1,J,K)*CON
       RU(1,J,K)=U*R(1,J,K)
       RV(1,J,K)=V*R(1,J,K)
       RW(1,J,K)=W*R(1,J,K)
-      E(1,J,K)=PINIT*RGM1+0.5*R(1,J,K)*(U**2+V**2+W**2)
+      E(1,J,K)=PINIT*RGM1+p5*R(1,J,K)*(U**2+V**2+W**2)
     8 CONTINUE
 
       DO 2 K=2,NK
@@ -158,7 +158,7 @@ C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC OUTFLOW B.C.s
       ADA=SADAJ(I,1,K)**2
       QDA=RU(I,2,K)*AJX(I,1,K)+RV(I,2,K)*AJY(I,1,K)
      *   +RW(I,2,K)*AJZ(I,1,K)
-      FF=2.0*QDA/ADA
+      FF=two*QDA/ADA
       RU(I,1,K)=RU(I,2,K)-FF*AJX(I,1,K)
       RV(I,1,K)=RV(I,2,K)-FF*AJY(I,1,K)
       RW(I,1,K)=RW(I,2,K)-FF*AJZ(I,1,K)
@@ -170,20 +170,20 @@ C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC OUTFLOW B.C.s
 C   THESE ARE CHARACTERISTIC VARIABLE IMPERMEABLE WALL B.C.s
       QDA=(RU(I,2,K)*AJX(I,1,K)+RV(I,2,K)*AJY(I,1,K)
      *   +RW(I,2,K)*AJZ(I,1,K))/R(I,2,K)
-      P0=0.5*(P(I,1,K)+P(I,2,K))
-      R0=0.5*(R(I,1,K)+R(I,2,K))
+      P0=p5*(P(I,1,K)+P(I,2,K))
+      R0=p5*(R(I,1,K)+R(I,2,K))
       C0=SQRT(GAM*P0/R0)
       PB=P(I,2,K)-R0*C0*QDA/SADAJ(I,1,K)
       P(I,1,K)=2.*PB-P(I,2,K)
       R(I,1,K)=R(I,2,K)+2.*(PB-P(I,2,K))/C0**2
-      FF=2.0*QDA/SADAJ(I,1,K)**2
+      FF=two*QDA/SADAJ(I,1,K)**2
       U=RU(I,2,K)/R(I,2,K)-FF*AJX(I,1,K)
       V=RV(I,2,K)/R(I,2,K)-FF*AJY(I,1,K)
       W=RW(I,2,K)/R(I,2,K)-FF*AJZ(I,1,K)
       RU(I,1,K)=U*R(I,1,K)
       RV(I,1,K)=V*R(I,1,K)
       RW(I,1,K)=W*R(I,1,K)
-      RQDQ=0.5*(RU(I,1,K)**2+RV(I,1,K)**2+RW(I,1,K)**2)/R(I,1,K)
+      RQDQ=p5*(RU(I,1,K)**2+RV(I,1,K)**2+RW(I,1,K)**2)/R(I,1,K)
       E(I,1,K)=P(I,1,K)*RGM1+RQDQ
       GO TO 2
     4 CONTINUE
@@ -200,14 +200,14 @@ c      ID=NI+2-I
       DO 20 K=2,NK
       DO 20 I=2,NI
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
-      R0=0.5*(R(I,NJ,K)+R(I,NJ1,K))
-      P0=0.5*(P(I,NJ,K)+P(I,NJ1,K))
+      R0=p5*(R(I,NJ,K)+R(I,NJ1,K))
+      P0=p5*(P(I,NJ,K)+P(I,NJ1,K))
       C0=SQRT(GAM*P0/R0)
       R0C0=R0*C0
       U2=RU(I,NJ,K)/R(I,NJ,K)
       V2=RV(I,NJ,K)/R(I,NJ,K)
       W2=RW(I,NJ,K)/R(I,NJ,K)
-      PB=0.5*(PINIT+P(I,NJ,K)-R0C0/SADAJ(I,NJ,K)*(AJX(I,NJ,K)*(RUINIT-
+      PB=p5*(PINIT+P(I,NJ,K)-R0C0/SADAJ(I,NJ,K)*(AJX(I,NJ,K)*(RUINIT-
      * U2)+AJY(I,NJ,K)*(RVINIT-V2)+AJZ(I,NJ,K)*(RWINIT-W2)))
       RB=RINIT+(PB-PINIT)/C0**2
       CON=-(PINIT-PB)/(R0C0*SADAJ(I,NJ,K))
@@ -222,7 +222,7 @@ C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
       RU(I,NJ1,K)=U*R(I,NJ1,K)
       RV(I,NJ1,K)=V*R(I,NJ1,K)
       RW(I,NJ1,K)=W*R(I,NJ1,K)
-      E(I,NJ1,K)=P(I,NJ1,K)*RGM1+0.5*R(I,NJ1,K)*(U**2+V**2+W**2)
+      E(I,NJ1,K)=P(I,NJ1,K)*RGM1+p5*R(I,NJ1,K)*(U**2+V**2+W**2)
    20 CONTINUE
       DO 6 J=2,NJ
       DO 6 I=2,NI
@@ -232,7 +232,7 @@ C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
       R(I,J,1)=R(I,J,2)
       E(I,J,1)=E(I,J,2)
       P(I,J,1)=P(I,J,2)
-      FF=2.0*QDA/ADA
+      FF=two*QDA/ADA
       RU(I,J,1)=RU(I,J,2)-FF*AKX(I,J,1)
       RV(I,J,1)=RV(I,J,2)-FF*AKY(I,J,1)
       RW(I,J,1)=RW(I,J,2)-FF*AKZ(I,J,1)
@@ -242,7 +242,7 @@ C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
       R(I,J,NK1)=R(I,J,NK)
       E(I,J,NK1)=E(I,J,NK)
       P(I,J,NK1)=P(I,J,NK)
-      FF=2.0*QDA/ADA
+      FF=two*QDA/ADA
       RU(I,J,NK1)=RU(I,J,NK)-FF*AKX(I,J,NK)
       RV(I,J,NK1)=RV(I,J,NK)-FF*AKY(I,J,NK)
       RW(I,J,NK1)=RW(I,J,NK)-FF*AKZ(I,J,NK)
@@ -253,7 +253,8 @@ C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
 
 C************************************************************************
 
-      SUBROUTINE STEP( rtol,converge,b1,b2,b3,b4,b5,b6,d,dt,
+      SUBROUTINE STEP( eps,epsi,rtol,converge,
+     &                 b1,b2,b3,b4,b5,b6,d,dt,
      &                 r,ru,rv,rw,e,p,
      &                 dr,dru,drv,drw,de,
      &                 br,bl,be,sadai,sadaj,sadak,
@@ -294,17 +295,15 @@ c      COMMON /FREQ/ IFREQ,ISGS
 
       Double  qer(5),qel(5),eps,dql,dqr,xl2,rqdq,rtmax,rtrms
       Double  etmax,etrms,con,rt,et,rtrmsr,etrmsr,tcl,tcd
-      Double  areas,cn,cc,area,pbody,cls,cds,xl2a
+      Double  areas,cn,cc,area,pbody,cls,cds,xl2a,epsi
       Double  rtol,xl2_init
       integer i,j,k,l,m,nsup,converge
-
 
       do 11 m=1,5
          qel(m)=zero
          qer(m)=zero
  11   continue
 
-      eps = PetscDoubleExp(1.0,-7)
       NCYC=NCYC+1
 c Evaluate nonlinear residual
 
@@ -319,7 +318,7 @@ c Evaluate nonlinear residual
       do 30 m=1,5
       qel(m)=eps
 c Form Jacobian elements in left part of matrix
-      call nd (m,eps,qer,qel,b1,b2,b3,
+      call nd (m,epsi,qer,qel,b1,b2,b3,
      &         r,ru,rv,rw,e,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
@@ -329,7 +328,7 @@ c Form Jacobian elements in left part of matrix
       do 31 m=1,5
       qer(m)=eps
 c Form Jacobian elements in right part of matrix
-      call nd (m,eps,qer,qel,b4,b5,b6,
+      call nd (m,epsi,qer,qel,b4,b5,b6,
      &         r,ru,rv,rw,e,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
@@ -393,7 +392,7 @@ c Update global solution vector with Newton correction
 c Update pressure through equation of state
       RQDQ=(RU(I,J,K)**2+RV(I,J,K)**2+
      1 RW(I,J,K)**2)/R(I,J,K)
-      P(I,J,K)=GM1*(E(I,J,K)-0.5*RQDQ)
+      P(I,J,K)=GM1*(E(I,J,K)-p5*RQDQ)
    15 CONTINUE
 
 c Apply boundary conditions
@@ -456,7 +455,7 @@ c Compute and tabulate norms and the number of supersonic points in flowfield
       AREA=0.
       DO 42 I=ITL+1,ITU
       AREA=AREA+ABS(AJY(I,1,K))*.5
-      PBODY=0.5*(P(I,1,K)+P(I,2,K))
+      PBODY=p5*(P(I,1,K)+P(I,2,K))
       CN=CN-(PBODY-RGAM)*AJY(I,1,K)
    42 CC=CC-(PBODY-RGAM)*AJX(I,1,K)
       CLS=CN*COS(-BETA)-CC*SIN(-BETA)

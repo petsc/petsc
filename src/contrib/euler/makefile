@@ -29,8 +29,8 @@
 #    saves some memory for the PETSc version.  This flag is used only
 #    in the routine julianne() in xnd.F.
 
-# CFLAGS    = $(CPPFLAGS) $(CONF) $(PETSC_INCLUDE) -DACTIVATE_JULIANNE
-  CFLAGS    = $(CPPFLAGS) $(CONF) $(PETSC_INCLUDE)
+ CFLAGS    = $(CPPFLAGS) $(CONF) $(PETSC_INCLUDE) -DACTIVATE_JULIANNE
+#  CFLAGS    = $(CPPFLAGS) $(CONF) $(PETSC_INCLUDE)
 
 # -----------------------------------------------------------------------
 # Define application source code
@@ -71,8 +71,8 @@ ALL: ex1
   OBJSF_COMMON     = xnd.o xmod2.o
   OBJSF_JULIANNE   = xjul.o
   OBJSF_PETSC      = xmod.o implbc.o mat.o
-  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
-# OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
+#  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
+ OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
@@ -102,19 +102,11 @@ ALL: ex1
 ex1: chkopts $(OBJSC) $(OBJSF) $(SOURCEH)
 	-$(FLINKER) -o ex1 $(OBJSC) $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-# These are just temporary programs for experiments
-
-interpolate: chkopts interpolate.o mesh.o
-	-$(FLINKER) -o interpolate interpolate.o mesh.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-
-meshview: chkopts meshview.o mesh.o
-	-$(FLINKER) -o meshview meshview.o mesh.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-
-ex5: ex5.o regmpimat.o  chkopts
-	-$(CLINKER) -o ex5 ex5.o regmpimat.o $(PETSC_LIB)
-	$(RM) ex5.o 
+# We have trouble with multiply defined main when using the fortran linker on ptera (alpha)
+# The following works though.
+ex1_alpha: chkopts $(OBJSC) $(OBJSF) $(SOURCEH)
+	-$(CLINKER) -o ex1 $(OBJSC) $(OBJSF) $(PETSC_FORTRAN_LIB) $(PETSC_LIB) \
+              /usr/lib/libm_4sqrt.a 
 
 # -----------------------------------------------------------------------
 # Define program tests
@@ -175,12 +167,6 @@ clean_c:
 #
 # Make PETSc tar file (containing all but input files that define meshes)
 #
-install_contrib: tar_euler
-	cp euler/*.c euler/*.F euler/*.h euler/makefile euler/nd.in /home/bsmith/petsc/src/contrib/euler
-
-#
-# Make PETSc tar file (containing all but input files that define meshes)
-#
 tar_euler:
 	cp $(SOURCEC) $(SOURCEF) $(SOURCEH) makefile nd.in euler 
 	chmod 664 euler/*
@@ -225,3 +211,9 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 #.F.o: 
 #	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) -C $*.F
 ##	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
+
+#
+# Define LAPACK here, just to test the scoop with ESSL on poseidon
+#
+# LAPACK_LIB = /ump/hpcc/home3/mcinnes/lapack/lapack.a
+# LAPACK_LIB = -lessl /ump/hpcc/home3/mcinnes/lapack/lapack.a

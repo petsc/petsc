@@ -11,8 +11,9 @@ c
 #include "include/FINCLUDE/vec.h"
 
 c   Parameters
-        Double one, two, zero
+        Double one, two, zero, p5
         parameter(zero=PetscDoubleExp(0.0,0),
+     &              p5=PetscDoubleExp(0.5,0),
      &             one=PetscDoubleExp(1.0,0),
      &             two=PetscDoubleExp(2.0,0))
 

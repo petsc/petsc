@@ -34,7 +34,7 @@ c the standard Newton method asymptotically.  However, it appears that boundary
 c conditions are updated explicitly after each solve -- another area we
 c wish to address.
 C************************************************************************
-      integer function JULIANNE( jsolve, app, cfl_init, rtol,
+      integer function JULIANNE( jsolve, app, cfl_init, rtol, eps,
      &                    b1, b2, b3, b4, b5, b6, d, dt,
      &                    r, ru, rv, rw, e, p,
      &                    dr, dru, drv, drw, de, 
@@ -83,14 +83,12 @@ c      COMMON /COORD/ X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /FREQ/ IFREQ,ISGS
 
-      Double  cfl_init,rtol,beta1
+      Double  cfl_init,rtol,beta1,eps,epsi
       integer jsolve,app,nb,nt,ierr,ifreq1
 #if defined(ACTIVATE_JULIANNE)
       integer m,converge
 #endif
-
       julianne    = 0
-
 #if !defined(ACTIVATE_JULIANNE)
       if (jsolve .eq. 1) then
          if (rank .eq. 0) 
@@ -103,14 +101,14 @@ c      COMMON /FREQ/ IFREQ,ISGS
 
       OPEN (15,FILE='nd.in',STATUS='OLD')
       NCYC = 0
-      GAM  = 1.4
-      RGAM = 1./GAM
-      GM1  = GAM-1.
-      RGM1 = 1./GM1
-      GS2  = GAM*0.5
+      GAM  = PetscDoubleExp(1.4,0)
+      RGAM = one/GAM
+      GM1  = GAM-one
+      RGM1 = one/GM1
+      GS2  = GAM*p5
 c Default angle of attack = 3.06 degrees
-      if (beta1 .gt. 5.0 .or. beta1 .lt. -one) then
-         beta = -3.06
+      if (beta1 .gt. 5.0 .or. beta1 .lt. -1.0) then
+         beta = PetscDoubleExp(-3.06,0)
       else 
          beta = -beta1
       endif
@@ -204,6 +202,7 @@ c For SNES version, boundary conditions are handled elsewhere.
       if (jsolve .eq. 1) 
      &   CALL BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
      &               aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+      epsi = one/eps
 #endif
       if (rank .eq. 0) WRITE (6,300) NB,NT
   300 FORMAT(1H0,I20,' PRINTOUTS EVERY ',I5,' CYCLES')
@@ -227,7 +226,8 @@ c        Note:  call pvar at conclusion of SNES solver.
          endif
          DO 2 M=1,NT
 c At each step, solve a Newton problem, and update the boundary conditions
-         CALL STEP(rtol,converge,b1,b2,b3,b4,b5,b6,d,dt,
+         CALL STEP(eps,epsi,rtol,converge,
+     &             b1,b2,b3,b4,b5,b6,d,dt,
      &             r,ru,rv,rw,e,p,
      &             dr,dru,drv,drw,de,
      &             br,bl,be,sadai,sadaj,sadak,
@@ -328,8 +328,8 @@ C   LIMIT=3 (VAN LEER)
      1   -COS(PHI)*SIN(BETA))
       RWINIT=FSMACH*(SIN(ALPHA)*COS(BETA)
      1  +SIN(PHI)*COS(ALPHA)*SIN(BETA))
-       EINIT=one/(GAM*GM1)+0.5*FSMACH**2
-      PINIT=GM1*(EINIT-0.5*FSMACH**2)
+       EINIT=one/(GAM*GM1)+p5*FSMACH**2
+      PINIT=GM1*(EINIT-p5*FSMACH**2)
       do 2 k=gzsf1,gzefp1
       do 2 j=gysf1,gyefp1
       do 2 i=gxsf1,gxefp1
@@ -390,7 +390,7 @@ c        DO 2 I=2,NI
         ADA=SADAJ(I,1,K)**2
         QDA=RU(I,2,K)*AJX(I,1,K)+RV(I,2,K)*AJY(I,1,K)
      *     +RW(I,2,K)*AJZ(I,1,K)
-        FF=2.0*QDA/ADA
+        FF=two*QDA/ADA
         RU(I,1,K)=RU(I,2,K)-FF*AJX(I,1,K)
         RV(I,1,K)=RV(I,2,K)-FF*AJY(I,1,K)
         RW(I,1,K)=RW(I,2,K)-FF*AJZ(I,1,K)
@@ -402,20 +402,20 @@ c        DO 2 I=2,NI
 C   THESE ARE CHARACTERISTIC VARIABLE IMPERMEABLE WALL B.C.s
         QDA=(RU(I,2,K)*AJX(I,1,K)+RV(I,2,K)*AJY(I,1,K)
      *     +RW(I,2,K)*AJZ(I,1,K))/R(I,2,K)
-        P0=0.5*(P(I,1,K)+P(I,2,K))
-        R0=0.5*(R(I,1,K)+R(I,2,K))
+        P0=p5*(P(I,1,K)+P(I,2,K))
+        R0=p5*(R(I,1,K)+R(I,2,K))
         C0=SQRT(GAM*P0/R0)
         PB=P(I,2,K)-R0*C0*QDA/SADAJ(I,1,K)
         P(I,1,K)=2.*PB-P(I,2,K)
         R(I,1,K)=R(I,2,K)+2.*(PB-P(I,2,K))/C0**2
-        FF=2.0*QDA/SADAJ(I,1,K)**2
+        FF=two*QDA/SADAJ(I,1,K)**2
         U=RU(I,2,K)/R(I,2,K)-FF*AJX(I,1,K)
         V=RV(I,2,K)/R(I,2,K)-FF*AJY(I,1,K)
         W=RW(I,2,K)/R(I,2,K)-FF*AJZ(I,1,K)
         RU(I,1,K)=U*R(I,1,K)
         RV(I,1,K)=V*R(I,1,K)
         RW(I,1,K)=W*R(I,1,K)
-        RQDQ=0.5*(RU(I,1,K)**2+RV(I,1,K)**2+RW(I,1,K)**2)/R(I,1,K)
+        RQDQ=p5*(RU(I,1,K)**2+RV(I,1,K)**2+RW(I,1,K)**2)/R(I,1,K)
         E(I,1,K)=P(I,1,K)*RGM1+RQDQ
         GO TO 2
     4   CONTINUE
@@ -477,29 +477,29 @@ c   See bc_uni() for uniprocessor case.
 c        DO 20 K=2,NK
 c        DO 20 I=2,NI
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
-        R0=0.5*(R(I,NJ,K)+R(I,NJ1,K))
-        P0=0.5*(P(I,NJ,K)+P(I,NJ1,K))
+        R0=p5*(R(I,NJ,K)+R(I,NJ1,K))
+        P0=p5*(P(I,NJ,K)+P(I,NJ1,K))
         C0=SQRT(GAM*P0/R0)
         R0C0=R0*C0
         U2=RU(I,NJ,K)/R(I,NJ,K)
         V2=RV(I,NJ,K)/R(I,NJ,K)
         W2=RW(I,NJ,K)/R(I,NJ,K)
-        PB=0.5*(PINIT+P(I,NJ,K)-R0C0/SADAJ(I,NJ,K)*(AJX(I,NJ,K)*(RUINIT-
+        PB=p5*(PINIT+P(I,NJ,K)-R0C0/SADAJ(I,NJ,K)*(AJX(I,NJ,K)*(RUINIT-
      *   U2)+AJY(I,NJ,K)*(RVINIT-V2)+AJZ(I,NJ,K)*(RWINIT-W2)))
         RB=RINIT+(PB-PINIT)/C0**2
         CON=-(PINIT-PB)/(R0C0*SADAJ(I,NJ,K))
         UB=RUINIT+AJX(I,NJ,K)*CON
         VB=RVINIT+AJY(I,NJ,K)*CON
         WB=RWINIT+AJZ(I,NJ,K)*CON
-        P(I,NJ1,K)=2.*PB-P(I,NJ,K)
-        R(I,NJ1,K)=2.*RB-R(I,NJ,K)
+        P(I,NJ1,K)=two*PB-P(I,NJ,K)
+        R(I,NJ1,K)=two*RB-R(I,NJ,K)
         U=2.*UB-U2
         V=2.*VB-V2
         W=2.*WB-W2
         RU(I,NJ1,K)=U*R(I,NJ1,K)
         RV(I,NJ1,K)=V*R(I,NJ1,K)
         RW(I,NJ1,K)=W*R(I,NJ1,K)
-        E(I,NJ1,K)=P(I,NJ1,K)*RGM1+0.5*R(I,NJ1,K)*(U**2+V**2+W**2)
+        E(I,NJ1,K)=P(I,NJ1,K)*RGM1+p5*R(I,NJ1,K)*(U**2+V**2+W**2)
    20   CONTINUE
       endif
 
@@ -514,7 +514,7 @@ c        DO 6 I=2,NI
         R(I,J,1)=R(I,J,2)
         E(I,J,1)=E(I,J,2)
         P(I,J,1)=P(I,J,2)
-        FF=2.0*QDA/ADA
+        FF=two*QDA/ADA
         RU(I,J,1)=RU(I,J,2)-FF*AKX(I,J,1)
         RV(I,J,1)=RV(I,J,2)-FF*AKY(I,J,1)
         RW(I,J,1)=RW(I,J,2)-FF*AKZ(I,J,1)
@@ -532,7 +532,7 @@ c        DO 7 I=2,NI
         R(I,J,NK1)=R(I,J,NK)
         E(I,J,NK1)=E(I,J,NK)
         P(I,J,NK1)=P(I,J,NK)
-        FF=2.0*QDA/ADA
+        FF=two*QDA/ADA
         RU(I,J,NK1)=RU(I,J,NK)-FF*AKX(I,J,NK)
         RV(I,J,NK1)=RV(I,J,NK)-FF*AKY(I,J,NK)
         RW(I,J,NK1)=RW(I,J,NK)-FF*AKZ(I,J,NK)
@@ -545,33 +545,33 @@ c        DO 7 I=2,NI
 c        DO 8 K=2,NK
 c        DO 8 J=2,NJ
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC OUTFLOW B.C.s
-         R0=0.5*(R(NI1,J,K)+R(NI,J,K))
+         R0=p5*(R(NI1,J,K)+R(NI,J,K))
         C0=SQRT(GAM*PINIT/R0)
-        R(NI1,J,K)=R(NI,J,K)+2.*(PINIT-P(NI,J,K))/C0**2
-        CON=-2.*(PINIT-P(NI,J,K))/(SADAI(NI,J,K)*R0*C0)
+        R(NI1,J,K)=R(NI,J,K)+two*(PINIT-P(NI,J,K))/C0**2
+        CON=-two*(PINIT-P(NI,J,K))/(SADAI(NI,J,K)*R0*C0)
         U=RU(NI,J,K)/R(NI,J,K)+AIX(NI,J,K)*CON
         V=RV(NI,J,K)/R(NI,J,K)+AIY(NI,J,K)*CON
         W=RW(NI,J,K)/R(NI,J,K)+AIZ(NI,J,K)*CON
         RU(NI1,J,K)=U*R(NI1,J,K)
         RV(NI1,J,K)=V*R(NI1,J,K)
         RW(NI1,J,K)=W*R(NI1,J,K)
-        E(NI1,J,K)=PINIT*RGM1+0.5*R(NI1,J,K)*(U**2+V**2+W**2)
+        E(NI1,J,K)=PINIT*RGM1+p5*R(NI1,J,K)*(U**2+V**2+W**2)
     8   CONTINUE
       endif
       if (xsf1 .eq. 1) then
         do 9 k=gzsf2,gzef01
         do 9 j=gysf2,gyef01
-        R0=0.5*(R(1,J,K)+R(2,J,K))
+        R0=p5*(R(1,J,K)+R(2,J,K))
         C0=SQRT(GAM*PINIT/R0)
         R(1,J,K)=R(2,J,K)+2.*(PINIT-P(2,J,K))/C0**2
-        CON=+2.*(PINIT-P(2,J,K))/(SADAI(1,J,K)*R0*C0)
+        CON=two*(PINIT-P(2,J,K))/(SADAI(1,J,K)*R0*C0)
         U=RU(2,J,K)/R(2,J,K)+AIX(1,J,K)*CON
         V=RV(2,J,K)/R(2,J,K)+AIY(1,J,K)*CON
         W=RW(2,J,K)/R(2,J,K)+AIZ(1,J,K)*CON
         RU(1,J,K)=U*R(1,J,K)
         RV(1,J,K)=V*R(1,J,K)
         RW(1,J,K)=W*R(1,J,K)
-        E(1,J,K)=PINIT*RGM1+0.5*R(1,J,K)*(U**2+V**2+W**2)
+        E(1,J,K)=PINIT*RGM1+p5*R(1,J,K)*(U**2+V**2+W**2)
 c    8   CONTINUE
     9   CONTINUE
       endif
@@ -631,7 +631,7 @@ c      DO 2 I=2,NI
       AKZA=AKZ(I,J,K)+AKZ(I,J,K-1)
       CONW=(RU(I,J,K)*AKXA+RV(I,J,K)*AKYA+RW(I,J,K)*AKZA)/R(I,J,K)
       EK=ABS(CONW)+C*(SADAK(I,J,K)+SADAK(I,J,K-1))
-      DT(I,J,K)=CFL*2.0/(EI+EJ+EK)
+      DT(I,J,K)=CFL*two/(EI+EJ+EK)
     2 CONTINUE
       RETURN
       END
@@ -672,9 +672,9 @@ c      DO 2 I=1,NI
       DX2=X(I,J-1,K)-X(I,J,K-1)
       DY2=Y(I,J-1,K)-Y(I,J,K-1)
       DZ2=Z(I,J-1,K)-Z(I,J,K-1)
-      AIX(I,J,K)=(DY1*DZ2-DZ1*DY2)*0.5
-      AIY(I,J,K)=(DZ1*DX2-DX1*DZ2)*0.5
-      AIZ(I,J,K)=(DX1*DY2-DY1*DX2)*0.5
+      AIX(I,J,K)=(DY1*DZ2-DZ1*DY2)*p5
+      AIY(I,J,K)=(DZ1*DX2-DX1*DZ2)*p5
+      AIZ(I,J,K)=(DX1*DY2-DY1*DX2)*p5
       SADAI(I,J,K)=SQRT(AIX(I,J,K)**2+AIY(I,J,K)**2+AIZ(I,J,K)**2)
     2 CONTINUE
       DO 3 I=gxsf2,gxef01
@@ -689,9 +689,9 @@ c      DO 3 J=1,NJ
       DX2=X(I,J,K-1)-X(I-1,J,K)
       DY2=Y(I,J,K-1)-Y(I-1,J,K)
       DZ2=Z(I,J,K-1)-Z(I-1,J,K)
-      AJX(I,J,K)=(DY1*DZ2-DZ1*DY2)*0.5
-      AJY(I,J,K)=(DZ1*DX2-DX1*DZ2)*0.5
-      AJZ(I,J,K)=(DX1*DY2-DY1*DX2)*0.5
+      AJX(I,J,K)=(DY1*DZ2-DZ1*DY2)*p5
+      AJY(I,J,K)=(DZ1*DX2-DX1*DZ2)*p5
+      AJZ(I,J,K)=(DX1*DY2-DY1*DX2)*p5
       SADAJ(I,J,K)=SQRT(AJX(I,J,K)**2+AJY(I,J,K)**2+AJZ(I,J,K)**2)
     3 CONTINUE
       DO 4 I=gxsf2,gxef01
@@ -706,9 +706,9 @@ c      DO 4 K=1,NK
       DX2=X(I-1,J,K)-X(I,J-1,K)
       DY2=Y(I-1,J,K)-Y(I,J-1,K)
       DZ2=Z(I-1,J,K)-Z(I,J-1,K)
-      AKX(I,J,K)=(DY1*DZ2-DZ1*DY2)*0.5
-      AKY(I,J,K)=(DZ1*DX2-DX1*DZ2)*0.5
-      AKZ(I,J,K)=(DX1*DY2-DY1*DX2)*0.5
+      AKX(I,J,K)=(DY1*DZ2-DZ1*DY2)*p5
+      AKY(I,J,K)=(DZ1*DX2-DX1*DZ2)*p5
+      AKZ(I,J,K)=(DX1*DY2-DY1*DX2)*p5
       SADAK(I,J,K)=SQRT(AKX(I,J,K)**2+AKY(I,J,K)**2+AKZ(I,J,K)**2)
     4 CONTINUE
       RETURN
@@ -800,13 +800,13 @@ c      DO 22 I=IB,NI
       Q2(I)=(ur+ul*RA)*RRA1
       Q3(I)=(vr+vl*RA)*RRA1
       Q4(I)=(wr+wl*RA)*RRA1
-      pr=gm1*(er-0.5*rr*(ur**2+vr**2+wr**2))
-      pl=gm1*(el-0.5*rl*(ul**2+vl**2+wl**2))
-      hl=0.5*(ul**2+vl**2+wl**2)+gam*rgm1*pl/rl
-      hr=0.5*(ur**2+vr**2+wr**2)+gam*rgm1*pr/rr
+      pr=gm1*(er-p5*rr*(ur**2+vr**2+wr**2))
+      pl=gm1*(el-p5*rl*(ul**2+vl**2+wl**2))
+      hl=p5*(ul**2+vl**2+wl**2)+gam*rgm1*pl/rl
+      hr=p5*(ur**2+vr**2+wr**2)+gam*rgm1*pr/rr
       HROE=(hr+hl*ra)*rra1
       RQRQ(I)=Q2(I)**2+Q3(I)**2+Q4(I)**2
-      C(I)=SQRT((HROE-0.5*RQRQ(I))*GM1)
+      C(I)=SQRT((HROE-p5*RQRQ(I))*GM1)
       Q6(I)=one/Q1(I)
       TT(I)=Q2(I)*AXT(I)+Q3(I)*AYT(I)+Q4(I)*AZT(I)
       RC(I)=Q1(I)*C(I)
@@ -814,22 +814,22 @@ c      DO 22 I=IB,NI
       E1=TT(I)*SADA(I,J,K)
       E4=E1+CSAD
       E5=E1-CSAD
-      BE(1,1,I,J,K)=0.5*(E1+ABS(E1))
+      BE(1,1,I,J,K)=p5*(E1+ABS(E1))
       BE(1,2,I,J,K)=BE(1,1,I,J,K)
       BE(1,3,I,J,K)=BE(1,1,I,J,K)
-      BE(1,4,I,J,K)=0.5*(E4+ABS(E4))
-      BE(1,5,I,J,K)=0.5*(E5+ABS(E5))
-      BE(2,1,I,J,K)=0.5*(E1-ABS(E1))
+      BE(1,4,I,J,K)=p5*(E4+ABS(E4))
+      BE(1,5,I,J,K)=p5*(E5+ABS(E5))
+      BE(2,1,I,J,K)=p5*(E1-ABS(E1))
       BE(2,2,I,J,K)=BE(2,1,I,J,K)
       BE(2,3,I,J,K)=BE(2,1,I,J,K)
-      BE(2,4,I,J,K)=0.5*(E4-ABS(E4))
-      BE(2,5,I,J,K)=0.5*(E5-ABS(E5))
+      BE(2,4,I,J,K)=p5*(E4-ABS(E4))
+      BE(2,5,I,J,K)=p5*(E5-ABS(E5))
    22 CONTINUE
-      RR2=1./SQRT(PetscDoubleExp(2.0,0))
+      RR2=one/SQRT(two)
       DO 23 I=IB,gxefw
 c      DO 23 I=IB,NI
       A=Q1(I)*RR2/C(I)
-      C1=0.5*RQRQ(I)
+      C1=p5*RQRQ(I)
       C2=C(I)*C(I)*RGM1
       BR(1,1,I,J,K)=AXT(I)
       BR(1,2,I,J,K)=AYT(I)
@@ -859,7 +859,7 @@ c      DO 23 I=IB,NI
    23 CONTINUE
       DO 2 I=IB,gxefw
 c      DO 2 I=IB,NI
-      PHI=0.5*GM1*RQRQ(I)
+      PHI=p5*GM1*RQRQ(I)
       C2=C(I)*C(I)
       B=RR2/RC(I)
       C1=one-PHI/C2
