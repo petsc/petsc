@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.37 1998/02/10 19:49:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.38 1998/04/13 17:55:33 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -10,13 +10,13 @@ static char vcid[] = "$Id: snesut.c,v 1.37 1998/02/10 19:49:03 curfman Exp bsmit
 /*@C
    SNESDefaultMonitor - Monitoring progress of the SNES solvers (default).
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
-.  dummy - unused context
-
-   Collective on SNES
+-  dummy - unused context
 
    Notes:
    For SNES_NONLINEAR_EQUATIONS methods the routine prints the 
@@ -81,30 +81,29 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
    SNESConverged_EQ_LS - Monitors the convergence of the solvers for
    systems of nonlinear equations (default).
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  xnorm - 2-norm of current iterate
 .  pnorm - 2-norm of current step 
 .  fnorm - 2-norm of function
-.  dummy - unused context
+-  dummy - unused context
 
    Returns:
-$  2  if  ( fnorm < atol ),
-$  3  if  ( pnorm < xtol*xnorm ),
-$  4  if  ( fnorm < rtol*fnorm0 ),
-$ -2  if  ( nfct > maxf ),
-$  0  otherwise,
++  2  - if  ( fnorm < atol ),
+.  3  - if  ( pnorm < xtol*xnorm ),
+.  4  - if  ( fnorm < rtol*fnorm0 ),
+. -2  - if  ( nfct > maxf ),
+-  0  - otherwise,
 
    where
-$    maxf - maximum number of function evaluations,
-$           set with SNESSetTolerances()
-$    nfct - number of function evaluations,
-$    atol - absolute function norm tolerance,
-$           set with SNESSetTolerances()
-$    rtol - relative function norm tolerance,
-$           set with SNESSetTolerances()
-
-   Collective on SNES
++    maxf - maximum number of function evaluations,
+            set with SNESSetTolerances()
+.    nfct - number of function evaluations,
+.    atol - absolute function norm tolerance,
+            set with SNESSetTolerances()
+-    rtol - relative function norm tolerance, set with SNESSetTolerances()
 
 .keywords: SNES, nonlinear, default, converged, convergence
 
@@ -152,10 +151,10 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
    SNES_KSP_SetConvergenceTestEW - Sets alternative convergence test
    for the linear solvers within an inexact Newton method.  
 
+   Collective on SNES
+
    Input Parameter:
 .  snes - SNES context
-
-   Collective on SNES
 
    Notes:
    Currently, the default is to use a constant relative tolerance for 
@@ -184,23 +183,19 @@ int SNES_KSP_SetConvergenceTestEW(SNES snes)
    convergence criteria for the linear solvers within an inexact
    Newton method.
 
-   Input Parameters:
-.    snes - SNES context
-.    version - version 1 or 2 (default is 2)
-.    rtol_0 - initial relative tolerance 
-$      (0 <= rtol_0 < 1)
-.    rtol_max - maximum relative tolerance
-$      (0 <= rtol_max < 1)
-.    alpha - power for version 2 rtol computation
-$      (1 < alpha <= 2)
-.    alpha2 - power for safeguard
-.    gamma2 - multiplicative factor for version 2 rtol computation
-$      (0 <= gamma2 <= 1)
-.    threshold - threshold for imposing safeguard
-$      (0 < threshold < 1)
-
    Collective on SNES
  
+   Input Parameters:
++    snes - SNES context
+.    version - version 1 or 2 (default is 2)
+.    rtol_0 - initial relative tolerance (0 <= rtol_0 < 1)
+.    rtol_max - maximum relative tolerance (0 <= rtol_max < 1)
+.    alpha - power for version 2 rtol computation (1 < alpha <= 2)
+.    alpha2 - power for safeguard
+.    gamma2 - multiplicative factor for version 2 rtol computation
+              (0 <= gamma2 <= 1)
+-    threshold - threshold for imposing safeguard (0 < threshold < 1)
+
    Note:
    Use PETSC_DEFAULT to retain the default for any of the parameters.
 

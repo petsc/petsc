@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.107 1998/04/22 23:50:34 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.108 1998/04/22 23:59:55 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -204,25 +204,25 @@ int SNESDestroy_EQ_LS(SNES snes)
    it simply uses the full Newton step.  Thus, this routine is intended 
    to serve as a template and is not recommended for general use.  
 
+   Collective on SNES and Vec
+
    Input Parameters:
-.  snes - nonlinear context
++  snes - nonlinear context
 .  x - current iterate
 .  f - residual evaluated at x
 .  y - search direction (contains new iterate on output)
 .  w - work vector
-.  fnorm - 2-norm of f
+-  fnorm - 2-norm of f
 
    Output Parameters:
-.  g - residual evaluated at new iterate y
++  g - residual evaluated at new iterate y
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
-.  flag - set to 0, indicating a successful line search
-
-   Collective on SNES and Vec
+-  flag - set to 0, indicating a successful line search
 
    Options Database Key:
-$  -snes_eq_ls basic
+.  -snes_eq_ls basic - Activates SNESNoLineSearch()
 
 .keywords: SNES, nonlinear, line search, cubic
 
@@ -255,27 +255,26 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
    even compute the norm of the function or search direction; this
    is intended only when you know the full step is fine and are
    not checking for convergence of the nonlinear iteration (for
-   example, you are running always for a fixed number of Newton
-   steps).
+   example, you are running always for a fixed number of Newton steps).
+
+   Collective on SNES and Vec
 
    Input Parameters:
-.  snes - nonlinear context
++  snes - nonlinear context
 .  x - current iterate
 .  f - residual evaluated at x
 .  y - search direction (contains new iterate on output)
 .  w - work vector
-.  fnorm - 2-norm of f
+-  fnorm - 2-norm of f
 
    Output Parameters:
-.  g - residual evaluated at new iterate y
++  g - residual evaluated at new iterate y
 .  gnorm - not changed
 .  ynorm - not changed
-.  flag - set to 0, indicating a successful line search
-
-   Collective on SNES and Vec
+-  flag - set to 0, indicating a successful line search
 
    Options Database Key:
-$  -snes_eq_ls basicnonorms
+.  -snes_eq_ls basicnonorms - Activates SNESNoLineSearchNoNorms()
 
 .keywords: SNES, nonlinear, line search, cubic
 
@@ -302,25 +301,25 @@ int SNESNoLineSearchNoNorms(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 /*@C
    SNESCubicLineSearch - Performs a cubic line search (default line search method).
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - nonlinear context
++  snes - nonlinear context
 .  x - current iterate
 .  f - residual evaluated at x
 .  y - search direction (contains new iterate on output)
 .  w - work vector
-.  fnorm - 2-norm of f
+-  fnorm - 2-norm of f
 
    Output Parameters:
-.  g - residual evaluated at new iterate y
++  g - residual evaluated at new iterate y
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
-.  flag - 0 if line search succeeds; -1 on failure.
-
-   Collective on SNES
+-  flag - 0 if line search succeeds; -1 on failure.
 
    Options Database Key:
-$  -snes_eq_ls cubic
+$  -snes_eq_ls cubic - Activates SNESCubicLineSearch()
 
    Notes:
    This line search is taken from "Numerical Methods for Unconstrained 
@@ -476,29 +475,28 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
 /*@C
    SNESQuadraticLineSearch - Performs a quadratic line search.
 
+   Collective on SNES and Vec
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  x - current iterate
 .  f - residual evaluated at x
 .  y - search direction (contains new iterate on output)
 .  w - work vector
-.  fnorm - 2-norm of f
+-  fnorm - 2-norm of f
 
    Output Parameters:
-.  g - residual evaluated at new iterate y
++  g - residual evaluated at new iterate y
 .  y - new iterate (contains search direction on input)
 .  gnorm - 2-norm of g
 .  ynorm - 2-norm of search length
-.  flag - 0 if line search succeeds; -1 on failure.
-
-   Collective on SNES and Vec
+-  flag - 0 if line search succeeds; -1 on failure.
 
    Options Database Key:
-$  -snes_eq_ls quadratic
+.  -snes_eq_ls quadratic - Activates SNESQuadraticLineSearch()
 
    Notes:
-   Use SNESSetLineSearch()
-   to set this routine within the SNES_EQ_LS method.  
+   Use SNESSetLineSearch() to set this routine within the SNES_EQ_LS method.  
 
 .keywords: SNES, nonlinear, quadratic, line search
 
@@ -605,22 +603,22 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
    by the method SNES_EQ_LS.
 
    Input Parameters:
-.  snes - nonlinear context obtained from SNESCreate()
-.  func - pointer to int function
++  snes - nonlinear context obtained from SNESCreate()
+-  func - pointer to int function
 
    Collective on SNES
 
    Available Routines:
-.  SNESCubicLineSearch() - default line search
++  SNESCubicLineSearch() - default line search
 .  SNESQuadraticLineSearch() - quadratic line search
 .  SNESNoLineSearch() - the full Newton step (actually not a line search)
-.  SNESNoLineSearchNoNorms() - use the full Newton step (calculate no norms; faster in parallel)
+-  SNESNoLineSearchNoNorms() - use the full Newton step (calculate no norms; faster in parallel)
 
     Options Database Keys:
-$   -snes_eq_ls [basic,quadratic,cubic]
-$   -snes_eq_ls_alpha <alpha>
-$   -snes_eq_ls_maxstep <max>
-$   -snes_eq_ls_steptol <steptol>
++   -snes_eq_ls [basic,quadratic,cubic] - Selects line search
+.   -snes_eq_ls_alpha <alpha> - Sets alpha
+.   -snes_eq_ls_maxstep <max> - Sets maxstep
+-   -snes_eq_ls_steptol <steptol> - Sets steptol
 
    Calling sequence of func:
    func (SNES snes, Vec x, Vec f, Vec g, Vec y,
@@ -628,19 +626,19 @@ $   -snes_eq_ls_steptol <steptol>
          double *gnorm, *flag)
 
     Input parameters for func:
-.   snes - nonlinear context
++   snes - nonlinear context
 .   x - current iterate
 .   f - residual evaluated at x
 .   y - search direction (contains new iterate on output)
 .   w - work vector
-.   fnorm - 2-norm of f
+-   fnorm - 2-norm of f
 
     Output parameters for func:
-.   g - residual evaluated at new iterate y
++   g - residual evaluated at new iterate y
 .   y - new iterate (contains search direction on input)
 .   gnorm - 2-norm of g
 .   ynorm - 2-norm of search length
-.   flag - set to 0 if the line search succeeds; a nonzero integer 
+-   flag - set to 0 if the line search succeeds; a nonzero integer 
            on failure.
 
 .keywords: SNES, nonlinear, set, line search, routine

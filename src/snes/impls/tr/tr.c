@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.84 1998/04/13 17:56:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.85 1998/04/21 23:48:38 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -289,34 +289,34 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
    SNESConverged_EQ_TR - Monitors the convergence of the trust region
    method SNES_EQ_TR for solving systems of nonlinear equations (default).
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  xnorm - 2-norm of current iterate
 .  pnorm - 2-norm of current step 
 .  fnorm - 2-norm of function
-.  dummy - unused context
-
-   Collective on SNES
+-  dummy - unused context
 
    Returns:
-$  1  if  ( delta < xnorm*deltatol ),
-$  2  if  ( fnorm < atol ),
-$  3  if  ( pnorm < xtol*xnorm ),
-$ -2  if  ( nfct > maxf ),
-$ -1  if  ( delta < xnorm*epsmch ),
-$  0  otherwise,
++  1  if  ( delta < xnorm*deltatol ),
+.  2  if  ( fnorm < atol ),
+.  3  if  ( pnorm < xtol*xnorm ),
+. -2  if  ( nfct > maxf ),
+. -1  if  ( delta < xnorm*epsmch ),
+-  0  otherwise
 
    where
-$    delta    - trust region paramenter
-$    deltatol - trust region size tolerance,
-$               set with SNESSetTrustRegionTolerance()
-$    maxf - maximum number of function evaluations,
-$           set with SNESSetTolerances()
-$    nfct - number of function evaluations,
-$    atol - absolute function norm tolerance,
-$           set with SNESSetTolerances()
-$    xtol - relative function norm tolerance,
-$           set with SNESSetTolerances()
++    delta    - trust region paramenter
+.    deltatol - trust region size tolerance,
+                set with SNESSetTrustRegionTolerance()
+.    maxf - maximum number of function evaluations,
+            set with SNESSetTolerances()
+.    nfct - number of function evaluations,
+.    atol - absolute function norm tolerance,
+            set with SNESSetTolerances()
+-    xtol - relative function norm tolerance,
+            set with SNESSetTolerances()
 
 .keywords: SNES, nonlinear, default, converged, convergence
 

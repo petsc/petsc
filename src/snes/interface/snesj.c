@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.48 1998/04/13 17:55:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.49 1998/04/20 18:09:47 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -9,19 +9,19 @@ static char vcid[] = "$Id: snesj.c,v 1.48 1998/04/13 17:55:33 bsmith Exp curfman
 /*@C
    SNESDefaultComputeJacobian - Computes the Jacobian using finite differences. 
 
-   Input Parameters:
-.  x1 - compute Jacobian at this point
-.  ctx - application's function context, as set with SNESSetFunction()
-
-   Output Parameters:
-.  J - Jacobian matrix (not altered in this routine)
-.  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
-.  flag - flag indicating whether the matrix sparsity structure has changed
-
    Collective on SNES
 
+   Input Parameters:
++  x1 - compute Jacobian at this point
+-  ctx - application's function context, as set with SNESSetFunction()
+
+   Output Parameters:
++  J - Jacobian matrix (not altered in this routine)
+.  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
+-  flag - flag indicating whether the matrix sparsity structure has changed
+
    Options Database Key:
-$  -snes_fd
+.  -snes_fd - Activates SNESDefaultComputeJacobian()
 
    Notes:
    This routine is slow and expensive, and is not currently optimized
@@ -37,7 +37,8 @@ $  -snes_fd
 
 .seealso: SNESSetJacobian(), SNESDefaultComputeJacobianWithColoring()
 @*/
-int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
+                               MatStructure *flag,void *ctx)
 {
   Vec      j1a,j2a,x2;
   int      i,ierr,N,start,end,j;
@@ -117,19 +118,19 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 /*@C
    SNESDefaultComputeHessian - Computes the Hessian using finite differences. 
 
-   Input Parameters:
-.  x1 - compute Hessian at this point
-.  ctx - application's gradient context, as set with SNESSetGradient()
-
-   Output Parameters:
-.  J - Hessian matrix (not altered in this routine)
-.  B - newly computed Hessian matrix to use with preconditioner (generally the same as J)
-.  flag - flag indicating whether the matrix sparsity structure has changed
-
    Collective on SNES
 
+   Input Parameters:
++  x1 - compute Hessian at this point
+-  ctx - application's gradient context, as set with SNESSetGradient()
+
+   Output Parameters:
++  J - Hessian matrix (not altered in this routine)
+.  B - newly computed Hessian matrix to use with preconditioner (generally the same as J)
+-  flag - flag indicating whether the matrix sparsity structure has changed
+
    Options Database Key:
-$  -snes_fd
+$  -snes_fd - Activates SNESDefaultComputeHessian()
 
    Notes:
    This routine is slow and expensive, and is not currently optimized
@@ -142,7 +143,8 @@ $  -snes_fd
 
 .seealso: SNESSetHessian()
 @*/
-int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+int SNESDefaultComputeHessian(SNES snes,Vec x1,Mat *J,Mat *B,
+                              MatStructure *flag,void *ctx)
 {
   int ierr;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj2.c,v 1.13 1997/11/28 16:21:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj2.c,v 1.14 1998/04/13 17:55:33 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -11,28 +11,28 @@ static char vcid[] = "$Id: snesj2.c,v 1.13 1997/11/28 16:21:38 bsmith Exp bsmith
     SNESDefaultComputeJacobianWithColoring - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity. 
   
+    Collective on SNES
+
     Input Parameters:
-.   snes - nonlinear solver object
++   snes - nonlinear solver object
 .   x1 - location at which to evaluate Jacobian
-.   ctx - coloring context, where
-$      ctx must have type MatFDColoring, 
-$      as created via MatFDColoringCreate()
+-   ctx - coloring context, where ctx must have type MatFDColoring, 
+          as created via MatFDColoringCreate()
 
     Output Parameters:
-.   J - Jacobian matrix (not altered in this routine)
++   J - Jacobian matrix (not altered in this routine)
 .   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
-.   flag - flag indicating whether the matrix sparsity structure has changed
+-   flag - flag indicating whether the matrix sparsity structure has changed
 
-   Collective on SNES
-
-   Options Database Keys:
-$  -mat_fd_coloring_freq <freq> 
+    Options Database Keys:
+.  -mat_fd_coloring_freq <freq> - Activates SNESDefaultComputeJacobianWithColoring()
 
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
 
 .seealso: SNESSetJacobian(), SNESTestJacobian(), SNESDefaultComputeJacobian()
 @*/
-int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *J,Mat *B,
+                                           MatStructure *flag,void *ctx)
 {
   MatFDColoring color = (MatFDColoring) ctx;
   int           ierr,freq,it;

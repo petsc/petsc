@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.147 1998/04/22 13:49:10 balay Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.148 1998/04/22 14:14:26 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -16,25 +16,25 @@ DLList SNESList = 0;
 /*@ 
    SNESView - Prints the SNES data structure.
 
-   Input Parameters:
-.  SNES - the SNES context
-.  viewer - visualization context
-
    Collective on SNES, unless Viewer is VIEWER_STDOUT_SELF
-  
+
+   Input Parameters:
++  SNES - the SNES context
+-  viewer - visualization context
+
    Options Database Key:
 .  -snes_view - Calls SNESView() at end of SNESSolve()
 
    Notes:
    The available visualization contexts include
-.     VIEWER_STDOUT_SELF - standard output (default)
-.     VIEWER_STDOUT_WORLD - synchronized standard
++     VIEWER_STDOUT_SELF - standard output (default)
+-     VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their 
          data to the first processor to print. 
 
-   The user can open alternative vistualization contexts with
-$    ViewerFileOpenASCII() - output to a specified file
+   The user can open an alternative vistualization context with
+   ViewerFileOpenASCII() - output to a specified file
 
 .keywords: SNES, view
 
@@ -108,10 +108,10 @@ static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 /*@
     SNESAddOptionsChecker - Adds an additional function to check for SNES options.
 
+    Not Collective
+
     Input Parameter:
 .   snescheck - function that checks for options
-
-    Not Collective
 
 .seealso: SNESSetFromOptions()
 @*/
@@ -131,10 +131,11 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 /*@
    SNESSetFromOptions - Sets various SNES and SLES parameters from user options.
 
+   Collective on SNES
+
    Input Parameter:
 .  snes - the SNES context
 
-   Collective on SNES
    Notes:
    To see all options, run your program with the -help option or consult
    the users manual.
@@ -267,11 +268,11 @@ int SNESSetFromOptions(SNES snes)
    SNESSetApplicationContext - Sets the optional user-defined context for 
    the nonlinear solvers.  
 
-   Input Parameters:
-.  snes - the SNES context
-.  usrP - optional user context
-
    Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  usrP - optional user context
 
 .keywords: SNES, nonlinear, set, application, context
 
@@ -291,13 +292,13 @@ int SNESSetApplicationContext(SNES snes,void *usrP)
    SNESGetApplicationContext - Gets the user-defined context for the 
    nonlinear solvers.  
 
+   Not Collective
+
    Input Parameter:
 .  snes - SNES context
 
    Output Parameter:
 .  usrP - user context
-
-   Not Collective
 
 .keywords: SNES, nonlinear, get, application, context
 
@@ -317,13 +318,13 @@ int SNESGetApplicationContext( SNES snes,  void **usrP )
    SNESGetIterationNumber - Gets the current iteration number of the
    nonlinear solver.
 
+   Not Collective
+
    Input Parameter:
 .  snes - SNES context
 
    Output Parameter:
 .  iter - iteration number
-
-   Not Collective
 
 .keywords: SNES, nonlinear, get, iteration, number
 @*/
@@ -342,13 +343,13 @@ int SNESGetIterationNumber(SNES snes,int* iter)
    SNESGetFunctionNorm - Gets the norm of the current function that was set
    with SNESSSetFunction().
 
+   Collective on SNES
+
    Input Parameter:
 .  snes - SNES context
 
    Output Parameter:
 .  fnorm - 2-norm of function
-
-   Collective on SNES
 
    Note:
    SNESGetFunctionNorm() is valid for SNES_NONLINEAR_EQUATIONS methods only.
@@ -377,13 +378,13 @@ int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
    SNESGetGradientNorm - Gets the norm of the current gradient that was set
    with SNESSSetGradient().
 
+   Collective on SNES
+
    Input Parameter:
 .  snes - SNES context
 
    Output Parameter:
 .  fnorm - 2-norm of gradient
-
-   Collective on SNES
 
    Note:
    SNESGetGradientNorm() is valid for SNES_UNCONSTRAINED_MINIMIZATION 
@@ -412,13 +413,13 @@ int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
    SNESGetNumberUnsuccessfulSteps - Gets the number of unsuccessful steps
    attempted by the nonlinear solver.
 
+   Not Collective
+
    Input Parameter:
 .  snes - SNES context
 
    Output Parameter:
 .  nfails - number of unsuccessful steps attempted
-
-   Not Collective
 
    Notes:
    This counter is reset to zero for each successive call to SNESSolve().
@@ -440,13 +441,13 @@ int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
    SNESGetNumberLinearIterations - Gets the total number of linear iterations
    used by the nonlinear solver.
 
+   Not Collective
+
    Input Parameter:
 .  snes - SNES context
 
    Output Parameter:
 .  lits - number of linear iterations
-
-   Not Collective
 
    Notes:
    This counter is reset to zero for each successive call to SNESSolve().
@@ -467,13 +468,13 @@ int SNESGetNumberLinearIterations(SNES snes,int* lits)
 /*@C
    SNESGetSLES - Returns the SLES context for a SNES solver.
 
+   Not Collective, but if SNES object is parallel, then SLES object is parallel
+
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
 .  sles - the SLES context
-
-   Not Collective, but if SNES object is parallel, then SLES object is parallel
 
    Notes:
    The user can then directly manipulate the SLES context to set various
@@ -498,26 +499,24 @@ int SNESGetSLES(SNES snes,SLES *sles)
 /*@C
    SNESCreate - Creates a nonlinear solver context.
 
-   Input Parameter:
-.  comm - MPI communicator
-.  type - type of method, one of
-$    SNES_NONLINEAR_EQUATIONS 
-$      (for systems of nonlinear equations)
-$    SNES_UNCONSTRAINED_MINIMIZATION
-$      (for unconstrained minimization)
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator
+-  type - type of method, either 
+   SNES_NONLINEAR_EQUATIONS (for systems of nonlinear equations) 
+   or SNES_UNCONSTRAINED_MINIMIZATION (for unconstrained minimization)
 
    Output Parameter:
 .  outsnes - the new SNES context
 
-   Collective on MPI_Comm
-
-   Options Database Key:
-$   -snes_mf - use default matrix-free Jacobian-vector products,
-$              and no preconditioning matrix
-$   -snes_mf_operator - use default matrix-free Jacobian-vector
-$             products, and a user-provided preconditioning matrix
-$             as set by SNESSetJacobian()
-$   -snes_fd - use (slow!) finite differences to compute Jacobian
+   Options Database Keys:
++   -snes_mf - Activates default matrix-free Jacobian-vector products,
+               and no preconditioning matrix
+.   -snes_mf_operator - Activates default matrix-free Jacobian-vector
+               products, and a user-provided preconditioning matrix
+               as set by SNESSetJacobian()
+-   -snes_fd - Uses (slow!) finite differences to compute Jacobian
 
 .keywords: SNES, nonlinear, create, context
 
@@ -603,26 +602,26 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
    vector for use by the SNES routines in solving systems of nonlinear
    equations.
 
-   Input Parameters:
-.  snes - the SNES context
-.  func - function evaluation routine
-.  r - vector to store function value
-.  ctx - [optional] user-defined context for private data for the 
-         function evaluation routine (may be PETSC_NULL)
-
    Collective on SNES
 
-   Calling sequence of func:
-.  func (SNES snes,Vec x,Vec f,void *ctx);
+   Input Parameters:
++  snes - the SNES context
+.  func - function evaluation routine
+.  r - vector to store function value
+-  ctx - [optional] user-defined context for private data for the 
+         function evaluation routine (may be PETSC_NULL)
 
-.  x - input vector
+   Calling sequence of func:
+$  func (SNES snes,Vec x,Vec f,void *ctx);
+
++  x - input vector
 .  f - function vector
-.  ctx - optional user-defined function context 
+-  ctx - optional user-defined function context 
 
    Notes:
    The Newton-like methods typically solve linear systems of the form
 $      f'(x) x = -f(x),
-$  where f'(x) denotes the Jacobian matrix and f(x) is the function.
+   where f'(x) denotes the Jacobian matrix and f(x) is the function.
 
    SNESSetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
    Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
@@ -651,14 +650,14 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx
    SNESComputeFunction - Computes the function that has been set with
    SNESSetFunction().  
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
-.  x - input vector
++  snes - the SNES context
+-  x - input vector
 
    Output Parameter:
 .  y - function vector, as set by SNESSetFunction()
-
-   Collective on SNES
 
    Notes:
    SNESComputeFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
@@ -692,20 +691,20 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
    SNESSetMinimizationFunction - Sets the function evaluation routine for 
    unconstrained minimization.
 
-   Input Parameters:
-.  snes - the SNES context
-.  func - function evaluation routine
-.  ctx - [optional] user-defined context for private data for the 
-         function evaluation routine (may be PETSC_NULL)
-
    Collective on SNES
 
-   Calling sequence of func:
-.  func (SNES snes,Vec x,double *f,void *ctx);
+   Input Parameters:
++  snes - the SNES context
+.  func - function evaluation routine
+-  ctx - [optional] user-defined context for private data for the 
+         function evaluation routine (may be PETSC_NULL)
 
-.  x - input vector
+   Calling sequence of func:
+$  func (SNES snes,Vec x,double *f,void *ctx);
+
++  x - input vector
 .  f - function
-.  ctx - [optional] user-defined function context 
+-  ctx - [optional] user-defined function context 
 
    Notes:
    SNESSetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
@@ -736,14 +735,14 @@ int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
    SNESComputeMinimizationFunction - Computes the function that has been
    set with SNESSetMinimizationFunction().
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
-.  x - input vector
++  snes - the SNES context
+-  x - input vector
 
    Output Parameter:
 .  y - function value
-
-   Collective on SNES
 
    Notes:
    SNESComputeMinimizationFunction() is valid only for 
@@ -778,21 +777,21 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
    SNESSetGradient - Sets the gradient evaluation routine and gradient
    vector for use by the SNES routines.
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  func - function evaluation routine
 .  ctx - optional user-defined context for private data for the 
          gradient evaluation routine (may be PETSC_NULL)
-.  r - vector to store gradient value
-
-   Collective on SNES
+-  r - vector to store gradient value
 
    Calling sequence of func:
-.  func (SNES, Vec x, Vec g, void *ctx);
+$  func (SNES, Vec x, Vec g, void *ctx);
 
-.  x - input vector
++  x - input vector
 .  g - gradient vector
-.  ctx - optional user-defined gradient context 
+-  ctx - optional user-defined gradient context 
 
    Notes:
    SNESSetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
@@ -823,14 +822,14 @@ int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
    SNESComputeGradient - Computes the gradient that has been set with
    SNESSetGradient().
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
-.  x - input vector
++  snes - the SNES context
+-  x - input vector
 
    Output Parameter:
 .  y - gradient vector
-
-   Collective on SNES
 
    Notes:
    SNESComputeGradient() is valid only for 
@@ -864,19 +863,19 @@ int SNESComputeGradient(SNES snes,Vec x, Vec y)
    SNESComputeJacobian - Computes the Jacobian matrix that has been
    set with SNESSetJacobian().
 
-   Input Parameters:
-.  snes - the SNES context
-.  x - input vector
-
-   Output Parameters:
-.  A - Jacobian matrix
-.  B - optional preconditioning matrix
-.  flag - flag indicating matrix structure
-
    Collective on SNES and Mat
 
+   Input Parameters:
++  snes - the SNES context
+-  x - input vector
+
+   Output Parameters:
++  A - Jacobian matrix
+.  B - optional preconditioning matrix
+-  flag - flag indicating matrix structure
+
    Notes: 
-   Most users should not need to explicitly call this routine, as it
+   Most users should not need to explicitly call this routine, as it 
    is used internally within the nonlinear solvers. 
 
    See SLESSetOperators() for important information about setting the
@@ -917,16 +916,16 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
    SNESComputeHessian - Computes the Hessian matrix that has been
    set with SNESSetHessian().
 
+   Collective on SNES and Mat
+
    Input Parameters:
-.  snes - the SNES context
-.  x - input vector
++  snes - the SNES context
+-  x - input vector
 
    Output Parameters:
-.  A - Hessian matrix
++  A - Hessian matrix
 .  B - optional preconditioning matrix
-.  flag - flag indicating matrix structure
-
-   Collective on SNES and Mat
+-  flag - flag indicating matrix structure
 
    Notes: 
    Most users should not need to explicitly call this routine, as it
@@ -971,25 +970,25 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
    SNESSetJacobian - Sets the function to compute Jacobian as well as the
    location to store the matrix.
 
+   Collective on SNES and Mat
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  A - Jacobian matrix
 .  B - preconditioner matrix (usually same as the Jacobian)
 .  func - Jacobian evaluation routine
-.  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the 
          Jacobian evaluation routine (may be PETSC_NULL)
 
-   Collective on SNES and Mat
-
    Calling sequence of func:
-.  func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
+$  func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
-.  x - input vector
++  x - input vector
 .  A - Jacobian matrix
 .  B - preconditioner matrix, usually the same as A
 .  flag - flag indicating information about the preconditioner matrix
    structure (same as flag in SLESSetOperators())
-.  ctx - [optional] user-defined Jacobian context
+-  ctx - [optional] user-defined Jacobian context
 
    Notes: 
    See SLESSetOperators() for important information about setting the flag
@@ -1026,15 +1025,15 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
    SNESGetJacobian - Returns the Jacobian matrix and optionally the user 
    provided context for evaluating the Jacobian.
 
+   Not Collective, but Mat object will be parallel if SNES object is
+
    Input Parameter:
 .  snes - the nonlinear solver context
 
    Output Parameters:
-.  A - location to stash Jacobian matrix (or PETSC_NULL)
++  A - location to stash Jacobian matrix (or PETSC_NULL)
 .  B - location to stash preconditioner matrix (or PETSC_NULL)
-.  ctx - location to stash Jacobian ctx (or PETSC_NULL)
-
-   Not Collective, but Mat object will be parallel if SNES object is
+-  ctx - location to stash Jacobian ctx (or PETSC_NULL)
 
 .seealso: SNESSetJacobian(), SNESComputeJacobian()
 @*/
@@ -1056,25 +1055,25 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
    SNESSetHessian - Sets the function to compute Hessian as well as the
    location to store the matrix.
 
+   Collective on SNES and Mat
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  A - Hessian matrix
 .  B - preconditioner matrix (usually same as the Hessian)
 .  func - Jacobian evaluation routine
-.  ctx - [optional] user-defined context for private data for the 
+-  ctx - [optional] user-defined context for private data for the 
          Hessian evaluation routine (may be PETSC_NULL)
 
-   Collective on SNES and Mat
-
    Calling sequence of func:
-.  func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
+$  func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
-.  x - input vector
++  x - input vector
 .  A - Hessian matrix
 .  B - preconditioner matrix, usually the same as A
 .  flag - flag indicating information about the preconditioner matrix
    structure (same as flag in SLESSetOperators())
-.  ctx - [optional] user-defined Hessian context
+-  ctx - [optional] user-defined Hessian context
 
    Notes: 
    See SLESSetOperators() for important information about setting the flag
@@ -1111,17 +1110,19 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
    SNESGetHessian - Returns the Hessian matrix and optionally the user 
    provided context for evaluating the Hessian.
 
+   Not Collective, but Mat object is parallel if SNES object is parallel
+
    Input Parameter:
 .  snes - the nonlinear solver context
 
    Output Parameters:
-.  A - location to stash Hessian matrix (or PETSC_NULL)
++  A - location to stash Hessian matrix (or PETSC_NULL)
 .  B - location to stash preconditioner matrix (or PETSC_NULL)
-.  ctx - location to stash Hessian ctx (or PETSC_NULL)
-
-   Not Collective, but Mat object is parallel if SNES object is parallel
+-  ctx - location to stash Hessian ctx (or PETSC_NULL)
 
 .seealso: SNESSetHessian(), SNESComputeHessian()
+
+.keywords: SNES, get, Hessian
 @*/
 int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
 {
@@ -1143,11 +1144,11 @@ int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
    SNESSetUp - Sets up the internal data structures for the later use
    of a nonlinear solver.
 
-   Input Parameters:
-.  snes - the SNES context
-.  x - the solution vector
-
    Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  x - the solution vector
 
    Notes:
    For basic use of the SNES solvers the user need not explicitly call
@@ -1246,10 +1247,10 @@ int SNESSetUp(SNES snes,Vec x)
    SNESDestroy - Destroys the nonlinear solver context that was created
    with SNESCreate().
 
+   Collective on SNES
+
    Input Parameter:
 .  snes - the SNES context
-
-   Collective on SNES
 
 .keywords: SNES, nonlinear, destroy
 
@@ -1281,23 +1282,23 @@ int SNESDestroy(SNES snes)
 /*@
    SNESSetTolerances - Sets various parameters used in convergence tests.
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  atol - absolute convergence tolerance
 .  rtol - relative convergence tolerance
 .  stol -  convergence tolerance in terms of the norm
            of the change in the solution between steps
 .  maxit - maximum number of iterations
-.  maxf - maximum number of function evaluations
-
-   Collective on SNES
+-  maxf - maximum number of function evaluations
 
    Options Database Keys: 
-$    -snes_atol <atol>
-$    -snes_rtol <rtol>
-$    -snes_stol <stol>
-$    -snes_max_it <maxit>
-$    -snes_max_funcs <maxf>
++    -snes_atol <atol> - Sets atol
+.    -snes_rtol <rtol> - Sets rtol
+.    -snes_stol <stol> - Sets stol
+.    -snes_max_it <maxit> - Sets maxit
+-    -snes_max_funcs <maxf> - Sets maxf
 
    Notes:
    The default maximum number of iterations is 50.
@@ -1324,16 +1325,16 @@ int SNESSetTolerances(SNES snes,double atol,double rtol,double stol,int maxit,in
 /*@
    SNESGetTolerances - Gets various parameters used in convergence tests.
 
+   Not Collective
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  atol - absolute convergence tolerance
 .  rtol - relative convergence tolerance
 .  stol -  convergence tolerance in terms of the norm
            of the change in the solution between steps
 .  maxit - maximum number of iterations
-.  maxf - maximum number of function evaluations
-
-   Not Collective
+-  maxf - maximum number of function evaluations
 
    Notes:
    The user can specify PETSC_NULL for any parameter that is not needed.
@@ -1359,14 +1360,14 @@ int SNESGetTolerances(SNES snes,double *atol,double *rtol,double *stol,int *maxi
 /*@
    SNESSetTrustRegionTolerance - Sets the trust region parameter tolerance.  
 
-   Input Parameters:
-.  snes - the SNES context
-.  tol - tolerance
-   
    Collective on SNES
 
+   Input Parameters:
++  snes - the SNES context
+-  tol - tolerance
+   
    Options Database Key: 
-$    -snes_trtol <tol>
+.  -snes_trtol <tol> - Sets tol
 
 .keywords: SNES, nonlinear, set, trust region, tolerance
 
@@ -1386,14 +1387,14 @@ int SNESSetTrustRegionTolerance(SNES snes,double tol)
    SNESSetMinimizationFunctionTolerance - Sets the minimum allowable function tolerance
    for unconstrained minimization solvers.
    
-   Input Parameters:
-.  snes - the SNES context
-.  ftol - minimum function tolerance
-
    Collective on SNES
 
+   Input Parameters:
++  snes - the SNES context
+-  ftol - minimum function tolerance
+
    Options Database Key: 
-$    -snes_fmin <ftol>
+.  -snes_fmin <ftol> - Sets ftol
 
    Note:
    SNESSetMinimizationFunctionTolerance() is valid for SNES_UNCONSTRAINED_MINIMIZATION
@@ -1420,37 +1421,34 @@ int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
    iteration of the nonlinear solver to display the iteration's 
    progress.   
 
-   Input Parameters:
-.  snes - the SNES context
-.  func - monitoring routine
-.  mctx - [optional] user-defined context for private data for the 
-          monitor routine (may be PETSC_NULL)
-
    Collective on SNES
 
-   Calling sequence of func:
-   int func(SNES snes,int its, Vec x,Vec f,double norm,void *mctx)
+   Input Parameters:
++  snes - the SNES context
+.  func - monitoring routine
+-  mctx - [optional] user-defined context for private data for the 
+          monitor routine (may be PETSC_NULL)
 
-$    snes - the SNES context
-$    its - iteration number
-$    mctx - [optional] monitoring context
-$
-$ SNES_NONLINEAR_EQUATIONS methods:
-$    norm - 2-norm function value (may be estimated)
-$
-$ SNES_UNCONSTRAINED_MINIMIZATION methods:
-$    norm - 2-norm gradient value (may be estimated)
+   Calling sequence of func:
+$  int func(SNES snes,int its, Vec x,Vec f,double norm,void *mctx)
+
++    snes - the SNES context
+.    its - iteration number
+.    mctx - [optional] monitoring context
+.    norm - 2-norm function value (may be estimated)
+            for SNES_NONLINEAR_EQUATIONS methods
+-    norm - 2-norm gradient value (may be estimated)
+            for SNES_UNCONSTRAINED_MINIMIZATION methods
 
    Options Database Keys:
-$    -snes_monitor        : sets SNESDefaultMonitor()
-$    -snes_xmonitor       : sets line graph monitor,
-$                           uses SNESLGMonitorCreate()
-$    -snes_cancelmonitors : cancels all monitors that have
-$                           been hardwired into a code by 
-$                           calls to SNESSetMonitor(), but
-$                           does not cancel those set via
-$                           the options database.
-
++    -snes_monitor        - sets SNESDefaultMonitor()
+.    -snes_xmonitor       - sets line graph monitor,
+                            uses SNESLGMonitorCreate()
+_    -snes_cancelmonitors - cancels all monitors that have
+                            been hardwired into a code by 
+                            calls to SNESSetMonitor(), but
+                            does not cancel those set via
+                            the options database.
 
    Notes: 
    Several different monitoring routines may be set by calling
@@ -1478,20 +1476,18 @@ int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
 /*@C
    SNESClearMonitor - Clears all the monitor functions for a SNES object.
 
+   Collective on SNES
+
    Input Parameters:
 .  snes - the SNES context
 
-   Collective on SNES
-
    Options Database:
-$    -snes_cancelmonitors : cancels all monitors that have
-$                           been hardwired into a code by 
-$                           calls to SNESSetMonitor(), but
-$                           does not cancel those set via
-$                           the options database.
+.  -snes_cancelmonitors - cancels all monitors that have been hardwired
+    into a code by calls to SNESSetMonitor(), but does not cancel those 
+    set via the options database
 
    Notes: 
-     There is no way to clear one specific monitor from a SNES object.
+   There is no way to clear one specific monitor from a SNES object.
 
 .keywords: SNES, nonlinear, set, monitor
 
@@ -1510,29 +1506,24 @@ int SNESClearMonitor( SNES snes )
    SNESSetConvergenceTest - Sets the function that is to be used 
    to test for convergence of the nonlinear iterative solution.   
 
-   Input Parameters:
-.  snes - the SNES context
-.  func - routine to test for convergence
-.  cctx - [optional] context for private data for the convergence routine 
-          (may be PETSC_NULL)
-
    Collective on SNES
 
-   Calling sequence of func:
-   int func (SNES snes,double xnorm,double gnorm,
-             double f,void *cctx)
+   Input Parameters:
++  snes - the SNES context
+.  func - routine to test for convergence
+-  cctx - [optional] context for private data for the convergence routine 
+          (may be PETSC_NULL)
 
-$    snes - the SNES context
-$    cctx - [optional] convergence context
-$    xnorm - 2-norm of current iterate
-$
-$ SNES_NONLINEAR_EQUATIONS methods:
-$    gnorm - 2-norm of current step 
-$    f - 2-norm of function
-$
-$ SNES_UNCONSTRAINED_MINIMIZATION methods:
-$    gnorm - 2-norm of current gradient
-$    f - function value
+   Calling sequence of func:
+$  int func (SNES snes,double xnorm,double gnorm,double f,void *cctx)
+
++    snes - the SNES context
+.    cctx - [optional] convergence context
+.    xnorm - 2-norm of current iterate
+.    gnorm - 2-norm of current step (SNES_NONLINEAR_EQUATIONS methods)
+.    f - 2-norm of function (SNES_NONLINEAR_EQUATIONS methods)
+.    gnorm - 2-norm of current gradient (SNES_UNCONSTRAINED_MINIMIZATION methods)
+-    f - function value (SNES_UNCONSTRAINED_MINIMIZATION methods)
 
 .keywords: SNES, nonlinear, set, convergence, test
 
@@ -1552,12 +1543,12 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,void*
 /*@
    SNESSetConvergenceHistory - Sets the array used to hold the convergence history.
 
-   Input Parameters:
-.  snes - iterative context obtained from SNESCreate()
-.  a   - array to hold history
-.  na  - size of a
-
    Collective on SNES
+
+   Input Parameters:
++  snes - iterative context obtained from SNESCreate()
+.  a   - array to hold history
+-  na  - size of a
 
    Notes:
    If set, this array will contain the function norms (for
@@ -1588,16 +1579,16 @@ int SNESSetConvergenceHistory(SNES snes, double *a, int na)
    positive parameter delta.
 
     Input Parameters:
-.   snes - the SNES context
++   snes - the SNES context
 .   y - approximate solution of linear system
 .   fnorm - 2-norm of current function
-.   delta - trust region size
+-   delta - trust region size
 
     Output Parameters:
-.   gpnorm - predicted function norm at the new point, assuming local 
++   gpnorm - predicted function norm at the new point, assuming local 
     linearization.  The value is zero if the step lies within the trust 
     region, and exceeds zero otherwise.
-.   ynorm - 2-norm of the step
+-   ynorm - 2-norm of the step
 
     Note:
     For non-trust region methods such as SNES_EQ_LS, the parameter delta 
@@ -1633,14 +1624,14 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
    SNESSolve - Solves a nonlinear system.  Call SNESSolve after calling 
    SNESCreate() and optional routines of the form SNESSetXXX().
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
-.  x - the solution vector
++  snes - the SNES context
+-  x - the solution vector
 
    Output Parameter:
 .  its - number of iterations until termination
-
-   Collective on SNES
 
    Notes:
    The user should initialize the vector, x, with the initial guess
@@ -1677,25 +1668,26 @@ int SNESSolve(SNES snes,Vec x,int *its)
 /*@C
    SNESSetType - Sets the method for the nonlinear solver.  
 
-   Input Parameters:
-.  snes - the SNES context
-.  method - a known method
-
    Collective on SNES
 
-  Options Database Command:
-$ -snes_type  <method>
-$    Use -help for a list of available methods
-$    (for instance, ls or tr)
+   Input Parameters:
++  snes - the SNES context
+-  method - a known method
+
+   Options Database Key:
+.  -snes_type <method> - Sets the method; use -help for a list
+   of available methods (for instance, ls or tr)
 
    Notes:
    See "petsc/include/snes.h" for available methods (for instance)
-$  Systems of nonlinear equations:
-$    SNES_EQ_LS - Newton's method with line search
-$    SNES_EQ_TR - Newton's method with trust region
-$  Unconstrained minimization:
-$    SNES_UM_TR - Newton's method with trust region 
-$    SNES_UM_LS - Newton's method with line search
+.    SNES_EQ_LS - Newton's method with line search
+     (systems of nonlinear equations)
+.    SNES_EQ_TR - Newton's method with trust region
+     (systems of nonlinear equations)
+.    SNES_UM_TR - Newton's method with trust region 
+     (unconstrained minimization)
+.    SNES_UM_LS - Newton's method with line search
+     (unconstrained minimization)
 
   Normally, it is best to use the SNESSetFromOptions() command and then
   set the SNES solver type from the options database rather than by using
@@ -1774,13 +1766,13 @@ int SNESRegisterDestroy(void)
 /*@C
    SNESGetType - Gets the SNES method type and name (as a string).
 
+   Not Collective
+
    Input Parameter:
 .  snes - nonlinear solver context
 
    Output Parameter:
 .  method - SNES method (a charactor string)
-
-   Not Collective
 
 .keywords: SNES, nonlinear, get, method, name
 @*/
@@ -1797,13 +1789,13 @@ int SNESGetType(SNES snes, SNESType *method)
    SNESGetSolution - Returns the vector where the approximate solution is
    stored.
 
+   Not Collective, but Vec is parallel if SNES is parallel
+
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
 .  x - the solution
-
-   Not Collective, but Vec is parallel if SNES is parallel
 
 .keywords: SNES, nonlinear, get, solution
 
@@ -1823,13 +1815,13 @@ int SNESGetSolution(SNES snes,Vec *x)
    SNESGetSolutionUpdate - Returns the vector where the solution update is
    stored. 
 
+   Not Collective, but Vec is parallel if SNES is parallel
+
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
 .  x - the solution update
-
-   Not Collective, but Vec is parallel if SNES is parallel
 
 .keywords: SNES, nonlinear, get, solution, update
 
@@ -1848,13 +1840,13 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 /*@C
    SNESGetFunction - Returns the vector where the function is stored.
 
+   Not Collective, but Vec is parallel if SNES is parallel
+
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
 .  r - the function
-
-   Not Collective, but Vec is parallel if SNES is parallel
 
    Notes:
    SNESGetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only
@@ -1882,13 +1874,13 @@ int SNESGetFunction(SNES snes,Vec *r)
 /*@C
    SNESGetGradient - Returns the vector where the gradient is stored.
 
+   Not Collective, but Vec is parallel if SNES is parallel
+
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
 .  r - the gradient
-
-   Not Collective, but Vec is parallel if SNES is parallel
 
    Notes:
    SNESGetGradient() is valid for SNES_UNCONSTRAINED_MINIMIZATION methods 
@@ -1916,13 +1908,13 @@ int SNESGetGradient(SNES snes,Vec *r)
    SNESGetMinimizationFunction - Returns the scalar function value for 
    unconstrained minimization problems.
 
+   Not Collective
+
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
 .  r - the function
-
-   Not Collective, but Vec is parallel if SNES is parallel
 
    Notes:
    SNESGetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
@@ -1951,16 +1943,15 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
    SNESSetOptionsPrefix - Sets the prefix used for searching for all 
    SNES options in the database.
 
-   Input Parameter:
-.  snes - the SNES context
-.  prefix - the prefix to prepend to all option names
-
    Collective on SNES
+
+   Input Parameter:
++  snes - the SNES context
+-  prefix - the prefix to prepend to all option names
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
-   The first character of all runtime options is AUTOMATICALLY the
-   hyphen.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
 
 .keywords: SNES, set, options, prefix, database
 
@@ -1983,16 +1974,15 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
    SNESAppendOptionsPrefix - Appends to the prefix used for searching for all 
    SNES options in the database.
 
-   Input Parameter:
-.  snes - the SNES context
-.  prefix - the prefix to prepend to all option names
-
    Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  prefix - the prefix to prepend to all option names
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
-   The first character of all runtime options is AUTOMATICALLY the
-   hyphen.
+   The first character of all runtime options is AUTOMATICALLY the hyphen.
 
 .keywords: SNES, append, options, prefix, database
 
@@ -2015,13 +2005,13 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
    SNESGetOptionsPrefix - Sets the prefix used for searching for all 
    SNES options in the database.
 
+   Not Collective
+
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
 .  prefix - pointer to the prefix string used
-
-   Not Collective
 
 .keywords: SNES, get, options, prefix, database
 
@@ -2042,13 +2032,14 @@ int SNESGetOptionsPrefix(SNES snes,char **prefix)
 /*@
    SNESPrintHelp - Prints all options for the SNES component.
 
+   Collective on SNES
+
    Input Parameter:
 .  snes - the SNES context
 
-   Collective on SNES
-
    Options Database Keys:
-$  -help, -h
++  -help - Prints SNES options
+-  -h - Prints SNES options
 
 .keywords: SNES, nonlinear, help
 
@@ -2128,11 +2119,13 @@ int SNESPrintHelp(SNES snes)
    Synopsis:
    SNESRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
 
+   Not collective
+
    Input Parameters:
-.  name_solver - name of a new user-defined solver
++  name_solver - name of a new user-defined solver
 .  path - path (either absolute or relative) the library containing this solver
 .  name_create - name of routine to create method context
-.  routine_create - routine to create method context
+-  routine_create - routine to create method context
 
    Notes:
    SNESRegister() may be called multiple times to add several user-defined solvers.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.67 1998/04/09 04:18:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.68 1998/04/13 17:56:35 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -222,32 +222,32 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
    SNESConverged_UM_LS - Monitors the convergence of the SNESSolve_UM_LS()
    routine (default). 
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  xnorm - 2-norm of current iterate
 .  gnorm - 2-norm of current gradient
 .  f - objective function value
-.  dummy - unused dummy context
-
-   Collective on SNES
+-  dummy - unused dummy context
 
    Returns:
-$   1  if  ( f < fmin ),
-$   2  if  ( gnorm < atol ),
-$  -1  if  ( nfunc > max_func ),
-$  -2  if  ( gnorm < epsmch ),
-$  -3  if  line search attempt failed,
-$   0  otherwise,
++   1  if  ( f < fmin ),
+.   2  if  ( gnorm < atol ),
+.  -1  if  ( nfunc > max_func ),
+.  -2  if  ( gnorm < epsmch ),
+.  -3  if  line search attempt failed,
+-   0  otherwise,
 
    where
-$  atol     - absolute gradient norm tolerance,
-$             set with SNESSetTolerances()
-$  epsmch   - machine epsilon
-$  fmin     - lower bound on function value,
-$             set with SNESSetMinimizationFunctionTolerance()
-$  max_func - maximum number of function evaluations,
-$             set with SNESSetTolerances()
-$  nfunc    - number of function evaluations
++  atol     - absolute gradient norm tolerance,
+              set with SNESSetTolerances()
+.  epsmch   - machine epsilon
+.  fmin     - lower bound on function value,
+              set with SNESSetMinimizationFunctionTolerance()
+.  max_func - maximum number of function evaluations,
+              set with SNESSetTolerances()
+-  nfunc    - number of function evaluations
 @*/
 int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,void *dummy)
 {
@@ -294,46 +294,46 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,void *dummy
      Technical Report MCS-P330-1092.
 
    Input Parameters:
-.  snes - SNES context
++  snes - SNES context
 .  X - current iterate (on output X contains new iterate, X + step*S)
 .  S - search direction
 .  f - objective function evaluated at X
 .  G - gradient evaluated at X
 .  W - work vector
-.  step - initial estimate of step length
+-  step - initial estimate of step length
 
    Output parameters:
-.  f - objective function evaluated at new iterate, X + step*S
++  f - objective function evaluated at new iterate, X + step*S
 .  G - gradient evaluated at new iterate, X + step*S
 .  X - new iterate
 .  gnorm - 2-norm of G
-.  step - final step length
+-  step - final step length
 
    Info is set to one of:
-$  1 if the line search succeeds:  the sufficient decrease
-$    condition and the directional derivative condition hold
-$
-$  negative number if the input parameters are invalid:
-$   -1:  step < 0
-$   -2:  ftol < 0 
-$   -3:  rtol < 0 
-$   -4:  gtol < 0 
-$   -5:  stepmin < 0 
-$   -6:  stepmax < stepmin 
-$   -7:  maxfev < 0 
-$
-$  positive number > 1 if the line search otherwise terminates:
-$    2:  Relative width of the interval of uncertainty is 
-$        at most rtol.
-$    3:  Maximum number of function evaluations (maxfev) has 
-$        been reached.
-$    4:  Step is at the lower bound, stepmin.
-$    5:  Step is at the upper bound, stepmax.
-$    6:  Rounding errors may prevent further progress. 
-$        There may not be a step that satisfies the 
-$        sufficient decrease and curvature conditions.  
-$        Tolerances may be too small.
-$    7:  Search direction is not a descent direction.
+.   1 - the line search succeeds; the sufficient decrease
+   condition and the directional derivative condition hold
+
+   negative number if an input parameter is invalid
+.   -1 -  step < 0 
+.   -2 -  ftol < 0 
+.   -3 -  rtol < 0 
+.   -4 -  gtol < 0 
+.   -5 -  stepmin < 0 
+.   -6 -  stepmax < stepmin
+-   -7 -  maxfev < 0
+
+   positive number > 1 if the line search otherwise terminates
++    2 -  Relative width of the interval of uncertainty is 
+         at most rtol.
+.    3 -  Maximum number of function evaluations (maxfev) has 
+         been reached.
+.    4 -  Step is at the lower bound, stepmin.
+.    5 -  Step is at the upper bound, stepmax.
+.    6 -  Rounding errors may prevent further progress. 
+         There may not be a step that satisfies the 
+         sufficient decrease and curvature conditions.  
+         Tolerances may be too small.
++    7 -  Search direction is not a descent direction.
 
    Notes:
    This routine is used within the SNES_UM_LS method.

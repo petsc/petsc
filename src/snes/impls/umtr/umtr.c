@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.68 1998/04/09 04:18:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.69 1998/04/13 17:56:28 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -217,38 +217,38 @@ static int SNESDestroy_UM_TR(SNES snes )
    SNESConverged_UM_TR - Monitors the convergence of the SNESSolve_UM_TR()
    routine (default). 
 
+   Collective on SNES
+
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  xnorm - 2-norm of current iterate
 .  gnorm - 2-norm of current gradient
 .  f - objective function value
-.  dummy - unused dummy context
-
-   Collective on SNES
+-  dummy - unused dummy context
 
    Returns:
-$  1  if  ( f < fmin ),
-$  2  if  ( abs(ared) <= rtol*abs(f) && 
-$           pred <= rtol*abs(f) ),
-$  3  if  ( delta <= deltatol*xnorm ),
-$ -1  if  ( nfuncs > maxfunc ),
-$ -2  if  ( abs(ared) <= epsmch && pred <= epsmch ),
-$  0  otherwise,
++  1  if  ( f < fmin ),
+.  2  if  ( abs(ared) <= rtol*abs(f) && 
+            pred <= rtol*abs(f) ),
+.  3  if  ( delta <= deltatol*xnorm ),
+. -1  if  ( nfuncs > maxfunc ),
+. -2  if  ( abs(ared) <= epsmch && pred <= epsmch ),
+-  0  otherwise.
 
    where
-$    ared     - actual reduction
-$    delta    - trust region paramenter
-$    deltatol - trust region size tolerance,
-$               set with SNESSetTrustRegionTolerance()
-$    epsmch   - machine epsilon
-$    fmin     - lower bound on function value,
-$               set with SNESSetMinimizationFunctionTolerance()
-$    nfunc    - number of function evaluations
-$    maxfunc  - maximum number of function evaluations, 
-$               set with SNESSetTolerances()
-$    pred     - predicted reduction
-$    rtol     - relative function tolerance, 
-$               set with SNESSetTolerances()
++    ared     - actual reduction
+.    delta    - trust region paramenter
+.    deltatol - trust region size tolerance,
+                set with SNESSetTrustRegionTolerance()
+.    epsmch   - machine epsilon
+.    fmin     - lower bound on function value,
+                set with SNESSetMinimizationFunctionTolerance()
+.    nfunc    - number of function evaluations
+.    maxfunc  - maximum number of function evaluations, 
+                set with SNESSetTolerances()
+.    pred     - predicted reduction
+-    rtol     - relative function tolerance, 
+                set with SNESSetTolerances()
 @*/
 int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,void *dummy)
 {

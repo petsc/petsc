@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.63 1998/04/09 04:18:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.64 1998/04/13 17:55:33 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -185,27 +185,28 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
    context for use with a SNES solver.  This matrix can be used as
    the Jacobian argument for the routine SNESSetJacobian().
 
+   Collective on SNES and Vec
+
    Input Parameters:
-.  snes - the SNES context
-.  x - vector where SNES solution is to be stored.
++  snes - the SNES context
+-  x - vector where SNES solution is to be stored.
 
    Output Parameter:
 .  J - the matrix-free matrix
-
-   Collective on SNES and Vec
 
    Notes:
    The matrix-free matrix context merely contains the function pointers
    and work space for performing finite difference approximations of
    Jacobian-vector products, J(u)*a, via
 
-$       J(u)*a = [J(u+h*a) - J(u)]/h where
-$        h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
-$          = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
-$   where
-$        error_rel = square root of relative error in
-$                    function evaluation
-$        umin = minimum iterate parameter
+.vb
+     J(u)*a = [J(u+h*a) - J(u)]/h where
+     h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
+       = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
+ where
+     error_rel = square root of relative error in function evaluation
+     umin = minimum iterate parameter
+.ve
 
    The user can set these parameters via SNESSetMatrixFreeParameters().
    See the nonlinear solvers chapter of the users manual for details.
@@ -214,8 +215,8 @@ $        umin = minimum iterate parameter
    matrix context.
 
    Options Database Keys:
-$  -snes_mf_err <error_rel>
-$  -snes_mf_unim <umin>
++  -snes_mf_err <error_rel> - Sets error_rel
+-  -snes_mf_unim <umin> - Sets umin
 
 .keywords: SNES, default, matrix-free, create, matrix
 
@@ -263,17 +264,25 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
    SNESSetMatrixFreeParameters - Sets the parameters for the approximation of
    matrix-vector products using finite differences.
 
-$       J(u)*a = [J(u+h*a) - J(u)]/h where
-$        h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
-$          = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
-$
-   Input Parameters:
-.  snes - the SNES context
-.  error_rel - relative error (should be set to the square root of
-     the relative error in the function evaluations)
-.  umin - minimum allowable u-value
-
    Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  error_rel - relative error (should be set to the square root of
+               the relative error in the function evaluations)
+-  umin - minimum allowable u-value
+
+   Notes:
+   The default matrix-free matrix-vector product routine computes
+.vb
+     J(u)*a = [J(u+h*a) - J(u)]/h where
+     h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
+       = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
+.ve
+
+   Options Database Keys:
++  -snes_mf_err <error_rel> - Sets error_rel
+-  -snes_mf_unim <umin> - Sets umin
 
 .keywords: SNES, matrix-free, parameters
 
@@ -303,14 +312,14 @@ int SNESSetMatrixFreeParameters(SNES snes,double error,double umin)
    small component in the null space, if you know the null space 
    you may have it automatically removed.
 
+   Collective on Mat 
+
    Input Parameters:
-.  J - the matrix-free matrix context
++  J - the matrix-free matrix context
 .  has_cnst - PETSC_TRUE or PETSC_FALSE, indicating if null space has constants
 .  n - number of vectors (excluding constant vector) in null space
-.  vecs - the vectors that span the null space (excluding the constant vector);
-.         these vectors must be orthonormal
-
-   Collective on Mat 
+-  vecs - the vectors that span the null space (excluding the constant vector);
+          these vectors must be orthonormal
 
 .keywords: SNES, matrix-free, null space
 @*/
