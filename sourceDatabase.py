@@ -9,6 +9,7 @@ import string
 import sys
 import time
 
+
 class SourceDB (dict, logging.Logger):
   includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
 
@@ -80,7 +81,8 @@ class SourceDB (dict, logging.Logger):
         else:
           raise e
       comps  = string.split(source, '/')
-      for line in file.readlines():
+      line = file.readline()
+      while line:
         m = self.includeRE.match(line)
         if m:
           filename  = m.group('includeFile')
@@ -98,6 +100,7 @@ class SourceDB (dict, logging.Logger):
                 matchName = s
                 matchNum  = i
           newDep.append(matchName)
+          line = file.readline()
       # Grep for #include, then put these files in a tuple, we can be recursive later in a fixpoint algorithm
       self[source] = (checksum, mtime, timestamp, tuple(newDep), updated)
 
@@ -131,10 +134,12 @@ class DependencyAnalyzer (logging.Logger):
   def getNeighbors(self, source):
     file = open(source, 'r')
     adj  = []
-    for line in file.readlines():
+    line = file.readline()
+    while line:
       match = self.includeRE.match(line)
       if match:
         adj.append(self.resolveDependency(source, m.group('includeFile')))
+      line = file.readline()
     return adj
 
   def calculateDependencies(self):

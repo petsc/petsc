@@ -310,13 +310,18 @@ class Bootstrap:
             print "Unable to access list of packages; are you sure you are on the network?"
             raise RuntimeError,"Unable to access list of packages; are you sure you are on the network?"
           fd            = open("packages")
-          packages = fd.readlines()
+          line = fd.readline()
+          packages = []
+          while line:
+            packages.append(line)
+            line = fd.readline()
           fd.close()
           os.unlink("packages")
           return packages
         elif self.transfermode == "ssh":
           (status,output) = commands.getstatusoutput('ssh terra.mcs.anl.gov \"cd /sandbox/bsmith/petsc-3.0; ls -1 -p | grep / \"')
-          return output
+          packages = string.split(output,"\n")
+          return packages
         
 
 #==================================================================================
