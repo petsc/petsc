@@ -1,5 +1,5 @@
 C
-C "$Id: sif.F,v 1.1 1997/09/10 16:51:04 bsmith Exp bsmith $";
+C "$Id: sif.F,v 1.2 1997/10/14 19:39:34 bsmith Exp bsmith $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -39,7 +39,7 @@ C  In this case, the PETsc include files are located in the directory
 C  petsc/include/finclude.
 C         
 C  Since one must be very careful to include each file no more than once
-C  in a Fortran routine, application programmers must exlicitly list
+C  in a Fortran routine, application programmers must explicitly list
 C  each file needed for the various PETSc components within their
 C  program (unlike the C/C++ interface).
 C
@@ -60,6 +60,9 @@ C     ftime      - final time
 C     duration   - total duration
 C     time_steps - number of timesteps
 C
+C     coloring and fd are used by PETSc to efficiently compute the sparse 
+C     Jacobian of the application function.
+C
 C  Note that vectors are declared as PETSc "Vec" objects.  These vectors
 C  are mathematical objects that contain more than just an array of
 C  double precision numbers. I.e., vectors in PETSc are not just
@@ -72,6 +75,7 @@ C  See the Fortran section of the PETSc users manual for details.
       Mat               A
       ISColoring        coloring
       MatFDColoring     fd
+      Draw              draw
 
       integer           flg, ierr
       integer           time_steps, steps
@@ -84,7 +88,7 @@ C  Note: Any user-defined Fortran routines (such as RHSFunction)
 C  MUST be declared as external.
 
       external Monitor, RHSFunction
-      external InitialConditions, RHSJacobian, RHSJacobianFD
+      external InitialConditions
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                 Beginning of program
@@ -99,13 +103,18 @@ C  Initialize problem parameters
 C
 C  use -ts_max_steps and -ts_max_time to override limits
 C
-      time_steps = 1000
+      time_steps = 100000
       duration   = 1.0e-4
 C
       M          = 60
       debug      = 0
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
+
+C  Double buffering makes graphics look better.
+C
+      call ViewerDrawGetDraw(VIEWER_DRAWX_WORLD,draw,ierr)
+      call DrawSetDoubleBuffer(draw,ierr)
 
 C
 C     Set the parameters in the U_t common block
@@ -122,7 +131,6 @@ C
         rpar(2) = - tan(1.57079632679490d0 - tda/2.0d0)
         rpar(4) = 1.0d0/sqrt(1.0d0 + rpar(2)**2)
         rpar(5) = 1.d0
-        rpar(6) = .05d0
 
 C
 C    This timestep is not used by PVode but the simple Backward Euler scheme
@@ -160,8 +168,8 @@ C
 C  Extract global and local vectors from DA; then duplicate for remaining
 C  vectors that are the same types.
 
-      call DAGetDistributedVector(da,global,ierr)
-      call DAGetLocalVector(da,local,ierr)
+      call DACreateGlobalVector(da,global,ierr)
+      call DACreateLocalVector(da,local,ierr)
 
 
 C  Make global work vector for storing exact solution
@@ -184,6 +192,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix data structure; set Jacobian evaluation routine;
+C  This uses the PETSc built in routines for computing sparse 
+C  Jacobians efficiently.
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call DAGetColoring(da,coloring,A,ierr)
@@ -191,9 +201,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call ISColoringDestroy(coloring,ierr)
       call MatFDColoringSetFunction(fd,RHSFunction,PETSC_NULL,ierr)
 
-C      call MatCreate(comm,M,M,A,ierr)
-      call SetCRoutineFromFortran(ts,A,A,fd,ierr)
-
+      call TSSetRHSJacobianDefault(ts,fd,A,A,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Customize timestepping solver; set runtime options.
@@ -219,9 +227,10 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call TSStep(ts,steps,ftime,ierr)
 
 C
-C    Save the solution
+C    Save the solution to a file called solution in a format that
+C    Matlab can easily read in
 C
-      call ViewerFileOpenASCII(comm,'solution',output,ierr)
+      call ViewerFileOpenASCII(comm,'solution.m',output,ierr)
       call ViewerSetFormat(output,VIEWER_FORMAT_ASCII_MATLAB,
      &                     'solution',ierr)
       call VecView(global,output,ierr)
@@ -267,7 +276,8 @@ C  Input/output parameters:
 
 C  Local variables:
       double precision y(1), x
-      integer          i, mybase, myend, ierr, idx
+      integer          i, mybase, myend, ierr
+      PetscOffset      idx
       double precision r1,sqt,cp,rc,orig,one,p1
 
 C  Determine starting and ending point of each processor's range of
@@ -298,14 +308,15 @@ C     directly into the array locations.
        cp   = .05d0
        
        rc       = - r1/sqt
+       rpar(6)  = rc
        orig     = rc + sqrt(one - cp*cp)*r1
        p1       = r1*r1
        if (mybase .eq. 1) then 
-         write (8,*) 'New origin at y=0 x=',rc
-         write (8,*) 'Radius =',r1
-         write (8,*) 'Centered at'
-         write (8,*) 'x =',rc,'  y = 0'
-         write (8,*) 'Initial neck/radius =',cp
+         write (6,*) 'New origin at y=0 x=',rc
+         write (6,*) 'Radius =',r1
+         write (6,*) 'Centered at'
+         write (6,*) 'x =',rc,'  y = 0'
+         write (6,*) 'Initial neck/radius =',cp
        endif
 C
 C    Last value in vector gets funny non-pysical value
@@ -314,7 +325,10 @@ C
          y(myend+1-mybase+idx) = orig
          myend                 = myend - 1
        endif
-
+C
+C      loop over vector elements stored on this processor
+C    from mybase to myend and put in the initial condition
+C
        do 20 i=mybase,myend
          x                 = real(i-1)*h
          y(i+1-mybase+idx) = sqrt(p1 - (x*orig - rc)**2)
@@ -341,6 +355,7 @@ C   ts     - the time-step context
 C   step   - the count of the current step (with 0 meaning the
 C            initial condition)
 C   time   - the current time
+C   global - vector containing the current solution
 C   dummy  - optional user-provided context for this monitoring routine,
 C           not used here
 C
@@ -353,13 +368,12 @@ C   global - the solution at this timestep
 
 C  Input/output parameters:
       TS                ts
-      integer           step, dummy
+      integer           step, dummy,nonlin,lin
       double precision  time
       Vec               global
 
 C  Local variables:
       integer  ierr
-      Draw     draw
 
 
 C  We use the default X windows viewer
@@ -370,10 +384,7 @@ C  Note that if we wished to plot several items in separate windows we
 C  would create each viewer with ViewerDrawOpenX() and store them in
 C  the application context, appctx.
 C
-C  Double buffering makes graphics look better.
 
-      call ViewerDrawGetDraw(VIEWER_DRAWX_WORLD,draw,ierr)
-      call DrawSetDoubleBuffer(draw,ierr)
       call VecView(global,VIEWER_DRAWX_WORLD,ierr)
 
 
@@ -385,9 +396,13 @@ C  Print debugging information if desired
         call ViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
       endif
 
+      call TSPVodeGetIterations(ts,nonlin,lin,ierr)
 C  Print only from processor 0
-      if (rank .eq. 0) write(6,100) step,time
- 100  format('Timestep = ',i5,', time = ',e9.3,' sec')
+      if (rank .eq. 0) then 
+        write(6,100) step,time,nonlin,lin
+      endif
+ 100  format('Timestep = ',i5,', time = ',e9.3,' sec, Newton Steps = '
+     &       ,i5,' linear its = ',i5)
 
       return
       end
@@ -422,7 +437,8 @@ C  Input/output parameters:
 C  Local variables:
       Vec              local
       double precision localptr(1), copyptr(1)
-      integer          ierr, idx_c, idx_l, localsize
+      integer          ierr, localsize
+      PetscOffset      idx_l,idx_c
 
 C  Print debugging information if desired
 
@@ -435,7 +451,7 @@ C  Print debugging information if desired
 
 C  The vector 'local' will be a workspace that contains the ghost region
 
-      call DAGetLocalVector(da,local,ierr)
+      call DACreateLocalVector(da,local,ierr)
   
 C  Copy the input vector into local and up-date the ghost points
       call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr)
@@ -464,6 +480,7 @@ C  Print debugging information if desired
         call ViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
       endif
 
+      call VecDestroy(local,ierr)
       return
       end
 
