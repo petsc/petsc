@@ -31,13 +31,13 @@ class BS (maker.Maker):
     argDB = nargs.ArgDict('ArgDict', clArgs)
     # put current package name into the database
     package = os.path.basename(os.getcwd())
-    if argDB.has_key('installedpackages'):
-      packages = argDB['installedpackages']
+    if argDB.has_key('installedprojects'):
+      packages = argDB['installedprojects']
       if package not in packages:
         packages.append(package)
-        argDB['installedpackages'] = packages
+        argDB['installedprojects'] = packages
     else:
-      argDB['installedpackages'] = [package]
+      argDB['installedprojects'] = [package]
 
   def saveSourceDB(self):
     self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
@@ -193,6 +193,27 @@ class BS (maker.Maker):
     return
 
   def main(self):
+    # add to database list of packages in current project
+    try:
+      import SIDLLanguage.Parser
+      import SIDLLanguage.Visitor
+      import ANL.SIDLVisitorI.GetPackageNames
+      import ANL.SIDLCompilerI.SIDLCompiler
+
+      compiler = SIDLLanguage.Parser.Parser(ANL.SIDLCompilerI.SIDLCompiler.SIDLCompiler())
+      if argDB.has_key('installedpackages'):
+        ipackages = argDB['installedpackages']
+      else: ipackages = []
+      for target in self.filesets['sidl'].getFiles():
+        tree = compiler.parseFile(target)
+        v = ANL.SIDLVisitorI.GetPackageNames.GetPackageNames()
+        tree.accept(v)
+        for p in v.getnames():
+           if not p in ipackages:
+              ipackages.append(p)
+      argDB['installedpackages'] = ipackages
+    except: pass
+
     try:
       print argDB.target
       map(self.executeTarget, argDB.target)
