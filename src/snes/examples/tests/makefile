@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.106 2001/03/29 16:36:30 balay Exp balay $ 
+# $Id: makefile,v 1.107 2001/08/22 18:02:07 balay Exp bsmith $ 
 
 CFLAGS	        =
 FFLAGS	        =
@@ -72,17 +72,17 @@ ex14: ex14.o  chkopts
 	${RM} ex14.o
 #--------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ex1 -nox -ksp_gmres_irorthog > ex1_1.tmp 2>&1;	 \
+	-@${MPIRUN} -np 1 ex1 -ksp_gmres_irorthog > ex1_1.tmp 2>&1;	 \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIRUN} -np 1 ex1 -snes_smonitor -nox -snes_type tr -ksp_gmres_irorthog > ex1_2.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex1 -snes_smonitor -snes_type tr -ksp_gmres_irorthog > ex1_2.tmp 2>&1;\
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true; \
 	   else echo "Possible problem with ex1_2, diffs above"; fi; \
 	   ${RM} -f ex1_2.tmp
 runex1_3:
-	-@${MPIRUN} -np 1 ex1 -snes_smonitor -mat_coloring_type sl -nox -snes_fd_coloring -mx 8 -my 11 \
+	-@${MPIRUN} -np 1 ex1 -snes_smonitor -mat_coloring_type sl  -snes_fd_coloring -mx 8 -my 11 \
                 -ksp_gmres_irorthog > ex1_3.tmp 2>&1;\
 	   if (${DIFF} output/ex1_3.out ex1_3.tmp) then true; \
 	   else echo "Possible problem with ex1_3, diffs above"; fi; \
