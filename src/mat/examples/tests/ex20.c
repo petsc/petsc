@@ -7,7 +7,7 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat               C,A; 
+  Mat               C,A = PETSC_NULL;
   PetscInt          i,j,m = 5,n = 4,I,J;
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size;
