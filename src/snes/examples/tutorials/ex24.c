@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.3 2001/01/03 21:09:17 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.4 2001/01/03 21:31:58 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -65,7 +65,8 @@ int main(int argc,char **argv)
   ierr = OptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
   ierr = OptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
   ierr = OptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
-  ierr = OptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr);
+  ierr = OptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
+  /* ierr = OptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = OptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   
   /* Create a global vector from a da arrays */
@@ -164,7 +165,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   DMMG    dmmg = (DMMG)dummy;
   int     ierr,xs,xm,i,N,nredundant;
   Scalar  *u,*w,*fw,*fu,*lambda,*flambda,d,h;
-  Vec     vu,vlambda,vfu,vflambda;
+  Vec     vu,vlambda,vfu,vflambda,vglambda;
   DA      da,dadummy;
   VecPack packer = (VecPack)dmmg->dm;
   MatFDColoring fd;
@@ -173,11 +174,15 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = VecPackGetEntries(packer,&nredundant,&da,&dadummy);CHKERRQ(ierr);
   ierr = VecPackGetLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
   ierr = VecPackScatter(packer,U,w,vu,vlambda);CHKERRQ(ierr);
-  ierr = VecPackAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
+  ierr = VecPackGetAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
+  ierr = VecPackGetAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
   /* Evaluate the Jacobian of PDEFormFunction() */
   ierr = PetscObjectQuery((PetscObject)dmmg->user,"FDColoring",(PetscObject*)&fd);CHKERRQ(ierr);
   ierr = MatFDColoringApply((Mat)dmmg->user,fd,vu,PETSC_NULL,w);CHKERRQ(ierr);
+  ierr = MatMultTranspose((Mat)dmmg->user,vglambda,vflambda);CHKERRQ(ierr);
+
+  ierr = MatView((Mat)dmmg->user,VIEWER_STDOUT_WORLD);
 
   /* derivative of L() w.r.t. lambda */
   ierr = PDEFormFunction(w,vu,vfu,da);CHKERRQ(ierr);
@@ -196,12 +201,21 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
     fw[0] = -2.*d*lambda[0];
   }
 
+  /* compare the J^T*lambda with that computed below */
+  for (i=xs; i<xs+xm; i++) {
+    if      (i == 0)   printf("i %d %g\n",i,flambda[0] -(2.*d*lambda[0]   - d*lambda[1]));
+    else if (i == 1)   printf("i %d %g\n",i,flambda[1]   - -(-2.*d*lambda[1]   + d*lambda[2]));
+    else if (i == N-1) printf("i %d %g\n",i,flambda[N-1] - (2.*d*lambda[N-1] - d*lambda[N-2]));
+    else if (i == N-2) printf("i %d %g\n",i,flambda[N-2] - -(- 2.*d*lambda[N-2] + d*lambda[N-3]));
+    else               printf("i %d %g\n",i,flambda[i]   - -((d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]))));
+  } 
+
 
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   flambda[0]   = (2.*h*u[0]   + 2.*d*lambda[0]   + d*lambda[1]);
+    if      (i == 0)   flambda[0]   = (2.*h*u[0]   + 2.*d*lambda[0]   - d*lambda[1]);
     else if (i == 1)   flambda[1]   = -(2.*h*u[1]   - 2.*d*lambda[1]   + d*lambda[2]);
-    else if (i == N-1) flambda[N-1] = (2.*h*u[N-1] + 2.*d*lambda[N-1] + d*lambda[N-2]);
+    else if (i == N-1) flambda[N-1] = (2.*h*u[N-1] + 2.*d*lambda[N-1] - d*lambda[N-2]);
     else if (i == N-2) flambda[N-2] = -(2.*h*u[N-2] - 2.*d*lambda[N-2] + d*lambda[N-3]);
     else               flambda[i]   = -((2.*h*u[i]   + d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1])));
   } 
@@ -213,6 +227,9 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
 
   ierr = VecPackRestoreLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
+  ierr = VecPackRestoreAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
+  ierr = VecPackRestoreAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
+
   PLogFlops(13*N);
   PetscFunctionReturn(0);
 }
