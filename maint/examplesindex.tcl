@@ -261,7 +261,7 @@ proc write_concepts_file { } {
     puts $concepts_file {<TR HEIGHT=10>}
     puts $concepts_file {<TH WIDTH=4 ><BR></TH>}
     puts $concepts_file {<TH WIDTH=192 ><B><I><FONT SIZE=5>Concepts</FONT></B></I></TH>}
-    puts $concepts_file {<TH WIDTH=132 ><B><I><FONT SIZE=5>File Name</FONT></B></I></TH>}
+    puts $concepts_file {<TH WIDTH=132 ><B><I><FONT SIZE=5>File Names</FONT></B></I></TH>}
     puts $concepts_file {</TR>}
     puts $concepts_file {</TABLE>}
 
@@ -305,9 +305,10 @@ proc write_concepts_file { } {
     }
  
     # Disclaimer........
-     puts $concepts_file "<HR>"
-    puts $concepts_file {Note: All the examples are not yet indexed.
-    This list includes primarily SLES, SNES, IS components.}
+    puts $concepts_file "<HR>"
+    puts $concepts_file {Note: Not all PETSc examples are currently indexed.
+    This list primarily includes examples within the SLES, SNES, TS, and IS components.}
+
    
     # HTML Tail
     puts $concepts_file {</BODY>} 
@@ -343,7 +344,7 @@ proc write_routines_file { } {
     puts $routines_file {<TR HEIGHT=10>}
     puts $routines_file {<TH WIDTH=4 ><BR></TH>}
     puts $routines_file {<TH WIDTH=192 ><B><I><FONT SIZE=5>Routines</FONT></B></I></TH>}
-    puts $routines_file {<TH WIDTH=132 ><B><I><FONT SIZE=5>File Name</FONT></B></I></TH>}
+    puts $routines_file {<TH WIDTH=132 ><B><I><FONT SIZE=5>File Names</FONT></B></I></TH>}
     puts $routines_file {</TR>}
     puts $routines_file {</TABLE>}
 
@@ -375,9 +376,9 @@ proc write_routines_file { } {
     }
 
     # Disclaimer........
-     puts $routines_file "<HR>"
-    puts $routines_file {Note: All the examples are not yet indexed.
-    This list includes primarily SLES, SNES, IS components.}
+    puts $routines_file "<HR>"
+    puts $routines_file {Note: Not all PETSc examples are currently indexed.
+    This list primarily includes examples within the SLES, SNES, TS, and IS components.}
     
     # HTML Tail
     puts $routines_file {</BODY>} 
