@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.9 2000/05/05 22:19:22 balay Exp bsmith $*/
+/*$Id: dainterp.c,v 1.10 2000/05/22 21:42:36 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -30,7 +30,7 @@ int DAGetInterpolationScale(DA dac,DA daf,Mat mat,Vec *scale)
 int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
 {
   int      ierr,i,i_start,m_f,Mx,*idx_f;
-  int      m_ghost,*idx_c,m_ghost_c,k,ll;
+  int      m_ghost,*idx_c,m_ghost_c;
   int      row,col,i_start_ghost,mx,m_c,nc,ratio;
   int      i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   Scalar   v[2],x;
@@ -51,13 +51,13 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreateMPIAIJ(dac->comm,dof*m_f,dof*m_c,dof*mx,dof*Mx,2*dof,0,0,0,&mat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(dac->comm,m_f,m_c,mx,Mx,2,0,0,0,&mat);CHKERRQ(ierr);
   ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
     /* convert to local "natural" numbering and then to PETSc global numbering */
-    row    = idx_f[dof*(i-i_start_ghost)];
+    row    = idx_f[dof*(i-i_start_ghost)]/dof;
 
     i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
 
@@ -71,27 +71,20 @@ int DAGetInterpolation_1D_dof(DA dac,DA daf,Mat *A)
     nc = 0;
       /* one left and below; or we are right on it */
     col      = dof*(i_c-i_start_ghost_c);
-    cols[nc] = idx_c[col]; 
+    cols[nc] = idx_c[col]/dof; 
     v[nc++]  = - x + 1.0;
     /* one right? */
     if (i_c*ratio != i) { 
-      cols[nc] = idx_c[col+dof];
+      cols[nc] = idx_c[col+dof]/dof;
       v[nc++]  = x;
     }
     ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
-    for (k=1; k<dof; k++) {
-      for (ll=0; ll<nc; ll++) {
-        cols[ll]++;
-      }
-      row++;
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
-    }
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+  ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
+  ierr = MatDestroy(mat);CHKERRQ(ierr);
   PLogFlops(5*m_f);
-  *A = mat;
   PetscFunctionReturn(0);
 }
 
@@ -443,3 +436,4 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
   }
   PetscFunctionReturn(0);
 } 
+
