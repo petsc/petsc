@@ -211,7 +211,7 @@ class Configure(config.base.Configure):
 
     # does C++ compiler (IBM's xlC) need special for .c files as c++?
     self.pushLanguage('C++')
-    self.compilerSource = 'conftest.c'
+    self.sourceExtension = '.c'
     if not self.checkCompile('class somename { int i; };'):
       oldFlags = self.framework.argDB['CXXFLAGS']
       self.framework.argDB['CXXFLAGS'] = oldFlags+' -+'
