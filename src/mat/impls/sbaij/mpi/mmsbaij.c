@@ -14,7 +14,7 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   Mat_MPISBAIJ       *baij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
   int                Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
-  int                col,bs = baij->bs,*stmp;
+  int                bs = baij->bs,*stmp;
   IS                 from,to;
   Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
@@ -118,7 +118,7 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
     garray[i] = bs*garray[i];
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
-  for (i=0,col=0; i<ec; i++) {
+  for (i=0; i<ec; i++) {
     garray[i] = garray[i]/bs;
   }
 

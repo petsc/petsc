@@ -1,24 +1,17 @@
 # $Id: base.site,v 1.11 2001/03/27 22:17:30 balay Exp $ 
-
-#
-#  This file contains site-specific information.  The definitions below
-#  should be changed to match the locations of libraries at your site.
-#  The following naming convention is used:
-#     XXX_LIB - location of library XXX
-#     XXX_INCLUDE - directory for include files needed for library XXX
 #
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html
 # for information on retrieving them.
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
-BLASLAPACK_LIB         = -lessl /usr/local/64/lib64/liblapack.a -lblas
+BLASLAPACK_LIB  =  -L/u0/kaushik/software/fblaslapack/rs6000_64 -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB         = /usr/local/64/mpich64/build/rs6000/ch_p4/lib/libmpich.a
-MPI_INCLUDE     = -I/usr/local/64/mpich64/include
-MPIRUN          = /usr/local/64/mpich64/build/rs6000/ch_p4/bin/mpirun
+MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
+MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
@@ -30,49 +23,3 @@ X11_INCLUDE    =
 X11_LIB        = -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
-# Location of BlockSolve (MPI version), if you do not have
-# BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there.
-#
-#BLOCKSOLVE_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BLOCKSOLVE_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
-#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
-#
-# MPE Libraries
-# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
-#
-#MPE_INCLUDE  = -I/home/petsc/mpich-1.1.1/mpe
-#MPE_LIB      = -lmpe -lpmpich
-#MPE_INCLUDE   = -I${MPI_HOME}/mpe 
-#MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
-#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
-#
-# Optional Matlab location, remove if not needed.
-#
-#CMEX            = 
-#MCC            = 
-#MATLABCOMMAND  = matlab
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
-#
-# Location of SuperLU, if you do not have
-# SuperLU, then remove -DPETSC_HAVE_SUPERLU from the PCONF definition
-# below if it is there.
-#
-#SUPERLU_LIB     = /home/bsmith/SuperLU/superlu${PETSC_ARCH}${BOPT}.a
-#SUPERLU_INCLUDE = -I/home/bsmith/SuperLU/SRC
-#PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU 
-# 
-#
-# Location of the LUSOL sparse LU factorization code (part of MINOS)
-# developed by Michael Saunders, saunders@stanford.edu at the
-# Systems Optimization Laboratory, Stanford University.
-#  http://www.sbsi-sol-optimize.com/
-# Uses the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
-# depending on how they are named)
-#
-#PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
-#LUSOL_LIB = 
-
-
-
-

@@ -6,12 +6,12 @@ AR		   = ar
 AR_FLAGS	   = cr
 RM		   = rm -f
 OMAKE		   = make  --no-print-directory
-RANLIB		   = ranlib -s
+RANLIB		   = ranlib -s -c
 SHELL		   = /usr/local/bin/bash
 SED		   = sed
 SH_LD		   = cc
 MKDIR              = mkdir -p
-LIB_SUFFIX         = a
+LIB_SUFFIX         = dylib
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
