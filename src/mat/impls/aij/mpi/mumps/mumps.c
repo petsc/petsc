@@ -405,14 +405,19 @@ int MatSolve_AIJMUMPS(Mat A,Vec b,Vec x) {
 int MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 { 
   Mat_MUMPS  *lu =(Mat_MUMPS*)F->spptr; 
-  int        ierr,neg,zero,pos;
+  int        ierr,neg,zero,pos,size;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(F->comm,&size);CHKERRQ(ierr);
+  /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
+  if (size > 1 && lu->id.ICNTL(13) != 1){
+    SETERRQ1(1,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",lu->id.INFOG(13));
+  }
   if (nneg){  
     if (!lu->myid){
       *nneg = lu->id.INFOG(12);
     } 
-    ierr = MPI_Bcast(nneg,1,MPI_INT,0,lu->comm_mumps);
+    ierr = MPI_Bcast(nneg,1,MPI_INT,0,lu->comm_mumps);CHKERRQ(ierr);
   }
   if (nzero) *nzero = 0;  
   if (npos)  *npos  = F->M - (*nneg);
