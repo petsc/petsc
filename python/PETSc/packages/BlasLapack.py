@@ -154,12 +154,14 @@ class Configure(config.base.Configure):
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')])
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')])      
       yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), os.path.join(dir, 'libmkl_def.a'), 'guide', 'pthread'])
+      yield ('User specified MKL Linux lib dir', None, [os.path.join(dir, 'libmkl_lapack.a'), os.path.join(dir, 'libmkl_ipf.a'), 'guide', 'pthread'])      
       mkldir = dir
       if self.framework.argDB['with-64-bit-pointers']:
         mkldir = os.path.join(mkldir, 'lib', '64')
       else:
         mkldir = os.path.join(mkldir, 'lib', '32')
       yield ('User specified MKL Linux installation root', None, [os.path.join(mkldir, 'libmkl_lapack.a'), os.path.join(mkldir, 'libmkl_def.a'), 'guide', 'pthread'])
+      yield ('User specified MKL Linux installation root', None, [os.path.join(mkldir, 'libmkl_lapack.a'), os.path.join(mkldir, 'libmkl_ipf.a'), 'guide', 'pthread'])
       if self.framework.argDB['with-64-bit-pointers']:
         mkldir = os.path.join(dir, 'ia64', 'lib')
       else:
