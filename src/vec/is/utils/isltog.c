@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.60 2001/01/15 21:44:35 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.61 2001/01/17 19:44:07 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -188,7 +188,7 @@ int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,int bs,ISLocalToGlo
     n    = inmap->n/bs;
     ierr = PetscMalloc(n*sizeof(int),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ii[i] = inmap->indices[bs*i];
+      ii[i] = inmap->indices[bs*i]/bs;
     }
     ierr = ISLocalToGlobalMappingCreate(inmap->comm,n,ii,outmap);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
