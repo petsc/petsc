@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
   def __str__(self):
     return ''
     
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
     help.addArgument('Make', '-with-make', nargs.Arg(None, None, 'Specify the make executable'))
     return

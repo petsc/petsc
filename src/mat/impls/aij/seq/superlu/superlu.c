@@ -81,15 +81,15 @@ int MatDestroy_SuperLU(Mat A)
 int MatView_SuperLU(Mat A,PetscViewer viewer)
 {
   int               ierr;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_SuperLU       *lu=(Mat_SuperLU*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
       ierr = MatFactorInfo_SuperLU(A,viewer);CHKERRQ(ierr);

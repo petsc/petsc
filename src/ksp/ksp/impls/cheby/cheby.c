@@ -200,11 +200,11 @@ int KSPView_Chebychev(KSP ksp,PetscViewer viewer)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev*)ksp->data;
   int           ierr;
-  PetscTruth    isascii;
+  PetscTruth    iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);

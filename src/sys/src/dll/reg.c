@@ -498,15 +498,15 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)(void
 int PetscFListView(PetscFList list,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii;
+  PetscTruth iascii;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidPointer(list,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(1,"Only ASCII viewer supported");
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (!iascii) SETERRQ(1,"Only ASCII viewer supported");
 
   while (list) {
     if (list->path) {

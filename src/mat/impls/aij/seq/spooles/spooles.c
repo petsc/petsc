@@ -153,7 +153,7 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   int                *ivec1,*ivec2,j;
   double             *dvec;
 #endif
-  PetscTruth         isAIJ;
+  PetscTruth         isAIJ,isSeqAIJ;
   
   PetscFunctionBegin;
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
@@ -168,8 +168,9 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   }
 
   /* copy A to Spooles' InpMtx object */
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJSPOOLES,&isAIJ);CHKERRQ(ierr);
-  if (isAIJ){
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJSPOOLES,&isSeqAIJ);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)A,MATAIJSPOOLES,&isAIJ);CHKERRQ(ierr);
+  if (isSeqAIJ || isAIJ){
     Mat_SeqAIJ   *mat = (Mat_SeqAIJ*)A->data;
     ai=mat->i; aj=mat->j; av=mat->a;
     if (lu->options.symflag == SPOOLES_NONSYMMETRIC) {
@@ -516,7 +517,8 @@ int MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *newmat) {
                                            "MatConvert_Spooles_Base",MatConvert_Spooles_Base);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqaijspooles_C",
                                            "MatConvert_SeqAIJ_SeqAIJSpooles",MatConvert_SeqAIJ_SeqAIJSpooles);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJSPOOLES);CHKERRQ(ierr);
+  /* ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJSPOOLES);CHKERRQ(ierr); */
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -536,9 +538,9 @@ int MatDuplicate_Spooles(Mat A, MatDuplicateOption op, Mat *M) {
 
 /*MC
   MATSEQAIJSPOOLES - MATSEQAIJSPOOLES = "seqaijspooles" - A matrix type providing direct solvers (LU or Cholesky) for sequential matrices 
-  via the external package SEQAIJSPOOLES.
+  via the external package SPOOLES.
 
-  If SEQAIJSPOOLES is installed (see the manual for
+  If SPOOLES is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SPOOLES solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATSEQAIJSPOOLES).
@@ -581,6 +583,63 @@ int MatCreate_SeqAIJSpooles(Mat A) {
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+/*MC
+  MATAIJSPOOLES - MATAIJSPOOLES = "aijspooles" - A matrix type providing direct solvers (LU or Cholesky) for sequential and parellel matrices 
+  via the external package SPOOLES.
+
+  If SPOOLES is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  a matrix type can be constructed which invokes SPOOLES solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJSPOOLES).
+  This matrix type is supported for double precision real and complex.
+
+  This matrix inherits from MATAIJ.  As a result, MatSeqAIJSetPreallocation and MatMPIAIJSetPreallocation are
+  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
+  the MATAIJ type without data copy.
+
+  Options Database Keys:
++ -mat_type aijspooles - sets the matrix type to "aijspooles" during a call to MatSetFromOptions()
+. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
+. -mat_spooles_seed <seed> - random number seed used for ordering
+. -mat_spooles_msglvl <msglvl> - message output level
+. -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
+. -mat_spooles_maxdomainsize <n> - maximum subgraph size used by Spooles orderings
+. -mat_spooles_maxzeros <n> - maximum number of zeros inside a supernode
+. -mat_spooles_maxsize <n> - maximum size of a supernode
+. -mat_spooles_FrontMtxInfo <true,fase> - print Spooles information about the computed factorization
+. -mat_spooles_symmetryflag <0,1,2> - 0: SPOOLES_SYMMETRIC, 1: SPOOLES_HERMITIAN, 2: SPOOLES_NONSYMMETRIC
+. -mat_spooles_patchAndGoFlag <0,1,2> - 0: no patch, 1: use PatchAndGo strategy 1, 2: use PatchAndGo strategy 2
+. -mat_spooles_toosmall <dt> - drop tolerance for PatchAndGo strategy 1
+. -mat_spooles_storeids <bool integer> - if nonzero, stores row and col numbers where patches were applied in an IV object
+. -mat_spooles_fudge <delta> - fudge factor for rescaling diagonals with PatchAndGo strategy 2
+- -mat_spooles_storevalues <bool integer> - if nonzero and PatchAndGo strategy 2 is used, store change in diagonal value in a DV object
+
+   Level: beginner
+
+.seealso: PCLU
+M*/
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_AIJSpooles"
+int MatCreate_AIJSpooles(Mat A) {
+  int ierr,size;
+
+  PetscFunctionBegin;
+  /* Change type name before calling MatSetType to force proper construction of SeqAIJSpooles or MPIAIJSpooles */
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATAIJSPOOLES);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+    ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,&A);CHKERRQ(ierr);
+  } else {
+    ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,&A);CHKERRQ(ierr);
+  }
+  
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

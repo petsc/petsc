@@ -11,11 +11,11 @@
 int PFView_String(void *value,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii;
+  PetscTruth iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"String = %s\n",(char*)value);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

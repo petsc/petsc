@@ -297,7 +297,7 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   int         ierr;
-  PetscTruth  isdraw,isascii,issocket,isbinary,ismathematica;
+  PetscTruth  isdraw,iascii,issocket,isbinary,ismathematica;
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth  isnetcdf;
 #endif
@@ -307,7 +307,7 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
@@ -320,7 +320,7 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
 
   if (isdraw){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
-  } else if (isascii){
+  } else if (iascii){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
   } else if (issocket) {
     ierr = PetscViewerSocketPutScalar(viewer,xin->n,1,x->array);CHKERRQ(ierr);

@@ -1234,13 +1234,13 @@ static int MatView_SeqBAIJ_Draw(Mat A,PetscViewer viewer)
 int MatView_SeqBAIJ(Mat A,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii,isbinary,isdraw;
+  PetscTruth iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  if (isascii){
+  if (iascii){
     ierr = MatView_SeqBAIJ_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_SeqBAIJ_Binary(A,viewer);CHKERRQ(ierr);
@@ -2360,6 +2360,7 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   *B = 0;
   ierr = MatCreate(A->comm,A->m,A->n,A->m,A->n,&C);CHKERRQ(ierr);
   ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
+  ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   c    = (Mat_SeqBAIJ*)C->data;
 
   C->M   = A->M;

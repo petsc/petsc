@@ -35,14 +35,14 @@ static int PCView_ASM(PC pc,PetscViewer viewer)
   PC_ASM      *jac = (PC_ASM*)pc->data;
   int         rank,ierr,i;
   const char  *cstring = 0;
-  PetscTruth  isascii,isstring;
+  PetscTruth  iascii,isstring;
   PetscViewer sviewer;
 
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);CHKERRQ(ierr);
     if (jac->type == PC_ASM_NONE)             cstring = "limited restriction and interpolation (PC_ASM_NONE)";
     else if (jac->type == PC_ASM_RESTRICT)    cstring = "full restriction (PC_ASM_RESTRICT)";

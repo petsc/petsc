@@ -5,7 +5,13 @@ import commands
 
 
 if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
-  print '******** You must have Python version 2.2 or higher to run configure ********'
+  print '********* You must have Python version 2.2 or higher to run configure ***********'
+  print '* Python is easy to install for end users or sys-admin. We urge you to upgrade  *'
+  print '*                   http://www.python.org/download/                             *'
+  print '*                                                                               *'
+  print '* You can configure PETSc manually BUT please, please consider upgrading python *'
+  print '* http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html#Manual   *'
+  print '*********************************************************************************'
   sys.exit(4)
   
 def getarch():
@@ -41,8 +47,6 @@ def petsc_configure(configure_options):
 
   
   framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
-  framework.argDB['CPPFLAGS'] = ''
-  framework.argDB['LIBS'] = ''
   try:
     framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
@@ -53,6 +57,11 @@ def petsc_configure(configure_options):
   except TypeError, e:
     msg = '******* Error in command line argument to configure.py ***********\n'+str(e)+'\n******************************************************\n'
     se = ''
+  except SystemExit, e:
+    if e.code is None or e.code == 0:
+      return
+    msg = '******* CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
+    se  = str(e)
   except Exception, e:
     msg = '******* CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
     se  = str(e)

@@ -99,12 +99,12 @@ static int PCView_Cholesky(PC pc,PetscViewer viewer)
 {
   PC_Cholesky *lu = (PC_Cholesky*)pc->data;
   int         ierr;
-  PetscTruth  isascii,isstring;
+  PetscTruth  iascii,isstring;
   
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     MatInfo info;
     
     if (lu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"  Cholesky: in-place factorization\n");CHKERRQ(ierr);}

@@ -58,6 +58,8 @@ E*/
 #define MATMPIAIJSPOOLES   "mpiaijspooles"
 #define MATSEQSBAIJSPOOLES "seqsbaijspooles"
 #define MATMPISBAIJSPOOLES "mpisbaijspooles"
+#define MATAIJSPOOLES      "aijspooles"
+#define MATSBAIJSPOOLES    "sbaijspooles"
 #define MATSUPERLU         "superlu"
 #define MATSUPERLU_DIST    "superlu_dist"
 #define MATUMFPACK         "umfpack"

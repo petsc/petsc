@@ -396,15 +396,15 @@ int TSView_PVode(TS ts,PetscViewer viewer)
   TS_PVode   *cvode = (TS_PVode*)ts->data;
   int        ierr;
   char       *type;
-  PetscTruth isascii,isstring;
+  PetscTruth iascii,isstring;
 
   PetscFunctionBegin;
   if (cvode->cvode_type == PVODE_ADAMS) {type = "Adams";}
   else                                  {type = "BDF: backward differentiation formula";}
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"PVode integrater does not use SNES!\n");CHKERRQ(ierr); 
     ierr = PetscViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);CHKERRQ(ierr);

@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
     if self.foundMatlab: return 'Matlab: Using '+self.matlab+'\n'
     return ''
     
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
     help.addArgument('Matlab', '-with-matlab=<bool>',         nargs.ArgBool(None, 1, 'Activate Matlab'))
     help.addArgument('Matlab', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the Matlab installation'))

@@ -1348,7 +1348,7 @@ int PCView(PC pc,PetscViewer viewer)
 {
   PCType            cstr;
   int               ierr;
-  PetscTruth        mat_exists,isascii,isstring;
+  PetscTruth        mat_exists,iascii,isstring;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -1357,9 +1357,9 @@ int PCView(PC pc,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
   PetscCheckSameComm(pc,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (pc->prefix) {
       ierr = PetscViewerASCIIPrintf(viewer,"PC Object:(%s)\n",pc->prefix);CHKERRQ(ierr);

@@ -462,14 +462,14 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
   Mat_MPIBDiag      *mbd = (Mat_MPIBDiag*)mat->data;
   Mat_SeqBDiag      *dmat = (Mat_SeqBDiag*)mbd->A->data;
   int               ierr,i,size = mbd->size,rank = mbd->rank;
-  PetscTruth        isascii,isdraw;
+  PetscTruth        iascii,isdraw;
   PetscViewer       sviewer;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       int nline = PetscMin(10,mbd->gnd),k,nk,np;
@@ -552,13 +552,13 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
 int MatView_MPIBDiag(Mat mat,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii,isdraw,isbinary;
+  PetscTruth iascii,isdraw,isbinary;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
-  if (isascii || isdraw) {
+  if (iascii || isdraw) {
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_MPIBDiag_Binary(mat,viewer);CHKERRQ(ierr);

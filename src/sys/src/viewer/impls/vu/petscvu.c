@@ -12,9 +12,9 @@ struct _PrintfQueue {
 };
 
 typedef struct {
-  FILE         *fd;
+  FILE          *fd;
   PetscFileMode mode;     /* The mode in which to open the file */
-  char         *filename;
+  char          *filename;
   PetscTruth    vecSeen;  /* The flag indicating whether any vector has been viewed so far */
   PrintfQueue   queue, queueBase;
   int           queueLength;
@@ -25,7 +25,7 @@ typedef struct {
 int PetscViewerDestroy_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
-  int             ierr;
+  int            ierr;
 
   PetscFunctionBegin;
   if (vu->vecSeen == PETSC_TRUE) {
@@ -43,8 +43,8 @@ int PetscViewerDestroy_VU(PetscViewer viewer)
 int PetscViewerFlush_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
-  int             rank;
-  int             ierr;
+  int            rank;
+  int            ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
@@ -71,9 +71,9 @@ EXTERN_C_BEGIN
 int PetscViewerSetFilename_VU(PetscViewer viewer, const char name[])
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
-  char            fname[PETSC_MAX_PATH_LEN];
-  int             rank;
-  int             ierr;
+  char           fname[PETSC_MAX_PATH_LEN];
+  int            rank;
+  int            ierr;
 
   PetscFunctionBegin;
   if (name == PETSC_NULL) PetscFunctionReturn(0);
@@ -127,7 +127,7 @@ EXTERN_C_BEGIN
 int PetscViewerCreate_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu;
-  int             ierr;
+  int            ierr;
 
   PetscFunctionBegin;
   ierr         = PetscNew(PetscViewer_VU, &vu);CHKERRQ(ierr);
@@ -288,10 +288,10 @@ int PetscViewerVUGetVecSeen(PetscViewer viewer, PetscTruth *vecSeen)
 int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
-  va_list         Argp;
-  PrintfQueue     next;
-  int             len;
-  int             ierr;
+  va_list        Argp;
+  PrintfQueue    next;
+  int            len;
+  int            ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _PrintfQueue, &next);CHKERRQ(ierr);
@@ -334,10 +334,10 @@ int PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
 int PetscViewerVUFlushDeferred(PetscViewer viewer)
 {
   PetscViewer_VU *vu   = (PetscViewer_VU *) viewer->data;
-  PrintfQueue     next = vu->queueBase;
-  PrintfQueue     previous;
-  int             i;
-  int             ierr;
+  PrintfQueue    next = vu->queueBase;
+  PrintfQueue    previous;
+  int            i;
+  int            ierr;
 
   PetscFunctionBegin;
   for(i = 0; i < vu->queueLength; i++) {

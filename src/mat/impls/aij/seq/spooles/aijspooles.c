@@ -9,15 +9,15 @@
 int MatView_SeqAIJSpooles(Mat A,PetscViewer viewer)
 {
   int               ierr;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_Spooles       *lu=(Mat_Spooles*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
       ierr = MatFactorInfo_Spooles(A,viewer);CHKERRQ(ierr);

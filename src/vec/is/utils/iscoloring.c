@@ -56,7 +56,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
 {
   int        i,ierr;
-  PetscTruth isascii;
+  PetscTruth iascii;
   IS         *is;
 
   PetscFunctionBegin;
@@ -64,8 +64,8 @@ int ISColoringView(ISColoring iscoloring,PetscViewer viewer)
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(iscoloring->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     MPI_Comm comm;
     int      rank;
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);

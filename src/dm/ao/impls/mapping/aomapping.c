@@ -35,7 +35,7 @@ int AOView_Mapping(AO ao, PetscViewer viewer)
 {
   AO_Mapping *aomap = (AO_Mapping *) ao->data;
   int         rank, i;
-  PetscTruth  isascii;
+  PetscTruth  iascii;
   int         ierr;
 
   PetscFunctionBegin;
@@ -46,8 +46,8 @@ int AOView_Mapping(AO ao, PetscViewer viewer)
     viewer = PETSC_VIEWER_STDOUT_SELF; 
   }
 
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &isascii);CHKERRQ(ierr);
-  if (isascii == PETSC_TRUE) {
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
+  if (iascii == PETSC_TRUE) {
     PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %d\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
     for(i = 0; i < aomap->N; i++) {

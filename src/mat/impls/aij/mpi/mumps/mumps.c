@@ -312,15 +312,15 @@ int MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) {
 #define __FUNCT__ "MatView_AIJMUMPS"
 int MatView_AIJMUMPS(Mat A,PetscViewer viewer) {
   int               ierr;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_MUMPS         *mumps=(Mat_MUMPS*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*mumps->MatView)(A,viewer);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
       ierr = MatFactorInfo_MUMPS(A,viewer);CHKERRQ(ierr);

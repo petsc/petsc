@@ -117,7 +117,7 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault *)ctx->hctx;
   int              ierr;
-  PetscTruth       isascii;
+  PetscTruth       iascii;
 
   PetscFunctionBegin;
   /*
@@ -125,8 +125,8 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
      could be added, but for this type of object other viewers
      make less sense
   */
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);

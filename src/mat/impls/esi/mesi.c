@@ -273,16 +273,16 @@ int MatView_ESI(Mat A,PetscViewer viewer)
 {
   Mat_ESI              *a = (Mat_ESI*)A->data;
   int                  ierr,i,rstart,m,*cols,nz,j;
-  PetscTruth           issocket,isascii,isbinary,isdraw;
+  PetscTruth           issocket,iascii,isbinary,isdraw;
   esi::IndexSpace<int> *rmap,*cmap;
   PetscScalar          *values;
 
   PetscFunctionBegin;  
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     ierr   = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     cols   = new int[100];
     values = new PetscScalar[100];

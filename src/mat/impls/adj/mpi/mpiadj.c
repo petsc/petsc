@@ -40,11 +40,11 @@ int MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 int MatView_MPIAdj(Mat A,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii;
+  PetscTruth iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported by MPIAdj",((PetscObject)viewer)->type_name);

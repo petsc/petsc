@@ -15,12 +15,12 @@ typedef struct {
 int PFView_Matlab(void *value,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii;
+  PetscTruth iascii;
   PF_Matlab  *matlab = (PF_Matlab*)value;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"Matlab Matlab = %s\n",matlab->string);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

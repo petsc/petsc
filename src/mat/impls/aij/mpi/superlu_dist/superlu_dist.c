@@ -559,15 +559,15 @@ int MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 int MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 {
   int               ierr;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_SuperLU_DIST  *lu=(Mat_SuperLU_DIST*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
       ierr = MatFactorInfo_SuperLU_DIST(A,viewer);CHKERRQ(ierr);

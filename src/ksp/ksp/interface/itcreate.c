@@ -46,7 +46,7 @@ int KSPView(KSP ksp,PetscViewer viewer)
 {
   char        *type;
   int         ierr;
-  PetscTruth  isascii;
+  PetscTruth  iascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -54,8 +54,8 @@ int KSPView(KSP ksp,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(ksp,1,viewer,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
     if (ksp->prefix) {
       ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:(%s)\n",ksp->prefix);CHKERRQ(ierr);

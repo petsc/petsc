@@ -159,11 +159,11 @@ int MatView_MFFD(Mat J,PetscViewer viewer)
 {
   int          ierr;
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
-  PetscTruth   isascii;
+  PetscTruth   iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
      ierr = PetscViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
      ierr = PetscViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
      if (!ctx->type_name) {

@@ -179,7 +179,7 @@ int DAView_Binary(DA da,PetscViewer viewer)
 int DAView(DA da,PetscViewer viewer)
 {
   int        ierr,i,dof = da->w;
-  PetscTruth isascii,fieldsnamed = PETSC_FALSE,isbinary;
+  PetscTruth iascii,fieldsnamed = PETSC_FALSE,isbinary;
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth ismatlab;
 #endif
@@ -189,12 +189,12 @@ int DAView(DA da,PetscViewer viewer)
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(da->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
-  if (isascii) {
+  if (iascii) {
     for (i=0; i<dof; i++) {
       if (da->fieldname[i]) {
         fieldsnamed = PETSC_TRUE;

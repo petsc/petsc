@@ -203,11 +203,11 @@ int ISView_Stride(IS is,PetscViewer viewer)
 {
   IS_Stride   *sub = (IS_Stride *)is->data;
   int         i,n = sub->n,ierr,rank,size;
-  PetscTruth  isascii;
+  PetscTruth  iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) { 
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) { 
     ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
     if (size == 1) {

@@ -138,12 +138,12 @@ static int PCView_LU(PC pc,PetscViewer viewer)
 {
   PC_LU      *lu = (PC_LU*)pc->data;
   int        ierr;
-  PetscTruth isascii,isstring;
+  PetscTruth iascii,isstring;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     MatInfo info;
 
     if (lu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");CHKERRQ(ierr);}

@@ -239,11 +239,11 @@ int KSPView_CGNE(KSP ksp,PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
   KSP_CG     *cg = (KSP_CG *)ksp->data; 
   int        ierr;
-  PetscTruth isascii;
+  PetscTruth iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     if (cg->type == KSP_CG_HERMITIAN) {
       ierr = PetscViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");CHKERRQ(ierr);
     } else if (cg->type == KSP_CG_SYMMETRIC) {

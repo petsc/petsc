@@ -322,7 +322,7 @@ int PetscError(int line,const char *func,const char* file,const char *dir,int n,
 int PetscIntView(int N,int idx[],PetscViewer viewer)
 {
   int        j,i,n = N/20,p = N % 20,ierr;
-  PetscTruth isascii,issocket;
+  PetscTruth iascii,issocket;
   MPI_Comm   comm;
 
   PetscFunctionBegin;
@@ -331,9 +331,9 @@ int PetscIntView(int N,int idx[],PetscViewer viewer)
   PetscValidIntPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     for (i=0; i<n; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%d:",20*i);CHKERRQ(ierr);
       for (j=0; j<20; j++) {
@@ -402,7 +402,7 @@ int PetscIntView(int N,int idx[],PetscViewer viewer)
 int PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
 {
   int        j,i,n = N/5,p = N % 5,ierr;
-  PetscTruth isascii,issocket;
+  PetscTruth iascii,issocket;
   MPI_Comm   comm;
 
   PetscFunctionBegin;
@@ -411,9 +411,9 @@ int PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
   PetscValidScalarPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     for (i=0; i<n; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",5*i);CHKERRQ(ierr);
       for (j=0; j<5; j++) {
@@ -483,7 +483,7 @@ int PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
 int PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
 {
   int        j,i,n = N/3,p = N % 3,ierr;
-  PetscTruth isascii,issocket;
+  PetscTruth iascii,issocket;
   MPI_Comm   comm;
 
   PetscFunctionBegin;
@@ -492,9 +492,9 @@ int PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
   PetscValidScalarPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     for (i=0; i<n; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*i);CHKERRQ(ierr);
       for (j=0; j<3; j++) {

@@ -134,7 +134,6 @@ int PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer *sviewer)
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
-
   vstr->head    = iviewer->head;  
   vstr->curlen += iviewer->curlen;  
   ierr = PetscViewerDestroy(*sviewer);CHKERRQ(ierr);
@@ -195,7 +194,6 @@ int PetscViewerStringSetString(PetscViewer viewer,char string[],int len)
   ierr = PetscMemzero(string,len*sizeof(char));CHKERRQ(ierr);
   vstr->string      = string;
   vstr->head        = string;
-
   vstr->curlen      = 0;
   vstr->maxlen      = len;
   PetscFunctionReturn(0);

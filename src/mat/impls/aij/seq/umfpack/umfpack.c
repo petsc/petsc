@@ -304,15 +304,15 @@ int MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer) {
 #define __FUNCT__ "MatView_UMFPACK"
 int MatView_UMFPACK(Mat A,PetscViewer viewer) {
   int               ierr;
-  PetscTruth        isascii;
+  PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_UMFPACK       *lu=(Mat_UMFPACK*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
       ierr = MatFactorInfo_UMFPACK(A,viewer);CHKERRQ(ierr);

@@ -223,15 +223,15 @@ int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
 int AODataView_Basic(AOData ao,PetscViewer viewer)
 {
   int        rank,ierr;
-  PetscTruth isascii,isbinary;
+  PetscTruth iascii,isbinary;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
-  if (isascii) { 
+  if (iascii) { 
     ierr = AODataView_Basic_ASCII(ao,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = AODataView_Basic_Binary(ao,viewer);CHKERRQ(ierr);

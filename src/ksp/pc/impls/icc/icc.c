@@ -431,12 +431,12 @@ static int PCView_ICC(PC pc,PetscViewer viewer)
 {
   PC_ICC     *icc = (PC_ICC*)pc->data;
   int        ierr;
-  PetscTruth isstring,isascii;
+  PetscTruth isstring,iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     if (icc->info.levels == 1) {
         ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d level of fill\n",(int)icc->info.levels);CHKERRQ(ierr);
     } else {

@@ -10,10 +10,6 @@ class Configure(config.base.Configure):
     self.substPrefix  = 'PETSC'
     self.argDB        = framework.argDB
     return
-     
-  def configureHelp(self, help):
-    import nargs
-    return
 
   def getDir(self):
     '''Find the directory containing Sowing'''

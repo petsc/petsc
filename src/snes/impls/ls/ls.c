@@ -956,11 +956,11 @@ static int SNESView_LS(SNES snes,PetscViewer viewer)
   SNES_LS    *ls = (SNES_LS *)snes->data;
   const char *cstr;
   int        ierr;
-  PetscTruth isascii;
+  PetscTruth iascii;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
     if (ls->LineSearch == SNESNoLineSearch)             cstr = "SNESNoLineSearch";
     else if (ls->LineSearch == SNESQuadraticLineSearch) cstr = "SNESQuadraticLineSearch";
     else if (ls->LineSearch == SNESCubicLineSearch)     cstr = "SNESCubicLineSearch";

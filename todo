@@ -44,8 +44,6 @@ General
 
   add DAVecGatherAll and DAVecGather
   
-  change VecConvertMPI..... to gather style
-
   keywords in maual pages should get listed in help topic list
 
 

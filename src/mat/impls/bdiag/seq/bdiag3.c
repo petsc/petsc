@@ -662,13 +662,13 @@ static int MatView_SeqBDiag_Draw(Mat A,PetscViewer viewer)
 int MatView_SeqBDiag(Mat A,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii,isbinary,isdraw;
+  PetscTruth iascii,isbinary,isdraw;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  if (isascii) {
+  if (iascii) {
     ierr = MatView_SeqBDiag_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = MatView_SeqBDiag_Binary(A,viewer);CHKERRQ(ierr);
