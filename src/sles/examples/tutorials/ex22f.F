@@ -1,4 +1,4 @@
-! $Id: ex22f.F,v 1.1 2001/03/28 21:02:47 bsmith Exp bsmith $
+! $Id: ex22f.F,v 1.2 2001/03/30 15:53:24 bsmith Exp balay $
 !
 !   Laplacian in 3D. Modeled by the partial differential equation
 !
@@ -95,15 +95,15 @@
       integer ierr
 
       DA         da
-      integer    ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs
+      integer    i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs
       Scalar     v(7),Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy
       MatStencil row(4),col(4,7)
 
       call DMMGGetDA(dmmg,da,ierr)
       call DAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
-     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
 
       Hx = 1.d0 / (mx-1)
@@ -112,18 +112,18 @@
       HxHydHz = Hx*Hy/Hz
       HxHzdHy = Hx*Hz/Hy
       HyHzdHx = Hy*Hz/Hx
-      call DAGetCorners(da,xs,ys,zs,xm,ym,zm,ierr)                            
+      call DAGetCorners(da,xs,ys,zs,xm,ym,zm,ierr)        
   
-      do 10,k=zs,zs+zm-1                                                      
-        do 20,j=ys,ys+ym-1                                                            
+      do 10,k=zs,zs+zm-1    
+        do 20,j=ys,ys+ym-1
           do 30,i=xs,xs+xm-1
-          row(MatStencil_i) = i                                                    
+          row(MatStencil_i) = i  
           row(MatStencil_j) = j
-          row(MatStencil_k) = k                                                   
-	  if (i.eq.0 .or. j.eq.0 .or. k.eq.0 .or. i.eq.mx-1 .or.           &
+          row(MatStencil_k) = k 
+          if (i.eq.0 .or. j.eq.0 .or. k.eq.0 .or. i.eq.mx-1 .or.         &
      &         j.eq.my-1 .or. k.eq.mz-1) then
             v(1) = 2.d0*(HxHydHz + HxHzdHy + HyHzdHx)
-	    call MatSetValuesStencil(jac,1,row,1,row,v,INSERT_VALUES,    &
+            call MatSetValuesStencil(jac,1,row,1,row,v,INSERT_VALUES,    &
      &                               ierr)
 	  else 
             v(1) = -HxHydHz
