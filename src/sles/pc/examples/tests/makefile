@@ -15,7 +15,7 @@ EXAMPLES_2    = ex5
 RUNEXAMPLES_2 = runex5
 EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5
 RUNEXAMPLES_4 = runex1 runex2 runex3 runex4 runex5
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c
 
 
 ex1: ex1.o 
@@ -37,10 +37,6 @@ ex4: ex4.o
 ex5: ex5.o 
 	-$(CLINKER) -o ex5 ex5.o $(SLES_LIB)
 	$(RM) ex5.o
-
-ex6: ex6.o 
-	-$(CLINKER) -o ex6 ex6.o $(SLES_LIB)
-	$(RM) ex6.o
 
 runex1:
 	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
@@ -69,11 +65,5 @@ runex5:
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   $(RM) -f ex5_1.tmp 
-
-runex6:
-	-@$(MPIRUN) ex6 > ex6_1.tmp 2>&1;   \
-	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
-	   else echo "Possible problem with ex6_1, diffs above"; fi; \
-	   $(RM) -f ex6_1.tmp 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
