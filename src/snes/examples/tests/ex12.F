@@ -1,5 +1,5 @@
 
-C    "$Id: ex12.F,v 1.11 1995/10/19 22:29:40 curfman Exp $";
+C    "$Id: ex12.F,v 1.12 1995/11/23 04:14:57 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -108,13 +108,17 @@ C --------------------  Evaluate Function F(x) ---------------------
 
       subroutine FormFunction(snes,x,f,ctx)
       integer snes,x,f,ctx(*)
-      integer rank, size,i,s,n,ierr
-      double precision h,d,ff(1000),F2(1000),xx(1000)
+      integer rank, size,i,s,n,ierr,ixx,iff,iF2
+      double precision h,d
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
 #include "include/finclude/da.h"
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
+
+#define ff(ib)  PetscDouble(iff + (ib))
+#define F2(ib)  PetscDouble(iF2 + (ib))
+#define xx(ib)  PetscDouble(ixx + (ib))
 
       rank  = ctx(4)
       size = ctx(5)
@@ -128,9 +132,9 @@ C --------------------  Evaluate Function F(x) ---------------------
         call MPI_Abort(MPI_COMM_WORLD,0,ierr)
       endif
 
-      call VecGetArray(ctx(3),xx,ierr)
-      call VecGetArray(f,ff,ierr)
-      call VecGetArray(ctx(2),F2,ierr)
+      call VecGetArray(ctx(3),ixx,ierr)
+      call VecGetArray(f,iff,ierr)
+      call VecGetArray(ctx(2),iF2,ierr)
 
       d = h*h
 
@@ -142,15 +146,20 @@ C --------------------  Evaluate Function F(x) ---------------------
       endif
 
       do 10 i=1,n-2
-       ff(i-s+1) = -d*(xx(i) - 2.d0*xx(i+1) + xx(i+2)) - xx(i+1)*xx(i+1)
-     *             + F2(i-s+1)
+       ff(i-s+1) = -d*(xx(i) - 
+     *                 2.d0*xx(i+1) + 
+     *                 xx(i+2)) 
+     *             - xx(i+1)*xx(i+1) +
+     *               F2(i-s+1)
  10   continue
 
       if (rank .eq. size-1) then
         ff(n-s) = -xx(n) + 1.d0
       endif
 
-      call VecRestoreArray(f,ff,ierr)
+      call VecRestoreArray(f,iff,ierr)
+      call VecRestoreArray(ctx(3),ixx,ierr)
+      call VecRestoreArray(ctx(2),iF2,ierr)
       return
       end
 
@@ -174,16 +183,18 @@ C --------------------  Evaluate Jacobian F'(x) --------------------
 #include "include/finclude/da.h"
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
-      integer          snes,x,jac(*),B,flag,ctx(*),ii,istart,iend
-      double precision xx(1000),d,A,h
+      integer          snes,x,jac(*),B,flag,ctx(*),ii,istart,iend,ixx
+      double precision d,A,h
       integer          i,j,n,rank,size,end,start,ierr
+
+#define xx(ib)  PetscDouble(ixx + (ib))
 
       h = 1.d0/(ctx(6) - 1.d0)
       d = h*h
       rank = ctx(4)
       size = ctx(5)
 
-      call VecGetArray(x,xx,ierr)
+      call VecGetArray(x,ixx,ierr)
       call VecGetOwnershipRange(x,start,end,ierr)
       n = end - start
 
@@ -211,6 +222,7 @@ C --------------------  Evaluate Jacobian F'(x) --------------------
         A = -2.0*d + 2.0*xx(i+1)
         call MatSetValues(jac,1,ii,1,ii,A,INSERT_VALUES,ierr)
  10   continue
+      call VecRestoreArray(x,ixx,ierr)
       call MatAssemblyBegin(jac,FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,FINAL_ASSEMBLY,ierr)
 C      call MatView(jac,STDOUT_VIEWER_WORLD)

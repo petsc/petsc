@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.50 1995/11/22 17:06:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.51 1995/11/25 20:50:48 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -123,14 +123,31 @@ static int     EventsStage = 0;    /* which log sessions are we using */
 static int     EventsStageMax = 0; /* highest event log used */ 
 static int     EventsStagePushed = 0;
 static int     EventsStageStack[100];
+static char    *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
 #define COUNT 0
 #define FLOPS 1
 #define TIME  2
 static double  EventsType[10][100][3];
 
 /*@
-   PLogPushStage - Users can log up to 10 stages within a code by using
-   PLogBegin() or -log_summary.  PLogPushStage() enables users to switch
+    PLogStageName - Attach a charactor string name to a logging stage.
+
+ Input Parameters:
+.  stage - the stage from 0 to 9 inclusive
+.  name - the name to associate with that stage
+
+.seealso: PLogStagePush(), PLogStagePop()
+@*/
+int PLogStageName(int stage, char *name)
+{
+  if (stage < 0 || stage > 10) SETERRQ(1,"PLogStageName:Out of range");
+  EventsStageName[stage] = name;
+  return 0;
+}
+
+/*@
+   PLogStagePush - Users can log up to 10 stages within a code by using
+   PLogBegin() or -log_summary.  PLogStagePush() enables users to switch
    to a new stage. 
 
    Input Parameters:
@@ -144,31 +161,33 @@ $
 $     PetscInitialize(int *argc,char ***args,0,0,0);
 $     [stage 0 of code]   
 $     for (i=0; i<ntimes; i++) {
-$        PLogPushStage(1);
+$        PLogStagePush(1);
 $        [stage 1 of code]
-$        PLogPushStage(2);
+$        PLogStagePop()
+$        PLogStagePush(2);
 $        [stage 2 of code]
+$        PLogStagePop()
 $     }
 $     PetscFinalize();
 $
 
 .keywords: log, push, stage
 
-.seealso: PLogPopStage()
+.seealso: PLogStagePop()
 @*/
-int PLogPushStage(int stage)
+int PLogStagePush(int stage)
 {
-  if (stage < 0 || stage > 10) SETERRQ(1,"PLogPushStage:Out of range");
+  if (stage < 0 || stage > 10) SETERRQ(1,"PLogStagePush:Out of range");
   EventsStageStack[EventsStagePushed++] = EventsStage;
-  if (EventsStagePushed++ > 99) SETERRQ(1,"PLogPushStage:Too many pushes");
+  if (EventsStagePushed++ > 99) SETERRQ(1,"PLogStagePush:Too many pushes");
   EventsStage = stage;
   if (stage > EventsStageMax) EventsStageMax = stage;
   return 0;
 }
 
 /*@
-   PLogPopStage - Users can log up to 10 stages within a code by using
-   PLogBegin() or -log_summary.  PLogPopStage() enable users to switch
+   PLogStagePop - Users can log up to 10 stages within a code by using
+   PLogBegin() or -log_summary.  PLogStagePop() enable users to switch
    from the current stage to the previous one.
 
    Example of Usage:
@@ -178,19 +197,19 @@ int PLogPushStage(int stage)
 $
 $     PetscInitialize(int *argc,char ***args,0,0,0);
 $     [stage 0 of code]   
-$     PLogPushStage(1);
+$     PLogStagePush(1);
 $     [stage 1 of code]
 $     [some code (stage 1)]
-$     PLogPopStage();
+$     PLogStagePop();
 $     [more stage 0 of code]   
 $     PetscFinalize();
 $
 
 .keywords: log, pop, stage
 
-.seealso: PLogPushStage()
+.seealso: PLogStagePush()
 @*/
-int PLogPopStage()
+int PLogStagePop()
 {
   if (EventsStagePushed < 1) return 0;
   EventsStage = EventsStageStack[--EventsStagePushed];
@@ -780,8 +799,17 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
    Flops/sec     %%Time %%Flop\n");
   MPIU_fprintf(comm,fd,"                             Min       Max      \
   Min       Max\n");
+  MPIU_fprintf(comm,fd,
+    "\n------------------------------------------------------------------------------\n"); 
   for ( j=0; j<=EventsStageMax; j++ ) {
-    if (EventsStageMax) MPIU_fprintf(comm,fd,"Event Stage %d:\n\n",j);
+    if (EventsStageMax) {
+      if (EventsStageName[j]) {
+        MPIU_fprintf(comm,fd,"\n                   ---------Event Stage %d:%s -----\n\n",
+                     j,EventsStageName[j]);
+      } else {
+        MPIU_fprintf(comm,fd,"\n                   ---------Event Stage %d: -----\n\n",j);
+      }
+    }
     for ( i=0; i<100; i++ ) {  
       if (EventsType[j][i][TIME]) {
         wdou = EventsType[j][i][FLOPS]/EventsType[j][i][TIME];
@@ -802,10 +830,10 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
                     100.*totts/tott,100.*totff/totf);
       }
     }
-    MPIU_fprintf(comm,fd,
-    "------------------------------------------------------------------------------\n"); 
   }
 
+  MPIU_fprintf(comm,fd,
+    "------------------------------------------------------------------------------\n"); 
   MPIU_fprintf(comm,fd,"\n"); 
   MPIU_fprintf(comm,fd,"Memory usage is given in bytes:\n\n");
 

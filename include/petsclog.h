@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.29 1995/11/22 17:05:20 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.30 1995/11/27 21:13:51 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -237,9 +237,9 @@ M*/
 extern int PLogObjectState(PetscObject,char *,...);
 extern int PLogInfo(PetscObject,char*,...);
 extern int PLogDestroy();
-extern int PLogPushStage(int);
-extern int PLogPopStage();
-extern int PLogNameStage();
+extern int PLogStagePush(int);
+extern int PLogStagePop();
+extern int PLogStageName();
 
 #else
 
@@ -252,8 +252,9 @@ extern int PLogNameStage();
 #define PLogObjectParents(p,n,c)
 extern int PLogInfo(PetscObject,char*,...);
 extern int PLogDestroy();
-extern int PLogPushStage(int);
-extern int PLogPopStage();
+extern int PLogStagePush(int);
+extern int PLogStagePop();
+extern int PLogStageName();
 #endif
 
 #endif

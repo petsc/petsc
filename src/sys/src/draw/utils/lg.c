@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.26 1995/11/09 22:31:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.27 1995/11/23 14:12:59 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -71,6 +71,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 @*/
 int DrawLGReset(DrawLG lg)
 {
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {return 0;}
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   lg->xmin  = 1.e20;
   lg->ymin  = 1.e20;
@@ -115,6 +116,8 @@ int DrawLGDestroy(DrawLG lg)
 int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 {
   int i;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {return 0;}
+
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
     double *tmpx,*tmpy;
@@ -147,6 +150,8 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 @*/
 int DrawLGIndicateDataPoints(DrawLG lg)
 {
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {return 0;}
+
   lg->use_dots = 1;
   return 0;
 }
@@ -167,6 +172,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 {
   int    i, j, k;
   double *x,*y;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {return 0;}
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
     double *tmpx,*tmpy;
@@ -210,7 +216,8 @@ int DrawLGDraw(DrawLG lg)
 {
   double   xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
   int      i, j, dim = lg->dim,nopts = lg->nopts;
-  Draw  win = lg->win;
+  Draw     win = lg->win;
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {return 0;}
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
 
   if (nopts < 2) return 0;
@@ -246,6 +253,7 @@ int DrawLGDraw(DrawLG lg)
 int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
                                   double y_max) 
 {
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {return 0;}
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   (lg)->xmin = x_min; 
   (lg)->xmax = x_max; 
@@ -289,6 +297,9 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 @*/
 int DrawLGGetDraw(DrawLG lg,Draw *win)
 {
+  if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {
+    *win = 0;
+  }
   PETSCVALIDHEADERSPECIFIC(lg,LG_COOKIE);
   *win = lg->win;
   return 0;

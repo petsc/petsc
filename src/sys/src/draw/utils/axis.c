@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.24 1995/11/09 22:31:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.25 1995/11/23 04:29:00 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -88,10 +88,11 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
   Input Parameters:
 .   axis - the axis context
 @*/
-int DrawAxisDestroy(DrawAxis axis)
+int DrawAxisDestroy(DrawAxis ad)
 {
-  PLogObjectDestroy(axis);
-  PetscHeaderDestroy(axis);
+  if (!ad) return 0;
+  PLogObjectDestroy(ad);
+  PetscHeaderDestroy(ad);
   return 0;
 }
 
@@ -105,9 +106,10 @@ int DrawAxisDestroy(DrawAxis axis)
 .   tc - the color of the tick marks
 .   cc - the color of the text strings
 @*/
-int DrawAxisSetColors(DrawAxis axis,int ac,int tc,int cc)
+int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 {
-  axis->ac = ac; axis->tc = tc; axis->cc = cc;
+  if (!ad) return 0;
+  ad->ac = ac; ad->tc = tc; ad->cc = cc;
   return 0;
 }
 
@@ -120,11 +122,12 @@ int DrawAxisSetColors(DrawAxis axis,int ac,int tc,int cc)
 .   top - the label at the top of the image
 .   xlabel,ylabel - the labes for the x and y axis
 @*/
-int DrawAxisSetLabels(DrawAxis axis,char* top,char *xlabel,char *ylabel)
+int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
 {
-  axis->xlabel   = xlabel;
-  axis->ylabel   = ylabel;
-  axis->toplabel = top;
+  if (!ad) return 0;
+  ad->xlabel   = xlabel;
+  ad->ylabel   = ylabel;
+  ad->toplabel = top;
   return 0;
 }
 
@@ -138,6 +141,7 @@ int DrawAxisSetLabels(DrawAxis axis,char* top,char *xlabel,char *ylabel)
 @*/
 int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double ymax)
 {
+  if (!ad) return 0;
   ad->xlow = xmin;
   ad->xhigh= xmax;
   ad->ylow = ymin;
@@ -164,8 +168,9 @@ int DrawAxisDraw(DrawAxis ad )
   char      *p;
   Draw      awin = ad->win;
   double    h,w,tw,th,xl,xr,yl,yr;
-
-  MPI_Comm_rank(ad->comm,&rank); if (rank) return 0;
+ 
+  if (!ad) return 0;
+   MPI_Comm_rank(ad->comm,&rank); if (rank) return 0;
 
   if (ad->xlow == ad->xhigh) {ad->xlow -= .5; ad->xhigh += .5;}
   if (ad->ylow == ad->yhigh) {ad->ylow -= .5; ad->yhigh += .5;}

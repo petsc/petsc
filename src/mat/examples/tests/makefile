@@ -40,7 +40,7 @@ ex4: ex4.o chkopts
 	$(RM) ex4.o
 
 ex5: ex5.o chkopts
-	-$(CLINKER) -o ex5 ex5.o $(PETSC_LIB)
+	-$(CLINKER)  -o ex5 ex5.o $(PETSC_LIB)
 	$(RM) ex5.o
 
 ex6: ex6.o chkopts

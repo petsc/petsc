@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.38 1995/11/25 20:31:22 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.39 1995/11/25 20:51:07 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -29,8 +29,11 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   n = 2*size;
 
+  PLogStageName(0,"Original Solve");
+  PLogStageName(1,"Second Solve");
+
   /* Create and assemble matrix */
-  PLogPushStage(0);
+  PLogStagePush(0);
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   ierr = MatSetOption(C,SYMMETRIC_MATRIX); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
@@ -93,7 +96,8 @@ int main(int argc,char **args)
   ierr = MatView(C,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   /* Change matrix (keeping same nonzero structure) and solve again */
-  PLogPushStage(1);
+  PLogStagePop();
+  PLogStagePush(1);
   ierr = MatSetOption(C,NO_NEW_NONZERO_LOCATIONS); CHKERRA(ierr);
   ierr = MatZeroEntries(C); CHKERRA(ierr);
   /* Fill matrix again */
@@ -129,6 +133,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);
   ierr = MatDestroy(C); CHKERRA(ierr);
+  PLogStagePop();
 
   PetscFinalize();
   return 0;
