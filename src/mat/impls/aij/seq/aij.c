@@ -43,8 +43,7 @@ int MatGetRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int
 #define __FUNCT__ "MatRestoreRowIJ_SeqAIJ"
 int MatRestoreRowIJ_SeqAIJ(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        ierr;
+  int ierr;
  
   PetscFunctionBegin;  
   if (!ia) PetscFunctionReturn(0);
@@ -1324,7 +1323,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,PetscScalar *diag)
 int MatGetRow_SeqAIJ(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        *itmp,i,ierr;
+  int        *itmp;
 
   PetscFunctionBegin;
   if (row < 0 || row >= A->m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Row %d out of range",row);
@@ -2878,11 +2877,6 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
 
   /* read in column indices and adjust for Fortran indexing*/
   ierr = PetscBinaryRead(fd,a->j,nz,PETSC_INT);CHKERRQ(ierr);
-  if (shift) {
-    for (i=0; i<nz; i++) {
-      a->j[i] += 1;
-    }
-  }
 
   /* read in nonzero values */
   ierr = PetscBinaryRead(fd,a->a,nz,PETSC_SCALAR);CHKERRQ(ierr);

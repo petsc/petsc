@@ -3778,7 +3778,7 @@ int MatICCFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
   PetscValidPointer(fact);
   PetscValidHeaderSpecific(perm,IS_COOKIE);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %d",info->levels);
+  if (info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %d",(int) info->levels);
   if (info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",info->fill);
   if (!mat->ops->iccfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");

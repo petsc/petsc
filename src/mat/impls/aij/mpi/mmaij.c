@@ -28,7 +28,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = PetscTableCreate(aij->B->m,&gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
-      int data,gid1 = aj[B->i[i] + shift + j] + 1 + shift;
+      int data,gid1 = aj[B->i[i] + j] + 1;
       ierr = PetscTableFind(gid1_lid1,gid1,&data);CHKERRQ(ierr);
       if (!data) {
         /* one based table */ 
@@ -53,10 +53,10 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   /* compact out the extra columns in B */
   for (i=0; i<aij->B->m; i++) {
     for (j=0; j<B->ilen[i]; j++) {
-      int gid1 = aj[B->i[i] + shift + j] + 1 + shift;
+      int gid1 = aj[B->i[i] + j] + 1;
       ierr = PetscTableFind(gid1_lid1,gid1,&lid);CHKERRQ(ierr);
       lid --;
-      aj[B->i[i] + shift + j]  = lid - shift;
+      aj[B->i[i] + j]  = lid;
     }
   }
   aij->B->n = aij->B->N = ec;

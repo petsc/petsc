@@ -1024,7 +1024,7 @@ int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse 
   {
     int nzA,nzB,*a_i = a->i,*b_i = b->i,imark;
     int *cworkA,*cworkB,cstart = c->cstart,rstart = c->rstart,*bmap = c->garray;
-    int *a_j = a->j,*b_j = b->j,ctmp,*t_cols;
+    int *a_j = a->j,*b_j = b->j,ctmp;
 
     for (i=0; i<nrqr; i++) {
       rbuf1_i   = rbuf1[i]; 
@@ -1070,7 +1070,7 @@ int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse 
     int    nzA,nzB,*a_i = a->i,*b_i = b->i, *cworkB,imark;
     int    cstart = c->cstart,rstart = c->rstart,*bmap = c->garray;
     int    *b_j = b->j;
-    PetscScalar *vworkA,*vworkB,*a_a = a->a,*b_a = b->a,*t_vals;
+    PetscScalar *vworkA,*vworkB,*a_a = a->a,*b_a = b->a;
     
     for (i=0; i<nrqr; i++) {
       rbuf1_i   = rbuf1[i];

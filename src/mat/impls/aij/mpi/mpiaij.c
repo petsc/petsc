@@ -899,7 +899,6 @@ int MatView_MPIAIJ_Binary(Mat mat,PetscViewer viewer)
 int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPIAIJ        *aij = (Mat_MPIAIJ*)mat->data;
-  Mat_SeqAIJ*       C = (Mat_SeqAIJ*)aij->A->data;
   int               ierr,rank = aij->rank,size = aij->size;
   PetscTruth        isdraw,isascii,flg,isbinary;
   PetscViewer       sviewer;

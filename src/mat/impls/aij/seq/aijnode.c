@@ -358,8 +358,7 @@ static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A,int **iia,int **jja,in
 #define __FUNCT__ "MatGetColumnIJ_SeqAIJ_Inode"
 static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,PetscTruth *done)
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  int        ierr;
+  int ierr;
 
   PetscFunctionBegin;  
   ierr = Mat_AIJ_CreateColInode(A,n,PETSC_NULL);CHKERRQ(ierr);
