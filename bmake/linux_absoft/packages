@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.2 1999/08/31 03:35:48 balay Exp balay $ 
+# $Id: base.site,v 1.3 1999/09/14 18:30:54 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -87,5 +87,5 @@ EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.
 #
-#C_DYLIBPATH     = 
-#F_DYLIBPATH     = 
+C_DYLIBPATH     = ${CLINKER_SLFLAG}/home/alice/software/egcs/linux/lib
+F_DYLIBPATH     = ${FLINKER_SLFLAG}/home/alice/software/egcs/linux/lib
