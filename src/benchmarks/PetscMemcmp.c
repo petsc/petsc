@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: PetscMemcmp.c,v 1.2 1996/03/06 17:41:51 balay Exp balay $";
+static char vcid[] = "$Id: PetscMemcmp.c,v 1.3 1996/03/08 17:16:14 balay Exp balay $";
 #endif
 
 #include "stdio.h"
@@ -8,7 +8,8 @@ static char vcid[] = "$Id: PetscMemcmp.c,v 1.2 1996/03/06 17:41:51 balay Exp bal
 int main( int argc, char **argv)
 {
   double x, y,z;
-  int A[10000], B[10000],i;
+  Scalar A[10000], B[10000];
+  int    i;
 
   PetscInitialize(&argc, &argv,0,0,0);
 
@@ -17,36 +18,36 @@ int main( int argc, char **argv)
     B[i] = i%61897;
   }
   /* To take care of paging effects */
-  PetscMemcmp(A,B,sizeof(int)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
   x = PetscGetTime();
 
   x = PetscGetTime();
-  PetscMemcmp(A,B,sizeof(int)*10000);
-  PetscMemcmp(A,B,sizeof(int)*10000);
-  PetscMemcmp(A,B,sizeof(int)*10000);
-  PetscMemcmp(A,B,sizeof(int)*10000);
-  PetscMemcmp(A,B,sizeof(int)*10000);
-  PetscMemcmp(A,B,sizeof(int)*10000);
-  PetscMemcmp(A,B,sizeof(int)*10000);
-  PetscMemcmp(A,B,sizeof(int)*10000);
-  PetscMemcmp(A,B,sizeof(int)*10000);
-  PetscMemcmp(A,B,sizeof(int)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
+  PetscMemcmp(A,B,sizeof(Scalar)*10000);
   y = PetscGetTime();
-  PetscMemcmp(A,B,sizeof(int)*0);
-  PetscMemcmp(A,B,sizeof(int)*0);
-  PetscMemcmp(A,B,sizeof(int)*0);
-  PetscMemcmp(A,B,sizeof(int)*0);
-  PetscMemcmp(A,B,sizeof(int)*0);
-  PetscMemcmp(A,B,sizeof(int)*0);
-  PetscMemcmp(A,B,sizeof(int)*0);
-  PetscMemcmp(A,B,sizeof(int)*0);
-  PetscMemcmp(A,B,sizeof(int)*0);
-  PetscMemcmp(A,B,sizeof(int)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
+  PetscMemcmp(A,B,sizeof(Scalar)*0);
   z = PetscGetTime();
 
   fprintf(stderr,"%s : \n","PetscMemcmp");
   fprintf(stderr,"    %-11s : %e sec\n","Latency",(z-y)/10.0);
-  fprintf(stderr,"    %-11s : %e sec\n","Per byte",(2*y-x-z)/(sizeof(int)*100000));
+  fprintf(stderr,"    %-11s : %e sec\n","Per Scalar",(2*y-x-z)/100000);
 
   PetscFinalize();
   return 0;

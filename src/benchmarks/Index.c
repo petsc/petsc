@@ -7,18 +7,20 @@ int main( int argc, char **argv)
 {
   double    t1, t2, value;
   int       i, ierr,z[10000], intval, tmp;
-  int       x[10000],y[10000];
+  Scalar    *x, *y;
   SYRandom  r;
 
   PetscInitialize(&argc, &argv,0,0,0);
-  ierr = SYRandomCreate( MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
+  ierr = SYRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
+  x    = (Scalar *)PetscMalloc(10000*sizeof(Scalar)); CHKPTRA(x);
+  y    = (Scalar *)PetscMalloc(10000*sizeof(Scalar)); CHKPTRA(y);
 
   /* Take care of paging effects */
   t1 = PetscGetTime(); 
   
   for (i=0; i<10000; i++) {
-    x[i] = i;
-    y[i] = i;
+    /*    x[i] = i;
+    y[i] = i; */
     z[i] = i;
   }
  
@@ -35,18 +37,18 @@ int main( int argc, char **argv)
   t1 = PetscGetTime(); 
   for (i=0; i<1000; i++) {  x[i] = y[z[i]]; }
   t2 = PetscGetTime(); 
-  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/(sizeof(int)*1000.0));
+  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/1000.0);
 
 
   t1 = PetscGetTime(); 
   for (i=0; i<1000; i++) {  x[z[i]] = y[i]; }
   t2 = PetscGetTime(); 
-  fprintf(stderr,"%-19s : %e sec\n","x[z[i]] = y[i]",(t2-t1)/(sizeof(int)*1000.0));
+  fprintf(stderr,"%-19s : %e sec\n","x[z[i]] = y[i]",(t2-t1)/1000.0);
 
   t1 = PetscGetTime(); 
   for (i=0; i<1000; i++) {  x[z[i]] = y[z[i]]; }
   t2 = PetscGetTime(); 
-  fprintf(stderr,"%-19s : %e sec\n","x[z[i]] = y[z[i]]",(t2-t1)/(sizeof(int)*1000.0));
+  fprintf(stderr,"%-19s : %e sec\n","x[z[i]] = y[z[i]]",(t2-t1)/1000.0);
 
   PetscFinalize();
   return 0;
