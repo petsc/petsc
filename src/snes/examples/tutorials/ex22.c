@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.3 2000/12/08 17:28:28 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.4 2000/12/13 17:39:08 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -38,7 +38,6 @@ static char help[] = "Solves PDE optimization problem\n\n";
 
 typedef struct {
   int     nredundant;
-  VecPack packer;
   Viewer  u_lambda_viewer;
   Viewer  fu_lambda_viewer;
 } UserCtx;
@@ -52,39 +51,35 @@ extern int Monitor(SNES,int,PetscReal,void*);
 int main(int argc,char **argv)
 {
   int     ierr,N = 5,its;
-  Vec     U,FU;
   SNES    snes;
   UserCtx user;
   DA      da;
+  DMMG    *dmmg;
+  VecPack packer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */
-  ierr = VecPackCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);
+  ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   user.nredundant = 1;
-  ierr = VecPackAddArray(user.packer,user.nredundant);CHKERRQ(ierr);
+  ierr = VecPackAddArray(packer,user.nredundant);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = VecPackAddDA(user.packer,da);CHKERRQ(ierr);
-  ierr = VecPackCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
-  ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
+  ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
 
   /* create graphics windows */
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"u_lambda - state variables and Lagrange multipliers",-1,-1,-1,-1,&user.u_lambda_viewer);CHKERRQ(ierr);
   ierr = ViewerDrawOpen(PETSC_COMM_WORLD,0,"fu_lambda - derivate w.r.t. state variables and Lagrange multipliers",-1,-1,-1,-1,&user.fu_lambda_viewer);CHKERRQ(ierr);
 
-  /* create nonlinear solver */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,FU,FormFunction,&user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,&user,0);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,U,&its);CHKERRQ(ierr);
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  /* create nonlinear multi-level solver */
+  ierr = DMMGCreate(PETSC_COMM_WORLD,1,&user,&dmmg);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
+  ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetMonitor(DMMGGetSNES(dmmg),Monitor,dmmg,0);CHKERRQ(ierr);
+  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
   ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = VecPackDestroy(user.packer);CHKERRQ(ierr);
-  ierr = VecDestroy(U);CHKERRQ(ierr);
-  ierr = VecDestroy(FU);CHKERRQ(ierr);
+  ierr = VecPackDestroy(packer);CHKERRQ(ierr);
   ierr = ViewerDestroy(user.u_lambda_viewer);CHKERRQ(ierr);
   ierr = ViewerDestroy(user.fu_lambda_viewer);CHKERRQ(ierr);
 
@@ -101,17 +96,19 @@ int main(int argc,char **argv)
 */
 int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
-  UserCtx *user = (UserCtx*)dummy;
+  DMMG    dmmg = (DMMG)dummy;
+  UserCtx *user = (UserCtx*)dmmg->user;
   int     ierr,xs,xm,i,N,nredundant;
   Scalar  **u_lambda,*w,*fw,**fu_lambda,d;
   Vec     vu_lambda,vfu_lambda;
   DA      da;
+  VecPack packer = (VecPack)dmmg->dm;
 
   PetscFunctionBegin;
-  ierr = VecPackGetEntries(user->packer,&nredundant,&da);CHKERRQ(ierr);
-  ierr = VecPackGetLocalVectors(user->packer,&w,&vu_lambda);CHKERRQ(ierr);
-  ierr = VecPackScatter(user->packer,U,w,vu_lambda);CHKERRQ(ierr);
-  ierr = VecPackAccess(user->packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
+  ierr = VecPackGetEntries(packer,&nredundant,&da);CHKERRQ(ierr);
+  ierr = VecPackGetLocalVectors(packer,&w,&vu_lambda);CHKERRQ(ierr);
+  ierr = VecPackScatter(packer,U,w,vu_lambda);CHKERRQ(ierr);
+  ierr = VecPackAccess(packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
 
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -131,9 +128,9 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   /* derivative of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu(0)   = 2.*u(0)   + d*lambda(0)   + d*lambda(1);
-    else if (i == N-1) fu(N-1) = 2.*u(N-1) + d*lambda(N-1) + d*lambda(N-2);
-    else               fu(i)   = 2.*u(i)   + d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1));
+    if      (i == 0)   fu(0)   = 2.*d*u(0)   + d*lambda(0)   + d*lambda(1);
+    else if (i == N-1) fu(N-1) = 2.*d*u(N-1) + d*lambda(N-1) + d*lambda(N-2);
+    else               fu(i)   = 2.*d*u(i)   + d*(lambda(i+1) - 2.0*lambda(i) + lambda(i-1));
   } 
 
   /* derivative of L() w.r.t. lambda */
@@ -145,28 +142,34 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   ierr = DAVecRestoreArray(da,vu_lambda,(void**)&u_lambda);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vfu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
-  ierr = VecPackRestoreLocalVectors(user->packer,&w,&vu_lambda);CHKERRQ(ierr);
-
+  ierr = VecPackRestoreLocalVectors(packer,&w,&vu_lambda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
 {
-  UserCtx *user = (UserCtx*)dummy;
+  DMMG    *dmmg = (DMMG*)dummy;
+  UserCtx *user = (UserCtx*)DMMGGetUser(dmmg);
   int     ierr;
   Scalar  *w;
   Vec     u_lambda,U,F;
+  VecPack packer = DMMGGetVecPack(dmmg);
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
-  ierr = VecPackAccess(user->packer,U,&w,&u_lambda);CHKERRQ(ierr);
+  ierr = VecPackAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->u_lambda_viewer);
 
   ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
-  ierr = VecPackAccess(user->packer,F,&w,&u_lambda);CHKERRQ(ierr);
+  ierr = VecPackAccess(packer,F,&w,&u_lambda);CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->fu_lambda_viewer);
   PetscFunctionReturn(0);
 }
+
+
+
+
+
 
 
 
