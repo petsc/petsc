@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.6 1995/11/16 16:55:15 balay Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.7 1995/11/16 19:30:56 balay Exp curfman $";
 #endif
 
 /* 
@@ -38,6 +38,7 @@ void SYByteSwapInt(int *buff,int n)
     buff[j] = *tptr;
   }
 }
+/* --------------------------------------------------------- */
 /*
   SYByteSwapShort - Swap bytes in a short
 */
@@ -55,6 +56,7 @@ void SYByteSwapShort(short *buff,int n)
     buff[j] = *tptr;
   }
 }
+/* --------------------------------------------------------- */
 /*
   SYByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
@@ -77,19 +79,26 @@ void SYByteSwapScalar(Scalar *buff,int n)
   }
 }
 #endif
+/* --------------------------------------------------------- */
+/*@C
+   SYRead - Reads from a binary file.
 
-/*@
-    SYRead - Reads from a binary file.
+   Input Parameters:
+.  fd - the file
+.  n  - the number of items to read 
+.  type - the type of items to read (SYINT or SYSCALAR)
 
-  Input Parameters:
-.   fd - the file
-.   n  - the number of items to read 
-.   type - the type of items to read (SYINT or SYSCALAR)
+   Output Parameters:
+.  p - the buffer
 
-  Output Parameters:
-.   p - the buffer
+   Notes: 
+   SYRead() uses byte swapping to work on all machines.
 
-  Notes: does byte swapping to work on all machines.
+   SYRead() is not supported in Fortran.
+
+.keywords: binary, input, read
+
+.seealso: SYWrite()
 @*/
 int SYRead(int fd,void *p,int n,SYIOType type)
 {
@@ -124,17 +133,24 @@ int SYRead(int fd,void *p,int n,SYIOType type)
 
   return 0;
 }
-/* -------------------------------------------------------------------- */
-/*@
-    SYWrite - Writes to a binary file.
+/* --------------------------------------------------------- */
+/*@C
+   SYWrite - Writes to a binary file.
 
-  Input Parameters:
-.   fd - the file
-.   p - the buffer
-.   n  - the number of items to read 
-.   type - the type of items to read (SYINT or SYSCALAR)
+   Input Parameters:
+.  fd - the file
+.  p - the buffer
+.  n  - the number of items to read 
+.  type - the type of items to read (SYINT or SYSCALAR)
 
-  Notes: does byte swapping to work on all machines.
+   Notes: 
+   SYWrite() uses byte swapping to work on all machines.
+
+   SYWrite() is not supported in Fortran.
+
+.keywords: binary, output, write
+
+.seealso: SYRead()
 @*/
 int SYWrite(int fd,void *p,int n,SYIOType type,int istemp)
 {
@@ -178,7 +194,7 @@ int SYWrite(int fd,void *p,int n,SYIOType type,int istemp)
 
   return 0;
 }
-/* -------------------------------------------------------------------- */
+/* --------------------------------------------------------- */
 /* 
    SYReadBuffer - Reads data from a file fd at:
 

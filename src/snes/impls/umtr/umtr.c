@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.20 1995/11/01 23:21:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.21 1995/11/09 22:32:48 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -208,6 +208,7 @@ static int SNESDestroy_UMTR(PetscObject obj )
 .  xnorm - 2-norm of current iterate
 .  gnorm - 2-norm of current gradient
 .  f - objective function value
+.  dummy - unused dummy context
 
    Returns:
 $  1  if  ( f < fmin ),
