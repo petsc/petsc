@@ -150,4 +150,9 @@ typedef int gid_t;
 #define        S_ISSOCK(m)     (((m)&S_IFMT) == S_IFSOCK)      /* socket */
 #endif
 
+/* MPIPro does not have f2c conversion functions */
+#define MPI_Comm_f2c(a)  (a)
+#define MPI_Comm_c2f(a)  (a)
+typedef  int MPI_Fint;
+
 #endif /* _PETSCFIX_H */

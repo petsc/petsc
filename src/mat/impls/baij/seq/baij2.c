@@ -858,17 +858,20 @@ int MatMultAdd_SeqBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *x,*z,*xb,*work,*workt;
+  PetscScalar    *x,*z,*xb,*work,*workt,*y;
   MatScalar      *v;
   int            mbs=a->mbs,i,*idx,*ii,bs=a->bs,j,n,bs2=a->bs2,ierr;
   int            ncols,k;
 
   PetscFunctionBegin;
-  if (xx != yy) { ierr = VecCopy(yy,zz);CHKERRQ(ierr); }
-
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
- 
+  if (zz != yy) { 
+    ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
+    ierr = PetscMemcpy(z,y,yy->n*sizeof(PetscScalar));CHKERRQ(ierr); 
+    ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
+  }
+
   idx   = a->j;
   v     = a->a;
   ii    = a->i;
