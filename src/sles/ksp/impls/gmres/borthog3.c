@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog3.c,v 1.2 1997/01/27 18:15:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog3.c,v 1.3 1997/03/01 15:44:54 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -55,7 +55,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 
     /*
 	 This is really a matrix vector product: 
-	 [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it].
+	 [h[0],h[1],...]*[ v[0]; v[1]; ...] subtracted from v[it+1].
     */
     for (j=0; j<=it; j++) lhh[j] = - lhh[j];
     VecMAXPY(it+1, lhh, VEC_VV(it+1),&VEC_VV(0) );

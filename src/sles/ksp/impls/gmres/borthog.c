@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.35 1997/01/07 18:02:22 balay Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.36 1997/01/27 18:15:31 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -30,9 +30,12 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
     /* ( vv(it+1), vv(j) ) */
     VecDot( VEC_VV(it+1), VEC_VV(j), hh );
     *hes++   = *hh;
-    /* vv(j) <- vv(j) - hh[j][it] vv(it) */
+    /* vv(it+1) <- vv(it+1) - hh[it+1][j] vv(j) */
     tmp = - (*hh++);  VecAXPY(&tmp , VEC_VV(j), VEC_VV(it+1) );
   }
   PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
   return 0;
 }
+
+
+

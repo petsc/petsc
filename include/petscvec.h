@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.56 1997/02/03 06:03:27 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.57 1997/02/04 21:27:32 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component of PETSc. Vectors generally
   represent degrees of freedom for finite element/finite difference functions
@@ -20,6 +20,7 @@ typedef struct _VecScatter*  VecScatter;
 
 extern int VecCreateSeq(MPI_Comm,int,Vec*);  
 extern int VecCreateMPI(MPI_Comm,int,int,Vec*);  
+extern int VecCreateMPIGhost(MPI_Comm,int,int,int,Vec*);  
 extern int VecCreate(MPI_Comm,int,Vec*); 
 
 extern int VecDestroy(Vec);        

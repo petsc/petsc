@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.4 1996/11/19 16:31:35 bsmith Exp balay $ */
+/* $Id: mpibaij.h,v 1.5 1996/12/03 15:50:02 balay Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -21,7 +21,6 @@ typedef struct {
 
   /* The following variables are used for matrix assembly */
 
-  InsertMode    insertmode;             /* mode for MatSetValues */
   Stash         stash;                  /* stash for non-local elements */
   int           donotstash;             /* if 1, off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */

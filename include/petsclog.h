@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.102 1997/03/04 15:26:59 balay Exp balay $ */
+/* $Id: petsclog.h,v 1.103 1997/03/06 21:38:32 balay Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -7,6 +7,8 @@
 #if !defined(__PLOG_PACKAGE)
 #define __PLOG_PACKAGE
 #include "petsc.h"  
+
+typedef double PLogDouble;
 
 /*
   Lists all PETSc events that are logged/profiled.
@@ -122,7 +124,7 @@
 #define PLOG_USER_EVENT_HIGH                    200
 
 /* Global flop counter */
-extern double _TotalFlops;
+extern PLogDouble _TotalFlops;
 
 /* General logging of information; different from event logging */
 extern int PLogInfo(void*,char*,...);
@@ -199,24 +201,24 @@ extern int (*_PLogPHD)(PetscObject);
 #define PLogObjectDestroy(h)        {if (_PLogPHD) (*_PLogPHD)((PetscObject)h);}
 #define PLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
                                     ((PetscObject)(p))->mem += (m);}
-extern int    PLogObjectState(PetscObject,char *,...);
-extern int    PLogDestroy();
-extern int    PLogStagePush(int);
-extern int    PLogStagePop();
-extern int    PLogStageRegister(int,char*);
-extern int    PLogPrintSummary(MPI_Comm,char *);
-extern int    PLogBegin();
-extern int    PLogTraceBegin(FILE *);
-extern int    PLogAllBegin();
-extern int    PLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
-                      int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject));
-extern int    PLogDump(char*);
-extern int    PLogEventRegister(int*,char*,char*);
-extern double PetscGetFlops();
+extern int        PLogObjectState(PetscObject,char *,...);
+extern int        PLogDestroy();
+extern int        PLogStagePush(int);
+extern int        PLogStagePop();
+extern int        PLogStageRegister(int,char*);
+extern int        PLogPrintSummary(MPI_Comm,char *);
+extern int        PLogBegin();
+extern int        PLogTraceBegin(FILE *);
+extern int        PLogAllBegin();
+extern int        PLogSet(int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject),
+                          int (*)(int,int,PetscObject,PetscObject,PetscObject,PetscObject));
+extern int        PLogDump(char*);
+extern int        PLogEventRegister(int*,char*,char*);
+extern PLogDouble PetscGetFlops();
 
-extern double irecv_ct, isend_ct, wait_ct, wait_any_ct, recv_ct, send_ct;
-extern double irecv_len, isend_len, recv_len, send_len;
-extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
+extern PLogDouble irecv_ct, isend_ct, wait_ct, wait_any_ct, recv_ct, send_ct;
+extern PLogDouble irecv_len, isend_len, recv_len, send_len;
+extern PLogDouble wait_all_ct,allreduce_ct,sum_of_waits_ct;
 /*
      This does not work for MPI-Uni because our src/mpiuni/mpi.h file
    uses macros to defined the MPI operations. 
@@ -234,11 +236,11 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 #define TypeSize(buff,count,type)                                            \
 {                                                                            \
   if (type == MPIU_SCALAR) {                                                 \
-    buff += (double) ((count)*sizeof(Scalar));                               \
+    buff += (PLogDouble) ((count)*sizeof(Scalar));                               \
   } else if (type == MPI_INT) {                                              \
-    buff += (double) ((count)*sizeof(int));                                  \
+    buff += (PLogDouble) ((count)*sizeof(int));                                  \
   } else {                                                                   \
-    int _size; MPI_Type_size(type,&_size); buff += (double) ((count)*_size); \
+    int _size; MPI_Type_size(type,&_size); buff += (PLogDouble) ((count)*_size); \
   }                                                                          \
 }
 
@@ -257,19 +259,19 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 #define MPI_Startall_irecv( count,number,requests)                            \
 {                                                                             \
   MPI_Startall( number, requests);                                            \
-  irecv_ct += (double)(number); irecv_len += (double) (count*sizeof(Scalar)); \
+  irecv_ct += (PLogDouble)(number); irecv_len += (PLogDouble) (count*sizeof(Scalar)); \
 }
 
 #define MPI_Startall_isend( count,number,requests)                            \
 {                                                                             \
   MPI_Startall( number, requests);                                            \
-  isend_ct += (double)(number); isend_len += (double) (count*sizeof(Scalar)); \
+  isend_ct += (PLogDouble)(number); isend_len += (PLogDouble) (count*sizeof(Scalar)); \
 }
 
 #define MPI_Start_isend(count,  requests)                                     \
 {                                                                             \
   MPI_Start( requests);                                                       \
-  isend_ct++; isend_len += (double) (count*sizeof(Scalar));                   \
+  isend_ct++; isend_len += (PLogDouble) (count*sizeof(Scalar));                   \
 }
 
 #define MPI_Recv( buf, count,  datatype, source, tag, comm, status)           \
@@ -298,7 +300,7 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 
 #define MPI_Waitall(count, array_of_requests, array_of_statuses) \
 (                                                                \
-  wait_all_ct++, sum_of_waits_ct += (double) (count),            \
+  wait_all_ct++, sum_of_waits_ct += (PLogDouble) (count),            \
   MPI_Waitall(count, array_of_requests, array_of_statuses)       \
 )
 

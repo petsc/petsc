@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.69 1997/01/12 04:32:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.70 1997/02/22 02:22:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -61,8 +61,12 @@ static struct _VeOps DvOps = { VecDuplicate_MPI,
             VecSetOption_MPI};
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreateMPIBase"
-static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,int rank,int *owners,Vec *vv)
+#define __FUNC__ "VecCreateMPI_Private"
+/*
+    VecCreateMPI_Private - Basic create routine called by VecCreateMPI(), VecCreateMPIGhost()
+  and VecDuplicate_MPI() to reduce code duplication.
+*/
+static int VecCreateMPI_Private(MPI_Comm comm,int n,int nghost,int N,int size,int rank,int *owners,Vec *vv)
 {
   Vec     v;
   Vec_MPI *s;
@@ -79,13 +83,14 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,int rank,int *own
   v->destroy     = VecDestroy_MPI;
   v->view        = VecView_MPI;
   s->n           = n;
+  s->nghost      = nghost;
   s->N           = N;
   v->n           = n;
   v->N           = N;
   v->mapping     = 0;
   s->size        = size;
   s->rank        = rank;
-  s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(s->array);
+  s->array       = (Scalar *) PetscMalloc((nghost+1)*sizeof(Scalar));CHKPTRQ(s->array);
   s->array_allocated = s->array;
 
   PetscMemzero(s->array,n*sizeof(Scalar));
@@ -131,7 +136,7 @@ static int VecCreateMPIBase(MPI_Comm comm,int n,int N,int size,int rank,int *own
 
 .keywords: vector, create, MPI
 
-.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs()
+.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPIGhost()
 @*/ 
 int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {
@@ -147,7 +152,45 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
   if (n == PETSC_DECIDE) { 
     n = N/size + ((N % size) > rank);
   }
-  return VecCreateMPIBase(comm,n,N,size,rank,0,vv);
+  return VecCreateMPI_Private(comm,n,n,N,size,rank,0,vv);
+}
+
+/*@C
+   VecCreateMPIGhost - Creates a parallel vector with ghost padding on each processor.
+
+   Input Parameters:
+.  comm - the MPI communicator to use
+.  n - local vector length 
+.  nghost - local vector length including ghost points
+.  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
+
+   Output Parameter:
+.  vv - the vector
+ 
+   Notes:
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   same type as an existing vector.
+
+.keywords: vector, create, MPI, ghost points, ghost padding
+
+.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI()
+@*/ 
+int VecCreateMPIGhost(MPI_Comm comm,int n,int nghost,int N,Vec *vv)
+{
+  int sum, work = n, size, rank;
+  *vv = 0;
+
+  if (n == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local size");
+  if (nghost == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local ghost size");
+  if (nghost < n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Ghost padded length must be no shorter then length");
+
+  MPI_Comm_size(comm,&size);
+  MPI_Comm_rank(comm,&rank); 
+  if (N == PETSC_DECIDE) { 
+    MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );
+    N = sum;
+  }
+  return VecCreateMPI_Private(comm,n,nghost,N,size,rank,0,vv);
 }
 
 #undef __FUNC__  
@@ -157,7 +200,7 @@ static int VecDuplicate_MPI( Vec win, Vec *v)
   int     ierr;
   Vec_MPI *vw, *w = (Vec_MPI *)win->data;
 
-  ierr = VecCreateMPIBase(win->comm,w->n,w->N,w->size,w->rank,w->ownership,v);CHKERRQ(ierr);
+  ierr = VecCreateMPI_Private(win->comm,w->n,w->nghost,w->N,w->size,w->rank,w->ownership,v);CHKERRQ(ierr);
 
   /* New vector should inherit stashing property of parent */
   vw                   = (Vec_MPI *)(*v)->data;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.149 1997/03/06 21:34:37 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.150 1997/03/06 21:49:11 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -417,13 +417,13 @@ char *(PLogEventName[]) = {"MatMult         ",
     memmax contains maximum memory usage so far
 */
 typedef struct {
-  double      time,flops,mem,maxmem;
-  int         cookie,type,event,id1,id2,id3;
+  PLogDouble      time,flops,mem,maxmem;
+  int             cookie,type,event,id1,id2,id3;
 } Events;
 
 typedef struct {
   int         parent;
-  double      mem;
+  PLogDouble  mem;
   char        string[64];
   char        name[32];
   PetscObject obj;
@@ -432,41 +432,41 @@ typedef struct {
 /* 
     Global counters 
 */
-double _TotalFlops = 0.0;
-double irecv_ct = 0.0,isend_ct = 0.0,wait_ct = 0.0,wait_any_ct = 0.0;
-double irecv_len = 0.0,isend_len = 0.0,recv_len = 0.0, send_len = 0.0;
-double send_ct = 0.0,recv_ct = 0.0;
-double wait_all_ct = 0.0,allreduce_ct = 0.0,sum_of_waits_ct = 0.0;
+PLogDouble _TotalFlops = 0.0;
+PLogDouble irecv_ct = 0.0,isend_ct = 0.0,wait_ct = 0.0,wait_any_ct = 0.0;
+PLogDouble irecv_len = 0.0,isend_len = 0.0,recv_len = 0.0, send_len = 0.0;
+PLogDouble send_ct = 0.0,recv_ct = 0.0;
+PLogDouble wait_all_ct = 0.0,allreduce_ct = 0.0,sum_of_waits_ct = 0.0;
 
 /*
     Log counters in this file only 
 */
-static double  BaseTime;
+static PLogDouble  BaseTime;
 static Events  *events = 0;
 static Objects *objects = 0;
 
 static int     nobjects = 0, nevents = 0, objectsspace = CHUNCK;
 static int     ObjectsDestroyed = 0, eventsspace = CHUNCK;
 /* make sure the 50 below is larger then any cookie - PETSC_COOKIE */
-static double  ObjectsType[50][4];
+static PLogDouble  ObjectsType[50][4];
 
 static int     EventsStage = 0;    /* which log sessions are we using */
 static int     EventsStageMax = 0; /* highest event log used */ 
 static int     EventsStagePushed = 0;
 static int     EventsStageStack[100];
 static char    *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
-static double  EventsStageFlops[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-static double  EventsStageTime[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-static double  EventsStageMessageCounts[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-static double  EventsStageMessageLengths[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-static double  EventsStageReductions[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+static PLogDouble  EventsStageFlops[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+static PLogDouble  EventsStageTime[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+static PLogDouble  EventsStageMessageCounts[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+static PLogDouble  EventsStageMessageLengths[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+static PLogDouble  EventsStageReductions[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 #define COUNT      0
 #define FLOPS      1
 #define TIME       2
 #define MESSAGES   3
 #define LENGTHS    4
 #define REDUCTIONS 5
-static double  EventsType[10][PLOG_USER_EVENT_HIGH][6];
+static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 
 
 #undef __FUNC__  
@@ -611,7 +611,7 @@ int PLogDefaultPHC(PetscObject obj)
 {
   if (nevents >= eventsspace) {
     Events *tmp;
-    double end,start;
+    PLogDouble end,start;
     PetscTime(start);
     tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
@@ -621,7 +621,7 @@ int PLogDefaultPHC(PetscObject obj)
   }
   if (nobjects >= objectsspace) {
     Objects *tmp;
-    double end,start;
+    PLogDouble end,start;
     PetscTime(start);
     tmp = (Objects *) malloc((objectsspace+CHUNCK)*sizeof(Objects));CHKPTRQ(tmp);
     PetscMemcpy(tmp,objects,objectsspace*sizeof(Objects));
@@ -656,7 +656,7 @@ int PLogDefaultPHD(PetscObject obj)
   PetscObject parent;
   if (nevents >= eventsspace) {
     Events *tmp;
-    double end,start;
+    PLogDouble end,start;
     PetscTime(start);
     tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
@@ -701,10 +701,10 @@ int PLogDefaultPHD(PetscObject obj)
 #define __FUNC__ "PLogDefaultPLBAll" /* ADIC Ignore */
 int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
- double ltime;
+ PLogDouble ltime;
  if (nevents >= eventsspace) {
     Events *tmp;
-    double end,start;
+    PLogDouble end,start;
     PetscTime(start);
     tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
@@ -738,10 +738,10 @@ int PLogDefaultPLBAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject 
 #define __FUNC__ "PLogDefaultPLEAll" /* ADIC Ignore */
 int PLogDefaultPLEAll(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
- double ltime;
+ PLogDouble ltime;
  if (nevents >= eventsspace) {
     Events *tmp;
-    double end,start;
+    PLogDouble end,start;
     PetscTime(start);
     tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
     PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
@@ -807,7 +807,7 @@ FILE   *tracefile = 0;
 int    tracelevel = 0;
 char   *traceblanks = "                                                                    ";
 char   tracespace[72];
-double tracetime = 0.0;
+PLogDouble tracetime = 0.0;
 
 #undef __FUNC__  
 #define __FUNC__ "PLogDefaultPLBTrace" /* ADIC Ignore */
@@ -1043,7 +1043,7 @@ int PLogDump(char* sname)
   int    i,rank;
   FILE   *fd;
   char   file[64];
-  double flops,_TotalTime;
+  PLogDouble flops,_TotalTime;
   
   PetscTime(_TotalTime);
   _TotalTime -= BaseTime;
@@ -1243,13 +1243,13 @@ $  -log_summary : Prints summary of log information (for code
 @*/
 int PLogPrintSummary(MPI_Comm comm,char* filename)
 {
-  double maxo,mino,aveo,mem,totmem,maxmem,minmem,mlensmcounts;
-  double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott,ratio;
-  double fmin,fmax,ftot,wdou,totts,totff,rat,sstime,sflops,ratf;
-  double ptotts,ptotff,ptotts_stime,ptotff_sflops,rat1,rat2,rat3;
-  double minm,maxm,avem,totm,minr,maxr,maxml,minml,totml,aveml,totr;
-  double rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
-  double pstime,psflops1,psflops,flopr;
+  PLogDouble maxo,mino,aveo,mem,totmem,maxmem,minmem,mlensmcounts;
+  PLogDouble maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott,ratio;
+  PLogDouble fmin,fmax,ftot,wdou,totts,totff,rat,sstime,sflops,ratf;
+  PLogDouble ptotts,ptotff,ptotts_stime,ptotff_sflops,rat1,rat2,rat3;
+  PLogDouble minm,maxm,avem,totm,minr,maxr,maxml,minml,totml,aveml,totr;
+  PLogDouble rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
+  PLogDouble pstime,psflops1,psflops,flopr;
   int    size,rank,i,j;
   char   arch[10],hostname[64],username[16];
   FILE   *fd = stdout;
@@ -1286,17 +1286,17 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   MPI_Allreduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,comm);
   MPI_Allreduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,comm);
   MPI_Allreduce(&wdou,&totf,1,MPI_DOUBLE,MPI_SUM,comm);
-  avef = (totf)/((double) size);
+  avef = (totf)/((PLogDouble) size);
   wdou = nobjects;
   MPI_Allreduce(&wdou,&mino,1,MPI_DOUBLE,MPI_MIN,comm);
   MPI_Allreduce(&wdou,&maxo,1,MPI_DOUBLE,MPI_MAX,comm);
   MPI_Allreduce(&wdou,&aveo,1,MPI_DOUBLE,MPI_SUM,comm);
-  aveo = (aveo)/((double) size);
+  aveo = (aveo)/((PLogDouble) size);
   wdou = _TotalTime;
   MPI_Allreduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,comm);
   MPI_Allreduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,comm);
   MPI_Allreduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,comm);
-  avet = (tott)/((double) size);
+  avet = (tott)/((PLogDouble) size);
 
   PetscFPrintf(comm,fd,"\n                         Max       Max/Min    Avg      Total \n");
   if (mint) ratio = maxt/mint; else ratio = 0.0;
@@ -1323,7 +1323,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   MPI_Allreduce(&wdou,&minm,1,MPI_DOUBLE,MPI_MIN,comm);
   MPI_Allreduce(&wdou,&maxm,1,MPI_DOUBLE,MPI_MAX,comm);
   MPI_Allreduce(&wdou,&totm,1,MPI_DOUBLE,MPI_SUM,comm);
-  avem = (totm)/((double) size);
+  avem = (totm)/((PLogDouble) size);
   wdou = .5*(irecv_len + isend_len + recv_len + send_len);
   MPI_Allreduce(&wdou,&minml,1,MPI_DOUBLE,MPI_MIN,comm);
   MPI_Allreduce(&wdou,&maxml,1,MPI_DOUBLE,MPI_MAX,comm);
@@ -1341,7 +1341,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
 
   if (EventsStageMax) {
-    double mcounts,mlens,rcounts;
+    PLogDouble mcounts,mlens,rcounts;
 
     PetscFPrintf(comm,fd,"\nSummary of Stages:  ---- Time ------     ----- Flops -------    -- Messages -- -- Message-lengths -- Reductions --\n");
     PetscFPrintf(comm,fd,"                      Avg      %%Total        Avg       %%Total   counts   %%Total    avg      %%Total   counts  %%Total \n");
@@ -1449,7 +1449,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
         if (totrs)  rps = 100.*rp/totrs; else rps = 0.0;if (rps >= 99.) rps = 99.;
         if (mp) lpmp = lp/mp; else lpmp = 0.0;
         mp = mp/2.0;
-        rp = rp/((double) size);
+        rp = rp/((PLogDouble) size);
         PetscFPrintf(comm,fd,"%s %7d %4.3e %6.1f  %2.1e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
                     PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
                     mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps,flopr/1.e6);
@@ -1501,7 +1501,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
 .seealso: PetscGetTime(), PLogFlops()
 @*/
-double PetscGetFlops()
+PLogDouble PetscGetFlops()
 {
   return _TotalFlops;
 }
@@ -1728,7 +1728,7 @@ int PLogObjectState(PetscObject obj,char *format,...)
 .  v - time counter
 
    Usage: 
-$     double v;
+$     PLogDouble v;
 $     v = PetscGetTime();
 $     .... perform some calculation ...
 $     v = PetscGetTime() -v;
@@ -1744,9 +1744,9 @@ $     v = PetscGetTime() -v;
 
 .keywords:  get, time
 @*/
-double PetscGetTime()
+PLogDouble PetscGetTime()
 {
-  double t;
+  PLogDouble t;
   PetscTime(t);
   return t;
 }

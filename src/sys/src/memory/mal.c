@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mal.c,v 1.22 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.23 1997/02/22 02:23:29 bsmith Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -36,7 +36,7 @@ int PetscSetMalloc(void *(*imalloc)(unsigned int,int,char*,char*,char*),
                    int (*ifree)(void*,int,char*,char*,char*))
 {
   static int visited = 0;
-  if (visited) SETERRQ(1,0,"cannot call multiple times");
+  if (visited) SETERRQ(PETSC_ERR_SUP,0,"cannot call multiple times");
   PetscTrMalloc = imalloc;
   PetscTrFree   = ifree;
   visited       = 1;

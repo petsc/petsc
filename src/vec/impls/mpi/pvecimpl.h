@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.10 1996/11/19 16:29:42 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.11 1997/02/22 02:22:33 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -8,10 +8,9 @@
 #include "src/vec/vecimpl.h"
 #include "src/vec/impls/dvecimpl.h"
 
-/* The first two elements of this structure should remain the same */
 typedef struct {
     VECHEADER
-    int         N;           /* length of total vector */
+    int         N;                  /* length of total vector */
     int         size,rank,*ownership;
     InsertMode  insertmode;
     struct      {int donotstash, nmax, n, *idx; Scalar *array;} stash;
@@ -19,6 +18,7 @@ typedef struct {
     int         nsends,nrecvs;
     Scalar      *svalues,*rvalues;
     int         rmax;
+    int         nghost;             /* length of local portion including ghost padding */
 } Vec_MPI;
 
 extern int VecNorm_Seq(Vec, NormType, double *work );

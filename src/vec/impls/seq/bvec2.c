@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.89 1997/02/22 02:22:30 bsmith Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.90 1997/03/09 00:50:32 curfman Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -301,7 +301,7 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
 
 .keywords: vector, sequential, create, BLAS
 
-.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs()
+.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPIGhost()
 @*/
 int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.35 1997/02/22 02:22:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.36 1997/03/01 15:42:53 bsmith Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -9,16 +9,24 @@ static char vcid[] = "$Id: cmesh.c,v 1.35 1997/02/22 02:22:21 bsmith Exp bsmith 
 #define __FUNC__ "DrawScalePopup" /* ADIC Ignore */
 int DrawScalePopup(Draw popup,double min,double max)
 {
-  double xl = 0.0, yl = 0.0, xr = 1.0, yr = 1.0;
-  int    i,c = 32;
-  char   string[32];
+  double   xl = 0.0, yl = 0.0, xr = 1.0, yr = 1.0,value;
+  int      i,c = 32,rank;
+  char     string[32];
+  MPI_Comm comm;
+
+  PetscObjectGetComm((PetscObject) popup,&comm);
+  MPI_Comm_rank(comm,&rank);
+  if (rank) return 0;
 
   for ( i=0; i<10; i++ ) {
     DrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);
     yl += .1; yr += .1; c = (int) ((double) c + (200.-32.)/9.);
   }
   for ( i=0; i<10; i++ ) {
-    sprintf(string,"%g",-min + i*(max-min)/9.0);
+    value = -min + i*(max-min)/9.0;
+    /* look for a value that should be zero, but is not due to round-off */
+    if (PetscAbsDouble(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
+    sprintf(string,"%g",value);
     DrawText(popup,.2,.02 + i/10.0,DRAW_BLACK,string);
   }
   DrawSetTitle(popup,"Contour Scale");

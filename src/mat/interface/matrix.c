@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.226 1997/02/11 19:45:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.227 1997/02/22 02:24:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -252,6 +252,11 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+  if (mat->insertmode == NOT_SET_VALUES) {
+    mat->insertmode = addv;
+  } else if (mat->insertmode != addv) {
+    SETERRQ(1,1,"Cannot mix add values and insert values");
+  }
 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
@@ -301,6 +306,11 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+  if (mat->insertmode == NOT_SET_VALUES) {
+    mat->insertmode = addv;
+  } else if (mat->insertmode != addv) {
+    SETERRQ(1,1,"Cannot mix add values and insert values");
+  }
 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
@@ -428,31 +438,36 @@ int MatSetLocalToGlobalMapping(Mat x, int n,int *indices)
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping()
 @*/
-int MatSetValuesLocal(Mat x,int nrow,int *irow,int ncol, int *icol,Scalar *y,InsertMode iora) 
+int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,InsertMode addv) 
 {
   int ierr,irowm[128],icolm[128];
 
-  PetscValidHeaderSpecific(x,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidIntPointer(irow);
   PetscValidIntPointer(icol);
   PetscValidScalarPointer(y);
-  if (!x->mapping) {
+  if (!mat->mapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMapping");
   }
   if (nrow > 128 || ncol > 128) {
     SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 128");
   }
-  if (x->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
-
-  if (x->assembled) {
-    x->was_assembled = PETSC_TRUE; 
-    x->assembled     = PETSC_FALSE;
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+  if (mat->insertmode == NOT_SET_VALUES) {
+    mat->insertmode = addv;
+  } else if (mat->insertmode != addv) {
+    SETERRQ(1,1,"Cannot mix add values and insert values");
   }
-  PLogEventBegin(MAT_SetValues,x,0,0,0);
-  ISLocalToGlobalMappingApply(x->mapping,nrow,irow,irowm); 
-  ISLocalToGlobalMappingApply(x->mapping,ncol,icol,icolm); 
-  ierr = (*x->ops.setvalues)(x,nrow,irowm,ncol,icolm,y,iora);CHKERRQ(ierr);
-  PLogEventEnd(MAT_SetValues,x,0,0,0);  
+
+  if (mat->assembled) {
+    mat->was_assembled = PETSC_TRUE; 
+    mat->assembled     = PETSC_FALSE;
+  }
+  PLogEventBegin(MAT_SetValues,mat,0,0,0);
+  ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm); 
+  ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm); 
+  ierr = (*mat->ops.setvalues)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   return 0;
 }
 
@@ -1707,6 +1722,63 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
   return 0;
 }
 
+
+#undef __FUNC__  
+#define __FUNC__ "MatView_Private"
+/*
+    Processes command line options to determine if/how a matrix
+  is to be viewed.
+*/
+int MatView_Private(Mat mat)
+{
+  int ierr,flg;
+
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_info",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = MatView(mat,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
+    ierr = MatView(mat,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = MatView(mat,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_matlab",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
+    ierr = MatView(mat,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = OptionsHasName(0,"-mat_view_contour",&flg); CHKERRQ(ierr);
+    if (flg) {
+      ViewerPushFormat(VIEWER_DRAWX_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+    }
+    ierr = MatView(mat,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+    if (flg) {
+      ViewerPopFormat(VIEWER_DRAWX_(mat->comm));CHKERRQ(ierr);
+    }
+  }
+  return 0;
+}
+
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyEnd"
 /*@
@@ -1741,64 +1813,24 @@ $  -draw_pause <sec> : Set number of seconds to pause after display
 @*/
 int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
-  int        ierr,flg;
+  int        ierr;
   static int inassm = 0;
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+
   inassm++;
   MatAssemblyEnd_InUse++;
   PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);
   if (mat->ops.assemblyend) {
     ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);
   }
-  mat->assembled = PETSC_TRUE; mat->num_ass++;
+  mat->assembled  = PETSC_TRUE; mat->num_ass++;
+  mat->insertmode = NOT_SET_VALUES;
   PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
   MatAssemblyEnd_InUse--;
 
   if (inassm == 1) {
-    ierr = OptionsHasName(PETSC_NULL,"-mat_view_info",&flg); CHKERRQ(ierr);
-    if (flg) {
-      Viewer viewer;
-      ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-      ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
-      ierr = MatView(mat,viewer); CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-    }
-    ierr = OptionsHasName(PETSC_NULL,"-mat_view_info_detailed",&flg);CHKERRQ(ierr);
-    if (flg) {
-      Viewer viewer;
-      ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-      ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_INFO_LONG,0);CHKERRQ(ierr);
-      ierr = MatView(mat,viewer); CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-    }
-    ierr = OptionsHasName(PETSC_NULL,"-mat_view",&flg); CHKERRQ(ierr);
-    if (flg) {
-      Viewer viewer;
-      ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-      ierr = MatView(mat,viewer); CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-    }
-    ierr = OptionsHasName(PETSC_NULL,"-mat_view_matlab",&flg); CHKERRQ(ierr);
-    if (flg) {
-      Viewer viewer;
-      ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-      ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"M");CHKERRQ(ierr);
-      ierr = MatView(mat,viewer); CHKERRQ(ierr);
-      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-    }
-    ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg); CHKERRQ(ierr);
-    if (flg) {
-      ierr = OptionsHasName(0,"-mat_view_contour",&flg); CHKERRQ(ierr);
-      if (flg) {
-        ViewerPushFormat(VIEWER_DRAWX_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
-      }
-      ierr = MatView(mat,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
-      ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
-      if (flg) {
-        ViewerPopFormat(VIEWER_DRAWX_(mat->comm));CHKERRQ(ierr);
-      }
-    }
+    ierr = MatView_Private(mat); CHKERRQ(ierr);
   }
   inassm--;
   return 0;
@@ -1943,6 +1975,7 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
   if (!mat->ops.zerorows) SETERRQ(PETSC_ERR_SUP,0,"");
 
   ierr = (*mat->ops.zerorows)(mat,is,diag); CHKERRQ(ierr);
+  ierr = MatView_Private(mat); CHKERRQ(ierr);
   return 0;
 }
 

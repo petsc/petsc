@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.33 1997/01/01 03:36:04 bsmith Exp balay $";
+static char vcid[] = "$Id: cgeig.c,v 1.34 1997/01/06 20:22:32 balay Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -81,7 +81,6 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
   always produces a real, symmetric tridiagonal matrix.
 */
 
-static double c_b10 = 1.;
 static double cgpthy_private(double*,double*);
 
 #undef __FUNC__  
@@ -90,7 +89,7 @@ static int ccgtql1_private(int *n, double *d, double *e, int *ierr)
 {
     /* System generated locals */
     int    i__1, i__2;
-    double d__1, d__2;
+    double d__1, d__2,c_b10 = 1.0;
 
     /* Local variables */
     static double c, f, g, h;

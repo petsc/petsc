@@ -302,15 +302,15 @@ wwwpages:
 adic:
 	@-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-          adiC.new -avuhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
+          adiC.new -auhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
           fi; done ; \
         fi; fi
 	@-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEH)" != "" ]; then \
           for i in $(SOURCEH) foo; do if [ -f $$i ]; then \
-          adiC.new -avuhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
+          adiC.new -auhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
           fi; done ; \
         fi; fi
-	-@chmod go+r *.ad.*
+	-@chmod go+rw *.ad.*
 
 adic2:
 	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
@@ -323,7 +323,7 @@ adic2:
           adiC.new -avuhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
           fi; done ; \
         fi; fi
-	-@chmod go+r *.ad.*
+	-@chmod go+rw *.ad.*
 
 adiclib:
 	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \

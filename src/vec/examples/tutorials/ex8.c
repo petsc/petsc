@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.1 1996/11/18 03:37:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.2 1996/11/19 16:29:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
@@ -13,7 +13,7 @@ a parallel vector.\n\n";
 T*/
 
 /* 
-  Include "vec.h" so that we can use SLES solvers.  Note that this file
+  Include "vec.h" so that we can use vectors.  Note that this file
   automatically includes:
      petsc.h  - base PETSc routines   is.h     - index sets
      sys.h    - system routines       viewer.h - viewers

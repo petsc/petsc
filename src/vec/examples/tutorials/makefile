@@ -29,7 +29,7 @@ BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex3f.PETSc ex3f.rm \
 BUILDEXAMPLES_4 = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_9 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c
 EXAMPLESF       = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex4f90.F ex1f90.F
 
 ex1: ex1.o  chkopts 

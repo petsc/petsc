@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.190 1997/02/04 19:29:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.191 1997/02/22 02:25:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -136,12 +136,6 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
   int        *aj = a->j, nonew = a->nonew,shift = a->indexshift; 
   Scalar     *ap, *aa = a->a;
 
-#if defined(PETSC_BOPT_g)
-  if (aij->insertmode != NOT_SET_VALUES && aij->insertmode != addv) {
-    SETERRQ(1,0,"Cannot mix inserts and adds");
-  }
-#endif
-  aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
 #if defined(PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(1,0,"Negative row");
@@ -247,11 +241,11 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   Scalar      *rvalues,*svalues;
 
   /* make sure all processors are either in INSERTMODE or ADDMODE */
-  MPI_Allreduce(&aij->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
+  MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) {
     SETERRQ(1,0,"Some processors inserted others added");
   }
-  aij->insertmode = addv; /* in case this processor had no cache */
+  mat->insertmode = addv; /* in case this processor had no cache */
 
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
@@ -344,7 +338,7 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   int         imdex,nrecvs = aij->nrecvs, count = nrecvs, i, n, ierr;
   int         row,col,other_disassembled;
   Scalar      *values,val;
-  InsertMode  addv = aij->insertmode;
+  InsertMode  addv = mat->insertmode;
 
   /*  wait on receives */
   while (count) {
@@ -387,7 +381,6 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   }
   PetscFree(aij->send_waits); PetscFree(aij->svalues);
 
-  aij->insertmode = NOT_SET_VALUES;
   ierr = MatAssemblyBegin(aij->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->A,mode); CHKERRQ(ierr);
 
@@ -1511,7 +1504,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   B->assembled  = PETSC_FALSE;
   B->mapping    = 0;
 
-  b->insertmode = NOT_SET_VALUES;
+  B->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&b->rank);
   MPI_Comm_size(comm,&b->size);
 
@@ -1606,7 +1599,7 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   a->cend         = oldmat->cend;
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;
-  a->insertmode   = NOT_SET_VALUES;
+  mat->insertmode = NOT_SET_VALUES;
   a->rowvalues    = 0;
   a->getrowactive = PETSC_FALSE;
 

@@ -1,4 +1,4 @@
-/* $Id: mpibdiag.h,v 1.12 1996/08/15 12:47:50 bsmith Exp curfman $ */
+/* $Id: mpibdiag.h,v 1.13 1996/08/22 15:33:04 curfman Exp bsmith $ */
 
 #include "src/mat/impls/bdiag/seq/bdiag.h"
 
@@ -24,7 +24,6 @@ typedef struct {
 
   /* The following variables are used for matrix assembly */
 
-  InsertMode    insertmode;             /* mode for MatSetValues */
   Stash         stash;                  /* stash for non-local elements */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.102 1997/02/22 02:22:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.103 1997/03/01 15:43:09 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -734,7 +734,7 @@ int VecSetLocalToGlobalMapping(Vec x, int n,int *indices)
 @*/
 int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
-  int ierr,lix[128];
+  int ierr,lixp[128],*lix = lixp;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
@@ -742,13 +742,16 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
     SETERRQ(1,0,"Local to global never set with VecSetLocalToGlobalMapping");
   }
   if (ni > 128) {
-    SETERRQ(1,0,"Number indices must be <= 128");
+    lix = (int *) PetscMalloc( ni*sizeof(int) );CHKPTRQ(lixp);
   }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   ISLocalToGlobalMappingApply(x->mapping,ni,ix,lix); 
   ierr = (*x->ops.setvalues)( x,ni,lix, y,iora ); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
+  if (ni > 128) {
+    PetscFree(lix);
+  }
   return 0;
 }
 
@@ -910,7 +913,7 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 #undef __FUNC__  
 #define __FUNC__ "VecMAXPY"
 /*@C
-   VecMAXPY - Computes y[j] = alpha[j] x + y[j]. 
+   VecMAXPY - Computes x = x + \sum alpha[j] y[j]
 
    Input Parameters:
 .  nv - number of scalars and x-vectors

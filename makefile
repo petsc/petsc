@@ -26,13 +26,17 @@ include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 all: chkpetsc_dir
 	-$(RM) -f $(PDIR)/*
 	-@echo "Beginning to compile libraries in all directories"
-	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
+	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
+	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "-----------------------------------------"
 	-@echo "Using configuration flags: $(CONF)"
+	-@echo "-----------------------------------------"
 	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: $(PETSC_DIR)"
 	-@echo "Using PETSc arch: $(PETSC_ARCH)"
-	-@echo "------------------------------------------"
+	-@echo "========================================="
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=libfast  tree 
 	-@cd $(PETSC_DIR)/src/sys/src ; \
@@ -40,14 +44,17 @@ all: chkpetsc_dir
 	$(RANLIB) $(PDIR)/*.a
 	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed building libraries"
-	-@echo "------------------------------------------"
+	-@echo "========================================="
 
 # Builds PETSc test examples for a given BOPT and architecture
 testexamples: chkopts
 	-@echo "Beginning to compile and run test examples"
-	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
+	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
+	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "-----------------------------------------"
 	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "-----------------------------------------"
 	-@echo "Using PETSc directory: $(PETSC_DIR)"
 	-@echo "Using PETSc arch: $(PETSC_ARCH)"
 	-@echo "------------------------------------------"
@@ -56,19 +63,22 @@ testexamples: chkopts
 	-@echo "------------------------------------------"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
-	-@echo "------------------------------------------"
+	-@echo "========================================="
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=testexamples_1  tree 
 	-@echo "Completed compiling and running test examples"
-	-@echo "------------------------------------------"
+	-@echo "========================================="
 
 # Builds PETSc test examples for a given BOPT and architecture
 testexamples_uni: chkopts
 	-@echo "Beginning to compile and run uniprocessor test examples"
-	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
+	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
 	-@echo "Using linker: $(CLINKER)"
+	-@echo "------------------------------------------"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "------------------------------------------"
 	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "------------------------------------------"
 	-@echo "Using PETSc directory: $(PETSC_DIR)"
 	-@echo "Using PETSc arch: $(PETSC_ARCH)"
 	-@echo "------------------------------------------"
@@ -77,11 +87,11 @@ testexamples_uni: chkopts
 	-@echo "------------------------------------------"
 	-@echo "Due to different numerical round-off on certain"
 	-@echo "machines some of the numbers may not match exactly."
-	-@echo "------------------------------------------"
+	-@echo "========================================="
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=testexamples_4  tree 
 	-@echo "Completed compiling and running uniprocessor test examples"
-	-@echo "------------------------------------------"
+	-@echo "========================================="
 
 #
 # Builds PETSc Fortran interface libary
@@ -91,13 +101,17 @@ fortran: chkpetsc_dir
 	-$(RM) -f $(PDIR)/libpetscfortran.*
 	-@echo "Beginning to compile Fortran interface library"
 	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
-	-@echo "Using C/C++ compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
+	-@echo "Using C/C++ compiler: $(CC) $(COPTFLAGS)"
+	-@echo "------------------------------------------"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "------------------------------------------"
 	-@echo "Using configuration flags: $(CONF)"
+	-@echo "------------------------------------------"
 	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "------------------------------------------"
 	-@echo "Using PETSc directory: $(PETSC_DIR)"
 	-@echo "Using PETSc arch: $(PETSC_ARCH)"
-	-@echo "------------------------------------------"
+	-@echo "========================================="
 	-@cd src/fortran/custom; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
 	  grep -v clog trashz | grep -v "information sections" | \
@@ -109,7 +123,7 @@ fortran: chkpetsc_dir
 	$(RANLIB) $(PDIR)/libpetscfortran.a
 	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran interface library"
-	-@echo "------------------------------------------"
+	-@echo "========================================="
 
 # Builds PETSc test examples for a given BOPT and architecture
 testfortran: chkopts
@@ -117,16 +131,17 @@ testfortran: chkopts
 	-@echo "Using compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using linker: $(FLINKER)"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "------------------------------------------"
 	-@echo "Using PETSc directory: $(PETSC_DIR)"
 	-@echo "Using PETSc arch: $(PETSC_ARCH)"
 	-@echo "------------------------------------------"
 	-@echo "Using linker: $(FLINKER)"
 	-@echo "Using libraries: $(PETSC_FORTRAN_LIB) $(PETSC_LIB)"
-	-@echo "------------------------------------------"
+	-@echo "========================================="
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=testexamples_3  tree 
 	-@echo "Completed compiling and running Fortran test examples"
-	-@echo "------------------------------------------"
+	-@echo "========================================="
     
 ranlib:
 	$(RANLIB) $(PDIR)/*.a
@@ -282,13 +297,13 @@ CFLAGS   =  $(CPPFLAGS) $(CONF)
 
 alladic:
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adic  tree 
-	-cd include ; \
+	-@cd include ; \
            adiC.new -avud gradient.new -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) petsc.h 
+	-@cd src/inline ; \
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
 
-joe:
-	-cd include ; \
-           adiC.new -avud gradient.new  -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) petsc.h
-
+alladiclib:
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adiclib  tree
 
 # 
 #  We no longer make Unix manpages

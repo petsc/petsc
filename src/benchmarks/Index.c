@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: Index.c,v 1.11 1996/05/29 22:32:40 balay Exp balay $";
+static char vcid[] = "$Id: Index.c,v 1.12 1996/10/17 19:07:38 balay Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -23,10 +23,11 @@ int main( int argc, char **argv)
 
 int test1()
 {
-  double    t1, t2, value;
-  int       i, ierr,*z,*zi, intval;
-  Scalar    *x, *y;
-  PetscRandom  r;
+  PLogDouble  t1, t2;
+  double      value;
+  int         i, ierr,*z,*zi, intval;
+  Scalar      *x, *y;
+  PetscRandom r;
 
   ierr = PetscRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);
   x    = (Scalar *)PetscMalloc(20000*sizeof(Scalar)); CHKPTRA(x);
@@ -113,9 +114,10 @@ int test1()
 
 int test2()
 {
-  double    t1, t2, value;
-  int       i, ierr,z[2000],zi[20000], intval, tmp;
-  Scalar    x[20000], y[20000];
+  PLogDouble   t1, t2;
+  double       value;
+  int          i, ierr,z[2000],zi[20000], intval, tmp;
+  Scalar       x[20000], y[20000];
   PetscRandom  r;
 
   ierr = PetscRandomCreate(MPI_COMM_SELF,RANDOM_DEFAULT,&r); CHKERRQ(ierr);

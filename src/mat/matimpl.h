@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.68 1997/01/27 18:16:16 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.69 1997/02/03 05:57:39 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -94,6 +94,7 @@ struct _Mat {
   int                    m, n;             /* local numbers of rows, columns */
   MatInfo                info;             /* matrix information */
   ISLocalToGlobalMapping mapping;          /* mapping used in VecSetValuesLocal() */
+  InsertMode             insertmode;       /* have values been inserted in matrix or added? */
 };
 
 /* final argument for MatConvertXXX() */
