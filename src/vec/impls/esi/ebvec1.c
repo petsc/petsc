@@ -1,3 +1,4 @@
+
 /*$Id: ebvec1.c,v 1.9 2001/09/26 17:10:29 balay Exp $*/
 
 
@@ -525,11 +526,11 @@ extern PetscFList CCAList;
 @*/
 int VecESISetType(Vec V,char *name)
 {
-  int                                   ierr;
-  esi::Vector<double,int>               *ve;
-  esi::petsc::VectorFactory<double,int> *f;
-  void                                  *(*r)(void);
-  esi::IndexSpace<int>                  *map;
+  int                            ierr;
+  esi::Vector<double,int>        *ve;
+  esi::VectorFactory<double,int> *f;
+  void                           *(*r)(void);
+  esi::IndexSpace<int>           *map;
 
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
@@ -537,9 +538,9 @@ int VecESISetType(Vec V,char *name)
 #if defined(PETSC_HAVE_CCA)
   gov::cca::Component *component = (gov::cca::Component *)(*r)();
   gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
-  f    = dynamic_cast<esi::petsc::VectorFactory<double,int>*>(port);
+  f    = dynamic_cast<esi::VectorFactory<double,int>*>(port);
 #else
-  f    = (esi::petsc::VectorFactory<double,int> *)(*r)();
+  f    = (esi::VectorFactory<double,int> *)(*r)();
 #endif
   map  = new esi::petsc::IndexSpace<int>(V->comm,V->n,V->N);
   ierr = f->getVector(*map,ve);CHKERRQ(ierr);
