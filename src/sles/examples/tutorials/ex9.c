@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.9 1996/04/12 20:28:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.10 1996/04/12 22:22:22 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -49,7 +49,7 @@ int main(int argc,char **args)
 
   /* Set user-defined monitoring routine for first linear system */
   ierr = OptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg); CHKERRA(ierr);
-  if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL); CHKERRQ(ierr);}
+  if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL); CHKERRA(ierr);}
 
   /* Create data structures for second linear system */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C2); CHKERRA(ierr);
@@ -177,9 +177,9 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   int    ierr;
 
   PLogEventBegin(CHECK_ERROR,u,x,b,0);
-  ierr = VecCopy(x,b); CHKERRA(ierr);       /* use b as a work vector */
-  ierr = VecAXPY(&none,u,b); CHKERRA(ierr);
-  ierr = VecNorm(b,NORM_2,&norm); CHKERRA(ierr);
+  ierr = VecCopy(x,b); CHKERRQ(ierr);       /* use b as a work vector */
+  ierr = VecAXPY(&none,u,b); CHKERRQ(ierr);
+  ierr = VecNorm(b,NORM_2,&norm); CHKERRQ(ierr);
   if (norm > 1.e-12)
     PetscPrintf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
