@@ -1448,6 +1448,7 @@ int SNESSetUp(SNES snes,Vec x)
     ierr = MatDestroy(J);CHKERRQ(ierr);
   }
 
+#if !defined(PETSC_USE_COMPLEX) || !defined(PETSC_USE_SINGLE)
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator2",&flg);CHKERRQ(ierr); 
   if (flg) {
     Mat J;
@@ -1455,6 +1456,7 @@ int SNESSetUp(SNES snes,Vec x)
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
   }
+#endif
 
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf",&flg);CHKERRQ(ierr); 
   /*
