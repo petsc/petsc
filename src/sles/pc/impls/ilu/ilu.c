@@ -63,8 +63,8 @@ int PCILUSetShift_ILU(PC pc,PetscTruth shift)
 
   PetscFunctionBegin;
   dir = (PC_ILU*)pc->data;
-  dir->info.lu_shift = shift;
-  if (shift) dir->info.lu_shift_fraction = 0.0;
+  dir->info.shift = shift;
+  if (shift) dir->info.shift_fraction = 0.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -928,8 +928,8 @@ int PCCreate_ILU(PC pc)
   ilu->info.dtcount            = PETSC_DEFAULT;
   ilu->info.dtcol              = PETSC_DEFAULT;
   ilu->info.damping            = 0.0;
-  ilu->info.lu_shift           = PETSC_FALSE;
-  ilu->info.lu_shift_fraction  = 0.0;
+  ilu->info.shift              = PETSC_FALSE;
+  ilu->info.shift_fraction     = 0.0;
   ilu->info.zeropivot          = 1.e-12;
   ilu->info.pivotinblocks      = 1.0;
   ilu->reusefill               = PETSC_FALSE;

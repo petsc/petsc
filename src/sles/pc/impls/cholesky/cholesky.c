@@ -305,8 +305,8 @@ int PCCholeskySetShift_Cholesky(PC pc,PetscTruth shift)
   
   PetscFunctionBegin;
   dir = (PC_Cholesky*)pc->data;
-  dir->info.lu_shift = shift;
-  if (shift) dir->info.lu_shift_fraction = 0.0;
+  dir->info.shift = shift;
+  if (shift) dir->info.shift_fraction = 0.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -642,8 +642,8 @@ int PCCreate_Cholesky(PC pc)
   dir->inplace                = 0;
   dir->info.fill              = 5.0;
   dir->info.damping           = 0.0;
-  dir->info.lu_shift          = PETSC_FALSE;
-  dir->info.lu_shift_fraction = 0.0;
+  dir->info.shift             = PETSC_FALSE;
+  dir->info.shift_fraction    = 0.0;
   dir->info.pivotinblocks     = 1.0;
   dir->col                    = 0;
   dir->row                    = 0;

@@ -44,8 +44,8 @@ int PCICCSetShift_ICC(PC pc,PetscTruth shift)
 
   PetscFunctionBegin;
   dir = (PC_ICC*)pc->data;
-  dir->info.lu_shift = shift;
-  if (shift) dir->info.lu_shift_fraction = 0.0;
+  dir->info.shift = shift;
+  if (shift) dir->info.shift_fraction = 0.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -472,8 +472,8 @@ int PCCreate_ICC(PC pc)
 
   icc->info.dtcol              = PETSC_DEFAULT;
   icc->info.damping            = 0.0;
-  icc->info.lu_shift           = PETSC_FALSE;
-  icc->info.lu_shift_fraction  = 0.0;
+  icc->info.shift              = PETSC_FALSE;
+  icc->info.shift_fraction     = 0.0;
   icc->info.zeropivot          = 1.e-12;
   pc->data	               = (void*)icc;
 

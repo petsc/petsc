@@ -506,8 +506,8 @@ EXTERN int MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 S*/
 typedef struct {
   PetscReal     damping;        /* scaling of identity added to matrix to prevent zero pivots */
-  PetscReal     lu_shift;          /* if true, shift until positive pivots */
-  PetscReal     lu_shift_fraction; /* record shift fraction taken */
+  PetscReal     shift;          /* if true, shift until positive pivots */
+  PetscReal     shift_fraction; /* record shift fraction taken */
   PetscReal     diagonal_fill;  /* force diagonal to fill in if initially not filled */
   PetscReal     dt;             /* drop tolerance */
   PetscReal     dtcol;          /* tolerance for pivoting */

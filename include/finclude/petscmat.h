@@ -181,14 +181,14 @@
       integer MAT_FACTORINFO_DTCOL
       integer MAT_FACTORINFO_DTCOUNT
       integer MAT_FACTORINFO_DAMPING
-      integer MAT_FACTORINFO_LU_SHIFT
-      integer MAT_FACTORINFO_LU_SHIFT_FRACTION
+      integer MAT_FACTORINFO_SHIFT
+      integer MAT_FACTORINFO_SHIFT_FRACTION
       integer MAT_FACTORINFO_ZERO_PIVOT
       integer MAT_FACTORINFO_PIVOT_IN_BLOCKS
 
       parameter (MAT_FACTORINFO_DAMPING = 1)
-      parameter (MAT_FACTORINFO_LU_SHIFT = 2)
-      parameter (MAT_FACTORINFO_LU_SHIFT_FRACTION = 3)
+      parameter (MAT_FACTORINFO_SHIFT = 2)
+      parameter (MAT_FACTORINFO_SHIFT_FRACTION = 3)
       parameter (MAT_FACTORINFO_DIAGONAL_FILL = 4)
       parameter (MAT_FACTORINFO_DT = 5)
       parameter (MAT_FACTORINFO_DTCOL = 6)

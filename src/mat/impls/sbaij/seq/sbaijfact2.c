@@ -1385,7 +1385,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
     b->row          = perm;
     b->icol         = perm;   
     b->factor_damping   = info->damping;
-    b->factor_shift     = info->lu_shift;
+    b->factor_shift     = info->shift;
     b->factor_zeropivot = info->zeropivot;
     ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
@@ -1566,7 +1566,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
   PetscLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(int)+sizeof(MatScalar)));
   b->s_maxnz          = b->s_nz = iu[mbs];
   b->factor_damping   = info->damping;
-  b->factor_shift     = info->lu_shift;
+  b->factor_shift     = info->shift;
   b->factor_zeropivot = info->zeropivot;
 
   (*B)->factor                 = FACTOR_CHOLESKY;

@@ -106,53 +106,13 @@ comm_init (void)
 
   if (p_init++) return;
 
-#ifdef NXSRC
-  if (sizeof(int) != sizeof(long))
-    {error_msg_fatal("Int/Long Incompatible!");}
-#endif
-
-  /*if (NULL!=0)
-    {error_msg_fatal("NULL != 0!");}*/
-
-  if (sizeof(int) != 4)
-    {error_msg_warning("Int != 4 Bytes!");}
-
-  error_msg_warning("sizeof(int) = %d\n",INT_LEN);
-  error_msg_warning("sizeof(REAL) = %d\n",REAL_LEN);
-
-#ifdef r8
-  iptr= (int *) &tmp;
-  for(i=0;i<(int) (sizeof(REAL)/sizeof(int));i++)
-  {
-     if (iptr[i]!=0) 
-    {error_msg_fatal("type double doesn't conform to IEEE 754 std. for 64 bit!");}
-  }
-#else
-  iptr= (int *) &tmp;
-  if (iptr[0])
-    {error_msg_fatal("type float doesn't conform to IEEE 754 std. for 32 bit!");}
+#if PETSC_SIZEOF_INT != 4
+  error_msg_warning("Int != 4 Bytes!");
 #endif
 
 
-#ifdef MPISRC  
-  /* has mpi been initialized */
-  MPI_Initialized(&num_nodes);
-  if (!num_nodes) {MPI_Init(&argc,NULL);}
   MPI_Comm_size(MPI_COMM_WORLD,&num_nodes);
   MPI_Comm_rank(MPI_COMM_WORLD,&my_id);
-
-#elif defined NXSRC
-  my_id = (int)mynode();
-  num_nodes = (int)numnodes();
-
-#else
-  my_id = 0;
-  num_nodes = 1;
-
-#endif
-
-  if (!num_nodes)
-    {error_msg_fatal("Can't have no nodes!?!");}
 
   if (num_nodes> (INT_MAX >> 1))
   {error_msg_fatal("Can't have more then MAX_INT/2 nodes!!!");}
