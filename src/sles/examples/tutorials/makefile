@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.62 1999/04/02 18:53:45 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.63 1999/05/11 19:16:12 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -324,7 +324,7 @@ runex10_7:
 	-@${RM} -f ex10_7.tmp
 runex10_8:
 	-@${MPIRUN} -np 1 ex10 -sles_diagonal_scale -pc_type eisenstat -ksp_smonitor -sles_diagonal_scale_fix \
-	   -f0 ../../../mat/examples/matrices/medium > ex10_8.tmp 2>&1; \
+	   -f0 ../../../mat/examples/matrices/medium -optionsleft_off > ex10_8.tmp 2>&1; \
 	   if (diff output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \
 	   ${RM} -f ex10_8.tmp
