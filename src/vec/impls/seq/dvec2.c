@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.30 1996/05/08 14:38:39 balay Exp balay $ */
+/* $Id: dvec2.c,v 1.31 1996/05/08 14:42:19 balay Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -33,7 +33,7 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
   register int n = xv->n,i,j,nv_rem,j_rem;
-  Scalar   sum0,sum1,sum2,sum3,*y0,*y1,*y2,*y3,x0,x1,x2,x3,*x;
+  Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
   
   /*
@@ -59,27 +59,27 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 
   switch (nv_rem) {
   case 3:
-  y0   = ((Vec_Seq *)(yy[0]->data))->array;
-  y1   = ((Vec_Seq *)(yy[1]->data))->array;
-  y2   = ((Vec_Seq *)(yy[2]->data))->array;
+  yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+  yy1   = ((Vec_Seq *)(yy[1]->data))->array;
+  yy2   = ((Vec_Seq *)(yy[2]->data))->array;
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; 
-      sum0 += x2*y0[2]; sum1 += x2*y1[2]; 
-      sum2 += x2*y2[2]; 
+      sum0 += x2*yy0[2]; sum1 += x2*yy1[2]; 
+      sum2 += x2*yy2[2]; 
     case 2: 
       x1 = x[1]; 
-      sum0 += x1*y0[1]; sum1 += x1*y1[1]; 
-      sum2 += x1*y2[1]; 
+      sum0 += x1*yy0[1]; sum1 += x1*yy1[1]; 
+      sum2 += x1*yy2[1]; 
     case 1: 
       x0 = x[0]; 
-      sum0 += x0*y0[0]; sum1 += x0*y1[0]; 
-      sum2 += x0*y2[0]; 
+      sum0 += x0*yy0[0]; sum1 += x0*yy1[0]; 
+      sum2 += x0*yy2[0]; 
     case 0: 
       x  += j_rem;
-      y0 += j_rem;
-      y1 += j_rem;
-      y2 += j_rem;
+      yy0 += j_rem;
+      yy1 += j_rem;
+      yy2 += j_rem;
       j  -= j_rem;
       break;
     }
@@ -90,9 +90,9 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
       x3 = x[3];
       x += 4;
       
-      sum0 += x0*y0[0] + x1*y0[1] + x2*y0[2] + x3*y0[3]; y0+=4;
-      sum1 += x0*y1[0] + x1*y1[1] + x2*y1[2] + x3*y1[3]; y1+=4;
-      sum2 += x0*y2[0] + x1*y2[1] + x2*y2[2] + x3*y2[3]; y2+=4;
+      sum0 += x0*yy0[0] + x1*yy0[1] + x2*yy0[2] + x3*yy0[3]; yy0+=4;
+      sum1 += x0*yy1[0] + x1*yy1[1] + x2*yy1[2] + x3*yy1[3]; yy1+=4;
+      sum2 += x0*yy2[0] + x1*yy2[1] + x2*yy2[2] + x3*yy2[3]; yy2+=4;
       j -= 4;
     }
     z[0] = sum0;
@@ -100,22 +100,22 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
     z[2] = sum2;
     break;
   case 2:
-  y0   = ((Vec_Seq *)(yy[0]->data))->array;
-  y1   = ((Vec_Seq *)(yy[1]->data))->array;
+  yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+  yy1   = ((Vec_Seq *)(yy[1]->data))->array;
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; 
-      sum0 += x2*y0[2]; sum1 += x2*y1[2]; 
+      sum0 += x2*yy0[2]; sum1 += x2*yy1[2]; 
     case 2: 
       x1 = x[1]; 
-      sum0 += x1*y0[1]; sum1 += x1*y1[1]; 
+      sum0 += x1*yy0[1]; sum1 += x1*yy1[1]; 
     case 1: 
       x0 = x[0]; 
-      sum0 += x0*y0[0]; sum1 += x0*y1[0]; 
+      sum0 += x0*yy0[0]; sum1 += x0*yy1[0]; 
     case 0: 
       x  += j_rem;
-      y0 += j_rem;
-      y1 += j_rem;
+      yy0 += j_rem;
+      yy1 += j_rem;
       j  -= j_rem;
       break;
     }
@@ -126,8 +126,8 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
       x3 = x[3];
       x += 4;
       
-      sum0 += x0*y0[0] + x1*y0[1] + x2*y0[2] + x3*y0[3]; y0+=4;
-      sum1 += x0*y1[0] + x1*y1[1] + x2*y1[2] + x3*y1[3]; y1+=4;
+      sum0 += x0*yy0[0] + x1*yy0[1] + x2*yy0[2] + x3*yy0[3]; yy0+=4;
+      sum1 += x0*yy1[0] + x1*yy1[1] + x2*yy1[2] + x3*yy1[3]; yy1+=4;
       j -= 4;
     }
     z[0] = sum0;
@@ -135,22 +135,22 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
  
     break;
   case 1:
-  y0   = ((Vec_Seq *)(yy[0]->data))->array;
+  yy0   = ((Vec_Seq *)(yy[0]->data))->array;
     switch (j_rem=j&0x3) {
     case 3: 
-      x2 = x[2]; sum0 += x2*y0[2];
+      x2 = x[2]; sum0 += x2*yy0[2];
     case 2: 
-      x1 = x[1]; sum0 += x1*y0[1];
+      x1 = x[1]; sum0 += x1*yy0[1];
     case 1: 
-      x0 = x[0]; sum0 += x0*y0[0];
+      x0 = x[0]; sum0 += x0*yy0[0];
     case 0: 
       x  += j_rem;
-      y0 += j_rem;
+      yy0 += j_rem;
       j  -= j_rem;
       break;
     }
     while (j>0) {
-      sum0 += x[0]*y0[0] + x[1]*y0[1] + x[2]*y0[2] + x[3]*y0[3]; y0+=4;
+      sum0 += x[0]*yy0[0] + x[1]*yy0[1] + x[2]*yy0[2] + x[3]*yy0[3]; yy0+=4;
       j -= 4; x+=4;
     }
     z[0] = sum0;
@@ -168,10 +168,10 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
     sum1 = 0;
     sum2 = 0;
     sum3 = 0;
-    y0   = ((Vec_Seq *)(yy[0]->data))->array;
-    y1   = ((Vec_Seq *)(yy[1]->data))->array;
-    y2   = ((Vec_Seq *)(yy[2]->data))->array;
-    y3   = ((Vec_Seq *)(yy[3]->data))->array;
+    yy0   = ((Vec_Seq *)(yy[0]->data))->array;
+    yy1   = ((Vec_Seq *)(yy[1]->data))->array;
+    yy2   = ((Vec_Seq *)(yy[2]->data))->array;
+    yy3   = ((Vec_Seq *)(yy[3]->data))->array;
     yy  += 4;
 
     j = n;
@@ -179,22 +179,22 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
     switch (j_rem=j&0x3) {
     case 3: 
       x2 = x[2]; 
-      sum0 += x2*y0[2]; sum1 += x2*y1[2]; 
-      sum2 += x2*y2[2]; sum3 += x2*y3[2];
+      sum0 += x2*yy0[2]; sum1 += x2*yy1[2]; 
+      sum2 += x2*yy2[2]; sum3 += x2*yy3[2];
     case 2: 
       x1 = x[1]; 
-      sum0 += x1*y0[1]; sum1 += x1*y1[1]; 
-      sum2 += x1*y2[1]; sum3 += x1*y3[1];
+      sum0 += x1*yy0[1]; sum1 += x1*yy1[1]; 
+      sum2 += x1*yy2[1]; sum3 += x1*yy3[1];
     case 1: 
       x0 = x[0]; 
-      sum0 += x0*y0[0]; sum1 += x0*y1[0]; 
-      sum2 += x0*y2[0]; sum3 += x0*y3[0];
+      sum0 += x0*yy0[0]; sum1 += x0*yy1[0]; 
+      sum2 += x0*yy2[0]; sum3 += x0*yy3[0];
     case 0: 
       x  += j_rem;
-      y0 += j_rem;
-      y1 += j_rem;
-      y2 += j_rem;
-      y3 += j_rem;
+      yy0 += j_rem;
+      yy1 += j_rem;
+      yy2 += j_rem;
+      yy3 += j_rem;
       j  -= j_rem;
       break;
     }
@@ -205,10 +205,10 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
       x3 = x[3];
       x += 4;
       
-      sum0 += x0*y0[0] + x1*y0[1] + x2*y0[2] + x3*y0[3]; y0+=4;
-      sum1 += x0*y1[0] + x1*y1[1] + x2*y1[2] + x3*y1[3]; y1+=4;
-      sum2 += x0*y2[0] + x1*y2[1] + x2*y2[2] + x3*y2[3]; y2+=4;
-      sum3 += x0*y3[0] + x1*y3[1] + x2*y3[2] + x3*y3[3]; y3+=4;
+      sum0 += x0*yy0[0] + x1*yy0[1] + x2*yy0[2] + x3*yy0[3]; yy0+=4;
+      sum1 += x0*yy1[0] + x1*yy1[1] + x2*yy1[2] + x3*yy1[3]; yy1+=4;
+      sum2 += x0*yy2[0] + x1*yy2[1] + x2*yy2[2] + x3*yy2[3]; yy2+=4;
+      sum3 += x0*yy3[0] + x1*yy3[1] + x2*yy3[2] + x3*yy3[3]; yy3+=4;
       j -= 4;
     }
     z[0] = sum0;
