@@ -20,7 +20,6 @@ petsc/src/contrib/esi
 petsc/bin/configure.in.old
 petsc/bin/petscconf.h.in.sav
 petsc/bin/confmake
-bmake/solaris_lam
 petsc/bmake/adicmastercontrol
 petsc/bmake/paragon
 petsc/bmake/solaris_uni
