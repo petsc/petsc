@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.15 1998/11/04 16:45:28 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.16 1999/02/08 22:22:33 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -42,4 +42,5 @@
 #define HAVE_CLOCK
 #define WORDS_BIGENDIAN 1
 
+#define CAN_SLEEP_AFTER_ERROR
 #endif

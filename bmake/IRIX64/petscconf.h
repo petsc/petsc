@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.22 1999/02/15 18:41:33 balay Exp balay $"
+"$Id: petscconf.h,v 1.23 1999/02/15 18:42:04 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -48,4 +48,5 @@
 #define USE_DYNAMIC_LIBRARIES 1
 #define HAVE_RTLD_GLOBAL 1
 
+#define CAN_SLEEP_AFTER_ERROR
 #endif
