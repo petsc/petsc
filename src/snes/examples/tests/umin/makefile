@@ -1,13 +1,12 @@
-PETSC_DIR = ../../../../
+PETSC_DIR = ../../../..
 ALL: ex1
 
-CFLAGS        = $(OPT) $(CONF) $(PETSC_INCLUDE)
+CFLAGS        = $(CONF) $(PETSC_INCLUDE)
+FFLAGS        = $(BASEOPTF)
 SOURCEC       = 
 SOURCEF       =
-WSOURCEC      = 
 SOURCEH       =
 OBJSC         =
-WOBJS         = 
 OBJSF         =
 LIBBASE       = libpetscsnes
 EXAMPLES_1    = ex2 ex3
@@ -16,7 +15,7 @@ EXAMPLES_2    = ex4 ex5
 RUNEXAMPLES_2 = 
 EXAMPLES_3    = ex1
 RUNEXAMPLES_3 = runex1 runex1_2
-EXAMPLESC     = ex1.c
+EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c
 
 FOBJ = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
        depths.o dgl1hs.o dgl2hs.o dmsahs.o dodchs.o dpjbhs.o dsschs.o \
@@ -77,4 +76,3 @@ runex3:
            else echo "Possible problem with ex3_1, diffs above"; fi; \
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
-
