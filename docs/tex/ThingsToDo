@@ -16,6 +16,12 @@ Additional Capabilities that PETSc Needs:
    - Design better ILU/ICC interface for mpirowbs format (so that PC 
      selection is correct and symmetric matrix can use ILU).
 
+   - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix
+    
+   - Add flag where user can announce that matrix is structurally symmetric and 
+     that they are inserting all values for MPIRowbs, this prevents unneeded 
+     communication.
+
    - Change all CAPS macro to use _ between words, for example INSERT_VALUES
 
    - Fix bug in MatCreateMPIAIJ() for rectangular matrices (not square)
