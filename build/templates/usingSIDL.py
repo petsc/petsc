@@ -84,12 +84,17 @@ class UsingSIDL (base.Base):
     return [project.ProjectPath(self.getServerLibrary(proj.getName(), self.getRuntimeLanguage(), self.getRuntimePackage()), proj.getUrl())]
 
   def getClasses(self, package):
-    import SIDL.Loader
-    import SIDLLanguage.Parser
-    import ANL.SIDL.ClassFinder
+    '''Return all the classes present in the SIDL file for "package"'''
+    try:
+      import SIDL.Loader
+      import SIDLLanguage.Parser
+      import ANL.SIDL.ClassFinder
 
-    parser = SIDLLanguage.Parser.Parser(SIDL.Loader.createClass('ANL.SIDLCompilerI.SIDLCompiler'))
-    ast    = parser.parseFile(os.path.join('sidl', package+'.sidl'))
-    finder = ANL.SIDL.ClassFinder.ClassFinder()
-    ast.accept(finder)
-    return [c.getFullIdentifier() for c in finder.getClasses()]
+      parser = SIDLLanguage.Parser.Parser(SIDL.Loader.createClass('ANL.SIDLCompilerI.SIDLCompiler'))
+      ast    = parser.parseFile(os.path.join('sidl', package+'.sidl'))
+      finder = ANL.SIDL.ClassFinder.ClassFinder()
+      ast.accept(finder)
+      return [c.getFullIdentifier() for c in finder.getClasses()]
+    except: pass
+    return []
+
