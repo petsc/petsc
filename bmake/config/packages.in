@@ -13,6 +13,7 @@
 # BLAS and LAPACK library
 #
 BLASLAPACK_LIB =  @BLASLAPACK_LIB@
+PETSC_BLASLAPACK_FLAGS = @PETSC_BLASLAPACK_FLAGS@
 #
 # Location of MPI (Message Passing Interface) software  
 #
