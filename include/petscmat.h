@@ -47,6 +47,7 @@ E*/
 #define MATMFFD     "mffd"
 #define MATESI      "esi"
 #define MATPETSCESI "petscesi"
+#define MATNORMAL   "normal"
 typedef char* MatType;
 
 #define MAT_SER_SEQAIJ_BINARY "seqaij_binary"
@@ -109,6 +110,7 @@ EXTERN int MatCreateSeqSBAIJ(MPI_Comm,int,int,int,int,int*,Mat*);
 EXTERN int MatCreateMPISBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
 EXTERN int MatCreateShell(MPI_Comm,int,int,int,int,void *,Mat*);
 EXTERN int MatCreateAdic(MPI_Comm,int,int,int,int,int,void (*)(void),Mat*);
+EXTERN int MatCreateNormal(Mat,Mat*);
 EXTERN int MatDestroy(Mat);
 
 EXTERN int MatPrintHelp(Mat);
