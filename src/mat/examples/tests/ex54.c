@@ -7,15 +7,16 @@ static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for parall
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A,B,*submatA,*submatB;
-  int         bs=1,m=11,ov=1,i,j,k,*rows,*cols,ierr,nd=5,*idx,size;
-  int         rank,rstart,rend,sz,mm,nn,M,N,Mbs;
-  PetscScalar *vals,rval;
-  IS          *is1,*is2;
-  PetscRandom rdm;
-  Vec         xx,s1,s2;
-  PetscReal   s1norm,s2norm,rnorm,tol = 1.e-10;
-  PetscTruth  flg;
+  Mat            A,B,*submatA,*submatB;
+  PetscInt       bs=1,m=11,ov=1,i,j,k,*rows,*cols,nd=5,*idx,rstart,rend,sz,mm,nn,M,N,Mbs;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscScalar    *vals,rval;
+  IS             *is1,*is2;
+  PetscRandom    rdm;
+  Vec            xx,s1,s2;
+  PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -36,8 +37,8 @@ int main(int argc,char **args)
   ierr = MatGetSize(A,&M,&N);
   Mbs  = M/bs;
 
-  ierr = PetscMalloc(bs*sizeof(int),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
   ierr = PetscMalloc(M*sizeof(PetscScalar),&idx);CHKERRQ(ierr);
 

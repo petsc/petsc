@@ -7,6 +7,8 @@ static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing
 /*
   Include the private file (not included by most applications) so we have direct
   access to the matrix data structure.
+
+  This code is buggy! What is it doing here?
 */
 #include "src/mat/impls/aij/seq/aij.h"
 
@@ -14,16 +16,17 @@ static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int         ierr,n,m,i,*ai,*aj,size,nz;
-  PetscTruth  flg;
-  Mat         A;
-  Vec         x;
-  char        bfile[PETSC_MAX_PATH_LEN],hbfile[PETSC_MAX_PATH_LEN]; 
-  PetscViewer fd;
-  Mat_SeqAIJ  *a;
-  PetscScalar *aa,*xx;
-  FILE        *file;
-  char        head[81];
+  PetscErrorCode ierr;
+  PetscInt       n,m,i,*ai,*aj,nz;
+  PetscMPIInt    size;
+  Mat            A;
+  Vec            x;
+  char           bfile[PETSC_MAX_PATH_LEN],hbfile[PETSC_MAX_PATH_LEN]; 
+  PetscViewer    fd;
+  Mat_SeqAIJ     *a;
+  PetscScalar    *aa,*xx;
+  FILE           *file;
+  char           head[81];
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

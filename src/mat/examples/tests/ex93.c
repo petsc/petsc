@@ -7,7 +7,7 @@ static char help[] = "Testing Matrix-Matrix multiplication for SeqAIJ matrices.\
 int main(int argc,char **argv) {
   Mat            A,B,C,D;
   PetscScalar    a[]={1.,1.,0.,0.,1.,1.,0.,0.,1.};
-  int            ij[]={0,1,2};
+  PetscInt       ij[]={0,1,2};
   PetscScalar    none=-1.;
   PetscErrorCode ierr;
   PetscReal      fill=4;

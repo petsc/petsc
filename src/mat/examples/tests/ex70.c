@@ -8,10 +8,11 @@ static char help[] = "Tests Vec/MatSetValues() with negative row and column indi
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i[2],j[2],ierr;
-  PetscScalar v[] = {1.0,2.0,3.0,4.0};
-  Vec         x;
+  Mat            C; 
+  PetscInt       i[2],j[2];
+  PetscErrorCode ierr;
+  PetscScalar    v[] = {1.0,2.0,3.0,4.0};
+  Vec            x;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

@@ -14,10 +14,11 @@ static char help[] = "Tests MatSeq(B)AIJSetColumnIndices().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A;
-  PetscScalar v;
-  int         ierr,i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2};
-  PetscTruth  flg;
+  Mat            A;
+  PetscScalar    v;
+  PetscErrorCode ierr;
+  PetscInt       i,j,rowlens[] = {2,3,1},cols[] = {0,2,0,1,2,2};
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

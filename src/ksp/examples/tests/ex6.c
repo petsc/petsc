@@ -12,7 +12,8 @@ Input arguments are:\n\
 int main(int argc,char **args)
 {
 #if !defined(PETSC_USE_COMPLEX)
-  int            ierr,its,stage1,stage2;
+  PetscErrorCode ierr;
+  PetscInt       its,stage1,stage2;
   PetscReal      norm;
   PetscLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   PetscScalar    zero = 0.0,none = -1.0;

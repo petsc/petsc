@@ -3,24 +3,22 @@ static char help[] = "Tests the various sequential routines in MatSBAIJ format. 
 
 #include "petscmat.h"
 
-/* extern int MatReorderingSeqSBAIJ(Mat,IS); */
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         x,y,b,s1,s2;      
-  Mat         A;           /* linear system matrix */ 
-  Mat         sA;         /* symmetric part of the matrices */ 
-
-  int         n,mbs=16,bs=1,nz=3,prob=2;
-  PetscScalar neg_one = -1.0,value[3],alpha=0.1;
-  int         ierr,i,j,col[3],size,row,I,J,n1,*ip_ptr;
-  IS          ip, isrow, iscol;
-  PetscRandom rdm;
-  PetscTruth  reorder=PETSC_FALSE;
-  MatInfo     minfo1,minfo2;
-  PetscReal   norm1,norm2,tol=1.e-10;
+  Vec            x,y,b,s1,s2;      
+  Mat            A;           /* linear system matrix */ 
+  Mat            sA;         /* symmetric part of the matrices */ 
+  PetscInt       n,mbs=16,bs=1,nz=3,prob=2,i,j,col[3],row,I,J,n1,*ip_ptr;
+  PetscScalar    neg_one = -1.0,value[3],alpha=0.1;
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+  IS             ip, isrow, iscol;
+  PetscRandom    rdm;
+  PetscTruth     reorder=PETSC_FALSE;
+  MatInfo        minfo1,minfo2;
+  PetscReal      norm1,norm2,tol=1.e-10;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

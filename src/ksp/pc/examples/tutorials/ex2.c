@@ -19,8 +19,8 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  KSP                solver;
-  PC                 prec;
+  KSP                ksp;
+  PC                 pc;
   Mat                A,M;
   Vec                X,B,D;
   MPI_Comm           comm;
@@ -70,11 +70,11 @@ int main(int argc,char **argv)
    * A Conjugate Gradient method
    * with ILU(0) preconditioning
    */
-  ierr = KSPCreate(comm,&solver);CHKERRQ(ierr);
-  ierr = KSPSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPCreate(comm,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = KSPSetType(solver,KSPCG);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(solver,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
+  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
   /*
    * ILU preconditioner;
@@ -85,19 +85,19 @@ int main(int argc,char **argv)
    * command line option, and see that the pivots are all positive and
    * the method converges.
    */
-  ierr = KSPGetPC(solver,&prec);CHKERRQ(ierr);
-  ierr = PCSetType(prec,PCICC);CHKERRQ(ierr);
-  /*  ierr = PCICCSetShift(prec,PETSC_TRUE);CHKERRQ(ierr); */
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCICC);CHKERRQ(ierr);
+  /*  ierr = PCICCSetShift(pc,PETSC_TRUE);CHKERRQ(ierr); */
 
-  ierr = KSPSetFromOptions(solver);CHKERRQ(ierr);
-  ierr = KSPSetUp(solver);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
   /*
    * Now that the factorisation is done, show the pivots;
    * note that the last one is negative. This in itself is not an error,
    * but it will make the iterative method diverge.
    */
-  ierr = PCGetFactoredMatrix(prec,&M);CHKERRQ(ierr);
+  ierr = PCGetFactoredMatrix(pc,&M);CHKERRQ(ierr);
   ierr = VecDuplicate(B,&D);CHKERRQ(ierr);
   ierr = MatGetDiagonal(M,D);CHKERRQ(ierr);
   printf("\nPivots:\n\n"); VecView(D,0);
@@ -107,19 +107,24 @@ int main(int argc,char **argv)
    * without the shift this will diverge with
    * an indefinite preconditioner
    */
-  ierr = KSPSolve(solver,B,X);CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(solver,&reason);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,B,X);CHKERRQ(ierr);
+  ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
     printf("\nDivergence because of indefinite preconditioner;\n");
     printf("Run the executable again but with -pc_icc_shift option.\n");
   } else if (reason<0) {
     printf("\nOther kind of divergence: this should not happen.\n");
   } else {
-    ierr = KSPGetIterationNumber(solver,&its);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     printf("\nConvergence in %d iterations.\n",(int)its);
   }
   printf("\n");
 
+  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = VecDestroy(B);CHKERRQ(ierr);
+  ierr = VecDestroy(X);CHKERRQ(ierr);
+  ierr = VecDestroy(D);CHKERRQ(ierr);
   PetscFinalize();
   PetscFunctionReturn(0);
 }

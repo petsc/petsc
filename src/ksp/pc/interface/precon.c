@@ -1072,6 +1072,8 @@ PetscErrorCode PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 
    Level: advanced
 
+   Notes: Does not increase the reference count for the matrix so DO NOT destroy it
+
 .keywords: PC, get, factored, matrix
 @*/
 PetscErrorCode PCGetFactoredMatrix(PC pc,Mat *mat)

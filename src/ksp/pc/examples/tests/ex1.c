@@ -7,9 +7,10 @@ static char help[] = "Tests the creation of a PC context.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  PC  pc;
-  PetscErrorCode ierr,n = 5;
-  Mat mat;
+  PC             pc;
+  PetscErrorCode ierr;
+  PetscInt       n = 5;
+  Mat            mat;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);

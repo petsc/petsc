@@ -7,17 +7,17 @@ static char help[] = "Tests matrix permutation for factorization and solve on ma
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         x,y,b;
-  Mat         A;           /* linear system matrix */ 
-  Mat         sA,sC;       /* symmetric part of the matrices */ 
-  int         n,mbs=16,bs=1,nz=3,prob=1;
-  int         ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
-  int         lf;          /* level of fill for icc */
-  PetscReal   norm1,norm2,tol=1.e-10;
-  PetscScalar neg_one = -1.0,four=4.0,value[3];  
-  IS          perm;
-  PetscRandom rdm;
-  PetscTruth  reorder=PETSC_TRUE;
+  Vec            x,y,b;
+  Mat            A;           /* linear system matrix */ 
+  Mat            sA,sC;       /* symmetric part of the matrices */ 
+  PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],block, row,I,J,n1,*ip_ptr,lf;
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  PetscReal      norm1,norm2,tol=1.e-10;
+  PetscScalar    neg_one = -1.0,four=4.0,value[3];  
+  IS             perm;
+  PetscRandom    rdm;
+  PetscTruth     reorder=PETSC_TRUE;
   MatFactorInfo  factinfo;
 
   PetscInitialize(&argc,&args,(char *)0,help);

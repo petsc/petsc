@@ -27,7 +27,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
 /* User-defined application contexts */
 
 typedef struct {
-   int        mx,my;            /* number grid points in x and y direction */
+   PetscInt   mx,my;            /* number grid points in x and y direction */
    Vec        localX,localF;    /* local vectors with ghost region */
    DA         da;
    Vec        x,b,r;            /* global vectors */
@@ -37,8 +37,8 @@ typedef struct {
 typedef struct {
    GridCtx     fine;
    GridCtx     coarse;
-   KSP        ksp_coarse;
-   int         ratio;
+   KSP         ksp_coarse;
+   PetscInt    ratio;
    Mat         I;               /* interpolation from coarse to fine */
 } AppCtx;
 

@@ -14,9 +14,10 @@ int main(int argc,char **args)
   PetscRandom       rand;
   Vec               xx,yy,s1,s2;
   PetscReal         s1norm,s2norm,rnorm,tol = 1.e-10;
-  int               rstart,rend,rows[2],cols[2],m,n,i,j,ierr,M,N,rank,ct,row,ncols1;
-  int               ncols2,bs;
-  const int         *cols1,*cols2;
+  PetscInt          rstart,rend,rows[2],cols[2],m,n,i,j,M,N,ct,row,ncols1,ncols2,bs;
+  PetscMPIInt       rank;
+  PetscErrorCode    ierr;
+  const PetscInt    *cols1,*cols2;
   PetscScalar       vals1[4],vals2[4],v;
   const PetscScalar *v1,*v2;
   PetscTruth        flg;

@@ -21,7 +21,9 @@ T*/
 int main(int argc,char **args)
 {
   Mat             A;
-  int             ierr,rank,*ia,*ja,size;
+  PetscErrorCode  ierr;
+  PetscMPIInt     rank,size;
+  PetscInt        *ia,*ja;
   MatPartitioning part;
   IS              is,isn;
 
@@ -30,8 +32,8 @@ int main(int argc,char **args)
   if (size != 4) SETERRQ(1,"Must run with 4 processors");
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(5*sizeof(int),&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc(16*sizeof(int),&ja);CHKERRQ(ierr);
+  ierr = PetscMalloc(5*sizeof(PetscInt),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc(16*sizeof(PetscInt),&ja);CHKERRQ(ierr);
   if (!rank) {
     ja[0] = 1; ja[1] = 4; ja[2] = 0; ja[3] = 2; ja[4] = 5; ja[5] = 1; ja[6] = 3; ja[7] = 6;
     ja[8] = 2; ja[9] = 7;
