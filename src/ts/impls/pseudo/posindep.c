@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.57 2001/08/07 03:04:23 balay Exp balay $*/
+/*$Id: posindep.c,v 1.58 2001/08/07 17:20:38 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -185,35 +185,12 @@ static int TSDestroy_Pseudo(TS ts)
   if (pseudo->update) {ierr = VecDestroy(pseudo->update);CHKERRQ(ierr);}
   if (pseudo->func) {ierr = VecDestroy(pseudo->func);CHKERRQ(ierr);}
   if (pseudo->rhs)  {ierr = VecDestroy(pseudo->rhs);CHKERRQ(ierr);}
-  if (ts->Ashell)   {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
   ierr = PetscFree(pseudo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 /*------------------------------------------------------------*/
-/*
-    This matrix shell multiply where user provided Shell matrix
-*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSPseudoMatMult"
-int TSPseudoMatMult(Mat mat,Vec x,Vec y)
-{
-  TS     ts;
-  PetscScalar mdt,mone = -1.0;
-  int    ierr;
-
-  PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ts);CHKERRQ(ierr);
-  mdt = 1.0/ts->time_step;
-
-  /* apply user provided function */
-  ierr = MatMult(ts->Ashell,x,y);CHKERRQ(ierr);
-  /* shift and scale by 1/dt - F */
-  ierr = VecAXPBY(&mdt,&mone,x,y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /* 
     This defines the nonlinear equation that is to be solved with SNES
@@ -258,20 +235,15 @@ int TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx
   TS            ts = (TS) ctx;
   int           ierr;
   PetscScalar   mone = -1.0,mdt = 1.0/ts->time_step;
-  PetscTruth    isshell;
 
   PetscFunctionBegin;
   /* construct users Jacobian */
   ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
-  /* shift and scale Jacobian, if not a shell matrix */
-  ierr = PetscTypeCompare((PetscObject)*AA,MATSHELL,&isshell);CHKERRQ(ierr);
-  if (!isshell) {
-    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
-    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
-  }
-  ierr = PetscTypeCompare((PetscObject)*BB,MATSHELL,&isshell);CHKERRQ(ierr);
-  if (*BB != *AA && *str != SAME_PRECONDITIONER && !isshell) {
+  /* shift and scale Jacobian */
+  ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
+  ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
+  if (*BB != *AA && *str != SAME_PRECONDITIONER) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
   }
@@ -292,12 +264,6 @@ static int TSSetUp_Pseudo(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);
-  if (ts->Ashell) { /* construct new shell matrix */
-    ierr = VecGetSize(ts->vec_sol,&M);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(ts->vec_sol,&m);CHKERRQ(ierr);
-    ierr = MatCreateShell(ts->comm,m,M,M,M,ts,&ts->A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)())TSPseudoMatMult);CHKERRQ(ierr);
-  }
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSPseudoJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -578,7 +544,6 @@ int TSCreate_Pseudo(TS ts)
 {
   TS_Pseudo  *pseudo;
   int        ierr;
-  PetscTruth isshell;
 
   PetscFunctionBegin;
   ts->destroy         = TSDestroy_Pseudo;
@@ -591,10 +556,6 @@ int TSCreate_Pseudo(TS ts)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian");
   }
 
-  ierr = PetscTypeCompare((PetscObject)ts->A,MATSHELL,&isshell);CHKERRQ(ierr);
-  if (isshell) {
-    ts->Ashell = ts->A;
-  }
   ts->setup           = TSSetUp_Pseudo;  
   ts->step            = TSStep_Pseudo;
   ts->setfromoptions  = TSSetFromOptions_Pseudo;
