@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.299 1998/07/24 01:01:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.300 1998/07/29 14:07:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1684,8 +1684,7 @@ int MatCopy(Mat A,Mat B)
   PLogEventBegin(MAT_Copy,A,B,0,0); 
   if (A->ops->copy) { 
     ierr = (*A->ops->copy)(A,B); CHKERRQ(ierr);
-  }
-  else { /* generic conversion */
+  } else { /* generic conversion */
     ierr = MatCopy_Basic(A,B); CHKERRQ(ierr);
   }
   PLogEventEnd(MAT_Copy,A,B,0,0); 
