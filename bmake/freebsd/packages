@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1999/02/08 22:22:33 bsmith Exp balay $ 
+# $Id: base.site,v 1.20 1999/03/06 19:19:06 balay Exp balay $ 
 #
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -37,9 +37,10 @@ MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
 # ----------------------------------------------------------------------------------------  
 #
 # Optional location of MPE
+# If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
 #
-#MPE_LIB       = -L/usr/local/mpi/lib/freebsd/ch_shmem -lmpe -lpmpi
 #MPE_INCLUDE   = -I/usr/local/mpi/mpe
+#MPE_LIB       = -L/usr/local/mpi/lib/freebsd/ch_shmem -lmpe -lpmpi
 #
 # Optional location of BlockSolve (MPI version)
 #

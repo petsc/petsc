@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.28 1999/02/03 15:46:22 bsmith Exp balay $ 
+# $Id: base.site,v 1.29 1999/03/24 19:09:03 balay Exp balay $ 
 #
 #    This file is for SGI Machines running OS 5.x, which is the old
 #  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
@@ -41,8 +41,8 @@ MPIRUN         = /home/petsc/mpich/lib/IRIX5/ch_shmem/mpirun.ch_shmem
 # Optional location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
 #
-MPE_LIB       = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi
 MPE_INCLUDE   = -I/home/petsc/mpich/mpe 
+MPE_LIB       = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi
 #
 # Optional location of BlockSolve (MPI version)
 #

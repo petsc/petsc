@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.45 1999/02/03 15:45:15 bsmith Exp balay $ 
+# $Id: base.site,v 1.46 1999/03/24 19:09:10 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -54,8 +54,8 @@ MPIRUN         = /usr/bin/nice -20 /bin/mpirun
 # Optional location of MPE
 # If using MPICH version 1.1.2 or higher use the flag -DHAVE_MPE_INITIALIZED_LOGGING
 #
-#MPE_LIB       = -L/usr/local/mpi/lib/IRIX64/ch_shmem -lmpe -lpmpi
 #MPE_INCLUDE   = -I/usr/local/mpi/include
+#MPE_LIB       = -L/usr/local/mpi/lib/IRIX64/ch_shmem -lmpe -lpmpi
 #
 # Optional location of BlockSolve (MPI version)
 #
