@@ -40,6 +40,10 @@ CONF    = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STDLIB_H \
           -DHAVE_DRAND48  -DHAVE_GETDOMAINNAME  -D_XOPEN_SOURCE \
           -DUSES_V_V_V_V_TSEARCH
 
+# AIX apparently does not remotely resemble EITHER System V or BSD 4.x.
+# By defining _POSIX_SOURCE , there is some hope that it will pretend that
+# it is some form of Unix.
+
 include $(PETSC_DIR)/bmake/common
 
 libc:
@@ -49,32 +53,6 @@ libf:
 	for i in $(OBJSF); do make libmember LIBMEMBER=$$i ; done
 
 libmember:    $(LIBNAME)($(LIBMEMBER))
-
-# AIX apparently does not remotely resemble EITHER System V or BSD 4.x.
-# By defining _POSIX_SOURCE , there is some hope that it will pretend that
-# it is some form of Unix.
-.c.a: 
-	-$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
-	-$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
-.c.o: 
-	$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
-.cpp.a .cc.a .C.a: 
-	-$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
-	-$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
-.cpp.o .cc.o .C.o: 
-	-$(CC) -c $(CFLAGS) $(COPTFLAGS) $<
-.f.o: 
-	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $<
-.f.a: 
-	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $<
-	-$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
-
-
-.SUFFIXES: $(SUFFIXES) .F
-.SUFFIXES: $(SUFFIXES) .r
 
 # This F.f rule ensures that the old *.f files are removed.
 .F.f:
