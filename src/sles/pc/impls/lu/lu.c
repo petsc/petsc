@@ -60,6 +60,21 @@ int PCLUSetReuseFill_LU(PC pc,PetscTruth flag)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCLUSetShift_LU"
+int PCLUSetShift_LU(PC pc,PetscTruth shift)
+{
+  PC_LU *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_LU*)pc->data;
+  dir->info.shift = shift;
+  if (shift) dir->info.shift_fraction = 0.0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_LU"
 static int PCSetFromOptions_LU(PC pc)
@@ -85,6 +100,10 @@ static int PCSetFromOptions_LU(PC pc)
         ierr = PCLUSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_lu_damping","Damping added to diagonal","PCLUSetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_lu_shift","Manteuffel shift applied to diagonal","PCLUSetShift",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCLUSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsReal("-pc_lu_zeropivot","Pivot is considered zero if less than","PCLUSetSetZeroPivot",lu->info.zeropivot,&lu->info.zeropivot,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-pc_lu_reuse_fill","Use fill from previous factorization","PCLUSetReuseFill",&flg);CHKERRQ(ierr);
@@ -364,7 +383,7 @@ EXTERN_C_END
 -  zero - all pivots smaller than this will be considered zero
 
    Options Database Key:
-.  -pc_ilu_zeropivot <zero> - Sets the zero pivot size
+.  -pc_lu_zeropivot <zero> - Sets the zero pivot size
 
    Level: intermediate
 
@@ -384,6 +403,42 @@ int PCLUSetZeroPivot(PC pc,PetscReal zero)
   } 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PCLUSetShift"
+/*@
+   PCLUSetShift - specify whether to use Manteuffel shifting of LU.
+   If an LU factorisation breaks down because of nonpositive pivots,
+   adding sufficient identity to the diagonal will remedy this.
+   Setting this causes a bisection method to find the minimum shift that
+   will lead to a well-defined LU.
+
+   Input parameters:
++  pc - the preconditioner context
+-  shifting - PETSC_TRUE to set shift else PETSC_FALSE
+
+   Options Database Key:
+.  -pc_lu_shift - Activate PCLUSetShift()
+
+   Level: intermediate
+
+.keywords: PC, indefinite, factorization
+
+.seealso: PCLUSetDamping(), PCILUSetShift()
+@*/
+int PCLUSetShift(PC pc,PetscTruth shifting)
+{
+  int ierr,(*f)(PC,PetscTruth);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCLUSetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,shifting);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCLUSetReuseOrdering"
@@ -724,7 +779,8 @@ int PCCreate_LU(PC pc)
   dir->info.damping       = 0.0;
   dir->info.zeropivot     = 1.e-12;
   dir->info.pivotinblocks = 1.0;
-  dir->info.shift         = 0;
+  dir->info.shift              = PETSC_FALSE;
+  dir->info.shift_fraction     = 0.0;
   dir->col                = 0;
   dir->row                = 0;
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
@@ -750,6 +806,8 @@ int PCCreate_LU(PC pc)
                     PCLUSetFill_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetDamping_C","PCLUSetDamping_LU",
                     PCLUSetDamping_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetShift_C","PCLUSetShift_LU",
+		    PCLUSetShift_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetUseInPlace_C","PCLUSetUseInPlace_LU",
                     PCLUSetUseInPlace_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCLUSetMatOrdering_C","PCLUSetMatOrdering_LU",
