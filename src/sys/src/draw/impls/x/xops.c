@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.77 1997/05/02 19:06:29 bsmith Exp balay $";
+static char vcid[] = "$Id: xops.c,v 1.78 1997/05/07 01:45:33 balay Exp balay $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
 */
 
-#include "src/draw/impls/x/ximpl.h"
+#include "src/draw/impls/x/ximpl.h"         /*I  "petsc.h" */
 
 #if defined(HAVE_X11)
 

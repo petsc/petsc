@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: cputime.c,v 1.2 1997/04/01 20:33:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.3 1997/05/03 15:23:12 bsmith Exp balay $";
 #endif
 
 /*
-              This file is not currently used. It is to allow one
-     to measure CPU time usage of their job, NOT real time usage.
+  This is to allow one to measure CPU time usage of their job, 
+  NOT real time usage.
 */
 
-#include "petsc.h"
+#include "petsc.h"                     /*I "petsc.h" I*/
 
 #if defined(PARCH_t3d)
 
