@@ -855,7 +855,7 @@ runex94:
 	   ${RM} -f ex94_1.tmp
 
 runex94_2:
-	-@${MPIRUN} -np 3 ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium> ex94_2.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium > ex94_2.tmp 2>&1; \
 	   if (${DIFF} output/ex94_2.out ex94_2.tmp) then true; \
 	   else echo "Possible problem with ex94_2, diffs above"; fi; \
 	   ${RM} -f ex94_2.tmp
