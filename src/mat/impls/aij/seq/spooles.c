@@ -95,7 +95,6 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   double             *dvec;
   
   PetscFunctionBegin;
-
   /* copy A to Spooles' InpMtx object */
   if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) {
     Mat_SeqAIJ   *mat = (Mat_SeqAIJ*)A->data;
