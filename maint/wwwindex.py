@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.2 1999/01/20 00:07:23 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.3 1999/01/20 00:15:25 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -49,9 +49,9 @@ def writeupdatedfile(filename,buf):
       outbuf = regsub.sub('\nLevel:','\n<B>Level:</B>',buf)
       if buf == outbuf: return
       try:
-            fd = open(filename[:-1],'w')
+            fd = open(filename,'w')
       except:
-            print 'Error! Cannot write to file:',filename[:-1]
+            print 'Error! Cannot write to file:',filename
             exit()            
       fd.write(outbuf)
       fd.close()
