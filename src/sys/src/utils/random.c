@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.8 1996/03/19 21:24:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: random.c,v 1.9 1996/03/20 03:49:48 curfman Exp bsmith $";
 #endif
 
 /*
@@ -47,11 +48,12 @@ int PetscRandomDestroy(PetscRandom r)
   return 0;
 }
 
-/* For now we've set up only the default sun4 random number generator.  
-   We need to deal with other machines as well as other variants of
-   random number generators. We should also add a routine to enable
-   restarts [seed48()] */
-#if defined(PARCH_sun4)
+/*
+   For now we've set up using the DRAND48() generater. We need to deal 
+   with other variants of random number generators. We should also add
+   a routine to enable restarts [seed48()] 
+*/
+#if defined(HAVE_DRAND48)
 #if defined(__cplusplus)
 extern "C" {
 extern double drand48();
@@ -130,8 +132,7 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
   PetscValidHeaderSpecific(r,RANDOM_COOKIE);
 #if defined(PETSC_COMPLEX)
-  complex tmp(drand48(),drand48());
-  *val = tmp;
+  *val = complex(drand48(),drand48());
 #else
   *val = drand48();
 #endif
@@ -139,9 +140,10 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 }
 
 #else
-/* Should put a simple, portable random number generator here */
+/* Should put a simple, portable random number generator here? */
 
 extern double drand48();
+
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
