@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.138 1999/10/01 21:21:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.139 1999/10/04 18:50:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -724,7 +724,7 @@ int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,con
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecCreateGhost"
+#define __FUNC__ "VecCreateGhostBlock"
 /*@C
    VecCreateGhostBlock - Creates a parallel vector with ghost padding on each processor.
         The indicing of the ghost points is done with blocks.
