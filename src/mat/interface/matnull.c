@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcnull.c,v 1.6 1996/08/08 14:41:55 bsmith Exp balay $";
+static char vcid[] = "$Id: pcnull.c,v 1.7 1996/12/16 20:10:56 balay Exp balay $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: pcnull.c,v 1.6 1996/08/08 14:41:55 bsmith Exp balay $
 #include "sys.h"
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCNullSpaceCreate"
+#undef __FUNC__  
+#define __FUNC__ "PCNullSpaceCreate"
 /*@C
   PCNullSpaceCreate - Creates a data-structure used to project vectors 
        out of null spaces.
@@ -47,8 +47,8 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCNullSpaceDestroy"
+#undef __FUNC__  
+#define __FUNC__ "PCNullSpaceDestroy"
 /*@
   PCNullSpaceDestroy - Destroys a data-structure used to project vectors 
        out of null spaces.
@@ -65,8 +65,8 @@ int PCNullSpaceDestroy(PCNullSpace sp)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCNullSpaceRemove"
+#undef __FUNC__  
+#define __FUNC__ "PCNullSpaceRemove"
 /*@
   PCNullSpaceRemove - Removes all the components of a null space from a vector.
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: smg.c,v 1.9 1996/11/07 15:08:56 bsmith Exp balay $";
+static char vcid[] = "$Id: smg.c,v 1.10 1996/12/17 17:11:36 balay Exp balay $";
 #endif
 /*
      Additive Multigrid V Cycle routine    
@@ -15,8 +15,8 @@ static char vcid[] = "$Id: smg.c,v 1.9 1996/11/07 15:08:56 bsmith Exp balay $";
 .   mg - structure created with  MGCreate().
 
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MGACycle_Private"
+#undef __FUNC__  
+#define __FUNC__ "MGACycle_Private"
 int MGACycle_Private(MG *mg)
 {
   int    i, l = mg[0]->levels,its,ierr;

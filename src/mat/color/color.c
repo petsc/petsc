@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.9 1996/12/19 00:16:13 balay Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.10 1997/01/01 03:38:31 bsmith Exp balay $";
 #endif
  
 /*
@@ -14,8 +14,8 @@ static char vcid[] = "$Id: color.c,v 1.9 1996/12/19 00:16:13 balay Exp bsmith $"
     MatFDColoringDegreeSequence_Minpack - Calls the MINPACK routine seqr() that
       computes the degree sequence required by MINPACK coloring routines.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatFDColoringDegreeSequence_Minpack"
+#undef __FUNC__  
+#define __FUNC__ "MatFDColoringDegreeSequence_Minpack"
 int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int *ria, int **seq)
 {
   int *work;
@@ -34,8 +34,8 @@ int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int 
         matrix computes the minimum number of colors needed.
 
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatFDColoringMinimumNumberofColors_Private"
+#undef __FUNC__  
+#define __FUNC__ "MatFDColoringMinimumNumberofColors_Private"
 int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
 {
   int i,c = 0;
@@ -51,8 +51,8 @@ int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
 /*
     MatFDColoringSL_Minpack - Uses the smallest-last (SL) coloring of minpack
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatFDColoringSL_Minpack"
+#undef __FUNC__  
+#define __FUNC__ "MatFDColoringSL_Minpack"
 int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -87,8 +87,8 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 /*
     MatFDColoringLF_Minpack - 
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatFDColoringLF_Minpack"
+#undef __FUNC__  
+#define __FUNC__ "MatFDColoringLF_Minpack"
 int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 {
   int        *list,*work,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -125,8 +125,8 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 /*
     MatFDColoringID_Minpack - 
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatFDColoringID_Minpack"
+#undef __FUNC__  
+#define __FUNC__ "MatFDColoringID_Minpack"
 int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -162,8 +162,8 @@ int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 /*
    Simplest coloring, each column of the matrix gets its own unique color.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatColoring_Natural"
+#undef __FUNC__  
+#define __FUNC__ "MatColoring_Natural"
 int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
 {
   int N,start,end,ierr,i;
@@ -195,8 +195,8 @@ int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
 
 static NRList *__MatColoringList = 0;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatColoringRegister"
+#undef __FUNC__  
+#define __FUNC__ "MatColoringRegister"
 /*@C
    MatColoringRegister - Adds a new sparse matrix coloring to the 
    matrix package. 
@@ -227,8 +227,8 @@ int  MatColoringRegister(MatColoring *name,char *sname,int (*color)(Mat,MatColor
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatColoringRegisterDestroy"
+#undef __FUNC__  
+#define __FUNC__ "MatColoringRegisterDestroy"
 /*@C
    MatColoringRegisterDestroy - Frees the list of coloringing routines.
 
@@ -245,8 +245,8 @@ int MatColoringRegisterDestroy()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetColoringTypeFromOptions"
+#undef __FUNC__  
+#define __FUNC__ "MatGetColoringTypeFromOptions"
 /*@C
    MatGetColoringTypeFromOptions - Gets matrix coloring method from the
    options database.
@@ -280,8 +280,8 @@ int MatGetColoringTypeFromOptions(char *prefix,MatColoring *type)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatColoringGetName"
+#undef __FUNC__  
+#define __FUNC__ "MatColoringGetName"
 /*@C
    MatColoringGetName - Gets the name associated with a coloring.
 
@@ -304,8 +304,8 @@ int MatColoringGetName(MatColoring meth,char **name)
 #include "src/mat/matimpl.h"
 extern int MatAdjustForInodes(Mat,IS *,IS *);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetColoring"
+#undef __FUNC__  
+#define __FUNC__ "MatGetColoring"
 /*@C
    MatGetColoring - Gets a coloring for a matrix to reduce fill or to
    improve numerical stability of LU factorization.

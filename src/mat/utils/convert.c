@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.55 1996/12/19 00:20:05 balay Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.56 1997/01/01 03:38:57 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: convert.c,v 1.55 1996/12/19 00:20:05 balay Exp bsmith
 /* This file contains a generic conversion routine and implementation specific
    versions for increased efficiency. */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatConvert_Basic"
+#undef __FUNC__  
+#define __FUNC__ "MatConvert_Basic"
 /* 
   MatConvert_Basic - Converts from any input format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.
@@ -70,8 +70,8 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
   return 0;
 }
 /* -------------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatConvert_SeqAIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatConvert_SeqAIJ"
 /* 
   MatConvert_SeqAIJ - Converts from MATSEQAIJ format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.
@@ -130,8 +130,8 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
   return 0;
 }
 /* ------------------------------------------------------------------ */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatConvert_MPIAIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatConvert_MPIAIJ"
 /* 
   MatConvert_MPIAIJ - Converts from MATMPIAIJ format to another
   parallel format.
@@ -158,8 +158,8 @@ int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
 ---------------------------------------------------------*/
 }
 /* ------------------------------------------------------------------ */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatConvert_SeqBDiag"
+#undef __FUNC__  
+#define __FUNC__ "MatConvert_SeqBDiag"
 /* 
   MatConvert_SeqBDiag - Converts from MATSEQBDiag format to another format. For
   parallel formats, the new matrix distribution is determined by PETSc.

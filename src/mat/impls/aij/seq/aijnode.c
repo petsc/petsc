@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.68 1996/12/19 01:11:24 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.69 1997/01/01 03:37:37 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -12,8 +12,8 @@ int Mat_AIJ_CheckInode(Mat);
 static int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
 static int MatLUFactorNumeric_SeqAIJ_Inode(Mat ,Mat * );
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "Mat_AIJ_CreateColInode"
+#undef __FUNC__  
+#define __FUNC__ "Mat_AIJ_CreateColInode"
 static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A, int* size, int ** ns)
 {
   int i,count,m,n,min_mn,*ns_row,*ns_col,limit;
@@ -61,8 +61,8 @@ static int Mat_AIJ_CreateColInode(Mat_SeqAIJ *A, int* size, int ** ns)
 /*
       This builds symmetric version of nonzero structure, 
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetRowIJ_SeqAIJ_Inode_Symmetric"
+#undef __FUNC__  
+#define __FUNC__ "MatGetRowIJ_SeqAIJ_Inode_Symmetric"
 static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                                int ishift,int oshift)
 {
@@ -149,8 +149,8 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
 /*
       This builds nonsymmetric version of nonzero structure, 
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric"
+#undef __FUNC__  
+#define __FUNC__ "MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric"
 static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                                   int ishift,int oshift)
 {
@@ -226,8 +226,8 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int 
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetRowIJ_SeqAIJ_Inode"
+#undef __FUNC__  
+#define __FUNC__ "MatGetRowIJ_SeqAIJ_Inode"
 static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                  PetscTruth *done)
 {
@@ -246,8 +246,8 @@ static int MatGetRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatRestoreRowIJ_SeqAIJ_Inode"
+#undef __FUNC__  
+#define __FUNC__ "MatRestoreRowIJ_SeqAIJ_Inode"
 static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                      PetscTruth *done)
 {
@@ -259,8 +259,8 @@ static int MatRestoreRowIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,in
 
 /* ----------------------------------------------------------- */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric"
+#undef __FUNC__  
+#define __FUNC__ "MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric"
 static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int **jja,
                                                int ishift,int oshift)
 {
@@ -338,8 +338,8 @@ static int MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, i
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetColumnIJ_SeqAIJ_Inode"
+#undef __FUNC__  
+#define __FUNC__ "MatGetColumnIJ_SeqAIJ_Inode"
 static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                  PetscTruth *done)
 {
@@ -359,8 +359,8 @@ static int MatGetColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatRestoreColumnIJ_SeqAIJ_Inode"
+#undef __FUNC__  
+#define __FUNC__ "MatRestoreColumnIJ_SeqAIJ_Inode"
 static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric,int *n,int **ia,int **ja,
                                      PetscTruth *done)
 {
@@ -372,8 +372,8 @@ static int MatRestoreColumnIJ_SeqAIJ_Inode(Mat A,int oshift,PetscTruth symmetric
 
 /* ----------------------------------------------------------- */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatMult_SeqAIJ_Inode"
+#undef __FUNC__  
+#define __FUNC__ "MatMult_SeqAIJ_Inode"
 static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
@@ -551,8 +551,8 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 }
 /* ----------------------------------------------------------- */
 /* Almost same code as the MatMult_SeqAij_Inode() */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatMultAdd_SeqAIJ_Inode"
+#undef __FUNC__  
+#define __FUNC__ "MatMultAdd_SeqAIJ_Inode"
 static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
@@ -733,8 +733,8 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 /* ----------------------------------------------------------- */
 extern int MatColoringPatch_SeqAIJ_Inode(Mat,int,int *,ISColoring *);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "Mat_AIJ_CheckInode"
+#undef __FUNC__  
+#define __FUNC__ "Mat_AIJ_CheckInode"
 int Mat_AIJ_CheckInode(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -789,8 +789,8 @@ int Mat_AIJ_CheckInode(Mat A)
 }
 
 /* ----------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqAIJ_Inode"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqAIJ_Inode"
 static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
@@ -1164,8 +1164,8 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqAIJ_Inode"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqAIJ_Inode"
 static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 {
   Mat        C = *B;
@@ -1475,8 +1475,8 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   permutations with ones that correspond to rows/cols of the matrix
   rather then inode blocks
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatAdjustForInodes"
+#undef __FUNC__  
+#define __FUNC__ "MatAdjustForInodes"
 int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;

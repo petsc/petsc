@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.24 1996/12/18 23:00:37 balay Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.25 1997/01/01 03:40:47 bsmith Exp balay $";
 #endif
 
 #include <math.h>
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESDefaultMonitor"
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultMonitor"
 /*@C
    SNESDefaultMonitor - Monitoring progress of the SNES solvers (default).
 
@@ -38,8 +38,8 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
   return 0;
 }
 /* ---------------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESDefaultSMonitor"
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultSMonitor"
 int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 {
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -72,8 +72,8 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
   return 0;
 }
 /* ---------------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESConverged_EQ_LS"
+#undef __FUNC__  
+#define __FUNC__ "SNESConverged_EQ_LS"
 /*@C 
    SNESConverged_EQ_LS - Monitors the convergence of the solvers for
    systems of nonlinear equations (default).
@@ -136,8 +136,8 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
   return 0;
 }
 /* ------------------------------------------------------------ */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNES_KSP_SetConvergenceTestEW"
+#undef __FUNC__  
+#define __FUNC__ "SNES_KSP_SetConvergenceTestEW"
 /*@
    SNES_KSP_SetConvergenceTestEW - Sets alternative convergence test
    for the linear solvers within an inexact Newton method.  
@@ -165,8 +165,8 @@ int SNES_KSP_SetConvergenceTestEW(SNES snes)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNES_KSP_SetParametersEW"
+#undef __FUNC__  
+#define __FUNC__ "SNES_KSP_SetParametersEW"
 /*@
    SNES_KSP_SetParametersEW - Sets parameters for Eisenstat-Walker
    convergence criteria for the linear solvers within an inexact
@@ -227,8 +227,8 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNES_KSP_EW_ComputeRelativeTolerance_Private"
+#undef __FUNC__  
+#define __FUNC__ "SNES_KSP_EW_ComputeRelativeTolerance_Private"
 int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
@@ -262,8 +262,8 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNES_KSP_EW_Converged_Private"
+#undef __FUNC__  
+#define __FUNC__ "SNES_KSP_EW_Converged_Private"
 int SNES_KSP_EW_Converged_Private(KSP ksp,int n,double rnorm,void *ctx)
 {
   SNES                snes = (SNES)ctx;

@@ -26,8 +26,8 @@
 /*              LT 0 MEANS THE NODE HAS BEEN MERGED WITH*/
 /*              OTHERS IN THE QUOTIENT OR IT IS IN NBRHD SET.*/
 /*****************************************************************/
-#undef __FUNCTION__  
-#define __FUNCTION__ "qmdrch"
+#undef __FUNC__  
+#define __FUNC__ "qmdrch"
 int qmdrch(int *root, int *xadj, int *adjncy, 
 	int *deg, int *marker, int *rchsze, int *rchset, 
 	int *nhdsze, int *nbrhd)

@@ -2,8 +2,8 @@
 
 #include "petsc.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "revrse"
+#undef __FUNC__  
+#define __FUNC__ "revrse"
 int revrse(int *n, int *perm)
 {
     /* System generated locals */
@@ -52,8 +52,8 @@ int revrse(int *n, int *perm)
 /*       FNDSEP, REVRSE.*/
 /*****************************************************************/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "gennd"
+#undef __FUNC__  
+#define __FUNC__ "gennd"
 int gennd(int *neqns, int *xadj, int *adjncy, 
 	int *mask, int *perm, int *xls, int *ls)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dgefa.c,v 1.5 1996/12/19 01:10:17 balay Exp bsmith $";
+static char vcid[] = "$Id: dgefa.c,v 1.6 1997/01/01 03:38:19 bsmith Exp balay $";
 #endif
 /*
        This routine was converted by f2c from Linpack source
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: dgefa.c,v 1.5 1996/12/19 01:10:17 balay Exp bsmith $"
 */
 #include "petsc.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "Linpack_DGEFA"
+#undef __FUNC__  
+#define __FUNC__ "Linpack_DGEFA"
 int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
 {
     int     i__2, i__3, kp1, nm1, j, k, l,ll,kn,knp1,jn;

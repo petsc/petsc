@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreatev.c,v 1.31 1996/08/08 14:40:07 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreatev.c,v 1.32 1996/12/16 22:41:35 balay Exp balay $";
 #endif
 
 
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: gcreatev.c,v 1.31 1996/08/08 14:40:07 bsmith Exp bala
 #include "is.h"
 #include "vec.h"    /*I "vec.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecCreate"
+#undef __FUNC__  
+#define __FUNC__ "VecCreate"
 /*@C
     VecCreate - Creates a vector, where the vector type is determined 
     from the options database.  Generates a parallel MPI vector if the 
@@ -48,8 +48,8 @@ int VecCreate(MPI_Comm comm,int n,Vec *V)
 }
 
 #include "src/vec/vecimpl.h"
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecGetType"
+#undef __FUNC__  
+#define __FUNC__ "VecGetType"
 /*@C
    VecGetType - Gets the vector type and name (as a string) from the vector.
 

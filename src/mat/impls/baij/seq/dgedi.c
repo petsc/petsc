@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dgedi.c,v 1.3 1996/04/28 03:07:21 bsmith Exp balay $";
+static char vcid[] = "$Id: dgedi.c,v 1.4 1996/12/18 00:01:36 balay Exp balay $";
 #endif
 
 /*  
@@ -13,8 +13,8 @@ static char vcid[] = "$Id: dgedi.c,v 1.3 1996/04/28 03:07:21 bsmith Exp balay $"
 
 #include "petsc.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "Linpack_DGEDI"
+#undef __FUNC__  
+#define __FUNC__ "Linpack_DGEDI"
 int Linpack_DGEDI(Scalar *a,int n,int *ipvt,Scalar *work)
 {
     int     i__2,kb, kp1, nm1,i, j, k, l, ll,kn,knp1,jn;

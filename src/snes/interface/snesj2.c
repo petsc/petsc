@@ -1,14 +1,14 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj2.c,v 1.4 1996/11/27 22:56:14 bsmith Exp balay $";
+static char vcid[] = "$Id: snesj2.c,v 1.5 1996/12/16 20:43:19 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESDefaultComputeJacobianWithColoring"
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultComputeJacobianWithColoring"
 /*@C
      SNESDefaultComputeJacobianWithColoring
   

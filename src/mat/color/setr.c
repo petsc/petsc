@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dpause.c,v 1.7 1996/12/18 20:55:58 balay Exp $";
+static char vcid[] = "$Id: setr.c,v 1.3 1996/12/18 21:00:14 balay Exp balay $";
 #endif
 
 /* setr.f -- translated by f2c (version of 25 March 1992  12:58:56). */
@@ -7,8 +7,8 @@ static char vcid[] = "$Id: dpause.c,v 1.7 1996/12/18 20:55:58 balay Exp $";
 #include "petsc.h"
 #include "src/mat/impls/color/color.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MINPACKsetr"
+#undef __FUNC__  
+#define __FUNC__ "MINPACKsetr"
 int MINPACKsetr(int*m,int* n,int* indrow,int* jpntr,int* indcol, int*ipntr,int* iwa)
 {
     /* System generated locals */

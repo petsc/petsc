@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.27 1996/08/08 14:42:08 bsmith Exp balay $";
+static char vcid[] = "$Id: shellpc.c,v 1.28 1996/12/17 17:16:57 balay Exp balay $";
 #endif
 
 /*
@@ -17,8 +17,8 @@ typedef struct {
   char *name;
 } PC_Shell;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCApply_Shell"
+#undef __FUNC__  
+#define __FUNC__ "PCApply_Shell"
 static int PCApply_Shell(PC pc,Vec x,Vec y)
 {
   PC_Shell *shell;
@@ -29,8 +29,8 @@ static int PCApply_Shell(PC pc,Vec x,Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCApplyRichardson_Shell"
+#undef __FUNC__  
+#define __FUNC__ "PCApplyRichardson_Shell"
 static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 {
   PC_Shell *shell;
@@ -38,8 +38,8 @@ static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
   return (*shell->applyrich)(shell->ctx,x,y,w,it);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCDestroy_Shell"
+#undef __FUNC__  
+#define __FUNC__ "PCDestroy_Shell"
 static int PCDestroy_Shell(PetscObject obj)
 {
   PC       pc = (PC) obj;
@@ -48,8 +48,8 @@ static int PCDestroy_Shell(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCView_Shell"
+#undef __FUNC__  
+#define __FUNC__ "PCView_Shell"
 static int PCView_Shell(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -80,8 +80,8 @@ static int PCView_Shell(PetscObject obj,Viewer viewer)
 .             PC_ShellSetApply(pc,mult,ctx);
 
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCCreate_Shel"
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_Shel"
 int PCCreate_Shell(PC pc)
 {
   PC_Shell *shell;
@@ -99,8 +99,8 @@ int PCCreate_Shell(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCShellSetApply"
+#undef __FUNC__  
+#define __FUNC__ "PCShellSetApply"
 /*@C
    PCShellSetApply - Sets routine to use as preconditioner.
 
@@ -129,8 +129,8 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCShellSetName"
+#undef __FUNC__  
+#define __FUNC__ "PCShellSetName"
 /*@C
    PCShellSetName - Sets an optional name to associate with a shell
    preconditioner.
@@ -152,8 +152,8 @@ int PCShellSetName(PC pc,char *name)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCShellGetName"
+#undef __FUNC__  
+#define __FUNC__ "PCShellGetName"
 /*@C
    PCShellGetName - Gets an optional name that the user has set for a shell
    preconditioner.
@@ -177,8 +177,8 @@ int PCShellGetName(PC pc,char **name)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCShellSetApplyRichardson"
+#undef __FUNC__  
+#define __FUNC__ "PCShellSetApplyRichardson"
 /*@C
    PCShellSetApplyRichardson - Sets routine to use as preconditioner
    in Richardson iteration.

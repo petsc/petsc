@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sortd.c,v 1.7 1996/09/28 17:30:12 curfman Exp balay $";
+static char vcid[] = "$Id: sortd.c,v 1.8 1996/12/16 22:08:39 balay Exp balay $";
 #endif
 
 /*
@@ -17,8 +17,8 @@ static char vcid[] = "$Id: sortd.c,v 1.7 1996/09/28 17:30:12 curfman Exp balay $
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
    
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetsciDqsort"
+#undef __FUNC__  
+#define __FUNC__ "PetsciDqsort"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
 static int PetsciDqsort(double *v,int right)
 {
@@ -44,8 +44,8 @@ static int PetsciDqsort(double *v,int right)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSortDouble"
+#undef __FUNC__  
+#define __FUNC__ "PetscSortDouble"
 /*@
    PetscSortDouble - Sorts an array of doubles in place in increasing order.
 

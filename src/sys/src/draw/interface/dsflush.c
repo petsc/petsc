@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: dsflush.c,v 1.7 1996/09/28 17:36:32 curfman Exp balay $";
+static char vcid[] = "$Id: dsflush.c,v 1.8 1996/12/16 18:24:47 balay Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawSyncFlush"
+#undef __FUNC__  
+#define __FUNC__ "DrawSyncFlush"
 /*@
    DrawSyncFlush - Flushes graphical output. This waits until all 
    processors have arrived and flushed, then does a global flush.

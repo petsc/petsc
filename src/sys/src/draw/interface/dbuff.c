@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: dbuff.c,v 1.6 1996/08/08 14:44:45 bsmith Exp balay $";
+static char vcid[] = "$Id: dbuff.c,v 1.7 1996/12/16 17:51:56 balay Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawSetDoubleBuffer"
+#undef __FUNC__  
+#define __FUNC__ "DrawSetDoubleBuffer"
 /*@
    DrawSetDoubleBuffer - Sets a window to be double buffered. 
 

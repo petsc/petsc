@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ffpath.c,v 1.4 1996/08/08 14:41:26 bsmith Exp balay $";
+static char vcid[] = "$Id: ffpath.c,v 1.5 1996/12/16 21:18:01 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: ffpath.c,v 1.4 1996/08/08 14:41:26 bsmith Exp balay $
 
 extern int SYiTestFile(char *,char,uid_t,gid_t);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscGetFileFromPath"
+#undef __FUNC__  
+#define __FUNC__ "PetscGetFileFromPath"
 /*@C
    PetscGetFileFromPath - Finds a file from a name and a path string.  A 
    default can be provided.

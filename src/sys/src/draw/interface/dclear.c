@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: dclear.c,v 1.9 1996/09/27 19:36:27 curfman Exp balay $";
+static char vcid[] = "$Id: dclear.c,v 1.10 1996/12/16 17:54:16 balay Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawClear"
+#undef __FUNC__  
+#define __FUNC__ "DrawClear"
 /*@
    DrawClear - Clears graphical output.
 
@@ -26,8 +26,8 @@ int DrawClear(Draw draw)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawBOP"
+#undef __FUNC__  
+#define __FUNC__ "DrawBOP"
 /*@
    DrawBOP - Begins a new page or frame on the selected graphical device.
 
@@ -45,8 +45,8 @@ int DrawBOP( Draw draw )
   if (draw->ops.beginpage) return (*draw->ops.beginpage)(draw);
   return 0;
 }
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawEOP"
+#undef __FUNC__  
+#define __FUNC__ "DrawEOP"
 /*@
    DrawEOP - Ends a page or frame on the selected graphical device.
 

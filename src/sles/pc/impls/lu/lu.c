@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.71 1996/11/07 15:08:51 bsmith Exp balay $";
+static char vcid[] = "$Id: lu.c,v 1.72 1996/12/17 17:06:40 balay Exp balay $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -16,8 +16,8 @@ typedef struct {
   MatReordering ordering;   /* matrix ordering */
 } PC_LU;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCLUSetUseInPlace"
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetUseInPlace"
 /*@
    PCLUSetUseInPlace - Tells the system to do an in-place factorization.
    For some implementations, for instance, dense matrices, this enables the 
@@ -49,8 +49,8 @@ int PCLUSetUseInPlace(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCSetFromOptions_LU"
+#undef __FUNC__  
+#define __FUNC__ "PCSetFromOptions_LU"
 static int PCSetFromOptions_LU(PC pc)
 {
   int ierr,flg;
@@ -62,8 +62,8 @@ static int PCSetFromOptions_LU(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCPrintHelp_LU"
+#undef __FUNC__  
+#define __FUNC__ "PCPrintHelp_LU"
 static int PCPrintHelp_LU(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCLU preconditioner:\n");
@@ -73,8 +73,8 @@ static int PCPrintHelp_LU(PC pc,char *p)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCView_LU"
+#undef __FUNC__  
+#define __FUNC__ "PCView_LU"
 static int PCView_LU(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -101,8 +101,8 @@ static int PCView_LU(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCGetFactoredMatrix_LU"
+#undef __FUNC__  
+#define __FUNC__ "PCGetFactoredMatrix_LU"
 static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 {
   PC_LU *dir = (PC_LU *) pc->data;
@@ -110,8 +110,8 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCSetUp_LU"
+#undef __FUNC__  
+#define __FUNC__ "PCSetUp_LU"
 static int PCSetUp_LU(PC pc)
 {
   int         ierr;
@@ -151,8 +151,8 @@ static int PCSetUp_LU(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCDestroy_LU"
+#undef __FUNC__  
+#define __FUNC__ "PCDestroy_LU"
 static int PCDestroy_LU(PetscObject obj)
 {
   PC    pc   = (PC) obj;
@@ -166,8 +166,8 @@ static int PCDestroy_LU(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCApply_LU"
+#undef __FUNC__  
+#define __FUNC__ "PCApply_LU"
 static int PCApply_LU(PC pc,Vec x,Vec y)
 {
   PC_LU *dir = (PC_LU *) pc->data;
@@ -178,8 +178,8 @@ static int PCApply_LU(PC pc,Vec x,Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCCreate_LU"
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_LU"
 int PCCreate_LU(PC pc)
 {
   PC_LU *dir     = PetscNew(PC_LU); CHKPTRQ(dir);

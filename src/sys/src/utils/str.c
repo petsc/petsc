@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: str.c,v 1.6 1996/03/10 17:27:31 bsmith Exp balay $";
+static char vcid[] = "$Id: str.c,v 1.7 1996/12/16 22:10:46 balay Exp balay $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -14,58 +14,58 @@ static char vcid[] = "$Id: str.c,v 1.6 1996/03/10 17:27:31 bsmith Exp balay $";
 #endif
 #include "pinclude/petscfix.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrlen"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrlen"
 int PetscStrlen(char *s)
 {
   if (!s) return 0;
   return strlen(s);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrcpy"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrcpy"
 void PetscStrcpy(char *s,char *t)
 {
   strcpy(s,t);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrncpy"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrncpy"
 void PetscStrncpy(char *s,char *t,int n)
 {
   strncpy(s,t,n);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrcat"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrcat"
 void PetscStrcat(char *s,char *t)
 {
   strcat(s,t);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrncat"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrncat"
 void PetscStrncat(char *s,char *t,int n)
 {
   strncat(s,t,n);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrcmp"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrcmp"
 int PetscStrcmp(char *a,char *b)
 {
   return strcmp(a,b);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrncmp"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrncmp"
 int PetscStrncmp(char *a,char *b,int n)
 {
   return strncmp(a,b,n);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrchr"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrchr"
 char *PetscStrchr(char *a,char b)
 {
   return strchr(a,b);
@@ -76,8 +76,8 @@ char *PetscStrchr(char *a,char b)
    It returns the position after the position of b and 
    if it does not find it then it returns the entire string.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrrchr"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrrchr"
 char *PetscStrrchr(char *a,char b)
 {
   char *tmp = strrchr(a,b);
@@ -85,15 +85,15 @@ char *PetscStrrchr(char *a,char b)
   return tmp;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrtok"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrtok"
 char *PetscStrtok(char *a,char *b)
 {
   return strtok(a,b);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStrstr"
+#undef __FUNC__  
+#define __FUNC__ "PetscStrstr"
 char *PetscStrstr(char*a,char *b)
 {
   return strstr(a,b);

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.146 1997/01/01 03:42:38 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.147 1997/01/05 15:34:11 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -62,9 +62,9 @@ extern void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*);
 extern int  (*PetscTrFree)(void *,int,char*,char*,char*);
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*,char*,char*),
                            int (*)(void *,int,char*,char*,char*));
-#define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FUNCTION__,__FILE__,__DIR__)
+#define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FUNC__,__FILE__,__DIR__)
 #define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
-#define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNCTION__,__FILE__,__DIR__)
+#define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNC__,__FILE__,__DIR__)
 
 extern int   PetscTrDump(FILE *);
 extern int   PetscTrSpace( double *, double *,double *);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.41 1996/12/19 01:09:54 balay Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.42 1997/01/01 03:38:01 bsmith Exp balay $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: bdfact.c,v 1.41 1996/12/19 01:09:54 balay Exp bsmith 
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatILUFactorSymbolic_SeqBDiag"
+#undef __FUNC__  
+#define __FUNC__ "MatILUFactorSymbolic_SeqBDiag"
 int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
                                   int levels,Mat *B)
 {
@@ -35,8 +35,8 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatILUFactor_SeqBDiag"
+#undef __FUNC__  
+#define __FUNC__ "MatILUFactor_SeqBDiag"
 int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -59,8 +59,8 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
 }
 
 /* --------------------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqBDiag_N"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqBDiag_N"
 int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
 {
   Mat          C = *B;
@@ -120,8 +120,8 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqBDiag_1"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqBDiag_1"
 int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 {
   Mat          C = *B;
@@ -174,8 +174,8 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
 
 /* -----------------------------------------------------------------*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBDiag_1"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBDiag_1"
 int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -207,8 +207,8 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBDiag_2"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBDiag_2"
 int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -263,8 +263,8 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBDiag_3"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBDiag_3"
 int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -321,8 +321,8 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBDiag_4"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBDiag_4"
 int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -382,8 +382,8 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBDiag_5"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBDiag_5"
 int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -452,8 +452,8 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBDiag_N"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBDiag_N"
 int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;

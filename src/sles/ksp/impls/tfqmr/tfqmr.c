@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.29 1996/12/19 00:16:17 balay Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.30 1997/01/01 03:36:21 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -16,8 +16,8 @@ static char vcid[] = "$Id: tfqmr.c,v 1.29 1996/12/19 00:16:17 balay Exp bsmith $
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetUp_TFQMR"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetUp_TFQMR"
 static int KSPSetUp_TFQMR(KSP ksp)
 {
   int ierr;
@@ -27,8 +27,8 @@ static int KSPSetUp_TFQMR(KSP ksp)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSolve_TFQMR"
+#undef __FUNC__  
+#define __FUNC__ "KSPSolve_TFQMR"
 static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
   int       i=0, maxit, m, conv=0, hist_len, cerr=0, ierr;
@@ -131,8 +131,8 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPCreate_TFQMR"
+#undef __FUNC__  
+#define __FUNC__ "KSPCreate_TFQMR"
 int KSPCreate_TFQMR(KSP ksp)
 {
   ksp->data                 = (void *) 0;

@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.69 1996/12/18 23:18:36 balay Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.70 1997/01/01 03:35:22 bsmith Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -12,8 +12,8 @@
 #include "src/vec/impls/mpi/pvecimpl.h"
 #include "pinclude/pviewer.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterView_MPI"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterView_MPI"
 int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 {
   VecScatter             ctx = (VecScatter) obj;
@@ -62,8 +62,8 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   exact copy of values into their current location. We check this here and
   then know that we need not perform that portion of the scatter.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterLocalOptimize_Private"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterLocalOptimize_Private"
  int VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,
                                            VecScatter_Seq_General *gen_from)
 {
@@ -111,8 +111,8 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
      the naming can be a little confusing.
 
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterBegin_PtoP"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_PtoP"
  int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
@@ -185,8 +185,8 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterEnd_PtoP"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterEnd_PtoP"
  int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
@@ -243,8 +243,8 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 /*
     Special scatters for fixed block sizes
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterPostRecvs_PtoP_5"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterPostRecvs_PtoP_5"
  int VecScatterPostRecvs_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_from;
@@ -262,8 +262,8 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterBegin_PtoP_5"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_PtoP_5"
  int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
@@ -357,8 +357,8 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterEnd_PtoP_5"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterEnd_PtoP_5"
 int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to, *gen_from;
@@ -419,8 +419,8 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 }
 
 /* --------------------------------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterCopy_PtoP"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCopy_PtoP"
 int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_General *in_to   = (VecScatter_MPI_General *) in->todata;
@@ -501,8 +501,8 @@ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
 }
 /* ---------------------------------------------------------------------------------*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterDestroy_PtoP_5"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterDestroy_PtoP_5"
 int VecScatterDestroy_PtoP_5(PetscObject obj)
 {
   VecScatter             ctx = (VecScatter) obj;
@@ -556,8 +556,8 @@ int VecScatterDestroy_PtoP_5(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterDestroy_PtoP"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterDestroy_PtoP"
 int VecScatterDestroy_PtoP(PetscObject obj)
 {
   VecScatter             ctx = (VecScatter) obj;
@@ -582,8 +582,8 @@ int VecScatterDestroy_PtoP(PetscObject obj)
    bs indicates how many elements there are in each block. Normally
    this would be 1.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterCreate_PtoS"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCreate_PtoS"
 int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,VecScatter ctx)
 {
   Vec_MPI                *x = (Vec_MPI *)xin->data;
@@ -838,8 +838,8 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
 /*
     Scatter from local Seq vectors to a parallel vector. 
  */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterCreate_StoP"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCreate_StoP"
 int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter ctx)
 {
   Vec_MPI                *y = (Vec_MPI *)yin->data;
@@ -1042,8 +1042,8 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 }
 
 /* ---------------------------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterCreate_PtoP"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCreate_PtoP"
 int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,VecScatter ctx)
 {
   Vec_MPI     *x = (Vec_MPI *)xin->data;

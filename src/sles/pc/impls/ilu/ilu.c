@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.78 1996/12/19 00:15:36 balay Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.79 1997/01/01 03:37:10 bsmith Exp balay $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -26,8 +26,8 @@ static int (*setups[])(PC) = {0,
                               0,
                               0,0,0,0,0};
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCILUSetUseDropTolerance"
+#undef __FUNC__  
+#define __FUNC__ "PCILUSetUseDropTolerance"
 /*@
    PCILUSetUseDropTolerance - The preconditioner will use an ILU 
    based on a drop tolerance.
@@ -54,8 +54,8 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
   return 0;
 }  
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCILUSetReuseReordering"
+#undef __FUNC__  
+#define __FUNC__ "PCILUSetReuseReordering"
 /*@
    PCILUSetReuseReordering - When similar matrices are factored, this
    causes the ordering computed in the first factor to be used for all
@@ -82,8 +82,8 @@ int PCILUSetReuseReordering(PC pc,PetscTruth flag)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCILUSetReuseFill"
+#undef __FUNC__  
+#define __FUNC__ "PCILUSetReuseFill"
 /*@
    PCILUSetReuseFill - When matrices with same nonzero structure are ILUDT factored,
      this causes later ones to use the fill computed in the initial factorization.
@@ -109,8 +109,8 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCILUSetLevels"
+#undef __FUNC__  
+#define __FUNC__ "PCILUSetLevels"
 /*@
    PCILUSetLevels - Sets the number of levels of fill to use.
 
@@ -135,8 +135,8 @@ int PCILUSetLevels(PC pc,int levels)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCILUSetUseInPlace"
+#undef __FUNC__  
+#define __FUNC__ "PCILUSetUseInPlace"
 /*@
    PCILUSetUseInPlace - Tells the system to do an in-place incomplete factorization.
 
@@ -167,8 +167,8 @@ int PCILUSetUseInPlace(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCSetFromOptions_ILU"
+#undef __FUNC__  
+#define __FUNC__ "PCSetFromOptions_ILU"
 static int PCSetFromOptions_ILU(PC pc)
 {
   int         levels,ierr,flg,dtmax = 2;
@@ -200,8 +200,8 @@ static int PCSetFromOptions_ILU(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCPrintHelp_ILU"
+#undef __FUNC__  
+#define __FUNC__ "PCPrintHelp_ILU"
 static int PCPrintHelp_ILU(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCILU preconditioner:\n");
@@ -216,8 +216,8 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCView_ILU"
+#undef __FUNC__  
+#define __FUNC__ "PCView_ILU"
 static int PCView_ILU(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
@@ -245,8 +245,8 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCSetUp_ILU"
+#undef __FUNC__  
+#define __FUNC__ "PCSetUp_ILU"
 static int PCSetUp_ILU(PC pc)
 {
   int         ierr;
@@ -332,8 +332,8 @@ static int PCSetUp_ILU(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCDestroy_ILU"
+#undef __FUNC__  
+#define __FUNC__ "PCDestroy_ILU"
 static int PCDestroy_ILU(PetscObject obj)
 {
   PC     pc   = (PC) obj;
@@ -346,8 +346,8 @@ static int PCDestroy_ILU(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCApply_ILU"
+#undef __FUNC__  
+#define __FUNC__ "PCApply_ILU"
 static int PCApply_ILU(PC pc,Vec x,Vec y)
 {
   PC_ILU *ilu = (PC_ILU *) pc->data;
@@ -357,8 +357,8 @@ static int PCApply_ILU(PC pc,Vec x,Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCGetFactoredMatrix_ILU"
+#undef __FUNC__  
+#define __FUNC__ "PCGetFactoredMatrix_ILU"
 static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 {
   PC_ILU *ilu = (PC_ILU *) pc->data;
@@ -366,8 +366,8 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCCreate_ILU"
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_ILU"
 int PCCreate_ILU(PC pc)
 {
   PC_ILU           *ilu = PetscNew(PC_ILU); CHKPTRQ(ilu);

@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.22 1996/12/18 22:58:20 balay Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.23 1997/01/01 03:38:57 bsmith Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatAXPY"
+#undef __FUNC__  
+#define __FUNC__ "MatAXPY"
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
@@ -47,8 +47,8 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatShift"
+#undef __FUNC__  
+#define __FUNC__ "MatShift"
 /*@
    MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity
    matrix.
@@ -81,8 +81,8 @@ int MatShift(Scalar *a,Mat Y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatDiagonalShift"
+#undef __FUNC__  
+#define __FUNC__ "MatDiagonalShift"
 /*@
    MatDiagonalShift - Computes Y = Y + D, where D is a diagonal matrix
    that is represented as a vector.

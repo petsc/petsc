@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.47 1996/12/19 00:16:25 balay Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.48 1997/01/01 03:36:13 bsmith Exp balay $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -11,8 +11,8 @@ static char vcid[] = "$Id: rich.c,v 1.47 1996/12/19 00:16:25 balay Exp bsmith $"
 #include "src/ksp/impls/rich/richctx.h"
 #include "pinclude/pviewer.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetUp_Richardson"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetUp_Richardson"
 int KSPSetUp_Richardson(KSP ksp)
 {
   /* check user parameters and functions */
@@ -24,8 +24,8 @@ int KSPSetUp_Richardson(KSP ksp)
   return KSPDefaultGetWork(ksp,2);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPRichardsonSetScale"
+#undef __FUNC__  
+#define __FUNC__ "KSPRichardsonSetScale"
 /*@
     KSPRichardsonSetScale - Call after KSPCreate(KSPRICHARDSON) to set
     the damping factor; if this routine is not called, the factor 
@@ -47,8 +47,8 @@ int KSPRichardsonSetScale(KSP ksp,double scale)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSolve_Richardson"
+#undef __FUNC__  
+#define __FUNC__ "KSPSolve_Richardson"
 int  KSPSolve_Richardson(KSP ksp,int *its)
 {
   int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr = 0, ierr;
@@ -124,8 +124,8 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPView_Richardson"
+#undef __FUNC__  
+#define __FUNC__ "KSPView_Richardson"
 static int KSPView_Richardson(PetscObject obj,Viewer viewer)
 {
   KSP            ksp = (KSP)obj;
@@ -142,8 +142,8 @@ static int KSPView_Richardson(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPCreate_Richardson"
+#undef __FUNC__  
+#define __FUNC__ "KSPCreate_Richardson"
 int KSPCreate_Richardson(KSP ksp)
 {
   KSP_Richardson *richardsonP = PetscNew(KSP_Richardson); CHKPTRQ(richardsonP);

@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: cookie.c,v 1.8 1996/12/18 22:59:54 balay Exp bsmith $";
+static char vcid[] = "$Id: cookie.c,v 1.9 1997/01/01 03:36:26 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"  /*I "petsc.h" I*/
 int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscRegisterCookie"
+#undef __FUNC__  
+#define __FUNC__ "PetscRegisterCookie"
 /*@
     PetscRegisterCookie - Registers a new cookie for use with a
     newly created PETSc object class.  The user should pass in

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.43 1996/12/19 00:15:50 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.44 1997/01/01 03:37:13 bsmith Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -27,8 +27,8 @@ typedef struct {
   Mat        *mat,*pmat;          /* mat is not currently used */
 } PC_ASM;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCView_ASM"
+#undef __FUNC__  
+#define __FUNC__ "PCView_ASM"
 static int PCView_ASM(PetscObject obj,Viewer viewer)
 {
   PC           pc = (PC)obj;
@@ -50,8 +50,8 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCSetUp_ASM"
+#undef __FUNC__  
+#define __FUNC__ "PCSetUp_ASM"
 static int PCSetUp_ASM(PC pc)
 {
   PC_ASM              *osm  = (PC_ASM *) pc->data;
@@ -164,8 +164,8 @@ static int PCSetUp_ASM(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCSetUpOnBlocks_ASM"
+#undef __FUNC__  
+#define __FUNC__ "PCSetUpOnBlocks_ASM"
 static int PCSetUpOnBlocks_ASM(PC pc)
 {
   PC_ASM *osm = (PC_ASM *) pc->data;
@@ -177,8 +177,8 @@ static int PCSetUpOnBlocks_ASM(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCApply_ASM"
+#undef __FUNC__  
+#define __FUNC__ "PCApply_ASM"
 static int PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM *osm = (PC_ASM *) pc->data;
@@ -206,8 +206,8 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCDestroy_ASM"
+#undef __FUNC__  
+#define __FUNC__ "PCDestroy_ASM"
 static int PCDestroy_ASM(PetscObject obj)
 {
   PC     pc = (PC) obj;
@@ -234,8 +234,8 @@ static int PCDestroy_ASM(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCPrintHelp_ASM"
+#undef __FUNC__  
+#define __FUNC__ "PCPrintHelp_ASM"
 static int PCPrintHelp_ASM(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCASM preconditioner:\n");
@@ -247,8 +247,8 @@ static int PCPrintHelp_ASM(PC pc,char *p)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCSetFromOptions_ASM"
+#undef __FUNC__  
+#define __FUNC__ "PCSetFromOptions_ASM"
 static int PCSetFromOptions_ASM(PC pc)
 {
   int  blocks,flg, ovl,ierr;
@@ -261,8 +261,8 @@ static int PCSetFromOptions_ASM(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCCreate_ASM"
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_ASM"
 int PCCreate_ASM(PC pc)
 {
   PC_ASM *osm = PetscNew(PC_ASM); CHKPTRQ(osm);
@@ -286,8 +286,8 @@ int PCCreate_ASM(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCASMSetLocalSubdomains"
+#undef __FUNC__  
+#define __FUNC__ "PCASMSetLocalSubdomains"
 /*@
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner.  Either all or no
@@ -319,8 +319,8 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCASMSetTotalSubdomains"
+#undef __FUNC__  
+#define __FUNC__ "PCASMSetTotalSubdomains"
 /*@
     PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -369,8 +369,8 @@ set specific index sets\n they cannot be set globally yet.");
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCASMSetOverlap"
+#undef __FUNC__  
+#define __FUNC__ "PCASMSetOverlap"
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -400,8 +400,8 @@ int PCASMSetOverlap(PC pc, int ovl)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCASMCreateSubdomains2D"
+#undef __FUNC__  
+#define __FUNC__ "PCASMCreateSubdomains2D"
 /*@
    PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz 
    preconditioner for a two-dimensional problem on a regular grid.
@@ -472,8 +472,8 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCASMGetSubSLES"
+#undef __FUNC__  
+#define __FUNC__ "PCASMGetSubSLES"
 /*@C
    PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.

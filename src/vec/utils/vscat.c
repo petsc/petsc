@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.79 1996/12/18 23:18:30 balay Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.80 1997/01/01 03:35:22 bsmith Exp balay $";
 #endif
 
 /*
@@ -21,8 +21,8 @@ static char vcid[] = "$Id: vscat.c,v 1.79 1996/12/18 23:18:30 balay Exp bsmith $
    This code was written by Cameron Cooper, Occidental College, Fall 1995,
    will working at ANL as a SERS student.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterBegin_MPI_ToAll"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_MPI_ToAll"
 int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
   if (mode == SCATTER_REVERSE) {
@@ -90,8 +90,8 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterDestroy_MPI_ToAll"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterDestroy_MPI_ToAll"
 int VecScatterDestroy_MPI_ToAll(PetscObject obj)
 {
   VecScatter           ctx = (VecScatter) obj;
@@ -106,8 +106,8 @@ int VecScatterDestroy_MPI_ToAll(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterCopy_MPI_ToAll"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCopy_MPI_ToAll"
 int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll *) in->todata, *sto;
@@ -138,8 +138,8 @@ int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 
 /* --------------------------------------------------------------------------------------*/
 /* Scatter: sequential general to sequential general */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterBegin_SGtoSG"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_SGtoSG"
 int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_General *gen_to = (VecScatter_Seq_General *) ctx->todata;
@@ -165,8 +165,8 @@ int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 }
 
 /* Scatter: sequential general to sequential stride 1 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterBegin_SGtoSS_Stride1"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_SGtoSS_Stride1"
 int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride *) ctx->todata;
@@ -197,8 +197,8 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
 }
 
 /* Scatter: sequential general to sequential stride */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterBegin_SGtoSS"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_SGtoSS"
 int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride *) ctx->todata;
@@ -227,8 +227,8 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 }
 
 /* Scatter: sequential stride 1 to sequential general */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterBegin_SStoSG_Stride1"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_SStoSG_Stride1"
 int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride *) ctx->fromdata;
@@ -258,8 +258,8 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterBegin_SStoSG"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_SStoSG"
 /* Scatter: sequential stride to sequential general */
 int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
@@ -289,8 +289,8 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 }
 
 /* Scatter: sequential stride to sequential stride */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterBegin_SStoSS"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_SStoSS"
 int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_Seq_Stride *gen_to   = (VecScatter_Seq_Stride *) ctx->todata;
@@ -334,8 +334,8 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterDestroy_SGtoSG"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterDestroy_SGtoSG"
 int VecScatterDestroy_SGtoSG(PetscObject obj)
 {
   VecScatter ctx = (VecScatter) obj;
@@ -346,8 +346,8 @@ int VecScatterDestroy_SGtoSG(PetscObject obj)
 }
 
 /* Scatter: parallel to sequential vector, sequential strides for both. */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterCopy_PStoSS"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCopy_PStoSS"
 int VecScatterCopy_PStoSS(VecScatter in,VecScatter out)
 {
   VecScatter_Seq_Stride *in_to   = (VecScatter_Seq_Stride *) in->todata, *out_to;
@@ -381,8 +381,8 @@ int VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
 int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 
 /* --------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterCreate"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCreate"
 /*@C
    VecScatterCreate - Creates a vector scatter context.
 
@@ -734,8 +734,8 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 }
 
 /* ------------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterPostRecvs"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterPostRecvs"
 /*@
    VecScatterPostRecvs - Posts the receives required for the ready-receiver
        version of the VecScatter routines.
@@ -851,8 +851,8 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
 }
 
 /* --------------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterEnd"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterEnd"
 /*@
    VecScatterEnd - Ends a generalized scatter from one vector to another.  Call
    after first calling VecScatterBegin().
@@ -892,8 +892,8 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterDestroy"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterDestroy"
 /*@C
    VecScatterDestroy - Destroys a scatter context created by 
    VecScatterCreate().
@@ -911,8 +911,8 @@ int VecScatterDestroy( VecScatter ctx )
   return (*ctx->destroy)((PetscObject)ctx);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterCopy"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterCopy"
 /*@C
    VecScatterCopy - Makes a copy of a scatter context.
 
@@ -941,8 +941,8 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 
 
 /* ------------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterView"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterView"
 /*@
    VecScatterView - Views a vector scatter context.
 
@@ -961,8 +961,8 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
   else return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecScatterRemap"
+#undef __FUNC__  
+#define __FUNC__ "VecScatterRemap"
 /*@
    VecScatterRemap - Remaps the "from" and "to" indices in a 
    vector scatter context. FOR EXPERTS ONLY!

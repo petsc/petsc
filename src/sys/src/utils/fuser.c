@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fuser.c,v 1.4 1996/08/08 14:41:26 bsmith Exp balay $";
+static char vcid[] = "$Id: fuser.c,v 1.5 1996/12/16 21:33:06 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -7,8 +7,8 @@ static char vcid[] = "$Id: fuser.c,v 1.4 1996/08/08 14:41:26 bsmith Exp balay $"
 #include "src/sys/src/files.h"
 
 #if defined(HAVE_PWD_H)
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscGetUserName"
+#undef __FUNC__  
+#define __FUNC__ "PetscGetUserName"
 /*@C
     PetscGetUserName - Returns the name of the user.
 
@@ -32,8 +32,8 @@ int PetscGetUserName( char *name, int nlen )
   return 0;
 }
 #else
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscGetUserName"
+#undef __FUNC__  
+#define __FUNC__ "PetscGetUserName"
 int PetscGetUserName( char *name, int nlen )
 {
   PetscStrncpy( name, "Unknown", nlen );

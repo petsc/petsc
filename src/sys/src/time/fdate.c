@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fdate.c,v 1.5 1996/10/24 19:26:02 bsmith Exp balay $";
+static char vcid[] = "$Id: fdate.c,v 1.6 1996/12/16 21:17:49 balay Exp balay $";
 #endif
 
 #include "src/sys/src/files.h"
@@ -12,8 +12,8 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 }
 */
    
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscGetDate"
+#undef __FUNC__  
+#define __FUNC__ "PetscGetDate"
 char *PetscGetDate()
 {
   struct timeval tp;

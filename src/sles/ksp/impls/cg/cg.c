@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.52 1996/12/18 23:17:09 balay Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.53 1997/01/01 03:36:04 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -22,8 +22,8 @@ static char vcid[] = "$Id: cg.c,v 1.52 1996/12/18 23:17:09 balay Exp bsmith $";
 extern int KSPComputeExtremeSingularValues_CG(KSP,double *,double *);
 extern int KSPComputeEigenvalues_CG(KSP,int,double *,double *);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetUp_CG"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetUp_CG"
 int KSPSetUp_CG(KSP ksp)
 {
   KSP_CG *cgP = (KSP_CG *) ksp->data;
@@ -52,8 +52,8 @@ int KSPSetUp_CG(KSP ksp)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSolve_CG"
+#undef __FUNC__  
+#define __FUNC__ "KSPSolve_CG"
 int  KSPSolve_CG(KSP ksp,int *its)
 {
   int          ierr, i = 0,maxit,eigs,pres, hist_len, cerr;
@@ -152,8 +152,8 @@ int  KSPSolve_CG(KSP ksp,int *its)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPDestroy_CG"
+#undef __FUNC__  
+#define __FUNC__ "KSPDestroy_CG"
 int KSPDestroy_CG(PetscObject obj)
 {
   KSP    ksp = (KSP) obj;
@@ -172,8 +172,8 @@ int KSPDestroy_CG(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPCGSetType"
+#undef __FUNC__  
+#define __FUNC__ "KSPCGSetType"
 /*@
     KSPCGSetType - Sets the variant of the conjugate gradient method to
     use for solving a linear system with a complex coefficient matrix.
@@ -204,8 +204,8 @@ int KSPCGSetType(KSP ksp,KSPCGType type)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPView_CG"
+#undef __FUNC__  
+#define __FUNC__ "KSPView_CG"
 static int KSPView_CG(PetscObject obj,Viewer viewer)
 {
 #if defined(PETSC_COMPLEX)
@@ -230,8 +230,8 @@ static int KSPView_CG(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPCreate_CG"
+#undef __FUNC__  
+#define __FUNC__ "KSPCreate_CG"
 int KSPCreate_CG(KSP ksp)
 {
   KSP_CG *cg = (KSP_CG*) PetscMalloc(sizeof(KSP_CG));  CHKPTRQ(cg);

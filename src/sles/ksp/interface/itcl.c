@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.83 1996/12/18 22:04:20 balay Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.84 1997/01/01 03:35:54 bsmith Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -20,8 +20,8 @@ extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 static int numberofsetfromoptions;
 static int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPAddOptionsChecker"
+#undef __FUNC__  
+#define __FUNC__ "KSPAddOptionsChecker"
 /*@
     KSPAddOptionsChecker - Adds an additional function to check for KSP options.
 
@@ -40,8 +40,8 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetFromOptions"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetFromOptions"
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
    This routine must be called before KSPSetUp() if the user is to be 
@@ -199,8 +199,8 @@ int KSPSetFromOptions(KSP ksp)
   
 extern int KSPPrintTypes_Private(MPI_Comm,char *,char *);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPPrintHelp"
+#undef __FUNC__  
+#define __FUNC__ "KSPPrintHelp"
 /*@ 
    KSPPrintHelp - Prints all options for the KSP component.
 
@@ -267,8 +267,8 @@ int KSPPrintHelp(KSP ksp)
   return 1;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetOptionsPrefix"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetOptionsPrefix"
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
    KSP options in the database. You must not include the - at the beginning of 
@@ -286,8 +286,8 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
   return PetscObjectSetOptionsPrefix((PetscObject)ksp, prefix);
 }
  
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPAppendOptionsPrefix"
+#undef __FUNC__  
+#define __FUNC__ "KSPAppendOptionsPrefix"
 /*@C
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
    KSP options in the database. You must NOT include the - at the beginning of 
@@ -305,8 +305,8 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
   return PetscObjectAppendOptionsPrefix((PetscObject)ksp, prefix);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPGetOptionsPrefix"
+#undef __FUNC__  
+#define __FUNC__ "KSPGetOptionsPrefix"
 /*@
    KSPGetOptionsPrefix - Gets the prefix used for searching for all 
    KSP options in the database.

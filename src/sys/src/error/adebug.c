@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.56 1997/01/01 03:36:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.57 1997/01/01 13:48:51 bsmith Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -18,8 +18,8 @@ static char vcid[] = "$Id: adebug.c,v 1.56 1997/01/01 03:36:26 bsmith Exp bsmith
 static char  *Debugger = "gdb", *Display = 0;
 static int   Xterm     = 1;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetDebugger"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetDebugger"
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
@@ -57,8 +57,8 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
 extern char *OptionsGetProgramName();
  
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscAttachDebugger"
+#undef __FUNC__  
+#define __FUNC__ "PetscAttachDebugger"
 /*@C
    PetscAttachDebugger - Attaches the debugger to the running process.
 
@@ -263,8 +263,8 @@ int PetscAttachDebugger()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscAttachDebuggerErrorHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscAttachDebuggerErrorHandler"
 /*@C
    PetscAttachDebuggerErrorHandler - Error handler that attaches
    a debugger to a running process when an error is detected.
@@ -272,7 +272,7 @@ int PetscAttachDebugger()
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
-.  fun - function where error occured (indicated by __FUNCTION__)
+.  fun - function where error occured (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __DIR__)
 .  message - an error text string, usually just printed to the screen

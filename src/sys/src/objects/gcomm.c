@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: gcomm.c,v 1.4 1996/12/18 22:59:27 balay Exp bsmith $";
+static char vcid[] = "$Id: gcomm.c,v 1.5 1997/01/01 03:36:26 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscObjectGetComm"
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectGetComm"
 /*@C
    PetscObjectGetComm - Gets the MPI communicator for any PetscObject, 
    regardless of the type.

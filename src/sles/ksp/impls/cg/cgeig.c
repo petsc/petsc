@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.32 1996/12/18 23:17:05 balay Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.33 1997/01/01 03:36:04 bsmith Exp balay $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: cgeig.c,v 1.32 1996/12/18 23:17:05 balay Exp bsmith $
 static int ccgtql1_private(int *, double *, double *, int *);
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPComputeEigenvalues_CG"
+#undef __FUNC__  
+#define __FUNC__ "KSPComputeEigenvalues_CG"
 int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
 {
   KSP_CG *cgP = (KSP_CG *) ksp->data;
@@ -42,8 +42,8 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPComputeExtremeSingularValues_CG"
+#undef __FUNC__  
+#define __FUNC__ "KSPComputeExtremeSingularValues_CG"
 int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
 {
   KSP_CG *cgP = (KSP_CG *) ksp->data;
@@ -84,8 +84,8 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
 static double c_b10 = 1.;
 static double cgpthy_private(double*,double*);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ccgtql1_private"
+#undef __FUNC__  
+#define __FUNC__ "ccgtql1_private"
 static int ccgtql1_private(int *n, double *d, double *e, int *ierr)
 {
     /* System generated locals */
@@ -283,8 +283,8 @@ L1001:
     return 0;
 } /* cgtql1_ */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "cgpthy_private"
+#undef __FUNC__  
+#define __FUNC__ "cgpthy_private"
 static double cgpthy_private(double *a, double *b)
 {
     /* System generated locals */

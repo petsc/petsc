@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.103 1996/12/19 14:29:07 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.104 1997/01/01 03:40:47 bsmith Exp balay $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -11,8 +11,8 @@ static char vcid[] = "$Id: snes.c,v 1.103 1996/12/19 14:29:07 balay Exp bsmith $
 extern int SNESGetTypeFromOptions_Private(SNES,SNESType*,int*);
 extern int SNESPrintTypes_Private(MPI_Comm,char*,char*);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESView"
+#undef __FUNC__  
+#define __FUNC__ "SNESView"
 /*@ 
    SNESView - Prints the SNES data structure.
 
@@ -96,8 +96,8 @@ int SNESView(SNES snes,Viewer viewer)
 static int numberofsetfromoptions;
 static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESAddOptionsChecker"
+#undef __FUNC__  
+#define __FUNC__ "SNESAddOptionsChecker"
 /*@
     SNESAddOptionsChecker - Adds an additional function to check for SNES options.
 
@@ -116,8 +116,8 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetFromOptions"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetFromOptions"
 /*@
    SNESSetFromOptions - Sets various SNES and SLES parameters from user options.
 
@@ -230,8 +230,8 @@ int SNESSetFromOptions(SNES snes)
   return (*snes->setfromoptions)(snes);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESPrintHelp"
+#undef __FUNC__  
+#define __FUNC__ "SNESPrintHelp"
 /*@
    SNESPrintHelp - Prints all options for the SNES component.
 
@@ -309,8 +309,8 @@ int SNESPrintHelp(SNES snes)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetApplicationContext"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetApplicationContext"
 /*@
    SNESSetApplicationContext - Sets the optional user-defined context for 
    the nonlinear solvers.  
@@ -330,8 +330,8 @@ int SNESSetApplicationContext(SNES snes,void *usrP)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetApplicationContext"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetApplicationContext"
 /*@C
    SNESGetApplicationContext - Gets the user-defined context for the 
    nonlinear solvers.  
@@ -353,8 +353,8 @@ int SNESGetApplicationContext( SNES snes,  void **usrP )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetIterationNumber"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetIterationNumber"
 /*@
    SNESGetIterationNumber - Gets the current iteration number of the
    nonlinear solver.
@@ -375,8 +375,8 @@ int SNESGetIterationNumber(SNES snes,int* iter)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetFunctionNorm"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetFunctionNorm"
 /*@
    SNESGetFunctionNorm - Gets the norm of the current function that was set
    with SNESSSetFunction().
@@ -407,8 +407,8 @@ int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetGradientNorm"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetGradientNorm"
 /*@
    SNESGetGradientNorm - Gets the norm of the current gradient that was set
    with SNESSSetGradient().
@@ -439,8 +439,8 @@ int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetNumberUnsuccessfulSteps"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetNumberUnsuccessfulSteps"
 /*@
    SNESGetNumberUnsuccessfulSteps - Gets the number of unsuccessful steps
    attempted by the nonlinear solver.
@@ -461,8 +461,8 @@ int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetSLES"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetSLES"
 /*@C
    SNESGetSLES - Returns the SLES context for a SNES solver.
 
@@ -488,8 +488,8 @@ int SNESGetSLES(SNES snes,SLES *sles)
   return 0;
 }
 /* -----------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESCreate"
+#undef __FUNC__  
+#define __FUNC__ "SNESCreate"
 /*@C
    SNESCreate - Creates a nonlinear solver context.
 
@@ -584,8 +584,8 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 }
 
 /* --------------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetFunction"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetFunction"
 /*@C
    SNESSetFunction - Sets the function evaluation routine and function 
    vector for use by the SNES routines in solving systems of nonlinear
@@ -628,8 +628,8 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESComputeFunction"
+#undef __FUNC__  
+#define __FUNC__ "SNESComputeFunction"
 /*@
    SNESComputeFunction - Computes the function that has been set with
    SNESSetFunction().  
@@ -662,8 +662,8 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetMinimizationFunction"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetMinimizationFunction"
 /*@C
    SNESSetMinimizationFunction - Sets the function evaluation routine for 
    unconstrained minimization.
@@ -701,8 +701,8 @@ int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESComputeMinimizationFunction"
+#undef __FUNC__  
+#define __FUNC__ "SNESComputeMinimizationFunction"
 /*@
    SNESComputeMinimizationFunction - Computes the function that has been
    set with SNESSetMinimizationFunction().
@@ -734,8 +734,8 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetGradient"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetGradient"
 /*@C
    SNESSetGradient - Sets the gradient evaluation routine and gradient
    vector for use by the SNES routines.
@@ -774,8 +774,8 @@ int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESComputeGradient"
+#undef __FUNC__  
+#define __FUNC__ "SNESComputeGradient"
 /*@
    SNESComputeGradient - Computes the gradient that has been set with
    SNESSetGradient().
@@ -808,8 +808,8 @@ int SNESComputeGradient(SNES snes,Vec x, Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESComputeJacobian"
+#undef __FUNC__  
+#define __FUNC__ "SNESComputeJacobian"
 /*@
    SNESComputeJacobian - Computes the Jacobian matrix that has been
    set with SNESSetJacobian().
@@ -854,8 +854,8 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESComputeHessian"
+#undef __FUNC__  
+#define __FUNC__ "SNESComputeHessian"
 /*@
    SNESComputeHessian - Computes the Hessian matrix that has been
    set with SNESSetHessian().
@@ -901,8 +901,8 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetJacobian"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetJacobian"
 /*@C
    SNESSetJacobian - Sets the function to compute Jacobian as well as the
    location to store the matrix.
@@ -952,8 +952,8 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetJacobian"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetJacobian"
 /*@
    SNESGetJacobian - Returns the Jacobian matrix and optionally the user 
    provided context for evaluating the Jacobian.
@@ -978,8 +978,8 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetHessian"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetHessian"
 /*@C
    SNESSetHessian - Sets the function to compute Hessian as well as the
    location to store the matrix.
@@ -1029,8 +1029,8 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetHessian"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetHessian"
 /*@
    SNESGetHessian - Returns the Hessian matrix and optionally the user 
    provided context for evaluating the Hessian.
@@ -1057,8 +1057,8 @@ int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
 
 /* ----- Routines to initialize and destroy a nonlinear solver ---- */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetUp"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetUp"
 /*@
    SNESSetUp - Sets up the internal data structures for the later use
    of a nonlinear solver.
@@ -1149,8 +1149,8 @@ int SNESSetUp(SNES snes,Vec x)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESDestroy"
+#undef __FUNC__  
+#define __FUNC__ "SNESDestroy"
 /*@C
    SNESDestroy - Destroys the nonlinear solver context that was created
    with SNESCreate().
@@ -1179,8 +1179,8 @@ int SNESDestroy(SNES snes)
 
 /* ----------- Routines to set solver parameters ---------- */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetTolerances"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetTolerances"
 /*@
    SNESSetTolerances - Sets various parameters used in convergence tests.
 
@@ -1219,8 +1219,8 @@ int SNESSetTolerances(SNES snes,double atol,double rtol,double stol,int maxit,in
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetTolerances"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetTolerances"
 /*@
    SNESGetTolerances - Gets various parameters used in convergence tests.
 
@@ -1251,8 +1251,8 @@ int SNESGetTolerances(SNES snes,double *atol,double *rtol,double *stol,int *maxi
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetTrustRegionTolerance"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetTrustRegionTolerance"
 /*@
    SNESSetTrustRegionTolerance - Sets the trust region parameter tolerance.  
 
@@ -1274,8 +1274,8 @@ int SNESSetTrustRegionTolerance(SNES snes,double tol)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetMinimizationFunctionTolerance"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetMinimizationFunctionTolerance"
 /*@
    SNESSetMinimizationFunctionTolerance - Sets the minimum allowable function tolerance
    for unconstrained minimization solvers.
@@ -1304,8 +1304,8 @@ int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
 
 /* ------------ Routines to set performance monitoring options ----------- */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetMonitor"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetMonitor"
 /*@C
    SNESSetMonitor - Sets the function that is to be used at every
    iteration of the nonlinear solver to display the iteration's 
@@ -1365,8 +1365,8 @@ int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetConvergenceTest"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetConvergenceTest"
 /*@C
    SNESSetConvergenceTest - Sets the function that is to be used 
    to test for convergence of the nonlinear iterative solution.   
@@ -1405,8 +1405,8 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,void*
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESScaleStep_Private"
+#undef __FUNC__  
+#define __FUNC__ "SNESScaleStep_Private"
 /*
    SNESScaleStep_Private - Scales a step so that its length is less than the
    positive parameter delta.
@@ -1448,8 +1448,8 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSolve"
+#undef __FUNC__  
+#define __FUNC__ "SNESSolve"
 /*@
    SNESSolve - Solves a nonlinear system.  Call SNESSolve after calling 
    SNESCreate() and optional routines of the form SNESSetXXX().
@@ -1490,8 +1490,8 @@ int SNESSolve(SNES snes,Vec x,int *its)
 /* --------- Internal routines for SNES Package --------- */
 static NRList *__SNESList = 0;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetType"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetType"
 /*@
    SNESSetType - Sets the method for the nonlinear solver.  
 
@@ -1543,8 +1543,8 @@ int SNESSetType(SNES snes,SNESType method)
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESRegister"
+#undef __FUNC__  
+#define __FUNC__ "SNESRegister"
 /*@C
    SNESRegister - Adds the method to the nonlinear solver package, given 
    a function pointer and a nonlinear solver name of the type SNESType.
@@ -1567,8 +1567,8 @@ int SNESRegister(int name, char *sname, int (*create)(SNES))
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESRegisterDestroy"
+#undef __FUNC__  
+#define __FUNC__ "SNESRegisterDestroy"
 /*@C
    SNESRegisterDestroy - Frees the list of nonlinear solvers that were
    registered by SNESRegister().
@@ -1586,8 +1586,8 @@ int SNESRegisterDestroy()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetTypeFromOptions_Private"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetTypeFromOptions_Private"
 /*
    SNESGetTypeFromOptions_Private - Sets the selected method from the 
    options database.
@@ -1617,8 +1617,8 @@ int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method,int *flg)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetType"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetType"
 /*@C
    SNESGetType - Gets the SNES method type and name (as a string).
 
@@ -1641,8 +1641,8 @@ int SNESGetType(SNES snes, SNESType *method,char **name)
 }
 
 #include <stdio.h>
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESPrintTypes_Private"
+#undef __FUNC__  
+#define __FUNC__ "SNESPrintTypes_Private"
 /*
    SNESPrintTypes_Private - Prints the SNES methods available from the 
    options database.
@@ -1666,8 +1666,8 @@ int SNESPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetSolution"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetSolution"
 /*@C
    SNESGetSolution - Returns the vector where the approximate solution is
    stored.
@@ -1689,8 +1689,8 @@ int SNESGetSolution(SNES snes,Vec *x)
   return 0;
 }  
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetSolutionUpdate"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetSolutionUpdate"
 /*@C
    SNESGetSolutionUpdate - Returns the vector where the solution update is
    stored. 
@@ -1715,8 +1715,8 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetFunction"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetFunction"
 /*@C
    SNESGetFunction - Returns the vector where the function is stored.
 
@@ -1745,8 +1745,8 @@ int SNESGetFunction(SNES snes,Vec *r)
   return 0;
 }  
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetGradient"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetGradient"
 /*@C
    SNESGetGradient - Returns the vector where the gradient is stored.
 
@@ -1774,8 +1774,8 @@ int SNESGetGradient(SNES snes,Vec *r)
   return 0;
 }  
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetMinimizationFunction"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetMinimizationFunction"
 /*@
    SNESGetMinimizationFunction - Returns the scalar function value for 
    unconstrained minimization problems.
@@ -1805,8 +1805,8 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
   return 0;
 }  
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetOptionsPrefix"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetOptionsPrefix"
 /*@C
    SNESSetOptionsPrefix - Sets the prefix used for searching for all 
    SNES options in the database. You must NOT include the - at the beginning of 
@@ -1830,8 +1830,8 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESAppendOptionsPrefix"
+#undef __FUNC__  
+#define __FUNC__ "SNESAppendOptionsPrefix"
 /*@C
    SNESAppendOptionsPrefix - Appends to the prefix used for searching for all 
    SNES options in the database. You must NOT include the - at the beginning of 
@@ -1855,8 +1855,8 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESGetOptionsPrefix"
+#undef __FUNC__  
+#define __FUNC__ "SNESGetOptionsPrefix"
 /*@
    SNESGetOptionsPrefix - Sets the prefix used for searching for all 
    SNES options in the database.

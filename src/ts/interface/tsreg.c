@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.13 1996/12/18 23:00:18 balay Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.14 1997/01/01 03:39:55 bsmith Exp balay $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -11,8 +11,8 @@ static char vcid[] = "$Id: tsreg.c,v 1.13 1996/12/18 23:00:18 balay Exp bsmith $
 
 static NRList *__TSList = 0;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSSetType"
+#undef __FUNC__  
+#define __FUNC__ "TSSetType"
 /*@
    TSSetType - Sets the method for the timestepping solver.  
 
@@ -60,8 +60,8 @@ int TSSetType(TS ts,TSType method)
 }
 
 /* --------------------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSRegister"
+#undef __FUNC__  
+#define __FUNC__ "TSRegister"
 /*@C
    TSRegister - Adds the method to the nonlinear solver package, given 
    a function pointer and a nonlinear solver name of the type TSType.
@@ -83,8 +83,8 @@ int TSRegister(int name, char *sname, int (*create)(TS))
   return 0;
 }
 /* --------------------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSRegisterDestroy"
+#undef __FUNC__  
+#define __FUNC__ "TSRegisterDestroy"
 /*@C
    TSRegisterDestroy - Frees the list of nonlinear solvers that were
    registered by TSRegister().
@@ -102,8 +102,8 @@ int TSRegisterDestroy()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSGetType"
+#undef __FUNC__  
+#define __FUNC__ "TSGetType"
 /*@C
    TSGetType - Gets the TS method type and name (as a string).
 
@@ -126,8 +126,8 @@ int TSGetType(TS ts, TSType *method,char **name)
 }
 
 #include <stdio.h>
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSPrintTypes_Private"
+#undef __FUNC__  
+#define __FUNC__ "TSPrintTypes_Private"
 /*
    TSPrintTypes_Private - Prints the TS methods available from the 
    options database.
@@ -152,8 +152,8 @@ int TSPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "TSGetTypeFromOptions_Private"
+#undef __FUNC__  
+#define __FUNC__ "TSGetTypeFromOptions_Private"
 /*
    TSGetTypeFromOptions_Private - Sets the selected method from the 
    options database.

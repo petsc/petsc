@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xmon.c,v 1.21 1996/12/16 19:46:08 balay Exp balay $";
+static char vcid[] = "$Id: xmon.c,v 1.22 1996/12/18 18:01:39 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: xmon.c,v 1.21 1996/12/16 19:46:08 balay Exp balay $";
 #include <math.h>
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPLGMonitorCreate"
+#undef __FUNC__  
+#define __FUNC__ "KSPLGMonitorCreate"
 /*@C
    KSPLGMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of preconditioned residual norms.
@@ -45,8 +45,8 @@ int KSPLGMonitorCreate(char *host,char *label,int x,int y,int m,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPLGMonitor"
+#undef __FUNC__  
+#define __FUNC__ "KSPLGMonitor"
 int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
 {
   DrawLG lg = (DrawLG) monctx;
@@ -62,8 +62,8 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
   return 0;
 } 
  
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPLGMonitorDestroy"
+#undef __FUNC__  
+#define __FUNC__ "KSPLGMonitorDestroy"
 /*@C
    KSPLGMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGMonitorCreate().
@@ -84,8 +84,8 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPLGTrueMonitorCreate"
+#undef __FUNC__  
+#define __FUNC__ "KSPLGTrueMonitorCreate"
 /*@C
    KSPLGTrueMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of true residual norms (as opposed to
@@ -127,8 +127,8 @@ int KSPLGTrueMonitorCreate(MPI_Comm comm,char *host,char *label,int x,int y,int 
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPLGTrueMonitor"
+#undef __FUNC__  
+#define __FUNC__ "KSPLGTrueMonitor"
 int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
 {
   DrawLG    lg = (DrawLG) monctx;
@@ -158,8 +158,8 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
   return 0;
 } 
  
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPLGTrueMonitorDestroy"
+#undef __FUNC__  
+#define __FUNC__ "KSPLGTrueMonitorDestroy"
 /*@C
    KSPLGTrueMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGTrueMonitorCreate().

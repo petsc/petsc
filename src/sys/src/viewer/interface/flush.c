@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: flush.c,v 1.5 1996/04/03 17:58:41 balay Exp balay $";
+static char vcid[] = "$Id: flush.c,v 1.6 1996/12/16 22:54:21 balay Exp balay $";
 #endif
 
 #include "petsc.h"  /*I "petsc.h" I*/
@@ -9,8 +9,8 @@ struct _Viewer {
   int         (*flush)(Viewer);
 };
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerFlush"
+#undef __FUNC__  
+#define __FUNC__ "ViewerFlush"
 /*@
    ViewerFlush - Flushes a viewer (i.e. tries to dump all the 
    data that has been printed through a viewer).

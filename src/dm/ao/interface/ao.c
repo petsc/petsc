@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: ao.c,v 1.6 1996/12/16 17:30:40 balay Exp balay $";
+static char vcid[] = "$Id: ao.c,v 1.7 1996/12/16 17:50:48 balay Exp balay $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
 #include "src/ao/aoimpl.h"      /*I "ao.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOView"
+#undef __FUNC__  
+#define __FUNC__ "AOView"
 /*@
    AOView - Displays an application ordering.
 
@@ -25,8 +25,8 @@ int AOView(AO ao, Viewer viewer)
   return (*ao->view)((PetscObject)ao,viewer);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AODestroy"
+#undef __FUNC__  
+#define __FUNC__ "AODestroy"
 /*@
    AODestroy - Destroys an application ordering set.
 
@@ -46,8 +46,8 @@ int AODestroy(AO ao)
 
 
 /* ---------------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOPetscToApplicationIS"
+#undef __FUNC__  
+#define __FUNC__ "AOPetscToApplicationIS"
 /*@
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to 
    the application-defined ordering.
@@ -72,8 +72,8 @@ int AOPetscToApplicationIS(AO ao,IS is)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOApplicationToPetscIS"
+#undef __FUNC__  
+#define __FUNC__ "AOApplicationToPetscIS"
 /*@
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
@@ -98,8 +98,8 @@ int AOApplicationToPetscIS(AO ao,IS is)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOPetscToApplication"
+#undef __FUNC__  
+#define __FUNC__ "AOPetscToApplication"
 /*@
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to 
    the application-defined ordering.
@@ -120,8 +120,8 @@ int AOPetscToApplication(AO ao,int n,int *ia)
   return (*ao->ops.petsctoapplication)(ao,n,ia);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOApplicationToPetsc"
+#undef __FUNC__  
+#define __FUNC__ "AOApplicationToPetsc"
 /*@
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.

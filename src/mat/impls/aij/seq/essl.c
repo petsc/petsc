@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: essl.c,v 1.16 1996/12/19 01:11:20 balay Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.17 1997/01/01 03:37:37 bsmith Exp balay $";
 #endif
 
 /* 
@@ -30,8 +30,8 @@ typedef struct {
 
 extern int MatDestroy_SeqAIJ(PetscObject);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatDestroy_SeqAIJ_Essl"
+#undef __FUNC__  
+#define __FUNC__ "MatDestroy_SeqAIJ_Essl"
 static int MatDestroy_SeqAIJ_Essl(PetscObject obj)
 {
   Mat             A = (Mat) obj;
@@ -43,8 +43,8 @@ static int MatDestroy_SeqAIJ_Essl(PetscObject obj)
   return MatDestroy_SeqAIJ(obj);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqAIJ_Essl"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqAIJ_Essl"
 static int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*) A->data;
@@ -61,8 +61,8 @@ static int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorSymbolic_SeqAIJ_Essl"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorSymbolic_SeqAIJ_Essl"
 static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
 {
   Mat             B;
@@ -97,8 +97,8 @@ static int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqAIJ_Essl"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqAIJ_Essl"
 static int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*) (*F)->data;
@@ -131,8 +131,8 @@ static int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatUseEssl_SeqAIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
   PetscValidHeaderSpecific(A,MAT_COOKIE);  
@@ -146,8 +146,8 @@ int MatUseEssl_SeqAIJ(Mat A)
 
 #else
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatUseEssl_SeqAIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
   return 0;

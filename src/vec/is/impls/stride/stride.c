@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.50 1996/12/18 23:17:15 balay Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.51 1997/01/01 03:35:08 bsmith Exp balay $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -12,8 +12,8 @@ typedef struct {
   int n,first,step;
 } IS_Stride;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISInvertPermutation_Stride"
+#undef __FUNC__  
+#define __FUNC__ "ISInvertPermutation_Stride"
 static int ISInvertPermutation_Stride(IS is, IS *perm)
 {
   IS_Stride *isstride = (IS_Stride *) is->data;
@@ -37,8 +37,8 @@ static int ISInvertPermutation_Stride(IS is, IS *perm)
   return 0;
 }
     
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISStrideGetInfo"
+#undef __FUNC__  
+#define __FUNC__ "ISStrideGetInfo"
 /*@
    ISStrideGetInfo - Returns the first index in a stride index set and 
    the stride width.
@@ -71,8 +71,8 @@ int ISStrideGetInfo(IS is,int *first,int *step)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISStride"
+#undef __FUNC__  
+#define __FUNC__ "ISStride"
 /*@C
    ISStride - Determines if an IS is based on a stride.
 
@@ -97,8 +97,8 @@ int ISStride(IS is,PetscTruth *flag)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISDestroy_Stride"
+#undef __FUNC__  
+#define __FUNC__ "ISDestroy_Stride"
 static int ISDestroy_Stride(PetscObject obj)
 {
   IS is = (IS) obj;
@@ -107,8 +107,8 @@ static int ISDestroy_Stride(PetscObject obj)
   PetscHeaderDestroy(is); return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISGetIndices_Stride"
+#undef __FUNC__  
+#define __FUNC__ "ISGetIndices_Stride"
 static int ISGetIndices_Stride(IS in,int **idx)
 {
   IS_Stride *sub = (IS_Stride *) in->data;
@@ -123,24 +123,24 @@ static int ISGetIndices_Stride(IS in,int **idx)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISRestoreIndices_Stride"
+#undef __FUNC__  
+#define __FUNC__ "ISRestoreIndices_Stride"
 static int ISRestoreIndices_Stride(IS in,int **idx)
 {
   if (*idx) PetscFree(*idx);
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISGetSize_Stride"
+#undef __FUNC__  
+#define __FUNC__ "ISGetSize_Stride"
 static int ISGetSize_Stride(IS is,int *size)
 {
   IS_Stride *sub = (IS_Stride *)is->data;
   *size = sub->n; return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISView_Stride"
+#undef __FUNC__  
+#define __FUNC__ "ISView_Stride"
 static int ISView_Stride(PetscObject obj, Viewer viewer)
 {
   IS          is = (IS) obj;
@@ -164,8 +164,8 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
   return 0;
 }
   
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISSort_Stride"
+#undef __FUNC__  
+#define __FUNC__ "ISSort_Stride"
 static int ISSort_Stride(IS is)
 {
   IS_Stride *sub = (IS_Stride *) is->data;
@@ -175,8 +175,8 @@ static int ISSort_Stride(IS is)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISSorted_Stride"
+#undef __FUNC__  
+#define __FUNC__ "ISSorted_Stride"
 static int ISSorted_Stride(IS is, PetscTruth* flg)
 {
   IS_Stride *sub = (IS_Stride *) is->data;
@@ -193,8 +193,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
                                ISSort_Stride, 
                                ISSorted_Stride };
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ISCreateStride"
+#undef __FUNC__  
+#define __FUNC__ "ISCreateStride"
 /*@C
    ISCreateStride - Creates a data structure for an index set 
    containing a list of evenly spaced integers.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stash.c,v 1.12 1996/11/19 16:31:54 bsmith Exp balay $";
+static char vcid[] = "$Id: stash.c,v 1.13 1996/12/16 22:39:42 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -14,8 +14,8 @@ static char vcid[] = "$Id: stash.c,v 1.12 1996/11/19 16:31:54 bsmith Exp balay $
    This is a simple minded stash. Simply add entry to end of stash.
 */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "StashInitialize_Private"
+#undef __FUNC__  
+#define __FUNC__ "StashInitialize_Private"
 int StashInitialize_Private(Stash *stash)
 {
   stash->nmax  = 0;
@@ -26,8 +26,8 @@ int StashInitialize_Private(Stash *stash)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "StashBuild_Private"
+#undef __FUNC__  
+#define __FUNC__ "StashBuild_Private"
 int StashBuild_Private(Stash *stash)
 {
   stash->nmax  = CHUNCKSIZE; /* completely arbitrary number */
@@ -39,8 +39,8 @@ int StashBuild_Private(Stash *stash)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "StashDestroy_Private"
+#undef __FUNC__  
+#define __FUNC__ "StashDestroy_Private"
 int StashDestroy_Private(Stash *stash)
 {
   stash->nmax = stash->n = 0;
@@ -48,8 +48,8 @@ int StashDestroy_Private(Stash *stash)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "StashInfo_Private"
+#undef __FUNC__  
+#define __FUNC__ "StashInfo_Private"
 int StashInfo_Private(Stash *stash)
 {
   PLogInfo(0,"Stash size %d\n",stash->n);
@@ -59,8 +59,8 @@ int StashInfo_Private(Stash *stash)
 /* 
     Should do this properly. With a sorted array.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "StashValues_Private"
+#undef __FUNC__  
+#define __FUNC__ "StashValues_Private"
 int StashValues_Private(Stash *stash,int row,int n, int *idxn,Scalar *values,InsertMode addv)
 {
   int    i, found, *n_idx, *n_idy; 

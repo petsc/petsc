@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.26 1996/12/19 01:13:31 balay Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.27 1997/01/01 03:40:37 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -16,8 +16,8 @@ struct _Viewer {
   FILE         *fdes_info;   /* optional file containing info on binary file*/
 };
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerBinaryGetDescriptor"
+#undef __FUNC__  
+#define __FUNC__ "ViewerBinaryGetDescriptor"
 /*@C
     ViewerBinaryGetDescriptor - Extracts the file descriptor from a viewer.
 
@@ -37,8 +37,8 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerBinaryGetInfoPointer"
+#undef __FUNC__  
+#define __FUNC__ "ViewerBinaryGetInfoPointer"
 /*@C
     ViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
           info file associated with a binary file.
@@ -59,8 +59,8 @@ int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerDestroy_BinaryFile"
+#undef __FUNC__  
+#define __FUNC__ "ViewerDestroy_BinaryFile"
 static int ViewerDestroy_BinaryFile(PetscObject obj)
 {
   int    rank;
@@ -73,8 +73,8 @@ static int ViewerDestroy_BinaryFile(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerFileOpenBinary"
+#undef __FUNC__  
+#define __FUNC__ "ViewerFileOpenBinary"
 /*@C
    ViewerFileOpenBinary - Opens a file for binary input/output.
 

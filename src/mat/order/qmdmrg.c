@@ -30,8 +30,8 @@
 /*              REACHABLE SETS.                                  */
 /*                                                               */
 /*****************************************************************/
-#undef __FUNCTION__  
-#define __FUNCTION__ "qmdmrg"
+#undef __FUNC__  
+#define __FUNC__ "qmdmrg"
 int qmdmrg(int *xadj, int *adjncy, int *deg, 
 	int *qsize, int *qlink, int *marker, int *deg0, 
 	int *nhdsze, int *nbrhd, int *rchset, int *ovrlp)

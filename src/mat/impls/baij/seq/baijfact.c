@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.33 1996/12/19 01:10:21 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.34 1997/01/01 03:38:19 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -15,8 +15,8 @@ static char vcid[] = "$Id: baijfact.c,v 1.33 1996/12/19 01:10:21 balay Exp bsmit
   except for very small changes since this is now a SeqBAIJ datastructure.
   NOT good code reuse.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorSymbolic_SeqBAIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorSymbolic_SeqBAIJ"
 int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data, *b;
@@ -148,8 +148,8 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 }
 
 /* ----------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqBAIJ_N"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_N"
 int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 {
   Mat             C = *B;
@@ -232,8 +232,8 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 /*
       Version for when blocks are 5 by 5
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqBAIJ_5"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_5"
 int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
 {
   Mat             C = *B;
@@ -413,8 +413,8 @@ int MatLUFactorNumeric_SeqBAIJ_5(Mat A,Mat *B)
 /*
       Version for when blocks are 4 by 4
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqBAIJ_4"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_4"
 int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
 {
   Mat             C = *B;
@@ -559,8 +559,8 @@ int MatLUFactorNumeric_SeqBAIJ_4(Mat A,Mat *B)
 /*
       Version for when blocks are 3 by 3
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqBAIJ_3"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_3"
 int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
 {
   Mat             C = *B;
@@ -673,8 +673,8 @@ int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
 /*
       Version for when blocks are 2 by 2
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqBAIJ_2"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_2"
 int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
 {
   Mat             C = *B;
@@ -765,8 +765,8 @@ int MatLUFactorNumeric_SeqBAIJ_2(Mat A,Mat *B)
 /*
      Version for when blocks are 1 by 1.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric_SeqBAIJ_1"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric_SeqBAIJ_1"
 int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 {
   Mat             C = *B;
@@ -834,8 +834,8 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 }
 
 /* ----------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactor_SeqBAIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactor_SeqBAIJ"
 int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
 {
   Mat_SeqBAIJ *mat = (Mat_SeqBAIJ *) A->data;
@@ -860,8 +860,8 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   return 0;
 }
 /* ----------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBAIJ_N"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBAIJ_N"
 int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -914,8 +914,8 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBAIJ_5"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBAIJ_5"
 int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -998,8 +998,8 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBAIJ_4"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBAIJ_4"
 int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1073,8 +1073,8 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBAIJ_3"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBAIJ_3"
 int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1139,8 +1139,8 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBAIJ_2"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBAIJ_2"
 int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1203,8 +1203,8 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve_SeqBAIJ_1"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve_SeqBAIJ_1"
 int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
@@ -1260,8 +1260,8 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
    except that the data structure of Mat_SeqAIJ is slightly different.
    Not a good example of code reuse.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatILUFactorSymbolic_SeqBAIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatILUFactorSymbolic_SeqBAIJ"
 int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
                                  Mat *fact)
 {

@@ -28,8 +28,8 @@
 /*      ROOTLS.                                                 */
 /*                                                              */
 /****************************************************************/
-#undef __FUNCTION__  
-#define __FUNCTION__ "fnroot"
+#undef __FUNC__  
+#define __FUNC__ "fnroot"
 int fnroot(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nlvl, int *xls, int *ls)
 {

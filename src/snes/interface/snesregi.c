@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.13 1996/08/08 14:46:41 bsmith Exp balay $";
+static char vcid[] = "$Id: snesregi.c,v 1.14 1996/12/16 20:46:26 balay Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -9,8 +9,8 @@ extern int SNESCreate_UM_TR(SNES);
 extern int SNESCreate_UM_LS(SNES);
 extern int SNESCreate_Test(SNES);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESRegisterAll"
+#undef __FUNC__  
+#define __FUNC__ "SNESRegisterAll"
 /*@C
   SNESRegisterAll - Registers all of the nonlinear solvers in the SNES 
   package. 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.46 1996/12/19 01:13:23 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.47 1997/01/01 03:40:33 bsmith Exp balay $";
 #endif
 
 /* 
@@ -91,8 +91,8 @@ extern int close(int);
 
 
 typedef struct { int onoff; int time; } Linger;
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerDestroy_Matlab"
+#undef __FUNC__  
+#define __FUNC__ "ViewerDestroy_Matlab"
 static int ViewerDestroy_Matlab(PetscObject obj)
 {
   Linger locallinger;
@@ -109,8 +109,8 @@ static int ViewerDestroy_Matlab(PetscObject obj)
 }
 
 /*--------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "SOCKCall_Private"
+#undef __FUNC__  
+#define __FUNC__ "SOCKCall_Private"
 int SOCKCall_Private(char *hostname,int portnum)
 {
   struct sockaddr_in sa;
@@ -154,8 +154,8 @@ int SOCKCall_Private(char *hostname,int portnum)
   return(s);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerMatlabOpen"
+#undef __FUNC__  
+#define __FUNC__ "ViewerMatlabOpen"
 /*@C
    ViewerMatlabOpen - Opens a connection to a Matlab server.
 
@@ -209,8 +209,8 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
 
 Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerInitializeMatlabWorld_Private"
+#undef __FUNC__  
+#define __FUNC__ "ViewerInitializeMatlabWorld_Private"
 int ViewerInitializeMatlabWorld_Private()
 {
   int  ierr,port = 5001,flag;
@@ -226,8 +226,8 @@ int ViewerInitializeMatlabWorld_Private()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "ViewerDestroyMatlab_Private"
+#undef __FUNC__  
+#define __FUNC__ "ViewerDestroyMatlab_Private"
 int ViewerDestroyMatlab_Private()
 {
   int ierr;

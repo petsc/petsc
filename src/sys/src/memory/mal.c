@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mal.c,v 1.20 1997/01/01 03:36:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.21 1997/01/01 13:48:51 bsmith Exp balay $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -19,8 +19,8 @@ static char vcid[] = "$Id: mal.c,v 1.20 1997/01/01 03:36:26 bsmith Exp bsmith $"
 void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*)=(void*(*)(unsigned int,int,char*,char*,char*))malloc;
 int  (*PetscTrFree)(void *,int,char*,char *,char*)        = (int (*)(void*,int,char*,char*,char*))free;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSetMalloc"
+#undef __FUNC__  
+#define __FUNC__ "PetscSetMalloc"
 /*@C
    PetscSetMalloc - Sets the routines used to do mallocs and frees.
    This routine MUST be called before PetscInitialize() and may be

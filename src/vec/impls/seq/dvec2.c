@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.35 1996/08/08 14:40:17 bsmith Exp balay $ */
+/* $Id: dvec2.c,v 1.36 1996/12/16 22:57:24 balay Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -29,8 +29,8 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
   return 0;
 }
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecMDot_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecMDot_Seq"
 static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
@@ -225,8 +225,8 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 }
     
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecMax_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecMax_Seq"
 static int VecMax_Seq(Vec xin,int* idx,double * z )
 { 
   Vec_Seq         *x = (Vec_Seq *) xin->data;
@@ -246,8 +246,8 @@ static int VecMax_Seq(Vec xin,int* idx,double * z )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecMin_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecMin_Seq"
 static int VecMin_Seq(Vec xin,int* idx,double * z )
 {
   Vec_Seq         *x = (Vec_Seq *) xin->data;
@@ -267,8 +267,8 @@ static int VecMin_Seq(Vec xin,int* idx,double * z )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSet_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecSet_Seq"
 static int VecSet_Seq(Scalar* alpha,Vec xin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
@@ -284,8 +284,8 @@ static int VecSet_Seq(Scalar* alpha,Vec xin)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSetRandom_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecSetRandom_Seq"
 static int VecSetRandom_Seq(PetscRandom r,Vec xin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
@@ -320,8 +320,8 @@ static int VecSetRandom_Seq(PetscRandom r,Vec xin)
   }
   return 0;
 } */
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecMAXPY_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecMAXPY_Seq"
 static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
 {
   Vec_Seq      *xdata = (Vec_Seq *) xin->data;
@@ -374,8 +374,8 @@ static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecAYPX_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecAYPX_Seq"
 static int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data, *y = (Vec_Seq *)yin->data;
@@ -395,8 +395,8 @@ static int VecAYPX_Seq(Scalar *alpha, Vec xin, Vec yin )
   void ?zaxpy(int*,Scalar*,Scalar*,int*,Scalar*,int*,Scalar*,int*);
 */
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecWAXPY_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecWAXPY_Seq"
 static int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
 {
   Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
@@ -423,8 +423,8 @@ static int VecWAXPY_Seq(Scalar* alpha,Vec xin,Vec yin,Vec win )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecPointwiseMult_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecPointwiseMult_Seq"
 static int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
 {
   Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
@@ -437,8 +437,8 @@ static int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecPointwiseDivide_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecPointwiseDivide_Seq"
 static int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
 {
   Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
@@ -452,16 +452,16 @@ static int VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win )
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecGetArray_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecGetArray_Seq"
 static int VecGetArray_Seq(Vec vin,Scalar **a)
 {
   Vec_Seq *v = (Vec_Seq *)vin->data;
   *a =  v->array; return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecGetSize_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecGetSize_Seq"
 static int VecGetSize_Seq(Vec vin,int *size)
 {
   Vec_Seq *v = (Vec_Seq *)vin->data;

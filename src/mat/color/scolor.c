@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: scolor.c,v 1.3 1996/11/07 15:09:48 bsmith Exp balay $";
+static char vcid[] = "$Id: scolor.c,v 1.4 1996/12/17 16:45:13 balay Exp balay $";
 #endif
  
 #include "petsc.h"
@@ -11,8 +11,8 @@ extern int MatFDColoringSL_Minpack(Mat,MatColoring,ISColoring*);
 extern int MatFDColoringLF_Minpack(Mat,MatColoring,ISColoring*);
 extern int MatFDColoringID_Minpack(Mat,MatColoring,ISColoring*);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatColoringRegisterAll"
+#undef __FUNC__  
+#define __FUNC__ "MatColoringRegisterAll"
 /*@C
   MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
 

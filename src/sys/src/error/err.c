@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.52 1997/01/01 03:36:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.53 1997/01/01 13:48:51 bsmith Exp balay $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -21,8 +21,8 @@ struct EH {
 
 static struct EH* eh = 0;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscAbortErrorHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscAbortErrorHandler"
 /*@C
    PetscAbortErrorHandler - Error handler that calls abort on error. 
    This routine is very useful when running in the debugger, because the 
@@ -30,7 +30,7 @@ static struct EH* eh = 0;
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
-.  function - function where error occured (indicated by __FUNCTION__)
+.  function - function where error occured (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __DIR__)
 .  message - an error text string, usually just printed to the screen
@@ -69,15 +69,15 @@ int PetscAbortErrorHandler(int line,char *function,char *file,char* dir,int numb
   abort(); return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscTraceBackErrorHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscTraceBackErrorHandler"
 /*@C
    PetscTraceBackErrorHandler - Default error handler routine that generates
    a traceback on error detection.
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
-.  function - the function where error is detected (indicated by __FUNCTION__)
+.  function - the function where error is detected (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __DIR__)
 .  message - an error text string, usually just printed to the screen
@@ -148,14 +148,14 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int numbe
   return number;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscStopErrorHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscStopErrorHandler"
 /*@C
    PetscStopErrorHandler - Calls MPI_abort() and exists.
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
-.  fun - the function where the error occurred (indicated by __FUNCTION__)
+.  fun - the function where the error occurred (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __DIR__)
 .  message - an error text string, usually just printed to the screen
@@ -222,8 +222,8 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int number,int
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscPushErrorHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscPushErrorHandler"
 /*@C
    PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
@@ -233,7 +233,7 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int number,int
    Calling sequence of func:
    int func (int line,char *func,char *file,char *dir,int number,int p,char *message);
 
-.  function - the function where the error occured (indicated by __FUNCTION__)
+.  function - the function where the error occured (indicated by __FUNC__)
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __DIR__)
@@ -257,8 +257,8 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscPopErrorHandler"
+#undef __FUNC__  
+#define __FUNC__ "PetscPopErrorHandler"
 /*@C
    PetscPopErrorHandler - Removes the latest error handler that was 
    pushed with PetscPushErrorHandler().
@@ -281,15 +281,15 @@ int PetscPopErrorHandler()
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscError"
+#undef __FUNC__  
+#define __FUNC__ "PetscError"
 /*@C
    PetscError - Routine that is called when an error has been detected, 
    usually called through the macro SETERRQ().
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
-.  function - the function where the error occured (indicated by __FUNCTION__)
+.  function - the function where the error occured (indicated by __FUNC__)
 .  dir - the directory of file (indicated by __DIR__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  message - an error text string, usually just printed to the screen
@@ -314,8 +314,8 @@ int PetscError(int line,char *function,char* file,char *dir,int number,int p,cha
   else  return (*eh->handler)(line,function,file,dir,number,p,message,eh->ctx);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscIntView"
+#undef __FUNC__  
+#define __FUNC__ "PetscIntView"
 /*@C
     PetscIntView - Prints an array of integers, useful for debugging.
 
@@ -359,8 +359,8 @@ int PetscIntView(int N,int* idx,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscDoubleView"
+#undef __FUNC__  
+#define __FUNC__ "PetscDoubleView"
 /*@C
     PetscDoubleView - Prints an array of double, useful for debugging.
 

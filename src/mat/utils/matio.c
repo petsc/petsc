@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.36 1996/12/19 00:19:56 balay Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.37 1997/01/01 03:38:57 bsmith Exp balay $";
 #endif
 
 /* 
@@ -23,8 +23,8 @@ extern int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
 
 extern int MatLoadGetInfo_Private(Viewer);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLoadPrintHelp_Private"
+#undef __FUNC__  
+#define __FUNC__ "MatLoadPrintHelp_Private"
 static int MatLoadPrintHelp_Private(Mat A)
 {
   static int called = 0; 
@@ -37,8 +37,8 @@ static int MatLoadPrintHelp_Private(Mat A)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLoad"
+#undef __FUNC__  
+#define __FUNC__ "MatLoad"
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
    with MatView().  The matrix format is determined from the options database.
@@ -170,8 +170,8 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLoadGetInfo_Private"
+#undef __FUNC__  
+#define __FUNC__ "MatLoadGetInfo_Private"
 /*
     MatLoadGetInfo_Private - Loads the matrix options from the name.info file
   if it exists.

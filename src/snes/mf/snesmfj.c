@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.40 1996/12/18 23:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.41 1997/01/01 03:40:47 bsmith Exp balay $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -15,8 +15,8 @@ typedef struct {  /* default context for matrix-free SNES */
   double      umin;      /* minimum allowable u'a value relative to |u|_1 */
 } MFCtx_Private;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESMatrixFreeDestroy_Private"
+#undef __FUNC__  
+#define __FUNC__ "SNESMatrixFreeDestroy_Private"
 int SNESMatrixFreeDestroy_Private(PetscObject obj)
 {
   int           ierr;
@@ -30,8 +30,8 @@ int SNESMatrixFreeDestroy_Private(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESMatrixFreeView_Private"
+#undef __FUNC__  
+#define __FUNC__ "SNESMatrixFreeView_Private"
 /*
    SNESMatrixFreeView_Private - Views matrix-free parameters.
  */
@@ -55,8 +55,8 @@ int SNESMatrixFreeView_Private(Mat J,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESMatrixFreeMult_Private"
+#undef __FUNC__  
+#define __FUNC__ "SNESMatrixFreeMult_Private"
 /*
   SNESMatrixFreeMult_Private - Default matrix-free form for Jacobian-vector
   product, y = F'(u)*a:
@@ -124,8 +124,8 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESDefaultMatrixFreeMatCreate"
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultMatrixFreeMatCreate"
 /*@C
    SNESDefaultMatrixFreeMatCreate - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as
@@ -182,8 +182,8 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetMatrixFreeParameters"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetMatrixFreeParameters"
 /*@
    SNESSetMatrixFreeParameters - Sets the parameters for the approximation of
    matrix-vector products using finite differences.
@@ -214,8 +214,8 @@ int SNESSetMatrixFreeParameters(SNES snes,double error,double umin)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESDefaultMatrixFreeMatAddNullSpace"
+#undef __FUNC__  
+#define __FUNC__ "SNESDefaultMatrixFreeMatAddNullSpace"
 /*@
    SNESDefaultMatrixFreeMatAddNullSpace - Provides a null space that 
    an operator is supposed to have.  Since roundoff will create a 

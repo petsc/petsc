@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.32 1996/12/19 00:18:08 balay Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.33 1997/01/01 03:36:08 bsmith Exp balay $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -14,8 +14,8 @@ static char vcid[] = "$Id: borthog.c,v 1.32 1996/12/19 00:18:08 balay Exp bsmith
 /*
     This is the basic orthogonalization routine using modified Gram-Schmidt.
  */
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
+#undef __FUNC__  
+#define __FUNC__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
 int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
@@ -45,8 +45,8 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
   Multiple applications of this can be used to provide a better 
   orthogonalization (but be careful of the HH and HES values).
  */
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPGMRESUnmodifiedGramSchmidtOrthogonalization"
+#undef __FUNC__  
+#define __FUNC__ "KSPGMRESUnmodifiedGramSchmidtOrthogonalization"
 int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
@@ -83,8 +83,8 @@ int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it )
 
   Care is taken to accumulate the updated HH/HES values.
  */
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPGMRESIROrthogonalization"
+#undef __FUNC__  
+#define __FUNC__ "KSPGMRESIROrthogonalization"
 int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
@@ -151,8 +151,8 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 
 /*  ---------------------------------------------------------------------------*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPComputeExtremeSingularValues_GMRES"
+#undef __FUNC__  
+#define __FUNC__ "KSPComputeExtremeSingularValues_GMRES"
 int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
@@ -194,8 +194,8 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
 }
 
 #if !defined(PETSC_COMPLEX)
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPComputeEigenvalues_GMRES"
+#undef __FUNC__  
+#define __FUNC__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
@@ -229,8 +229,8 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
   return 0;
 }
 #else
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPComputeEigenvalues_GMRES"
+#undef __FUNC__  
+#define __FUNC__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;

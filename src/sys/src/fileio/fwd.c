@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: fwd.c,v 1.5 1996/08/08 14:41:26 bsmith Exp balay $";
+static char vcid[] = "$Id: fwd.c,v 1.6 1996/12/16 21:33:26 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "src/sys/src/files.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscGetWorkingDirectory"
+#undef __FUNC__  
+#define __FUNC__ "PetscGetWorkingDirectory"
 /*@C
    PetscGetWorkingDirectory - Gets the current working directory.
 

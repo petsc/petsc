@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorti.c,v 1.5 1996/09/28 17:29:54 curfman Exp balay $";
+static char vcid[] = "$Id: sorti.c,v 1.6 1996/12/16 22:08:58 balay Exp balay $";
 #endif
 
 /*
@@ -17,8 +17,8 @@ static char vcid[] = "$Id: sorti.c,v 1.5 1996/09/28 17:29:54 curfman Exp balay $
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetsciIqsort"
+#undef __FUNC__  
+#define __FUNC__ "PetsciIqsort"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87.
    Assumes 0 origin for v, number of elements = right+1 (right is index of
    right-most member). */
@@ -44,8 +44,8 @@ static int PetsciIqsort(int *v,int right)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscSortInt"
+#undef __FUNC__  
+#define __FUNC__ "PetscSortInt"
 /*@
    PetscSortInt - Sorts an array of integers in place in increasing order.
 

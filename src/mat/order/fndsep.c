@@ -32,8 +32,8 @@
 /*       FNROOT.                                                 */
 /*                                                               */
 /*****************************************************************/
-#undef __FUNCTION__  
-#define __FUNCTION__ "fndsep"
+#undef __FUNC__  
+#define __FUNC__ "fndsep"
 int fndsep(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *xls, int *ls)
 {

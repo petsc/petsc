@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.25 1996/12/18 22:03:42 balay Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.26 1997/01/01 03:35:54 bsmith Exp balay $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPResidual"
+#undef __FUNC__  
+#define __FUNC__ "KSPResidual"
 /*@
    KSPResidual - Computes the residual.
 
@@ -67,8 +67,8 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPUnwindPreconditioner"
+#undef __FUNC__  
+#define __FUNC__ "KSPUnwindPreconditioner"
 /*@
    KSPUnwindPreconditioner - Unwinds the preconditioning in the solution.
 
@@ -104,8 +104,8 @@ int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPComputeExplicitOperator"
+#undef __FUNC__  
+#define __FUNC__ "KSPComputeExplicitOperator"
 /*@
        KSPComputeExplicitOperator - Computes as a dense matrix the explicit 
           preconditioned operator. This is done by applying the operators to 
@@ -175,8 +175,8 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
 
 #include "pinclude/plapack.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPComputeEigenvaluesExplicitly"
+#undef __FUNC__  
+#define __FUNC__ "KSPComputeEigenvaluesExplicitly"
 /*@
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the 
           preconditioned operator using LAPACK. This is very slow but will generally

@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: dmouse.c,v 1.5 1996/08/08 14:44:45 bsmith Exp balay $";
+static char vcid[] = "$Id: dmouse.c,v 1.6 1996/12/16 18:16:46 balay Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawGetMouseButton"
+#undef __FUNC__  
+#define __FUNC__ "DrawGetMouseButton"
 /*@
        DrawGetMouseButton - Returns location of mouse and which button was
             pressed. Waits for button to be pressed.

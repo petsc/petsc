@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: dgpause.c,v 1.7 1996/12/08 20:18:49 bsmith Exp balay $";
+static char vcid[] = "$Id: dgpause.c,v 1.8 1996/12/16 18:14:18 balay Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawGetPause"
+#undef __FUNC__  
+#define __FUNC__ "DrawGetPause"
 /*@
    DrawGetPause - Gets the amount of time that program pauses after 
    a DrawPause() is called. 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zerodiag.c,v 1.11 1996/12/19 00:19:51 balay Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.12 1997/01/01 03:38:57 bsmith Exp balay $";
 #endif
 
 /*
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: zerodiag.c,v 1.11 1996/12/19 00:19:51 balay Exp bsmit
 
 #define SWAP(a,b) {int _t; _t = a; a = b; b = _t; }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatZeroFindPre_Private"
+#undef __FUNC__  
+#define __FUNC__ "MatZeroFindPre_Private"
 /* Given a current row and current permutation, find a column permutation
    that removes a zero diagonal */
 int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
@@ -44,8 +44,8 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatReorderForNonzeroDiagonal"
+#undef __FUNC__  
+#define __FUNC__ "MatReorderForNonzeroDiagonal"
 /*@
     MatReorderForNonzeroDiagonal - Changes matrix ordering to remove
         zeros from diagonal. This may help in the LU factorization to 

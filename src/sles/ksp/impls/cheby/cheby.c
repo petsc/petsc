@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.44 1996/12/18 23:17:00 balay Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.45 1997/01/01 03:36:11 bsmith Exp balay $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: cheby.c,v 1.44 1996/12/18 23:17:00 balay Exp bsmith $
 #include "src/ksp/impls/cheby/chebctx.h"
 #include "pinclude/pviewer.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetUp_Chebychev"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetUp_Chebychev"
 int KSPSetUp_Chebychev(KSP ksp)
 {
   if (ksp->pc_side == PC_SYMMETRIC)
@@ -21,8 +21,8 @@ int KSPSetUp_Chebychev(KSP ksp)
   return KSPDefaultGetWork( ksp, 3 );
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPChebychevSetEigenvalues"
+#undef __FUNC__  
+#define __FUNC__ "KSPChebychevSetEigenvalues"
 /*@
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
@@ -43,8 +43,8 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSolve_Chebychev"
+#undef __FUNC__  
+#define __FUNC__ "KSPSolve_Chebychev"
 int  KSPSolve_Chebychev(KSP ksp,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i = 0,pres,hist_len,cerr,ierr;
@@ -147,8 +147,8 @@ int  KSPSolve_Chebychev(KSP ksp,int *its)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPView_Chebychev"
+#undef __FUNC__  
+#define __FUNC__ "KSPView_Chebychev"
 static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 {
   KSP           ksp = (KSP)obj;
@@ -168,8 +168,8 @@ static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPCreate_Chebychev"
+#undef __FUNC__  
+#define __FUNC__ "KSPCreate_Chebychev"
 int KSPCreate_Chebychev(KSP ksp)
 {
   KSP_Chebychev *chebychevP = PetscNew(KSP_Chebychev);CHKPTRQ(chebychevP);

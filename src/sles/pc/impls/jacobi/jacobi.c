@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: jacobi.c,v 1.27 1996/11/07 15:08:48 bsmith Exp balay $";
+static char vcid[] = "$Id: jacobi.c,v 1.28 1996/12/17 17:05:20 balay Exp balay $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -12,8 +12,8 @@ typedef struct {
   Vec diagsqrt;
 } PC_Jacobi;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCSetUp_Jacobi"
+#undef __FUNC__  
+#define __FUNC__ "PCSetUp_Jacobi"
 static int PCSetUp_Jacobi(PC pc)
 {
   int        ierr, i, n;
@@ -47,8 +47,8 @@ static int PCSetUp_Jacobi(PC pc)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCApply_Jacobi"
+#undef __FUNC__  
+#define __FUNC__ "PCApply_Jacobi"
 static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
@@ -57,8 +57,8 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCApplySymmetricLeftOrRight_Jacobi"
+#undef __FUNC__  
+#define __FUNC__ "PCApplySymmetricLeftOrRight_Jacobi"
 static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
@@ -66,8 +66,8 @@ static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCDestroy_Jacobi"
+#undef __FUNC__  
+#define __FUNC__ "PCDestroy_Jacobi"
 static int PCDestroy_Jacobi(PetscObject obj)
 {
   PC pc = (PC) obj;
@@ -78,8 +78,8 @@ static int PCDestroy_Jacobi(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCCreate_Jacobi"
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_Jacobi"
 int PCCreate_Jacobi(PC pc)
 {
   PC_Jacobi *jac = PetscNew(PC_Jacobi); CHKPTRQ(jac);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.27 1996/12/18 23:18:42 balay Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.28 1997/01/01 03:35:22 bsmith Exp balay $";
 #endif
 /*
      Some useful vector utility functions.
@@ -7,8 +7,8 @@ static char vcid[] = "$Id: vinv.c,v 1.27 1996/12/18 23:18:42 balay Exp bsmith $"
 #include "vec.h"   /*I "vec.h" I*/
 #include "src/vec/vecimpl.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecReciprocal"
+#undef __FUNC__  
+#define __FUNC__ "VecReciprocal"
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
 
@@ -33,8 +33,8 @@ int VecReciprocal(Vec v)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSum"
+#undef __FUNC__  
+#define __FUNC__ "VecSum"
 /*@
    VecSum - Computes the sum of all the components of a vector.
 
@@ -67,8 +67,8 @@ int VecSum(Vec v,Scalar *sum)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecShift"
+#undef __FUNC__  
+#define __FUNC__ "VecShift"
 /*@
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
@@ -96,8 +96,8 @@ int VecShift(Scalar *shift,Vec v)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecAbs"
+#undef __FUNC__  
+#define __FUNC__ "VecAbs"
 /*@
    VecAbs - Replaces every element in a vector with its absolute value.
 
@@ -121,8 +121,8 @@ int VecAbs(Vec v)
 }
 
 #include "src/vec/impls/dvecimpl.h"
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecPlaceArray"
+#undef __FUNC__  
+#define __FUNC__ "VecPlaceArray"
 /*@
     VecPlaceArray - Allows one to replace the array in a vector with 
          a user provided one. This is useful to avoid copying an 
@@ -150,8 +150,8 @@ int VecPlaceArray(Vec vec,Scalar *array)
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecEqual"
+#undef __FUNC__  
+#define __FUNC__ "VecEqual"
 /*@
    VecEqual - Compares two vectors.
 

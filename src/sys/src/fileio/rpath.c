@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rpath.c,v 1.5 1996/08/08 14:41:26 bsmith Exp balay $";
+static char vcid[] = "$Id: rpath.c,v 1.6 1996/12/16 22:07:41 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -7,8 +7,8 @@ static char vcid[] = "$Id: rpath.c,v 1.5 1996/08/08 14:41:26 bsmith Exp balay $"
 #include "src/sys/src/files.h"
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscGetRelativePath"
+#undef __FUNC__  
+#define __FUNC__ "PetscGetRelativePath"
 /*@C
    PetscGetRelativePath - Given a filename, returns the relative path (removes
    all directory specifiers).

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dadestroy.c,v 1.7 1996/09/28 17:15:49 curfman Exp balay $";
+static char vcid[] = "$Id: dadestroy.c,v 1.8 1996/12/16 21:08:35 balay Exp balay $";
 #endif
  
 /*
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: dadestroy.c,v 1.7 1996/09/28 17:15:49 curfman Exp bal
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DADestroy"
+#undef __FUNC__  
+#define __FUNC__ "DADestroy"
 /*@C
    DADestroy - Destroys a distributed array.
 

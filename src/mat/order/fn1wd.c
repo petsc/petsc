@@ -29,8 +29,8 @@
 /*    PROGRAM SUBROUTINE -                                       */
 /*       FNROOT.                                                 */
 /*****************************************************************/
-#undef __FUNCTION__  
-#define __FUNCTION__ "fn1wd"
+#undef __FUNC__  
+#define __FUNC__ "fn1wd"
 int fn1wd(int *root, int *xadj, int *adjncy, 
 	int *mask, int *nsep, int *sep, int *nlvl, int *
 	xls, int *ls)

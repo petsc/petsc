@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: preonly.c,v 1.17 1996/08/08 14:41:16 bsmith Exp balay $";
+static char vcid[] = "$Id: preonly.c,v 1.18 1996/12/17 16:36:50 balay Exp balay $";
 #endif
 
 /*                       
@@ -12,15 +12,15 @@ static char vcid[] = "$Id: preonly.c,v 1.17 1996/08/08 14:41:16 bsmith Exp balay
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetUp_PREONLY"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetUp_PREONLY"
 static int KSPSetUp_PREONLY(KSP ksp)
 {
  return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSolve_PREONLY"
+#undef __FUNC__  
+#define __FUNC__ "KSPSolve_PREONLY"
 static int  KSPSolve_PREONLY(KSP ksp,int *its)
 {
   int ierr;
@@ -32,8 +32,8 @@ static int  KSPSolve_PREONLY(KSP ksp,int *its)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPCreate_PREONLY"
+#undef __FUNC__  
+#define __FUNC__ "KSPCreate_PREONLY"
 int KSPCreate_PREONLY(KSP ksp)
 {
   ksp->data                 = (void *) 0;

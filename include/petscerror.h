@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.4 1997/01/01 03:42:38 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.5 1997/01/01 13:54:22 bsmith Exp balay $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -17,8 +17,8 @@
    Defines the function where the compiled source is located; used 
    in printing error messages.
 */
-#if !defined(__FUNCTION__)
-#define __FUNCTION__ 0
+#if !defined(__FUNC__)
+#define __FUNC__ 0
 #endif
 
 /* 
@@ -56,8 +56,8 @@
 #define PETSC_ERR_MAT_CH_ZRPVT    71   /* Detected a zero pivot during Cholesky factorization */
 
 #if defined(PETSC_DEBUG)
-#define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNCTION__,__FILE__,__DIR__,n,p,s);}
-#define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNCTION__,__FILE__,__DIR__,n,p,s);\
+#define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNC__,__FILE__,__DIR__,n,p,s);}
+#define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNC__,__FILE__,__DIR__,n,p,s);\
                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)     {if (n) SETERRQ(n,0,(char *)0);}
 #define CHKERRA(n)     {if (n) SETERRA(n,0,(char *)0);}

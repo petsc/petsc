@@ -28,8 +28,8 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       QMDMRG.*/
 /******************************************************************/
-#undef __FUNCTION__  
-#define __FUNCTION__ "qmdupd"
+#undef __FUNC__  
+#define __FUNC__ "qmdupd"
 int qmdupd(int *xadj, int *adjncy, int *nlist, 
 	int *list, int *deg, int *qsize, int *qlink, int *
 	marker, int *rchset, int *nbrhd)

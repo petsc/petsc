@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: mhas.c,v 1.6 1996/09/28 23:12:06 curfman Exp balay $";
+static char vcid[] = "$Id: mhas.c,v 1.7 1996/12/16 20:10:03 balay Exp balay $";
 #endif
 
 
 #include "petsc.h"
 #include "src/mat/matimpl.h"        /*I "mat.h" I*/
        
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatHasOperation"
+#undef __FUNC__  
+#define __FUNC__ "MatHasOperation"
 /*@
     MatHasOperation - Determines if the given matrix supports the particular
     operation.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dasub.c,v 1.9 1996/12/18 23:00:09 balay Exp bsmith $";
+static char vcid[] = "$Id: dasub.c,v 1.10 1997/01/01 03:41:35 bsmith Exp balay $";
 #endif
  
 /*
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: dasub.c,v 1.9 1996/12/18 23:00:09 balay Exp bsmith $"
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DAGetProcessorSubset"
+#undef __FUNC__  
+#define __FUNC__ "DAGetProcessorSubset"
 /*@C
    DAGetProcessorSubset - Returns a communicator consisting only of the
    processors in a DA that own a particular global x, y, or z grid point

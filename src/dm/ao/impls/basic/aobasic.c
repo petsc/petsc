@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.10 1996/12/18 23:18:25 balay Exp bsmith $";
+static char vcid[] = "$Id: aodebug.c,v 1.11 1997/01/01 03:42:16 bsmith Exp balay $";
 #endif
 
 /*
@@ -17,8 +17,8 @@ typedef struct {
                     /* petsc[j] is the partner for the jth app slot */
 } AO_Debug;
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AODestroy_Debug"
+#undef __FUNC__  
+#define __FUNC__ "AODestroy_Debug"
 static int AODestroy_Debug(PetscObject obj)
 {
   AO       ao = (AO) obj;
@@ -30,8 +30,8 @@ static int AODestroy_Debug(PetscObject obj)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOView_Debug"
+#undef __FUNC__  
+#define __FUNC__ "AOView_Debug"
 static int AOView_Debug(PetscObject obj,Viewer viewer)
 {
   AO          ao = (AO) obj;
@@ -58,8 +58,8 @@ static int AOView_Debug(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOPetscToApplication_Debug"
+#undef __FUNC__  
+#define __FUNC__ "AOPetscToApplication_Debug"
 static int AOPetscToApplication_Debug(AO ao,int n,int *ia)
 {
   int      i;
@@ -71,8 +71,8 @@ static int AOPetscToApplication_Debug(AO ao,int n,int *ia)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOApplicationToPetsc_Debug"
+#undef __FUNC__  
+#define __FUNC__ "AOApplicationToPetsc_Debug"
 static int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
 {
   int      i;
@@ -87,8 +87,8 @@ static int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
 static struct _AOOps myops = {AOPetscToApplication_Debug,
                               AOApplicationToPetsc_Debug};
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOCreateDebug"
+#undef __FUNC__  
+#define __FUNC__ "AOCreateDebug"
 /*@C
    AOCreateDebug - Creates a basic application ordering.
 
@@ -170,8 +170,8 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   *aoout = ao; return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "AOCreateDebugIS"
+#undef __FUNC__  
+#define __FUNC__ "AOCreateDebugIS"
 /*@C
    AOCreateDebugIS - Creates a basic application ordering.
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.33 1996/12/18 23:17:02 balay Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.34 1997/01/01 03:36:07 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -15,8 +15,8 @@ static char vcid[] = "$Id: cgs.c,v 1.33 1996/12/18 23:17:02 balay Exp bsmith $";
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetUp_CGS"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetUp_CGS"
 static int KSPSetUp_CGS(KSP ksp)
 {
   if (ksp->pc_side == PC_SYMMETRIC)
@@ -24,8 +24,8 @@ static int KSPSetUp_CGS(KSP ksp)
   return KSPDefaultGetWork( ksp, 8 );
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSolve_CGS"
+#undef __FUNC__  
+#define __FUNC__ "KSPSolve_CGS"
 static int  KSPSolve_CGS(KSP ksp,int *its)
 {
   int       i = 0, maxit, hist_len, cerr = 0, ierr;
@@ -100,8 +100,8 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPCreate_CGS"
+#undef __FUNC__  
+#define __FUNC__ "KSPCreate_CGS"
 int KSPCreate_CGS(KSP ksp)
 {
   ksp->data                 = (void *) 0;

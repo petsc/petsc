@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.27 1996/08/08 14:41:55 bsmith Exp balay $";
+static char vcid[] = "$Id: pcregis.c,v 1.28 1996/12/16 20:13:35 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -18,8 +18,8 @@ extern int PCCreate_ICC(PC);
 extern int PCCreate_ASM(PC);
 extern int PCCreate_BGS(PC);
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PCRegisterAll"
+#undef __FUNC__  
+#define __FUNC__ "PCRegisterAll"
 /*@C
   PCRegisterAll - Registers all of the preconditioners in the PC package.
 

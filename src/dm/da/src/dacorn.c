@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dacorn.c,v 1.6 1996/11/07 15:11:52 bsmith Exp balay $";
+static char vcid[] = "$Id: dacorn.c,v 1.7 1996/12/16 21:08:24 balay Exp balay $";
 #endif
  
 /*
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: dacorn.c,v 1.6 1996/11/07 15:11:52 bsmith Exp balay $
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DAGetCorners"
+#undef __FUNC__  
+#define __FUNC__ "DAGetCorners"
 /*@
    DAGetCorners - Returns the global (x,y,z) indices of the lower left
    corner of the local region, excluding ghost points.

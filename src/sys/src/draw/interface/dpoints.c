@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: dpoints.c,v 1.9 1996/12/18 21:42:27 balay Exp bsmith $";
+static char vcid[] = "$Id: dpoints.c,v 1.10 1997/01/01 03:39:24 bsmith Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DrawPointSetSize"
+#undef __FUNC__  
+#define __FUNC__ "DrawPointSetSize"
 /*@
    DrawPointSetSize - Sets the point size for future draws.  The size is
    relative to the user coordinates of the window; 0.0 denotes the natural

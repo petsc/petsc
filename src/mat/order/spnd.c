@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spnd.c,v 1.16 1996/12/19 00:16:02 balay Exp bsmith $";
+static char vcid[] = "$Id: spnd.c,v 1.17 1997/01/01 03:38:11 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -9,8 +9,8 @@ static char vcid[] = "$Id: spnd.c,v 1.16 1996/12/19 00:16:02 balay Exp bsmith $"
 /*
     MatOrder_ND - Find the nested dissection ordering of a given matrix.
 */    
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatOrder_ND"
+#undef __FUNC__  
+#define __FUNC__ "MatOrder_ND"
 int MatOrder_ND( Mat mat, MatReordering type, IS *row, IS *col)
 {
   int        ierr, i,  *mask, *xls, *ls, nrow,*ia,*ja,*perm;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dalocal.c,v 1.4 1996/08/08 14:47:19 bsmith Exp balay $";
+static char vcid[] = "$Id: dalocal.c,v 1.5 1996/12/16 21:10:30 balay Exp balay $";
 #endif
  
 /*
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: dalocal.c,v 1.4 1996/08/08 14:47:19 bsmith Exp balay 
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "DAGetLocalVector"
+#undef __FUNC__  
+#define __FUNC__ "DAGetLocalVector"
 /*@C
    DAGetLocalVector - Gets a local vector (including ghost points) for a 
    distributed array.  Additional vectors of the same type can be created 

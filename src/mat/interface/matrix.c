@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.214 1997/01/03 17:26:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.215 1997/01/03 18:42:42 bsmith Exp balay $";
 #endif
 
 /*
@@ -14,8 +14,8 @@ static char vcid[] = "$Id: matrix.c,v 1.214 1997/01/03 17:26:41 bsmith Exp bsmit
 #include "draw.h"
        
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetRow"
+#undef __FUNC__  
+#define __FUNC__ "MatGetRow"
 /*@C
    MatGetRow - Gets a row of a matrix.  You MUST call MatRestoreRow()
    for each row that you get to ensure that your application does
@@ -64,8 +64,8 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatRestoreRow"
+#undef __FUNC__  
+#define __FUNC__ "MatRestoreRow"
 /*@C  
    MatRestoreRow - Frees any temporary space allocated by MatGetRow().
 
@@ -88,8 +88,8 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
   return (*mat->ops.restorerow)(mat,row,ncols,cols,vals);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatView"
+#undef __FUNC__  
+#define __FUNC__ "MatView"
 /*@C
    MatView - Visualizes a matrix object.
 
@@ -170,8 +170,8 @@ int MatView(Mat mat,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatDestroy"
+#undef __FUNC__  
+#define __FUNC__ "MatDestroy"
 /*@C
    MatDestroy - Frees space taken by a matrix.
   
@@ -188,8 +188,8 @@ int MatDestroy(Mat mat)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatValid"
+#undef __FUNC__  
+#define __FUNC__ "MatValid"
 /*@
    MatValid - Checks whether a matrix object is valid.
 
@@ -212,8 +212,8 @@ int MatValid(Mat m,PetscTruth *flg)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSetValues"
+#undef __FUNC__  
+#define __FUNC__ "MatSetValues"
 /*@ 
    MatSetValues - Inserts or adds a block of values into a matrix.
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 
@@ -263,8 +263,8 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetValues"
+#undef __FUNC__  
+#define __FUNC__ "MatGetValues"
 /*@ 
    MatGetValues - Gets a block of values from a matrix.
 
@@ -304,8 +304,8 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSetLocalToGlobalMapping"
+#undef __FUNC__  
+#define __FUNC__ "MatSetLocalToGlobalMapping"
 /*@
    MatSetLocalToGlobalMapping - Sets a local numbering to global numbering used
      by the routine MatSetValuesLocal() to allow users to insert matrices entries
@@ -334,8 +334,8 @@ int MatSetLocalToGlobalMapping(Mat x, int n,int *indices)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSetValuesLocal"
+#undef __FUNC__  
+#define __FUNC__ "MatSetValuesLocal"
 /*@
    MatSetValuesLocal - Inserts or adds values into certain locations of a matrix,
         using a local ordering of the nodes. 
@@ -389,8 +389,8 @@ int MatSetValuesLocal(Mat x,int nrow,int *irow,int ncol, int *icol,Scalar *y,Ins
 }
 
 /* --------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatMult"
+#undef __FUNC__  
+#define __FUNC__ "MatMult"
 /*@
    MatMult - Computes the matrix-vector product, y = Ax.
 
@@ -428,8 +428,8 @@ int MatMult(Mat mat,Vec x,Vec y)
   return 0;
 }   
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatMultTrans"
+#undef __FUNC__  
+#define __FUNC__ "MatMultTrans"
 /*@
    MatMultTrans - Computes matrix transpose times a vector.
 
@@ -464,8 +464,8 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
   return 0;
 }   
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatMultAdd"
+#undef __FUNC__  
+#define __FUNC__ "MatMultAdd"
 /*@
     MatMultAdd -  Computes v3 = v2 + A * v1.
 
@@ -504,8 +504,8 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   return 0;
 }   
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatMultTransAdd"
+#undef __FUNC__  
+#define __FUNC__ "MatMultTransAdd"
 /*@
    MatMultTransAdd - Computes v3 = v2 + A' * v1.
 
@@ -543,8 +543,8 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   return 0;
 }
 /* ------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetInfo"
+#undef __FUNC__  
+#define __FUNC__ "MatGetInfo"
 /*@C
    MatGetInfo - Returns information about matrix storage (number of
    nonzeros, memory, etc.).
@@ -608,8 +608,8 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 }   
 
 /* ----------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatILUDTFactor"
+#undef __FUNC__  
+#define __FUNC__ "MatILUDTFactor"
 /*@  
    MatILUDTFactor - Performs a drop tolerance ILU factorization.
 
@@ -643,8 +643,8 @@ int MatILUDTFactor(Mat mat,double dt,int maxnz,IS row,IS col,Mat *fact)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactor"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactor"
 /*@  
    MatLUFactor - Performs in-place LU factorization of matrix.
 
@@ -673,8 +673,8 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorSymbolic"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorSymbolic"
 /*@  
    MatILUFactor - Performs in-place ILU factorization of matrix.
 
@@ -705,8 +705,8 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorSymbolic"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorSymbolic"
 /*@  
    MatLUFactorSymbolic - Performs symbolic LU factorization of matrix.
    Call this routine before calling MatLUFactorNumeric().
@@ -749,8 +749,8 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatLUFactorNumeric"
+#undef __FUNC__  
+#define __FUNC__ "MatLUFactorNumeric"
 /*@  
    MatLUFactorNumeric - Performs numeric LU factorization of a matrix.
    Call this routine after first calling MatLUFactorSymbolic().
@@ -794,8 +794,8 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatCholeskyFactor"
+#undef __FUNC__  
+#define __FUNC__ "MatCholeskyFactor"
 /*@  
    MatCholeskyFactor - Performs in-place Cholesky factorization of a
    symmetric matrix. 
@@ -828,8 +828,8 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatCholeskyFactorSymbolic"
+#undef __FUNC__  
+#define __FUNC__ "MatCholeskyFactorSymbolic"
 /*@  
    MatCholeskyFactorSymbolic - Performs symbolic Cholesky factorization
    of a symmetric matrix. 
@@ -866,8 +866,8 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatCholeskyFactorNumeric"
+#undef __FUNC__  
+#define __FUNC__ "MatCholeskyFactorNumeric"
 /*@  
    MatCholeskyFactorNumeric - Performs numeric Cholesky factorization
    of a symmetric matrix. Call this routine after first calling
@@ -900,8 +900,8 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 }
 
 /* ----------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolve"
+#undef __FUNC__  
+#define __FUNC__ "MatSolve"
 /*@
    MatSolve - Solves A x = b, given a factored matrix.
 
@@ -938,8 +938,8 @@ int MatSolve(Mat mat,Vec b,Vec x)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatForwardSolve"
+#undef __FUNC__  
+#define __FUNC__ "MatForwardSolve"
 /* @
    MatForwardSolve - Solves L x = b, given a factored matrix, A = LU.
 
@@ -979,8 +979,8 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatBackwardSolve"
+#undef __FUNC__  
+#define __FUNC__ "MatBackwardSolve"
 /* @
    MatBackwardSolve - Solves U x = b, given a factored matrix, A = LU.
 
@@ -1020,8 +1020,8 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolveAdd"
+#undef __FUNC__  
+#define __FUNC__ "MatSolveAdd"
 /*@
    MatSolveAdd - Computes x = y + inv(A)*b, given a factored matrix.
 
@@ -1079,8 +1079,8 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolveTrans"
+#undef __FUNC__  
+#define __FUNC__ "MatSolveTrans"
 /*@
    MatSolveTrans - Solves A' x = b, given a factored matrix.
 
@@ -1116,8 +1116,8 @@ int MatSolveTrans(Mat mat,Vec b,Vec x)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSolveTransAdd"
+#undef __FUNC__  
+#define __FUNC__ "MatSolveTransAdd"
 /*@
    MatSolveTransAdd - Computes x = y + inv(trans(A)) b, given a 
                       factored matrix. 
@@ -1176,8 +1176,8 @@ int MatSolveTransAdd(Mat mat,Vec b,Vec y,Vec x)
 }
 /* ----------------------------------------------------------------*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatRelax"
+#undef __FUNC__  
+#define __FUNC__ "MatRelax"
 /*@
    MatRelax - Computes one relaxation sweep.
 
@@ -1236,8 +1236,8 @@ int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatCopy_Basic"
+#undef __FUNC__  
+#define __FUNC__ "MatCopy_Basic"
 /*
       Default matrix copy routine.
 */
@@ -1258,8 +1258,8 @@ int MatCopy_Basic(Mat A,Mat B)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatCopy"
+#undef __FUNC__  
+#define __FUNC__ "MatCopy"
 /*@C  
    MatCopy - Copys a matrix to another matrix.
 
@@ -1297,8 +1297,8 @@ int MatCopy(Mat A,Mat B)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatConvert"
+#undef __FUNC__  
+#define __FUNC__ "MatConvert"
 /*@C  
    MatConvert - Converts a matrix to another matrix, either of the same
    or different type.
@@ -1347,8 +1347,8 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetDiagonal"
+#undef __FUNC__  
+#define __FUNC__ "MatGetDiagonal"
 /*@ 
    MatGetDiagonal - Gets the diagonal of a matrix.
 
@@ -1370,8 +1370,8 @@ int MatGetDiagonal(Mat mat,Vec v)
   return (*mat->ops.getdiagonal)(mat,v);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatTranspose"
+#undef __FUNC__  
+#define __FUNC__ "MatTranspose"
 /*@C
    MatTranspose - Computes an in-place or out-of-place transpose of a matrix.
 
@@ -1394,8 +1394,8 @@ int MatTranspose(Mat mat,Mat *B)
   return (*mat->ops.transpose)(mat,B);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatEqual"
+#undef __FUNC__  
+#define __FUNC__ "MatEqual"
 /*@
    MatEqual - Compares two matrices.
 
@@ -1420,8 +1420,8 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
   return (*A->ops.equal)(A,B,flg);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatDiagonalScale"
+#undef __FUNC__  
+#define __FUNC__ "MatDiagonalScale"
 /*@
    MatDiagonalScale - Scales a matrix on the left and right by diagonal
    matrices that are stored as vectors.  Either of the two scaling
@@ -1457,8 +1457,8 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatScale"
+#undef __FUNC__  
+#define __FUNC__ "MatScale"
 /*@
     MatScale - Scales all elements of a matrix by a given number.
 
@@ -1488,8 +1488,8 @@ int MatScale(Scalar *a,Mat mat)
   return 0;
 } 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatNorm"
+#undef __FUNC__  
+#define __FUNC__ "MatNorm"
 /*@ 
    MatNorm - Calculates various norms of a matrix.
 
@@ -1519,8 +1519,8 @@ int MatNorm(Mat mat,NormType type,double *norm)
    are called from within a MatAssemblyEnd().
 */
 static int MatAssemblyEnd_InUse = 0;
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatAssemblyBegin"
+#undef __FUNC__  
+#define __FUNC__ "MatAssemblyBegin"
 /*@
    MatAssemblyBegin - Begins assembling the matrix.  This routine should
    be called after completing all calls to MatSetValues().
@@ -1559,8 +1559,8 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatAssemblyEnd"
+#undef __FUNC__  
+#define __FUNC__ "MatAssemblyEnd"
 /*@
    MatAssemblyEnd - Completes assembling the matrix.  This routine should
    be called after MatAssemblyBegin().
@@ -1650,8 +1650,8 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatCompress"
+#undef __FUNC__  
+#define __FUNC__ "MatCompress"
 /*@
    MatCompress - Tries to store the matrix in as little space as 
    possible.  May fail if memory is already fully used, since it
@@ -1669,8 +1669,8 @@ int MatCompress(Mat mat)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatSetOption"
+#undef __FUNC__  
+#define __FUNC__ "MatSetOption"
 /*@
    MatSetOption - Sets a parameter option for a matrix. Some options
    may be specific to certain storage formats.  Some options
@@ -1723,8 +1723,8 @@ int MatSetOption(Mat mat,MatOption op)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatZeroEntries"
+#undef __FUNC__  
+#define __FUNC__ "MatZeroEntries"
 /*@
    MatZeroEntries - Zeros all entries of a matrix.  For sparse matrices
    this routine retains the old nonzero structure.
@@ -1749,8 +1749,8 @@ int MatZeroEntries(Mat mat)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatZeroRows"
+#undef __FUNC__  
+#define __FUNC__ "MatZeroRows"
 /*@ 
    MatZeroRows - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix.
@@ -1791,8 +1791,8 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatZeroRowsLocal"
+#undef __FUNC__  
+#define __FUNC__ "MatZeroRowsLocal"
 /*@ 
    MatZeroRowsLocal - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
@@ -1836,8 +1836,8 @@ int MatZeroRowsLocal(Mat mat,IS is, Scalar *diag)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetSize"
+#undef __FUNC__  
+#define __FUNC__ "MatGetSize"
 /*@
    MatGetSize - Returns the numbers of rows and columns in a matrix.
 
@@ -1860,8 +1860,8 @@ int MatGetSize(Mat mat,int *m,int* n)
   return (*mat->ops.getsize)(mat,m,n);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetLocalSize"
+#undef __FUNC__  
+#define __FUNC__ "MatGetLocalSize"
 /*@
    MatGetLocalSize - Returns the number of rows and columns in a matrix
    stored locally.  This information may be implementation dependent, so
@@ -1886,8 +1886,8 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
   return (*mat->ops.getlocalsize)(mat,m,n);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetOwnershipRange"
+#undef __FUNC__  
+#define __FUNC__ "MatGetOwnershipRange"
 /*@
    MatGetOwnershipRange - Returns the range of matrix rows owned by
    this processor, assuming that the matrix is laid out with the first
@@ -1912,8 +1912,8 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
   return (*mat->ops.getownershiprange)(mat,m,n);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatILUFactorSymbolic"
+#undef __FUNC__  
+#define __FUNC__ "MatILUFactorSymbolic"
 /*@  
    MatILUFactorSymbolic - Performs symbolic ILU factorization of a matrix.
    Uses levels of fill only, not drop tolerance. Use MatLUFactorNumeric() 
@@ -1960,8 +1960,8 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatIncompleteCholeskyFactorSymbolic"
+#undef __FUNC__  
+#define __FUNC__ "MatIncompleteCholeskyFactorSymbolic"
 /*@  
    MatIncompleteCholeskyFactorSymbolic - Performs symbolic incomplete
    Cholesky factorization for a symmetric matrix.  Use 
@@ -2001,8 +2001,8 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetArray"
+#undef __FUNC__  
+#define __FUNC__ "MatGetArray"
 /*@C
    MatGetArray - Returns a pointer to the element values in the matrix.
    This routine  is implementation dependent, and may not even work for 
@@ -2032,8 +2032,8 @@ int MatGetArray(Mat mat,Scalar **v)
   return (*mat->ops.getarray)(mat,v);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatRestoreArray"
+#undef __FUNC__  
+#define __FUNC__ "MatRestoreArray"
 /*@C
    MatRestoreArray - Restores the matrix after MatGetArray has been called.
 
@@ -2057,8 +2057,8 @@ int MatRestoreArray(Mat mat,Scalar **v)
   return (*mat->ops.restorearray)(mat,v);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetSubMatrices"
+#undef __FUNC__  
+#define __FUNC__ "MatGetSubMatrices"
 /*@C
    MatGetSubMatrices - Extracts several submatrices from a matrix. If submat
    points to an array of valid matrices, it may be reused.
@@ -2102,8 +2102,8 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatDestroyMatrices"
+#undef __FUNC__  
+#define __FUNC__ "MatDestroyMatrices"
 /*@C
    MatDestroyMatrices - Destroys a set of matrices obtained with MatGetSubMatrices().
 
@@ -2127,8 +2127,8 @@ int MatDestroyMatrices(int n,Mat **mat)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatIncreaseOverlap"
+#undef __FUNC__  
+#define __FUNC__ "MatIncreaseOverlap"
 /*@
    MatIncreaseOverlap - Given a set of submatrices indicated by index sets,
    replaces the index by larger ones that represent submatrices with more
@@ -2159,8 +2159,8 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is,int ov)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatPrintHelp"
+#undef __FUNC__  
+#define __FUNC__ "MatPrintHelp"
 /*@
    MatPrintHelp - Prints all the options for the matrix.
 
@@ -2194,8 +2194,8 @@ int MatPrintHelp(Mat mat)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetBlockSize"
+#undef __FUNC__  
+#define __FUNC__ "MatGetBlockSize"
 /*@
    MatGetBlockSize - Returns the matrix block size; useful especially for the
    block row and block diagonal formats.
@@ -2222,8 +2222,8 @@ int MatGetBlockSize(Mat mat,int *bs)
   return (*mat->ops.getblocksize)(mat,bs);
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetRowIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatGetRowIJ"
 /*@C
       MatGetRowIJ - Returns the compress row storage i and j indices for sequential matrices.
                  EXPERTS ONLY.
@@ -2255,8 +2255,8 @@ int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatGetColumnIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatGetColumnIJ"
 /*@C
       MatGetColumnIJ - Returns the compress Column storage i and j indices for sequential matrices.
                  EXPERTS ONLY.
@@ -2289,8 +2289,8 @@ int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** 
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatRestoreRowIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatRestoreRowIJ"
 /*@C
       MatRestoreRowIJ - Call after you are completed with the ia,ja indices obtained with
                      MatGetRowIJ(). EXPERTS ONLY.
@@ -2323,8 +2323,8 @@ int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int**
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatRestoreColumnIJ"
+#undef __FUNC__  
+#define __FUNC__ "MatRestoreColumnIJ"
 /*@C
       MatRestoreColumnIJ - Call after you are completed with the ia,ja indices obtained with
                      MatGetColumnIJ(). EXPERTS ONLY.
@@ -2357,8 +2357,8 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatColoringPatch"
+#undef __FUNC__  
+#define __FUNC__ "MatColoringPatch"
 /*@C
       MatColoringPatch - EXPERTS ONLY, used inside matrix coloring routines that 
           use matGetRowIJ() and/or MatGetColumnIJ().

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.29 1996/12/19 00:16:32 balay Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.30 1997/01/01 03:36:14 bsmith Exp balay $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -13,8 +13,8 @@ static char vcid[] = "$Id: lsqr.c,v 1.29 1996/12/19 00:16:32 balay Exp bsmith $"
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetUp_LSQR"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetUp_LSQR"
 static int KSPSetUp_LSQR(KSP ksp)
 {
   int ierr;
@@ -24,8 +24,8 @@ static int KSPSetUp_LSQR(KSP ksp)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSolve_LSQR"
+#undef __FUNC__  
+#define __FUNC__ "KSPSolve_LSQR"
 static int KSPSolve_LSQR(KSP ksp,int *its)
 {
   int          i = 0, maxit, hist_len, cerr = 0, ierr;
@@ -115,8 +115,8 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPCreate_LSQR"
+#undef __FUNC__  
+#define __FUNC__ "KSPCreate_LSQR"
 int KSPCreate_LSQR(KSP ksp)
 {
   ksp->data                 = (void *) 0;

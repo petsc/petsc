@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.65 1996/12/19 00:15:14 balay Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.66 1997/01/01 03:41:00 bsmith Exp balay $";
 #endif
 
 #include <math.h>
@@ -10,8 +10,8 @@ static char vcid[] = "$Id: tr.c,v 1.65 1996/12/19 00:15:14 balay Exp bsmith $";
    This convergence test determines if the two norm of the 
    solution lies outside the trust region, if so it halts.
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNES_TR_KSPConverged_Private"
+#undef __FUNC__  
+#define __FUNC__ "SNES_TR_KSPConverged_Private"
 int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
 {
   SNES                snes = (SNES) ctx;
@@ -55,8 +55,8 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
    necessarily have many of the bells and whistles of other 
    implementations.  
 */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSolve_EQ_TR"
+#undef __FUNC__  
+#define __FUNC__ "SNESSolve_EQ_TR"
 static int SNESSolve_EQ_TR(SNES snes,int *its)
 {
   SNES_TR      *neP = (SNES_TR *) snes->data;
@@ -179,8 +179,8 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   return 0;
 }
 /*------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetUp_EQ_TR"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetUp_EQ_TR"
 static int SNESSetUp_EQ_TR( SNES snes )
 {
   int ierr;
@@ -191,8 +191,8 @@ static int SNESSetUp_EQ_TR( SNES snes )
   return 0;
 }
 /*------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESDestroy_EQ_TR"
+#undef __FUNC__  
+#define __FUNC__ "SNESDestroy_EQ_TR"
 static int SNESDestroy_EQ_TR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
@@ -206,8 +206,8 @@ static int SNESDestroy_EQ_TR(PetscObject obj )
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESSetFromOptions_EQ_TR"
+#undef __FUNC__  
+#define __FUNC__ "SNESSetFromOptions_EQ_TR"
 static int SNESSetFromOptions_EQ_TR(SNES snes)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
@@ -231,8 +231,8 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESPrintHelp_EQ_TR"
+#undef __FUNC__  
+#define __FUNC__ "SNESPrintHelp_EQ_TR"
 static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
@@ -248,8 +248,8 @@ static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESView_EQ_TR"
+#undef __FUNC__  
+#define __FUNC__ "SNESView_EQ_TR"
 static int SNESView_EQ_TR(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;
@@ -269,8 +269,8 @@ static int SNESView_EQ_TR(PetscObject obj,Viewer viewer)
 }
 
 /* ---------------------------------------------------------------- */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESConverged_EQ_TR"
+#undef __FUNC__  
+#define __FUNC__ "SNESConverged_EQ_TR"
 /*@
    SNESConverged_EQ_TR - Monitors the convergence of the trust region
    method SNES_EQ_TR for solving systems of nonlinear equations (default).
@@ -332,8 +332,8 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
   return 0;
 }
 /* ------------------------------------------------------------ */
-#undef __FUNCTION__  
-#define __FUNCTION__ "SNESCreate_EQ_TR"
+#undef __FUNC__  
+#define __FUNC__ "SNESCreate_EQ_TR"
 int SNESCreate_EQ_TR(SNES snes )
 {
   SNES_TR *neP;

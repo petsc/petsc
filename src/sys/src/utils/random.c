@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.23 1996/12/18 22:58:30 balay Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.24 1997/01/01 03:36:26 bsmith Exp balay $";
 #endif
 
 /*
@@ -31,8 +31,8 @@ struct _PetscRandom {
 };
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscRandomDestroy"
+#undef __FUNC__  
+#define __FUNC__ "PetscRandomDestroy"
 /*@C
    PetscRandomDestroy - Destroys a context that has been formed by 
    PetscRandomCreate().
@@ -52,8 +52,8 @@ int PetscRandomDestroy(PetscRandom r)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscRandomSetInterval"
+#undef __FUNC__  
+#define __FUNC__ "PetscRandomSetInterval"
 /*@C
    PetscRandomSetInterval - Sets the interval over which the random numbers
    will be randomly distributed.  By default, this interval is [0,1).
@@ -103,8 +103,8 @@ extern double drand48();
 extern void   srand48(long);
 #endif
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscRandomCreate"
+#undef __FUNC__  
+#define __FUNC__ "PetscRandomCreate"
 /*@C
    PetscRandomCreate - Creates a context for generating random numbers,
    and initializes the random-number generator.
@@ -162,8 +162,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscRandomGetValue"
+#undef __FUNC__  
+#define __FUNC__ "PetscRandomGetValue"
 /*@C
    PetscRandomGetValue - Generates a random number.  Call this after first calling
    PetscRandomCreate().
@@ -216,8 +216,8 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 
 extern double drand48();
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscRandomCreate"
+#undef __FUNC__  
+#define __FUNC__ "PetscRandomCreate"
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
@@ -233,8 +233,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscRandomGetValue"
+#undef __FUNC__  
+#define __FUNC__ "PetscRandomGetValue"
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);

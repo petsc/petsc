@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.16 1996/12/19 00:15:58 balay Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.17 1997/01/01 03:38:11 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -9,8 +9,8 @@ static char vcid[] = "$Id: spqmd.c,v 1.16 1996/12/19 00:15:58 balay Exp bsmith $
 /*
     MatOrder_QMD - Find the Quotient Minimum Degree ordering of a given matrix.
 */    
-#undef __FUNCTION__  
-#define __FUNCTION__ "MatOrder_QMD"
+#undef __FUNC__  
+#define __FUNC__ "MatOrder_QMD"
 int MatOrder_QMD(Mat mat, MatReordering type, IS *row, IS *col) 
 {
   int        i,   *deg, *marker, *rchset, *nbrhd, *qsize, *qlink, nofsub, *iperm, nrow;

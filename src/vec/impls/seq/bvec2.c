@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.83 1997/01/01 03:35:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.84 1997/01/02 01:20:48 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: bvec2.c,v 1.83 1997/01/01 03:35:32 bsmith Exp bsmith 
 #include "src/vec/impls/bvec1.c"
 #include "src/vec/impls/dvec2.c"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecNorm_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecNorm_Seq"
 int VecNorm_Seq(Vec xin,NormType type,double* z )
 {
   Vec_Seq * x = (Vec_Seq *) xin->data;
@@ -51,8 +51,8 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecGetOwnershipRange_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecGetOwnershipRange_Seq"
 static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 {
   Vec_Seq *x = (Vec_Seq *) xin->data;
@@ -62,8 +62,8 @@ static int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 #include "viewer.h"
 #include "sys.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecView_Seq_File"
+#undef __FUNC__  
+#define __FUNC__ "VecView_Seq_File"
 static int VecView_Seq_File(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -108,8 +108,8 @@ static int VecView_Seq_File(Vec xin,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecView_Seq_Draw_LG"
+#undef __FUNC__  
+#define __FUNC__ "VecView_Seq_Draw_LG"
 static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -145,8 +145,8 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecView_Seq_Draw"
+#undef __FUNC__  
+#define __FUNC__ "VecView_Seq_Draw"
 static int VecView_Seq_Draw(Vec xin,Viewer v)
 {
   int        ierr;
@@ -171,8 +171,8 @@ static int VecView_Seq_Draw(Vec xin,Viewer v)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecView_Seq_Binary"
+#undef __FUNC__  
+#define __FUNC__ "VecView_Seq_Binary"
 static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -190,8 +190,8 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 }
 
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecView_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecView_Seq"
 static int VecView_Seq(PetscObject obj,Viewer viewer)
 {
   Vec         xin = (Vec) obj;
@@ -215,8 +215,8 @@ static int VecView_Seq(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecSetValues_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecSetValues_Seq"
 static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -242,8 +242,8 @@ static int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecDestroy_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecDestroy_Seq"
 static int VecDestroy_Seq(PetscObject obj )
 {
   Vec      v  = (Vec ) obj;
@@ -279,8 +279,8 @@ static struct _VeOps DvOps = {VecDuplicate_Seq,
             VecGetOwnershipRange_Seq,0,VecMax_Seq,VecMin_Seq,
             VecSetRandom_Seq};
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecCreateSeq"
+#undef __FUNC__  
+#define __FUNC__ "VecCreateSeq"
 /*@C
    VecCreateSeq - Creates a standard, sequential array-style vector.
 
@@ -325,8 +325,8 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   *V = v; return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "VecDuplicate_Seq"
+#undef __FUNC__  
+#define __FUNC__ "VecDuplicate_Seq"
 static int VecDuplicate_Seq(Vec win,Vec *V)
 {
   int     ierr;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: frame.c,v 1.8 1996/08/08 14:45:12 bsmith Exp balay $";
+static char vcid[] = "$Id: frame.c,v 1.9 1996/12/16 23:29:27 balay Exp balay $";
 #endif
 
 #if defined(HAVE_X11)
@@ -26,8 +26,8 @@ static PixVal HiPix=0, LoPix=0;
 /* 
    Set the colors for the highlights by name 
  */
-#undef __FUNCTION__  
-#define __FUNCTION__ "XiFrameColors"
+#undef __FUNC__  
+#define __FUNC__ "XiFrameColors"
 int XiFrameColors( Draw_X* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
 {
   Rgn->Hi = XiGetColor( XiWin, Hi, 1 );
@@ -36,8 +36,8 @@ int XiFrameColors( Draw_X* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "XiDrawFrame"
+#undef __FUNC__  
+#define __FUNC__ "XiDrawFrame"
 int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
 {
   int    xl = Rgn->Box.x, yl = Rgn->Box.y, xh = Rgn->Box.xh, yh = Rgn->Box.yh,
@@ -107,8 +107,8 @@ int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
 /*
    Set the colors for the highlights by name 
  */
-#undef __FUNCTION__  
-#define __FUNCTION__ "XiFrameColorsByName"
+#undef __FUNC__  
+#define __FUNC__ "XiFrameColorsByName"
 int XiFrameColorsByName(Draw_X* XiWin, char *Hi, char *Lo )
 {
   if (XiWin->numcolors > 2) {

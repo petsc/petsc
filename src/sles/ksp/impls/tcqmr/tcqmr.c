@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.30 1996/12/19 00:16:21 balay Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.31 1997/01/01 03:36:18 bsmith Exp balay $";
 #endif
 
 /*
@@ -15,8 +15,8 @@ static char vcid[] = "$Id: tcqmr.c,v 1.30 1996/12/19 00:16:21 balay Exp bsmith $
 #include "src/ksp/kspimpl.h"
 #include "src/ksp/impls/tcqmr/tcqmrp.h"
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSolve_TCQMR"
+#undef __FUNC__  
+#define __FUNC__ "KSPSolve_TCQMR"
 static int KSPSolve_TCQMR(KSP ksp,int *its )
 {
   double      rnorm0, rnorm,dp1,Gamma;
@@ -146,8 +146,8 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPSetUp_TCQMR"
+#undef __FUNC__  
+#define __FUNC__ "KSPSetUp_TCQMR"
 static int KSPSetUp_TCQMR(KSP ksp)
 {
   int ierr;
@@ -157,8 +157,8 @@ static int KSPSetUp_TCQMR(KSP ksp)
   return 0;
 }
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "KSPCreate_TCQMR"
+#undef __FUNC__  
+#define __FUNC__ "KSPCreate_TCQMR"
 int KSPCreate_TCQMR(KSP ksp)
 {
   ksp->data          = (void *) 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fpath.c,v 1.4 1996/08/08 14:41:26 bsmith Exp balay $";
+static char vcid[] = "$Id: fpath.c,v 1.5 1996/12/16 21:32:02 balay Exp balay $";
 #endif
 /*
       Code for opening and closing files.
@@ -8,8 +8,8 @@ static char vcid[] = "$Id: fpath.c,v 1.4 1996/08/08 14:41:26 bsmith Exp balay $"
 
 #if defined(HAVE_PWD_H)
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscGetFullPath"
+#undef __FUNC__  
+#define __FUNC__ "PetscGetFullPath"
 /*@C
    PetscGetFullPath - Given a filename, returns the fully qualified file name.
 
@@ -79,8 +79,8 @@ int PetscGetFullPath( char *path, char *fullpath, int flen )
   return 0;
 }
 #else
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscGetFullPath"
+#undef __FUNC__  
+#define __FUNC__ "PetscGetFullPath"
 int PetscGetFullPath( char *path, char *fullpath, int flen )
 {
   PetscStrcpy( fullpath, path );

@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.29 1996/12/18 22:59:48 balay Exp bsmith $";
+static char vcid[] = "$Id: destroy.c,v 1.30 1997/01/01 03:36:26 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-#undef __FUNCTION__  
-#define __FUNCTION__ "PetscObjectDestroy"
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectDestroy"
 /*@C
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
    This routine should seldom be needed.
