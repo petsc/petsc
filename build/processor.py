@@ -472,66 +472,26 @@ class SharedLinker(Linker):
       flags.extend(Linker.getLinkerFlags(self, source))
       return flags
 
-  def getOutputFlags(self, source):
-    '''Return a list of the linker flags specifying the library'''
-    if self.argDB['HAVE_CYGWIN']:
-      output_library_name = self.getLibrary(source)
-      return ['-o '+output_library_name+' -Wl,--out-implib='+output_library_name+'.a']
-    return super(SharedLinker, self).getOutputFlags(source)
-
-class ExceptionSharedLinker(SharedLinker):
-  '''An ExceptionSharedLinker processes any FileSet of libraries, and outputs a FileSet of shared libraries'''
+class ImportSharedLinker(SharedLinker):
+  '''An ImportSharedLinker processes any FileSet of libraries, and outputs a FileSet of import libraries'''
   def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = None):
     SharedLinker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
-    self.exceptions     = build.fileset.FileSet()
-    self.exceptions.tag = outputTag+' exception'
+    self.imports     = build.fileset.FileSet()
+    self.imports.tag = outputTag+' import'
     return
 
-  def processFile(self, source, set):
-    '''Link "source"'''
-    if source.find('Exception') >= 0:
-      self.debugPrint('Linking exception '+source, 3, 'link')
-      build.transform.Transform.handleFile(self, source, self.exceptions)
-      return self.processFileSet(build.fileset.FileSet([source], tag = set.tag))
-    else:
-      # Leave this set unchanged
-      build.transform.Transform.handleFile(self, source, set)
-      self.debugPrint('Ignoring non-exception '+source, 3, 'link')
+  def getLibrary(self, object):
+    '''Return the import library'''
+    return super(SharedLinker, self).getLibrary(self, object)+'.a'
+
+  def getOutputFlags(self, source):
+    '''Return a list of the linker flags specifying the library'''
+    return ['-o '+os.path.join(tempfile.tempdir, 'import_dummy')+' -Wl,--out-implib='+self.getLibrary(source)]
+
+  def handleErrors(self, command, status, output):
+    '''Ignore errors when trying to link libraries
+       - This is the only way to get correct C++ mangling'''
     return
-
-  def processFileSet(self, set):
-    '''Link all the files in "set"'''
-    if len(set) == 0: return self.output
-    isException = 0
-    for source in set:
-      if source.find('Exception') >= 0:
-        isException = 1
-    if isException:
-      self.debugPrint('Linking exception '+source, 3, 'compile')
-      for f in set:
-        build.transform.Transform.handleFile(self, f, self.exceptions)
-      library = self.getLibrary(set)
-      self.debugPrint('Linking '+str(set)+' into '+library, 3, 'compile')
-      command = ' '.join([self.getProcessor()]+set+self.getFlags(set))
-      output  = self.executeShellCommand(command, self.handleErrors)
-      self.output.extend(map(lambda f: os.path.join(library, os.path.basename(f)), set))
-    else:
-      self.debugPrint('Ignoring non-exception '+source, 3, 'compile')
-      # Leave this set unchanged
-      for f in set:
-        build.transform.Transform.handleFile(self, f, set)
-    return self.output
-
-  def processOldFile(self, f, set):
-    '''Output old library'''
-    if f.find('Exception') >= 0:
-      self.debugPrint('Reporting old exception '+f, 3, 'compile')
-      self.oldOutput.append(self.getLibrary(f))
-    else:
-      # Leave this set unchanged
-      build.transform.Transform.handleFile(self, f, set)
-      self.debugPrint('Ignoring non-exception '+f, 3, 'link')
-    return self.output
 
 class LibraryAdder (build.transform.Transform):
   '''A LibraryAdder adds every library matching inputTag to the extraLibraries member of linker'''
