@@ -651,7 +651,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCHYPRESetType"
-/*@
+/*@C
      PCHYPRESetType - Sets which hypre preconditioner you wish to use
 
    Input Parameters:

@@ -83,7 +83,7 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
     Mat_MPISBAIJ  *mat =  (Mat_MPISBAIJ*)A->data;
     Mat_SeqSBAIJ  *aa=(Mat_SeqSBAIJ*)(mat->A)->data;
     Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
-    if (mat->bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", mat->bs);
+    if (A->bs > 1) SETERRQ1(PETSC_ERR_SUP," bs=%d is not supported yet\n", A->bs);
     nz = aa->nz + bb->nz;
     ai=aa->i; aj=aa->j; bi=bb->i; bj=bb->j; rstart= mat->rstart;
     garray = mat->garray;
@@ -150,11 +150,12 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MUMPS_Base"
-PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_MUMPS_Base(Mat A,const MatType type,Mat *newmat) \
+{
   PetscErrorCode ierr;
-  Mat       B=*newmat;
-  Mat_MUMPS *mumps=(Mat_MUMPS*)A->spptr;
-  void      (*f)(void);
+  Mat            B=*newmat;
+  Mat_MUMPS      *mumps=(Mat_MUMPS*)A->spptr;
+  void           (*f)(void);
 
   PetscFunctionBegin;
   if (B != A) {
@@ -719,13 +720,13 @@ PetscErrorCode MatAssemblyEnd_AIJMUMPS(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_AIJ_AIJMUMPS"
-PetscErrorCode MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,Mat *newmat)\
+PetscErrorCode MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,Mat *newmat)
 {
   PetscErrorCode ierr;
-  int       size;
-  MPI_Comm  comm;
-  Mat       B=*newmat;
-  Mat_MUMPS *mumps;
+  PetscMPIInt    size;
+  MPI_Comm       comm;
+  Mat            B=*newmat;
+  Mat_MUMPS      *mumps;
 
   PetscFunctionBegin;
   if (B != A) {
@@ -885,11 +886,11 @@ EXTERN_C_BEGIN
 PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newmat) 
 {
   PetscErrorCode ierr;
-  int       size;
-  MPI_Comm  comm;
-  Mat       B=*newmat;
-  Mat_MUMPS *mumps;  
-  void      (*f)(void);
+  PetscMPIInt    size;
+  MPI_Comm       comm;
+  Mat            B=*newmat;
+  Mat_MUMPS      *mumps;  
+  void           (*f)(void);
 
   PetscFunctionBegin;
   if (B != A) {

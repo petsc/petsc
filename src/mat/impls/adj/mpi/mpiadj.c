@@ -166,16 +166,6 @@ PetscErrorCode MatRestoreRow_MPIAdj(Mat A,PetscInt row,PetscInt *nz,PetscInt **i
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetBlockSize_MPIAdj"
-PetscErrorCode MatGetBlockSize_MPIAdj(Mat A,PetscInt *bs)
-{
-  PetscFunctionBegin;
-  *bs = 1;
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatEqual_MPIAdj"
 PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
 {
@@ -294,7 +284,7 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-/*50*/ MatGetBlockSize_MPIAdj,
+/*50*/ 0,
        MatGetRowIJ_MPIAdj,
        MatRestoreRowIJ_MPIAdj,
        0,

@@ -1279,15 +1279,6 @@ PetscErrorCode MatZeroEntries_SeqDense(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetBlockSize_SeqDense"
-PetscErrorCode MatGetBlockSize_SeqDense(Mat A,int *bs)
-{
-  PetscFunctionBegin;
-  *bs = 1;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqDense"
 PetscErrorCode MatZeroRows_SeqDense(Mat A,IS is,const PetscScalar *diag)
 {
@@ -1488,7 +1479,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        0,
-/*50*/ MatGetBlockSize_SeqDense,
+/*50*/ 0,
        0,
        0,
        0,

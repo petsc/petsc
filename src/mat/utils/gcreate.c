@@ -93,14 +93,14 @@ PetscErrorCode MatCreate(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);
   PetscLogObjectCreate(B);
 
-  B->m = m;
-  B->n = n;
-  B->M = M;
-  B->N = N;
-
+  B->m             = m;
+  B->n             = n;
+  B->M             = M;
+  B->N             = N;
+  B->bs            = 1;
   B->preallocated  = PETSC_FALSE;
   B->bops->publish = MatPublish_Base;
-  *A = B;
+  *A               = B;
   PetscFunctionReturn(0);
 }
 

@@ -251,15 +251,6 @@ PetscErrorCode MatZeroEntries_MPIDense(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetBlockSize_MPIDense"
-PetscErrorCode MatGetBlockSize_MPIDense(Mat A,int *bs)
-{
-  PetscFunctionBegin;
-  *bs = 1;
-  PetscFunctionReturn(0);
-}
-
 /* the code does not do the diagonal entries correctly unless the 
    matrix is square and the column and row owerships are identical.
    This is a BUG. The only way to fix it seems to be to access 
@@ -954,7 +945,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        0,
-/*50*/ MatGetBlockSize_MPIDense,
+/*50*/ 0,
        0,
        0,
        0,

@@ -160,11 +160,12 @@ PetscErrorCode  BAIJtoMyANonz( int *AIndex, int *AStruct, int bs,
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_DSCPACK_Base"
-PetscErrorCode MatConvert_DSCPACK_Base(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_DSCPACK_Base(Mat A,const MatType type,Mat *newmat) 
+{
   PetscErrorCode ierr;
-  Mat     B=*newmat;
-  Mat_DSC *lu=(Mat_DSC*)A->spptr;
-  void    (*f)(void);
+  Mat            B=*newmat;
+  Mat_DSC        *lu=(Mat_DSC*)A->spptr;
+  void           (*f)(void);
 
   PetscFunctionBegin;
   if (B != A) {
@@ -461,7 +462,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     
   lu = (Mat_DSC*)B->spptr;
-  lu->bs = bs;
+  B->bs = bs;
 
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_DSCPACK;
   B->ops->solve                  = MatSolve_DSCPACK;
@@ -676,15 +677,16 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Base_DSCPACK"
-PetscErrorCode MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_Base_DSCPACK(Mat A,const MatType type,Mat *newmat) 
+{
   /* This routine is only called to convert to MATDSCPACK */
   /* from MATSEQBAIJ if A has a single process communicator */
   /* or MATMPIBAIJ otherwise, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
-  MPI_Comm comm;
-  Mat      B=*newmat;
-  Mat_DSC  *lu;
-  void     (*f)(void);
+  MPI_Comm       comm;
+  Mat            B=*newmat;
+  Mat_DSC        *lu;
+  void           (*f)(void);
 
   PetscFunctionBegin;
   if (B != A) {

@@ -16,7 +16,7 @@
   PetscInt         nonew;        /* 1 don't add new nonzeros, -1 generate error on new */            \
   PetscTruth       singlemalloc; /* if true a, i, and j have been obtained with                      \
                                         one big malloc */                                            \
-  PetscInt         bs,bs2;       /* block size, square of block size */                              \
+  PetscInt         bs2;          /*  square of block size */                                         \
   PetscInt         mbs,nbs;      /* rows/bs, columns/bs */                                           \
   PetscInt         nz,maxnz;     /* nonzeros, allocated nonzeros */                                  \
   PetscInt         *diag;        /* pointers to diagonal elements */                                 \

@@ -26,8 +26,8 @@ PetscErrorCode MatDestroy_SeqSBAIJSpooles(Mat A)
 PetscErrorCode MatAssemblyEnd_SeqSBAIJSpooles(Mat A,MatAssemblyType mode) \
 {
   PetscErrorCode ierr;
-  int bs;
-  Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
+  PetscInt       bs;
+  Mat_Spooles    *lu=(Mat_Spooles *)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);

@@ -14,7 +14,7 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newma
   PetscErrorCode ierr;
   int *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,j,k,*bi,*bj,
                *rowlengths,nz,*rowstart,itmp;
-  int          bs=a->bs,bs2=bs*bs,mbs=A->m/bs;
+  int          bs=A->bs,bs2=bs*bs,mbs=A->m/bs;
   PetscScalar  *av,*bv;
 
   PetscFunctionBegin;
@@ -47,7 +47,8 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newma
   ierr = MatSetOption(B,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
-  
+  B->bs = A->bs;
+
   b  = (Mat_SeqAIJ*)(B->data);
   bi = b->i;
   bj = b->j; 
@@ -181,7 +182,7 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newm
   PetscErrorCode ierr;
   int *ai=a->i,*aj=a->j,m=A->m,n=A->n,i,k,*bi,*bj,
                *browlengths,nz,*browstart,itmp;
-  int          bs=a->bs,bs2=bs*bs,mbs=m/bs;
+  int          bs=A->bs,bs2=bs*bs,mbs=m/bs;
   PetscScalar  *av,*bv;
 
   PetscFunctionBegin;
@@ -271,7 +272,7 @@ PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A,const MatType newtype,Mat *newm
   PetscErrorCode ierr;
   int *ai=a->i,*aj,m=A->m,n=A->n,i,j,k,
                *bi,*bj,*browlengths;
-  int          bs=a->bs,bs2=bs*bs,mbs=m/bs;
+  int          bs=A->bs,bs2=bs*bs,mbs=m/bs;
   PetscScalar  *av,*bv;
 
   PetscFunctionBegin;

@@ -4,11 +4,12 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqBAI_SeqAIJ"
-PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat) {
+PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat) 
+{
   Mat            B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 
   PetscErrorCode ierr;
-  PetscInt       bs = a->bs,*ai = a->i,*aj = a->j,n = A->M/bs,i,j,k;
+  PetscInt       bs = A->bs,*ai = a->i,*aj = a->j,n = A->M/bs,i,j,k;
   PetscInt       *rowlengths,*rows,*cols,maxlen = 0,ncols;
   PetscScalar    *aa = a->a;
 
@@ -48,6 +49,8 @@ PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,Mat *newmat
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  
+  B->bs = A->bs;
 
   /* Fake support for "inplace" convert. */
   if (*newmat == A) {
@@ -63,7 +66,8 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqBAIJ"
-PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType newtype,Mat *newmat) 
+{
   Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
   Mat_SeqBAIJ    *b;

@@ -17,7 +17,7 @@ case 0: while (n>0) {v[0]=val;v[1]=val;v[2]=val;v[3]=val;v+=4;n-=4;}}
 #define SET(v,n,val) while (n--) *v++ = val;
 
 #else
-#define SET(v,n,val) {int __i;for(__i=0;__i<n;__i++)v[__i] = val;}
+#define SET(v,n,val) {PetscInt __i;for(__i=0;__i<n;__i++)v[__i] = val;}
 #endif
 
 #endif

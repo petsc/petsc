@@ -18,7 +18,7 @@ PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,int *nneig,int *nzero,int *npos)
 { 
   Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;
   PetscScalar  *dd = fact_ptr->a;
-  int          mbs=fact_ptr->mbs,bs=fact_ptr->bs,i,nneig_tmp,npos_tmp,
+  int          mbs=fact_ptr->mbs,bs=F->bs,i,nneig_tmp,npos_tmp,
                *fi = fact_ptr->i;
 
   PetscFunctionBegin;
@@ -53,7 +53,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
   PetscErrorCode ierr;
   int          *rip,i,mbs = a->mbs,*ai,*aj;
-  int          *jutmp,bs = a->bs,bs2=a->bs2;
+  int          *jutmp,bs = A->bs,bs2=a->bs2;
   int          m,reallocs = 0,prow;
   int          *jl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   int          *il,ili,nextprow;
@@ -454,7 +454,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
   PetscErrorCode ierr;
   int                *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   int                *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
-  int                bs=a->bs,bs2 = a->bs2;
+  int                bs=A->bs,bs2 = a->bs2;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
   MatScalar          *work;
@@ -616,7 +616,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,Mat *B)
   PetscErrorCode ierr;
   int i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   int                *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
-  int                bs=a->bs,bs2 = a->bs2;
+  int                bs=A->bs,bs2 = a->bs2;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
   MatScalar          *work;

@@ -16,7 +16,7 @@ PetscErrorCode MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
   info->columns_global    = (double)A->n;
   info->rows_local        = (double)A->m;
   info->columns_local     = (double)A->n;
-  info->block_size        = a->bs;
+  info->block_size        = A->bs;
   info->nz_allocated      = (double)a->maxnz;
   info->nz_used           = (double)a->nz;
   info->nz_unneeded       = (double)(a->maxnz - a->nz);
@@ -41,7 +41,7 @@ PetscErrorCode MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 PetscErrorCode MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,PetscScalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          nd = a->nd,bs = a->bs;
+  int          nd = a->nd,bs = A->bs;
   int          nc = A->n,*diag = a->diag,pcol,shift,i,j,k;
 
   PetscFunctionBegin;
@@ -176,7 +176,7 @@ PetscErrorCode MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int          d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len;
+  int          d,i,j,k,nd = a->nd,bs = A->bs,diag,kshift,kloc,len;
   PetscScalar  *dv;
 
   PetscFunctionBegin;
@@ -233,7 +233,7 @@ PetscErrorCode MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *nrm)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscReal    sum = 0.0,*tmp;
   PetscErrorCode ierr;
-  int          d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len;
+  int          d,i,j,k,nd = a->nd,bs = A->bs,diag,kshift,kloc,len;
   PetscScalar  *dv;
 
   PetscFunctionBegin;
@@ -332,7 +332,7 @@ PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
   Mat          tmat;
   PetscErrorCode ierr;
   int          i,j,k,d,nd = a->nd,*diag = a->diag,*diagnew;
-  int          bs = a->bs,kshift,shifto,shiftn;
+  int          bs = A->bs,kshift,shifto,shiftn;
   PetscScalar  *dwork,*dvnew;
 
   PetscFunctionBegin;
@@ -451,7 +451,7 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
   Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
   char              *name;
   PetscErrorCode ierr;
-  int              *col,i,j,len,diag,nr = A->m,bs = a->bs,iprint,nz;
+  int              *col,i,j,len,diag,nr = A->m,bs = A->bs,iprint,nz;
   PetscScalar       *val,*dv,zero = 0.0;
   PetscViewerFormat format;
 

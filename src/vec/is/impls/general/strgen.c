@@ -60,6 +60,7 @@ PetscErrorCode ISStrideToGeneral(IS inis)
 
   ierr = ISStrideGetInfo(inis,PETSC_NULL,&step);CHKERRQ(ierr);
   if (step > 0) sub->sorted = PETSC_TRUE; else sub->sorted = PETSC_FALSE;
+  sub->allocated = PETSC_TRUE;
 
   /* Remove the old stride data set */
   ierr = PetscFree(inis->data);CHKERRQ(ierr);

@@ -19,7 +19,7 @@
                                            B (off-diag part) */                                \
   PetscMPIInt   size;                   /* size of communicator */                             \
   PetscMPIInt   rank;                   /* rank of proc in communicator */                     \
-  PetscInt      bs,bs2;                /* block size, bs2 = bs*bs */                           \
+  PetscInt      bs2;                    /* block size, bs2 = bs*bs */                           \
   PetscInt      Mbs,Nbs;               /* number block rows/cols in matrix; M/bs, N/bs */      \
   PetscInt      mbs,nbs;               /* number block rows/cols on processor; m/bs, n/bs */   \
                                                                                                \

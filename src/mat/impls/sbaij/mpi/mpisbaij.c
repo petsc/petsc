@@ -319,7 +319,7 @@ PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt
   PetscInt       i,j,row,col;
   PetscInt       rstart_orig=baij->rstart_bs;
   PetscInt       rend_orig=baij->rend_bs,cstart_orig=baij->cstart_bs;
-  PetscInt       cend_orig=baij->cend_bs,bs=baij->bs;
+  PetscInt       cend_orig=baij->cend_bs,bs=mat->bs;
 
   /* Some Variables required in the macro */
   Mat            A = baij->A;
@@ -429,7 +429,7 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const P
   PetscErrorCode  ierr;
   PetscInt        i,j,ii,jj,row,col,rstart=baij->rstart;
   PetscInt        rend=baij->rend,cstart=baij->cstart,stepval;
-  PetscInt        cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
+  PetscInt        cend=baij->cend,bs=mat->bs,bs2=baij->bs2;
 
   PetscFunctionBegin;  
   if(!barray) {
@@ -549,7 +549,7 @@ PetscErrorCode MatGetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pe
 {
   Mat_MPISBAIJ   *baij = (Mat_MPISBAIJ*)mat->data;
   PetscErrorCode ierr;
-  PetscInt       bs=baij->bs,i,j,bsrstart = baij->rstart*bs,bsrend = baij->rend*bs;
+  PetscInt       bs=mat->bs,i,j,bsrstart = baij->rstart*bs,bsrend = baij->rend*bs;
   PetscInt       bscstart = baij->cstart*bs,bscend = baij->cend*bs,row,col,data;
 
   PetscFunctionBegin;
@@ -771,7 +771,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
 {
   Mat_MPISBAIJ      *baij = (Mat_MPISBAIJ*)mat->data;
   PetscErrorCode    ierr;
-  PetscInt          bs = baij->bs;
+  PetscInt          bs = mat->bs;
   PetscMPIInt       size = baij->size,rank = baij->rank;
   PetscTruth        iascii,isdraw;
   PetscViewer       sviewer;
@@ -788,7 +788,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D bs %D mem %D\n",
               rank,mat->m,(PetscInt)info.nz_used*bs,(PetscInt)info.nz_allocated*bs,
-              baij->bs,(PetscInt)info.memory);CHKERRQ(ierr);      
+              mat->bs,(PetscInt)info.memory);CHKERRQ(ierr);      
       ierr = MatGetInfo(baij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] on-diagonal part: nz %D \n",rank,(PetscInt)info.nz_used*bs);CHKERRQ(ierr);
       ierr = MatGetInfo(baij->B,MAT_LOCAL,&info);CHKERRQ(ierr); 
@@ -827,7 +827,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
       ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
     }
     ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-    ierr = MatMPISBAIJSetPreallocation(A,baij->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocation(A,mat->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     PetscLogObjectParent(mat,A);
 
     /* copy over the A part */
@@ -953,7 +953,7 @@ PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       nt,mbs=a->mbs,bs=a->bs;
+  PetscInt       nt,mbs=a->mbs,bs=A->bs;
   PetscScalar    *x,*from,zero=0.0;
  
   PetscFunctionBegin;
@@ -1027,7 +1027,7 @@ PetscErrorCode MatMultAdd_MPISBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       mbs=a->mbs,bs=a->bs;
+  PetscInt       mbs=a->mbs,bs=A->bs;
   PetscScalar    *x,*from,zero=0.0;
  
   PetscFunctionBegin;
@@ -1140,7 +1140,7 @@ PetscErrorCode MatGetRow_MPISBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt *
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   PetscScalar    *vworkA,*vworkB,**pvA,**pvB,*v_p;
   PetscErrorCode ierr;
-  PetscInt       bs = mat->bs,bs2 = mat->bs2,i,*cworkA,*cworkB,**pcA,**pcB;
+  PetscInt       bs = matin->bs,bs2 = mat->bs2,i,*cworkA,*cworkB,**pcA,**pcB;
   PetscInt       nztot,nzA,nzB,lrow,brstart = mat->rstart*bs,brend = mat->rend*bs;
   PetscInt       *cmap,*idx_p,cstart = mat->cstart;
 
@@ -1231,17 +1231,6 @@ PetscErrorCode MatRestoreRow_MPISBAIJ(Mat mat,PetscInt row,PetscInt *nz,PetscInt
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetBlockSize_MPISBAIJ"
-PetscErrorCode MatGetBlockSize_MPISBAIJ(Mat mat,PetscInt *bs)
-{
-  Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
-
-  PetscFunctionBegin;
-  *bs = baij->bs;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatZeroEntries_MPISBAIJ"
 PetscErrorCode MatZeroEntries_MPISBAIJ(Mat A)
 {
@@ -1264,7 +1253,7 @@ PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   PetscReal      isend[5],irecv[5];
 
   PetscFunctionBegin;
-  info->block_size     = (PetscReal)a->bs;
+  info->block_size     = (PetscReal)matin->bs;
   ierr = MatGetInfo(A,MAT_LOCAL,info);CHKERRQ(ierr);
   isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;
   isend[3] = info->memory;  isend[4] = info->mallocs;
@@ -1553,7 +1542,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*50*/ MatGetBlockSize_MPISBAIJ,
+/*50*/ 0,
        0,
        0,
        0,
@@ -1656,7 +1645,7 @@ PetscErrorCode MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,PetscInt bs,PetscInt d
     SETERRQ2(PETSC_ERR_ARG_SIZ,"No of local rows %D must be divisible by blocksize %D",B->m,bs);
   }
 
-  b->bs  = bs;
+  B->bs  = bs;
   b->bs2 = bs*bs;
   b->mbs = mbs;
   b->nbs = mbs; 
@@ -2057,7 +2046,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   Mat            mat;
   Mat_MPISBAIJ   *a,*oldmat = (Mat_MPISBAIJ*)matin->data;
   PetscErrorCode ierr;
-  PetscInt       len=0,nt,bs=oldmat->bs,mbs=oldmat->mbs;
+  PetscInt       len=0,nt,bs=matin->bs,mbs=oldmat->mbs;
   PetscScalar    *array;
 
   PetscFunctionBegin;
@@ -2072,12 +2061,12 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   mat->insertmode   = NOT_SET_VALUES;
 
   a = (Mat_MPISBAIJ*)mat->data;
-  a->bs  = oldmat->bs;
-  a->bs2 = oldmat->bs2;
-  a->mbs = oldmat->mbs;
-  a->nbs = oldmat->nbs;
-  a->Mbs = oldmat->Mbs;
-  a->Nbs = oldmat->Nbs;
+  mat->bs  = matin->bs;
+  a->bs2   = oldmat->bs2;
+  a->mbs   = oldmat->mbs;
+  a->nbs   = oldmat->nbs;
+  a->Mbs   = oldmat->Mbs;
+  a->Nbs   = oldmat->Nbs;
   
   a->rstart       = oldmat->rstart;
   a->rend         = oldmat->rend;
@@ -2107,7 +2096,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   
   ierr = PetscMemcpy(a->rowners,oldmat->rowners,3*(a->size+2)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = MatStashCreate_Private(matin->comm,1,&mat->stash);CHKERRQ(ierr);
-  ierr = MatStashCreate_Private(matin->comm,oldmat->bs,&mat->bstash);CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(matin->comm,matin->bs,&mat->bstash);CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (PETSC_USE_CTABLE)
     ierr = PetscTableCreateCopy(oldmat->colmap,&a->colmap);CHKERRQ(ierr); 
@@ -2449,7 +2438,7 @@ PetscErrorCode MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
 
-  bs   = a->bs;
+  bs   = A->bs;
   mbs  = a->mbs;
   Mbs  = a->Mbs;
   ba   = b->a;
@@ -2516,7 +2505,7 @@ PetscErrorCode MatRelax_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType fla
 {
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   PetscErrorCode ierr;
-  PetscInt       mbs=mat->mbs,bs=mat->bs;
+  PetscInt       mbs=mat->mbs,bs=matin->bs;
   PetscScalar    mone=-1.0,*x,*b,*ptr,zero=0.0;
   Vec            bb1;
  
@@ -2583,7 +2572,7 @@ PetscErrorCode MatRelax_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORTy
  
   PetscFunctionBegin;
   if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
-  if (mat->bs > 1)
+  if (matin->bs > 1)
     SETERRQ(PETSC_ERR_SUP,"SSOR for block size > 1 is not yet implemented");
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){

@@ -409,6 +409,30 @@ void PETSC_STDCALL pclusetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len)
     *ierr = PCLUSetMatOrdering(*pc,t);
     FREECHAR(ordering,t);
 }
-
 EXTERN_C_END
+
+#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define pchypresettype_ PCHYPRESETTYPE
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define pchypresettype_ pchypresettype
+#endif
+
+#if defined(PETSC_HAVE_HYPRE) && !defined(PETSC_USE_COMPLEX)
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+void PETSC_STDCALL  pchypresettype_(PC pc, CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len) )
+{
+  char *t;
+  FIXCHAR(name,len,t);
+  *ierr = PCHYPRESetType(*pc,t);
+  FREECHAR(name,t);
+}
+#if defined(__cplusplus)
+}
+#endif
+
+#endif
+
 

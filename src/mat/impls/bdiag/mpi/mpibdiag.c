@@ -93,13 +93,13 @@ PetscErrorCode MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 #define __FUNCT__ "MatAssemblyEnd_MPIBDiag"
 PetscErrorCode MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  Mat_SeqBDiag *mlocal;
+  Mat_MPIBDiag   *mbd = (Mat_MPIBDiag*)mat->data;
+  Mat_SeqBDiag   *mlocal;
   PetscErrorCode ierr;
-  int          i,n,*row,*col;
-  int          *tmp1,*tmp2,len,ict,Mblock,Nblock,flg,j,rstart,ncols;
-  PetscScalar  *val;
-  InsertMode   addv = mat->insertmode;
+  PetscInt       i,n,*row,*col;
+  PetscInt       *tmp1,*tmp2,len,ict,Mblock,Nblock,flg,j,rstart,ncols;
+  PetscScalar    *val;
+  InsertMode     addv = mat->insertmode;
 
   PetscFunctionBegin;
 
@@ -124,7 +124,7 @@ PetscErrorCode MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 
   /* Fix main diagonal location and determine global diagonals */
   mlocal         = (Mat_SeqBDiag*)mbd->A->data;
-  Mblock         = mat->M/mlocal->bs; Nblock = mat->N/mlocal->bs;
+  Mblock         = mat->M/mat->bs; Nblock = mat->N/mat->bs;
   len            = Mblock + Nblock + 1; /* add 1 to prevent 0 malloc */
   ierr           = PetscMalloc(2*len*sizeof(int),&tmp1);CHKERRQ(ierr);
   tmp2           = tmp1 + len;
@@ -148,18 +148,6 @@ PetscErrorCode MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIBDiag(mat);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetBlockSize_MPIBDiag"
-PetscErrorCode MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
-{
-  Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  Mat_SeqBDiag *dmat = (Mat_SeqBDiag*)mbd->A->data;
-
-  PetscFunctionBegin;
-  *bs = dmat->bs;
   PetscFunctionReturn(0);
 }
 
@@ -371,13 +359,12 @@ PetscErrorCode MatMultTransposeAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
 #define __FUNCT__ "MatGetInfo_MPIBDiag"
 PetscErrorCode MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
 {
-  Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
-  Mat_SeqBDiag *dmat = (Mat_SeqBDiag*)mat->A->data;
+  Mat_MPIBDiag   *mat = (Mat_MPIBDiag*)matin->data;
   PetscErrorCode ierr;
-  PetscReal    isend[5],irecv[5];
+  PetscReal      isend[5],irecv[5];
 
   PetscFunctionBegin;
-  info->block_size     = (PetscReal)dmat->bs;
+  info->block_size     = (PetscReal)mat->A->bs;
   ierr = MatGetInfo(mat->A,MAT_LOCAL,info);CHKERRQ(ierr);
   isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;
   isend[3] = info->memory;  isend[4] = info->mallocs;
@@ -431,7 +418,7 @@ PetscErrorCode MatDestroy_MPIBDiag(Mat mat)
   Mat_SeqBDiag *ms = (Mat_SeqBDiag*)mbd->A->data;
 
   PetscFunctionBegin;
-  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, BSize=%D, NDiag=%D",mat->M,mat->N,ms->bs,ms->nd);
+  PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D, BSize=%D, NDiag=%D",mat->M,mat->N,mat->bs,ms->nd);
 #else
   PetscFunctionBegin;
 #endif
@@ -467,8 +454,7 @@ static PetscErrorCode MatView_MPIBDiag_Binary(Mat mat,PetscViewer viewer)
 static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
 {
   Mat_MPIBDiag      *mbd = (Mat_MPIBDiag*)mat->data;
-  Mat_SeqBDiag      *dmat = (Mat_SeqBDiag*)mbd->A->data;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   int               i,size = mbd->size,rank = mbd->rank;
   PetscTruth        iascii,isdraw;
   PetscViewer       sviewer;
@@ -481,7 +467,7 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       int nline = PetscMin(10,mbd->gnd),k,nk,np;
-      ierr = PetscViewerASCIIPrintf(viewer,"  block size=%D, total number of diagonals=%D\n",dmat->bs,mbd->gnd);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  block size=%D, total number of diagonals=%D\n",mat->bs,mbd->gnd);CHKERRQ(ierr);
       nk = (mbd->gnd-1)/nline + 1;
       for (k=0; k<nk; k++) {
         ierr = PetscViewerASCIIPrintf(viewer,"  global diag numbers:");CHKERRQ(ierr);
@@ -516,19 +502,18 @@ static PetscErrorCode MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
   } else {
     /* assemble the entire matrix onto first processor. */
     Mat          A;
-    int          M = mat->M,N = mat->N,m,row,nz,*cols;
+    PetscInt     M = mat->M,N = mat->N,m,row,nz,*cols;
     PetscScalar  *vals;
-    Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*)mbd->A->data;
 
     /* Here we are constructing a temporary matrix, so we will explicitly set the type to MPIBDiag */
     if (!rank) {
       ierr = MatCreate(mat->comm,M,M,M,N,&A);CHKERRQ(ierr);
       ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
-      ierr = MatMPIBDiagSetPreallocation(A,mbd->gnd,Ambd->bs,mbd->gdiag,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatMPIBDiagSetPreallocation(A,mbd->gnd,mbd->A->bs,mbd->gdiag,PETSC_NULL);CHKERRQ(ierr);
     } else {
       ierr = MatCreate(mat->comm,0,0,M,N,&A);CHKERRQ(ierr);
       ierr = MatSetType(A,MATMPIBDIAG);CHKERRQ(ierr);
-      ierr = MatMPIBDiagSetPreallocation(A,0,Ambd->bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatMPIBDiagSetPreallocation(A,0,mbd->A->bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
     PetscLogObjectParent(mat,A);
 
@@ -659,12 +644,12 @@ PetscErrorCode MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscS
 #define __FUNCT__ "MatNorm_MPIBDiag"
 PetscErrorCode MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
 {
-  Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)A->data;
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)mbd->A->data;
-  PetscReal    sum = 0.0;
+  Mat_MPIBDiag   *mbd = (Mat_MPIBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)mbd->A->data;
+  PetscReal      sum = 0.0;
   PetscErrorCode ierr;
-  int          d,i,nd = a->nd,bs = a->bs,len;
-  PetscScalar  *dv;
+  PetscInt       d,i,nd = a->nd,bs = A->bs,len;
+  PetscScalar    *dv;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -792,7 +777,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        0,
        0,
        0,
-/*50*/ MatGetBlockSize_MPIBDiag,
+/*50*/ 0,
        0,
        0,
        0,
@@ -871,11 +856,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatMPIBDiagSetPreallocation_MPIBDiag"
 PetscErrorCode MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
 {
-  Mat_MPIBDiag *b;
+  Mat_MPIBDiag   *b;
   PetscErrorCode ierr;
-  int          i,k,*ldiag,len,nd2;
-  PetscScalar  **ldiagv = 0;
-  PetscTruth   flg2;
+  PetscInt       i,k,*ldiag,len,nd2;
+  PetscScalar    **ldiagv = 0;
+  PetscTruth     flg2;
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
@@ -903,6 +888,7 @@ PetscErrorCode MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,int nd,int bs,int *dia
   if ((B->N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad column number");
   if ((B->m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad local row number");
   if ((B->M%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad global row number");
+  B->bs = bs;
 
   /* the information in the maps duplicates the information computed below, eventually 
      we should remove the duplicate information that is not contained in the maps */
@@ -1245,7 +1231,7 @@ PetscErrorCode MatBDiagGetData(Mat mat,int *nd,int *bs,int *diag[],int *bdlen[],
     dmat = (Mat_SeqBDiag*)pdmat->A->data;
   } else SETERRQ(PETSC_ERR_SUP,"Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
   *nd    = dmat->nd;
-  *bs    = dmat->bs;
+  *bs    = mat->bs;
   *diag  = dmat->diag;
   *bdlen = dmat->bdlen;
   *diagv = dmat->diagv;

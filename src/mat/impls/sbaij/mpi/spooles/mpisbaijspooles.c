@@ -119,7 +119,8 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPISBAIJ_MPISBAIJSpooles"
-PetscErrorCode MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) 
+{
   /* This routine is only called to convert a MATMPISBAIJ matrix */
   /* to a MATMPISBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;

@@ -17,7 +17,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   IS             isicol;
   PetscErrorCode ierr;
   PetscInt       *r,*ic,i,n = a->mbs,*ai = a->i,*aj = a->j;
-  PetscInt       *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = a->bs,bs2=a->bs2;
+  PetscInt       *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = A->bs,bs2=a->bs2;
   PetscInt       *idnew,idx,row,m,fm,nnz,nzi,reallocs = 0,nzbd,*im;
   PetscReal      f = 1.0;
 

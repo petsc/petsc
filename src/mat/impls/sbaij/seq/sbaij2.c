@@ -9,18 +9,16 @@
 #define __FUNCT__ "MatIncreaseOverlap_SeqSBAIJ"
 PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  int          brow,i,j,k,l,mbs,n,*idx,*nidx,isz,bcol,bcol_max,
-               start,end,*ai,*aj,bs,*nidx2;
-  PetscBT      table;
-  PetscBT      table0; 
+  PetscInt       brow,i,j,k,l,mbs,n,*idx,*nidx,isz,bcol,bcol_max,start,end,*ai,*aj,bs,*nidx2;
+  PetscBT        table,table0; 
 
   PetscFunctionBegin;
   mbs = a->mbs;
   ai  = a->i;
   aj  = a->j;
-  bs  = a->bs;
+  bs  = A->bs;
 
   if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
 
@@ -101,7 +99,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,M
   PetscErrorCode ierr;
   int          *smap,i,k,kstart,kend,oldcols = a->mbs,*lens;
   int          row,mat_i,*mat_j,tcol,*mat_ilen;
-  int          *irow,nrows,*ssmap,bs=a->bs,bs2=a->bs2;
+  int          *irow,nrows,*ssmap,bs=A->bs,bs2=a->bs2;
   int          *aj = a->j,*ai = a->i;
   MatScalar    *mat_a;
   Mat          C;
@@ -136,7 +134,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,int cs,M
   if (scall == MAT_REUSE_MATRIX) {
     c = (Mat_SeqSBAIJ *)((*B)->data);
 
-    if (c->mbs!=nrows || c->bs!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
+    if (c->mbs!=nrows || (*B)->bs!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
     ierr = PetscMemcmp(c->ilen,lens,c->mbs *sizeof(int),&flag);CHKERRQ(ierr);
     if (flag == PETSC_FALSE) {
       SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
@@ -185,7 +183,7 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse 
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   IS          is1;
   PetscErrorCode ierr;
-  int         *vary,*iary,*irow,nrows,i,bs=a->bs,count;
+  int         *vary,*iary,*irow,nrows,i,bs=A->bs,count;
 
   PetscFunctionBegin;
   if (isrow != iscol) SETERRQ(PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
@@ -614,12 +612,11 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
 #define __FUNCT__ "MatMult_SeqSBAIJ_N"
 PetscErrorCode MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 {
-  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
-  PetscScalar     *x,*x_ptr,*z,*z_ptr,*xb,*zb,*work,*workt,zero=0.0;
-  MatScalar       *v;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
+  PetscScalar    *x,*x_ptr,*z,*z_ptr,*xb,*zb,*work,*workt,zero=0.0;
+  MatScalar      *v;
   PetscErrorCode ierr;
-  int mbs=a->mbs,i,*idx,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
-  int             ncols,k;
+  PetscInt       mbs=a->mbs,i,*idx,*aj,*ii,bs=A->bs,j,n,bs2=a->bs2,ncols,k;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
@@ -1131,8 +1128,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   PetscScalar     *x,*x_ptr,*y,*z,*z_ptr=0,*xb,*zb,*work,*workt;
   MatScalar       *v;
   PetscErrorCode ierr;
-  int mbs=a->mbs,i,*idx,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
-  int             ncols,k;
+  PetscInt mbs=a->mbs,i,*idx,*aj,*ii,bs=A->bs,j,n,bs2=a->bs2,ncols,k;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); x_ptr=x;
@@ -1220,7 +1216,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   MatScalar   *v = a->a;
   PetscReal   sum_diag = 0.0, sum_off = 0.0, *sum;
-  int         i,j,k,bs = a->bs,bs2=a->bs2,k1,mbs=a->mbs,*aj=a->j;
+  int         i,j,k,bs = A->bs,bs2=a->bs2,k1,mbs=a->mbs,*aj=a->j;
   PetscErrorCode ierr;
   int         *jl,*il,jmin,jmax,nexti,ik,*col;
   
@@ -1329,7 +1325,7 @@ PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
   PetscFunctionBegin;
 
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
-  if ((A->m != B->m) || (A->n != B->n) || (a->bs != b->bs)|| (a->nz != b->nz)) {
+  if ((A->m != B->m) || (A->n != B->n) || (A->bs != B->bs)|| (a->nz != b->nz)) {
     *flg = PETSC_FALSE;
     PetscFunctionReturn(0); 
   }
@@ -1346,7 +1342,7 @@ PetscErrorCode MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
     PetscFunctionReturn(0);
   }  
   /* if a->a are the same */
-  ierr = PetscMemcmp(a->a,b->a,(a->nz)*(a->bs)*(a->bs)*sizeof(PetscScalar),flg);CHKERRQ(ierr);
+  ierr = PetscMemcmp(a->a,b->a,(a->nz)*(A->bs)*(A->bs)*sizeof(PetscScalar),flg);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -1362,7 +1358,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   MatScalar    *aa,*aa_j;
 
   PetscFunctionBegin;
-  bs   = a->bs;
+  bs   = A->bs;
   if (A->factor && bs>1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");   
   
   aa   = a->a;
@@ -1407,7 +1403,7 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   aj  = a->j;
   aa  = a->a;
   m   = A->m;
-  bs  = a->bs;
+  bs  = A->bs;
   mbs = a->mbs;
   bs2 = a->bs2;
 
@@ -1519,7 +1515,7 @@ PetscErrorCode MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
-  bs   = a->bs;
+  bs   = A->bs;
   aa   = a->a;
   ai   = a->i;
   aj   = a->j;

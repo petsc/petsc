@@ -177,13 +177,13 @@ PetscErrorCode MatAssemblyEnd_Essl(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Essl"
-PetscErrorCode MatConvert_SeqAIJ_Essl(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_Essl(Mat A,const MatType type,Mat *newmat) 
+{
   Mat      B=*newmat;
   PetscErrorCode ierr;
   Mat_Essl *essl;
 
   PetscFunctionBegin;
-
   if (B != A) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }

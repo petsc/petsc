@@ -58,8 +58,18 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PC_FieldSplit     *jac  = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink link = jac->head;
+  PetscInt          i;
 
   PetscFunctionBegin;
+  if (jac->bs <= 0) {
+    ierr = MatGetBlockSize(pc->pmat,&jac->bs);CHKERRQ(ierr);
+  }
+  if (!link) { /* user has not split fields so use default */
+    for (i=0; i<jac->bs; i++) {
+      ierr = PCFieldSplitSetFields(pc,1,&i);CHKERRQ(ierr);
+    }
+    link = jac->head;
+  }
   while (link) {
     ierr = PCSetUp(link->pc);CHKERRQ(ierr);
     link = link->next;

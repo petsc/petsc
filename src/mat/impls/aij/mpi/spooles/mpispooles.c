@@ -587,12 +587,13 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJSpooles"
-PetscErrorCode MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,Mat *newmat) 
+{
   /* This routine is only called to convert a MATMPIAIJ matrix */
   /* to a MATMPIAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
-  Mat         B=*newmat;
-  Mat_Spooles *lu;
+  Mat            B=*newmat;
+  Mat_Spooles    *lu;
 
   PetscFunctionBegin;
   if (B != A) {

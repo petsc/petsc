@@ -101,7 +101,7 @@ PetscErrorCode MatSetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const in
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
   int          kk,ldiag,shift,row,newnz,*bdlen_new;
-  int          j,k,bs = a->bs,*diag_new,idx=0;
+  int          j,k,bs = A->bs,*diag_new,idx=0;
   PetscTruth   roworiented = a->roworiented,dfound;
   PetscScalar  value,**diagv_new;
 
@@ -218,7 +218,7 @@ PetscErrorCode MatGetValues_SeqBDiag_1(Mat A,int m,const int im[],int n,const in
 PetscErrorCode MatGetValues_SeqBDiag_N(Mat A,int m,const int im[],int n,const int in[],PetscScalar v[])
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          kk,ldiag,shift,row,j,k,bs = a->bs;
+  int          kk,ldiag,shift,row,j,k,bs = A->bs;
   PetscScalar  zero = 0.0;
   PetscTruth   dfound;
 
@@ -461,7 +461,7 @@ PetscErrorCode MatMult_SeqBDiag_5(Mat A,Vec xx,Vec yy)
 PetscErrorCode MatMult_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
-  int             nd = a->nd,bs = a->bs,nb_diag,bs2 = bs*bs;
+  int             nd = a->nd,bs = A->bs,nb_diag,bs2 = bs*bs;
   PetscErrorCode ierr;
   int  *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
   PetscScalar     *vin,*vout,**a_diagv = a->diagv;
@@ -711,7 +711,7 @@ PetscErrorCode MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 { 
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int   nd = a->nd,bs = a->bs,nb_diag,bs2 = bs*bs;
+  int   nd = a->nd,bs = A->bs,nb_diag,bs2 = bs*bs;
   int             *a_diag = a->diag,*a_bdlen = a->bdlen,d,k,len;
   PetscScalar     *vin,*vout,**a_diagv = a->diagv;
   PetscScalar     *pvin,*pvout,*dv;
@@ -787,7 +787,7 @@ PetscErrorCode MatMultTranspose_SeqBDiag_N(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int  nd = a->nd,bs = a->bs,diag,kshift,kloc,d,i,j,k,len;
+  int  nd = a->nd,bs = A->bs,diag,kshift,kloc,d,i,j,k,len;
   PetscScalar     *pvin,*pvout,*dv;
   PetscScalar     *vin,*vout;
   
@@ -867,7 +867,7 @@ PetscErrorCode MatMultTransposeAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqBDiag    *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int  nd = a->nd,bs = a->bs,diag,kshift,kloc,d,i,j,k,len;
+  int  nd = a->nd,bs = A->bs,diag,kshift,kloc,d,i,j,k,len;
   PetscScalar     *pvin,*pvout,*dv;
   PetscScalar     *vin,*vout;
   
@@ -909,7 +909,7 @@ PetscErrorCode MatRelax_SeqBDiag_N(Mat A,Vec bb,PetscReal omega,MatSORType flag,
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscScalar  *x,*b,*xb,*dd,*dv,dval,sum;
   PetscErrorCode ierr;
-  int  i,j,k,d,kbase,bs = a->bs,kloc;
+  int  i,j,k,d,kbase,bs = A->bs,kloc;
   int          mainbd = a->mainbd,diag,mblock = a->mblock,bloc;
 
   PetscFunctionBegin;

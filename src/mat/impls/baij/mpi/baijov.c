@@ -15,9 +15,8 @@ EXTERN PetscErrorCode MatRestoreRow_MPIBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,Pe
 #define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ"
 PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt ov)
 {
-  Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   PetscErrorCode ierr;
-  PetscInt       i,N=C->N, bs=c->bs;
+  PetscInt       i,N=C->N, bs=C->bs;
   IS             *is_new;
 
   PetscFunctionBegin;
@@ -563,7 +562,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   IS             *isrow_new,*iscol_new;
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   PetscErrorCode ierr;
-  PetscInt       nmax,nstages_local,nstages,i,pos,max_no,N=C->N,bs=c->bs;
+  PetscInt       nmax,nstages_local,nstages,i,pos,max_no,N=C->N,bs=C->bs;
 
   PetscFunctionBegin;
   /* The compression and expansion should be avoided. Does'nt point
@@ -637,7 +636,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   PetscInt       **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2;
   PetscInt       **lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;
   PetscInt       len,ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*lens_i;
-  PetscInt       bs=c->bs,bs2=c->bs2,*a_j=a->j,*b_j=b->j,*cworkA,*cworkB;
+  PetscInt       bs=C->bs,bs2=c->bs2,*a_j=a->j,*b_j=b->j,*cworkA,*cworkB;
   PetscInt       cstart = c->cstart,nzA,nzB,*a_i=a->i,*b_i=b->i,imark;
   PetscInt       *bmap = c->garray,ctmp,rstart=c->rstart;
   MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
@@ -1162,7 +1161,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
     */
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqBAIJ *)(submats[i]->data);
-      if ((mat->mbs != nrow[i]) || (mat->nbs != ncol[i] || mat->bs != bs)) {
+      if ((mat->mbs != nrow[i]) || (mat->nbs != ncol[i] || C->bs != bs)) {
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
       ierr = PetscMemcmp(mat->ilen,lens[i],mat->mbs *sizeof(PetscInt),&flag);CHKERRQ(ierr);
@@ -1177,9 +1176,9 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
     for (i=0; i<ismax; i++) {
       ierr = MatCreate(PETSC_COMM_SELF,nrow[i]*bs,ncol[i]*bs,nrow[i]*bs,ncol[i]*bs,submats+i);CHKERRQ(ierr);
       ierr = MatSetType(submats[i],A->type_name);CHKERRQ(ierr);
-      ierr = MatSeqBAIJSetPreallocation(submats[i],a->bs,0,lens[i]);CHKERRQ(ierr);
+      ierr = MatSeqBAIJSetPreallocation(submats[i],C->bs,0,lens[i]);CHKERRQ(ierr);
 #if !defined(PETSC_USE_64BIT_INT)
-      ierr = MatSeqSBAIJSetPreallocation(submats[i],a->bs,0,lens[i]);CHKERRQ(ierr);
+      ierr = MatSeqSBAIJSetPreallocation(submats[i],C->bs,0,lens[i]);CHKERRQ(ierr);
 #endif
     }
   }

@@ -15,7 +15,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(sbaij->B->data);  
   PetscErrorCode ierr;
   int                Nbs = sbaij->Nbs,i,j,*indices,*aj = B->j,ec = 0,*garray,*sgarray;
-  int                bs = sbaij->bs,*stmp,mbs=sbaij->mbs, vec_size,nt;
+  int                bs = mat->bs,*stmp,mbs=sbaij->mbs, vec_size,nt;
   IS                 from,to;
   Vec                gvec;
   int                rank=sbaij->rank,lsize,size=sbaij->size; 
@@ -68,7 +68,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
     for (j=0; j<B->ilen[i]; j++) aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
   }
   B->nbs      = ec;
-  sbaij->B->n = ec*B->bs;
+  sbaij->B->n = ec*mat->bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /* create local vector that is used to scatter into */
@@ -175,7 +175,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
   PetscErrorCode ierr;
   int                i,j,*aj = B->j,ec = 0,*garray;
-  int                bs = baij->bs,*stmp;
+  int                bs = mat->bs,*stmp;
   IS                 from,to;
   Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
@@ -260,7 +260,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
     }
   }
   B->nbs       = ec;
-  baij->B->n   = ec*B->bs;
+  baij->B->n   = ec*mat->bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
   
@@ -329,7 +329,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   Mat_SeqBAIJ   *Bbaij = (Mat_SeqBAIJ*)B->data;
   PetscErrorCode ierr;
   int i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
-  int           k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
+  int           k,bs=A->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
   MatScalar     *a = Bbaij->a;
   PetscScalar   *atmp;
 #if defined(PETSC_USE_MAT_SINGLE)
@@ -365,7 +365,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   }
   ierr = MatCreate(PETSC_COMM_SELF,m,n,m,n,&Bnew);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(Bnew,baij->bs,0,nz);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(Bnew,B->bs,0,nz);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
   
   ierr = PetscMalloc(bs*sizeof(int),&rvals);CHKERRQ(ierr);

@@ -140,6 +140,14 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
 
 EXTERN PetscErrorCode MatConvert_Shell(Mat,const MatType,Mat*);
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetBlockSize_Shell"
+PetscErrorCode MatSetBlockSize_Shell(Mat A,PetscInt bs)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 static struct _MatOps MatOps_Values = {0,
        0,
        0,
@@ -190,7 +198,7 @@ static struct _MatOps MatOps_Values = {0,
        MatShift_Shell,
        0,
        0,
-/*50*/ 0,
+/*50*/ MatSetBlockSize_Shell,
        0,
        0,
        0,

@@ -1113,7 +1113,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   IS             iscol=a->col,isrow=a->row;
   PetscErrorCode ierr;
   PetscInt       *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
-  PetscInt       nz,bs=a->bs,bs2=a->bs2,*rout,*cout;
+  PetscInt       nz,bs=A->bs,bs2=a->bs2,*rout,*cout;
   MatScalar      *aa=a->a,*v;
   PetscScalar    *x,*b,*s,*t,*ls;
 
@@ -1157,7 +1157,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  PetscLogFlops(2*(a->bs2)*(a->nz) - a->bs*A->n);
+  PetscLogFlops(2*(a->bs2)*(a->nz) - A->bs*A->n);
   PetscFunctionReturn(0);
 }
 
@@ -3073,7 +3073,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
   PetscInt       *r,*ic,prow,n = a->mbs,*ai = a->i,*aj = a->j;
   PetscInt       *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
   PetscInt       *dloc,idx,row,m,fm,nzf,nzi,len, reallocate = 0,dcount = 0;
-  PetscInt       incrlev,nnz,i,bs = a->bs,bs2 = a->bs2,levels,diagonal_fill;
+  PetscInt       incrlev,nnz,i,bs = A->bs,bs2 = a->bs2,levels,diagonal_fill;
   PetscTruth     col_identity,row_identity;
   PetscReal      f;
 
@@ -3099,7 +3099,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol       = isicol;
     b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
-    ierr          = PetscMalloc(((*fact)->m+1+b->bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+    ierr          = PetscMalloc(((*fact)->m+1+(*fact)->bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   } else { /* general case perform the symbolic factorization */
     ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
     ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -3321,12 +3321,10 @@ PetscErrorCode MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
       Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
       with natural ordering
   */
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)inA->data;
-
   PetscFunctionBegin;
   inA->ops->solve             = MatSolve_SeqBAIJ_Update;
   inA->ops->solvetranspose    = MatSolveTranspose_SeqBAIJ_Update;
-  switch (a->bs) {
+  switch (inA->bs) {
   case 1:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
     PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=1\n");
@@ -3423,7 +3421,7 @@ PetscErrorCode MatSeqBAIJ_UpdateSolvers(Mat A)
     use_natural = PETSC_TRUE;
   }
 
-  switch (a->bs) {
+  switch (A->bs) {
   case 1:
     if (use_natural) {
       A->ops->solve           = MatSolve_SeqBAIJ_1_NaturalOrdering;

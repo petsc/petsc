@@ -181,12 +181,13 @@ typedef struct  {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_LUSOL_SeqAIJ"
-PetscErrorCode MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,Mat *newmat) 
+{
   /* This routine is only called to convert an unfactored PETSc-LUSOL matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
-  Mat       B=*newmat;
-  Mat_LUSOL *lusol=(Mat_LUSOL *)A->spptr;
+  Mat            B=*newmat;
+  Mat_LUSOL      *lusol=(Mat_LUSOL *)A->spptr;
 
   PetscFunctionBegin;
   if (B != A) {
@@ -478,11 +479,12 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_LUSOL"
-PetscErrorCode MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,Mat *newmat) 
+{
   PetscErrorCode ierr;
-  int        m, n;
-  Mat_LUSOL *lusol;
-  Mat       B=*newmat;
+  PetscInt       m, n;
+  Mat_LUSOL      *lusol;
+  Mat            B=*newmat;
 
   PetscFunctionBegin;
   ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);

@@ -10,11 +10,11 @@ PetscErrorCode MatDestroy_SeqBDiag(Mat A)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int          i,bs = a->bs;
+  int          i,bs = A->bs;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D, BSize=%D, NDiag=%D",A->m,A->n,a->nz,a->bs,a->nd);
+  PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D, BSize=%D, NDiag=%D",A->m,A->n,a->nz,A->bs,a->nd);
 #endif
   if (!a->user_alloc) { /* Free the actual diagonals */
     for (i=0; i<a->nd; i++) {
@@ -69,7 +69,7 @@ PetscErrorCode MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
   for (i=0; i<a->nd; i++) {
     if (!a->diag[i]) {a->mainbd = i; break;}
   }
-  PetscLogInfo(A,"MatAssemblyEnd_SeqBDiag:Number diagonals %D,memory used %D, block size %D\n",a->nd,a->maxnz,a->bs);
+  PetscLogInfo(A,"MatAssemblyEnd_SeqBDiag:Number diagonals %D,memory used %D, block size %D\n",a->nd,a->maxnz,A->bs);
   PetscFunctionReturn(0);
 }
 
@@ -147,7 +147,7 @@ static PetscErrorCode MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int         i,j,n,len,ibase,bs = a->bs,iloc;
+  int         i,j,n,len,ibase,bs = A->bs,iloc;
   PetscScalar  *x,*dd,zero = 0.0;
 
   PetscFunctionBegin;
@@ -194,7 +194,7 @@ static PetscErrorCode MatGetDiagonal_SeqBDiag_1(Mat A,Vec v)
 PetscErrorCode MatZeroEntries_SeqBDiag(Mat A)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  int          d,i,len,bs = a->bs;
+  int          d,i,len,bs = A->bs;
   PetscScalar  *dv;
 
   PetscFunctionBegin;
@@ -206,17 +206,6 @@ PetscErrorCode MatZeroEntries_SeqBDiag(Mat A)
     len = a->bdlen[d]*bs*bs;
     for (i=0; i<len; i++) dv[i] = 0.0;
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetBlockSize_SeqBDiag"
-PetscErrorCode MatGetBlockSize_SeqBDiag(Mat A,int *bs)
-{
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-
-  PetscFunctionBegin;
-  *bs = a->bs;
   PetscFunctionReturn(0);
 }
 
@@ -254,7 +243,6 @@ PetscErrorCode MatZeroRows_SeqBDiag(Mat A,IS is,const PetscScalar *diag)
 #define __FUNCT__ "MatGetSubMatrix_SeqBDiag"
 PetscErrorCode MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 {
-  Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
   int               nznew,*smap,i,j,oldcols = A->n;
   int               *irow,*icol,newr,newc,*cwork,nz,bs;
@@ -280,7 +268,7 @@ PetscErrorCode MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,M
   for (i=0; i<newc; i++) smap[icol[i]] = i+1;
 
   /* Determine diagonals; then create submatrix */
-  bs = a->bs; /* Default block size remains the same */
+  bs = A->bs; /* Default block size remains the same */
   ierr = MatCreate(A->comm,newr,newc,newr,newc,&newmat);CHKERRQ(ierr);
   ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(newmat,0,bs,PETSC_NULL,PETSC_NULL);
@@ -334,7 +322,7 @@ PetscErrorCode MatGetSubMatrices_SeqBDiag(Mat A,int n,const IS irow[],const IS i
 PetscErrorCode MatScale_SeqBDiag(const PetscScalar *alpha,Mat inA)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)inA->data;
-  int          i,bs = a->bs;
+  int          i,bs = inA->bs;
   PetscBLASInt one = 1,len;
 
   PetscFunctionBegin;
@@ -358,7 +346,7 @@ PetscErrorCode MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
   PetscScalar  *l,*r,*dv;
   PetscErrorCode ierr;
   int          d,j,len;
-  int          nd = a->nd,bs = a->bs,diag,m,n;
+  int          nd = a->nd,bs = A->bs,diag,m,n;
 
   PetscFunctionBegin;
   if (ll) {
@@ -460,7 +448,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        0,
        0,
        0,
-/*50*/ MatGetBlockSize_SeqBDiag,
+/*50*/ 0,
        0,
        0,
        0,
@@ -628,7 +616,7 @@ PetscErrorCode MatSeqBDiagSetPreallocation_SeqBDiag(Mat B,int nd,int bs,int *dia
   b->mblock = B->m/bs;
   b->nblock = B->n/bs;
   b->nd     = nd;
-  b->bs     = bs;
+  B->bs     = bs;
   b->ndim   = 0;
   b->mainbd = -1;
   b->pivot  = 0;
@@ -690,7 +678,7 @@ static PetscErrorCode MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Ma
 { 
   Mat_SeqBDiag *newmat,*a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
-  int          i,len,diag,bs = a->bs;
+  int          i,len,diag,bs = A->bs;
   Mat          mat;
 
   PetscFunctionBegin;

@@ -13,11 +13,11 @@
 #define __FUNCT__ "VecMDot_Seq"
 PetscErrorCode VecMDot_Seq(PetscInt nv,Vec xin,const Vec yin[],PetscScalar *z)
 {
-  Vec_Seq     *xv = (Vec_Seq *)xin->data;
+  Vec_Seq        *xv = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt         i,nv_rem,n = xin->n;
-  PetscScalar sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,*x;
-  Vec         *yy;
+  PetscInt       i,nv_rem,n = xin->n;
+  PetscScalar    sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,*x;
+  Vec            *yy;
 
   PetscFunctionBegin;
   sum0 = 0;
@@ -95,12 +95,12 @@ PetscErrorCode VecMDot_Seq(PetscInt nv,Vec xin,const Vec yin[],PetscScalar *z)
 #define __FUNCT__ "VecMDot_Seq"
 PetscErrorCode VecMDot_Seq(PetscInt nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
 {
-  Vec_Seq     *xv = (Vec_Seq *)xin->data;
+  Vec_Seq        *xv = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt          n = xin->n,i,j,nv_rem,j_rem;
-  PetscScalar  sum0,sum1,sum2,sum3,x0,x1,x2,x3,* restrict x;
-  PetscScalar  * restrict yy0,* restrict yy1,* restrict yy2,*restrict yy3; 
-  Vec          *yy;
+  PetscInt       n = xin->n,i,j,nv_rem,j_rem;
+  PetscScalar    sum0,sum1,sum2,sum3,x0,x1,x2,x3,* restrict x;
+  PetscScalar    * restrict yy0,* restrict yy1,* restrict yy2,*restrict yy3; 
+  Vec            *yy;
 
   PetscFunctionBegin;
   sum0 = 0;
@@ -296,11 +296,11 @@ PetscErrorCode VecMDot_Seq(PetscInt nv,Vec xin,const Vec yin[],PetscScalar * res
 #define __FUNCT__ "VecMTDot_Seq"
 PetscErrorCode VecMTDot_Seq(PetscInt nv,Vec xin,const Vec yin[],PetscScalar *z)
 {
-  Vec_Seq      *xv = (Vec_Seq *)xin->data;
+  Vec_Seq        *xv = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt          n = xin->n,i,j,nv_rem,j_rem;
-  PetscScalar  sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
-  Vec          *yy;
+  PetscInt       n = xin->n,i,j,nv_rem,j_rem;
+  PetscScalar    sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
+  Vec            *yy;
   
   PetscFunctionBegin;
 
@@ -495,7 +495,7 @@ PetscErrorCode VecMTDot_Seq(PetscInt nv,Vec xin,const Vec yin[],PetscScalar *z)
 PetscErrorCode VecMax_Seq(Vec xin,PetscInt* idx,PetscReal * z)
 { 
   Vec_Seq      *x = (Vec_Seq*)xin->data;
-  PetscInt          i,j=0,n = xin->n;
+  PetscInt     i,j=0,n = xin->n;
   PetscReal    max,tmp;
   PetscScalar  *xx = x->array;
 
@@ -527,7 +527,7 @@ PetscErrorCode VecMax_Seq(Vec xin,PetscInt* idx,PetscReal * z)
 PetscErrorCode VecMin_Seq(Vec xin,PetscInt* idx,PetscReal * z)
 {
   Vec_Seq      *x = (Vec_Seq*)xin->data;
-  PetscInt          i,j=0,n = xin->n;
+  PetscInt     i,j=0,n = xin->n;
   PetscReal    min,tmp;
   PetscScalar  *xx = x->array;
 
@@ -558,10 +558,10 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt* idx,PetscReal * z)
 #define __FUNCT__ "VecSet_Seq"
 PetscErrorCode VecSet_Seq(const PetscScalar* alpha,Vec xin)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data;
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt          n = xin->n;
-  PetscScalar  *xx = x->array,oalpha = *alpha;
+  PetscInt       n = xin->n;
+  PetscScalar    *xx = x->array,oalpha = *alpha;
 
   PetscFunctionBegin;
   if (oalpha == 0.0) {
@@ -578,8 +578,8 @@ PetscErrorCode VecSet_Seq(const PetscScalar* alpha,Vec xin)
 PetscErrorCode VecSetRandom_Seq(PetscRandom r,Vec xin)
 {
   PetscErrorCode ierr;
-  PetscInt          n = xin->n,i;
-  PetscScalar  *xx;
+  PetscInt       n = xin->n,i;
+  PetscScalar    *xx;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
@@ -592,10 +592,10 @@ PetscErrorCode VecSetRandom_Seq(PetscRandom r,Vec xin)
 #define __FUNCT__ "VecMAXPY_Seq"
 PetscErrorCode VecMAXPY_Seq(PetscInt nv,const PetscScalar *alpha,Vec xin,Vec *y)
 {
-  Vec_Seq      *xdata = (Vec_Seq*)xin->data;
+  Vec_Seq        *xdata = (Vec_Seq*)xin->data;
   PetscErrorCode ierr;
-  PetscInt          n = xin->n,j,j_rem;
-  PetscScalar  *xx,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
+  PetscInt       n = xin->n,j,j_rem;
+  PetscScalar    *xx,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*xx,*yy0,*yy1,*yy2,*yy3,*alpha)
@@ -663,10 +663,10 @@ PetscErrorCode VecMAXPY_Seq(PetscInt nv,const PetscScalar *alpha,Vec xin,Vec *y)
 #define __FUNCT__ "VecAYPX_Seq"
 PetscErrorCode VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data;
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt          n = xin->n;
-  PetscScalar  *xx = x->array,*yy;
+  PetscInt       n = xin->n;
+  PetscScalar    *xx = x->array,*yy;
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
@@ -696,10 +696,10 @@ PetscErrorCode VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 #define __FUNCT__ "VecWAXPY_Seq"
 PetscErrorCode VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data;
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt          i,n = xin->n;
-  PetscScalar  *xx = x->array,*yy,*ww,oalpha = *alpha;
+  PetscInt       i,n = xin->n;
+  PetscScalar    *xx = x->array,*yy,*ww,oalpha = *alpha;
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
@@ -730,10 +730,10 @@ PetscErrorCode VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
 #define __FUNCT__ "VecPointwiseMult_Seq"
 PetscErrorCode VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data;
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt          n = xin->n,i;
-  PetscScalar  *xx = x->array,*yy,*ww;
+  PetscInt       n = xin->n,i;
+  PetscScalar    *xx = x->array,*yy,*ww;
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
@@ -767,10 +767,10 @@ PetscErrorCode VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
 #define __FUNCT__ "VecPointwiseDivide_Seq"
 PetscErrorCode VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data;
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt          n = xin->n,i;
-  PetscScalar  *xx = x->array,*yy,*ww;
+  PetscInt       n = xin->n,i;
+  PetscScalar    *xx = x->array,*yy,*ww;
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
@@ -787,11 +787,11 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win)
 #define __FUNCT__ "VecMaxPointwiseDivide_Seq"
 PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
 {
-  Vec_Seq      *x = (Vec_Seq *)xin->data;
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt          n = xin->n,i;
-  PetscScalar  *xx = x->array,*yy;
-  PetscReal    m = 0.0;
+  PetscInt       n = xin->n,i;
+  PetscScalar    *xx = x->array,*yy;
+  PetscReal      m = 0.0;
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
@@ -812,7 +812,7 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
 #define __FUNCT__ "VecGetArray_Seq"
 PetscErrorCode VecGetArray_Seq(Vec vin,PetscScalar *a[])
 {
-  Vec_Seq *v = (Vec_Seq *)vin->data;
+  Vec_Seq        *v = (Vec_Seq *)vin->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -834,7 +834,6 @@ PetscErrorCode VecRestoreArray_Seq(Vec vin,PetscScalar *a[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (!vin->array_gotten) {
     SETERRQ(PETSC_ERR_ORDER,"Array has not been gotten for this vector, you may\n\
     have forgotten a call to VecGetArray()");
@@ -872,7 +871,7 @@ PetscErrorCode VecPlaceArray_Seq(Vec vin,const PetscScalar *a)
 #define __FUNCT__ "VecReplaceArray_Seq"
 PetscErrorCode VecReplaceArray_Seq(Vec vin,const PetscScalar *a)
 {
-  Vec_Seq *v = (Vec_Seq *)vin->data;
+  Vec_Seq        *v = (Vec_Seq *)vin->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -895,7 +894,7 @@ PetscErrorCode VecGetSize_Seq(Vec vin,PetscInt *size)
 PetscErrorCode VecConjugate_Seq(Vec xin)
 {
   PetscScalar *x = ((Vec_Seq *)xin->data)->array;
-  PetscInt         n = xin->n;
+  PetscInt    n = xin->n;
 
   PetscFunctionBegin;
   while (n-->0) {

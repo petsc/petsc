@@ -274,6 +274,7 @@ EXTERN PetscErrorCode MatGetColumnVector(Mat,Vec,PetscInt);
 EXTERN PetscErrorCode MatGetArray(Mat,PetscScalar *[]);
 EXTERN PetscErrorCode MatRestoreArray(Mat,PetscScalar *[]);
 EXTERN PetscErrorCode MatGetBlockSize(Mat,PetscInt *);
+EXTERN PetscErrorCode MatSetBlockSize(Mat,PetscInt);
 
 EXTERN PetscErrorCode MatMult(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd(Mat,Vec,Vec,Vec);

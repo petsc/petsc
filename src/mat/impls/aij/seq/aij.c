@@ -1740,15 +1740,6 @@ PetscErrorCode MatGetSubMatrices_SeqAIJ(Mat A,PetscInt n,const IS irow[],const I
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetBlockSize_SeqAIJ"
-PetscErrorCode MatGetBlockSize_SeqAIJ(Mat A,PetscInt *bs)
-{
-  PetscFunctionBegin;
-  *bs = 1;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqAIJ"
 PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A,PetscInt is_max,IS is[],PetscInt ov)
 {
@@ -2104,6 +2095,14 @@ PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetBlockSize_SeqAIJ"
+PetscErrorCode MatSetBlockSize_SeqAIJ(Mat A,PetscInt bs)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,
@@ -2155,7 +2154,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        MatILUDTFactor_SeqAIJ,
-/*50*/ MatGetBlockSize_SeqAIJ,
+/*50*/ MatSetBlockSize_SeqAIJ,
        MatGetRowIJ_SeqAIJ,
        MatRestoreRowIJ_SeqAIJ,
        MatGetColumnIJ_SeqAIJ,
@@ -2744,6 +2743,7 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
   C->M          = A->m;
   C->N          = A->n;
+  C->bs         = A->bs;
 
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&c->imax);CHKERRQ(ierr);
   ierr = PetscMalloc((m+1)*sizeof(PetscInt),&c->ilen);CHKERRQ(ierr);

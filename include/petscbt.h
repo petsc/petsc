@@ -38,13 +38,13 @@ PETSC_EXTERN_CXX_BEGIN
 .seealso:  PetscBTCreate(), PetscBTDestroy(), PetscBTMemzero(), PetscBTSet(), PetscBTClear(),
            PetscBTLookup(), PetscBTLookupSet(), PetscBTLength(), PetscBTView()
 S*/
-#define PetscBT char*
+typedef char* PetscBT;
 
 extern char      _BT_mask,_BT_c;
 extern PetscInt  _BT_idx;
 
 #define PetscBTLength(m)        ((m)/PETSC_BITS_PER_BYTE+1)
-#define PetscBTMemzero(m,array) PetscMemzero(array,(m)/PETSC_BITS_PER_BYTE+1)
+#define PetscBTMemzero(m,array) PetscMemzero(array,sizeof(char)*((m)/PETSC_BITS_PER_BYTE+1))
 #define PetscBTDestroy(array)   PetscFree(array)
 
 #define PetscBTView(m,bt,viewer) 0; {\

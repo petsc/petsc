@@ -4432,6 +4432,38 @@ PetscErrorCode MatPrintHelp(Mat mat)
 @*/
 PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
 {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  MatPreallocated(mat);
+  PetscValidIntPointer(bs,2);
+  *bs = mat->bs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetBlockSize"
+/*@
+   MatSetBlockSize - Sets the matrix block size; for many matrix types you 
+     cannot use this and MUST set the blocksize when you preallocate the matrix
+   
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  bs - block size
+
+   Notes:
+     Only works for shell and AIJ matrices
+
+   Level: intermediate
+
+   Concepts: matrices^block size
+
+.seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatCreateSeqBDiag(), MatCreateMPIBDiag(), MatGetBlockSize()
+@*/
+PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4439,8 +4471,12 @@ PetscErrorCode MatGetBlockSize(Mat mat,PetscInt *bs)
   PetscValidType(mat,1);
   MatPreallocated(mat);
   PetscValidIntPointer(bs,2);
-  if (!mat->ops->getblocksize) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
-  ierr = (*mat->ops->getblocksize)(mat,bs);CHKERRQ(ierr);
+  if (mat->ops->setblocksize) {
+    mat->bs = bs;
+    ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",mat->type_name);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -88,17 +88,6 @@ static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,int oshift,PetscTruth symme
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetBlockSize_SeqSBAIJ"
-PetscErrorCode MatGetBlockSize_SeqSBAIJ(Mat mat,int *bs)
-{
-  Mat_SeqSBAIJ *sbaij = (Mat_SeqSBAIJ*)mat->data;
-
-  PetscFunctionBegin;
-  *bs = sbaij->bs;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqSBAIJ"
 PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 {
@@ -211,7 +200,7 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,int row,int *ncols,int **cols,PetscScala
   PetscScalar  *v_i;
 
   PetscFunctionBegin;
-  bs  = a->bs;
+  bs  = A->bs;
   ai  = a->i;
   aj  = a->j;
   aa  = a->a;
@@ -300,8 +289,8 @@ PetscErrorCode MatTranspose_SeqSBAIJ(Mat A,Mat *B)
 static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
 {
   Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode ierr;
-  int i,j,bs = a->bs,k,l,bs2=a->bs2;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,bs = A->bs,k,l,bs2=a->bs2;
   char              *name;
   PetscViewerFormat format;
 
@@ -375,14 +364,14 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatView_SeqSBAIJ_Draw_Zoom"
 static PetscErrorCode MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
 {
-  Mat          A = (Mat) Aa;
-  Mat_SeqSBAIJ *a=(Mat_SeqSBAIJ*)A->data;
+  Mat            A = (Mat) Aa;
+  Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  int          row,i,j,k,l,mbs=a->mbs,color,bs=a->bs,bs2=a->bs2,rank;
-  PetscReal    xl,yl,xr,yr,x_l,x_r,y_l,y_r;
-  MatScalar    *aa;
-  MPI_Comm     comm;
-  PetscViewer  viewer;
+  PetscInt       row,i,j,k,l,mbs=a->mbs,color,bs=A->bs,bs2=a->bs2,rank;
+  PetscReal      xl,yl,xr,yr,x_l,x_r,y_l,y_r;
+  MatScalar      *aa;
+  MPI_Comm       comm;
+  PetscViewer    viewer;
 
   PetscFunctionBegin; 
   /*
@@ -500,7 +489,7 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int 
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int        *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
   int        *ai = a->i,*ailen = a->ilen;
-  int        brow,bcol,ridx,cidx,bs=a->bs,bs2=a->bs2;
+  int        brow,bcol,ridx,cidx,bs=A->bs,bs2=a->bs2;
   MatScalar  *ap,*aa = a->a,zero = 0.0;
 
   PetscFunctionBegin;
@@ -547,7 +536,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,const int im[],int n,con
   PetscErrorCode ierr;
   int             *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
   int             *imax=a->imax,*ai=a->i,*ailen=a->ilen;
-  int             *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=a->bs,stepval;
+  int             *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=A->bs,stepval;
   PetscTruth      roworiented=a->roworiented; 
   const MatScalar *value = v;
   MatScalar       *ap,*aa = a->a,*bap;
@@ -739,7 +728,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
     ierr = PetscMemcpy(a->diag,ai,(mbs+1)*sizeof(int));CHKERRQ(ierr);
   } 
   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Matrix size: %D X %D, block size %D; storage space: %D unneeded, %D used\n",
-           m,A->m,a->bs,fshift*bs2,a->nz*bs2);
+           m,A->m,A->bs,fshift*bs2,a->nz*bs2);
   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Number of mallocs during MatSetValues is %D\n",
            a->reallocs);
   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Most nonzeros blocks in any row is %D\n",rmax);
@@ -812,7 +801,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,int m,const int im[],int n,const int 
   PetscErrorCode ierr;
   int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
   int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented;
-  int         *aj=a->j,nonew=a->nonew,bs=a->bs,brow,bcol;
+  int         *aj=a->j,nonew=a->nonew,bs=A->bs,brow,bcol;
   int         ridx,cidx,bs2=a->bs2;
   MatScalar   *ap,value,*aa=a->a,*bap;
 
@@ -1199,7 +1188,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure st
 {
   Mat_SeqSBAIJ   *x=(Mat_SeqSBAIJ *)X->data, *y=(Mat_SeqSBAIJ *)Y->data;
   PetscErrorCode ierr;
-  int            i,bs=y->bs,bs2,j;
+  PetscInt       i,bs=Y->bs,bs2,j;
   PetscBLASInt   bnz = (PetscBLASInt)x->nz,one = 1;
 
   PetscFunctionBegin;
@@ -1307,7 +1296,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-/*50*/ MatGetBlockSize_SeqSBAIJ,
+/*50*/ 0,
        MatGetRowIJ_SeqSBAIJ,
        MatRestoreRowIJ_SeqSBAIJ,
        0,
@@ -1366,8 +1355,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatStoreValues_SeqSBAIJ"
 PetscErrorCode MatStoreValues_SeqSBAIJ(Mat mat)
 {
-  Mat_SeqSBAIJ *aij = (Mat_SeqSBAIJ *)mat->data;
-  int         nz = aij->i[mat->m]*aij->bs*aij->bs2;
+  Mat_SeqSBAIJ   *aij = (Mat_SeqSBAIJ *)mat->data;
+  PetscInt       nz = aij->i[mat->m]*mat->bs*aij->bs2;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1391,9 +1380,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatRetrieveValues_SeqSBAIJ"
 PetscErrorCode MatRetrieveValues_SeqSBAIJ(Mat mat)
 {
-  Mat_SeqSBAIJ *aij = (Mat_SeqSBAIJ *)mat->data;
+  Mat_SeqSBAIJ   *aij = (Mat_SeqSBAIJ *)mat->data;
   PetscErrorCode ierr;
-  int         nz = aij->i[mat->m]*aij->bs*aij->bs2;
+  PetscInt       nz = aij->i[mat->m]*mat->bs*aij->bs2;
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
@@ -1530,7 +1519,7 @@ PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,int bs,int nz,int *nnz
   PetscLogObjectMemory(B,len+2*(mbs+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqSBAIJ));
   for (i=0; i<mbs; i++) { b->ilen[i] = 0;}
   
-  b->bs               = bs;
+  B->bs               = bs;
   b->bs2              = bs2;
   b->nz             = 0;
   b->maxnz          = nz*bs2;
@@ -1758,7 +1747,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
   C->M    = A->M;
   C->N    = A->N;
-  c->bs   = a->bs;
+  C->bs   = A->bs;
   c->bs2  = a->bs2;
   c->mbs  = a->mbs;
   c->nbs  = a->nbs;
@@ -1961,12 +1950,12 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer,const MatType type,Mat *A)
 #define __FUNCT__ "MatRelax_SeqSBAIJ"
 PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  MatScalar    *aa=a->a,*v,*v1;
-  PetscScalar  *x,*b,*t,sum,d;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
+  MatScalar      *aa=a->a,*v,*v1;
+  PetscScalar    *x,*b,*t,sum,d;
   PetscErrorCode ierr;
-  int          m=a->mbs,bs=a->bs,*ai=a->i,*aj=a->j;
-  int          nz,nz1,*vj,*vj1,i;
+  PetscInt       m=a->mbs,bs=A->bs,*ai=a->i,*aj=a->j;
+  PetscInt       nz,nz1,*vj,*vj1,i;
 
   PetscFunctionBegin;
   its = its*lits;

@@ -7,19 +7,19 @@
 #define __FUNCT__ "MatSetUpMultiply_MPIBDiag"
 PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
 {
-  Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
-  Mat_SeqBDiag *lmbd = (Mat_SeqBDiag*)mbd->A->data;
+  Mat_MPIBDiag   *mbd = (Mat_MPIBDiag*)mat->data;
+  Mat_SeqBDiag   *lmbd = (Mat_SeqBDiag*)mbd->A->data;
   PetscErrorCode ierr;
-  int   N = mat->N,*indices,*garray,ec=0;
-  int          bs = lmbd->bs,d,i,j,diag;
-  IS           to,from;
-  Vec          gvec;
+  PetscInt       N = mat->N,*indices,*garray,ec=0;
+  PetscInt       bs = mat->bs,d,i,j,diag;
+  IS             to,from;
+  Vec            gvec;
 
   PetscFunctionBegin;
   /* We make an array as long as the number of columns */
   /* mark those columns that are in mbd->A */
   ierr = PetscMalloc((N+1)*sizeof(int),&indices);CHKERRQ(ierr);
-  ierr    = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero(indices,N*sizeof(int));CHKERRQ(ierr);
 
   if (bs == 1) {
     for (d=0; d<lmbd->nd; d++) {

@@ -145,9 +145,9 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   ierr        =  MatInvertBlockDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
   a           = (Mat_SeqBAIJ*)A->data;
   jac->diag   = a->idiag;
-  jac->bs     = a->bs;
+  jac->bs     = A->bs;
   jac->mbs    = a->mbs;
-  switch (a->bs){
+  switch (jac->bs){
     case 2:
       pc->ops->apply = PCApply_PBJacobi_2;
       break;
@@ -161,7 +161,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
       pc->ops->apply = PCApply_PBJacobi_5;
       break;
     default: 
-      SETERRQ1(PETSC_ERR_SUP,"not supported for block size %D",a->bs);
+      SETERRQ1(PETSC_ERR_SUP,"not supported for block size %D",jac->bs);
   }
 
   PetscFunctionReturn(0);

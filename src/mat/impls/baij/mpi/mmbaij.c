@@ -13,7 +13,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   Mat_SeqBAIJ    *B = (Mat_SeqBAIJ*)(baij->B->data);  
   PetscErrorCode ierr;
   PetscInt       i,j,*aj = B->j,ec = 0,*garray;
-  PetscInt       bs = baij->bs,*stmp;
+  PetscInt       bs = mat->bs,*stmp;
   IS             from,to;
   Vec            gvec;
 #if defined (PETSC_USE_CTABLE)
@@ -62,7 +62,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
     }
   }
   B->nbs     = ec;
-  baij->B->n = ec*B->bs;
+  baij->B->n = ec*mat->bs;
   ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
@@ -98,7 +98,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
     }
   }
   B->nbs       = ec;
-  baij->B->n   = ec*B->bs;
+  baij->B->n   = ec*mat->bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
 
@@ -199,7 +199,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   }
   ierr = MatCreate(B->comm,m,n,m,n,&Bnew);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(Bnew,baij->bs,0,nz);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(Bnew,B->bs,0,nz);CHKERRQ(ierr);
   ierr = MatSetOption(Bnew,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_MAT_SINGLE)
@@ -245,10 +245,9 @@ static Vec uglydd = 0,uglyoo = 0;   /* work vectors used to scale the two parts 
 PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
 {
   Mat_MPIBAIJ    *ina = (Mat_MPIBAIJ*) inA->data; /*access private part of matrix */
-  Mat_SeqBAIJ    *A = (Mat_SeqBAIJ*)ina->A->data;
   Mat_SeqBAIJ    *B = (Mat_SeqBAIJ*)ina->B->data;
   PetscErrorCode ierr;
-  PetscInt       bs = A->bs,i,n,nt,j,cstart,cend,no,*garray = ina->garray,*lindices;
+  PetscInt       bs = inA->bs,i,n,nt,j,cstart,cend,no,*garray = ina->garray,*lindices;
   PetscInt       *r_rmapd,*r_rmapo;
   
   PetscFunctionBegin;

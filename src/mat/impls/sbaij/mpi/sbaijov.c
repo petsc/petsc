@@ -13,10 +13,9 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat,int*,int,int*,PetscB
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ"
 PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
 {
-  Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
   PetscErrorCode ierr;
-  int           i,N=C->N, bs=c->bs;
-  IS            *is_new;
+  PetscInt       i,N=C->N, bs=C->bs;
+  IS             *is_new;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(is_max*sizeof(IS),&is_new);CHKERRQ(ierr);
@@ -71,7 +70,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
   PetscBT     *table;  /* mark indices of this processor's is[] */
   PetscBT     table_i;
   PetscBT     otable; /* mark indices of other processors' is[] */ 
-  int         bs=c->bs,Bn = c->B->n,Bnbs = Bn/bs,*Bowners;  
+  int         bs=C->bs,Bn = c->B->n,Bnbs = Bn/bs,*Bowners;  
   IS          garray_local,garray_gl;
 
   PetscFunctionBegin;

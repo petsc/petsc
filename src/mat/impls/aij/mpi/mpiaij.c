@@ -1484,11 +1484,15 @@ PetscErrorCode MatPrintHelp_MPIAIJ(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetBlockSize_MPIAIJ"
-PetscErrorCode MatGetBlockSize_MPIAIJ(Mat A,PetscInt *bs)
+#define __FUNCT__ "MatSetBlockSize_MPIAIJ"
+PetscErrorCode MatSetBlockSize_MPIAIJ(Mat A,PetscInt bs)
 {
+  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  *bs = 1;
+  ierr = MatSetBlockSize(a->A,bs);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(a->B,bs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -1655,7 +1659,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        0,
-/*50*/ MatGetBlockSize_MPIAIJ,
+/*50*/ MatSetBlockSize_MPIAIJ,
        0,
        0,
        0,
@@ -1824,6 +1828,7 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   a    = (Mat_MPIAIJ*)mat->data;
   
   mat->factor       = matin->factor;
+  mat->bs           = matin->bs;
   mat->assembled    = PETSC_TRUE;
   mat->insertmode   = NOT_SET_VALUES;
   mat->preallocated = PETSC_TRUE;

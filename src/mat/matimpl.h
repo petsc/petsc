@@ -65,7 +65,7 @@ struct _MatOps {
                  (*shift)(const PetscScalar *,Mat),
                  (*diagonalset)(Mat,Vec,InsertMode),
                  (*iludtfactor)(Mat,MatFactorInfo*,IS,IS,Mat *),
-/*50*/           (*getblocksize)(Mat,PetscInt *),
+/*50*/           (*setblocksize)(Mat,PetscInt),
                  (*getrowij)(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *),
                  (*restorerowij)(Mat,PetscInt,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *),
                  (*getcolumnij)(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *),
@@ -201,6 +201,7 @@ struct _p_Mat {
   PetscTruth             symmetric,hermitian,structurally_symmetric;
   PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set; /* if true, then corresponding flag is correct*/
   PetscTruth             symmetric_eternal;
+  PetscInt               bs;
   void                   *spptr;          /* pointer for special library like SuperLU */
 };
 

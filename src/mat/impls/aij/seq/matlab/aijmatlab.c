@@ -83,10 +83,11 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Matlab_SeqAIJ"
-PetscErrorCode MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,Mat *newmat) 
+{
   PetscErrorCode ierr;
-  Mat        B=*newmat;
-  Mat_Matlab *lu=(Mat_Matlab*)A->spptr;
+  Mat            B=*newmat;
+  Mat_Matlab    *lu=(Mat_Matlab*)A->spptr;
 
   PetscFunctionBegin;
   if (B != A) {
@@ -329,13 +330,14 @@ PetscErrorCode MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Matlab"
-PetscErrorCode MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) 
+{
   /* This routine is only called to convert to MATMATLAB */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
-  Mat        B=*newmat;
-  Mat_Matlab *lu;
-  PetscTruth qr;
+  Mat            B=*newmat;
+  Mat_Matlab     *lu;
+  PetscTruth     qr;
 
   PetscFunctionBegin;
   if (B != A) {

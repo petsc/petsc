@@ -19,7 +19,6 @@ typedef struct {
   int          nz,maxnz;         /* nonzeros, allocated nonzeros */
   int          nd;               /* number of block diagonals */
   int          mainbd;           /* the number of the main block diagonal */
-  int          bs;               /* Each diagonal element is an bs x bs matrix */
   int          *diag;            /* value of (row-col)/bs for each diagonal */
   int          *bdlen;           /* block-length of each diagonal */
   int          ndim;             /* diagonals come from an ndim pde (if 0, ignore) */
