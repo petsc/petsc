@@ -1,9 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.41 1996/09/28 14:10:11 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.42 1996/10/01 01:08:00 curfman Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
-This example employs a user-defined monitoring routine.\n\n";
+This example employs a user-defined monitoring routine.  This code also demonstrates\n\
+use of the macro __FUNC__ to define routine names for use in error handling.\n\n";
 
 /*T
    Concepts: SNES^Solving a system of nonlinear equations (basic parallel example);
@@ -34,7 +35,14 @@ T*/
 #include <math.h>
 
 /* 
-   User-defined routines
+   User-defined routines.  Note that immediately before each routine below,
+   we define the macro __FUNC__ to be a string containing the routine name.
+   If defined, this macro is used in the PETSc error handlers to provide a
+   complete traceback of routine names.  All PETSc library routines use this
+   macro, and users can optionally employ it as well in their application
+   codes.  Note that users can get a traceback of PETSc errors regardless of
+   whether they define __FUNC__ in application codes; this macro merely
+   provides the added traceback detail of the application routine names.
 */
 int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int FormFunction(SNES,Vec,Vec,void*);
@@ -60,6 +68,8 @@ typedef struct {
    Viewer viewer;
 } MonitorCtx;
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
   SNES           snes;                 /* SNES context */
@@ -238,6 +248,8 @@ int main( int argc, char **argv )
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess"
 /*
    FormInitialGuess - Computes initial guess.
 
@@ -252,6 +264,8 @@ int FormInitialGuess(Vec x)
    return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormFunction"
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -344,6 +358,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 
@@ -422,6 +438,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *ctx)
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "Monitor"
 /*
    Monitor - User-defined monitoring routine that views the
    current iterate with an x-window plot.
