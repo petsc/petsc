@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.2 1998/09/25 03:16:22 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 1999/04/07 02:45:18 bsmith Exp bsmith $ 
 
-DIRS     = milu spai
+DIRS     = milu
 LOCDIR   = src/contrib/pc
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
