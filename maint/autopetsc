@@ -30,12 +30,17 @@
                                    send "mu $swho I have received your whisper\r" 
                  } "* pages,*\r\n" { 
                                    puts $expect_out(buffer)
-                                   scan $expect_out(buffer) "%s pages, %s" swho  message
+                                   scan $expect_out(buffer) "%s pages, %s\r\n" swho  message
                                    puts "who: $swho message: $message"
                                    send "page $swho I have received your page\r"
+                 } "* [to Petsc]: *\r\n" { 
+                                   puts $expect_out(buffer)
+                                   scan $expect_out(buffer) "%s [to Petsc]: %s\r\n" swho  message
+                                   puts "who: $swho message: $message"
+                                   send "\`$swho I acknowlege your comment\r"
                  } "* blinks\r\n" { 
                                    puts $expect_out(buffer)
-                                   scan $expect_out(buffer) "%s blinks" swho
+                                   scan $expect_out(buffer) "%s blinks\r\n" swho
                                    puts "who: $swho"
                                    send "say Welcome back,  $swho\r"
                  } "*\r\n" { 
@@ -45,4 +50,3 @@
     }
 
     send "@quit\r"
-
