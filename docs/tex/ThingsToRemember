@@ -383,5 +383,12 @@ Tools for image manipulation (e.g., transparent gifs, animation, interlacing):
  - also, see SGI tool: imgworks  (different capabilities on cyan and violet)
 
 ---------------------------------------------------------------------
+
 In HTML, to pop up the page linked to in a different frame, use:
 <A HREF="http://www.boeing.com/747.html" TARGET="NEW">Boeing Corporation 747 Fact Sheet</A>
+
+---------------------------------------------------------------------
+
+To restart mpi server on elvis, log into elvis as ~petsc and type serverstart
+
+
