@@ -2,7 +2,7 @@ PETSC_DIR = ../..
 
 ALL: lib
 
-CFLAGS	 = $(PETSC_INCLUDE)
+CFLAGS	 = $(PETSC_INCLUDE)  $(CONF) -D__DIR__='"mpiuni"' $(PCONF)
 SOURCEC	 = mpi.c
 SOURCEF	 = 
 SOURCEH	 = 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.8 1996/03/19 21:27:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.9 1996/03/23 20:43:02 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -856,15 +856,15 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   return 0;
 }
 /* ----------------------------------------------------------- */
-int MatSolve_SeqBAIJ(Mat A,Vec bb, Vec xx)
+static int MatSolveAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  IS          iscol = a->col, isrow = a->row;
-  int         *r,*c, ierr, i,  n = a->mbs, *vi, *ai = a->i, *aj = a->j;
-  int         nz,bs = a->bs,bs2 = bs*bs,idx,idt,idc, _One = 1;
-  Scalar      *xa,*ba,*aa = a->a, *sum, _DOne = 1.0, _DMOne = -1.0;
-  Scalar      _DZero = 0.0,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
-  register Scalar *x, *b, *lsum, *tmp, *v;
+  Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
+  IS          iscol=a->col,isrow=a->row;
+  int         *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
+  int         nz,bs=a->bs,bs2=bs*bs,idx,idt,idc,_One=1,m=a->m;
+  Scalar      *xa,*ba,*aa=a->a,*sum,_DOne=1.0,_DMOne=-1.0;
+  Scalar      _DZero=0.0,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5,*y;
+  register Scalar *x,*b,*lsum,*tmp,*v;
 
   if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolve_SeqBAIJ:Not for unfactored matrix");
 
@@ -872,6 +872,13 @@ int MatSolve_SeqBAIJ(Mat A,Vec bb, Vec xx)
   ierr = VecGetArray(xx,&xa); CHKERRQ(ierr); x = xa;
   tmp  = a->solve_work;
 
+  if (yy==PETSC_NULL) PetscMemzero(x,m*sizeof(Scalar)); /* MatSolve() */
+  else if (xx!=yy){
+    ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+    PetscMemcpy(x,y,m*sizeof(Scalar));  
+    ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
+  }
+  
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&c);CHKERRQ(ierr); c = c + (n-1);
 
@@ -1128,7 +1135,30 @@ int MatSolve_SeqBAIJ(Mat A,Vec bb, Vec xx)
 
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
-  PLogFlops(2*bs2*a->nz - a->n);
+  return 0;
+}
+
+/* ----------------------------------------------------------------*/
+
+int MatSolve_SeqBAIJ(Mat A,Vec bb, Vec xx)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr,bs=a->bs,bs2=bs*bs;
+
+  ierr = MatSolveAdd_SeqBAIJ_Private(A,bb,PETSC_NULL,xx); CHKERRQ(ierr);
+  PLogFlops(2*bs2*(a->nz) - a->n);
+  return 0;
+}
+
+/* ----------------------------------------------------------------*/
+
+int MatSolveAdd_SeqBAIJ(Mat A,Vec bb,Vec yy,Vec xx)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr,bs=a->bs,bs2=bs*bs;
+
+  ierr = MatSolveAdd_SeqBAIJ_Private(A,bb,yy,xx); CHKERRQ(ierr);
+  PLogFlops(2*bs2*(a->nz));
   return 0;
 }
 
