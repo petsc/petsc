@@ -1,15 +1,17 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.33 1998/05/08 00:19:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: inherit.c,v 1.34 1998/05/13 16:37:34 curfman Exp bsmith $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-extern int PetscObjectCompose_Petsc(PetscObject,char *,PetscObject);
 extern int PetscObjectGetComm_Petsc(PetscObject,MPI_Comm *);
+extern int PetscObjectCompose_Petsc(PetscObject,char *,PetscObject);
 extern int PetscObjectQuery_Petsc(PetscObject,char *,PetscObject *);
+extern int PetscObjectComposeLanguage_Petsc(PetscObject,PetscLanguage,void *);
+extern int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
 extern int PetscObjectComposeFunction_Petsc(PetscObject,char *,char *,void *);
 extern int PetscObjectQueryFunction_Petsc(PetscObject,char *,void **);
 
@@ -34,6 +36,8 @@ int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,in
   h->bops->query            = PetscObjectQuery_Petsc;
   h->bops->composefunction  = PetscObjectComposeFunction_Petsc;
   h->bops->queryfunction    = PetscObjectQueryFunction_Petsc;
+  h->bops->querylanguage    = PetscObjectQueryLanguage_Petsc;
+  h->bops->composelanguage  = PetscObjectComposeLanguage_Petsc;
   PetscCommDup_Private(comm,&h->comm,&h->tag);
   PetscFunctionReturn(0);
 }
@@ -178,6 +182,38 @@ int PetscObjectQuery_Petsc(PetscObject obj,char *name,PetscObject *ptr)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "PetscObjectComposeLanguage_Petsc"
+int PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vob)
+{
+  PetscFunctionBegin;
+  if (lang == PETSC_LANGUAGE_CPP) {
+    obj->cpp = vob;
+  } else {
+    SETERRQ(1,1,"No support for this language yet");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectQueryLanguage_Petsc"
+int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob)
+{
+  PetscFunctionBegin;
+  if (lang == PETSC_LANGUAGE_C) {
+    *vob = (void *) obj;
+  } else if (lang == PETSC_LANGUAGE_CPP) {
+    if (obj->cpp) {
+      *vob = obj->cpp;
+    } else {
+      SETERRQ(1,1,"No C++ wrapper generated");
+    }
+  } else {
+    SETERRQ(1,1,"No support for this language yet");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "PetscObjectComposeFunction_Petsc"
 int PetscObjectComposeFunction_Petsc(PetscObject obj,char *name,char *fname,void *ptr)
 {
@@ -268,6 +304,62 @@ int PetscObjectQuery(PetscObject obj,char *name,PetscObject *ptr)
 
   PetscFunctionBegin;
   ierr = (*obj->bops->query)(obj,name,ptr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectQueryLanguage"
+/*@C
+   PetscObjectQueryLanguage - Returns a language specific interface to the given object
+                       
+   Not Collective
+
+   Input Parameters:
++  obj - the PETSc object
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectCompose((PetscObject) mat,...);
+-  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CPP
+
+   Output Parameter:
+.  ptr - the language specific interface
+
+.keywords: language, object wrappers
+
+.seealso: PetscObjectQuery()
+@*/
+int PetscObjectQueryLanguage(PetscObject obj,PetscLanguage lang,void **ptr)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = (*obj->bops->querylanguage)(obj,lang,ptr);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectComposeLanguage"
+/*@C
+   PetscObjectComposeLanguage - Sets a language specific interface to the given object
+                       
+   Not Collective
+
+   Input Parameters:
++  obj - the PETSc object
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectCompose((PetscObject) mat,...);
+.  lang - one of PETSC_LANGUAGE_C, PETSC_LANGUAGE_F77, PETSC_LANGUAGE_CPP
+-  ptr - the language specific interface
+
+.keywords: language, object wrappers
+
+.seealso: PetscObjectQuery()
+@*/
+int PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  ierr = (*obj->bops->composelanguage)(obj,lang,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -407,7 +499,6 @@ int PetscDataTypeGetName(PetscDataType ptype,char **name)
   PetscFunctionReturn(0);
 }
 
-
 struct _p_PetscObjectContainer {
   PETSCHEADER(int)
   void   *ptr;
@@ -480,7 +571,7 @@ int PetscObjectContainerDestroy(PetscObjectContainer obj)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectContainerDestroy"
+#define __FUNC__ "PetscObjectContainerCreate"
 /*@C
    PetscObjectContainerCreate - Creates a PETSc object that has room to hold
    a single pointer. This allows one to attach any type of data (accessible
