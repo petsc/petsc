@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.211 1997/07/29 14:09:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.212 1997/08/07 14:39:24 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1561,6 +1561,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   B->mapping    = 0;
 
   B->insertmode = NOT_SET_VALUES;
+  b->size       = size;
   MPI_Comm_rank(comm,&b->rank);
 
   if (m == PETSC_DECIDE && (d_nnz != PETSC_NULL || o_nnz != PETSC_NULL)) 
