@@ -1,7 +1,7 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.25 1999/10/12 18:39:11 balay Exp balay $ 
-#
+# $Id: wwwindex.py,v 1.26 1999/10/12 21:34:18 balay Exp balay $ 
+# 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
 # on the 'Level of Difficulty'
