@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.15 1999/04/02 18:50:45 bsmith Exp bsmith $";
+!    "$Id: ex14f.F,v 1.16 1999/04/02 19:01:24 bsmith Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -73,18 +73,13 @@
 
       MPI_Comm comm
       SLES     sles
-      Vec      X, Y, F
+      Vec      X, Y, F, localX, localF
       Mat      J, B
-      integer  Nx, Ny, flg, N, ierr
+      DA       da
+      integer  Nx, Ny, flg, N, ierr,mx,my
       integer  usemf,nooutput
-      common   /mycommon/ B
+      common   /mycommon/ B,mx,my,localX,localF,da
 !
-!      user() containes PETSc objects (vectors) hence we need to 
-!     declare it as a PetscFortranAddr array rather than as an 
-!     integer array to make sure it always has room to hold the 
-!     PETSc object; it is an integer or integer(8) array
-!     
-      PetscFortranAddr  user(6)
 !
 !      This is the routine to use for matrix-free approach
 !
@@ -107,18 +102,17 @@
       comm = PETSC_COMM_WORLD
 
 !  Initialize problem parameters
-!  
-!    user(1) = mx, user(2) = my, user(3) = localX, user(4) = localF, user(5) = da
+
 !
-      user(1) = 4
-      user(2) = 4
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user(1),flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(2),flg,ierr)
-      N = user(1)*user(2)
+      mx = 4
+      my = 4
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
+      N = mx*my
 
       nooutput = 0
       call OptionsHasName(PETSC_NULL_CHARACTER,'-no_output',nooutput,    &
-     &                    flg,ierr)
+     &                    ierr)
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create linear solver context
@@ -137,19 +131,19 @@
       Ny = PETSC_DECIDE
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user(1),      &
-     &     user(2),Nx,Ny,1,1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,     &
-     &     user(5),ierr)
+      call DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,           &
+     &     my,Nx,Ny,1,1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,          &
+     &     da,ierr)
 
 !  
 !  Extract global and local vectors from DA then duplicate for remaining
 !  vectors that are the same types
 !  
-       call DACreateGlobalVector(user(5),X,ierr)
-       call DACreateLocalVector(user(5),user(3),ierr)
+       call DACreateGlobalVector(da,X,ierr)
+       call DACreateLocalVector(da,localX,ierr)
        call VecDuplicate(X,F,ierr)
        call VecDuplicate(X,Y,ierr)
-       call VecDuplicate(user(3),user(4),ierr)
+       call VecDuplicate(localX,localF,ierr)
 
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -202,11 +196,11 @@
 !     Evaluate initial guess
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-       call FormInitialGuess(user,X,ierr)
-       call ComputeFunction(user,X,F,ierr)
+       call FormInitialGuess(X,ierr)
+       call ComputeFunction(X,F,ierr)
        call VecNorm(F,NORM_2,fnorm,ierr)
        ttol = fnorm*rtol
-       if (nooutput .ne. 1) then
+       if (nooutput .eq. 0) then
          print*, 'Initial function norm ',fnorm
        endif
 
@@ -229,7 +223,7 @@
 !  Compute the Jacobian matrix.  See the comments in this routine for
 !  important information about setting the flag mat_flag.
 
-         call ComputeJacobian(user,X,B,ierr)
+         call ComputeJacobian(X,B,ierr)
 
 !  Solve J Y = F, where J is the Jacobian matrix.
 !    - First, set the SLES linear operators.  Here the matrix that
@@ -246,23 +240,23 @@
          call VecAYPX(mone,X,Y,ierr)
          call VecCopy(Y,X,ierr)
          call VecNorm(X,NORM_2,xnorm,ierr)
-         if (nooutput .ne. 1) then
+         if (nooutput .eq. 0) then
            print*,'linear solve iterations = ',lin_its,' xnorm = ',     &
      &         xnorm,' ynorm = ',ynorm
          endif
 
 !  Evaluate nonlinear function at new location
 
-         call ComputeFunction(user,X,F,ierr)
+         call ComputeFunction(X,F,ierr)
          call VecNorm(F,NORM_2,fnorm,ierr)
-         if (nooutput .ne. 1) then
+         if (nooutput .eq. 0) then
            print*, 'Iteration ',i+1,' function norm',fnorm
          endif
 
 !  Test for convergence
 
        if (fnorm .le. ttol) then
-         if ( nooutput .ne. 1) then
+         if ( nooutput .eq. 0) then
            print*,'Converged: function norm ',fnorm,' tolerance ',ttol
          endif
          goto 20
@@ -282,13 +276,13 @@
        if ( usemf .ne. 0) then
          call MatDestroy(J,ierr)
        endif
-       call VecDestroy(user(3),ierr)
+       call VecDestroy(localX,ierr)
        call VecDestroy(X,ierr)
        call VecDestroy(Y,ierr)
-       call VecDestroy(user(4),ierr)
+       call VecDestroy(localF,ierr)
        call VecDestroy(F,ierr)
        call SLESDestroy(sles,ierr)
-       call DADestroy(user(5),ierr)
+       call DADestroy(da,ierr)
        call PetscFinalize(ierr)
        end
 
@@ -297,13 +291,12 @@
 !   FormInitialGuess - Forms initial approximation.
 !
 !   Input Parameters:
-!   user - user-defined application context
 !   X - vector
 !
 !   Output Parameter:
 !   X - vector
 ! 
-      subroutine FormInitialGuess(user,X,ierr)
+      subroutine FormInitialGuess(X,ierr)
       implicit none
 
 !     petsc.h  - base PETSc routines   vec.h - vectors
@@ -318,21 +311,19 @@
 #include "include/finclude/pc.h"
 #include "include/finclude/sles.h"
 #include "include/finclude/da.h"
-      integer          user(6),ierr
+      integer          ierr
       PetscOffset      idx
-      Vec              X,localX
+      Vec              X,localX,localF
       integer          i, j, row, mx, my,  xs, ys, xm
       integer          ym, gxm, gym, gxs, gys
       double precision one, lambda, temp1, temp, hx, hy
       double precision hxdhy, hydhx,sc
       Scalar           xx(1)
       DA               da
+      Mat              B
+      common   /mycommon/ B,mx,my,localX,localF,da
  
-      da     = user(5)
-      localX = user(3)
       one    = 1.d0
-      mx     = user(1)
-      my     = user(2) 
       lambda = 6.d0
       hx     = one/(mx-1)
       hy     = one/(my-1)
@@ -389,12 +380,11 @@
 !
 !   Input Parameters:
 !.  X - input vector
-!.  user - user-defined application context
 !
 !   Output Parameter:
 !.  F - function vector
 ! 
-      subroutine  ComputeFunction(user,X,F,ierr)
+      subroutine  ComputeFunction(X,F,ierr)
       implicit none
 
 !     petsc.h  - base PETSc routines   vec.h - vectors
@@ -411,23 +401,20 @@
 #include "include/finclude/da.h"
 
       Vec              X,F,localX, localF
-      integer          user(6), gys, gxm, gym
+      integer          gys, gxm, gym
       PetscOffset      idx,idf
       integer          ierr, i, j, row, mx, my, xs,ys,xm,ym,gxs 
       double precision two, one, lambda,hx
       double precision hy, hxdhy, hydhx,sc
       Scalar           u, uxx, uyy, xx(1),ff(1)
       DA               da
+      Mat              B
+      common   /mycommon/ B,mx,my,localX,localF,da
 
       two    = 2.d0
       one    = 1.d0
-      da     = user(5)
-      localX = user(3)
-      localF = user(4)
       lambda = 6.d0
 
-      mx     = user(1)
-      my     = user(2)
       hx     = one/(mx-1)
       hy     = one/(my-1)
       sc     = hx*hy*lambda 
@@ -491,7 +478,6 @@
 !
 !   Input Parameters:
 !   x - input vector
-!   user - user-defined application context
 !
 !   Output Parameters:
 !   jac - Jacobian matrix
@@ -504,7 +490,7 @@
 !   We cannot work directly with the global numbers for the original
 !   uniprocessor grid!
 !
-      subroutine ComputeJacobian(user,X,jac,ierr)
+      subroutine ComputeJacobian(X,jac,ierr)
       implicit none
 
 !     petsc.h  - base PETSc routines   vec.h - vectors
@@ -520,10 +506,9 @@
 #include "include/finclude/sles.h"
 #include "include/finclude/da.h"
 
-      integer     user(6)
       Vec         X
       Mat         jac
-      Vec         localX
+      Vec         localX,localF
       DA          da
       integer     ltog(1)
       PetscOffset idltog,idx
@@ -531,14 +516,11 @@
       integer     nloc, xs, ys, xm, ym, gxs, gys, gxm, gym, grow
       Scalar      two, one, lambda, v(5), hx, hy, hxdhy
       Scalar      hydhx, sc, xx(1)
+      Mat         B
+      common   /mycommon/ B,mx,my,localX,localF,da
 
-      da     = user(5)
       one    = 1.d0
       two    = 2.d0
-      localX = user(3)
-      da     = user(5)
-      mx     = user(1)
-      my     = user(2)
       hx     = one/(mx-1)
       hy     = one/(my-1)
       sc     = hx*hy  
@@ -621,7 +603,6 @@
 !   MyMult - user provided matrix multiply 
 !
 !   Input Parameters:
-!.  user - user-defined application context
 !.  X - input vector
 !
 !   Output Parameter:
@@ -631,9 +612,11 @@
       implicit none
       Mat     J,B
       Vec     X,F
-      integer ierr
+      integer ierr,mx,my
+      DA      da
+      Vec     localX,localF
 
-      common   /mycommon/ B
+      common   /mycommon/ B,mx,my,localX,localF,da
 !
 !       Here we use the actual formed matrix B; users would 
 !     instead write their own matrix vector product routine
