@@ -73,7 +73,6 @@ while [ $# -gt 0 ] ; do
     *)
     if [ -x $arg ] ; then
         programname=$arg
-        shift
         progargs=$@
     else
         echo "Unrecognized option $arg"
@@ -84,19 +83,24 @@ while [ $# -gt 0 ] ; do
 done
 #
 # Now process program options looking for -f filename or -f0 or -f1
+# stage the file directly into the rundir directory so we need to generate new
+# command line arguments that strip the path form the filename
 #
 # Process arguments
+newprogargs=""
 while [ $# -gt 0 ] ; do
     arg=$1
+    newprogargs="$newprogargs $arg"
     shift
     case $arg in 
     -f|-f0|-f1) 
       infiles="$infiles $1"
+      newprogargs="$newprogargs `basename $1`"
       shift
     ;;
   esac
 done
-echo Staging files: $infiles
+if [ $infiles != "" ] ; then echo "Staging files: $infiles" ; fi
 #
 jobname="v.tmp"
 jobdir=$HOME/$jobname
@@ -107,7 +111,7 @@ chi_file -create $rundir
 #
 # Undocumented step:  copy program into rundir
 cp $programname $rundir
-if [ "$infiles" != "" ] ; then cp --parents $infiles $rundir; fi
+if [ "$infiles" != "" ] ; then cp $infiles $rundir; fi
 #
 # Check if this should be a myrinet job:
 has_gm="`nm $programname | egrep 'T gm_init$'`"
@@ -147,7 +151,7 @@ if [ ! -s \${pbsfile} ] ; then
 	exit 1
     fi
 fi
-mpirun.ch_gm -np $num --gm-f \${pbsfile} $rundir/$programbase $progargs
+mpirun.ch_gm -np $num --gm-f \${pbsfile} $rundir/$programbase $newprogargs
 #
 exit 0;
 EOF
@@ -163,7 +167,7 @@ else
 PATH=$PATH
 export PATH
 cd $rundir
-mpirun.ch_p4 -np $num -machinefile \$PBS_NODEFILE $programbase $progargs
+mpirun.ch_p4 -np $num -machinefile \$PBS_NODEFILE $programbase $newprogargs
 #
 exit 0;
 EOF
