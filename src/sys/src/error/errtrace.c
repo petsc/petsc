@@ -1,4 +1,4 @@
-/*$Id: errtrace.c,v 1.17 2000/09/28 19:18:18 bsmith Exp bsmith $*/
+/*$Id: errtrace.c,v 1.18 2000/09/28 21:08:54 bsmith Exp bsmith $*/
 
 #include "petsc.h"           /*I "petsc.h" I*/
 
@@ -31,6 +31,8 @@ static char *PetscErrorStrings[] = {
   /*80 */ "Arguments must have same communicators",
   /*81 */ "Detected zero pivot in Cholesky factorization"};
 
+extern char PetscErrorBaseMessage[1024];
+
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PetscErrorMessage" 
 /*@C
@@ -42,7 +44,8 @@ static char *PetscErrorStrings[] = {
 .   errno - the error code
 
    Output Parameter: 
-.  text - the error message
++  text - the error message (PETSC_NULL if not desired) 
+-  specific - the specific error message that was set with SETERRxxx() or PetscError().  (PETSC_NULL if not desired) 
 
    Level: developer
 
@@ -51,13 +54,18 @@ static char *PetscErrorStrings[] = {
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-int PetscErrorMessage(int errno,char **text)
+int PetscErrorMessage(int errno,char **text,char **specific)
 {
   PetscFunctionBegin;
   if (errno < PETSC_ERR_MEM || errno > PETSC_ERR_MAT_CH_ZRPVT) {
     SETERRQ(1,"Unknown error code");
   }
-  *text = PetscErrorStrings[errno-PETSC_ERR_MEM];
+  if (text) {
+    *text = PetscErrorStrings[errno-PETSC_ERR_MEM];
+  }
+  if (specific) {
+    *specific = PetscErrorBaseMessage;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -128,10 +136,10 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
     }
   } else {
     char *text;
-    PetscErrorMessage(n,&text);
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s!\n",rank);
+    PetscErrorMessage(n,&text,PETSC_NULL);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s!\n",rank,text);
   }
-  if (mess) {
+  if (p == 1 && mess) {
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   %s\n",rank,mess);
   }
   PetscFunctionReturn(n);
