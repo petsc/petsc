@@ -97,11 +97,16 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-vendor-compilers'] == 'yes': self.framework.argDB['with-vendor-compilers'] = ''      
     if self.framework.argDB['with-vendor-compilers'] == 'false': self.framework.argDB['with-vendor-compilers'] = '0'
     if self.framework.argDB['with-vendor-compilers'] == 'true': self.framework.argDB['with-vendor-compilers'] = ''      
-    
+
+    if 'PETSC_DIR' in self.framework.argDB:
+      self.framework.argDB['search-dirs'].append(os.path.join(self.framework.argDB['PETSC_DIR'],'bin','win32fe'))
+        
     if self.framework.argDB.has_key('with-cc'):
+      if self.framework.argDB['with-cc'] in ['icl','cl','bcc32']: self.framework.argDB['with-cc'] = 'win32fe '+self.framework.argDB['with-cc']
       yield self.framework.argDB['with-cc']
       raise RuntimeError('C compiler you provided with -with-cc='+self.framework.argDB['with-cc']+' does not work')
     elif self.framework.argDB.has_key('CC'):
+      if self.framework.argDB['CC'] in ['icl','cl','bcc32']: self.framework.argDB['CC'] = 'win32fe '+self.framework.argDB['CC']
       yield self.framework.argDB['CC']
       raise RuntimeError('C compiler you provided with -CC='+self.framework.argDB['CC']+' does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'],'bin')) and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['with-mpich'] and self.framework.argDB['with-mpi']:
@@ -214,9 +219,11 @@ class Configure(config.base.Configure):
       if self.framework.argDB['with-cxx'] == '0':
         return
       else:
+        if self.framework.argDB['with-cxx'] in ['icl','cl','bcc32']: self.framework.argDB['with-cxx'] = 'win32fe '+self.framework.argDB['with-cxx']
         yield self.framework.argDB['with-cxx']
         raise RuntimeError('C++ compiler you provided with -with-cxx='+self.framework.argDB['with-cxx']+' does not work')
     elif self.framework.argDB.has_key('CXX'):
+      if self.framework.argDB['CXX'] in ['icl','cl','bcc32']: self.framework.argDB['CXX'] = 'win32fe '+self.framework.argDB['CXX']
       yield self.framework.argDB['CXX']
       raise RuntimeError('C++ compiler you provided with -CXX='+self.framework.argDB['CXX']+' does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'],'bin')) and self.framework.argDB['with-mpi-compilers']  and not self.framework.argDB['with-mpich'] and self.framework.argDB['with-mpi']:
@@ -350,9 +357,11 @@ class Configure(config.base.Configure):
 
     if self.framework.argDB.has_key('with-fc'):
       if self.framework.argDB['with-fc'] == '0': return
+      if self.framework.argDB['with-fc'] in ['ifl','ifort'] and self.framework.argDB['PETSC_ARCH_BASE'].startswith('cygwin'): self.framework.argDB['with-fc'] = 'win32fe '+self.framework.argDB['with-fc']
       yield self.framework.argDB['with-fc']
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.framework.argDB['with-fc']+' does not work')
     elif self.framework.argDB.has_key('FC'):
+      if self.framework.argDB['FC'] in ['ifl','ifort'] and self.framework.argDB['PETSC_ARCH_BASE'].startswith('cygwin'): self.framework.argDB['FC'] = 'win32fe '+self.framework.argDB['FC']
       yield self.framework.argDB['FC']
       raise RuntimeError('Fortran compiler you provided with -FC='+self.framework.argDB['FC']+' does not work')
     elif self.framework.argDB.has_key('with-mpi-dir') and os.path.isdir(os.path.join(self.framework.argDB['with-mpi-dir'],'bin')) and self.framework.argDB['with-mpi-compilers'] and not self.framework.argDB['with-mpich'] and self.framework.argDB['with-mpi']:

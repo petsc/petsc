@@ -74,7 +74,8 @@ class Configure(config.base.Configure):
     '''Checks that C++ compiler supports namespaces, and if it does defines HAVE_CXX_NAMESPACE'''
     self.pushLanguage('C++')
     if self.checkCompile('namespace petsc {int dummy;}'):
-      self.addDefine('HAVE_CXX_NAMESPACE', 1)
+      if self.checkCompile('template <class dummy> struct a {};\nnamespace trouble{\ntemplate <class dummy> struct a : public ::a<dummy> {};\n}\ntrouble::a<int> uugh;\n'):
+        self.addDefine('HAVE_CXX_NAMESPACE', 1)
     self.popLanguage()
     return
 
@@ -269,7 +270,6 @@ class Configure(config.base.Configure):
     lflags  = []
     try:
       while 1:
-        self.framework.log.write( 'Getting arg\n')
         arg = argIter.next()
         self.framework.log.write( 'Checking arg '+arg+'\n')
         # Check for full library name
@@ -303,7 +303,12 @@ class Configure(config.base.Configure):
         # Check for special library arguments
         m = re.match(r'^-[lLR].*$', arg)
         if m:
+          # HP Fortran prints these libraries in a very strange way
+          if arg == '-l:libU77.a':  arg = '-lU77'
+          if arg == '-l:libF90.a':  arg = '-lF90'
+          if arg == '-l:libIO77.a': arg = '-lIO77'                      
           if not arg in lflags:
+            
             #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
             if arg == '-lkernel32':
               continue
@@ -329,8 +334,19 @@ class Configure(config.base.Configure):
           for lib in argIter.next().split(':'):
             #solaris gnu g77 has this extra P, here, not sure why it means
             if lib.startswith('P,'):lib = lib[2:]
+            self.framework.log.write( 'Handling -Y option: '+lib+'\n')
             flibs.append('-L'+lib)
           continue
+        # HPUX lists a bunch of library directories seperated by :
+        if arg.find(':') >=0:
+          founddir = 0
+          for l in arg.split(':'):
+            if os.path.isdir(l):
+              flibs.append('-L'+l)
+              self.framework.log.write( 'Handling HPUX list of directories: '+l+'\n')
+              founddir = 1
+          if founddir:
+            continue
         self.framework.log.write( 'Unknown arg '+arg+'\n')
     except StopIteration:
       pass

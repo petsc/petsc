@@ -190,29 +190,30 @@ class Configure(config.base.Configure):
   def checkSizeof(self, typeName, otherInclude = None):
     '''Determines the size of type "typeName", and defines SIZEOF_"typeName" to be the size'''
     self.framework.log.write('Checking for size of type: '+typeName+'\n')
-    size     = 0
     filename = 'conftestval'
     includes = '#include <stdlib.h>\n#include <stdio.h>\n'
     if otherInclude:
       includes += '#include <'+otherInclude+'>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%d\\n", sizeof('+typeName+'));\n'
-    (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p'))
-    if not returnCode:
-      if os.path.exists(filename):
+    typename = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p')
+    if not typename in self.framework.argDB:
+      if self.checkRun(includes, body) and os.path.exists(filename):
         f    = file(filename)
         size = int(f.read())
         f.close()
         os.remove(filename)
+      elif not typename == 'sizeof_long_long':
+        raise RuntimeError('Unable to determine '+typename)
       else:
-        size = int(output)
-      self.addDefine('SIZEOF_'+typeName.upper().replace(' ', '_').replace('*', 'P'), size)
+        self.framework.log.write('Compiler does not support long long\n')
+        size = 0
     else:
-      self.framework.log.write('Could not check size\n')
+      size = self.framework.argDB[typename]
+    self.addDefine(typename.upper(), size)
     return size
 
   def checkBitsPerByte(self):
     '''Determine the nubmer of bits per byte and define BITS_PER_BYTE'''
-    bits     = 8
     filename = 'conftestval'
     includes = '#include <stdlib.h>\n#include <stdio.h>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n'+'''
@@ -222,12 +223,17 @@ class Configure(config.base.Configure):
     while((char) val) {val <<= 1; i++;}
     fprintf(f, "%d\\n", i);\n
     '''
-    if self.checkRun(includes, body, defaultArg = 'bits_per_byte') and os.path.exists(filename):
-      f    = file(filename)
-      size = int(f.read())
-      f.close()
-      os.remove(filename)
-      self.addDefine('BITS_PER_BYTE', bits)
+    if not 'bits_per_byte' in self.framework.argDB:
+      if self.checkRun(includes, body) and os.path.exists(filename):
+        f    = file(filename)
+        bits = int(f.read())
+        f.close()
+        os.remove(filename)
+      else:
+        raise RuntimeError('Unable to determine bits per byte')
+    else:
+      bits = self.framework.argDB['bits_per_byte']      
+    self.addDefine('BITS_PER_BYTE', bits)
     return
 
   def configure(self):

@@ -556,7 +556,7 @@ class Configure:
     (output, error, status)        = self.outputCompile(includes, body)
     output  += error
     valid    = 1
-    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0:
+    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option') >= 0 or output.find('not recognized') >= 0 or output.find('ignored') >= 0 or output.find('illegal option') >= 0  or output.find('linker input file unused because linking not done') >= 0 or output.find('Unknown switch') >= 0:
       valid = 0
     self.framework.argDB[flagsArg] = oldFlags
     return valid
@@ -624,7 +624,7 @@ class Configure:
     if status:
       valid = 0
       self.framework.log.write('Rejecting linker flag '+flag+' due to nonzero status from link\n')
-    if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') >= 0 and output.find(' option') >= 0) or output.find('linker input file unused because linking not done') >= 0 or output.find('flag is ignored') >= 0:
+    if output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or (output.find('bad ') >= 0 and output.find(' option') >= 0) or output.find('linker input file unused because linking not done') >= 0 or output.find('flag is ignored') >= 0 or output.find('Invalid option') >= 0 or output.find('unknown option') >= 0:
       valid = 0
       self.framework.log.write('Rejecting linker flag '+flag+' due to \n'+output)
     self.framework.argDB[flagsArg] = oldFlags
