@@ -23,6 +23,7 @@ class BuildChecker:
                'rs6000_sp':       ['ibm'],
                'solaris':         ['solaris'],
                'solaris64':       ['solaris'],
+               'solaris_gnu':     ['gcc'],
                't3e':             ['cray'],
                'win32_borland':   ['win32fe', 'borland'],
                'win32_gnu':       ['gcc'],
