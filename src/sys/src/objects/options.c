@@ -1096,8 +1096,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char o
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *flg)
 {
-  char       *value;
-  PetscTruth flag,istrue,isfalse;
+  char           *value;
+  PetscTruth     flag,istrue,isfalse;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1166,9 +1166,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetLogical(const char pre[],const cha
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,PetscTruth *flg)
 {
-  char       *value;
+  char           *value;
   PetscErrorCode ierr;
-  PetscTruth flag;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -1216,8 +1216,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetReal(const char pre[],const char n
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue,PetscTruth *flg)
 {
-  char       *value;
-  PetscTruth flag;
+  char           *value;
+  PetscTruth     flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1288,11 +1288,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],PetscInt *nmax,PetscTruth *flg)
 {
-  char       *value;
+  char           *value;
   PetscErrorCode ierr;
-  int        n = 0;
-  PetscTruth flag;
-  PetscToken *token;
+  PetscInt       n = 0;
+  PetscTruth     flag;
+  PetscToken     *token;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -1416,9 +1416,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetString(const char pre[],const char name[],char string[],size_t len,PetscTruth *flg)
 {
-  char       *value;
+  char           *value;
   PetscErrorCode ierr;
-  PetscTruth flag;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -1523,7 +1523,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetStringArray(const char pre[],const
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsAllUsed(int *N)
 {
-  int  i,n = 0;
+  PetscInt i,n = 0;
 
   PetscFunctionBegin;
   for (i=0; i<options->N; i++) {
@@ -1550,7 +1550,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAllUsed(int *N)
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsLeft(void)
 {
   PetscErrorCode ierr;
-  int        i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   for (i=0; i<options->N; i++) {
