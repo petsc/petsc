@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.23 1998/04/30 23:13:28 bsmith Exp balay $ 
+# $Id: buildntdist,v 1.24 1998/05/13 21:11:07 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -11,6 +11,7 @@ endif
 
 /bin/rm -r -f /mcs/tmp/petscnt
 /bin/rm -f /mcs/tmp/petscnt.tar
+setenv PETSC_DIR /home/bsmith/petsc
 cd /home/bsmith/petsc
 make ACTION=clean tree
 

@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.55 1998/04/29 19:06:40 bsmith Exp balay $ 
+# $Id: builddist,v 1.56 1998/04/30 16:37:50 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -22,6 +22,7 @@ else
   set version=""
 endif
 #
+setenv PETSC_DIR /home/bsmith/petsc
 cd /home/bsmith/petsc
 make ACTION=clean tree
 #
