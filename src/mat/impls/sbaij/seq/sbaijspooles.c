@@ -43,7 +43,6 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
   int                  ierr,m=A->m,n=A->n;
 
   PetscFunctionBegin;	
-  printf("calling MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles...\n");
   /* Create the factorization matrix F */  
   ierr = MatCreateSeqAIJ(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
 
