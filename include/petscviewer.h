@@ -1,13 +1,19 @@
-/* $Id: viewer.h,v 1.39 1997/01/22 18:46:23 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.40 1997/02/03 06:03:27 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
+
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
 
+typedef struct _Viewer*            Viewer;
+
+/*
+    petsc.h must be included AFTER the definition of Viewer for ADIC to 
+   process correctly.
+*/
 #include "petsc.h"
 
-typedef struct _Viewer*            Viewer;
 #define VIEWER_COOKIE              PETSC_COOKIE+1
 typedef enum { MATLAB_VIEWER,ASCII_FILE_VIEWER, ASCII_FILES_VIEWER, 
                BINARY_FILE_VIEWER, STRING_VIEWER, DRAW_VIEWER} ViewerType;
