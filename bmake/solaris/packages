@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.91 2001/03/12 18:33:20 bsmith Exp balay $ 
+# $Id: base.site,v 1.92 2001/03/27 22:17:30 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -86,9 +86,9 @@ PETSC_HAVE_MATLAB_ENGINE =  -DPETSC_HAVE_MATLAB_ENGINE
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-PVODE_INCLUDE    = -I/home/petsc/software/MPI_PVODE/include
-PVODE_LIB        = /home/petsc/software/MPI_PVODE/lib/solaris/libpvode.a
-PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
+#PVODE_INCLUDE    = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB        = /home/petsc/software/MPI_PVODE/lib/solaris/libpvode.a
+#PETSC_HAVE_PVODE = -DPETSC_HAVE_PVODE
 #
 # Location of ParMetis
 #
