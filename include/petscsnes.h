@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.18 1995/06/13 01:18:51 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.19 1995/06/13 01:23:08 curfman Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -51,6 +51,7 @@ extern int SNESSetRelativeTolerance(SNES,double);
 extern int SNESSetTruncationTolerance(SNES,double);
 extern int SNESSetMaxIterations(SNES,int);
 extern int SNESSetMaxFunctionEvaluations(SNES,int);
+extern int SNESGetIterationNumber(SNES,int*);
 
 #if defined(__DRAW_PACKAGE)
 #define SNESLGMonitorCreate  KSPLGMonitorCreate
@@ -63,6 +64,7 @@ extern int SNESComputeInitialGuess(SNES,Vec);
 extern int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESDefaultMatrixFreeComputeJacobian(SNES,Vec,Mat*,Mat*,
                                                 MatStructure*,void*);
+extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
 
 extern int SNESComputeFunction(SNES,Vec,Vec);
 extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void *);
