@@ -2,7 +2,7 @@ PARCH    = hpux
 #
 #   The name of the C compiler to use
 #
-CC       = cc -DPARCH_hpux -Aa +z
+CC       = cc -DPARCH_hpux 
 # If building shared libraries, use the following instead.
 # You MUST use +z for shared libraries.
 # CC       = cc -DPARCH_hpux -Aa +z
