@@ -2913,17 +2913,16 @@ PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
 {
   PetscErrorCode    ierr; 
   MPI_Comm          comm=mpimat->comm;
-  Mat               B_mpi;
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)seqmat->data;
   PetscMPIInt       size,rank;
-  int               N=mpimat->N,i,j,*owners,*ai=a->i,*aj=a->j; /* M=seqmat->m,N=seqmat->n,i,j,*owners,*ai=a->i,*aj=a->j; */
-  int               len,*len_s,proc,m;
-  int               taga,*len_si,*len_ri,**buf_ri,**buf_rj;  
-  int               k,anzi,*bj_i,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj; 
-  int               nrows,*buf_s,*buf_si,*buf_si_i,**buf_ri_k,**nextrow,**nextai;
+  int               N=mpimat->N,i,j,*owners,*ai=a->i,*aj=a->j; 
+  int               *len_s,proc,m;
+  int               taga,**buf_ri,**buf_rj;  
+  int               k,anzi,*bj_i,*bi,*bj,arow,bnzi,nextaj; 
+  int               nrows,**buf_ri_k,**nextrow,**nextai;
   MPI_Request       *s_waits,*r_waits; 
   MPI_Status        *status;
-  MatScalar         *ba,*aa=a->a,**abuf_r,*ba_i;
+  MatScalar         *aa=a->a,**abuf_r,*ba_i;
   Mat_Merge_SeqsToMPI  *merge;
   PetscObjectContainer container;
   
@@ -2931,7 +2930,6 @@ PetscErrorCode MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-  /* B_mpi = mpimat; */
   ierr = PetscObjectQuery((PetscObject)mpimat,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
     ierr  = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
@@ -3032,10 +3030,10 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   Mat               B_seq,B_mpi;
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)seqmat->data;
   PetscMPIInt       size,rank;
-  int               M=seqmat->m,N=seqmat->n,i,j,*owners,*ai=a->i,*aj=a->j;
+  int               M=seqmat->m,N=seqmat->n,i,*owners,*ai=a->i,*aj=a->j;
   int               len,*len_s,proc;
   int               tagi,tagj,*len_si,*len_ri,**buf_ri,**buf_rj;  
-  int               k,anzi,*bj_i,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj; 
+  int               k,anzi,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0; 
   int               nrows,*buf_s,*buf_si,*buf_si_i,**buf_ri_k,**nextrow,**nextai;
   MPI_Request       *si_waits,*sj_waits,*ri_waits,*rj_waits; 
   MPI_Status        *status;
