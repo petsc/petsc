@@ -3,138 +3,126 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html">
   <title>PETSc: The Portable, Extensible Toolkit for Scientific
-  Computation</title>
+Computation</title>
 </head>
-
 <body bgcolor="#d5eaff">
-
 <table width="775">
   <tbody>
     <tr>
-      <td width="218" valign="top"><h1><font color="#ff0000"
-        size="7">PETSc</font></h1>
-        <ul>
-          <li><a href="../index.html"><strong>Home</strong></a></li>
-        </ul>
-        &nbsp;</td>
-      <td width="549"><h1>Developers Site</h1>
+      <td width="218" valign="top">
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
+      <ul>
+        <li><a href="../index.html"><strong>Home</strong></a></li>
+      </ul>
+&nbsp;</td>
+      <td width="549">
+      <h1>Developers Site</h1>
       </td>
     </tr>
     <tr>
-      <td width="771" colspan="2"><hr size="4" color="#FF5B5B">
-      </td>
+      <td width="771" colspan="2">
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
     <tr>
-      <td width="218" valign="top"><ul>
-          <li><a
-          href="../download/index.html"><strong>Download</strong></a></li>
-          <li><a
-          href="../features/index.html"><strong>Features</strong></a></li>
-          <li><a
-            href="../documentation/index.html"><strong>Documentation</strong></a></li>
-          <li><strong><a
-            href="../publications/index.html">Publications</a></strong></li>
-          <li><a
-            href="../presentations/index.html"><strong>Presentations</strong></a></li>
-          <li><a
-            href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-          <li><strong><font color="#ff0000">Developers</font></strong>
-            <ul>
-              <li><strong><font color="#ff0000">&nbsp;<a
-                href="http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/index.html">Development
-                copy of documentation</a></font></strong></li>
-              <li><strong><font color="#ff0000"><a
-                href="projects.html">Proposed
-              projects</a></font></strong></li>
-              <li><strong><font color="#ff0000"><a
-                href="http://www.mcs.anl.gov/petsc/petsc-3">PETSc
-                3</a></font></strong></li>
-            </ul>
-          </li>
-        </ul>
-
-        <p>&nbsp;</p>
+      <td width="218" valign="top">
+      <ul>
+        <li><a href="../download/index.html"><strong>Download</strong></a></li>
+        <li><a href="../features/index.html"><strong>Features</strong></a></li>
+        <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
+        <li><strong><a href="../publications/index.html">Publications</a></strong></li>
+        <li><a href="../presentations/index.html"><strong>Presentations</strong></a></li>
+        <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+        <li><strong><font color="#ff0000">Developers</font></strong>
+          <ul>
+            <li><strong><font color="#ff0000">&nbsp;<a
+ href="http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/index.html">Development
+copy of documentation</a></font></strong></li>
+            <li><strong><font color="#ff0000"><a href="projects.html">Proposed
+projects</a></font></strong></li>
+          </ul>
+        </li>
+      </ul>
+      <p>&nbsp;</p>
       </td>
-      <td width="549" valign="top"><p align="left">&nbsp;These pages are for
-        people interested in developing and contributing to the PETSc
-        libraries. It is intended only  for people who are experienced with
-        building, using and debugging PETSc.   If you cannot use makefiles, a
-        debugger and EMACS etags then please don't access these pages.<br>
-        </p>
-
-        <big><span style="font-weight: bold;">Obtaining
-        PETSc:</span></big><br>
-        <br>
-        To obtain the development version of PETSc,  download and install
-        <b>BitKeeper</b> (free) from <a href="http://bitkeeper.com">
-        bitkeeper.com</a>. Using BitKeeper, invoke
-        the following command to obtain PETSc. (This creates a local
-        directory with the name petsc-dev)
-        <ul>
-          <li><font color="#800000">bk&nbsp; clone&nbsp;
-            http://petsc.bkbits.net/petsc-dev&nbsp;&nbsp;petsc-dev</font></li>
-        </ul>
-        For additional help on using BitKeeper you can use
-        <ul>
-          <li><font color="#800000">bk helptool</font></li>
-        </ul>
-        We strongly recomment that all users of the development version of
-        PETSc use the automatic configuration <a
-        href="http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/installation.html">to install PETSc</a>,
-         rather than editing the bmake files
-        manually (if you have trouble with the automatic configuration,
-        please <b>do</b> contact us for help). If you must use the manual configuration
-        do <strong>make allfortranstubs etags</strong>
-        from the PETSc directory just before doing <strong>make all</strong>.</p>
-        </ul>
-
-        <br>
-        <big style="font-weight: bold;">Updating PETSc:<br>
-        <br>
-        </big>The next time you  need to update your copy of PETSc with the
-        changes we made (since your  last update), you can do the
-        following:<br>
-        </p>
-        <ul>
-          <li><font color="#800000">make update</font>(from inside the petsc-dev directory tree)</li>
-        </ul>
-
-        <p align="left" style="font-weight: bold;"><big>Building
-        Documentation:</big></p>
-
-        <p align="left">The documentation tools are now automatically downloaded and installed by configure. However, as
-            a failsafe, we provide them here as well.</p>
-        <p align="left">The following additional tools are required to build
-        the PETSc documentation:</p>
-        <ul>
-          <li><p align="left"><font size="4"><a
-            href="ftp://ftp.mcs.anl.gov/pub/petsc/sowing.tar.gz">Sowing</a>:</font>&nbsp;
-            A text processing tools developed by Bill Gropp. This is automatically downloaded and installed by configure</p>
-          </li>
-          <li><p align="left"><font size="4"><a
-            href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
-            A text processing package required to generate the PETSc
-            documentation. This is automatically downloaded and installed by configure</p>
-          </li>
-          <li><p align="left">A version of pdflatex <a href="http://www.tug.org/teTeX/"><font
-            size="4"></font></a><font size="4"><a
-            href="http://www.tug.org/teTeX/">(for example in teTeX)</a>:</font>This package
-            might already be installed on most systems. It is required to
-            generate the users manual (part of the PETSc documentation)</p>
-          </li>
-        </ul>
-
-        <p align="left">&nbsp;&nbsp; Once pdflatex (from teTeX) is in your PATH you can build the
-        documentation with:<br>
-        </p>
-        <ul>
-          <li><font color="#800000">make alldoc LOC=${PETSC_DIR}</font>.</li>
-        </ul>
-        &nbsp;</td>
+      <td width="549" valign="top">
+      <p align="left">&nbsp;These pages are for people interested in
+developing and contributing to the PETSc libraries. It is intended only
+for people who are experienced with building, using and debugging
+PETSc. If you cannot use makefiles, a debugger and EMACS etags then
+please don't access these pages.<br>
+      </p>
+      <big><span style="font-weight: bold;">Obtaining PETSc:</span></big><br>
+      <br>
+To obtain the development version of PETSc, download and install <b>BitKeeper</b>
+(free) from <a href="http://bitkeeper.com"> bitkeeper.com</a>. Using
+BitKeeper, invoke the following command to obtain PETSc. (This creates
+a local directory with the name petsc-dev)
+      <ul>
+        <li><font color="#800000">bk&nbsp; clone&nbsp;
+http://petsc.bkbits.net/petsc-dev&nbsp;&nbsp;petsc-dev</font></li>
+      </ul>
+For additional help on using BitKeeper you can use
+      <ul>
+        <li><font color="#800000">bk helptool</font></li>
+      </ul>
+We strongly recomment that all users of the development version of
+PETSc use the automatic configuration <a
+ href="http://www.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/installation.html">to
+install PETSc</a>, rather than editing the bmake files manually (if you
+have trouble with the automatic configuration, please <b>do</b>
+contact us for help). If you must use the manual configuration do <strong>make
+allfortranstubs etags</strong> from the PETSc directory just before
+doing <strong>make all</strong>.
+      <p></p>
+      <br>
+      <big style="font-weight: bold;">Updating PETSc:<br>
+      <br>
+      </big>The next time you need to update your copy of PETSc with
+the changes we made (since your last update), you can do the following:<br>
+      <p></p>
+      <ul>
+        <li><font color="#800000">make update</font>(from inside the
+petsc-dev directory tree)</li>
+      </ul>
+      <p align="left" style="font-weight: bold;"><big>Building
+Documentation:</big></p>
+      <p align="left">The documentation tools are now automatically
+downloaded and installed by configure. However, as a failsafe, we
+provide them here as well.</p>
+      <p align="left">The following additional tools are required to
+build the PETSc documentation:</p>
+      <ul>
+        <li>
+          <p align="left"><font size="4"><a
+ href="ftp://ftp.mcs.anl.gov/pub/petsc/sowing.tar.gz">Sowing</a>:</font>&nbsp;
+A text processing tools developed by Bill Gropp. This is automatically
+downloaded and installed by configure</p>
+        </li>
+        <li>
+          <p align="left"><font size="4"><a
+ href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
+A text processing package required to generate the PETSc documentation.
+This is automatically downloaded and installed by configure</p>
+        </li>
+        <li>
+          <p align="left">A version of pdflatex <a
+ href="http://www.tug.org/teTeX/"><font size="4"></font></a><font
+ size="4"><a href="http://www.tug.org/teTeX/">(for example in teTeX)</a>:</font>This
+package might already be installed on most systems. It is required to
+generate the users manual (part of the PETSc documentation)</p>
+        </li>
+      </ul>
+      <p align="left">&nbsp;&nbsp; Once pdflatex (from teTeX) is in
+your PATH you can build the documentation with:<br>
+      </p>
+      <ul>
+        <li><font color="#800000">make alldoc LOC=${PETSC_DIR}</font>.</li>
+      </ul>
+&nbsp;</td>
     </tr>
     <tr>
-      <td width="771" colspan="2"><hr size="4" color="#FF5B5B">
-      </td>
+      <td width="771" colspan="2">
+      <hr size="4" color="#ff5b5b"> </td>
     </tr>
     <tr>
       <td width="771" colspan="2"><br>
