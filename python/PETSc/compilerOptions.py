@@ -198,6 +198,12 @@ class compilerOptions(config.base.Configure):
           flags.extend(['-g', '-trapuv'])
         elif bopt == 'O':
           flags.extend(['-O2', '-IPA:cprop=OFF', '-OPT:IEEE_arithmetic=1'])
+    # MacOSX on Apple Power PC
+    elif self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
+      # IBM
+      if re.match(r'\w*xl[fF]\w*', compiler):
+        if bopt == '':
+          flags.append('-qextname')
     # Generic
     if not len(flags):
       if bopt == 'g':

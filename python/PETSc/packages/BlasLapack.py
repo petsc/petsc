@@ -11,14 +11,16 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.argDB        = framework.argDB
     self.found        = 0
-    # Assume that these libraries are Fortran if we have a Fortran compiler
-    self.compilers    = self.framework.require('config.compilers',            self)
-    self.setcompilers = self.framework.require('config.setCompilers',            self)    
-    self.libraries    = self.framework.require('config.libraries',            self)
+    self.compilers    = self.framework.require('config.compilers', self)
+    self.setcompilers = self.framework.require('config.setCompilers', self)    
+    self.libraries    = self.framework.require('config.libraries', self)
     self.framework.require('PETSc.packages.Sowing', self)
     self.name         = 'BlasLapack'
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
+    self.f2c             = 0
+    self.missingRoutines = []
+    self.separateBlas    = 1
     return
 
   def __str__(self):
@@ -60,57 +62,59 @@ class Configure(config.base.Configure):
     f.close()
     return m.hexdigest()
 
-  def parseLibrary(self, library):
-    (dir, lib)  = os.path.split(library)
-    lib         = os.path.splitext(lib)[0]
-    if lib.startswith('lib'): lib = lib[3:]
-    return (dir, lib)
+  def getOtherLibs(self, foundBlas = None, blasLibrary = None, separateBlas = None):
+    if foundBlas is None:
+      foundBlas = self.foundBlas
+    if blasLibrary is None:
+      blasLibrary = self.blasLibrary
+    if separateBlas is None:
+      separateBlas = self.separateBlas
+    otherLibs = ''
+    if foundBlas:
+      if separateBlas:
+        otherLibs += ' '.join(map(self.libraries.getLibArgument, blasLibrary))
+    if 'FC' in self.framework.argDB:
+      otherLibs += ' '+self.compilers.flibs
+    return otherLibs
+
+  def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routine = 'ddot'):
+    '''This checks the given library for the routine, ddot by default'''
+    oldLibs = self.framework.argDB['LIBS']
+    found   = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
+    self.framework.argDB['LIBS'] = oldLibs
+    return found
+
+  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routines = ['dgetrs', 'dgeev']):
+    oldLibs = self.framework.argDB['LIBS']
+    found   = 0
+    for routine in routines:
+      found = found or self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
+      if found: break
+    self.framework.argDB['LIBS'] = oldLibs
+    return found
 
   def checkLib(self, lapackLibrary, blasLibrary = None):
     '''Checking for BLAS and LAPACK symbols'''
-    f2c = 0
     if blasLibrary is None:
-      separateBlas = 0
-      blasLibrary  = lapackLibrary
+      self.separateBlas = 0
+      blasLibrary       = lapackLibrary
     else:
-      separateBlas = 1
+      self.separateBlas = 1
     if not isinstance(lapackLibrary, list): lapackLibrary = [lapackLibrary]
     if not isinstance(blasLibrary,   list): blasLibrary   = [blasLibrary]
     foundBlas   = 0
     foundLapack = 0
+    self.f2c    = 0
     mangleFunc  = 'FC' in self.framework.argDB
-    if mangleFunc:
-      otherLibs = self.compilers.flibs
+    foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
+    if foundBlas:
+      foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
     else:
-      otherLibs = ''
-    # Check for BLAS
-    oldLibs   = self.framework.argDB['LIBS']
-    foundBlas = (self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = mangleFunc))
-    if not foundBlas:
-      foundBlas = (self.libraries.check(blasLibrary, 'ddot_', otherLibs = otherLibs, fortranMangle = 0))
-    self.framework.argDB['LIBS'] = oldLibs
-    # Check for LAPACK
-    if foundBlas and separateBlas:
-      otherLibs = ' '.join(map(self.libraries.getLibArgument, blasLibrary))+' '+otherLibs
-    oldLibs     = self.framework.argDB['LIBS']
-    foundLapack = ((self.libraries.check(lapackLibrary, 'dgetrs', otherLibs = otherLibs, fortranMangle = mangleFunc) or
-                    self.libraries.check(lapackLibrary, 'dgeev', otherLibs = otherLibs, fortranMangle = mangleFunc)))
-    if not foundLapack:
-      foundLapack = ((self.libraries.check(lapackLibrary, 'dgetrs_', otherLibs = otherLibs, fortranMangle = 0) or
-                      self.libraries.check(lapackLibrary, 'dgeev_', otherLibs = otherLibs, fortranMangle = 0)))
-      if foundLapack:
-        self.addDefine('BLASLAPACK_F2C',1)
-        mangleFunc = 0
-        f2c        = 1
-    if foundLapack:
-      #check for missing symbols from lapack
-      for i in ['gesvd','geev','getrf','potrf','getrs','potrs']:
-        if f2c: ii = 'd'+i+'_'
-        else:   ii = 'd'+i
-        if not self.libraries.check(lapackLibrary, ii, otherLibs = otherLibs, fortranMangle = mangleFunc):
-           self.addDefine('MISSING_LAPACK_'+i.upper(),1)
-      
-    self.framework.argDB['LIBS'] = oldLibs
+      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
+      if foundBlas:
+        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs_', 'dgeev_'])
+        if foundLapack:
+          self.f2c = 1
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -224,15 +228,14 @@ class Configure(config.base.Configure):
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'))
     return
 
-  def downLoadBlasLapack(self,f2c,l):
+  def downLoadBlasLapack(self, f2c, l):
     self.framework.log.write('Downloading '+l+'blaslapack\n')
-
     packages = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
       os.mkdir(packages)
-
-    if f2c == 'f2c': self.addDefine('BLASLAPACK_F2C',1)
-    libdir               = os.path.join(packages,f2c+'blaslapack',self.framework.argDB['PETSC_ARCH'])
+    if f2c == 'f2c':
+      self.f2c = 1
+    libdir = os.path.join(packages,f2c+'blaslapack',self.framework.argDB['PETSC_ARCH'])
     if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
@@ -241,11 +244,11 @@ class Configure(config.base.Configure):
       except:
         raise RuntimeError('Error downloading '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
-        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip '+f2c+'blaslapack.tar.gz', log = self.framework.log)
+        self.executeShellCommand('cd '+packages+'; gunzip '+f2c+'blaslapack.tar.gz', log = self.framework.log)
       except:
         raise RuntimeError('Error unzipping '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
-        config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf '+f2c+'blaslapack.tar', log = self.framework.log)
+        self.executeShellCommand('cd '+packages+'; tar -xf '+f2c+'blaslapack.tar', log = self.framework.log)
       except:
         raise RuntimeError('Error doing tar -xf '+f2c+'blaslapack.tar requested with -with-'+l+'-blas-lapack option')
       os.unlink(os.path.join(packages,f2c+'blaslapack.tar'))
@@ -310,14 +313,14 @@ class Configure(config.base.Configure):
   
   def configureLibrary(self):
     self.functionalBlasLapack = []
-    self.foundBlas       = 0
-    self.foundLapack     = 0
+    self.foundBlas   = 0
+    self.foundLapack = 0
     if self.framework.argDB['download-c-blas-lapack'] == 1:
       if 'FC' in self.framework.argDB:
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
-      self.downLoadBlasLapack('f2c','c')        
-      self.foundBlas       = 1
-      self.foundLapack     = 1
+      self.downLoadBlasLapack('f2c', 'c')
+      self.foundBlas   = 1
+      self.foundLapack = 1
     else:
       for (name, blasLibrary, lapackLibrary) in self.generateGuesses():
         self.framework.log.write('================================================================================\n')
@@ -329,7 +332,6 @@ class Configure(config.base.Configure):
           self.functionalBlasLapack.append((name, blasLibrary, lapackLibrary))
           if not self.framework.argDB['with-alternatives']:
             break
-
     if not (self.foundBlas and self.foundLapack):
       if self.framework.argDB['download-c-blas-lapack'] == 2:
         if 'FC' in self.framework.argDB:
@@ -337,76 +339,46 @@ class Configure(config.base.Configure):
         self.downLoadBlasLapack('f2c','c')        
         self.foundBlas       = 1
         self.foundLapack     = 1
-    
     # User chooses one or take first (sort by version)
     if self.foundBlas and self.foundLapack:
       name, self.blasLibrary, self.lapackLibrary = self.functionalBlasLapack[0]
       if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
       if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
-      
-      #ugly stuff to decide if BLAS/LAPACK are dynamic or static
-      self.sharedBlasLapack = 1
-      if len(self.blasLibrary) > 0 and self.blasLibrary[0]:
-        if ' '.join(self.blasLibrary).find('blas.a') >= 0: self.sharedBlasLapack = 0
-        if len(self.lapackLibrary) > 0 and self.lapackLibrary[0]:
-          if ' '.join(self.lapackLibrary).find('lapack.a') >= 0: self.sharedBlasLapack = 0
-
+      self.lib = self.lapackLibrary+self.blasLibrary
+      self.framework.packages.append(self)
+      if self.f2c:
+        self.addDefine('BLASLAPACK_F2C', 1)
     else:
       if not self.foundBlas:
         raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
       if not self.foundLapack:
         raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-c-blas-lapack=1 or --download-f-blas-lapack=1 to have one automatically downloaded and installed\n')
-
-    # check if Mac OS BLAS/LAPACK and IBM Fortran compiler?
-    # if yes, then force IBM Fortran to add _ for subroutine names
-    # so cab access BLAS/LAPACK from Fortran
-    if name.find('MacOSX') >= 0 and 'FC' in self.framework.argDB:
-      self.setcompilers.pushLanguage('FC')
-      if self.setcompilers.getCompiler().find('xlf') >= 0 or self.setcompilers.getCompiler().find('xlF') >= 0:
-        # should check if compiler is already using underscore and that -qextname works 
-        self.compilers.fortranMangling = 'underscore'
-        self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS'] + ' -qextname'
-        self.framework.log.write('Using the MacOX blas/lapack libraries and xlF so forcing _ after Fortran symbols\n')
-        self.compilers.delDefine('HAVE_FORTRAN_NOUNDERSCORE')
-        self.compilers.addDefine('HAVE_FORTRAN_UNDERSCORE',1)
-        self.delDefine('BLASLAPACK_F2C')
-      self.setcompilers.popLanguage()
     return
 
-  def configureESSL(self):
+  def checkESSL(self):
+    '''Check for the IBM ESSL library'''
     if self.libraries.check(self.lapackLibrary, 'iessl'):
       self.addDefine('HAVE_ESSL',1)
     return
 
-  def unique(self, l):
-    m = []
-    for i in l:
-      if not i in m: m.append(i)
-    return m
-
-  def setOutput(self):
-    '''Add defines and substitutions
-       - BLAS_DIR is the location of the BLAS library
-       - LAPACK_DIR is the location of the LAPACK library
-       - LAPACK_LIB is the LAPACK linker flags'''
-    if self.foundBlas:
-      if None in self.blasLibrary:
-        lib = self.lapackLibrary
-      else:
-        lib = self.blasLibrary
-      dir = self.unique(map(os.path.dirname, lib))
-      libFlag = map(self.libraries.getLibArgument, lib)
+  def checkMissing(self):
+    '''Check for missing LAPACK routines'''
     if self.foundLapack:
-      dir = self.unique(map(os.path.dirname, self.lapackLibrary))
-      libFlag = map(self.libraries.getLibArgument, self.lapackLibrary)
-    self.lib = self.lapackLibrary+self.blasLibrary
-    self.framework.packages.append(self)
+      mangleFunc = 'FC' in self.framework.argDB and not self.f2c
+      for baseName in ['gesvd','geev','getrf','potrf','getrs','potrs']:
+        if self.f2c:
+          routine = 'd'+baseName+'_'
+        else:
+          routine = 'd'+baseName
+        if not self.libraries.check(self.lapackLibrary, routine, otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc):
+          self.missingRoutines.append(baseName)
+          self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
     return
 
   def configure(self):
     self.executeTest(self.configureLibrary)
-    self.executeTest(self.configureESSL)
-    self.setOutput()
+    self.executeTest(self.checkESSL)
+    self.executeTest(self.checkMissing)
     return
 
 if __name__ == '__main__':
