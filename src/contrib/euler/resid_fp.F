@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.12 1997/10/16 22:11:35 keyes Exp keyes $";
+c  "$Id: resid_fp.F,v 1.13 1997/10/16 23:28:36 keyes Exp $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -10,7 +10,7 @@ c
       integer function localfortfct_fp(first_time_resid,fff,
      &                xx,p,xx_bc,p_bc,sadai,sadaj,sadak,
      &                aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                dxx,den,xvel,yvel,zvel)
+     &                dxx,den,xvel,yvel,zvel,x,y,z)
 
 c localfortfct - Evaluates local Fortran function (using implicit BCs).
 c                We use a single routine to interface between the C routine
@@ -25,6 +25,7 @@ c                to facilitate use of automatic differentiation.
 #include "bc.h"
 #include "ibcwork.h"
 #include "aux_fp.h"
+#include "coord.h"
 
       integer first_time_resid,ierr,resid_fp,residbc_fp
   
@@ -33,7 +34,7 @@ c                to facilitate use of automatic differentiation.
 C  If using implicit BC's, compute function components for boundary points 
       ierr = residbc_fp(xx, fff, p, xx_bc, p_bc, sadai, sadaj, sadak,
      &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz,
-     &         den, xvel, yvel, zvel)
+     &         den, xvel, yvel, zvel, x, y, z)
       if (ierr .ne. 0) then
          write(6,*)  'local_fortran_fct:rank,residbc',
      &                rank,ierr
@@ -45,7 +46,7 @@ C  Compute function components for interior grid points
       ierr = resid_fp(xx, p, dxx,
      &         sadai, sadaj, sadak,
      &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz, 
-     &         den, xvel, yvel, zvel)
+     &         den, xvel, yvel, zvel, x, y, z)
       if (ierr .ne. 0) then
          write(6,*)  'local_fortran_fct:rank,resid',
      &                rank,ierr
@@ -61,7 +62,7 @@ C ----------------------------------------------------------------
       integer function RESID_fp(xx,p,dxx,
      &                  sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                  den,xvel,yvel,zvel)
+     &                  den,xvel,yvel,zvel,x,y,z)
 
 c Computes the nonlinear residual (five components at each interior point)
 c Each coordinate direction is considered in turn (two cell faces per
@@ -78,6 +79,7 @@ c though most of this is written out more explicitly than necessary.
 #include "freq.h"
 #include "condi.h"
 #include "aux_fp.h"
+#include "coord.h"
 
 C   RESID COMPUTES THE RESIDUAL VECTOR.
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
@@ -112,16 +114,62 @@ c is uniformly unity, and that mesh is uniform
       dy = aix(xsf2,ysf2,zsf2)
 c      print *, 'mesh spacings', dx, dy
 
+c
+c  Uniform grid auxiliaries (not needed now)
+c
+c      do 1 k=gzsf1,gzef01
+c      do 1 j=gysf1,gyef01
+c      do 1 i=gxsf1,gxef01
+c	  xvel(i,j,k)= p5* ( fp(i+1,j,k)-fp(i,j,k) +
+c     &                       fp(i+1,j+1,k)-fp(i,j+1,k) )/dx
+c	  yvel(i,j,k)= p5* ( fp(i,j+1,k)-fp(i,j,k) +
+c     &                       fp(i+1,j+1,k)-fp(i+1,j,k) )/dy
+c          zvel(i,j,k)= zero
+c          den (i,j,k)= ( one+p5*gm1*(fsmach**2-
+c     &                 (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+c1     continue
+c
       do 1 k=gzsf1,gzef01
       do 1 j=gysf1,gyef01
       do 1 i=gxsf1,gxef01
-	  xvel(i,j,k)= p5* ( fp(i+1,j,k)-fp(i,j,k) +
-     &                       fp(i+1,j+1,k)-fp(i,j+1,k) )/dx
-	  yvel(i,j,k)= p5* ( fp(i,j+1,k)-fp(i,j,k) +
-     &                       fp(i+1,j+1,k)-fp(i+1,j,k) )/dy
-          zvel(i,j,k)= zero
-          den (i,j,k)= ( one+p5*gm1*(fsmach**2-
-     &                 (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+c       xne = p25 * (x(i,j,k)+x(i+1,j,k)+x(i,j+1,k)+x(i+1,j+1,k))
+c	xnw = p25 * (x(i,j,k)+x(i-1,j,k)+x(i,j+1,k)+x(i-1,j+1,k))
+c	xse = p25 * (x(i,j,k)+x(i+1,j,k)+x(i,j-1,k)+x(i+1,j-1,k))
+c	xsw = p25 * (x(i,j,k)+x(i-1,j,k)+x(i,j-1,k)+x(i-1,j-1,k))
+c	yne = p25 * (y(i,j,k)+y(i+1,j,k)+y(i,j+1,k)+y(i+1,j+1,k))
+c	ynw = p25 * (y(i,j,k)+y(i-1,j,k)+y(i,j+1,k)+y(i-1,j+1,k))
+c	yse = p25 * (y(i,j,k)+y(i+1,j,k)+y(i,j-1,k)+y(i+1,j-1,k))
+c	ysw = p25 * (y(i,j,k)+y(i-1,j,k)+y(i,j-1,k)+y(i-1,j-1,k))
+c	xe  = p5 * (xne + xse)
+c	xw  = p5 * (xnw + xsw)
+c	yn  = p5 * (yne + ynw)
+c	ys  = p5 * (yse + ysw)
+c       cen = (y(i,j,k)-yse) / (yne-yse)
+c	ces = one - cen
+c       cwn = (y(i,j,k)-ysw) / (ynw-ysw)
+c	cws = one - cen
+c       cne = (x(i,j,k)-xnw) / (xne-xnw)
+c	cnw = one - cne
+c       cse = (x(i,j,k)-xsw) / (xse-xsw)
+c	csw = one - cse
+c       fpe = cen*fp(i+1,j+1) + ces*fp(i+1,j)
+c       fpw = cwn*fp(i,j+1)   + cws*fp(i,j)
+c       fpn = cne*fp(i+1,j+1) + cnw*fp(i,j+1)
+c       fps = cse*fp(i+1,j)   + csw*fp(i,j)
+c       xvel(i,j,k) = (fpe-fpw) / (xe-xw)
+c       yvel(i,j,k) = (fpn-fps) / (yn-ys)
+	call velfcn(x(i-1,j-1,k),x(i,j-1,k),x(i+1,j-1,k),
+     &              x(i-1,j  ,k),x(i,j  ,k),x(i+1,j  ,k),
+     &              x(i-1,j+1,k),x(i,j+1,k),x(i+1,j+1,k),
+     &              y(i-1,j-1,k),y(i,j-1,k),y(i+1,j-1,k),
+     &              y(i-1,j  ,k),y(i,j  ,k),y(i+1,j  ,k),
+     &              y(i-1,j+1,k),y(i,j+1,k),y(i+1,j+1,k),
+     &              fp(i  ,j  ,k),fp(i+1,j  ,k),
+     &              fp(i  ,j+1,k),fp(i+1,j+1,k),
+		    xvel(i,j,k), yvel(i,j,k))
+        zvel(i,j,k) = zero
+        den (i,j,k) = ( one+p5*gm1*(fsmach**2-
+     &               (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
 1     continue
 
 C   FLUX IN THE I DIRECTION
@@ -219,13 +267,51 @@ c    4 CONTINUE
 c
 c      RETURN
       END
-
+c=======================================================================
+	subroutine velfcn(xmm,xim,xpm,xmj,xij,xpj,xmp,xip,xpp,
+     &                    ymm,yim,ypm,ymj,yij,ypj,ymp,yip,ypp,
+     &                    fij,fpj,fip,fpp, xvel,yvel)
+	double precision xmm,xim,xpm,xmj,xij,xpj,xmp,xip,xpp,
+     &                   ymm,yim,ypm,ymj,yij,ypj,ymp,yip,ypp,
+     &                   fij,fpj,fip,fpp, xvel,yvel, p25
+     &			 xne,xnw,xse,xsw,yne,ynw,yse,ysw,
+     &                   cen,ces,cwn,cws,cne,cnw,cse,csw,
+     &                   xe,xw,yn,ys,fpe,fpw,fpn,fps
+	parameter (p25=0.25d0)
+	xne = p25 * (xij+xpj+xip+xpp)
+	xnw = p25 * (xij+xmj+xip+xmp)
+	xse = p25 * (xij+xpj+xim+xpm)
+	xsw = p25 * (xij+xmj+xim+xmm)
+	yne = p25 * (yij+ypj+yip+ypp)
+	ynw = p25 * (yij+ymj+yip+ymp)
+	yse = p25 * (yij+ypj+yim+ypm)
+	ysw = p25 * (yij+ymj+yim+ymm)
+	xe  = p5 * (xne + xse)
+	xw  = p5 * (xnw + xsw)
+	yn  = p5 * (yne + ynw)
+	ys  = p5 * (yse + ysw)
+        cen = (y(i,j,k)-yse) / (yne-yse)
+	ces = one - cen
+        cwn = (y(i,j,k)-ysw) / (ynw-ysw)
+	cws = one - cen
+        cne = (x(i,j,k)-xnw) / (xne-xnw)
+	cnw = one - cne
+        cse = (x(i,j,k)-xsw) / (xse-xsw)
+	csw = one - cse
+        fpe = cen*fp(i+1,j+1) + ces*fp(i+1,j)
+        fpw = cwn*fp(i,j+1)   + cws*fp(i,j)
+        fpn = cne*fp(i+1,j+1) + cnw*fp(i,j+1)
+        fps = cse*fp(i+1,j)   + csw*fp(i,j)
+        xvel = (fpe-fpw) / (xe-xw)
+        yvel = (fpn-fps) / (yn-ys)
+        return
+	end
 c ---------------------------------------------------------------
 
       integer function residbc_fp(xx,fff,p,xx_bc,p_bc,
      &                sadai,sadaj,sadak,
      &                aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                den,xvel,yvel,zvel)
+     &                den,xvel,yvel,zvel,x,y,z)
 
 c residbc - Forms the residual components due to boundary conditions.
 c           This routine is called by localfortranfct().
@@ -241,6 +327,7 @@ c
 #include "bc.h"
 #include "ibcwork.h"
 #include "aux_fp.h"
+#include "coord.h"
 
 c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
 c      COMMON /CONST2/ PINIT
