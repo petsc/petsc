@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.12 2000/09/28 20:51:10 bsmith Exp bsmith $*/
+/*$Id: sbaij2.c,v 1.13 2000/09/28 20:51:54 bsmith Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -178,7 +178,7 @@ int MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0];  /* length of i_th row of A */    
     x1 = xb[0];
     ib = aj + *ai;
-    z[i] += *v++ * x[*ib++];   /* (diag of A)*x */
+    if (*ib == i) z[i] += *v++ * x[*ib++];   /* (diag of A)*x */
     for (j=1; j<n; j++) {
       cval    = *ib; 
       z[cval] += *v * x1;      /* (strict lower triangular part of A)*x  */
@@ -215,10 +215,11 @@ int MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[2*i]   += v[0]*x1 + v[2]*x2;
-    z[2*i+1] += v[2]*x1 + v[3]*x2;
-    v += 4; 
+    if (*ib == i){     /* (diag of A)*x */
+      z[2*i]   += v[0]*x1 + v[2]*x2;
+      z[2*i+1] += v[2]*x1 + v[3]*x2;
+      v += 4; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*2;
@@ -260,11 +261,12 @@ int MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
-    z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
-    z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
-    v += 9; 
+    if (*ib == i){     /* (diag of A)*x */
+      z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
+      z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
+      z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
+      v += 9; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*3;
@@ -307,12 +309,13 @@ int MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
-    z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
-    z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
-    z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
-    v += 16; 
+    if (*ib == i){     /* (diag of A)*x */
+      z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
+      z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
+      z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
+      z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
+      v += 16; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*4;
@@ -357,13 +360,14 @@ int MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
-    z[5*i+1] += v[5]*x1  + v[6]*x2 + v[11]*x3 + v[16]*x4+ v[21]*x5;
-    z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
-    z[5*i+3] += v[15]*x1 +v[16]*x2 + v[17]*x3 + v[18]*x4+ v[23]*x5;
-    z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5; 
-    v += 25; 
+    if (*ib == i){      /* (diag of A)*x */
+      z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
+      z[5*i+1] += v[5]*x1  + v[6]*x2 + v[11]*x3 + v[16]*x4+ v[21]*x5;
+      z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
+      z[5*i+3] += v[15]*x1 +v[16]*x2 + v[17]*x3 + v[18]*x4+ v[23]*x5;
+      z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5; 
+      v += 25; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*5;
@@ -411,14 +415,15 @@ int MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
-    z[6*i+1] += v[6]*x1  + v[7]*x2 + v[13]*x3 + v[19]*x4+ v[25]*x5 + v[31]*x6;
-    z[6*i+2] += v[12]*x1 +v[13]*x2 + v[14]*x3 + v[20]*x4+ v[26]*x5 + v[32]*x6;
-    z[6*i+3] += v[18]*x1 +v[19]*x2 + v[20]*x3 + v[21]*x4+ v[27]*x5 + v[33]*x6;
-    z[6*i+4] += v[24]*x1 +v[25]*x2 + v[26]*x3 + v[27]*x4+ v[28]*x5 + v[34]*x6; 
-    z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
-    v += 36; 
+    if (*ib == i){      /* (diag of A)*x */
+      z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
+      z[6*i+1] += v[6]*x1  + v[7]*x2 + v[13]*x3 + v[19]*x4+ v[25]*x5 + v[31]*x6;
+      z[6*i+2] += v[12]*x1 +v[13]*x2 + v[14]*x3 + v[20]*x4+ v[26]*x5 + v[32]*x6;
+      z[6*i+3] += v[18]*x1 +v[19]*x2 + v[20]*x3 + v[21]*x4+ v[27]*x5 + v[33]*x6;
+      z[6*i+4] += v[24]*x1 +v[25]*x2 + v[26]*x3 + v[27]*x4+ v[28]*x5 + v[34]*x6; 
+      z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
+      v += 36; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*6;
@@ -466,15 +471,16 @@ int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5]; x7=xb[6];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
-    z[7*i+1] += v[7]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4+ v[29]*x5 + v[36]*x6+ v[43]*x7;
-    z[7*i+2] += v[14]*x1+ v[15]*x2 +v[16]*x3 + v[23]*x4+ v[30]*x5 + v[37]*x6+ v[44]*x7;
-    z[7*i+3] += v[21]*x1+ v[22]*x2 +v[23]*x3 + v[24]*x4+ v[31]*x5 + v[38]*x6+ v[45]*x7;
-    z[7*i+4] += v[28]*x1+ v[29]*x2 +v[30]*x3 + v[31]*x4+ v[32]*x5 + v[39]*x6+ v[46]*x7;
-    z[7*i+5] += v[35]*x1+ v[36]*x2 +v[37]*x3 + v[38]*x4+ v[39]*x5 + v[40]*x6+ v[47]*x7;
-    z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
-    v += 49; 
+    if (*ib == i){      /* (diag of A)*x */
+      z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
+      z[7*i+1] += v[7]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4+ v[29]*x5 + v[36]*x6+ v[43]*x7;
+      z[7*i+2] += v[14]*x1+ v[15]*x2 +v[16]*x3 + v[23]*x4+ v[30]*x5 + v[37]*x6+ v[44]*x7;
+      z[7*i+3] += v[21]*x1+ v[22]*x2 +v[23]*x3 + v[24]*x4+ v[31]*x5 + v[38]*x6+ v[45]*x7;
+      z[7*i+4] += v[28]*x1+ v[29]*x2 +v[30]*x3 + v[31]*x4+ v[32]*x5 + v[39]*x6+ v[46]*x7;
+      z[7*i+5] += v[35]*x1+ v[36]*x2 +v[37]*x3 + v[38]*x4+ v[39]*x5 + v[40]*x6+ v[47]*x7;
+      z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
+      v += 49; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*7;
@@ -600,7 +606,7 @@ int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0];  /* length of i_th row of A */    
     x1 = xb[0];
     ib = aj + *ai;
-    z[i] += *v++ * x[*ib++];   /* (diag of A)*x */
+    if (*ib == i) z[i] += *v++ * x[*ib++];   /* (diag of A)*x */
     for (j=1; j<n; j++) {
       cval    = *ib; 
       z[cval] += *v * x1;      /* (strict lower triangular part of A)*x  */
@@ -647,10 +653,11 @@ int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[2*i]   += v[0]*x1 + v[2]*x2;
-    z[2*i+1] += v[2]*x1 + v[3]*x2;
-    v += 4; 
+    if (*ib == i){      /* (diag of A)*x */
+      z[2*i]   += v[0]*x1 + v[2]*x2;
+      z[2*i+1] += v[2]*x1 + v[3]*x2;
+      v += 4; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*2;
@@ -702,11 +709,12 @@ int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
-    z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
-    z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
-    v += 9; 
+    if (*ib == i){     /* (diag of A)*x */
+     z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
+     z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
+     z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
+     v += 9; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*3;
@@ -760,12 +768,13 @@ int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
-    z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
-    z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
-    z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
-    v += 16; 
+    if (*ib == i){      /* (diag of A)*x */
+      z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
+      z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
+      z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
+      z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
+      v += 16; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*4;
@@ -821,13 +830,14 @@ int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
-    z[5*i+1] += v[5]*x1  + v[6]*x2 + v[11]*x3 + v[16]*x4+ v[21]*x5;
-    z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
-    z[5*i+3] += v[15]*x1 +v[16]*x2 + v[17]*x3 + v[18]*x4+ v[23]*x5;
-    z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5; 
-    v += 25; 
+    if (*ib == i){      /* (diag of A)*x */
+      z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
+      z[5*i+1] += v[5]*x1  + v[6]*x2 + v[11]*x3 + v[16]*x4+ v[21]*x5;
+      z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
+      z[5*i+3] += v[15]*x1 +v[16]*x2 + v[17]*x3 + v[18]*x4+ v[23]*x5;
+      z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5; 
+      v += 25; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*5;
@@ -884,14 +894,15 @@ int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
-    z[6*i+1] += v[6]*x1  + v[7]*x2 + v[13]*x3 + v[19]*x4+ v[25]*x5 + v[31]*x6;
-    z[6*i+2] += v[12]*x1 +v[13]*x2 + v[14]*x3 + v[20]*x4+ v[26]*x5 + v[32]*x6;
-    z[6*i+3] += v[18]*x1 +v[19]*x2 + v[20]*x3 + v[21]*x4+ v[27]*x5 + v[33]*x6;
-    z[6*i+4] += v[24]*x1 +v[25]*x2 + v[26]*x3 + v[27]*x4+ v[28]*x5 + v[34]*x6; 
-    z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
-    v += 36; 
+    if (*ib == i){     /* (diag of A)*x */
+      z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
+      z[6*i+1] += v[6]*x1  + v[7]*x2 + v[13]*x3 + v[19]*x4+ v[25]*x5 + v[31]*x6;
+      z[6*i+2] += v[12]*x1 +v[13]*x2 + v[14]*x3 + v[20]*x4+ v[26]*x5 + v[32]*x6;
+      z[6*i+3] += v[18]*x1 +v[19]*x2 + v[20]*x3 + v[21]*x4+ v[27]*x5 + v[33]*x6;
+      z[6*i+4] += v[24]*x1 +v[25]*x2 + v[26]*x3 + v[27]*x4+ v[28]*x5 + v[34]*x6; 
+      z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
+      v += 36; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*6;
@@ -951,15 +962,16 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5]; x7=xb[6];
     ib = aj + *ai;
-    /* (diag of A)*x */
-    z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
-    z[7*i+1] += v[7]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4+ v[29]*x5 + v[36]*x6+ v[43]*x7;
-    z[7*i+2] += v[14]*x1+ v[15]*x2 +v[16]*x3 + v[23]*x4+ v[30]*x5 + v[37]*x6+ v[44]*x7;
-    z[7*i+3] += v[21]*x1+ v[22]*x2 +v[23]*x3 + v[24]*x4+ v[31]*x5 + v[38]*x6+ v[45]*x7;
-    z[7*i+4] += v[28]*x1+ v[29]*x2 +v[30]*x3 + v[31]*x4+ v[32]*x5 + v[39]*x6+ v[46]*x7;
-    z[7*i+5] += v[35]*x1+ v[36]*x2 +v[37]*x3 + v[38]*x4+ v[39]*x5 + v[40]*x6+ v[47]*x7;
-    z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
-    v += 49; 
+    if (*ib == i){     /* (diag of A)*x */
+      z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
+      z[7*i+1] += v[7]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4+ v[29]*x5 + v[36]*x6+ v[43]*x7;
+      z[7*i+2] += v[14]*x1+ v[15]*x2 +v[16]*x3 + v[23]*x4+ v[30]*x5 + v[37]*x6+ v[44]*x7;
+      z[7*i+3] += v[21]*x1+ v[22]*x2 +v[23]*x3 + v[24]*x4+ v[31]*x5 + v[38]*x6+ v[45]*x7;
+      z[7*i+4] += v[28]*x1+ v[29]*x2 +v[30]*x3 + v[31]*x4+ v[32]*x5 + v[39]*x6+ v[46]*x7;
+      z[7*i+5] += v[35]*x1+ v[36]*x2 +v[37]*x3 + v[38]*x4+ v[39]*x5 + v[40]*x6+ v[47]*x7;
+      z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
+      v += 49; 
+    }
     for (j=1; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*7;
