@@ -982,6 +982,7 @@ instead write
 \item Do not use the {\em register} directive.
 \item Do not use {\em if (rank == 0)} or {\em if (v == PETSC\_NULL)} or {\em if (flg == PETSC\_TRUE)} or {\em if (flg == PETSC\_FALSE)} 
 instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg)}.
+\item Do not use {\em #ifdef} or {\em #ifndef} rather use {\em #if defined(...} or {\em #if !defined(...}
 \end{itemize}
 
 \section{Option Names}

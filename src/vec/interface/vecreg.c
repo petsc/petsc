@@ -40,6 +40,8 @@ PetscErrorCode VecSetType(Vec vec, const VecType method)
   ierr = PetscTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
+  if (vec->n < 0 && vec->N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call VecSetSizes() first");
+
   /* Get the function pointers for the vector requested */
   if (!VecRegisterAllCalled) {
     ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);
