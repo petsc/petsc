@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.24 2000/09/14 19:49:18 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.25 2000/09/14 20:42:31 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1429,7 +1429,7 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   
   b->bs               = bs;
   b->bs2              = bs2;
-  b->mbs              = mbs; /* redundant? */ 
+  /* b->mbs              = mbs; redundant */ 
   b->s_nz               = 0;
   b->s_maxnz            = s_nz*bs2;
   b->sorted           = PETSC_FALSE;
@@ -1459,8 +1459,8 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
                                      (void*)MatRetrieveValues_SeqSBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqSBAIJSetColumnIndices_C",
                                      "MatSeqSBAIJSetColumnIndices_SeqSBAIJ",
-                                     (void*)MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr); */
-  /* printf("In MatCreateSeqSBAIJ, s_nz = %d, bs2=%d, m=%d, mbs=%d \n", s_nz,bs2,m,mbs);  
+                                     (void*)MatSeqSBAIJSetColumnIndices_SeqSBAIJ);CHKERRQ(ierr);
+  /* printf("In MatCreateSeqSBAIJ, s_nz = %d, bs2=%d, m=%d, mbs=%d \n", s_nz,bs2,m,mbs); */ 
    /*
    for (i=0; i<mbs; i++){
      printf("imax[%d]= %d, ilen[%d]= %d\n", i,b->imax[i], i,b->ilen[i]);
