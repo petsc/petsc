@@ -84,7 +84,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
   PetscErrorCode ierr;
   PetscInt       i,j,anzj;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data;
-  PetscInt       an=A->N,am=A->M;
+  PetscInt       an=A->N;
   PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
 
   PetscFunctionBegin;

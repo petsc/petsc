@@ -110,14 +110,14 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode    ierr;
-  Mat               P_seq,C_seq;
+  Mat               C_seq;
   Mat               P_loc,P_oth,*ploc;
   PetscInt          prstart,prend,m=P->m,low;
   IS                isrow,iscol;
 
   PetscFunctionBegin;
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
-  ierr = MatGetBrowsOfAoCols_Private(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&prstart,&P_oth);CHKERRQ(ierr);
+  ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&prstart,&P_oth);CHKERRQ(ierr);
   prend = prstart + m;
   /* get P_loc by taking all local rows of P */
   ierr = MatGetOwnershipRange(P,&low,PETSC_NULL);CHKERRQ(ierr); 
@@ -135,6 +135,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatDestroyMatrices(1,&ploc);CHKERRQ(ierr);
   ierr = MatDestroy(P_oth);CHKERRQ(ierr);
 #ifdef OLD
+  Mat               P_seq;
   /* get P_seq = submatrix of P by taking rows of P that equal to nonzero col of A */
   ierr = MatGetBrowsOfAcols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&prstart,&P_seq);CHKERRQ(ierr);
   /* compute C_seq = P_loc^T * A_loc * P_seq */
@@ -977,90 +978,6 @@ PetscErrorCode MatPtAPReducedPt_MPIAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscRe
   
   PetscFunctionReturn(0);
 }
- 
-/*@C
-    MatGetBrowsOfAoCols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns
-     of the off-diagonal portion of A 
-
-    Collective on Mat
-
-   Input Parameters:
-+    A,B - the matrices in mpiaij format
-.    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--    rowb, colb - index sets of rows and columns of B to extract (or PETSC_NULL)   
-
-   Output Parameter:
-+    rowb, colb - index sets of rows and columns of B to extract 
-.    brstart - row index of B_seq from which next B->m rows are taken from B's local rows
--    B_seq - the sequential matrix generated
-
-    Level: developer
-
-@*/
-static PetscEvent logkey_GetBrowsOfAocols = 0;
-#undef __FUNCT__
-#define __FUNCT__ "MatGetBrowsOfAoCols_Private"
-PetscErrorCode MatGetBrowsOfAoCols_Private(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,PetscInt *brstart,Mat *B_seq) 
-{
-  Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
-  PetscErrorCode    ierr;
-  PetscInt          *idx,i,start,ncols,nzB,*cmap,imark; 
-  IS                isrowb,iscolb;
-  Mat               *bseq;
- 
-  PetscFunctionBegin;
-  if (a->cstart != b->rstart || a->cend != b->rend){
-    SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%d, %d) != (%d,%d)",a->cstart,a->cend,b->rstart,b->rend);
-  }
-  if (!logkey_GetBrowsOfAocols) {
-    ierr = PetscLogEventRegister(&logkey_GetBrowsOfAocols,"MatGetBrowsOfAoCols",MAT_COOKIE);
-  }
-  ierr = PetscLogEventBegin(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
-  
-  if (scall == MAT_INITIAL_MATRIX){
-    start = a->cstart;
-    cmap  = a->garray;
-    nzB   = a->B->n;
-    if (!nzB){ /* output a null matrix */
-      B_seq = PETSC_NULL;
-      ierr = PetscLogEventEnd(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    }
-    ierr  = PetscMalloc(nzB*sizeof(PetscInt), &idx);CHKERRQ(ierr); 
-    ncols = 0;
-    for (i=0; i<nzB; i++) {  /* row < local row index */
-      if (cmap[i] < start) idx[ncols++] = cmap[i];
-      else break;
-    }
-    imark = i;
-    /* for (i=0; i<nzA; i++) idx[ncols++] = start + i; */ /* local rows */
-    for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i]; /* row > local row index */
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&isrowb);CHKERRQ(ierr);
-    ierr = PetscFree(idx);CHKERRQ(ierr); 
-    *brstart = imark;
-    ierr = ISCreateStride(PETSC_COMM_SELF,B->N,0,1,&iscolb);CHKERRQ(ierr);
-  } else {
-    if (!rowb || !colb) SETERRQ(PETSC_ERR_SUP,"IS rowb and colb must be provided for MAT_REUSE_MATRIX");
-    isrowb = *rowb; iscolb = *colb;
-    ierr = PetscMalloc(sizeof(Mat),&bseq);CHKERRQ(ierr);
-    bseq[0] = *B_seq;
-  }
-  ierr = MatGetSubMatrices(B,1,&isrowb,&iscolb,scall,&bseq);CHKERRQ(ierr);
-  *B_seq = bseq[0];
-  ierr = PetscFree(bseq);CHKERRQ(ierr);
-  if (!rowb){ 
-    ierr = ISDestroy(isrowb);CHKERRQ(ierr);
-  } else {
-    *rowb = isrowb;
-  }
-  if (!colb){ 
-    ierr = ISDestroy(iscolb);CHKERRQ(ierr);
-  } else {
-    *colb = iscolb;
-  }
-  ierr = PetscLogEventEnd(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /* ------------- New --------------------*/
 static PetscEvent logkey_matptapnumeric_local = 0;
@@ -1084,7 +1001,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_Local(Mat A,Mat P_loc,Mat P_oth,Pets
   MatScalar      *pa_loc=p_loc->a,*pA=pa_loc,*pa_oth=p_oth->a;
 
   PetscFunctionBegin;
-    if (!logkey_matptapnumeric_local) {
+  if (!logkey_matptapnumeric_local) {
     ierr = PetscLogEventRegister(&logkey_matptapnumeric_local,"MatPtAPNumeric_MPIAIJ_MPIAIJ_Local",MAT_COOKIE);
   }
   PetscLogEventBegin(logkey_matptapnumeric_local,A,P_loc,P_oth,0);CHKERRQ(ierr);
