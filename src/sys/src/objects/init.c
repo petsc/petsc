@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.59 2000/04/27 04:17:14 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.60 2000/04/27 04:21:31 bsmith Exp curfman $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -327,8 +327,8 @@ int (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
 #define __FUNC__ /*<a name="PetscSetHelpVersionFunctions"></a>*/"PetscSetHelpVersionFunctions"
 /*@C 
    PetscSetHelpVersionFunctions - Sets functions that print help and version information
-     before the PETSc help and version information is printed. Must call BEFORE PetscInitialize().
-     This is so a "higher-level" package that uses PETSc can print its messages first.
+   before the PETSc help and version information is printed. Must call BEFORE PetscInitialize().
+   This routine enables a "higher-level" package that uses PETSc to print its messages first.
 
    Input Parameter:
 +  help - the help function (may be PETSC_NULL)
