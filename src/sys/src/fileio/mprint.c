@@ -510,7 +510,7 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
 ------------------------------\n");
     fprintf(fd,"%s\n",version);
     fprintf(fd,"See docs/changes/index.html for recent updates.\n");
-    fprintf(fd,"See docs/troubleshooting.html for hints about trouble shooting.\n");
+    fprintf(fd,"See docs/faq.html for hints about trouble shooting.\n");
     fprintf(fd,"See docs/index.html for manual pages.\n");
     fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
@@ -518,6 +518,8 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
       fprintf(fd,"%s on a %s named %s by %s %s\n",pname,arch,hostname,username,date);
     }
     fprintf(fd,"Libraries linked from %s\n",PETSC_LIB_DIR);
+    fprintf(fd,"Configure run at %s\n",CONFIGURE_RUN_TIME);
+    fprintf(fd,"Configure options %s\n",CONFIGURE_OPTIONS);
     fprintf(fd,"--------------------------------------------\
 ---------------------------\n");
     fflush(fd);
