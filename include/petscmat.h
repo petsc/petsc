@@ -51,6 +51,7 @@ E*/
 #define MATSEQAIJSPOOLES   "seqaijspooles"
 #define MATMPIAIJSPOOLES   "mpiaijspooles"
 #define MATSEQSBAIJSPOOLES "seqsbaijspooles"
+#define MATMPISBAIJSPOOLES "mpisbaijspooles"
 typedef char* MatType;
 
 #define MAT_SER_SEQAIJ_BINARY "seqaij_binary"

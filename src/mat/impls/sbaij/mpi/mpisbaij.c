@@ -689,7 +689,7 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscTruth  r1,r2,r3;
   MatScalar   *val;
   InsertMode  addv = mat->insertmode;
-#if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_MUMPS) 
+#if defined(PETSC_HAVE_MUMPS) 
   PetscTruth  flag;
 #endif
 
@@ -783,10 +783,6 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
     baij->rowvalues = 0;
   }
 
-#if defined(PETSC_HAVE_SPOOLES) 
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
-  if (flag) { ierr = MatUseSpooles_MPISBAIJ(mat);CHKERRQ(ierr); }
-#endif   
 #if defined(PETSC_HAVE_MUMPS) 
   ierr = PetscOptionsHasName(mat->prefix,"-mat_sbaij_mumps",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseMUMPS_MPIAIJ(mat);CHKERRQ(ierr); }
@@ -2049,7 +2045,7 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   int          tag = ((PetscObject)viewer)->tag,bs=1,Mbs,mbs,extra_rows;
   int          *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   int          dcount,kmax,k,nzcount,tmp;
-#if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_MUMPS) 
+#if defined(PETSC_HAVE_MUMPS) 
   PetscTruth   flag;
 #endif
  
@@ -2197,9 +2193,9 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   }
   
   /* create our matrix */
-  ierr = MatCreateMPISBAIJ(comm,bs,m,m,PETSC_DETERMINE,PETSC_DETERMINE,0,dlens,0,odlens,newmat); 
-  CHKERRQ(ierr);
-  A = *newmat;
+  ierr = MatCreate(comm,m,m,PETSC_DETERMINE,PETSC_DETERMINE,&A);CHKERRQ(ierr);
+  ierr = MatSetType(A,type);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   
   if (!rank) {
@@ -2267,22 +2263,13 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = PetscFree(mask);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SPOOLES)
-  ierr = PetscOptionsHasName(A->prefix,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
-  if (flag) {
-    if (size == 1) {
-      ierr = MatUseSpooles_SeqAIJ(A);CHKERRQ(ierr);
-    } else {
-      ierr = MatUseSpooles_MPISBAIJ(A);CHKERRQ(ierr); 
-    }
-  }
-#endif
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscOptionsHasName(A->prefix,"-mat_sbaij_mumps",&flag);CHKERRQ(ierr);
   if (flag) {
       ierr = MatUseMUMPS_MPIAIJ(A);CHKERRQ(ierr); 
   }
 #endif
+  *newmat = A;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

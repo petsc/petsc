@@ -603,3 +603,4 @@ int MatCreate_MPIAIJ_Spooles(Mat A) {
   A->ops->destroy     = MatDestroy_MPIAIJ_Spooles;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

@@ -5,37 +5,48 @@
 
 
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
-
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_MPISBAIJ_Spooles"
+int MatAssemblyEnd_MPISBAIJ_Spooles(Mat A,MatAssemblyType mode) {
+  int         ierr;
+  Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  ierr = MatUseSpooles_MPISBAIJ(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPISBAIJ_Spooles"
 int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 {
-  Mat_MPISBAIJ  *mat = (Mat_MPISBAIJ*)A->data;
+  Mat           B;
   Mat_Spooles   *lu;   
   int           ierr;
   
   PetscFunctionBegin;	
   A->ops->lufactornumeric  = MatFactorNumeric_MPIAIJ_Spooles;  
 
-  /* Create the factorization matrix F */  
-  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  /* Create the factorization matrix */  
+  ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);
+  ierr = MatSetType(B,MATMPIAIJSPOOLES);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   
-  (*F)->ops->choleskyfactornumeric = MatFactorNumeric_MPIAIJ_Spooles;
-  (*F)->factor                     = FACTOR_CHOLESKY;  
+  B->ops->choleskyfactornumeric = MatFactorNumeric_MPIAIJ_Spooles;
+  B->factor                     = FACTOR_CHOLESKY;  
 
-  ierr                     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
-  (*F)->spptr              = (void*)lu;  
+  lu                       = (Mat_Spooles*)(B->spptr);
   lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
   lu->flg                  = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR        = PETSC_FALSE;
   lu->options.symflag      = SPOOLES_SYMMETRIC;  /* default */
 
   ierr = MPI_Comm_dup(A->comm,&(lu->comm_spooles));CHKERRQ(ierr);
-
+  *F = B;
   PetscFunctionReturn(0); 
 }
 
@@ -52,14 +63,23 @@ int MatUseSpooles_MPISBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#else
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_MPISBAIJ_Spooles"
+int MatCreate_MPISBAIJ_Spooles(Mat A) {
+  int ierr;
+  Mat_Spooles *lu;
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseSpooles_MPISBAIJ"
-int MatUseSpooles_MPISBAIJ(Mat A)
-{
   PetscFunctionBegin;
+  ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+  ierr = MatUseSpooles_MPISBAIJ(A);CHKERRQ(ierr);
+
+  ierr                = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
+  lu->MatAssemblyEnd  = A->ops->assemblyend;
+  lu->MatDestroy      = A->ops->destroy;
+  A->spptr            = (void*)lu;
+  A->ops->assemblyend = MatAssemblyEnd_MPISBAIJ_Spooles;
+  A->ops->destroy     = MatDestroy_SeqSBAIJ_Spooles;
   PetscFunctionReturn(0);
 }
-
-#endif
+EXTERN_C_END

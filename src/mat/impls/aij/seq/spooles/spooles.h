@@ -66,5 +66,6 @@ EXTERN int MatSolve_MPIAIJ_Spooles(Mat,Vec,Vec);
 EXTERN int MatFactorNumeric_MPIAIJ_Spooles(Mat,Mat*); 
 EXTERN int MatAssemblyEnd_MPIAIJ_Spooles(Mat,MatAssemblyType);
 
+EXTERN int MatDestroy_SeqSBAIJ_Spooles(Mat);
 EXTERN int MatGetInertia_SeqSBAIJ_Spooles(Mat,int*,int*,int*);
 #endif

@@ -25,8 +25,8 @@ int MatDestroy_SeqSBAIJ_Spooles(Mat A)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_Spooles"
-int MatAssemblyEnd_SeqAIJ_Spooles(Mat A,MatAssemblyType mode) {
+#define __FUNCT__ "MatAssemblyEnd_SeqSBAIJ_Spooles"
+int MatAssemblyEnd_SeqSBAIJ_Spooles(Mat A,MatAssemblyType mode) {
   int         ierr;
   Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
 
@@ -114,8 +114,8 @@ int MatCreate_SeqSBAIJ_Spooles(Mat A) {
   lu->MatAssemblyEnd  = A->ops->assemblyend;
   lu->MatDestroy      = A->ops->destroy;
   A->spptr            = (void*)lu;
-  A->ops->assemblyend = MatAssemblyEnd_SeqAIJ_Spooles;
-  A->ops->destroy     = MatDestroy_SeqAIJ_Spooles;
+  A->ops->assemblyend = MatAssemblyEnd_SeqSBAIJ_Spooles;
+  A->ops->destroy     = MatDestroy_SeqSBAIJ_Spooles;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -3,7 +3,6 @@
    Provides an interface to the Spooles serial sparse solver
 */
 
-#include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 #undef __FUNCT__
