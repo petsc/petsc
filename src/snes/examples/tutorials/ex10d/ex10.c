@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.1 1999/03/19 04:48:30 bsmith Exp kaushik $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: ex1.c,v 1.10 1999/03/19 21:23:07 bsmith Exp $";
 #endif
 
 /* 
@@ -96,7 +96,6 @@ int main( int argc, char **argv )
   Vec      x, r;                 /* solution, residual vectors */
   Mat      Jac;                  /* Jacobian matrix */
   AppCtx   user;                 /* user-defined application context */
-  Draw     draw;                 /* drawing context */
   AO       ao;                   /* Application Ordering object */
   IS       isglobal,islocal;     /* global and local index sets */
   int	   rank, size;           /* rank of a process, number of processors */
@@ -108,16 +107,19 @@ int main( int argc, char **argv )
   int      *vertices;            /* list of all vertices (incl. ghost ones) 
                                     on a processor */ 
   int      *verticesmask, *svertices;
-  int      *tmp, *tmp1, *tmp2;
+  int      *tmp;
   int      i, j, jstart, inode, nb, nbrs, Nvneighborstotal = 0;
   int      ierr, its, N, flg;
-  double   tiny = 1.0e-10, big = 1.0e+10;
-  double   zero = 0.0, one = 1.0;
-  Scalar   *xx, *ff, *gg;
+  Scalar   *xx;
   char     str[256], form[256], part_name[256];
   FILE     *fptr, *fptr1;
   ISLocalToGlobalMapping isl2g;
-
+#if defined (UNUSED_VARIABLES)
+  Draw    draw;                 /* drawing context */
+  Scalar  *ff, *gg;
+  double  tiny = 1.0e-10, zero = 0.0, one = 1.0, big = 1.0e+10;
+  int     *tmp1, *tmp2;
+#endif
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -125,6 +127,13 @@ int main( int argc, char **argv )
   PetscInitialize( &argc, &argv,"options.inf",help );
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
+
+#if defined(USE_PETSC_COMPLEX)
+  SETERRA(1,0,"This example does not work with complex numbers");
+#endif
+
+  /* The current input file options.inf is for 2 proc run only */
+  if (size != 2) SETERRA(1,0,"This Example currently runs on 2 procs only.");
 
   /*
      Initialize problem parameters
@@ -439,7 +448,7 @@ int main( int argc, char **argv )
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   fclose(fptr1);
   PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);
-  PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);
+  PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n",nfails);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -471,10 +480,14 @@ int main( int argc, char **argv )
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i, j, row, Nvglobal, Nvlocal, Neglobal, ierr;
+  int     i, Nvglobal, Nvlocal, Neglobal, ierr;
   int     *gloInd;
-  double  alpha, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  double  alpha, lambda;
   Scalar  *x;
+#if defined (UNUSED_VARIABLES)
+  double  temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  int      j, row;
+#endif
 
   Nvglobal = user->Nvglobal; 
   Nvlocal  = user->Nvlocal; 
@@ -520,12 +533,18 @@ int FormInitialGuess(AppCtx *user,Vec X)
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
-  int        ierr, i, j, row, Nvglobal, Nvlocal, Neglobal;
+  int        ierr, i, j, Nvglobal, Nvlocal, Neglobal;
   int        *gloInd;
-  double     two = 2.0, one = 1.0, alpha, lambda,hx, hy, hxdhy, hydhx;
-  Scalar     ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f,*g;
+  double     alpha, lambda;
+  Scalar      *x,*f;
   VecScatter scatter;
   Vec        localX = user->localX;
+#if defined (UNUSED_VARIABLES)
+  Scalar     ut, ub, ul, ur, u, *g, sc, uyy, uxx;
+  double     hx, hy, hxdhy, hydhx;
+  double     two = 2.0, one = 1.0;
+  int        row;
+#endif
 
   Nvglobal = user->Nvglobal;
   Nvlocal  = user->Nvlocal;
@@ -595,13 +614,17 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   Mat     jac = *B;
-  int     i, j, row, Nvglobal,Nvlocal, Neglobal, col[50], ierr;
+  int     i, j, Nvglobal,Nvlocal, Neglobal, col[50], ierr;
   int     *gloInd;
-  Scalar  two = 2.0, one = 1.0, alpha, lambda, value[50];
+  Scalar  alpha, lambda, value[50];
   Vec     localX = user->localX;
   VecScatter scatter;
   Scalar  *x;
-  
+#if defined (UNUSED_VARIABLES)
+  Scalar  two = 2.0, one = 1.0;
+  int     row;
+#endif
+ 
   /*printf("Entering into FormJacobian \n");*/
   Nvglobal = user->Nvglobal; 
   Nvlocal  = user->Nvlocal; 
@@ -679,7 +702,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
      matrix. If we do, it will generate an error.
   */
   ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR); CHKERRQ(ierr);
-  /*MatView(jac,VIEWER_STDOUT_SELF);*/
+  /* MatView(jac,VIEWER_STDOUT_SELF); */
   return 0;
 }
 

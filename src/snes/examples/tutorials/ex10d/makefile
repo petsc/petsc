@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 1999/03/19 17:51:25 kaushik Exp balay $ 
+# $Id: makefile,v 1.3 1999/03/24 19:52:19 balay Exp balay $ 
 
 ALL: ex10
 
@@ -7,8 +7,8 @@ FFLAGS		 =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/ex10
-TESTEXAMPLES_1	 = ex10.PETSc runex10 ex10.rm
-BUILDEXAMPLES_1	 = ex10.PETSc ex10.rm
+TESTEXAMPLES_6	 = ex10.PETSc runex10 ex10.rm
+BUILDEXAMPLES_6	 = ex10.PETSc ex10.rm
 DOCS		 = readme
 DIRS		 = 
 
