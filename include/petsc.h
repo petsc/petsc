@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.185 1997/11/12 04:07:52 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.186 1997/11/12 04:08:43 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -16,6 +16,7 @@
 #define PETSC_VERSION_SUBMINOR 21
 #define PETSC_VERSION_DATE     "November 13, 1997"
 
+/* ========================================================================== */
 /* Before anything else, include the PETSc configuration file.  This 
    contains various definitions that handle portability issues and the 
    presence of important features.  For backward compatibility while 
@@ -62,6 +63,7 @@
 #endif
 #endif
 
+/* ========================================================================== */
 
 #include <stdio.h>
 /*
@@ -80,7 +82,7 @@ extern int      PetscInitializedCalled;
 extern int      PetscSetCommWorld(MPI_Comm);
 
 /*
-    Defines the malloc employed by PETSc. Users may employ these routines as well. 
+    Defines the malloc employed by PETSc. Users may use these routines as well. 
 */
 extern void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*);
 extern int  (*PetscTrFree)(void *,int,char*,char*,char*);
