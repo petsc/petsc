@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.27 1995/06/20 22:36:25 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.28 1995/06/23 12:40:22 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -45,11 +45,9 @@ int PCDestroy(PC pc)
   int ierr = 0;
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->destroy) ierr =  (*pc->destroy)((PetscObject)pc);
-  else {
-    if (pc->data) PETSCFREE(pc->data);
-    PLogObjectDestroy(pc);
-    PETSCHEADERDESTROY(pc);
-  }
+  else {if (pc->data) PETSCFREE(pc->data);}
+  PLogObjectDestroy(pc);
+  PETSCHEADERDESTROY(pc);
   return ierr;
 }
 

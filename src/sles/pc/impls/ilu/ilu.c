@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.17 1995/06/08 03:08:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.18 1995/06/18 16:24:06 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -124,8 +124,6 @@ static int PCDestroy_ILU(PetscObject obj)
 
   MatDestroy(dir->fact);
   PETSCFREE(dir); 
-  PLogObjectDestroy(pc);
-  PETSCHEADERDESTROY(pc);
   return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.11 1995/05/11 01:20:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.12 1995/06/08 03:08:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -36,8 +36,6 @@ static int PCDestroy_Shell(PetscObject obj)
   PC_Shell *shell;
   shell = (PC_Shell *) pc->data;
   PETSCFREE(shell);
-  PLogObjectDestroy(pc);
-  PETSCHEADERDESTROY(pc);
   return 0;
 }
 

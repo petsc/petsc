@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.10 1995/05/18 22:45:20 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.11 1995/06/08 03:08:48 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -50,8 +50,6 @@ static int PCDestroy_ICC(PetscObject obj)
   if (icc->ImplDestroy) {ierr = (*icc->ImplDestroy)(pc); CHKERRQ(ierr);}
   MatDestroy(icc->fact);
   PETSCFREE(icc);
-  PLogObjectDestroy(pc);
-  PETSCHEADERDESTROY(pc);
   return 0;
 }
 

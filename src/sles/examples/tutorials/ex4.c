@@ -1,27 +1,26 @@
 
 static char help[] = 
-"This example tests MatScatter\n";
+"This example tests PCSPAI\n";
 
 #include "mat.h"
+#include "sles.h"
 #include <stdio.h>
 
 int main(int argc,char **args)
 {
   Mat           C, A; 
-  int           i,j, m = 4, n = 4, mytid, numtids, low, high, iglobal;
+  int           i,j, m = 15, n = 17, mytid, numtids, low, high, iglobal;
   Scalar        v,  one = 1.0;
-  int           I, J, ierr, nz, nzalloc, mem, ldim,Istart,Iend;
-  Vec           u,b;
-  IS            xr,xc,yr,yc;
-  MatScatterCtx ctx;
+  int           its, I, J, ierr, nz, nzalloc, mem, ldim,Istart,Iend;
+  Vec           u,b,x;
+  SLES          sles;
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stderr,help);
-  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
-  MPI_Comm_size(MPI_COMM_WORLD,&numtids);
-  
-  ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                           m*n,m*n,5,0,5,0,&C); 
+  OptionsGetInt(0,"-m",&m);
+  OptionsGetInt(0,"-n",&n);
+
+  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); 
   CHKERRA(ierr);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
@@ -37,29 +36,22 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  MatView(C,SYNC_STDOUT_VIEWER);
+  ierr = VecCreate(MPI_COMM_WORLD,m*n,&b); CHKERRA(ierr);
+  ierr = VecDuplicate(b,&u); CHKERRA(ierr);
+  ierr = VecDuplicate(b,&x); CHKERRA(ierr);
+  VecSet(&one,u);
+  ierr = MatMult(C,u,b); CHKERRA(ierr);
 
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,m*n,m*n,5,0,&A);  CHKERRA(ierr);
+  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,C,C,0); CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,2,0,1,&xr); CHKERRA(ierr);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,m*n,0,1,&xc); CHKERRA(ierr);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,2,0,1,&yr); CHKERRA(ierr);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,m*n,0,1,&yc); CHKERRA(ierr);
-
-  ierr = MatScatterCtxCreate(C,xr,xc,A,yr,yc,&ctx); CHKERRA(ierr);
-
-  ierr = MatScatterBegin(C,A,INSERTVALUES,ctx); CHKERRA(ierr);
-  ierr = MatScatterEnd(C,A,INSERTVALUES,ctx); CHKERRA(ierr);
-
-  MatView(A,STDOUT_VIEWER);
-
-  ierr = ISDestroy(xr); CHKERRA(ierr);
-  ierr = ISDestroy(xc); CHKERRA(ierr);
-  ierr = ISDestroy(yr); CHKERRA(ierr);
-  ierr = ISDestroy(yc); CHKERRA(ierr);
+  ierr = SLESDestroy(sles); CHKERRA(ierr);
+  ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(b); CHKERRA(ierr);
   ierr = MatDestroy(C); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
-  ierr = MatScatterCtxDestroy(ctx); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.20 1995/06/08 03:08:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.21 1995/06/18 16:24:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -90,8 +90,6 @@ int PCDestroy_Eisenstat(PetscObject obj)
   if (jac->b) VecDestroy(jac->b);
   if (jac->shell) MatDestroy(jac->shell);
   PETSCFREE(jac);
-  PLogObjectDestroy(pc);
-  PETSCHEADERDESTROY(pc);
   return 0;
 }
 

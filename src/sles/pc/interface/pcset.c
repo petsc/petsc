@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.16 1995/06/08 03:08:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.17 1995/06/18 16:23:48 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -30,10 +30,12 @@ $      (for instance, jacobi or bdd)
 @*/
 int PCSetMethod(PC ctx,PCMethod method)
 {
-  int (*r)(PC);
+  int ierr,(*r)(PC);
   VALIDHEADER(ctx,PC_COOKIE);
   if (ctx->setupcalled) {
-    SETERRQ(1,"PCSetMethod: cannot be called after PCSetUp");
+    if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
+    else {if (ctx->data) PETSCFREE(ctx->data);}
+    ctx->data = 0;
   }
   /* Get the function pointers for the method requested */
   if (!__PCList) {PCRegisterAll();}

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.22 1995/06/14 17:23:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.23 1995/06/18 16:24:01 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -107,7 +107,7 @@ static int MGDestroy(PetscObject obj)
 }
 
 #include <stdio.h>
-/*@C
+/*@
    MGCheck - Checks that all components of the MG structure have 
    been set; use before MGCycle().
 
@@ -164,7 +164,7 @@ int MGCheck(PC pc)
   return count;
 }
 
-/*@C
+/*@
    MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
    use on all levels. Use MGSetSmootherDown() to set different 
    pre-smoothing steps on different levels.
@@ -192,7 +192,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
   return 0;
 }
 
-/*@C
+/*@
    MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
    on all levels. Use MGSetSmootherUp() to set different numbers of 
    post-smoothing steps on different levels.
@@ -220,7 +220,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   return 0;
 }
 
-/*@C
+/*@
    MGSetCycles - Sets the number of cycles to use. 1 denotes a
    V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
    complicated cycling.
