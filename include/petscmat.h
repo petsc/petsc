@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.165 1999/01/12 23:18:23 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.166 1999/01/27 19:50:01 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -63,16 +63,18 @@ extern int MatAssemblyEnd(Mat,MatAssemblyType);
 {int _ierr,_row = i,_col = j; \
   _ierr = MatGetValues(v,1,&_row,1,&_col,&va);CHKERRQ(_ierr); \
 }
-
+/*
+   Any additions/changes here MUST also be made in include/finclude/mat.h
+*/
 typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
               MAT_COLUMNS_SORTED=8,MAT_NO_NEW_NONZERO_LOCATIONS=16,
               MAT_YES_NEW_NONZERO_LOCATIONS=32,MAT_SYMMETRIC=64,
-              MAT_STRUCTURALLY_SYMMETRIC,MAT_NO_NEW_DIAGONALS,
-              MAT_YES_NEW_DIAGONALS,MAT_INODE_LIMIT_1,MAT_INODE_LIMIT_2,
-              MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4,MAT_INODE_LIMIT_5,
-              MAT_IGNORE_OFF_PROC_ENTRIES,MAT_ROWS_UNSORTED,
-              MAT_COLUMNS_UNSORTED,MAT_NEW_NONZERO_LOCATION_ERROR,
-              MAT_NEW_NONZERO_ALLOCATION_ERROR,MAT_USE_HASH_TABLE} MatOption;
+              MAT_STRUCTURALLY_SYMMETRIC=65,MAT_NO_NEW_DIAGONALS=66,
+              MAT_YES_NEW_DIAGONALS=67,MAT_INODE_LIMIT_1=68,MAT_INODE_LIMIT_2=69,
+              MAT_INODE_LIMIT_3=70,MAT_INODE_LIMIT_4=71,MAT_INODE_LIMIT_5=72,
+              MAT_IGNORE_OFF_PROC_ENTRIES=73,MAT_ROWS_UNSORTED=74,
+              MAT_COLUMNS_UNSORTED=75,MAT_NEW_NONZERO_LOCATION_ERROR=76,
+              MAT_NEW_NONZERO_ALLOCATION_ERROR=77,MAT_USE_HASH_TABLE=78} MatOption;
 extern int MatSetOption(Mat,MatOption);
 extern int MatGetType(Mat,MatType*,char**);
 extern int MatGetTypeFromOptions(MPI_Comm,char*,MatType*,PetscTruth*);

@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.47 1999/01/12 23:18:29 bsmith Exp bsmith $;
+!  $Id: mat.h,v 1.48 1999/01/27 19:50:07 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -43,7 +43,7 @@
 
       parameter( MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
 !
-!  Matrix options
+!  Matrix options; must match those in include/mat.h
 !
       integer MAT_ROW_ORIENTED,MAT_COLUMN_ORIENTED,MAT_ROWS_SORTED
       integer MAT_COLUMNS_SORTED,MAT_NO_NEW_NONZERO_LOCATIONS
@@ -53,7 +53,8 @@
       integer MAT_INODE_LIMIT_2,MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4
       integer MAT_INODE_LIMIT_5,MAT_IGNORE_OFF_PROC_ENTRIES
       integer MAT_ROWS_UNSORTED,MAT_COLUMNS_UNSORTED
-      integer MAT_NEW_NONZERO_LOCATION_ERROR,MAT_USE_HASH_TABLE
+      integer MAT_NEW_NONZERO_LOCATION_ERROR
+      integer MAT_NEW_NONZERO_ALLOCATION_ERROR,MAT_USE_HASH_TABLE
 
       
       parameter (MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2)
@@ -67,7 +68,8 @@
       parameter (MAT_INODE_LIMIT_5=72,MAT_IGNORE_OFF_PROC_ENTRIES=73)
       parameter (MAT_ROWS_UNSORTED=74,MAT_COLUMNS_UNSORTED=75)
       parameter (MAT_NEW_NONZERO_LOCATION_ERROR=76)
-      parameter (MAT_USE_HASH_TABLE=77)
+      parameter (MAT_NEW_NONZERO_ALLOCATION_ERROR=77)
+      parameter (MAT_USE_HASH_TABLE=78)
 
 !
 !  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
