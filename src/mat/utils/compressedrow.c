@@ -26,6 +26,12 @@ PetscErrorCode Mat_CheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pet
   PetscInt       nrows,*cpi=PETSC_NULL,*ridx=PETSC_NULL,nz,i,row,m=A->m/A->bs; 
 
   PetscFunctionBegin;  
+  if (!compressedrow->use) PetscFunctionReturn(0);
+  if (compressedrow->checked && !A->same_nonzero){
+    ierr = PetscFree(compressedrow->i);CHKERRQ(ierr); 
+    compressedrow->rindex = PETSC_NULL;
+    PetscLogInfo(A,"Mat_CheckCompressedRow: Mat structure might be changed. Free memory and recheck.\n");
+  }
   compressedrow->checked = PETSC_TRUE; 
 
   /* compute number of zero rows */

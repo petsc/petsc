@@ -212,6 +212,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
     }
     ailen[row] = nrow;
   }
+  A->same_nonzero = PETSC_FALSE;
   PetscFunctionReturn(0);
 } 
 
@@ -646,15 +647,11 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   }
 
   /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
-  if (!a->inode.use && !a->compressedrow.checked && a->compressedrow.use){
+  if (!a->inode.use && a->compressedrow.use && !A->same_nonzero){
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr); 
-  } else if (a->compressedrow.checked && a->compressedrow.use){ 
-    /* mat structure likely has been changed. Do not use compressed row format until a better
-       flag on changing mat structure is introduced */
-    ierr = PetscFree(a->compressedrow.i);CHKERRQ(ierr); 
-    a->compressedrow.use    = PETSC_FALSE;
-    a->compressedrow.rindex = PETSC_NULL;
-  }
+  } 
+
+  A->same_nonzero = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1343,6 +1340,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,IS is,const PetscScalar *diag)
         a->a[a->diag[rows[i]]] = *diag;
       }
     }
+    A->same_nonzero = PETSC_TRUE;
   } else {
     if (diag) {
       for (i=0; i<N; i++) {
@@ -1361,6 +1359,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,IS is,const PetscScalar *diag)
         a->ilen[rows[i]] = 0; 
       }
     }
+    A->same_nonzero = PETSC_FALSE;
   }
   ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
   ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2760,6 +2759,7 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   b->compressedrow.i       = PETSC_NULL;
   b->compressedrow.rindex  = PETSC_NULL;
   b->compressedrow.checked = PETSC_FALSE;
+  B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
 
@@ -2901,9 +2901,8 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     c->compressedrow.use    = PETSC_FALSE;
     c->compressedrow.i      = PETSC_NULL;
     c->compressedrow.rindex = PETSC_NULL;
-    C->ops->mult            = MatMult_SeqAIJ;
-    C->ops->multadd         = MatMultAdd_SeqAIJ; 
   }
+  C->same_nonzero = A->same_nonzero;
   
   *B = C;
   ierr = PetscFListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
