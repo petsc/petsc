@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.116 2001/03/22 20:29:16 bsmith Exp balay $ */
+/* $Id: petscvec.h,v 1.117 2001/03/28 19:40:58 balay Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -16,7 +16,7 @@
 
 /*S
      Map - Abstract PETSc object that defines the layout of vector and
-  matrices accross processors
+  matrices across processors
 
    Level: advanced
 
