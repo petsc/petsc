@@ -7,6 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Supplument the MG preconditioner to support the storage of the
+tranpose of restriction and interpolation; so user need not use shell.
+
   Graphics for 3d DA. Also matlab graphics for 2 and 3d DA
 
   Local SOR for mpibaij matrices
