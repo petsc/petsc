@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.36 1996/03/23 20:42:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.37 1996/04/07 22:45:20 curfman Exp curfman $";
 #endif
 
 /*
@@ -875,10 +875,10 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
   if (N == PETSC_DECIDE) N = n;
   if (n == PETSC_DECIDE) {n = N/a->size + ((N % a->size) > a->rank);}
   /*  if (n != N) SETERRQ(1,"MatCreateMPIDense:For now, only n=N is supported"); */
-  a->N = N;
-  a->M = M;
-  a->m = m;
-  a->n = n;
+  a->N = mat->N = N;
+  a->M = mat->M = M;
+  a->m = mat->m = m;
+  a->n = mat->n = n;
 
   /* build local table of row and column ownerships */
   a->rowners = (int *) PetscMalloc(2*(a->size+2)*sizeof(int)); CHKPTRQ(a->rowners);
