@@ -10,6 +10,19 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Handle PCView_BJacobi, PCView_ASM for the case of multiple blocks with
+    potentially different solvers on each
+      - basic parallel
+      - multiple blocks per processor
+    What to do?  Possibilities:
+      - create new local viewer for each proc (w/ same file name as
+        current viewer), then use it when calling SLESView on the blocks?
+          pros: easy.
+          cons: still not necessarily good output format.
+      - Send info to 1 proc, then print from it.
+          pros: nice output format
+          cons: a pain to do, unless there were a new routine like SLESViewInfo().
+    
   - What to do for ASM, BJacobi PCs for -use_true_local and
     PCModifySubmatrices()?
     
