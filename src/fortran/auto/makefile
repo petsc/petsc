@@ -19,7 +19,9 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgf.c \
 	trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c viewf.c vinvf.c  \
 	vscatf.c zerodiagf.c
 
-SOURCEF	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgf.o \
+SOURCEF	 = 
+SOURCEH	 = 
+OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgf.o \
 	chebyf.o cmeshf.o cookief.o da2f.o dacornf.o daghostf.o dagtolf.o  \
 	daltogf.o daltolf.o daviewf.o dbufff.o dclearf.o dcoorf.o  \
 	dflushf.o dgcoorf.o dgpausef.o dlinef.o dlinegwf.o  \
@@ -33,9 +35,6 @@ SOURCEF	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgf.o \
 	snesmfjf.o snesutf.o sorf.o sortdf.o sortif.o sortipf.o stridef.o  \
 	trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o viewf.o vinvf.o  \
 	vscatf.o zerodiagf.o
-SOURCEH	 = 
-OBJSC	 = 
-
 OBJSF	 =
 LIBBASE	 = libpetscfortran
 MANSEC	 = 1
