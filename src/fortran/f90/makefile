@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.9 1998/04/23 23:49:51 balay Exp balay $ 
+# $Id: makefile,v 1.10 1998/04/25 21:08:00 balay Exp balay $ 
 
 ALL: lib
 
@@ -6,8 +6,8 @@ CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS   = 
 SOURCEC  = zf90.c f90_nag.c f90_IRIX.c f90_rs6000.c f90_t3e.c
 SOURCEF  = 
-SOURCEH  = f90_IRIX.h f90_rs6000.h
-OBJSC    = zf90.o f90_nag.o f90_IRIX.o f90_rs6000.o f90_t3e.h
+SOURCEH  = zf90.h f90_IRIX.h f90_rs6000.h f90_t3e.h
+OBJSC    = zf90.o f90_nag.o f90_IRIX.o f90_rs6000.o f90_t3e.o
 OBJSF    = 
 LIBBASE  = libpetscfortran
 MANSEC   = 7
