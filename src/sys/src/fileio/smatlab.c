@@ -1,4 +1,4 @@
-/* $Id: smatlab.c,v 1.1 2000/01/05 21:37:32 bsmith Exp bsmith $ */
+/* $Id: smatlab.c,v 1.2 2000/01/11 20:59:28 bsmith Exp bsmith $ */
 
 #include "petsc.h"
 #include "sys.h"
@@ -32,19 +32,30 @@
 int PetscStartMatlab(MPI_Comm comm,char *machine,char *script,FILE **fp)
 {
   int  ierr;
+  FILE *fd;
   char command[512];
+#if defined(PARCH_solaris)
+  char buf[1024],*found;
+#endif
 
   PetscFunctionBegin;
-  /* the extra \" are to protect possible () in the script command from the shell */
+
+#if defined(PARCH_solaris)
+  /* check if Matlab is not already running */
+  ierr = PetscPOpen(comm,machine,"/usr/ucb/ps -ugxww | grep matlab | grep -v grep","r",&fd);CHKERRQ(ierr);
+  found = fgets(buf,1024,fd);
+  ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
+  if (found) PetscFunctionReturn(0);
+#endif
 
   /* the remote machine won't know about current directory, so add it to Matlab path */
-  ierr = PetscStrcpy(command,"echo \"path(path,'$WORKINGDIRECTORY'); ");CHKERRQ(ierr);
-  ierr = PetscStrcat(command,script);CHKERRQ(ierr);
-  ierr = PetscStrcat(command,"\" > $HOMEDIRECTORY/matlab/startup.m");CHKERRQ(ierr);
-  ierr = PetscPOpen(comm,PETSC_NULL,command,"r",fp);CHKERRQ(ierr);
-  ierr = PetscFClose(comm,*fp);CHKERRQ(ierr);
+  /* the extra \" are to protect possible () in the script command from the shell */
+  sprintf(command,"echo \"path(path,'${WORKINGDIRECTORY}'); %s \" > ${HOMEDIRECTORY}/matlab/startup.m",script);
+  ierr = PetscPOpen(comm,machine,command,"r",&fd);CHKERRQ(ierr);
+  ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
 
-  ierr = PetscPOpen(comm,machine,"xterm -display $DISPLAY -e matlab -nosplash","r",fp);CHKERRQ(ierr);
+  ierr = PetscPOpen(comm,machine,"xterm -display ${DISPLAY} -e matlab -nosplash","r",fp);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
