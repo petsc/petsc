@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mhas.c,v 1.2 1996/02/01 17:29:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mhas.c,v 1.3 1996/03/19 21:25:35 bsmith Exp curfman $";
 #endif
 
 
@@ -7,16 +7,25 @@ static char vcid[] = "$Id: mhas.c,v 1.2 1996/02/01 17:29:02 bsmith Exp bsmith $"
 #include "matimpl.h"        /*I "mat.h" I*/
        
 /*@
-     MatHasOperation - Determines if the given matrix supports
-            the particular operation.
+    MatHasOperation - Determines if the given matrix supports the particular
+    operation.
 
-  Input Parameters:
+   Input Parameters:
 .  mat - the matrix
 .  op - the operation, for example, MAT_GET_DIAGONAL
 
-  Output Parameters:
+   Output Parameter:
 .  has - either PETSC_TRUE or PETSC_FALSE
 
+   Notes:
+   See the file petsc/include/mat.h for a complete list of matrix
+   operations, which all have the form MAT_<OPERATION>, where
+   <OPERATION> is the name (in all capital letters) of the
+   user-level routine.  E.g., MatNorm() -> MAT_NORM.
+
+.keywords: matrix, has, operation
+
+.seealso: MatCreateShell()
 @*/
 int MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
 {
