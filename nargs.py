@@ -44,7 +44,6 @@ in order to declare the type of that option.'''
             value[entry[0]] = entry[1]
           else:
             value[entry[0]] = None
-          else:
       value = arg
     return value
   parseValue = staticmethod(parseValue)

@@ -64,7 +64,13 @@ def SelectFromList(stdscr,list,my = 1,text = 'Select desired value'):
 
   return ch
 
-
+def FindCommand(com):
+  (status,output) = commands.getstatusoutput('which '+com)
+  if status == 0 and not output[0:3] == 'no ' and output.find('not found') == -1:
+    return output
+  else:
+    return None
+  
 # -----------------------------------------------------------------    
 
 class CursesInstall:
@@ -86,9 +92,8 @@ class CursesInstall:
     list = ['No browser']
     list.append('A different browser or a browser on a different machine (you will be prompted for it)')
     for l in ['netscape','lynx','opera','mozilla','galeon']:
-      (status,output) = commands.getstatusoutput('which '+l)
-      if status == 0 and not output[0:3] == 'no ' and output.find('not found') == -1:
-        list.append(output)
+      output = FindCommand(l)
+      if output: list.append(output)
 
     stdscr.clear()
     key = SelectFromList(stdscr,list,my = 1,text = 'Select browser to view documentation')
@@ -191,7 +196,8 @@ class CursesInstall:
             while not (c == 'q' or c == 't'):
               c = stdscr.getkey()
             if c == 'q':
-              sys.exit()
+              self.installpath = None
+              return
       else:
         return
     
@@ -252,19 +258,16 @@ if __name__ ==  '__main__':
   curses.wrapper(installer.Welcome)
 
   curses.wrapper(installer.GetBrowser)
-  #print 'Browser '+installer.browser
   
-  # need to have a more complete search for bk, but cannot use configure stuff
-  (status,output) = commands.getstatusoutput('which bk')
-  if status == 0:  # found it :-)
+  output = FindCommand('bk')
+  if output:
     installer.bkpath = os.path.dirname(output)
   else:
     curses.wrapper(installer.IndicateBKMissing)
     if not installer.bkpath: sys.exit()
-  #print 'BK directory '+installer.bkpath+':'
   
   curses.wrapper(installer.InstallDirectory)
-  #print 'Install directory '+installer.installpath
+  if not installer.installpath: sys.exit()
 
   if os.path.isdir(os.path.join(installer.installpath,'BuildSystem')):
     curses.wrapper(installer.AlreadyInstalled)
