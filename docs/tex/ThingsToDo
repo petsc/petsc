@@ -10,9 +10,7 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
  -----------------------------------------------------------------------
 
-  - Fix include files for *.f programs (e.g., snes/examples/tests/ex10.f)
-
-  - Fix Gary Kumferts problem, link with 2.0.14
+  X Fix include files for *.f programs (e.g., snes/examples/tests/ex10.f)
 
   - fix mark adams code
 
