@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.28 2001/04/25 18:54:26 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.29 2001/04/25 19:33:54 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -416,7 +416,7 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&xstart);CHKERRQ(ierr);
-  my_AD_SetValArray(ad_xstart,gtdof,xstart);
+  my_AD_SetValArray(((DERIV_TYPE*)ad_xstart),gtdof,xstart);
   ierr = VecRestoreArray(localX,&xstart);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
