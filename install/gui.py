@@ -99,6 +99,8 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
       for i in self.iprojects:
         if not i.url.find('-release') == -1: self.iprojects.remove(i)  # remove  PETSc 2 releases
         if not i.url.find('/bugdb') == -1: self.iprojects.remove(i)    # remove BitKeeper crap
+        if not i.url.find('petsc-dev') == -1: self.iprojects.remove(i) # remove PETSc 2
+        if not i.url.find('blaslapack') == -1: self.iprojects.remove(i) 
         
 
   def SelectProject(self,stdscr):
