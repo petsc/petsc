@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.100 1996/10/03 03:26:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.101 1996/10/03 19:12:39 curfman Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -104,6 +104,132 @@ int      PetscInitializedCalled = 0;
 int      PetscGlobalRank = -1, PetscGlobalSize = -1;
 MPI_Comm PETSC_COMM_WORLD = 0;
 
+/* ---------------------------------------------------------------------------*/
+int    PetscCompare          = 0;
+double PetscCompareTolerance = 1.e-10;
+/*@C
+   PetscCompareInt - Compares intss while running with PETSc's incremental
+        debugger; triggered with the -compare option.
+
+  Input Parameter:
+.    d - integer to compare
+
+@*/
+int PetscCompareInt(int d)
+{
+  int work = d;
+
+  MPI_Bcast(&work,1,MPI_INT,0,MPI_COMM_WORLD);
+  if (d != work) {
+    SETERRQ(1,"PetscCompareInt:Inconsistent integer");
+  }
+  return 0;
+}
+
+/*@C
+   PetscCompareDouble - Compares doubles while running with PETSc's incremental
+        debugger; triggered with the -compare <tol> flag.
+
+  Input Parameter:
+.    d - double precision number to compare
+
+@*/
+int PetscCompareDouble(double d)
+{
+  double work = d;
+
+  MPI_Bcast(&work,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  if (!d && !work) return 0;
+  if (PetscAbsDouble(work - d)/PetscMax(PetscAbsDouble(d),PetscAbsDouble(work)) 
+      > PetscCompareTolerance) {
+    SETERRQ(1,"PetscCompareDouble:Inconsistent double");
+  }
+  return 0;
+}
+
+/*@C
+   PetscCompareScalar - Compares scalars while running with PETSc's incremental
+        debugger; triggered with the -compare <tol> flag.
+
+  Input Parameter:
+.    d - scalar to compare
+
+@*/
+int PetscCompareScalar(Scalar d)
+{
+  Scalar work = d;
+
+  MPI_Bcast(&work,2,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) return 0;
+  if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) 
+      >= PetscCompareTolerance) {
+    SETERRQ(1,"PetscCompareScalar:Inconsistent scalar");
+  }
+  return 0;
+}
+
+/*
+    PetscCompareInitialize - If there is a command line option -compare then
+       this routine calls MPI_Init() and sets up two PETSC_COMM_WORLD, one for 
+       each program being compared.
+
+    Note: Only works with C programs.
+
+*/
+int PetscCompareInitialize(double tol)
+{
+  int       i, len,rank,work,*gflag,size,mysize;
+  char      *programname = options->programname, basename[256];
+  MPI_Group group_all,group_sub;
+
+  PetscCompareTolerance = tol;
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  if (!rank) {
+    PetscStrcpy(basename,programname);
+    len = PetscStrlen(basename);
+  }
+
+  /* broadcase name from first processor to all processors */
+  MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
+  MPI_Bcast(basename,len+1,MPI_CHAR,0,MPI_COMM_WORLD);
+
+  /* determine what processors belong to my group */
+  if (!PetscStrcmp(programname,basename)) work = 1;
+  else                                    work = 0;
+  gflag = (int *) malloc( size*sizeof(int) ); CHKPTRQ(gflag);
+  MPI_Allgather(&work,1,MPI_INT,gflag,1 ,MPI_INT,MPI_COMM_WORLD); 
+  mysize = 0;
+  for ( i=0; i<size; i++ ) {
+    if (work == gflag[i]) gflag[mysize++] = i;
+  }
+  /*   printf("[%d] my name %s basename %s mysize %d\n",rank,programname,basename,mysize); */
+
+  if (mysize == 0 || mysize == size) {
+    SETERRQ(1,"PetscCompareInitialize:Need two different programs to compare");
+  }
+
+  /* create a new communicator for each program */
+  MPI_Comm_group(MPI_COMM_WORLD,&group_all);
+  MPI_Group_incl(group_all,mysize,gflag,&group_sub);
+  MPI_Comm_create(MPI_COMM_WORLD,group_sub,&PETSC_COMM_WORLD);
+  MPI_Group_free(&group_all);
+  MPI_Group_free(&group_sub);
+  free(gflag);
+
+  PetscCompare = 1;
+  PLogInfo(0,"Configured to compare two programs\n",rank);
+  return 0;
+}
+/* ------------------------------------------------------------------------------------*/
+int PetscInitializeOptions()
+{
+  options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
+  PetscMemzero(options->used,MAXOPTIONS*sizeof(int));
+  return 0;
+}
+
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize calls MPI_Init() if that has yet to be called,
@@ -157,6 +283,20 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
 
   if (PetscInitializedCalled) return 0;
 
+  ierr = PetscInitializeOptions(); CHKERRQ(ierr);
+
+  /*
+     We initialize the program name here because MPICH has a bug in 
+     it that it sets args[0] on all processors to be args[0]
+     on the first processor.
+  */
+  if (argc && *argc) {
+    options->namegiven = 1;
+    PetscStrncpy(options->programname,**args,256);
+  }
+  else {options->namegiven = 0;}
+
+
   MPI_Initialized(&flag);
   if (!flag) {
     ierr = MPI_Init(argc,args); CHKERRQ(ierr);
@@ -166,8 +306,8 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
 
   PetscInitializedCalled = 1;
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&PetscGlobalRank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&PetscGlobalSize);
+  MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
+  MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
 #if defined(PETSC_COMPLEX)
   /* 
      Initialized the global variable; this is because with 
@@ -537,6 +677,12 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm," -v: prints PETSc version number and release date\n");
     PetscPrintf(comm,"-----------------------------------------------\n");
   }
+  ierr = OptionsHasName(PETSC_NULL,"-compare",&flg1); CHKERRQ(ierr);
+  if (flg1) {
+     double tol = 1.e-12;
+     ierr = OptionsGetDouble(PETSC_NULL,"-compare",&tol,&flg1);CHKERRQ(ierr); 
+     ierr = PetscCompareInitialize(tol); CHKERRQ(ierr);
+  }
   return 0;
 }
 
@@ -570,21 +716,12 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
   char pfile[128];
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  if (!options) {
-    options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
-    PetscMemzero(options->used,MAXOPTIONS*sizeof(int));
-  }
   if (!file) {
     if ((ierr = PetscGetHomeDirectory(120,pfile))) return ierr;
     PetscStrcat(pfile,"/.petscrc");
     file = pfile;
   }
 
-  if (argc && *argc) {
-    options->namegiven = 1;
-    PetscStrncpy(options->programname,**args,256);
-  }
-  else {options->namegiven = 0;}
   options->N = 0;
   options->Naliases = 0;
   options->argc = (argc) ? *argc : 0;
@@ -912,8 +1049,8 @@ int OptionsGetInt(char*pre,char *name,int *ivalue,int *flg)
 
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
   if (!*flg) return 0;
-  if (!value) SETERRQ(-1,"OptionsGetInt:Missing value for option");
-  *ivalue = atoi(value);
+  if (!value) {*flg = 0; *ivalue = 0;}
+  else        *ivalue = atoi(value);
   return 0; 
 } 
 
@@ -940,8 +1077,8 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
   int  ierr;
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
   if (!*flg) return 0;
-  if (!value) SETERRQ(-1,"OptionsGetDouble:Missing value for option");
-  *dvalue = atof(value);
+  if (!value) {*flg = 0; *dvalue = 0.0;}
+  else *dvalue = atof(value);
   return 0; 
 } 
 
@@ -970,8 +1107,8 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue,int *flg)
   
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr);
   if (!*flg) return 0;
-  if (!value) SETERRQ(-1,"OptionsGetScalar:Missing value for option");
-  *dvalue = atof(value);
+  if (!value) {*flg = 0; *dvalue = 0;}
+  else        *dvalue = atof(value);
   return 0; 
 } 
 

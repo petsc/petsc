@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.13 1996/09/23 21:27:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.14 1996/10/03 03:26:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -122,6 +122,8 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 extern "C" {
 #endif
 
+extern int PetscInitializeOptions();
+
 void petscinitialize_(CHAR filename,int *__ierr,int len)
 {
   int  flag,argc = 0;
@@ -130,6 +132,9 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   *__ierr = 1;
 
   if (PetscInitializedCalled) {*__ierr = 0; return;}
+
+  *__ierr = PetscInitializeOptions(); 
+  if (*__ierr) return;
 
   MPI_Initialized(&flag);
   if (!flag) {
