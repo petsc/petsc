@@ -66,14 +66,14 @@ int XiDrawFrame(PetscDraw_X *XiWin,XiDecoration *Rgn)
     else         Hi = HiPix;
     if (Rgn->Lo) Lo = Rgn->Lo;
     else         Lo = LoPix;
-    XiSetPixVal(XiWin,Rgn->is_in ? Hi : Lo);
+    XiSetPixVal(XiWin,(Rgn->is_in !=0) ? Hi : Lo);
     if (o <= 1)
 	XDrawLines(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
 		   high,7,CoordModeOrigin);
     else
 	XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
 		      high,7,Nonconvex,CoordModeOrigin);
-    XiSetPixVal(XiWin,Rgn->is_in ? Lo : Hi);
+    XiSetPixVal(XiWin,(Rgn->is_in !=0) ? Lo : Hi);
     if (o <= 1)
 	XDrawLines(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
 		    low,7,CoordModeOrigin);

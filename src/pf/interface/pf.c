@@ -5,7 +5,7 @@
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /* Logging support */
-int VEC_COOKIE;
+int PF_COOKIE;
 
 PetscFList PPetscFList         = PETSC_NULL; /* list of all registered PD functions */
 PetscTruth PFRegisterAllCalled = PETSC_FALSE;

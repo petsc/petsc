@@ -45,13 +45,7 @@
 #define PETSC_HAVE_RTLD_GLOBAL 1
 
 #define PETSC_HAVE_SYS_UTSNAME_H
-
 #define PETSC_MISSING_SIGSYS
-
-#ifdef PETSC_USE_MAT_SINGLE
-#  define PETSC_MEMALIGN 16
-#  define PETSC_HAVE_SSE "iclsse.h"
-#endif
 #define PETSC_HAVE_CXX_NAMESPACE
 
 #endif

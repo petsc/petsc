@@ -38,7 +38,7 @@ esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
 
 esi::petsc::IndexSpace<int>::~IndexSpace()
 {
-  int ierr = PetscMapDestroy(this->map);
+  PetscMapDestroy(this->map);
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
