@@ -1,5 +1,4 @@
 import args
-
 import sys
 
 class Logger(args.ArgumentProcessor):
@@ -125,7 +124,7 @@ class Logger(args.ArgumentProcessor):
     import traceback
 
     indentLevel = len(traceback.extract_stack())-5
-    for writeAll, f in enumerate([self.out, self.log]):
+    for writeAll, f in [self.out, self.log]:
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
         for i in range(indentLevel):
           f.write(self.debugIndent)
@@ -139,7 +138,7 @@ class Logger(args.ArgumentProcessor):
 
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
     '''Write the message to the log streams'''
-    for writeAll, f in enumerate([self.out, self.log]):
+    for writeAll, f in [[0,self.out], [1,self.log]]:
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
         if not forceScroll and not writeAll and self.linewidth > 0:
           self.logClear()
@@ -156,7 +155,7 @@ class Logger(args.ArgumentProcessor):
     if indent:
       self.logIndent(debugLevel, debugSection)
     self.logWrite(msg, debugLevel, debugSection)
-    for writeAll, f in enumerate([self.out, self.log]):
+    for writeAll, f in [[0,self.out], [1,self.log]]:
       if not f is None and (writeAll or self.linewidth < 0):
         f.write('\n')
     return

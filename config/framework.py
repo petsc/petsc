@@ -45,7 +45,11 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       files.sort()
       for dir in files:
         if re.match(nextDirs[0], dir):
-          dirs.extend(self.listDirs(os.path.join(base, dir), apply(os.path.join, nextDirs[1:])))
+          if nextDirs[1:]:
+            rest = apply(os.path.join, nextDirs[1:])
+          else:
+            rest = None
+          dirs.extend(self.listDirs(os.path.join(base, dir),rest ))            
     return dirs
 
   def setupHelp(self, help):
