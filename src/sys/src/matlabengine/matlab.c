@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.8 2000/05/12 04:40:50 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.9 2000/05/18 18:15:51 bsmith Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -87,7 +87,7 @@ int PetscMatlabEngineDestroy(PetscMatlabEngine v)
 #undef __FUNC__  
 #define __FUNC__ /*<a name="PetscMatlabEngineEvaluate"></a>*/"PetscMatlabEngineEvaluate"
 /*@C
-    PetscMatlabEngineCreate - Evaluates a string in Matlab
+    PetscMatlabEngineEvaluate - Evaluates a string in Matlab
 
     Not Collective
 
@@ -116,6 +116,15 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
 
   PLogInfo(0,"Evaluating Matlab string: %s\n",buffer);
   engEvalString(engine->ep, buffer);
+
+  /* 
+     Check for error in Matlab: indicated by ? as first charactor in engine->buffer
+  */
+
+  if (engine->buffer[4] == '?') {
+    SETERRQ2(1,1,"Error in evaluating Matlab command:%s\n%s",string,engine->buffer);
+  }
+
   /*
      Get flop number back from Matlab output
   */
@@ -161,7 +170,7 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine engine,char *string,...)
 int PetscMatlabEngineGetOutput(PetscMatlabEngine engine,char **string)
 {
   PetscFunctionBegin;  
-  *string = engine->buffer + 2;
+  *string = engine->buffer;
   PetscFunctionReturn(0);
 }
 
@@ -187,7 +196,7 @@ int PetscMatlabEnginePrintOutput(PetscMatlabEngine engine,FILE *fd)
 
   PetscFunctionBegin;  
   ierr = MPI_Comm_rank(engine->comm,&rank);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFPrintf(engine->comm,fd,"[%d]%s",rank,engine->buffer + 2);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFPrintf(engine->comm,fd,"[%d]%s",rank,engine->buffer);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(engine->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -328,7 +337,7 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
 
     Input Parameters:
 +    engine - the Matlab engine
-.    n - the length of the array
+.    m,n - the dimensions of the array
 .    array - the array (represented in one dimension)
 -    name - the name of the array
 
@@ -338,7 +347,7 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           MATLAB_ENGINE_(), PetscMatlabEnginePut(), MatlabEngineGetArray()
 @*/
-int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int n,Scalar *array,char *name)
+int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,Scalar *array,char *name)
 {
   int     ierr;
   mxArray *mat;
@@ -346,11 +355,11 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int n,Scalar *array,char 
   PetscFunctionBegin;  
   PLogInfo(0,"Putting Matlab array %s\n",name);
 #if !defined(PETSC_USE_COMPLEX)
-  mat  = mxCreateDoubleMatrix(n,1,mxREAL);
+  mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
-  mat  = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
+  mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
-  ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(Scalar));CHKERRQ(ierr);
   mxSetName(mat,name);
   engPutArray(engine->ep,mat);
 
@@ -367,7 +376,7 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int n,Scalar *array,char 
 
     Input Parameters:
 +    engine - the Matlab engine
-.    n - the length of the array
+.    m,n - the dimensions of the array
 .    array - the array (represented in one dimension)
 -    name - the name of the array
 
@@ -377,7 +386,7 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int n,Scalar *array,char 
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGet()
 @*/
-int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int n,Scalar *array,char *name)
+int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int m,int n,Scalar *array,char *name)
 {
   int     ierr;
   mxArray *mat;
@@ -386,7 +395,7 @@ int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int n,Scalar *array,char 
   PLogInfo(0,"Getting Matlab array %s\n",name);
   mat  = engGetArray(engine->ep,name);
   if (!mat) SETERRQ1(1,1,"Unable to get array %s from matlab",name);
-  ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(Scalar));CHKERRQ(ierr);
   PLogInfo(0,"Got Matlab array %s\n",name);
   PetscFunctionReturn(0);
 }
