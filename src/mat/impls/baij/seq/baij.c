@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.26 1996/04/04 04:07:02 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.27 1996/04/05 16:20:05 balay Exp balay $";
 #endif
 
 /*
@@ -384,6 +384,62 @@ int MatRestoreRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   if (v)   {if (*v)   PetscFree(*v);}
   return 0;
 }
+
+static int MatTranspose_SeqBAIJ(Mat A,Mat *B)
+{ 
+  Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
+  Mat         C;
+  int         i,j,k,ierr,*aj=a->j,*ai=a->i,bs=a->bs,mbs=a->mbs,nbs=a->nbs,len,*col;
+  int         shift=a->indexshift,*rows,*cols,bs2=bs*bs;
+  Scalar      *array=a->a;
+
+  if (B==PETSC_NULL && mbs!=nbs)
+    SETERRQ(1,"MatTranspose_SeqBAIJ:Square matrix only for in-place");
+  col = (int *) PetscMalloc((1+nbs)*sizeof(int)); CHKPTRQ(col);
+  PetscMemzero(col,(1+nbs)*sizeof(int));
+  if (shift) {
+    for ( i=0; i<ai[mbs]-1; i++ ) aj[i] -= 1;
+  }
+  for ( i=0; i<ai[mbs]+shift; i++ ) col[aj[i]] += 1;
+  ierr = MatCreateSeqBAIJ(A->comm,bs,a->n,a->m,PETSC_NULL,col,&C); CHKERRQ(ierr);
+  PetscFree(col);
+  rows = (int *) PetscMalloc(2*bs*sizeof(int)); CHKPTRQ(rows);
+  cols = rows + bs;
+  for ( i=0; i<mbs; i++ ) {
+    cols[0] = i*bs;
+    for (k=1; k<bs; k++ ) cols[k] = cols[k-1] + 1;
+    len = ai[i+1] - ai[i];
+    for ( j=0; j<len; j++ ) {
+      rows[0] = (*aj++)*bs;
+      for (k=1; k<bs; k++ ) rows[k] = rows[k-1] + 1;
+      ierr = MatSetValues(C,bs,rows,bs,cols,array,INSERT_VALUES); CHKERRQ(ierr);
+      array += bs2;
+    }
+  }
+  if (shift) { 
+    for ( i=0; i<ai[mbs]-1; i++ ) aj[i] += 1;
+  }
+  
+  ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  
+  if (B != PETSC_NULL) {
+    *B = C;
+  } else {
+    /* This isn't really an in-place transpose */
+    PetscFree(a->a); 
+    if (!a->singlemalloc) {PetscFree(a->i); PetscFree(a->j);}
+    if (a->diag) PetscFree(a->diag);
+    if (a->ilen) PetscFree(a->ilen);
+    if (a->imax) PetscFree(a->imax);
+    if (a->solve_work) PetscFree(a->solve_work);
+    PetscFree(a); 
+    PetscMemcpy(A,C,sizeof(struct _Mat)); 
+    PetscHeaderDestroy(C);
+  }
+  return 0;
+}
+
 
 static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 {
@@ -844,7 +900,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        0,0,
        MatLUFactor_SeqBAIJ,0,
        0,
-       0,
+       MatTranspose_SeqBAIJ,
        MatGetInfo_SeqBAIJ,MatEqual_SeqBAIJ,
        MatGetDiagonal_SeqBAIJ,MatDiagonalScale_SeqBAIJ,MatNorm_SeqBAIJ,
        0,MatAssemblyEnd_SeqBAIJ,
@@ -898,16 +954,15 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 {
   Mat         B;
   Mat_SeqBAIJ *b;
-  int         i,len,ierr, flg,mbs = m/bs,bs2;
+  int         i,len,ierr,flg,mbs=m/bs,nbs=n/bs,bs2=bs*bs;
 
-  if (mbs*bs != m) 
-    SETERRQ(1,"MatCreateSeqBAIJ:Number rows must be divisible by blocksize");
+  if (mbs*bs!=m || nbs*bs!=n) 
+    SETERRQ(1,"MatCreateSeqBAIJ:Number rows, cols must be divisible by blocksize");
 
-  *A      = 0;
-  bs2     = bs*bs;
+  *A = 0;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQBAIJ,comm);
   PLogObjectCreate(B);
-  B->data             = (void *) (b = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(b);
+  B->data = (void *) (b = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(b);
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
   switch (bs) {
     case 1:
@@ -937,6 +992,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->m       = m;
   b->mbs     = mbs;
   b->n       = n;
+  b->nbs     = nbs;
   b->imax    = (int *) PetscMalloc( (mbs+1)*sizeof(int) ); CHKPTRQ(b->imax);
   if (nnz == PETSC_NULL) {
     if (nz == PETSC_DEFAULT) nz = CHUNKSIZE;
