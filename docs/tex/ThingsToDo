@@ -10,6 +10,7 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+
   - Handle PCView_BJacobi, PCView_ASM for the case of multiple blocks with
     potentially different solvers on each
       - basic parallel
@@ -53,11 +54,13 @@ Additional Capabilities that PETSc Needs:
   - Aim for more exhaustive PETSc testing.  See
     /home/MPI/mpich/examples/test/rlist.srt:
 
-  - Create an Database for examples
+  * Create an Database for examples
 
-  - Reorganize examples, write a SLES tutorial
+  * Reorganize examples, write a SLES tutorial
+     - Lois' selections to be eliminated:  any objections?
+         sles/examples/tests/ex18.c, snes/examples/ex1.c
 
-  - Make sure to document any examples that are uniprocessor only.
+  * Make sure to document any examples that are uniprocessor only.
 
   - Make all systems use shared libraries if possible, and document how to
     use these variants.
