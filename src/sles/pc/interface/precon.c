@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.128 1997/07/09 20:52:24 balay Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.129 1997/07/22 04:24:06 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -118,6 +118,13 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   return PCSetType(pc,initialtype);
 }
 
+/* -------------------------------------------------------------------------------*/
+/*
+       This variable is used to insure that profiling is never turned on for
+    more then one PCApplyXXX() routine at a time.
+*/
+static int apply_double_count = 0;
+
 #undef __FUNC__  
 #define __FUNC__ "PCApply"
 /*@
@@ -137,15 +144,14 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 int PCApply(PC pc,Vec x,Vec y)
 {
   int        ierr;
-  static int doublecount = 0;  
 
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
-  if (!doublecount) {PLogEventBegin(PC_Apply,pc,x,y,0);} doublecount++;
+  if (!apply_double_count) {PLogEventBegin(PC_Apply,pc,x,y,0);}apply_double_count++;
   ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
-  if (doublecount == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);} doublecount--;
+  if (apply_double_count == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);}apply_double_count--;
   return 0;
 }
 
@@ -174,9 +180,9 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);
+  if (!apply_double_count) {PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);}apply_double_count++;
   ierr = (*pc->applysymmetricleft)(pc,x,y); CHKERRQ(ierr);
-  PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);
+  if (apply_double_count == 1) {PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);}apply_double_count--;
   return 0;
 }
 
@@ -205,9 +211,9 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);
+  if (!apply_double_count) {PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);}apply_double_count++;
   ierr = (*pc->applysymmetricright)(pc,x,y); CHKERRQ(ierr);
-  PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);
+  if (apply_double_count == 1){PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);}apply_double_count--;
   return 0;
 }
 
@@ -235,7 +241,9 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
   if (!pc->applytrans) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!apply_double_count) {PLogEventBegin(PC_Apply,pc,x,y,0);}apply_double_count++;
   ierr = (*pc->applytrans)(pc,x,y); CHKERRQ(ierr);
+  if (apply_double_count == 1) {PLogEventEnd(PC_Apply,pc,x,y,0);}apply_double_count--;
   return 0;
 }
 
@@ -269,8 +277,9 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
   if (side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Side must be right, left, or symmetric");
   }
-  if (pc->applyBA)  return (*pc->applyBA)(pc,side,x,y,work);
-  if (side == PC_RIGHT) {
+  if (pc->applyBA) {
+    ierr = (*pc->applyBA)(pc,side,x,y,work); CHKERRQ(ierr);
+  } else if (side == PC_RIGHT) {
     ierr = PCApply(pc,x,work); CHKERRQ(ierr);
     return MatMult(pc->mat,work,y); 
   }
@@ -331,6 +340,8 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
   /* add support for PC_SYMMETRIC */
   return 0; /* actually will never get here */
 }
+
+/* -------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
 #define __FUNC__ "PCApplyRichardsonExists"
