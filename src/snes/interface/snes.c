@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.213 2000/04/30 22:17:08 bsmith Exp balay $*/
+/*$Id: snes.c,v 1.214 2000/05/05 22:18:12 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -713,7 +713,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   PLogObjectParent(snes,snes->sles)
 
   *outsnes = snes;
-  PetscPublishAll(snes);
+  ierr = PetscPublishAll(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1189,10 +1189,10 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStru
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
-  PetscValidHeaderSpecific(B,MAT_COOKIE);
-  PetscCheckSameComm(snes,A);
-  PetscCheckSameComm(snes,B);
+  if (A) PetscValidHeaderSpecific(A,MAT_COOKIE);
+  if (B) PetscValidHeaderSpecific(B,MAT_COOKIE);
+  if (A) PetscCheckSameComm(snes,A);
+  if (B) PetscCheckSameComm(snes,B);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
@@ -1218,22 +1218,24 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStru
    Output Parameters:
 +  A - location to stash Jacobian matrix (or PETSC_NULL)
 .  B - location to stash preconditioner matrix (or PETSC_NULL)
--  ctx - location to stash Jacobian ctx (or PETSC_NULL)
+.  ctx - location to stash Jacobian ctx (or PETSC_NULL)
+-  func - location to put Jacobian function (or PETSC_NULL)
 
    Level: advanced
 
 .seealso: SNESSetJacobian(), SNESComputeJacobian()
 @*/
-int SNESGetJacobian(SNES snes,Mat *A,Mat *B,void **ctx)
+int SNESGetJacobian(SNES snes,Mat *A,Mat *B,void **ctx,int (**func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
-  if (A)   *A = snes->jacobian;
-  if (B)   *B = snes->jacobian_pre;
-  if (ctx) *ctx = snes->jacP;
+  if (A)    *A    = snes->jacobian;
+  if (B)    *B    = snes->jacobian_pre;
+  if (ctx)  *ctx  = snes->jacP;
+  if (func) *func = snes->computejacobian;
   PetscFunctionReturn(0);
 }
 
@@ -2224,7 +2226,8 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 
    Output Parameter:
 +  r - the function (or PETSC_NULL)
--  ctx - the function context (or PETSC_NULL)
+.  ctx - the function context (or PETSC_NULL)
+-  func - the function (or PETSC_NULL)
 
    Notes:
    SNESGetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only
@@ -2239,15 +2242,16 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
           SNESGetGradient()
 
 @*/
-int SNESGetFunction(SNES snes,Vec *r,void **ctx)
+int SNESGetFunction(SNES snes,Vec *r,void **ctx,int (**func)(SNES,Vec,Vec,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
-  if (r)   *r = snes->vec_func_always;
-  if (ctx) *ctx = snes->funP;
+  if (r)    *r    = snes->vec_func_always;
+  if (ctx)  *ctx  = snes->funP;
+  if (func) *func = snes->computefunction;
   PetscFunctionReturn(0);
 }  
 
