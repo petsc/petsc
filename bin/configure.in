@@ -124,7 +124,7 @@ AC_ARG_WITH(blas,[ --with-blas=library - Use system-provided BLAS],BLAS_LIB=$wit
 dnl AC_SUBST(BLAS_LIB)
 AC_ARG_WITH(lapack,[ --with-lapack=library - Use system-provide LAPACK],LAPACK_LIB=$withval)
 dnl AC_SUBST(LAPACK_LIB)
-BLASLAPACK_LIB =$LAPACK_LIB $BLAS_LIB
+BLASLAPACK_LIB=$LAPACK_LIB $BLAS_LIB
 AC_SUBST(BLASLAPACK_LIB)
 dnl
 AC_ARG_WITH(blocksolve,[ --with-blocksolve=library - Use BlockSolve95],BLOCKSOLVE_LIB=$withval)
