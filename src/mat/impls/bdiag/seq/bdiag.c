@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.112 1996/08/08 14:43:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.113 1996/08/15 12:47:45 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -52,6 +52,7 @@ static int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,
           }
         } else {
           PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
+          a->reallocs++;
           /* free old bdiag storage info and reallocate */
           diag_new = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int));CHKPTRQ(diag_new);
           bdlen_new = diag_new + a->nd + 1;
@@ -138,6 +139,7 @@ static int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,
           }
         } else {
           PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
+          a->reallocs++;
           /* free old bdiag storage info and reallocate */
           diag_new = (int *)PetscMalloc(2*(a->nd+1)*sizeof(int));CHKPTRQ(diag_new);
           bdlen_new = diag_new + a->nd + 1;
@@ -1067,12 +1069,24 @@ static int MatRelax_SeqBDiag_1(Mat A,Vec bb,double omega,MatSORType flag,
   return 0;
 } 
 
-static int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *mem)
+static int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  if (nz)      *nz      = a->nz;
-  if (nzalloc) *nzalloc = a->maxnz;
-  if (mem)     *mem     = (int)A->mem;
+
+  info->rows_global       = (double)a->m;
+  info->columns_global    = (double)a->n;
+  info->rows_local        = (double)a->m;
+  info->columns_local     = (double)a->n;
+  info->block_size        = a->bs;
+  info->nz_allocated      = (double)a->maxnz;
+  info->nz_used           = (double)a->nz;
+  info->nz_unneeded       = (double)(a->maxnz - a->nz);
+  info->assemblies        = (double)A->num_ass;
+  info->mallocs           = (double)a->reallocs;
+  info->memory            = A->mem;
+  info->fill_ratio_given  = 0; /* supports ILU(0) only */
+  info->fill_ratio_needed = 0;
+  info->factor_mallocs    = 0;
   return 0;
 }
 
@@ -1467,8 +1481,7 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   FILE         *fd;
   char         *outputname;
-  int          ierr, *col, i, j, len, diag, nr = a->m, bs = a->bs;
-  int          format, nz, nzalloc, mem, iprint;
+  int          ierr, *col, i, j, len, diag, nr = a->m, bs = a->bs, format, iprint, nz;
   Scalar       *val, *dv, zero = 0.0;
 
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -1490,10 +1503,9 @@ static int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
     }
   }
   else if (format == ASCII_FORMAT_MATLAB) {
-    MatGetInfo(A,MAT_LOCAL,&nz,&nzalloc,&mem);
     fprintf(fd,"%% Size = %d %d \n",nr, a->n);
-    fprintf(fd,"%% Nonzeros = %d \n",nz);
-    fprintf(fd,"zzz = zeros(%d,3);\n",nz);
+    fprintf(fd,"%% Nonzeros = %d \n",a->nz);
+    fprintf(fd,"zzz = zeros(%d,3);\n",a->nz);
     fprintf(fd,"zzz = [\n");
     for ( i=0; i<a->m; i++ ) {
       ierr = MatGetRow( A, i, &nz, &col, &val ); CHKERRQ(ierr);
@@ -1827,6 +1839,13 @@ static int MatZeroEntries_SeqBDiag(Mat A)
   return 0;
 }
 
+static int MatGetBlockSize_SeqBDiag(Mat A,int *bs)
+{
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  *bs = a->bs;
+  return 0;
+}
+
 static int MatZeroRows_SeqBDiag(Mat A,IS is,Scalar *diag)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -2010,7 +2029,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
        MatConvertSameType_SeqBDiag,0,0,
        MatILUFactor_SeqBDiag,0,0,
        MatGetSubMatrices_SeqBDiag,0,MatGetValues_SeqBDiag_N,0,
-       MatPrintHelp_SeqBDiag,MatScale_SeqBDiag};
+       MatPrintHelp_SeqBDiag,MatScale_SeqBDiag,
+       0,0,0,MatGetBlockSize_SeqBDiag};
 
 /*@C
    MatCreateSeqBDiag - Creates a sequential block diagonal matrix.
@@ -2175,6 +2195,8 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
   b->roworiented = 1;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg1); CHKERRQ(ierr);
   if (flg1) {ierr = MatPrintHelp(B); CHKERRQ(ierr);}
+  B->info.nz_unneeded = (double)b->maxnz;
+
   *A = B;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.27 1996/08/06 23:00:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.28 1996/08/08 14:43:31 bsmith Exp curfman $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -138,6 +138,10 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
      Allocate idnew, solve_work, new a, new j */
   PLogObjectMemory(*B,(ainew[n]-n)*(sizeof(int)+sizeof(Scalar)));
   b->maxnz = b->nz = ainew[n];
+
+  (*B)->info.factor_mallocs    = realloc;
+  (*B)->info.fill_ratio_given  = f;
+  (*B)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[i]);
 
   return 0; 
 }
@@ -1390,6 +1394,11 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   PLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(int))+bs2*ainew[n]*sizeof(Scalar));
   b->maxnz          = b->nz = ainew[n];
   (*fact)->factor   = FACTOR_LU;
+
+  (*fact)->info.factor_mallocs    = realloc;
+  (*fact)->info.fill_ratio_given  = f;
+  (*fact)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[prow]);
+
   return 0; 
 }
 

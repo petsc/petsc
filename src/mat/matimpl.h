@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.60 1996/07/11 04:05:13 balay Exp bsmith $ */
+/* $Id: matimpl.h,v 1.61 1996/08/05 17:18:21 bsmith Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -26,7 +26,7 @@ struct _MatOps {
             (*choleskyfactor)(Mat,IS,double),
             (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),
             (*transpose)(Mat,Mat *),
-            (*getinfo)(Mat,MatInfoType,int *,int *,int *),
+            (*getinfo)(Mat,MatInfoType,MatInfo*),
             (*equal)(Mat,Mat,PetscTruth *),
             (*getdiagonal)(Mat,Vec),
             (*diagonalscale)(Mat,Vec,Vec),
@@ -83,6 +83,7 @@ struct _Mat {
   PetscTruth       same_nonzero;      /* matrix has same nonzero pattern as previous */
   int              M, N;              /* global numbers of rows, columns */
   int              m, n;              /* local numbers of rows, columns */
+  MatInfo          info;              /* matrix information */
 };
 
 /* final argument for MatConvertXXX() */

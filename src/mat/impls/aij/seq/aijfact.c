@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.64 1996/08/06 23:01:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.65 1996/08/08 14:42:46 bsmith Exp curfman $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -130,6 +130,10 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
      Allocate idnew, solve_work, new a, new j */
   PLogObjectMemory(*B,(ainew[n]+shift-n)*(sizeof(int)+sizeof(Scalar)));
   b->maxnz = b->nz = ainew[n] + shift;
+
+  (*B)->info.factor_mallocs    = realloc;
+  (*B)->info.fill_ratio_given  = f;
+  (*B)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[i]);
 
   return 0; 
 }
@@ -645,6 +649,11 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   PLogObjectMemory(*fact,(ainew[n]+shift-n) * (sizeof(int)+sizeof(Scalar)));
   b->maxnz          = b->nz = ainew[n] + shift;
   (*fact)->factor   = FACTOR_LU;
+
+  (*fact)->info.factor_mallocs    = realloc;
+  (*fact)->info.fill_ratio_given  = f;
+  (*fact)->info.fill_ratio_needed = ((double)ainew[n])/((double)ai[prow]);
+
   return 0; 
 }
 

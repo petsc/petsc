@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.22 1996/08/08 14:43:12 bsmith Exp bsmith $ */
+/* $Id: bdiag.h,v 1.23 1996/08/15 12:47:45 bsmith Exp curfman $ */
 
 #include "src/mat/matimpl.h"
 #include <math.h>
@@ -32,7 +32,8 @@ typedef struct {
   Scalar **diagv;          /* The actual diagonals */
   Scalar *dvalue;          /* Used to hold a row if MatGetRow is used */
   int    *pivot;           /* pivots for LU factorization (temporary loc) */
-  int    roworiented;      /* inputs to MatSetValue() are row oriented (default = 1)*/
+  int    roworiented;      /* inputs to MatSetValue() are row oriented (default = 1) */
+  int    reallocs;         /* number of allocations during MatSetValues */
 } Mat_SeqBDiag;
 
 extern int MatConvert_SeqBDiag(Mat,MatType,Mat *);
