@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.38 1996/01/12 22:08:38 bsmith Exp $";
+static char vcid[] = "$Id: ex17.c,v 1.1 1996/01/22 03:05:07 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -21,19 +21,21 @@ int main(int argc,char **args)
   SYRandom rctx;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
-  OptionsGetInt(PETSC_NULL,"-kind",&kind,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-kind",&kind,&flg); CHKERRA(ierr);
 
   /* Create vectors */
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
-  ierr = SYRandomCreate(RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
+  ierr = SYRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
   ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
 
   /* Create and assemble matrix */
   ierr = MatCreate(MPI_COMM_WORLD,n,n,&A); CHKERRA(ierr);
   ierr = FormTestMatrix(A,n,kind); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-matprint",&flg); CHKERRA(ierr);
+  if (flg) {ierr = MatView(A,STDOUT_VIEWER_WORLD); CHKERRA(ierr);}
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
   /* Create SLES context; set operators and options; solve linear system */
@@ -53,8 +55,9 @@ int main(int argc,char **args)
     MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   /* Free work space */
-  ierr = VecDestroy(x); CHKERRA(ierr);ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr); ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = VecDestroy(b); CHKERRA(ierr); ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = SYRandomDestroy(rctx); CHKERRQ(ierr);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   PetscFinalize();
   return 0;
@@ -62,38 +65,59 @@ int main(int argc,char **args)
 
 int FormTestMatrix(Mat A,int n,int kind)
 {
-  Scalar value[4];
-  int    i, ierr, col[4];
+#if !defined(PETSC_COMPLEX)
+  SETERRQ(1,"FormTestMatrix: These problems require complex numbers.");
+#else
+
+  Scalar val[5];
+  int    i, ierr, col[5];
 
   if (kind == 0) {
-    value[0] = 1.0; value[1] = 4.0; value[2] = -2.0;
+    val[0] = 1.0; val[1] = 4.0; val[2] = -2.0;
     for (i=1; i<n-1; i++ ) {
       col[0] = i-1; col[1] = i; col[2] = i+1;
-      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+      ierr = MatSetValues(A,1,&i,3,col,val,INSERT_VALUES); CHKERRQ(ierr);
     }
-    i = n - 1; col[0] = n - 2; col[1] = n - 1;
-    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
-    i = 0; col[0] = 0; col[1] = 1; value[0] = 4.0; value[1] = -2.0;
-    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
+    i = n-1; col[0] = n-2; col[1] = n-1;
+    ierr = MatSetValues(A,1,&i,2,col,val,INSERT_VALUES); CHKERRQ(ierr);
+    i = 0; col[0] = 0; col[1] = 1; val[0] = 4.0; val[1] = -2.0;
+    ierr = MatSetValues(A,1,&i,2,col,val,INSERT_VALUES); CHKERRQ(ierr);
   } 
   else if (kind == 1) {
-    value[0] = 1.0; value[1] = 0.0; value[2] = 2.0; value[3] = 1.0;
-    for (i=2; i<n-2; i++ ) {
-      col[0] = i-1; col[1] = i; col[2] = i+1;
-      ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
+    val[0] = 1.0; val[1] = 0.0; val[2] = 2.0; val[3] = 1.0;
+    for (i=2; i<n-1; i++ ) {
+      col[0] = i-2; col[1] = i-1; col[2] = i; col[3] = i+1;
+      ierr = MatSetValues(A,1,&i,4,col,val,INSERT_VALUES); CHKERRQ(ierr);
     }
-    i = n - 2; col[0] = n - 3; col[1] = n - 2; col[1] = n - 1;
-    ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES); CHKERRA(ierr);
-    i = n - 1; col[0] = n - 2; col[1] = n - 1;
-    ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES); CHKERRA(ierr);
-    i = 0; col[0] = 0; col[1] = 1;
-    ierr = MatSetValues(A,1,&i,2,col,&value[2],INSERT_VALUES); CHKERRA(ierr);
+    i = n-1; col[0] = n-3; col[1] = n-2; col[2] = n-1;
+    ierr = MatSetValues(A,1,&i,3,col,val,INSERT_VALUES); CHKERRQ(ierr);
     i = 1; col[0] = 0; col[1] = 1; col[2] = 2;
-    ierr = MatSetValues(A,1,&i,3,col,&value[1],INSERT_VALUES); CHKERRA(ierr);
+    ierr = MatSetValues(A,1,&i,3,col,&val[1],INSERT_VALUES); CHKERRQ(ierr);
+    i = 0;
+    ierr = MatSetValues(A,1,&i,2,col,&val[2],INSERT_VALUES); CHKERRQ(ierr);
+  } 
+  else if (kind == 2) {
+    val[0] = 3.0;
+   /* val[0] = complex(0.0,2.0); */
+    val[1] = 4.0; val[2] = 0.0; val[3] = 1.0; val[4] = 0.7;
+    for (i=1; i<n-3; i++ ) {
+      col[0] = i-1; col[1] = i; col[2] = i+1; col[3] = i+2; col[4] = i+3;
+      ierr = MatSetValues(A,1,&i,5,col,val,INSERT_VALUES); CHKERRQ(ierr);
+    }
+    i = n-3; col[0] = n-4; col[1] = n-3; col[2] = n-2; col[3] = n-1;
+    ierr = MatSetValues(A,1,&i,4,col,val,INSERT_VALUES); CHKERRQ(ierr);
+    i = n-2; col[0] = n-3; col[1] = n-2; col[2] = n-1;
+    ierr = MatSetValues(A,1,&i,3,col,val,INSERT_VALUES); CHKERRQ(ierr);
+    i = n-1; col[0] = n-2; col[1] = n-1;
+    ierr = MatSetValues(A,1,&i,2,col,val,INSERT_VALUES); CHKERRQ(ierr);
+    i = 0; col[0] = 0; col[1] = 1; col[2] = 2; col[3] = 3;
+    ierr = MatSetValues(A,1,&i,3,col,&val[1],INSERT_VALUES); CHKERRQ(ierr);
   } 
   else SETERRQ(1,"FormTestMatrix: this kind of test matrix not supported");
 
-  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRQ(ierr);
+#endif
+
   return 0;
 }

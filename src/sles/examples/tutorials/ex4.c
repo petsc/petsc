@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.13 1995/12/21 18:33:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.14 1996/01/12 22:08:38 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests the SLES solvers\n\n";
@@ -17,8 +17,8 @@ int main(int argc,char **args)
   SLES    sles;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.2 1996/01/01 01:04:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.3 1996/01/12 22:08:38 bsmith Exp curfman $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";
@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PC      pc;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* Create vectors */
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);

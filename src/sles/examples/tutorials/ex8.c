@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.6 1996/01/01 01:04:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.7 1996/01/12 22:08:38 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests the preconditioner ASM\n\n";
@@ -20,11 +20,11 @@ int main(int argc,char **args)
   IS      *is;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);   /* mesh lines in x */
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);   /* mesh lines in y */
-  OptionsGetInt(PETSC_NULL,"-M",&M,&flg);   /* subdomains in x */
-  OptionsGetInt(PETSC_NULL,"-N",&N,&flg);   /* subdomains in y */
-  OptionsGetInt(PETSC_NULL,"-overlap",&overlap,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr); /* mesh lines in x */
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr); /* mesh lines in y */
+  irer = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr); /* subdomains in x */
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr); /* subdomains in y */
+  ierr = OptionsGetInt(PETSC_NULL,"-overlap",&overlap,&flg); CHKERRA(ierr);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,m*n,m*n,5,PETSC_NULL,&C); CHKERRA(ierr);

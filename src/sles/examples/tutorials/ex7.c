@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.15 1996/01/01 01:04:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.16 1996/01/12 22:08:38 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   PCType    pcmethod;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);  n = 2*size;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.36 1995/12/21 18:33:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.37 1996/01/12 22:08:38 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -26,17 +26,16 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i, m = 2,  N,M,its, ierr,idx[4],count,*rows,flg;
+  int         i, m = 2, N, M,its, ierr, idx[4], count, *rows, flg;
   Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
-  double      x,y,h,norm;
-
-  Vec         u,ustar,b;
+  double      x, y, h, norm;
+  Vec         u, ustar, b;
   SLES        sles;
   KSP         ksp;
   IS          is;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
