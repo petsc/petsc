@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.67 1996/08/17 14:35:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.68 1996/10/29 18:32:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -718,7 +718,7 @@ $    SCATTER_ALL, SCATTER_REVERSE
 .  y - the vector to which we scatter
 
    Notes:
-   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+   The vectors x and y cannot be the same. y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
    This scatter is far more general than the conventional
    scatter, since it can be a gather or a scatter or a combination,
@@ -775,7 +775,7 @@ $    SCATTER_ALL, SCATTER_REVERSE
 .  y - the vector to which we scatter
 
    Notes:
-   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+   The vectors x and y cannot be the same. y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
 .keywords: vector, scatter, gather, end
 
