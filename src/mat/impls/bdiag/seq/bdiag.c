@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.79 1996/01/01 01:03:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.80 1996/01/02 20:16:29 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1274,6 +1274,20 @@ static int MatSetOption_SeqBDiag(Mat A,MatOption op)
   return 0;
 }
 
+int MatPrintHelp_SeqBDiag(Mat A)
+{
+  static int called = 0; 
+  MPI_Comm   comm = A->comm;
+
+  if (called) return 0; else called = 1;
+  MPIU_printf(comm," Matrix options for MATSEQBDIAG and MATMPIBDIAG formats:\n");
+  MPIU_printf(comm,"  -mat_bdiag_bsize <block_size>\n");
+  MPIU_printf(comm,"  -mat_bdiag_ndiag <number_diags> \n"); 
+  MPIU_printf(comm,"  -mat_bdiag_dvals <d1,d2,d3,...> (diagonal numbers)\n"); 
+  MPIU_printf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
+  return 0;
+}
+
 static int MatGetDiagonal_SeqBDiag(Mat A,Vec v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -1421,7 +1435,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
        MatGetSubMatrix_SeqBDiag,0,
        MatConvertSameType_SeqBDiag,0,0,
        MatILUFactor_SeqBDiag,0,0,
-       0,0,MatGetValues_SeqBDiag};
+       0,0,MatGetValues_SeqBDiag,0,
+       MatPrintHelp_SeqBDiag};
 
 /*@C
    MatCreateSeqBDiag - Creates a sequential block diagonal matrix.
@@ -1463,9 +1478,23 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
 {
   Mat          A;
   Mat_SeqBDiag *a;
-  int          i, nda, sizetot,ierr;
+  int          i, nda, sizetot, ierr, dset = 0, nd2;
 
   *newmat       = 0;
+  if (nb == PETSC_DEFAULT) nb = 1;
+  if (nd == PETSC_DEFAULT) nd = 0;
+  OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);
+  OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd);
+  if (nd && diag == PETSC_NULL) {
+    diag = (int *)PetscMalloc(nd * sizeof(int)); CHKPTRQ(diag);
+    nd2 = nd; dset = 1;
+    OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2);
+    if (nd2 != nd)
+      SETERRQ(1,"MatCreateSeqBDiag: Incompatible number of diags and diagonal vals");
+  } else if (OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals")) {
+    SETERRQ(1,"MatCreate: Must specify number of diagonals with -mat_bdiag_ndiag");
+  }
+
   if ((n%nb) || (m%nb)) SETERRQ(1,"MatCreateSeqBDiag:Invalid block size");
   if (!nd) nda = nd + 1;
   else nda = nd;
@@ -1536,6 +1565,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   if (OptionsHasName(PETSC_NULL,"-help")) {
     ierr = MatPrintHelp(A); CHKERRQ(ierr);
   }
+  if (dset) PetscFree(diag);
   *newmat        = A;
   return 0;
 }
