@@ -46,6 +46,13 @@ extern PetscErrorCode ComputeCorrector(DMMG,Vec,Vec);
 extern PetscErrorCode dummy(SNES,Vec,void *);
 
 typedef struct {
+  PetscScalar rho;
+  PetscScalar rho_u;
+  PetscScalar rho_v;
+  PetscScalar rho_e;
+} Fields;
+
+typedef struct {
   PetscScalar phi;
 } UserContext;
 
@@ -62,7 +69,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);
   ierr = DADestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
@@ -108,8 +115,8 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
   DA             da   = (DA)dmmg->dm;
   PetscScalar    zero = 0.0;
   Vec            uOldLocal, uLocal;
-  PetscScalar    *pOld;
-  PetscScalar    *p;
+  Fields        *pOld;
+  Fields        *p;
   PetscInt       i,ne;
   const PetscInt *e;
   PetscErrorCode ierr;
@@ -121,20 +128,28 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
   ierr = VecSet(&zero, uLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
-  ierr = VecGetArray(uOldLocal, &pOld);CHKERRQ(ierr);
-  ierr = VecGetArray(uLocal,    &p);CHKERRQ(ierr);
+  ierr = VecGetArray(uOldLocal, (PetscScalar **) &pOld);CHKERRQ(ierr);
+  ierr = VecGetArray(uLocal,    (PetscScalar **) &p);CHKERRQ(ierr);
   ierr = DAGetElements(da,&ne,&e);CHKERRQ(ierr);
+  /* Source terms are all zero right now */
   for(i = 0; i < ne; i++) {
-
+    /* Rich now is using element averages for all explicit values fed back into the finite element integrals. I think
+       we should maintain them as unassembled sums of element functions. */
+    /* Determine time-weighted values of \rho^{n+\phi} and (\rho\vu)^{n+\phi} */
     /* this is nonsense, but copy each nodal value */
     p[e[3*i]]   = pOld[e[3*i]];
     p[e[3*i+1]] = pOld[e[3*i+1]];
     p[e[3*i+2]] = pOld[e[3*i+2]];
   }
+  /* Solve equation (9) for \delta(\rho\vu) and (\rho\vu)^* */
+  /* Solve equation (13) for \delta\rho and \rho^* */
+  /* Solve equation (15) for \delta(\rho e_t) and (\rho e_t)^* */
+  /* Apply artifical dissipation */
+  /* Determine the smoothed explicit pressure, \tilde P and temperature \tilde T using the equation of state */
   ierr = DARestoreElements(da,&ne,&e);CHKERRQ(ierr);
 
-  ierr = VecRestoreArray(uOldLocal, &pOld);CHKERRQ(ierr);
-  ierr = VecRestoreArray(uLocal,   &p);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uOldLocal, (PetscScalar **) &pOld);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uLocal,    (PetscScalar **) &p);CHKERRQ(ierr);
   ierr = DALocalToGlobalBegin(da, uLocal, u);CHKERRQ(ierr);
   ierr = DALocalToGlobalEnd(da, uLocal, u);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
@@ -162,7 +177,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   DA             da   = (DA)dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
   PetscScalar    phi  = user->phi;
-  PetscScalar    *array;
+  Fields        *array;
   PetscInt       ne,i;
   const PetscInt *e;
   PetscErrorCode ierr;
@@ -171,18 +186,18 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   PetscFunctionBegin;
   /* access a local vector with room for the ghost points */
   ierr = DAGetLocalVector(da,&blocal);CHKERRQ(ierr);
-  ierr = VecGetArray(blocal, &array);CHKERRQ(ierr);
+  ierr = VecGetArray(blocal, (PetscScalar **) &array);CHKERRQ(ierr);
 
   /* access the list of elements on this processor and loop over them */
   ierr = DAGetElements(da,&ne,&e);CHKERRQ(ierr);
   for (i=0; i<ne; i++) {
 
     /* this is nonsense, but set each nodal value to phi (will actually do integration over element */
-    array[e[3*i]]   = phi;
-    array[e[3*i+1]] = phi;
-    array[e[3*i+2]] = phi;
+    array[e[3*i]].rho   = phi;
+    array[e[3*i+1]].rho = phi;
+    array[e[3*i+2]].rho = phi;
   }
-  ierr = VecRestoreArray(blocal, &array);CHKERRQ(ierr);
+  ierr = VecRestoreArray(blocal, (PetscScalar **) &array);CHKERRQ(ierr);
   ierr = DARestoreElements(da,&ne,&e);CHKERRQ(ierr);
 
   /* add our partial sums over all processors into b */
@@ -284,8 +299,8 @@ PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
   ierr = VecSet(&zero, uLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
-  ierr = VecGetArray(uOldLocal, &cOld);CHKERRQ(ierr);
-  ierr = VecGetArray(uLocal,    &c);CHKERRQ(ierr);
+  ierr = VecGetArray(uOldLocal, (PetscScalar **) &cOld);CHKERRQ(ierr);
+  ierr = VecGetArray(uLocal,    (PetscScalar **) &c);CHKERRQ(ierr);
 
   /* access the list of elements on this processor and loop over them */
   ierr = DAGetElements(da,&ne,&e);CHKERRQ(ierr);
@@ -297,8 +312,8 @@ PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
     c[e[3*i+2]] = cOld[e[3*i+2]];
   }
   ierr = DARestoreElements(da,&ne,&e);CHKERRQ(ierr);
-  ierr = VecRestoreArray(uOldLocal, &cOld);CHKERRQ(ierr);
-  ierr = VecRestoreArray(uLocal, &c);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uOldLocal, (PetscScalar **) &cOld);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uLocal,    (PetscScalar **) &c);CHKERRQ(ierr);
   ierr = DALocalToGlobalBegin(da, uLocal, u);CHKERRQ(ierr);
   ierr = DALocalToGlobalEnd(da, uLocal, u);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
