@@ -1,8 +1,7 @@
-# $Id: makefile,v 1.22 1998/04/23 23:26:49 balay Exp balay $ 
+# $Id: makefile,v 1.23 1998/06/12 21:07:55 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = 
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = kspimpl.h

@@ -1,8 +1,7 @@
-# $Id: makefile,v 1.18 1998/04/23 23:42:09 balay Exp balay $ 
+# $Id: makefile,v 1.19 1998/06/12 21:12:42 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = 
 CPPFLAGS = ${SUPERLU_INCLUDE}
 SOURCEC  = baij.c baij2.c baijfact.c baijfact2.c dgefa.c dgedi.c dgefa3.c \
 	   dgefa4.c dgefa5.c

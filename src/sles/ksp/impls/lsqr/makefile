@@ -1,8 +1,7 @@
-# $Id: makefile,v 1.27 1998/04/23 23:34:16 balay Exp balay $ 
+# $Id: makefile,v 1.28 1998/06/12 21:07:11 balay Exp balay $ 
 
 ALL: lib 
 
-CFLAGS   = 
 SOURCEC  = lsqr.c
 SOURCEF  =
 OBJSC    = lsqr.o

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 1998/04/23 23:34:57 balay Exp balay $ 
+# $Id: makefile,v 1.11 1998/06/12 21:13:01 balay Exp balay $ 
 #
 #  All the Minpack coloring routines have been converted to C with the F2C 
 # converter. We do not include in the distribution the original Fortran 77 
@@ -6,7 +6,6 @@
 #
 ALL: lib
 
-CFLAGS   = 
 SOURCEC  = degr.c setr.c dsm.c ido.c numsrt.c seq.c slo.c color.c \
            scolor.c
 SOURCEH  = color.h

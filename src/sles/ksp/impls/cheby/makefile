@@ -1,8 +1,7 @@
-# $Id: makefile,v 1.30 1998/04/23 23:33:14 balay Exp balay $ 
+# $Id: makefile,v 1.31 1998/06/12 21:07:42 balay Exp balay $ 
 
 ALL: lib 
 
-CFLAGS   = 
 SOURCEC  = cheby.c 
 SOURCEF  =
 SOURCEH  = chebctx.h
