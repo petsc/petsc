@@ -417,9 +417,17 @@ class Configure(config.base.Configure):
     return
 
   def checkSharedLinkerPaths(self):
-    '''Determine whether the linker accepts the -rpath'''
-    flag = '-Wl,-rpath,'
-    if not self.checkLinkerFlag(flag+'`pwd`'):
+    '''Determine the shared linker path options
+       - IRIX: -rpath
+       - Linux, OSF: -Wl,-rpath,
+       - Solaris: -R
+       - FreeBSD: -Wl,-R,'''
+    found = 0
+    for flag in ['-rpath ', '-Wl,-rpath,', '-R', '-Wl,-R,']:
+      if self.checkLinkerFlag(flag+os.path.abspath(os.getcwd())):
+        found = 1
+        break
+    if not found:
       flag = ''
     self.addSubstitution('RPATH', flag)
     self.slpath = flag

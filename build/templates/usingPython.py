@@ -54,7 +54,9 @@ class UsingPython (base.Base):
       SO = distutils.sysconfig.get_config_var('SO')
       try:
         # Look for the shared library
-        lib = os.path.join(distutils.sysconfig.get_config_var('LIBPL'), distutils.sysconfig.get_config_var('LDLIBRARY'))
+        lib = os.path.join(distutils.sysconfig.get_config_var('LIBDIR'), distutils.sysconfig.get_config_var('LDLIBRARY'))
+        if not os.path.isfile(lib):
+          lib = os.path.join(distutils.sysconfig.get_config_var('LIBPL'), distutils.sysconfig.get_config_var('LDLIBRARY'))
         # if .so was not built then need to strip .a off of end
         if lib[-2:] == '.a': lib = lib[0:-2]
         # may be stuff after .so like .0, so cannot use splitext()
