@@ -12,11 +12,17 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     return
 
+  def getLibArgument(self, libName):
+    '''Leave full library path arguments unchanged, otherwise return -l<name> form'''
+    if len(libName) > 3 and libName[-4:] == '.lib':
+      return libName
+    return '-l'+libName
+
   def getDefineName(self, libName):
     return 'HAVE_LIB'+libName.upper()
 
   def haveLib(self, libName):
-    return self.defines.has_key(self.getDefineName(libName))
+    return self.getDefineName(libName) in self.defines
 
   def check(self, libName, funcName, libDir = None, otherLibs = '', prototype = '', call = '', fortranMangle = 0):
     '''Checks that the library "libName" contains "funcName", and if it does adds "libName" to $LIBS and defines HAVE_LIB"libName"
@@ -52,13 +58,13 @@ class Configure(config.base.Configure):
         self.framework.argDB['LIBS'] += ' -L'+dir
     if not isinstance(libName, list): libName = [libName]
     for lib in libName:
-      self.framework.argDB['LIBS'] += ' -l'+lib
+      self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
     self.framework.argDB['LIBS'] += ' '+otherLibs
     self.pushLanguage(self.language[-1])
     if self.checkLink(includes, body):
       found = 1
       for lib in libName:
-        self.framework.argDB['LIBS'] = oldLibs+' -l'+lib
+        self.framework.argDB['LIBS'] = oldLibs+' '+self.getLibArgument(lib)
         self.addDefine(self.getDefineName(lib), 1)
     else:
       found = 0

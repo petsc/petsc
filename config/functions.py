@@ -12,6 +12,9 @@ class Configure(config.base.Configure):
   def getDefineName(self, funcName):
     return 'HAVE_'+funcName.upper()
 
+  def haveFunction(self, function):
+    return self.getDefineName(function) in self.defines
+
   def check(self, funcName, libraries = None):
     '''Checks for the function "funcName", and if found defines HAVE_"funcName"'''
     self.framework.log.write('Checking for function '+funcName+'\n')

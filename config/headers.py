@@ -12,6 +12,9 @@ class Configure(config.base.Configure):
   def getDefineName(self, header):
     return 'HAVE_'+header.upper().replace('.', '_').replace('/', '_')
 
+  def haveHeader(self, header):
+    return self.getDefineName(header) in self.defines
+
   def check(self, header):
     '''Checks for "header", and defines HAVE_"header" if found'''
     self.framework.log.write('Checking for header: '+header+'\n')
