@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex51.c,v 1.7 1996/08/15 12:48:18 bsmith Exp $";
+static char vcid[] = "$Id: ex51.c,v 1.1 1996/12/10 13:58:03 bsmith Exp balay $";
 #endif
 
 static char help[] = 
@@ -154,5 +154,6 @@ int main(int argc,char **args)
   MatDestroy(A);
   MatDestroy(B);
   PetscRandomDestroy(rand);
+  PetscFinalize();
   return 0;
 }
