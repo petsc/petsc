@@ -276,20 +276,19 @@ int UserSetGrid(Euler *app)
 
   /* Create local mesh and free global mesh (optional if using > 1 processor) */
   if (!app->global_grid && app->size > 1) {
-    if (app->post_process || app->pvar) 
-      SETERRQ(1,0,"Local grid is not currently compatible with -post and -pvar");
-    mx_l = (app->gxef01 - app->gxsf1 + 1); mx_g = app->ni1-1;
-    my_l = (app->gyef01 - app->gysf1 + 1); my_g = app->nj1-1;
-    mz_l = (app->gzef01 - app->gzsf1 + 1); mz_g = app->nk1-1;
+    if (app->post_process) SETERRQ(1,0,"Local grid is not currently compatible with post processing");
+    mx_l = (app->gxef01 - app->gxsf1 + 2); mx_g = app->ni1-1;
+    my_l = (app->gyef01 - app->gysf1 + 2); my_g = app->nj1-1;
+    mz_l = (app->gzef01 - app->gzsf1 + 2); mz_g = app->nk1-1;
 
     llen = mx_l * my_l * mz_l;
     xt = (Scalar *)PetscMalloc(llen * 3 * sizeof(Scalar)); CHKPTRQ(xt);
     yt = xt + llen;
     zt = yt + llen;
 
-    gxs1 = app->gxsf1-1; gxe01 = app->gxef01;
-    gys1 = app->gysf1-1; gye01 = app->gyef01;
-    gzs1 = app->gzsf1-1; gze01 = app->gzef01;
+    gxs1 = app->gxsf1-2; gxe01 = app->gxef01;
+    gys1 = app->gysf1-2; gye01 = app->gyef01;
+    gzs1 = app->gzsf1-2; gze01 = app->gzef01;
 
     for (k=gzs1; k<gze01; k++) {
       for (j=gys1; j<gye01; j++) {
