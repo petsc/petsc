@@ -1168,6 +1168,7 @@ int MatMultTranspose(Mat mat,Vec x,Vec y)
   if (mat->N != y->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec y: global dim %d %d",mat->N,y->N);
 #endif
 
+  if (!mat->ops->multtranspose) SETERRQ(PETSC_ERR_SUP, "Operation not supported");
   ierr = PetscLogEventBegin(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
   ierr = (*mat->ops->multtranspose)(mat,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultTranspose,mat,x,y,0);CHKERRQ(ierr);
