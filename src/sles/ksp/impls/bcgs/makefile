@@ -2,7 +2,7 @@ ALL: lib
 ITOOLSDIR = ../../../../
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF)  \
-           -I$(ITOOLSDIR)/pinclude -I../../
+           -I$(ITOOLSDIR)/pinclude -I../../ -D__DIR__='"ksp/impls/bcgs/"'
 SOURCEC  = bcgs.c
 WSOURCEC = 
 SOURCEF  =

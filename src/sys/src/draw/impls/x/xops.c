@@ -50,6 +50,18 @@ int XiDrawTextSize(DrawCtx Win,double x,double  y)
   return XiFontFixed( XiWin,w, h, &XiWin->font);
 }
 
+int XiDrawTextGetSize(DrawCtx Win,double *x,double  *y)
+{
+  XiWindow* XiWin = (XiWindow*) Win->data;
+  double    w,h;
+  w = XiWin->font->font_w; h = XiWin->font->font_h;
+  *x = w*(Win->coor_xr - Win->coor_xl)/
+         (XiWin->w)*(Win->port_xr - Win->port_xl);
+  *y = h*(Win->coor_yr - Win->coor_yl)/
+         (XiWin->h)*(Win->port_yr - Win->port_yl);
+  return 0;
+}
+
 int XiDrawTextVertical(DrawCtx Win,double x,double  y,int c,char *chrs )
 {
   int       xx,yy,n = strlen(chrs),i;
@@ -67,19 +79,6 @@ int XiDrawTextVertical(DrawCtx Win,double x,double  y,int c,char *chrs )
     XDrawString( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
                xx, yy - XiWin->font->font_descent, tmp, 1 );
   }
-  return 0;
-}
-
-
-int XiDrawTextGetSize(DrawCtx Win,double *x,double  *y)
-{
-  XiWindow* XiWin = (XiWindow*) Win->data;
-  double    w,h;
-  w = XiWin->font->font_w; h = XiWin->font->font_h;
-  *x = w*(Win->coor_xr - Win->coor_xl)/
-         (XiWin->w)*(Win->port_xr - Win->port_xl);
-  *y = h*(Win->coor_yr - Win->coor_yl)/
-         (XiWin->h)*(Win->port_yr - Win->port_yl);
   return 0;
 }
 

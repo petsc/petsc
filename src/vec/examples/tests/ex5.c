@@ -5,7 +5,6 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
    parallel vector.\n";
 
 #include "petsc.h"
-#include "comm.h"
 #include "is.h"
 #include "vec.h"
 #include "sys.h"

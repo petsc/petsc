@@ -102,9 +102,11 @@ int SLESDestroy(SLES sles)
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
   int ierr;
-  KSP ksp = sles->ksp; 
-  PC  pc = sles->pc;
+  KSP ksp;
+  PC  pc;
   Mat mat;
+  VALIDHEADER(sles,SLES_COOKIE);
+  ksp = sles->ksp; pc = sles->pc;
   KSPSetRhs(ksp,b);
   KSPSetSolution(ksp,x);
   KSPSetBinv(ksp,pc);
@@ -162,7 +164,7 @@ int SLESSetMat(SLES sles,Mat mat)
   VALIDHEADER(sles,SLES_COOKIE);
   VALIDHEADER(mat,MAT_COOKIE);
   KSPSetAmult(sles->ksp,mat);
-  PCSetMatrix(sles->pc,mat);
+  PCSetMat(sles->pc,mat);
   return 0;
 }
 

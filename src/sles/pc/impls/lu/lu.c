@@ -96,6 +96,16 @@ static int PCiDirectSetup(PC pc)
   return 0;
 }
 
+static int PCiDirectDestroy(PetscObject obj)
+{
+  PC        pc   = (PC) obj;
+  PCiDirect *dir = (PCiDirect*) pc->data;
+
+  if (!dir->inplace) MatDestroy(dir->fact);
+  FREE(dir); FREE(pc);
+  return 0;
+}
+
 static int PCiDirectApply(PC pc,Vec x,Vec y)
 {
   PCiDirect *dir = (PCiDirect *) pc->data;
@@ -109,6 +119,7 @@ int PCiDirectCreate(PC pc)
   dir->fact     = 0;
   dir->ordering = ORDER_ND;
   dir->inplace  = 0;
+  pc->destroy   = PCiDirectDestroy;
   pc->apply     = PCiDirectApply;
   pc->setup     = PCiDirectSetup;
   pc->type      = PCDIRECT;

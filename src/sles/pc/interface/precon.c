@@ -34,7 +34,7 @@ int PCDestroy(PC pc)
   int ierr = 0;
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->destroy) ierr =  (*pc->destroy)((PetscObject)pc);
-  FREE(pc);
+  else   FREE(pc);
   return ierr;
 }
 
@@ -55,6 +55,7 @@ int PCCreate(PC *newpc)
   pc->vec         = 0;
   pc->mat         = 0;
   pc->setupcalled = 0;
+  pc->destroy     = 0;
   pc->data        = 0;
   pc->apply       = 0;
   pc->applytrans  = 0;
@@ -167,20 +168,20 @@ int PCSetUp(PC pc)
 }
 
 /*@
-    PCSetMatrix - Set the matrix associated with the preconditioner.
+    PCSetMat - Set the matrix associated with the preconditioner.
 
   Input Parameters:
 .  pc - the preconditioner context
 .  mat - the matrix
 @*/
-int PCSetMatrix(PC pc,Mat mat)
+int PCSetMat(PC pc,Mat mat)
 {
   VALIDHEADER(pc,PC_COOKIE);
   pc->mat = mat;
   return 0;
 }
 /*@
-    PCGetMatrix - Gets the matrix associated with the preconditioner.
+    PCGetMat - Gets the matrix associated with the preconditioner.
 
   Input Parameters:
 .  pc - the preconditioner context
@@ -188,7 +189,7 @@ int PCSetMatrix(PC pc,Mat mat)
   Output Parameter:
 .  mat - the matrix
 @*/
-int PCGetMatrix(PC pc,Mat *mat)
+int PCGetMat(PC pc,Mat *mat)
 {
   VALIDHEADER(pc,PC_COOKIE);
   *mat = pc->mat;

@@ -2,7 +2,6 @@
     Does the parallel vector scatter 
 */
 
-#include "comm.h"
 #include "is/isimpl.h"
 #include "vecimpl.h"                     /*I "vec.h" I*/
 #include "impls/dvecimpl.h"

@@ -18,16 +18,16 @@
 #define __VEC_PACKAGE
 #include "is.h"
 
+#define VEC_COOKIE 0x101010
+
 typedef struct _Vec*           Vec;
 typedef struct _VecScatterCtx* VecScatterCtx;
 
 extern int VecCreateSequential(int,Vec *);  
 extern int VecCreateSequentialBLAS(int,Vec *); 
 
-#if defined(USING_MPI)
 extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
 extern int VecCreateMPIBLAS(MPI_Comm,int,int,Vec *); 
-#endif
 
 extern int VecCreateInitialVector(int,Vec *); 
 

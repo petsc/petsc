@@ -516,7 +516,7 @@ int KSPGetConvergenceContext(KSP itP, void **ctx)
 }
 
 /*@
-  KSPBuildSolution - Builds the solution in a vector provided.
+  KSPBuildSolution - Builds the approximate solution in a vector provided.
 
   Input Parameter:
 . ctx - iterative context obtained from KSPCreate()
@@ -546,13 +546,13 @@ int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
 .  ctx - iterative context obtained from KSPCreate()
 
   Output Parameters:
-.  v   - optional location to stash solution.  If v is not provided,
+.  v   - optional location to stash residual.  If v is not provided,
          then a location is generated.
 .  t   - work vector.  If not provided then one is generated.
-.  V   - the solution
+.  V   - the residual
 
   Note:
-  Regardless of whether or not v is provided, the solution is 
+  Regardless of whether or not v is provided, the residual is 
   returned in V.
 @*/
 int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)

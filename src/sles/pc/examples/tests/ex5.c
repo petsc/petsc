@@ -9,6 +9,9 @@ static char help[] = "           Test of Multigrid Code\n\
     -f use full multigrid (preconditioner variant) \n\
     This example demonstrates how matrix free methods may be written\n";
 
+/*
+    This is not a good example to understand the use of multigrid with Petsc.
+*/
 #include <math.h>
 #include <signal.h>
 #include <stdio.h>
@@ -24,31 +27,23 @@ int  Create1dLaplacian(int,Mat*);
 int  CalculateRhs(Vec);
 int  CalculateError(Vec,Vec,Vec,double*);
 int  CalculateSolution(int,Vec*);
+int  amult(void*,Vec,Vec);
 
 int main(int Argc, char **Args)
 {
-  MG          *mg;
   int         x_mesh = 15,levels = 3,cycles = 1;
   int         i,smooths = 1;
   int         *N, use_jacobi = 0, am = Multiplicative;
-  Mat         cmat,mat[20];
-  SLES        csles,sles[20];
-  double      d[3], e[3], s; /* l_2 error, max error, residual */
-  DrawLGCtx   lg;
-  DrawCtx     win;
-  int         ierr;
+  Mat         cmat,mat[20],fmat;
+  SLES        csles,sles[20],slesmg;
+  double      e[3]; /* l_2 error, max error, residual */
+  int         ierr,its;
   Vec         x,solution,X[20],R[20],B[20];
   Scalar      zero = 0.0;
-  PC          pc;
-  KSP         ksp;
+  KSP         ksp,kspmg;
+  PC          pcmg,pc;
 
   OptionsCreate(&Argc,&Args,0,0);
-
-  /* open the window */
-/*
-  ierr = DrawOpenX(0,0,0,0,300,300,&win); CHKERR(ierr);
-  ierr = DrawLGCreate(win,3,&lg); CHKERR(ierr);
-*/
 
   OptionsGetInt(1,0,"-x",&x_mesh);  
   OptionsGetInt(1,0,"-l",&levels);  
@@ -68,25 +63,31 @@ int main(int Argc, char **Args)
 
   Create1dLaplacian(N[levels-1],&cmat);
 
-  ierr = MGCreate(levels,&mg);
+  ierr = SLESCreate(&slesmg); CHKERR(ierr);
+  ierr = SLESGetPC(slesmg,&pcmg); CHKERR(ierr);
+  ierr = SLESGetKSP(slesmg,&kspmg); CHKERR(ierr);
+  ierr = SLESSetFromOptions(slesmg); CHKERR(ierr);
+  ierr = PCSetMethod(pcmg,PCMG); CHKERR(ierr);
+  ierr = MGSetLevels(pcmg,levels); CHKERR(ierr);
+  ierr = MGSetMethod(pcmg,am); CHKERR(ierr);
 
-  MGGetCoarseSolve(mg,&csles);
+  MGGetCoarseSolve(pcmg,&csles);
   SLESSetMat(csles,cmat);
   SLESGetPC(csles,&pc); PCSetMethod(pc,PCDIRECT);
   SLESGetKSP(csles,&ksp); KSPSetMethod(ksp,KSPPREONLY);
 
   /* zero is finest level */
   for ( i=0; i<levels-1; i++ ) {
-      MGSetResidual(mg,levels - 1 - i,residual,(Mat)0);
+      MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);
       MatShellCreate(N[i],N[i+1],(void *)0,&mat[i]);
       MatShellSetMult(mat[i],restrict);
       MatShellSetMultTransAdd(mat[i],interpolate);
-      MGSetInterpolate(mg,levels - 1 - i,mat[i]);
-      MGSetRestriction(mg,levels - 1 - i,mat[i]);
-      MGSetCyclesOnLevel(mg,levels - 1 - i,cycles);
+      MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);
+      MGSetRestriction(pcmg,levels - 1 - i,mat[i]);
+      MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);
 
       /* set smoother */
-      MGGetSmoother(mg,levels - 1 - i,&sles[i]);
+      MGGetSmoother(pcmg,levels - 1 - i,&sles[i]);
       SLESGetPC(sles[i],&pc);
       PCSetMethod(pc,PCSHELL);
       SLESSetMat(sles[i],mat[i]); /* this is a dummy! */
@@ -98,51 +99,37 @@ int main(int Argc, char **Args)
       KSPSetIterations(ksp,smooths);
 
       VecCreateSequential(N[i],&x); X[levels - 1 - i] = x;
-      MGSetX(mg,levels - 1 - i,x);
+      MGSetX(pcmg,levels - 1 - i,x);
       VecCreateSequential(N[i],&x); B[levels -1 - i] = x;
-      MGSetRhs(mg,levels - 1 - i,x);
+      MGSetRhs(pcmg,levels - 1 - i,x);
       VecCreateSequential(N[i],&x); R[levels - 1 - i] = x;
-      MGSetR(mg,levels - 1 - i,x);
+      MGSetR(pcmg,levels - 1 - i,x);
   } 
   /* create coarse level vectors */
-  VecCreateSequential(N[levels-1],&x); MGSetX(mg,0,x); X[0] = x;
-  VecCreateSequential(N[levels-1],&x); MGSetRhs(mg,0,x); B[0] = x;
-  VecCreateSequential(N[levels-1],&x); MGSetR(mg,0,x); R[0] = x;
+  VecCreateSequential(N[levels-1],&x); MGSetX(pcmg,0,x); X[0] = x;
+  VecCreateSequential(N[levels-1],&x); MGSetRhs(pcmg,0,x); B[0] = x;
+  VecCreateSequential(N[levels-1],&x); MGSetR(pcmg,0,x); R[0] = x;
+
+  /* create matrix multiply for finest level */
+  MatShellCreate(N[0],N[0],(void *)0,&fmat);
+  MatShellSetMult(fmat,amult);
+  SLESSetMat(slesmg,fmat);
 
   CalculateSolution(N[0],&solution);
   CalculateRhs(B[levels-1]);
   VecSet(&zero,X[levels-1]);
 
-  if (MGCheck(mg)) {SETERR(1,0);}
+  if (MGCheck(pcmg)) {SETERR(1,0);}
      
   residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
-  CalculateError(solution,X[levels-1],R[levels-1],e); i = 0; s = e[0];
-  d[0] = d[1] = d[2] = (double) i;
+  CalculateError(solution,X[levels-1],R[levels-1],e);
   printf("l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
-  e[0] = log10(e[0]);e[1] = log10(e[1]);e[2] = log10(e[2]);
-/*
-  DrawLGAddPoint(lg,d,e); 
-*/
 
-  while (s > 1.e-13) {
-    ierr = MGCycle(mg,am); CHKERR(ierr);
-    i++;
-    residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
-    CalculateError(solution,X[levels-1],R[levels-1],e); 
-    d[0] = d[1] = d[2] = (double) i;
-    printf("l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
-    s = e[0];
-    e[0] = log10(e[0]);e[1] = log10(e[1]);e[2] = log10(e[2]);
+  ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its); CHKERR(ierr);
+  residual((void*)0,B[levels-1],X[levels-1],R[levels-1]);
+  CalculateError(solution,X[levels-1],R[levels-1],e); 
+  printf("its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
 
-/*
-    DrawLGAddPoint(lg,d,e);
-    DrawLG(lg); 
-*/
-  }
-/*
-  DrawLGDestroy(lg);
-  DrawDestroy(win);
-*/
   FREE(N);
   VecDestroy(solution);
 
@@ -151,8 +138,8 @@ int main(int Argc, char **Args)
   for ( i=0; i<levels; i++ ) {
     VecDestroy(X[i]); VecDestroy(B[i]); VecDestroy(R[i]);
   }
-  MatDestroy(cmat);
-  MGDestroy(mg);
+  MatDestroy(cmat); MatDestroy(fmat);
+  SLESDestroy(slesmg);
   PetscFinalize();
   return 0;
 }
@@ -170,6 +157,21 @@ int residual(Mat mat,Vec bb,Vec xx,Vec rr)
   r[n1] = b[n1] + x[n1-1] - 2.0*x[n1];
   for ( i=1; i<n1; i++ ) {
     r[i] = b[i] + x[i+1] + x[i-1] - 2.0*x[i];
+  }
+  return 0;
+}
+int amult(void *ptr,Vec xx,Vec yy)
+{
+  int    i, n1;
+  Scalar *y,*x,*r;
+
+  VecGetSize(xx,&n1);
+  VecGetArray(xx,&x); VecGetArray(yy,&y);
+  n1--;
+  y[0] =  -x[1] + 2.0*x[0];
+  y[n1] = -x[n1-1] + 2.0*x[n1];
+  for ( i=1; i<n1; i++ ) {
+    y[i] = -x[i+1] - x[i-1] + 2.0*x[i];
   }
   return 0;
 }

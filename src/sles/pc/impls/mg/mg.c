@@ -3,8 +3,9 @@
 
 */
 #include "mgimpl.h"
+#include "options.h"
 
-/*@C
+/*
        MGMCycle - Given an MG structure created with MGCreate() runs 
                   one multiplicative cycle down through the levels and
                   back up.
@@ -12,7 +13,7 @@
     Iput Parameters:
 .   mg - structure created with  MGCreate().
 
-@*/
+*/
 int MGMCycle(MG *mglevels)
 {
   MG     mg = *mglevels, mgc = *(mglevels + 1);
@@ -36,7 +37,7 @@ int MGMCycle(MG *mglevels)
   return 0;
 }
 
-/*@
+/*
        MGCreate - Creates a MG structure for use with the multigrid code.
                Level 0 is the coarsest. (But the finest level is stored
                first in the MG array.)                  
@@ -50,8 +51,8 @@ int MGMCycle(MG *mglevels)
     Iput Parameters:
 .   levels - the number of levels to use.
 
-@*/
-int MGCreate(int levels,MG **result)
+*/
+static int MGCreate(int levels,MG **result)
 {
   MG  *mg;
   int i,ierr;
@@ -75,16 +76,18 @@ int MGCreate(int levels,MG **result)
   return 0;
 }
 
-/*@C
+/*
        MGDestroy - Frees space used by an MG structure created with 
                     MGCreate().
 
     Iput Parameters:
 .   mg - the MG structure
 
-@*/
-int MGDestroy(MG *mg)
+*/
+static int MGDestroy(PetscObject obj)
 {
+  PC pc = (PC) obj;
+  MG *mg = (MG *) pc->data;
   int i, n = mg[0]->level + 1;
   for ( i=0; i<n; i++ ) {
     if ( i==n-1 ) {
@@ -97,6 +100,7 @@ int MGDestroy(MG *mg)
      FREE(mg[i]);
   }
   FREE(mg);
+  FREE(pc);
   return 0;
 }
 
@@ -109,9 +113,12 @@ int MGDestroy(MG *mg)
 .   mg - the MG structure
 
 @*/
-int MGCheck(MG *mg)
+int MGCheck(PC pc)
 {
-  int i, n = mg[0]->level, count = 0;
+  MG *mg = (MG *) pc->data;
+  int i, n, count = 0;
+  if (pc->type != PCMG) return 0;
+  n = mg[0]->level;
 
   if (!mg[n]->csles) {
     fprintf(stderr,"No coarse solver set \n"); count++;
@@ -135,10 +142,10 @@ int MGCheck(MG *mg)
     if (!mg[i]->r) {
       fprintf(stderr,"No r set level %d \n",n-i); count++;
     } 
-    if (!mg[i]->x) {
+    if (i > 0 && !mg[i]->x) {
       fprintf(stderr,"No x set level %d \n",n-i); count++;
     }
-    if (!mg[i]->b) {
+    if (i > 0 && !mg[i]->b) {
       fprintf(stderr,"No b set level %d \n",n-i); count++;
     }
   }
@@ -164,8 +171,9 @@ int MGCheck(MG *mg)
 .   n - the number of smoothing steps
 
 @*/
-int MGSetNumberSmoothDown(MG *mg,int n)
+int MGSetNumberSmoothDown(PC pc,int n)
 { 
+  MG *mg = (MG *) pc->data;
   int i;
   KSP ksp;
   for ( i=0; i<mg[0]->level; i++ ) {  
@@ -185,8 +193,9 @@ int MGSetNumberSmoothDown(MG *mg,int n)
 .   n - the number of smoothing steps
 
 @*/
-int  MGSetNumberSmoothUp(MG *mg,int n)
+int  MGSetNumberSmoothUp(PC pc,int n)
 { 
+  MG *mg = (MG *) pc->data;
   int i;
   KSP ksp;
   for ( i=0; i<mg[0]->level; i++ ) {  
@@ -206,8 +215,9 @@ int  MGSetNumberSmoothUp(MG *mg,int n)
 .   n - the number of cycles
 
 @*/
-int MGSetCycles(MG *mg,int n)
+int MGSetCycles(PC pc,int n)
 { 
+  MG *mg = (MG *) pc->data;
   int i;
   for ( i=0; i<mg[0]->level; i++ ) {  
      mg[i]->cycles  = n; 
@@ -215,3 +225,139 @@ int MGSetCycles(MG *mg,int n)
   return 0;
 }
 
+extern int MGACycle(MG*);
+extern int MGFCycle(MG*);
+
+/*
+      MGCycle - Runs either an additive, multiplicative or full cycle of 
+                multigrid. 
+
+  Input Parameters:
+.   mg - the multigrid context 
+.   am - either Multiplicative, Additive or FullMultigrid 
+
+
+  Note: a simple  wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
+*/ 
+static int MGCycle(PC pc,Vec b,Vec x)
+{
+   MG *mg = (MG*) pc->data;
+   Scalar zero = 0.0;
+   mg[0]->b = b; mg[0]->x = x;
+   if (mg[0]->am == Multiplicative) {
+     VecSet(&zero,x);
+     return MGMCycle(mg);
+   } 
+   else if (mg[0]->am == Additive) {
+     return MGACycle(mg);
+   }
+   else {
+     return MGFCycle(mg);
+   }
+   return 0;
+}
+
+static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
+{
+  int ierr;
+  MG  *mg = (MG*) pc->data;
+  mg[0]->b = b; mg[0]->x = x;
+  while (its--) {
+    ierr = MGMCycle(mg); CHKERR(ierr);
+  }
+  return 0;
+}
+
+static int PCisetfrom(PC pc)
+{
+  int    m;
+  char   buff[16];
+
+  if (pc->type != PCMG) return 0;
+  if (!pc->data) {
+    SETERR(1,"For multigrid PCSetFromOptions() must be after MGSetLevels");
+  }
+  if (OptionsGetInt(0,pc->prefix,"-mgcycles",&m)) {
+    MGSetCycles(pc,m);
+  } 
+  if (OptionsGetInt(0,pc->prefix,"-mgsmoothsup",&m)) {
+    MGSetNumberSmoothUp(pc,m);
+  }
+  if (OptionsGetInt(0,pc->prefix,"-mgsmoothsdown",&m)) {
+    MGSetNumberSmoothDown(pc,m);
+  }
+  if (OptionsGetString(0,pc->prefix,"-mgmethod",buff,15)) {
+    if (!strcmp(buff,"additive")) m = Additive;
+    else if (!strcmp(buff,"multiplicative")) m = Multiplicative;
+    else if (!strcmp(buff,"fullmultigrid")) m = FullMultigrid;
+    else if (!strcmp(buff,"kaskade")) m = Kaskade;
+    else SETERR(1,"Unknown MG method");
+    MGSetMethod(pc,m);
+  }
+  return 0;
+}
+
+static int PCiprinthelp(PC pc)
+{
+  char *p;
+  if (pc->prefix) p = pc->prefix; else p = "-";
+  fprintf(stderr,"%smgmethod [additive,multiplicative,fullmultigrid,kaskade\
+                  : type of multigrid method\n",p);
+  fprintf(stderr,"%smgsmoothsdown m: number of pre-smooths\n",p);
+  fprintf(stderr,"%smgsmoothsup m: number of post-smooths\n",p);
+  fprintf(stderr,"%smgcycles m: 1 for V-cycle, 2 for W cycle\n",p);
+  return 0;
+}
+
+int PCiMGCreate(PC pc)
+{
+  pc->apply     = MGCycle;
+  pc->setup     = 0;
+  pc->destroy   = MGDestroy;
+  pc->type      = PCMG;
+  pc->data      = (void *) 0;
+  pc->setfrom   = PCisetfrom;
+  pc->printhelp = PCiprinthelp;
+  return 0;
+}
+
+/*@
+    MGSetLevels - Sets the number of levels to use with MG.
+                  Must be called before any other MG routine.
+
+  Input Parameters:
+.  pc - the preconditioner context
+.  levels - the number of levels
+
+@*/
+int MGSetLevels(PC pc,int levels)
+{
+  int ierr;
+  MG  *mg;
+  if (pc->type != PCMG) return 0;
+  ierr          = MGCreate(levels,&mg); CHKERR(ierr);
+  mg[0]->am     = Multiplicative;
+  pc->data      = (void *) mg;
+  pc->applyrich = MGCycleRichardson;
+  return 0;
+}
+
+/*@
+
+    MGSetMethod - Determines if multiplicative, additive or full 
+                  multigrid is used.
+
+  Input Parameters:
+.  pc - the preconditioner context
+.  flag - either Multiplicative, Additive or FullMultigrid
+
+@*/
+int MGSetMethod(PC pc,int flag)
+{
+  MG *mg = (MG *) pc->data;
+  if (pc->type != PCMG) return 0;
+  mg[0]->am = flag;
+  if (flag == Multiplicative) pc->applyrich = MGCycleRichardson;
+  else pc->applyrich = 0;
+  return 0;
+}

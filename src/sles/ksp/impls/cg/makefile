@@ -2,7 +2,7 @@ ALL: lib
 ITOOLSDIR = ../../../../
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF)  \
-           -I$(ITOOLSDIR)/pinclude -I../..
+           -I$(ITOOLSDIR)/pinclude -I../.. -D__DIR__='"ksp/impls/cg"'
 FFLAGS   =
 SOURCEC  = cg.c cgeig.c
 SOURCEF  = 

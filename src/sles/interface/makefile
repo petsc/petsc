@@ -3,7 +3,7 @@ ITOOLSDIR = ../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
-           -I$(ITOOLSDIR)/pinclude $(CONF)
+           -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"sles/src/"'
 SOURCEC  = sles.c 
 SOURCEF  = 
 WSOURCEC = slesf.c

@@ -3,7 +3,8 @@ ITOOLSDIR = ../../../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. \
-           -I$(ITOOLSDIR)/pinclude $(CONF)
+           -I$(ITOOLSDIR)/pinclude $(CONF) \
+           -D__DIR__='"mat/impls/aij/seq/order/"'
 SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c
 SOURCEF  = degree.f  fnroot.f genqmd.f qmdqt.f rcm.f fn1wd.f gen1wd.f \
            genrcm.f qmdrch.f rootls.f fndsep.f gennd.f qmdmrg.f qmdupd.f

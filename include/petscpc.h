@@ -7,7 +7,7 @@
 #include "petsc.h"
 #include "mat.h"
 
-typedef enum { PCNONE, PCJACOBI, PCSOR, PCDIRECT, PCSHELL, PCBJACOBI}
+typedef enum { PCNONE, PCJACOBI, PCSOR, PCDIRECT, PCSHELL, PCBJACOBI, PCMG}
                PCMETHOD;
 
 typedef struct _PC* PC;
@@ -29,8 +29,8 @@ extern int    PCGetMethodFromOptions(PC pc,PCMETHOD *);
 extern int    PCPrintMethods(char*,char *);
 extern int    PCGetMethodFromContext(PC,PCMETHOD*);
 extern int    PCGetMethodName(PCMETHOD,char **);
-extern int    PCSetMatrix(PC,Mat);
-extern int    PCGetMatrix(PC,Mat*);
+extern int    PCSetMat(PC,Mat);
+extern int    PCGetMat(PC,Mat*);
 extern int    PCSetVector(PC,Vec);
 extern int    PCPrintHelp(PC);
 extern int    PCSetOptionsPrefix(PC,char*);
@@ -42,5 +42,6 @@ extern int PCSORSetIterations(PC, int);
 extern int PCBJacobiSetBlocks(PC, int);
 
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
+extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 
 #endif

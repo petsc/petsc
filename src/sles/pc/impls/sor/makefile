@@ -3,7 +3,7 @@ ITOOLSDIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(ITOOLSDIR)/pinclude\
-           $(CONF)
+           $(CONF) -D__DIR__='"pc/impls/sor/"'
 SOURCEC  = sor.c
 SOURCEF  =
 WSOURCEC = 
@@ -11,7 +11,7 @@ SOURCEH  =
 OBJSC    = sor.o
 WOBJS    = 
 OBJSF    =
-LIBBASE  = libpetscpc
+LIBBASE  = libpetscsles
 LINCLUDE = $(SOURCEH)
 DIRS     = 
 MANSEC   = 4

@@ -1,7 +1,7 @@
 ITOOLSDIR = ../../
 
 ALL: lib 
-CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF)
+CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF) -D__DIR__='"sys/"'
 SOURCEC   = tr.c arch.c txt.c file.c  nreg.c try.c
 SOURCEF   =
 SOURCEH   =

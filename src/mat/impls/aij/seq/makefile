@@ -3,7 +3,7 @@ ITOOLSDIR = ../../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. \
-           -I$(ITOOLSDIR)/pinclude $(CONF)
+           -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"mat/impls/aij/seq/"'
 SOURCEC  = ij.c aij.c aijfact.c
 SOURCEF  =
 WSOURCEC = 

@@ -3,7 +3,7 @@ ALL: lib
 ITOOLSDIR = ../../../../
 
 CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
-           -I$(ITOOLSDIR)/pinclude -I../../
+           -I$(ITOOLSDIR)/pinclude -I../../ -D__DIR__='"ksp/impls/gmres/"'
 SOURCEC  = gmres.c borthog.c mmaxpy.c
 WSOURCEC = gmresf.c  
 SOURCEF  =

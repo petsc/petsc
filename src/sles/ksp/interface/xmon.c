@@ -35,6 +35,7 @@ int KSPLGMonitor(KSP itP,int n,double rnorm,void *monctx)
   if (n < 20 || (n % 5)) {
     DrawLG(lg);
   }
+  return 0;
 } 
  
 int KSPLGMonitorDestroy(DrawLGCtx ctx)

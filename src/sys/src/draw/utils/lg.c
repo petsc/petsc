@@ -68,6 +68,7 @@ int DrawLGReset(DrawLGCtx lg)
   lg->ymax  = -1.e20;
   lg->loc   = 0;
   lg->nopts = 0;
+  return 0;
 }
 
 /*@

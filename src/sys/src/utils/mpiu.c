@@ -1,5 +1,5 @@
 
-#include "comm.h"
+#include "petsc.h"
 #include <stdio.h>
 #include <stdarg.h>
 /*@

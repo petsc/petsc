@@ -2,7 +2,7 @@ ALL: lib
 ITOOLSDIR = ../../../../
 
 CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
-           -I$(ITOOLSDIR)/pinclude  -I../../
+           -I$(ITOOLSDIR)/pinclude  -I../../ -D__DIR__='"ksp/impls/lsqr/"'
 SOURCEC  = lsqr.c
 SOURCEF  =
 WSOURCEC = 

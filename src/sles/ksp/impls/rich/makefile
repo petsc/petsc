@@ -2,7 +2,7 @@ ALL: lib
 ITOOLSDIR = ../../../../
 
 CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) -I../..  \
-           -I$(ITOOLSDIR)/pinclude
+           -I$(ITOOLSDIR)/pinclude -D__DIR__='"ksp/impls/rich/"'
 SOURCEC  = rich.c
 WSOURCEC = richf.c
 SOURCEF  =

@@ -3,7 +3,6 @@
 static char help[] = "Example demonstrating opening and drawing a window\n";
 
 #include "petsc.h"
-#include "comm.h"
 #include "is.h"
 #include "vec.h"
 #include "sys.h"

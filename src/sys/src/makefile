@@ -1,11 +1,12 @@
 ITOOLSDIR = ../../../
 
 ALL: lib 
-CFLAGS    = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude $(CONF)
-SOURCEC   = adebug.c  error.c signal.c
+CFLAGS    = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude $(CONF)\
+            -D__DIR__='"sys/error/"'
+SOURCEC   = adebug.c  error.c signal.c fp.c
 SOURCEF   =
 SOURCEH   =
-OBJSC     = adebug.o  error.o signal.o
+OBJSC     = adebug.o  error.o signal.o fp.o
 OBJSF     =
 WSOURCEC  = errorf.c  
 WOBJS     = errorf.o 

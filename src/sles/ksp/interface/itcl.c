@@ -4,7 +4,6 @@
 
 #include "petsc.h"
 #include "draw.h"
-#include "comm.h"
 #include "kspimpl.h"
 #include "sys.h"
 #include "options.h"

@@ -9,6 +9,7 @@ int PCiNoneCreate(PC);
 int PCiDirectCreate(PC);
 int PCiSORCreate(PC);
 int PCiShellCreate(PC);
+int PCiMGCreate(PC);
 
 /*@
    PCRegisterAll - Registers all the iterative methods
@@ -23,10 +24,11 @@ int PCRegisterAll()
 {
   PCRegister(PCNONE         , "none",       PCiNoneCreate);
   PCRegister(PCJACOBI       , "jacobi",     PCiJacobiCreate);
-  PCRegister(PCBJACOBI      , "bjacobi",     PCiBJacobiCreate);
+  PCRegister(PCBJACOBI      , "bjacobi",    PCiBJacobiCreate);
   PCRegister(PCSOR          , "sor",        PCiSORCreate);
   PCRegister(PCDIRECT       , "direct",     PCiDirectCreate);
   PCRegister(PCSHELL        , "shell",      PCiShellCreate);
+  PCRegister(PCMG           , "mg",         PCiMGCreate);
   return 0;
 }
 

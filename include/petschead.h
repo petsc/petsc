@@ -20,31 +20,38 @@
 
 */
 
-#define PETSCHEADER                   \
-  int    cookie;                      \
-  int    type;                        \
-  int    (*destroy)(PetscObject);     \
-  int    (*view)(PetscObject,Viewer); \
-  /*  ... */                          \
+#define PETSCHEADER                     \
+  int      cookie;                      \
+  int      type;                        \
+  int      (*destroy)(PetscObject);     \
+  int      (*view)(PetscObject,Viewer); \
+  MPI_Comm comm;                        \
+  /*  ... */                            \
 
 #define CREATEHEADER(h,tp)                           \
-      {h = (struct tp *) NEW(struct tp);           \
+      {h = (struct tp *) NEW(struct tp);             \
        CHKPTR((h));                                  \
        (h)->cookie = 0; (h)->type = 0;               \
-       (h)->destroy = (int (*)(PetscObject)) 0; \
-       (h)->view = (int (*)(PetscObject,Viewer)) 0;}
+       (h)->destroy = (int (*)(PetscObject)) 0;      \
+       (h)->view = (int (*)(PetscObject,Viewer)) 0;  \
+       (h)->comm = MPI_COMM_WORLD;}
 
 #define FREEDHEADER -1
 
-#define VALIDHEADER(h,ck)                  \
-  {if (!h) {SETERR(1,"Null Object");}      \
-  if ((h)->cookie != ck) {                 \
-    if ((h)->cookie == FREEDHEADER) {      \
-      SETERR(1,"Object already free");     \
-    }                                      \
-    else {                                 \
-      SETERR(2,"Invalid or Wrong Object"); \
-    }                                      \
+extern void *PetscLow,* PetscHigh;
+
+#define VALIDHEADER(h,ck)                             \
+  {if (!h) {SETERR(1,"Null Object");}                 \
+  if (PetscLow > (void *) h || PetscHigh < (void *)h){\
+    SETERR(3,"Invalid Pointer to Object");            \
+  }                                                   \
+  if ((h)->cookie != ck) {                            \
+    if ((h)->cookie == FREEDHEADER) {                 \
+      SETERR(1,"Object already free");                \
+    }                                                 \
+    else {                                            \
+      SETERR(2,"Invalid or Wrong Object");            \
+    }                                                 \
   }}
 
 #define CHKSAME(a,b) \

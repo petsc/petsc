@@ -1,6 +1,4 @@
-#ifndef lint
-static char vcid[] = "$Id: spinver.c,v 1.2 1994/11/25 23:04:56 bsmith Exp bsmith $";
-#endif
+
 
 #include "petsc.h"
 
@@ -29,14 +27,4 @@ void SpInverse( int n, int *perm, int *iperm )
   }
 }
 
-/* Interface to the sparsepak routines. This makes perm[k] -> perm[n-k] */
-void revrse_(int * n,int* perm )
-{
-  int i, in = *n-1, m = *n/2, swap;
-  for (i=0; i<m; i++) {
-    swap       = perm[i];
-    perm[i]    = perm[in];
-    perm[in--] = swap;
-  }
-}
 

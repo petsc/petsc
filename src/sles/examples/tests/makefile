@@ -13,7 +13,7 @@ LIBBASE   = libpetscsles
 EXAMPLES  = ex1 ex2 ex3 ex4
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c
 SYSLIB    = -L$(LDIR) -lpetscsles -lpetscksp \
-           -lpetscpc -lpetscmat \
+           -lpetscmat \
            -lpetscvec -lpetscsys -lpetscdraw \
            $(LAPACK) $(BLAS) $(X11LIB) $(CLIB) $(SLIB) $(FCLIB) -lm 
 LINCLUDE  = $(SOURCEH)

@@ -2,7 +2,6 @@
 static char help[] = "Displays a vector visually\n";
 
 #include "petsc.h"
-#include "comm.h"
 #include "is.h"
 #include "vec.h"
 #include "sys.h"

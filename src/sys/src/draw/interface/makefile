@@ -3,7 +3,7 @@ ITOOLSDIR = ../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
-          -I$(ITOOLSDIR)/pinclude $(CONF)
+          -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"draw/src/"'
 SOURCEC  = draw.c 
 SOURCEF  =
 SOURCEH  = 

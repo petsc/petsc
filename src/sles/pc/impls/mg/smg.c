@@ -3,7 +3,7 @@
 */
 #include "mgimpl.h"
 
-/*@C
+/*
        MGACycle - Given an MG structure created with MGCreate() runs 
                   one cycle down through the levels and back up. Applys
                   the smoothers in an additive manner.
@@ -11,7 +11,7 @@
     Iput Parameters:
 .   mg - structure created with  MGCreate().
 
-@*/
+*/
 int MGACycle(MG *mg)
 {
   int    i, l = mg[0]->level,its,ierr;

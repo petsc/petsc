@@ -332,6 +332,7 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   return (*x->ops->insertvalues)( x, ni,ix, y,iora );
 }
 
+
 /*@
     VecBeginAssembly - Begins assembling global vector. Call after
       all calls to VecAddValues() or VecInsertValues(). Note that you cannot

@@ -10,8 +10,9 @@
 #include "vec/vecimpl.h"  
 
 typedef struct {
-  void *ctx;
+  void *ctx,*ctxrich;
   int  (*apply)(void *,Vec,Vec);
+  int  (*applyrich)(void *,Vec,Vec,Vec,int);
 } PCShell;
 
 static int PCShellApply(PC pc,Vec x,Vec y)
@@ -20,15 +21,21 @@ static int PCShellApply(PC pc,Vec x,Vec y)
   shell = (PCShell *) pc->data;
   return (*shell->apply)(shell->ctx,x,y);
 }
+static int PCShellApplyRichardson(PC pc,Vec x,Vec y,Vec w,int it)
+{
+  PCShell *shell;
+  shell = (PCShell *) pc->data;
+  return (*shell->applyrich)(shell->ctx,x,y,w,it);
+}
 static int PCShellDestroy(PetscObject obj)
 {
   PC      pc = (PC) obj;
   PCShell *shell;
   shell = (PCShell *) pc->data;
-  FREE(shell); FREE(pc);
+  FREE(shell);
+  FREE(pc);
   return 0;
 }
-  
 
 /*
    PCShellCreate - creates a new preconditioner class for use with your 
@@ -52,6 +59,7 @@ int PCiShellCreate(PC pc)
   shell          = NEW(PCShell); CHKPTR(shell);
   pc->data       = (void *) shell;
   pc->apply      = PCShellApply;
+  pc->applyrich  = PCShellApplyRichardson;
   pc->setup      = 0;
   pc->type       = PCSHELL;
   shell->apply   = 0;
@@ -75,5 +83,27 @@ int PCShellSetApply(PC pc, int (*mult)(void*,Vec,Vec),void *ptr)
   shell        = (PCShell *) pc->data;
   shell->apply = mult;
   shell->ctx   = ptr;
+  return 0;
+}
+
+/*@
+   PCShellSetApplyRichardson - sets routine to use as preconditioner
+               in Richardson iteration.
+
+  Input Parameters:
+.  pc - the preconditioner context
+.  mult - the application routine.
+.  ptr - pointer to data needed by application multiply routine
+
+  Keywords: preconditioner, user-provided
+@*/
+int PCShellSetApplyRichardson(PC pc, int (*mult)(void*,Vec,Vec,Vec,int),
+                              void *ptr)
+{
+  PCShell *shell;
+  VALIDHEADER(pc,PC_COOKIE);
+  shell            = (PCShell *) pc->data;
+  shell->applyrich = mult;
+  shell->ctxrich   = ptr;
   return 0;
 }

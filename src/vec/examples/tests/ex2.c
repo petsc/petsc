@@ -2,7 +2,6 @@
 static char help[] = "Tests vector scatter gathers\n";
 
 #include "petsc.h"
-#include "comm.h"
 #include "is.h"
 #include "vec.h"
 #include "sys.h"

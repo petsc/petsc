@@ -2,7 +2,7 @@ ITOOLSDIR = ../../../../
 
 ALL: lib 
 CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
-            $(XINCLUDEDIR) $(CONF)
+            $(XINCLUDEDIR) $(CONF) -D__DIR__='"draw/impls/x/"'
 SOURCEC   = xinit.c  frame.c wmap.c color.c xops.c text.c
 SOURCEF   =
 SOURCEH   =

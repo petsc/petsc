@@ -5,7 +5,6 @@ static char help[] = "Tests MPI parallel AIJ  solve with SLES.\n\
   is assembled, this is to test parallel matrix assembly.\
   Uses simple bilinear elements on the unit square,\n";
 
-#include "comm.h"
 #include "vec.h"
 #include "mat.h"
 #include "options.h"
@@ -30,9 +29,9 @@ int FormElementRhs(double x, double y, double H,Scalar *r)
 int main(int argc,char **args)
 {
   Mat         C; 
-  int         i,j, m = 2, mytid,numtids, N, start,end,M,its;
-  Scalar      val, zero = 0.0,norm, one = 1.0, none = -1.0,Ke[16],r[4];
-  double      x,y,h;
+  int         i,j, m = 5, mytid,numtids, N, start,end,M,its;
+  Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
+  double      x,y,h,norm;
   int         I, J, ierr,idx[4],count,*rows;
   Vec         u,ustar,b;
   SLES        sles;

@@ -4,6 +4,13 @@
 #include "petsc.h"
 #undef TRSPACE
 
+/*
+   Experimental code for checking if a pointer is out of the range 
+  of malloced memory. This will only work on flat memory models and 
+  even then is suspicious.
+*/
+void *PetscLow = (void *) 0xEEEEEEEE  , *PetscHigh = (void *) 0x0;
+
 #ifdef __MSDOS__
 #ifdef __TURBOC__
 #include <alloc.h>
@@ -14,16 +21,14 @@
 #endif
 #endif
 
-#ifndef MALLOC_DEFINED
 #if defined(__cplusplus)
 extern "C" {
 #endif
-#if !defined(rs6000)
+#if !defined(PARCH_rs6000)
 extern char *malloc(int );
 #endif
 #if defined(__cplusplus)
 };
-#endif
 #endif
 
 
@@ -175,6 +180,14 @@ if (nsize & TR_ALIGN_MASK)
 inew = (char *) malloc( (unsigned)( nsize + sizeof(TrSPACE) + sizeof(unsigned long) ) );
 if (!inew) return 0;
 
+/*
+   Keep track of range of memory locations we have malloced in 
+*/
+if (PetscLow > (void *) inew) PetscLow = (void *) inew;
+if (PetscHigh < (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)))
+    PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long));
+
+
 head = (TRSPACE *)inew;
 inew  += sizeof(TrSPACE);
 
@@ -205,6 +218,12 @@ if (TRlevel & TR_MALLOC)
     fprintf( stderr, "Allocating %d bytes at %lx\n", a, inew );
 return (void *)inew;
 }
+
+#if defined(PARCH_sun4) && defined(__cplusplus)
+extern "C" {
+int free(char *);
+};
+#endif
 
 /*@C
    trfree - Free with tracing.
@@ -360,6 +379,12 @@ fprintf( fp, "The maximum space allocated was %d bytes [%d]\n",
 #endif
 #include <search.h>
 typedef struct { int id, size, lineno; char *fname; } TRINFO;
+#if defined(PARCH_sun4) && defined(__cplusplus)
+extern "C" {
+char *tsearch(char *,char **, int (*)(void*,void*));
+void twalk(char *,void (*)(void*,VISIT,int));
+};
+#endif
 static int IntCompare( TRINFO *a, TRINFO * b )
 {
 return a->id - b->id;
@@ -400,7 +425,8 @@ while (head) {
     key->fname  = head->fname;
 #if !defined(PARCH_IRIX) && !defined(PARCH_solaris) && !defined(PARCH_HPUX)\
      && !defined(PARCH_rs6000)
-    fnd    = (TRINFO **)tsearch( (char *) key, (char **) &root, IntCompare );
+    fnd    = (TRINFO **)tsearch( (char *) key, (char **) &root, 
+                                 (int (*)(void*,void*)) IntCompare );
 #else
     fnd    = (TRINFO **)tsearch( (void *) key, (void **) &root, 
 				 (int (*)(void*,void*))IntCompare );

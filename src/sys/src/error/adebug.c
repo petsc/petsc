@@ -35,6 +35,11 @@ int PetscSetDebugger(char *debugger, int xterm,char *display)
 
 extern char *OptionsGetProgramName();
  
+#if defined(PARCH_sun4) && defined(__cplusplus)
+extern "C" {
+int exit(int);
+};
+#endif
 /*@
     PetscAttachDebugger - Attaches debugger to the running process.
 
@@ -105,8 +110,8 @@ int PetscAttachDebugger()
 .  PetscDefaultErrorHandler for tracebacks
 ,  PetscAbortErrorHandler for when you are already in the debugger.
 @*/
-int PetscAttachDebuggerErrorHandler(int line,char* file,char* mess,int num,
-                                    void *ctx)
+int PetscAttachDebuggerErrorHandler(int line,char* dir,char* file,char* mess,
+                                    int num,void *ctx)
 {
   int ierr = PetscAttachDebugger();
   if (ierr) {

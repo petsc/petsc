@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.5 1994/11/21 06:45:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.6 1994/12/12 02:24:57 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -61,7 +61,7 @@ int  KSPiRichardsonSolve(KSP itP,int *its)
   /* if user has provided fast Richardson code use that */
   if (PCApplyRichardsonExists(itP->B)) {
     *its = maxit;
-    return PCApplyRichardson(itP->B,x,b,r,maxit);
+    return PCApplyRichardson(itP->B,b,x,r,maxit);
   }
 
   z       = itP->work[1];

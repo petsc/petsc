@@ -3,7 +3,6 @@
 static char help[] = "Tests various vector routines\n";
 
 #include "petsc.h"
-#include "comm.h"
 #include "is.h"
 #include "vec.h"
 #include "sys.h"

@@ -5,7 +5,6 @@ static char help[] = "Builds a parallel vector with 1 component on the first\n\
    except the last mytid.\n";
 
 #include "petsc.h"
-#include "comm.h"
 #include "is.h"
 #include "vec.h"
 #include "sys.h"

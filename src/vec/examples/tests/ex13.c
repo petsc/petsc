@@ -4,7 +4,6 @@ static char help[] = "Scatters from  a sequential vector to a parallel vector.\n
    Does case when each local vector is as long as the entire parallel vector.\n";
 
 #include "petsc.h"
-#include "comm.h"
 #include "is.h"
 #include "vec.h"
 #include "sys.h"

@@ -23,14 +23,15 @@ static PixVal HiPix=0, LoPix=0;
 /* 
    Set the colors for the highlights by name 
  */
-XiFrameColors( XiWindow* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
+int XiFrameColors( XiWindow* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
 {
   Rgn->Hi = XiGetColor( XiWin, Hi, 1 );
   Rgn->Lo = XiGetColor( XiWin, Lo, 1 );
   Rgn->HasColor = Rgn->Hi != Rgn->Lo;
+  return 0;
 }
 
-XiDrawFrame(XiWindow *XiWin, XiDecoration *Rgn )
+int XiDrawFrame(XiWindow *XiWin, XiDecoration *Rgn )
 {
   int    xl = Rgn->Box.x, yl = Rgn->Box.y, xh = Rgn->Box.xh, yh = Rgn->Box.yh,
          o = Rgn->width;
@@ -92,17 +93,19 @@ XiDrawFrame(XiWindow *XiWin, XiDecoration *Rgn )
 		 low, 7, Nonconvex, CoordModeOrigin);
     XSetFillStyle( XiWin->disp, XiWin->gc.set, FillSolid );
   }
+  return 0;
 }
 
 
 /*
    Set the colors for the highlights by name 
  */
-void XiFrameColorsByName(XiWindow* XiWin, char *Hi, char *Lo )
+int XiFrameColorsByName(XiWindow* XiWin, char *Hi, char *Lo )
 {
   if (XiWin->numcolors > 2) {
     HiPix = XiGetColor( XiWin, Hi, 1 );
     LoPix = XiGetColor( XiWin, Lo, 1 );
     /* HasColor = 1; */
   }
+  return 0;
 }

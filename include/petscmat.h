@@ -5,21 +5,20 @@
 #define __MAT_PACKAGE
 #include "vec.h"
 
+#define MAT_COOKIE 0x404040
+
 typedef struct _Mat*           Mat;
 typedef struct _MatScatterCtx* MatScatterCtx;
 
 
 extern int MatCreateSequentialDense(int,int,Mat*);
 extern int MatCreateSequentialAIJ(int,int,int,int *,Mat*);
-
-#if defined(USING_MPI)
 extern int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
-#endif
 
 extern int MatShellCreate(int,int,void *,Mat*);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
 extern int MatShellSetMultTrans(Mat,int (*)(void*,Vec,Vec));
-
+extern int MatShellSetMultTransAdd(Mat,int (*)(void*,Vec,Vec,Vec));
   
 /* ------------------------------------------------------------*/
 extern int  MatValidMatrix(Mat);

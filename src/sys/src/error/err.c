@@ -4,7 +4,7 @@
 
 struct EH {
   int    cookie;
-  int    (*handler)(int, char *,char *,int,void *);
+  int    (*handler)(int, char*,char *,char *,int,void *);
   void   *ctx;
   struct EH* previous;
 };
@@ -12,6 +12,11 @@ struct EH {
 static struct EH* eh = 0;
 
 
+#if defined(PARCH_sun4) && defined(__cplusplus)
+extern "C" {
+int abort();
+};
+#endif
 /*@
     PetscAbortErrorHandler - Error handler routine that calls 
         abort on error. This is very useful when running in the 
@@ -23,8 +28,8 @@ static struct EH* eh = 0;
 .  PetscAttachDebuggerErrorHandler() for automatically attaching the 
 .          debugger when an error is detected.
 @*/
-int PetscAbortErrorHandler(int line,char *file,char *message,int number,
-                           void *ctx)
+int PetscAbortErrorHandler(int line,char* dir,char *file,char *message,
+                           int number,void *ctx)
 {
   abort(); return 0;
 }
@@ -38,10 +43,11 @@ int PetscAbortErrorHandler(int line,char *file,char *message,int number,
 .  PetscAttachDebuggerErrorHandler() for automatically attaching the 
 .          debugger when an error is detected.
 @*/
-int PetscDefaultErrorHandler(int line,char *file,char *message,int number,
-                             void *ctx)
+int PetscDefaultErrorHandler(int line,char *dir,char *file,char *message,
+                             int number,void *ctx)
 {
-  fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
+  if (!dir) fprintf(stderr,"%s %d %s %d\n",file,line,message,number);
+  else      fprintf(stderr,"%s%s %d %s %d\n",dir,file,line,message,number);
   return number;
 }
 
@@ -52,9 +58,10 @@ int PetscDefaultErrorHandler(int line,char *file,char *message,int number,
 .  func - error handler
 
   Call sequence of function:
-.  int func(int linenumber,char *filename,char* errormessage,int errorno);
+.  int func(int line,char *dir,char *filename,char* errormessage,int errorno);
 @*/
-int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,void*),void *ctx )
+int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,void*),
+                          void *ctx )
 {
   struct  EH *neweh = NEW(struct EH); CHKPTR(neweh);
   if (eh) {neweh->previous = eh;} 
@@ -80,13 +87,14 @@ int PetscPopErrorHandler()
 
   Input Parameters:
 .  line,file - the linenumber and file the error was detected in
+.  dir - the directory as indicated by __DIR__
 .  message - a text string usually just printed to the screen
 .  number - the user provided error number.
 @*/
-int PetscError(int line,char *file,char *message,int number)
+int PetscError(int line,char *dir,char *file,char *message,int number)
 {
-  if (!eh) PetscDefaultErrorHandler(line,file,message,number,0);
-  else  return (*eh->handler)(line,file,message,number,eh->ctx);
+  if (!eh) return PetscDefaultErrorHandler(line,dir,file,message,number,0);
+  else  return (*eh->handler)(line,dir,file,message,number,eh->ctx);
 }
 
 /*

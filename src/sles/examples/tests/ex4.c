@@ -1,7 +1,6 @@
 
 static char help[] = "Tests AIJ  solve with SLES.\n";
 
-#include "comm.h"
 #include "vec.h"
 #include "mat.h"
 #include "options.h"

@@ -2,6 +2,22 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
+#include <stdio.h>
+
+/* MPI interface */
+#include "mpi.h"
+#include "mpe.h"
+#if defined(PETSC_COMPLEX)
+#define MPI_SCALAR MPIR_dcomplex_dte
+#else
+#define MPI_SCALAR MPI_DOUBLE
+#endif
+FILE *MPE_fopen(MPI_Comm,char *,char *);
+int MPE_fclose(MPI_Comm,FILE*);
+int MPE_fprintf(MPI_Comm,FILE*,char *,...);
+int MPE_printf(MPI_Comm,char *,...);
+
+
 #if defined(PETSC_COMPLEX)
 /* work around for bug in alpha g++ compiler */
 #if defined(PARCH_alpha) 
@@ -31,7 +47,10 @@
 #include <memory.h>
 
 /*  Macros for error checking */
-#define SETERR(n,s)     {return PetscError(__LINE__,__FILE__,s,n);}
+#if !defined(__DIR__)
+#define __DIR__ 0
+#endif
+#define SETERR(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
 #define CHKERR(n)       {if (n) SETERR(n,(char *)0);}
 #define CHKPTR(p)       if (!p) SETERR(1,"No memory");
 
@@ -46,23 +65,21 @@ extern int  PetscFinalize();
 extern int  PetscDestroy(PetscObject);
 extern int  PetscView(PetscObject,Viewer);
 
-extern int  PetscError(int,char*,char*,int);
-extern int  PetscPushErrorHandler(int (*handler)(int,char*,char*,int,void*),void* );
+extern int  PetscDefaultErrorHandler(int,char*,char*,char*,int,void*);
+extern int  PetscAbortErrorHandler(int,char*,char*,char*,int,void* );
+extern int  PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,void*); 
+extern int  PetscError(int,char*,char*,char*,int);
+extern int  PetscPushErrorHandler(int 
+                         (*handler)(int,char*,char*,char*,int,void*),void* );
 extern int  PetscPopErrorHandler();
-
-extern int  PetscDefaultErrorHandler(int,char*,char*,int,void*);
-extern int  PetscAbortErrorHandler(int,char*,char*,int,void* );
-extern int  PetscAttachDebuggerErrorHandler(int, char *,char *,int,void*); 
 
 extern int  PetscSetDebugger(char *,int,char *);
 extern int  PetscAttachDebugger();
 
-#include <signal.h> /* I don't like this, but? */
-#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_alpha)
-extern int PetscSetSignalHandler(void (*)(int,int,struct sigcontext *,char*));
-#else
-extern int PetscSetSignalHandler(void (*)(int));
-#endif
+extern int PetscDefaultSignalHandler(int,void*);
+extern int PetscPushSignalHandler(int (*)(int,void *),void*);
+extern int PetscPopSignalHandler();
+extern int PetscSetFPTrap(int);
 
 extern void *trmalloc(unsigned int,int,char*);
 extern int  trfree(void *,int,char*);

@@ -4,6 +4,8 @@
 #if !defined(__DRAW_PACKAGE)
 #define __DRAW_PACKAGE
 
+#define DRAW_COOKIE 0x101010
+
 typedef struct _DrawCtx* DrawCtx;
 
 #define DRAW_WHITE  0
@@ -14,7 +16,6 @@ typedef struct _DrawCtx* DrawCtx;
 #define DRAW_CYAN   5
 #define DRAW_BLUE   6
 
-#define DRAW_COOKIE 0x101010
 int DrawOpenX(char*,char *,int,int,int,int,DrawCtx*);
 int DrawDestroy(DrawCtx);
 
@@ -53,6 +54,7 @@ int DrawLGDestroy(DrawLGCtx);
 int DrawLGAddPoint(DrawLGCtx,double*,double*);
 int DrawLGAddPoints(DrawLGCtx,int,double**,double**);
 int DrawLG(DrawLGCtx);
+int DrawLGReset(DrawLGCtx);
 int DrawLGGetAxisCtx(DrawLGCtx,DrawAxisCtx *);
 int DrawLGGetDrawCtx(DrawLGCtx,DrawCtx *);
 

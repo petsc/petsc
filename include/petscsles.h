@@ -4,6 +4,8 @@
 #include "pc.h"
 #include "ksp.h"
 
+#define SLES_COOKIE 0x70707070
+
 typedef struct _SLES* SLES;
 
 extern int SLESCreate(SLES*);

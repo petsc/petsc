@@ -2,8 +2,8 @@ ITOOLSDIR = ../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) \
-           -I$(ITOOLSDIR)/pinclude $(CONF)
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(ITOOLSDIR) \
+           -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"is/src/"'
 SOURCEC  = index.c 
 SOURCEF  = 
 WSOURCEC = indexf.c

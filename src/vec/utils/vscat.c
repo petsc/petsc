@@ -7,7 +7,6 @@
        This code knows about the different implementations
 */
 
-#include "comm.h"
 #include "is/isimpl.h"
 #include "vecimpl.h"                     /*I "vec.h" I*/
 #include "impls/dvecimpl.h"

@@ -6,6 +6,8 @@
 #include "mat.h"
 #include "pc.h"
 
+#define KSP_COOKIE         0x202020
+
 typedef struct _KSP*     KSP;
 
 /*  Possible Krylov Space Methods */

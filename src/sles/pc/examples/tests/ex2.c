@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = PCCreate(&pc); CHKERR(ierr);
   ierr = PCSetMethod(pc,PCNONE); CHKERR(ierr);
   PCSetFromOptions(pc);
-  ierr = PCSetMatrix(pc,mat); CHKERR(ierr);
+  ierr = PCSetMat(pc,mat); CHKERR(ierr);
   ierr = PCSetVector(pc,u);   CHKERR(ierr);
   ierr = PCSetUp(pc); CHKERR(ierr);
 

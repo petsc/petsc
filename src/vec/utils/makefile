@@ -3,7 +3,7 @@ ITOOLSDIR = ../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../impls -I.. -I$(ITOOLSDIR)/pinclude\
-           $(COPT) $(CONF)
+           $(COPT) $(CONF) -D__DIR__='"vec/utils/"'
 SOURCEC  = vinv.c gcreate.c vscat.c vpscat.c
 SOURCEF  =
 WSOURCEC = 

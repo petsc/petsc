@@ -3,7 +3,7 @@ ITOOLSDIR = ../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
-           -I..   $(CONF)
+           -I..   $(CONF) -D__DIR__='"mat/src/"'
 SOURCEC  = matrix.c 
 SOURCEF  =
 WSOURCEC = matrixf.c

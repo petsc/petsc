@@ -3,7 +3,7 @@ ITOOLSDIR = ../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../impls -I.. -I$(ITOOLSDIR)/pinclude\
-           $(COPT) $(CONF)
+           $(COPT) $(CONF) -D__DIR__='"draw/utils/"'
 SOURCEC  = axis.c lg.c
 SOURCEF  =
 WSOURCEC = 

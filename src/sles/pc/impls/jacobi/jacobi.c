@@ -33,6 +33,7 @@ int PCiJacobiDestroy(PetscObject obj)
   PCiJacobi *jac = (PCiJacobi *) pc->data;
   if (jac->diag) VecDestroy(jac->diag);
   FREE(jac);
+  FREE(pc);
   return 0;
 }
 

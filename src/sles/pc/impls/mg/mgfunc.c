@@ -1,24 +1,6 @@
 
 #include "mgimpl.h"
 
-/*@
-      MGCycle - Runs either an additive, multiplicative or full cycle of 
-                multigrid. 
-
-  Input Parameters:
-.   mg - the multigrid context 
-.   am - either Multiplicative, Additive or FullMultigrid 
-
-
-  Note: a simple  wrapper which calls MGMCycle(),MGACycle(), or MGFCycle(). 
-@*/ 
-int MGCycle(MG *mg,int am)
-{
-   if (am == Multiplicative)      return MGMCycle(mg); 
-   else if (am == Additive)       return MGACycle(mg);
-   else                           return MGFCycle(mg);
-   return 0;
-}
 
 /*@
       MGGetCoarseSolve - Gets the solver contex to be used on the 
@@ -31,8 +13,9 @@ int MGCycle(MG *mg,int am)
 .   sles - the coarse grid solver context 
 
 @*/ 
-int MGGetCoarseSolve(MG *mg,SLES *sles)  
+int MGGetCoarseSolve(PC pc,SLES *sles)  
 { 
+  MG *mg = (MG*) pc->data;
   *sles =  mg[mg[0]->level]->csles;  
   return 0;
 }
@@ -47,6 +30,7 @@ int MGGetCoarseSolve(MG *mg,SLES *sles)
  
   Output Parameters:
 .  r - location to store the residual
+@*/
 int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 {
   int    ierr;
@@ -66,8 +50,9 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 .  mat - matrix associated with residual
 .  residual - function used to form residual (usually MGDefaultResidual)
 @*/
-int MGSetResidual(MG *mg,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
+int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
+  MG *mg = (MG*) pc->data;
   mg[mg[0]->level - l]->residual = residual;  
   mg[mg[0]->level - l]->A        = mat;
   return 0;
@@ -83,8 +68,9 @@ int MGSetResidual(MG *mg,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 .  l - the level to supply
 
 @*/
-int MGSetInterpolate(MG *mg,int l,Mat mat)
+int MGSetInterpolate(PC pc,int l,Mat mat)
 { 
+  MG *mg = (MG*) pc->data;
   mg[mg[0]->level - l]->interpolate = mat;  
   return 0;
 }
@@ -100,8 +86,9 @@ int MGSetInterpolate(MG *mg,int l,Mat mat)
 .  l - the level to supply
 
 @*/
-int MGSetRestriction(MG *mg,int l,Mat mat)  
+int MGSetRestriction(PC pc,int l,Mat mat)  
 {
+  MG *mg = (MG*) pc->data;
   mg[mg[0]->level - l]->restrict  = mat;  
   return 0;
 }
@@ -119,8 +106,9 @@ int MGSetRestriction(MG *mg,int l,Mat mat)
   Ouput Parameters:
 .   sles - the smoother
 @*/
-int MGGetSmoother(MG *mg,int l,SLES *sles)
+int MGGetSmoother(PC pc,int l,SLES *sles)
 {
+  MG *mg = (MG*) pc->data;
   *sles = mg[mg[0]->level - l]->smoothu;  
   return 0;
 }
@@ -136,8 +124,9 @@ int MGGetSmoother(MG *mg,int l,SLES *sles)
   Ouput Parameters:
 .   sles - the smoother
 @*/
-int MGGetSmootherUp(MG *mg,int l,SLES *sles)
+int MGGetSmootherUp(PC pc,int l,SLES *sles)
 {
+  MG *mg = (MG*) pc->data;
   *sles = mg[mg[0]->level - l]->smoothu;  
   return 0;
 }
@@ -153,8 +142,9 @@ int MGGetSmootherUp(MG *mg,int l,SLES *sles)
   Ouput Parameters:
 .   sles - the smoother
 @*/
-int MGGetSmootherDown(MG *mg,int l,SLES *sles)
+int MGGetSmootherDown(PC pc,int l,SLES *sles)
 {
+  MG *mg = (MG*) pc->data;
   int ierr;
   /*
      This is called only if user wants a different pre-smoother from post.
@@ -177,8 +167,9 @@ int MGGetSmootherDown(MG *mg,int l,SLES *sles)
 .   n - the number of cycles
 
 @*/
-int MGSetCyclesOnLevel(MG *mg,int l,int c) 
+int MGSetCyclesOnLevel(PC pc,int l,int c) 
 {
+  MG *mg = (MG*) pc->data;
   mg[mg[0]->level - l]->cycles  = c;
   return 0;
 }
@@ -194,8 +185,9 @@ int MGSetCyclesOnLevel(MG *mg,int l,int c)
 .   c - the space
 
 @*/
-int MGSetRhs(MG *mg,int l,Vec c)  
+int MGSetRhs(PC pc,int l,Vec c)  
 { 
+  MG *mg = (MG*) pc->data;
   mg[mg[0]->level - l]->b  = c;
   return 0;
 }
@@ -211,8 +203,9 @@ int MGSetRhs(MG *mg,int l,Vec c)
 .   c - the space
 
 @*/
-int MGSetX(MG *mg,int l,Vec c)  
+int MGSetX(PC pc,int l,Vec c)  
 { 
+  MG *mg = (MG*) pc->data;
   mg[mg[0]->level - l]->x  = c;
   return 0;
 }
@@ -228,8 +221,9 @@ int MGSetX(MG *mg,int l,Vec c)
 .   c - the space
 
 @*/
-int MGSetR(MG *mg,int l,Vec c)
+int MGSetR(PC pc,int l,Vec c)
 { 
+  MG *mg = (MG*) pc->data;
   mg[mg[0]->level - l]->r  = c;
   return 0;
 }

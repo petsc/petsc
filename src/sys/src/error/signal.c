@@ -5,7 +5,16 @@
 */
 #include "petsc.h"
 #include "sys.h"
-#include <signal.h>          /*I <signal.h> I*/
+#include <signal.h>     
+
+struct SH {
+  int    cookie;
+  int    (*handler)(int,void *);
+  void   *ctx;
+  struct SH* previous;
+};
+static struct SH* sh        = 0;
+static int        SignalSet = 0;
 
 static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
                            "TRAP",    "ABRT", "EMT",  "FPE",  "KILL", 
@@ -15,60 +24,111 @@ static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
                            "TERM",    "URG",  "STOP", "TSTP", "CONT", 
                            "CHLD" }; 
 
-#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_alpha)
+#if defined(PARCH_sun4) && defined(__cplusplus)
+extern "C" {
+int exit(int);
+};
+#endif
+
 /*
+    This is the signal handler called by the system. This calls 
+  your signal handler.
+*/
+#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_alpha)
+static void PetscSignalHandler( int sig, int code,
+                                        struct sigcontext * scp,char *addr)
+#else
+static void PetscSignalHandler( int sig )
+#endif
+{
+  int ierr;
+  if (!sh || !sh->handler) {
+    ierr = PetscDefaultSignalHandler(sig,(void*)0);
+  }
+  else{
+    ierr = (*sh->handler)(sig,sh->ctx);
+  }
+  if (ierr) exit(ierr);
+}
+
+/*@
   PetscDefaultSignalHandler - Default signal handler.
 
   Input Parameters:
 . sig   - signal value
-. code,scp,addr - see the signal man page
-*/
-void PetscDefaultSignalHandler( int sig, int code,struct sigcontext * scp, 
-                                char *addr )
+. ptr - unused pointer
+@*/
+int PetscDefaultSignalHandler( int sig, void *ptr)
 {
-#else
-void PetscDefaultSignalHandler( int sig )
-{
-#endif
   int ierr;
   static char buf[128];
-
   signal( sig, SIG_DFL );
   if (sig >= 0 && sig <= 20) 
     sprintf( buf, "Error: Caught signal %s", SIGNAME[sig] );
   else
     strcpy( buf, "Error: Caught signal " );
-  ierr = PetscError(0,"Unknown",buf,1);
-  if (ierr) exit(ierr); else return;
-}
-
-#if !defined(PARCH_rs6000) && !defined(PARCH_freebsd) && !defined(PARCH_alpha)
-/*@
-   PetscSetSignalHandler - Set up to catch the usual fatal errors and 
-   kill the job..
-
-   Input parameter:
-.  routine - routine to call when a signal is received.  This should
-             have a form that is compatible with "signal". Not that 
-             on the IBM rs6000 it takes one argument instead of the 
-             traditional Unix four.
-@*/
-int PetscSetSignalHandler( 
-                       void (*routine)(int, int, struct sigcontext *,char*) )
-{
-#else
-int PetscSetSignalHandler( 
-                       void (*routine)(int) )
-{
-#endif
-  if (routine == 0) routine = PetscDefaultSignalHandler;
-  signal( SIGQUIT, routine );
-  signal( SIGILL,  routine );
-  signal( SIGFPE,  routine );
-  signal( SIGBUS,  routine );
-  signal( SIGSEGV, routine );
-  signal( SIGSYS,  routine );
+  ierr =  PetscError(0,0,"Unknown",buf,1);
+  exit(ierr);
   return 0;
 }
 
+/*@
+   PetscPushSignalHandler - Set up to catch the usual fatal errors and 
+   kill the job..
 
+   Input parameter:
+.  routine - routine to call when a signal is received.
+.  ctx - optional context needed by the routine
+
+@*/
+int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
+{
+  struct  SH *newsh;
+  if (!SignalSet && routine) {
+    signal( SIGQUIT, PetscSignalHandler );
+    signal( SIGILL,  PetscSignalHandler );
+    signal( SIGFPE,  PetscSignalHandler );
+    signal( SIGBUS,  PetscSignalHandler );
+    signal( SIGSEGV, PetscSignalHandler );
+    signal( SIGSYS,  PetscSignalHandler );
+    SignalSet = 1;
+  }
+  if (!routine) {
+    signal( SIGQUIT, 0 );
+    signal( SIGILL,  0 );
+    signal( SIGFPE,  0 );
+    signal( SIGBUS,  0 );
+    signal( SIGSEGV, 0 );
+    signal( SIGSYS,  0 );
+    SignalSet = 0;
+  }
+  newsh = NEW(struct SH); CHKPTR(newsh);
+  if (sh) {newsh->previous = sh;} 
+  else {newsh->previous = 0;}
+  newsh->handler = routine;
+  newsh->ctx     = ctx;
+  sh = newsh;
+  return 0;
+}
+
+int PetscPopSignalHandler()
+{
+  struct SH *tmp;
+  if (!sh) return 0;
+  tmp = sh;
+  sh  = sh->previous;
+  FREE(tmp);
+  if (!sh || !sh->handler) {
+    signal( SIGQUIT, 0 );
+    signal( SIGILL,  0 );
+    signal( SIGFPE,  0 );
+    signal( SIGBUS,  0 );
+    signal( SIGSEGV, 0 );
+    signal( SIGSYS,  0 );
+    SignalSet = 0;
+  }
+  else {
+    SignalSet = 1;
+  }
+  return 0;
+}

@@ -4,7 +4,6 @@ static char help[] = "Tests MPI parallel AIJ solve with SLES. \n\
   differently then the way it is assembled, this is to test parallel\n\
   matrix assembly.\n";
 
-#include "comm.h"
 #include "vec.h"
 #include "mat.h"
 #include "options.h"
@@ -22,6 +21,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
+  OptionsGetInt(0,0,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
   n = 2*numtids;

@@ -3,7 +3,6 @@
 #include "options.h"
 #include "sysio.h"
 #include "mat.h"
-#include "comm.h"
 
 /*@C
       MatCreateInitialMatrix - Reads from command line to determine 

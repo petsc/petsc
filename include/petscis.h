@@ -6,12 +6,12 @@
 #define __IS_PACKAGE
 #include "petsc.h"
 
+#define IS_COOKIE 0x13131313
+
 typedef struct _IS* IS;
 
 extern int    ISCreateSequential(int,int *,IS *);
-#if defined(USING_MPI)
 extern int    ISCreateMPI(int,int,int *,MPI_Comm,IS *);
-#endif
 extern int    ISCreateStrideSequential(int,int,int,IS *);
 extern int    ISStrideGetInfo(IS,int *,int*);
 

@@ -15,6 +15,7 @@ DIRS     = src include pinclude
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
 all:
+	-$(RM) -f $(LDIR)/*.a
 	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PARCH) COMPLEX=$(COMPLEX) \
            ACTION=libfast  tree 
 	$(RANLIB) $(LDIR)/*.a
@@ -23,7 +24,7 @@ ranlib:
 	$(RANLIB) $(LDIR)/*.a
 
 deletelibs:
-	-$(RM) $(LDIR)/*.a $(LDIR)/complex/*
+	-$(RM) -f $(LDIR)/*.a $(LDIR)/complex/*
 
 deletemanpages:
 	$(RM) -f $(PETSCLIB)/docs/man/man*/*

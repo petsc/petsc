@@ -3,7 +3,7 @@ ITOOLSDIR = ../../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. -I$(ITOOLSDIR) \
-           -I$(ITOOLSDIR)/pinclude $(CONF)
+           -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"is/impls/seq/general/"'
 SOURCEC  = general.c 
 SOURCEF  =
 WSOURCEC = 

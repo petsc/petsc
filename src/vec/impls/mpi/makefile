@@ -7,7 +7,8 @@ ITOOLSDIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I../.. \
-           -I$(ITOOLSDIR)/pinclude $(CONF) $(COPT)
+           -I$(ITOOLSDIR)/pinclude $(CONF) $(COPT) \
+           -D__DIR__='"vec/impls/mpi/"'
 SOURCEC  = pvec.c pbvec.c
 SOURCEF  =
 WSOURCEC = 
