@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.150 2000/12/02 08:02:23 kaushik Exp kaushik $*/
+/*$Id: vpscat.c,v 1.151 2000/12/04 07:33:13 kaushik Exp kaushik $*/
 /*
     Defines parallel vector scatters.
 */
@@ -800,13 +800,14 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
     rwaits   = gen_from->rev_requests;
     swaits   = gen_to->rev_requests;
     sstatus  = gen_from->sstatus;
+    rstatus  = gen_from->rstatus;
   } else {
     gen_to   = (VecScatter_MPI_General*)ctx->todata;
     gen_from = (VecScatter_MPI_General*)ctx->fromdata;
     rwaits   = gen_from->requests;
-    rstatus  = gen_to->rstatus;
     swaits   = gen_to->requests;
     sstatus  = gen_to->sstatus;
+    rstatus  = gen_to->rstatus;
   }
   rvalues  = gen_from->values;
   nrecvs   = gen_from->n;
