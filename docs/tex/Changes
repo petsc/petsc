@@ -98,6 +98,3 @@ add to it).
     Added option -optionsleft_off so BOPT=g version of code will not print warnings
     about unused options
 
-    PETSc now checks the memory heap for corruption at the entry and exit of all 
-    PETSc functions for the BOPT=g version. This will slow the code down, but is 
-    worth it to help track memory corruption quickly.
