@@ -1,26 +1,16 @@
 # $Id: packages,v 1.6 2001/10/10 18:49:15 balay Exp $ 
-
-#
-#  This file contains site-specific information.  The definitions below
-#  should be changed to match the locations of libraries at your site.
-#  The following naming convention is used:
-#     XXX_LIB - location of library XXX
-#     XXX_INCLUDE - directory for include files needed for library XXX
 #
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-#BLASLAPACK_LIB = -L/home/balay/software/fblaslapack/linux_intel -lflapack -lfblas
-#
-BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_def
+BLASLAPACK_LIB = -L/home/petsc/software/mkl_linux/LIB -lmkl32_lapack -lmkl32_def /usr/lib/gcc-lib/i586-mandrake-linux/2.95.3/libg2c.a
 #
 # Location of MPI (Message Passing Interface) software
 #
-
-MPI_INCLUDE = -I${PETSC_DIR}/src/sys/src/mpiuni
-MPI_LIB     = -lmpiuni
-MPIRUN      = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
-
+MPI_HOME       = /home/petsc/software/mpich-1.2.2.3/linux_intel
+MPI_LIB        = -L${MPI_HOME}/lib  -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
@@ -32,19 +22,9 @@ X11_INCLUDE    =
 X11_LIB        = -L/usr/X11R6/lib -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
-# Location of MPE
-# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
+# Location of MPE - which is part of MPICH
 #
-#MPE_INCLUDE   = -I/home/petsc/mpich-1.1.1/mpe
-#MPE_LIB       = -L/home/petsc/mpich-1.1.1/lib/LINUX/ch_p4 -lmpe -lpmpich
-#MPE_INCLUDE   = -I${MPI_HOME}/mpe
-#MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
-#PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
+MPE_INCLUDE   = 
+MPE_LIB       =  -lmpe
+PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
-# Location of BlockSolve (MPI version)
-#
-#BLOCKSOLVE_INCLUDE     = -I/home/petsc/software/BlockSolve95/include
-#BLOCKSOLVE_LIB         =  -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
-#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
-#
-# ------------------------------------------------------------------------------
