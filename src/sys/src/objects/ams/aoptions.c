@@ -621,7 +621,7 @@ PetscErrorCode PetscOptionsLogical(const char opt[],const char text[],const char
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal *value,PetscInt *n,PetscTruth *set)
+PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const char man[],PetscReal value[],PetscInt *n,PetscTruth *set)
 {
   PetscErrorCode ierr;
   PetscInt        i;
@@ -675,7 +675,7 @@ PetscErrorCode PetscOptionsRealArray(const char opt[],const char text[],const ch
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList(), PetscOptionsRealArray()
 @*/
-PetscErrorCode PetscOptionsIntArray(const char opt[],const char text[],const char man[],PetscInt *value,PetscInt *n,PetscTruth *set)
+PetscErrorCode PetscOptionsIntArray(const char opt[],const char text[],const char man[],PetscInt value[],PetscInt *n,PetscTruth *set)
 {
   PetscErrorCode ierr;
   PetscInt       i;
