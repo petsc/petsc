@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.63 1996/03/20 06:06:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.64 1996/03/23 18:29:58 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -124,17 +124,18 @@ int SNESSetFromOptions(SNES snes)
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) { SNESPrintHelp(snes); }
   ierr = OptionsGetDouble(snes->prefix,"-snes_stol",&tmp, &flg); CHKERRQ(ierr);
-  if (flg) { SNESSetSolutionTolerance(snes,tmp); }
+  if (flg) { SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT); }
   ierr = OptionsGetDouble(snes->prefix,"-snes_atol",&tmp, &flg); CHKERRQ(ierr);
-  if (flg) { SNESSetAbsoluteTolerance(snes,tmp); }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp, &flg);  CHKERRQ(ierr);
-  if (flg) { SNESSetTrustRegionTolerance(snes,tmp); }
+  if (flg) { SNESSetTolerances(snes,tmp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); }
   ierr = OptionsGetDouble(snes->prefix,"-snes_rtol",&tmp, &flg);  CHKERRQ(ierr);
-  if (flg) { SNESSetRelativeTolerance(snes,tmp); }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg);  CHKERRQ(ierr);
-  if (flg) { SNESSetMinimizationFunctionTolerance(snes,tmp); }
+  if (flg) { SNESSetTolerances(snes,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); }
   ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its, &flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs, &flg);CHKERRQ(ierr);
+
+  ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp, &flg);  CHKERRQ(ierr);
+  if (flg) { SNESSetTrustRegionTolerance(snes,tmp); }
+  ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg);  CHKERRQ(ierr);
+  if (flg) { SNESSetMinimizationFunctionTolerance(snes,tmp); }
   ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv", &flg);  CHKERRQ(ierr);
   if (flg) { snes->ksp_ewconv = 1; }
   ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version, \
@@ -1038,73 +1039,36 @@ int SNESDestroy(SNES snes)
 /* ----------- Routines to set solver parameters ---------- */
 
 /*@
-   SNESSetMaxIterations - Sets the maximum number of global iterations to use.
+   SNESSetTolerances - Sets various parameters used in convergence tests.
 
    Input Parameters:
 .  snes - the SNES context
-.  maxits - maximum number of iterations to use
+.  atol - tolerance
 
-   Options Database Key:
-$  -snes_max_it  maxits
+   Options Database Key: 
+$    -snes_atol <atol> - absolute convergence tolerance
+$    -snes_rtol <rtol>  - relative convergence tolerance
+$    -snes_stol <stol> - convergence tolerance in terms of 
+$          the norm of the change in the solution between steps
+$    -snes_max_it <maxit> - maximum number of iterations
+$    -snes_max_funcs <maxf> - maximum number of function evaluations
 
-   Note:
+   Notes:
    The default maximum number of iterations is 50.
-
-.keywords: SNES, nonlinear, set, maximum, iterations
-
-.seealso: SNESSetMaxFunctionEvaluations()
-@*/
-int SNESSetMaxIterations(SNES snes,int maxits)
-{
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  snes->max_its = maxits;
-  return 0;
-}
-
-/*@
-   SNESSetMaxFunctionEvaluations - Sets the maximum number of function
-   evaluations to use.
-
-   Input Parameters:
-.  snes - the SNES context
-.  maxf - maximum number of function evaluations
-
-   Options Database Key:
-$  -snes_max_funcs maxf
-
-   Note:
    The default maximum number of function evaluations is 1000.
 
-.keywords: SNES, nonlinear, set, maximum, function, evaluations
+.keywords: SNES, nonlinear, set, absolute, convergence, tolerance
 
-.seealso: SNESSetMaxIterations()
+.seealso: SNESSetTrustRegionTolerance(), SNESSetMinimizationFunctionTolerance()
 @*/
-int SNESSetMaxFunctionEvaluations(SNES snes,int maxf)
+int SNESSetTolerances(SNES snes,double atol,double rtol,double stol,int maxit,int maxf)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  snes->max_funcs = maxf;
-  return 0;
-}
-
-/*@
-   SNESSetRelativeTolerance - Sets the relative convergence tolerance.  
-
-   Input Parameters:
-.  snes - the SNES context
-.  rtol - tolerance
-   
-   Options Database Key: 
-$    -snes_rtol tol
-
-.keywords: SNES, nonlinear, set, relative, convergence, tolerance
- 
-.seealso: SNESSetAbsoluteTolerance(), SNESSetSolutionTolerance()
-
-@*/
-int SNESSetRelativeTolerance(SNES snes,double rtol)
-{
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  snes->rtol = rtol;
+  if (atol != PETSC_DEFAULT)  snes->atol      = atol;
+  if (rtol != PETSC_DEFAULT)  snes->rtol      = rtol;
+  if (stol != PETSC_DEFAULT)  snes->xtol      = stol;
+  if (maxit != PETSC_DEFAULT) snes->max_its   = maxit;
+  if (maxf != PETSC_DEFAULT)  snes->max_funcs = maxf;
   return 0;
 }
 
@@ -1116,59 +1080,16 @@ int SNESSetRelativeTolerance(SNES snes,double rtol)
 .  tol - tolerance
    
    Options Database Key: 
-$    -snes_trtol tol
+$    -snes_trtol <tol>
 
 .keywords: SNES, nonlinear, set, trust region, tolerance
  
-.seealso: SNESSetAbsoluteTolerance(), SNESSetSolutionTolerance()
+.seealso: SNESSetTolerances(), SNESSetMinimizationFunctionTolerance()
 @*/
 int SNESSetTrustRegionTolerance(SNES snes,double tol)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   snes->deltatol = tol;
-  return 0;
-}
-
-/*@
-   SNESSetAbsoluteTolerance - Sets the absolute convergence tolerance.  
-
-   Input Parameters:
-.  snes - the SNES context
-.  atol - tolerance
-
-   Options Database Key: 
-$    -snes_atol tol
-
-.keywords: SNES, nonlinear, set, absolute, convergence, tolerance
-
-.seealso: SNESSetRelativeTolerance(), SNESSetSolutionTolerance()
-@*/
-int SNESSetAbsoluteTolerance(SNES snes,double atol)
-{
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  snes->atol = atol;
-  return 0;
-}
-
-/*@
-   SNESSetSolutionTolerance - Sets the convergence tolerance in terms of 
-   the norm of the change in the solution between steps.
-
-   Input Parameters:
-.  snes - the SNES context
-.  tol - tolerance
-
-   Options Database Key: 
-$    -snes_stol tol
-
-.keywords: SNES, nonlinear, set, solution, tolerance
-
-.seealso: SNESSetTruncationTolerance(), SNESSetRelativeTolerance()
-@*/
-int SNESSetSolutionTolerance( SNES snes, double tol )
-{
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  snes->xtol = tol;
   return 0;
 }
 
@@ -1181,7 +1102,7 @@ int SNESSetSolutionTolerance( SNES snes, double tol )
 .  ftol - minimum function tolerance
 
    Options Database Key: 
-$    -snes_fmin ftol
+$    -snes_fmin <ftol>
 
    Note:
    SNESSetMinimizationFunctionTolerance() is valid for SNES_UNCONSTRAINED_MINIMIZATION
@@ -1189,7 +1110,7 @@ $    -snes_fmin ftol
 
 .keywords: SNES, nonlinear, set, minimum, convergence, function, tolerance
 
-.seealso: SNESSetRelativeTolerance(), SNESSetSolutionTolerance()
+.seealso: SNESSetTolerances(), SNESSetTrustRegionTolerance()
 @*/
 int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.11 1996/01/24 05:47:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.12 1996/03/19 21:28:59 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -92,7 +92,7 @@ $           set with SNESSetMaxFunctionEvaluations()
 $    nfct - number of function evaluations,
 $    atol - absolute function norm tolerance,
 $           set with SNESSetAbsoluteTolerance()
-$    xtol - relative function norm tolerance,
+$    rtol - relative function norm tolerance,
 $           set with SNESSetRelativeTolerance()
 
 .keywords: SNES, nonlinear, default, converged, convergence

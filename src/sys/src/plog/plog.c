@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.88 1996/03/22 22:35:56 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.89 1996/03/23 17:15:47 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -26,13 +26,13 @@ static char vcid[] = "$Id: plog.c,v 1.88 1996/03/22 22:35:56 curfman Exp curfman
 static int PrintInfo = 0;
 
 /*@C
-    PLogAllowInfo - Causes PLogInfo messages to be printed to standard output.
+    PLogAllowInfo - Causes PLogInfo() messages to be printed to standard output.
 
     Input Parameter:
 .   flag - PETSC_TRUE or PETSC_FALSE
 
     Options Database Key:
-$  -info 
+$    -info 
 
 .keywords: allow, information, printing, monitoring
 @*/

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.15 1996/03/23 17:15:03 curfman Exp curfman $";
+static char vcid[] = "$Id: zsys.c,v 1.16 1996/03/23 19:06:19 curfman Exp curfman $";
 #endif
 
 #include "zpetsc.h"
@@ -7,40 +7,22 @@ static char vcid[] = "$Id: zsys.c,v 1.15 1996/03/23 17:15:03 curfman Exp curfman
 #include "pinclude/petscfix.h"
 
 #ifdef HAVE_FORTRAN_CAPS
-#define plogeventbegin_       PLOGEVENTBEGIN
-#define plogeventend_         PLOGEVENTEND
-#define plogflops_            PLOGFLOPS
 #define petscattachdebugger_  PETSCATTACHDEBUGGER
-#define plogallbegin_         PLOGALLBEGIN
-#define plogdestroy_          PLOGDESTROY
-#define plogbegin_            PLOGBEGIN
 #define petscobjectsetname_   PETSCOBJECTSETNAME
 #define petscobjectdestroy_   PETSCOBJECTDESTROY
 #define petscobjectgetcomm_   PETSCOBJECTGETCOMM
 #define petscobjectgetname_   PETSCOBJECTGETNAME
-#define plogdump_             PLOGDUMP
-#define plogeventregister_    PLOGEVENTREGISTER
-#define plogstagepop_         PLOGSTAGEPOP
 #define petscgettime_         PETSCGETTIME
 #define petscgetflops_        PETSCGETFLOPS
 #define petscerror_           PETSCERROR
 #define petscrandomcreate_    PETSCRANDOMCREATE
 #define petscrandomdestroy_   PETSCRANDOMDESTROY
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define plogeventbegin_       plogeventbegin
-#define plogeventend_         plogeventend
-#define plogflops_            plogflops
 #define petscattachdebugger_  petscattachdebugger
-#define plogallbegin_         plogallbegin
-#define plogdestroy_          plogdestroy
-#define plogbegin_            plogbegin
 #define petscobjectsetname_   petscobjectsetname
 #define petscobjectdestroy_   petscobjectdestroy
 #define petscobjectgetcomm_   petscobjectgetcomm
 #define petscobjectgetname_   petscobjectgetname
-#define plogeventregister_    plogeventregister
-#define plogdump_             plogdump
-#define plogstagepop_         plogstagepop  
 #define petscgettime_         petscgettime  
 #define petscgetflops_        petscgetflops 
 #define petscerror_           petscerror
@@ -51,24 +33,6 @@ static char vcid[] = "$Id: zsys.c,v 1.15 1996/03/23 17:15:03 curfman Exp curfman
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-void plogdump_(CHAR name, int *__ierr,int len ){
-#if defined(PETSC_LOG)
-  char *t1;
-  FIXCHAR(name,len,t1);
-  *__ierr = PLogDump(t1);
-  FREECHAR(name,t1);
-#endif
-}
-void plogeventregister_(int *e,CHAR string,CHAR color,int *__ierr,int len1,
-                        int len2){
-#if defined(PETSC_LOG)
-  char *t1,*t2;
-  FIXCHAR(string,len1,t1);
-  FIXCHAR(color,len2,t2);
-  *__ierr = PLogEventRegister(e,t1,t2);
-#endif
-}
 
 void petscobjectgetname(PetscObject obj, CHAR name, int *__ierr, int len)
 {
@@ -100,57 +64,6 @@ void petscattachdebugger_(int *__ierr){
   *__ierr = PetscAttachDebugger();
 }
 
-void plogallbegin_(int *__ierr){
-#if defined(PETSC_LOG)
-  *__ierr = PLogAllBegin();
-#endif
-}
-
-void plogdestroy_(int *__ierr){
-#if defined(PETSC_LOG)
-  *__ierr = PLogDestroy();
-#endif
-}
-
-void plogbegin_(int *__ierr){
-#if defined(PETSC_LOG)
-  *__ierr = PLogBegin();
-#endif
-}
-
-void plogeventbegin_(int e,int o1,int o2,int o3,int o4){
-#if defined(PETSC_LOG)
-  PetscObject t1,t2,t3,t4;
-  if (o1) t1 = (PetscObject) MPIR_ToPointer(*(int*)(o1)); else t1 = 0;
-  if (o2) t2 = (PetscObject) MPIR_ToPointer(*(int*)(o2)); else t2 = 0;
-  if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
-  if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
-
-  if (_PLB) (*_PLB)(e,1,t1,t2,t3,t4);
-#if defined(HAVE_MPE)
-  if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e,0,"");
-#endif
-#endif
-}
-
-void plogeventend_(int e,int o1,int o2,int o3,int o4){
-#if defined(PETSC_LOG)
-  PetscObject t1,t2,t3,t4;
-  if (o1) t1 = (PetscObject) MPIR_ToPointer(*(int*)(o1)); else t1 = 0;
-  if (o2) t2 = (PetscObject) MPIR_ToPointer(*(int*)(o2)); else t2 = 0;
-  if (o3) t3 = (PetscObject) MPIR_ToPointer(*(int*)(o3)); else t3 = 0;
-  if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
-  if (_PLE) (*_PLE)(e,1,t1,t2,t3,t4);
-#if defined(HAVE_MPE)
-  if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e+1,0,"");
-#endif
-#endif
-}
-
-void plogflops_(int f) {
-  PLogFlops(f);
-}
-
 /*
       This bleeds memory, but no easy way to get around it
 */
@@ -169,12 +82,6 @@ void petscerror_(int *number,CHAR message,int *__ierr,int len)
   *__ierr = PetscError(-1,0,"fortran_interface_unknown_file",*number,t1);
 }
 
-void plogstagepop_(int *__ierr )
-{
-#if defined(PETSC_LOG)
-  *__ierr = PLogStagePop();
-#endif
-}
 double petscgettime_()
 { 
   return PetscGetTime();
@@ -213,7 +120,7 @@ void petscrandomdestroy_(PetscRandom *r, int *__ierr ){
 /* ----------------------------------------------------------------*/
 /*    This code was taken from the MPICH implementation of MPI.    */
 /*
- *  $Id: zsys.c,v 1.15 1996/03/23 17:15:03 curfman Exp curfman $
+ *  $Id: zsys.c,v 1.16 1996/03/23 19:06:19 curfman Exp curfman $
  *
  *  (C) 1994 by Argonne National Laboratory and Mississipi State University.
  *      See COPYRIGHT in top-level directory.
