@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.104 1996/06/04 20:15:05 balay Exp balay $ */
+/* $Id: mat.h,v 1.105 1996/06/04 20:25:39 balay Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -23,6 +23,7 @@ extern int MatCreateMPIRowbs(MPI_Comm,int,int,int,int*,void*,Mat*);
 extern int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,Scalar**,Mat*); 
 extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*); 
 extern int MatCreateSeqBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
+extern int MatCreateMPIBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
 
 extern int MatDestroy(Mat);
 
