@@ -175,8 +175,8 @@ build:
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree \
          2>&1 | tee make_log_${BOPT} | egrep "(^lib|^*\.c:|Error)"
-	-@${RANLIB} ${PETSC_LIB_DIR}/*.a
-	-@chmod g+w  ${PETSC_LIB_DIR}/*.a
+	-@${RANLIB} ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
+	-@chmod g+w  ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
@@ -230,7 +230,7 @@ testfortran_uni: info chkopts
 
 # Ranlib on the libraries
 ranlib:
-	${RANLIB} ${PETSC_LIB_DIR}/*.a
+	${RANLIB} ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
 
 # Deletes PETSc libraries
 deletelibs: chkopts_basic
@@ -445,7 +445,7 @@ alladiclib:
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
 	-@echo "========================================="
-	-@${RM} -f  ${INSTALL_LIB_DIR}/*adic.a
+	-@${RM} -f  ${INSTALL_LIB_DIR}/*adic.${LIB_SUFFIX}
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
 	-@cd src/blaslapack ; \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
@@ -507,8 +507,8 @@ noise: info chklib_dir
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; ${RM} trashz
-	${RANLIB} ${INSTALL_LIB_DIR}/libpetscsnes.a
-	-@chmod g+w  ${INSTALL_LIB_DIR}/libpetscsnes.a
+	${RANLIB} ${INSTALL_LIB_DIR}/libpetscsnes.${LIB_SUFFIX}
+	-@chmod g+w  ${INSTALL_LIB_DIR}/libpetscsnes.${LIB_SUFFIX}
 	-@echo "Completed compiling noise routines"
 	-@echo "========================================="
 

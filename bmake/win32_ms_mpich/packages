@@ -15,9 +15,9 @@ BLASLAPACK_LIB         = -L'"C:/Program Files/Intel/MKL/ia32/lib"' mkl_c_dll.lib
 # Location of MPI (Message Passing Interface) software  
 # MPICH from ANL http://www.mcs.anl.gov/~ashton/mpich.nt/
 #
-MPI_HOME       = C:/Program Files/Argonne National Lab/MPICH.NT.1.2.1/SDK
+MPI_HOME       = C:/Program Files/Argonne National Lab/MPICH.NT.1.2.2/SDK
 MPI_INCLUDE    = -I'"$(MPI_HOME)/include"'
-MPI_LIB        = -L'"$(MPI_HOME)/lib"' ws2_32.lib mpich.lib pmpich.lib 
+MPI_LIB        = -L'"$(MPI_HOME)/lib"' ws2_32.lib mpich.lib
 MPIRUN         = mpirun
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.

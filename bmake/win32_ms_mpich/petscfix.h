@@ -28,8 +28,8 @@ typedef struct rusage* s_rusage;
 #endif
 
 /* Fixes from sys/types.h */
-typdef int uid_t;
-typdef int gid_t;
+typedef int uid_t;
+typedef int gid_t;
 
 /* Fixes from sys/stat.h */
 #if !defined(R_OK)
