@@ -34,6 +34,11 @@ Lois - Add table of all preconditioners and options to PETSc manual.
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Objects need to be able to flush themself of memory that they are not currently
+    actively using, so that it may be used by another object. For example the work
+    vectors in KSP, or the memory used for storing values in sparse matrices, see
+    src/contrib/reuse.
+
   - Currently no support for MatGetSubMatrices_SeqBDIAG()  MAT_SAME_NON_ZERO_STRUCTURE. (Satish)
 
   - Make src/sys/src/cputime.c compile and run correctly on all machines.
