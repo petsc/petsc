@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.28 2000/02/02 20:08:02 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.29 2000/02/07 16:05:43 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -42,6 +42,7 @@ int ViewerAMSSetCommName_AMS(Viewer v,const char name[])
     char dir[256];
 #if defined(PARCH_solaris)
     char buf[1024],*found;
+    FILE *fp;
 
     /* check if jacc is not already running */
     ierr  = PetscPOpen(v->comm,m,"/usr/ucb/ps -ugxww | grep jacc | grep -v grep","r",&fp);CHKERRQ(ierr);
