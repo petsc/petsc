@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.25 1996/02/13 23:29:25 bsmith Exp curfman $ */
+/* $Id: aij.h,v 1.26 1996/02/23 21:00:41 curfman Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -42,7 +42,7 @@ typedef struct {
   int              indexshift;       /* zero or -one for C or Fortran indexing */
   Mat_SeqAIJ_Inode inode;            /* identical node informaton */
   int              reallocs;         /* number of mallocs done during MatSetValues() 
-                                        as more values are set then were prealloced for */
+                                        as more values are set than were prealloced */
   PetscTruth       ilu_preserve_row_sums;
 } Mat_SeqAIJ;
 
