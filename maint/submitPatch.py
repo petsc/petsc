@@ -91,22 +91,19 @@ class Patch (object):
 
     self.help.addOption('Main', 'help', nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
     self.help.addOption('Main', 'h',    nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
-    # Actions
-    self.help.addOption('Main', 'updateVersion',   nargs.ArgBool(None, 1, 'Update petscversion.h'))
-    self.help.addOption('Main', 'pushChange',      nargs.ArgBool(None, 1, 'Push changes'))
-    self.help.addOption('Main', 'makePatch',       nargs.ArgBool(None, 1, 'Construct the patch for Petsc'))
-    self.help.addOption('Main', 'makeMasterPatch', nargs.ArgBool(None, 1, 'Construct the master patch for Petsc'))
-    self.help.addOption('Main', 'integratePatch',  nargs.ArgBool(None, 1, 'Integrate changes into the Petsc development repository'))
-    self.help.addOption('Main', 'updateWeb',       nargs.ArgBool(None, 1, 'Update the patches web page'))
-    # Variables
+    self.help.addOption('Actions', 'updateVersion',   nargs.ArgBool(None, 1, 'Update petscversion.h'))
+    self.help.addOption('Actions', 'pushChange',      nargs.ArgBool(None, 1, 'Push changes'))
+    self.help.addOption('Actions', 'makePatch',       nargs.ArgBool(None, 1, 'Construct the patch for Petsc'))
+    self.help.addOption('Actions', 'makeMasterPatch', nargs.ArgBool(None, 1, 'Construct the master patch for Petsc'))
+    self.help.addOption('Actions', 'integratePatch',  nargs.ArgBool(None, 1, 'Integrate changes into the Petsc development repository'))
+    self.help.addOption('Actions', 'updateWeb',       nargs.ArgBool(None, 1, 'Update the patches web page'))
     patchDir = os.path.join('/mcs', 'ftp', 'pub', 'petsc', 'patches')
     if not os.path.isdir(patchDir): patchDir = None
-    self.help.addOption('Main', 'patchDir=<dir>', nargs.ArgDir(None, patchDir, 'The directory containing both the patch and master patch files'))
+    self.help.addOption('Variables', 'patchDir=<dir>', nargs.ArgDir(None, patchDir, 'The directory containing both the patch and master patch files'))
     # Variables necessary when some actions are excluded
-    self.help.addOption('Main', 'version=<num>',         nargs.Arg(None, None, 'The version number being patched, e.g. 2.1.0', isTemporary = 1))
-    self.help.addOption('Main', 'patchNum=<num>',        nargs.ArgInt(None, None, 'The patch number, e.g. 1', min = 1, isTemporary = 1))
-    self.help.addOption('Main', 'changeSets=[<num>...]', nargs.Arg(None, None, 'The ChangeSets which were pushed, e.g. 1.1052', isTemporary = 1))
-    self.help.addOption('Main', 'dryRun',                nargs.ArgBool(None, 0, 'Log all actions which would be taken, but do not actually do anything', isTemporary = 1))
+    self.help.addOption('Variables for missing actions', 'version=<num>',         nargs.Arg(None, None, 'The version number being patched, e.g. 2.1.0', isTemporary = 1))
+    self.help.addOption('Variables for missing actions', 'patchNum=<num>',        nargs.ArgInt(None, None, 'The patch number, e.g. 1', min = 1, isTemporary = 1))
+    self.help.addOption('Variables for missing actions', 'changeSets=[<num>...]', nargs.Arg(None, None, 'The ChangeSets which were pushed, e.g. 1.1052', isTemporary = 1))
 
     self.argDB.insertArgs(clArgs)
     return
@@ -124,11 +121,10 @@ class Patch (object):
 
   # Should use Maker.executeShellCommand() here
   def executeShellCommand(self, command, checkCommand = None):
-    '''Execute a shell command, unless -dryRun is specified'''
+    '''Execute a shell command'''
     import commands
 
     self.writeLogLine('Executing shell cmd: '+command)
-    if self.argDB['dryRun']: return ''
     (status, output) = commands.getstatusoutput(command)
     if checkCommand:
       checkCommand(command, status, output)
@@ -197,10 +193,9 @@ class Patch (object):
     else:
       self.argDB['patchNum'] = patchNum
     # Write the new petscversion.h
-    if not self.argDB['dryRun']:
-      output = file(filename, 'w')
-      output.writelines(lines)
-      output.close()
+    output = file(filename, 'w')
+    output.writelines(lines)
+    output.close()
     # Check in the new petscversion.h
     #self.executeShellCommand('bk ci -u -y"Cranked up patch level" '+filename)
     self.writeLogLine('Changed version to '+version+'.'+str(patchNum))
