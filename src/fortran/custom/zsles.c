@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.30 2001/03/28 04:09:01 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.31 2001/03/28 17:03:38 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -16,6 +16,10 @@
 #define dmmgcreate_              DMMGCREATE
 #define dmmgdestroy_             DMMGDESTROY
 #define dmmgsetup_               DMMGSETUP
+#define dmmgsetdm_               DMMGSETDM
+#define dmmgview_                DMMGVIEW
+#define dmmgsolve_               DMMGSOLVE
+#define dmmgsetusematrixfree_    DMMGSETUSEMATRIXFREE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmgdestroy_             dmmgdestroy
 #define dmmgcreate_              dmmgcreate
@@ -28,9 +32,73 @@
 #define slesgetksp_              slesgetksp
 #define slesgetoptionsprefix_    slesgetoptionsprefix
 #define slesview_                slesview
+#define dmmgsetdm_               dmmgsetdm
+#define dmmgview_                dmmgview
+#define dmmgsolve_               dmmgsolve
+#define dmmgsetusematrixfree_    dmmgsetusematrixfree
 #endif
 
 EXTERN_C_BEGIN
+
+/* ----------------------------------------------------------------------------------------------------------*/
+static int ourrhs(DMMG dmmg,Vec vec)
+{
+  int              ierr = 0;
+  (*(int (PETSC_STDCALL *)(DMMG*,Vec*,int*))(((PetscObject)dmmg->dm)->fortran_func_pointers[0]))(&dmmg,&vec,&ierr);
+  return ierr;
+}
+
+/*
+   Since DMMGSetSLES() immediately calls the matrix functions for each level we do not need to store
+  the mat() function inside the DMMG object
+*/
+static int (PETSC_STDCALL *theirmat)(DMMG*,Mat*,int*);
+static int ourmat(DMMG dmmg,Mat mat)
+{
+  int              ierr = 0;
+  (*theirmat)(&dmmg,&mat,&ierr);
+  return ierr;
+}
+
+void PETSC_STDCALL dmmgsetsles_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(DMMG*,Vec*,int*),int (PETSC_STDCALL *mat)(DMMG*,Mat*,int*),int *ierr)
+{
+  int i;
+  theirmat = mat;
+  *ierr = DMMGSetSLES(*dmmg,ourrhs,ourmat);
+  /*
+    Save the fortran rhs function in the DM on each level; ourrhs() pulls it out when needed
+  */
+  for (i=0; i<(**dmmg)->nlevels; i++) {
+    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[0] = (void (*)())rhs;
+  }
+}
+
+/* ----------------------------------------------------------------------------------------------------------*/
+
+void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,int *ierr)
+{
+  int i;
+  *ierr = DMMGSetDM(*dmmg,*dm);if (*ierr) return;
+  /* loop over the levels added a place to hang the function pointers in the DM for each level*/
+  for (i=0; i<(**dmmg)->nlevels; i++) {
+    *ierr = PetscMalloc(3*sizeof(void (*)()),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (ierr) return;
+  }
+}
+
+void PETSC_STDCALL dmmgview_(DMMG **dmmg,PetscViewer *viewer,int *ierr)
+{
+  *ierr = DMMGView(*dmmg,*viewer);
+}
+
+void PETSC_STDCALL dmmgsolve_(DMMG **dmmg,int *ierr)
+{
+  *ierr = DMMGSolve(*dmmg);
+}
+
+void PETSC_STDCALL dmmgsetusematrixfree_(DMMG **dmmg,int *ierr)
+{
+  *ierr = DMMGSetUseMatrixFree(*dmmg);
+}
 
 void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,void *user,DMMG **dmmg,int *ierr)
 {
@@ -39,6 +107,11 @@ void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,void *user,DMMG **dmm
 
 void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,int *ierr)
 {
+  int i;
+  /* loop over the levels remove the place to hang the function pointers in the DM for each level*/
+  for (i=0; i<(**dmmg)->nlevels; i++) {
+    *ierr = PetscFree(((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (ierr) return;
+  }
   *ierr = DMMGDestroy(*dmmg);
 }
 
