@@ -31,7 +31,6 @@ extern int    PCGetMethodFromOptions(PC pc,PCMETHOD *);
 extern int    PCPrintMethods(char*,char *);
 extern int    PCGetMethodFromContext(PC,PCMETHOD*);
 extern int    PCGetMethodName(PCMETHOD,char **);
-#define MAT_SAME_NONZERO_PATTERN 1
 extern int    PCSetOperators(PC,Mat,Mat,int);
 extern int    PCBJacobiSetUseTrueLocal(PC);
 extern int    PCSetVector(PC,Vec);
