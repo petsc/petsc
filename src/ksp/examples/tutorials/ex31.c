@@ -64,7 +64,7 @@ typedef struct {
   Vec             mu;      /* The dynamic viscosity \mu(T) at time n */
   Vec             kappa;   /* The thermal conductivity \kappa(T) at time n */
   PetscScalar     phi;     /* The time weighting parameter */
-  PetscReal       dt;      /* The timestep \Delta t */
+  PetscScalar     dt;      /* The timestep \Delta t */
 } UserContext;
 
 #undef __FUNCT__
@@ -729,7 +729,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat jac)
   */
   PetscScalar    values[3][3];
   PetscInt       idx[3];
-  PetscReal      hx, hy, hx2, hy2, area, phi_dt2;
+  PetscScalar    hx, hy, hx2, hy2, area,phi_dt2;
   PetscInt       i,mx,my,xm,ym,xs,ys;
   PetscInt       ne;
   const PetscInt *e;
@@ -738,8 +738,8 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat jac)
   PetscFunctionBegin;
   ierr = DAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  hx   = 1.0 / (PetscReal)(mx-1);
-  hy   = 1.0 / (PetscReal)(my-1);
+  hx   = 1.0 / (mx-1);
+  hy   = 1.0 / (my-1);
   area = 0.5*hx*hy;
   phi_dt2 = user->phi*user->dt*user->dt;
   hx2     = hx*hx/area*phi_dt2;

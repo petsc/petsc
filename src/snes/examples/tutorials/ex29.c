@@ -235,7 +235,7 @@ int main(int argc,char **argv)
       ierr = VecDuplicate(dmmg[i]->x, &user[i].Xold);CHKERRQ(ierr);
       user[i].tsCtx = &tsCtx;
       user[i].param = &param;
-      DMMGSetUser(dmmg,i,&user[i]);
+      ierr = DMMGSetUser(dmmg,i,&user[i]);CHKERRQ(ierr);
     }
     
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
