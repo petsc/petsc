@@ -1,4 +1,4 @@
-/*$Id: petscfix.h,v 1.100 2000/01/11 20:57:57 bsmith Exp $*/
+/*$Id: petscfix.h,v 1.1 2000/07/21 14:08:11 balay Exp balay $*/
 
 /*
     This fixes various things in system files that are incomplete, for 
@@ -24,7 +24,6 @@ typedef struct rusage* s_rusage;
 /* -----------------------DEC alpha ----------------------------------------*/
 #if defined(__cplusplus)
 extern "C" {
-extern int    getdomainname(char *,int);
 extern unsigned int sleep (unsigned int);
 }
 #else
