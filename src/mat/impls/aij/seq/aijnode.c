@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.25 1995/12/21 19:58:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: aijnode.c,v 1.26 1996/01/05 00:17:48 curfman Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -333,11 +333,13 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 int Mat_AIJ_CheckInode(Mat A)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size;
+  int        ierr, flg, i, j, m, nzx, nzy, *idx, *idy, *ns,*ii, node_count, blk_size;
 
   /* Notes: We set a->inode.limit=5 in MatCreateSeqAIJ(). */
-  if (OptionsHasName(PETSC_NULL,"-mat_aij_no_inode")) return 0;
-  OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode", &flg); CHKERRQ(ierr);
+  if (flg) return 0;
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit, \
+                       &flg);  CHKERRQ(ierr);
   if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
   m = a->m;        
   if (!a->inode.size && m){
