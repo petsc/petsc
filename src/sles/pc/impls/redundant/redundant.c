@@ -1,4 +1,4 @@
-/*$Id: redundant.c,v 1.19 2000/05/04 14:04:16 balay Exp balay $*/
+/*$Id: redundant.c,v 1.20 2000/05/05 22:17:21 balay Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 
@@ -25,24 +25,26 @@ static int PCView_Redundant(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
-    if (isascii) {
-      ierr = ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
+    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    if (!rank) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
       ierr = PCView(red->pc,sviewer);CHKERRQ(ierr);
-      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    } else if (isstring) {
-      ierr = ViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
-      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-      ierr = PCView(red->pc,sviewer);CHKERRQ(ierr);
-      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(1,1,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
     }
+    ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+  } else if (isstring) {
+    ierr = ViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
+    ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = PCView(red->pc,sviewer);CHKERRQ(ierr);
+    }
+    ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,1,"Viewer type %s not supported for PC redundant",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -241,6 +243,96 @@ int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }  
 
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCRedundantGetPC_Redundant"
+int PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
+{
+  PC_Redundant *red = (PC_Redundant*)pc->data;
+  int          ierr;
+
+  PetscFunctionBegin;
+  *innerpc = red->pc;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCRedundantGetPC"
+/*@
+   PCRedundantGetPC - Gets the sequential PC created by the redundant PC.
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  innerpc - the sequential PC 
+
+   Level: advanced
+
+.keywords: PC, redundant solve
+@*/
+int PCRedundantGetPC(PC pc,PC *innerpc)
+{
+  int ierr,(*f)(PC,PC*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetPC_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,innerpc);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}  
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCRedundantGetOperators_Redundant"
+int PCRedundantGetOperators_Redundant(PC pc,Mat *mat,Mat *pmat)
+{
+  PC_Redundant *red = (PC_Redundant*)pc->data;
+  int          ierr;
+
+  PetscFunctionBegin;
+  if (mat)  *mat  = red->mats[0];
+  if (pmat) *pmat = red->pmats[0];
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCRedundantGetOperators"
+/*@
+   PCRedundantGetOperators - gets the sequential matrix and preconditioner matrix
+
+   Not Collective
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
++  mat - the matrix
+-  pmat - the (possibly different) preconditioner matrix
+
+   Level: advanced
+
+.keywords: PC, redundant solve
+@*/
+int PCRedundantGetOperators(PC pc,Mat *mat,Mat *pmat)
+{
+  int ierr,(*f)(PC,Mat*,Mat*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantGetOperators_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,mat,pmat);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}  
+
 /* -------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -277,6 +369,10 @@ int PCCreate_Redundant(PC pc)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
                     PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetPC_C","PCRedundantGetPC_Redundant",
+                    PCRedundantGetPC_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetOperators_C","PCRedundantGetOperators_Redundant",
+                    PCRedundantGetOperators_Redundant);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.101 2000/05/29 21:59:14 bsmith Exp balay $ */
+/* $Id: petscpc.h,v 1.102 2000/06/08 15:18:29 balay Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -124,6 +124,7 @@ EXTERN int PCLUSetReuseOrdering(PC,PetscTruth);
 EXTERN int PCLUSetReuseFill(PC,PetscTruth);
 EXTERN int PCLUSetUseInPlace(PC);
 EXTERN int PCLUSetFill(PC,double);
+EXTERN int PCLUSetDamping(PC,double);
 EXTERN int PCLUSetColumnPivoting(PC,PetscReal);
 
 EXTERN int PCILUSetMatOrdering(PC,MatOrderingType);
@@ -150,7 +151,8 @@ EXTERN int PCCompositeAddPC(PC,PCType);
 EXTERN int PCCompositeGetPC(PC pc,int n,PC *);
 
 EXTERN int PCRedundantSetScatter(PC,VecScatter,VecScatter);
-
+EXTERN int PCRedundantGetOperators(PC,Mat*,Mat*);
+EXTERN int PCRedundantGetPC(PC,PC*);
 
 #endif
 
