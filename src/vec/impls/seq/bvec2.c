@@ -280,20 +280,12 @@ int VecView_Seq_Matlab(Vec vec,PetscViewer viewer)
 {
   int         ierr,n;
   PetscScalar *array;
-  mxArray     *mat;
   
   PetscFunctionBegin;
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-  mat  = mxCreateDoubleMatrix(n,1,mxREAL);
-#else
-  mat  = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
-#endif
-  ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName((PetscObject)vec);CHKERRQ(ierr);
-  PetscViewerMatlabPutVariable(viewer,vec->name,mat);
-  
+  ierr = PetscViewerMatlabPutArray(viewer,n,1,array,vec->name);CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

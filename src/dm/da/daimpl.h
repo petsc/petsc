@@ -127,7 +127,6 @@ struct _p_DA {
             nearest neighbor timestepping.
 */
 
-EXTERN int DAView_Binary(DA,PetscViewer);
 EXTERN_C_BEGIN
 EXTERN int VecView_MPI_DA(Vec,PetscViewer);
 EXTERN int VecLoadIntoVector_Binary_DA(PetscViewer,Vec);

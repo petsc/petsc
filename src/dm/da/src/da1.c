@@ -18,14 +18,13 @@ EXTERN_C_END
 int DAView_1d(DA da,PetscViewer viewer)
 {
   int        rank,ierr;
-  PetscTruth isascii,isdraw,isbinary;
+  PetscTruth isascii,isdraw;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
                  da->m,da->w,da->s);CHKERRQ(ierr);
@@ -78,8 +77,6 @@ int DAView_1d(DA da,PetscViewer viewer)
 
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  } else if (isbinary) {
-    ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for DA 1d",((PetscObject)viewer)->type_name);
   }

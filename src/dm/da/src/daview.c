@@ -11,6 +11,113 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 #endif
 
+
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+#include "mat.h"   /* Matlab include file */
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAView_Matlab"
+int DAView_Matlab(DA da,PetscViewer viewer)
+{
+  int            rank,ierr;
+  int            dim,m,n,p,dof,swidth;
+  DAStencilType  stencil;
+  DAPeriodicType periodic;
+  mxArray        *mx;
+  char           *fnames[] = {"dimension","m","n","p","dof","stencil_width","periodicity","stencil_type"};
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
+  if (rank) PetscFunctionReturn(0);
+
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
+
+  mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
+  if (!mx) SETERRQ(1,"Unable to generate Matlab struct array to hold DA informations");
+  mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
+  mxSetFieldByNumber(mx,0,1,mxCreateDoubleScalar((double)m));
+  mxSetFieldByNumber(mx,0,2,mxCreateDoubleScalar((double)n));
+  mxSetFieldByNumber(mx,0,3,mxCreateDoubleScalar((double)p));
+  mxSetFieldByNumber(mx,0,4,mxCreateDoubleScalar((double)dof));
+  mxSetFieldByNumber(mx,0,5,mxCreateDoubleScalar((double)swidth));
+  mxSetFieldByNumber(mx,0,6,mxCreateDoubleScalar((double)periodic));
+  mxSetFieldByNumber(mx,0,7,mxCreateDoubleScalar((double)stencil));
+
+  ierr = PetscObjectName((PetscObject)da);CHKERRQ(ierr);
+  ierr = PetscViewerMatlabPutVariable(viewer,da->name,mx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAView_Binary"
+int DAView_Binary(DA da,PetscViewer viewer)
+{
+  int            rank,ierr;
+  int            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
+  DAStencilType  stencil;
+  DAPeriodicType periodic;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    FILE *file;
+
+    ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+    if (file) {
+      char           fieldname[256];
+
+      fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
+      for (i=0; i<dof; i++) {
+        if (da->fieldname[i]) {
+          ierr = PetscStrncpy(fieldname,da->fieldname[i],256);CHKERRQ(ierr);
+          ierr = PetscStrlen(fieldname,&len);CHKERRQ(ierr);
+          len  = PetscMin(256,len);CHKERRQ(ierr);
+          for (j=0; j<len; j++) {
+            if (fieldname[j] == ' ') fieldname[j] = '_';
+          }
+          fprintf(file,"-daload_fieldname_%d %s\n",i,fieldname);
+        }
+      }
+      if (da->coordinates) { /* save the DA's coordinates */
+        fprintf(file,"-daload_coordinates\n");
+      }
+    }
+  } 
+
+  /* save the coordinates if they exist to disk (in the natural ordering) */
+  if (da->coordinates) {
+    DA  dac;
+    int *lx,*ly,*lz;
+    Vec natural;
+
+    /* create the appropriate DA to map to natural ordering */
+    ierr = DAGetOwnershipRange(da,&lx,&ly,&lz);CHKERRQ(ierr);
+    if (dim == 1) {
+      ierr = DACreate1d(comm,DA_NONPERIODIC,m,dim,0,lx,&dac);CHKERRQ(ierr); 
+    } else if (dim == 2) {
+      ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,M,N,dim,0,lx,ly,&dac);CHKERRQ(ierr); 
+    } else if (dim == 3) {
+      ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
+    } else {
+      SETERRQ1(1,"Dimension is not 1 2 or 3: %d\n",dim);
+    }
+    ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalBegin(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalEnd(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
+    ierr = VecView(natural,viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(natural);CHKERRQ(ierr);
+    ierr = DADestroy(dac);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DAView"
 /*@C
@@ -71,7 +178,10 @@ EXTERN_C_END
 int DAView(DA da,PetscViewer viewer)
 {
   int        ierr,i,dof = da->w;
-  PetscTruth isascii,fieldsnamed = PETSC_FALSE;
+  PetscTruth isascii,fieldsnamed = PETSC_FALSE,isbinary;
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  PetscTruth ismatlab;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -79,6 +189,10 @@ int DAView(DA da,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
+#endif
   if (isascii) {
     for (i=0; i<dof; i++) {
       if (da->fieldname[i]) {
@@ -98,7 +212,15 @@ int DAView(DA da,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
   }
-  ierr = (*da->ops->view)(da,viewer);CHKERRQ(ierr);
+  if (isbinary){
+    ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  } else if (ismatlab) {
+    ierr = DAView_Matlab(da,viewer);CHKERRQ(ierr);
+#endif
+  } else {
+    ierr = (*da->ops->view)(da,viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }  
 
@@ -205,72 +327,3 @@ int DAGetLocalInfo(DA da,DALocalInfo *info)
   PetscFunctionReturn(0);
 }  
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "DAView_Binary"
-int DAView_Binary(DA da,PetscViewer viewer)
-{
-  int            rank,ierr;
-  int            i,j,len,dim,m,n,p,dof,swidth,M,N,P;
-  DAStencilType  stencil;
-  DAPeriodicType periodic;
-  MPI_Comm       comm;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-
-  ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank) {
-    FILE *file;
-
-    ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-    if (file) {
-      char           fieldname[256];
-
-      fprintf(file,"-daload_info %d,%d,%d,%d,%d,%d,%d,%d\n",dim,m,n,p,dof,swidth,stencil,periodic);
-      for (i=0; i<dof; i++) {
-        if (da->fieldname[i]) {
-          ierr = PetscStrncpy(fieldname,da->fieldname[i],256);CHKERRQ(ierr);
-          ierr = PetscStrlen(fieldname,&len);CHKERRQ(ierr);
-          len  = PetscMin(256,len);CHKERRQ(ierr);
-          for (j=0; j<len; j++) {
-            if (fieldname[j] == ' ') fieldname[j] = '_';
-          }
-          fprintf(file,"-daload_fieldname_%d %s\n",i,fieldname);
-        }
-      }
-      if (da->coordinates) { /* save the DA's coordinates */
-        fprintf(file,"-daload_coordinates\n");
-      }
-    }
-  } 
-
-  /* save the coordinates if they exist to disk (in the natural ordering) */
-  if (da->coordinates) {
-    DA  dac;
-    int *lx,*ly,*lz;
-    Vec natural;
-
-    /* create the appropriate DA to map to natural ordering */
-    ierr = DAGetOwnershipRange(da,&lx,&ly,&lz);CHKERRQ(ierr);
-    if (dim == 1) {
-      ierr = DACreate1d(comm,DA_NONPERIODIC,m,dim,0,lx,&dac);CHKERRQ(ierr); 
-    } else if (dim == 2) {
-      ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,M,N,dim,0,lx,ly,&dac);CHKERRQ(ierr); 
-    } else if (dim == 3) {
-      ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
-    } else {
-      SETERRQ1(1,"Dimension is not 1 2 or 3: %d\n",dim);
-    }
-    ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
-    ierr = DAGlobalToNaturalBegin(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = DAGlobalToNaturalEnd(dac,da->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = VecView(natural,viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(natural);CHKERRQ(ierr);
-    ierr = DADestroy(dac);CHKERRQ(ierr);
-  }
-
-  PetscFunctionReturn(0);
-}

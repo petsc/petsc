@@ -53,6 +53,7 @@ int main(int argc,char **argv)
   ierr = DAView(da,viewer);CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  ierr = DAView(da,mviewer);CHKERRQ(ierr);
   ierr = VecView(global,mviewer);CHKERRQ(ierr);
 #endif
 
