@@ -84,14 +84,18 @@ class PetscMake(bs.BS):
                                                    serverCxxAction,
                                                    link.TagLibrary(),
                                                    link.LinkSharedLibrary(extraLibraries=self.filesets['babelLib'])])
+    self.targets['pythonModuleFixup'] = target.Target(None,
+                                                      [transform.FileFilter(lambda source: source[-2:] == '.c'),
+                                                       babel.PythonModuleFixup(self.filesets['pythonClientLib'], self.directories['pythonClientSource'])])
     self.targets['pythonClientCompile'] = target.Target(self.filesets['pythonClientSource'],
-                                                  [compile.TagC(),
-                                                   transform.FileFilter(self.isPythonStub, tags = ['c', 'old c']),
-                                                   pythonClientCAction,
-                                                   link.TagLibrary(),
-                                                   link.LinkSharedLibrary(extraLibraries=self.filesets['babelLib'])])
-    self.targets['pythonModuleFixup'] = target.Target(fileset.ExtensionFileSet(self.directories['pythonClientSource'], '.c'),
-                                                      [babel.PythonModuleFixup(self.filesets['pythonClientLib'], self.directories['pythonClientSource'])])
+                                                        (self.targets['pythonModuleFixup'],
+                                                         [compile.TagC(),
+                                                          transform.FileFilter(self.isPythonStub, tags = ['c', 'old c']),
+                                                          pythonClientCAction,
+                                                          link.TagLibrary(),
+                                                          link.LinkSharedLibrary(extraLibraries=self.filesets['babelLib'])]))
+    self.targets['default'] = target.Target(None,
+                                            [(self.targets['serverCompile'], self.targets['pythonClientCompile'])])
 
   def isImpl(self, source):
     if self.implRE.match(os.path.dirname(source)): return 1
