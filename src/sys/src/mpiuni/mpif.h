@@ -1,3 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: gcreate.c,v 1.60 1995/12/12 22:55:20 curfman Exp $";
+#endif
+
 C     Trying to provide as little support for fortran code in petsc as needed
 
 c     External objects outside of MPI calls 

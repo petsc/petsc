@@ -1,3 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: gcreate.c,v 1.60 1995/12/12 22:55:20 curfman Exp $";
+#endif
+
 /*
  * This is a special set of bindings for uni-processor use of MPI
  * This is UNDER CONSTRUCTION

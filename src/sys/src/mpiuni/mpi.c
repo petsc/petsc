@@ -1,5 +1,15 @@
-#include "petsc.h"
-#include "pinclude/petscfix.h"
+#ifndef lint
+static char vcid[] = "$Id: gcreate.c,v 1.60 1995/12/12 22:55:20 curfman Exp $";
+#endif
+
+#include "petsc.h"               /*I   "petsc.h"   I*/
+#include <signal.h> 
+#include <stdio.h>
+#include <unistd.h>
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#include "pinclude/petscfix.h" 
 #define MPI_SUCCESS 0
 void * MPID_TMP  = 0;
 double MPID_DUMMY =0;
@@ -140,33 +150,33 @@ double MPI_WTIME()
 /*******mpi_abort******/
 void mpi_abort(MPI_Comm *comm, int *errorcode, int *ierr) 
 {
-  fprintf(stderr,"[0] Aborting program!\n");
-  abort();
+  PetscError(__LINE__,__DIR__,__FILE__,*errorcode,"[0] Aborting program!");
+  exit(*errorcode); 
   *ierr = MPI_SUCCESS;
 }
 
 void mpi_abort_(MPI_Comm *comm, int *errorcode, int *ierr) 
 {
-  fprintf(stderr,"[0] Aborting program!\n");
-  abort();
+  PetscError(__LINE__,__DIR__,__FILE__,*errorcode,"[0] Aborting program!");
+  exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 
 void mpi_abort__(MPI_Comm *comm, int *errorcode, int *ierr) 
 {
-  fprintf(stderr,"[0] Aborting program!\n");
-  abort();
+  PetscError(__LINE__,__DIR__,__FILE__,*errorcode,"[0] Aborting program!");
+  exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 
 void MPI_ABORT(MPI_Comm *comm, int *errorcode, int *ierr) 
 {
-  fprintf(stderr,"[0] Aborting program!\n");
-  abort();
+  PetscError(__LINE__,__DIR__,__FILE__,*errorcode,"[0] Aborting program!");
+  exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 
-  
+
 #if defined(__cplusplus)
 }
 #endif
