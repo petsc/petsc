@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.29 1997/05/02 19:09:09 bsmith Exp balay $";
+static char vcid[] = "$Id: xinit.c,v 1.30 1997/07/09 20:58:00 balay Exp bsmith $";
 #endif
 
 /* 
@@ -52,16 +52,23 @@ int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
     XiWin->depth  = DefaultDepth(XiWin->disp,XiWin->screen);
     if (!cmap) XiWin->cmap  = DefaultColormap( XiWin->disp, XiWin->screen );
     else       XiWin->cmap  = cmap;
+    PLogInfo(0,"Opening default visual X window\n");
   }
   else {
-    /* Try to match to some popular types */
     XVisualInfo vinfo;
-    if (XMatchVisualInfo(XiWin->disp,XiWin->screen,24,DirectColor,&vinfo)) {
+    /* Try to match to some popular types */
+    /*
+       This does not work on the SGI machines for some reason, should fix it
+
+      if (XMatchVisualInfo(XiWin->disp,XiWin->screen,24,DirectColor,&vinfo)) {
       XiWin->vis    = vinfo.visual;
       XiWin->depth  = 24;
       nc            = 256;
+      PLogInfo(0,"Opening direct color 24 bit X window\n");
     }
-    else if (XMatchVisualInfo(XiWin->disp,XiWin->screen,8,PseudoColor,&vinfo)){
+    else */
+
+     if (XMatchVisualInfo(XiWin->disp,XiWin->screen,8,PseudoColor,&vinfo)){
       XiWin->vis    = vinfo.visual;
       XiWin->depth  = 8;
       nc            = 256;
