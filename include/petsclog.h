@@ -260,7 +260,7 @@ EXTERN int EventLogGetEvent(EventLog, int, int *);
 
      It does not work with Windows NT because winmpich lacks MPI_Type_size()
 */
-#if !defined(HAVE_MPI_UNI) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(PETSC_HAVE_MPI_UNI) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
 /*
    Logging of MPI activities
 */
