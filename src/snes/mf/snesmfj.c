@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.68 1998/10/26 01:03:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.69 1998/10/26 03:26:40 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -12,8 +12,8 @@ typedef struct {  /* default context for matrix-free SNES */
   PCNullSpace sp;        /* null space context */
   double      error_rel; /* square root of relative error in computing function */
   double      umin;      /* minimum allowable u'a value relative to |u|_1 */
-  double      currenth;  /* last differencing parameter used */
-  double      *historyh; /* history of h */
+  Scalar      currenth;  /* last differencing parameter used */
+  Scalar      *historyh; /* history of h */
   int         ncurrenth,maxcurrenth; 
 } MFCtx_Private;
 
@@ -172,7 +172,11 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
 
   /* keep a record of the current differencing parameter h */  
   ctx->currenth = h;
+#if defined(USE_PETSC_COMPLEX)
+  PLogInfo(mat,"Current differencing parameter: %g + %g i\n",PetscReal(h),PetscImaginary(h));
+#else
   PLogInfo(mat,"Current differencing parameter: %g\n",h);
+#endif
   if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) {
     ctx->historyh[ctx->ncurrenth++] = h;
   }
@@ -191,9 +195,9 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESDefaultMatrixFreeMatCreate"
+#define __FUNC__ "SNESDefaultMatrixFreeCreate"
 /*@C
-   SNESDefaultMatrixFreeMatCreate - Creates a matrix-free matrix
+   SNESDefaultMatrixFreeCreate - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as
    the Jacobian argument for the routine SNESSetJacobian().
 
@@ -220,7 +224,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
      umin = minimum iterate parameter
 .ve
 
-   The user can set these parameters via SNESSetMatrixFreeParameters().
+   The user can set these parameters via SNESDefaultMatrixFreeSetParameters().
    See the nonlinear solvers chapter of the users manual for details.
 
    The user should call MatDestroy() when finished with the matrix-free
@@ -232,9 +236,9 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
 
 .keywords: SNES, default, matrix-free, create, matrix
 
-.seealso: MatDestroy(), SNESSetMatrixFreeParameters()
+.seealso: MatDestroy(), SNESDefaultMatrixFreeSetParameters()
 @*/
-int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
+int SNESDefaultMatrixFreeCreate(SNES snes,Vec x, Mat *J)
 {
   MPI_Comm      comm;
   MFCtx_Private *mfctx;
@@ -276,31 +280,29 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetMatrixFreeH"
+#define __FUNC__ "SNESDefaultMatrixFreeGetH"
 /*@
-   SNESGetMatrixFreeH - Gets the last h that was used as the differencing 
+   SNESDefaultMatrixFreeGetH - Gets the last h that was used as the differencing 
      parameter.
 
    Not Collective
 
    Input Parameters:
-.  snes - the SNES context
+.   mat - the matrix obtained with SNESDefaultMatrixFreeCreate()
 
    Output Paramter:
 .  h - the differencing step size
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: SNESDefaultMatrixFreeMatCreate()
+.seealso: SNESDefaultMatrixFreeCreate()
 @*/
-int SNESGetMatrixFreeH(SNES snes,double *h)
+int SNESDefaultMatrixFreeGetH(Mat mat,Scalar *h)
 {
   MFCtx_Private *ctx;
   int           ierr;
-  Mat           mat;
 
   PetscFunctionBegin;
-  ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   if (ctx) {
     *h = ctx->currenth;
@@ -309,14 +311,14 @@ int SNESGetMatrixFreeH(SNES snes,double *h)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeKSPDefaultMonitor"
+#define __FUNC__ "SNESDefaultMatrixFreeKSPMonitor"
 /*
-   SNESMatrixFreeKSPDefaultMonitor - A KSP monitor for use with the default PETSc
+   SNESDefaultMatrixFreeKSPMonitor - A KSP monitor for use with the default PETSc
       SNES matrix free routines. Prints the h differencing parameter used at each
       timestep.
 
 */
-int SNESMatrixFreeKSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
+int SNESDefaultMatrixFreeKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
 {
   PC            pc;
   MFCtx_Private *ctx;
@@ -332,7 +334,12 @@ int SNESMatrixFreeKSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
   ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   if (n > 0 || nonzeroinitialguess) {
+#if defined(USE_PETSC_COMPLEX)
+    PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
+                PetscReal(ctx->currenth),PetscImaginary(ctx->currenth)); 
+#else
     PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g \n",n,rnorm,ctx->currenth); 
+#endif
   } else {
     PetscPrintf(comm,"%d KSP Residual norm %14.12e\n",n,rnorm); 
   }
@@ -340,15 +347,15 @@ int SNESMatrixFreeKSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetMatrixFreeParameters"
+#define __FUNC__ "SNESDefaultMatrixFreeSetParameters"
 /*@
-   SNESSetMatrixFreeParameters - Sets the parameters for the approximation of
+   SNESDefaultMatrixFreeSetParameters - Sets the parameters for the approximation of
    matrix-vector products using finite differences.
 
-   Collective on SNES
+   Collective on Mat
 
    Input Parameters:
-+  snes - the SNES context
++  mat - the matrix free matrix created via SNESDefaultMatrixFreeCreate()
 .  error_rel - relative error (should be set to the square root of
                the relative error in the function evaluations)
 -  umin - minimum allowable u-value
@@ -367,16 +374,14 @@ int SNESMatrixFreeKSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: SNESDefaultMatrixFreeMatCreate()
+.seealso: SNESDefaultMatrixFreeCreate()
 @*/
-int SNESSetMatrixFreeParameters(SNES snes,double error,double umin)
+int SNESDefaultMatrixFreeSetParameters(Mat mat,double error,double umin)
 {
   MFCtx_Private *ctx;
   int           ierr;
-  Mat           mat;
 
   PetscFunctionBegin;
-  ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
   if (ctx) {
     if (error != PETSC_DEFAULT) ctx->error_rel = error;
@@ -386,9 +391,9 @@ int SNESSetMatrixFreeParameters(SNES snes,double error,double umin)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESDefaultMatrixFreeMatAddNullSpace"
+#define __FUNC__ "SNESDefaultMatrixFreeAddNullSpace"
 /*@
-   SNESDefaultMatrixFreeMatAddNullSpace - Provides a null space that 
+   SNESDefaultMatrixFreeAddNullSpace - Provides a null space that 
    an operator is supposed to have.  Since roundoff will create a 
    small component in the null space, if you know the null space 
    you may have it automatically removed.
@@ -404,7 +409,7 @@ int SNESSetMatrixFreeParameters(SNES snes,double error,double umin)
 
 .keywords: SNES, matrix-free, null space
 @*/
-int SNESDefaultMatrixFreeMatAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
+int SNESDefaultMatrixFreeAddNullSpace(Mat J,int has_cnst,int n,Vec *vecs)
 {
   int           ierr;
   MFCtx_Private *ctx;
