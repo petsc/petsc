@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: search.c,v 1.17 1997/12/01 01:56:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: search.c,v 1.18 1998/12/03 04:05:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -75,6 +75,7 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
   double    two = 2.0, zero = 0.0;
   int       bound;
 
+  PetscFunctionBegin;
   /* Check the input parameters for errors */
   neP->infoc = 0;
   if (neP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty))))

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.21 1999/06/30 23:49:24 balay Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.22 1999/09/19 15:51:52 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
@@ -118,9 +118,11 @@ int PetscStackView(Viewer viewer)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStackDestroy"
+/*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 int PetscStackDestroy(void) 
 {
   int ierr;
+
 #if defined(PETSC_HAVE_AMS)
   ierr = PetscStackDepublish();CHKERRQ(ierr);
 #endif
@@ -134,6 +136,7 @@ int PetscStackDestroy(void)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStackCopy"
+/*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 int PetscStackCopy(PetscStack* sint,PetscStack* sout)
 {
   int i;
@@ -152,9 +155,9 @@ int PetscStackCopy(PetscStack* sint,PetscStack* sout)
   return 0;
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "PetscStackPrint"
+/*  PetscFunctionBegin;  so that make rule checkbadPetscFunctionBegin works */
 int PetscStackPrint(PetscStack* sint,FILE *fp)
 {
   int i;
@@ -168,25 +171,41 @@ int PetscStackPrint(PetscStack* sint,FILE *fp)
 }
 
 #else
+#undef __FUNC__  
+#define __FUNC__ "PetscStackPublish"
 int PetscStackPublish(void)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
+#undef __FUNC__  
+#define __FUNC__ "PetscStackDepublish"
 int PetscStackDepublish(void)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
+#undef __FUNC__  
+#define __FUNC__ "PetscStackCreate"
 int PetscStackCreate(void)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
+#undef __FUNC__  
+#define __FUNC__ "PetscStackView"
 int PetscStackView(Viewer viewer)
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
+#undef __FUNC__  
+#define __FUNC__ "PetscStackDestroy"
 int PetscStackDestroy(void) 
 {
-  return 0;
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #endif
+

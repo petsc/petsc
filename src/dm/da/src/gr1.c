@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.12 1999/05/12 03:34:00 bsmith Exp balay $";
+static char vcid[] = "$Id: gr1.c,v 1.13 1999/06/08 22:58:32 balay Exp bsmith $";
 #endif
 
 /* 
@@ -9,6 +9,8 @@ static char vcid[] = "$Id: gr1.c,v 1.12 1999/05/12 03:34:00 bsmith Exp balay $";
 
 #include "da.h"      /*I  "da.h"   I*/
 
+#undef __FUNC__  
+#define __FUNC__ "DACreateUniformCoordinates"
 int DACreateUniformCoordinates(DA da,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
 {
   int            i,j,ierr,M,N,P,istart,isize,jstart,jsize,dim,cnt;

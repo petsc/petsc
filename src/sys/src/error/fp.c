@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.57 1999/07/14 21:55:12 balay Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.58 1999/07/15 14:50:33 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -145,6 +145,8 @@ void PetscDefaultFPTrap(int sig, siginfo_t *scp,ucontext_t *uap)
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
 {
   char *out; 
@@ -247,6 +249,7 @@ void PetscDefaultFPTrap(int sig)
 
   PetscFunctionBegin;
   ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
+  PetscFunctionReturn(ierr);
 }
 
 #undef __FUNC__  

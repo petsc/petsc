@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.58 1999/05/04 20:38:08 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.59 1999/05/12 03:34:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -153,9 +153,6 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 }
 
 EXTERN_C_BEGIN
-
-#undef __FUNC__  
-#define __FUNC__ "aliceinitialize"
 /*
     aliceinitialize - Version called from Fortran.
 
@@ -278,16 +275,12 @@ void alicefinalize_(int *__ierr)
 
   *__ierr = AliceFinalize();
 }
-
 EXTERN_C_END
 
 /* -----------------------------------------------------------------------------------------------*/
 
 
 EXTERN_C_BEGIN
-
-#undef __FUNC__  
-#define __FUNC__ "petscinitialize"
 /*
     petscinitialize - Version called from Fortran.
 
@@ -319,5 +312,4 @@ void petscsetcommworld_(MPI_Comm *comm,int *__ierr)
 {
   *__ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *comm )  );
 }
-
 EXTERN_C_END
