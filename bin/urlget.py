@@ -1,5 +1,5 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.14 1998/02/27 17:10:47 balay Exp balay $ 
+# $Id: urlget.py,v 1.15 1998/03/04 16:43:14 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -7,151 +7,192 @@
 #      urlget.py ftp://hostname/directoryname/file [local filename]
 #
 import urllib
-import urlparse
-import sys
 import os
-import re
-import tempfile
 import ftplib
 import httplib
 from exceptions import *
+from sys import *
 
-# Given a url, create a unique filename 
-def urltofile(url) :
-    from string import *
-    from urlparse import *
-    url_split = urlparse(urlunparse(urlparse(url)))
-    return replace(join(url_split[0:3],'@'),'/','_')
+# Defines a meta class, wose member functions are common/required
+# by ftp/http object classes
+class url_object:
+    def gettime(): 
+        print 'Error Derived function should be implemented'
+        exit()
+    def getfile(filename):
+        print 'Error Derived function should be implemented'
+        exit()
+
+class ftp_object(url_object):
+    def __init__(self,machine,urlpath):
+        self.machine = machine
+        self.urlpath = urlpath
+        self.buf     = ''
+        self.ftp     = ftplib.FTP(self.machine)
+        self.ftp.login()
+
+    def __del__(self):
+        self.ftp.close()
+
+    def readftplines(self,buf1):
+        self.buf   = self.buf + buf1
+
+    def gettime(self):
+        from string import *
+        from time import *
+        
+        self.buf       = ''
+        self.ftp.retrlines('LIST ' +self.urlpath,self.readftplines)
+        month,day,year = split(self.buf)[5:8]
+        hour,min       = '0','0'
+
+        if len(split(year,':')) >=2:
+            hour,min   = split(year,':')
+            year       = gmtime(time())[0]
+        else:
+            year = atoi(year)
+
+        month_d = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,
+                   'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
+
+        newtime = mktime((year,month_d[month],atoi(day),atoi(hour),
+                          atoi(min),0,-1,-1,0))
+        c_time  = time()
+        if newtime > c_time:
+            newtime = mktime((year-1,month_d[month],atoi(day),
+                              atoi(hour),atoi(min),0,-1,-1,0))
+        self.remotetime = newtime - timezone
+        return self.remotetime
     
-# Get the timestamp of the URL from the ftp server
-# and convert it to a timestamp useable by utime()
-def getftptimestamp(ftp,filename) :
-    from string import *
-    from time import *
-    global buf
-    buf = ''
-    def readftplines(buf1) :
-        global buf
-        buf        = buf + buf1
-    ftp.retrlines('LIST ' +filename,readftplines)
-    month,day,year = split(buf)[5:8]
-    hour,min       = '0','0'
-    if len(split(year,':')) >=2 :
-        hour,min   = split(year,':')
-        year       = gmtime(time())[0]
-    month_d = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,\
-               'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
-    newtime = mktime((atoi(year),month_d[month],atoi(day),atoi(hour),atoi(min),0,-1,-1,0))
-    c_time  = time()
-    if newtime > c_time:
-        newtime = mktime((atoi(year)-1,month_d[month],atoi(day),atoi(hour),atoi(min),0,-1,-1,0))
-    return newtime - timezone
+    def writefile(self,buf):
+        self.fp.write(buf)
 
-# Convert the Timestamp returned by the http server to a value useable by utime()     
-def geturltimestamp(date) :
-    from string import *
-    from time import *
-    month_d             = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,\
-                           'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
-    day,month,year,time = split(date)[1:-1] 
-    hour,min,sec        = split(time,':')
-    newtime             = (atoi(year),month_d[month],atoi(day),atoi(hour),atoi(min),\
-                           atoi(sec),-1,-1,0)
-    return mktime(newtime) - timezone
+    def getfile(self,outfilename):
+        self.fp  = open(outfilename,'w')
+        self.ftp.retrbinary('RETR '+ self.urlpath,self.writefile)
+        self.fp.close()
 
-def main() :
-    # Set the temp dir location as /tmp
-    tempfile.tempdir='/tmp'
-    arg_len = len(sys.argv)
 
-    if arg_len < 2 : 
+class http_object(url_object):
+    def __init__(self,machine,urlpath):
+        self.machine = machine
+        self.urlpath = urlpath
+        self.http    = httplib.HTTP(machine)
+
+        self.http.putrequest('GET',self.urlpath)
+        self.http.putheader('Accept','*/*')
+        self.http.endheaders()
+        errcode, errmesg, self.headers = self.http.getreply()
+        if errcode != 200:
+            print 'Error! Accessing url on the server.',errcode,errmesg
+            self.http.close()
+            exit()
+        filesize   = self.headers.dict['content-length']
+        if filesize < 2000 :
+            print 'Error! Accessing url on the server. bytes-received :',filesize
+            self.http.close()
+            exit()
+
+    def __del__(self):
+        self.http.close()
+
+
+    def gettime(self):
+        from string import *
+        from time import *
+
+        # Get the remote timestamps
+        urltimestamp = self.headers.dict['last-modified']
+        month_d             = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,
+                               'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
+        day,month,year,time = split(urltimestamp)[1:-1] 
+        hour,min,sec        = split(time,':')
+        newtime             = (atoi(year),month_d[month],atoi(day),atoi(hour),
+                               atoi(min),atoi(sec),-1,-1,0)
+        self.remotetime     = mktime(newtime) - timezone
+        return self.remotetime
+
+    def getfile(self,outfilename):
+        #read the data
+        f    = self.http.getfile()
+        data = f.read()
+        f.close()
+        # Now write this data to a file
+        fp = open(outfilename,'w')
+        fp.write(data)
+        fp.close()
+        
+class urlget:
+
+    def __init__(self,url,filename =''):
+        from urlparse import *
+        from string   import *
+        self.url                                = urlunparse(urlparse(url))
+        self.protocol,self.machine,self.urlpath = urlparse(self.url)[0:3]
+
+        if filename != '':
+            self.filename = filename
+            self.cache    = 0
+        else:
+            self.filename = '/tmp/'+replace(join(urlparse(self.url)[0:3],'@'),'/','_')
+            self.cache    = 1
+
+        if self.protocol == 'ftp':
+            self.url_obj = ftp_object(self.machine,self.urlpath)
+        elif self.protocol == 'http':
+            self.url_obj = http_object(self.machine,self.urlpath)
+        else:
+            print 'Error! Unknown protocol. use ftp or http protocols only'
+
+        timestamp = self.url_obj.gettime()
+        uselocalcopy = 0
+        if os.path.isfile(self.filename) == 1:
+            mtime = os.stat(self.filename)[7]
+            if mtime >= timestamp:
+                uselocalcopy = 1
+
+        if self.cache == 0 and os.path.isfile(self.filename) == 1:
+            flag = 0
+            while flag == 0:
+                print self.filename,'exists. Would you like to replace it? (y/n)'
+                c = stdin.readline()[0]
+                if c == 'y': 
+                    uselocalcopy = 0
+                    flag = 1
+                elif c == 'n':
+                    uselocalcopy = 1
+                    flag = 1
+                    
+        if uselocalcopy == 0 :
+            self.url_obj.getfile(self.filename)
+            os.utime(self.filename,(timestamp,timestamp))
+
+        os.chmod(self.filename,500)
+
+
+    
+def main():
+    arg_len = len(argv)
+
+    if arg_len < 2: 
         print 'Error! Insufficient arguments.'
-        print 'Usage:', sys.argv[0], 'url-filename [local filename]' 
-        sys.exit()
+        print 'Usage:', argv[0], 'url-filename [local filename]' 
+        exit()
 
-    urlfilename = sys.argv[1]
-    url_split   = urlparse.urlparse(urlfilename)
-    if arg_len == 3 :
-        outfilename =  sys.argv[2]
-    else :
-        outfilename = os.path.join(tempfile.tempdir,urltofile(urlfilename))
-
-    # If the url is ftp:// use ftp module to retrive the file
-    if re.search('ftp',url_split[0]) >= 0 :   
-        ftp = ftplib.FTP(url_split[1])
-        ftp.login()
-        try:      
-            timestamp = getftptimestamp(ftp,url_split[2])
-            # if local file exists, check the timestamp, and get the URL only if it is more recent
-            uselocalcopy = 0
-            if (os.path.isfile(outfilename) == 1) and (arg_len != 3) :
-                mtime = os.stat(outfilename)[7]
-                if mtime >= timestamp:
-                    uselocalcopy = 1
-            if uselocalcopy == 0 :
-                fp = open(outfilename,'w')
-                # This function is a callback function which is called by ftp.retrbinary
-                # with the data as argument. This function is responsible to write the
-                # data to the file. The fp is opened before the function is
-                # declared so as to pass the filepointer to the function
-                def writefile(buf,fp = fp):
-                    fp.write(buf)
-                ftp.retrbinary('RETR '+ url_split[2],writefile)
-                fp.close()
-                os.utime(outfilename,(timestamp,timestamp))
-            ftp.quit()
-        except:
-            print 'Error! Accessing url on the server',sys.exc_type, sys.exc_value
-            ftp.close()
-            sys.exit()
-            # if the url is http: use the url module to retrive the file
-    elif re.search('http',url_split[0]) >= 0 :  
-        tmpfilename = ()
-        try:
-            h = httplib.HTTP(url_split[1])
-            h.putrequest('GET', url_split[2])
-            h.putheader('Accept','*/*')
-            h.endheaders()
-            errcode, errmesg, headers = h.getreply()
-            if errcode != 200 :
-                print 'Error! Accessing url on the server.',errorcode,errmesg
-                h.close()
-                sys.exit()
-            filesize   = headers.dict['content-length']
-            if filesize < 2000 :
-                print 'Error! Accessing url on the server. bytes-received :',filesize
-                h.close()
-                sys.exit()
-            # Get Tie remote timestamps
-            urltimestamp = headers.dict['last-modified']
-            timestamp = geturltimestamp(urltimestamp)
-            # if local file exists, check the timestamp, and get the URL only if it is more recent
-            uselocalcopy = 0
-            if os.path.isfile(outfilename) == 1 and arg_len != 3 :
-                mtime = os.stat(outfilename)[7]
-                if mtime >= timestamp:
-                    uselocalcopy = 1
-            if uselocalcopy == 0 :
-                f    = h.getfile()
-                data = f.read()
-                # Now write this data to a file
-                fp = open(outfilename,'w')
-                fp.write(data)
-                fp.close()
-                # Change the modified time of the file
-                os.utime(outfilename,(timestamp,timestamp))
-                f.close()
-            h.close()
-        except:
-            print 'Error! Accessing url on the server',sys.exc_type, sys.exc_value
-            h.close()
-            sys.exit()
+    url = argv[1]
+    if arg_len == 3:
+        outfilename =  argv[2]
     else:
-        print 'Error! Unknown protocol. Use http or ftp protocol only'
-        sys.exit()
+        outfilename = ''
 
-    os.chmod(outfilename,500)
-    print outfilename
-    sys.exit()
+    try:
+        x = urlget(url,outfilename)
+        print x.filename
+    except:
+        print 'Error! Accessing url on the server',exc_type,exc_value
 
-main()
+
+# The classes in this file can also
+# be used in other probrams by using import
+if __name__ ==  '__main__': 
+    main()
