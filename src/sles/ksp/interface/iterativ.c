@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.61 1997/07/28 22:05:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.62 1997/08/22 15:11:05 bsmith Exp curfman $";
 #endif
 
 /*
@@ -30,7 +30,7 @@ int KSPDefaultFreeWork( KSP ksp )
 #define __FUNC__ "KSPSingularValueMonitor"
 /*@C
     KSPSingularValueMonitor - Prints the two norm of the true residual and
-    estimation of the extreme eigenvalues of the preconditioned problem
+    estimation of the extreme singular values of the preconditioned problem
     at each iteration.
  
     Input Parameters:
@@ -46,7 +46,7 @@ $     -ksp_singmonitor
     while GMRES uses the Arnoldi technique; other iterative methods do
     not currently compute singular values.
 
-.keywords: KSP, CG, default, monitor, extreme, eigenvalues, Lanczos
+.keywords: KSP, CG, default, monitor, extreme, singular values, Lanczos, Arnoldi
 
 .seealso: KSPComputeExtremeSingularValues()
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgeig.c,v 1.35 1997/03/09 17:57:18 bsmith Exp balay $";
+static char vcid[] = "$Id: cgeig.c,v 1.36 1997/07/09 20:50:32 balay Exp curfman $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -77,7 +77,7 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
    tridiagonal matrix 
 
   Note that this routine always uses real numbers (not complex) even if the underlying 
-  matrix is Hermitian. This is because the Lanczo process applied to Hermitian matrices
+  matrix is Hermitian. This is because the Lanczos process applied to Hermitian matrices
   always produces a real, symmetric tridiagonal matrix.
 */
 

@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.28 1997/04/04 19:24:24 balay Exp bsmith $ */
+/* $Id: plapack.h,v 1.29 1997/06/18 12:53:51 bsmith Exp curfman $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -338,7 +338,17 @@ extern void   LApotrs_(char*,int*,int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   LAgetrs_(char*,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
 extern void   BLgemm_(char *,char*,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
-#if !defined(PETSC_COMPLEX)
+
+/* ESSL uses a different calling sequence for dgeev(), zgeev() than LAPACK; */
+#if defined(HAVE_ESSL) && defined(PETSC_COMPLEX)
+extern void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
+extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,double*,int*);
+#elif defined(HAVE_ESSL)
+extern void   LAgeev_(int*,Scalar*,int*,Scalar*,Scalar*,int*,int*,int*,double*,int*);
+extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,
+                      int*,Scalar*,int*,Scalar*,int*,int*);
+#elif !defined(PETSC_COMPLEX)
 extern void   LAgeev_(char *,char *,int *, Scalar *,int*,double*,double*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
 extern void   LAgesvd_(char *,char *,int *,int*, Scalar *,int*,double*,Scalar*,

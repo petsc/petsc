@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.60 1997/08/22 15:11:16 bsmith Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.61 1997/09/10 18:50:27 curfman Exp curfman $";
 #endif
 
 /*                       
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: cg.c,v 1.60 1997/08/22 15:11:16 bsmith Exp curfman $"
     same code is used for the complex symmetric case as well.  The user
     must call KSPCGSetType(ksp,KSP_CG_SYMMETRIC) or use the option 
     -ksp_cg_symmetric to invoke this variant for the complex case.
+    Note, however, that the complex symmetric code is NOT valid for
+    all such matrices ... and thus we don't recommend using this method.
 */
 #include <stdio.h>
 #include <math.h>
