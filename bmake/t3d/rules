@@ -1,4 +1,4 @@
-# $Id: base,v 1.30 1998/04/09 21:12:26 balay Exp balay $ 
+# $Id: base,v 1.31 1998/04/09 21:13:29 balay Exp bsmith $ 
 
 PARCH    = t3d
 CC       = cc -DPARCH_t3d -h jump
@@ -38,15 +38,15 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 
 .F.f:
 	${RM} $*.f
-	cpp  -DPARCH_t3d ${CFLAGS} -P $*.F $*.f
+	cpp  -DPARCH_t3d ${CFLAGS} ${FCONF} -P $*.F $*.f
 
 .F.o:
-	cpp  -DPARCH_t3d ${CFLAGS} -P $*.F $*.f
+	cpp  -DPARCH_t3d ${CFLAGS} ${FCONF} -P $*.F $*.f
 	${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
 	${RM} -f $*.f
 
 .F.a: 
-	cpp  -DPARCH_t3d ${CFLAGS} -P $*.F $*.f
+	cpp  -DPARCH_t3d ${CFLAGS} ${FCONF} -P $*.F $*.f
 	${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
 	${AR} cr ${LIBNAME} $*.o
 	${RM} -f $*.o $*.f
