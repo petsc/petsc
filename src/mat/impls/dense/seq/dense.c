@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.153 1998/07/14 02:49:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.154 1998/07/23 22:47:43 bsmith Exp balay $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1108,12 +1108,11 @@ int MatRestoreArray_SeqDense(Mat A,Scalar **array)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqDense"
-static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatrixCall scall,Mat *submat)
+static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatrixCall scall,Mat *B)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
-  int          nznew, *smap, i, j, ierr, oldcols = mat->n;
-  int          *irow, *icol, nrows, ncols, *cwork;
-  Scalar       *vwork, *val;
+  int          i, j, ierr, m = mat->m, *irow, *icol, nrows, ncols;
+  Scalar       *av, *bv, *v = mat->v;
   Mat          newmat;
 
   PetscFunctionBegin;
@@ -1121,34 +1120,36 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatr
   ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
   ierr = ISGetSize(iscol,&ncols); CHKERRQ(ierr);
-
-  smap = (int *) PetscMalloc(oldcols*sizeof(int)); CHKPTRQ(smap);
-  cwork = (int *) PetscMalloc(ncols*sizeof(int)); CHKPTRQ(cwork);
-  vwork = (Scalar *) PetscMalloc(ncols*sizeof(Scalar)); CHKPTRQ(vwork);
-  PetscMemzero((char*)smap,oldcols*sizeof(int));
-  for ( i=0; i<ncols; i++ ) smap[icol[i]] = i+1;
-
-  /* Create and fill new matrix */
-  ierr = MatCreateSeqDense(A->comm,nrows,ncols,PETSC_NULL,&newmat); CHKERRQ(ierr);
-  for (i=0; i<nrows; i++) {
-    nznew = 0;
-    val   = mat->v + irow[i];
-    for (j=0; j<oldcols; j++) {
-      if (smap[j]) {
-        cwork[nznew]   = smap[j] - 1;
-        vwork[nznew++] = val[j * mat->m];
-      }
-    }
-    ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
+  
+  /* Check submatrixcall */
+  if (scall == MAT_REUSE_MATRIX) {
+    int n_cols,n_rows;
+    ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
+    if (n_rows != nrows || n_cols != ncols) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Reused submatrix wrong size");
+    newmat = *B;
+  } else {
+    /* Create and fill new matrix */
+    ierr = MatCreateSeqDense(A->comm,nrows,ncols,PETSC_NULL,&newmat); CHKERRQ(ierr);
   }
+
+  /* Now extract the data pointers and do the copy, column at a time */
+  bv = ((Mat_SeqDense*)newmat->data)->v;
+  
+  for ( i=0; i<ncols; i++ ) {
+    av = v + m*icol[i];
+    for (j=0; j<nrows; j++ ) {
+      *bv++ = av[irow[j]];
+    }
+  }
+
+  /* Assemble the matrices so that the correct flags are set */
   ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Free work space */
-  PetscFree(smap); PetscFree(cwork); PetscFree(vwork);
   ierr = ISRestoreIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&icol); CHKERRQ(ierr);
-  *submat = newmat;
+  *B = newmat;
   PetscFunctionReturn(0);
 }
 

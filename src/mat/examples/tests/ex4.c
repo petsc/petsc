@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.4 1997/10/19 03:26:38 bsmith Exp balay $";
 #endif
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
@@ -16,9 +16,9 @@ int main(int argc,char **argv)
   Scalar    value = 1.0;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = ViewerSetFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_COMMON,0); CHKERRA(ierr);
+  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0); CHKERRA(ierr);
 
-  ierr = MatCreate(PETSC_COMM_SELF,m,n,&mat); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,m,n,&mat); CHKERRA(ierr);
   for (i=0; i<m; i++ ) {
     value = (double) i+1; tmp = i % 5; 
     ierr = MatSetValues(mat,1,&tmp,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   printf("initial matrix:\n");
-  ierr = MatView(mat,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = MatView(mat,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   /* Form submatrix with rows 2-4 and columns 4-8 */
   ierr = ISCreateStride(PETSC_COMM_SELF,3,2,1,&irkeep); CHKERRA(ierr);
@@ -34,12 +34,12 @@ int main(int argc,char **argv)
   ierr = MatGetSubMatrices(mat,1,&irkeep,&ickeep,MAT_INITIAL_MATRIX,&submatrices);CHKERRA(ierr);
   submat = *submatrices; PetscFree(submatrices);
   printf("\nsubmatrix:\n");
-  ierr = MatView(submat,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = MatView(submat,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   /* Zero the original matrix */
   printf("\nzeroed matrix:\n");
   ierr = MatZeroEntries(mat); CHKERRA(ierr);
-  ierr = MatView(mat,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  ierr = MatView(mat,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
   ierr = ISDestroy(irkeep); CHKERRA(ierr);
   ierr = ISDestroy(ickeep); CHKERRA(ierr);
