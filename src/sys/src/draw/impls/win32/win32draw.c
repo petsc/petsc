@@ -1,4 +1,4 @@
-/* $Id: win32draw.c,v 1.9 2001/02/08 20:56:45 bsmith Exp buschelm $ */
+/* $Id: win32draw.c,v 1.10 2001/02/12 23:32:52 buschelm Exp buschelm $ */
 #include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
 #include "win32draw.h"
@@ -395,7 +395,7 @@ static int PetscDrawString_Win32(PetscDraw draw,double x,double y,int color,char
   }
   SelectFont(hdc,hfont);
   SetTextColor(hdc,windraw->currentcolor);
-  PetscDrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP);
+  DrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP);
   DeleteObject(hfont);
   /* Forces a WM_PAINT message and erases background */
   InvalidateRect(windraw->hWnd,NULL,TRUE);
@@ -442,7 +442,7 @@ static int PetscDrawStringVertical_Win32(PetscDraw draw,double x,double y,int co
   }
   SelectFont(hdc,hfont);
   SetTextColor(hdc,windraw->currentcolor);
-  PetscDrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP | DT_SINGLELINE );
+  DrawText(hdc,text,lstrlen(text),&r,DT_NOCLIP | DT_SINGLELINE );
   DeleteObject(hfont);
   /* Forces a WM_PAINT message and erases background */
   InvalidateRect(windraw->hWnd,NULL,TRUE);
