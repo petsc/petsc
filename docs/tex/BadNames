@@ -31,7 +31,7 @@ PETSc names that should be changed.
  - SYGetwd ->? SYGetWD (will be more consistant but ugly? satish)
               prob SYGetWorkingDirectory() to be consistant with SYGetHomeDirectory() GetWorkingDirectory is best.
 
-   SYIsort ->  SYISort etc...  Or SYIntSort
+   SYIsort ->  SYISort etc...  Or SYIntSort, SYSortInt(), ....?
 
 
  - Tr -> TR? 
