@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.141 2000/08/01 20:01:24 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.142 2000/08/08 20:12:53 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -28,15 +28,9 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
 
       ierr = MPI_Reduce(&to->n,&nsend_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
       ierr = MPI_Reduce(&from->n,&nrecv_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
-      itmp = 0;
-      for (i=0; i<to->n; i++){
-        itmp += to->starts[i+1] - to->starts[i];
-      }
+      itmp = to->starts[to->n+1];
       ierr = MPI_Reduce(&itmp,&lensend_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
-      itmp = 0;
-      for (i=0; i<from->n; i++){
-        itmp += from->starts[i+1] - from->starts[i];
-      }
+      itmp = from->starts[from->n+1];
       ierr = MPI_Reduce(&itmp,&lenrecv_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
       ierr = MPI_Reduce(&itmp,&alldata,1,MPI_INT,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 
