@@ -10,6 +10,10 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Add VecCreateWithData() and VecCreateXXXWithData().
+
+  - Pur signalling nans into trmalloc()
+
   - Add to MatCreateXXX() man pages clear indicattion of optional 
     preallocation arguments.
 
