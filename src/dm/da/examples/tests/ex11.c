@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.2 1998/12/23 22:53:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.3 1999/03/19 21:24:17 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
@@ -11,7 +11,7 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int    rank, M = 5, N = 4,ierr, dof=1, s=1, wrap=0, flg, i, n, j, k, m, cnt;
+  int    M = 5, N = 4,ierr, dof=1, s=1, wrap=0, flg, i, n, j, k, m, cnt;
   DA     da;
   Viewer viewer;
   Vec    local, locala, global,coors;

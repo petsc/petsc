@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.11 1999/03/07 17:30:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.12 1999/03/19 21:24:17 bsmith Exp balay $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -86,9 +86,8 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int            rank, M = 3, N = 5, P=3, s=1, flg, nloc, l, i, j, k, kk;
+  int            rank, M = 3, N = 5, P=3, s=1, flg;
   int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
-  int            Xs, Xm, Ys, Ym, Zs, Zm, iloc, *ltog, *iglobal, test_order;
   int            *lx = PETSC_NULL, *ly = PETSC_NULL, *lz = PETSC_NULL;
   DA             da;
   Vec            local, global,vslice;
@@ -134,24 +133,3 @@ int main(int argc,char **argv)
   PetscFinalize();
   return 0;
 }
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
