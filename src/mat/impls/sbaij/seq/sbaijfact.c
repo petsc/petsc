@@ -53,7 +53,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 
   /* for each row k */
   for (k=0; k<mbs; k++){   
-    nzk = 0; /* num. of nz blocks in k-th block row with diagonal block excluded */
+    nzk  = 0; /* num. of nz blocks in k-th block row with diagonal block excluded */
     q[k] = mbs;
     /* initialize nonzero structure of k-th row to row rip[k] of A */
     jmin = ai[rip[k]];
@@ -66,10 +66,10 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
           m  = qm; qm = q[m];
         } while(qm < vj);
         if (qm == vj) {
-          printf(" error: duplicate entry in A\n"); break;
+          SETERRQ(1," error: duplicate entry in A\n"); 
         }     
         nzk++;
-        q[m] = vj;
+        q[m]  = vj;
         q[vj] = qm;  
       } /* if(vj > k) */
     } /* for (j=jmin; j<jmax; j++) */
@@ -104,7 +104,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
     iu[k+1] = iu[k] + nzk;   /* printf(" iu[%d]=%d, umax=%d\n", k+1, iu[k+1],umax);*/
 
     /* allocate more space to ju if needed */
-    if (iu[k+1] > umax) { printf("allocate more space, iu[%d]=%d > umax=%d\n",k+1, iu[k+1],umax);
+    if (iu[k+1] > umax) {
       /* estimate how much additional space we will need */
       /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
       /* just double the memory each time */
@@ -124,16 +124,16 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
     i=k;
     jumin = juptr + 1; juptr += nzk; 
     for (j=jumin; j<juptr+1; j++){
-      i=q[i];
-      ju[j]=i;
+      i     = q[i];
+      ju[j] = i;
     }     
   } 
 
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_lu_fill %g or use \n",af);
-    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCLUSetFill(pc,%g);\n",af);
+    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_cholesky_fill %g or use \n",af);
+    PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCCholeskySetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:for best performance.\n");
   } else {
      PetscLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n");

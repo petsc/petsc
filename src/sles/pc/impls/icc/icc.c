@@ -266,6 +266,32 @@ static int PCSetFromOptions_ICC(PC pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_ICC"
+static int PCView_ICC(PC pc,PetscViewer viewer)
+{
+  PC_ICC     *icc = (PC_ICC*)pc->data;
+  int        ierr;
+  PetscTruth isstring,isascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    if (icc->levels == 1) {
+        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d level of fill\n",(int)icc->levels);CHKERRQ(ierr);
+    } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %d levels of fill\n",(int)icc->levels);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"  ICC: max fill ratio allocated %g\n",icc->fill);CHKERRQ(ierr);
+  } else if (isstring) {
+    ierr = PetscViewerStringSPrintf(viewer," lvls=%g",icc->levels);CHKERRQ(ierr);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,"Viewer type %s not supported for PCICC",((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate_ICC"
@@ -289,7 +315,7 @@ int PCCreate_ICC(PC pc)
   pc->ops->setup               = PCSetup_ICC;
   pc->ops->destroy	       = PCDestroy_ICC;
   pc->ops->setfromoptions      = PCSetFromOptions_ICC;
-  pc->ops->view                = 0;
+  pc->ops->view                = PCView_ICC;
   pc->ops->getfactoredmatrix   = PCGetFactoredMatrix_ICC;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ICC;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ICC;
