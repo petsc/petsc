@@ -371,7 +371,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,PetscScal
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetValues_MPIBAIJ"
+#define __FUNCT__ "MatSetValues_MPIBAIJ_MatScalar"
 int MatSetValues_MPIBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ*)mat->data;
