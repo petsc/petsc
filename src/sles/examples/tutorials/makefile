@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.64 1999/05/14 14:43:17 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.65 1999/11/05 14:46:58 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -277,25 +277,25 @@ runex10:
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
 runex10_2:
-	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg \
+	-@${MPIRUN} -np 2 ex10 -options_left_off -ksp_type bicg \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_2.tmp 2>&1; \
 	   if (diff output/ex10_2.out ex10_2.tmp) then true; \
 	   else echo "Possible problem with ex10_2, diffs above"; fi; \
 	   ${RM} -f ex10_2.tmp
 runex10_3:
-	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg -pc_type asm \
+	-@${MPIRUN} -np 2 ex10 -options_left_off -ksp_type bicg -pc_type asm \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_3.tmp 2>&1; \
 	   if (diff output/ex10_3.out ex10_3.tmp) then true; \
 	   else echo "Possible problem with ex10_3, diffs above"; fi; \
 	   ${RM} -f ex10_3.tmp
 runex10_4:
-	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg -pc_type lu \
+	-@${MPIRUN} -np 1 ex10 -options_left_off -ksp_type bicg -pc_type lu \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_4.tmp 2>&1; \
 	   if (diff output/ex10_4.out ex10_4.tmp) then true; \
 	   else echo "Possible problem with ex10_4, diffs above"; fi; \
 	   ${RM} -f ex10_4.tmp
 runex10_5:
-	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg \
+	-@${MPIRUN} -np 1 ex10 -options_left_off -ksp_type bicg \
 	   -f0 ../../../mat/examples/matrices/medium > ex10_5.tmp 2>&1; \
 	   if (diff output/ex10_5.out ex10_5.tmp) then true; \
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
@@ -315,20 +315,20 @@ runex10_7:
                     1.0e-15 -ksp_smonitor >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
                     -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
-                    1.0e-15 -ksp_smonitor -mat_order nd >> ex10_7.tmp 2>&1 ; \
+                    1.0e-15 -ksp_smonitor -mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
                     -mat_seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
                     1.0e-15 -ksp_smonitor -pc_ilu_levels 1 >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ex10 -f0 ../../../mat/examples/matrices/medium -load_ignore_info \
                     -mat_seqbaij -matload_block_size $$bs -ksp_type preonly \
                     -ksp_smonitor -pc_type lu  >> ex10_7.tmp 2>&1 ; \
-         done;
+         done; cp ex10_7.tmp joe \
 	-@if (diff output/ex10_7.out ex10_7.tmp) then true; \
 	   else echo "Possible problem with ex10_7, diffs above"; fi;
 	-@${RM} -f ex10_7.tmp
 runex10_8:
 	-@${MPIRUN} -np 1 ex10 -sles_diagonal_scale -pc_type eisenstat -ksp_smonitor -sles_diagonal_scale_fix \
-	   -f0 ../../../mat/examples/matrices/medium -optionsleft_off > ex10_8.tmp 2>&1; \
+	   -f0 ../../../mat/examples/matrices/medium -options_left_off > ex10_8.tmp 2>&1; \
 	   if (diff output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \
 	   ${RM} -f ex10_8.tmp
