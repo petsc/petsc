@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.28 1996/04/05 02:06:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.29 1996/07/08 22:22:53 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -61,6 +61,11 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
   VecGetArray(x1,&xx);
   ierr = eval_fct(snes,x1,j1); CHKERRQ(ierr);
+
+  /* Compute Jacobian approximation, 1 column at a time. 
+      x1 = current iterate, j1 = F(x1)
+      x2 = perturbed iterate, j2 = F(x2)
+   */
   for ( i=0; i<N; i++ ) {
     ierr = VecCopy(x1,x2); CHKERRQ(ierr);
     if ( i>= start && i<end) {
@@ -81,7 +86,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     }
     ierr = eval_fct(snes,x2,j2); CHKERRQ(ierr);
     ierr = VecAXPY(&mone,j1,j2); CHKERRQ(ierr);
-/* communicate scale to all processors */
+    /* Communicate scale to all processors */
 #if !defined(PETSC_COMPLEX)
     MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);
 #else
