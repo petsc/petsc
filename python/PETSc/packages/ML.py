@@ -85,8 +85,7 @@ class Configure(config.base.Configure):
     return
         
   def checkLib(self,lib,func):
-    '''We  need the BLAS libraries here'''
-    # This next line is really ugly
+    '''We  need the BLAS/Lapack libraries here plus (possibly) Fortran'''
     oldLibs = self.framework.argDB['LIBS']
     otherLibs=self.blasLapack.lib
     if hasattr(self.compilers,'flibs'): otherLibs += ' '+self.compilers.flibs
@@ -119,6 +118,7 @@ class Configure(config.base.Configure):
         break
     if foundLibrary and foundHeader:
       self.setFoundOutput()
+      self.found = 1
     else:
       self.framework.log.write('Could not find a functional '+self.name+'\n')
       self.setEmptyOutput()

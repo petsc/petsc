@@ -113,6 +113,7 @@ class Configure(config.base.Configure):
         break
     if foundLibrary and foundHeader:
       self.setFoundOutput()
+      self.found = 1
     else:
       self.framework.log.write('Could not find a functional '+self.name+'\n')
       self.setEmptyOutput()
