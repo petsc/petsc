@@ -134,11 +134,6 @@ class SharedLinker(config.compile.processor.Processor):
 
 class StaticLinker(SharedLinker):
   '''The C static linker, which is not really a linker, but we are hacking it in here'''
-  def __init__(self, argDB):
-    SharedLinker.__init__(self, argDB)
-    self.outputFlag = self.configCompilers.AR_FLAGS
-    return
-
   def getOutputFlag(self):
     if hasattr(self, 'configCompilers'):
       return self.configCompilers.AR_FLAGS
