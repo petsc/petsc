@@ -9,6 +9,6 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = dense aij shell row rowbs bdiag order
+DIRS     = dense aij shell rowbs bdiag order
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.19 1995/10/25 23:06:07 curfman Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.20 1995/10/26 21:45:14 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -14,8 +14,7 @@ static char vcid[] = "$Id: matio.c,v 1.19 1995/10/25 23:06:07 curfman Exp curfma
 
 extern int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
 extern int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
-extern int MatLoad_SeqRow(Viewer,MatType,Mat*);
-extern int MatLoad_MPIAIJorMPIRow(Viewer,MatType,Mat*);
+extern int MatLoad_MPIAIJ(Viewer,MatType,Mat*);
 extern int MatLoad_SeqBDiag(Viewer,MatType,Mat*);
 extern int MatLoad_MPIBDiag(Viewer,MatType,Mat*);
 extern int MatLoad_SeqDense(Viewer,MatType,Mat*);
@@ -78,11 +77,8 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
   if (type == MATSEQAIJ) {
     ierr = MatLoad_SeqAIJ(bview,type,newmat); CHKERRQ(ierr);
   }
-  else if (type == MATMPIAIJ || type == MATMPIROW) {
-    ierr = MatLoad_MPIAIJorMPIRow(bview,type,newmat); CHKERRQ(ierr);
-  }
-  else if (type == MATSEQROW) {
-    ierr = MatLoad_SeqRow(bview,type,newmat); CHKERRQ(ierr);
+  else if (type == MATMPIAIJ) {
+    ierr = MatLoad_MPIAIJ(bview,type,newmat); CHKERRQ(ierr);
   }
   else if (type == MATSEQBDIAG) {
     ierr = MatLoad_SeqBDiag(bview,type,newmat); CHKERRQ(ierr);
