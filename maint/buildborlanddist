@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildborlanddist,v 1.47 2000/09/08 01:41:08 balay Exp $ 
+# $Id: buildborlanddist,v 1.1 2000/12/21 04:23:30 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -78,13 +78,12 @@ find $tmpdir/petscborland -type d -name output -exec /bin/rm -rf {} \;
 #
 cd $tmpdir/petscborland/petsc
 make etags etags_examples TAGSDIR=`pwd`
+/bin/cp -f bmake/win32_borland/makefile.borland makefile
 
 cd $tmpdir/petscborland
 chmod -R u+w petsc
 ~bsmith/petsc/maint/makeborland.tcl $tmpdir/petscborland/petsc
-
 /bin/rm -f $tmpdir/petscborland.tar $tmpdir/cblas.tar
-
 
 cd $tmpdir/petscborland
 if ($#argv == 1) then
