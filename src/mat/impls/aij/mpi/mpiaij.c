@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.294 1999/05/12 03:29:11 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.295 1999/06/08 22:55:49 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -830,10 +830,12 @@ int MatView_MPIAIJ(Mat mat,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER) || PetscTypeCompare(vtype,DRAW_VIEWER) || 
-      PetscTypeCompare(vtype,SOCKET_VIEWER)) { 
+      PetscTypeCompare(vtype,SOCKET_VIEWER) || PetscTypeCompare(vtype,BINARY_VIEWER)) { 
     ierr = MatView_MPIAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
+    /*
   } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = MatView_MPIAIJ_Binary(mat,viewer);CHKERRQ(ierr);
+    */
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }

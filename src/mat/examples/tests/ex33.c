@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex33.c,v 1.7 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex33.c,v 1.8 1999/05/04 20:33:03 balay Exp balay $";
 #endif
 
 static char help[] = 
@@ -21,8 +21,15 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,6,PETSC_NULL,
-         PETSC_NULL,&A);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-use_mataij",&flg);CHKERRA(ierr);
+  if (flg) {
+    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,
+                           PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A);CHKERRA(ierr);
+  } else {
+    ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,6,PETSC_NULL,
+                             PETSC_NULL,&A);CHKERRA(ierr);
+  }
+
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
       v = -1.0;  I = j + n*i;
