@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.21 1996/04/15 20:40:33 curfman Exp balay $;
+C  $Id: petsc.h,v 1.22 1996/04/15 22:59:21 balay Exp balay $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -36,12 +36,14 @@ C
 C     Macro for templating between real and complex
 C
 #if defined(PETSC_COMPLEX)
+#define PetscReal(a) real(a)
 #if defined(PARCH_t3d)
 #define Scalar  complex
 #else
 #define Scalar  double complex
 #endif
 #else
+#define PetscReal(a) a
 #if defined(PARCH_t3d)
 #define Scalar  real
 #else

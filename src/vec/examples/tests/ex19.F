@@ -1,5 +1,5 @@
 
-C    "$Id: ex19.F,v 1.20 1996/03/19 21:23:15 bsmith Exp bsmith $";
+C    "$Id: ex19.F,v 1.21 1996/03/23 18:32:43 bsmith Exp balay $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -29,7 +29,7 @@ C Create a vector, then duplicate it
        call VecSet(two,y,ierr)
 
        call VecDot(x,y,dot,ierr)
-       rdot = dot
+       rdot = PetscReal(dot)
        write(6,100) rdot
   100  format('Result of inner product ',f10.4)
 
