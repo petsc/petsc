@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.83 1996/08/20 16:03:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.84 1996/08/26 02:35:13 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -233,7 +233,7 @@ int SNESPrintHelp(SNES snes)
      " Options for solving systems of nonlinear equations only:\n");
     PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
-    PetscPrintf(snes->comm,"   %ssnes_mf_operator:use matrix-free Jacobian,not preconditioner\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf_operator:use matrix-free Jacobian and user-provided preconditioning matrix\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf_err: relative error in function evaluation for matrix-free Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_mf_umin: minimum iterate parameter for matrix-free Jacobian\n",p);
     PetscPrintf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
