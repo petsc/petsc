@@ -42,8 +42,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   for (i=0; i<rdim; i++) {
-    v = one*i;
-    ierr = VecSetValues(u,1,&i,&v,INSERTVALUES); CHKERR(ierr);
+    v = one*i; ierr = VecSetValues(u,1,&i,&v,INSERTVALUES); CHKERR(ierr);
   } 
   ierr = VecAssemblyBegin(u); CHKERR(ierr);
   ierr = VecAssemblyEnd(u); CHKERR(ierr);
@@ -163,33 +162,11 @@ int GetElasticityMatrix(int m,Mat *newmat)
   MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
   printf("matrix nonzeros = %d, allocated nonzeros = %d, memory = %d bytes\n",
           nz,nzalloc,mem);
-/*  ierr = DrawOpenX(MPI_COMM_WORLD,0,0,0,0,300,300,&win); CHKERRA(ierr);
-  MatView(*newmat,(Viewer)win); CHKERRA(ierr);
-  DrawSyncFlush(win); CHKERRA(ierr); 
-  problem here?  All formats hang? */
   
-  { Scalar *val; int *col, nz;
-  int i = 0;
-  MatGetRow(*newmat, i, &nz, &col, &val);
-  for (j=0; j<nz; j++) {
-    printf("%d %d  %18.16e\n", i+1, col[j]+1, val[j]);
-  }
-  MatRestoreRow(*newmat, i, &nz, &col, &val);
-  }
-
-  /* Dump info to file compatible with Matlab */
-  /* { Viewer fileviewer; ViewerFileOpen("MAT",&fileviewer);
+  /* Dump matrix to file compatible with Matlab */
+/*  { Viewer fileviewer; ViewerFileOpen("MAT",&fileviewer);
   ViewerFileSetFormat(fileviewer,FILE_FORMAT_MATLAB,"mmat");
   MatView(*newmat,fileviewer); CHKERRA(ierr); } */
-
-  { Viewer fileviewer; ViewerFileOpen("MAT",&fileviewer);
-  ViewerFileSetFormat(fileviewer,FILE_FORMAT_IMPL,0);
-  MatView(*newmat,fileviewer); CHKERRA(ierr); }
-
-  /* Use socket connections to Matlab */
-  /*  {Viewer viewer;
-  ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERR(ierr);
-  ierr = MatView(*newmat,viewer); CHKERR(ierr); } */
 
   return 0;
 }
