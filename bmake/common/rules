@@ -101,7 +101,7 @@ clean:
 	@-$(RM) -f *.o *~ ex[0-9] ex[0-9][0-9] $(CLEANFILES) $(TESTS) \
 	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
-	       output/*~ .mpirtmp mon.out *.aus
+	       output/*~ .mpirtmp mon.out *.aus *.mon.*
 
 #
 #  testexamples_X - Runs various PETSc test suites
@@ -226,7 +226,7 @@ wwwpages:
 	$(RM) $*.o
 
 .cpp.rm .cc.rm .C.rm .F.rm .f.rm .c.rm:
-	-@$(RM) -f $* *.o
+	-@$(RM) -f $* *.o $*.mon.* gmon.out mon.out
 .c.PETSc:
 	-@$(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
