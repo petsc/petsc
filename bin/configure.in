@@ -60,17 +60,17 @@ dnl autoconf commands.
 AC_SUBST(PETSC_ARCH)
 dnl
 dnl Also remove any local petscconf.h file
-rm -f petscconf.h
+dnl comment rm -f petscconf.h
 dnl
 dnl
 dnl NOT DONE YET
 dnl Read in a "petsc.conf" file containing values to use, particularly for
 dnl things like the location of BlockSolve, MPI, etc.
 dnl
-dnl This adds a definition of the CPP name PETSC_ARCH_NAME with the value 
+dnl This adds a definition of the CPP name ARCH_NAME with the value 
 dnl "$PETSC_ARCH" (including the quotes!) to the generated petscconf.h file
 dnl (see below)
-AC_DEFINE_UNQUOTED(PETSC_ARCH_NAME,"$PETSC_ARCH")
+AC_DEFINE_UNQUOTED(ARCH_NAME,"$PETSC_ARCH")
 dnl
 dnl Place the ARG processing AFTER the petsc.conf file so that the
 dnl command line args can override any defaults.
@@ -171,7 +171,7 @@ dnl Makefiles simpler, and allows users to concoct their own Makefiles more
 dnl easily (the Makefiles are currently one place where PETSc really, really
 dnl wants to be in charge).
 dnl
-AC_CONFIG_HEADER(petscconf.h)
+AC_CONFIG_HEADER(bmake/config/petscconf.h:../bmake/config/petscconf.h.in)
 dnl
 dnl PETSc can have a fairly complex site configuration.  Rather than
 dnl force the user to set a zillion environment variables, we allow the user
@@ -421,7 +421,8 @@ dnl some are not implemented correctly on all platforms.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h malloc.h strings.h sys/time.h unistd.h)
-AC_CHECK_HEADERS(stropts.h search.h pwd.h string.h sys/systeminfo.h sys/resource.h)
+AC_CHECK_HEADERS(stropts.h search.h pwd.h string.h sys/systeminfo.h)
+AC_CHECK_HEADERS( sys/resource.h sys/procfs.h)
 dnl io.h is really only an NT header; we include this as part of unifying
 dnl the configuration
 AC_CHECK_HEADERS(io.h)
@@ -513,7 +514,9 @@ dnl Note that the input and output filenames are not handled correctly
 dnl by configure in the case where configure lives in a subdirectory.
 dnl To work around this, we use the output:input file name options
 dnl
-AC_OUTPUT(bin/config/base.site:config/base.site.in bin/config/base:config/base.in bin/config/base_variables:config/base_variables.in)
+AC_OUTPUT(bmake/config/base.site:../bmake/config/base.site.in)
+AC_OUTPUT(bmake/config/base:../bmake/config/base.in)
+AC_OUTPUT(bmake/config/base_variables:../bmake/config/base_variables.in)
 dnl
 dnl If the user asked us, move the files into the bmake area in their own
 dnl directory
@@ -536,17 +539,19 @@ if test $install_sitefiles = 1 ; then
 	fi
     fi
     echo "Moving created files to $PETSC_DIR/bmake/$PETSC_ARCH"
-    mv bin/config/base.site $PETSC_DIR/bmake/$PETSC_ARCH/base.site
-    mv bin/config/base_variables $PETSC_DIR/bmake/$PETSC_ARCH/base_variables
-    mv bin/config/base     $PETSC_DIR/bmake/$PETSC_ARCH/base
-    cp petscconf.h $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h    
+    mv bmake/config/base.site $PETSC_DIR/bmake/$PETSC_ARCH/base.site
+    mv bmake/config/base_variables $PETSC_DIR/bmake/$PETSC_ARCH/base_variables
+    mv bmake/config/base     $PETSC_DIR/bmake/$PETSC_ARCH/base
+    # Change all DEFINE to PETSC_DEFINE
+    cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' > bmake/config/petscconf.tmp
+    mv -f bmake/config/petscconf.tmp $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h    
+    mv -f bmake/config/petscconf.h $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.unmodified
     # If we move the petscconf.h into the lib directory, we need to
     # fix the make all target to NOT delete it
     # Leave a marker that configure setup this directory
     rm -f $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig
     date > $PETSC_DIR/bmake/$PETSC_ARCH/.isconfig
 else
-    echo "Moving petscconf.h to bin/config/petscconf.h"
-    mv -f petscconf.h bin/config
+    echo "Leaving configuration files in bmake/config"
 fi
 
