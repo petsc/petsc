@@ -275,7 +275,7 @@ class Configure(config.base.Configure):
     # C Blas/Lapack does not compile at this stage (kind of a BUG) but PETSc make will compile it
     if f2c == 'f2c':
       self.functionalBlasLapack.append((f2c+'blaslapack', os.path.join(libdir,'lib'+f2c+'blas.a'), os.path.join(libdir,'lib'+f2c+'lapack.a')))
-      return
+      return libdir
     blasDir = os.path.join(packages,f2c+'blaslapack')
     g = open(os.path.join(blasDir,'tmpmakefile'),'w')
     f = open(os.path.join(blasDir,'makefile'),'r')    

@@ -51,7 +51,7 @@ class Configure(config.base.Configure):
         pass
       
     # task_info() is  used on Mach and darwin (MacOS X) systems
-    if self.functions.haveFunction('task_info') and self.framework.argDB['can-execute']:
+    if self.functions.haveFunction('task_info') and not self.framework.argDB['with-batch']:
       (output,status) = self.outputRun('#include <mach/mach.h>\n#include <stdlib.h>\n#include <stdio.h>\n','''#define  ARRAYSIZE 10000000
           int *m,i;
           unsigned int count;
@@ -90,7 +90,7 @@ class Configure(config.base.Configure):
       self.framework.logPrint("task_info() does not work\n"+output)
       
     # getrusage() is still used on BSD systems
-    if self.functions.haveFunction('getrusage') and self.framework.argDB['can-execute']:
+    if self.functions.haveFunction('getrusage') and not self.framework.argDB['with-batch']:
       if self.functions.haveFunction('getpagesize'):
         (output,status) = self.outputRun('''#include <stdio.h>\n#include <ctype.h>\n#include <sys/times.h>\n#include <sys/types.h>\n
             #include <sys/stat.h>\n#include <sys/resource.h>\n#include <stdlib.h>''','''#define ARRAYSIZE 10000000
