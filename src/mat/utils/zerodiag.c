@@ -1,8 +1,6 @@
 
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.27 1998/11/04 19:45:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.28 1998/11/04 20:02:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -11,47 +9,8 @@ static char vcid[] = "$Id: zerodiag.c,v 1.27 1998/11/04 19:45:13 bsmith Exp bsmi
  */
 
 #include "src/mat/matimpl.h"       /*I  "mat.h"  I*/
-#include <math.h>
 
 #define SWAP(a,b) {int _t; _t = a; a = b; b = _t; }
-
-#undef __FUNC__  
-#define __FUNC__ "MatZeroFindPre_Private"
-/* 
-   Given a current row and current permutation, find a column permutation
-   that removes a zero diagonal.
-*/
-int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,int *icol,double repla,
-                           double atol,int* rc,double* rcv,int nz, int *j, Scalar *v)
-{
-  int      k, repl, kk, nnz, *jj,ierr;
-  Scalar   *vv;
-
-  PetscFunctionBegin;
-   /*
-      Here one could sort the col[j[k]] to try to select the column closest
-     to the diagonal (in the new ordering) that satisfies the criteria
-  */
-  for (k=0; k<nz; k++) {
-    if (icol[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
-      /* See if this one will work */
-      repl  = icol[j[k]];
-      ierr = MatGetRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
-      for (kk=0; kk<nnz; kk++) {
-	if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
-	  *rcv = PetscAbsScalar(v[k]);
-	  *rc  = repl;
-          ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
-	  PetscFunctionReturn(1);
-	}
-      }
-      ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
-    }
-  }
-
-  SETERRQ(1,1," ");
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "MatReorderForNonzeroDiagonal"
@@ -94,10 +53,10 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,int *icol,double r
 @*/
 int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
 {
-  int      ierr, prow, k, nz, n, repl, *j, *col, *row, m, *irow, *icol;
-  Scalar   *v;
+  int      ierr, prow, k, nz, n, repl, *j, *col, *row, m, *irow, *icol,nnz,*jj,kk;
+  Scalar   *v,*vv;
   double   repla;
-  IS       icis,iris;
+  IS       icis;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -107,7 +66,6 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
   ierr = ISGetIndices(ris,&row); CHKERRQ(ierr);
   ierr = ISGetIndices(cis,&col); CHKERRQ(ierr);
   ierr = ISInvertPermutation(cis,&icis);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(ris,&iris);CHKERRQ(ierr);
   ierr = ISGetIndices(icis,&icol); CHKERRQ(ierr);
   ierr = MatGetSize(mat,&m,&n); CHKERRQ(ierr);
 
@@ -119,31 +77,57 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
       repl  = prow;
       repla = (k >= nz) ? 0.0 : PetscAbsScalar(v[k]);
       /*
-        Here one could sort the icol[j[k]] list to try to select the 
-        column closest to the diagonal in the new ordering. (Note have
-        to permute the v[k] values as well, and use a fixed bound on the
-        quality of repla rather then looking for the absolute largest.
+          Look for a later column we can swap with this one
       */
       for (k=0; k<nz; k++) {
 	if (icol[j[k]] > prow && PetscAbsScalar(v[k]) > repla) {
-	  repl  = icol[j[k]];
+          /* found a suitable later column */
+	  repl  = icol[j[k]];   
 	  repla = PetscAbsScalar(v[k]);
+          SWAP(icol[col[prow]],icol[col[repl]]); 
+          SWAP(col[prow],col[repl]); 
+          goto found;
         }
       }
-      if (prow == repl) {
-	/* 
-           Look for an element that allows us
-	   to pivot with a previous column.  To do this, we need
-	   to be sure that we don't introduce a zero in a previous
+      /* 
+           Did not find a suitable later column so look for an earlier column
+	   We need to be sure that we don't introduce a zero in a previous
 	   diagonal 
-        */
-        if (!MatZeroFindPre_Private(mat,prow,row,col,icol,repla,atol,&repl,&repla,nz,j,v)){
-          (*PetscErrorPrintf)("Permuted row number %d\n",prow);
-	  SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Cannot reorder matrix to eliminate zero diagonal entry");
-	}
+      */
+      for (k=0; k<nz; k++) {
+        if (icol[j[k]] < prow && PetscAbsScalar(v[k]) > repla) {
+          /* See if this one will work */
+          repl  = icol[j[k]];
+          ierr = MatGetRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
+          for (kk=0; kk<nnz; kk++) {
+            if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
+	      repla = PetscAbsScalar(v[k]);
+              ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
+              SWAP(icol[col[prow]],icol[col[repl]]); 
+              SWAP(col[prow],col[repl]); 
+              goto found;
+	    }
+          }
+          ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
+        }
       }
-      SWAP(icol[col[prow]],icol[col[repl]]); 
-      SWAP(col[prow],col[repl]); 
+      /* 
+          No column  suitable; instead check all future rows 
+          Note: this will be very slow 
+      */
+      for (k=prow+1; k<n; k++) {
+        ierr = MatGetRow( mat, row[k], &nnz, &jj, &vv ); CHKERRQ(ierr);
+        for (kk=0; kk<nnz; kk++) {
+          if (icol[jj[kk]] == prow && PetscAbsScalar(vv[kk]) > atol) {
+            /* found a row */
+            SWAP(row[prow],row[k]);
+            goto found;
+          }
+        }
+        ierr = MatRestoreRow( mat, row[k], &nnz, &jj, &vv ); CHKERRQ(ierr);
+      }
+
+      found:;
     }
     ierr = MatRestoreRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
   }
