@@ -37,7 +37,7 @@ $     SETERRQ(n,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
            PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,char *mess,void *ctx)
+int PetscStopErrorHandler(int line,const char *fun,const char *file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
   int            rank;
   PetscTruth     flg1,flg2;

@@ -12,7 +12,7 @@
 typedef struct _EH *EH;
 struct _EH {
   int    cookie;
-  int    (*handler)(int,char*,char*,char *,int,int,char*,void *);
+  int    (*handler)(int,const char*,const char*,const char *,int,int,const char*,void *);
   void   *ctx;
   EH     previous;
 };
@@ -61,7 +61,7 @@ $     SETERRQ(number,p,mess)
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-int PetscEmacsClientErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
+int PetscEmacsClientErrorHandler(int line,const char *fun,const char* file,const char *dir,int n,int p,const char *mess,void *ctx)
 {
   int         ierr;
   char        command[PETSC_MAX_PATH_LEN],*pdir;
@@ -112,7 +112,7 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
-int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),void *ctx)
+int PetscPushErrorHandler(int (*handler)(int,const char *,const char*,const char*,int,int,const char*,void*),void *ctx)
 {
   EH  neweh;
   int ierr;
@@ -190,7 +190,7 @@ $     SETERRQ(n,mess)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ(), SETERRQ1(), SETERRQ2()
 @*/
-int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,...)
+int PetscError(int line,const char *func,const char* file,const char *dir,int n,int p,const char *mess,...)
 {
   va_list     Argp;
   int         ierr;

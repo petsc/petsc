@@ -55,7 +55,7 @@ $     SETERRQ(number,mess)
 .seealso: PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
           PetscAttachDebuggerErrorHandler()
 @*/
-int PetscAbortErrorHandler(int line,char *fun,char *file,char* dir,int n,int p,char *mess,void *ctx)
+int PetscAbortErrorHandler(int line,const char *fun,const char *file,const char* dir,int n,int p,const char *mess,void *ctx)
 {
   int rank;
 

@@ -453,7 +453,7 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
-int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int num,int p,char* mess,void *ctx)
+int PetscAttachDebuggerErrorHandler(int line,const char* fun,const char *file,const char* dir,int num,int p,const char* mess,void *ctx)
 {
   int ierr,rank;
 

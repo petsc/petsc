@@ -272,14 +272,14 @@ extern  int __gierr;
 #endif
 
 EXTERN int PetscErrorMessage(int,char**,char **);
-EXTERN int PetscTraceBackErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-EXTERN int PetscIgnoreErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-EXTERN int PetscEmacsClientErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-EXTERN int PetscStopErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-EXTERN int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void*);
-EXTERN int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,void*); 
-EXTERN int PetscError(int,char*,char*,char*,int,int,char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
-EXTERN int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,int,char*,void*),void*);
+EXTERN int PetscTraceBackErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
+EXTERN int PetscIgnoreErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
+EXTERN int PetscEmacsClientErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
+EXTERN int PetscStopErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
+EXTERN int PetscAbortErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
+EXTERN int PetscAttachDebuggerErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*); 
+EXTERN int PetscError(int,const char*,const char*,const char*,int,int,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
+EXTERN int PetscPushErrorHandler(int (*handler)(int,const char*,const char*,const char*,int,int,const char*,void*),void*);
 EXTERN int PetscPopErrorHandler(void);
 EXTERN int PetscDefaultSignalHandler(int,void*);
 EXTERN int PetscPushSignalHandler(int (*)(int,void *),void*);
