@@ -193,7 +193,7 @@ tree: ${ACTION}
             fi; \
             (cd $$dir ; \
             echo ${ACTION} in: `pwd`; \
-            ${OMAKE} tree ACTION=${ACTION} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} LOC=${LOC});\
+            ${OMAKE} tree ACTION=${ACTION} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH});\
 	  done ; \
         fi
 
