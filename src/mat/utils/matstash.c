@@ -432,13 +432,13 @@ PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,Pet
 #define __FUNCT__ "MatStashScatterBegin_Private"
 PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
 { 
-  PetscInt         *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
-  PetscInt         size=stash->size,*nprocs,nsends,nreceives;
+  PetscInt       *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
+  PetscInt       size=stash->size,*nprocs,nsends,nreceives;
   PetscErrorCode ierr;
-  PetscInt         nmax,count,*sindices,*rindices,i,j,idx;
-  MatScalar   *rvalues,*svalues;
-  MPI_Comm    comm = stash->comm;
-  MPI_Request *send_waits,*recv_waits;
+  PetscInt       nmax,count,*sindices,*rindices,i,j,idx,lastidx;
+  MatScalar      *rvalues,*svalues;
+  MPI_Comm       comm = stash->comm;
+  MPI_Request    *send_waits,*recv_waits;
 
   PetscFunctionBegin;
 
@@ -448,9 +448,13 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
   ierr  = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr  = PetscMalloc((stash->n+1)*sizeof(PetscInt),&owner);CHKERRQ(ierr);
 
+  j       = 0;
+  lastidx = -1;
   for (i=0; i<stash->n; i++) {
-    idx = stash->idx[i];
-    for (j=0; j<size; j++) {
+    /* if indices are NOT locally sorted, need to start search at the beginning */
+    if (lastidx > (idx = stash->idx[i])) j = 0;
+    lastidx = idx;
+    for (; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; break;
       }

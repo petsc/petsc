@@ -43,7 +43,7 @@ int main(int argc,char **args)
   ierr = MatFactorInfoInitialize(&luinfo);CHKERRQ(ierr);
   luinfo.fill = 2.0;
   luinfo.dtcol = 0.0; 
-  luinfo.damping = 0.0; 
+  luinfo.shiftnz = 0.0; 
   luinfo.zeropivot = 1.e-14; 
   luinfo.pivotinblocks = 1.0; 
   ierr = MatLUFactorSymbolic(C,perm,iperm,&luinfo,&LU);CHKERRQ(ierr);

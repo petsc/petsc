@@ -19,6 +19,53 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetZeroPivot_Cholesky"
+PetscErrorCode PCFactorSetZeroPivot_Cholesky(PC pc,PetscReal z)
+{
+  PC_Cholesky *ch;
+
+  PetscFunctionBegin;
+  ch                 = (PC_Cholesky*)pc->data;
+  ch->info.zeropivot = z;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftNonzero_Cholesky"
+PetscErrorCode PCFactorSetShiftNonzero_Cholesky(PC pc,PetscReal shift)
+{
+  PC_Cholesky *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_Cholesky*)pc->data;
+  if (shift == (PetscReal) PETSC_DECIDE) {
+    dir->info.shiftnz = 1.e-12;
+  } else {
+    dir->info.shiftnz = shift;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftPd_Cholesky"
+PetscErrorCode PCFactorSetShiftPd_Cholesky(PC pc,PetscTruth shift)
+{
+  PC_Cholesky *dir;
+ 
+  PetscFunctionBegin;
+  dir = (PC_Cholesky*)pc->data;
+  dir->info.shiftpd = shift;
+  if (shift) dir->info.shift_fraction = 0.0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetReuseOrdering_Cholesky"
 PetscErrorCode PCCholeskySetReuseOrdering_Cholesky(PC pc,PetscTruth flag)
 {
@@ -80,12 +127,12 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
   }
   ierr = PetscOptionsName("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCFactorSetShiftNonzero((PetscReal) PETSC_DECIDE,&lu->info);CHKERRQ(ierr);
+    ierr = PCFactorSetShiftNonzero(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",lu->info.shiftnz,&lu->info.shiftnz,0);CHKERRQ(ierr);
   ierr = PetscOptionsName("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCFactorSetShiftPd(PETSC_TRUE,&lu->info);CHKERRQ(ierr);
+    ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",lu->info.zeropivot,&lu->info.zeropivot,0);CHKERRQ(ierr);
 
@@ -557,6 +604,13 @@ PetscErrorCode PCCreate_Cholesky(PC pc)
   pc->ops->view              = PCView_Cholesky;
   pc->ops->applyrichardson   = 0;
   pc->ops->getfactoredmatrix = PCGetFactoredMatrix_Cholesky;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Cholesky",
+                    PCFactorSetZeroPivot_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_Cholesky",
+                    PCFactorSetShiftNonzero_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Cholesky",
+                    PCFactorSetShiftPd_Cholesky);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetFill_C","PCCholeskySetFill_Cholesky",
                     PCCholeskySetFill_Cholesky);CHKERRQ(ierr);

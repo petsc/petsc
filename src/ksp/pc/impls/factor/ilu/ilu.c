@@ -6,6 +6,52 @@
 #include "src/mat/matimpl.h"
 
 /* ------------------------------------------------------------------------------------------*/
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetZeroPivot_ILU"
+PetscErrorCode PCFactorSetZeroPivot_ILU(PC pc,PetscReal z)
+{
+  PC_ILU *ilu;
+
+  PetscFunctionBegin;
+  ilu                 = (PC_ILU*)pc->data;
+  ilu->info.zeropivot = z;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftNonzero_ILU"
+PetscErrorCode PCFactorSetShiftNonzero_ILU(PC pc,PetscReal shift)
+{
+  PC_ILU *dir;
+
+  PetscFunctionBegin;
+  dir = (PC_ILU*)pc->data;
+  if (shift == (PetscReal) PETSC_DECIDE) {
+    dir->info.shiftnz = 1.e-12;
+  } else {
+    dir->info.shiftnz = shift;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftPd_ILU"
+PetscErrorCode PCFactorSetShiftPd_ILU(PC pc,PetscTruth shift)
+{
+  PC_ILU *dir;
+ 
+  PetscFunctionBegin;
+  dir = (PC_ILU*)pc->data;
+  dir->info.shiftpd = shift;
+  if (shift) dir->info.shift_fraction = 0.0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -580,7 +626,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
 
     ierr = PetscOptionsName("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetShiftNonzero((PetscReal) PETSC_DECIDE,&ilu->info);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",ilu->info.shiftnz,&ilu->info.shiftnz,0);CHKERRQ(ierr);
     
@@ -588,9 +634,9 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     if (flg) {
       ierr = PetscOptionsInt("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",(PetscInt)ilu->info.shiftpd,&itmp,&flg); CHKERRQ(ierr);
       if (flg && !itmp) {
-	ierr = PCFactorSetShiftPd(PETSC_FALSE,&ilu->info);CHKERRQ(ierr);
+	ierr = PCFactorSetShiftPd(pc,PETSC_FALSE);CHKERRQ(ierr);
       } else {
-	ierr = PCFactorSetShiftPd(PETSC_TRUE,&ilu->info);CHKERRQ(ierr); 
+	ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr); 
       }
     }
     ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",ilu->info.zeropivot,&ilu->info.zeropivot,0);CHKERRQ(ierr);
@@ -877,6 +923,13 @@ PetscErrorCode PCCreate_ILU(PC pc)
   pc->ops->getfactoredmatrix   = PCGetFactoredMatrix_ILU;
   pc->ops->view                = PCView_ILU;
   pc->ops->applyrichardson     = 0;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_ILU",
+                    PCFactorSetZeroPivot_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_ILU",
+                    PCFactorSetShiftNonzero_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_ILU",
+                    PCFactorSetShiftPd_ILU);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
                     PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);

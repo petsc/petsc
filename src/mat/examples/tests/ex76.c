@@ -19,7 +19,9 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   PetscInt       reorder=0,displ=0;
   MatFactorInfo  factinfo;
-  PetscTruth     TestAIJ=PETSC_FALSE,TestBAIJ=PETSC_TRUE,equal;
+  PetscTruth     equal;
+  PetscTruth     TestAIJ=PETSC_FALSE,TestBAIJ=PETSC_TRUE;
+  PetscInt       TestShift=0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -28,10 +30,11 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-reorder",&reorder,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-testaij",&TestAIJ,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-testShift",&TestShift,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-displ",&displ,PETSC_NULL);CHKERRQ(ierr);
 
   n = mbs*bs;
-  if (TestAIJ){ /* A is in aij format -- will be changed later! */
+  if (TestAIJ){ /* A is in aij format */
     ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,n,n,nz,PETSC_NULL,&A);CHKERRQ(ierr);
     TestBAIJ = PETSC_FALSE;
   } else { /* A is in baij format */
@@ -128,7 +131,14 @@ int main(int argc,char **args)
     }
   }
 
-  /* insert zero diagonal to A for testing - */
+  if (TestShift){
+     /* set diagonals in the 0-th block as 0 for testing shift numerical factor */
+     for (i=0; i<bs; i++){
+       row = i; col[0] = i; value[0] = 0.0;
+       ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+       ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+     }
+   }
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -161,6 +171,16 @@ int main(int argc,char **args)
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,mbs,ip_ptr,&perm);CHKERRQ(ierr);
   ierr = ISSetPermutation(perm);CHKERRQ(ierr);
+
+  /* initialize factinfo */
+  factinfo.shiftnz   = 0.0;
+  factinfo.shiftpd   = PETSC_FALSE;
+  factinfo.zeropivot = 1.e-12;
+  if (TestShift == 1){
+    factinfo.shiftnz = 0.1;
+  } else if (TestShift == 2){
+    factinfo.shiftpd = PETSC_TRUE;
+  }
   
   /* Test MatCholeskyFactor(), MatICCFactor() */
   /*------------------------------------------*/

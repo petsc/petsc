@@ -67,7 +67,7 @@ int main(int argc,char **args)
     info.levels        = lf;
     info.fill          = 1.0;
     info.diagonal_fill = 0;
-    info.damping       = 0;
+    info.shiftnz       = 0;
     info.zeropivot     = 0.0;
     ierr = MatILUFactorSymbolic(C,row,col,&info,&A);CHKERRQ(ierr);
   }

@@ -198,9 +198,9 @@ EXTERN PetscErrorCode PCShellSetView(PC,PetscErrorCode (*)(void*,PetscViewer));
 EXTERN PetscErrorCode PCShellSetName(PC,const char[]);
 EXTERN PetscErrorCode PCShellGetName(PC,char*[]);
 
-EXTERN PetscErrorCode PCFactorSetZeroPivot(PetscReal,MatFactorInfo*);
-EXTERN PetscErrorCode PCFactorSetShiftNonzero(PetscReal,MatFactorInfo*); 
-EXTERN PetscErrorCode PCFactorSetShiftPd(PetscTruth,MatFactorInfo*); 
+EXTERN PetscErrorCode PCFactorSetZeroPivot(PC,PetscReal);
+EXTERN PetscErrorCode PCFactorSetShiftNonzero(PC,PetscReal); 
+EXTERN PetscErrorCode PCFactorSetShiftPd(PC,PetscTruth); 
 
 EXTERN PetscErrorCode PCLUSetMatOrdering(PC,MatOrderingType);
 EXTERN PetscErrorCode PCLUSetReuseOrdering(PC,PetscTruth);

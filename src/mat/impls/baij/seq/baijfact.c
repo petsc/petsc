@@ -361,7 +361,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
       if (nz){
         bcol = bj + jmin;
         while (nz--){
-          rs += PetscAbsScalar(rtmp[*bcol++]);
+          rs += PetscAbsScalar(rtmp[*bcol]);
+          bcol++;
         }
       }
 
@@ -492,7 +493,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,MatFacto
       if (nz){
         bcol = bj + jmin;
         while (nz--){
-          rs += PetscAbsScalar(rtmp[*bcol++]);
+          rs += PetscAbsScalar(rtmp[*bcol]);
+          bcol++;
         }
       }
 

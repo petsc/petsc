@@ -263,7 +263,7 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   PetscErrorCode ierr;
   PetscMPIInt    size = stash->size,tag1=stash->tag1,tag2=stash->tag2;
   PetscInt       *owner,*start,*nprocs,nsends,nreceives;
-  PetscInt       nmax,count,*sindices,*rindices,i,j,idx,bs=stash->bs;
+  PetscInt       nmax,count,*sindices,*rindices,i,j,idx,bs=stash->bs,lastidx;
   PetscScalar    *rvalues,*svalues;
   MPI_Comm       comm = stash->comm;
   MPI_Request    *send_waits,*recv_waits;
@@ -275,9 +275,13 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
   ierr   = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr   = PetscMalloc((stash->n+1)*sizeof(PetscInt),&owner);CHKERRQ(ierr);
 
+  j       = 0;
+  lastidx = -1;
   for (i=0; i<stash->n; i++) {
-    idx = stash->idx[i];
-    for (j=0; j<size; j++) {
+    /* if indices are NOT locally sorted, need to start search at the beginning */
+    if (lastidx > (idx = stash->idx[i])) j = 0;
+    lastidx = idx;
+    for (; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
         nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; break;
       }

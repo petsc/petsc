@@ -3,7 +3,6 @@
 #include "petscksp.h"    /*I      "petscksp.h"    I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 #include "src/ksp/pc/pcimpl.h"                 /*I "petscpc.h"  I*/
-#include "src/ksp/pc/impls/factor/lu/lu.h" 
 
 /*
    Code for almost fully managing multigrid/multi-level linear solvers for DA grids
@@ -539,7 +538,6 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
   KSP            iksp;
   PC             pc,ipc;
   PetscTruth     ismg,isred;
-  PC_LU          *lu=PETSC_NULL;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
@@ -578,10 +576,7 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
       if (isred) {
         ierr = PCRedundantGetPC(ipc,&ipc);CHKERRQ(ierr);
       }
-      lu = (PC_LU*)ipc->data;
-      if (lu){
-        ierr = PCFactorSetShiftPd(PETSC_TRUE,&lu->info);CHKERRQ(ierr);
-      }
+      ierr = PCFactorSetShiftPd(ipc,PETSC_TRUE);CHKERRQ(ierr); 
     }
   }
   PetscFunctionReturn(0);
