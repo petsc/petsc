@@ -401,7 +401,9 @@ M*/
     } else {                                                         \
       flag = PETSC_FALSE;                                            \
     }                                                                \
-  } else flag = PETSC_FALSE;                                         \
+  } else {                                                           \
+    flag = PETSC_FALSE;                                              \
+  }                                                                  \
 }
 /*MC
    PetscObjectSetScalarComposedData - attach scalar data to a PetscObject 
