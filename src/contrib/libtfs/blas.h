@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
+/*$Id: blas.h,v 1.2 2001/03/29 18:29:13 bsmith Exp balay $*/
 #if   defined(BLAS)
 #if   defined(r8)
 double ddot (int n, double *x, int incx, double *y, int incy);
