@@ -130,6 +130,8 @@ class Configure(config.base.Configure):
           yield 'win32fe cl'
         if vendor == 'portland' or not vendor:
           yield 'pgcc'
+        if vendor == 'solaris' or not vendor:
+          yield 'cc'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'gcc'
     return
@@ -244,6 +246,8 @@ class Configure(config.base.Configure):
           yield 'cl'
         if vendor == 'portland' or not vendor:
           yield 'pgCC'
+        if vendor == 'solaris' or not vendor:
+          yield 'CC'
       if self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
     return
@@ -361,6 +365,10 @@ class Configure(config.base.Configure):
         if vendor == 'portland' or not vendor:
           yield 'pgf90'
           yield 'pgf77'
+        if vendor == 'solaris' or not vendor:
+          yield 'f95'
+          yield 'f90'
+          yield 'f77'
         if not vendor:
           yield 'f77'
       if self.framework.argDB['with-gnu-compilers']:
