@@ -127,8 +127,10 @@ ICASE suns:
 ODU: suns, solaris, (others too?)
   user: mcinnes
   passwd: odupasswd
-  sandstorm.cs.odu.edu (sun4, for now ... may change soon)
-
+  sun4:    sandstorm.cs.odu.edu , blizzard, (sun4, for now ... may change soon)
+  solaris: typhoon, flurry, cyclone, hail, fog, orchid, violet
+  solaris:  Ultra-1) hurricane, daisy
+  irix:    galaxa, tetris, pacman, 
 ---------
 
 Linux accounts:
