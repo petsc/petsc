@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.294 1998/11/09 20:16:51 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.295 1998/12/03 04:07:20 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -52,14 +52,15 @@ of components to store on the local processor, and {\tt M} is the
 total number of vector components.  Either the local or global 
 dimension, but not both, can be set to {\tt PETSC\_DECIDE} to 
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
-More generally, one can use the routine \findex{VecCreate()}
+More generally, one can use the routines \findex{VecCreate()} \findex{VecSetFromOptions()}
 \begin{verbatim}
    ierr = VecCreate(MPI_Comm comm,int m,int M,Vec *v);
+   ierr = VecSetFromOptions(v);
 \end{verbatim}
 which automatically generates the appropriate vector type 
 (sequential or parallel) over all processors in {\tt comm}.
 The option {\tt -vec\_type mpi} can be used in conjunction with 
-{\tt VecCreate()} to specify the use of MPI \findex{-vec_type}
+{\tt VecCreate()} and {\tt VecSetFromOptions()} to specify the use of MPI \findex{-vec_type}
 vectors even for the uniprocessor case.
 
 We emphasize that all processors in {\tt comm} {\em must} call the
@@ -1629,7 +1630,7 @@ and then associate it with the matrix, {\tt mat}, by using the
 command \findex{MatShellSetOperation()}
 \begin{verbatim}
    ierr = MatShellSetOperation(Mat mat,MatOperation MATOP_MULT,
-                               int (*UserMult)(Mat,Vec,Vec));
+                               (void *) int (*UserMult)(Mat,Vec,Vec));
 \end{verbatim}
 Here {\tt MATOP\_MULT} is the name of the operation for matrix-vector
 multiplication. Within each user-defined routine (such as
@@ -1649,6 +1650,9 @@ user-provided functions have the same calling sequence as the
 usual matrix interface routines, since the user-defined functions are
 intended to be accessed through interface, e.g., 
 {\tt MatMult(Mat,Vec,Vec)} $ \rightarrow$ {\tt UserMult(Mat,Vec,Vec)}.
+The final argument for {\tt MatShellSetOperation()} needs to be cast
+to a {\tt void *}, since the final argument could (depending on the 
+{\tt MatOperation} be a variety of different functions.
 
 Note that {\tt MatShellSetOperation()} can also be used as a
 ``backdoor'' means of introducing user-defined changes in matrix
@@ -6386,7 +6390,7 @@ within the makefile.
 \end{figure}
 
 
-\findex{PETSC_LIB} \findex{SLES_LIB}
+\findex{PETSC_LIB} \findex{PETSC_LIB}
 Note that the variable {\tt \$\{PETSC\_LIB\}} (as listed on the link
 line in the above makefile) specifies {\em all} of the various PETSc
 libraries in the appropriate order for correct linking.  For users who

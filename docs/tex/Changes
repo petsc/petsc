@@ -21,7 +21,8 @@ add to it).
 
     Fixed bugs in factorization for AIJ matrices with variable size
     inodes
-   
+
+    MatGetSubMatrixCall replaced with MatReuse   
 
   KSP
 
