@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.53 1997/03/08 18:16:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.54 1997/03/09 17:44:41 curfman Exp curfman $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -1025,14 +1025,14 @@ static int MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_MAX,matin->comm);
+    MPI_Allreduce(isend,irecv,5,MPI_INT,MPI_MAX,matin->comm);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    MPI_Allreduce(isend,irecv,3,MPI_INT,MPI_SUM,matin->comm);
+    MPI_Allreduce(isend,irecv,5,MPI_INT,MPI_SUM,matin->comm);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
