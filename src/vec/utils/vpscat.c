@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.130 2000/04/12 04:22:10 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.131 2000/04/21 17:01:34 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -60,7 +60,6 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
 
       ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Number receives = %d; Number from self = %d\n",rank,from->n,from->local.n);CHKERRQ(ierr);
       for (i=0; i<from->n; i++){
-        ierr = ViewerASCIISynchronizedPrintf(viewer,"Now the indices\n");CHKERRQ(ierr);
         ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d length %d from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
       }
 
