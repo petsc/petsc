@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.114 2001/01/19 23:19:30 balay Exp bsmith $ */
+/* $Id: filev.c,v 1.115 2001/02/27 21:11:59 bsmith Exp balay $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -621,7 +621,7 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (!isascii) SETERRQ(1,"Not ASCII PetscViewer");
 
   comm = viewer->comm;
