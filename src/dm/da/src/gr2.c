@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.1 1998/12/22 21:45:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.2 1998/12/23 22:53:37 bsmith Exp balay $";
 #endif
 
 /* 
@@ -14,10 +14,9 @@ EXTERN_C_BEGIN
 int VecView_MPI_Draw_DA2d(Vec xin,Viewer v)
 {
   DA             da;
-  int            i,rank,size,ierr,start,n,tag1,tag2,igstart,igsize,N,step;
+  int            i,rank,size,ierr,n,tag1,tag2,igstart,igsize,N,step;
   int            istart,isize,j,M,jgsize,jgstart;
-  MPI_Status     status;
-  double         coors[4],ymin,ymax,min,max,xmin,xmax,tmp;
+  double         coors[4],ymin,ymax,min,max,xmin,xmax;
   Scalar         *array,*xy;
   Draw           draw;
   PetscTruth     isnull;
