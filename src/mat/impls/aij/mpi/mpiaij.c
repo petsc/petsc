@@ -1813,6 +1813,38 @@ int MatCreate_MPIAIJ(Mat B)
 }
 EXTERN_C_END
 
+/*MC
+   MATAIJ = "aij" - A matrix type to be used for sparse matrices.
+
+   This matrix type is identical to MATSEQAIJ when constructed with a single process communicator,
+   and MATMPIAIJ otherwise.
+
+   Options Database Keys:
+. -mat_type aij - sets the matrix type to "aij" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_AIJ"
+int MatCreate_AIJ(Mat A) {
+  int ierr,size;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATAIJ);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatDuplicate_MPIAIJ"
 int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)

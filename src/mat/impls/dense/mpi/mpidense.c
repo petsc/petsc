@@ -1057,6 +1057,38 @@ int MatCreate_MPIDense(Mat mat)
 }
 EXTERN_C_END
 
+/*MC
+   MATDENSE = "dense" - A matrix type to be used for dense matrices.
+
+   This matrix type is identical to MATSEQDENSE when constructed with a single process communicator,
+   and MATMPIDENSE otherwise.
+
+   Options Database Keys:
+. -mat_type dense - sets the matrix type to "dense" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateMPIDense,MATSEQDENSE,MATMPIDENSE
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_Dense"
+int MatCreate_Dense(Mat A) {
+  int ierr,size;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATDENSE);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIDenseSetPreallocation"
 /*@C
