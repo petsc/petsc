@@ -2,5 +2,3 @@ This file contains a list of the special definitions needed by PETSc,
 along with a brief description (including the system where the need was
 discovered).
 
-HAVE_EXP10 routine exp10 (sun4).  From the math library on some systems
- Needed only to build src/draw/utils/axis.c

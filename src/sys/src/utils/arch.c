@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: arch.c,v 1.12 1996/03/20 03:13:51 curfman Exp curfman $";
+static char vcid[] = "$Id: arch.c,v 1.13 1996/03/20 03:32:01 curfman Exp bsmith $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
@@ -24,7 +24,7 @@ int PetscGetArchType(char *str,int slen)
   PetscStrncpy(str,"solaris",slen);
 #elif defined(PARCH_sun4) 
   PetscStrncpy(str,"sun4",slen);
-#elif defined(PARCH_IRIX) && defined(HAVE_64BITS)
+#elif defined(PARCH_IRIX64)
   PetscStrncpy(str,"IRIX64",slen);
 #elif defined(PARCH_IRIX)
   PetscStrncpy(str,"IRIX",slen);
