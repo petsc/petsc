@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.32 2000/10/27 16:15:27 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.33 2000/10/27 16:32:23 hzhang Exp hzhang $*/
 /*
     Symbolic (-UT)*D*(-U) factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -1948,18 +1948,18 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,Mat *B)
         }
         /* transform columnoriented blocks that lie in the lower triangle to roworiented blocks */
         if (i > aj[j]){ 
-          printf("change orientation, row: %d, col: %d\n",i,aj[j]);
+          /* printf("change orientation, row: %d, col: %d\n",i,aj[j]); */
           ap = aa + j*9;                     /* ptr to the beginning of j-th block of aa */
           for (k=0; k<9; k++) dk[k] = ap[k]; /* dk <- j-th block of aa */
           for (k=0; k<3; k++){               /* j-th block of aa <- dk^T */
-            for (k1=0; k1<3; k++) *ap++ = dk[k + 3*k1];         
+            for (k1=0; k1<3; k1++) *ap++ = dk[k + 3*k1];         
           }
         }
       }
     }
     ierr = PetscFree(a2anew);CHKERRA(ierr); 
   }
-
+  
   /* for each row k */
   for (k = 0; k<mbs; k++){
 
