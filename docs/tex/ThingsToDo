@@ -14,7 +14,7 @@ Additional Capabilities that PETSc Needs:
   - Change remotetest to use gzip instead of compress, if it 
     is available on all machines.
 
- - allow more then one SNES and TS monitor. Model on KSP.
+ - allow more then one TS monitor. Model on KSP.
 
  - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
 
@@ -565,4 +565,4 @@ Additional Capabilities that PETSc Needs:
 
  X Remove Unix man pages from next PETSc release. 
 
- X allow more then one KSP monitor.
+ X allow more then one KSP and SNES monitor.
