@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.3 1995/05/11 22:54:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.4 1995/05/18 19:25:36 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -244,6 +244,7 @@ static int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,int *nz,
 static int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 {
   Mat_MPIBDiag *A = (Mat_MPIBDiag *) mat->data;
+  int          ierr;
   if (!A->assembled) 
     SETERR(1,"MatGetDiag_MPIBDiag: Must assemble matrix first.");
   return MatGetDiagonal(A->A,v);
@@ -451,6 +452,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
 {
   Mat          mat;
   Mat_MPIBDiag *mbd;
+  Mat_BDiag    *mlocal;
   int          ierr, i, k, *ldiag, sum[2], work[2];
 
   *newmat       = 0;
@@ -499,6 +501,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   printf("[%d] rstart=%d, rend=%d, brstart=%d, brend=%d\n", mbd->mytid,
            mbd->rstart,mbd->rend,mbd->brstart, mbd->brend);
 
+  /* Determine local diagonals; for now, assume global rows = global cols */
   ldiag = (int *) MALLOC(nd*sizeof(int)); CHKPTR(ldiag); /* local diags */
   k = 0;
   for (i=0; i<nd; i++) {
@@ -516,6 +519,10 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   }
   ierr = MatCreateSequentialBDiag(MPI_COMM_SELF,mbd->m,mbd->n,k,nb,
                                   ldiag,diagv,&mbd->A); CHKERR(ierr); 
+  mlocal = (Mat_BDiag *) mbd->A->data;
+  mlocal->mainbd += mbd->brstart; /* fix main diagonal location */
+  if (mlocal->mainbd >= k)
+    SETERR(1,"Must set main diagonal location, even if zero");
   PLogObjectParent(mat,mbd->A);
   FREE(ldiag);
 
