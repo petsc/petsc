@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.20 1997/09/22 15:21:51 balay Exp balay $";
+C      "$Id: ex12.F,v 1.21 1997/09/25 15:26:01 balay Exp balay $";
 
        implicit none
 
@@ -86,7 +86,8 @@ C Get information about factored matrix
         call PCGetFactoredMatrix(pc,A_factor,ierr)
         call MatGetInfo(A_factor,MAT_GLOBAL_SUM,info,ierr)
         write(6,100) info(MAT_INFO_FILL_RATIO_GIVEN),
-     *    info(MAT_INFO_FILL_RATIO_NEEDED),info(MAT_FACTOR_MALLOCS)
+     *    info(MAT_INFO_FILL_RATIO_NEEDED),
+     *    info(MAT_INFO_FACTOR_MALLOCS)
       endif
 
 C Cleanup
