@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.29 1997/02/19 20:04:33 balay Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.30 1997/02/22 02:28:27 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -8,6 +8,9 @@ static char vcid[] = "$Id: binv.c,v 1.29 1997/02/19 20:04:33 balay Exp bsmith $"
 #include <fcntl.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
+#endif
+#if defined (HAVE_IO_H)
+#include <io.h>
 #endif
 
 struct _Viewer {
