@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.3 2000/09/25 18:52:03 curfman Exp curfman $*/
+/*$Id: cholesky.c,v 1.4 2000/09/25 20:29:50 curfman Exp curfman $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -142,7 +142,8 @@ static int PCSetUp_Cholesky(PC pc)
     if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
     if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
     ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-    if (dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);} /* only use row ordering for SBAIJ */
+    if (dir->col && dir->row != dir->col) 
+       {ierr = ISDestroy(dir->col);CHKERRQ(ierr); dir->col=0;} /* only use row ordering for SBAIJ */
     if (dir->row) {PLogObjectParent(pc,dir->row);}
     ierr = MatCholeskyFactor(pc->pmat,dir->row,dir->info.fill);CHKERRQ(ierr);
     dir->fact = pc->pmat;
@@ -150,7 +151,8 @@ static int PCSetUp_Cholesky(PC pc)
     MatInfo info;
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-      if (dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);} /* only use row ordering for SBAIJ */
+      if (dir->col && dir->row != dir->col) 
+         {ierr = ISDestroy(dir->col);CHKERRQ(ierr); dir->col=0;} /* only use row ordering for SBAIJ */
       ierr = OptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         PetscReal tol = 1.e-10;
@@ -167,7 +169,8 @@ static int PCSetUp_Cholesky(PC pc)
         if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
         if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
         ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-        if (dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);} /* only use row ordering for SBAIJ */
+        if (dir->col && dir->row != dir->col)
+           {ierr = ISDestroy(dir->col);CHKERRQ(ierr); dir->col=0;} /* only use row ordering for SBAIJ */
         ierr = OptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           PetscReal tol = 1.e-10;
