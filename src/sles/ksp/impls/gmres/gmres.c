@@ -296,9 +296,9 @@ int KSPDestroy_GMRES(KSP ksp)
 #define __FUNCT__ "BuildGmresSoln"
 static int BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
 {
-  PetscScalar    tt,zero = 0.0,one = 1.0;
-  int       ierr,ii,k,j;
-  KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
+  PetscScalar tt,zero = 0.0,one = 1.0;
+  int         ierr,ii,k,j;
+  KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -342,9 +342,9 @@ static int BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
 #define __FUNCT__ "GMRESUpdateHessenberg"
 static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
-  PetscScalar    *hh,*cc,*ss,tt;
-  int       j;
-  KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
+  PetscScalar *hh,*cc,*ss,tt;
+  int         j;
+  KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
 
   PetscFunctionBegin;
   hh  = HH(0,it);

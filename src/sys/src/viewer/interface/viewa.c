@@ -11,8 +11,7 @@
 
    Input Parameters:
 +  viewer - the PetscViewer
-.  format - the format
--  char - optional object name
+-  format - the format
 
    Level: intermediate
 
@@ -62,8 +61,7 @@ int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 
    Input Parameters:
 +  viewer - the PetscViewer
-.  format - the format
--  char - optional object name
+-  format - the format
 
    Level: intermediate
 
