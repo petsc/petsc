@@ -203,6 +203,7 @@ EXTERN int MatGetBlockSize(Mat,int *);
 EXTERN int MatMult(Mat,Vec,Vec);
 EXTERN int MatMultAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatMultTranspose(Mat,Vec,Vec);
+EXTERN int MatIsSymmetric(Mat,Mat,PetscTruth*);
 EXTERN int MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatMultConstrained(Mat,Vec,Vec);
 EXTERN int MatMultTransposeConstrained(Mat,Vec,Vec);

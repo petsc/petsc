@@ -1459,6 +1459,63 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatIsSymmetric_SeqAIJ"
+int MatIsSymmetric_SeqAIJ(Mat A,Mat B,PetscTruth *f)
+{
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ *) A->data,*bij = (Mat_SeqAIJ*) A->data;
+  MatType type; PetscTruth flg;
+  int *adx,*bdx,*aii,*bii,*aptr,*bptr; PetscScalar *va,*vb;
+  int ma,na,mb,nb, i,ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetType(B,&type); CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,MATSEQAIJ,&flg); CHKERRQ(ierr);
+  if (!flg) SETERRQ(1,"Second matrix needs to be SeqAIJ too");
+  bij = (Mat_SeqAIJ *) B->data;
+  if (aij->indexshift || bij->indexshift)
+    SETERRQ(1,"Index shift not supported");
+
+  ierr = MatGetSize(A,&ma,&na); CHKERRQ(ierr);
+  ierr = MatGetSize(B,&mb,&nb); CHKERRQ(ierr);
+  if (ma!=nb || na!=mb)
+    SETERRQ(1,"Incompatible A/B sizes for symmetry test");
+  aii = aij->i; bii = bij->i;
+  adx = aij->j; bdx = bij->j;
+  va = aij->a; vb = bij->a;
+  ierr = PetscMalloc(ma*sizeof(int),&aptr); CHKERRQ(ierr);
+  ierr = PetscMalloc(mb*sizeof(int),&bptr); CHKERRQ(ierr);
+  for (i=0; i<ma; i++) aptr[i] = aii[i];
+  for (i=0; i<mb; i++) bptr[i] = bii[i];
+
+  *f = PETSC_TRUE;
+  for (i=0; i<ma; i++) {
+    /*printf("row %d spans %d--%d; we start @ %d\n",
+      i,idx[ii[i]],idx[ii[i+1]-1],idx[aptr[i]]);*/
+    while (aptr[i]<aii[i+1]) {
+      int idc,idr; PetscScalar vc,vr;
+      /* column/row index/value */
+      idc = adx[aptr[i]]; idr = bdx[bptr[idc]];
+      vc = va[aptr[i]]; vr = vb[bptr[idc]];
+      /*printf("comparing %d: (%d,%d)=%e to (%d,%d)=%e\n",
+	aptr[i],i,idc,vc,idc,idr,vr);*/
+      if (i!=idr || vc!=vr) {
+	*f = PETSC_FALSE; goto done;
+      } else {
+	aptr[i]++; if ((int)B || i!=idc) bptr[idc]++;
+      }
+    }
+  }
+ done:
+  ierr = PetscFree(aptr); CHKERRQ(ierr);
+  if ((int)B) {
+    ierr = PetscFree(bptr); CHKERRQ(ierr);}
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalScale_SeqAIJ"
 int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
@@ -2721,6 +2778,9 @@ int MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqbaij_C",
                                      "MatConvert_SeqAIJ_SeqBAIJ",
                                       MatConvert_SeqAIJ_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsSymmetric_C",
+                                     "MatIsSymmetric_SeqAIJ",
+                                      MatIsSymmetric_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEngineGet_C","MatMatlabEngineGet_SeqAIJ",MatMatlabEngineGet_SeqAIJ);CHKERRQ(ierr);

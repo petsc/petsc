@@ -636,6 +636,41 @@ int MatMultTranspose_MPIAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatIsSymmetric_MPIAIJ"
+int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
+{
+  Mat_MPIAIJ *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
+  Mat        A = Aij->A, B,Aoff = Aij->B,Boff;
+  MatType    type;
+  IS         Me,Notme;
+  int        M,N,first,last,*notme,i, ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetType(Bmat,&type); CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,MATMPIAIJ,f); CHKERRQ(ierr);
+  if (!*f) SETERRQ(1,"Second matrix needs to be SeqAIJ too");
+  ierr = MatIsSymmetric(A,B,f); CHKERRQ(ierr);
+  if (!*f) PetscFunctionReturn(0);
+  Bij = (Mat_MPIAIJ *) Bmat->data; B = Bij->B;
+  ierr = MatGetSize(Amat,&M,&N); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(Amat,&first,&last); CHKERRQ(ierr);
+  ierr = PetscMalloc((N-last+first)*sizeof(int),&notme); CHKERRQ(ierr);
+  for (i=0; i<first; i++) notme[i] = i;
+  for (i=last; i<M; i++) notme[i-last+first] = i;
+  ierr = ISCreateGeneral
+    (MPI_COMM_SELF,N-last+first,notme,&Notme); CHKERRQ(ierr);
+  ierr = ISCreateStride
+    (MPI_COMM_SELF,last-first,first,1,&Me); CHKERRQ(ierr);
+  ierr = MatGetSubMatrix
+    (B,Notme,Me,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Boff); CHKERRQ(ierr);
+  ierr = MatIsSymmetric(Aoff,Boff,f); CHKERRQ(ierr);
+  ierr = MatDestroy(Boff); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_MPIAIJ"
 int MatMultTransposeAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
@@ -1746,9 +1781,11 @@ int MatCreate_MPIAIJ(Mat B)
                                      "MatRetrieveValues_MPIAIJ",
                                      MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
-                                     "MatGetDiagonalBlock_MPIAIJ",
+				     "MatGetDiagonalBlock_MPIAIJ",
                                      MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsSymmetric_C",
+				     "MatIsSymmetric_MPIAIJ",
+				     MatIsSymmetric_MPIAIJ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

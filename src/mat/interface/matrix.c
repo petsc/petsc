@@ -2669,7 +2669,7 @@ int MatGetRowMax(Mat mat,Vec v)
 
    Concepts: matrices^transposing
 
-.seealso: MatMultTranspose(), MatMultTransposeAdd()
+.seealso: MatMultTranspose(), MatMultTransposeAdd(), MatIsSymmetric()
 @*/
 int MatTranspose(Mat mat,Mat *B)
 {
@@ -2687,6 +2687,46 @@ int MatTranspose(Mat mat,Mat *B)
   ierr = (*mat->ops->transpose)(mat,B);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Transpose,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsSymmetric"
+/*@C
+   MatIsSymmetric - Test whether a matrix is another one's transpose, 
+        or its own, in which case it tests symmetry.
+
+   Collective on Mat
+
+   Input Parameter:
++  A - the matrix to test
+-  B - the matrix to test against, this can equal the first parameter
+
+   Output Parameters:
+.  flg - the result
+
+   Notes:
+   Only available for SeqAIJ/MPIAIJ matrices. The sequential algorithm
+   has a running time of the order of the number of nonzeros; the parallel
+   test involves parallel copies of the block-offdiagonal parts of the matrix.
+
+   Level: intermediate
+
+   Concepts: matrices^transposing, matrix^symmetry
+
+.seealso: MatTranspose()
+@*/
+int MatIsSymmetric(Mat A,Mat B,PetscTruth *flg)
+{
+  int ierr,(*f)(Mat,Mat,PetscTruth*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  PetscValidHeaderSpecific(B,MAT_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsSymmetric_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,B,flg);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
