@@ -1,4 +1,4 @@
-/*$Id: fdmpiaij.c,v 1.38 2001/03/23 23:21:56 balay Exp bsmith $*/
+/*$Id: fdmpiaij.c,v 1.39 2001/04/10 19:35:25 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -91,8 +91,8 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     /*
        Mark all rows affect by these columns
     */
-    if (flg) {/*-----------------------------------------------------------------------------*/
-      /* crude, slow version */
+    if (!flg) {/*-----------------------------------------------------------------------------*/
+      /* crude, fast version */
       ierr = PetscMemzero(rowhit,M*sizeof(int));CHKERRQ(ierr);
       /* loop over columns*/
       for (j=0; j<nctot; j++) {
@@ -139,7 +139,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
         }
       }
     } else {/*-------------------------------------------------------------------------------*/
-      /* efficient version, using rowhit as a linked list */
+      /* slow version, using rowhit as a linked list */
       int currentcol,fm,mfm;
       rowhit[M] = M;
       nrows     = 0;
