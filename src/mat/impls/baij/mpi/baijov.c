@@ -1,4 +1,4 @@
-/*$Id: baijov.c,v 1.51 2000/09/15 14:56:12 balay Exp balay $*/
+/*$Id: baijov.c,v 1.52 2000/09/17 14:26:37 balay Exp bsmith $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -789,7 +789,7 @@ int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall
 #if defined (PETSC_USE_CTABLE)
 #undef __FUNC__    
 #define __FUNC__ "PetscGetProc" 
-int PetscGetProc(const int gid, const int numprocs, const int proc_gnode[], int *proc )
+int PetscGetProc(const int gid, const int numprocs, const int proc_gnode[], int *proc)
 {
   int nGlobalNd = proc_gnode[numprocs];
   int fproc = (int) ((float)gid * (float)numprocs / (float)nGlobalNd + 0.5);
@@ -797,7 +797,7 @@ int PetscGetProc(const int gid, const int numprocs, const int proc_gnode[], int 
   PetscFunctionBegin;
   /* if(fproc < 0) SETERRQ(1,1,"fproc < 0");*/
   if (fproc > numprocs) fproc = numprocs;
-  while (gid < proc_gnode[fproc] || gid >= proc_gnode[fproc+1] ) {
+  while (gid < proc_gnode[fproc] || gid >= proc_gnode[fproc+1]) {
     if (gid < proc_gnode[fproc]) fproc--;
     else                         fproc++;
   }
@@ -1201,7 +1201,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
 #if defined (PETSC_USE_CTABLE)
       lcol1_gcol1 = colmaps[i];
       for (j=0; j<jmax; j++) { 
-	ierr = PetscTableAdd(lcol1_gcol1, icol_i[j]+1, j+1 );
+	ierr = PetscTableAdd(lcol1_gcol1, icol_i[j]+1, j+1);
 	CHKERRQ(ierr);
       }
 #else
