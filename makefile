@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.242 1998/04/29 16:13:03 bsmith Exp balay $ 
+# $Id: makefile,v 1.243 1998/06/12 21:31:03 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -29,10 +29,10 @@ info:
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
 	-@echo "-----------------------------------------"
-	-@echo "Using C compiler: ${CC} ${COPTFLAGS}"
+	-@echo "Using C compiler: ${CC} ${CFLAGS} ${COPTFLAGS}"
 	-@if [ -n "${CCV}" -a "${CCV}" != "unknown" ] ; then \
 	  echo "Compiler version:" `${CCV}` ; fi
-	-@echo "Using Fortran compiler: ${FC} ${FFLAGS} ${FOPTFLAGS}"
+	-@echo "Using Fortran compiler: ${FC} ${FOPTFLAGS}"
 	-@echo "-----------------------------------------"
 	-@grep PETSC_VERSION_NUMBER include/petsc.h | sed "s/........//"
 	-@echo "-----------------------------------------"
