@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.13 1995/09/06 03:06:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.14 1995/09/06 14:07:29 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -35,7 +35,7 @@ static char vcid[] = "$Id: umtr.c,v 1.13 1995/09/06 03:06:38 bsmith Exp curfman 
 static int SNESSolve_UMTR(SNES snes,int *outits)
 {
   SNES_UMTR    *neP = (SNES_UMTR *) snes->data;
-  int          maxits, i, history_len, nlconv, ierr, qits, newton, has_norm;
+  int          maxits, i, history_len, nlconv, ierr, qits, newton;
   double       *gnorm, xnorm, max_val, *history, ftrial, delta;
   double       zero = 0.0, *f, two = 2.0, four = 4.0;
   Scalar       one = 1.0;
