@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.17 2001/03/23 23:24:25 balay Exp bsmith $*/
+/*$Id: ex22.c,v 1.18 2001/04/10 19:37:05 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem.\n\n";
 
@@ -49,14 +49,13 @@ extern int Monitor(SNES,int,PetscReal,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int     ierr,N = 5,i;
+  int     ierr;
   UserCtx user;
   DA      da;
   DMMG    *dmmg;
   VecPack packer;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Hardwire several options; can be changed at command line */
   ierr = PetscOptionsSetValue("-dmmg_grid_sequence",PETSC_NULL);CHKERRQ(ierr);
@@ -77,7 +76,7 @@ int main(int argc,char **argv)
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
-  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
 
   /* create graphics windows */
@@ -89,9 +88,10 @@ int main(int argc,char **argv)
   ierr = DMMGSetUseMatrixFree(dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
+  /*
   for (i=0; i<DMMGGetLevels(dmmg); i++) {
     ierr = SNESSetMonitor(dmmg[i]->snes,Monitor,dmmg[i],0);CHKERRQ(ierr); 
-  }
+  }*/
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
@@ -138,11 +138,6 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DAVecGetArray(da,vfu_lambda,(void**)&fu_lambda);CHKERRQ(ierr);
   d    = N-1.0;
   h    = 1.0/d;
-
-#define u(i)        u_lambda[i][0]
-#define lambda(i)   u_lambda[i][1]
-#define fu(i)       fu_lambda[i][1]
-#define flambda(i)  fu_lambda[i][0]
 
   /* derivative of L() w.r.t. w */
   if (xs == 0) { /* only first processor computes this */
