@@ -189,7 +189,7 @@ extern int    atoi(char*);
 extern int  getdomainname(char *,int);
 extern void exit(int);
 extern void abort();
-
+extern int readlink(const char *, char *, int);
 #else
 extern char *mktemp(char*);
 #define SIGBUS _SIGBUS
