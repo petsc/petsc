@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.200 1997/02/04 19:47:36 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.201 1997/02/05 04:37:33 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -636,7 +636,8 @@ dimensions are analogous:
 \begin{verbatim}
    ierr = DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);
    ierr = DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                     int M,int N,int P,int m,int n,int p,int w,int s,DA *inra);
+                     int M,int N,int P,int m,int n,int p,int w,int s,int *lx,
+                     int *ly,int *lz,DA *inra);
 \end{verbatim}
 {\tt DA\_ZPERIODIC}, \findex{DA_ZPERIODIC}
 {\tt DA\_XZPERIODIC}, \findex{DA_XZPERIODIC}
