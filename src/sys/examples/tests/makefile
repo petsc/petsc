@@ -24,39 +24,39 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c
 EXAMPLESF       = ex5.F ex6.F ex7f.F
 
-ex1: ex1.o 
+ex1: ex1.o chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
 	$(RM) -f ex1.o
 
-ex2: ex2.o 
+ex2: ex2.o chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
 	$(RM) -f ex2.o
 
-ex3: ex3.o 
+ex3: ex3.o chkopts
 	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
 	$(RM) -f ex3.o
 
-ex4: ex4.o 
+ex4: ex4.o chkopts
 	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
 	$(RM) -f ex4.o
 
-ex5: ex5.o 
+ex5: ex5.o chkopts
 	-$(FLINKER) -o ex5 ex5.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) -f ex5.o
 
-ex6: ex6.o 
+ex6: ex6.o chkopts
 	-$(FLINKER) -o ex6 ex6.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) -f ex6.o
 
-ex7: ex7.o 
+ex7: ex7.o chkopts
 	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
 	$(RM) -f ex7.o
 
-ex7f: ex7f.o 
+ex7f: ex7f.o chkopts
 	-$(FLINKER) -o ex7f ex7f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) -f ex7f.o
 
-ex8: ex8.o 
+ex8: ex8.o chkopts
 	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
 	$(RM) -f ex8.o
 
