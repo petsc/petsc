@@ -8,7 +8,7 @@ class Defaults:
   def __init__(self, defaults):
     self.defaults = defaults
     # Get runtime AST
-    defaults.usingSIDL.repositoryDirs.append(os.path.join(self.defaults.usingSIDL.getRootDir(), 'sidl', 'sidl.sidl'))
+    defaults.usingSIDL.repositoryDirs.append(self.defaults.usingSIDL.getRootDir())
     return
 
   def getCompilerModule(self):

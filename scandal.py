@@ -25,10 +25,14 @@ class CompileSIDL (compile.Process):
   def constructIncludes(self, source, baseFlags):
     if self.repositoryDirs:
       baseFlags += ' -includes=['
-      for source in self.repositoryDirs:
-        if not os.path.exists(source): raise RuntimeError('Invalid SIDL include directory: '+source)
+      for i in range(len(self.repositoryDirs)):
+        dir = os.path.join(self.repositoryDirs[i], 'sidl')
+        if not os.path.exists(dir): raise RuntimeError('Invalid SIDL include directory: '+dir)
+        for source in os.listdir(dir):
+          source  = os.path.join(dir, source)
+          if not os.path.exists(source): raise RuntimeError('Invalid SIDL include: '+source)
         baseFlags += source
-        if not source == self.repositoryDirs[-1]: baseFlags += ','
+        if i < len(self.repositoryDirs)-1: baseFlags += ','
       baseFlags += ']'
     return baseFlags
 

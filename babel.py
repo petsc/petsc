@@ -33,10 +33,11 @@ class CompileSIDL (compile.Process):
   def constructRepositoryDir(self, source, baseFlags):
     if self.repositoryDirs:
       baseFlags += ' --repository-path=\"'
-      for dir in self.repositoryDirs:
+      for i in range(len(self.repositoryDirs)):
+        dir = os.path.join(self.repositoryDirs[i], 'xml')
         if not os.path.exists(dir): raise RuntimeError('Invalid SIDL repository directory: '+dir)
         baseFlags += dir
-        if not dir == self.repositoryDirs[-1]: baseFlags += ';'
+        if i < len(self.repositoryDirs)-1: baseFlags += ';'
       baseFlags += '\"'
     return baseFlags
 
