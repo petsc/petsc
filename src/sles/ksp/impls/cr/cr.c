@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.9 1995/03/30 21:17:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: cr.c,v 1.10 1995/04/12 23:51:24 curfman Exp curfman $";
 #endif
 
 /*                       
@@ -103,12 +103,6 @@ static int  KSPSolve_CR(KSP itP,int *its)
   }
   if (i == maxit) i--;
   if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
-
-  /* Update computational work */
-  itP->namult += i+1;
-  itP->nbinv  += i+1;
-  itP->nvectors += (i+1)*10;
-
   *its = RCONV(itP,i+1); return 0;
 }
 

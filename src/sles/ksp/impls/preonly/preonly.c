@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: preonly.c,v 1.6 1995/03/25 01:26:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.7 1995/03/30 21:17:43 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -20,15 +20,12 @@ static int KSPSetUp_PREONLY(KSP itP)
 
 static int  KSPSolve_PREONLY(KSP itP,int *its)
 {
-Vec      X,B;
-X        = itP->vec_sol;
-B        = itP->vec_rhs;
-PCApply(itP->B,B,X);
-
-itP->nmatop   += 1;
-itP->nvectors += 0;
-*its = 1;
-return 0;
+  Vec X,B;
+  X    = itP->vec_sol;
+  B    = itP->vec_rhs;
+  PCApply(itP->B,B,X);
+  *its = 1;
+  return 0;
 }
 
 int KSPCreate_PREONLY(KSP itP)

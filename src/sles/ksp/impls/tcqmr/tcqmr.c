@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.7 1995/03/25 01:26:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.8 1995/03/30 21:17:45 bsmith Exp curfman $";
 #endif
 
 /*
@@ -138,10 +138,6 @@ while ( !CONVERGED(itP,rnorm,it)) {
 #endif
     it++; if (it > itP->max_it) {break;}
     }
-
-/* Get floating point work */
-itP->nmatop += (it * 3);
-itP->nvectors += (it) * 34;
 
 /* Need to undo preconditioning here  */
 KSPUnwindPre(  itP, x, vtmp );

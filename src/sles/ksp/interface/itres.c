@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.8 1995/04/13 21:08:13 curfman Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.9 1995/04/16 00:49:57 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -38,7 +38,6 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
   }
   else {
     PCApply(itP->B,vb,vbinvf);
-    itP->nbinv++;
   }
   if (!itP->guess_zero) {
     /* compute initial residual: f - M*x */
@@ -47,18 +46,15 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
         /* we want a * binv * b * x, or just a * x for the first step */
         /* a*x into temp */
         MatMult(Amat, vsoln, vt1 );
-	itP->namult++;
     }
     else {
         /* else we do binv * a * x */
         PCApplyBAorAB(itP->B,itP->right_pre, vsoln, vt1, vt2 );
-	itP->nmatop++;
     }
     /* This is an extra copy for the right-inverse case */
     VecCopy( vbinvf, vres ); 
     VecAXPY(&one, vt1, vres );
           /* inv(b)(f - a*x) into dest */
-    itP->nvectors++;
   }
   else {
     VecCopy( vbinvf, vres );
@@ -92,7 +88,6 @@ int KSPUnwindPre( KSP itP, Vec vsoln, Vec vt1 )
   if (itP->right_pre) {
     PCApply(itP->B, vsoln, vt1 );
     VecCopy( vt1, vsoln );
-    itP->nbinv++;
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bcgs.c,v 1.9 1995/03/25 01:25:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.10 1995/03/30 21:17:29 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -97,10 +97,6 @@ for (i=0; i<maxit; i++) {
     }
 if (i == maxit) i--;
 if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
-
-/* Get floating point work */
-itP->nmatop += (i * 2);
-itP->nvectors += (i) * 24;
 
 KSPUnwindPre( itP, X, T );
 *its = RCONV(itP,i+1); return 0;

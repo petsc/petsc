@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.7 1995/03/25 01:26:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.8 1995/03/30 21:17:46 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -114,10 +114,6 @@ for (i=0; i<maxit; i++) {
     }
 if (i == maxit) i--;
 if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
-
-/* Update computational work */
-itP->nmatop   += 2*(i+1);
-itP->nvectors += (i+1)*26;
 
 KSPUnwindPre(  itP, X, T );
 *its = RCONV(itP,i+1); return 0;

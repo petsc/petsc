@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.11 1995/03/30 21:17:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: cheby.c,v 1.12 1995/04/12 23:50:40 curfman Exp curfman $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -130,19 +130,13 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
     itP->vec_sol = p[k]; 
     MONITOR(itP,rnorm,i);
   }
-if (history) itP->res_act_size = (hist_len < i) ? hist_len : i;
+  if (history) itP->res_act_size = (hist_len < i) ? hist_len : i;
 
   /* make sure solution is in vector x */
   itP->vec_sol = x;
   if (k != 0) {
     VecCopy(p[k],x);
   }
-
-  /* Get floating point work */
-  itP->namult   += (i+1);
-  itP->nbinv    += (i+1);
-  itP->nvectors += (i+1)*7;
-
   *its = RCONV(itP,i+1); return 0;
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.8 1995/03/25 01:25:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.9 1995/03/30 21:17:33 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -81,9 +81,7 @@ for (i=0; i<maxit; i++) {
     PCApplyBAorAB(itP->B,itP->right_pre,P,V,Q);    /* v <- K p              */
     rhoold = rho;
     }
-if (i == maxit) {i--; itP->nmatop++; itP->nvectors += 4;}
-itP->nmatop   += 2 + 2*i;
-itP->nvectors +=  8 + 10*i;
+if (i == maxit) i--;
 if (history) itP->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
 KSPUnwindPre(  itP, X, T );

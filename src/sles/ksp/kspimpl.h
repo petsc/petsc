@@ -59,9 +59,6 @@ struct _KSP {
   int  nwork;
   Vec *work;
 
-  /* ----------------Keep track of the amount of work----------------- */
-  int  nmatop, namult, nbinv, nvectors, nscalar;
-
   /* ------------Contexts for the user-defined functions-------------- */
   void *monP,       /* User Monitor */
        *cnvP;       /* Convergence tester */

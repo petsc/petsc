@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.31 1995/05/03 16:17:52 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.32 1995/05/03 16:23:04 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -94,12 +94,6 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->MethodPrivate = 0;
   ctx->nwork         = 0;
   ctx->work          = 0;
-
-  ctx->nmatop        = 0;
-  ctx->namult        = 0;
-  ctx->nbinv         = 0;
-  ctx->nvectors      = 0;
-  ctx->nscalar       = 0;
 
   ctx->monP          = 0;
   ctx->cnvP          = 0;
