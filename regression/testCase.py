@@ -29,6 +29,7 @@ class MPITest (unittest.TestCase):
 
   def tearDown(self):
     '''We cannot finalize MPI here, since it can only be initialized once'''
+    self.comm = None
     return
 
 class PETScTest (MPITest):
