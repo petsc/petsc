@@ -12,7 +12,7 @@ cd $petscdir
 #
 # make ACTION=clean tree >>& /dev/null
 #
-find . \(  -name man -prune -o -name www -prune -o -name euler -prune \) \
+find . \(  -name man -prune -o -name www -prune \) \
         -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
          \; >>& /dev/null
 
