@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.28 1997/12/31 19:33:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.29 1998/03/03 19:27:38 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -33,7 +33,7 @@ static char vcid[] = "$Id: zvec.c,v 1.28 1997/12/31 19:33:57 bsmith Exp bsmith $
 #define vecmdot_               vecmdot
 #define veccreateseq_          veccreateseq
 #define veccreateseqwitharray_ veccreateseqwitharray
-#define veccreatempi1G1Gwitharray_ veccreatempiwitharray
+#define veccreatempiwitharray_ veccreatempiwitharray
 #define veccreate_             veccreate
 #define vecduplicate_          vecduplicate
 #define veccreatempi_          veccreatempi
