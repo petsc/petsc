@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.2 2000/10/25 18:44:28 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.3 2000/10/25 19:12:08 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -6,6 +6,7 @@
 import java.lang.Thread;
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 public class PETScRun
 {
@@ -14,30 +15,39 @@ public class PETScRun
   }
  
   public void start() throws java.io.IOException
-{
-    Socket sock = new Socket("fire",2000);
-         InputStreamReader stream = new InputStreamReader(sock.getInputStream());
+  {
+    Socket sock = new Socket("cclogin1",2000);
+    sock.setSoLinger(true,5);
 
-        String output = new String("");
-        char[] errors = new char[1024];
-        int    fd     = 0;
-        while (true) {
-        System.out.println("reading"); 
-            try {
-              fd = stream.read(errors);
-            } catch (java.io.IOException ex) {System.out.println("except");break;}
-            if (fd == -1) break;
-            output = output+(new String(errors));
-        }
-        System.out.println(output); 
-    }
+    /* construct properties to send to server */
+    Properties   properties = new Properties();
+    properties.setProperty("PETSC_ARCH","solaris");
+    properties.setProperty("DIRECTORY","src/vec/examples/tutorials");
+    properties.setProperty("EXAMPLE","ex1");
+    properties.setProperty("NUMBERPROCESSORS","1");
+    properties.setProperty("COMMAND","mpirun");
 
-    public static void main(String s[]) {  /*-------------------------------------*/
-      PETScRun prun = new PETScRun();
-      try {
-        prun.start();
-      } catch (java.io.IOException ex) {;}
+    (new ObjectOutputStream(sock.getOutputStream())).writeObject(properties);
+
+    /* get output and print to screen */
+    InputStreamReader stream = new InputStreamReader(sock.getInputStream());
+    char[] results = new char[128];
+    int    fd     = 0;
+
+    while (true) {
+      fd = stream.read(results);
+      if (fd == -1) {break;}
+      System.out.println(new String(results));
     }
+  }
+
+  public static void main(String s[])
+  {
+    PETScRun prun = new PETScRun();
+    try {
+      prun.start();
+    } catch (java.io.IOException ex) {;}
+  }
 }
 
 
