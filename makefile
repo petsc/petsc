@@ -109,13 +109,13 @@ info:
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
 	-@echo "-----------------------------------------"
-	-@echo "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}"
+	-@echo "Using C compiler: ${C_CC} ${COPTFLAGS} ${CCPPFLAGS}"
 	-@if [ -n "${C_CCV}" -a "${C_CCV}" != "unknown" ]; then \
         echo "C Compiler version: " `${C_CCV}`; fi
-	-@echo "Using C++ compiler: ${CXX} ${COPTFLAGS} ${CCPPFLAGS}"
+	-@echo "Using C++ compiler: ${CXX_CC} ${COPTFLAGS} ${CCPPFLAGS}"
 	-@if [ -n "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ]; then \
         echo "C++ Compiler version: " `${CXX_CCV}`; fi
-	-@echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}"
+	-@echo "Using Fortran compiler: ${C_FC} ${FOPTFLAGS} ${FCPPFLAGS}"
 	-@if [ -n "${C_FCV}" -a "${C_FCV}" != "unknown" ]; then \
 	  echo "Fortran Compiler version: " `${C_FCV}`; fi
 	-@echo "-----------------------------------------"
