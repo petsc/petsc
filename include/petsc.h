@@ -83,7 +83,9 @@ typedef struct _Viewer*      Viewer;
 #define ViewerPrintf         (void *) 0
 #define VIEWER_COOKIE        PETSC_COOKIE+1
 #define MATLAB_VIEWER        0
+#define FILE_VIEWER          1
 extern int ViewerMatlabOpen(char*,int,Viewer *);
+extern int ViewerFileOpen(char*,Viewer *);
 
 /* useful Petsc routines (used often) */
 extern int  PetscInitialize(int*,char***,char*,char*);

@@ -13,7 +13,7 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = matlab
+DIRS     = matlab file
 
 runexamples:
 
