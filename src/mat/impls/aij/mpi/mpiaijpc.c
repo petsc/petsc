@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.13 1996/02/24 19:49:30 balay Exp curfman $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.14 1996/02/25 02:42:31 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -35,6 +35,17 @@ int PCDestroy_BJacobiMPIAIJ(PetscObject obj)
   return 0;
 }
 
+
+int PCSetUpOnBlocks_BJacobiMPIAIJ(PC pc)
+{
+  int              ierr;
+  PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
+  PC_BJacobiMPIAIJ *bjac = (PC_BJacobiMPIAIJ *) jac->data;
+
+  ierr = SLESSetUp(jac->sles[0],bjac->x,bjac->y); CHKERRQ(ierr);
+  return 0;
+}
+
 int PCApply_BJacobiMPIAIJ(PC pc,Vec x, Vec y)
 {
   int              ierr,its;
@@ -57,7 +68,6 @@ int PCApply_BJacobiMPIAIJ(PC pc,Vec x, Vec y)
   ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->x,x_true_array); CHKERRQ(ierr);
   ierr = VecPlaceArray(bjac->y,y_true_array); CHKERRQ(ierr);
-
   return 0;
 }
 
@@ -101,8 +111,9 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
     PLogObjectParent(pmat,x);
     PLogObjectParent(pmat,y);
 
-    pc->destroy  = PCDestroy_BJacobiMPIAIJ;
-    pc->apply    = PCApply_BJacobiMPIAIJ;
+    pc->destroy       = PCDestroy_BJacobiMPIAIJ;
+    pc->apply         = PCApply_BJacobiMPIAIJ;
+    pc->setuponblocks = PCSetUpOnBlocks_BJacobiMPIAIJ;
 
     bjac         = (PC_BJacobiMPIAIJ *) PetscMalloc(sizeof(PC_BJacobiMPIAIJ));CHKPTRQ(bjac);
     PLogObjectMemory(pc,sizeof(PC_BJacobiMPIAIJ));
@@ -125,7 +136,6 @@ int PCSetUp_BJacobiMPIAIJ(PC pc)
   else
     ierr = SLESSetOperators(sles,pmatin->A,pmatin->A,pc->flag);
   CHKERRQ(ierr);
-  ierr = SLESSetUp(sles,bjac->x,bjac->y); CHKERRQ(ierr);  
   return 0;
 }
 

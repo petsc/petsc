@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.9 1996/01/27 19:03:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.10 1996/02/08 18:27:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the preconditioner ASM\n\n";
@@ -54,12 +54,16 @@ int main(int argc,char **args)
   /* set operators and options; solve linear system */
   ierr = PCSetType(pc,PCASM); CHKERRQ(ierr);
   ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is); CHKERRQ(ierr);
-  ierr = PCASMSetSubdomains(pc,Nsub,is); CHKERRQ(ierr);
+  ierr = PCASMSetLocalSubdomains(pc,Nsub,is); CHKERRQ(ierr);
   ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
   /* Free work space */
+  for ( i=0; i<Nsub; i++ ) {
+    ISDestroy(is[i]);
+  }
+  PetscFree(is);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
