@@ -51,7 +51,7 @@ class Configure(config.base.Configure):
   def configureExternC(self):
     '''Protect C bindings from C++ mangling'''
     if self.language == 'C':
-      self.addDefine('USE_EXTERN_CXX')
+      self.addDefine('USE_EXTERN_CXX',' ')
     return
 
   def configure(self):
