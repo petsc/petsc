@@ -1,5 +1,5 @@
 !
-!  $Id: petscmat.h,v 1.71 2001/06/21 23:41:25 buschelm Exp balay $;
+!  $Id: petscmat.h,v 1.72 2001/06/29 13:56:21 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -176,7 +176,7 @@
 !
       integer   MAT_ILUINFO_SIZE
 
-      parameter (MAT_ILUINFO_SIZE=8)
+      parameter (MAT_ILUINFO_SIZE=9)
 
       integer MAT_ILUINFO_LEVELS
       integer MAT_ILUINFO_FILL
@@ -186,6 +186,7 @@
       integer MAT_ILUINFO_DTCOUNT
       integer MAT_ILUINFO_DAMPING
       integer MAT_ILUINFO_DAMP
+      integer MAT_ILUINFO_PIVOT_ZERO
 
       parameter (MAT_ILUINFO_LEVELS = 1)
       parameter (MAT_ILUINFO_FILL = 2)
@@ -195,6 +196,7 @@
       parameter (MAT_ILUINFO_DTCOUNT = 6)
       parameter (MAT_ILUINFO_DAMPING = 7)
       parameter (MAT_ILUINFO_DAMP = 8)
+      parameter (MAT_ILUINFO_PIVOT_ZERO = 9)
 
 !
 !  Note: MAT_LUINFO_SIZE must equal # elements in MatLUInfo structure
@@ -202,17 +204,19 @@
 !
       integer   MAT_LUINFO_SIZE
 
-      parameter (MAT_LUINFO_SIZE = 4)
+      parameter (MAT_LUINFO_SIZE = 5)
 
       integer MAT_LUINFO_FILL
       integer MAT_LUINFO_DTCOL
       integer MAT_LUINFO_DAMPING
       integer MAT_LUINFO_DAMP
+      integer MAT_LUINFO_PIVOT_ZERO
 
       parameter (MAT_LUINFO_FILL  = 1)
       parameter (MAT_LUINFO_DTCOL = 2)
       parameter (MAT_LUINFO_DAMPING = 3)
       parameter (MAT_LUINFO_DAMP = 4)
+      parameter (MAT_LUINFO_PIVOT_ZERO = 5)
 
 
 !

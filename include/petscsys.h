@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.60 2001/07/13 14:55:50 buschelm Exp buschelm $ */
+/* $Id: petscsys.h,v 1.61 2001/07/20 19:40:21 buschelm Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -19,8 +19,8 @@ EXTERN int  PetscGetInitialDate(char[],int);
 EXTERN int  PetscSortInt(int,int[]);
 EXTERN int  PetscSortIntWithPermutation(int,const int[],int[]);
 EXTERN int  PetscSortIntWithArray(int,int[],int[]);
-EXTERN int  PetscSortDouble(int,double[]);
-EXTERN int  PetscSortDoubleWithPermutation(int,const double[],int[]);
+EXTERN int  PetscSortReal(int,double[]);
+EXTERN int  PetscSortRealWithPermutation(int,const double[],int[]);
 
 EXTERN int  PetscSetDisplay(void);
 EXTERN int  PetscGetDisplay(char[],int);
@@ -33,8 +33,8 @@ typedef enum { RANDOM_DEFAULT,RANDOM_DEFAULT_REAL,
 typedef struct _p_PetscRandom*   PetscRandom;
 
 EXTERN int PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
-EXTERN int PetscRandomGetValue(PetscRandom,Scalar*);
-EXTERN int PetscRandomSetInterval(PetscRandom,Scalar,Scalar);
+EXTERN int PetscRandomGetValue(PetscRandom,PetscScalar*);
+EXTERN int PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScalar);
 EXTERN int PetscRandomDestroy(PetscRandom);
 
 EXTERN int PetscGetFullPath(const char[],char[],int);
@@ -64,7 +64,7 @@ EXTERN int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
 #define PETSC_BINARY_CHAR_SIZE    (8/8)
 #define PETSC_BINARY_SHORT_SIZE  (16/8)
 #define PETSC_BINARY_DOUBLE_SIZE (64/8)
-#define PETSC_BINARY_SCALAR_SIZE sizeof(Scalar)
+#define PETSC_BINARY_SCALAR_SIZE sizeof(PetscScalar)
 
 typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
 EXTERN int PetscBinarySeek(int,int,PetscBinarySeekType,int*);
@@ -79,7 +79,7 @@ EXTERN int PetscStopForDebugger(void);
 EXTERN int PetscGatherNumberOfMessages(MPI_Comm,int*,int*,int*);
 EXTERN int PetscGatherMessageLengths(MPI_Comm,int,int,int*,int**,int**);
 EXTERN int PetscPostIrecvInt(MPI_Comm,int,int,int*,int*,int***,MPI_Request**);
-EXTERN int PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,Scalar***,MPI_Request**);
+EXTERN int PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,PetscScalar***,MPI_Request**);
 
 EXTERN int PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
 #endif      

@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.30 1999/11/24 21:52:46 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.31 2001/01/15 21:43:21 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -11,21 +11,21 @@
 struct _PetscDrawOps {
   int (*setdoublebuffer)(PetscDraw);
   int (*flush)(PetscDraw);
-  int (*line)(PetscDraw,double,double,double,double,int);
-  int (*linesetwidth)(PetscDraw,double);
-  int (*linegetwidth)(PetscDraw,double*);
-  int (*point)(PetscDraw,double,double,int);
-  int (*pointsetsize)(PetscDraw,double);
-  int (*string)(PetscDraw,double,double,int,char*);
-  int (*stringvertical)(PetscDraw,double,double,int,char*);
-  int (*stringsetsize)(PetscDraw,double,double);
-  int (*stringgetsize)(PetscDraw,double*,double*);
-  int (*setviewport)(PetscDraw,double,double,double,double);
+  int (*line)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
+  int (*linesetwidth)(PetscDraw,PetscReal);
+  int (*linegetwidth)(PetscDraw,PetscReal*);
+  int (*point)(PetscDraw,PetscReal,PetscReal,int);
+  int (*pointsetsize)(PetscDraw,PetscReal);
+  int (*string)(PetscDraw,PetscReal,PetscReal,int,char*);
+  int (*stringvertical)(PetscDraw,PetscReal,PetscReal,int,char*);
+  int (*stringsetsize)(PetscDraw,PetscReal,PetscReal);
+  int (*stringgetsize)(PetscDraw,PetscReal*,PetscReal*);
+  int (*setviewport)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
   int (*clear)(PetscDraw);
   int (*synchronizedflush)(PetscDraw);
-  int (*rectangle)(PetscDraw,double,double,double,double,int,int,int,int);
-  int (*triangle)(PetscDraw,double,double,double,double,double,double,int,int,int);
-  int (*getmousebutton)(PetscDraw,PetscDrawButton*,double *,double *,double*,double*);
+  int (*rectangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
+  int (*triangle)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int);
+  int (*getmousebutton)(PetscDraw,PetscDrawButton*,PetscReal *,PetscReal *,PetscReal*,PetscReal*);
   int (*pause)(PetscDraw);
   int (*synchronizedclear)(PetscDraw);
   int (*beginpage)(PetscDraw);
@@ -38,14 +38,14 @@ struct _PetscDrawOps {
   int (*view)(PetscDraw,PetscViewer);
   int (*getsingleton)(PetscDraw,PetscDraw*);
   int (*restoresingleton)(PetscDraw,PetscDraw*);
-  int (*setcoordinates)(PetscDraw,double,double,double,double);
+  int (*setcoordinates)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
 };
 
 struct _p_PetscDraw {
   PETSCHEADER(struct _PetscDrawOps)
   int             pause;       /* sleep time after a synchronized flush */
-  double          port_xl,port_yl,port_xr,port_yr;
-  double          coor_xl,coor_yl,coor_xr,coor_yr;
+  PetscReal       port_xl,port_yl,port_xr,port_yr;
+  PetscReal       coor_xl,coor_yl,coor_xr,coor_yr;
   char            *title;
   char            *display;
   PetscDraw       popup;

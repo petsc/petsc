@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.71 2001/03/23 23:21:18 balay Exp bsmith $*/
+/*$Id: vecio.c,v 1.72 2001/07/20 21:17:57 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -38,7 +38,7 @@
 .vb
      int    VEC_COOKIE
      int    number of rows
-     Scalar *values of all nonzeros
+     PetscScalar *values of all nonzeros
 .ve
 
    Note for Cray users, the int's stored in the binary file are 32 bit
@@ -62,7 +62,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
   Vec         vec;
-  Scalar      *avec;
+  PetscScalar      *avec;
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;
@@ -105,7 +105,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
       for (i=1; i<size; i++) {
         n = PetscMax(n,range[i] - range[i-1]);
       }
-      ierr = PetscMalloc(n*sizeof(Scalar),&avec);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(PetscScalar),&avec);CHKERRQ(ierr);
       ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
       for (i=1; i<size; i++) {
         n    = range[i+1] - range[i];
@@ -137,7 +137,7 @@ int VecLoad(PetscViewer viewer,Vec *newvec)
 int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 {
   int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
-  Scalar      *avec;
+  PetscScalar      *avec;
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;
@@ -183,7 +183,7 @@ int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
       for (i=1; i<size; i++) {
         n = PetscMax(n,range[i] - range[i-1]);
       }
-      ierr = PetscMalloc(n*sizeof(Scalar),&avec);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(PetscScalar),&avec);CHKERRQ(ierr);
       ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
       for (i=1; i<size; i++) {
         n    = range[i+1] - range[i];

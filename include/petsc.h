@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.291 2001/05/24 20:53:46 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.292 2001/06/21 21:20:02 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -468,7 +468,7 @@ EXTERN int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *);
 */
 extern PetscTruth PetscCompare;
 EXTERN int        PetscCompareDouble(double);
-EXTERN int        PetscCompareScalar(Scalar);
+EXTERN int        PetscCompareScalar(PetscScalar);
 EXTERN int        PetscCompareInt(int);
 
 /*
@@ -476,8 +476,8 @@ EXTERN int        PetscCompareInt(int);
 */
 extern int PetscGlobalRank,PetscGlobalSize;
 EXTERN int PetscIntView(int,int[],PetscViewer);
-EXTERN int PetscDoubleView(int,double[],PetscViewer);
-EXTERN int PetscScalarView(int,Scalar[],PetscViewer);
+EXTERN int PetscRealView(int,PetscReal[],PetscViewer);
+EXTERN int PetscScalarView(int,PetscScalar[],PetscViewer);
 
 /*
     Allows accessing Matlab Engine

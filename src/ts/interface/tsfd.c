@@ -1,4 +1,4 @@
-/*$Id: tsfd.c,v 1.21 2001/01/15 21:48:25 bsmith Exp balay $*/
+/*$Id: tsfd.c,v 1.22 2001/03/23 23:24:34 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
 #include "src/ts/tsimpl.h"        /*I  "petscts.h"  I*/
@@ -32,7 +32,7 @@ $  -mat_fd_coloring_freq <freq>
 
 .seealso: TSSetJacobian(), MatFDColoringCreate(), MatFDColoringSetFunction()
 @*/
-int TSDefaultComputeJacobianColor(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+int TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring color = (MatFDColoring) ctx;
   SNES          snes;
@@ -85,14 +85,14 @@ int TSDefaultComputeJacobianColor(TS ts,double t,Vec x1,Mat *J,Mat *B,MatStructu
 
 .seealso: TSDefaultComputeJacobianColor()
 */
-int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+int TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  Vec      jj1,jj2,xx2;
-  int      i,ierr,N,start,end,j;
-  Scalar   dx,mone = -1.0,*y,scale,*xx,wscale;
-  double   amax,epsilon = 1.e-8; /* assumes double precision */
-  double   dx_min = 1.e-16,dx_par = 1.e-1;
-  MPI_Comm comm;
+  Vec       jj1,jj2,xx2;
+  int       i,ierr,N,start,end,j;
+  Scalar    dx,mone = -1.0,*y,scale,*xx,wscale;
+  PetscReal amax,epsilon = 1.e-8; /* assumes double precision */
+  PetscReal dx_min = 1.e-16,dx_par = 1.e-1;
+  MPI_Comm  comm;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.126 2001/03/23 23:20:26 balay Exp bsmith $*/
+/*$Id: err.c,v 1.127 2001/04/10 19:34:27 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -251,7 +251,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
 
   Level: intermediate
 
-.seealso: PetscDoubleView() 
+.seealso: PetscRealView() 
 @*/
 int PetscIntView(int N,int idx[],PetscViewer viewer)
 {
@@ -318,9 +318,9 @@ int PetscIntView(int N,int idx[],PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscDoubleView" 
+#define __FUNCT__ "PetscRealView" 
 /*@C
-    PetscDoubleView - Prints an array of doubles; useful for debugging.
+    PetscRealView - Prints an array of doubles; useful for debugging.
 
     Collective on PetscViewer
 
@@ -333,7 +333,7 @@ int PetscIntView(int N,int idx[],PetscViewer viewer)
 
 .seealso: PetscIntView() 
 @*/
-int PetscDoubleView(int N,PetscReal idx[],PetscViewer viewer)
+int PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
 {
   int        j,i,n = N/5,p = N % 5,ierr;
   PetscTruth isascii,issocket;
@@ -412,9 +412,9 @@ int PetscDoubleView(int N,PetscReal idx[],PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: PetscIntView(), PetscDoubleView()
+.seealso: PetscIntView(), PetscRealView()
 @*/
-int PetscScalarView(int N,Scalar idx[],PetscViewer viewer)
+int PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
 {
   int        j,i,n = N/3,p = N % 3,ierr;
   PetscTruth isascii,issocket;
@@ -456,7 +456,7 @@ int PetscScalarView(int N,Scalar idx[],PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
     int    *sizes,rank,size,Ntotal,*displs;
-    Scalar *array;
+    PetscScalar *array;
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -475,7 +475,7 @@ int PetscScalarView(int N,Scalar idx[],PetscViewer viewer)
           Ntotal    += sizes[i];
           displs[i] =  displs[i-1] + sizes[i-1];
         }
-	ierr = PetscMalloc(Ntotal*sizeof(Scalar),&array);CHKERRQ(ierr);
+	ierr = PetscMalloc(Ntotal*sizeof(PetscScalar),&array);CHKERRQ(ierr);
         ierr = MPI_Gatherv(idx,N,MPIU_SCALAR,array,sizes,displs,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
         ierr = PetscViewerSocketPutScalar(viewer,Ntotal,1,array);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);

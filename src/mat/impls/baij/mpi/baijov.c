@@ -1,4 +1,4 @@
-/*$Id: baijov.c,v 1.63 2001/03/09 20:05:31 balay Exp balay $*/
+/*$Id: baijov.c,v 1.64 2001/03/23 23:22:14 balay Exp bsmith $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -10,8 +10,8 @@
 static int MatIncreaseOverlap_MPIBAIJ_Once(Mat,int,IS *);
 static int MatIncreaseOverlap_MPIBAIJ_Local(Mat,int,char **,int*,int**);
 static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat,int,int **,int**,int*);
-EXTERN int MatGetRow_MPIBAIJ(Mat,int,int*,int**,Scalar**);
-EXTERN int MatRestoreRow_MPIBAIJ(Mat,int,int*,int**,Scalar**);
+EXTERN int MatGetRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN int MatRestoreRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
  
 #undef __FUNCT__  
 #define __FUNCT__ "MatCompressIndicesGeneral_MPIBAIJ"

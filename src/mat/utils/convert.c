@@ -1,4 +1,4 @@
-/*$Id: convert.c,v 1.73 2001/03/22 20:30:42 bsmith Exp balay $*/
+/*$Id: convert.c,v 1.74 2001/03/23 23:22:45 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 
@@ -12,7 +12,7 @@
  */
 int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
 {
-  Scalar     *vwork;
+  PetscScalar     *vwork;
   int        ierr,i,nz,m,n,*cwork,rstart,rend,lm,ln;
 
   PetscFunctionBegin;

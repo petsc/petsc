@@ -1,7 +1,8 @@
-# $Id: makefile,v 1.1 2000/12/21 18:56:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 2001/01/15 21:49:36 bsmith Exp bsmith $ 
 
-#requireslanguage CONLY
-#requiresscalar real 
+#requireslanguage  CONLY
+#requiresscalar    real 
+#requiresprecision double
 
 ALL: lib
 

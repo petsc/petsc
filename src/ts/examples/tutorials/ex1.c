@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.27 2001/03/23 23:24:45 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.28 2001/04/10 19:37:12 bsmith Exp bsmith $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping.";
 
@@ -74,12 +74,12 @@ int main(int argc,char **argv)
   */
   PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);
   PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);
-  PetscOptionsGetDouble(PETSC_NULL,"-param",&user.param,PETSC_NULL);
+  PetscOptionsGetReal(PETSC_NULL,"-param",&user.param,PETSC_NULL);
   if (user.param >= param_max || user.param <= param_min) {
     SETERRQ(1,"Parameter is out of range");
   }
   dt = .5/PetscMax(user.mx,user.my);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-dt",&dt,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&dt,PETSC_NULL);CHKERRQ(ierr);
   N          = user.mx*user.my;
   
   /* 

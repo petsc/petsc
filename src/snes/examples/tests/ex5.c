@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.25 2001/01/23 20:57:06 balay Exp balay $*/
+/*$Id: ex5.c,v 1.26 2001/03/23 23:24:20 balay Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the modified Bratu problem in a 2D rectangular domain,\n\
@@ -96,11 +96,11 @@ int main(int argc,char **argv)
   user.mx = 4; user.my = 4; user.param = 6.0; user.param2 = 0.0;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-lambda",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRQ(1,"Lambda is out of range");
   }
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&user.param2,PETSC_NULL);CHKERRQ(ierr);
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) {
     SETERRQ(1,"Kappa is out of range");
   }

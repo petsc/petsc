@@ -1,4 +1,4 @@
-/*$Id: ex48.c,v 1.21 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex48.c,v 1.22 2001/04/10 19:35:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the vatious routines in MatBAIJ format.\n";
 
@@ -93,7 +93,7 @@ int main(int argc,char **args)
     rows[1] = (int)(PetscRealPart(rval)*M);
     ierr = MatGetValues(A,2,rows,2,cols,vals1);CHKERRQ(ierr);
     ierr = MatGetValues(B,2,rows,2,cols,vals2);CHKERRQ(ierr);
-    ierr = PetscMemcmp(vals1,vals2,4*sizeof(Scalar),&flg);CHKERRQ(ierr);
+    ierr = PetscMemcmp(vals1,vals2,4*sizeof(PetscScalar),&flg);CHKERRQ(ierr);
     if (!flg) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetValues bs = %d\n",bs);CHKERRQ(ierr);
     }

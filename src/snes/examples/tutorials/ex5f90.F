@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.40 2001/05/01 18:32:18 bsmith Exp bsmith $";
+! "$Id: ex5f90.F,v 1.41 2001/06/21 21:18:53 bsmith Exp bsmith $";
 !
 !  Description: Solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -195,7 +195,7 @@
       lambda_max  = 6.81
       lambda_min  = 0.0
       user%lambda = 6.0
-      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',           &
+      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',           &
      &     user%lambda,flg,ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &
      &     then

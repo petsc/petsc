@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.231 2001/07/17 20:50:41 bsmith Exp balay $*/
+/*$Id: snes.c,v 1.232 2001/08/02 20:29:42 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -204,23 +204,23 @@ int SNESSetFromOptions(SNES snes)
       ierr = SNESSetType(snes,deft);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsDouble("-snes_stol","Stop if step length less then","SNESSetTolerances",snes->xtol,&snes->xtol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_atol","Stop if function norm less then","SNESSetTolerances",snes->atol,&snes->atol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_stol","Stop if step length less then","SNESSetTolerances",snes->xtol,&snes->xtol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_atol","Stop if function norm less then","SNESSetTolerances",snes->atol,&snes->atol,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsDouble("-snes_rtol","Stop if decrease in function norm less then","SNESSetTolerances",snes->rtol,&snes->rtol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_rtol","Stop if decrease in function norm less then","SNESSetTolerances",snes->rtol,&snes->rtol,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_it","Maximum iterations","SNESSetTolerances",snes->max_its,&snes->max_its,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_funcs","Maximum function evaluations","SNESSetTolerances",snes->max_funcs,&snes->max_funcs,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_fmin","Minimization function tolerance","SNESSetMinimizationFunctionTolerance",snes->fmin,&snes->fmin,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_fmin","Minimization function tolerance","SNESSetMinimizationFunctionTolerance",snes->fmin,&snes->fmin,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetParametersEW",&snes->ksp_ewconv);CHKERRQ(ierr);
 
     ierr = PetscOptionsInt("-snes_ksp_ew_version","Version 1 or 2","SNES_KSP_SetParametersEW",kctx->version,&kctx->version,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_ksp_ew_rtol0","0 <= rtol0 < 1","SNES_KSP_SetParametersEW",kctx->rtol_0,&kctx->rtol_0,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_ksp_ew_rtolmax","0 <= rtolmax < 1","SNES_KSP_SetParametersEW",kctx->rtol_max,&kctx->rtol_max,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_ksp_ew_gamma","0 <= gamma <= 1","SNES_KSP_SetParametersEW",kctx->gamma,&kctx->gamma,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_ksp_ew_alpha","1 < alpha <= 2","SNES_KSP_SetParametersEW",kctx->alpha,&kctx->alpha,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_ksp_ew_alpha2","alpha2","SNES_KSP_SetParametersEW",kctx->alpha2,&kctx->alpha2,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_ksp_ew_threshold","0 < threshold < 1","SNES_KSP_SetParametersEW",kctx->threshold,&kctx->threshold,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_rtol0","0 <= rtol0 < 1","SNES_KSP_SetParametersEW",kctx->rtol_0,&kctx->rtol_0,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_rtolmax","0 <= rtolmax < 1","SNES_KSP_SetParametersEW",kctx->rtol_max,&kctx->rtol_max,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_gamma","0 <= gamma <= 1","SNES_KSP_SetParametersEW",kctx->gamma,&kctx->gamma,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_alpha","1 < alpha <= 2","SNES_KSP_SetParametersEW",kctx->alpha,&kctx->alpha,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_alpha2","alpha2","SNES_KSP_SetParametersEW",kctx->alpha2,&kctx->alpha2,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_threshold","0 < threshold < 1","SNES_KSP_SetParametersEW",kctx->threshold,&kctx->threshold,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-snes_no_convergence_test","Don't test for convergence","None",&flg);CHKERRQ(ierr);
     if (flg) {snes->converged = 0;}
@@ -381,7 +381,7 @@ int SNESGetIterationNumber(SNES snes,int* iter)
 
 .seealso: SNESGetFunction()
 @*/
-int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
+int SNESGetFunctionNorm(SNES snes,PetscScalar *fnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -418,7 +418,7 @@ int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
 
 .seelso: SNESSetGradient()
 @*/
-int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
+int SNESGetGradientNorm(SNES snes,PetscScalar *gnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);

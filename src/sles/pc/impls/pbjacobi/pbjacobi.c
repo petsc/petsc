@@ -1,4 +1,4 @@
-/*$Id: pbjacobi.c,v 1.1 2001/04/24 00:16:43 bsmith Exp bsmith $*/
+/*$Id: pbjacobi.c,v 1.2 2001/06/21 21:18:01 bsmith Exp bsmith $*/
 
 /* 
    Include files needed for the PBJacobi preconditioner:
@@ -141,8 +141,8 @@ static int PCSetUp_PBJacobi(PC pc)
   bs2         = a->bs*a->bs;
   diag_offset = a->diag;
   v           = a->a;
-  ierr        = PetscMalloc((bs2*a->mbs+1)*sizeof(Scalar),&diag);CHKERRQ(ierr);
-  PetscLogObjectMemory(pc,bs2*a->mbs*sizeof(Scalar));
+  ierr        = PetscMalloc((bs2*a->mbs+1)*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
+  PetscLogObjectMemory(pc,bs2*a->mbs*sizeof(PetscScalar));
   jac->diag   = diag;
   jac->bs     = a->bs;
   jac->mbs    = a->mbs;
@@ -172,7 +172,7 @@ static int PCSetUp_PBJacobi(PC pc)
     case 4:
       for (i=0; i<a->mbs; i++) {
         odiag = v + 16*diag_offset[i];
-        ierr  = PetscMemcpy(diag,odiag,16*sizeof(Scalar));CHKERRQ(ierr);
+        ierr  = PetscMemcpy(diag,odiag,16*sizeof(PetscScalar));CHKERRQ(ierr);
 	ierr  = Kernel_A_gets_inverse_A_4(diag);CHKERRQ(ierr);
 	diag += 16;
       }
@@ -181,7 +181,7 @@ static int PCSetUp_PBJacobi(PC pc)
     case 5:
       for (i=0; i<a->mbs; i++) {
         odiag = v + 25*diag_offset[i];
-        ierr  = PetscMemcpy(diag,odiag,25*sizeof(Scalar));CHKERRQ(ierr);
+        ierr  = PetscMemcpy(diag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
 	ierr  = Kernel_A_gets_inverse_A_5(diag);CHKERRQ(ierr);
 	diag += 25;
       }

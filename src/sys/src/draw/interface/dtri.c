@@ -1,4 +1,4 @@
-/*$Id: dtri.c,v 1.48 2001/01/17 19:44:01 balay Exp balay $*/
+/*$Id: dtri.c,v 1.49 2001/03/23 23:20:08 balay Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -88,7 +88,7 @@ int PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 typedef struct {
   int        m,n;
   PetscReal  *x,*y,min,max;
-  Scalar     *v;
+  PetscScalar     *v;
   PetscTruth showgrid;
 } ZoomCtx;
 
@@ -139,7 +139,7 @@ static int PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 .seealso: PetscDrawTensorContourPatch()
 
 @*/
-int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],Scalar *v)
+int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscScalar *v)
 {
   int           N = m*n,ierr;
   PetscTruth    isnull;
@@ -235,7 +235,7 @@ int PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal xi[],const 
 .seealso: PetscDrawTensorContour()
 
 @*/
-int PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,Scalar *v)
+int PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal max,PetscReal min,PetscScalar *v)
 {
   int           c1,c2,c3,c4,i,j,ierr;
   PetscReal     x1,x2,x3,x4,y_1,y2,y3,y4,scale;

@@ -1,4 +1,4 @@
-/*$Id: shellcnv.c,v 1.17 2001/01/15 21:45:41 bsmith Exp balay $*/
+/*$Id: shellcnv.c,v 1.18 2001/03/23 23:21:59 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"  
@@ -10,7 +10,7 @@ int MatConvert_Shell(Mat oldmat,MatType newtype,Mat *mat)
   Vec      in,out;
   int      ierr,i,M,m,*rows,start,end;
   MPI_Comm comm;
-  Scalar   *array,zero = 0.0,one = 1.0;
+  PetscScalar   *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(oldmat,MAT_COOKIE);

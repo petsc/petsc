@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.223 2001/07/20 21:19:19 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.224 2001/08/04 02:50:19 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -64,13 +64,13 @@ extern PetscTruth MatRegisterAllCalled;
 extern PetscFList MatList;
 
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
-EXTERN int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
-EXTERN int MatCreateMPIDense(MPI_Comm,int,int,int,int,Scalar*,Mat*); 
+EXTERN int MatCreateSeqDense(MPI_Comm,int,int,PetscScalar*,Mat*);
+EXTERN int MatCreateMPIDense(MPI_Comm,int,int,int,int,PetscScalar*,Mat*); 
 EXTERN int MatCreateSeqAIJ(MPI_Comm,int,int,int,int*,Mat*);
 EXTERN int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
 EXTERN int MatCreateMPIRowbs(MPI_Comm,int,int,int,int*,Mat*); 
-EXTERN int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,Scalar**,Mat*); 
-EXTERN int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*); 
+EXTERN int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,PetscScalar**,Mat*); 
+EXTERN int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,PetscScalar**,Mat*); 
 EXTERN int MatCreateSeqBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
 EXTERN int MatCreateMPIBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
 EXTERN int MatCreateMPIAdj(MPI_Comm,int,int,int*,int*,int *,Mat*);
@@ -84,8 +84,8 @@ EXTERN int MatPrintHelp(Mat);
 EXTERN int MatGetPetscMaps(Mat,PetscMap*,PetscMap*);
 
 /* ------------------------------------------------------------*/
-EXTERN int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
-EXTERN int MatSetValuesBlocked(Mat,int,int*,int,int*,Scalar*,InsertMode);
+EXTERN int MatSetValues(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+EXTERN int MatSetValuesBlocked(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
@@ -101,8 +101,8 @@ typedef struct {
   int k,j,i,c;
 } MatStencil;
 
-EXTERN int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,Scalar*,InsertMode);
-EXTERN int MatSetValuesBlockedStencil(Mat,int,MatStencil*,int,MatStencil*,Scalar*,InsertMode);
+EXTERN int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,PetscScalar*,InsertMode);
+EXTERN int MatSetValuesBlockedStencil(Mat,int,MatStencil*,int,MatStencil*,PetscScalar*,InsertMode);
 EXTERN int MatSetStencil(Mat,int,int*,int*,int);
 
 EXTERN int MatSetColoring(Mat,ISColoring);
@@ -157,14 +157,14 @@ typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
 EXTERN int MatSetOption(Mat,MatOption);
 EXTERN int MatGetType(Mat,MatType*);
 
-EXTERN int MatGetValues(Mat,int,int*,int,int*,Scalar*);
-EXTERN int MatGetRow(Mat,int,int *,int **,Scalar**);
-EXTERN int MatRestoreRow(Mat,int,int *,int **,Scalar**);
-EXTERN int MatGetColumn(Mat,int,int *,int **,Scalar**);
-EXTERN int MatRestoreColumn(Mat,int,int *,int **,Scalar**);
+EXTERN int MatGetValues(Mat,int,int*,int,int*,PetscScalar*);
+EXTERN int MatGetRow(Mat,int,int *,int **,PetscScalar**);
+EXTERN int MatRestoreRow(Mat,int,int *,int **,PetscScalar**);
+EXTERN int MatGetColumn(Mat,int,int *,int **,PetscScalar**);
+EXTERN int MatRestoreColumn(Mat,int,int *,int **,PetscScalar**);
 EXTERN int MatGetColumnVector(Mat,Vec,int);
-EXTERN int MatGetArray(Mat,Scalar **);
-EXTERN int MatRestoreArray(Mat,Scalar **);
+EXTERN int MatGetArray(Mat,PetscScalar **);
+EXTERN int MatRestoreArray(Mat,PetscScalar **);
 EXTERN int MatGetBlockSize(Mat,int *);
 
 EXTERN int MatMult(Mat,Vec,Vec);
@@ -272,10 +272,10 @@ EXTERN int MatDiagonalScale(Mat,Vec,Vec);
 EXTERN int MatDiagonalSet(Mat,Vec,InsertMode);
 EXTERN int MatEqual(Mat,Mat,PetscTruth*);
 
-EXTERN int MatNorm(Mat,NormType,double *);
+EXTERN int MatNorm(Mat,NormType,PetscReal *);
 EXTERN int MatZeroEntries(Mat);
-EXTERN int MatZeroRows(Mat,IS,Scalar*);
-EXTERN int MatZeroColumns(Mat,IS,Scalar*);
+EXTERN int MatZeroRows(Mat,IS,PetscScalar*);
+EXTERN int MatZeroColumns(Mat,IS,PetscScalar*);
 
 EXTERN int MatUseScaledForm(Mat,PetscTruth);
 EXTERN int MatScaleSystem(Mat,Vec,Vec);
@@ -302,18 +302,18 @@ EXTERN int MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
 
 EXTERN int MatIncreaseOverlap(Mat,int,IS *,int);
 
-EXTERN int MatAXPY(Scalar *,Mat,Mat);
-EXTERN int MatAYPX(Scalar *,Mat,Mat);
+EXTERN int MatAXPY(PetscScalar *,Mat,Mat);
+EXTERN int MatAYPX(PetscScalar *,Mat,Mat);
 EXTERN int MatCompress(Mat);
 
-EXTERN int MatScale(Scalar *,Mat);
-EXTERN int MatShift(Scalar *,Mat);
+EXTERN int MatScale(PetscScalar *,Mat);
+EXTERN int MatShift(PetscScalar *,Mat);
 
 EXTERN int MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping);
 EXTERN int MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping);
-EXTERN int MatZeroRowsLocal(Mat,IS,Scalar*);
-EXTERN int MatSetValuesLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
-EXTERN int MatSetValuesBlockedLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
+EXTERN int MatZeroRowsLocal(Mat,IS,PetscScalar*);
+EXTERN int MatSetValuesLocal(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+EXTERN int MatSetValuesBlockedLocal(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
 
 EXTERN int MatSetStashInitialSize(Mat,int,int);
 
@@ -355,25 +355,25 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
 /* Routines unique to particular data structures */
 EXTERN int MatShellGetContext(Mat,void **);
 
-EXTERN int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
+EXTERN int MatBDiagGetData(Mat,int*,int*,int**,int**,PetscScalar***);
 EXTERN int MatSeqAIJSetColumnIndices(Mat,int *);
 EXTERN int MatSeqBAIJSetColumnIndices(Mat,int *);
-EXTERN int MatCreateSeqAIJWithArrays(MPI_Comm,int,int,int*,int*,Scalar *,Mat*);
+EXTERN int MatCreateSeqAIJWithArrays(MPI_Comm,int,int,int*,int*,PetscScalar *,Mat*);
 
 EXTERN int MatSeqBAIJSetPreallocation(Mat,int,int,int*);
 EXTERN int MatSeqSBAIJSetPreallocation(Mat,int,int,int*);
 EXTERN int MatSeqAIJSetPreallocation(Mat,int,int*);
-EXTERN int MatSeqDensePreallocation(Mat,Scalar*);
-EXTERN int MatSeqBDiagSetPreallocation(Mat,int,int,int*,Scalar**);
-EXTERN int MatSeqDenseSetPreallocation(Mat,Scalar*);
+EXTERN int MatSeqDensePreallocation(Mat,PetscScalar*);
+EXTERN int MatSeqBDiagSetPreallocation(Mat,int,int,int*,PetscScalar**);
+EXTERN int MatSeqDenseSetPreallocation(Mat,PetscScalar*);
 
 EXTERN int MatMPIBAIJSetPreallocation(Mat,int,int,int*,int,int*);
 EXTERN int MatMPISBAIJSetPreallocation(Mat,int,int,int*,int,int*);
 EXTERN int MatMPIAIJSetPreallocation(Mat,int,int*,int,int*);
-EXTERN int MatMPIDensePreallocation(Mat,Scalar*);
-EXTERN int MatMPIBDiagSetPreallocation(Mat,int,int,int*,Scalar**);
+EXTERN int MatMPIDensePreallocation(Mat,PetscScalar*);
+EXTERN int MatMPIBDiagSetPreallocation(Mat,int,int,int*,PetscScalar**);
 EXTERN int MatMPIAdjSetPreallocation(Mat,int*,int*,int*);
-EXTERN int MatMPIDenseSetPreallocation(Mat,Scalar*);
+EXTERN int MatMPIDenseSetPreallocation(Mat,PetscScalar*);
 EXTERN int MatMPIRowbsSetPreallocation(Mat,int,int*);
 EXTERN int MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,int**);
 EXTERN int MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,int**);
@@ -421,10 +421,10 @@ EXTERN int        MatOrderingRegisterAll(char*);
 extern PetscTruth MatOrderingRegisterAllCalled;
 extern PetscFList      MatOrderingList;
 
-EXTERN int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
+EXTERN int MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
-EXTERN int MatCholeskyFactor(Mat,IS,double);
-EXTERN int MatCholeskyFactorSymbolic(Mat,IS,double,Mat*);
+EXTERN int MatCholeskyFactor(Mat,IS,PetscReal);
+EXTERN int MatCholeskyFactorSymbolic(Mat,IS,PetscReal,Mat*);
 EXTERN int MatCholeskyFactorNumeric(Mat,Mat*);
 
 /*S 
@@ -496,8 +496,8 @@ EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);
 EXTERN int MatILUFactor(Mat,IS,IS,MatILUInfo*);
 EXTERN int MatLUFactorSymbolic(Mat,IS,IS,MatLUInfo*,Mat*);
 EXTERN int MatILUFactorSymbolic(Mat,IS,IS,MatILUInfo*,Mat*);
-EXTERN int MatICCFactorSymbolic(Mat,IS,double,int,Mat*);
-EXTERN int MatICCFactor(Mat,IS,double,int);
+EXTERN int MatICCFactorSymbolic(Mat,IS,PetscReal,int,Mat*);
+EXTERN int MatICCFactor(Mat,IS,PetscReal,int);
 EXTERN int MatLUFactorNumeric(Mat,Mat*);
 EXTERN int MatILUDTFactor(Mat,MatILUInfo*,IS,IS,Mat *);
 
@@ -526,7 +526,7 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_LOCAL_FORWARD_SWEEP=4,SOR_LOCAL_BACKWARD_SWEEP=8,
               SOR_LOCAL_SYMMETRIC_SWEEP=12,SOR_ZERO_INITIAL_GUESS=16,
               SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128} MatSORType;
-EXTERN int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
+EXTERN int MatRelax(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
 
 /* 
     These routines are for efficiently computing Jacobians via finite differences.
@@ -576,12 +576,12 @@ EXTERN int MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
 EXTERN int MatFDColoringDestroy(MatFDColoring);
 EXTERN int MatFDColoringView(MatFDColoring,PetscViewer);
 EXTERN int MatFDColoringSetFunction(MatFDColoring,int (*)(void),void*);
-EXTERN int MatFDColoringSetParameters(MatFDColoring,double,double);
+EXTERN int MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 EXTERN int MatFDColoringSetFrequency(MatFDColoring,int);
 EXTERN int MatFDColoringGetFrequency(MatFDColoring,int*);
 EXTERN int MatFDColoringSetFromOptions(MatFDColoring);
 EXTERN int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);
-EXTERN int MatFDColoringApplyTS(Mat,MatFDColoring,double,Vec,MatStructure*,void *);
+EXTERN int MatFDColoringApplyTS(Mat,MatFDColoring,PetscReal,Vec,MatStructure*,void *);
 EXTERN int MatFDColoringSetRecompute(MatFDColoring);
 EXTERN int MatFDColoringSetF(MatFDColoring,Vec);
 
@@ -745,11 +745,11 @@ EXTERN int MatTransposeAIJIndices(MatAIJIndices,MatAIJIndices*);
 
 EXTERN int MatCreateSeqCSN(MPI_Comm,int,int,int*,int,Mat*);
 EXTERN int MatCreateSeqCSN_Single(MPI_Comm,int,int,int*,int,Mat*);
-EXTERN int MatCreateSeqCSNWithPrecision(MPI_Comm,int,int,int*,int,ScalarPrecision,Mat*);
+EXTERN int MatCreateSeqCSNWithPrecision(MPI_Comm,int,int,int*,int,PetscScalarPrecision,Mat*);
 
 EXTERN int MatCreateSeqCSNIndices(MPI_Comm,MatAIJIndices,int,Mat *);
 EXTERN int MatCreateSeqCSNIndices_Single(MPI_Comm,MatAIJIndices,int,Mat *);
-EXTERN int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,ScalarPrecision,Mat *);
+EXTERN int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,PetscScalarPrecision,Mat *);
 
 EXTERN int MatMPIBAIJSetHashTableFactor(Mat,PetscReal);
 EXTERN int MatSeqAIJGetInodeSizes(Mat,int *,int *[],int *);

@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.15 2001/04/10 19:34:44 bsmith Exp balay $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.16 2001/04/18 20:48:22 balay Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -351,7 +351,7 @@ PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm comm)
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           MATLAB_ENGINE_(), PetscMatlabEnginePut(), MatlabEngineGetArray()
 @*/
-int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,Scalar *array,char *name)
+int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,PetscScalar *array,char *name)
 {
   int     ierr;
   mxArray *mat;
@@ -363,7 +363,7 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,Scalar *array
 #else
   mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
-  ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   mxSetName(mat,name);
   engPutArray(engine->ep,mat);
 
@@ -390,7 +390,7 @@ int PetscMatlabEnginePutArray(PetscMatlabEngine engine,int m,int n,Scalar *array
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGet()
 @*/
-int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int m,int n,Scalar *array,char *name)
+int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int m,int n,PetscScalar *array,char *name)
 {
   int     ierr;
   mxArray *mat;
@@ -399,7 +399,7 @@ int PetscMatlabEngineGetArray(PetscMatlabEngine engine,int m,int n,Scalar *array
   PetscLogInfo(0,"Getting Matlab array %s\n",name);
   mat  = engGetArray(engine->ep,name);
   if (!mat) SETERRQ1(1,"Unable to get array %s from matlab",name);
-  ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   PetscLogInfo(0,"Got Matlab array %s\n",name);
   PetscFunctionReturn(0);
 }

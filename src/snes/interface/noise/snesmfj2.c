@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.31 2001/03/23 23:24:10 balay Exp balay $*/
+/*$Id: snesmfj2.c,v 1.32 2001/03/28 19:42:18 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -242,8 +242,8 @@ int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
   mfctx->compute_err      = 0;
   mfctx->compute_err_freq = 0;
   mfctx->compute_err_iter = -1;
-  ierr = PetscOptionsGetDouble(snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(snes->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);

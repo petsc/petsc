@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.125 2001/06/18 21:28:57 curfman Exp curfman $*/
+/*$Id: tr.c,v 1.126 2001/06/30 18:48:47 curfman Exp bsmith $*/
  
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
@@ -8,13 +8,13 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNES_EQ_TR_KSPConverged_Private"
-int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,double rnorm,KSPConvergedReason *reason,void *ctx)
+int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES) ctx;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   SNES_EQ_TR          *neP = (SNES_EQ_TR*)snes->data;
   Vec                 x;
-  double              norm;
+  PetscReal           norm;
   int                 ierr;
 
   PetscFunctionBegin;
@@ -59,7 +59,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   Vec                 X,F,Y,G,TMP,Ytmp;
   int                 maxits,i,ierr,lits,breakout = 0;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
-  double              rho,fnorm,gnorm,gpnorm,xnorm,delta,norm,ynorm,norm1;
+  PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,norm,ynorm,norm1;
   Scalar              mone = -1.0,cnorm;
   KSP                 ksp;
   SLES                sles;
@@ -238,14 +238,14 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES trust region options for nonlinear equations");CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_tr_mu","mu","None",ctx->mu,&ctx->mu,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_tr_eta","eta","None",ctx->eta,&ctx->eta,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_tr_sigma","sigma","None",ctx->sigma,&ctx->sigma,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_tr_delta0","delta0","None",ctx->delta0,&ctx->delta0,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_tr_delta1","delta1","None",ctx->delta1,&ctx->delta1,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_tr_delta2","delta2","None",ctx->delta2,&ctx->delta2,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_tr_delta3","delta3","None",ctx->delta3,&ctx->delta3,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_tr_mu","mu","None",ctx->mu,&ctx->mu,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_tr_eta","eta","None",ctx->eta,&ctx->eta,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_tr_sigma","sigma","None",ctx->sigma,&ctx->sigma,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_tr_delta0","delta0","None",ctx->delta0,&ctx->delta0,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_tr_delta1","delta1","None",ctx->delta1,&ctx->delta1,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_tr_delta2","delta2","None",ctx->delta2,&ctx->delta2,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_tr_delta3","delta3","None",ctx->delta3,&ctx->delta3,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -313,7 +313,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise)
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,SNESConvergedReason *reason,void *dummy)
+int SNESConverged_EQ_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   SNES_EQ_TR *neP = (SNES_EQ_TR *)snes->data;
   int        ierr;

@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.88 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex5.c,v 1.89 2001/03/23 23:23:55 balay Exp bsmith $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\
@@ -142,7 +142,7 @@ int main(int argc,char **args)
   ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = (Scalar)(i + 100*rank);
+    v = (PetscScalar)(i + 100*rank);
     ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
 

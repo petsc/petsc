@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.60 2001/03/23 23:23:50 balay Exp bsmith $*/
+/*$Id: ex4.c,v 1.61 2001/06/21 21:18:25 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\
@@ -8,7 +8,7 @@ bilinear elements on the unit square. Input arguments are:\n\
 
 #undef __FUNCT__
 #define __FUNCT__ "FormatElementStiffness"
-int FormElementStiffness(double H,Scalar *Ke)
+int FormElementStiffness(double H,PetscScalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
   Ke[4]  = -.125*H;  Ke[5]  = H/6.0;   Ke[6]  = -.125*H;  Ke[7]  = H/12.0;
@@ -18,7 +18,7 @@ int FormElementStiffness(double H,Scalar *Ke)
 }
 #undef __FUNCT__
 #define __FUNCT__ "FormElementRhs"
-int FormElementRhs(double x,double y,double H,Scalar *r)
+int FormElementRhs(double x,double y,double H,PetscScalar *r)
 {
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
   return 0;

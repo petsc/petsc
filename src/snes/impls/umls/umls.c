@@ -1,9 +1,9 @@
-/*$Id: umls.c,v 1.108 2001/03/23 23:24:18 balay Exp bsmith $*/
+/*$Id: umls.c,v 1.109 2001/04/10 19:36:57 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
-EXTERN int SNESStep(SNES,double*,double*,double*,double*,
-                    double*,double*,double*,double*,double*);
+EXTERN int SNESStep(SNES,PetscReal*,PetscReal*,PetscReal*,PetscReal*,
+                    PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 /*
    Implements Newton's Method with a line search approach
@@ -21,7 +21,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
 {
   SNES_UM_LS          *neP = (SNES_UM_LS*)snes->data;
   int                 maxits,success,iters,i,global_dim,ierr,kspmaxit;
-  double              snorm,*f,*gnorm,two = 2.0,tnorm;
+  PetscReal              snorm,*f,*gnorm,two = 2.0,tnorm;
   Scalar              neg_one = -1.0;
   Vec                 G,X,RHS,S,W;
   SLES                sles;
@@ -57,7 +57,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = VecGetSize(X,&global_dim);CHKERRQ(ierr);
-  kspmaxit = neP->max_kspiter_factor * ((int)sqrt((double)global_dim));
+  kspmaxit = neP->max_kspiter_factor * ((int)sqrt((PetscReal)global_dim));
   ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,kspmaxit);CHKERRQ(ierr);
 
   for (i=0; i<maxits; i++) {
@@ -203,13 +203,13 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES trust region options for minimization");CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_ls_gamma_factor","Damping parameter","None",ctx->gamma_factor,&ctx->gamma_factor,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_ls_gamma_factor","Damping parameter","None",ctx->gamma_factor,&ctx->gamma_factor,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_um_ls_maxfev","Max function evaluation in line search","None",ctx->maxfev,&ctx->maxfev,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_ls_ftol","Tolerance for sufficient decrease","None",ctx->ftol,&ctx->ftol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_ls_gtol","Tolerance for curvature condition","None",ctx->gtol,&ctx->gtol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_ls_rtol","Relative tolerance for acceptable step","None",ctx->rtol,&ctx->rtol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_ls_stepmin","Lower bound for step","None",ctx->stepmin,&ctx->stepmin,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_ls_stepmax","upper bound for step","None",ctx->stepmax,&ctx->stepmax,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_ls_ftol","Tolerance for sufficient decrease","None",ctx->ftol,&ctx->ftol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_ls_gtol","Tolerance for curvature condition","None",ctx->gtol,&ctx->gtol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_ls_rtol","Relative tolerance for acceptable step","None",ctx->rtol,&ctx->rtol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_ls_stepmin","Lower bound for step","None",ctx->stepmin,&ctx->stepmin,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_ls_stepmax","upper bound for step","None",ctx->stepmax,&ctx->stepmax,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   /* if preconditioner has not been set yet, and not using a matrix shell then
      set preconditioner to Jacobi. This is to prevent PCSetFromOptions() from 
@@ -284,7 +284,7 @@ $   SNES_CONVERGED_ITERATING         otherwise
    Level: intermediate
 
 @*/
-int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *dummy)
+int SNESConverged_UM_LS(SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *dummy)
 {
   SNES_UM_LS *neP = (SNES_UM_LS*)snes->data;
 
@@ -365,13 +365,13 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,SNESConverg
    Notes:
    This routine is used within the SNESUMLS method.
 @ */
-int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
-                  double *step,double *gnorm,int *info)
+int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,PetscReal *f,
+                  PetscReal *step,PetscReal *gnorm,int *info)
 {
   SNES_UM_LS *neP = (SNES_UM_LS*)snes->data;
-  double     zero = 0.0,two = 2.0,p5 = 0.5,p66 = 0.66,xtrapf = 4.0;
-  double     finit,width,width1,dginit,fm,fxm,fym,dgm,dgxm,dgym;
-  double     dgx,dgy,dg,fx,fy,stx,sty,dgtest,ftest1;
+  PetscReal     zero = 0.0,two = 2.0,p5 = 0.5,p66 = 0.66,xtrapf = 4.0;
+  PetscReal     finit,width,width1,dginit,fm,fxm,fym,dgm,dgxm,dgym;
+  PetscReal     dgx,dgy,dg,fx,fy,stx,sty,dgtest,ftest1;
   int        ierr,i,stage1;
 #if defined(PETSC_USE_COMPLEX)
   Scalar    cdginit,cdg,cstep = 0.0;
@@ -558,7 +558,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchGetDampingParameter_UM_LS"
-int SNESLineSearchGetDampingParameter_UM_LS(SNES snes,Scalar *damp)
+int SNESLineSearchGetDampingParameter_UM_LS(SNES snes,PetscScalar *damp)
 {
   SNES_UM_LS *neP;
 
@@ -631,9 +631,9 @@ EXTERN_C_END
 
 .keywords: SNES, nonlinear, get, line search, damping parameter
 @ */
-int SNESLineSearchGetDampingParameter(SNES snes,Scalar *damp)
+int SNESLineSearchGetDampingParameter(SNES snes,PetscScalar *damp)
 {
-  int ierr,(*f)(SNES,Scalar *);
+  int ierr,(*f)(SNES,PetscScalar *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);

@@ -1,4 +1,4 @@
-/*$Id: snesmfjdef.c,v 1.27 2001/07/17 20:26:03 bsmith Exp bsmith $*/
+/*$Id: snesmfjdef.c,v 1.28 2001/07/20 21:25:24 bsmith Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 
@@ -61,7 +61,7 @@ typedef struct {
 .  h - the scale computed
 
 */
-static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
+static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
   PetscReal        norm,sum,umin = hctx->umin;
@@ -152,7 +152,7 @@ static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Default matrix free parameters");CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_mf_umin","umin","MatSNESMFDefaultSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_mf_umin","umin","MatSNESMFDefaultSetUmin",hctx->umin,&hctx->umin,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.74 2001/03/23 23:25:38 balay Exp bsmith $";*/
+/* "$Id: flow.c,v 1.75 2001/04/04 18:13:53 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver.\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -16,7 +16,7 @@ and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 #endif
 
 #define ICALLOC(size,y) ierr = PetscMalloc((PetscMax(size,1))*sizeof(int),y);CHKERRQ(ierr);
-#define FCALLOC(size,y) ierr = PetscMalloc((PetscMax(size,1))*sizeof(Scalar),y);CHKERRQ(ierr);
+#define FCALLOC(size,y) ierr = PetscMalloc((PetscMax(size,1))*sizeof(PetscScalar),y);CHKERRQ(ierr);
  
 typedef struct {
  Vec     qnew,qold,func;
@@ -119,9 +119,9 @@ int main(int argc,char **args)
   tsCtx.dt        = -5.0; tsCtx.fnorm_ratio = 1.0e+10;
   tsCtx.LocalTimeStepping = 1;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
   tsCtx.print_freq = tsCtx.max_steps; 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
 
@@ -136,8 +136,8 @@ int main(int argc,char **args)
 
   f_pntr.jvisc   = c_info->ivisc;
   f_pntr.ileast  = 4;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-alpha",&c_info->alpha,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-beta",&c_info->beta,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&c_info->alpha,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-beta",&c_info->beta,PETSC_NULL);CHKERRQ(ierr);
   
   /*======================================================================*/
 
@@ -2489,7 +2489,7 @@ int EdgeColoring(int nnodes,int nedge,int *e2n,int *eperm,int *ncle,int *counte)
  }
 #endif
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
-int EventCountersBegin(int *gen_start,Scalar* time_start_counters)
+int EventCountersBegin(int *gen_start,PetscScalar* time_start_counters)
 {
  int ierr;
  if ((*gen_start = start_counters(event0,event1)) < 0)
@@ -2498,7 +2498,7 @@ int EventCountersBegin(int *gen_start,Scalar* time_start_counters)
  return 0;
 }
 
-int EventCountersEnd(int gen_start,Scalar time_start_counters) 
+int EventCountersEnd(int gen_start,PetscScalar time_start_counters) 
 {
  int gen_read,ierr;
  Scalar time_read_counters;

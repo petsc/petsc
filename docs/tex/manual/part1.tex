@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.143 2001/04/10 19:37:53 bsmith Exp bsmith $ 
+% $Id: part1.tex,v 1.144 2001/06/21 21:20:15 bsmith Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -367,8 +367,8 @@ Additional vectors of the same type can be formed with
 \end{verbatim}
 The commands \findex{VecSet()} \findex{VecSetValues()}
 \begin{verbatim}
-  VecSet(Scalar *value,Vec x);
-  VecSetValues(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
+  VecSet(PetscScalar *value,Vec x);
+  VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT_VALUES);
 \end{verbatim}
 respectively set all the components of a vector to a particular scalar
 value and assign a different value to each component.  More
@@ -401,7 +401,7 @@ alternatively specify each processes' number of local rows and columns
 using \trl{m} and \trl{n}.
 Values can then be set with the command
 \begin{verbatim}
-  MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
+  MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,
                        INSERT_VALUES);
 \end{verbatim}
 After \findex{MatSetValues()} all elements have been inserted into the

@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.66 2001/02/19 16:28:29 balay Exp bsmith $*/
+/*$Id: zvec.c,v 1.67 2001/07/20 21:27:22 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -101,8 +101,7 @@ void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
 {
   *ierr = VecSetRandom(*r,*x);
 }
-
-void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,double *x,double *y,Scalar *V,int *ierr)
+void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,double *x,double *y,PetscScalar *V,int *ierr)
 {
   double *xx,*yy;
   if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 
@@ -157,7 +156,7 @@ void PETSC_STDCALL mapdestroy_(PetscMap *m,int *ierr)
   *ierr = PetscMapDestroy(*m);
 }
 
-void PETSC_STDCALL vecsetvalue_(Vec *v,int *i,Scalar *va,InsertMode *mode)
+void PETSC_STDCALL vecsetvalue_(Vec *v,int *i,PetscScalar *va,InsertMode *mode)
 {
   /* cannot use VecSetValue() here since that usesCHKERRQ() which has a return in it */
   VecSetValues(*v,1,i,va,*mode);
@@ -193,7 +192,7 @@ void PETSC_STDCALL vecload_(PetscViewer *viewer,Vec *newvec,int *ierr)
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
-void PETSC_STDCALL vecrestorearray_(Vec *x,Scalar *fa,long *ia,int *ierr)
+void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,long *ia,int *ierr)
 {
   int    m;
   Scalar *lx;
@@ -203,7 +202,7 @@ void PETSC_STDCALL vecrestorearray_(Vec *x,Scalar *fa,long *ia,int *ierr)
   *ierr = VecRestoreArray(*x,&lx);if (*ierr) return;
 }
 
-void PETSC_STDCALL vecgetarray_(Vec *x,Scalar *fa,long *ia,int *ierr)
+void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,long *ia,int *ierr)
 {
   Scalar *lx;
   int    m;
@@ -255,13 +254,13 @@ void PETSC_STDCALL veccreateseq_(MPI_Comm *comm,int *n,Vec *V,int *ierr)
   *ierr = VecCreateSeq((MPI_Comm)PetscToPointerComm(*comm),*n,V);
 }
 
-void PETSC_STDCALL veccreateseqwitharray_(MPI_Comm *comm,int *n,Scalar *s,Vec *V,int *ierr)
+void PETSC_STDCALL veccreateseqwitharray_(MPI_Comm *comm,int *n,PetscScalar *s,Vec *V,int *ierr)
 {
   if (FORTRANNULLSCALAR(s)) s = PETSC_NULL;
   *ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,s,V);
 }
 
-void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,Scalar *s,Vec *V,int *ierr)
+void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,PetscScalar *s,Vec *V,int *ierr)
 {
   if (FORTRANNULLSCALAR(s)) s = PETSC_NULL;
   *ierr = VecCreateMPIWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,s,V);
@@ -301,17 +300,17 @@ void PETSC_STDCALL vecdestroyvecs_(Vec *vecs,int *m,int *ierr)
   }
 }
 
-void PETSC_STDCALL vecmtdot_(int *nv,Vec *x,Vec *y,Scalar *val,int *ierr)
+void PETSC_STDCALL vecmtdot_(int *nv,Vec *x,Vec *y,PetscScalar *val,int *ierr)
 {
   *ierr = VecMTDot(*nv,*x,y,val);
 }
 
-void PETSC_STDCALL vecmdot_(int *nv,Vec *x,Vec *y,Scalar *val,int *ierr)
+void PETSC_STDCALL vecmdot_(int *nv,Vec *x,Vec *y,PetscScalar *val,int *ierr)
 {
   *ierr = VecMDot(*nv,*x,y,val);
 }
 
-void PETSC_STDCALL vecmaxpy_(int *nv,Scalar *alpha,Vec *x,Vec *y,int *ierr)
+void PETSC_STDCALL vecmaxpy_(int *nv,PetscScalar *alpha,Vec *x,Vec *y,int *ierr)
 {
   *ierr = VecMAXPY(*nv,alpha,*x,y);
 }
@@ -336,7 +335,7 @@ void PETSC_STDCALL veccreateghostblock_(MPI_Comm *comm,int *bs,int *n,int *N,int
   *ierr = VecCreateGhostBlock((MPI_Comm)PetscToPointerComm(*comm),*bs,*n,*N,*nghost,ghosts,vv);
 }
 
-void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Scalar *array,
+void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,PetscScalar *array,
                               Vec *vv,int *ierr)
 {
   if (FORTRANNULLSCALAR(array)) array = PETSC_NULL;

@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.33 2001/01/15 21:45:04 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.34 2001/07/20 21:18:16 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -25,12 +25,12 @@ typedef struct {
   VecScatter  localupdate;              /* scatter to update ghost values */
 } Vec_MPI;
 
-EXTERN int VecNorm_Seq(Vec,NormType,double *work);
-EXTERN int VecMDot_MPI(int,Vec,const Vec[],Scalar *);
-EXTERN int VecMTDot_MPI(int,Vec,const Vec[],Scalar *);
-EXTERN int VecNorm_MPI(Vec,NormType,double *);
-EXTERN int VecMax_MPI(Vec,int *,double *);
-EXTERN int VecMin_MPI(Vec,int *,double *);
+EXTERN int VecNorm_Seq(Vec,NormType,PetscReal *work);
+EXTERN int VecMDot_MPI(int,Vec,const Vec[],PetscScalar *);
+EXTERN int VecMTDot_MPI(int,Vec,const Vec[],PetscScalar *);
+EXTERN int VecNorm_MPI(Vec,NormType,PetscReal *);
+EXTERN int VecMax_MPI(Vec,int *,PetscReal *);
+EXTERN int VecMin_MPI(Vec,int *,PetscReal *);
 EXTERN int VecGetOwnershipRange_MPI(Vec,int *,int*); 
 EXTERN int VecDestroy_MPI(Vec);
 EXTERN int VecView_MPI_File(Vec,PetscViewer);

@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.78 2001/03/23 23:20:30 balay Exp balay $*/
+/*$Id: sysio.c,v 1.79 2001/04/09 19:27:02 balay Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -70,7 +70,7 @@ int PetscByteSwapShort(short *buff,int n)
   PetscByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
 */
-int PetscByteSwapScalar(Scalar *buff,int n)
+int PetscByteSwapScalar(PetscScalar *buff,int n)
 {
   int    i,j;
   double tmp,*buff1 = (double*)buff;
@@ -208,7 +208,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     }
   }
 #endif
-  else if (type == PETSC_SCALAR)  m *= sizeof(Scalar);
+  else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
@@ -226,7 +226,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   }
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((Scalar*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
@@ -315,7 +315,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((Scalar*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
@@ -340,7 +340,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 #else
   if (type == PETSC_INT)          m *= sizeof(int);
 #endif
-  else if (type == PETSC_SCALAR)  m *= sizeof(Scalar);
+  else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
@@ -358,7 +358,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
-    if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((Scalar*)ptmp,n);CHKERRQ(ierr);}
+    if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_INT)    {ierr = PetscByteSwapInt((int*)ptmp,n);CHKERRQ(ierr);}
   }

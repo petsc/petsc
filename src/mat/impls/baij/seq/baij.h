@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.32 2001/07/12 23:47:53 buschelm Exp buschelm $ */
+/* $Id: baij.h,v 1.33 2001/07/13 14:50:51 buschelm Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -54,7 +54,7 @@ EXTERN int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
 EXTERN int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
 EXTERN int MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
 EXTERN int MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
-EXTERN int MatScale_SeqBAIJ(Scalar*,Mat);
+EXTERN int MatScale_SeqBAIJ(PetscScalar*,Mat);
 EXTERN int MatNorm_SeqBAIJ(Mat,NormType,PetscReal *);
 EXTERN int MatEqual_SeqBAIJ(Mat,Mat,PetscTruth*);
 EXTERN int MatGetDiagonal_SeqBAIJ(Mat,Vec);

@@ -1,4 +1,4 @@
-/*$Id: ptype.c,v 1.5 2001/03/23 23:20:38 balay Exp bsmith $*/
+/*$Id: ptype.c,v 1.6 2001/04/10 19:34:33 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
@@ -34,7 +34,7 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 }
 
 typedef enum {PETSC_INT_SIZE = sizeof(int),PETSC_DOUBLE_SIZE = sizeof(double),
-              PETSC_COMPLEX_SIZE = sizeof(Scalar),PETSC_LONG_SIZE=sizeof(long),
+              PETSC_COMPLEX_SIZE = sizeof(PetscScalar),PETSC_LONG_SIZE=sizeof(long),
               PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
               PETSC_CHAR_SIZE = sizeof(char),PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
 #if defined(PETSC_USE_COMPLEX)

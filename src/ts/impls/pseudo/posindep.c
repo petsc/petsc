@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.54 2001/04/04 17:12:38 bsmith Exp balay $*/
+/*$Id: posindep.c,v 1.55 2001/04/04 18:04:13 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -11,15 +11,15 @@ typedef struct {
 
   /* information used for Pseudo-timestepping */
 
-  int    (*dt)(TS,double*,void*);              /* compute next timestep, and related context */
+  int    (*dt)(TS,PetscReal*,void*);              /* compute next timestep, and related context */
   void   *dtctx;              
-  int    (*verify)(TS,Vec,void*,double*,int*); /* verify previous timestep and related context */
+  int    (*verify)(TS,Vec,void*,PetscReal*,int*); /* verify previous timestep and related context */
   void   *verifyctx;     
 
-  double initial_fnorm,fnorm;                  /* original and current norm of F(u) */
-  double fnorm_previous;
+  PetscReal  initial_fnorm,fnorm;                  /* original and current norm of F(u) */
+  PetscReal  fnorm_previous;
 
-  double     dt_increment;                  /* scaling that dt is incremented each time-step */
+  PetscReal  dt_increment;                  /* scaling that dt is incremented each time-step */
   PetscTruth increment_dt_from_initial_dt;  
 } TS_Pseudo;
 
@@ -49,7 +49,7 @@ typedef struct {
 
 .seealso: TSPseudoDefaultTimeStep(), TSPseudoSetTimeStep()
 @*/
-int TSPseudoComputeTimeStep(TS ts,double *dt)
+int TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   int       ierr;
@@ -89,7 +89,7 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,double *newdt,int *flag)
+int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,PetscReal *newdt,int *flag)
 {
   PetscFunctionBegin;
   *flag = 1;
@@ -122,7 +122,7 @@ int TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,double *newdt,int
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoDefaultVerifyTimeStep()
 @*/
-int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)
+int TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,int *flag)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   int       ierr;
@@ -139,12 +139,12 @@ int TSPseudoVerifyTimeStep(TS ts,Vec update,double *dt,int *flag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Pseudo"
-static int TSStep_Pseudo(TS ts,int *steps,double *ptime)
+static int TSStep_Pseudo(TS ts,int *steps,PetscReal *ptime)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its,ok,lits;
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
-  double    current_time_step;
+  PetscReal current_time_step;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -305,7 +305,7 @@ static int TSSetUp_Pseudo(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoDefaultMonitor"
-int TSPseudoDefaultMonitor(TS ts,int step,double ptime,Vec v,void *ctx)
+int TSPseudoDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   int       ierr;
@@ -334,7 +334,7 @@ static int TSSetFromOptions_Pseudo(TS ts)
     if (flg) {
       ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsDouble("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
+    ierr = PetscOptionsPetscReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -366,7 +366,7 @@ static int TSView_Pseudo(TS ts,PetscViewer viewer)
    Level: advanced
 
    Calling sequence of func:
-.  func (TS ts,Vec update,void *ctx,double *newdt,int *flag);
+.  func (TS ts,Vec update,void *ctx,PetscReal *newdt,int *flag);
 
 .  update - latest solution vector
 .  ctx - [optional] timestep context
@@ -381,9 +381,9 @@ static int TSView_Pseudo(TS ts,PetscViewer viewer)
 
 .seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* ctx)
+int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,PetscReal*,int*),void* ctx)
 {
-  int ierr,(*f)(TS,int (*)(TS,Vec,void*,double *,int *),void *);
+  int ierr,(*f)(TS,int (*)(TS,Vec,void*,PetscReal *,int *),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -416,9 +416,9 @@ $    -ts_pseudo_increment <increment>
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
 @*/
-int TSPseudoSetTimeStepIncrement(TS ts,double inc)
+int TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
 {
-  int ierr,(*f)(TS,double);
+  int ierr,(*f)(TS,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -485,7 +485,7 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
    Level: intermediate
 
    Calling sequence of func:
-.  func (TS ts,double *newdt,void *ctx);
+.  func (TS ts,PetscReal *newdt,void *ctx);
 
 .  newdt - the newly computed timestep
 .  ctx - [optional] timestep context
@@ -498,9 +498,9 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
 
 .seealso: TSPseudoDefaultTimeStep(), TSPseudoComputeTimeStep()
 @*/
-int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
+int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,PetscReal*,void*),void* ctx)
 {
-  int ierr,(*f)(TS,int (*)(TS,double *,void *),void *);
+  int ierr,(*f)(TS,int (*)(TS,PetscReal *,void *),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -517,7 +517,7 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"
-int TSPseudoSetVerifyTimeStep_Pseudo(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* ctx)
+int TSPseudoSetVerifyTimeStep_Pseudo(TS ts,int (*dt)(TS,Vec,void*,PetscReal*,int*),void* ctx)
 {
   TS_Pseudo *pseudo;
 
@@ -532,7 +532,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetTimeStepIncrement_Pseudo"
-int TSPseudoSetTimeStepIncrement_Pseudo(TS ts,double inc)
+int TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
@@ -558,7 +558,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetTimeStep_Pseudo"
-int TSPseudoSetTimeStep_Pseudo(TS ts,int (*dt)(TS,double*,void*),void* ctx)
+int TSPseudoSetTimeStep_Pseudo(TS ts,int (*dt)(TS,PetscReal*,void*),void* ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
 
@@ -649,10 +649,10 @@ EXTERN_C_END
 
 .seealso: TSPseudoSetTimeStep(), TSPseudoComputeTimeStep()
 @*/
-int TSPseudoDefaultTimeStep(TS ts,double* newdt,void* dtctx)
+int TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
-  double    inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
+  PetscReal inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
   int       ierr;
 
   PetscFunctionBegin;

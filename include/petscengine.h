@@ -1,4 +1,4 @@
-/* $Id: petscengine.h,v 1.2 2000/05/08 04:29:25 bsmith Exp bsmith $ */
+/* $Id: petscengine.h,v 1.3 2000/08/01 20:58:40 bsmith Exp bsmith $ */
 
 /*
     Defines an interface to the Matlab Engine from PETSc
@@ -18,8 +18,8 @@ EXTERN int PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
 EXTERN int PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
 EXTERN int PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
 EXTERN int PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
-EXTERN int PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,Scalar*,char*);
-EXTERN int PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,Scalar*,char*);
+EXTERN int PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,PetscScalar*,char*);
+EXTERN int PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,PetscScalar*,char*);
 
 EXTERN PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm);
 #define MATLAB_ENGINE_SELF  MATLAB_ENGINE_(PETSC_COMM_SELF)

@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.13 2001/01/16 18:18:01 balay Exp balay $*/
+/*$Id: is.c,v 1.14 2001/03/23 23:22:19 balay Exp bsmith $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -47,7 +47,7 @@ int MatMult_IS(Mat A,Vec x,Vec y)
 {
   int    ierr;
   Mat_IS *is = (Mat_IS*)A->data;
-  Scalar zero = 0.0;
+  PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
   /*  scatter the global vector x into the local work vector */
@@ -102,7 +102,7 @@ int MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mapping)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesLocal_IS" 
-int MatSetValuesLocal_IS(Mat A,int m,int *rows,int n,int *cols,Scalar *values,InsertMode addv)
+int MatSetValuesLocal_IS(Mat A,int m,int *rows,int n,int *cols,PetscScalar *values,InsertMode addv)
 {
   int    ierr;
   Mat_IS *is = (Mat_IS*)A->data;
@@ -114,11 +114,11 @@ int MatSetValuesLocal_IS(Mat A,int m,int *rows,int n,int *cols,Scalar *values,In
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRowsLocal_IS" 
-int MatZeroRowsLocal_IS(Mat A,IS isrows,Scalar *diag)
+int MatZeroRowsLocal_IS(Mat A,IS isrows,PetscScalar *diag)
 {
   Mat_IS *is = (Mat_IS*)A->data;
   int    ierr,i,n,*rows;
-  Scalar *array;
+  PetscScalar *array;
 
   PetscFunctionBegin;
 
@@ -128,7 +128,7 @@ int MatZeroRowsLocal_IS(Mat A,IS isrows,Scalar *diag)
        work properly in the interface nodes.
     */
     Vec    counter;
-    Scalar one=1.0, zero=0.0;
+    PetscScalar one=1.0, zero=0.0;
     ierr = VecCreateMPI(A->comm,A->n,A->N,&counter);CHKERRQ(ierr);
     ierr = VecSet(&zero,counter);CHKERRQ(ierr);
     ierr = VecSet(&one,is->x);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex54.c,v 1.18 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex54.c,v 1.19 2001/04/10 19:35:44 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAIJ format.\n";
 
@@ -39,8 +39,8 @@ int main(int argc,char **args)
 
   ierr = PetscMalloc(bs*sizeof(int),&rows);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*sizeof(int),&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*bs*sizeof(Scalar),&vals);CHKERRQ(ierr);
-  ierr = PetscMalloc(M*sizeof(Scalar),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+  ierr = PetscMalloc(M*sizeof(PetscScalar),&idx);CHKERRQ(ierr);
 
   /* Now set blocks of values */
   for (i=0; i<40*bs; i++) {

@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.43 2001/03/23 22:04:55 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.44 2001/06/21 21:16:21 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -49,6 +49,7 @@ typedef struct {
   PetscReal        lu_dtcol;
   PetscTruth       lu_damp;
   PetscReal        lu_damping;
+  PetscReal        lu_zeropivot;
   Scalar           *saved_values;    /* location for stashing nonzero values of matrix */
   Scalar           *idiag,*ssor;     /* inverse of diagonal entries; space for eisen */
 
@@ -65,7 +66,7 @@ EXTERN int MatMult_SeqAIJ(Mat A,Vec,Vec);
 EXTERN int MatMultAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
 EXTERN int MatMultTranspose_SeqAIJ(Mat A,Vec,Vec);
 EXTERN int MatMultTransposeAdd_SeqAIJ(Mat A,Vec,Vec,Vec);
-EXTERN int MatRelax_SeqAIJ(Mat,Vec,double,MatSORType,double,int,Vec);
+EXTERN int MatRelax_SeqAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec);
 
 EXTERN int MatSetColoring_SeqAIJ(Mat,ISColoring);
 EXTERN int MatSetValuesAdic_SeqAIJ(Mat,void*);

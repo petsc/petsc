@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.49 2001/01/18 17:17:41 bsmith Exp balay $*/
+/*$Id: shvec.c,v 1.50 2001/03/23 23:21:29 balay Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -19,12 +19,12 @@ int VecDuplicate_Shared(Vec win,Vec *v)
 {
   int     ierr;
   Vec_MPI *vw,*w = (Vec_MPI *)win->data;
-  Scalar  *array;
+  PetscScalar  *array;
 
   PetscFunctionBegin;
 
   /* first processor allocates entire array and sends it's address to the others */
-  ierr = PetscSharedMalloc(win->comm,win->n*sizeof(Scalar),win->N*sizeof(Scalar),(void**)&array);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(win->comm,win->n*sizeof(PetscScalar),win->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
 
   ierr = VecCreate(win->comm,win->n,win->N,v);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,array,win->map);CHKERRQ(ierr);
@@ -53,11 +53,11 @@ EXTERN_C_BEGIN
 int VecCreate_Shared(Vec vv)
 {
   int     ierr;
-  Scalar  *array;
+  PetscScalar  *array;
 
   PetscFunctionBegin;
   ierr = PetscSplitOwnership(vv->comm,&vv->n,&vv->N);CHKERRQ(ierr);
-  ierr = PetscSharedMalloc(vv->comm,vv->n*sizeof(Scalar),vv->N*sizeof(Scalar),(void**)&array);CHKERRQ(ierr); 
+  ierr = PetscSharedMalloc(vv->comm,vv->n*sizeof(PetscScalar),vv->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr); 
 
   ierr = VecCreate_MPI_Private(vv,0,array,PETSC_NULL);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;

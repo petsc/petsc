@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.249 2001/06/21 21:15:31 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.250 2001/07/20 21:16:37 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -169,9 +169,9 @@ int PetscSetProgramName(const char name[])
   Level: intermediate
 
 .seealso: PetscOptionsSetValue(), PetscOptionsPrint(), PetscOptionsHasName(), PetscOptionsGetInt(),
-          PetscOptionsGetDouble(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsLogical(),
+          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 
@@ -616,10 +616,10 @@ int PetscOptionsClearValue(const char iname[])
 
    Concepts: options database^rejecting option
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),OptionsHasName(),
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(),PetscOptionsLogical(),
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),OptionsHasName(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
@@ -700,10 +700,10 @@ static int PetscOptionsFindPair_Private(const char pre[],const char name[],char 
 
    Concepts: options database^rejecting option
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),OptionsHasName(),
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),OptionsHasName(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
@@ -742,10 +742,10 @@ int PetscOptionsReject(const char name[],const char mess[])
 
    Concepts: options database^has option name
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
@@ -794,11 +794,11 @@ int PetscOptionsHasName(const char pre[],const char name[],PetscTruth *flg)
 
    Concepts: options database^has int
 
-.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical()
-          PetscOptionsInt(), PetscOptionsString(), PetscOptionsDouble(), PetscOptionsLogical(),
+.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
@@ -847,10 +847,10 @@ int PetscOptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth
 
    Concepts: options database^has logical
 
-.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(),
-          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsGetInt(), PetscOptionsLogical(),
+.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsGetInt(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
@@ -907,9 +907,9 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsGetDouble"
+#define __FUNCT__ "PetscOptionsGetReal"
 /*@C
-   PetscOptionsGetDouble - Gets the double precision value for a particular 
+   PetscOptionsGetReal - Gets the double precision value for a particular 
    option in the database.
 
    Not Collective
@@ -927,13 +927,13 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
    Concepts: options database^has double
 
 .seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(),PetscOptionsLogical(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(),PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetDouble(const char pre[],const char name[],double *dvalue,PetscTruth *flg)
+int PetscOptionsGetReal(const char pre[],const char name[],double *dvalue,PetscTruth *flg)
 {
   char       *value;
   int        ierr;
@@ -976,13 +976,13 @@ int PetscOptionsGetDouble(const char pre[],const char name[],double *dvalue,Pets
    Concepts: options database^has scalar
 
 .seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,PetscTruth *flg)
+int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue,PetscTruth *flg)
 {
   char       *value;
   PetscTruth flag;
@@ -1021,9 +1021,9 @@ int PetscOptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,Pets
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsGetDoubleArray"
+#define __FUNCT__ "PetscOptionsGetRealArray"
 /*@C
-   PetscOptionsGetDoubleArray - Gets an array of double precision values for a 
+   PetscOptionsGetRealArray - Gets an array of double precision values for a 
    particular option in the database.  The values must be separated with 
    commas with no intervening spaces.
 
@@ -1046,11 +1046,11 @@ int PetscOptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,Pets
 .seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
            PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
-int PetscOptionsGetDoubleArray(const char pre[],const char name[],double dvalue[],int *nmax,PetscTruth *flg)
+int PetscOptionsGetRealArray(const char pre[],const char name[],double dvalue[],int *nmax,PetscTruth *flg)
 {
   char       *value;
   int        n = 0,ierr;
@@ -1099,9 +1099,9 @@ int PetscOptionsGetDoubleArray(const char pre[],const char name[],double dvalue[
    Concepts: options database^array of ints
 
 .seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
-           PetscOptionsGetString(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+           PetscOptionsGetString(), PetscOptionsGetRealArray(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
@@ -1161,10 +1161,10 @@ int PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int 
 
    Concepts: options database^string
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/
@@ -1221,10 +1221,10 @@ int PetscOptionsGetString(const char pre[],const char name[],char string[],int l
 
    Concepts: options database^array of strings
 
-.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
-           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
-          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
           PetscOptionsList(), PetscOptionsEList()
 @*/

@@ -1,11 +1,11 @@
-/*$Id: mmsbaij.c,v 1.7 2001/03/09 21:37:17 balay Exp balay $*/
+/*$Id: mmsbaij.c,v 1.8 2001/03/23 23:22:26 balay Exp bsmith $*/
 
 /*
    Support for the parallel SBAIJ matrix vector multiply
 */
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "src/vec/vecimpl.h"
-extern int MatSetValues_SeqSBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
+extern int MatSetValues_SeqSBAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpMultiply_MPISBAIJ"
@@ -176,14 +176,14 @@ int DisAssemble_MPISBAIJ(Mat A)
   int         ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
   int         k,bs=baij->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->m;
   MatScalar   *a = Bbaij->a;
-  Scalar      *atmp;
+  PetscScalar      *atmp;
 #if defined(PETSC_USE_MAT_SINGLE)
   int         l;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscMalloc(baij->bs*sizeof(Scalar),&atmp);
+  ierr = PetscMalloc(baij->bs*sizeof(PetscScalar),&atmp);
 #endif
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */

@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.16 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex10.c,v 1.17 2001/03/23 23:21:30 balay Exp bsmith $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
 
   /* fill local part of parallel vector */
   for (i=n*rank; i<n*(rank+1); i++) {
-    value = (Scalar) i;
+    value = (PetscScalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
 
   /* fill local part of parallel vector */
   for (i=0; i<n; i++) {
-    value = -(Scalar) (i + 100*rank);
+    value = -(PetscScalar) (i + 100*rank);
     ierr = VecSetValues(y,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(y);CHKERRQ(ierr);

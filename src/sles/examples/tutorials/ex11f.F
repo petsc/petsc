@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.28 2001/01/15 21:47:36 bsmith Exp balay $";
+!    "$Id: ex11f.F,v 1.29 2001/01/23 18:44:49 balay Exp bsmith $";
 !
 !/*T
 !  Concepts: SLES^solving a Helmholtz equation
@@ -92,7 +92,7 @@
       n      = 6
       sigma1 = 100.0
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-sigma1',sigma1,      &
+      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-sigma1',sigma1,      &
      &                       flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       dim    = n*n

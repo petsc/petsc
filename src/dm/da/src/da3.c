@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.133 2001/06/21 21:19:09 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.134 2001/07/20 21:26:11 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -33,8 +33,8 @@ int DAView_3d(DA da,PetscViewer viewer)
                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     if (da->coordinates) {
-      int    last;
-      double *coors;
+      int       last;
+      PetscReal *coors;
       ierr = VecGetArray(da->coordinates,&coors);CHKERRQ(ierr);
       ierr = VecGetLocalSize(da->coordinates,&last);CHKERRQ(ierr);
       last = last - 3;
@@ -46,8 +46,8 @@ int DAView_3d(DA da,PetscViewer viewer)
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     PetscDraw       draw;
-    double     ymin = -1.0,ymax = (double)da->N;
-    double     xmin = -1.0,xmax = (double)((da->M+2)*da->P),x,y,ycoord,xcoord;
+    PetscReal     ymin = -1.0,ymax = (PetscReal)da->N;
+    PetscReal     xmin = -1.0,xmax = (PetscReal)((da->M+2)*da->P),x,y,ycoord,xcoord;
     int        k,plane,base,*idx;
     char       node[10];
     PetscTruth isnull;
@@ -60,13 +60,13 @@ int DAView_3d(DA da,PetscViewer viewer)
     /* first processor draw all node lines */
     if (!rank) {
       for (k=0; k<da->P; k++) {
-        ymin = 0.0; ymax = (double)(da->N - 1);
-        for (xmin=(double)(k*(da->M+1)); xmin<(double)(da->M+(k*(da->M+1))); xmin++) {
+        ymin = 0.0; ymax = (PetscReal)(da->N - 1);
+        for (xmin=(PetscReal)(k*(da->M+1)); xmin<(PetscReal)(da->M+(k*(da->M+1))); xmin++) {
           ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
         }
       
-        xmin = (double)(k*(da->M+1)); xmax = xmin + (double)(da->M - 1);
-        for (ymin=0; ymin<(double)da->N; ymin++) {
+        xmin = (PetscReal)(k*(da->M+1)); xmax = xmin + (PetscReal)(da->M - 1);
+        for (ymin=0; ymin<(PetscReal)da->N; ymin++) {
           ierr = PetscDrawLine(draw,xmin,ymin,xmax,ymin,PETSC_DRAW_BLACK);CHKERRQ(ierr);
         }
       }
@@ -295,7 +295,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     p = size/(m*n);
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p != PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)N*p)));
+    m = (int)(0.5 + sqrt(((PetscReal)M)*((PetscReal)size)/((PetscReal)N*p)));
     if (!m) m = 1;
     while (m > 0) {
       n = size/(m*p);
@@ -306,7 +306,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)P*n)));
+    m = (int)(0.5 + sqrt(((PetscReal)M)*((PetscReal)size)/((PetscReal)P*n)));
     if (!m) m = 1;
     while (m > 0) {
       p = size/(m*n);
@@ -317,7 +317,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if (M > P && m < p) {int _m = m; m = p; p = _m;}
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int)(0.5 + sqrt(((double)N)*((double)size)/((double)P*m)));
+    n = (int)(0.5 + sqrt(((PetscReal)N)*((PetscReal)size)/((PetscReal)P*m)));
     if (!n) n = 1;
     while (n > 0) {
       p = size/(m*n);
@@ -328,7 +328,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     if (N > P && n < p) {int _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int)(0.5 + pow(((double)N*N)*((double)size)/((double)P*M),1./3.));
+    n = (int)(0.5 + pow(((PetscReal)N*N)*((PetscReal)size)/((PetscReal)P*M),1./3.));
     if (!n) n = 1;
     while (n > 0) {
       pm = size/n;
@@ -336,7 +336,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
       n--;
     }   
     if (!n) n = 1; 
-    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)P*n)));
+    m = (int)(0.5 + sqrt(((PetscReal)M)*((PetscReal)size)/((PetscReal)P*n)));
     if (!m) m = 1;
     while (m > 0) {
       p = size/(m*n);

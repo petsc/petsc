@@ -1,4 +1,4 @@
-/*$Id: lsparams.c,v 1.10 2001/03/23 23:24:13 balay Exp bsmith $*/
+/*$Id: lsparams.c,v 1.11 2001/04/05 20:01:02 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -30,7 +30,7 @@
 
 .seealso: SNESGetLineSearchParams(), SNESSetLineSearch()
 @*/
-int SNESSetLineSearchParams(SNES snes,double alpha,double maxstep,double steptol)
+int SNESSetLineSearchParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal steptol)
 {
   SNES_EQ_LS *ls;
 
@@ -72,7 +72,7 @@ int SNESSetLineSearchParams(SNES snes,double alpha,double maxstep,double steptol
 
 .seealso: SNESSetLineSearchParams(), SNESSetLineSearch()
 @*/
-int SNESGetLineSearchParams(SNES snes,double *alpha,double *maxstep,double *steptol)
+int SNESGetLineSearchParams(SNES snes,PetscReal *alpha,PetscReal *maxstep,PetscReal *steptol)
 {
   SNES_EQ_LS *ls;
 

@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.16 2001/03/09 22:50:15 balay Exp balay $ */
+/* $Id: inpututils.c,v 1.17 2001/03/23 23:25:19 balay Exp bsmith $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -74,9 +74,9 @@ int AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
 {
   PetscDraw       popup;                           /* help window */
   PetscDrawButton button;                          /* mouse button pressed */
-  int        cn, ierr,*cell;
-  double     *vertex,cx,cy;
-  char       title[120];
+  int             cn, ierr,*cell;
+  double          *vertex,cx,cy;
+  char            title[120];
 
   PetscFunctionBegin;
   agrid->cell_max = 500;

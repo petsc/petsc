@@ -1,4 +1,4 @@
-/*$Id: sda2f.c,v 1.13 1999/10/24 14:04:15 bsmith Exp bsmith $*/
+/*$Id: sda2f.c,v 1.14 2000/01/11 21:03:35 bsmith Exp bsmith $*/
 /*
      Fortran interface for SDA routines.
 */
@@ -30,13 +30,13 @@ void sdadestroy_(SDA *sda,int *__ierr)
   PetscRmPointer(sda);
 }
 
-void sdalocaltolocalbegin_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l,
+void sdalocaltolocalbegin_(SDA *sda,PetscScalar *g,InsertMode *mode,PetscScalar *l,
                            int *__ierr)
 {
   *__ierr = SDALocalToLocalBegin((SDA)PetscToPointer(sda),g,*mode,l);
 }
 
-void sdalocaltolocalend_(SDA *sda,Scalar *g,InsertMode *mode,Scalar *l,
+void sdalocaltolocalend_(SDA *sda,PetscScalar *g,InsertMode *mode,PetscScalar *l,
                          int *__ierr){
   *__ierr = SDALocalToLocalEnd((SDA)PetscToPointer(sda),g,*mode,l);
 }

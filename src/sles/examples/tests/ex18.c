@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.23 2001/03/23 23:23:50 balay Exp bsmith $*/
+/*$Id: ex18.c,v 1.24 2001/04/10 19:36:37 bsmith Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -47,7 +47,7 @@ int main(int argc,char **args)
     ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
     ierr = VecGetArray(tmp,&bnew);CHKERRQ(ierr);
     ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
-    ierr = PetscMemcpy(bnew,bold,mvec*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(bnew,bold,mvec*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
     b = tmp;
   }

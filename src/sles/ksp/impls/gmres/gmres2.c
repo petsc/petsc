@@ -1,4 +1,4 @@
-/*$Id: gmres2.c,v 1.33 2001/03/23 23:23:37 balay Exp bsmith $*/
+/*$Id: gmres2.c,v 1.34 2001/04/10 19:36:32 bsmith Exp bsmith $*/
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNCT__  
@@ -22,9 +22,9 @@
 
 .seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
 @*/
-int KSPGMRESSetHapTol(KSP ksp,double tol)
+int KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 {
-  int ierr,(*f)(KSP,double);
+  int ierr,(*f)(KSP,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);

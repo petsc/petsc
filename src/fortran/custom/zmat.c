@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.97 2001/04/07 02:33:14 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.98 2001/06/21 21:19:50 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -122,7 +122,7 @@ void PETSC_STDCALL matsettype_(Mat *x,CHAR type_name PETSC_MIXED_LEN(len),int *i
   FREECHAR(type_name,t);
 }
 
-void PETSC_STDCALL matsetvaluesstencil_(Mat *mat,int *m,MatStencil *idxm,int *n,MatStencil *idxn,Scalar *v,InsertMode *addv,
+void PETSC_STDCALL matsetvaluesstencil_(Mat *mat,int *m,MatStencil *idxm,int *n,MatStencil *idxn,PetscScalar *v,InsertMode *addv,
                                         int *ierr)
 {
   *ierr = MatSetValuesStencil(*mat,*m,idxm,*n,idxn,v,*addv);
@@ -163,7 +163,7 @@ void PETSC_STDCALL matsetfromoptions_(Mat *B,int *ierr)
   *ierr = MatSetFromOptions(*B);
 }
 
-void PETSC_STDCALL matcreateseqaijwitharrays_(MPI_Comm *comm,int *m,int *n,int *i,int *j,Scalar *a,Mat *mat,int *ierr)
+void PETSC_STDCALL matcreateseqaijwitharrays_(MPI_Comm *comm,int *m,int *n,int *i,int *j,PetscScalar *a,Mat *mat,int *ierr)
 {
   *ierr = MatCreateSeqAIJWithArrays((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,a,mat);
 }
@@ -224,13 +224,13 @@ void PETSC_STDCALL matgetcoloring_(Mat *mat,CHAR type PETSC_MIXED_LEN(len),ISCol
   FREECHAR(type,t);
 }
 
-void PETSC_STDCALL matsetvalue_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mode,int *ierr)
+void PETSC_STDCALL matsetvalue_(Mat *mat,int *i,int *j,PetscScalar *va,InsertMode *mode,int *ierr)
 {
   /* cannot use MatSetValue() here since that usesCHKERRQ() which has a return in it */
   *ierr = MatSetValues(*mat,1,i,1,j,va,*mode);
 }
 
-void PETSC_STDCALL matsetvaluelocal_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mode,int *ierr)
+void PETSC_STDCALL matsetvaluelocal_(Mat *mat,int *i,int *j,PetscScalar *va,InsertMode *mode,int *ierr)
 {
   /* cannot use MatSetValueLocal() here since that usesCHKERRQ() which has a return in it */
   *ierr = MatSetValuesLocal(*mat,1,i,1,j,va,*mode);
@@ -251,7 +251,7 @@ void PETSC_STDCALL matfdcoloringcreate_(Mat *mat,ISColoring *iscoloring,MatFDCol
 static int    matgetrowactive = 0,*my_ocols = 0;
 static Scalar *my_ovals = 0;
 
-void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,Scalar *vals,int *ierr)
+void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar *vals,int *ierr)
 {
   int    **oocols = &my_ocols;
   Scalar **oovals = &my_ovals;
@@ -270,11 +270,11 @@ void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,Scalar *val
   if (*ierr) return;
 
   if (oocols) { *ierr = PetscMemcpy(cols,my_ocols,(*ncols)*sizeof(int)); if (*ierr) return;}
-  if (oovals) { *ierr = PetscMemcpy(vals,my_ovals,(*ncols)*sizeof(Scalar)); if (*ierr) return; }
+  if (oovals) { *ierr = PetscMemcpy(vals,my_ovals,(*ncols)*sizeof(PetscScalar)); if (*ierr) return; }
   matgetrowactive = 1;
 }
 
-void PETSC_STDCALL matrestorerow_(Mat *mat,int *row,int *ncols,int *cols,Scalar *vals,int *ierr)
+void PETSC_STDCALL matrestorerow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar *vals,int *ierr)
 {
   int    **oocols = &my_ocols;
   Scalar **oovals = &my_ovals;
@@ -307,7 +307,7 @@ void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,int *ier
   *ierr = MatGetInfo(*mat,*flag,(MatInfo*)finfo);
 }
 
-void PETSC_STDCALL matgetarray_(Mat *mat,Scalar *fa,long *ia,int *ierr)
+void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,long *ia,int *ierr)
 {
   Scalar *mm;
   int    m,n;
@@ -317,7 +317,7 @@ void PETSC_STDCALL matgetarray_(Mat *mat,Scalar *fa,long *ia,int *ierr)
   *ierr = PetscScalarAddressToFortran((PetscObject)*mat,fa,mm,m*n,ia); if (*ierr) return;
 }
 
-void PETSC_STDCALL matrestorearray_(Mat *mat,Scalar *fa,long *ia,int *ierr)
+void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,long *ia,int *ierr)
 {
   Scalar               *lx;
   int                  m,n;
@@ -351,13 +351,13 @@ void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),Mat *M
   FREECHAR(outtype,t);
 }
 
-void PETSC_STDCALL matcreateseqdense_(MPI_Comm *comm,int *m,int *n,Scalar *data,Mat *newmat,int *ierr)
+void PETSC_STDCALL matcreateseqdense_(MPI_Comm *comm,int *m,int *n,PetscScalar *data,Mat *newmat,int *ierr)
 {
   if (FORTRANNULLSCALAR(data)) data = PETSC_NULL;
   *ierr = MatCreateSeqDense((MPI_Comm)PetscToPointerComm(*comm),*m,*n,data,newmat);
 }
 
-void PETSC_STDCALL matcreatempidense_(MPI_Comm *comm,int *m,int *n,int *M,int *N,Scalar *data,Mat *newmat,
+void PETSC_STDCALL matcreatempidense_(MPI_Comm *comm,int *m,int *n,int *M,int *N,PetscScalar *data,Mat *newmat,
                         int *ierr)
 {
   if (FORTRANNULLSCALAR(data)) data = PETSC_NULL;
@@ -366,7 +366,7 @@ void PETSC_STDCALL matcreatempidense_(MPI_Comm *comm,int *m,int *n,int *M,int *N
 
 /* Fortran ignores diagv */
 void PETSC_STDCALL matcreatempibdiag_(MPI_Comm *comm,int *m,int *M,int *N,int *nd,int *bs,
-                        int *diag,Scalar **diagv,Mat *newmat,int *ierr)
+                        int *diag,PetscScalar **diagv,Mat *newmat,int *ierr)
 {
   *ierr = MatCreateMPIBDiag((MPI_Comm)PetscToPointerComm(*comm),
                               *m,*M,*N,*nd,*bs,diag,PETSC_NULL,newmat);
@@ -374,13 +374,13 @@ void PETSC_STDCALL matcreatempibdiag_(MPI_Comm *comm,int *m,int *M,int *N,int *n
 
 /* Fortran ignores diagv */
 void PETSC_STDCALL matcreateseqbdiag_(MPI_Comm *comm,int *m,int *n,int *nd,int *bs,
-                        int *diag,Scalar **diagv,Mat *newmat,int *ierr)
+                        int *diag,PetscScalar **diagv,Mat *newmat,int *ierr)
 {
   *ierr = MatCreateSeqBDiag((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*nd,*bs,diag,
                                PETSC_NULL,newmat);
 }
 
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 /*  Fortran cannot pass in procinfo,hence ignored */
 void PETSC_STDCALL matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *nnz,Mat *newmat,int *ierr)
 {
@@ -593,13 +593,13 @@ void PETSC_STDCALL matduplicate_(Mat *matin,MatDuplicateOption *op,Mat *matout,i
   *ierr = MatDuplicate(*matin,*op,matout);
 }
 
-void PETSC_STDCALL matzerorows_(Mat *mat,IS *is,Scalar *diag,int *ierr)
+void PETSC_STDCALL matzerorows_(Mat *mat,IS *is,PetscScalar *diag,int *ierr)
 {
   if (FORTRANNULLSCALAR(diag))  diag = PETSC_NULL;
   *ierr = MatZeroRows(*mat,*is,diag);
 }
 
-void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,Scalar *diag,int *ierr)
+void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,PetscScalar *diag,int *ierr)
 {
   if (FORTRANNULLSCALAR(diag))  diag = PETSC_NULL;
   *ierr = MatZeroRowsLocal(*mat,*is,diag);

@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.83 2001/07/16 19:17:10 balay Exp balay $*/
+/*$Id: qcg.c,v 1.84 2001/07/17 19:25:56 balay Exp bsmith $*/
 /*
    Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -27,9 +27,9 @@ static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 
 .keywords: KSP, QCG, set, trust region radius
 @*/
-int KSPQCGSetTrustRegionRadius(KSP ksp,double delta)
+int KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
 {
-  int ierr,(*f)(KSP,double);
+  int ierr,(*f)(KSP,PetscReal);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -58,9 +58,9 @@ int KSPQCGSetTrustRegionRadius(KSP ksp,double delta)
 
     Level: advanced
 @*/
-int KSPQCGGetTrialStepNorm(KSP ksp,double *tsnorm)
+int KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
 {
-  int ierr,(*f)(KSP,double*);
+  int ierr,(*f)(KSP,PetscReal*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -99,9 +99,9 @@ int KSPQCGGetTrialStepNorm(KSP ksp,double *tsnorm)
 
     Level: advanced
 @*/
-int KSPQCGGetQuadratic(KSP ksp,double *quadratic)
+int KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
 {
-  int ierr,(*f)(KSP,double*);
+  int ierr,(*f)(KSP,PetscReal*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
@@ -414,7 +414,7 @@ int KSPDestroy_QCG(KSP ksp)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGSetTrustRegionRadius_QCG"
-int KSPQCGSetTrustRegionRadius_QCG(KSP ksp,double delta)
+int KSPQCGSetTrustRegionRadius_QCG(KSP ksp,PetscReal delta)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -427,7 +427,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetTrialStepNorm_QCG"
-int KSPQCGGetTrialStepNorm_QCG(KSP ksp,double *ltsnrm)
+int KSPQCGGetTrialStepNorm_QCG(KSP ksp,PetscReal *ltsnrm)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -440,7 +440,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPQCGGetQuadratic_QCG"
-int KSPQCGGetQuadratic_QCG(KSP ksp,double *quadratic)
+int KSPQCGGetQuadratic_QCG(KSP ksp,PetscReal *quadratic)
 {
   KSP_QCG *cgP = (KSP_QCG*)ksp->data;
 
@@ -455,13 +455,13 @@ EXTERN_C_END
 int KSPSetFromOptions_QCG(KSP ksp)
 {
   int        ierr;
-  double     delta;
+  PetscReal  delta;
   KSP_QCG    *cgP = (KSP_QCG*)ksp->data;
   PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP QCG Options");CHKERRQ(ierr);
-  ierr = PetscOptionsDouble("-ksp_qcg_trustregionradius","Trust Region Radius","KSPQCGSetTrustRegionRadius",cgP->delta,&delta,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsPetscReal("-ksp_qcg_trustregionradius","Trust Region Radius","KSPQCGSetTrustRegionRadius",cgP->delta,&delta,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPQCGSetTrustRegionRadius(ksp,delta);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.204 2001/04/10 19:36:24 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.205 2001/06/21 21:18:09 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -426,9 +426,9 @@ int KSPSetFromOptions(KSP ksp)
     }
 
     ierr = PetscOptionsInt("-ksp_max_it","Maximum number of iterations","KSPSetTolerances",ksp->max_it,&ksp->max_it,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->atol,&ksp->atol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->atol,&ksp->atol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-ksp_avoid_norms","Do not compute norms for convergence tests","KSPSetAvoidNorms",&flg);CHKERRQ(ierr);
     if (flg) {

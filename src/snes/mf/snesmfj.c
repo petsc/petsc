@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.126 2001/07/17 20:26:03 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.127 2001/07/20 21:25:24 bsmith Exp bsmith $*/
 
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 #include "src/mat/matimpl.h"
@@ -61,6 +61,29 @@ int MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetFunctioniBase_FD"
+int MatSNESMFSetFunctioniBase_FD(Mat mat,int (*func)(Vec,void *))
+{
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
+
+  PetscFunctionBegin;
+  ctx->funcisetbase = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSNESMFSetFunctioni_FD"
+int MatSNESMFSetFunctioni_FD(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
+{
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
+
+  PetscFunctionBegin;
+  ctx->funci = funci;
+  PetscFunctionReturn(0);
+}
+
 
 /*MC
    MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.
@@ -314,7 +337,7 @@ int MatGetDiagonal_MFFD(Mat mat,Vec a)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   Scalar       h,*aa,*ww,v;
-  double       epsilon = 1.e-8,umin = 1.e-6;
+  PetscReal    epsilon = 1.e-8,umin = 1.e-6;
   Vec          w,U;
   int          i,ierr,rstart,rend;
 
@@ -479,7 +502,7 @@ int MatSNESMFSetFromOptions(Mat mat)
     ierr = MatSNESMFSetType(mat,ftype);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsDouble("-snes_mf_err","set sqrt relative error in function","MatSNESMFSetFunctionError",mfctx->error_rel,&mfctx->error_rel,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_mf_err","set sqrt relative error in function","MatSNESMFSetFunctionError",mfctx->error_rel,&mfctx->error_rel,0);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_mf_period","how often h is recomputed","MatSNESMFSetPeriod",mfctx->recomputeperiod,&mfctx->recomputeperiod,0);CHKERRQ(ierr);
   if (mfctx->snes) {
     ierr = PetscOptionsName("-snes_mf_ksp_monitor","Monitor matrix-free parameters","MatSNESMFKSPMonitor",&flg);CHKERRQ(ierr);
@@ -547,6 +570,8 @@ int MatCreate_MFFD(Mat A)
   A->ops->setfromoptions = MatSNESMFSetFromOptions;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetBase_C","MatSNESMFSetBase_FD",MatSNESMFSetBase_FD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioniBase_C","MatSNESMFSetFunctioniBasei_FD",MatSNESMFSetFunctioniBase_FD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioni_C","MatSNESMFSetFunctioni_FD",MatSNESMFSetFunctioni_FD);CHKERRQ(ierr);
   mfctx->mat = A;
   ierr = VecCreateMPI(A->comm,A->n,A->N,&mfctx->w);CHKERRQ(ierr);
 
@@ -642,7 +667,7 @@ int MatCreateMF(Vec x,Mat *J)
 .seealso: MatCreateSNESMF(),MatSNESMFSetHHistory(), 
           MatSNESMFResetHHistory(),MatSNESMFKSPMonitor()
 @*/
-int MatSNESMFGetH(Mat mat,Scalar *h)
+int MatSNESMFGetH(Mat mat,PetscScalar *h)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
 
@@ -749,14 +774,19 @@ int MatSNESMFSetFunction(Mat mat,Vec v,int (*func)(SNES,Vec,Vec,void *),void *fu
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor(), SNESetFunction()
 @*/
-int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,Scalar*,void *))
+int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,PetscScalar*,void *))
 {
-  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
+  int  ierr,(*f)(Mat,int (*)(int,Vec,PetscScalar*,void *));
 
   PetscFunctionBegin;
-  ctx->funci   = funci;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSNESMFSetFunctioni_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,funci);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFSetFunctioniBase"
@@ -784,10 +814,14 @@ int MatSNESMFSetFunctioni(Mat mat,int (*funci)(int,Vec,Scalar*,void *))
 @*/
 int MatSNESMFSetFunctioniBase(Mat mat,int (*func)(Vec,void *))
 {
-  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
+  int  ierr,(*f)(Mat,int (*)(Vec,void *));
 
   PetscFunctionBegin;
-  ctx->funcisetbase   = func;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSNESMFSetFunctioniBase_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,func);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -928,7 +962,7 @@ int MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
           MatSNESMFKSPMonitor(), MatSNESMFSetFunctionError()
 
 @*/
-int MatSNESMFSetHHistory(Mat J,Scalar *history,int nhistory)
+int MatSNESMFSetHHistory(Mat J,PetscScalar *history,int nhistory)
 {
   MatSNESMFCtx ctx = (MatSNESMFCtx)J->data;
 

@@ -1,4 +1,4 @@
-/*$Id: mal.c,v 1.54 2001/04/05 16:20:58 bsmith Exp bsmith $*/
+/*$Id: mal.c,v 1.55 2001/06/21 21:15:26 bsmith Exp bsmith $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
@@ -16,7 +16,7 @@
         We want to make sure that all mallocs of double or complex numbers are complex aligned.
     1) on systems with memalign() we call that routine to get an aligned memory location
     2) on systems without memalign() we 
-       - allocate one sizeof(Scalar) extra space
+       - allocate one sizeof(PetscScalar) extra space
        - we shift the pointer up slightly if needed to get Scalar aligned
        - if shifted we store at ptr[-1] the amount of shift (plus a cookie)
 */

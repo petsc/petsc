@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.34 2001/01/15 21:44:00 bsmith Exp balay $*/
+/*$Id: sortip.c,v 1.35 2001/03/23 23:20:45 balay Exp bsmith $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -56,7 +56,7 @@ static int PetscSortIntWithPermutation_Private(const int v[],int vdx[],int right
 
    Concepts: sorting^ints with permutation
 
-.seealso: PetscSortInt(), PetscSortDoubleWithPermutation()
+.seealso: PetscSortInt(), PetscSortRealWithPermutation()
  @*/
 int PetscSortIntWithPermutation(int n,const int i[],int idx[])
 {
@@ -82,8 +82,8 @@ int PetscSortIntWithPermutation(int n,const int i[],int idx[])
 /* ---------------------------------------------------------------------- */
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSortDoubleWithPermutation_Private"
-static int PetscSortDoubleWithPermutation_Private(const double v[],int vdx[],int right)
+#define __FUNCT__ "PetscSortRealWithPermutation_Private"
+static int PetscSortRealWithPermutation_Private(const double v[],int vdx[],int right)
 {
   double vl;
   int    ierr,tmp,i,last;
@@ -102,15 +102,15 @@ static int PetscSortDoubleWithPermutation_Private(const double v[],int vdx[],int
     if (v[vdx[i]] < vl) {last++; SWAP(vdx[last],vdx[i],tmp);}
   }
   SWAP(vdx[0],vdx[last],tmp);
-  ierr = PetscSortDoubleWithPermutation_Private(v,vdx,last-1);CHKERRQ(ierr);
-  ierr = PetscSortDoubleWithPermutation_Private(v,vdx+last+1,right-(last+1));CHKERRQ(ierr);
+  ierr = PetscSortRealWithPermutation_Private(v,vdx,last-1);CHKERRQ(ierr);
+  ierr = PetscSortRealWithPermutation_Private(v,vdx+last+1,right-(last+1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSortDoubleWithPermutation"
+#define __FUNCT__ "PetscSortRealWithPermutation"
 /*@
-   PetscSortDoubleWithPermutation - Computes the permutation of values that gives 
+   PetscSortRealWithPermutation - Computes the permutation of values that gives 
    a sorted sequence.
 
    Not Collective
@@ -127,9 +127,9 @@ static int PetscSortDoubleWithPermutation_Private(const double v[],int vdx[],int
 
    Concepts: sorting^doubles with permutation
 
-.seealso: PetscSortDouble(), PetscSortIntWithPermutation()
+.seealso: PetscSortReal(), PetscSortIntWithPermutation()
  @*/
-int PetscSortDoubleWithPermutation(int n,const double i[],int idx[])
+int PetscSortRealWithPermutation(int n,const double i[],int idx[])
 {
   int    j,k,tmp,ierr;
   double ik;
@@ -146,7 +146,7 @@ int PetscSortDoubleWithPermutation(int n,const double i[],int idx[])
       }
     }
   } else {
-    ierr = PetscSortDoubleWithPermutation_Private(i,idx,n-1);CHKERRQ(ierr);
+    ierr = PetscSortRealWithPermutation_Private(i,idx,n-1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

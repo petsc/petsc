@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.10 2001/01/17 22:28:12 bsmith Exp balay $*/
+/*$Id: appload.c,v 1.11 2001/03/23 23:25:29 balay Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -127,7 +127,7 @@ int AppCtxSetLocal(AppCtx *appctx)
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] grid->cell_n %d grid->vertex_n %d grid->vertex_local_n %d\n",
                                    rank,grid->cell_n,grid->vertex_n,grid->vertex_local_n);CHKERRQ(ierr);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] AODataSegmentGetIS generated vertex coordinates\n",rank);CHKERRQ(ierr);
-    ierr = PetscDoubleView(2*grid->cell_n,vertex_coords,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscRealView(2*grid->cell_n,vertex_coords,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /*   Get the vertex local numbering for each local cell  */

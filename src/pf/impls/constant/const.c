@@ -1,15 +1,15 @@
-/*$Id: const.c,v 1.17 2001/03/28 22:20:27 balay Exp balay $*/
+/*$Id: const.c,v 1.18 2001/03/28 22:21:18 balay Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Constant"
-int PFApply_Constant(void *value,int n,Scalar *x,Scalar *y)
+int PFApply_Constant(void *value,int n,PetscScalar *x,PetscScalar *y)
 {
   int    i;
-  Scalar v = ((Scalar*)value)[0];
+  Scalar v = ((PetscScalar*)value)[0];
 
   PetscFunctionBegin;
-  n *= (int) PetscRealPart(((Scalar*)value)[1]);
+  n *= (int) PetscRealPart(((PetscScalar*)value)[1]);
   for (i=0; i<n; i++) {
     y[i] = v;
   }
@@ -22,7 +22,7 @@ int PFApplyVec_Constant(void *value,Vec x,Vec y)
 {
   int ierr;
   PetscFunctionBegin;
-  ierr = VecSet((Scalar*)value,y);CHKERRQ(ierr);
+  ierr = VecSet((PetscScalar*)value,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -38,7 +38,7 @@ int PFView_Constant(void *value,PetscViewer viewer)
 #if !defined(PETSC_USE_COMPLEX)
     ierr = PetscViewerASCIIPrintf(viewer,"Constant = %g\n",*(double*)value);CHKERRQ(ierr);
 #else
-    ierr = PetscViewerASCIIPrintf(viewer,"Constant = %g + %gi\n",PetscRealPart(*(Scalar*)value),PetscImaginaryPart(*(Scalar*)value));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Constant = %g + %gi\n",PetscRealPart(*(PetscScalar*)value),PetscImaginaryPart(*(PetscScalar*)value));CHKERRQ(ierr);
 #endif
   }
   PetscFunctionReturn(0);
@@ -58,7 +58,7 @@ int PFDestroy_Constant(void *value)
 int PFSetFromOptions_Constant(PF pf)
 {
   int        ierr;
-  Scalar     *value = (Scalar *)pf->data;
+  Scalar     *value = (PetscScalar *)pf->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Constant function options");CHKERRQ(ierr);
@@ -76,8 +76,8 @@ int PFCreate_Constant(PF pf,void *value)
   Scalar *loc;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(2*sizeof(Scalar),&loc);CHKERRQ(ierr);
-  if (value) loc[0] = *(Scalar*)value; else loc[0] = 0.0;
+  ierr = PetscMalloc(2*sizeof(PetscScalar),&loc);CHKERRQ(ierr);
+  if (value) loc[0] = *(PetscScalar*)value; else loc[0] = 0.0;
   loc[1] = pf->dimout;
   ierr   = PFSet(pf,PFApply_Constant,PFApplyVec_Constant,PFView_Constant,PFDestroy_Constant,loc);CHKERRQ(ierr);
 
@@ -95,7 +95,7 @@ int PFCreate_Quick(PF pf,void *function)
 
   PetscFunctionBegin;
 
-  ierr = PFSet(pf,(int (*)(void*,int,Scalar*,Scalar*))function,0,0,0,0);CHKERRQ(ierr);
+  ierr = PFSet(pf,(int (*)(void*,int,PetscScalar*,PetscScalar*))function,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -103,7 +103,7 @@ EXTERN_C_END
 /* -------------------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Identity"
-int PFApply_Identity(void *value,int n,Scalar *x,Scalar *y)
+int PFApply_Identity(void *value,int n,PetscScalar *x,PetscScalar *y)
 {
   int    i;
 

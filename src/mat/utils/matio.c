@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.77 2001/03/23 23:22:45 balay Exp bsmith $*/
+/*$Id: matio.c,v 1.78 2001/04/10 19:35:59 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -121,7 +121,7 @@ $    int    number of columns
 $    int    total number of nonzeros
 $    int    *number nonzeros in each row
 $    int    *column indices of all nonzeros (starting index is zero)
-$    Scalar *values of all nonzeros
+$    PetscScalar *values of all nonzeros
 
    Note for Cray users, the int's stored in the binary file are 32 bit
 integers; not 64 as they are represented in the memory, so if you

@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.77 2001/03/28 19:43:08 balay Exp bsmith $*/
+/*$Id: zoptions.c,v 1.78 2001/06/21 21:19:50 bsmith Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -18,8 +18,8 @@ extern PetscTruth PetscBeganMPI;
 #define petscoptionsclearvalue_            PETSCOPTIONSCLEARVALUE
 #define petscoptionshasname_               PETSCOPTIONSHASNAME
 #define petscoptionsgetint_                PETSCOPTIONSGETINT
-#define petscoptionsgetdouble_             PETSCOPTIONSGETDOUBLE
-#define petscoptionsgetdoublearray_        PETSCOPTIONSGETDOUBLEARRAY
+#define petscoptionsgetreal_             PETSCOPTIONSGETREAL
+#define petscoptionsgetrealarray_        PETSCOPTIONSGETREALARRAY
 #define petscoptionsgetstring_             PETSCOPTIONSGETSTRING
 #define petscgetprogramname                PETSCGETPROGRAMNAME
 #define petscoptionsinsertfile_            PETSCOPTIONSINSERTFILE
@@ -30,8 +30,8 @@ extern PetscTruth PetscBeganMPI;
 #define petscoptionsclearvalue_            petscoptionsclearvalue
 #define petscoptionshasname_               petscoptionshasname
 #define petscoptionsgetint_                petscoptionsgetint
-#define petscoptionsgetdouble_             petscoptionsgetdouble
-#define petscoptionsgetdoublearray_        petscoptionsgetdoublearray
+#define petscoptionsgetreal_             petscoptionsgetreal
+#define petscoptionsgetrealarray_        petscoptionsgetrealarray
 #define petscoptionsgetstring_             petscoptionsgetstring
 #define petscoptionsgetintarray_           petscoptionsgetintarray
 #define petscgetprogramname_               petscgetprogramname
@@ -108,26 +108,26 @@ void PETSC_STDCALL petscoptionsgetlogical_(CHAR pre PETSC_MIXED_LEN(len1),CHAR n
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL petscoptionsgetdouble_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                    double *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                    real *dvalue,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetDouble(c1,c2,dvalue,flg);
+  *ierr = PetscOptionsGetReal(c1,c2,dvalue,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
 
-void PETSC_STDCALL petscoptionsgetdoublearray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
-                double *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+void PETSC_STDCALL petscoptionsgetrealarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name PETSC_MIXED_LEN(len2),
+                real *dvalue,int *nmax,PetscTruth *flg,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetDoubleArray(c1,c2,dvalue,nmax,flg);
+  *ierr = PetscOptionsGetRealArray(c1,c2,dvalue,nmax,flg);
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -253,22 +253,22 @@ int *PetscIntAddressFromFortran(int *base,long addr)
  currently we just stick into the signed and don't check.
 
 */
-int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,long *res)
+int PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *addr,int N,long *res)
 {
-  unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(Scalar);
+  unsigned long tmp1 = (unsigned long) base,tmp2 = tmp1/sizeof(PetscScalar);
   unsigned long tmp3 = (unsigned long) addr;
   long          itmp2;
   int           shift;
 
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
-    tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
+    tmp2  = (tmp3 - tmp1)/sizeof(PetscScalar);
     itmp2 = (long) tmp2;
-    shift = (sizeof(Scalar) - (int)((tmp3 - tmp1) % sizeof(Scalar))) % sizeof(Scalar);
+    shift = (sizeof(PetscScalar) - (int)((tmp3 - tmp1) % sizeof(PetscScalar))) % sizeof(PetscScalar);
   } else {  
-    tmp2  = (tmp1 - tmp3)/sizeof(Scalar);
+    tmp2  = (tmp1 - tmp3)/sizeof(PetscScalar);
     itmp2 = -((long) tmp2);
-    shift = (int)((tmp1 - tmp3) % sizeof(Scalar));
+    shift = (int)((tmp1 - tmp3) % sizeof(PetscScalar));
   }
 #else
   if (tmp3 > tmp1) {  /* C is bigger than Fortran */
@@ -290,11 +290,11 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
     Scalar               *work;
     PetscObjectContainer container;
 
-    ierr = PetscMalloc((N+1)*sizeof(Scalar),&work);CHKERRQ(ierr); 
+    ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
 
     /* shift work by that number of bytes */
-    work = (Scalar*)(((char*)work) + shift);
-    ierr = PetscMemcpy(work,addr,N*sizeof(Scalar));CHKERRQ(ierr);
+    work = (PetscScalar*)(((char*)work) + shift);
+    ierr = PetscMemcpy(work,addr,N*sizeof(PetscScalar));CHKERRQ(ierr);
 
     /* store in the first location in addr how much you shift it */
     ((int *)addr)[0] = shift;
@@ -305,20 +305,20 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
 
     tmp3 = (unsigned long) work;
     if (tmp3 > tmp1) {  /* C is bigger than Fortran */
-      tmp2  = (tmp3 - tmp1)/sizeof(Scalar);
+      tmp2  = (tmp3 - tmp1)/sizeof(PetscScalar);
       itmp2 = (long) tmp2;
-      shift = (sizeof(Scalar) - (int)((tmp3 - tmp1) % sizeof(Scalar))) % sizeof(Scalar);
+      shift = (sizeof(PetscScalar) - (int)((tmp3 - tmp1) % sizeof(PetscScalar))) % sizeof(PetscScalar);
     } else {  
-      tmp2  = (tmp1 - tmp3)/sizeof(Scalar);
+      tmp2  = (tmp1 - tmp3)/sizeof(PetscScalar);
       itmp2 = -((long) tmp2);
-      shift = (int)((tmp1 - tmp3) % sizeof(Scalar));
+      shift = (int)((tmp1 - tmp3) % sizeof(PetscScalar));
     }
     if (shift) {
       (*PetscErrorPrintf)("PetscScalarAddressToFortran:C and Fortran arrays are\n");
       (*PetscErrorPrintf)("not commonly aligned.\n");
       /* double/int doesn't work with ADIC */
-      (*PetscErrorPrintf)("Locations/sizeof(Scalar): C %f Fortran %f\n",
-                         ((double)tmp3)/(double)sizeof(Scalar),((double)tmp1)/(double)sizeof(Scalar));
+      (*PetscErrorPrintf)("Locations/sizeof(PetscScalar): C %f Fortran %f\n",
+                         ((double)tmp3)/(double)sizeof(PetscScalar),((double)tmp1)/(double)sizeof(PetscScalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
     PetscLogInfo((void *)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\
@@ -336,7 +336,7 @@ int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,
 
     lx   - the array space that is to be passed to XXXXRestoreArray()
 */     
-int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,Scalar **lx)
+int PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,long addr,int N,PetscScalar **lx)
 {
   int                  ierr,shift;
   PetscObjectContainer container;
@@ -348,8 +348,8 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
     tlx   = base + addr;
 
     shift = *(int *)*lx;
-    ierr  = PetscMemcpy(*lx,tlx,N*sizeof(Scalar));CHKERRQ(ierr);
-    tlx   = (Scalar*)(((char *)tlx) - shift);
+    ierr  = PetscMemcpy(*lx,tlx,N*sizeof(PetscScalar));CHKERRQ(ierr);
+    tlx   = (PetscScalar*)(((char *)tlx) - shift);
     ierr = PetscFree(tlx);CHKERRQ(ierr);
     ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);

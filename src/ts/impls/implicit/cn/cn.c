@@ -1,4 +1,4 @@
-/*$Id: cn.c,v 1.29 2001/04/04 16:56:35 balay Exp bsmith $*/
+/*$Id: cn.c,v 1.30 2001/06/21 21:19:00 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!
@@ -20,7 +20,7 @@ typedef struct {
    Note: If the user did not provide a function but merely a matrix,
    this routine applies the matrix.
 */
-int TSComputeRHSFunctionEuler(TS ts,double t,Vec x,Vec y)
+int TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
 {
   int    ierr;
   Scalar neg_two = -2.0,neg_mdt = -1.0/ts->time_step;
@@ -60,7 +60,7 @@ int TSComputeRHSFunctionEuler(TS ts,double t,Vec x,Vec y)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_CN_Linear_Constant_Matrix"
-static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *ptime)
+static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
 {
   TS_CN     *cn = (TS_CN*)ts->data;
   Vec       sol = ts->vec_sol,update = cn->update;
@@ -104,7 +104,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *ptime)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_CN_Linear_Variable_Matrix"
-static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *ptime)
+static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
 {
   TS_CN        *cn = (TS_CN*)ts->data;
   Vec          sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
@@ -162,7 +162,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,double *ptime)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_CN_Nonlinear"
-static int TSStep_CN_Nonlinear(TS ts,int *steps,double *ptime)
+static int TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its,lits;

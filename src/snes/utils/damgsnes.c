@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.49 2001/07/20 21:25:47 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.50 2001/07/23 03:31:35 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -371,7 +371,10 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   int         ierr,i,nlevels = dmmg[0]->nlevels;
-  PetscTruth  snesmonitor,mffdoperator,mffd,mfadoperator,mfad,fdjacobian,adjacobian;
+  PetscTruth  snesmonitor,mffdoperator,mffd,fdjacobian;
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  PetscTruth  mfadoperator,mfad,adjacobian;
+#endif
   SLES        sles;
   PetscViewer ascii;
   MPI_Comm    comm;
@@ -386,7 +389,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 
     ierr = PetscOptionsName("-dmmg_jacobian_fd","Compute sparse Jacobian explicitly with finite differencing","DMMGSetSNES",&fdjacobian);CHKERRQ(ierr);
     if (fdjacobian) jacobian = DMMGComputeJacobianWithFD;
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
     ierr = PetscOptionsName("-dmmg_jacobian_ad","Compute sparse Jacobian explicitly with ADIC (automatic differentiation)","DMMGSetSNES",&adjacobian);CHKERRQ(ierr);
     if (adjacobian) jacobian = DMMGComputeJacobianWithAdic;
 #endif
@@ -394,7 +397,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     ierr = PetscOptionsLogicalGroupBegin("-dmmg_jacobian_mf_fd_operator","Apply Jacobian via matrix free finite differencing","DMMGSetSNES",&mffdoperator);CHKERRQ(ierr);
     ierr = PetscOptionsLogicalGroupEnd("-dmmg_jacobian_mf_fd","Apply Jacobian via matrix free finite differencing even in computing preconditioner","DMMGSetSNES",&mffd);CHKERRQ(ierr);
     if (mffd) mffdoperator = PETSC_TRUE;
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
     ierr = PetscOptionsLogicalGroupBegin("-dmmg_jacobian_mf_ad_operator","Apply Jacobian via matrix free ADIC (automatic differentiation)","DMMGSetSNES",&mfadoperator);CHKERRQ(ierr);
     ierr = PetscOptionsLogicalGroupEnd("-dmmg_jacobian_mf_ad","Apply Jacobian via matrix free ADIC (automatic differentiation) even in computing preconditioner","DMMGSetSNES",&mfad);CHKERRQ(ierr);
     if (mfad) mfadoperator = PETSC_TRUE;
@@ -420,6 +423,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
         dmmg[i]->B = dmmg[i]->J;
         jacobian   = DMMGComputeJacobianWithMF;
       }
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
     } else if (mfadoperator) {
       ierr = MatRegisterDAAD();CHKERRQ(ierr);
       ierr = MatCreateDAAD((DA)dmmg[i]->dm,&dmmg[i]->J);CHKERRQ(ierr);
@@ -428,6 +432,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
         dmmg[i]->B = dmmg[i]->J;
         jacobian   = DMMGComputeJacobianWithMF;
       }
+#endif
     }
     
     if (!dmmg[i]->B) {
@@ -476,7 +481,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
       ierr = MatFDColoringSetFunction(dmmg[i]->fdcoloring,(int(*)(void))function,dmmg[i]);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(dmmg[i]->fdcoloring);CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   } else if (jacobian == DMMGComputeJacobianWithAdic) {
     for (i=0; i<nlevels; i++) {
       ISColoring iscoloring;
@@ -572,7 +577,7 @@ int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunctio
 
   PetscFunctionBegin;
   if (jacobian)         computejacobian = SNESDAComputeJacobian;
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   else if (ad_function) computejacobian = DMMGComputeJacobianWithAdic;
 #endif
 
@@ -588,7 +593,7 @@ int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunctio
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGFunctioni"
-static int DMMGFunctioni(int i,Vec u,Scalar* r,void* ctx)
+static int DMMGFunctioni(int i,Vec u,PetscScalar* r,void* ctx)
 {
   DMMG       dmmg = (DMMG)ctx;
   Vec        U = dmmg->lwork1;
@@ -621,23 +626,31 @@ static int DMMGFunctioniBase(Vec u,void* ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocali_Private"
-int DMMGSetSNESLocali_Private(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStencil*,void*,Scalar*,void*),int (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*))
+int DMMGSetSNESLocali_Private(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),int (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*),int (*adimf)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   int ierr,i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
+CHKMEMQ;
   for (i=0; i<nlevels; i++) {
+CHKMEMQ;
     ierr = DASetLocalFunctioni((DA)dmmg[i]->dm,functioni);CHKERRQ(ierr);
+CHKMEMQ;
     ierr = DASetLocalAdicFunctioni((DA)dmmg[i]->dm,adi);CHKERRQ(ierr);
+CHKMEMQ;
+    ierr = DASetLocalAdicMFFunctioni((DA)dmmg[i]->dm,adimf);CHKERRQ(ierr);
+CHKMEMQ;
     ierr = MatSNESMFSetFunctioni(dmmg[i]->J,DMMGFunctioni);CHKERRQ(ierr);
+CHKMEMQ;
     ierr = MatSNESMFSetFunctioniBase(dmmg[i]->J,DMMGFunctioniBase);CHKERRQ(ierr);    
+CHKMEMQ;
     ierr = DACreateLocalVector((DA)dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
 #include "adic_utils.h"
 EXTERN_C_END

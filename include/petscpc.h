@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.119 2001/07/17 19:01:21 balay Exp balay $ */
+/* $Id: petscpc.h,v 1.120 2001/08/02 20:29:38 balay Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -127,10 +127,10 @@ EXTERN int PCDiagonalScaleSet(PC,Vec);
 
 EXTERN int PCJacobiSetUseRowMax(PC);
 EXTERN int PCSORSetSymmetric(PC,MatSORType);
-EXTERN int PCSORSetOmega(PC,double);
+EXTERN int PCSORSetOmega(PC,PetscReal);
 EXTERN int PCSORSetIterations(PC,int);
 
-EXTERN int PCEisenstatSetOmega(PC,double);
+EXTERN int PCEisenstatSetOmega(PC,PetscReal);
 EXTERN int PCEisenstatNoDiagonalScaling(PC);
 
 #define USE_PRECONDITIONER_MATRIX 0
@@ -152,30 +152,30 @@ EXTERN int PCLUSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCLUSetReuseOrdering(PC,PetscTruth);
 EXTERN int PCLUSetReuseFill(PC,PetscTruth);
 EXTERN int PCLUSetUseInPlace(PC);
-EXTERN int PCLUSetFill(PC,double);
-EXTERN int PCLUSetDamping(PC,double);
+EXTERN int PCLUSetFill(PC,PetscReal);
+EXTERN int PCLUSetDamping(PC,PetscReal);
 EXTERN int PCLUSetPivoting(PC,PetscReal);
 
 EXTERN int PCCholeskySetMatOrdering(PC,MatOrderingType);
 EXTERN int PCCholeskySetReuseOrdering(PC,PetscTruth);
 EXTERN int PCCholeskySetReuseFill(PC,PetscTruth);
 EXTERN int PCCholeskySetUseInPlace(PC);
-EXTERN int PCCholeskySetFill(PC,double);
-EXTERN int PCCholeskySetDamping(PC,double);
+EXTERN int PCCholeskySetFill(PC,PetscReal);
+EXTERN int PCCholeskySetDamping(PC,PetscReal);
 
 EXTERN int PCILUSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCILUSetUseInPlace(PC);
-EXTERN int PCILUSetFill(PC,double);
+EXTERN int PCILUSetFill(PC,PetscReal);
 EXTERN int PCILUSetLevels(PC,int);
 EXTERN int PCILUSetReuseOrdering(PC,PetscTruth);
 EXTERN int PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
 EXTERN int PCILUDTSetReuseFill(PC,PetscTruth);
 EXTERN int PCILUSetAllowDiagonalFill(PC);
-EXTERN int PCILUSetDamping(PC,double);
+EXTERN int PCILUSetDamping(PC,PetscReal);
 EXTERN int PCILUSetSinglePrecisionSolves(PC,PetscTruth);
 
 EXTERN int PCICCSetMatOrdering(PC,MatOrderingType);
-EXTERN int PCICCSetFill(PC,double);
+EXTERN int PCICCSetFill(PC,PetscReal);
 EXTERN int PCICCSetLevels(PC,int);
 
 EXTERN int PCASMSetLocalSubdomains(PC,int,IS *);
@@ -224,7 +224,7 @@ EXTERN int PCCompositeSetUseTrue(PC);
 EXTERN int PCCompositeSetType(PC,PCCompositeType);
 EXTERN int PCCompositeAddPC(PC,PCType);
 EXTERN int PCCompositeGetPC(PC pc,int n,PC *);
-EXTERN int PCCompositeSpecialSetAlpha(PC,Scalar);
+EXTERN int PCCompositeSpecialSetAlpha(PC,PetscScalar);
 
 EXTERN int PCRedundantSetScatter(PC,VecScatter,VecScatter);
 EXTERN int PCRedundantGetOperators(PC,Mat*,Mat*);

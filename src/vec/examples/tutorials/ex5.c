@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.47 2001/03/23 23:21:37 balay Exp bsmith $*/
+/*$Id: ex5.c,v 1.48 2001/04/10 19:35:06 bsmith Exp bsmith $*/
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of user-defined event logging.\n\n";
 
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = (Scalar)(i + 100*rank);
+    v = (PetscScalar)(i + 100*rank);
     ierr = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);

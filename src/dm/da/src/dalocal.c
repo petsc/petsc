@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.32 2001/06/21 21:19:09 bsmith Exp curfman $*/
+/*$Id: dalocal.c,v 1.33 2001/08/06 16:31:20 curfman Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -533,38 +533,38 @@ int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
     case 1: {
       void *ptr;
 
-      ierr  = PetscMalloc(xm*sizeof(Scalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*sizeof(Scalar));CHKERRQ(ierr);
+      ierr  = PetscMalloc(xm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMemzero(iarray_start,xm*sizeof(PetscScalar));CHKERRQ(ierr);
 
-      ptr   = (void*)(iarray_start - xs*sizeof(Scalar));
+      ptr   = (void*)(iarray_start - xs*sizeof(PetscScalar));
       *iptr = (void*)ptr; 
       break;}
     case 2: {
       void **ptr;
 
-      ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*sizeof(Scalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*sizeof(Scalar));CHKERRQ(ierr);
+      ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMemzero(iarray_start,xm*ym*sizeof(PetscScalar));CHKERRQ(ierr);
 
-      ptr  = (void**)(iarray_start + xm*ym*sizeof(Scalar) - ys*sizeof(void*));
+      ptr  = (void**)(iarray_start + xm*ym*sizeof(PetscScalar) - ys*sizeof(void*));
       for(j=ys;j<ys+ym;j++) {
-        ptr[j] = iarray_start + sizeof(Scalar)*(xm*(j-ys) - xs);
+        ptr[j] = iarray_start + sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
       *iptr = (void*)ptr; 
       break;}
     case 3: {
       void ***ptr,**bptr;
 
-      ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*sizeof(Scalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*zm*sizeof(Scalar));CHKERRQ(ierr);
+      ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMemzero(iarray_start,xm*ym*zm*sizeof(PetscScalar));CHKERRQ(ierr);
 
-      ptr  = (void***)(iarray_start + xm*ym*zm*sizeof(Scalar) - zs*sizeof(void*));
-      bptr = (void**)(iarray_start + xm*ym*zm*sizeof(Scalar) + zm*sizeof(void**));
+      ptr  = (void***)(iarray_start + xm*ym*zm*sizeof(PetscScalar) - zs*sizeof(void*));
+      bptr = (void**)(iarray_start + xm*ym*zm*sizeof(PetscScalar) + zm*sizeof(void**));
       for(i=zs;i<zs+zm;i++) {
         ptr[i] = bptr + ((i-zs)*ym* - ys)*sizeof(void*);
       }
       for (i=zs; i<zs+zm; i++) {
         for (j=ys; j<ys+ym; j++) {
-          ptr[i][j] = iarray_start + sizeof(Scalar)*(xm*ym*(i-zs) + xm*(j-ys) - xs);
+          ptr[i][j] = iarray_start + sizeof(PetscScalar)*(xm*ym*(i-zs) + xm*(j-ys) - xs);
         }
       }
 
@@ -727,22 +727,22 @@ int DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int
       void *ptr;
       itdof = xm;
 
-      ierr  = PetscMalloc(xm*2*sizeof(Scalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*2*sizeof(Scalar));CHKERRQ(ierr);
+      ierr  = PetscMalloc(xm*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMemzero(iarray_start,xm*2*sizeof(PetscScalar));CHKERRQ(ierr);
 
-      ptr   = (void*)(iarray_start - xs*2*sizeof(Scalar));
+      ptr   = (void*)(iarray_start - xs*2*sizeof(PetscScalar));
       *iptr = (void*)ptr; 
       break;}
     case 2: {
       void **ptr;
       itdof = xm*ym;
 
-      ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*2*sizeof(Scalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*2*sizeof(Scalar));CHKERRQ(ierr);
+      ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMemzero(iarray_start,xm*ym*2*sizeof(PetscScalar));CHKERRQ(ierr);
 
-      ptr  = (void**)(iarray_start + xm*ym*2*sizeof(Scalar) - ys*sizeof(void*));
+      ptr  = (void**)(iarray_start + xm*ym*2*sizeof(PetscScalar) - ys*sizeof(void*));
       for(j=ys;j<ys+ym;j++) {
-        ptr[j] = iarray_start + 2*sizeof(Scalar)*(xm*(j-ys) - xs);
+        ptr[j] = iarray_start + 2*sizeof(PetscScalar)*(xm*(j-ys) - xs);
       }
       *iptr = (void*)ptr; 
       break;}
@@ -750,17 +750,17 @@ int DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int
       void ***ptr,**bptr;
       itdof = xm*ym*zm;
 
-      ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*2*sizeof(Scalar),&iarray_start);CHKERRQ(ierr);
-      ierr  = PetscMemzero(iarray_start,xm*ym*zm*2*sizeof(Scalar));CHKERRQ(ierr);
+      ierr  = PetscMalloc((zm+1)*sizeof(void **)+(ym*zm+1)*sizeof(void*)+xm*ym*zm*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMemzero(iarray_start,xm*ym*zm*2*sizeof(PetscScalar));CHKERRQ(ierr);
 
-      ptr  = (void***)(iarray_start + xm*ym*zm*2*sizeof(Scalar) - zs*sizeof(void*));
-      bptr = (void**)(iarray_start + xm*ym*zm*2*sizeof(Scalar) + zm*sizeof(void**));
+      ptr  = (void***)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) - zs*sizeof(void*));
+      bptr = (void**)(iarray_start + xm*ym*zm*2*sizeof(PetscScalar) + zm*sizeof(void**));
       for(i=zs;i<zs+zm;i++) {
         ptr[i] = bptr + ((i-zs)*ym* - ys)*sizeof(void*);
       }
       for (i=zs; i<zs+zm; i++) {
         for (j=ys; j<ys+ym; j++) {
-          ptr[i][j] = iarray_start + 2*sizeof(Scalar)*(xm*ym*(i-zs) + xm*(j-ys) - xs);
+          ptr[i][j] = iarray_start + 2*sizeof(PetscScalar)*(xm*ym*(i-zs) + xm*(j-ys) - xs);
         }
       }
 

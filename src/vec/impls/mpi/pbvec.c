@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.167 2001/07/19 21:08:05 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.168 2001/07/20 21:18:16 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -42,9 +42,9 @@ static int VecPublish_MPI(PetscObject obj)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_MPI"
-int VecDot_MPI(Vec xin,Vec yin,Scalar *z)
+int VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
-  Scalar    sum,work;
+  PetscScalar    sum,work;
   int       ierr;
 
   PetscFunctionBegin;
@@ -56,9 +56,9 @@ int VecDot_MPI(Vec xin,Vec yin,Scalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecTDot_MPI"
-int VecTDot_MPI(Vec xin,Vec yin,Scalar *z)
+int VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 {
-  Scalar    sum,work;
+  PetscScalar    sum,work;
   int       ierr;
 
   PetscFunctionBegin;
@@ -142,7 +142,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
     VecCreateMPIWithArray(), VecCreate_Shared() (i.e. VecCreateShared()), VecCreateGhost(),
     VecDuplicate_MPI(), VecCreateGhostWithArray(), VecDuplicate_MPI(), and VecDuplicate_Shared()
 */
-int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],PetscMap map)
+int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap map)
 {
   Vec_MPI *s;
   int     ierr,size,rank;
@@ -152,7 +152,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],PetscMap map)
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
 
   v->bops->publish   = VecPublish_MPI;
-  PetscLogObjectMemory(v,sizeof(Vec_MPI) + (v->n+nghost+1)*sizeof(Scalar));
+  PetscLogObjectMemory(v,sizeof(Vec_MPI) + (v->n+nghost+1)*sizeof(PetscScalar));
   ierr         = PetscMalloc(sizeof(Vec_MPI),&s);CHKERRQ(ierr);
   ierr         = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   v->data      = (void*)s;
@@ -164,12 +164,12 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],PetscMap map)
   s->rank      = rank;
   s->browners  = 0;
   if (array) {
-    s->array           = (Scalar *)array;
+    s->array           = (PetscScalar *)array;
     s->array_allocated = 0;
   } else {
-    ierr               = PetscMalloc((v->n+nghost+1)*sizeof(Scalar),&s->array);CHKERRQ(ierr);
+    ierr               = PetscMalloc((v->n+nghost+1)*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
     s->array_allocated = s->array;
-    ierr               = PetscMemzero(s->array,v->n*sizeof(Scalar));CHKERRQ(ierr);
+    ierr               = PetscMemzero(s->array,v->n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   /* By default parallel vectors do not have local representation */
@@ -193,7 +193,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],PetscMap map)
   ierr = VecStashCreate_Private(v->comm,1,&v->bstash);CHKERRQ(ierr); 
   s->donotstash  = PETSC_FALSE;
                                                         
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif
@@ -251,7 +251,7 @@ EXTERN_C_END
           VecCreateMPI(), VecCreateGhostWithArray(), VecPlaceArray()
 
 @*/ 
-int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const Scalar array[],Vec *vv)
+int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const PetscScalar array[],Vec *vv)
 {
   int ierr;
 
@@ -503,11 +503,11 @@ int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray()
 
 @*/ 
-int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],const Scalar array[],Vec *vv)
+int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
 {
   int     ierr;
   Vec_MPI *w;
-  Scalar  *larray;
+  PetscScalar  *larray;
 
   PetscFunctionBegin;
   *vv = 0;
@@ -588,7 +588,7 @@ int VecDuplicate_MPI(Vec win,Vec *v)
 {
   int     ierr;
   Vec_MPI *vw,*w = (Vec_MPI *)win->data;
-  Scalar  *array;
+  PetscScalar  *array;
 #if defined(PETSC_HAVE_AMS)
   int     (*f)(AMS_Memory,char *,Vec);
 #endif
@@ -680,11 +680,11 @@ int VecDuplicate_MPI(Vec win,Vec *v)
           VecCreateGhostWithArray(), VecCreateGhostBlocked()
 
 @*/ 
-int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],const Scalar array[],Vec *vv)
+int VecCreateGhostBlockWithArray(MPI_Comm comm,int bs,int n,int N,int nghost,const int ghosts[],const PetscScalar array[],Vec *vv)
 {
   int     ierr;
   Vec_MPI *w;
-  Scalar  *larray;
+  PetscScalar  *larray;
 
   PetscFunctionBegin;
   *vv = 0;
@@ -784,7 +784,7 @@ int VecSetLocalToGlobalMapping_FETI(Vec vv,ISLocalToGlobalMapping map)
 
   /* we need to make longer the array space that was allocated when the vector was created */
   ierr     = PetscFree(v->array_allocated);CHKERRQ(ierr);
-  ierr     = PetscMalloc(map->n*sizeof(Scalar),&v->array_allocated);CHKERRQ(ierr);
+  ierr     = PetscMalloc(map->n*sizeof(PetscScalar),&v->array_allocated);CHKERRQ(ierr);
   v->array = v->array_allocated;
   
   /* Create local representation */
@@ -797,7 +797,7 @@ int VecSetLocalToGlobalMapping_FETI(Vec vv,ISLocalToGlobalMapping map)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValuesLocal_FETI"
-int VecSetValuesLocal_FETI(Vec vv,int n,const int *ix,const Scalar *values,InsertMode mode)
+int VecSetValuesLocal_FETI(Vec vv,int n,const int *ix,const PetscScalar *values,InsertMode mode)
 {
   int      ierr;
   Vec_MPI *v = (Vec_MPI *)vv->data;

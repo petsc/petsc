@@ -1,4 +1,4 @@
-/*$Id: symmlq.c,v 1.13 2001/03/23 23:23:49 balay Exp bsmith $*/
+/*$Id: symmlq.c,v 1.14 2001/04/17 02:54:34 bsmith Exp bsmith $*/
 /*                       
     This code implements the SYMMLQ method. 
     Reference: Paige & Saunders, 1975.
@@ -8,7 +8,7 @@
 #include "src/sles/ksp/kspimpl.h"
 
 typedef struct {
-  double haptol;
+  PetscReal haptol;
 } KSP_SYMMLQ;
 
 #undef __FUNCT__  

@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.160 2001/06/07 14:58:26 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.161 2001/07/20 21:17:57 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -38,9 +38,9 @@ int VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"VecScatter statistics\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number sends %d\n",nsend_max);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number receives %d\n",nrecv_max);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data sent %d\n",lensend_max*to->bs*sizeof(Scalar));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data received %d\n",lenrecv_max*to->bs*sizeof(Scalar));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %d\n",alldata*to->bs*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data sent %d\n",lensend_max*to->bs*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data received %d\n",lenrecv_max*to->bs*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %d\n",alldata*to->bs*sizeof(PetscScalar));CHKERRQ(ierr);
 
     } else { 
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %d; Number to self = %d\n",rank,to->n,to->local.n);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
   ierr = PetscMemzero(out_to,sizeof(VecScatter_MPI_General));CHKERRQ(ierr);
   PetscLogObjectMemory(out,sizeof(VecScatter_MPI_General));
   ny                = in_to->starts[in_to->n];
-  len               = ny*(sizeof(int) + sizeof(Scalar)) + (in_to->n+1)*sizeof(int) +
+  len               = ny*(sizeof(int) + sizeof(PetscScalar)) + (in_to->n+1)*sizeof(int) +
                      (in_to->n)*(sizeof(int) + sizeof(MPI_Request));
   out_to->n         = in_to->n; 
   out_to->type      = in_to->type;
@@ -182,7 +182,7 @@ int VecScatterCopy_PtoP(VecScatter in,VecScatter out)
   out_from->type      = in_from->type;
   PetscLogObjectMemory(out,sizeof(VecScatter_MPI_General));
   ny                  = in_from->starts[in_from->n];
-  len                 = ny*(sizeof(int) + sizeof(Scalar)) + (in_from->n+1)*sizeof(int) +
+  len                 = ny*(sizeof(int) + sizeof(PetscScalar)) + (in_from->n+1)*sizeof(int) +
                        (in_from->n)*(sizeof(int) + sizeof(MPI_Request));
   out_from->n         = in_from->n; 
   out_from->sendfirst = in_from->sendfirst;
@@ -251,7 +251,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 {
   VecScatter_MPI_General *gen_to,*gen_from;
   MPI_Comm               comm = ctx->comm;
-  Scalar                 *xv,*yv,*val,*rvalues,*svalues;
+  PetscScalar                 *xv,*yv,*val,*rvalues,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    tag = ctx->tag,i,j,*indices,*rstarts,*sstarts,*rprocs,*sprocs;
   int                    nrecvs,nsends,iend,ierr;
@@ -354,7 +354,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *rvalues,*yv,*val;
+  PetscScalar                 *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             rstatus,*sstatus;
@@ -464,10 +464,10 @@ int VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatte
   }
   gen_to->is_copy       = PETSC_TRUE; 
   gen_to->copy_start    = to_slots[0]; 
-  gen_to->copy_length   = bs*sizeof(Scalar)*n;
+  gen_to->copy_length   = bs*sizeof(PetscScalar)*n;
   gen_from->is_copy     = PETSC_TRUE;
   gen_from->copy_start  = from_slots[0];
-  gen_from->copy_length = bs*sizeof(Scalar)*n;
+  gen_from->copy_length = bs*sizeof(PetscScalar)*n;
 
   PetscLogInfo(0,"VecScatterLocalOptimizeCopy_Private:Local scatter is a copy, optimizing for it\n");
 
@@ -497,7 +497,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   ierr = PetscMemzero(out_to,sizeof(VecScatter_MPI_General));CHKERRQ(ierr);
   PetscLogObjectMemory(out,sizeof(VecScatter_MPI_General));
   ny                = in_to->starts[in_to->n];
-  len               = ny*(sizeof(int) + bs*sizeof(Scalar)) + (in_to->n+1)*sizeof(int) +
+  len               = ny*(sizeof(int) + bs*sizeof(PetscScalar)) + (in_to->n+1)*sizeof(int) +
                      (in_to->n)*(sizeof(int) + sizeof(MPI_Request));
   out_to->n         = in_to->n; 
   out_to->type      = in_to->type;
@@ -535,7 +535,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   out_from->type      = in_from->type;
   PetscLogObjectMemory(out,sizeof(VecScatter_MPI_General));
   ny                  = in_from->starts[in_from->n];
-  len                 = ny*(sizeof(int) + bs*sizeof(Scalar)) + (in_from->n+1)*sizeof(int) +
+  len                 = ny*(sizeof(int) + bs*sizeof(PetscScalar)) + (in_from->n+1)*sizeof(int) +
                        (in_from->n)*(sizeof(int) + sizeof(MPI_Request));
   out_from->n         = in_from->n; 
   out_from->sendfirst = in_from->sendfirst;
@@ -572,7 +572,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     PetscTruth  flg;
     MPI_Request *swaits  = out_to->requests,*rwaits  = out_from->requests;
     MPI_Request *rev_swaits,*rev_rwaits;
-    Scalar      *Ssvalues = out_to->values, *Srvalues = out_from->values;
+    PetscScalar      *Ssvalues = out_to->values, *Srvalues = out_from->values;
 
     ierr = PetscMalloc((in_to->n+1)*sizeof(MPI_Request),&out_to->rev_requests);CHKERRQ(ierr);
     ierr = PetscMalloc((in_from->n+1)*sizeof(MPI_Request),&out_from->rev_requests);CHKERRQ(ierr);
@@ -639,7 +639,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
 int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *xv,*yv,*val,*svalues;
+  PetscScalar                 *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,ierr,len;
 
@@ -795,7 +795,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
 int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *rvalues,*yv,*val;
+  PetscScalar                 *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             *rstatus,*sstatus;
@@ -965,7 +965,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
 int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *xv,*yv,*val,*svalues;
+  PetscScalar                 *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
 
@@ -1102,7 +1102,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *rvalues,*yv,*val;
+  PetscScalar                 *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             rstatus,*sstatus;
@@ -1188,7 +1188,7 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *xv,*yv,*val,*svalues;
+  PetscScalar                 *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,ierr,len;
 
@@ -1305,7 +1305,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *rvalues,*yv,*val;
+  PetscScalar                 *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             *rstatus,*sstatus;
@@ -1428,7 +1428,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *xv,*yv,*val,*svalues;
+  PetscScalar                 *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
 
@@ -1557,7 +1557,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *rvalues,*yv,*val;
+  PetscScalar                 *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             rstatus,*sstatus;
@@ -1637,7 +1637,7 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *xv,*yv,*val,*svalues;
+  PetscScalar                 *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
   int                    ierr,i,*indices,*sstarts,iend,j,nrecvs,nsends,idx;
 
@@ -1756,7 +1756,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  Scalar                 *rvalues,*yv,*val;
+  PetscScalar                 *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
   MPI_Status             rstatus,*sstatus;
@@ -2000,7 +2000,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&to->sendfirst);CHKERRQ(ierr);
   ierr = PetscMemzero(to,sizeof(VecScatter_MPI_General));CHKERRQ(ierr);
   PetscLogObjectMemory(ctx,sizeof(VecScatter_MPI_General));
-  len = slen*sizeof(int) + bs*slen*sizeof(Scalar) + (nrecvs+1)*sizeof(int) +
+  len = slen*sizeof(int) + bs*slen*sizeof(PetscScalar) + (nrecvs+1)*sizeof(int) +
         nrecvs*(sizeof(int) + sizeof(MPI_Request));
   to->n         = nrecvs; 
   ierr = PetscMalloc(len,&to->values);CHKERRQ(ierr);
@@ -2039,7 +2039,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&from->sendfirst);CHKERRQ(ierr);
   ierr = PetscMemzero(from,sizeof(VecScatter_MPI_General));CHKERRQ(ierr);
   PetscLogObjectMemory(ctx,sizeof(VecScatter_MPI_General));
-  len = ny*sizeof(int) + ny*bs*sizeof(Scalar) + (nsends+1)*sizeof(int) +
+  len = ny*sizeof(int) + ny*bs*sizeof(PetscScalar) + (nsends+1)*sizeof(int) +
         nsends*(sizeof(int) + sizeof(MPI_Request));
   from->n        = nsends;
   ierr = PetscMalloc(len,&from->values);CHKERRQ(ierr);
@@ -2120,7 +2120,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
     int         *sprocs  = to->procs,   *rprocs  = from->procs;
     MPI_Request *swaits  = to->requests,*rwaits  = from->requests;
     MPI_Request *rev_swaits,*rev_rwaits;
-    Scalar      *Ssvalues = to->values, *Srvalues = from->values;
+    PetscScalar      *Ssvalues = to->values, *Srvalues = from->values;
 
     ctx->destroy   = VecScatterDestroy_PtoP_X;
     ctx->copy      = VecScatterCopy_PtoP_X;
@@ -2311,7 +2311,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   ierr = PetscMemzero(to,sizeof(VecScatter_MPI_General));CHKERRQ(ierr);
   PetscLogObjectMemory(ctx,sizeof(VecScatter_MPI_General));
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&to->sendfirst);CHKERRQ(ierr);
-  len  = ny*(sizeof(int) + sizeof(Scalar)) + (nsends+1)*sizeof(int) +
+  len  = ny*(sizeof(int) + sizeof(PetscScalar)) + (nsends+1)*sizeof(int) +
         nsends*(sizeof(int) + sizeof(MPI_Request));
   to->n        = nsends; 
   ierr = PetscMalloc(len,&to->values);CHKERRQ(ierr); 
@@ -2368,7 +2368,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   ierr = PetscMemzero(from,sizeof(VecScatter_MPI_General));CHKERRQ(ierr);
   PetscLogObjectMemory(ctx,sizeof(VecScatter_MPI_General));
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&from->sendfirst);CHKERRQ(ierr);
-  len  = slen*(sizeof(int) + sizeof(Scalar)) + (nrecvs+1)*sizeof(int) +
+  len  = slen*(sizeof(int) + sizeof(PetscScalar)) + (nrecvs+1)*sizeof(int) +
           nrecvs*(sizeof(int) + sizeof(MPI_Request));
   from->n        = nrecvs; 
   ierr = PetscMalloc(len,&from->values);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: tsreg.c,v 1.69 2001/04/14 03:58:15 bsmith Exp balay $*/
+/*$Id: tsreg.c,v 1.70 2001/08/02 20:29:40 balay Exp bsmith $*/
 
 #include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
 
@@ -156,7 +156,7 @@ int TSSetFromOptions(TS ts)
   int        ierr;
   PetscTruth flg;
   char       *deft,type[256];
-  double     dt;
+  PetscReal  dt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -176,8 +176,8 @@ int TSSetFromOptions(TS ts)
     }
 
     ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-ts_dt","Initial time step","TSSetInitialTimeStep",ts->initial_time_step,&dt,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetInitialTimeStep",ts->initial_time_step,&dt,&flg);CHKERRQ(ierr);
     if (flg) {
       ts->initial_time_step = ts->time_step = dt;
     }

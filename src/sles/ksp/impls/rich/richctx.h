@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.85 1999/11/05 14:46:46 bsmith Exp bsmith $*/
+/*$Id: richctx.h,v 1.4 1999/11/24 21:54:54 bsmith Exp bsmith $*/
 /*
       Private data structure for Richardson Iteration 
 */
@@ -7,7 +7,7 @@
 #define __RICH_H
 
 typedef struct {
-  double scale;               /* scaling on preconditioner */
+  PetscReal scale;               /* scaling on preconditioner */
 } KSP_Richardson;
 
 #endif

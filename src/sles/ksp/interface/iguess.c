@@ -1,4 +1,4 @@
-/*$Id: iguess.c,v 1.35 2001/01/16 18:19:24 balay Exp balay $*/
+/*$Id: iguess.c,v 1.36 2001/03/23 23:23:29 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
 /* 
@@ -27,8 +27,8 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
   ierr = PetscMalloc(sizeof(KSPIGUESS),&itg);CHKERRQ(ierr);
   itg->curl = 0;
   itg->maxl = maxl;
-  ierr = PetscMalloc(maxl * sizeof(Scalar),&itg->alpha);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,sizeof(KSPIGUESS) + maxl*sizeof(Scalar));
+  ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
+  PetscLogObjectMemory(ksp,sizeof(KSPIGUESS) + maxl*sizeof(PetscScalar));
   ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->xtilde);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,maxl,itg->xtilde);
   ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->btilde);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.72 2001/04/05 21:06:49 balay Exp bsmith $*/
+/*$Id: init.c,v 1.73 2001/06/21 21:15:31 bsmith Exp bsmith $*/
 /*
 
    This file defines part of the initialization of PETSc
@@ -200,9 +200,9 @@ int PetscCompareDouble(double d)
 
 .seealso: PetscCompareInt(), PetscComparseDouble()
 @*/
-int PetscCompareScalar(Scalar d)
+int PetscCompareScalar(PetscScalar d)
 {
-  Scalar work = d;
+  PetscScalar work = d;
   int    ierr;
 
   PetscFunctionBegin;
@@ -654,7 +654,7 @@ int PetscOptionsCheckInitial(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-compare",&flg1);CHKERRQ(ierr);
   if (flg1) {
      double tol = 1.e-12;
-     ierr = PetscOptionsGetDouble(PETSC_NULL,"-compare",&tol,&flg1);CHKERRQ(ierr); 
+     ierr = PetscOptionsGetReal(PETSC_NULL,"-compare",&tol,&flg1);CHKERRQ(ierr); 
      ierr = PetscCompareInitialize(tol);CHKERRQ(ierr);
   }
   ierr = PetscOptionsGetInt(PETSC_NULL,"-petsc_sleep",&i,&flg1);CHKERRQ(ierr);

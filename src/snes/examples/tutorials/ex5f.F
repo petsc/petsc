@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.76 2001/06/21 21:18:53 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.77 2001/07/06 14:30:43 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -84,7 +84,7 @@
       lambda_max = 6.81
       lambda_min = 0.0
       lambda     = 6.0
-      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,    &
+      call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',lambda,    &
      &                           flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'

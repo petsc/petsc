@@ -1,4 +1,4 @@
-/*$Id: bdfact.c,v 1.62 2001/03/23 23:22:03 balay Exp bsmith $*/
+/*$Id: bdfact.c,v 1.63 2001/04/10 19:35:32 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format - factorization and triangular solves */
 
@@ -67,8 +67,8 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
   int          k,d,d2,dgk,elim_row,elim_col,bs = a->bs,knb,knb2,bs2 = bs*bs;
   int          dnum,nd = a->nd,mblock = a->mblock,nblock = a->nblock,ierr;
   int          *diag = a->diag, m = A->m,mainbd = a->mainbd,*dgptr,len,i;
-  Scalar       **dv = a->diagv,*dd = dv[mainbd],*v_work;
-  Scalar       *multiplier;
+  PetscScalar       **dv = a->diagv,*dd = dv[mainbd],*v_work;
+  PetscScalar       *multiplier;
 
   PetscFunctionBegin;
   /* Copy input matrix to factored matrix if we've already factored the
@@ -77,7 +77,7 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
      factorization for successive calls with same matrix sparsity structure. */
   if (C->factor == FACTOR_LU) {
     for (i=0; i<a->nd; i++) {
-      len = a->bdlen[i] * bs2 * sizeof(Scalar);
+      len = a->bdlen[i] * bs2 * sizeof(PetscScalar);
       d   = diag[i];
       if (d > 0) {
         ierr = PetscMemcpy(dv[i]+bs2*d,a1->diagv[i]+bs2*d,len);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ int MatLUFactorNumeric_SeqBDiag_N(Mat A,Mat *B)
     ierr = PetscMalloc((m+1)*sizeof(int),&a->pivot);CHKERRQ(ierr);
     PetscLogObjectMemory(C,m*sizeof(int));
   }
-  ierr       = PetscMalloc((bs2+bs+1)*sizeof(Scalar),&v_work);CHKERRQ(ierr);
+  ierr       = PetscMalloc((bs2+bs+1)*sizeof(PetscScalar),&v_work);CHKERRQ(ierr);
   multiplier = v_work + bs;
   ierr       = PetscMalloc((mblock+nblock+1)*sizeof(int),&dgptr);CHKERRQ(ierr);
   ierr       = PetscMemzero(dgptr,(mblock+nblock)*sizeof(int));CHKERRQ(ierr);
@@ -132,7 +132,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)C->data,*a1 = (Mat_SeqBDiag*)A->data;
   int          k,d,d2,dgk,elim_row,elim_col,dnum,nd = a->nd,i,len,ierr;
   int          *diag = a->diag,n = A->n,m = A->m,mainbd = a->mainbd,*dgptr;
-  Scalar       **dv = a->diagv,*dd = dv[mainbd],mult;
+  PetscScalar       **dv = a->diagv,*dd = dv[mainbd],mult;
 
   PetscFunctionBegin;
   /* Copy input matrix to factored matrix if we've already factored the
@@ -141,7 +141,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
      factorization for successive calls with same matrix sparsity structure. */
   if (C->factor == FACTOR_LU) {
     for (i=0; i<nd; i++) {
-      len = a->bdlen[i] * sizeof(Scalar);
+      len = a->bdlen[i] * sizeof(PetscScalar);
       d   = diag[i];
       if (d > 0) {
         ierr = PetscMemcpy(dv[i]+d,a1->diagv[i]+d,len);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ int MatSolve_SeqBDiag_1(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          ierr,i,d,loc,mainbd = a->mainbd;
   int          n = A->n,m = A->m,*diag = a->diag,col;
-  Scalar       *x,*y,*dd = a->diagv[mainbd],sum,**dv = a->diagv;
+  PetscScalar       *x,*y,*dd = a->diagv[mainbd],sum,**dv = a->diagv;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -226,13 +226,13 @@ int MatSolve_SeqBDiag_2(Mat A,Vec xx,Vec yy)
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
   int          ierr,m = A->m,*diag = a->diag,col;
-  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
-  Scalar       w0,w1,sum0,sum1;
+  PetscScalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
+  PetscScalar       w0,w1,sum0,sum1;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -285,13 +285,13 @@ int MatSolve_SeqBDiag_3(Mat A,Vec xx,Vec yy)
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
   int          ierr,m = A->m,*diag = a->diag,col;
-  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
-  Scalar       w0,w1,w2,sum0,sum1,sum2;
+  PetscScalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
+  PetscScalar       w0,w1,w2,sum0,sum1,sum2;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -346,13 +346,13 @@ int MatSolve_SeqBDiag_4(Mat A,Vec xx,Vec yy)
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
   int          ierr,m = A->m,*diag = a->diag,col;
-  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
-  Scalar       w0,w1,w2,w3,sum0,sum1,sum2,sum3;
+  PetscScalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
+  PetscScalar       w0,w1,w2,w3,sum0,sum1,sum2,sum3;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -410,13 +410,13 @@ int MatSolve_SeqBDiag_5(Mat A,Vec xx,Vec yy)
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
   int          ierr,m = A->m,*diag = a->diag,col;
-  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
-  Scalar       w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
+  PetscScalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv,*dvt;
+  PetscScalar       w0,w1,w2,w3,w4,sum0,sum1,sum2,sum3,sum4;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -483,14 +483,14 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   int          i,d,loc,mainbd = a->mainbd;
   int          mblock = a->mblock,nblock = a->nblock,inb,inb2;
   int          ierr,bs = a->bs,m = A->m,*diag = a->diag,col,bs2 = bs*bs;
-  Scalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv;
-  Scalar       work[25];
+  PetscScalar       *x,*y,*dd = a->diagv[mainbd],**dv = a->diagv;
+  PetscScalar       work[25];
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (bs > 25) SETERRQ(PETSC_ERR_SUP,"Blocks must be smaller then 25");
-  ierr = PetscMemcpy(y,x,m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(y,x,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* forward solve the lower triangular part */
   if (mainbd != 0) {
@@ -515,7 +515,7 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
       }
     }
     Kernel_w_gets_A_times_v(bs,y+inb,dd+inb2,work);  
-    ierr = PetscMemcpy(y+inb,work,bs*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(y+inb,work,bs*sizeof(PetscScalar));CHKERRQ(ierr);
     inb -= bs; inb2 -= bs2;
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);

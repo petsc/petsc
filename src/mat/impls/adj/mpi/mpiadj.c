@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.63 2001/06/22 00:24:28 buschelm Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.64 2001/07/20 21:20:46 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -135,7 +135,7 @@ int MatGetOwnershipRange_MPIAdj(Mat A,int *m,int *n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIAdj"
-int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
+int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data;
   int        *itmp;
@@ -159,7 +159,7 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPIAdj"
-int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
+int MatRestoreRow_MPIAdj(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -448,7 +448,7 @@ EXTERN_C_BEGIN
 int MatConvertTo_MPIAdj(Mat A,MatType type,Mat *B)
 {
   int      i,ierr,m,N,nzeros = 0,*ia,*ja,*rj,len,rstart,cnt,j,*a;
-  Scalar   *ra;
+  PetscScalar   *ra;
   MPI_Comm comm;
 
   PetscFunctionBegin;

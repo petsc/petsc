@@ -1,4 +1,4 @@
-/*$Id: random.c,v 1.57 2001/03/23 23:20:45 balay Exp balay $*/
+/*$Id: random.c,v 1.58 2001/04/06 19:24:30 balay Exp bsmith $*/
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number
@@ -20,7 +20,7 @@
 struct _p_PetscRandom {
   PETSCHEADER(int)
   unsigned long seed;
-  Scalar        low,width;       /* lower bound and width of the interval over
+  PetscScalar        low,width;       /* lower bound and width of the interval over
                                      which the random numbers are distributed */
   PetscTruth    iset;             /* if true, indicates that the user has set the interval */
   /* array for shuffling ??? */
@@ -78,7 +78,7 @@ int PetscRandomDestroy(PetscRandom r)
 
 .seealso: PetscRandomCreate()
 @*/
-int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
+int PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
@@ -202,7 +202,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
 @*/
-int PetscRandomGetValue(PetscRandom r,Scalar *val)
+int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
@@ -259,7 +259,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 #define RAND_WRAP() (rand()/(double)(RAND_MAX+1))
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue"
-int PetscRandomGetValue(PetscRandom r,Scalar *val)
+int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
@@ -309,7 +309,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue"
-int PetscRandomGetValue(PetscRandom r,Scalar *val)
+int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);

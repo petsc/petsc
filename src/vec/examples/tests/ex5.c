@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.49 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex5.c,v 1.50 2001/03/23 23:21:30 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 This does case when we are merely selecting the local part of the\n\
@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
   for (i=0; i<n*size; i++) {
-    value = (Scalar) i;
+    value = (PetscScalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);

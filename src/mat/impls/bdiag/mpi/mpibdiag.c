@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.201 2001/06/22 18:57:46 curfman Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.202 2001/07/20 21:20:20 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIBDiag"
-int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
+int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,InsertMode addv)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   int          ierr,i,j,row,rstart = mbd->rstart,rend = mbd->rend;
@@ -44,7 +44,7 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPIBDiag"
-int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
+int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag*)mat->data;
   int          ierr,i,j,row,rstart = mbd->rstart,rend = mbd->rend;
@@ -97,7 +97,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   Mat_SeqBDiag *mlocal;
   int          i,n,*row,*col;
   int          *tmp1,*tmp2,ierr,len,ict,Mblock,Nblock,flg,j,rstart,ncols;
-  Scalar       *val;
+  PetscScalar       *val;
   InsertMode   addv = mat->insertmode;
 
   PetscFunctionBegin;
@@ -187,7 +187,7 @@ int MatZeroEntries_MPIBDiag(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIBDiag"
-int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
+int MatZeroRows_MPIBDiag(Mat A,IS is,PetscScalar *diag)
 {
   Mat_MPIBDiag   *l = (Mat_MPIBDiag*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -345,7 +345,7 @@ int MatMultTranspose_MPIBDiag(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*)A->data;
   int          ierr;
-  Scalar       zero = 0.0;
+  PetscScalar       zero = 0.0;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,yy);CHKERRQ(ierr);
@@ -517,7 +517,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,PetscViewer viewer)
     /* assemble the entire matrix onto first processor. */
     Mat          A;
     int          M = mat->M,N = mat->N,m,row,nz,*cols;
-    Scalar       *vals;
+    PetscScalar       *vals;
     Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*)mbd->A->data;
 
     if (!rank) {
@@ -626,7 +626,7 @@ int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIBDiag"
-int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
+int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
   int          lrow,ierr;
@@ -641,7 +641,7 @@ int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPIBDiag"
 int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
-                                  Scalar **v)
+                                  PetscScalar **v)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
   int          lrow,ierr;
@@ -661,7 +661,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *norm)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)mbd->A->data;
   PetscReal    sum = 0.0;
   int          ierr,d,i,nd = a->nd,bs = a->bs,len;
-  Scalar       *dv;
+  PetscScalar       *dv;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -715,10 +715,10 @@ int MatPrintHelp_MPIBDiag(Mat A)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatScale_SeqBDiag(Scalar*,Mat);
+EXTERN int MatScale_SeqBDiag(PetscScalar*,Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIBDiag"
-int MatScale_MPIBDiag(Scalar *alpha,Mat A)
+int MatScale_MPIBDiag(PetscScalar *alpha,Mat A)
 {
   int          ierr;
   Mat_MPIBDiag *a = (Mat_MPIBDiag*)A->data;
@@ -919,11 +919,11 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
 @*/
-int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,Scalar **diagv)
+int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,PetscScalar **diagv)
 {
   Mat_MPIBDiag *b;
   int          ierr,i,k,*ldiag,len,nd2;
-  Scalar       **ldiagv = 0;
+  PetscScalar       **ldiagv = 0;
   PetscTruth   flg2;
 
   PetscFunctionBegin;
@@ -984,7 +984,7 @@ int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,Scalar **diagv)
   PetscLogObjectMemory(B,(nd+1)*sizeof(int) + (b->size+2)*sizeof(int)
                         + sizeof(struct _p_Mat) + sizeof(Mat_MPIBDiag));
   if (diagv) {
-    ierr = PetscMalloc((nd+1)*sizeof(Scalar*),&ldiagv);CHKERRQ(ierr); 
+    ierr = PetscMalloc((nd+1)*sizeof(PetscScalar*),&ldiagv);CHKERRQ(ierr); 
   }
   for (i=0; i<nd; i++) {
     b->gdiag[i] = diag[i];
@@ -1074,7 +1074,7 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreate(), MatCreateSeqBDiag(), MatSetValues()
 @*/
-int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Scalar **diagv,Mat *A)
+int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,PetscScalar **diagv,Mat *A)
 {
   int ierr,size;
 
@@ -1125,7 +1125,7 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,Scalar ***diagv)
+int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,PetscScalar ***diagv)
 {
   Mat_MPIBDiag *pdmat;
   Mat_SeqBDiag *dmat = 0;
@@ -1158,7 +1158,7 @@ EXTERN_C_BEGIN
 int MatLoad_MPIBDiag(PetscViewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
-  Scalar       *vals,*svals;
+  PetscScalar       *vals,*svals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          bs,i,nz,ierr,j,rstart,rend,fd,*rowners,maxnz,*cols;
@@ -1277,7 +1277,7 @@ int MatLoad_MPIBDiag(PetscViewer viewer,MatType type,Mat *newmat)
   A = *newmat;
 
   if (!rank) {
-    ierr = PetscMalloc(maxnz*sizeof(Scalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* read in my part of the matrix numerical values  */
     nz = procsnz[0];
@@ -1312,7 +1312,7 @@ int MatLoad_MPIBDiag(PetscViewer viewer,MatType type,Mat *newmat)
     ierr = PetscFree(procsnz);CHKERRQ(ierr);
   } else {
     /* receive numeric values */
-    ierr = PetscMalloc(nz*sizeof(Scalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* receive message of values*/
     ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);CHKERRQ(ierr);

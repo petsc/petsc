@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.25 2001/03/23 23:24:25 balay Exp bsmith $*/
+/*$Id: ex5s.c,v 1.26 2001/04/04 20:58:02 bsmith Exp bsmith $*/
 
 static char help[] = "2d Bratu problem in shared memory parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -128,7 +128,7 @@ int main(int argc,char **argv)
   user.mx = 4; user.my = 4; user.param = 6.0;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRQ(1,"Lambda is out of range");
   }

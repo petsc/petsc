@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.10 2001/03/23 23:23:22 balay Exp bsmith $*/
+/*$Id: nn.c,v 1.11 2001/04/25 14:54:33 bsmith Exp bsmith $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -231,21 +231,21 @@ int PCNNCreateCoarseMatrix (PC pc)
   PetscFunctionBegin;
 
   /* Allocate memory for mat (the +1 is to handle the case n_neigh equal to zero) */
-  ierr = PetscMalloc((n_neigh*n_neigh+1)*sizeof(Scalar),&mat);CHKERRQ(ierr);
+  ierr = PetscMalloc((n_neigh*n_neigh+1)*sizeof(PetscScalar),&mat);CHKERRQ(ierr);
 
   /* Allocate memory for DZ */
   /* Notice that DZ_OUT[0] is allocated some space that is never used. */
   /* This is just in order to DZ_OUT and DZ_IN to have exactly the same form. */
   {
     int size_of_Z = 0;
-    ierr  = PetscMalloc ((n_neigh+1)*sizeof(Scalar*),&pcnn->DZ_IN);CHKERRQ(ierr);
+    ierr  = PetscMalloc ((n_neigh+1)*sizeof(PetscScalar*),&pcnn->DZ_IN);CHKERRQ(ierr);
     DZ_IN = pcnn->DZ_IN;
-    ierr  = PetscMalloc ((n_neigh+1)*sizeof(Scalar*),&DZ_OUT);CHKERRQ(ierr);
+    ierr  = PetscMalloc ((n_neigh+1)*sizeof(PetscScalar*),&DZ_OUT);CHKERRQ(ierr);
     for (i=0; i<n_neigh; i++) {
       size_of_Z += n_shared[i];
     }
-    ierr = PetscMalloc ((size_of_Z+1)*sizeof(Scalar),&DZ_IN[0]);CHKERRQ(ierr);
-    ierr = PetscMalloc ((size_of_Z+1)*sizeof(Scalar),&DZ_OUT[0]);CHKERRQ(ierr);
+    ierr = PetscMalloc ((size_of_Z+1)*sizeof(PetscScalar),&DZ_IN[0]);CHKERRQ(ierr);
+    ierr = PetscMalloc ((size_of_Z+1)*sizeof(PetscScalar),&DZ_OUT[0]);CHKERRQ(ierr);
   }
   for (i=1; i<n_neigh; i++) {
     DZ_IN[i]  = DZ_IN [i-1] + n_shared[i-1];
@@ -427,7 +427,7 @@ int PCNNApplySchurToChunk(PC pc, int n, int* idx, Scalar *chunk, Scalar* array_N
 
   PetscFunctionBegin;
 
-  ierr = PetscMemzero((void*)array_N, pcis->n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemzero((void*)array_N, pcis->n*sizeof(PetscScalar));CHKERRQ(ierr);
   for (i=0; i<n; i++) { array_N[idx[i]] = chunk[i]; }
   ierr = PCISScatterArrayNToVecB(array_N,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pc);CHKERRQ(ierr);
   ierr = PCISApplySchur(pc,vec2_B,vec1_B,(Vec)0,vec1_D,vec2_D);CHKERRQ(ierr);

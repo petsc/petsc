@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.22 2001/04/10 19:37:23 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.23 2001/06/21 21:19:09 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -66,6 +66,8 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
     row    = idx_f[dof*(i-i_start_ghost)]/dof;
 
     i_c = (i/ratio);    /* coarse grid node to left of fine grid node */
+    if (i_c < i_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+    i_start %d i_c %d i_start_ghost_c %d",i_start,i_c,i_start_ghost_c);
 
     /* 
          Only include those interpolation points that are truly 
@@ -231,6 +233,11 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
+      if (j_c < j_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+    j_start %d j_c %d j_start_ghost_c %d",j_start,j_c,j_start_ghost_c);
+      if (i_c < i_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+    i_start %d i_c %d i_start_ghost_c %d",i_start,i_c,i_start_ghost_c);
+
       /* 
          Only include those interpolation points that are truly 
          nonzero. Note this is very important for final grid lines
@@ -278,10 +285,6 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
       /* printf("i j %d %d %g %g\n",i,j,x,y); */
       nc = 0;
       /* one left and below; or we are right on it */
-      if (j_c < j_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
-    j_start %d j_c %d j_start_ghost_c %d",j_start,j_c,j_start_ghost_c);
-      if (i_c < i_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
-    i_start %d i_c %d i_start_ghost_c %d",i_start,i_c,i_start_ghost_c);
       col      = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
       cols[nc] = col_shift + idx_c[col]/dof; 
       v[nc++]  = x*y - x - y + 1.0;
@@ -371,6 +374,12 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
         i_c = (i/ratioi);
         j_c = (j/ratioj);
         l_c = (l/ratiok);
+        if (l_c < l_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+          l_start %d l_c %d l_start_ghost_c %d",l_start,l_c,l_start_ghost_c);
+        if (j_c < j_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+          j_start %d j_c %d j_start_ghost_c %d",j_start,j_c,j_start_ghost_c);
+        if (i_c < i_start_ghost_c) SETERRQ3(1,"Processor's coarse DA must lie over fine DA\n\
+          i_start %d i_c %d i_start_ghost_c %d",i_start,i_c,i_start_ghost_c);
 
         /* 
          Only include those interpolation points that are truly 

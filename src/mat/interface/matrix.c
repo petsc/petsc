@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.408 2001/07/20 21:19:21 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.409 2001/07/31 03:47:39 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -69,7 +69,7 @@
 
 .seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubmatrices(), MatGetDiagonal()
 @*/
-int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
+int MatGetRow(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
 {
   int   ierr;
 
@@ -122,7 +122,7 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 
 .seealso:  MatGetRow()
 @*/
-int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
+int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
 {
   int ierr;
 
@@ -482,7 +482,7 @@ int MatValid(Mat m,PetscTruth *flg)
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
 @*/
-int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
+int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,InsertMode addv)
 {
   int ierr;
 
@@ -573,7 +573,7 @@ $    idxm(MatStencil_c,1) = c
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
           MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil()
 @*/
-int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,Scalar *v,InsertMode addv)
+int MatSetValuesStencil(Mat mat,int m,MatStencil *idxm,int n,MatStencil *idxn,PetscScalar *v,InsertMode addv)
 {
   int j,i,ierr,jdxm[128],jdxn[128],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
   int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
@@ -703,7 +703,7 @@ int MatSetStencil(Mat mat,int dim,int *dims,int *starts,int dof)
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal()
 @*/
-int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
+int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,InsertMode addv)
 {
   int ierr;
 
@@ -740,7 +740,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
    MatSetValue - Set a single entry into a matrix.
 
    Synopsis:
-   int MatSetValue(Mat m,int row,int col,Scalar value,InsertMode mode);
+   int MatSetValue(Mat m,int row,int col,PetscScalar value,InsertMode mode);
 
    Not collective
 
@@ -777,7 +777,7 @@ M*/
 -  n, idxn - the number of columns and their global indices
 
    Notes:
-   The user must allocate space (m*n Scalars) for the values, v.
+   The user must allocate space (m*n PetscScalars) for the values, v.
    The values, v, are then returned in a row-oriented format, 
    analogous to that used by default in MatSetValues().
 
@@ -795,7 +795,7 @@ M*/
 
 .seealso: MatGetRow(), MatGetSubmatrices(), MatSetValues()
 @*/
-int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
+int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v)
 {
   int ierr;
 
@@ -932,7 +932,7 @@ int MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapping)
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
            MatSetValueLocal()
 @*/
-int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,InsertMode addv) 
+int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,PetscScalar *y,InsertMode addv) 
 {
   int ierr,irowm[2048],icolm[2048];
 
@@ -1008,7 +1008,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,In
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
 @*/
-int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scalar *y,InsertMode addv) 
+int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,PetscScalar *y,InsertMode addv) 
 {
   int ierr,irowm[2048],icolm[2048];
 
@@ -1358,7 +1358,7 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 
     Concepts: matrices^ILUDT factorization
 
-.seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
+.seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatILUInfo
 @*/
 int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
 {
@@ -1409,7 +1409,7 @@ $                   Run with the option -log_info to determine an optimal value 
    Concepts: matrices^LU factorization
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(),
-          MatGetOrdering(), MatSetUnfactored()
+          MatGetOrdering(), MatSetUnfactored(), MatLUInfo
 
 @*/
 int MatLUFactor(Mat mat,IS row,IS col,MatLUInfo *info)
@@ -1459,7 +1459,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
 
    Concepts: matrices^ILU factorization
 
-.seealso: MatILUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
+.seealso: MatILUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatILUInfo
 @*/
 int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
 {
@@ -1511,7 +1511,7 @@ $                   Run with the option -log_info to determine an optimal value 
 
    Concepts: matrices^LU symbolic factorization
 
-.seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor()
+.seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor(), MatLUInfo
 @*/
 int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatLUInfo *info,Mat *fact)
 {
@@ -1944,7 +1944,7 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
 @*/
 int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
 {
-  Scalar one = 1.0;
+  PetscScalar one = 1.0;
   Vec    tmp;
   int    ierr;
 
@@ -2071,7 +2071,7 @@ int MatSolveTranspose(Mat mat,Vec b,Vec x)
 @*/
 int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 {
-  Scalar one = 1.0;
+  PetscScalar one = 1.0;
   int    ierr;
   Vec    tmp;
 
@@ -2201,7 +2201,7 @@ int MatRelax(Mat mat,Vec b,PetscReal omega,MatSORType flag,PetscReal shift,int i
 int MatCopy_Basic(Mat A,Mat B,MatStructure str)
 {
   int    ierr,i,rstart,rend,nz,*cwork;
-  Scalar *vwork;
+  PetscScalar *vwork;
 
   PetscFunctionBegin;
   ierr = MatZeroEntries(B);CHKERRQ(ierr);
@@ -2685,7 +2685,7 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
 
 .seealso: MatDiagonalScale()
 @*/
-int MatScale(Scalar *a,Mat mat)
+int MatScale(PetscScalar *a,Mat mat)
 {
   int ierr;
 
@@ -3181,7 +3181,7 @@ int MatZeroEntries(Mat mat)
 
 .seealso: MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
-int MatZeroRows(Mat mat,IS is,Scalar *diag)
+int MatZeroRows(Mat mat,IS is,PetscScalar *diag)
 {
   int ierr;
 
@@ -3234,7 +3234,7 @@ int MatZeroRows(Mat mat,IS is,Scalar *diag)
 
 .seealso: MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
 @*/
-int MatZeroRowsLocal(Mat mat,IS is,Scalar *diag)
+int MatZeroRowsLocal(Mat mat,IS is,PetscScalar *diag)
 {
   int ierr;
   IS  newis;
@@ -3392,7 +3392,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
   Concepts: LU^symbolic factorization
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
-          MatGetOrdering()
+          MatGetOrdering(), MatILUInfo
 
 @*/
 int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
@@ -3494,7 +3494,7 @@ int MatICCFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat *fact)
    This routine is used differently from Fortran, e.g.,
 .vb
         Mat         mat
-        Scalar      mat_array(1)
+        PetscScalar      mat_array(1)
         PetscOffset i_mat
         int         ierr
         call MatGetArray(mat,mat_array,i_mat,ierr)
@@ -3516,7 +3516,7 @@ int MatICCFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat *fact)
 
 .seealso: MatRestoreArray(), MatGetArrayF90()
 @*/
-int MatGetArray(Mat mat,Scalar **v)
+int MatGetArray(Mat mat,PetscScalar **v)
 {
   int ierr;
 
@@ -3545,7 +3545,7 @@ int MatGetArray(Mat mat,Scalar **v)
    This routine is used differently from Fortran, e.g.,
 .vb
         Mat         mat
-        Scalar      mat_array(1)
+        PetscScalar      mat_array(1)
         PetscOffset i_mat
         int         ierr
         call MatGetArray(mat,mat_array,i_mat,ierr)
@@ -3565,7 +3565,7 @@ int MatGetArray(Mat mat,Scalar **v)
 
 .seealso: MatGetArray(), MatRestoreArrayF90()
 @*/
-int MatRestoreArray(Mat mat,Scalar **v)
+int MatRestoreArray(Mat mat,PetscScalar **v)
 {
   int ierr;
 
@@ -4084,7 +4084,7 @@ int MatSetUnfactored(Mat mat)
 
     Example of Usage: 
 .vb
-      Scalar, pointer xx_v(:)
+      PetscScalar, pointer xx_v(:)
       ....
       call MatGetArrayF90(x,xx_v,ierr)
       a = xx_v(3)
@@ -4120,7 +4120,7 @@ M*/
 
     Example of Usage: 
 .vb
-       Scalar, pointer xx_v(:)
+       PetscScalar, pointer xx_v(:)
        ....
        call MatGetArrayF90(x,xx_v,ierr)
        a = xx_v(3)

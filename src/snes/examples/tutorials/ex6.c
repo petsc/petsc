@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.68 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.69 2001/03/22 20:32:01 bsmith Exp bsmith $*/
 
 static char help[] = "u`` + u^{2} = f. Different matrices for the Jacobian and the preconditioner.\n\
 Demonstrates the use of matrix-free Newton-Krylov methods in conjunction\n\
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   Mat        J,JPrec;             /* Jacobian,preconditioner matrices */
   int        ierr,it,n = 5,i,size;
   int        *Shistit = 0,Khistl = 200,Shistl = 10;
-  double     h,xp = 0.0,*Khist = 0,*Shist = 0;
+  PetscReal     h,xp = 0.0,*Khist = 0,*Shist = 0;
   Scalar     v,pfive = .5;
   PetscTruth flg;
 
@@ -117,9 +117,9 @@ int main(int argc,char **argv)
   if (flg) {
     ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
     ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-    ierr = PetscMalloc(Khistl*sizeof(double),&Khist);CHKERRQ(ierr);
+    ierr = PetscMalloc(Khistl*sizeof(PetscReal),&Khist);CHKERRQ(ierr);
     ierr = KSPSetResidualHistory(ksp,Khist,Khistl,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscMalloc(Shistl*sizeof(double),&Shist);CHKERRQ(ierr);
+    ierr = PetscMalloc(Shistl*sizeof(PetscReal),&Shist);CHKERRQ(ierr);
     ierr = PetscMalloc(Shistl*sizeof(int),&Shistit);CHKERRQ(ierr);
     ierr = SNESSetConvergenceHistory(snes,Shist,Shistit,Shistl,PETSC_FALSE);CHKERRQ(ierr);
   }
@@ -147,11 +147,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = KSPGetResidualHistory(ksp,PETSC_NULL,&Khistl);CHKERRQ(ierr);
-    PetscDoubleView(Khistl,Khist,PETSC_VIEWER_STDOUT_SELF);
-    ierr = PetscFree(Khist);CHKERRQ(ierr);
+    ierr = PetscRealView(Khistl,Khist,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscFree(Khist);CHKERRQ(ierr);CHKERRQ(ierr);
     ierr = SNESGetConvergenceHistory(snes,PETSC_NULL,PETSC_NULL,&Shistl);CHKERRQ(ierr);
-    PetscDoubleView(Shistl,Shist,PETSC_VIEWER_STDOUT_SELF);
-    PetscIntView(Shistl,Shistit,PETSC_VIEWER_STDOUT_SELF);
+    ierr = PetscRealView(Shistl,Shist,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscIntView(Shistl,Shistit,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     ierr = PetscFree(Shist);CHKERRQ(ierr);
     ierr = PetscFree(Shistit);CHKERRQ(ierr);
   }
@@ -188,7 +188,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
   ierr = VecGetArray((Vec)dummy,&FF);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  d = (double)(n - 1); d = d*d;
+  d = (PetscReal)(n - 1); d = d*d;
   ff[0]   = xx[0];
   for (i=1; i<n-1; i++) {
     ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
@@ -221,7 +221,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *d
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  d = (double)(n - 1); d = d*d;
+  d = (PetscReal)(n - 1); d = d*d;
 
   /* Form Jacobian.  Also form a different preconditioning matrix that 
      has only the diagonal elements. */

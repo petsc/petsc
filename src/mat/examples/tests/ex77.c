@@ -1,4 +1,4 @@
-/*$Id: ex77.c,v 1.8 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex77.c,v 1.9 2001/04/25 15:12:38 bsmith Exp bsmith $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format. Same as ex74.c except diagonal entries of the matrices are zeros.\n";
 
@@ -183,9 +183,9 @@ int main(int argc,char **args)
   /* Test MatGetRow() */
   if (getrow){
     row = n/2; 
-    ierr = PetscMalloc(n*sizeof(Scalar),&vr1);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscScalar),&vr1);CHKERRQ(ierr);
     vr1_wk = vr1;  
-    ierr = PetscMalloc(n*sizeof(Scalar),&vr2);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscScalar),&vr2);CHKERRQ(ierr);
     vr2_wk = vr2;
     ierr = MatGetRow(A,row,&J,&cols1,&vr1);CHKERRQ(ierr); 
     vr1_wk += J-1;

@@ -1,4 +1,4 @@
-/*$Id: mmaij.c,v 1.56 2001/01/15 21:45:38 bsmith Exp balay $*/
+/*$Id: mmaij.c,v 1.57 2001/03/23 23:21:56 balay Exp bsmith $*/
 
 /*
    Support for the parallel AIJ matrix vector multiply
@@ -142,7 +142,7 @@ int DisAssemble_MPIAIJ(Mat A)
   Mat_SeqAIJ *Baij = (Mat_SeqAIJ*)B->data;
   int        ierr,i,j,m = B->m,n = A->N,col,ct = 0,*garray = aij->garray;
   int        *nz,ec,shift = Baij->indexshift;
-  Scalar     v;
+  PetscScalar     v;
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */

@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.196 2001/06/21 21:16:00 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.197 2001/07/20 21:18:14 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -25,7 +25,7 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 #if defined(PETSC_HAVE_SLOW_NRM2)
     {
       int i;
-      Scalar sum=0.0;
+      PetscScalar sum=0.0;
       for (i=0; i<xin->n; i++) {
         sum += (x->array[i])*(PetscConj(x->array[i]));
       }
@@ -38,7 +38,7 @@ int VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   } else if (type == NORM_INFINITY) {
     int       i,n = xin->n;
     PetscReal max = 0.0,tmp;
-    Scalar    *xx = x->array;
+    PetscScalar    *xx = x->array;
 
     for (i=0; i<n; i++) {
       if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
@@ -245,10 +245,10 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValues_Seq"
-int VecSetValues_Seq(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode m)
+int VecSetValues_Seq(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertMode m)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  Scalar   *xx = x->array;
+  PetscScalar   *xx = x->array;
   int      i;
 
   PetscFunctionBegin;
@@ -274,10 +274,10 @@ int VecSetValues_Seq(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode m
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValuesBlocked_Seq"
-int VecSetValuesBlocked_Seq(Vec xin,int ni,const int ix[],const Scalar yin[],InsertMode m)
+int VecSetValuesBlocked_Seq(Vec xin,int ni,const int ix[],const PetscScalar yin[],InsertMode m)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
-  Scalar   *xx = x->array,*y = (Scalar*)yin;
+  PetscScalar   *xx = x->array,*y = (PetscScalar*)yin;
   int      i,bs = xin->bs,start,j;
 
   /*
@@ -420,7 +420,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Seq_Private"
-static int VecCreate_Seq_Private(Vec v,const Scalar array[])
+static int VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 {
   Vec_Seq *s;
   int     ierr;
@@ -433,13 +433,13 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
   v->n               = PetscMax(v->n,v->N); 
   v->N               = PetscMax(v->n,v->N); 
   v->bs              = -1;
-  s->array           = (Scalar *)array;
+  s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
   if (!v->map) {
     ierr = PetscMapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_SEQ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif
@@ -480,7 +480,7 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
 .seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
 @*/
-int VecCreateSeqWithArray(MPI_Comm comm,int n,const Scalar array[],Vec *V)
+int VecCreateSeqWithArray(MPI_Comm comm,int n,const PetscScalar array[],Vec *V)
 {
   int  ierr;
 
@@ -496,12 +496,12 @@ EXTERN_C_BEGIN
 int VecCreate_Seq(Vec V)
 {
   Vec_Seq *s;
-  Scalar  *array;
+  PetscScalar  *array;
   int     ierr,n = PetscMax(V->n,V->N);
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((n+1)*sizeof(Scalar),&array);CHKERRQ(ierr);
-  ierr = PetscMemzero(array,n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+  ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
   s    = (Vec_Seq*)V->data;
   s->array_allocated = array;

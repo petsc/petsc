@@ -1,4 +1,4 @@
-/*$Id: eisen.c,v 1.111 2001/03/28 19:41:50 balay Exp bsmith $*/
+/*$Id: eisen.c,v 1.112 2001/04/10 19:36:12 bsmith Exp bsmith $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
@@ -120,7 +120,7 @@ static int PCSetFromOptions_Eisenstat(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Eisenstat SSOR options");CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_eisenstat_omega","Relaxation factor 0 < omega < 2","PCEisenstatSetOmega",eis->omega,&eis->omega,0);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_eisenstat_no_diagonal_scaling","Do not use standard diagonal scaling","PCEisenstatNoDiagonalScaling",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCEisenstatNoDiagonalScaling(pc);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.19 2001/03/22 20:32:01 bsmith Exp balay $ */
+/* $Id: ex18.c,v 1.20 2001/03/23 23:24:25 balay Exp bsmith $ */
 
 
 static char help[] ="Nonlinear Radiative Transport PDE with multigrid in 2d.\n\
@@ -75,9 +75,9 @@ int main(int argc,char **argv)
   user.tleft  = 1.0; 
   user.tright = 0.1;
   user.beta   = 2.5; 
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRQ(ierr);
   user.bm1  = user.beta - 1.0;
   user.coef = user.beta/2.0;
 

@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.3 2001/01/16 18:21:37 balay Exp balay $*/
+/*$Id: appload.c,v 1.4 2001/03/23 23:25:31 balay Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -27,10 +27,10 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   ierr = PetscOptionsGetInt   (PETSC_NULL,"-ny"  ,&Nely,&flg);CHKERRQ(ierr); if (!flg) { Nely = 5;   }
   ierr = PetscOptionsGetInt   (PETSC_NULL,"-nsdx",&nsdx,&flg);CHKERRQ(ierr); if (!flg) { nsdx = 1;   }
   ierr = PetscOptionsGetInt   (PETSC_NULL,"-nsdy",&nsdy,&flg);CHKERRQ(ierr); if (!flg) { nsdy = 1;   }
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-xmin",&xmin,&flg);CHKERRQ(ierr); if (!flg) { xmin = 0.0; }
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-xmax",&xmax,&flg);CHKERRQ(ierr); if (!flg) { xmax = 1.0; }
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-ymin",&ymin,&flg);CHKERRQ(ierr); if (!flg) { ymin = 0.0; }
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-ymax",&ymax,&flg);CHKERRQ(ierr); if (!flg) { ymax = 1.0; }
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&xmin,&flg);CHKERRQ(ierr); if (!flg) { xmin = 0.0; }
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&xmax,&flg);CHKERRQ(ierr); if (!flg) { xmax = 1.0; }
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-ymin",&ymin,&flg);CHKERRQ(ierr); if (!flg) { ymin = 0.0; }
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-ymax",&ymax,&flg);CHKERRQ(ierr); if (!flg) { ymax = 1.0; }
 
   ierr = AppPartitionSetUp(&((*appctx)->part),comm,Nelx,Nely,nsdx,nsdy,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
 

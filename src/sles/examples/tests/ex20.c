@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.15 2001/04/10 19:36:37 bsmith Exp bsmith $*/
+/*$Id: ex20.c,v 1.16 2001/06/21 21:18:25 bsmith Exp bsmith $*/
 
 static char help[] = "This example solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
@@ -10,7 +10,7 @@ differently from the way it is assembled.  Input arguments are:\n\
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
-int FormElementStiffness(double H,Scalar *Ke)
+int FormElementStiffness(double H,PetscScalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
   Ke[4]  = -.125*H;  Ke[5]  = H/6.0;   Ke[6]  = -.125*H;  Ke[7]  = H/12.0;

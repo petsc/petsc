@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.60 2001/04/04 18:09:20 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.61 2001/04/10 19:37:00 bsmith Exp bsmith $*/
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
 
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-cavity",&cavity);CHKERRQ(ierr);
   if (cavity) user.param = 100.0;
   else        user.param = 6.0;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (!cavity && (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
     SETERRQ(1,"Lambda is out of range");
   }

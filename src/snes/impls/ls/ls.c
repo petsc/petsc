@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.169 2001/03/23 23:24:13 balay Exp bsmith $*/
+/*$Id: ls.c,v 1.170 2001/04/10 19:36:55 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -815,7 +815,7 @@ EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetLineSearch_LS"
 int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,
-                         double,double*,double*,int*),void *lsctx)
+                         PetscReal,PetscReal*,PetscReal*,int*),void *lsctx)
 {
   PetscFunctionBegin;
   ((SNES_EQ_LS *)(snes->data))->LineSearch = func;
@@ -952,9 +952,9 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Line search options");CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_ls_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_eq_ls_steptol","Step must be greater than","None",ls->steptol,&ls->steptol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_ls_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_eq_ls_steptol","Step must be greater than","None",ls->steptol,&ls->steptol,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsEList("-snes_eq_ls","Line search used","SNESSetLineSearch",lses,4,"cubic",ver,16,&flg);CHKERRQ(ierr);
     if (flg) {

@@ -1,4 +1,4 @@
-/*$Id: sor.c,v 1.100 2001/03/23 23:23:06 balay Exp bsmith $*/
+/*$Id: sor.c,v 1.101 2001/04/10 19:36:08 bsmith Exp bsmith $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
@@ -57,7 +57,7 @@ static int PCSetFromOptions_SOR(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("(S)SOR options");CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-pc_sor_omega","relaxation factor (0 < omega < 2)","PCSORSetOmega",jac->omega,&jac->omega,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_sor_omega","relaxation factor (0 < omega < 2)","PCSORSetOmega",jac->omega,&jac->omega,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_sor_its","number of inner SOR iterations","PCSORSetIterations",jac->its,&jac->its,0);CHKERRQ(ierr);
     ierr = PetscOptionsLogicalGroupBegin("-pc_sor_symmetric","SSOR, not SOR","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);CHKERRQ(ierr);}

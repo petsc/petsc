@@ -1,4 +1,4 @@
-/*$Id: zviewer.c,v 1.31 2001/01/20 03:37:34 bsmith Exp balay $*/
+/*$Id: zviewer.c,v 1.32 2001/01/22 21:03:07 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petsc.h"
@@ -37,7 +37,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petscviewersocketputscalar(PetscViewer *viewer,int *m,int *n,Scalar *s,int *ierr)
+void PETSC_STDCALL petscviewersocketputscalar(PetscViewer *viewer,int *m,int *n,PetscScalar *s,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);

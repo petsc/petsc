@@ -1,4 +1,4 @@
-/*$Id: gmreig.c,v 1.25 2001/03/22 05:16:20 balay Exp balay $*/
+/*$Id: gmreig.c,v 1.26 2001/03/23 23:23:37 balay Exp bsmith $*/
 
 #include "src/sles/ksp/impls/gmres/gmresp.h"
 #include "petscblaslapack.h"
@@ -18,7 +18,7 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,PetscReal *emi
     PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
-  ierr = PetscMemcpy(R,gmres->hh_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(R,gmres->hh_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* zero below diagonal garbage */
   for (i=0; i<n; i++) {
@@ -68,7 +68,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
     PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
-  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
 
@@ -89,7 +89,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
     realpart[i] = cwork[2*i];
     perm[i]     = i;
   }
-  ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
+  ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     r[i] = cwork[2*perm[i]];
     c[i] = cwork[2*perm[i]+1];
@@ -99,7 +99,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
     realpart[i] = PetscRealPart(cwork[i]);
     perm[i]     = i;
   }
-  ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
+  ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     r[i] = PetscRealPart(cwork[perm[i]]);
     c[i] = PetscImaginaryPart(cwork[perm[i]]);
@@ -127,7 +127,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   }
 
   /* copy R matrix to work space */
-  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
 #if defined(PETSC_MISSING_LAPACK_GEEV) 
@@ -138,7 +138,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   if (ierr) SETERRQ(PETSC_ERR_LIB,"Error in LAPACK routine");
   ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
-  ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
+  ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     r[i] = realpart[perm[i]];
     c[i] = imagpart[perm[i]];
@@ -163,7 +163,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
     PetscFunctionReturn(0);
   }
   /* copy R matrix to work space */
-  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(R,gmres->hes_origin,N*N*sizeof(PetscScalar));CHKERRQ(ierr);
 
   /* compute eigenvalues */
 #if defined(PETSC_MISSING_LAPACK_GEEV) 
@@ -175,7 +175,7 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,PetscReal *r,PetscReal *c,int *
   ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) { perm[i] = i;}
   for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}
-  ierr = PetscSortDoubleWithPermutation(n,r,perm);CHKERRQ(ierr);
+  ierr = PetscSortRealWithPermutation(n,r,perm);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     r[i] = PetscRealPart(eigs[perm[i]]);
     c[i] = PetscImaginaryPart(eigs[perm[i]]);

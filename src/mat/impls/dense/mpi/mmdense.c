@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.36 2001/03/09 19:12:00 balay Exp balay $*/
+/*$Id: mmdense.c,v 1.37 2001/03/23 23:21:49 balay Exp bsmith $*/
 
 /*
    Support for the parallel dense matrix vector multiply
@@ -90,7 +90,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   MPI_Request   *s_waits1,*r_waits1,*s_waits2,*r_waits2;
   MPI_Status    *r_status1,*r_status2,*s_status1,*s_status2;
   MPI_Comm      comm;
-  Scalar        **rbuf2,**sbuf2;
+  PetscScalar        **rbuf2,**sbuf2;
 
   PetscFunctionBegin;
   comm   = C->comm;
@@ -255,11 +255,11 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
 
   /* Post recieves to capture the row_data from other procs */
   ierr  = PetscMalloc((nrqs+1)*sizeof(MPI_Request),&r_waits2);CHKERRQ(ierr);
-  ierr  = PetscMalloc((nrqs+1)*sizeof(Scalar*),&rbuf2);CHKERRQ(ierr);
+  ierr  = PetscMalloc((nrqs+1)*sizeof(PetscScalar*),&rbuf2);CHKERRQ(ierr);
   for (i=0; i<nrqs; i++) {
     j        = pa[i];
     count    = (w1[j] - (2*sbuf1[j][0] + 1))*N;
-    ierr     = PetscMalloc((count+1)*sizeof(Scalar),&rbuf2[i]);CHKERRQ(ierr);
+    ierr     = PetscMalloc((count+1)*sizeof(PetscScalar),&rbuf2[i]);CHKERRQ(ierr);
     ierr     = MPI_Irecv(rbuf2[i],count,MPIU_SCALAR,j,tag1,comm,r_waits2+i);CHKERRQ(ierr);
   }
 
@@ -268,10 +268,10 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
 
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits2);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&r_status1);CHKERRQ(ierr);
-  ierr = PetscMalloc((nrqr+1)*sizeof(Scalar*),&sbuf2);CHKERRQ(ierr);
+  ierr = PetscMalloc((nrqr+1)*sizeof(PetscScalar*),&sbuf2);CHKERRQ(ierr);
  
   {
-    Scalar *sbuf2_i,*v_start;
+    PetscScalar *sbuf2_i,*v_start;
     int    s_proc;
     for (i=0; i<nrqr; ++i) {
       ierr = MPI_Waitany(nrqr,r_waits1,&index,r_status1+i);CHKERRQ(ierr);
@@ -282,7 +282,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
       start           = 2*rbuf1_i[0] + 1;
       ierr            = MPI_Get_count(r_status1+i,MPI_INT,&end);CHKERRQ(ierr);
       /* allocate memory sufficinet to hold all the row values */
-      ierr = PetscMalloc((end-start)*N*sizeof(Scalar),&sbuf2[index]);CHKERRQ(ierr);
+      ierr = PetscMalloc((end-start)*N*sizeof(PetscScalar),&sbuf2[index]);CHKERRQ(ierr);
       sbuf2_i      = sbuf2[index];
       /* Now pack the data */
       for (j=start; j<end; j++) {
@@ -312,7 +312,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
       if ((submats[i]->m != nrow[i]) || (submats[i]->n != ncol[i])) {
         SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong size");
       }
-      ierr = PetscMemzero(mat->v,submats[i]->m*submats[i]->n*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = PetscMemzero(mat->v,submats[i]->m*submats[i]->n*sizeof(PetscScalar));CHKERRQ(ierr);
       submats[i]->factor = C->factor;
     }
   } else {
@@ -324,7 +324,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   /* Assemble the matrices */
   {
     int    col;
-    Scalar *imat_v,*mat_v,*imat_vi,*mat_vi;
+    PetscScalar *imat_v,*mat_v,*imat_vi,*mat_vi;
   
     for (i=0; i<ismax; i++) {
       mat       = (Mat_SeqDense*)submats[i]->data;
@@ -369,7 +369,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
 
   {
     int    is_max,tmp1,col,*sbuf1_i,is_sz;
-    Scalar *rbuf2_i,*imat_v,*imat_vi;
+    PetscScalar *rbuf2_i,*imat_v,*imat_vi;
   
     for (tmp1=0; tmp1<nrqs; tmp1++) { /* For each message */
       ierr = MPI_Waitany(nrqs,r_waits2,&i,r_status2+tmp1);CHKERRQ(ierr);

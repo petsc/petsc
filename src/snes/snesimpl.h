@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.56 2001/01/15 21:47:47 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.57 2001/06/21 21:18:34 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -35,11 +35,11 @@ struct _p_SNES {
 
   /* ---------------- PETSc-provided (or user-provided) stuff ---------------------*/
 
-  int   (*monitor[MAXSNESMONITORS])(SNES,int,double,void*); /* monitor routine */
+  int   (*monitor[MAXSNESMONITORS])(SNES,int,PetscReal,void*); /* monitor routine */
   int   (*monitordestroy[MAXSNESMONITORS])(void*);          /* monitor context destroy routine */
   void  *monitorcontext[MAXSNESMONITORS];                   /* monitor context */
   int   numbermonitors;                                     /* number of monitors */
-  int   (*converged)(SNES,double,double,double,SNESConvergedReason*,void*);      /* convergence routine */
+  int   (*converged)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);      /* convergence routine */
   void  *cnvP;	                                            /* convergence context */
   SNESConvergedReason reason;
 
@@ -58,12 +58,12 @@ struct _p_SNES {
   int      nfuncs;             /* number of function evaluations */
   int      iter;               /* global iteration number */
   int      linear_its;         /* total number of linear solver iterations */
-  double   norm;               /* residual norm of current iterate
+  PetscReal   norm;               /* residual norm of current iterate
 				  (or gradient norm of current iterate) */
-  double   rtol;               /* relative tolerance */
-  double   atol;               /* absolute tolerance */
-  double   xtol;               /* relative tolerance in solution */
-  double   trunctol;           /* truncation tolerance */
+  PetscReal   rtol;               /* relative tolerance */
+  PetscReal   atol;               /* absolute tolerance */
+  PetscReal   xtol;               /* relative tolerance in solution */
+  PetscReal   trunctol;           /* truncation tolerance */
 
   /* ------------------------ Default work-area management ---------------------- */
 
@@ -72,7 +72,7 @@ struct _p_SNES {
 
   /* ------------------------- Miscellaneous Information ------------------------ */
 
-  double     *conv_hist;         /* If !0, stores function norm (or
+  PetscReal     *conv_hist;         /* If !0, stores function norm (or
                                     gradient norm) at each iteration */
   int        *conv_hist_its;     /* linear iterations for each Newton step */
   int        conv_hist_len;      /* size of convergence history array */
@@ -85,12 +85,12 @@ struct _p_SNES {
      with the nonlinear equations code.  We should find a better way to deal 
      with this; the naming conventions are confusing.  Perhaps use unions? */
 
-  int             (*computeumfunction)(SNES,Vec,double*,void*);
-  double          fc;                /* function value */
+  int             (*computeumfunction)(SNES,Vec,PetscReal*,void*);
+  PetscReal          fc;                /* function value */
   void            *umfunP;           /* function pointer */
   SNESProblemType method_class;      /* type of solver */
-  double          deltatol;          /* trust region convergence tolerance */
-  double          fmin;              /* minimum tolerance for function value */
+  PetscReal          deltatol;          /* trust region convergence tolerance */
+  PetscReal          fmin;              /* minimum tolerance for function value */
   int             set_method_called; /* flag indicating set_method has been called */
 
  /*
@@ -100,7 +100,7 @@ struct _p_SNES {
   PetscTruth  ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
   void        *kspconvctx;       /* KSP convergence context */
 
-  double      ttol;              /* used by default convergence test routine */
+  PetscReal      ttol;              /* used by default convergence test routine */
 
   Vec         *vwork;            /* more work vectors for Jacobian/Hessian approx */
   int         nvwork;
@@ -110,16 +110,16 @@ struct _p_SNES {
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
 typedef struct {
-  int    version;             /* flag indicating version 1 or 2 of test */
-  double rtol_0;              /* initial rtol */
-  double rtol_last;           /* last rtol */
-  double rtol_max;            /* maximum rtol */
-  double gamma;               /* mult. factor for version 2 rtol computation */
-  double alpha;               /* power for version 2 rtol computation */
-  double alpha2;              /* power for safeguard */
-  double threshold;           /* threshold for imposing safeguard */
-  double lresid_last;         /* linear residual from last iteration */
-  double norm_last;           /* function norm from last iteration */
+  int       version;             /* flag indicating version 1 or 2 of test */
+  PetscReal rtol_0;              /* initial rtol */
+  PetscReal rtol_last;           /* last rtol */
+  PetscReal rtol_max;            /* maximum rtol */
+  PetscReal gamma;               /* mult. factor for version 2 rtol computation */
+  PetscReal alpha;               /* power for version 2 rtol computation */
+  PetscReal alpha2;              /* power for safeguard */
+  PetscReal threshold;           /* threshold for imposing safeguard */
+  PetscReal lresid_last;         /* linear residual from last iteration */
+  PetscReal norm_last;           /* function norm from last iteration */
 } SNES_KSP_EW_ConvCtx;
 
 #define SNESLogConvHistory(snes,res,its) \
@@ -136,8 +136,8 @@ typedef struct {
 	  } \
 	}
 
-int SNES_KSP_EW_Converged_Private(KSP,int,double,KSPConvergedReason*,void*);
+int SNES_KSP_EW_Converged_Private(KSP,int,PetscReal,KSPConvergedReason*,void*);
 int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES,KSP);
-int SNESScaleStep_Private(SNES,Vec,double*,double*,double*,double*);
+int SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 #endif

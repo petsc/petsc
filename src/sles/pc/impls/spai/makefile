@@ -1,7 +1,8 @@
-# $Id: makefile,v 1.8 2000/10/24 20:26:32 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.9 2001/06/21 21:17:55 bsmith Exp bsmith $ 
 
-#requirespackage 'PETSC_HAVE_SPAI'
-#requireslanguage CONLY
+#requirespackage   'PETSC_HAVE_SPAI'
+#requireslanguage  CONLY
+#requiresprecision double
 
 ALL: lib
 

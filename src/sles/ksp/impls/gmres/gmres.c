@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.173 2001/06/21 21:18:19 bsmith Exp curfman $*/
+/*$Id: gmres.c,v 1.174 2001/07/03 03:34:41 curfman Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -34,7 +34,7 @@
 #define GMRES_DEFAULT_MAXK     30
 static int    GMRESGetNewVectors(KSP,int);
 static int    GMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal*);
-static int    BuildGmresSoln(Scalar*,Vec,Vec,KSP,int);
+static int    BuildGmresSoln(PetscScalar*,Vec,Vec,KSP,int);
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_GMRES"
@@ -53,7 +53,7 @@ int    KSPSetUp_GMRES(KSP ksp)
   hes           = (max_k + 1) * (max_k + 1);
   rs            = (max_k + 2);
   cc            = (max_k + 1);
-  size          = (hh + hes + rs + 2*cc) * sizeof(Scalar);
+  size          = (hh + hes + rs + 2*cc) * sizeof(PetscScalar);
 
   ierr = PetscMalloc(size,&gmres->hh_origin);CHKERRQ(ierr);
   ierr = PetscMemzero(gmres->hh_origin,size);CHKERRQ(ierr);
@@ -65,7 +65,7 @@ int    KSPSetUp_GMRES(KSP ksp)
 
   if (ksp->calc_sings) {
     /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
-    size = (max_k + 3)*(max_k + 9)*sizeof(Scalar);
+    size = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
     ierr = PetscMalloc(size,&gmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
     PetscLogObjectMemory(ksp,size+5*(max_k+2)*sizeof(PetscReal));
@@ -292,7 +292,7 @@ int KSPDestroy_GMRES(KSP ksp)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "BuildGmresSoln"
-static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
+static int BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
 {
   Scalar    tt,zero = 0.0,one = 1.0;
   int       ierr,ii,k,j;
@@ -445,8 +445,8 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
   }
   if (!gmres->nrs) {
     /* allocate the work area */
-    ierr = PetscMalloc(gmres->max_k*sizeof(Scalar),&gmres->nrs);CHKERRQ(ierr);
-    PetscLogObjectMemory(ksp,gmres->max_k*sizeof(Scalar));
+    ierr = PetscMalloc(gmres->max_k*sizeof(PetscScalar),&gmres->nrs);CHKERRQ(ierr);
+    PetscLogObjectMemory(ksp,gmres->max_k*sizeof(PetscScalar));
   }
 
   ierr = BuildGmresSoln(gmres->nrs,VEC_SOLN,ptr,ksp,gmres->it);CHKERRQ(ierr);
@@ -529,15 +529,15 @@ int KSPGMRESKrylovMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
 int KSPSetFromOptions_GMRES(KSP ksp)
 {
   int        ierr,restart;
-  double     haptol;
-  KSP_GMRES *gmres = (KSP_GMRES*)ksp->data;
+  PetscReal  haptol;
+  KSP_GMRES  *gmres = (KSP_GMRES*)ksp->data;
   PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP GMRES Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ksp_gmres_restart","Number of Krylov search directions","KSPGMRESSetRestart",gmres->max_k,&restart,&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
-    ierr = PetscOptionsDouble("-ksp_gmres_haptol","Tolerance for exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ksp_gmres_haptol","Tolerance for exact convergence (happy ending)","KSPGMRESSetHapTol",gmres->haptol,&haptol,&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
     ierr = PetscOptionsName("-ksp_gmres_preallocate","Preallocate Krylov vectors","KSPGMRESSetPreAllocateVectors",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.9 2001/03/23 23:25:53 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.10 2001/06/21 21:19:47 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -19,7 +19,7 @@ T*/
 
 #undef __FUNCT__
 #define __FUNCT__ "myfunction"
-int myfunction(void *ctx,int n,Scalar *xy,Scalar *u)
+int myfunction(void *ctx,int n,PetscScalar *xy,PetscScalar *u)
 {
   int i;
 

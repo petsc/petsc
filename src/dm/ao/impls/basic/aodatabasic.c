@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.61 2001/01/20 03:36:46 bsmith Exp balay $*/
+/*$Id: aodatabasic.c,v 1.62 2001/03/23 23:24:52 balay Exp bsmith $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -164,7 +164,7 @@ int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
             ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
           }
         } else if (segment->datatype == PETSC_DOUBLE) {
-          double *mdata = (double*)segment->data;
+          PetscReal *mdata = (PetscReal*)segment->data;
           for (k=0; k<key->N; k++) {
             ierr = PetscViewerASCIIPrintf(viewer," %d: ",k);CHKERRQ(ierr);
             for (l=0; l<segment->bs; l++) {
@@ -173,7 +173,7 @@ int AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
             ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
           }
         } else if (segment->datatype == PETSC_SCALAR) {
-          Scalar *mdata = (Scalar*)segment->data;
+          Scalar *mdata = (PetscScalar*)segment->data;
           for (k=0; k<key->N; k++) {
             ierr = PetscViewerASCIIPrintf(viewer," %d: ",k);CHKERRQ(ierr);
             for (l=0; l<segment->bs; l++) {
@@ -500,7 +500,7 @@ int AODataSegmentGetExtrema_Basic(AOData ao,char *name,char *segname,void *xmax,
       }
     }
   } else if (segment->datatype == PETSC_DOUBLE) {
-    double *vmax = (double*)xmax,*vmin = (double*)xmin,*values = (double*)segment->data;
+    PetscReal *vmax = (PetscReal*)xmax,*vmin = (PetscReal*)xmin,*values = (PetscReal*)segment->data;
     for (j=0; j<bs; j++) {
       vmax[j] = vmin[j] = values[j];
     }

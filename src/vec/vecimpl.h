@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.84 2001/07/20 21:17:46 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.85 2001/08/06 16:29:19 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -32,11 +32,11 @@ struct _VecOps {
   int  (*duplicate)(Vec,Vec*),              /* get single vector */
        (*duplicatevecs)(Vec,int,Vec**),     /* get array of vectors */
        (*destroyvecs)(const Vec[],int),     /* free array of vectors */
-       (*dot)(Vec,Vec,Scalar*),             /* z = x^H * y */
-       (*mdot)(int,Vec,const Vec[],Scalar*), /* z[j] = x dot y[j] */
+       (*dot)(Vec,Vec,PetscScalar*),             /* z = x^H * y */
+       (*mdot)(int,Vec,const Vec[],PetscScalar*), /* z[j] = x dot y[j] */
        (*norm)(Vec,NormType,PetscReal*),        /* z = sqrt(x^H * x) */
-       (*tdot)(Vec,Vec,Scalar*),             /* x'*y */
-       (*mtdot)(int,Vec,const Vec[],Scalar*),/* z[j] = x dot y[j] */
+       (*tdot)(Vec,Vec,PetscScalar*),             /* x'*y */
+       (*mtdot)(int,Vec,const Vec[],PetscScalar*),/* z[j] = x dot y[j] */
        (*scale)(const Scalar*,Vec),          /* x = alpha * x   */
        (*copy)(Vec,Vec),                     /* y = x */
        (*set)(const Scalar*,Vec),            /* y = alpha  */
@@ -51,11 +51,11 @@ struct _VecOps {
        (*setvalues)(Vec,int,const int[],const Scalar[],InsertMode),
        (*assemblybegin)(Vec),                /* start global assembly */
        (*assemblyend)(Vec),                  /* end global assembly */
-       (*getarray)(Vec,Scalar**),            /* get data array */
+       (*getarray)(Vec,PetscScalar**),            /* get data array */
        (*getsize)(Vec,int*),
        (*getlocalsize)(Vec,int*),
        (*getownershiprange)(Vec,int*,int*),
-       (*restorearray)(Vec,Scalar**),        /* restore data array */
+       (*restorearray)(Vec,PetscScalar**),        /* restore data array */
        (*max)(Vec,int*,PetscReal*),      /* z = max(x); idx=index of max(x) */
        (*min)(Vec,int*,PetscReal*),      /* z = min(x); idx=index of min(x) */
        (*setrandom)(PetscRandom,Vec),        /* set y[j] = random numbers */
@@ -66,8 +66,8 @@ struct _VecOps {
        (*placearray)(Vec,const Scalar*),     /* place data array */
        (*replacearray)(Vec,const Scalar*),     /* replace data array */
        (*getmap)(Vec,PetscMap*),
-       (*dot_local)(Vec,Vec,Scalar*),
-       (*tdot_local)(Vec,Vec,Scalar*),
+       (*dot_local)(Vec,Vec,PetscScalar*),
+       (*tdot_local)(Vec,Vec,PetscScalar*),
        (*norm_local)(Vec,NormType,PetscReal*),
        (*loadintovector)(PetscViewer,Vec),
        (*reciprocal)(Vec),
@@ -221,14 +221,14 @@ EXTERN int VecStashScatterEnd_Private(VecStash*);
 EXTERN int VecStashSetInitialSize_Private(VecStash*,int);
 EXTERN int VecStashGetInfo_Private(VecStash*,int*,int*);
 EXTERN int VecStashScatterBegin_Private(VecStash*,int*);
-EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
+EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,PetscScalar**,int*);
 
 /* 
    The following are implemented as macros to avoid the function
    call overhead.
 
-   extern int VecStashValue_Private(VecStash*,int,Scalar);
-   extern int VecStashValuesBlocked_Private(VecStash*,int,Scalar*);
+   extern int VecStashValue_Private(VecStash*,int,PetscScalar);
+   extern int VecStashValuesBlocked_Private(VecStash*,int,PetscScalar*);
 */
 
 /*
@@ -273,7 +273,7 @@ EXTERN int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
 
 EXTERN int VecReciprocal_Default(Vec);
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
 EXTERN int VecMatlabEnginePut_Default(PetscObject,void*);
 EXTERN int VecMatlabEngineGet_Default(PetscObject,void*);

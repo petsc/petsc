@@ -1,4 +1,4 @@
-/* $Id: petscdraw.h,v 1.75 2001/01/15 21:43:21 bsmith Exp bsmith $ */
+/* $Id: petscdraw.h,v 1.76 2001/04/10 19:34:12 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -104,30 +104,30 @@ EXTERN int PetscDrawGetPopup(PetscDraw,PetscDraw*);
 EXTERN int PetscDrawCheckResizedWindow(PetscDraw);
 EXTERN int PetscDrawResizeWindow(PetscDraw,int,int);
 
-EXTERN int PetscDrawScalePopup(PetscDraw,double min,double max); 
+EXTERN int PetscDrawScalePopup(PetscDraw,PetscReal min,PetscReal max); 
 
-EXTERN int PetscDrawLine(PetscDraw,double,double,double,double,int);
-EXTERN int PetscDrawLineSetWidth(PetscDraw,double);
-EXTERN int PetscDrawLineGetWidth(PetscDraw,double*);
+EXTERN int PetscDrawLine(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
+EXTERN int PetscDrawLineSetWidth(PetscDraw,PetscReal);
+EXTERN int PetscDrawLineGetWidth(PetscDraw,PetscReal*);
 
-EXTERN int PetscDrawPoint(PetscDraw,double,double,int);
-EXTERN int PetscDrawPointSetSize(PetscDraw,double);
+EXTERN int PetscDrawPoint(PetscDraw,PetscReal,PetscReal,int);
+EXTERN int PetscDrawPointSetSize(PetscDraw,PetscReal);
 
-EXTERN int PetscDrawRectangle(PetscDraw,double,double,double,double,int,int,int,int);
-EXTERN int PetscDrawTriangle(PetscDraw,double,double,double,double,double,double,int,int,int);
-EXTERN int PetscDrawTensorContourPatch(PetscDraw,int,int,double*,double*,double,double,Scalar*);
-EXTERN int PetscDrawTensorContour(PetscDraw,int,int,const double[],const double[],Scalar *);
+EXTERN int PetscDrawRectangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int,int);
+EXTERN int PetscDrawTriangle(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,int,int,int);
+EXTERN int PetscDrawTensorContourPatch(PetscDraw,int,int,PetscReal*,PetscReal*,PetscReal,PetscReal,PetscScalar*);
+EXTERN int PetscDrawTensorContour(PetscDraw,int,int,const PetscReal[],const PetscReal[],PetscScalar *);
 
-EXTERN int PetscDrawString(PetscDraw,double,double,int,char*);
-EXTERN int PetscDrawStringVertical(PetscDraw,double,double,int,char*);
-EXTERN int PetscDrawStringSetSize(PetscDraw,double,double);
-EXTERN int PetscDrawStringGetSize(PetscDraw,double*,double*);
+EXTERN int PetscDrawString(PetscDraw,PetscReal,PetscReal,int,char*);
+EXTERN int PetscDrawStringVertical(PetscDraw,PetscReal,PetscReal,int,char*);
+EXTERN int PetscDrawStringSetSize(PetscDraw,PetscReal,PetscReal);
+EXTERN int PetscDrawStringGetSize(PetscDraw,PetscReal*,PetscReal*);
 
-EXTERN int PetscDrawSetViewPort(PetscDraw,double,double,double,double);
+EXTERN int PetscDrawSetViewPort(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
 EXTERN int PetscDrawSplitViewPort(PetscDraw);
 
-EXTERN int PetscDrawSetCoordinates(PetscDraw,double,double,double,double);
-EXTERN int PetscDrawGetCoordinates(PetscDraw,double*,double*,double*,double*);
+EXTERN int PetscDrawSetCoordinates(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
+EXTERN int PetscDrawGetCoordinates(PetscDraw,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 EXTERN int PetscDrawSetTitle(PetscDraw,char *);
 EXTERN int PetscDrawAppendTitle(PetscDraw,char *);
@@ -136,7 +136,7 @@ EXTERN int PetscDrawGetTitle(PetscDraw,char **);
 EXTERN int PetscDrawSetPause(PetscDraw,int);
 EXTERN int PetscDrawGetPause(PetscDraw,int*);
 EXTERN int PetscDrawPause(PetscDraw);
-EXTERN int PetscDrawSetDoubleBuffer(PetscDraw);
+EXTERN int PetscDrawSetPetscRealBuffer(PetscDraw);
 EXTERN int PetscDrawFlush(PetscDraw);
 EXTERN int PetscDrawSynchronizedFlush(PetscDraw);
 EXTERN int PetscDrawClear(PetscDraw);
@@ -156,8 +156,8 @@ EXTERN int PetscDrawRestoreSingleton(PetscDraw,PetscDraw*);
 E*/
 typedef enum {BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT } PetscDrawButton;
 
-EXTERN int PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,double*,double *,double *,double *);
-EXTERN int PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,double*,double *,double *,double *);
+EXTERN int PetscDrawGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
+EXTERN int PetscDrawSynchronizedGetMouseButton(PetscDraw,PetscDrawButton *,PetscReal*,PetscReal *,PetscReal *,PetscReal *);
 
 EXTERN int PetscDrawZoom(PetscDraw,int (*)(PetscDraw,void *),void *);
 
@@ -172,7 +172,7 @@ EXTERN int PetscDrawZoom(PetscDraw,int (*)(PetscDraw,void *),void *);
 S*/
 typedef struct {
   int       nports;
-  double    *xl,*xr,*yl,*yr;
+  PetscReal    *xl,*xr,*yl,*yr;
   PetscDraw draw;
 } PetscDrawViewPorts;
 EXTERN int PetscDrawViewPortsCreate(PetscDraw,int,PetscDrawViewPorts**);
@@ -194,7 +194,7 @@ typedef struct _p_DrawAxis* PetscDrawAxis;
 EXTERN int PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
 EXTERN int PetscDrawAxisDestroy(PetscDrawAxis);
 EXTERN int PetscDrawAxisDraw(PetscDrawAxis);
-EXTERN int PetscDrawAxisSetLimits(PetscDrawAxis,double,double,double,double);
+EXTERN int PetscDrawAxisSetLimits(PetscDrawAxis,PetscReal,PetscReal,PetscReal,PetscReal);
 EXTERN int PetscDrawAxisSetColors(PetscDrawAxis,int,int,int);
 EXTERN int PetscDrawAxisSetLabels(PetscDrawAxis,char*,char*,char*);
 
@@ -212,15 +212,15 @@ typedef struct _p_DrawLG*   PetscDrawLG;
 #define DRAWLG_COOKIE PETSC_COOKIE+7
 EXTERN int PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
 EXTERN int PetscDrawLGDestroy(PetscDrawLG);
-EXTERN int PetscDrawLGAddPoint(PetscDrawLG,double*,double*);
-EXTERN int PetscDrawLGAddPoints(PetscDrawLG,int,double**,double**);
+EXTERN int PetscDrawLGAddPoint(PetscDrawLG,PetscReal*,PetscReal*);
+EXTERN int PetscDrawLGAddPoints(PetscDrawLG,int,PetscReal**,PetscReal**);
 EXTERN int PetscDrawLGDraw(PetscDrawLG);
 EXTERN int PetscDrawLGReset(PetscDrawLG);
 EXTERN int PetscDrawLGSetDimension(PetscDrawLG,int);
 EXTERN int PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
 EXTERN int PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
 EXTERN int PetscDrawLGIndicateDataPoints(PetscDrawLG);
-EXTERN int PetscDrawLGSetLimits(PetscDrawLG,double,double,double,double); 
+EXTERN int PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscReal); 
 
 /*S
      PetscDrawSP - Manages drawing scatter plots
@@ -236,14 +236,14 @@ typedef struct _p_DrawSP*   PetscDrawSP;
 #define DRAWSP_COOKIE PETSC_COOKIE+27
 EXTERN int PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
 EXTERN int PetscDrawSPDestroy(PetscDrawSP);
-EXTERN int PetscDrawSPAddPoint(PetscDrawSP,double*,double*);
-EXTERN int PetscDrawSPAddPoints(PetscDrawSP,int,double**,double**);
+EXTERN int PetscDrawSPAddPoint(PetscDrawSP,PetscReal*,PetscReal*);
+EXTERN int PetscDrawSPAddPoints(PetscDrawSP,int,PetscReal**,PetscReal**);
 EXTERN int PetscDrawSPDraw(PetscDrawSP);
 EXTERN int PetscDrawSPReset(PetscDrawSP);
 EXTERN int PetscDrawSPSetDimension(PetscDrawSP,int);
 EXTERN int PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis *);
 EXTERN int PetscDrawSPGetDraw(PetscDrawSP,PetscDraw *);
-EXTERN int PetscDrawSPSetLimits(PetscDrawSP,double,double,double,double); 
+EXTERN int PetscDrawSPSetLimits(PetscDrawSP,PetscReal,PetscReal,PetscReal,PetscReal); 
 
 /*S
      PetscDrawHG - Manages drawing histograms
@@ -259,12 +259,12 @@ typedef struct _p_DrawHG*   PetscDrawHG;
 #define DRAWHG_COOKIE PETSC_COOKIE+15
 EXTERN int PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
 EXTERN int PetscDrawHGDestroy(PetscDrawHG);
-EXTERN int PetscDrawHGAddValue(PetscDrawHG,double);
+EXTERN int PetscDrawHGAddValue(PetscDrawHG,PetscReal);
 EXTERN int PetscDrawHGDraw(PetscDrawHG);
 EXTERN int PetscDrawHGReset(PetscDrawHG);
 EXTERN int PetscDrawHGGetAxis(PetscDrawHG,PetscDrawAxis *);
 EXTERN int PetscDrawHGGetDraw(PetscDrawHG,PetscDraw *);
-EXTERN int PetscDrawHGSetLimits(PetscDrawHG,double,double,int,int);
+EXTERN int PetscDrawHGSetLimits(PetscDrawHG,PetscReal,PetscReal,int,int);
 EXTERN int PetscDrawHGSetNumberBins(PetscDrawHG,int);
 EXTERN int PetscDrawHGSetColor(PetscDrawHG,int);
 
@@ -276,13 +276,13 @@ EXTERN int PetscViewerDrawGetDrawLG(PetscViewer,int,PetscDrawLG*);
 EXTERN int PetscViewerDrawGetDrawAxis(PetscViewer,int,PetscDrawAxis*);
 
 EXTERN int PetscDrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
-EXTERN int PetscDrawUtilitySetGamma(double);
+EXTERN int PetscDrawUtilitySetGamma(PetscReal);
 
 /* Mesh management routines */
 typedef struct _p_DrawMesh* PetscDrawMesh;
-int PetscDrawMeshCreate(PetscDrawMesh *,double *,double *,double *,
-		        int,int,int,int,int,int,int,int,int,int,int,int,int,double *,int);
-int PetscDrawMeshCreateSimple(PetscDrawMesh *,double *,double *,double *,int,int,int,int,double *,int);
+int PetscDrawMeshCreate(PetscDrawMesh *,PetscReal *,PetscReal *,PetscReal *,
+		        int,int,int,int,int,int,int,int,int,int,int,int,int,PetscReal *,int);
+int PetscDrawMeshCreateSimple(PetscDrawMesh *,PetscReal *,PetscReal *,PetscReal *,int,int,int,int,PetscReal *,int);
 int PetscDrawMeshDestroy(PetscDrawMesh *);
 
 

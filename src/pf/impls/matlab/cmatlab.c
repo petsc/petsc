@@ -1,4 +1,4 @@
-/*$Id: cmatlab.c,v 1.6 2001/01/15 21:49:45 bsmith Exp balay $*/
+/*$Id: cmatlab.c,v 1.7 2001/03/23 23:25:52 balay Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -42,7 +42,7 @@ int PFDestroy_Matlab(void *value)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Matlab"
-int PFApply_Matlab(void *value,int n,Scalar *in,Scalar *out)
+int PFApply_Matlab(void *value,int n,PetscScalar *in,PetscScalar *out)
 {
   PF_Matlab  *matlab = (PF_Matlab*)value;
   int        ierr;

@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.29 2001/03/23 23:23:50 balay Exp bsmith $*/
+/*$Id: ex14.c,v 1.30 2001/04/10 19:36:37 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
 
@@ -119,7 +119,7 @@ int main(int argc,char **argv)
   user.mx = 4; user.my = 4; user.param = 6.0;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRQ(1,"Lambda is out of range");
   }

@@ -1,4 +1,4 @@
-/*$Id: memc.c,v 1.66 2001/01/15 21:44:00 bsmith Exp balay $*/
+/*$Id: memc.c,v 1.67 2001/03/23 23:20:45 balay Exp bsmith $*/
 /*
     We define the memory operations here. The reason we just do not use 
   the standard memory routines in the PETSc code is that on some machines 
@@ -73,7 +73,7 @@ int PetscMemcpy(void *a,const void *b,int n)
   if (!(((long) a) % 4) && !(n % 8)) {
 #endif
     int one = 1;
-    dcopy_(&n,(Scalar *)a,&one,(Scalar *)b,&one);
+    dcopy_(&n,(PetscScalar *)a,&one,(PetscScalar *)b,&one);
   } else {
     memcpy((char*)(a),(char*)(b),n);
   }

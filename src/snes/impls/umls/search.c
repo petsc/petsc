@@ -1,4 +1,4 @@
-/*$Id: search.c,v 1.26 2001/01/15 21:47:59 bsmith Exp balay $*/
+/*$Id: search.c,v 1.27 2001/03/23 23:24:18 balay Exp bsmith $*/
 
 /*
      The subroutine mcstep is taken from the work of Jorge Nocedal.
@@ -65,12 +65,12 @@ nc
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESStep"
-int SNESStep(SNES snes,double *stx,double *fx,double *dx,
-    double *sty,double *fy,double *dy,double *stp,double *fp,double *dp)
+int SNESStep(SNES snes,PetscReal *stx,PetscReal *fx,PetscReal *dx,
+    PetscReal *sty,PetscReal *fy,PetscReal *dy,PetscReal *stp,PetscReal *fp,PetscReal *dp)
 {
   SNES_UM_LS *neP = (SNES_UM_LS*)snes->data;
-  double     gamma1,p,q,r,s,sgnd,stpc,stpf,stpq,theta;
-  double     two = 2.0,zero = 0.0;
+  PetscReal     gamma1,p,q,r,s,sgnd,stpc,stpf,stpq,theta;
+  PetscReal     two = 2.0,zero = 0.0;
   int        bound;
 
   PetscFunctionBegin;

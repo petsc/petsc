@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.34 2001/07/17 20:26:03 bsmith Exp bsmith $*/
+/*$Id: wp.c,v 1.35 2001/07/20 21:25:24 bsmith Exp bsmith $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -47,7 +47,7 @@ typedef struct {
 .   h - the scale computed
 
 */
-static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
+static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 {
   MatSNESMFWP   *hctx = (MatSNESMFWP*)ctx->hctx;
   PetscReal     normU,norma = 1.0;

@@ -1,4 +1,4 @@
-/*$Id: lusol.c,v 1.9 2001/04/09 15:37:46 bsmith Exp bsmith $*/
+/*$Id: lusol.c,v 1.10 2001/04/09 15:38:01 bsmith Exp bsmith $*/
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -37,7 +37,7 @@ void PETSC_STDCALL M6RDEL() {
 }
 EXTERN_C_END
 
-#if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_LUSOL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 
 EXTERN_C_BEGIN
 extern void PETSC_STDCALL LU1FAC (int *m, int *n, int *nnz, int *size, int *luparm,

@@ -1,12 +1,12 @@
-/*$Id: ex12.c,v 1.26 2001/01/23 20:55:11 balay Exp balay $*/
+/*$Id: ex12.c,v 1.27 2001/03/23 23:22:29 balay Exp bsmith $*/
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";
 
 #include "petscmat.h"
 
-EXTERN int TestMatZeroRows_Basic(Mat,IS,Scalar *);
-EXTERN int TestMatZeroRows_with_no_allocation(Mat,IS,Scalar *);
+EXTERN int TestMatZeroRows_Basic(Mat,IS,PetscScalar *);
+EXTERN int TestMatZeroRows_with_no_allocation(Mat,IS,PetscScalar *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -79,7 +79,7 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_Basic"
-int TestMatZeroRows_Basic(Mat A,IS is,Scalar *diag)
+int TestMatZeroRows_Basic(Mat A,IS is,PetscScalar *diag)
 {
   Mat        B;
   int        ierr;
@@ -101,7 +101,7 @@ int TestMatZeroRows_Basic(Mat A,IS is,Scalar *diag)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_with_no_allocation"
-int TestMatZeroRows_with_no_allocation(Mat A,IS is,Scalar *diag)
+int TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar *diag)
 {
   Mat         B;
   int         ierr;

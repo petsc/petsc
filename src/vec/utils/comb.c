@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.35 2001/01/15 21:44:37 bsmith Exp balay $*/
+/*$Id: comb.c,v 1.36 2001/03/23 23:21:18 balay Exp bsmith $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -8,10 +8,10 @@
    Victor Eijkhout.
 
        Usage:
-             VecDotBegin(Vec,Vec,Scalar *);
+             VecDotBegin(Vec,Vec,PetscScalar *);
              VecNormBegin(Vec,NormType,PetscReal *);
              ....
-             VecDotEnd(Vec,Vec,Scalar *);
+             VecDotEnd(Vec,Vec,PetscScalar *);
              VecNormEnd(Vec,NormType,PetscReal *);
 
        Limitations: 
@@ -31,8 +31,8 @@
 
 typedef struct {
   MPI_Comm comm;
-  Scalar   *lvalues;    /* this are the reduced values before call to MPI_Allreduce() */
-  Scalar   *gvalues;    /* values after call to MPI_Allreduce() */
+  PetscScalar   *lvalues;    /* this are the reduced values before call to MPI_Allreduce() */
+  PetscScalar   *gvalues;    /* values after call to MPI_Allreduce() */
   void     **invecs;     /* for debugging only, vector/memory used with each op */
   int      *reducetype; /* is particular value to be summed or maxed? */
   int      state;       /* are we calling xxxBegin() or xxxEnd()? */
@@ -62,8 +62,8 @@ int PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReduction **sr)
   (*sr)->numopsend   = 0;
   (*sr)->state       = STATE_BEGIN;
   (*sr)->maxops      = 32;
-  ierr               = PetscMalloc(2*32*sizeof(Scalar),&(*sr)->lvalues);CHKERRQ(ierr);
-  ierr               = PetscMalloc(2*32*sizeof(Scalar),&(*sr)->gvalues);CHKERRQ(ierr);
+  ierr               = PetscMalloc(2*32*sizeof(PetscScalar),&(*sr)->lvalues);CHKERRQ(ierr);
+  ierr               = PetscMalloc(2*32*sizeof(PetscScalar),&(*sr)->gvalues);CHKERRQ(ierr);
   ierr               = PetscMalloc(32*sizeof(void*),&(*sr)->invecs);CHKERRQ(ierr);
   (*sr)->comm        = comm;
   ierr               = PetscMalloc(32*sizeof(int),&(*sr)->reducetype);CHKERRQ(ierr);
@@ -83,7 +83,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscSplitReduction_Local"
 void PetscSplitReduction_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
-  Scalar *xin = (Scalar *)in,*xout = (Scalar*)out;
+  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   int    i,count = *cnt;
 
   PetscFunctionBegin;
@@ -120,7 +120,7 @@ EXTERN_C_END
 int PetscSplitReductionApply(PetscSplitReduction *sr)
 {
   int        size,ierr,i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
-  Scalar     *lvalues = sr->lvalues,*gvalues = sr->gvalues;
+  PetscScalar     *lvalues = sr->lvalues,*gvalues = sr->gvalues;
   int        sum_flg = 0,max_flg = 0, min_flg = 0;
   MPI_Comm   comm = sr->comm;
 
@@ -132,7 +132,7 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
   ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr); 
   if (size == 1) {
-    ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
     /* determine if all reductions are sum, max, or min */
     for (i=0; i<numops; i++) {
@@ -198,17 +198,17 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
 int PetscSplitReductionExtend(PetscSplitReduction *sr)
 {
   int    maxops = sr->maxops,*reducetype = sr->reducetype,ierr;
-  Scalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
+  PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
   void   *invecs = sr->invecs;
 
   PetscFunctionBegin;
   sr->maxops     = 2*maxops;
-  ierr = PetscMalloc(2*2*maxops*sizeof(Scalar),&sr->lvalues);CHKERRQ(ierr);
-  ierr = PetscMalloc(2*2*maxops*sizeof(Scalar),&sr->gvalues);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*2*maxops*sizeof(PetscScalar),&sr->lvalues);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*2*maxops*sizeof(PetscScalar),&sr->gvalues);CHKERRQ(ierr);
   ierr = PetscMalloc(2*maxops*sizeof(int),&sr->reducetype);CHKERRQ(ierr);
   ierr = PetscMalloc(2*maxops*sizeof(void*),&sr->invecs);CHKERRQ(ierr);
-  ierr = PetscMemcpy(sr->lvalues,lvalues,maxops*sizeof(Scalar));CHKERRQ(ierr);
-  ierr = PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(sr->lvalues,lvalues,maxops*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->reducetype,reducetype,maxops*sizeof(int));CHKERRQ(ierr);
   ierr = PetscMemcpy(sr->invecs,invecs,maxops*sizeof(void*));CHKERRQ(ierr);
   ierr = PetscFree(lvalues);CHKERRQ(ierr);
@@ -312,7 +312,7 @@ int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
 seealso: VecDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
          VecTDotBegin(), VecTDotEnd()
 @*/
-int VecDotBegin(Vec x,Vec y,Scalar *result) 
+int VecDotBegin(Vec x,Vec y,PetscScalar *result) 
 {
   int                 ierr;
   PetscSplitReduction *sr;
@@ -355,7 +355,7 @@ seealso: VecDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMD
          VecTDotBegin(),VecTDotEnd()
 
 @*/
-int VecDotEnd(Vec x,Vec y,Scalar *result) 
+int VecDotEnd(Vec x,Vec y,PetscScalar *result) 
 {
   int                 ierr;
   PetscSplitReduction *sr;
@@ -411,7 +411,7 @@ seealso: VecTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDo
          VecDotBegin(), VecDotEnd()
 
 @*/
-int VecTDotBegin(Vec x,Vec y,Scalar *result) 
+int VecTDotBegin(Vec x,Vec y,PetscScalar *result) 
 {
   int                 ierr;
   PetscSplitReduction *sr;
@@ -453,7 +453,7 @@ int VecTDotBegin(Vec x,Vec y,Scalar *result)
 seealso: VecTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
          VecDotBegin(), VecDotEnd()
 @*/
-int VecTDotEnd(Vec x,Vec y,Scalar *result) 
+int VecTDotEnd(Vec x,Vec y,PetscScalar *result) 
 {
   int               ierr;
 

@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.18 2001/03/23 23:21:30 balay Exp bsmith $*/
+/*$Id: ex24.c,v 1.19 2001/04/10 19:35:02 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
   for (i=0; i<bs*n*size; i++) {
-    value = (Scalar) i;
+    value = (PetscScalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);

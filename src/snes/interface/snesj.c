@@ -1,4 +1,4 @@
-/*$Id: snesj.c,v 1.70 2001/03/09 20:56:59 bsmith Exp balay $*/
+/*$Id: snesj.c,v 1.71 2001/03/23 23:24:07 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"    /*I  "petscsnes.h"  I*/
 
@@ -49,7 +49,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   int      (*eval_fct)(SNES,Vec,Vec)=0;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetDouble(snes->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(snes->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) eval_fct = SNESComputeFunction;
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) eval_fct = SNESComputeGradient;
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid method class");

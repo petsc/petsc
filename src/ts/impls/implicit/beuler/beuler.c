@@ -1,4 +1,4 @@
-/*$Id: beuler.c,v 1.56 2001/04/04 16:56:38 balay Exp bsmith $*/
+/*$Id: beuler.c,v 1.57 2001/06/21 21:18:59 bsmith Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -18,7 +18,7 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_BEuler_Linear_Constant_Matrix"
-static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *ptime)
+static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
 {
   TS_BEuler *beuler = (TS_BEuler*)ts->data;
   Vec       sol = ts->vec_sol,update = beuler->update;
@@ -57,7 +57,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,double *ptime)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_BEuler_Linear_Variable_Matrix"
-static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *ptime)
+static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
 {
   TS_BEuler    *beuler = (TS_BEuler*)ts->data;
   Vec          sol = ts->vec_sol,update = beuler->update,rhs = beuler->rhs;
@@ -109,7 +109,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *ptime)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_BEuler_Nonlinear"
-static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *ptime)
+static int TSStep_BEuler_Nonlinear(TS ts,int *steps,PetscReal *ptime)
 {
   Vec       sol = ts->vec_sol;
   int       ierr,i,max_steps = ts->max_steps,its,lits;

@@ -1,4 +1,4 @@
-/*$Id: index.c,v 1.83 2001/05/24 21:02:54 bsmith Exp bsmith $*/
+/*$Id: index.c,v 1.84 2001/06/21 21:15:50 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
@@ -493,7 +493,7 @@ int ISDuplicate(IS is,IS *newIS)
 
     Example of Usage: 
 .vb
-    Scalar, pointer xx_v(:)
+    PetscScalar, pointer xx_v(:)
     ....
     call ISGetIndicesF90(x,xx_v,ierr)
     a = xx_v(3)
@@ -531,7 +531,7 @@ M*/
 
     Example of Usage: 
 .vb
-    Scalar, pointer xx_v(:)
+    PetscScalar, pointer xx_v(:)
     ....
     call ISGetIndicesF90(x,xx_v,ierr)
     a = xx_v(3)
@@ -565,7 +565,7 @@ M*/
 -   ierr - error code
     Example of Usage: 
 .vb
-    Scalar, pointer xx_v(:)
+    PetscScalar, pointer xx_v(:)
     ....
     call ISBlockGetIndicesF90(x,xx_v,ierr)
     a = xx_v(3)
@@ -602,7 +602,7 @@ M*/
 
     Example of Usage: 
 .vb
-    Scalar, pointer xx_v(:)
+    PetscScalar, pointer xx_v(:)
     ....
     call ISBlockGetIndicesF90(x,xx_v,ierr)
     a = xx_v(3)

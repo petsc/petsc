@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.20 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex22.c,v 1.21 2001/03/23 23:21:30 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
 
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&is1);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,(n*(rank+1))%N,1,&is2);CHKERRQ(ierr);
 
-  value = (Scalar)(rank+1); 
+  value = (PetscScalar)(rank+1); 
   ierr = VecSet(&value,x);CHKERRQ(ierr);
   ierr = VecSet(&zero,y);CHKERRQ(ierr);
 

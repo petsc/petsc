@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.48 2001/04/10 19:37:00 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.49 2001/06/21 21:18:51 bsmith Exp bsmith $*/
 
 static char help[] = "This program demonstrates use of the SNES package. Solve systems of\n\
 nonlinear equations in parallel.  This example uses matrix-free Krylov\n\
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Nz",&Nz,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRQ(1,"Lambda is out of range");
   }

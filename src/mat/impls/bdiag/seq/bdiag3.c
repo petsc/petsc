@@ -1,4 +1,4 @@
-/*$Id: bdiag3.c,v 1.30 2001/03/23 23:22:03 balay Exp bsmith $*/
+/*$Id: bdiag3.c,v 1.31 2001/04/10 19:35:32 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 
@@ -7,10 +7,10 @@
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 
-EXTERN int MatSetValues_SeqBDiag_1(Mat,int,int *,int,int *,Scalar *,InsertMode);
-EXTERN int MatSetValues_SeqBDiag_N(Mat,int,int *,int,int *,Scalar *,InsertMode);
-EXTERN int MatGetValues_SeqBDiag_1(Mat,int,int *,int,int *,Scalar *);
-EXTERN int MatGetValues_SeqBDiag_N(Mat,int,int *,int,int *,Scalar *);
+EXTERN int MatSetValues_SeqBDiag_1(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
+EXTERN int MatSetValues_SeqBDiag_N(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
+EXTERN int MatGetValues_SeqBDiag_1(Mat,int,int *,int,int *,PetscScalar *);
+EXTERN int MatGetValues_SeqBDiag_N(Mat,int,int *,int,int *,PetscScalar *);
 EXTERN int MatMult_SeqBDiag_1(Mat,Vec,Vec);
 EXTERN int MatMult_SeqBDiag_2(Mat,Vec,Vec);
 EXTERN int MatMult_SeqBDiag_3(Mat,Vec,Vec);
@@ -74,7 +74,7 @@ int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_SeqBDiag"
-int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
+int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,PetscScalar **v)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          nd = a->nd,bs = a->bs;
@@ -193,7 +193,7 @@ int MatGetRow_SeqBDiag(Mat A,int row,int *nz,int **col,Scalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_SeqBDiag"
-int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,Scalar **vals)
+int MatRestoreRow_SeqBDiag(Mat A,int row,int *ncols,int **cols,PetscScalar **vals)
 {
   PetscFunctionBegin;
   /* Work space is allocated during matrix creation and freed
@@ -212,7 +212,7 @@ int MatNorm_SeqBDiag_Columns(Mat A,PetscReal *tmp,int n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len,ierr;
-  Scalar       *dv;
+  PetscScalar       *dv;
 
   PetscFunctionBegin;
   ierr = PetscMemzero(tmp,A->n*sizeof(PetscReal));CHKERRQ(ierr);
@@ -268,7 +268,7 @@ int MatNorm_SeqBDiag(Mat A,NormType type,PetscReal *norm)
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscReal    sum = 0.0,*tmp;
   int          ierr,d,i,j,k,nd = a->nd,bs = a->bs,diag,kshift,kloc,len;
-  Scalar       *dv;
+  PetscScalar       *dv;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
@@ -366,7 +366,7 @@ int MatTranspose_SeqBDiag(Mat A,Mat *matout)
   Mat          tmat;
   int          i,j,k,d,ierr,nd = a->nd,*diag = a->diag,*diagnew;
   int          bs = a->bs,kshift,shifto,shiftn;
-  Scalar       *dwork,*dvnew;
+  PetscScalar       *dwork,*dvnew;
 
   PetscFunctionBegin;
   ierr = PetscMalloc((nd+1)*sizeof(int),&diagnew);CHKERRQ(ierr);
@@ -434,7 +434,7 @@ int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,ict,fd,*col_lens,*cval,*col,ierr,nz;
-  Scalar       *anonz,*val;
+  PetscScalar       *anonz,*val;
 
   PetscFunctionBegin;
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
@@ -448,14 +448,14 @@ int MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
 
   /* Should do translation using less memory; this is just a quick initial version */
   ierr = PetscMalloc((a->maxnz)*sizeof(int),&cval);CHKERRQ(ierr);
-  ierr = PetscMalloc((a->maxnz)*sizeof(Scalar),&anonz);CHKERRQ(ierr);
+  ierr = PetscMalloc((a->maxnz)*sizeof(PetscScalar),&anonz);CHKERRQ(ierr);
 
   ict = 0;
   for (i=0; i<A->m; i++) {
     ierr = MatGetRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     col_lens[4+i] = nz;
     ierr = PetscMemcpy(&cval[ict],col,nz*sizeof(int));CHKERRQ(ierr);
-    ierr = PetscMemcpy(&anonz[ict],anonz,nz*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(&anonz[ict],anonz,nz*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     ict += nz;
   }
@@ -480,7 +480,7 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
   Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
   char              *name;
   int               ierr,*col,i,j,len,diag,nr = A->m,bs = a->bs,iprint,nz;
-  Scalar            *val,*dv,zero = 0.0;
+  PetscScalar            *val,*dv,zero = 0.0;
   PetscViewerFormat format;
 
   PetscFunctionBegin;

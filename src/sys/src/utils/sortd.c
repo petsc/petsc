@@ -1,4 +1,4 @@
-/*$Id: sortd.c,v 1.26 2001/01/15 21:44:00 bsmith Exp balay $*/
+/*$Id: sortd.c,v 1.27 2001/03/23 23:20:45 balay Exp bsmith $*/
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
@@ -41,9 +41,9 @@ static int PetsciDqsort(double *v,int right)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSortDouble"
+#define __FUNCT__ "PetscSortReal"
 /*@
-   PetscSortDouble - Sorts an array of doubles in place in increasing order.
+   PetscSortReal - Sorts an array of doubles in place in increasing order.
 
    Not Collective
 
@@ -55,9 +55,9 @@ static int PetsciDqsort(double *v,int right)
 
    Concepts: sorting^doubles
 
-.seealso: PetscSortInt(), PetscSortDoubleWithPermutation()
+.seealso: PetscSortInt(), PetscSortRealWithPermutation()
 @*/
-int PetscSortDouble(int n,double v[])
+int PetscSortReal(int n,double v[])
 {
   int    j,k;
   double tmp,vk;

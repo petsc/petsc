@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.25 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex13.c,v 1.26 2001/03/23 23:23:55 balay Exp bsmith $*/
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
@@ -33,7 +33,7 @@ typedef struct {
 
 extern int UserInitializeLinearSolver(int,int,UserCtx *);
 extern int UserFinalizeLinearSolver(UserCtx *);
-extern int UserDoLinearSolver(Scalar *,UserCtx *userctx,Scalar *b,Scalar *x);
+extern int UserDoLinearSolver(PetscScalar *,UserCtx *userctx,PetscScalar *b,PetscScalar *x);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -70,14 +70,14 @@ int main(int argc,char **args)
      the context of a larger application these would be provided by
      other (non-PETSc) parts of the application code.
   */
-  ierr = PetscMalloc(N*sizeof(Scalar),&userx);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(Scalar),&userb);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(Scalar),&solution);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscScalar),&userx);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscScalar),&userb);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscScalar),&solution);CHKERRQ(ierr);
 
   /* 
       Allocate an array to hold the coefficients in the elliptic operator
   */
-  ierr = PetscMalloc(N*sizeof(Scalar),&rho);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscScalar),&rho);CHKERRQ(ierr);
 
   /*
      Fill up the array rho[] with the function rho(x,y) = x; fill the
@@ -187,7 +187,7 @@ int UserInitializeLinearSolver(int m,int n,UserCtx *userctx)
    style by columns. userb is a standard one-dimensional array.
 */ 
 /* ------------------------------------------------------------------------*/
-int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
+int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,PetscScalar *userx)
 {
   int    ierr,i,j,I,J,m = userctx->m,n = userctx->n,its;
   Mat    A = userctx->A;

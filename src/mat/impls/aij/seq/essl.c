@@ -1,4 +1,4 @@
-/*$Id: essl.c,v 1.46 2001/03/23 23:21:51 balay Exp balay $*/
+/*$Id: essl.c,v 1.47 2001/03/27 22:18:56 balay Exp bsmith $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver
@@ -11,14 +11,14 @@
 
 typedef struct {
    int       n,nz;
-   Scalar    *a;
+   PetscScalar    *a;
    int       *ia;
    int       *ja;
    int       lna;
    int       iparm[5];
    PetscReal rparm[5];
    PetscReal oparm[5];
-   Scalar    *aux;
+   PetscScalar    *aux;
    int       naux;
 } Mat_SeqAIJ_Essl;
 
@@ -46,7 +46,7 @@ int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)a->spptr;
-  Scalar          *xx;
+  PetscScalar          *xx;
   int             ierr,m,zero = 0;
 
   PetscFunctionBegin;
@@ -76,7 +76,7 @@ int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
     ierr = PetscMemcpy(essl->ia,aa->i,(A->m+1)*sizeof(int));CHKERRQ(ierr);
     ierr = PetscMemcpy(essl->ja,aa->j,(aa->nz)*sizeof(int));CHKERRQ(ierr);
   }
-  ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
   
   /* set Essl options */
   essl->iparm[0] = 1; 
@@ -121,7 +121,7 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   essl->naux = 100 + 10*A->m;
 
   /* since malloc is slow on IBM we try a single malloc */
-  len        = essl->lna*(2*sizeof(int)+sizeof(Scalar)) + essl->naux*sizeof(Scalar);
+  len        = essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar);
   ierr       = PetscMalloc(len,&essl->a);CHKERRQ(ierr);
   essl->aux  = essl->a + essl->lna;
   essl->ia   = (int*)(essl->aux + essl->naux);

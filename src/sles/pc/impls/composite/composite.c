@@ -1,4 +1,4 @@
-/*$Id: composite.c,v 1.42 2001/03/23 23:23:17 balay Exp bsmith $*/
+/*$Id: composite.c,v 1.43 2001/04/10 19:36:17 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
@@ -223,7 +223,7 @@ static int PCView_Composite(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCCompositeSpecialSetAlpha_Composite"
-int PCCompositeSpecialSetAlpha_Composite(PC pc,Scalar alpha)
+int PCCompositeSpecialSetAlpha_Composite(PC pc,PetscScalar alpha)
 {
   PC_Composite *jac = (PC_Composite*)pc->data;
   PetscFunctionBegin;
@@ -374,9 +374,9 @@ int PCCompositeSetType(PC pc,PCCompositeType type)
 
 .keywords: PC, set, type, composite preconditioner, additive, multiplicative
 @*/
-int PCCompositeSpecialSetAlpha(PC pc,Scalar alpha)
+int PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 {
-  int ierr,(*f)(PC,Scalar);
+  int ierr,(*f)(PC,PetscScalar);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

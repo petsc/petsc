@@ -1,4 +1,4 @@
-/*$Id: sendsparse.c,v 1.35 2001/04/12 13:32:03 balay Exp balay $*/
+/*$Id: sendsparse.c,v 1.36 2001/04/12 13:32:45 balay Exp bsmith $*/
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
@@ -32,7 +32,7 @@ $     MatView(Mat matrix,PetscViewer viewer)
 
 .seealso: PetscViewerSocketOpen(), MatView()
 @*/
-int PetscViewerSocketPutSparse_Private(PetscViewer vw,int m,int n,int nnz,Scalar *v,int *r,int *c)
+int PetscViewerSocketPutSparse_Private(PetscViewer vw,int m,int n,int nnz,PetscScalar *v,int *r,int *c)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)vw->data;
   int                ierr,t = vmatlab->port,type = SPARSEREAL,value;

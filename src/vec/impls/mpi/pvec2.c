@@ -1,4 +1,4 @@
-/*$Id: pvec2.c,v 1.51 2001/01/15 21:45:04 bsmith Exp balay $*/
+/*$Id: pvec2.c,v 1.52 2001/03/23 23:21:26 balay Exp bsmith $*/
 
 /*
      Code for some of the parallel vector primatives.
@@ -37,14 +37,14 @@ int Ethernet_Allreduce(PetscReal *in,PetscReal *out,int n,MPI_Datatype type,MPI_
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_MPI"
-int VecMDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
+int VecMDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
 {
-  Scalar awork[128],*work = awork;
+  PetscScalar awork[128],*work = awork;
   int    ierr;
 
   PetscFunctionBegin;
   if (nv > 128) {
-    ierr = PetscMalloc(nv*sizeof(Scalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   }
   ierr = VecMDot_Seq(nv,xin,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
@@ -56,14 +56,14 @@ int VecMDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMTDot_MPI"
-int VecMTDot_MPI(int nv,Vec xin,const Vec y[],Scalar *z)
+int VecMTDot_MPI(int nv,Vec xin,const Vec y[],PetscScalar *z)
 {
-  Scalar awork[128],*work = awork;
+  PetscScalar awork[128],*work = awork;
   int    ierr;
 
   PetscFunctionBegin;
   if (nv > 128) {
-    ierr = PetscMalloc(nv*sizeof(Scalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   }
   ierr = VecMTDot_Seq(nv,xin,y,work);CHKERRQ(ierr);
   ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ int VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 {
   Vec_MPI      *x = (Vec_MPI*)xin->data;
   PetscReal    sum,work = 0.0;
-  Scalar       *xx = x->array;
+  PetscScalar       *xx = x->array;
   int          n = xin->n,ierr;
 
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.27 2001/01/17 22:24:36 bsmith Exp balay $*/
+/*$Id: milu.c,v 1.28 2001/03/23 23:23:19 balay Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -62,21 +62,21 @@ int PCmILUSetBaseType(PC pc,PCType type)
 #define __FUNCT__ "PCSetup_mILU"
 static int PCSetup_mILU(PC pc)
 {
-  PC     base_pc = (PC) pc->data;
-  Mat    omat = pc->pmat,pmat;
-  Vec    diag;
-  Scalar *dia;
-  double *mprop;
-  int    lsize,first,last,ierr;
+  PC        base_pc = (PC) pc->data;
+  Mat       omat = pc->pmat,pmat;
+  Vec       diag;
+  Scalar    *dia;
+  PetscReal *mprop;
+  int       lsize,first,last,ierr;
 
   PetscFunctionBegin;
   ierr  = MatGetOwnershipRange(omat,&first,&last);CHKERRQ(ierr);
   lsize = last-first;
-  ierr = PetscMalloc((lsize+1)*sizeof(double),&mprop);CHKERRQ(ierr);
+  ierr = PetscMalloc((lsize+1)*sizeof(PetscReal),&mprop);CHKERRQ(ierr);
   {
     int irow;
     for (irow=first; irow<last; irow++) {
-      int icol,ncols,*cols; Scalar *vals; double mp=0.;
+      int icol,ncols,*cols; Scalar *vals; PetscReal mp=0.;
       ierr = MatGetRow(omat,irow,&ncols,&cols,&vals);CHKERRQ(ierr);
       for (icol=0; icol<ncols; icol++) {
 	if (cols[icol]==irow) {

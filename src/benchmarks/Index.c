@@ -1,4 +1,4 @@
-/*$Id: Index.c,v 1.30 2001/01/23 20:58:37 balay Exp balay $*/
+/*$Id: Index.c,v 1.31 2001/03/23 23:25:45 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -33,8 +33,8 @@ int test1(void)
   PetscRandom r;
 
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRQ(ierr);
-  ierr = PetscMalloc(20000*sizeof(Scalar),&x);CHKERRQ(ierr);
-  ierr = PetscMalloc(20000*sizeof(Scalar),&y);CHKERRQ(ierr);
+  ierr = PetscMalloc(20000*sizeof(PetscScalar),&x);CHKERRQ(ierr);
+  ierr = PetscMalloc(20000*sizeof(PetscScalar),&y);CHKERRQ(ierr);
 
   ierr = PetscMalloc(2000*sizeof(int),&z);CHKERRQ(ierr); 
   ierr = PetscMalloc(2000*sizeof(int),&zi);CHKERRQ(ierr); 
@@ -195,18 +195,18 @@ int BlastCache(void)
   int    i,n = 1000000;
   Scalar *x,*y,*z,*a,*b;
 
-  ierr = PetscMalloc(5*n*sizeof(Scalar),&x);CHKERRQ(ierr);
+  ierr = PetscMalloc(5*n*sizeof(PetscScalar),&x);CHKERRQ(ierr);
   y = x + n;
   z = y + n;
   a = z + n;
   b = a + n;
 
   for (i=0; i<n; i++) {
-    a[i] = (Scalar) i;
-    y[i] = (Scalar) i;
-    z[i] = (Scalar) i;
-    b[i] = (Scalar) i;
-    x[i] = (Scalar) i;
+    a[i] = (PetscScalar) i;
+    y[i] = (PetscScalar) i;
+    z[i] = (PetscScalar) i;
+    b[i] = (PetscScalar) i;
+    x[i] = (PetscScalar) i;
   }
 
   for (i=0; i<n; i++) {

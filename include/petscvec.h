@@ -1,4 +1,4 @@
-/* $Id: petscvec.h,v 1.121 2001/07/19 21:07:09 bsmith Exp bsmith $ */
+/* $Id: petscvec.h,v 1.122 2001/07/20 21:17:46 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -85,10 +85,10 @@ EXTERN int PetscMapGetSize(PetscMap,int *);
 EXTERN int PetscMapGetLocalRange(PetscMap,int *,int *);
 EXTERN int PetscMapGetGlobalRange(PetscMap,int *[]);
 
-EXTERN int VecDot(Vec,Vec,Scalar*);
-EXTERN int VecTDot(Vec,Vec,Scalar*);  
-EXTERN int VecMDot(int,Vec,const Vec[],Scalar*);
-EXTERN int VecMTDot(int,Vec,const Vec[],Scalar*); 
+EXTERN int VecDot(Vec,Vec,PetscScalar*);
+EXTERN int VecTDot(Vec,Vec,PetscScalar*);  
+EXTERN int VecMDot(int,Vec,const Vec[],PetscScalar*);
+EXTERN int VecMTDot(int,Vec,const Vec[],PetscScalar*); 
 
 /*E
     NormType - determines what type of norm to compute
@@ -101,7 +101,7 @@ typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4,NORM_1_AND_2=5}
 #define NORM_MAX NORM_INFINITY
 
 EXTERN int VecNorm(Vec,NormType,PetscReal *);
-EXTERN int VecSum(Vec,Scalar*);
+EXTERN int VecSum(Vec,PetscScalar*);
 EXTERN int VecMax(Vec,int*,PetscReal *);
 EXTERN int VecMin(Vec,int*,PetscReal *);
 EXTERN int VecScale(const Scalar *a,Vec v);
@@ -136,11 +136,11 @@ EXTERN int VecGetPetscMap(Vec,PetscMap*);
 E*/
 typedef enum {NOT_SET_VALUES,INSERT_VALUES,ADD_VALUES,MAX_VALUES} InsertMode;
 
-EXTERN int VecStrideNorm(Vec,int,NormType,double*);
+EXTERN int VecStrideNorm(Vec,int,NormType,PetscReal*);
 EXTERN int VecStrideGather(Vec,int,Vec,InsertMode);
 EXTERN int VecStrideScatter(Vec,int,Vec,InsertMode);
-EXTERN int VecStrideMax(Vec,int,int *,double *);
-EXTERN int VecStrideMin(Vec,int,int *,double *);
+EXTERN int VecStrideMax(Vec,int,int *,PetscReal *);
+EXTERN int VecStrideMin(Vec,int,int *,PetscReal *);
 EXTERN int VecStrideGatherAll(Vec,Vec*,InsertMode);
 EXTERN int VecStrideScatterAll(Vec*,Vec,InsertMode);
 
@@ -200,22 +200,22 @@ EXTERN int VecPipelineEnd(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPi
 EXTERN int VecPipelineView(VecPipeline,PetscViewer);
 EXTERN int VecPipelineDestroy(VecPipeline);
 
-EXTERN int VecGetArray(Vec,Scalar*[]);
-EXTERN int VecRestoreArray(Vec,Scalar*[]);
-EXTERN int VecGetArray4d(Vec,int,int,int,int,int,int,int,int,Scalar****[]);
-EXTERN int VecRestoreArray4d(Vec,int,int,int,int,int,int,int,int,Scalar****[]);
-EXTERN int VecGetArray3d(Vec,int,int,int,int,int,int,Scalar***[]);
-EXTERN int VecRestoreArray3d(Vec,int,int,int,int,int,int,Scalar***[]);
-EXTERN int VecGetArray2d(Vec,int,int,int,int,Scalar**[]);
-EXTERN int VecRestoreArray2d(Vec,int,int,int,int,Scalar**[]);
-EXTERN int VecGetArray1d(Vec,int,int,Scalar *[]);
-EXTERN int VecRestoreArray1d(Vec,int,int,Scalar *[]);
+EXTERN int VecGetArray(Vec,PetscScalar*[]);
+EXTERN int VecRestoreArray(Vec,PetscScalar*[]);
+EXTERN int VecGetArray4d(Vec,int,int,int,int,int,int,int,int,PetscScalar****[]);
+EXTERN int VecRestoreArray4d(Vec,int,int,int,int,int,int,int,int,PetscScalar****[]);
+EXTERN int VecGetArray3d(Vec,int,int,int,int,int,int,PetscScalar***[]);
+EXTERN int VecRestoreArray3d(Vec,int,int,int,int,int,int,PetscScalar***[]);
+EXTERN int VecGetArray2d(Vec,int,int,int,int,PetscScalar**[]);
+EXTERN int VecRestoreArray2d(Vec,int,int,int,int,PetscScalar**[]);
+EXTERN int VecGetArray1d(Vec,int,int,PetscScalar *[]);
+EXTERN int VecRestoreArray1d(Vec,int,int,PetscScalar *[]);
 
 EXTERN int VecPlaceArray(Vec,const Scalar[]);
 EXTERN int VecResetArray(Vec);
 EXTERN int VecReplaceArray(Vec,const Scalar[]);
-EXTERN int VecGetArrays(const Vec[],int,Scalar**[]);
-EXTERN int VecRestoreArrays(const Vec[],int,Scalar**[]);
+EXTERN int VecGetArrays(const Vec[],int,PetscScalar**[]);
+EXTERN int VecRestoreArrays(const Vec[],int,PetscScalar**[]);
 
 EXTERN int VecValid(Vec,PetscTruth*);
 EXTERN int VecView(Vec,PetscViewer);
@@ -233,17 +233,17 @@ EXTERN int VecSetValuesLocal(Vec,int,const int[],const Scalar[],InsertMode);
 EXTERN int VecSetLocalToGlobalMappingBlock(Vec,ISLocalToGlobalMapping);
 EXTERN int VecSetValuesBlockedLocal(Vec,int,const int[],const Scalar[],InsertMode);
 
-EXTERN int VecDotBegin(Vec,Vec,Scalar *);
-EXTERN int VecDotEnd(Vec,Vec,Scalar *);
-EXTERN int VecTDotBegin(Vec,Vec,Scalar *);
-EXTERN int VecTDotEnd(Vec,Vec,Scalar *);
-EXTERN int VecNormBegin(Vec,NormType,double *);
-EXTERN int VecNormEnd(Vec,NormType,double *);
+EXTERN int VecDotBegin(Vec,Vec,PetscScalar *);
+EXTERN int VecDotEnd(Vec,Vec,PetscScalar *);
+EXTERN int VecTDotBegin(Vec,Vec,PetscScalar *);
+EXTERN int VecTDotEnd(Vec,Vec,PetscScalar *);
+EXTERN int VecNormBegin(Vec,NormType,PetscReal *);
+EXTERN int VecNormEnd(Vec,NormType,PetscReal *);
 
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_TREAT_OFF_PROC_ENTRIES} VecOption;
 EXTERN int VecSetOption(Vec,VecOption);
 
-EXTERN int VecContourScale(Vec,double,double);
+EXTERN int VecContourScale(Vec,PetscReal,PetscReal);
 
 /*
     These numbers need to match the entries in 

@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.65 2001/06/21 21:17:38 bsmith Exp $*/
+/*$Id: petscfunc.c,v 1.9 2001/07/05 14:38:56 bsmith Exp bsmith $*/
 
 #include "petscfunc.h"
 #include "ramgfunc.h"
@@ -329,7 +329,7 @@ int PrintVector(Vec vec, char* path, char* base)
    sprintf(filename, "%s%s%s", path, base, ".m");
    printf("   [PrintVector]::Generating file %s ...\n", filename); 
    ierr = VecGetSize(vec, &size); CHKERRQ(ierr);
-   ierr = PetscMalloc(size * sizeof(Scalar),&values);CHKERRQ(ierr); 
+   ierr = PetscMalloc(size * sizeof(PetscScalar),&values);CHKERRQ(ierr); 
    ierr = VecGetArray(vec, &values); CHKERRQ(ierr);
    ierr = PetscViewerASCIIOpen(MPI_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
    ierr = PetscViewerASCIIPrintf(viewer,"function [z] = %s()\n",base);CHKERRQ(ierr);

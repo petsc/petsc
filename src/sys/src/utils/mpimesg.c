@@ -1,4 +1,4 @@
-/*$Id: mpimesg.c,v 1.11 2001/03/13 15:50:51 bsmith Exp balay $*/
+/*$Id: mpimesg.c,v 1.12 2001/03/23 23:20:45 balay Exp bsmith $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
@@ -188,23 +188,23 @@ int PetscPostIrecvInt(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscPostIrecvScalar"
-int PetscPostIrecvScalar(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,Scalar ***rbuf,MPI_Request **r_waits)
+int PetscPostIrecvScalar(MPI_Comm comm,int tag,int nrecvs,int *onodes,int *olengths,PetscScalar ***rbuf,MPI_Request **r_waits)
 {
   int         len=0,i,ierr;
-  Scalar      **rbuf_t;
+  PetscScalar      **rbuf_t;
   MPI_Request *r_waits_t;
 
   PetscFunctionBegin;
 
   /* compute memory required for recv buffers */
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
-  len *= sizeof(Scalar);
-  len += (nrecvs+1)*sizeof(Scalar*); /* Array of pointers for each message */
+  len *= sizeof(PetscScalar);
+  len += (nrecvs+1)*sizeof(PetscScalar*); /* Array of pointers for each message */
 
 
   /* allocate memory for recv buffers */
   ierr    = PetscMalloc(len,&rbuf_t);CHKERRQ(ierr);
-  rbuf_t[0] = (Scalar*)(rbuf_t + nrecvs);
+  rbuf_t[0] = (PetscScalar*)(rbuf_t + nrecvs);
   for (i=1; i<nrecvs; ++i) rbuf_t[i] = rbuf_t[i-1] + olengths[i-1];
 
   /* Post the receives */

@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.29 2001/03/23 23:24:20 balay Exp bsmith $*/
+/*$Id: ex13.c,v 1.30 2001/04/10 19:37:00 bsmith Exp bsmith $*/
 
 static char help[] = "This program is a replica of ex6.c except that it does 2 solves to avoid paging.\n\
 This program demonstrates use of the SNES package to solve systems of\n\
@@ -65,7 +65,7 @@ int main(int argc,char **argv)
     if (i!=0) {
       ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.mx,PETSC_NULL);CHKERRQ(ierr);
       ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
       if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
         SETERRQ(1,"Lambda is out of range");
       }

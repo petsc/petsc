@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.30 2001/03/23 23:21:37 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.31 2001/04/10 19:35:06 bsmith Exp bsmith $*/
 
 static char help[] = "Writes an array to a file, then reads an array from a file, then forms a vector.\n\n";
 
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   /* ---------------------------------------------------------------------- */
 
   /* Allocate array and set values */
-  ierr = PetscMalloc(m*sizeof(Scalar),&array);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     array[i] = i*10.0;
   }

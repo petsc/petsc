@@ -1,10 +1,10 @@
-/*$Id: dsc.c,v 1.5 2001/03/23 23:21:51 balay Exp bsmith $*/
+/*$Id: dsc.c,v 1.6 2001/03/28 20:46:32 bsmith Exp bsmith $*/
 /* 
         Provides an interface to the DSCPACK-S
 */
 
 #include "src/mat/impls/aij/seq/aij.h" 
-#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_COMPLEX) 
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) 
 EXTERN_C_BEGIN
 #include "dscmain.h"
 extern int Initialize_A_Nonz(int,int*,int*,real_number_type*,int,int*,int*,real_number_type**);

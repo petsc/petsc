@@ -1,4 +1,4 @@
-/*$Id: ex17.c,v 1.39 2001/01/23 20:56:37 balay Exp balay $*/
+/*$Id: ex17.c,v 1.40 2001/03/23 23:23:50 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
@@ -146,7 +146,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
     PetscRandom rctx;
     double      h2,sigma1 = 5.0;
     Scalar      sigma2;
-    ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     for (I=Istart; I<Iend; I++) { 
@@ -175,7 +175,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
      */
     double  h2,sigma1 = 200.0;
     Scalar alpha_h;
-    ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
     h2 = 1.0/((n+1)*(n+1));
     alpha_h = (PETSC_i * 10.0) / (double)(n+1);  /* alpha_h = alpha * h */
     for (I=Istart; I<Iend; I++) { 

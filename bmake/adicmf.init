@@ -1,5 +1,6 @@
 [GENERAL]
-	type_prefix = ad_
+	type_prefix = admf_
+	prefix = admf_
 
 [INACTIVE_FUNCTIONS]
 	PetscLogFlops
@@ -12,20 +13,25 @@
 	Vec            = "typedef int Vec;"
 	Mat            = "typedef int Mat;"
 	DA             = "typedef int DA;"
+	PC             = "typedef int PC;"
+	SLES           = "typedef int SLES;"
+	SNES           = "typedef int SNES;"
 	DAPeriodicType = "typedef int DAPeriodicType;"
 	DAStencilType  = "typedef int DAStencilType;"
-	DA             = "typedef int DA;"
         ISColoring     = "typedef int ISColoring;"
 	PetscTruth     = "typedef int PetscTruth;"
 	Scalar         = "typedef double Scalar;"
         DALocalInfo    = "typedef struct {int dim,dof,sw;DAPeriodicType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;int gxs,gys,gzs;int gxm,gym,gzm; DA da;} DALocalInfo;"
-        PassiveDouble  = "typedef double PassiveDouble;"
+        MatStencil     = "typedef struct {int k,j,i,c;} MatStencil;"
+        PassiveReal    = "typedef double PassiveReal;"
         PassiveScalar  = "typedef double PassiveScalar;"
 
 [DEFINES]
 	PetscAbsScalar = fabs
 	PetscExpScalar = exp
         PetscFunctionBegin = 
+	PetscPowScalar = pow
+	PetscSqrtScalar = sqrt
         PETSC_TRUE         = 1
         PETSC_FALSE        = 0
 
@@ -34,11 +40,15 @@
 [INACTIVE_VARIABLES]
 
 [INACTIVE_TYPES]
-        PassiveDouble
+        PassiveReal
 	PassiveScalar
         PetscTruth
         DALocalInfo
+        MatStencil
         Mat
         Vec
         ISColoring
         DA
+        PC
+        SLES
+        SNES

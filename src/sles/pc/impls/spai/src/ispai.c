@@ -1,4 +1,4 @@
-/* $Id: ispai.c,v 1.25 2001/04/10 19:36:18 bsmith Exp bsmith $*/
+/* $Id: ispai.c,v 1.26 2001/07/27 15:58:34 bsmith Exp bsmith $*/
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 
@@ -420,7 +420,7 @@ static int PCSetFromOptions_SPAI(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SPAI options");CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSPAISetEpsilon(pc,epsilon);CHKERRQ(ierr);
     }

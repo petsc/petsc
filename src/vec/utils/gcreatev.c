@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.86 2001/04/10 19:34:51 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.87 2001/06/21 21:15:56 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "petsc.h"
@@ -176,7 +176,7 @@ int VecSetType(Vec vec,VecType type_name)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -186,7 +186,7 @@ int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
 {
   int     ierr,n;
   Vec     vec = (Vec)obj;
-  Scalar  *array;
+  PetscScalar  *array;
   mxArray *mat;
 
   PetscFunctionBegin;
@@ -197,7 +197,7 @@ int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
 #else
   mat  = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
 #endif
-  ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   mxSetName(mat,obj->name);
   engPutArray((Engine *)engine,mat);
@@ -214,7 +214,7 @@ int VecMatlabEngineGet_Default(PetscObject obj,void *engine)
 {
   int     ierr,n;
   Vec     vec = (Vec)obj;
-  Scalar  *array;
+  PetscScalar  *array;
   mxArray *mat;
 
   PetscFunctionBegin;
@@ -222,7 +222,7 @@ int VecMatlabEngineGet_Default(PetscObject obj,void *engine)
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   mat  = engGetArray((Engine *)engine,obj->name);
   if (!mat) SETERRQ1(1,"Unable to get object %s from matlab",obj->name);
-  ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

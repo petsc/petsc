@@ -1,4 +1,4 @@
-/*$Id: eige.c,v 1.32 2001/03/22 05:16:23 balay Exp balay $*/
+/*$Id: eige.c,v 1.33 2001/03/23 23:23:29 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -171,7 +171,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
 #else
     clen = 2*n;
 #endif
-    ierr   = PetscMalloc(clen*sizeof(Scalar),&cwork);CHKERRQ(ierr);
+    ierr   = PetscMalloc(clen*sizeof(PetscScalar),&cwork);CHKERRQ(ierr);
     idummy = n;
     lwork  = 5*n;
     ierr   = PetscMalloc(lwork*sizeof(PetscReal),&work);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
       realpart[i] = cwork[2*i];
       perm[i]     = i;
     }
-    ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
+    ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       r[i] = cwork[2*perm[i]];
       c[i] = cwork[2*perm[i]+1];
@@ -199,7 +199,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
       realpart[i] = PetscRealPart(cwork[i]);
       perm[i]     = i;
     }
-    ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
+    ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       r[i] = PetscRealPart(cwork[perm[i]]);
       c[i] = PetscImaginaryPart(cwork[perm[i]]);
@@ -229,7 +229,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) { perm[i] = i;}
-    ierr = PetscSortDoubleWithPermutation(n,realpart,perm);CHKERRQ(ierr);
+    ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       r[i] = realpart[perm[i]];
       c[i] = imagpart[perm[i]];
@@ -245,9 +245,9 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
 
     idummy   = n;
     lwork    = 5*n;
-    ierr = PetscMalloc(5*n*sizeof(Scalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc(5*n*sizeof(PetscScalar),&work);CHKERRQ(ierr);
     ierr = PetscMalloc(2*n*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(Scalar),&eigs);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscScalar),&eigs);CHKERRQ(ierr);
 #if defined(PETSC_MISSING_LAPACK_GEEV) 
   SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavilable\nNot able to provide eigen values.");
 #else
@@ -259,7 +259,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
     ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) { perm[i] = i;}
     for (i=0; i<n; i++) { r[i]    = PetscRealPart(eigs[i]);}
-    ierr = PetscSortDoubleWithPermutation(n,r,perm);CHKERRQ(ierr);
+    ierr = PetscSortRealWithPermutation(n,r,perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       r[i] = PetscRealPart(eigs[perm[i]]);
       c[i] = PetscImaginaryPart(eigs[perm[i]]);

@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.378 2000/08/17 04:51:22 bsmith Exp $*/
+/*$Id: is.h,v 1.2 2000/08/24 22:42:38 bsmith Exp bsmith $*/
 #if !defined(__pcis_h)
 #define __pcis_h
 
@@ -73,7 +73,7 @@ extern int PCISSetUp(PC pc);
 extern int PCISDestroy(PC pc);
 extern int PCISCreate(PC pc);
 extern int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D);
-extern int PCISScatterArrayNToVecB(Scalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc);
+extern int PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc);
 extern int PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N);
 
 #endif /* __pcis_h */

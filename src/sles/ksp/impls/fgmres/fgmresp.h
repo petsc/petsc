@@ -1,4 +1,4 @@
-/*$Id: fgmresp.h,v 1.4 2000/01/11 21:02:14 bsmith Exp bsmith $*/
+/*$Id: fgmresp.h,v 1.5 2000/08/01 20:57:05 bsmith Exp bsmith $*/
 /*
    Private data structure used by the FGMRES method.
 */
@@ -20,11 +20,11 @@
     Scalar *rs_origin;   /* holds the right-hand-side of the Hessenberg system */
 
     /* Work space for computing eigenvalues/singular values */
-    double *Dsvd;
+    PetscReal *Dsvd;
     Scalar *Rsvd;
       
     /* parameters */
-    double haptol;            /* tolerance used for the "HAPPY BREAK DOWN"  */
+    PetscReal haptol;            /* tolerance used for the "HAPPY BREAK DOWN"  */
     int    max_k;             /* maximum number of Krylov directions to find 
                                  before restarting */
 
@@ -71,7 +71,7 @@
 
     /* we need a function for interacting with the pcfamily */
    
-    int    (*modifypc)(KSP,int,int,double,void*);  /* function to modify the preconditioner*/
+    int    (*modifypc)(KSP,int,int,PetscReal,void*);  /* function to modify the preconditioner*/
     int    (*modifydestroy)(void*);
     void   *modifyctx;
 } KSP_FGMRES;

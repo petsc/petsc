@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.29 2001/01/23 20:54:12 balay Exp balay $*/
+/*$Id: ex9.c,v 1.30 2001/03/23 23:21:37 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-allocate",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscMalloc((nlocal+nghost)*sizeof(Scalar),&tarray);CHKERRQ(ierr);
+    ierr = PetscMalloc((nlocal+nghost)*sizeof(PetscScalar),&tarray);CHKERRQ(ierr);
     ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRQ(ierr);
   } else {
     ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRQ(ierr);
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   */
   ierr = VecGetOwnershipRange(gx,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
-    value = (Scalar) i;
+    value = (PetscScalar) i;
     ierr  = VecSetValues(gx,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(gx);CHKERRQ(ierr);

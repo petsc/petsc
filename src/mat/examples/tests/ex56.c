@@ -1,4 +1,4 @@
-/*$Id: ex56.c,v 1.29 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex56.c,v 1.30 2001/04/10 19:35:44 bsmith Exp bsmith $*/
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for rectangular MatBAIJ matrix.";
 
 #include "petscmat.h"
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   row[0] =rstart+0;  row[1] =rstart+2;
   col[0] =rstart+0;  col[1] =rstart+1;  col[2] =rstart+3;
   for (i=0; i<6; i++) {
-    for (j =0; j< 9; j++) x[i][j] = (Scalar)val++;
+    for (j =0; j< 9; j++) x[i][j] = (PetscScalar)val++;
   }
 
   ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ int main(int argc,char **args)
 
   /* Do another MatSetValues to test the case when only one local block is specified */
   for (i=0; i<3; i++) {
-    for (j =0; j<3 ; j++)  y[i][j] = (Scalar)(10 + i*eval + j);
+    for (j =0; j<3 ; j++)  y[i][j] = (PetscScalar)(10 + i*eval + j);
   }
   ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

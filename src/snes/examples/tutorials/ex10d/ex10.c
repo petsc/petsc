@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.24 2001/03/23 23:24:31 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.25 2001/04/10 19:37:07 bsmith Exp bsmith $*/
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
@@ -135,9 +135,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-vert",&user.Nvglobal,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-elem",&user.Neglobal,PETSC_NULL);CHKERRQ(ierr);
   user.non_lin_param = 0.06;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-nl_par",&user.non_lin_param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-nl_par",&user.non_lin_param,PETSC_NULL);CHKERRQ(ierr);
   user.lin_param = -1.0;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-lin_par",&user.lin_param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-lin_par",&user.lin_param,PETSC_NULL);CHKERRQ(ierr);
   user.Nvlocal = 0;
   user.Nelocal = 0;
 

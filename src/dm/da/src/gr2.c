@@ -1,4 +1,4 @@
-/*$Id: gr2.c,v 1.44 2001/01/20 03:36:52 bsmith Exp balay $*/
+/*$Id: gr2.c,v 1.45 2001/03/23 23:25:00 balay Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate2d()
@@ -11,7 +11,7 @@
 */
 typedef struct {
   int        m,n,step,k;
-  double     min,max,scale;
+  PetscReal     min,max,scale;
   Scalar     *xy,*v;
   PetscTruth showgrid;
 } ZoomCtx;
@@ -27,7 +27,7 @@ int VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
   ZoomCtx *zctx = (ZoomCtx*)ctx;
   int     ierr,m,n,i,j,k,step,id,c1,c2,c3,c4;
-  double  s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
+  PetscReal  s,min,x1,x2,x3,x4,y_1,y2,y3,y4;
   Scalar  *v,*xy;
 
   PetscFunctionBegin; 
@@ -73,7 +73,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DA                 da,dac,dag;
   int                rank,ierr,igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
-  double             coors[4],ymin,ymax,xmin,xmax;
+  PetscReal             coors[4],ymin,ymax,xmin,xmax;
   PetscDraw          draw,popup;
   PetscTruth         isnull,useports;
   MPI_Comm           comm;

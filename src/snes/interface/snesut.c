@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.64 2001/04/10 19:36:48 bsmith Exp bsmith $*/
+/*$Id: snesut.c,v 1.65 2001/06/21 21:18:37 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
@@ -143,7 +143,7 @@ int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 int SNESRatioMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
 {
   int         ierr,len;
-  double      *history;
+  PetscReal   *history;
   PetscViewer viewer;
 
   PetscFunctionBegin;
@@ -153,7 +153,7 @@ int SNESRatioMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   if (its == 0 || !history || its > len) {
     ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   } else {
-    double ratio = fgnorm/history[its-1];
+    PetscReal ratio = fgnorm/history[its-1];
     ierr = PetscViewerASCIIPrintf(viewer,"%3d SNES Function norm %14.12e %g \n",its,fgnorm,ratio);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -192,8 +192,8 @@ int SNESRatioMonitorDestroy(void *history)
 @*/
 int SNESSetRatioMonitor(SNES snes)
 {
-  int         ierr;
-  double      *history;
+  int       ierr;
+  PetscReal *history;
 
   PetscFunctionBegin;
 

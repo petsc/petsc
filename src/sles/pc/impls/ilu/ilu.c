@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.169 2001/07/17 19:12:07 buschelm Exp buschelm $*/
+/*$Id: ilu.c,v 1.170 2001/07/17 19:12:36 buschelm Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -545,17 +545,18 @@ static int PCSetFromOptions_ILU(PC pc)
     if (flg) {
       ierr = PCILUSetDamping(pc,0.0);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsDouble("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",ilu->info.damping,&ilu->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",ilu->info.damping,&ilu->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_ilu_zeropivot","Pivot is considered zero if less than","PCILUSetSetZeroPivot",ilu->info.zeropivot,&ilu->info.zeropivot,0);CHKERRQ(ierr);
 
     dt[0] = ilu->info.dt;
     dt[1] = ilu->info.dtcol;
     dt[2] = ilu->info.dtcount;
-    ierr = PetscOptionsDoubleArray("-pc_ilu_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCILUSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsRealArray("-pc_ilu_use_drop_tolerance","<dt,dtcol,maxrowcount>","PCILUSetUseDropTolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCILUSetUseDropTolerance(pc,dt[0],dt[1],(int)dt[2]);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsDouble("-pc_ilu_fill","Expected fill in factorization","PCILUSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_ilu_fill","Expected fill in factorization","PCILUSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
 
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
     ierr = PetscOptionsList("-pc_ilu_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCILUSetMatOrdering",ordlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
@@ -588,6 +589,7 @@ static int PCView_ILU(PC pc,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %d levels of fill\n",(int)ilu->info.levels);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max fill ratio allocated %g\n",ilu->info.fill);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ILU: tolerance for zero pivot %g\n",ilu->info.zeropivot);CHKERRQ(ierr);
     if (ilu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"       in-place factorization\n");CHKERRQ(ierr);}
     else              {ierr = PetscViewerASCIIPrintf(viewer,"       out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",ilu->ordering);CHKERRQ(ierr);
@@ -667,7 +669,7 @@ static int PCSetUp_ILU(PC pc)
       ierr = PetscOptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         PetscReal ntol = 1.e-10;
-        ierr = PetscOptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
 
@@ -685,7 +687,7 @@ static int PCSetUp_ILU(PC pc)
         ierr = PetscOptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           PetscReal ntol = 1.e-10;
-          ierr = PetscOptionsGetDouble(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsGetReal(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
         }
       }
@@ -779,6 +781,7 @@ int PCCreate_ILU(PC pc)
   ilu->info.dtcol              = PETSC_DEFAULT;
   ilu->info.damp               = 0.0;
   ilu->info.damping            = 0.0;
+  ilu->info.zeropivot          = 1.e-12;
   ilu->reusefill               = PETSC_FALSE;
   ilu->info.diagonal_fill      = 0;
   ilu->single_precision_solve  = PETSC_FALSE;

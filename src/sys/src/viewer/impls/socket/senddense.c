@@ -1,4 +1,4 @@
-/* $Id: senddense.c,v 1.46 2001/03/23 23:19:52 balay Exp bsmith $ */
+/* $Id: senddense.c,v 1.47 2001/04/10 19:34:04 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
@@ -29,7 +29,7 @@
 .seealso: PetscViewerSocketOpen(), MatView(), VecView(), PetscViewerSocketPutReal(), PetscViewerSocketPutScalar(),
       PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF
 @*/
-int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,Scalar *array)
+int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,PetscScalar *array)
 {
   PetscViewer_Socket *vmatlab = (PetscViewer_Socket*)viewer->data;
   int                ierr,t = vmatlab->port,type = DENSEREAL,value;

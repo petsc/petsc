@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.146 2001/05/14 17:41:00 balay Exp bsmith $*/
+/*$Id: lu.c,v 1.147 2001/06/21 21:17:48 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -64,13 +64,14 @@ static int PCSetFromOptions_LU(PC pc)
     if (flg) {
       ierr = PCLUSetUseInPlace(pc);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsDouble("-pc_lu_fill","Expected non-zeros in LU/non-zeros in matrix","PCLUSetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_lu_fill","Expected non-zeros in LU/non-zeros in matrix","PCLUSetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsHasName(pc->prefix,"-pc_lu_damping",&flg);CHKERRQ(ierr);
     if (flg) {
         ierr = PCLUSetDamping(pc,0.0);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsDouble("-pc_lu_damping","Damping added to diagonal","PCLUSetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_lu_damping","Damping added to diagonal","PCLUSetDamping",lu->info.damping,&lu->info.damping,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_lu_zeropivot","Pivot is considered zero if less than","PCLUSetSetZeroPivot",lu->info.zeropivot,&lu->info.zeropivot,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-pc_lu_reuse_fill","Use fill from previous factorization","PCLUSetReuseFill",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -86,9 +87,9 @@ static int PCSetFromOptions_LU(PC pc)
     if (flg) {
       ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsDouble("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_lu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsDouble("-pc_lu_pivoting","Pivoting tolerance (used only for SuperLU)","PCLUSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_lu_pivoting","Pivoting tolerance (used only for SuperLU)","PCLUSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -110,6 +111,7 @@ static int PCView_LU(PC pc,PetscViewer viewer)
     if (lu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");CHKERRQ(ierr);}
     else             {ierr = PetscViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  LU: tolerance for zero pivot %g\n",lu->info.zeropivot);CHKERRQ(ierr);
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);CHKERRQ(ierr);
@@ -161,7 +163,7 @@ static int PCSetUp_LU(PC pc)
       ierr = PetscOptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         PetscReal tol = 1.e-10;
-        ierr = PetscOptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PetscLogObjectParent(pc,dir->row); PetscLogObjectParent(pc,dir->col);}
@@ -177,7 +179,7 @@ static int PCSetUp_LU(PC pc)
         ierr = PetscOptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           PetscReal tol = 1.e-10;
-          ierr = PetscOptionsGetDouble(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsGetReal(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->col);CHKERRQ(ierr);
         }
         if (dir->row) {PetscLogObjectParent(pc,dir->row); PetscLogObjectParent(pc,dir->col);}
@@ -585,6 +587,7 @@ int PCCreate_LU(PC pc)
   dir->info.dtcol       = 0.0; /* default to no pivoting; this is only thing PETSc LU supports */
   dir->info.damping     = 0.0;
   dir->info.damp        = 0.0;
+  dir->info.zeropivot   = 1.e-12;
   dir->col              = 0;
   dir->row              = 0;
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);

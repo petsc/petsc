@@ -1,4 +1,4 @@
-/*$Id: sda2.c,v 1.21 2001/01/15 21:49:21 bsmith Exp balay $*/
+/*$Id: sda2.c,v 1.22 2001/03/23 23:25:26 balay Exp bsmith $*/
 /*
     Simplified interface to PETSC DA (distributed array) object. 
    This is for a user who is not using PETSc Vecs (vectors).
@@ -263,7 +263,7 @@ int SDADestroy(SDA sda)
 
 .seealso: SDALocalToLocalEnd(), SDACreate2d()
 @*/
-int SDALocalToLocalBegin(SDA sda,Scalar *g,InsertMode mode,Scalar *l)
+int SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 {
   int ierr;
   DA  da = sda->da;
@@ -295,7 +295,7 @@ int SDALocalToLocalBegin(SDA sda,Scalar *g,InsertMode mode,Scalar *l)
 
 .seealso: SDALocalToLocalBegin(), SDACreate2d()
 @*/
-int SDALocalToLocalEnd(SDA sda,Scalar *g,InsertMode mode,Scalar *l)
+int SDALocalToLocalEnd(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 {
   int ierr;
   DA  da = sda->da;

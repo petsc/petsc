@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.169 2001/03/23 23:21:18 balay Exp bsmith $*/
+/*$Id: vscat.c,v 1.170 2001/07/20 21:17:57 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -38,7 +38,7 @@ static int VecScatterCheckIndices_Private(int nmax,int n,int *idx)
 int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
   int      ierr,yy_n,xx_n,*range;
-  Scalar   *xv,*yv;
+  PetscScalar   *xv,*yv;
   PetscMap map;
 
   PetscFunctionBegin;
@@ -48,7 +48,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
   if (x != y) {ierr = VecGetArray(x,&xv);CHKERRQ(ierr);}
 
   if (mode & SCATTER_REVERSE) {
-    Scalar               *xvt,*xvt2;
+    PetscScalar               *xvt,*xvt2;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
@@ -60,7 +60,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
          vectors have the same values
       */
       ierr = VecGetOwnershipRange(y,&rstart,&rend);CHKERRQ(ierr);
-      ierr = PetscMemcpy(yv,xv+rstart,yy_n*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = PetscMemcpy(yv,xv+rstart,yy_n*sizeof(PetscScalar));CHKERRQ(ierr);
     } else {
       MPI_Comm comm;
       int      rank;
@@ -68,16 +68,16 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
       ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
       if (scat->work1) xvt = scat->work1; 
       else {
-        ierr        = PetscMalloc((xx_n+1)*sizeof(Scalar),&xvt);CHKERRQ(ierr);
+        ierr        = PetscMalloc((xx_n+1)*sizeof(PetscScalar),&xvt);CHKERRQ(ierr);
         scat->work1 = xvt;
-        PetscLogObjectMemory(ctx,xx_n*sizeof(Scalar));
+        PetscLogObjectMemory(ctx,xx_n*sizeof(PetscScalar));
       }
       if (!rank) { /* I am the zeroth processor, values are accumulated here */
         if   (scat->work2) xvt2 = scat->work2; 
         else {
-          ierr        = PetscMalloc((xx_n+1)*sizeof(Scalar),& xvt2);CHKERRQ(ierr);
+          ierr        = PetscMalloc((xx_n+1)*sizeof(PetscScalar),& xvt2);CHKERRQ(ierr);
           scat->work2 = xvt2;
-          PetscLogObjectMemory(ctx,xx_n*sizeof(Scalar));
+          PetscLogObjectMemory(ctx,xx_n*sizeof(PetscScalar));
         }
         ierr = VecGetPetscMap(y,&map);CHKERRQ(ierr);
         ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
@@ -112,7 +112,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
       }
     }
   } else {
-    Scalar               *yvt;
+    PetscScalar               *yvt;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
@@ -123,9 +123,9 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     } else {
       if (scat->work1) yvt = scat->work1; 
       else {
-        ierr        = PetscMalloc((yy_n+1)*sizeof(Scalar),&yvt);CHKERRQ(ierr);
+        ierr        = PetscMalloc((yy_n+1)*sizeof(PetscScalar),&yvt);CHKERRQ(ierr);
         scat->work1 = yvt;
-        PetscLogObjectMemory(ctx,yy_n*sizeof(Scalar));
+        PetscLogObjectMemory(ctx,yy_n*sizeof(PetscScalar));
       }
       ierr = MPI_Allgatherv(xv,xx_n,MPIU_SCALAR,yvt,scat->count,map->range,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
       if (addv == ADD_VALUES){
@@ -156,7 +156,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
   int      rank,ierr,yy_n,xx_n,*range;
-  Scalar   *xv,*yv;
+  PetscScalar   *xv,*yv;
   MPI_Comm comm;
   PetscMap map;
 
@@ -171,7 +171,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 
   /* --------  Reverse scatter; spread from processor 0 to other processors */
   if (mode & SCATTER_REVERSE) {
-    Scalar               *yvt;
+    PetscScalar               *yvt;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
@@ -182,9 +182,9 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     } else {
       if (scat->work2) yvt = scat->work2; 
       else {
-        ierr        = PetscMalloc((xx_n+1)*sizeof(Scalar),&yvt);CHKERRQ(ierr);
+        ierr        = PetscMalloc((xx_n+1)*sizeof(PetscScalar),&yvt);CHKERRQ(ierr);
         scat->work2 = yvt;
-        PetscLogObjectMemory(ctx,xx_n*sizeof(Scalar));
+        PetscLogObjectMemory(ctx,xx_n*sizeof(PetscScalar));
       }
       ierr = MPI_Scatterv(xv,scat->count,range,MPIU_SCALAR,yvt,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       if (addv == ADD_VALUES) {
@@ -201,7 +201,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
     }
   /* ---------  Forward scatter; gather all values onto processor 0 */
   } else { 
-    Scalar               *yvt = 0;
+    PetscScalar               *yvt = 0;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
     int                  i;
 
@@ -213,9 +213,9 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
       if (!rank) {
         if (scat->work1) yvt = scat->work1; 
         else {
-          ierr        = PetscMalloc((yy_n+1)*sizeof(Scalar),&yvt);CHKERRQ(ierr);
+          ierr        = PetscMalloc((yy_n+1)*sizeof(PetscScalar),&yvt);CHKERRQ(ierr);
           scat->work1 = yvt;
-          PetscLogObjectMemory(ctx,yy_n*sizeof(Scalar));
+          PetscLogObjectMemory(ctx,yy_n*sizeof(PetscScalar));
         }
       }
       ierr = MPI_Gatherv(xv,xx_n,MPIU_SCALAR,yvt,scat->count,range,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
@@ -301,7 +301,7 @@ int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   VecScatter_Seq_General *gen_to = (VecScatter_Seq_General*)ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
   int                    i,n = gen_from->n,*fslots,*tslots,ierr;
-  Scalar                 *xv,*yv;
+  PetscScalar                 *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -338,7 +338,7 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
   int                    i,n = gen_from->n,*fslots = gen_from->slots;
   int                    first = gen_to->first,ierr;
-  Scalar                 *xv,*yv;
+  PetscScalar                 *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -382,7 +382,7 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
   int                    i,n = gen_from->n,*fslots = gen_from->slots;
   int                    first = gen_to->first,step = gen_to->step,ierr;
-  Scalar                 *xv,*yv;
+  PetscScalar                 *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -425,7 +425,7 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
   int                    i,n = gen_from->n,*fslots = gen_to->slots;
   int                    first = gen_from->first,ierr;
-  Scalar                 *xv,*yv;
+  PetscScalar                 *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -470,7 +470,7 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
   int                    i,n = gen_from->n,*fslots = gen_to->slots;
   int                    first = gen_from->first,step = gen_from->step,ierr;
-  Scalar                 *xv,*yv;
+  PetscScalar                 *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -513,7 +513,7 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   VecScatter_Seq_Stride *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
   int                   i,n = gen_from->n,to_first = gen_to->first,to_step = gen_to->step;
   int                   from_first = gen_from->first,from_step = gen_from->step,ierr;
-  Scalar                *xv,*yv;
+  PetscScalar                *xv,*yv;
   
   PetscFunctionBegin;
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
@@ -528,7 +528,7 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
 
   if (addv == INSERT_VALUES) {
     if (to_step == 1 && from_step == 1) {
-      ierr = PetscMemcpy(yv+to_first,xv+from_first,n*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = PetscMemcpy(yv+to_first,xv+from_first,n*sizeof(PetscScalar));CHKERRQ(ierr);
     } else  {
       for (i=0; i<n; i++) {
         yv[to_first + i*to_step] = xv[from_first+i*from_step];

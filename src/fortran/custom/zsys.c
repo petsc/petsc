@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.92 2001/04/19 17:32:19 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.93 2001/04/25 14:57:23 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -24,7 +24,7 @@
 #define petscrandomdestroy_        PETSCRANDOMDESTROY
 #define petscrandomgetvalue_       PETSCRANDOMGETVALUE
 #define petsctrvalid_              PETSCTRVALID
-#define petscdoubleview_           PETSCDOUBLEVIEW
+#define petscrealview_             PETSCREALVIEW
 #define petscintview_              PETSCINTVIEW
 #define petscsequentialphasebegin_ PETSCSEQUENTIALPHASEBEGIN
 #define petscsequentialphaseend_   PETSCSEQUENTIALPHASEEND
@@ -93,7 +93,7 @@
 #define petscrandomdestroy_        petscrandomdestroy
 #define petscrandomgetvalue_       petscrandomgetvalue
 #define petsctrvalid_              petsctrvalid
-#define petscdoubleview_           petscdoubleview
+#define petscrealview_             petscrealview
 #define petscintview_              petscintview
 #define petscsequentialphasebegin_ petscsequentialphasebegin
 #define petscsequentialphaseend_   petscsequentialphaseend
@@ -139,7 +139,7 @@ void PETSC_STDCALL petscgetresidentsetsize_(PetscLogDouble *foo, int *ierr)
   *ierr = PetscGetResidentSetSize(foo);
 }
 
-void PETSC_STDCALL petscoffsetfortran_(Scalar *x,Scalar *y,int *shift,int *ierr)
+void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,int *shift,int *ierr)
 {
   *ierr = 0;
   *shift = y - x;
@@ -376,7 +376,7 @@ void PETSC_STDCALL petsctrvalid_(int *ierr)
   *ierr = PetscTrValid(0,"Unknown Fortran",0,0);
 }
 
-void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,Scalar *val,int *ierr)
+void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,PetscScalar *val,int *ierr)
 {
   *ierr = PetscRandomGetValue(*r,val);
 }
@@ -454,9 +454,9 @@ void PETSC_STDCALL petscrandomdestroy_(PetscRandom *r,int *ierr)
   *ierr = PetscRandomDestroy(*r);
 }
 
-void PETSC_STDCALL petscdoubleview_(int *n,double *d,int *viwer,int *ierr)
+void PETSC_STDCALL petscrealview_(int *n,PetscReal *d,int *viwer,int *ierr)
 {
-  *ierr = PetscDoubleView(*n,d,0);
+  *ierr = PetscRealView(*n,d,0);
 }
 
 void PETSC_STDCALL petscintview_(int *n,int *d,int *viwer,int *ierr)
@@ -474,7 +474,7 @@ void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng,int *ierr){
 }
 
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 
 void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
                                             int *ierr PETSC_END_LEN(len))
@@ -510,7 +510,7 @@ void PETSC_STDCALL petscmatlabengineget_(PetscMatlabEngine *e,PetscObject *o,int
   *ierr = PetscMatlabEngineGet(*e,*o);
 }
 
-void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,int *m,int *n,Scalar *a,
+void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,int *m,int *n,PetscScalar *a,
                                               CHAR s PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *ms;
@@ -519,7 +519,7 @@ void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,int *m,int *n
   FREECHAR(s,ms);
 }
 
-void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,int *m,int *n,Scalar *a,
+void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,int *m,int *n,PetscScalar *a,
                                               CHAR s PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *ms;

@@ -1,4 +1,4 @@
-/*$Id: ilut.c,v 1.5 2000/01/11 21:00:37 bsmith Exp bsmith $*/
+/*$Id: ilut.c,v 1.6 2001/04/09 15:36:26 bsmith Exp bsmith $*/
 /* ilut.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
      The Fortran version of this code was developed by Yousef Saad.
@@ -347,17 +347,17 @@ Public License instead of this License.
 */
 #include "petsc.h"
 
-static int SPARSEKIT2qsplit(Scalar *a,int *ind,int *n,int *ncut)
+static int SPARSEKIT2qsplit(PetscScalar *a,int *ind,int *n,int *ncut)
 {
     /* System generated locals */
     int i__1;
-    Scalar d__1;
+    PetscScalar d__1;
 
     /* Local variables */
     int last,itmp,j,first;
     PetscReal abskey;
     int mid;
-    Scalar tmp;
+    PetscScalar tmp;
 
 /* -----------------------------------------------------------------------
  */
@@ -433,26 +433,26 @@ L1:
 
 
 /* ---------------------------------------------------------------------- */
-int SPARSEKIT2ilutp(int *n,Scalar *a,int *ja,int * ia,int *lfil,PetscReal *droptol,PetscReal *permtol,int *mbloc,Scalar *alu,
-	int *jlu,int *ju,int *iwk,Scalar *w,int *jw,  int *iperm,int *ierr)
+int SPARSEKIT2ilutp(int *n,PetscScalar *a,int *ja,int * ia,int *lfil,PetscReal droptol,PetscReal *permtol,int *mbloc,PetscScalar *alu,
+	int *jlu,int *ju,int *iwk,PetscScalar *w,int *jw,  int *iperm,int *ierr)
 {
     /* System generated locals */
     int i__1,i__2;
-    Scalar d__1;
+    PetscScalar d__1;
 
     /* Local variables */
-    Scalar fact;
+    PetscScalar fact;
     int lenl,imax,lenu,icut,jpos;
     PetscReal xmax;
     int jrow;
     PetscReal xmax0;
     int i,j,k;
-    Scalar s,t;
+    PetscScalar s,t;
     int j_1,j2;
     PetscReal tnorm,t1;
     int ii,jj;
     int ju0,len;
-    Scalar tmp;
+    PetscScalar tmp;
 
 /* -----------------------------------------------------------------------
  */
@@ -703,7 +703,7 @@ ect */
 
 /*     drop term if small */
 
-	if (PetscAbsScalar(fact) <= *droptol) {
+	if (PetscAbsScalar(fact) <= droptol) {
 	    goto L150;
 	}
 
@@ -809,7 +809,7 @@ L160:
 	len = 0;
 	i__2 = lenu - 1;
 	for (k = 1; k <= i__2; ++k) {
-	    if ((d__1 = w[ii + k], PetscAbsScalar(d__1)) > *droptol * tnorm) {
+	    if ((d__1 = w[ii + k], PetscAbsScalar(d__1)) > droptol * tnorm) {
 		++len;
 		w[ii + len] = w[ii + k];
 		jw[ii + len] = jw[ii + k];
@@ -872,7 +872,7 @@ L160:
 /*     store inverse of diagonal element of u */
 
 	if (w[ii] == 0.) {
-	    w[ii] = (*droptol + 1e-4) * tnorm;
+	    w[ii] = (droptol + 1e-4) * tnorm;
 	}
 	alu[ii] = 1. / w[ii];
 

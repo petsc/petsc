@@ -1,4 +1,4 @@
-/* $Id: petscpf.h,v 1.10 2001/04/10 19:37:42 bsmith Exp balay $ */
+/* $Id: petscpf.h,v 1.11 2001/08/02 20:29:32 balay Exp bsmith $ */
 
 /*
       mathematical function module. 
@@ -43,8 +43,8 @@ typedef struct _p_PF* PF;
 
 EXTERN int PFCreate(MPI_Comm,int,int,PF*);
 EXTERN int PFSetType(PF,PFType,void*);
-EXTERN int PFSet(PF,int(*)(void*,int,Scalar*,Scalar*),int(*)(void*,Vec,Vec),int(*)(void*,PetscViewer),int(*)(void*),void*);
-EXTERN int PFApply(PF,int,Scalar*,Scalar*);
+EXTERN int PFSet(PF,int(*)(void*,int,PetscScalar*,PetscScalar*),int(*)(void*,Vec,Vec),int(*)(void*,PetscViewer),int(*)(void*),void*);
+EXTERN int PFApply(PF,int,PetscScalar*,PetscScalar*);
 EXTERN int PFApplyVec(PF,Vec,Vec);
 
 EXTERN int        PFRegisterDestroy(void);

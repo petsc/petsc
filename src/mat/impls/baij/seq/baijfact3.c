@@ -1,4 +1,4 @@
-/*$Id: baijfact3.c,v 1.4 2001/03/23 23:22:07 balay Exp bsmith $*/
+/*$Id: baijfact3.c,v 1.5 2001/06/21 21:16:41 bsmith Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -147,7 +147,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
-  ierr = PetscMalloc((bs*n+bs)*sizeof(Scalar),&b->solve_work);CHKERRQ(ierr);
+  ierr = PetscMalloc((bs*n+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
   PetscLogObjectMemory(*B,(ainew[n]-n)*(sizeof(int)+sizeof(MatScalar)));

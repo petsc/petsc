@@ -1,4 +1,4 @@
-/*$Id: sbaijfact.c,v 1.59 2001/04/10 22:35:39 balay Exp bsmith $*/
+/*$Id: sbaijfact.c,v 1.60 2001/06/21 21:17:00 bsmith Exp bsmith $*/
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
@@ -162,7 +162,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr    = PetscMalloc((bs*mbs+bs)*sizeof(Scalar),&b->solve_work);CHKERRQ(ierr);
+  ierr    = PetscMalloc((bs*mbs+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
   PetscLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(int)+sizeof(MatScalar)));

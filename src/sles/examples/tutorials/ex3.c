@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.29 2001/03/23 23:23:55 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.30 2001/06/21 21:18:27 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.  The matrix\n\
 uses simple bilinear elements on the unit square.  To test the parallel\n\
@@ -23,8 +23,8 @@ T*/
 #include "petscsles.h"
 
 /* Declare user-defined routines */
-extern int FormElementStiffness(double,Scalar*);
-extern int FormElementRhs(double,double,double,Scalar*);
+extern int FormElementStiffness(double,PetscScalar*);
+extern int FormElementRhs(double,double,double,PetscScalar*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -197,7 +197,7 @@ int main(int argc,char **args)
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"
    /* element stiffness for Laplacian */
-int FormElementStiffness(double H,Scalar *Ke)
+int FormElementStiffness(double H,PetscScalar *Ke)
 {
   PetscFunctionBegin;
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -209,7 +209,7 @@ int FormElementStiffness(double H,Scalar *Ke)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormElementRhs"
-int FormElementRhs(double x,double y,double H,Scalar *r)
+int FormElementRhs(double x,double y,double H,PetscScalar *r)
 {
   PetscFunctionBegin;
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 

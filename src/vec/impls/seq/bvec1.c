@@ -1,4 +1,4 @@
-/*$Id: bvec1.c,v 1.38 2001/01/15 21:45:02 bsmith Exp balay $*/
+/*$Id: bvec1.c,v 1.39 2001/03/23 23:21:25 balay Exp bsmith $*/
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel
@@ -11,7 +11,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_Seq"
-int VecDot_Seq(Vec xin,Vec yin,Scalar *z)
+int VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
 #if !defined(PETSC_USE_COMPLEX)
@@ -24,7 +24,7 @@ int VecDot_Seq(Vec xin,Vec yin,Scalar *z)
      not happy about returning a double complex */
   {
     int    i;
-    Scalar sum = 0.0,*xa = x->array,*ya = y->array;
+    PetscScalar sum = 0.0,*xa = x->array,*ya = y->array;
     for (i=0; i<xin->n; i++) {
       sum += xa[i]*PetscConj(ya[i]);
     }
@@ -39,7 +39,7 @@ int VecDot_Seq(Vec xin,Vec yin,Scalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecTDot_Seq"
-int VecTDot_Seq(Vec xin,Vec yin,Scalar *z)
+int VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
   Vec_Seq *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
 #if !defined(PETSC_USE_COMPLEX)
@@ -51,7 +51,7 @@ int VecTDot_Seq(Vec xin,Vec yin,Scalar *z)
   /* cannot use BLAS dot for complex because compiler/linker is 
      not happy about returning a double complex */
   int    i;
-  Scalar sum = 0.0,*xa = x->array,*ya = y->array;
+  PetscScalar sum = 0.0,*xa = x->array,*ya = y->array;
   for (i=0; i<xin->n; i++) {
     sum += xa[i]*ya[i];
   }
@@ -65,13 +65,13 @@ int VecTDot_Seq(Vec xin,Vec yin,Scalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScale_Seq"
-int VecScale_Seq(const Scalar *alpha,Vec xin)
+int VecScale_Seq(const PetscScalar *alpha,Vec xin)
 {
   Vec_Seq *x = (Vec_Seq*)xin->data;
   int     one = 1;
 
   PetscFunctionBegin;
-  BLscal_(&xin->n,(Scalar *)alpha,x->array,&one);
+  BLscal_(&xin->n,(PetscScalar *)alpha,x->array,&one);
   PetscLogFlops(xin->n);
   PetscFunctionReturn(0);
 }
@@ -85,7 +85,7 @@ int VecCopy_Seq(Vec xin,Vec yin)
 
   PetscFunctionBegin;
   if (x->array != y->array) {
-    ierr = PetscMemcpy(y->array,x->array,xin->n*sizeof(Scalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(y->array,x->array,xin->n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -104,15 +104,15 @@ int VecSwap_Seq(Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecAXPY_Seq"
-int VecAXPY_Seq(const Scalar *alpha,Vec xin,Vec yin)
+int VecAXPY_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      one = 1,ierr;
-  Scalar   *yarray;
+  PetscScalar   *yarray;
 
   PetscFunctionBegin;
   ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
-  BLaxpy_(&xin->n,(Scalar *)alpha,x->array,&one,yarray,&one);
+  BLaxpy_(&xin->n,(PetscScalar *)alpha,x->array,&one,yarray,&one);
   ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
   PetscLogFlops(2*xin->n);
   PetscFunctionReturn(0);
@@ -120,11 +120,11 @@ int VecAXPY_Seq(const Scalar *alpha,Vec xin,Vec yin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecAXPBY_Seq"
-int VecAXPBY_Seq(const Scalar *alpha,const Scalar *beta,Vec xin,Vec yin)
+int VecAXPBY_Seq(const PetscScalar *alpha,const PetscScalar *beta,Vec xin,Vec yin)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data,*y = (Vec_Seq *)yin->data;
   int      n = xin->n,i;
-  Scalar   *xx = x->array,*yy = y->array,a = *alpha,b = *beta;
+  PetscScalar   *xx = x->array,*yy = y->array,a = *alpha,b = *beta;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {

@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.123 2001/07/18 18:05:23 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.124 2001/07/20 21:19:19 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -15,9 +15,9 @@
 */
 typedef struct _MatOps *MatOps;
 struct _MatOps {
-  int       (*setvalues)(Mat,int,int *,int,int *,Scalar *,InsertMode),
-            (*getrow)(Mat,int,int *,int **,Scalar **),
-            (*restorerow)(Mat,int,int *,int **,Scalar **),
+  int       (*setvalues)(Mat,int,int *,int,int *,PetscScalar *,InsertMode),
+            (*getrow)(Mat,int,int *,int **,PetscScalar **),
+            (*restorerow)(Mat,int,int *,int **,PetscScalar **),
             (*mult)(Mat,Vec,Vec),
 /* 4*/      (*multadd)(Mat,Vec,Vec,Vec),
             (*multtranspose)(Mat,Vec,Vec),
@@ -27,44 +27,44 @@ struct _MatOps {
             (*solvetranspose)(Mat,Vec,Vec),
 /*10*/      (*solvetransposeadd)(Mat,Vec,Vec,Vec),
             (*lufactor)(Mat,IS,IS,MatLUInfo*),
-            (*choleskyfactor)(Mat,IS,double),
-            (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),
+            (*choleskyfactor)(Mat,IS,PetscReal),
+            (*relax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,Vec),
             (*transpose)(Mat,Mat *),
 /*15*/      (*getinfo)(Mat,MatInfoType,MatInfo*),
             (*equal)(Mat,Mat,PetscTruth *),
             (*getdiagonal)(Mat,Vec),
             (*diagonalscale)(Mat,Vec,Vec),
-            (*norm)(Mat,NormType,double *),
+            (*norm)(Mat,NormType,PetscReal *),
 /*20*/      (*assemblybegin)(Mat,MatAssemblyType),
             (*assemblyend)(Mat,MatAssemblyType),
             (*compress)(Mat),
             (*setoption)(Mat,MatOption),
             (*zeroentries)(Mat),
-/*25*/      (*zerorows)(Mat,IS,Scalar *),
+/*25*/      (*zerorows)(Mat,IS,PetscScalar *),
             (*lufactorsymbolic)(Mat,IS,IS,MatLUInfo*,Mat *),
             (*lufactornumeric)(Mat,Mat *),
-            (*choleskyfactorsymbolic)(Mat,IS,double,Mat *),
+            (*choleskyfactorsymbolic)(Mat,IS,PetscReal,Mat *),
             (*choleskyfactornumeric)(Mat,Mat *),
 /*30*/      (*setuppreallocation)(Mat),
             (*dummy2)(Mat,int *,int *),
             (*getownershiprange)(Mat,int *,int *),
             (*ilufactorsymbolic)(Mat,IS,IS,MatILUInfo*,Mat *),
-            (*iccfactorsymbolic)(Mat,IS,double,int,Mat *),
-/*35*/      (*getarray)(Mat,Scalar **),
-            (*restorearray)(Mat,Scalar **),
+            (*iccfactorsymbolic)(Mat,IS,PetscReal,int,Mat *),
+/*35*/      (*getarray)(Mat,PetscScalar **),
+            (*restorearray)(Mat,PetscScalar **),
             (*duplicate)(Mat,MatDuplicateOption,Mat *),
             (*forwardsolve)(Mat,Vec,Vec),
             (*backwardsolve)(Mat,Vec,Vec),
 /*40*/      (*ilufactor)(Mat,IS,IS,MatILUInfo*),
-            (*iccfactor)(Mat,IS,double,int),
-            (*axpy)(Scalar *,Mat,Mat),
+            (*iccfactor)(Mat,IS,PetscReal,int),
+            (*axpy)(PetscScalar *,Mat,Mat),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatReuse,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
-/*45*/      (*getvalues)(Mat,int,int *,int,int *,Scalar *),
+/*45*/      (*getvalues)(Mat,int,int *,int,int *,PetscScalar *),
             (*copy)(Mat,Mat,MatStructure),
             (*printhelp)(Mat),
-            (*scale)(Scalar *,Mat),
-            (*shift)(Scalar *,Mat),
+            (*scale)(PetscScalar *,Mat),
+            (*shift)(PetscScalar *,Mat),
 /*50*/      (*diagonalset)(Mat,Vec,InsertMode),
             (*iludtfactor)(Mat,MatILUInfo*,IS,IS,Mat *),
             (*getblocksize)(Mat,int *),
@@ -76,7 +76,7 @@ struct _MatOps {
             (*coloringpatch)(Mat,int,int,int *,ISColoring*),
             (*setunfactored)(Mat),
 /*60*/      (*permute)(Mat,IS,IS,Mat*),
-            (*setvaluesblocked)(Mat,int,int *,int,int *,Scalar *,InsertMode),
+            (*setvaluesblocked)(Mat,int,int *,int,int *,PetscScalar *,InsertMode),
             (*getsubmatrix)(Mat,IS,IS,int,MatReuse,Mat*),
             (*destroy)(Mat),
             (*view)(Mat,PetscViewer),
@@ -85,8 +85,8 @@ struct _MatOps {
             (*scalesystem)(Mat,Vec,Vec),
             (*unscalesystem)(Mat,Vec,Vec),
             (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping),
-            (*setvalueslocal)(Mat,int,int *,int,int *,Scalar *,InsertMode),
-            (*zerorowslocal)(Mat,IS,Scalar *),
+            (*setvalueslocal)(Mat,int,int *,int,int *,PetscScalar *,InsertMode),
+            (*zerorowslocal)(Mat,IS,PetscScalar *),
             (*getrowmax)(Mat,Vec),
             (*convert)(Mat,MatType,Mat*),
             (*setcoloring)(Mat,ISColoring),
@@ -162,7 +162,7 @@ struct _p_Mat {
   PetscMap               rmap,cmap;
   void                   *data;            /* implementation-specific data */
   int                    factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
-  double                 lupivotthreshold; /* threshold for pivoting */
+  PetscReal                 lupivotthreshold; /* threshold for pivoting */
   PetscTruth             assembled;        /* is the matrix assembled? */
   PetscTruth             was_assembled;    /* new values inserted into assembled mat */
   int                    num_ass;          /* number of times matrix has been assembled */
@@ -254,8 +254,8 @@ struct  _p_MatFDColoring{
   int        *nrows;           /* number of local rows for each color */
   int        **rows;           /* lists the local rows for each color (using the local row numbering) */
   int        **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */ 
-  double     error_rel;        /* square root of relative error in computing function */
-  double     umin;             /* minimum allowable u'dx value */
+  PetscReal  error_rel;        /* square root of relative error in computing function */
+  PetscReal  umin;             /* minimum allowable u'dx value */
   int        freq;             /* frequency at which new Jacobian is computed */
   Vec        w1,w2,w3;         /* work vectors used in computing Jacobian */
   int        (*f)(void);       /* function that defines Jacobian */

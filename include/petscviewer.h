@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.83 2001/03/08 17:29:14 bsmith Exp bsmith $ */
+/* $Id: petscviewer.h,v 1.84 2001/04/10 19:34:03 bsmith Exp bsmith $ */
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
@@ -161,10 +161,10 @@ EXTERN int         PETSC_VIEWER_AMS_Destroy(MPI_Comm);
     PetscViewer utility routines used by PETSc that are not normally used
    by users.
 */
-EXTERN int  PetscViewerSocketPutScalar(PetscViewer,int,int,Scalar*);
-EXTERN int  PetscViewerSocketPutReal(PetscViewer,int,int,double*);
+EXTERN int  PetscViewerSocketPutScalar(PetscViewer,int,int,PetscScalar*);
+EXTERN int  PetscViewerSocketPutReal(PetscViewer,int,int,PetscReal*);
 EXTERN int  PetscViewerSocketPutInt(PetscViewer,int,int*);
-EXTERN int  PetscViewerSocketPutSparse_Private(PetscViewer,int,int,int,Scalar*,int*,int *);
+EXTERN int  PetscViewerSocketPutSparse_Private(PetscViewer,int,int,int,PetscScalar*,int*,int *);
 EXTERN int  PetscViewerDestroyAMS_Private(void);
 
 /*S

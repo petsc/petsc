@@ -1,4 +1,4 @@
-/*$Id: cholesky.c,v 1.10 2001/04/10 19:36:21 bsmith Exp bsmith $*/
+/*$Id: cholesky.c,v 1.11 2001/06/21 21:17:58 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -62,7 +62,7 @@ static int PCSetFromOptions_Cholesky(PC pc)
   if (flg) {
     ierr = PCCholeskySetUseInPlace(pc);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsDouble("-pc_cholesky_fill","Expected non-zeros in Cholesky/non-zeros in matrix","PCCholeskySetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_cholesky_fill","Expected non-zeros in Cholesky/non-zeros in matrix","PCCholeskySetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
   
   ierr = PetscOptionsName("-pc_cholesky_reuse_fill","Use fill from previous factorization","PCCholeskySetReuseFill",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -78,7 +78,7 @@ static int PCSetFromOptions_Cholesky(PC pc)
   if (flg) {
     ierr = PCCholeskySetMatOrdering(pc,tname);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsDouble("-pc_cholesky_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_cholesky_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
   
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -156,7 +156,7 @@ static int PCSetUp_Cholesky(PC pc)
       ierr = PetscOptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         PetscReal tol = 1.e-10;
-        ierr = PetscOptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsGetReal(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
       }
       if (dir->row) {PetscLogObjectParent(pc,dir->row);}
@@ -174,7 +174,7 @@ static int PCSetUp_Cholesky(PC pc)
         ierr = PetscOptionsHasName(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
         if (flg) {
           PetscReal tol = 1.e-10;
-          ierr = PetscOptionsGetDouble(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsGetReal(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
         }
         if (dir->row) {PetscLogObjectParent(pc,dir->row);}

@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.16 2001/03/28 19:42:48 balay Exp bsmith $*/
+/*$Id: pack.c,v 1.17 2001/06/21 21:19:29 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -121,7 +121,7 @@ int VecPackDestroy(VecPack packer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPackGetAccess_Array"
-int VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar **array)
+int VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar **array)
 {
   int    ierr;
   Scalar *varray;
@@ -158,7 +158,7 @@ int VecPackGetAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec *glo
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPackRestoreAccess_Array"
-int VecPackRestoreAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar **array)
+int VecPackRestoreAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -180,7 +180,7 @@ int VecPackRestoreAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec 
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPackScatter_Array"
-int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar *array)
+int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar *array)
 {
   int    ierr;
   Scalar *varray;
@@ -189,7 +189,7 @@ int VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar 
 
   if (!packer->rank) {
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
-    ierr    = PetscMemcpy(array,varray+mine->rstart,mine->n*sizeof(Scalar));CHKERRQ(ierr);
+    ierr    = PetscMemcpy(array,varray+mine->rstart,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
   ierr    = MPI_Bcast(array,mine->n,MPIU_SCALAR,0,packer->comm);CHKERRQ(ierr);
@@ -218,7 +218,7 @@ int VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPackGather_Array"
-int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar *array)
+int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar *array)
 {
   int    ierr;
   Scalar *varray;
@@ -227,7 +227,7 @@ int VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,Scalar *
   if (!packer->rank) {
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
     if (varray+mine->rstart == array) SETERRQ(1,"You need not VecPackGather() into objects obtained via VecPackGetAccess()");
-    ierr    = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(Scalar));CHKERRQ(ierr);
+    ierr    = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -698,12 +698,12 @@ int VecPackGetGlobalIndices(VecPack packer,...)
 /* -------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "VecPackGetLocalVectors_Array"
-int VecPackGetLocalVectors_Array(VecPack packer,struct VecPackLink *mine,Scalar **array)
+int VecPackGetLocalVectors_Array(VecPack packer,struct VecPackLink *mine,PetscScalar **array)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(mine->n*sizeof(Scalar),array);CHKERRQ(ierr);
+  ierr = PetscMalloc(mine->n*sizeof(PetscScalar),array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -719,7 +719,7 @@ int VecPackGetLocalVectors_DA(VecPack packer,struct VecPackLink *mine,Vec *local
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPackRestoreLocalVectors_Array"
-int VecPackRestoreLocalVectors_Array(VecPack packer,struct VecPackLink *mine,Scalar **array)
+int VecPackRestoreLocalVectors_Array(VecPack packer,struct VecPackLink *mine,PetscScalar **array)
 {
   int ierr;
   PetscFunctionBegin;
@@ -987,7 +987,7 @@ int MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
             yarray[ynext->rstart+i] += xarray[xnext->rstart+i];
           }
         } else {
-          ierr    = PetscMemcpy(yarray+ynext->rstart,xarray+xnext->rstart,xnext->n*sizeof(Scalar));CHKERRQ(ierr);
+          ierr    = PetscMemcpy(yarray+ynext->rstart,xarray+xnext->rstart,xnext->n*sizeof(PetscScalar));CHKERRQ(ierr);
         }
         ierr    = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
         ierr    = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
@@ -1063,7 +1063,7 @@ int MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
       if (!mpack->right->rank) {
         ierr    = VecGetArray(x,&xarray);CHKERRQ(ierr);
         ierr    = VecGetArray(y,&yarray);CHKERRQ(ierr);
-        ierr    = PetscMemcpy(yarray+ynext->rstart,xarray+xnext->rstart,xnext->n*sizeof(Scalar));CHKERRQ(ierr);
+        ierr    = PetscMemcpy(yarray+ynext->rstart,xarray+xnext->rstart,xnext->n*sizeof(PetscScalar));CHKERRQ(ierr);
         ierr    = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
         ierr    = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
       }

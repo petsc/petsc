@@ -1,9 +1,10 @@
-# $Id: makefile,v 1.10 2000/08/17 04:53:02 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.11 2000/10/24 20:27:26 bsmith Exp bsmith $ 
 
 ALL: lib
 
-#requirespackage  'PETSC_HAVE_PVODE'
-#requireslanguage CONLY
+#requirespackage   'PETSC_HAVE_PVODE'
+#requireslanguage  CONLY
+#requiresprecision double
 
 CFLAGS   =
 FFLAGS   =

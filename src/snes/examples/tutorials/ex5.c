@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.138 2001/06/20 03:34:27 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.139 2001/07/05 15:28:29 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
 
@@ -53,7 +53,7 @@ T*/
 */
 typedef struct {
    DA            da;             /* distributed array data structure */
-   PassiveDouble param;          /* test problem parameter */
+   PassiveReal param;          /* test problem parameter */
 } AppCtx;
 
 /* 
@@ -61,8 +61,8 @@ typedef struct {
 */
 extern int FormFunction(SNES,Vec,Vec,void*),FormInitialGuess(AppCtx*,Vec),FormFunctionMatlab(SNES,Vec,Vec,void*);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormFunctionLocal(DALocalInfo*,Scalar**,Scalar**,AppCtx*);
-extern int FormJacobianLocal(DALocalInfo*,Scalar**,Mat,AppCtx*);
+extern int FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
+extern int FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
      Initialize problem parameters
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.param = 6.0;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
     SETERRQ(1,"Lambda is out of range");
   }
@@ -130,7 +130,7 @@ int main(int argc,char **argv)
 
   if (global_function) {
     ierr = SNESSetFunction(snes,r,FormFunction,&user);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   } else if (matlab_function) {
     ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
 #endif
@@ -159,7 +159,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-local_jacobian",&local_jacobian,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetLogical(PETSC_NULL,"-adicmf_jacobian",&adicmf_jacobian,0);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   if (adicmf_jacobian) {
     ierr = DASetLocalAdicMFFunction(user.da,admf_FormFunctionLocal);CHKERRQ(ierr);
     ierr = MatRegisterDAAD();CHKERRQ(ierr);
@@ -176,7 +176,7 @@ int main(int argc,char **argv)
     ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   } else if (adic_jacobian) {
     ierr = DAGetColoring(user.da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
     ierr = MatSetColoring(J,iscoloring);CHKERRQ(ierr);
@@ -391,7 +391,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
        Process adiC: FormFunctionLocal
 
  */
-int FormFunctionLocal(DALocalInfo *info,Scalar **x,Scalar **f,AppCtx *user)
+int FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
   int     ierr,i,j;
   double  two = 2.0,lambda,hx,hy,hxdhy,hydhx,sc;
@@ -567,7 +567,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 
 
 */
-int FormJacobianLocal(DALocalInfo *info,Scalar **x,Mat jac,AppCtx *user)
+int FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
 {
   int        ierr,i,j;
   MatStencil col[5],row;
@@ -629,7 +629,7 @@ int FormJacobianLocal(DALocalInfo *info,Scalar **x,Mat jac,AppCtx *user)
 /*
       Variant of FormFunction() that computes the function in Matlab
 */
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 int FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx   *user = (AppCtx*)ptr;

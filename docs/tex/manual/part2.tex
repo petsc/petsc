@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.362 2001/06/21 21:20:15 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.363 2001/07/13 13:43:19 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -74,14 +74,14 @@ order on each processor in the communicator.
 One can assign a single value to all components of a vector with the 
 command \findex{VecSet()}
 \begin{verbatim}
-  VecSet(Scalar *value,Vec x);
+  VecSet(PetscScalar *value,Vec x);
 \end{verbatim}
 Assigning values to individual components of the vector is more 
 complicated, in order to make it possible to write efficient parallel 
 code.  Assigning a set of components is a two-step process: one 
 first calls  \findex{VecSetValues()} \findex{INSERT_VALUES}
 \begin{verbatim}
-  VecSetValues(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
+  VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT_VALUES);
 \end{verbatim}
 any number of times on any or all of the processors. The argument
 \trl{n} gives the number of components being set in this 
@@ -180,14 +180,14 @@ rather than having PETSc internally allocate the array space.
 \sindex{vectors, user-supplied arrays} 
 Such vectors can be created with the routines
 \begin{verbatim}
-  VecCreateSeqWithArray(PETSC_COMM_SELF,int m,Scalar *array,Vec *x);
+  VecCreateSeqWithArray(PETSC_COMM_SELF,int m,PetscScalar *array,Vec *x);
 \end{verbatim}
 and  \findex{VecCreateMPIWithArray()} \findex{VecCreateSeqWithArray()}
 \begin{verbatim}
-  VecCreateMPIWithArray(MPI_Comm comm,int m,int M,,Scalar *array,Vec *x);
+  VecCreateMPIWithArray(MPI_Comm comm,int m,int M,,PetscScalar *array,Vec *x);
 \end{verbatim}
 Note that here one must provide the value \trl{m}, it cannot be \trl{PETSC_DECIDE} and
-the user is responsible for providing enough space in the array; \trl{m*sizeof(Scalar)}.
+the user is responsible for providing enough space in the array; \trl{m*sizeof(PetscScalar)}.
 
 
 % --------------------------------------------------------------------------------------
@@ -199,11 +199,11 @@ the user is responsible for providing enough space in the array; \trl{m*sizeof(S
 \begin{tabular}{ll}
 {\bf Function Name} & {\bf Operation} \\
 \hline
-VecAXPY(Scalar *a,Vec x, Vec y); & $ y = y + a*x$ \\
-VecAYPX(Scalar *a,Vec x, Vec y); & $ y = x + a*y$ \\
-VecWAXPY(Scalar *a,Vec x,Vec y, Vec w); & $ w = a*x + y$ \\
-VecAXPBY(Scalar *a,Scalar *,Vec x,Vec y); & $ y = a*x + b*y$ \\
-VecScale(Scalar *a, Vec x); & $ x = a*x $ \\
+VecAXPY(PetscScalar *a,Vec x, Vec y); & $ y = y + a*x$ \\
+VecAYPX(PetscScalar *a,Vec x, Vec y); & $ y = x + a*y$ \\
+VecWAXPY(PetscScalar *a,Vec x,Vec y, Vec w); & $ w = a*x + y$ \\
+VecAXPBY(PetscScalar *a,PetscScalar *,Vec x,Vec y); & $ y = a*x + b*y$ \\
+VecScale(PetscScalar *a, Vec x); & $ x = a*x $ \\
 VecDot(Vec x, Vec y, Scalar *r); & $ r = \bar{x}'*y$ \\
 VecTDot(Vec x, Vec y, Scalar *r); & $ r = x'*y$ \\
 VecNorm(Vec x,NormType type,  double *r); & $ r = ||x||_{type}$ \\
@@ -212,14 +212,14 @@ VecCopy(Vec x, Vec y); & $ y = x $ \\
 VecSwap(Vec x, Vec y); & $ y = x $ while $ x = y$ \\
 VecPointwiseMult(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}*y_{i} $ \\
 VecPointwiseDivide(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}/y_{i} $ \\
-VecMDot(int n,Vec x, Vec *y,Scalar *r); & $ r[i] = \bar{x}'*y[i]$ \\
-VecMTDot(int n,Vec x, Vec *y,Scalar *r); & $ r[i] = x'*y[i]$ \\
+VecMDot(int n,Vec x, Vec *y,PetscScalar *r); & $ r[i] = \bar{x}'*y[i]$ \\
+VecMTDot(int n,Vec x, Vec *y,PetscScalar *r); & $ r[i] = x'*y[i]$ \\
 VecMAXPY(int n, Scalar *a,Vec y, Vec *x); \hspace{1cm} & $ y = y + \sum_i a_{i}*x[i] $ \\
 VecMax(Vec x,  int *idx, double *r); & $ r = \max x_{i}$ \\
 VecMin(Vec x,  int *idx, double *r); & $ r = \min x_{i}$ \\
 VecAbs(Vec x); & $ x_i = |x_{i}|$ \\
 VecReciprocal(Vec x); & $ x_i = 1/x_{i}$ \\
-VecShift(Scalar *s,Vec x); & $ x_i = s + x_{i}$ \\
+VecShift(PetscScalar *s,Vec x); & $ x_i = s + x_{i}$ \\
 \hline 
 \end{tabular}
 \end{center}
@@ -253,7 +253,7 @@ On occasion, the user needs to access the actual elements of the vector.
 The routine \trl{VecGetArray()} \findex{VecGetArray()}
 returns a pointer to the elements local to the processor:
 \begin{verbatim}
-  VecGetArray(Vec v,Scalar **array);
+  VecGetArray(Vec v,PetscScalar **array);
 \end{verbatim}
 When access to the array is no longer
 needed, the user should call
@@ -283,17 +283,17 @@ split phase versions of these that allow several independent inner products and/
 to share the same communication (thus improving parallel efficiency). For example,
 one may have code such as 
 \begin{verbatim}
- VecDot(Vec x,Vec y,Scalar *dot);
+ VecDot(Vec x,Vec y,PetscScalar *dot);
  VecNorm(Vec x,NormType NORM_2,double *norm2);
  VecNorm(Vec x,NormType NORM_1,double *norm1);
 \end{verbatim}
 This code works fine, the problem is that it performs three seperate parallel communication
 operations. Instead one can write 
 \begin{verbatim}
- VecDotBegin(Vec x,Vec y,Scalar *dot);
+ VecDotBegin(Vec x,Vec y,PetscScalar *dot);
  VecNormBegin(Vec x,NormType NORM_2,double *norm2);
  VecNormBegin(Vec x,NormType NORM_1,double *norm1);
- VecDotEnd(Vec x,Vec y,Scalar *dot);
+ VecDotEnd(Vec x,Vec y,PetscScalar *dot);
  VecNormEnd(Vec x,NormType NORM_2,double *norm2);
  VecNormEnd(Vec x,NormType NORM_1,double *norm1);
 \end{verbatim}
@@ -498,7 +498,7 @@ To set values into a vector with the local numbering, one must first call
 \findex{VecSetLocalToGlobalMapping} \sindex{vectors, setting values with local numbering}
 and then call \findex{VecSetValuesLocal}
 \begin{verbatim}
-  VecSetValuesLocal(Vec x,int n,int *indices,Scalar *values,INSERT_VALUES);
+  VecSetValuesLocal(Vec x,int n,int *indices,PetscScalar *values,INSERT_VALUES);
 \end{verbatim}
 Now the \trl{indices} use the local numbering, rather than the global.
 
@@ -1168,12 +1168,12 @@ the manual pages for further information about available matrix formats.
 To insert or add entries to a matrix, one can call a variant of \trl{
 MatSetValues}, either \findex{MatSetValues()}
 \begin{verbatim}
-  MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
+  MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,
                        INSERT_VALUES);
 \end{verbatim}
 or 
 \begin{verbatim}
-  MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
+  MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,
                        ADD_VALUES);
 \end{verbatim}
 This routine inserts or adds a logically dense subblock of dimension
@@ -1575,7 +1575,7 @@ usual Fortran style.  To create a sequential, dense PETSc matrix,
 \trl{A} of dimensions \trl{m} by \trl{n}, the user should
 call \findex{MatCreateSeqDense()}
 \begin{verbatim}
-  MatCreateSeqDense(PETSC_COMM_SELF,int m,int n,Scalar *data,Mat *A);
+  MatCreateSeqDense(PETSC_COMM_SELF,int m,int n,PetscScalar *data,Mat *A);
 \end{verbatim}
 The variable \trl{data} enables the user to optionally provide the
 location of the data for matrix storage (intended for Fortran users who
@@ -1583,7 +1583,7 @@ wish to allocate their own storage space).  Most users should merely
 set \trl{data} to \trl{PETSC_NULL} for PETSc to control matrix memory allocation.
 To create a parallel, dense matrix, \trl{A}, the user should call
 \begin{verbatim}
-  MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,
+  MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,PetscScalar *data,
                             Mat *A)
 \end{verbatim}
 The arguments \trl{m}, \trl{n}, 
@@ -1662,20 +1662,20 @@ page and Section~\ref{sec:viewers}.
 \begin{tabular}{ll}
 {\bf Function Name} & {\bf Operation} \\
 \hline
-MatAXPY(Scalar *a,Mat X, Mat Y); & $ Y = Y + a*X $ \\
+MatAXPY(PetscScalar *a,Mat X, Mat Y); & $ Y = Y + a*X $ \\
 MatMult(Mat A,Vec x, Vec y); & $ y = A*x $ \\
 MatMultAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A*x $ \\
 MatMultTranspose(Mat A,Vec x, Vec y); & $ y = A^{T}*x $ \\
 MatMultTransposeAdd(Mat A,Vec x, Vec y,Vec z); & $ z = y + A^{T}*x $ \\
 MatNorm(Mat A,NormType type,  double *r); & $ r = ||A||_{type}$ \\
 MatDiagonalScale(Mat A,Vec l,Vec r); & $ A = \hbox{diag}(l)*A*\hbox{diag}(r) $ \\
-MatScale(Scalar *a,Mat A); & $ A = a*A $ \\
+MatScale(PetscScalar *a,Mat A); & $ A = a*A $ \\
 MatConvert(Mat A,MatType type,Mat *B); & $ B = A $ \\
 MatCopy(Mat A,Mat B,MatStructure); &  $ B = A $ \\
 MatGetDiagonal(Mat A,Vec x); & $ x = \hbox{diag}(A)$ \\
 MatTranspose(Mat A,Mat* B); & $ B = A^{T} $ \\
 MatZeroEntries(Mat A); & $ A = 0 $ \\
-MatShift(Scalar *a,Mat Y); & $ Y =  Y + a*I $ \\
+MatShift(PetscScalar *a,Mat Y); & $ Y =  Y + a*I $ \\
 \hline 
 \end{tabular}
 \end{center}
@@ -1799,7 +1799,7 @@ matrix associated with known boundary conditions, by rows of the
 identity matrix (or some scaling of it). This action can be done with 
 the command \findex{MatZeroRows()}
 \begin{verbatim}
-  MatZeroRows(Mat A,IS rows,Scalar *diag_value);
+  MatZeroRows(Mat A,IS rows,PetscScalar *diag_value);
 \end{verbatim}
 For sparse matrices this removes the data structures for certain rows 
 of the matrix. If the pointer \trl{diag_value} is \trl{PETSC_NULL}, it 
@@ -1836,7 +1836,7 @@ In certain applications it may be necessary for application codes
 to directly access elements of a matrix. This may be done by using the 
 the command 
 \begin{verbatim}
-  MatGetRow(Mat A,int row, int *ncols,int **cols,Scalar **vals);
+  MatGetRow(Mat A,int row, int *ncols,int **cols,PetscScalar **vals);
 \end{verbatim}
 The argument \trl{ncols} returns the number of nonzeros in that row, 
 while \trl{cols} and \trl{vals} returns the column indices (with indices
@@ -1851,7 +1851,7 @@ To change the matrix entries, one must use \trl{MatSetValues()}.
 
 Once the user has finished using a row, he or she {\em must} call 
 \begin{verbatim}
-  MatRestoreRow(Mat A,int row,int *ncols,int **cols,Scalar **vals);
+  MatRestoreRow(Mat A,int row,int *ncols,int **cols,PetscScalar **vals);
 \end{verbatim}
 to free any space that was allocated during the call to \trl{MatGetRow()}.
 
@@ -3732,9 +3732,9 @@ application code.
 It is also possible to monitor the differencing parameters h that are computed
 via the routines
 \begin{verbatim}
-   MatSNESMFSetHHistory(Mat,Scalar *,int);
-   MatSNESMFResetHHistory(Mat,Scalar *,int);
-   MatSNESMFGetH(Mat,Scalar *);
+   MatSNESMFSetHHistory(Mat,PetscScalar *,int);
+   MatSNESMFResetHHistory(Mat,PetscScalar *,int);
+   MatSNESMFGetH(Mat,PetscScalar *);
    MatSNESMFKSPMonitor(KSP,int,double,void *);
 \end{verbatim}
 and the runtime option  \trl{-snes_mf_ksp_monitor} \findex{snes_mf_ksp_monitor}
@@ -4307,7 +4307,7 @@ One creates a viewer to Matlab via \trl{ViewerSocketOpen(MPI_Comm,char *machine,
 \end{verbatim}
 One can also send arrays or integer arrays via
 \begin{verbatim}
-  PetscViewerSocketPutScalar(v,int m,int n,Scalar *array);
+  PetscViewerSocketPutScalar(v,int m,int n,PetscScalar *array);
   PetscViewerSocketPutReal(v,int m,int n,double *array);
   PetscViewerSocketPutInt(v,int m,int *array);
 \end{verbatim}
@@ -4338,12 +4338,12 @@ via
 \end{verbatim}
 Similarly one can send arrays via
 \begin{verbatim}
-  PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,Scalar *array,
+  PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,
                             char *name);
 \end{verbatim}
 and get them back via
 \begin{verbatim}
-  PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,Scalar *array,
+  PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,
                             char *name);
 \end{verbatim}
 One cannot use Matlab
@@ -5852,19 +5852,19 @@ commands \findex{OptionsHasName()} \findex{OptionsGetInt()}
 \begin{verbatim}
   OptionsHasName(char *pre,char *name,PetscTruth *flg);
   OptionsGetInt(char *pre,char *name,int *value,PetscTruth *flg);
-  OptionsGetDouble(char *pre,char *name,double *value,PetscTruth *flg);
+  OptionsGetReal(char *pre,char *name,double *value,PetscTruth *flg);
   OptionsGetString(char *pre,char *name,char *value,int maxlen,
                            PetscTruth *flg);
   OptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,
                            PetscTruth *flg);
   OptionsGetIntArray(char *pre,char *name,int *value,int *nmax,
                              PetscTruth *flg);
-  OptionsGetDoubleArray(char *pre,char *name,double *value, int *nmax,
+  OptionsGetRealArray(char *pre,char *name,double *value, int *nmax,
                              PetscTruth *flg);
 \end{verbatim}
-All \findex{OptionsGetDouble()}
+All \findex{OptionsGetReal()}
 of \findex{OptionsGetString()} \findex{OptionsGetIntArray()}
-these \findex{OptionsGetDoubleArray()}
+these \findex{OptionsGetRealArray()}
 routines set \trl{flg=PETSC_TRUE} if the corresponding option was found, \trl{flg=PETSC_FALSE} if it
 was not found.  The optional argument
 \trl{pre} indicates that the true name of the option is the given name

@@ -1,4 +1,4 @@
-/*$Id: superlu.c,v 1.6 2001/07/06 14:27:43 bsmith Exp bsmith $*/
+/*$Id: superlu.c,v 1.7 2001/07/27 15:54:38 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the SuperLU sparse solver
@@ -66,7 +66,7 @@ int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
   int                 numCols = A->n;
   SCformat           *Lstore;
   int                 numNullCols,size;
-  Scalar             *nullVals,*workVals;
+  PetscScalar             *nullVals,*workVals;
   int                 row,newRow,col,newCol,block,b;
   int                 ierr;
 
@@ -122,7 +122,7 @@ extern int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)a->spptr;
-  Scalar             *array;
+  PetscScalar             *array;
   int                 m;
   int                 ierr;
 

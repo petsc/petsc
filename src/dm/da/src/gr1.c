@@ -1,4 +1,4 @@
-/*$Id: gr1.c,v 1.26 2001/03/23 23:25:00 balay Exp bsmith $*/
+/*$Id: gr1.c,v 1.27 2001/04/10 19:37:23 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate1d()
@@ -24,10 +24,10 @@
 .seealso: DASetCoordinates(), DAGetCoordinates(), DACreate1d(), DACreate2d(), DACreate3d()
 
 @*/
-int DASetUniformCoordinates(DA da,double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
+int DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
   int            i,j,k,ierr,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
-  double         hx,hy,hz_;
+  PetscReal      hx,hy,hz_;
   Vec            xcoor;
   DAPeriodicType periodic;
   Scalar         *coors;
@@ -104,7 +104,7 @@ int VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   int            i,rank,size,ierr,n,tag1,tag2,N,step;
   int            istart,isize,j;
   MPI_Status     status;
-  double         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
+  PetscReal         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
   Scalar         *array,*xg;
   PetscDraw      draw;
   PetscTruth     isnull;

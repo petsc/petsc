@@ -1,4 +1,4 @@
-/*$Id: pxxt.c,v 1.5 2001/03/26 15:49:35 bsmith Exp bsmith $*/
+/*$Id: pxxt.c,v 1.6 2001/04/10 19:35:25 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the Tufo-Fischer parallel direct solver
@@ -6,7 +6,7 @@
 */
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-#if !defined(PETSC_USE_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "src/contrib/libtfs/xxt.h"
 
 typedef struct {
@@ -40,7 +40,7 @@ int MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)a->spptr;
-  Scalar         *bb,*xx;
+  PetscScalar         *bb,*xx;
   int            ierr;
 
   PetscFunctionBegin;
@@ -62,7 +62,7 @@ int MatLUFactorNumeric_MPIAIJ_XXT(Mat A,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "LocalMult"
-static int LocalMult_XXT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
+static int LocalMult_XXT(Mat_MPIAIJ *a,PetscScalar *xin,PetscScalar *xout)
 {
   int            ierr;
   Mat_MPIAIJ_XXT *xxt = (Mat_MPIAIJ_XXT*)a->spptr;
@@ -74,8 +74,8 @@ static int LocalMult_XXT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
   ierr = MatMult(a->A,xxt->xd,xxt->b);CHKERRQ(ierr);
   ierr = MatMultAdd(a->B,xxt->xo,xxt->b,xxt->b);CHKERRQ(ierr);
   /*
-  PetscDoubleView(a->A->n+a->B->n,xin,PETSC_VIEWER_STDOUT_WORLD);
-  PetscDoubleView(a->A->m,xout,PETSC_VIEWER_STDOUT_WORLD);
+  PetscRealView(a->A->n+a->B->n,xin,PETSC_VIEWER_STDOUT_WORLD);
+  PetscRealView(a->A->m,xout,PETSC_VIEWER_STDOUT_WORLD);
   */
   PetscFunctionReturn(0);
 }
@@ -165,7 +165,7 @@ int MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJ_XYT *xyt = (Mat_MPIAIJ_XYT*)a->spptr;
-  Scalar         *bb,*xx;
+  PetscScalar         *bb,*xx;
   int            ierr;
 
   PetscFunctionBegin;
@@ -187,7 +187,7 @@ int MatLUFactorNumeric_MPIAIJ_XYT(Mat A,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "LocalMult"
-static int LocalMult_XYT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
+static int LocalMult_XYT(Mat_MPIAIJ *a,PetscScalar *xin,PetscScalar *xout)
 {
   int            ierr;
   Mat_MPIAIJ_XYT *xyt = (Mat_MPIAIJ_XYT*)a->spptr;
@@ -199,8 +199,8 @@ static int LocalMult_XYT(Mat_MPIAIJ *a,Scalar *xin,Scalar *xout)
   ierr = MatMult(a->A,xyt->xd,xyt->b);CHKERRQ(ierr);
   ierr = MatMultAdd(a->B,xyt->xo,xyt->b,xyt->b);CHKERRQ(ierr);
   /*
-  PetscDoubleView(a->A->n+a->B->n,xin,PETSC_VIEWER_STDOUT_WORLD);
-  PetscDoubleView(a->A->m,xout,PETSC_VIEWER_STDOUT_WORLD);
+  PetscRealView(a->A->n+a->B->n,xin,PETSC_VIEWER_STDOUT_WORLD);
+  PetscRealView(a->A->m,xout,PETSC_VIEWER_STDOUT_WORLD);
   */
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.42 2001/06/21 21:19:07 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.43 2001/07/20 21:26:10 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -103,7 +103,9 @@ struct _p_DA {
   DALocalFunction1       adifor_lf;
   DALocalFunction1       adiformf_lf;
 
-  int                    (*lfi)(DALocalInfo*,MatStencil*,void*,Scalar*,void*);
+  int                    (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
+  int                    (*adic_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
+  int                    (*adicmf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
 };
 
 /*

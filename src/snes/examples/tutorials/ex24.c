@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.22 2001/05/30 18:50:23 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.23 2001/06/21 21:18:53 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjoint.\n\n";
 
@@ -49,7 +49,7 @@ static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjo
 
 
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int PDEFormFunctionLocal(DALocalInfo*,Scalar*,Scalar*,PassiveScalar*);
+extern int PDEFormFunctionLocal(DALocalInfo*,PetscScalar*,PetscScalar*,PassiveScalar*);
 
 typedef struct {
   Mat        J;           /* Jacobian of PDE system */
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr); 
-  ierr = PetscOptionsSetValue("-dmmg_snes_mffd",0);CHKERRQ(ierr); 
+  ierr = PetscOptionsSetValue("-dmmg_jacobian_mf_fd",0);CHKERRQ(ierr); 
   /* ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr);   
 
@@ -201,7 +201,7 @@ int main(int argc,char **argv)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PDEFormFunctionLocal"
-int PDEFormFunctionLocal(DALocalInfo *info,Scalar *u,Scalar *fu,PassiveScalar *w)
+int PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar *fu,PassiveScalar *w)
 {
   int     xs = info->xs,xm = info->xm,i,mx = info->mx;
   Scalar  d,h;

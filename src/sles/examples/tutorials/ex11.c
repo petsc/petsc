@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.33 2001/01/23 20:56:41 balay Exp balay $*/
+/*$Id: ex11.c,v 1.34 2001/03/23 23:23:55 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   SETERRQ(1,"This example requires complex numbers");
 #endif
 
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   dim = n*n;
 

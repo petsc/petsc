@@ -1,4 +1,4 @@
-/*$Id: aijmatlab.c,v 1.10 2001/03/22 20:29:53 bsmith Exp balay $*/
+/*$Id: aijmatlab.c,v 1.11 2001/03/23 23:21:51 balay Exp bsmith $*/
 
 /* 
         Provides an interface for the Matlab engine sparse solver
@@ -6,7 +6,7 @@
 */
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 

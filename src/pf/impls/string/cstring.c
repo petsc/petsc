@@ -1,4 +1,4 @@
-/*$Id: cstring.c,v 1.15 2001/06/02 03:10:26 bsmith Exp bsmith $*/
+/*$Id: cstring.c,v 1.16 2001/06/20 03:44:38 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /*
@@ -103,7 +103,7 @@ int PFSetFromOptions_String(PF pf)
   int        ierr;
   PetscTruth flag;
   char       value[256];
-  int        (*f)(void *,int,Scalar*,Scalar*) = 0;
+  int        (*f)(void *,int,PetscScalar*,PetscScalar*) = 0;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("String function options");CHKERRQ(ierr);
@@ -123,7 +123,7 @@ EXTERN_C_BEGIN
 int PFCreate_String(PF pf,void *value)
 {
   int        ierr;
-  int        (*f)(void *,int,Scalar*,Scalar*) = 0;
+  int        (*f)(void *,int,PetscScalar*,PetscScalar*) = 0;
 
   PetscFunctionBegin;
   

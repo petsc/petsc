@@ -1,8 +1,9 @@
-# $Id: makefile,v 1.1 2000/12/21 18:57:34 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 2001/01/15 21:49:38 bsmith Exp bsmith $ 
 
-#requirespackage 'PETSC_HAVE_SAMG'
-#requireslanguage CONLY
-#requiresscalar real 
+#requirespackage  'PETSC_HAVE_SAMG'
+#requireslanguage  CONLY
+#requiresscalar    real 
+#requiresprecision double
 
 ALL: lib
 

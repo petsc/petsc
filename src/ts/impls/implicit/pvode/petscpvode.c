@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.68 2001/04/10 19:37:10 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.69 2001/06/21 21:19:01 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -324,9 +324,9 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PVode Gram-Schmidt orthogonalization type \n");
       }
     }
-    ierr = PetscOptionsDouble("-ts_pvode_atol","Absolute tolerance for convergence","TSPVodeSetTolerance",cvode->abstol,&cvode->abstol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-ts_pvode_rtol","Relative tolerance for convergence","TSPVodeSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-ts_pvode_linear_tolerance","Convergence tolerance for linear solve","TSPVodeSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_pvode_atol","Absolute tolerance for convergence","TSPVodeSetTolerance",cvode->abstol,&cvode->abstol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_pvode_rtol","Relative tolerance for convergence","TSPVodeSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_pvode_linear_tolerance","Convergence tolerance for linear solve","TSPVodeSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_pvode_gmres_restart","Number of GMRES orthogonalization directions","TSPVodeSetGMRESRestart",cvode->restart,&cvode->restart,&flag);CHKERRQ(ierr);
     ierr = PetscOptionsName("-ts_pvode_not_exact_final_time","Allow PVODE to stop near the final time, not exactly on it","TSPVodeSetExactFinalTime",&cvode->exact_final_time);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex32.c,v 1.26 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex32.c,v 1.27 2001/04/10 19:35:44 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format. Writes\n\
 them using the PETSc sparse format. Input parameters are:\n\
@@ -39,7 +39,7 @@ int main(int argc,char **args)
     fscanf(file,"     I=%d%d\n",&j,&col[i]);
   fscanf(file,"  EOD JA\n");
 
-  ierr = PetscMalloc(nnz*sizeof(Scalar),&val);CHKERRQ(ierr);
+  ierr = PetscMalloc(nnz*sizeof(PetscScalar),&val);CHKERRQ(ierr);
   ierr = PetscMalloc(nnz*sizeof(int),&row);CHKERRQ(ierr);
   fscanf(file,"  COEFFICIENT MATRIX IN SLAPSV: I, IA, A\n");
   for (i=0; i<nnz; i++) {
@@ -48,7 +48,7 @@ int main(int argc,char **args)
   }
   fscanf(file,"  EOD IA\n");
 
-  ierr = PetscMalloc(n*sizeof(Scalar),&bval);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscScalar),&bval);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(int),&brow);CHKERRQ(ierr);
   fscanf(file,"  RESIDUAL IN SLAPSV ;IRHS=%d\n",&j);
   for (i=0; i<n; i++) {

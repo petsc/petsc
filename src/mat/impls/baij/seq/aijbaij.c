@@ -1,4 +1,4 @@
-/*$Id: aijbaij.c,v 1.6 2001/03/09 22:50:54 balay Exp balay $*/
+/*$Id: aijbaij.c,v 1.7 2001/03/23 23:22:07 balay Exp bsmith $*/
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -10,7 +10,7 @@ int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data; 
   int         ierr,bs = a->bs,*ai = a->i,*aj = a->j,n = A->M/bs,i,j,k;
   int         *rowlengths,*rows,*cols,maxlen = 0,ncols;
-  Scalar      *aa = a->a;
+  PetscScalar      *aa = a->a;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(n*bs*sizeof(int),&rowlengths);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: axpy.c,v 1.52 2001/03/09 19:38:01 balay Exp balay $*/
+/*$Id: axpy.c,v 1.53 2001/03/23 23:22:45 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -11,7 +11,7 @@
 
    Input Parameters:
 +  X, Y - the matrices
--  a - the scalar multiplier
+-  a - the PetscScalar multiplier
 
    Contributed by: Matthew Knepley
 
@@ -25,10 +25,10 @@
 
 .seealso: MatAYPX()
  @*/
-int MatAXPY(Scalar *a,Mat X,Mat Y)
+int MatAXPY(PetscScalar *a,Mat X,Mat Y)
 {
   int    m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;
-  Scalar *val,*vals;
+  PetscScalar *val,*vals;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,MAT_COOKIE); 
@@ -50,7 +50,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
         ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscMalloc((n1+1)*sizeof(Scalar),&vals);CHKERRQ(ierr);
+      ierr = PetscMalloc((n1+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
       for (i=start; i<end; i++) {
         ierr = MatGetRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
         for (j=0; j<ncols; j++) {
@@ -70,13 +70,13 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
 #undef __FUNCT__  
 #define __FUNCT__ "MatShift"
 /*@
-   MatShift - Computes Y =  Y + a I, where a is a scalar and I is the identity matrix.
+   MatShift - Computes Y =  Y + a I, where a is a PetscScalar and I is the identity matrix.
 
    Collective on Mat
 
    Input Parameters:
 +  Y - the matrices
--  a - the scalar 
+-  a - the PetscScalar 
 
    Level: intermediate
 
@@ -84,7 +84,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
 
 .seealso: MatDiagonalSet()
  @*/
-int MatShift(Scalar *a,Mat Y)
+int MatShift(PetscScalar *a,Mat Y)
 {
   int    i,start,end,ierr;
 
@@ -135,7 +135,7 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
     ierr = (*Y->ops->diagonalset)(Y,D,is);CHKERRQ(ierr);
   } else {
     int    vstart,vend;
-    Scalar *v;
+    PetscScalar *v;
     ierr = VecGetOwnershipRange(D,&vstart,&vend);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
     if (vstart != start || vend != end) {
@@ -161,7 +161,7 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 
    Input Parameters:
 +  X,Y - the matrices
--  a - the scalar multiplier
+-  a - the PetscScalar multiplier
 
    Contributed by: Matthew Knepley
 
@@ -174,9 +174,9 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 
 .seealso: MatAXPY()
  @*/
-int MatAYPX(Scalar *a,Mat X,Mat Y)
+int MatAYPX(PetscScalar *a,Mat X,Mat Y)
 {
-  Scalar one = 1.0;
+  PetscScalar one = 1.0;
   int    mX,mY,nX,nY,ierr;
 
   PetscFunctionBegin;
@@ -224,7 +224,7 @@ int MatComputeExplicitOperator(Mat inmat,Mat *mat)
   Vec      in,out;
   int      ierr,i,M,m,size,*rows,start,end;
   MPI_Comm comm;
-  Scalar   *array,zero = 0.0,one = 1.0;
+  PetscScalar   *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inmat,MAT_COOKIE);

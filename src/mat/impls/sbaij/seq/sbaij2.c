@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.29 2001/03/23 23:22:21 balay Exp bsmith $*/
+/*$Id: sbaij2.c,v 1.30 2001/06/21 21:17:00 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -162,7 +162,7 @@ int MatGetSubMatrices_SeqSBAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat 
 int MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*z,*xb,x1,zero=0.0;
+  PetscScalar          *x,*z,*xb,x1,zero=0.0;
   MatScalar       *v;
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -202,7 +202,7 @@ int MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
 int MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*z,*xb,x1,x2,zero=0.0;
+  PetscScalar          *x,*z,*xb,x1,x2,zero=0.0;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -249,7 +249,7 @@ int MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
 int MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*z,*xb,x1,x2,x3,zero=0.0;
+  PetscScalar          *x,*z,*xb,x1,x2,x3,zero=0.0;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -299,7 +299,7 @@ int MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
 int MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*z,*xb,x1,x2,x3,x4,zero=0.0;
+  PetscScalar          *x,*z,*xb,x1,x2,x3,x4,zero=0.0;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -351,7 +351,7 @@ int MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
 int MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*z,*xb,x1,x2,x3,x4,x5,zero=0.0;
+  PetscScalar          *x,*z,*xb,x1,x2,x3,x4,x5,zero=0.0;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -407,7 +407,7 @@ int MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
 int MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*z,*xb,x1,x2,x3,x4,x5,x6,zero=0.0;
+  PetscScalar          *x,*z,*xb,x1,x2,x3,x4,x5,x6,zero=0.0;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -464,7 +464,7 @@ int MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
 int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*z,*xb,x1,x2,x3,x4,x5,x6,x7,zero=0.0;
+  PetscScalar          *x,*z,*xb,x1,x2,x3,x4,x5,x6,x7,zero=0.0;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -527,7 +527,7 @@ int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
 int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*x_ptr,*z,*z_ptr,*xb,*zb,*work,*workt,zero=0.0;
+  PetscScalar          *x,*x_ptr,*z,*z_ptr,*xb,*zb,*work,*workt,zero=0.0;
   MatScalar       *v;
   int             ierr,mbs=a->mbs,i,*idx,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
   int             ncols,k;
@@ -542,7 +542,7 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
   ii   = a->i;
 
   if (!a->mult_work) {    
-    ierr = PetscMalloc((A->m+1)*sizeof(Scalar),&a->mult_work);CHKERRQ(ierr);
+    ierr = PetscMalloc((A->m+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work; 
     
@@ -567,7 +567,7 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
    
     if (ncols > 0){
       workt = work;
-      ierr  = PetscMemzero(workt,ncols*sizeof(Scalar));CHKERRQ(ierr);
+      ierr  = PetscMemzero(workt,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
       Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
       for (j=0; j<n; j++) {
         zb = z_ptr + bs*(*idx++);  
@@ -589,7 +589,7 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*y,*z,*xb,x1;
+  PetscScalar          *x,*y,*z,*xb,x1;
   MatScalar       *v;
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -639,7 +639,7 @@ int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*y,*z,*xb,x1,x2;
+  PetscScalar          *x,*y,*z,*xb,x1,x2;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -696,7 +696,7 @@ int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*y,*z,*xb,x1,x2,x3;
+  PetscScalar          *x,*y,*z,*xb,x1,x2,x3;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin; 
 
@@ -756,7 +756,7 @@ int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*y,*z,*xb,x1,x2,x3,x4;
+  PetscScalar          *x,*y,*z,*xb,x1,x2,x3,x4;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -819,7 +819,7 @@ int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*y,*z,*xb,x1,x2,x3,x4,x5;
+  PetscScalar          *x,*y,*z,*xb,x1,x2,x3,x4,x5;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin; 
 
@@ -884,7 +884,7 @@ int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*y,*z,*xb,x1,x2,x3,x4,x5,x6;
+  PetscScalar          *x,*y,*z,*xb,x1,x2,x3,x4,x5,x6;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
@@ -953,7 +953,7 @@ int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*y,*z,*xb,x1,x2,x3,x4,x5,x6,x7;
+  PetscScalar          *x,*y,*z,*xb,x1,x2,x3,x4,x5,x6,x7;
   MatScalar       *v;  
   int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin; 
 
@@ -1025,7 +1025,7 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*x_ptr,*y,*z,*z_ptr=0,*xb,*zb,*work,*workt;
+  PetscScalar          *x,*x_ptr,*y,*z,*z_ptr=0,*xb,*zb,*work,*workt;
   MatScalar       *v;
   int             ierr,mbs=a->mbs,i,*idx,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
   int             ncols,k;
@@ -1049,7 +1049,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
   ii   = a->i;
 
   if (!a->mult_work) {    
-    ierr = PetscMalloc((A->m+1)*sizeof(Scalar),&a->mult_work);CHKERRQ(ierr);
+    ierr = PetscMalloc((A->m+1)*sizeof(PetscScalar),&a->mult_work);CHKERRQ(ierr);
   }
   work = a->mult_work; 
   
@@ -1074,7 +1074,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     }
     if (ncols > 0){
       workt = work;
-      ierr  = PetscMemzero(workt,ncols*sizeof(Scalar));CHKERRQ(ierr);
+      ierr  = PetscMemzero(workt,ncols*sizeof(PetscScalar));CHKERRQ(ierr);
       Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
       for (j=0; j<n; j++) {
         zb = z_ptr + bs*(*idx++); 
@@ -1116,7 +1116,7 @@ int MatMultTransposeAdd_SeqSBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqSBAIJ"
-int MatScale_SeqSBAIJ(Scalar *alpha,Mat inA)
+int MatScale_SeqSBAIJ(PetscScalar *alpha,Mat inA)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
   int         one = 1,totalnz = a->bs2*a->s_nz;
@@ -1262,7 +1262,7 @@ int MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
     PetscFunctionReturn(0);
   }  
   /* if a->a are the same */
-  ierr = PetscMemcmp(a->a,b->a,(a->s_nz)*(a->bs)*(a->bs)*sizeof(Scalar),flg);CHKERRQ(ierr);
+  ierr = PetscMemcmp(a->a,b->a,(a->s_nz)*(a->bs)*(a->bs)*sizeof(PetscScalar),flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   
 }
@@ -1273,7 +1273,7 @@ int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   int         ierr,i,j,k,n,row,bs,*ai,*aj,ambs,bs2;
-  Scalar      *x,zero = 0.0;
+  PetscScalar      *x,zero = 0.0;
   MatScalar   *aa,*aa_j;
 
   PetscFunctionBegin;
@@ -1306,7 +1306,7 @@ int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
 int MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar      *l,*r,x,*li,*ri;
+  PetscScalar      *l,*r,x,*li,*ri;
   MatScalar   *aa,*v;
   int         ierr,i,j,k,lm,rn,M,m,*ai,*aj,mbs,tmp,bs,bs2;
 
@@ -1421,7 +1421,7 @@ int MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
   int          ierr,i,j,n,row,col,bs,*ai,*aj,mbs;
   PetscReal    atmp;
   MatScalar    *aa;
-  Scalar       zero = 0.0,*x;
+  PetscScalar       zero = 0.0,*x;
   int          ncols,brow,bcol,krow,kcol; 
 
   PetscFunctionBegin;

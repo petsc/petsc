@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.49 2001/05/14 15:27:23 balay Exp balay $*/
+/*$Id: zpc.c,v 1.50 2001/05/14 17:49:38 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -78,7 +78,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL pccompositespecialsetalpha_(PC *pc,Scalar *alpha,int *ierr)
+void PETSC_STDCALL pccompositespecialsetalpha_(PC *pc,PetscScalar *alpha,int *ierr)
 {
   *ierr = PCCompositeSpecialSetAlpha(*pc,*alpha);
 }

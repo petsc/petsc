@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.92 2001/03/23 23:23:50 balay Exp bsmith $*/
+/*$Id: ex10.c,v 1.93 2001/04/10 19:36:37 bsmith Exp bsmith $*/
 
 static char help[] = "This example calculates the stiffness matrix for a brick in three\n\
 dimensions using 20 node serendipity elements and the equations of linear\n\
@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
-    v = (Scalar)(i-rstart + 100*rank); 
+    v = (PetscScalar)(i-rstart + 100*rank); 
     ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
   } 
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);

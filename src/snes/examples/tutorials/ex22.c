@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.19 2001/04/29 15:11:49 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.20 2001/06/21 21:18:53 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem.\n\n";
 
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-dmmg_snes_mffd",0);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-dmmg_jacobian_mf_fd",0);CHKERRQ(ierr);
   /* ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
 
@@ -171,7 +171,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 /* 
     Computes the exact solution
 */
-int u_solution(void *dummy,int n,Scalar *x,Scalar *u)
+int u_solution(void *dummy,int n,PetscScalar *x,PetscScalar *u)
 {
   int i;
   PetscFunctionBegin;

@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.174 2001/07/20 21:26:11 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.175 2001/07/26 18:23:36 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -184,7 +184,7 @@ int DAPublish_Petsc(PetscObject obj)
 /*
    This allows the DA vectors to properly tell Matlab their dimensions
 */
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */
 EXTERN_C_BEGIN
@@ -209,7 +209,7 @@ int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
 #else
   mat  = mxCreateDoubleMatrix(m,n,mxCOMPLEX);
 #endif
-  ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   mxSetName(mat,obj->name);
   engPutArray((Engine *)engine,mat);
@@ -1039,7 +1039,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   if (dof == 1) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
   }
@@ -1240,7 +1240,7 @@ int DASetLocalFunction(DA da,DALocalFunction1 lf)
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalFunction()
 @*/
-int DASetLocalFunctioni(DA da,int (*lfi)(DALocalInfo*,MatStencil*,void*,Scalar*,void*))
+int DASetLocalFunctioni(DA da,int (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -1467,7 +1467,7 @@ int DAFormFunctioniTest1(DA da,void *w)
   int         ierr,i,n;
   Scalar      *ui,mone = -1.0;
   PetscRandom rnd;
-  double      norm;
+  PetscReal   norm;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
@@ -1518,7 +1518,7 @@ int DAFormFunctioniTest1(DA da,void *w)
 .seealso: DAComputeJacobian1WithAdic()
 
 @*/
-int DAFormFunctioni1(DA da,int i,Vec vu,Scalar *vfu,void *w)
+int DAFormFunctioni1(DA da,int i,Vec vu,PetscScalar *vfu,void *w)
 {
   int         ierr;
   void        *u;
@@ -1542,7 +1542,58 @@ int DAFormFunctioni1(DA da,int i,Vec vu,Scalar *vfu,void *w)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(new)
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetDiagonal_MFFD"
+/*
+  DAGetDiagonal_MFFD - Gets the diagonal for a matrix free matrix where local
+    function lives on a DA
+
+        y ~= (F(u + ha) - F(u))/h, 
+  where F = nonlinear function, as set by SNESSetFunction()
+        u = current iterate
+        h = difference interval
+*/
+int DAGetDiagonal_MFFD(DA da,Vec U,Vec a)
+{
+  Scalar       h,*aa,*ww,v;
+  PetscReal    epsilon = 1.e-8,umin = 1.e-6;
+  int          ierr,gI,nI;
+  MatStencil   stencil;
+  DALocalInfo  info;
+ 
+  PetscFunctionBegin;
+  ierr = (*ctx->func)(0,U,a,ctx->funcctx);CHKERRQ(ierr);
+  ierr = (*ctx->funcisetbase)(U,ctx->funcctx);CHKERRQ(ierr);
+
+  ierr = VecGetArray(U,&ww);CHKERRQ(ierr);
+  ierr = VecGetArray(a,&aa);CHKERRQ(ierr);
+  
+  nI = 0;
+    h  = ww[gI];
+    if (h == 0.0) h = 1.0;
+#if !defined(PETSC_USE_COMPLEX)
+    if (h < umin && h >= 0.0)      h = umin;
+    else if (h < 0.0 && h > -umin) h = -umin;
+#else
+    if (PetscAbsScalar(h) < umin && PetscRealPart(h) >= 0.0)     h = umin;
+    else if (PetscRealPart(h) < 0.0 && PetscAbsScalar(h) < umin) h = -umin;
+#endif
+    h     *= epsilon;
+    
+    ww[gI += h;
+    ierr          = (*ctx->funci)(i,w,&v,ctx->funcctx);CHKERRQ(ierr);
+    aa[nI]  = (v - aa[nI])/h;
+    ww[gI] -= h;
+    nI++;
+  }
+  ierr = VecRestoreArray(U,&ww);CHKERRQ(ierr);
+  ierr = VecRestoreArray(a,&aa);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN_C_BEGIN
 #include "adic_utils.h"
 EXTERN_C_END
@@ -1594,75 +1645,11 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   ierr = (*da->adic_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
 
   /* stick the values into the matrix */
-  ierr = MatSetValuesAdic(J,(Scalar**)ad_fstart);CHKERRQ(ierr);
+  ierr = MatSetValuesAdic(J,(PetscScalar**)ad_fstart);CHKERRQ(ierr);
 
   /* return space for derivative objects.  */
   ierr = DARestoreAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
   ierr = DARestoreAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DAComputeJacobiani1WithAdic"
-/*@
-    DAComputeJacobiani1WithAdic - Evaluates a adiC provided Jacobian functioni
-
-   Input Parameters:
-+    da - the DA that defines the grid
-.    i - vector compute to evalute derivative
-.    vu - input vector (ghosted)
-.    j - output value
--    w - any user data
-
-   Level: advanced
-
-    Notes: Does NOT do ghost updates on vu upon entry
-
-.seealso: DAFormFunction1()
-
-@*/
-int DAComputeJacobiani1WithAdic(DA da,int i,Vec vu,Scalar *j,void *w)
-{
-  int         ierr,gtdof,tdof,I;
-  Scalar      *ustart;
-  DALocalInfo info;
-  void        *ad_u,*ad_j,*ad_ustart;
-  ISColoring  iscoloring;
-  MatStencil  stencil;
-
-  PetscFunctionBegin;
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-
-  /* figure out stencil value from i */
-  stencil.c = i % info.dof;
-  stencil.i = (i % (info.xm*info.dof))/info.dof;
-  stencil.j = (i % (info.xm*info.ym*info.dof))/(info.xm*info.dof);
-  stencil.k = i/(info.xm*info.ym*info.dof);
-
-  /* get space for derivative objects.  */
-  ierr = PetscMalloc(my_AD_GetDerivTypeSize(),&ad_j);CHKERRQ(ierr);
-  ierr = DAGetAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-
-  /* copy the input vector values into the derivative version */
-  ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
-  my_AD_SetValArray((DERIV_TYPE*)ad_ustart,gtdof,ustart);
-  ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
-
-  /* zero the derivative part of ad_ustart and then set just the ith one to 1 */
-  my_AD_ResetIndep();
-  my_AD_ClearGradArray(((DERIV_TYPE*)ad_ustart),gtdof);
-  I = stencil.c + (stencil.i - info.gxs)*info.dof + (stencil.j - info.gys)*info.dof*info.xm + (stencil.k - info.gzs)*info.dof*info.xm*info.ym;
-  my_AD_SetIndepArrayElement((DERIV_TYPE*)ad_ustart,I);
-  my_AD_SetIndepDone();
-
-  ierr = (*da->adic_lfi)(&info,&stencil,ad_u,ad_j,w);CHKERRQ(ierr);
-
-  /* stick the value into j */
-  *j = *(Scalar*)my_AD_GetGradArray(ad_j);
-
-  /* return space for derivative objects.  */
-  ierr = DARestoreAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = PetscFree(ad_j);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1730,71 +1717,6 @@ int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DAMultiplyByJacobiani1WithAdic"
-/*@C
-    DAMultiplyByJacobiani1WithAdic - Applies an ADIC-provided Jacobian function to a vector on 
-    each processor that shares a DA.
-
-    Input Parameters:
-+   da - the DA that defines the grid
-.   i - row of matrix to apply
-.   vu - Jacobian is computed at this point (ghosted)
-.   v - product is done on this vector (ghosted)
-.   f - output value
--   w - any user data
-
-    Notes: 
-    This routine does NOT do ghost updates on vu upon entry.
-
-   Level: advanced
-
-.seealso: DAFormFunction1()
-
-@*/
-int DAMultiplyByJacobiani1WithAdic(DA da,int i,Vec vu,Vec v,Scalar *f,void *w)
-{
-  int         ierr,j,gtdof,tdof;
-  Scalar      *avu,*av,*ad_vustart,ad_f[2];
-  DALocalInfo info;
-  void        *ad_vu;
-  MatStencil  stencil;
-
-  PetscFunctionBegin;
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-
-  /* figure out stencil value from i */
-  stencil.c = i % info.dof;
-  stencil.i = (i % (info.xm*info.dof))/info.dof;
-  stencil.j = (i % (info.xm*info.ym*info.dof))/(info.xm*info.dof);
-  stencil.k = i/(info.xm*info.ym*info.dof);
-
-  /* get space for derivative objects.  */
-  ierr = DAGetAdicMFArray(da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
-
-  /* copy input vector into derivative object */
-  ierr = VecGetArray(vu,&avu);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&av);CHKERRQ(ierr);
-  for (j=0; j<gtdof; j++) {
-    ad_vustart[2*j]   = avu[j];
-    ad_vustart[2*j+1] = av[j];
-  }
-  ierr = VecRestoreArray(vu,&avu);CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&av);CHKERRQ(ierr);
-
-  my_AD_ResetIndep();
-  my_AD_IncrementTotalGradSize(1);
-  my_AD_SetIndepDone();
-
-  ierr = (*da->adicmf_lfi)(&info,&stencil,ad_vu,ad_f,w);CHKERRQ(ierr);
-
-  /* stick the result into the output */
-  *f = ad_f[1];
-
-  /* return space for derivative objects.  */
-  ierr = DARestoreAdicMFArray(da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #else
 
@@ -1807,24 +1729,8 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DAComputeJacobiani1WithAdic"
-int DAComputeJacobiani1WithAdic(DA da,int i,Vec vu,Scalar *j,void *w)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Must compile with base.site flag PETSC_HAVE_ADIC for this routine");
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "DAMultiplyByJacobian1WithAdic"
 int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
-{
-  PetscFunctionBegin;
-  SETERRQ(1,"Must compile with base.site flag PETSC_HAVE_ADIC for this routine");
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DAMultiplyByJacobiani1WithAdic"
-int DAMultiplyByJacobiani1WithAdic(DA da,Vec vu,Vec v,Scalar *f,void *w)
 {
   PetscFunctionBegin;
   SETERRQ(1,"Must compile with base.site flag PETSC_HAVE_ADIC for this routine");
@@ -1889,8 +1795,8 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
   DALocalInfo info;
   Scalar      *u,*g_u,*g_f,*f,*p_u;
   ISColoring  iscoloring;
-  void        (*lf)(int *,DALocalInfo*,Scalar*,Scalar*,int*,Scalar*,Scalar*,int*,void*,int*) = 
-              (void (*)(int *,DALocalInfo*,Scalar*,Scalar*,int*,Scalar*,Scalar*,int*,void*,int*))*da->adifor_lf;
+  void        (*lf)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*) = 
+              (void (*)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*))*da->adifor_lf;
 
   PetscFunctionBegin;
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
@@ -1899,8 +1805,8 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
   N    = info.gxm*info.gym*info.gzm*info.dof;
 
   /* get space for derivative objects.  */
-  ierr  = PetscMalloc(Nc*info.gxm*info.gym*info.gzm*info.dof*sizeof(Scalar),&g_u);CHKERRQ(ierr);
-  ierr  = PetscMemzero(g_u,Nc*info.gxm*info.gym*info.gzm*info.dof*sizeof(Scalar));CHKERRQ(ierr);
+  ierr  = PetscMalloc(Nc*info.gxm*info.gym*info.gzm*info.dof*sizeof(PetscScalar),&g_u);CHKERRQ(ierr);
+  ierr  = PetscMemzero(g_u,Nc*info.gxm*info.gym*info.gzm*info.dof*sizeof(PetscScalar));CHKERRQ(ierr);
   p_u   = g_u;
   color = iscoloring->colors;
   for (i=0; i<N; i++) {
@@ -1908,8 +1814,8 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
     p_u          += Nc;
   }
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-  ierr = PetscMalloc(Nc*info.xm*info.ym*info.zm*info.dof*sizeof(Scalar),&g_f);CHKERRQ(ierr);
-  ierr = PetscMalloc(info.xm*info.ym*info.zm*info.dof*sizeof(Scalar),&f);CHKERRQ(ierr);
+  ierr = PetscMalloc(Nc*info.xm*info.ym*info.zm*info.dof*sizeof(PetscScalar),&g_f);CHKERRQ(ierr);
+  ierr = PetscMalloc(info.xm*info.ym*info.zm*info.dof*sizeof(PetscScalar),&f);CHKERRQ(ierr);
 
   /* Seed the input array g_u with coloring information */
  
@@ -1958,7 +1864,7 @@ int DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 
   PetscFunctionBegin;
   if (da->adicmf_lf) {
-#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
     ierr = DAMultiplyByJacobian1WithAdic(da,u,v,f,w);CHKERRQ(ierr);
 #else
     SETERRQ(1,"Requires ADIC to be installed and cannot use complex numbers");
@@ -1998,8 +1904,8 @@ int DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
   Scalar      *au,*av,*af,*awork;
   Vec         work;
   DALocalInfo info;
-  void        (*lf)(DALocalInfo*,Scalar*,Scalar*,Scalar*,Scalar*,void*,int*) = 
-              (void (*)(DALocalInfo*,Scalar*,Scalar*,Scalar*,Scalar*,void*,int*))*da->adiformf_lf;
+  void        (*lf)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,int*) = 
+              (void (*)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,int*))*da->adiformf_lf;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.71 2001/05/23 03:06:07 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.72 2001/05/29 17:19:06 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -473,8 +473,8 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat *J)
   /* create empty Jacobian matrix */
   ierr    = MatCreate(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
 
-  ierr = PetscMalloc(col*col*nc*nc*sizeof(Scalar),&values);CHKERRQ(ierr);
-  ierr = PetscMemzero(values,col*col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
   ierr = PetscMalloc(col*col*nc*nc*sizeof(int),&cols);CHKERRQ(ierr);
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
@@ -605,8 +605,8 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat *J)
   /* create the matrix */
   /* create empty Jacobian matrix */
   ierr = MatCreate(comm,nc*nx*ny*nz,nc*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE,J);CHKERRQ(ierr);  
-  ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(Scalar),&values);CHKERRQ(ierr);
-  ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
   ierr = PetscMalloc(col*col*col*nc*sizeof(int),&cols);CHKERRQ(ierr);
   ierr = DAGetISLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
@@ -749,8 +749,8 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat *J)
   ierr = DAGetGhostCorners(da,&starts[0],PETSC_IGNORE,PETSC_IGNORE,&dims[0],PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = MatSetStencil(*J,1,dims,starts,nc);CHKERRQ(ierr);
   
-  ierr = PetscMalloc(col*nc*nc*sizeof(Scalar),&values);CHKERRQ(ierr);
-  ierr = PetscMemzero(values,col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMalloc(col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr = PetscMemzero(values,col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
   ierr = PetscMalloc(col*nc*sizeof(int),&cols);CHKERRQ(ierr);
   
@@ -812,8 +812,8 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   /* create the matrix */
-  ierr  = PetscMalloc(col*col*col*nc*nc*sizeof(Scalar),&values);CHKERRQ(ierr);
-  ierr  = PetscMemzero(values,col*col*col*nc*nc*sizeof(Scalar));CHKERRQ(ierr);
+  ierr  = PetscMalloc(col*col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr  = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr  = PetscMalloc(col*col*col*sizeof(int),&cols);CHKERRQ(ierr);
 
   ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);

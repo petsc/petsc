@@ -1,4 +1,4 @@
-/*$Id: dagetarray.c,v 1.11 2001/03/22 20:32:43 bsmith Exp balay $*/
+/*$Id: dagetarray.c,v 1.12 2001/03/23 23:25:00 balay Exp bsmith $*/
  
 #include "petscda.h"    /*I   "petscda.h"   I*/
 
@@ -50,11 +50,11 @@ int DAVecGetArray(DA da,Vec vec,void **array)
   }
 
   if (dim == 1) {
-    ierr = VecGetArray1d(vec,gxm*dof,gxs*dof,(Scalar **)array);CHKERRQ(ierr);
+    ierr = VecGetArray1d(vec,gxm*dof,gxs*dof,(PetscScalar **)array);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr = VecGetArray2d(vec,gym,gxm*dof,gys,gxs*dof,(Scalar***)array);CHKERRQ(ierr);
+    ierr = VecGetArray2d(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr = VecGetArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(Scalar****)array);CHKERRQ(ierr);
+    ierr = VecGetArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"DA dimension not 1, 2, or 3, it is %d\n",dim);
   }
@@ -102,11 +102,11 @@ int DAVecRestoreArray(DA da,Vec vec,void **array)
   }
 
   if (dim == 1) {
-    ierr = VecRestoreArray1d(vec,gxm*dof,gxs*dof,(Scalar **)array);CHKERRQ(ierr);
+    ierr = VecRestoreArray1d(vec,gxm*dof,gxs*dof,(PetscScalar **)array);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr = VecRestoreArray2d(vec,gym,gxm*dof,gys,gxs*dof,(Scalar***)array);CHKERRQ(ierr);
+    ierr = VecRestoreArray2d(vec,gym,gxm*dof,gys,gxs*dof,(PetscScalar***)array);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr = VecRestoreArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(Scalar****)array);CHKERRQ(ierr);
+    ierr = VecRestoreArray3d(vec,gzm,gym,gxm*dof,gzs,gys,gxs*dof,(PetscScalar****)array);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"DA dimension not 1, 2, or 3, it is %d\n",dim);
   }

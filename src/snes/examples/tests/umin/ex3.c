@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.67 2001/03/28 19:42:25 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.68 2001/04/10 19:37:04 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained minimization problems in parallel.  This example is based on the\n\
 Elastic-Plastic Torsion (dept) problem from the MINPACK-2 test suite.\n\
@@ -65,7 +65,7 @@ int main(int argc,char **argv)
 
   /* Set up user-defined work space */
   user.param = 5.0;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
@@ -374,7 +374,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppCt
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(gvec);CHKERRQ(ierr);
-    ierr = VecScale((Scalar*)&area,gvec);CHKERRQ(ierr);
+    ierr = VecScale((PetscScalar*)&area,gvec);CHKERRQ(ierr);
   }
   return 0;
 }

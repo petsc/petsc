@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.47 2001/05/03 16:38:06 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.48 2001/06/21 21:19:50 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -68,7 +68,7 @@ EXTERN_C_BEGIN
 
 
 static void (PETSC_STDCALL *j1d)(DALocalInfo*,void*,void*,void*,int*);
-static int ourlj1d(DALocalInfo *info,Scalar *in,Mat m,void *ptr)
+static int ourlj1d(DALocalInfo *info,PetscScalar *in,Mat m,void *ptr)
 {
   int ierr = 0;
   (*j1d)(info,&in[info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
@@ -76,7 +76,7 @@ static int ourlj1d(DALocalInfo *info,Scalar *in,Mat m,void *ptr)
 }
 
 static void (PETSC_STDCALL *j2d)(DALocalInfo*,void*,void*,void*,int*);
-static int ourlj2d(DALocalInfo *info,Scalar **in,Mat m,void *ptr)
+static int ourlj2d(DALocalInfo *info,PetscScalar **in,Mat m,void *ptr)
 {
   int ierr = 0;
   (*j2d)(info,&in[info->gys][info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
@@ -84,7 +84,7 @@ static int ourlj2d(DALocalInfo *info,Scalar **in,Mat m,void *ptr)
 }
 
 static void (PETSC_STDCALL *j3d)(DALocalInfo*,void*,void*,void*,int*);
-static int ourlj3d(DALocalInfo *info,Scalar ***in,Mat m,void *ptr)
+static int ourlj3d(DALocalInfo *info,PetscScalar ***in,Mat m,void *ptr)
 {
   int ierr = 0;
   (*j3d)(info,&in[info->gzs][info->gys][info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
@@ -92,7 +92,7 @@ static int ourlj3d(DALocalInfo *info,Scalar ***in,Mat m,void *ptr)
 }
 
 static void (PETSC_STDCALL *f1d)(DALocalInfo*,void*,void*,void*,int*);
-static int ourlf1d(DALocalInfo *info,Scalar *in,Scalar *out,void *ptr)
+static int ourlf1d(DALocalInfo *info,PetscScalar *in,PetscScalar *out,void *ptr)
 {
   int ierr = 0;
   (*f1d)(info,&in[info->gxs],&out[info->xs],ptr,&ierr);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ static int ourlf1d(DALocalInfo *info,Scalar *in,Scalar *out,void *ptr)
 }
 
 static void (PETSC_STDCALL *f2d)(DALocalInfo*,void*,void*,void*,int*);
-static int ourlf2d(DALocalInfo *info,Scalar **in,Scalar **out,void *ptr)
+static int ourlf2d(DALocalInfo *info,PetscScalar **in,PetscScalar **out,void *ptr)
 {
   int ierr = 0;
   (*f2d)(info,&in[info->gys][info->gxs],&out[info->ys][info->xs],ptr,&ierr);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ static int ourlf2d(DALocalInfo *info,Scalar **in,Scalar **out,void *ptr)
 }
 
 static void (PETSC_STDCALL *f3d)(DALocalInfo*,void*,void*,void*,int*);
-static int ourlf3d(DALocalInfo *info,Scalar ***in,Scalar ***out,void *ptr)
+static int ourlf3d(DALocalInfo *info,PetscScalar ***in,PetscScalar ***out,void *ptr)
 {
   int ierr = 0;
   (*f3d)(info,&in[info->gzs][info->gys][info->gxs],&out[info->zs][info->ys][info->xs],ptr,&ierr);CHKERRQ(ierr);

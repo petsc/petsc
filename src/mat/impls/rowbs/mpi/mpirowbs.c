@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.c,v 2.5 2001/07/05 15:27:35 bsmith Exp bsmith $*/
+/* $Id: mpirowbs.c,v 2.6 2001/07/20 21:20:14 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/rowbs/mpi/mpirowbs.h"
 #include "src/vec/vecimpl.h"
@@ -7,14 +7,14 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFreeRowbs_Private"
-static int MatFreeRowbs_Private(Mat A,int n,int *i,Scalar *v)
+static int MatFreeRowbs_Private(Mat A,int n,int *i,PetscScalar *v)
 {
   int ierr;
 
   PetscFunctionBegin;
   if (v) {
 #if defined(PETSC_USE_LOG)
-    int len = -n*(sizeof(int)+sizeof(Scalar));
+    int len = -n*(sizeof(int)+sizeof(PetscScalar));
 #endif
     ierr = PetscFree(v);CHKERRQ(ierr);
     PetscLogObjectMemory(A,len);
@@ -24,7 +24,7 @@ static int MatFreeRowbs_Private(Mat A,int n,int *i,Scalar *v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMallocRowbs_Private"
-static int MatMallocRowbs_Private(Mat A,int n,int **i,Scalar **v)
+static int MatMallocRowbs_Private(Mat A,int n,int **i,PetscScalar **v)
 {
   int len,ierr;
 
@@ -32,7 +32,7 @@ static int MatMallocRowbs_Private(Mat A,int n,int **i,Scalar **v)
   if (!n) {
     *i = 0; *v = 0;
   } else {
-    len = n*(sizeof(int) + sizeof(Scalar));
+    len = n*(sizeof(int) + sizeof(PetscScalar));
     ierr = PetscMalloc(len,v);CHKERRQ(ierr);
     PetscLogObjectMemory(A,len);
     *i = (int *)(*v + n);
@@ -42,12 +42,12 @@ static int MatMallocRowbs_Private(Mat A,int n,int **i,Scalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIRowbs"
-int MatScale_MPIRowbs(Scalar *alphain,Mat inA)
+int MatScale_MPIRowbs(PetscScalar *alphain,Mat inA)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)inA->data;
   BSspmat      *A = a->A;
   BSsprow      *vs;
-  Scalar       *ap,alpha = *alphain;
+  PetscScalar       *ap,alpha = *alphain;
   int          i,m = inA->m,nrow,j;
 
   PetscFunctionBegin;
@@ -130,14 +130,14 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,int *nnz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIRowbs_local"
-static int MatSetValues_MPIRowbs_local(Mat AA,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
+static int MatSetValues_MPIRowbs_local(Mat AA,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)AA->data;
   BSspmat      *A = mat->A;
   BSsprow      *vs;
   int          *rp,k,a,b,t,ii,row,nrow,i,col,l,rmax,ierr;
   int          *imax = mat->imax,nonew = mat->nonew,sorted = mat->sorted;
-  Scalar       *ap,value;
+  PetscScalar       *ap,value;
 
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over added rows */
@@ -170,7 +170,7 @@ static int MatSetValues_MPIRowbs_local(Mat AA,int m,int *im,int n,int *in,Scalar
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int    *itemp,*iout,*iin = vs->col;
-        Scalar *vout,*vin = vs->nz,*vtemp;
+        PetscScalar *vout,*vin = vs->nz,*vtemp;
 
         /* malloc new storage space */
         imax[row] += CHUNCKSIZE_LOCAL;
@@ -253,7 +253,7 @@ static int MatAssemblyEnd_MPIRowbs_local(Mat AA,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIRowbs_local"
-static int MatZeroRows_MPIRowbs_local(Mat A,IS is,Scalar *diag)
+static int MatZeroRows_MPIRowbs_local(Mat A,IS is,PetscScalar *diag)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
   BSspmat      *l = a->A;
@@ -292,7 +292,7 @@ static int MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)A->data;
   BSsprow      *vs,**rs;
-  Scalar       *xv;
+  PetscScalar       *xv;
   PetscReal    sum = 0.0;
   int          *xi,nz,i,j,ierr;
 
@@ -353,7 +353,7 @@ static int MatNorm_MPIRowbs_local(Mat A,NormType type,PetscReal *norm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPIRowbs"
-int MatSetValues_MPIRowbs(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode av)
+int MatSetValues_MPIRowbs(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode av)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   int          ierr,i,j,row,col,rstart = a->rstart,rend = a->rend;
@@ -480,7 +480,7 @@ static int MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
   BSsprow      **rs = A->rows;
   MPI_Comm     comm = mat->comm;
   MPI_Status   status;
-  Scalar       *vals;
+  PetscScalar       *vals;
   MatInfo      info;
 
   PetscFunctionBegin;
@@ -544,7 +544,7 @@ static int MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
       ierr = PetscBinaryWrite(fd,cols,nz,PETSC_INT,0);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
-    ierr = PetscMalloc(maxnz*sizeof(Scalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* binary store values for 0th processor */
     nz = 0;
@@ -587,7 +587,7 @@ static int MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
     ierr = PetscFree(cols);CHKERRQ(ierr);
 
     /* copy into buffer column values */
-    ierr = PetscMalloc(nz*sizeof(Scalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
     nz   = 0;
     for (i=0; i<A->num_rows; i++) {
       for (j=0; j<rs[i]->length; j++) {
@@ -636,7 +636,7 @@ static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   int          size,rank,M,rstart,tag,i,j,*rtable,*w1,*w2,*w3,*w4,len,proc,nrqs;
   int          msz,*pa,bsz,nrqr,**rbuf1,**sbuf1,**ptr,*tmp,*ctr,col,index,row;
   int          ctr_j,*sbuf1_j,k,ierr;
-  Scalar       val=0.0;
+  PetscScalar       val=0.0;
   MPI_Comm     comm;
   MPI_Request  *s_waits1,*r_waits1;
   MPI_Status   *s_status,*r_status;
@@ -848,7 +848,7 @@ int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
 { 
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   int          ierr,ldim,low,high,i;
-  Scalar       *diag;
+  PetscScalar       *diag;
 
   PetscFunctionBegin;
   if ((mat->was_assembled) && (!mat->same_nonzero)) {  /* Free the old info */
@@ -898,7 +898,7 @@ int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   int          i,n,row,col,*rows,*cols,ierr,rstart,nzcount,flg,j,ncols;
-  Scalar       *vals,val;
+  PetscScalar       *vals,val;
   InsertMode   addv = mat->insertmode;
 
   PetscFunctionBegin;
@@ -966,7 +966,7 @@ int MatZeroEntries_MPIRowbs(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIRowbs"
-int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
+int MatZeroRows_MPIRowbs(Mat A,IS is,PetscScalar *diag)
 {
   Mat_MPIRowbs   *l = (Mat_MPIRowbs*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -1095,7 +1095,7 @@ int MatNorm_MPIRowbs(Mat mat,NormType type,PetscReal *norm)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   BSsprow      *vs,**rs;
-  Scalar       *xv;
+  PetscScalar       *xv;
   PetscReal    sum = 0.0;
   int          *xi,nz,i,j,ierr;
 
@@ -1167,7 +1167,7 @@ int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)mat->data;
   BSprocinfo   *bspinfo = bsif->procinfo;
-  Scalar       *xxa,*xworka,*yya;
+  PetscScalar       *xxa,*xworka,*yya;
   int          ierr;
 
   PetscFunctionBegin;
@@ -1230,7 +1230,7 @@ int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
 int MatMultAdd_MPIRowbs(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   int     ierr;
-  Scalar  one = 1.0;
+  PetscScalar  one = 1.0;
 
   PetscFunctionBegin;
   ierr = (*mat->ops->mult)(mat,xx,zz);CHKERRQ(ierr);
@@ -1287,7 +1287,7 @@ int MatGetDiagonal_MPIRowbs(Mat mat,Vec v)
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)mat->data;
   BSsprow      **rs = a->A->rows;
   int          i,n,ierr;
-  Scalar       *x,zero = 0.0;
+  PetscScalar       *x,zero = 0.0;
 
   PetscFunctionBegin;
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
@@ -1417,7 +1417,7 @@ int MatGetOwnershipRange_MPIRowbs(Mat A,int *m,int *n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIRowbs"
-int MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,Scalar **v)
+int MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPIRowbs *mat = (Mat_MPIRowbs*)AA->data;
   BSspmat      *A = mat->A;
@@ -1435,7 +1435,7 @@ int MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,Scalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPIRowbs"
-int MatRestoreRow_MPIRowbs(Mat A,int row,int *nz,int **idx,Scalar **v)
+int MatRestoreRow_MPIRowbs(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -1623,7 +1623,7 @@ int MatCreate_MPIRowbs(Mat A)
   ierr = VecCreateMPI(A->comm,A->m,A->M,&(a->diag));CHKERRQ(ierr);
   ierr = VecDuplicate(a->diag,&(a->xwork));CHKERRQ(ierr);
   PetscLogObjectParent(A,a->diag);  PetscLogObjectParent(A,a->xwork);
-  PetscLogObjectMemory(A,(A->m+1)*sizeof(Scalar));
+  PetscLogObjectMemory(A,(A->m+1)*sizeof(PetscScalar));
   bspinfo = BScreate_ctx();CHKERRBS(0);
   a->procinfo = bspinfo;
   BSctx_set_id(bspinfo,a->rank);CHKERRBS(0);
@@ -1745,7 +1745,7 @@ int MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
   Mat          mat;
   int          i,nz,ierr,j,rstart,rend,fd,*ourlens,*sndcounts = 0,*procsnz;
   int          header[4],rank,size,*rowlengths = 0,M,m,*rowners,maxnz,*cols;
-  Scalar       *vals;
+  PetscScalar       *vals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
 
@@ -1833,7 +1833,7 @@ int MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
       ierr = MPI_Send(cols,nz,MPI_INT,i,mat->tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
-    ierr = PetscMalloc(maxnz*sizeof(Scalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* read in my part of the matrix numerical values  */
     nz   = procsnz[0];
@@ -1876,7 +1876,7 @@ int MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
       rs[i]->length = a->imax[i];
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(Scalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* receive message of values*/
     ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,mat->tag,comm,&status);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.22 2001/04/10 19:37:43 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.23 2001/06/05 20:48:27 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -28,7 +28,7 @@ PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
 @*/
-int PFSet(PF pf,int(*apply)(void*,int,Scalar*,Scalar*),int(*applyvec)(void*,Vec,Vec),int(*view)(void*,PetscViewer),int(*destroy)(void*),void*ctx)
+int PFSet(PF pf,int(*apply)(void*,int,PetscScalar*,PetscScalar*),int(*applyvec)(void*,Vec,Vec),int(*view)(void*,PetscViewer),int(*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
@@ -191,7 +191,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
     ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
     for (i=rstart; i<rend; i++) {
-      xx[i-rstart] = (Scalar)i;
+      xx[i-rstart] = (PetscScalar)i;
     }
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   }
@@ -242,7 +242,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
 
 .seealso: PFApplyVec(), PFCreate(), PFDestroy(), PFSetType(), PFSet()
 @*/
-int PFApply(PF pf,int n,Scalar* x,Scalar* y)
+int PFApply(PF pf,int n,PetscScalar* x,PetscScalar* y)
 {
   int        ierr;
 

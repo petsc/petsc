@@ -1,4 +1,4 @@
-/*$Id: ex78.c,v 1.10 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex78.c,v 1.11 2001/04/10 19:35:44 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a matrix in ASCII Matlab format (I,J,A), read in vectors rhs and exact_solu in ASCII format.\n\
 Writes them using the PETSc sparse format.\n\
@@ -57,7 +57,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n Read rhs in ascii format ...\n");CHKERRQ(ierr);
     ierr = PetscFOpen(PETSC_COMM_SELF,bin,"r",&bfile);CHKERRQ(ierr); 
     ierr = PetscMalloc(n*sizeof(double),&bval);CHKERRQ(ierr);
-    ierr = PetscMalloc(n*sizeof(Scalar),&work);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscScalar),&work);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(int),&ib);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       /* fscanf(bfile,"%d %le\n",ib+i,bval+i); ib[i]--;  */  /* modify according to data file! */
@@ -86,7 +86,7 @@ int main(int argc,char **args)
     }
     */
     for (i=0; i<nz; i++) {
-      row_i =(int)row[i]; col_i =(int)col[i]; val_i = (Scalar)val[i];
+      row_i =(int)row[i]; col_i =(int)col[i]; val_i = (PetscScalar)val[i];
       ierr = MatSetValues(A,1,&row_i,1,&col_i,&val_i,INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ int main(int argc,char **args)
     ierr = PetscFree(row);CHKERRQ(ierr);
   }
   if(flg_b){
-    for (i=0; i<n; i++) work[i]=(Scalar)bval[i];
+    for (i=0; i<n; i++) work[i]=(PetscScalar)bval[i];
     ierr = VecSetValues(b,n,ib,work,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ int main(int argc,char **args)
   }
 
   if(flg_u & flg_b){
-    for (i=0; i<n; i++) work[i]=(Scalar)uval[i];
+    for (i=0; i<n; i++) work[i]=(PetscScalar)uval[i];
     ierr = VecSetValues(u,n,ib,work,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(u);CHKERRQ(ierr);

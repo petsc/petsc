@@ -1,4 +1,4 @@
-/*$Id: bread.c,v 1.6 2001/01/15 21:43:08 bsmith Exp balay $*/
+/*$Id: bread.c,v 1.7 2001/03/23 23:19:53 balay Exp bsmith $*/
 
 #include <stdio.h>
 #include "petscsys.h"
@@ -58,7 +58,7 @@ void SYByteSwapShort(short *buff,int n)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SYByteSwapScalar"
-void SYByteSwapScalar(Scalar *buff,int n)
+void SYByteSwapScalar(PetscScalar *buff,int n)
 {
   int    i,j;
   double tmp,*buff1 = (double*)buff;
@@ -103,7 +103,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 
   maxblock = 65536;
   if (type == PETSC_INT)         n *= sizeof(int);
-  else if (type == PETSC_SCALAR) n *= sizeof(Scalar);
+  else if (type == PETSC_SCALAR) n *= sizeof(PetscScalar);
   else if (type == PETSC_SHORT)  n *= sizeof(short);
   else printf("PetscBinaryRead: Unknown type");
   
@@ -121,7 +121,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   }
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
-  else if (type == PETSC_SCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp);
+  else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
   else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
 #endif
 

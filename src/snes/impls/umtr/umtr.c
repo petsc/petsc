@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.109 2001/07/10 18:08:00 buschelm Exp bsmith $*/
+/*$Id: umtr.c,v 1.110 2001/08/06 14:49:08 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 
@@ -33,8 +33,8 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   SNES_UM_TR          *neP = (SNES_UM_TR*)snes->data;
   int                 maxits,i,nlconv,ierr,qits;
   PetscTruth          newton;
-  double              xnorm,max_val,ftrial,delta,ltsnrm,quadratic;
-  double              zero = 0.0,two = 2.0,four = 4.0;
+  PetscReal           xnorm,max_val,ftrial,delta,ltsnrm,quadratic;
+  PetscReal           zero = 0.0,two = 2.0,four = 4.0;
   Scalar              one = 1.0;
   Vec                 X,G,S,Xtrial;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
@@ -291,11 +291,11 @@ $   SNES_CONVERGED_ITERATING         (otherwise).
    Level: intermediate
 
 @*/
-int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *dummy)
+int SNESConverged_UM_TR(SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *dummy)
 {
   SNES_UM_TR *neP = (SNES_UM_TR*)snes->data;
-  double     rtol = snes->rtol,delta = neP->delta,ared = neP->actred,pred = neP->prered;
-  double     epsmch = 1.0e-14;   /* This must be fixed */
+  PetscReal  rtol = snes->rtol,delta = neP->delta,ared = neP->actred,pred = neP->prered;
+  PetscReal  epsmch = 1.0e-14;   /* This must be fixed */
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
@@ -342,13 +342,13 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES trust region options for minimization");CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_eta1","eta1","None",ctx->eta1,&ctx->eta1,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_eta2","step unsuccessful if reduction < eta1 * predicted reduction","None",ctx->eta2,&ctx->eta2,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_eta3","eta3","None",ctx->eta3,&ctx->eta3,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_eta4","eta4","None",ctx->eta4,&ctx->eta4,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_delta0","delta0","None",ctx->delta,&ctx->delta,0);CHKERRQ(ierr);
-    ierr = PetscOptionsDouble("-snes_um_factor1","factor1","None",ctx->factor1,&ctx->factor1,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_trtol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_eta1","eta1","None",ctx->eta1,&ctx->eta1,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_eta2","step unsuccessful if reduction < eta1 * predicted reduction","None",ctx->eta2,&ctx->eta2,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_eta3","eta3","None",ctx->eta3,&ctx->eta3,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_eta4","eta4","None",ctx->eta4,&ctx->eta4,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_delta0","delta0","None",ctx->delta,&ctx->delta,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_um_factor1","factor1","None",ctx->factor1,&ctx->factor1,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   /* if preconditioner has not been set yet, and not using a matrix shell then

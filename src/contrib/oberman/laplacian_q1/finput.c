@@ -27,10 +27,10 @@ int main( int argc, char **argv )
   }
   x_min = 0.0; x_max = 1.0;
   y_min = 0.0; y_max = 1.0;
-  ierr = PetscOptionsGetDouble(0,"-xmin",&x_min,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(0,"-xmax",&x_max,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(0,"-ymin",&y_min,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetDouble(0,"-ymax",&y_max,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(0,"-xmin",&x_min,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(0,"-xmax",&x_max,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(0,"-ymin",&y_min,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(0,"-ymax",&y_max,0);CHKERRQ(ierr);
   n_x = 5; n_y = 5;
   ierr = PetscOptionsGetInt(0,"-nx",&n_x,0);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(0,"-ny",&n_y,0);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.54 2001/06/21 21:15:31 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.55 2001/07/17 00:53:11 bsmith Exp bsmith $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -181,7 +181,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscSum_Local"
 void PetscSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
-  Scalar *xin = (Scalar *)in,*xout = (Scalar*)out;
+  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   int    i,count = *cnt;
 
   PetscFunctionBegin;
@@ -363,7 +363,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
      are not called; at least on IRIX.
   */
   {
-    Scalar ic(0.0,1.0);
+    PetscScalar ic(0.0,1.0);
     PETSC_i = ic; 
   }
   ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-  /* $Id: tsimpl.h,v 1.22 2000/09/02 02:49:52 bsmith Exp bsmith $ */
+  /* $Id: tsimpl.h,v 1.23 2001/01/15 21:48:24 bsmith Exp bsmith $ */
 
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
@@ -24,20 +24,20 @@ struct _p_TS {
   Vec           vec_sol,vec_sol_always;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
-  int  (*monitor[MAXTSMONITORS])(TS,int,double,Vec,void*); /* returns control to user after */
+  int  (*monitor[MAXTSMONITORS])(TS,int,PetscReal,Vec,void*); /* returns control to user after */
   int  (*mdestroy[MAXTSMONITORS])(void*);                
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   int  numbermonitors;                       /* to, for instance, print residual norm, etc. */
 
-  int           (*rhsmatrix)(TS,double,Mat*,Mat*,MatStructure *,void*);
+  int           (*rhsmatrix)(TS,PetscReal,Mat*,Mat*,MatStructure *,void*);
   Mat           A,B;        /* user provided matrix and preconditioner */
   Mat           Ashell;     /* if user provided a Shell matrix */
 
-  int           (*rhsfunction)(TS,double,Vec,Vec,void*); 
+  int           (*rhsfunction)(TS,PetscReal,Vec,Vec,void*); 
   void          *funP;
-  int           (*rhsjacobian)(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+  int           (*rhsjacobian)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
   void          *jacP;
-  int           (*rhsbc)(TS,double,Vec,void*); 
+  int           (*rhsbc)(TS,PetscReal,Vec,void*); 
   void          *bcP;
 
   /* ---------Inner nonlinear or linear solvers ---------------------------*/
@@ -49,7 +49,7 @@ struct _p_TS {
 
   int           (*setup)(TS);            /* sets up the nonlinear solver */
   int           setupcalled;            /* true if setup has been called */
-  int           (*step)(TS,int*,double*); /* stepping routine */      
+  int           (*step)(TS,int*,PetscReal*); /* stepping routine */      
   int           (*setfromoptions)(TS);    /* sets options from database */
   void          *data;                    /* implementationspecific data */
 
@@ -58,11 +58,11 @@ struct _p_TS {
   /* ------------------  Parameters -------------------------------------- */
 
   int           max_steps;          /* max number of steps */
-  double        max_time;
-  double        time_step;
-  double        initial_time_step;
+  PetscReal     max_time;
+  PetscReal     time_step;
+  PetscReal     initial_time_step;
   int           steps;              /* steps taken so far */
-  double        ptime;              /* time taken so far */
+  PetscReal     ptime;              /* time taken so far */
   int           linear_its;         /* total number of linear solver iterations */
   int           nonlinear_its;      /* total number of nonlinear solver iterations */
 
@@ -74,7 +74,7 @@ struct _p_TS {
   int           (*view)(TS,PetscViewer);
 };
 
-EXTERN int TSMonitor(TS,int,double,Vec);
-EXTERN int TSComputeRHSBoundaryConditions(TS,double,Vec); 
+EXTERN int TSMonitor(TS,int,PetscReal,Vec);
+EXTERN int TSComputeRHSBoundaryConditions(TS,PetscReal,Vec); 
 
 #endif

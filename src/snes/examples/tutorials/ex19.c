@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.26 2001/07/20 21:25:39 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.27 2001/07/26 20:10:22 bsmith Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -75,10 +75,10 @@ typedef struct {
 extern int FormInitialGuess(SNES,Vec,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
-extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,Scalar*,void*);
+extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,PetscScalar*,void*);
 
 typedef struct {
-   PassiveDouble  lidvelocity,prandtl,grashof;  /* physical parameters */
+   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
    PetscTruth     draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
@@ -119,9 +119,9 @@ int main(int argc,char **argv)
     user.lidvelocity = 1.0/(mx*my);
     user.prandtl     = 1.0;
     user.grashof     = 1.0;
-    ierr = PetscOptionsGetDouble(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetDouble(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetDouble(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
     ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
@@ -139,10 +139,12 @@ int main(int argc,char **argv)
 
        Process adiC: FormFunctionLocal FormFunctionLocali
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
+    CHKMEMQ;
     ierr = PetscOptionsGetLogical(PETSC_NULL,"-localfunction",&localfunction,PETSC_IGNORE);CHKERRQ(ierr);
+    CHKMEMQ;
     if (localfunction) {
       ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+    CHKMEMQ;
       ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
     } else {
       ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
@@ -568,13 +570,13 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   PetscFunctionReturn(0);
 } 
 
-int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,Scalar *f,void *ptr)
+int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f,void *ptr)
  {
-  AppCtx  *user = (AppCtx*)ptr;
-  int     ierr,i,j,c;
-  double  hx,hy,dhx,dhy,hxdhy,hydhx;
-  double  grashof,prandtl,lid;
-  Scalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  AppCtx      *user = (AppCtx*)ptr;
+  int         i,j,c;
+  PassiveReal hx,hy,dhx,dhy,hxdhy,hydhx;
+  PassiveReal grashof,prandtl,lid;
+  Scalar      u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
 
   PetscFunctionBegin;
   grashof = user->grashof;  

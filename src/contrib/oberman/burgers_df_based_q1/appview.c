@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.8 2001/01/17 22:28:20 bsmith Exp balay $*/
+/*$Id: appview.c,v 1.9 2001/03/23 23:25:35 balay Exp bsmith $*/
 
 
 /*
@@ -213,11 +213,9 @@ int AppCtxViewMatlab(AppCtx* appctx)
   /* Next, send vertices to Matlab */
   ierr = AODataKeyGetOwnershipRange(appctx->aodata,"vertex",&rstart,&rend);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,&isvertex);CHKERRQ(ierr);
-  ierr = AODataSegmentGetIS(appctx->aodata,"vertex","values",isvertex,(void **)&vertex_values);
-         CHKERRQ(ierr);
-  ierr = PetscDoubleView(2*(rend-rstart),vertex_values,viewer);CHKERRQ(ierr);
-  ierr = AODataSegmentRestoreIS(appctx->aodata,"vertex","values",PETSC_NULL,(void **)&vertex_values);
-         CHKERRQ(ierr);
+  ierr = AODataSegmentGetIS(appctx->aodata,"vertex","values",isvertex,(void **)&vertex_values);CHKERRQ(ierr);
+  ierr = PetscRealView(2*(rend-rstart),vertex_values,viewer);CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(appctx->aodata,"vertex","values",PETSC_NULL,(void **)&vertex_values);CHKERRQ(ierr);
   ierr = ISDestroy(isvertex);CHKERRQ(ierr);
 
   /* 

@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.49 2001/04/10 19:36:40 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.50 2001/06/21 21:18:27 bsmith Exp bsmith $*/
 
 static char help[] = "The solution of 2 different linear systems with different linear solvers.\n\
 Also, this example illustrates the repeated\n\
@@ -135,7 +135,7 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(u,&low,&high);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
-    v = (Scalar)(i + 100*rank);
+    v = (PetscScalar)(i + 100*rank);
     ierr = VecSetValues(u,1,&iglobal,&v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(u);CHKERRQ(ierr);

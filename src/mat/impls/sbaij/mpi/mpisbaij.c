@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.56 2001/06/22 18:58:12 curfman Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.57 2001/07/20 21:21:19 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -9,18 +9,18 @@ extern int MatSetUpMultiply_MPISBAIJ(Mat);
 extern int DisAssemble_MPISBAIJ(Mat);
 extern int MatIncreaseOverlap_MPISBAIJ(Mat,int,IS *,int);
 extern int MatGetSubMatrices_MPISBAIJ(Mat,int,IS *,IS *,MatReuse,Mat **);
-extern int MatGetValues_SeqSBAIJ(Mat,int,int *,int,int *,Scalar *);
-extern int MatSetValues_SeqSBAIJ(Mat,int,int *,int,int *,Scalar *,InsertMode);
-extern int MatSetValuesBlocked_SeqSBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
-extern int MatGetRow_SeqSBAIJ(Mat,int,int*,int**,Scalar**);
-extern int MatRestoreRow_SeqSBAIJ(Mat,int,int*,int**,Scalar**);
+extern int MatGetValues_SeqSBAIJ(Mat,int,int *,int,int *,PetscScalar *);
+extern int MatSetValues_SeqSBAIJ(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
+extern int MatSetValuesBlocked_SeqSBAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+extern int MatGetRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
+extern int MatRestoreRow_SeqSBAIJ(Mat,int,int*,int**,PetscScalar**);
 extern int MatPrintHelp_SeqSBAIJ(Mat);
-extern int MatZeroRows_SeqSBAIJ(Mat,IS,Scalar*);
-extern int MatZeroRows_SeqBAIJ(Mat,IS,Scalar *);
+extern int MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*);
+extern int MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar *);
 extern int MatGetRowMax_MPISBAIJ(Mat,Vec);
 
 /*  UGLY, ugly, ugly
-   When MatScalar == Scalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
+   When MatScalar == PetscScalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
    not exist. Otherwise ..._MatScalar() takes matrix elements in single precision and 
    inserts them into the single precision data structure. The function MatSetValuesBlocked_MPIBAIJ()
    converts the entries into single precision and then calls ..._MatScalar() to put them
@@ -132,7 +132,7 @@ static int CreateColmap_MPISBAIJ_Private(Mat mat)
         len = (new_nz - CHUNKSIZE - ai[brow] - nrow); \
         ierr = PetscMemcpy(new_j+ai[brow]+nrow+CHUNKSIZE,aj+ai[brow]+nrow,len*sizeof(int));CHKERRQ(ierr); \
         ierr = PetscMemcpy(new_a,aa,(ai[brow]+nrow)*bs2*sizeof(MatScalar));CHKERRQ(ierr); \
-        ierr = PetscMemzero(new_a+bs2*(ai[brow]+nrow),bs2*CHUNKSIZE*sizeof(Scalar));CHKERRQ(ierr); \
+        ierr = PetscMemzero(new_a+bs2*(ai[brow]+nrow),bs2*CHUNKSIZE*sizeof(PetscScalar));CHKERRQ(ierr); \
         ierr = PetscMemcpy(new_a+bs2*(ai[brow]+nrow+CHUNKSIZE), \
                     aa+bs2*(ai[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
@@ -244,7 +244,7 @@ static int CreateColmap_MPISBAIJ_Private(Mat mat)
 #if defined(PETSC_USE_MAT_SINGLE)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPISBAIJ"
-int MatSetValues_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
+int MatSetValues_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
 {
   Mat_MPISBAIJ *b = (Mat_MPISBAIJ*)mat->data;
   int          ierr,i,N = m*n;
@@ -267,7 +267,7 @@ int MatSetValues_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMo
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ"
-int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
+int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
   int         ierr,i,N = m*n*b->bs2;
@@ -289,7 +289,7 @@ int MatSetValuesBlocked_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,I
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_MPISBAIJ_HT"
-int MatSetValues_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
+int MatSetValues_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
   int         ierr,i,N = m*n;
@@ -302,7 +302,7 @@ int MatSetValues_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Inser
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_HT"
-int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
+int MatSetValuesBlocked_MPISBAIJ_HT(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *b = (Mat_MPIBAIJ*)mat->data;
   int         ierr,i,N = m*n*b->bs2;
@@ -459,7 +459,7 @@ int MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,int *im,int n,int *i
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_MPISBAIJ"
-int MatGetValues_MPISBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
+int MatGetValues_MPISBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
   int          bs=baij->bs,ierr,i,j,bsrstart = baij->rstart*bs,bsrend = baij->rend*bs;
@@ -945,7 +945,7 @@ int MatGetDiagonal_MPISBAIJ(Mat A,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPISBAIJ"
-int MatScale_MPISBAIJ(Scalar *aa,Mat A)
+int MatScale_MPISBAIJ(PetscScalar *aa,Mat A)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
   int         ierr;
@@ -970,10 +970,10 @@ int MatGetOwnershipRange_MPISBAIJ(Mat matin,int *m,int *n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPISBAIJ"
-int MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
+int MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPISBAIJ *mat = (Mat_MPISBAIJ*)matin->data;
-  Scalar     *vworkA,*vworkB,**pvA,**pvB,*v_p;
+  PetscScalar     *vworkA,*vworkB,**pvA,**pvB,*v_p;
   int        bs = mat->bs,bs2 = mat->bs2,i,ierr,*cworkA,*cworkB,**pcA,**pcB;
   int        nztot,nzA,nzB,lrow,brstart = mat->rstart*bs,brend = mat->rend*bs;
   int        *cmap,*idx_p,cstart = mat->cstart;
@@ -993,7 +993,7 @@ int MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i]; /* row length */
       if (max < tmp) { max = tmp; }
     }
-    ierr = PetscMalloc(max*bs2*(sizeof(int)+sizeof(Scalar)),&mat->rowvalues);CHKERRQ(ierr);
+    ierr = PetscMalloc(max*bs2*(sizeof(int)+sizeof(PetscScalar)),&mat->rowvalues);CHKERRQ(ierr);
     mat->rowindices = (int*)(mat->rowvalues + max*bs2);
   }
        
@@ -1052,7 +1052,7 @@ int MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_MPISBAIJ"
-int MatRestoreRow_MPISBAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
+int MatRestoreRow_MPISBAIJ(Mat mat,int row,int *nz,int **idx,PetscScalar **v)
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
 
@@ -1235,7 +1235,7 @@ int MatDiagonalScale_MPISBAIJ(Mat mat,Vec ll,Vec rr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPISBAIJ"
-int MatZeroRows_MPISBAIJ(Mat A,IS is,Scalar *diag)
+int MatZeroRows_MPISBAIJ(Mat A,IS is,PetscScalar *diag)
 {
   Mat_MPISBAIJ   *l = (Mat_MPISBAIJ*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -1611,7 +1611,7 @@ int MatCreate_MPISBAIJ(Mat B)
   if (flg) { 
     double fact = 1.39;
     ierr = MatSetOption(B,MAT_USE_HASH_TABLE);CHKERRQ(ierr);
-    ierr = PetscOptionsGetDouble(PETSC_NULL,"-mat_use_hash_table",&fact,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-mat_use_hash_table",&fact,PETSC_NULL);CHKERRQ(ierr);
     if (fact <= 1.0) fact = 1.39;
     ierr = MatMPIBAIJSetHashTableFactor(B,fact);CHKERRQ(ierr);
     PetscLogInfo(0,"MatCreateMPISBAIJ:Hash table Factor used %5.2f\n",fact);
@@ -1987,7 +1987,7 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
 {
   Mat          A;
   int          i,nz,ierr,j,rstart,rend,fd;
-  Scalar       *vals,*buf;
+  PetscScalar       *vals,*buf;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,*browners,maxnz,*cols;
@@ -2146,7 +2146,7 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   
   if (!rank) {
-    ierr = PetscMalloc(maxnz*sizeof(Scalar),&buf);CHKERRQ(ierr);
+    ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
     /* read in my part of the matrix numerical values  */
     nz = procsnz[0];
     vals = buf;
@@ -2183,7 +2183,7 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
 
   } else {
     /* receive numeric values */
-    ierr = PetscMalloc(nz*sizeof(Scalar),&buf);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
 
     /* receive message of values*/
     vals   = buf;
@@ -2248,10 +2248,10 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
   Mat_SeqBAIJ  *b = (Mat_SeqBAIJ*)(a->B)->data;
   PetscReal    atmp;
-  double       *work,*svalues,*rvalues;
+  PetscReal    *work,*svalues,*rvalues;
   int          ierr,i,bs,mbs,*bi,*bj,brow,j,ncols,krow,kcol,col,row,Mbs,bcol;
   int          rank,size,*rowners_bs,dest,count,source;
-  Scalar       *va;
+  PetscScalar       *va;
   MatScalar    *ba;
   MPI_Status   stat;
 
@@ -2316,8 +2316,8 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
     /* send values to its owners */
     for (dest=rank+1; dest<size; dest++){
       svalues = work + rowners_bs[dest];
-      count = rowners_bs[dest+1]-rowners_bs[dest];
-      ierr = MPI_Send(svalues,count,MPI_DOUBLE,dest,rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      count   = rowners_bs[dest+1]-rowners_bs[dest];
+      ierr    = MPI_Send(svalues,count,MPI_DOUBLE,dest,rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
       /*
       PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] sends %d values to [%d]: %g, %g, %g, %g\n",rank,count,dest,svalues[0],svalues[1],svalues[2],svalues[3]); 
       PetscSynchronizedFlush(PETSC_COMM_WORLD);
@@ -2328,7 +2328,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   /* receive values */
   if (rank){
     rvalues = work;
-    count = rowners_bs[rank+1]-rowners_bs[rank];
+    count   = rowners_bs[rank+1]-rowners_bs[rank];
     for (source=0; source<rank; source++){     
       ierr = MPI_Recv(rvalues,count,MPI_DOUBLE,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&stat);CHKERRQ(ierr);
       /* process values */     

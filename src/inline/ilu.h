@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.26 2001/04/06 04:17:23 buschelm Exp buschelm $ */
+/* $Id: ilu.h,v 1.27 2001/06/22 19:49:57 buschelm Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -290,10 +290,10 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 #define msgemm_  msgemm
 #endif
 EXTERN_C_BEGIN
-EXTERN void msgemv_(int *,int *,MatScalar*,Scalar*,Scalar*);
-EXTERN void msgemvp_(int *,int *,MatScalar*,Scalar*,Scalar*);
-EXTERN void msgemvm_(int *,int *,MatScalar*,Scalar*,Scalar*);
-EXTERN void msgemvt_(int *,int *,MatScalar*,Scalar*,Scalar*);
+EXTERN void msgemv_(int *,int *,MatScalar*,PetscScalar*,PetscScalar*);
+EXTERN void msgemvp_(int *,int *,MatScalar*,PetscScalar*,PetscScalar*);
+EXTERN void msgemvm_(int *,int *,MatScalar*,PetscScalar*,PetscScalar*);
+EXTERN void msgemvt_(int *,int *,MatScalar*,PetscScalar*,PetscScalar*);
 EXTERN void msgemmi_(int *,MatScalar*,MatScalar*,MatScalar*);
 EXTERN void msgemm_(int *,MatScalar*,MatScalar*,MatScalar*);
 EXTERN_C_END

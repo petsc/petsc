@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.83 2001/03/22 20:32:01 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.84 2001/03/23 23:24:25 balay Exp bsmith $*/
 
 static char help[] = "Newton methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -178,7 +178,7 @@ int main(int argc,char **argv)
     ierr = SNESSetLineSearchCheck(snes,StepCheck,&checkP);CHKERRQ(ierr); 
     ierr = VecDuplicate(x,&(checkP.last_step));CHKERRQ(ierr); 
     checkP.tolerance = 1.0;
-    ierr = PetscOptionsGetDouble(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRQ(ierr);
   }
 
 

@@ -1,4 +1,4 @@
-/*$Id: cmesh.c,v 1.71 2001/01/15 21:44:37 bsmith Exp balay $*/
+/*$Id: cmesh.c,v 1.72 2001/03/23 23:21:18 balay Exp bsmith $*/
 
 #include "petscvec.h"        /*I "petscvec.h" I*/
 
@@ -23,7 +23,7 @@
 @*/
 int VecContourScale(Vec v,PetscReal vmin,PetscReal vmax)
 {
-  Scalar *values;
+  PetscScalar *values;
   int    ierr,n,i;
   PetscReal scale;
 

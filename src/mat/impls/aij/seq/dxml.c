@@ -1,4 +1,4 @@
-/*$Id: dxml.c,v 1.21 2001/01/15 21:45:34 bsmith Exp balay $*/
+/*$Id: dxml.c,v 1.22 2001/03/23 23:21:51 balay Exp bsmith $*/
 
 /* 
         Provides an interface to the DEC Alpha DXML library
@@ -13,7 +13,7 @@
 static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
-  Scalar     *xx,*yy;
+  PetscScalar     *xx,*yy;
   int        ierr,zero = 0;
 
   PetscFunctionBegin;

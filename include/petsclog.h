@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.152 2001/04/10 19:34:39 bsmith Exp balay $ */
+/* $Id: petsclog.h,v 1.153 2001/04/10 22:34:32 balay Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -314,19 +314,19 @@ extern int            PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define MPI_Startall_irecv(count,number,requests)                                     \
 (\
   PETSC_DUMMY = MPI_Startall(number,requests),                                                    \
-  irecv_ct += (PetscLogDouble)(number),irecv_len += ((PetscLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY \
+  irecv_ct += (PetscLogDouble)(number),irecv_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY \
 )
 
 #define MPI_Startall_isend(count,number,requests)                                    \
 (\
   PETSC_DUMMY = MPI_Startall(number,requests),                                                   \
-  isend_ct += (PetscLogDouble)(number),isend_len += ((PetscLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY \
+  isend_ct += (PetscLogDouble)(number),isend_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY \
 )
 
 #define MPI_Start_isend(count, requests)\
 (\
   PETSC_DUMMY = MPI_Start(requests),\
-  isend_ct++,isend_len += ((PetscLogDouble) ((count)*sizeof(Scalar))),PETSC_DUMMY\
+  isend_ct++,isend_len += ((PetscLogDouble) ((count)*sizeof(PetscScalar))),PETSC_DUMMY\
 )
 
 #define MPI_Recv(buf,count, datatype,source,tag,comm,status)           \

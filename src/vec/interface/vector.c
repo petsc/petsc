@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.232 2001/07/19 21:09:57 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.233 2001/07/20 21:18:10 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -136,7 +136,7 @@ $     val = (x,y) = y^T x,
 
 .seealso: VecMDot(), VecTDot(), VecNorm(), VecDotBegin(), VecDotEnd()
 @*/
-int VecDot(Vec x,Vec y,Scalar *val)
+int VecDot(Vec x,Vec y,PetscScalar *val)
 {
   int ierr;
 
@@ -338,7 +338,7 @@ $     val = (x,y) = y^H x,
 
 .seealso: VecDot(), VecMTDot()
 @*/
-int VecTDot(Vec x,Vec y,Scalar *val) 
+int VecTDot(Vec x,Vec y,PetscScalar *val) 
 {
   int ierr;
 
@@ -383,7 +383,7 @@ $      x[i] = alpha * x[i], for i=1,...,n.
    Concepts: scaling^vector
 
 @*/
-int VecScale (const Scalar *alpha,Vec x)
+int VecScale (const PetscScalar *alpha,Vec x)
 {
   int ierr;
 
@@ -465,7 +465,7 @@ $     x[i] = alpha, for i=1,...,n,
    Concepts: vector^setting to constant
 
 @*/
-int VecSet(const Scalar *alpha,Vec x) 
+int VecSet(const PetscScalar *alpha,Vec x) 
 {
   int ierr;
 
@@ -557,7 +557,7 @@ int VecSetRandom(PetscRandom rctx,Vec x)
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY()
 @*/
-int VecAXPY(const Scalar *alpha,Vec x,Vec y)
+int VecAXPY(const PetscScalar *alpha,Vec x,Vec y)
 {
   int ierr;
 
@@ -599,7 +599,7 @@ int VecAXPY(const Scalar *alpha,Vec x,Vec y)
 
 .seealso: VecAYPX(), VecMAXPY(), VecWAXPY(), VecAXPY()
 @*/
-int VecAXPBY(const Scalar *alpha,const Scalar *beta,Vec x,Vec y)
+int VecAXPBY(const PetscScalar *alpha,const PetscScalar *beta,Vec x,Vec y)
 {
   int ierr;
 
@@ -642,7 +642,7 @@ int VecAXPBY(const Scalar *alpha,const Scalar *beta,Vec x,Vec y)
 
 .seealso: VecAXPY(), VecWAXPY()
 @*/
-int VecAYPX(const Scalar *alpha,Vec x,Vec y)
+int VecAYPX(const PetscScalar *alpha,Vec x,Vec y)
 {
   int ierr;
 
@@ -719,7 +719,7 @@ int VecSwap(Vec x,Vec y)
 
 .seealso: VecAXPY(), VecAYPX()
 @*/
-int VecWAXPY(const Scalar *alpha,Vec x,Vec y,Vec w)
+int VecWAXPY(const PetscScalar *alpha,Vec x,Vec y,Vec w)
 {
   int ierr;
 
@@ -1013,7 +1013,7 @@ int VecDestroyVecs(const Vec vv[],int m)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
            VecSetValue(), VecSetValuesBlocked()
 @*/
-int VecSetValues(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora) 
+int VecSetValues(Vec x,int ni,const int ix[],const PetscScalar y[],InsertMode iora) 
 {
   int ierr;
 
@@ -1069,7 +1069,7 @@ int VecSetValues(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(),
            VecSetValues()
 @*/
-int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora) 
+int VecSetValuesBlocked(Vec x,int ni,const int ix[],const PetscScalar y[],InsertMode iora) 
 {
   int ierr;
 
@@ -1088,7 +1088,7 @@ int VecSetValuesBlocked(Vec x,int ni,const int ix[],const Scalar y[],InsertMode 
    VecSetValue - Set a single entry into a vector.
 
    Synopsis:
-   int VecSetValue(Vec v,int row,Scalar value, InsertMode mode);
+   int VecSetValue(Vec v,int row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -1232,7 +1232,7 @@ int VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapping)
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetLocalToGlobalMapping(),
            VecSetValuesBlockedLocal()
 @*/
-int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora) 
+int VecSetValuesLocal(Vec x,int ni,const int ix[],const PetscScalar y[],InsertMode iora) 
 {
   int ierr,lixp[128],*lix = lixp;
 
@@ -1300,7 +1300,7 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesBlocked(), 
            VecSetLocalToGlobalMappingBlocked()
 @*/
-int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode iora) 
+int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const PetscScalar y[],InsertMode iora) 
 {
   int ierr,lixp[128],*lix = lixp;
 
@@ -1475,7 +1475,7 @@ $      val = (x,y) = y^H x,
 
 .seealso: VecMDot(), VecTDot()
 @*/
-int VecMTDot(int nv,Vec x,const Vec y[],Scalar *val)
+int VecMTDot(int nv,Vec x,const Vec y[],PetscScalar *val)
 {
   int ierr;
 
@@ -1527,7 +1527,7 @@ $     val = (x,y) = y^T x,
 
 .seealso: VecMTDot(), VecDot()
 @*/
-int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
+int VecMDot(int nv,Vec x,const Vec y[],PetscScalar *val)
 {
   int ierr;
 
@@ -1567,7 +1567,7 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
 
 .seealso: VecAXPY(), VecWAXPY(), VecAYPX()
 @*/
-int  VecMAXPY(int nv,const Scalar *alpha,Vec y,Vec *x)
+int  VecMAXPY(int nv,const PetscScalar *alpha,Vec y,Vec *x)
 {
   int ierr;
 
@@ -1631,7 +1631,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
 @*/
-int VecGetArray(Vec x,Scalar *a[])
+int VecGetArray(Vec x,PetscScalar *a[])
 {
   int ierr;
 
@@ -1667,16 +1667,16 @@ int VecGetArray(Vec x,Scalar *a[])
 
 .seealso: VecGetArray(), VecRestoreArrays()
 @*/
-int VecGetArrays(const Vec x[],int n,Scalar **a[])
+int VecGetArrays(const Vec x[],int n,PetscScalar **a[])
 {
   int    i,ierr;
-  Scalar **q;
+  PetscScalar **q;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(*x,VEC_COOKIE);
   PetscValidPointer(a);
   if (n <= 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must get at least one array n = %d",n);
-  ierr = PetscMalloc(n*sizeof(Scalar*),&q);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscScalar*),&q);CHKERRQ(ierr);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]);CHKERRQ(ierr);
   }
@@ -1710,10 +1710,10 @@ int VecGetArrays(const Vec x[],int n,Scalar **a[])
 
 .seealso: VecGetArrays(), VecRestoreArray()
 @*/
-int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
+int VecRestoreArrays(const Vec x[],int n,PetscScalar **a[])
 {
   int    i,ierr;
-  Scalar **q = *a;
+  PetscScalar **q = *a;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(*x,VEC_COOKIE);
@@ -1752,7 +1752,7 @@ int VecRestoreArrays(const Vec x[],int n,Scalar **a[])
    Fortran Note:
    This routine is used differently from Fortran 77
 $    Vec         x
-$    Scalar      x_array(1)
+$    PetscScalar      x_array(1)
 $    PetscOffset i_x
 $    int         ierr
 $       call VecGetArray(x,x_array,i_x,ierr)
@@ -1769,7 +1769,7 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 
 .seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
 @*/
-int VecRestoreArray(Vec x,Scalar *a[])
+int VecRestoreArray(Vec x,PetscScalar *a[])
 {
   int ierr;
 
@@ -1829,7 +1829,7 @@ int VecRestoreArray(Vec x,Scalar *a[])
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscDrawLGCreate(),
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), VecLoad(), PetscViewerCreate(),
-          PetscDoubleView(), PetscScalarView(), PetscIntView()
+          PetscRealView(), PetscScalarView(), PetscIntView()
 @*/
 int VecView(Vec vec,PetscViewer viewer)
 {
@@ -2077,7 +2077,7 @@ int VecDestroyVecs_Default(const Vec v[], int m)
 .seealso: VecGetArray(), VecRestoreArray(), VecReplaceArray(), VecResetArray()
 
 @*/
-int VecPlaceArray(Vec vec,const Scalar array[])
+int VecPlaceArray(Vec vec,const PetscScalar array[])
 {
   int ierr;
 
@@ -2147,7 +2147,7 @@ int VecResetArray(Vec vec)
 .seealso: VecGetArray(), VecRestoreArray(), VecPlaceArray()
 
 @*/
-int VecReplaceArray(Vec vec,const Scalar array[])
+int VecReplaceArray(Vec vec,const PetscScalar array[])
 {
   int ierr;
 
@@ -2220,7 +2220,7 @@ M*/
 
     Example of Usage: 
 .vb
-    Scalar, pointer :: xx_v(:)
+    PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
     a = xx_v(3)
@@ -2278,7 +2278,7 @@ M*/
 
     Example of Usage: 
 .vb
-    Scalar, pointer :: xx_v(:)
+    PetscScalar, pointer :: xx_v(:)
     ....
     call VecGetArrayF90(x,xx_v,ierr)
     a = xx_v(3)
@@ -2322,7 +2322,7 @@ M*/
 .vb
      int    VEC_COOKIE
      int    number of rows
-     Scalar *values of all nonzeros
+     PetscScalar *values of all nonzeros
 .ve
 
    Note for Cray users, the int's stored in the binary file are 32 bit
@@ -2474,7 +2474,7 @@ int VecStashView(Vec v,PetscViewer viewer)
   int        ierr,rank,i,j;
   PetscTruth match;
   VecStash   *s;
-  Scalar     val;
+  PetscScalar     val;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -2556,10 +2556,10 @@ int VecStashView(Vec v,PetscViewer viewer)
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
+int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,PetscScalar **a[])
 {
   int    i,ierr,N;
-  Scalar *aa;
+  PetscScalar *aa;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
@@ -2569,7 +2569,7 @@ int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
   if (m*n != N) SETERRQ3(1,"Local array size %d does not match 2d array dimensions %d by %d",N,m,n);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(m*sizeof(Scalar*),a);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscScalar*),a);CHKERRQ(ierr);
   for (i=0; i<m; i++) (*a)[i] = aa + i*n - nstart;
   *a -= mstart;
   PetscFunctionReturn(0);
@@ -2604,7 +2604,7 @@ int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
           VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-int VecRestoreArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
+int VecRestoreArray2d(Vec x,int m,int n,int mstart,int nstart,PetscScalar **a[])
 {
   int ierr;
 
@@ -2646,7 +2646,7 @@ int VecRestoreArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetarray2d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-int VecGetArray1d(Vec x,int m,int mstart,Scalar *a[])
+int VecGetArray1d(Vec x,int m,int mstart,PetscScalar *a[])
 {
   int ierr,N;
 
@@ -2690,7 +2690,7 @@ int VecGetArray1d(Vec x,int m,int mstart,Scalar *a[])
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
           VecGetarray1d(), VecRestoreArray2d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-int VecRestoreArray1d(Vec x,int m,int mstart,Scalar *a[])
+int VecRestoreArray1d(Vec x,int m,int mstart,PetscScalar *a[])
 {
   int ierr;
 
@@ -2768,10 +2768,10 @@ int VecConjugate(Vec x)
           VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
           VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
 @*/
-int VecGetArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,Scalar ***a[])
+int VecGetArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,PetscScalar ***a[])
 {
   int    i,ierr,N,j;
-  Scalar *aa,**b;
+  PetscScalar *aa,**b;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
@@ -2781,8 +2781,8 @@ int VecGetArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,Scala
   if (m*n*p != N) SETERRQ4(1,"Local array size %d does not match 3d array dimensions %d by %d by %d",N,m,n,p);
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(m*sizeof(Scalar**)+m*n*sizeof(Scalar*),a);CHKERRQ(ierr);
-  b    = (Scalar **)((*a) + m);
+  ierr = PetscMalloc(m*sizeof(PetscScalar**)+m*n*sizeof(PetscScalar*),a);CHKERRQ(ierr);
+  b    = (PetscScalar **)((*a) + m);
   for (i=0; i<m; i++)   (*a)[i] = b + i*n - nstart;
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
@@ -2824,7 +2824,7 @@ int VecGetArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,Scala
           VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
           VecGetarray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
 @*/
-int VecRestoreArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,Scalar ***a[])
+int VecRestoreArray3d(Vec x,int m,int n,int p,int mstart,int nstart,int pstart,PetscScalar ***a[])
 {
   int ierr;
 

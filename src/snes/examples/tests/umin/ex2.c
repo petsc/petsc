@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.68 2001/03/28 19:42:25 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.69 2001/04/10 19:37:04 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained minimization problems on a single processor.  These examples are based on\n\
 problems from the MINPACK-2 test suite.  The command line options are:\n\
@@ -70,14 +70,14 @@ int main(int argc,char **argv)
   user.problem = 1;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&user.problem,PETSC_NULL);CHKERRQ(ierr);
   user.param = 5.0;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-par",&user.param,PETSC_NULL);CHKERRQ(ierr);
   if (user.problem != 1 && user.problem != 2) SETERRQ(1,"Invalid problem number");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
   user.hx = one/(mx+1); user.hy = one/(my+1);
   if (user.problem == 2) {
-    ierr = PetscMalloc(2*(mx+my+4)*sizeof(Scalar),&user.work);CHKERRQ(ierr);
+    ierr = PetscMalloc(2*(mx+my+4)*sizeof(PetscScalar),&user.work);CHKERRQ(ierr);
   } else {
     user.work = 0;
   }
@@ -374,7 +374,7 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,AppC
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(gvec);CHKERRQ(ierr);
-    ierr = VecScale((Scalar*)&area,gvec);CHKERRQ(ierr);
+    ierr = VecScale((PetscScalar*)&area,gvec);CHKERRQ(ierr);
   }
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.40 2001/04/05 21:09:19 balay Exp bsmith $ */
+/* $Id: ts.c,v 1.41 2001/06/21 21:18:58 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNCT__  
@@ -34,7 +34,7 @@
 
 .seealso:  TSSetRHSJacobian(), SLESSetOperators()
 @*/
-int TSComputeRHSJacobian(TS ts,double t,Vec X,Mat *A,Mat *B,MatStructure *flg)
+int TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
   int ierr;
 
@@ -66,7 +66,7 @@ int TSComputeRHSJacobian(TS ts,double t,Vec X,Mat *A,Mat *B,MatStructure *flg)
    Note: If the user did not provide a function but merely a matrix,
    this routine applies the matrix.
 */
-int TSComputeRHSFunction(TS ts,double t,Vec x,Vec y)
+int TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 {
   int ierr;
 
@@ -112,7 +112,7 @@ int TSComputeRHSFunction(TS ts,double t,Vec x,Vec y)
           function evaluation routine (may be PETSC_NULL)
 
     Calling sequence of func:
-$     func (TS ts,double t,Vec u,Vec F,void *ctx);
+$     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
 +   t - current timestep
 .   u - input vector
@@ -128,7 +128,7 @@ $     func (TS ts,double t,Vec u,Vec F,void *ctx);
 
 .seealso: TSSetRHSMatrix()
 @*/
-int TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *ctx)
+int TSSetRHSFunction(TS ts,int (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
 
@@ -159,7 +159,7 @@ int TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *ctx)
           matrix evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$     func (TS ts,double t,Mat *A,Mat *B,int *flag,void *ctx);
+$     func (TS ts,PetscReal t,Mat *A,Mat *B,int *flag,void *ctx);
 
 +  t - current timestep
 .  A - matrix A, where U_t = A(t) U
@@ -187,7 +187,7 @@ $     func (TS ts,double t,Mat *A,Mat *B,int *flag,void *ctx);
 
 .seealso: TSSetRHSFunction()
 @*/
-int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,double,Mat*,Mat*,MatStructure*,void*),void *ctx)
+int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -224,7 +224,7 @@ int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,double,Mat*,Mat*,MatStructure*,
          Jacobian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$     func (TS ts,double t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
+$     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 
 +  t - current timestep
 .  u - input vector
@@ -252,7 +252,7 @@ $     func (TS ts,double t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
           SNESDefaultComputeJacobianColor()
 
 @*/
-int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -279,7 +279,7 @@ int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,MatStruc
    Note: If the user did not provide a function but merely a matrix,
    this routine applies the matrix.
 */
-int TSComputeRHSBoundaryConditions(TS ts,double t,Vec x)
+int TSComputeRHSBoundaryConditions(TS ts,PetscReal t,Vec x)
 {
   int ierr;
 
@@ -313,7 +313,7 @@ int TSComputeRHSBoundaryConditions(TS ts,double t,Vec x)
           function evaluation routine (may be PETSC_NULL)
 
     Calling sequence of func:
-$     func (TS ts,double t,Vec F,void *ctx);
+$     func (TS ts,PetscReal t,Vec F,void *ctx);
 
 +   t - current timestep
 .   F - function vector
@@ -323,7 +323,7 @@ $     func (TS ts,double t,Vec F,void *ctx);
 
 .keywords: TS, timestep, set, boundary conditions, function
 @*/
-int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
+int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
 
@@ -510,7 +510,7 @@ int TSGetTimeStepNumber(TS ts,int* iter)
 
 .keywords: TS, set, initial, timestep
 @*/
-int TSSetInitialTimeStep(TS ts,double initial_time,double time_step)
+int TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -538,7 +538,7 @@ int TSSetInitialTimeStep(TS ts,double initial_time,double time_step)
 
 .keywords: TS, set, timestep
 @*/
-int TSSetTimeStep(TS ts,double time_step)
+int TSSetTimeStep(TS ts,PetscReal time_step)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -565,7 +565,7 @@ int TSSetTimeStep(TS ts,double time_step)
 
 .keywords: TS, get, timestep
 @*/
-int TSGetTimeStep(TS ts,double* dt)
+int TSGetTimeStep(TS ts,PetscReal* dt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -863,7 +863,7 @@ int TSGetSLES(TS ts,SLES *sles)
 
 .keywords: TS, timestep, set, maximum, iterations
 @*/
-int TSSetDuration(TS ts,int maxsteps,double maxtime)
+int TSSetDuration(TS ts,int maxsteps,PetscReal maxtime)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -915,7 +915,7 @@ int TSSetSolution(TS ts,Vec x)
           (may be PETSC_NULL)
 
    Calling sequence of func:
-$    int func(TS ts,int steps,double time,Vec x,void *mctx)
+$    int func(TS ts,int steps,PetscReal time,Vec x,void *mctx)
 
 +    ts - the TS context
 .    steps - iteration number
@@ -933,7 +933,7 @@ $    int func(TS ts,int steps,double time,Vec x,void *mctx)
 
 .seealso: TSDefaultMonitor(), TSClearMonitor()
 @*/
-int TSSetMonitor(TS ts,int (*monitor)(TS,int,double,Vec,void*),void *mctx,int (*mdestroy)(void*))
+int TSSetMonitor(TS ts,int (*monitor)(TS,int,PetscReal,Vec,void*),void *mctx,int (*mdestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -975,7 +975,7 @@ int TSClearMonitor(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSDefaultMonitor"
-int TSDefaultMonitor(TS ts,int step,double ptime,Vec v,void *ctx)
+int TSDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
 {
   int ierr;
 
@@ -1004,7 +1004,7 @@ int TSDefaultMonitor(TS ts,int step,double ptime,Vec v,void *ctx)
 
 .seealso: TSCreate(), TSSetUp(), TSDestroy()
 @*/
-int TSStep(TS ts,int *steps,double *ptime)
+int TSStep(TS ts,int *steps,PetscReal *ptime)
 {
   int        ierr;
   PetscTruth flg;
@@ -1025,7 +1025,7 @@ int TSStep(TS ts,int *steps,double *ptime)
 /*
      Runs the user provided monitor routines, if they exists.
 */
-int TSMonitor(TS ts,int step,double ptime,Vec x)
+int TSMonitor(TS ts,int step,PetscReal ptime,Vec x)
 {
   int i,ierr,n = ts->numbermonitors;
 
@@ -1085,10 +1085,10 @@ int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSLGMonitor"
-int TSLGMonitor(TS ts,int n,double ptime,Vec v,void *monctx)
+int TSLGMonitor(TS ts,int n,PetscReal ptime,Vec v,void *monctx)
 {
   PetscDrawLG lg = (PetscDrawLG) monctx;
-  double      x,y = ptime;
+  PetscReal      x,y = ptime;
   int         ierr;
 
   PetscFunctionBegin;
@@ -1102,7 +1102,7 @@ int TSLGMonitor(TS ts,int n,double ptime,Vec v,void *monctx)
   }
 
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
-  x = (double)n;
+  x = (PetscReal)n;
   ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
   if (n < 20 || (n % 5)) {
     ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
@@ -1160,7 +1160,7 @@ int TSLGMonitorDestroy(PetscDrawLG drawlg)
 
 .keywords: TS, get, time
 @*/
-int TSGetTime(TS ts,double* t)
+int TSGetTime(TS ts,PetscReal* t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);

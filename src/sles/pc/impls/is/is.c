@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.6 2001/03/09 19:28:07 balay Exp balay $*/
+/*$Id: is.c,v 1.7 2001/03/23 23:23:21 balay Exp bsmith $*/
 #include "src/sles/pc/impls/is/is.h"
 
 /* -------------------------------------------------------------------------- */
@@ -102,7 +102,7 @@ int PCISSetUp(PC pc)
     ierr = PCGetVector(pc,&global);CHKERRQ(ierr);
     ierr = VecDuplicate(global,&pcis->vec1_global);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc((pcis->n)*sizeof(Scalar),&pcis->work_N);CHKERRQ(ierr);
+  ierr = PetscMalloc((pcis->n)*sizeof(PetscScalar),&pcis->work_N);CHKERRQ(ierr);
 
   /* Creating the scatter contexts */
   ierr = VecScatterCreate(pc->vec,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
@@ -149,16 +149,16 @@ int PCISSetUp(PC pc)
                  set_damping_factor_floating,
                  not_damp_floating,
                  not_remove_nullspace_floating;
-      double     fixed_factor,
+      PetscReal  fixed_factor,
                  floating_factor;
 
-      ierr = PetscOptionsGetDouble(pc_ctx->prefix,"-pc_is_damp_fixed",&fixed_factor,&damp_fixed);CHKERRQ(ierr);
+      ierr = PetscOptionsGetReal(pc_ctx->prefix,"-pc_is_damp_fixed",&fixed_factor,&damp_fixed);CHKERRQ(ierr);
       if (!damp_fixed) { fixed_factor = 0.0; }
       ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_damp_fixed",&damp_fixed);CHKERRQ(ierr);
 
       ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_remove_nullspace_fixed",&remove_nullspace_fixed);CHKERRQ(ierr);
 
-      ierr = PetscOptionsGetDouble(pc_ctx->prefix,"-pc_is_set_damping_factor_floating",
+      ierr = PetscOptionsGetReal(pc_ctx->prefix,"-pc_is_set_damping_factor_floating",
 			      &floating_factor,&set_damping_factor_floating);CHKERRQ(ierr);
       if (!set_damping_factor_floating) { floating_factor = 0.0; }
       ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_set_damping_factor_floating",&set_damping_factor_floating);CHKERRQ(ierr);
@@ -344,7 +344,7 @@ int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCISScatterArrayNToVecB"
-int PCISScatterArrayNToVecB (Scalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
+int PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
   int    i, ierr, *index;
   Scalar *array_B;

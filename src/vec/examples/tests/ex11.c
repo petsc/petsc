@@ -1,4 +1,4 @@
-/*$Id: ex11.c,v 1.48 2001/01/23 20:54:05 balay Exp balay $*/
+/*$Id: ex11.c,v 1.49 2001/03/23 23:21:30 balay Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\n";
 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
 
   /* fill parallel vector: note this is not efficient way*/
   for (i=0; i<N; i++) {
-    value = (Scalar) i;
+    value = (PetscScalar) i;
     ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);

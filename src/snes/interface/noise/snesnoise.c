@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesnoise.c,v 1.3 2001/01/19 23:21:50 balay Exp balay $";
+static char vcid[] = "$Id: snesnoise.c,v 1.4 2001/03/23 23:24:10 balay Exp bsmith $";
 #endif
 
 
@@ -24,7 +24,7 @@ typedef struct {
 #endif
 
 EXTERN_C_BEGIN
-extern void dnest_(int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,Scalar*);
+extern void dnest_(int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,PetscScalar*);
 EXTERN_C_END
 extern int JacMatMultCompare(SNES,Vec,Vec,double);
 extern int SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);

@@ -1,9 +1,9 @@
-/*$Id: dscorder.c,v 1.5 2001/01/17 22:23:51 bsmith Exp balay $*/
+/*$Id: dscorder.c,v 1.6 2001/03/23 23:22:56 balay Exp bsmith $*/
 /* 
         Provides an interface to the DSCPACK-S ordering routines.
 */
 #include "petscmat.h"
-#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_COMPLEX) 
+#if defined(PETSC_HAVE_DSCPACK) && !defined(PETSC_USE_COMPLEX)  && !defined(PETSC_USE_SINGLE)
 extern int dsc_s_nz; /* golbal communication mechanism for dscpack */
 
 EXTERN_C_BEGIN

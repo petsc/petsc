@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.23 2001/06/21 21:20:02 bsmith Exp balay $ */
+/* $Id: petscmath.h,v 1.24 2001/07/17 18:30:20 balay Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -74,8 +74,12 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 
 /* Compiling for real numbers only */
 #else
-#  define MPIU_SCALAR           MPI_DOUBLE
-#  if defined(PETSC_USE_MAT_SINGLE)
+#  if defined(PETSC_USE_SINGLE)
+#    define MPIU_SCALAR           MPI_FLOAT
+#  else
+#    define MPIU_SCALAR           MPI_DOUBLE
+#  endif
+#  if defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
 #    define MPIU_MATSCALAR        MPI_FLOAT
 #  else
 #    define MPIU_MATSCALAR        MPI_DOUBLE
@@ -110,7 +114,7 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 typedef Scalar MatScalar;
 typedef double MatReal;
 
-#elif defined(PETSC_USE_MAT_SINGLE)
+#elif defined(PETSC_USE_MAT_SINGLE) || defined(PETSC_USE_SINGLE)
 
 typedef float MatScalar;
 typedef float MatReal;
@@ -174,10 +178,10 @@ typedef double PetscLogDouble;
 #endif
 #endif
 
-#define PassiveDouble double
+#define PassiveReal PetscReal
 #define PassiveScalar Scalar
 
 #define PETSCMAP1_a(a,b)  a ## _ ## b
 #define PETSCMAP1_b(a,b)  PETSCMAP1_a(a,b)
-#define PETSCMAP1(a)      PETSCMAP1_b(a,Scalar)
+#define PETSCMAP1(a)      PETSCMAP1_b(a,PetscScalar)
 #endif

@@ -1,4 +1,4 @@
-/*$Id: ex33.c,v 1.19 2001/03/23 23:22:29 balay Exp bsmith $*/
+/*$Id: ex33.c,v 1.20 2001/04/10 19:35:44 bsmith Exp bsmith $*/
 
 static char help[] = "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
    -fout <file> : output file name\n\n";
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   if (flg) {
     ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,
                            PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   } else {
     ierr = MatCreateMPIRowbs(PETSC_COMM_WORLD,PETSC_DECIDE,N,6,PETSC_NULL,&A);CHKERRQ(ierr);
 #endif

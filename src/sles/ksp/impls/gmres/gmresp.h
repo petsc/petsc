@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.15 2000/08/01 20:56:55 bsmith Exp bsmith $ */
+/* $Id: gmresp.h,v 1.16 2000/09/27 20:39:48 bsmith Exp bsmith $ */
 /*
    Private data structure used by the GMRES method.
 */
@@ -13,11 +13,11 @@ typedef struct {
        to estimate the Singular Values of the matrix */
     Scalar *hh_origin,*hes_origin,*cc_origin,*ss_origin,*rs_origin;
     /* Work space for computing eigenvalues/singular values */
-    double *Dsvd;
+    PetscReal *Dsvd;
     Scalar *Rsvd;
       
     /* parameters */
-    double haptol;
+    PetscReal haptol;
     int    max_k;
 
     int   (*orthog)(KSP,int); /* Functions to use (special to gmres) */

@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.8 2001/07/07 03:28:29 bsmith Exp bsmith $*/
+/*$Id: ex23.c,v 1.9 2001/07/20 21:25:39 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -28,7 +28,7 @@ typedef struct {
 } UserCtx;
 
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Scalar*,Scalar*,void*);
+extern int FormFunctionLocali(DALocalInfo*,MatStencil*,PetscScalar*,PetscScalar*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -54,7 +54,7 @@ int main(int argc,char **argv)
   /* ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr); */
   /* ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr); */
   ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
-  /*  ierr = PetscOptionsSetValue("-dmmg_snes_mffd",0);CHKERRQ(ierr); */
+  /*  ierr = PetscOptionsSetValue("-dmmg_jacobian_mf_fd",0);CHKERRQ(ierr); */
   /*  ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,0);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
@@ -119,7 +119,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscFunctionReturn(0);
 }
 
-int FormFunctionLocali(DALocalInfo *info,MatStencil *pt,Scalar *u,Scalar *fu,void* dummy)
+int FormFunctionLocali(DALocalInfo *info,MatStencil *pt,PetscScalar *u,PetscScalar *fu,void* dummy)
 {
   int     ierr,i,N = info->mx;
   Scalar  d,h;

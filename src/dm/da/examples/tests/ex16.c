@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.9 2001/03/23 23:25:07 balay Exp bsmith $*/
+/*$Id: ex16.c,v 1.10 2001/04/10 19:37:27 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecPack routines.\n\n";
 
@@ -22,14 +22,14 @@ int main(int argc,char **argv)
 
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(nredundant1*sizeof(Scalar),&redundant1);CHKERRQ(ierr);
+  ierr = PetscMalloc(nredundant1*sizeof(PetscScalar),&redundant1);CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,nredundant1);CHKERRQ(ierr);
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL,&da1);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da1,&local1);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da1);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(nredundant2*sizeof(Scalar),&redundant2);CHKERRQ(ierr);
+  ierr = PetscMalloc(nredundant2*sizeof(PetscScalar),&redundant2);CHKERRQ(ierr);
   ierr = VecPackAddArray(packer,nredundant2);CHKERRQ(ierr);
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,6,1,1,PETSC_NULL,&da2);CHKERRQ(ierr);

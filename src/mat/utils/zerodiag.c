@@ -1,4 +1,4 @@
-/*$Id: zerodiag.c,v 1.42 2001/03/09 21:32:49 balay Exp balay $*/
+/*$Id: zerodiag.c,v 1.43 2001/03/23 23:22:45 balay Exp bsmith $*/
 
 /*
     This file contains routines to reorder a matrix so that the diagonal
@@ -53,7 +53,7 @@
 int MatReorderForNonzeroDiagonal(Mat mat,PetscReal atol,IS ris,IS cis)
 {
   int      ierr,prow,k,nz,n,repl,*j,*col,*row,m,*icol,nnz,*jj,kk;
-  Scalar   *v,*vv;
+  PetscScalar   *v,*vv;
   PetscReal   repla;
   IS       icis;
 

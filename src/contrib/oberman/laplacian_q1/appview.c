@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.7 2001/01/17 22:28:12 bsmith Exp balay $*/
+/*$Id: appview.c,v 1.8 2001/03/23 23:25:29 balay Exp bsmith $*/
 #include "appctx.h"
 
 
@@ -27,7 +27,7 @@ int AppCtxViewMatlab(AppCtx* appctx)
   viewer = PETSC_VIEWER_SOCKET_WORLD;
   
   /* send the cell_coordinates */
-  ierr = PetscDoubleView(2*4*appctx->grid.cell_n,appctx->grid.cell_coords,viewer);CHKERRQ(ierr);
+  ierr = PetscRealView(2*4*appctx->grid.cell_n,appctx->grid.cell_coords,viewer);CHKERRQ(ierr);
   /* send cell_vertices */
   ierr = PetscIntView(4*appctx->grid.cell_n,appctx->grid.global_cell_vertex,viewer);CHKERRQ(ierr);
   /* send the solution */

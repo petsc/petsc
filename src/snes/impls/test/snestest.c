@@ -1,4 +1,4 @@
-/*$Id: snestest.c,v 1.55 2001/01/16 18:20:15 balay Exp balay $*/
+/*$Id: snestest.c,v 1.56 2001/03/23 23:24:16 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 
@@ -19,7 +19,7 @@ int SNESSolve_Test(SNES snes,int *its)
   int          ierr,i;
   MatStructure flg;
   Scalar       mone = -1.0,one = 1.0;
-  double       norm,gnorm;
+  PetscReal    norm,gnorm;
   SNES_Test    *neP = (SNES_Test*)snes->data;
 
   PetscFunctionBegin;

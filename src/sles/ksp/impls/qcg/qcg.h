@@ -1,4 +1,4 @@
-/* $Id: qcg.h,v 1.1 1995/07/20 21:09:50 curfman Exp bsmith $ */
+/* $Id: qcg.h,v 1.2 2000/01/11 21:02:12 bsmith Exp bsmith $ */
 
 /*
     Context for using preconditioned CG to minimize a quadratic function 
@@ -8,9 +8,9 @@
 #define __QCG
 
 typedef struct {
-  double quadratic;
-  double ltsnrm;
-  double delta;
+  PetscReal quadratic;
+  PetscReal ltsnrm;
+  PetscReal delta;
 } KSP_QCG;
 
 #endif

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.148 2001/04/10 19:34:57 bsmith Exp bsmith $*/
+/* $Id: pdvec.c,v 1.149 2001/06/21 21:16:01 bsmith Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -51,7 +51,7 @@ int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   Vec_MPI           *x = (Vec_MPI*)xin->data;
   int               i,rank,len,work = xin->n,n,j,size,ierr,cnt,tag = ((PetscObject)viewer)->tag;
   MPI_Status        status;
-  Scalar            *values;
+  PetscScalar            *values;
   char              *name;
   PetscViewerFormat format;
 
@@ -62,7 +62,7 @@ int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
 
   if (!rank) {
-    ierr = PetscMalloc((len+1)*sizeof(Scalar),&values);CHKERRQ(ierr);
+    ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     /*
         Matlab format and ASCII format are very similar except 
@@ -185,7 +185,7 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   Vec_MPI     *x = (Vec_MPI*)xin->data;
   int         rank,ierr,len,work = xin->n,n,j,size,fdes,tag = ((PetscObject)viewer)->tag;
   MPI_Status  status;
-  Scalar      *values;
+  PetscScalar      *values;
   FILE        *file;
 
   PetscFunctionBegin;
@@ -201,7 +201,7 @@ int VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscBinaryWrite(fdes,&xin->N,1,PETSC_INT,0);CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fdes,x->array,xin->n,PETSC_SCALAR,0);CHKERRQ(ierr);
 
-    ierr = PetscMalloc((len+1)*sizeof(Scalar),&values);CHKERRQ(ierr);
+    ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     /* receive and print messages */
     for (j=1; j<size; j++) {
       ierr = MPI_Recv(values,len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
@@ -367,13 +367,13 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 {
   Vec_MPI     *x = (Vec_MPI*)xin->data;
   int         i,rank,size,N = xin->N,*lens,ierr;
-  Scalar      *xx;
+  PetscScalar      *xx;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscMalloc((N+1)*sizeof(Scalar),&xx);CHKERRQ(ierr);
+    ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
     ierr = PetscMalloc(size*sizeof(int),&lens);CHKERRQ(ierr);
     for (i=0; i<size; i++) {
       lens[i] = xin->map->range[i+1] - xin->map->range[i];
@@ -432,12 +432,12 @@ int VecGetSize_MPI(Vec xin,int *N)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValues_MPI"
-int VecSetValues_MPI(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode addv)
+int VecSetValues_MPI(Vec xin,int ni,const int ix[],const PetscScalar y[],InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
   int      rank = x->rank,*owners = xin->map->range,start = owners[rank];
   int      end = owners[rank+1],i,row,ierr;
-  Scalar   *xx = x->array;
+  PetscScalar   *xx = x->array;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_BOPT_g)
@@ -479,12 +479,12 @@ int VecSetValues_MPI(Vec xin,int ni,const int ix[],const Scalar y[],InsertMode a
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetValuesBlocked_MPI"
-int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const Scalar yin[],InsertMode addv)
+int VecSetValuesBlocked_MPI(Vec xin,int ni,const int ix[],const PetscScalar yin[],InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
   int      rank = x->rank,*owners = xin->map->range,start = owners[rank];
   int      end = owners[rank+1],i,row,bs = xin->bs,j,ierr;
-  Scalar   *xx = x->array,*y = (Scalar*)yin;
+  PetscScalar   *xx = x->array,*y = (PetscScalar*)yin;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_BOPT_g)
@@ -580,7 +580,7 @@ int VecAssemblyEnd_MPI(Vec vec)
 {
   Vec_MPI     *x = (Vec_MPI *)vec->data;
   int         ierr,base,i,j,n,*row,flg,bs;
-  Scalar      *val,*vv,*array;
+  PetscScalar      *val,*vv,*array;
 
    PetscFunctionBegin;
   if (!x->donotstash) {

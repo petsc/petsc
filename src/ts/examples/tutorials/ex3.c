@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.23 2001/03/23 23:24:45 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.24 2001/04/10 19:37:12 bsmith Exp bsmith $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -402,7 +402,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   appctx->norm_max += norm_max;
 
   dttol = .0001;
-  ierr = PetscOptionsGetDouble(PETSC_NULL,"-dttol",&dttol,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-dttol",&dttol,PETSC_NULL);CHKERRQ(ierr);
   if (dt < dttol) {
     dt *= .999;
     ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);

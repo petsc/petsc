@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.157 2001/03/23 23:23:09 balay Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.158 2001/04/10 19:36:10 bsmith Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -971,8 +971,8 @@ static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     ierr = PetscMalloc(2*n_local*sizeof(Vec),&bjac->x);CHKERRQ(ierr);
     PetscLogObjectMemory(pc,sizeof(2*n_local*sizeof(Vec)));
     bjac->y      = bjac->x + n_local;
-    ierr = PetscMalloc(n_local*sizeof(Scalar),&bjac->starts);CHKERRQ(ierr);
-    PetscLogObjectMemory(pc,sizeof(n_local*sizeof(Scalar)));
+    ierr = PetscMalloc(n_local*sizeof(PetscScalar),&bjac->starts);CHKERRQ(ierr);
+    PetscLogObjectMemory(pc,sizeof(n_local*sizeof(PetscScalar)));
     
     jac->data    = (void*)bjac;
     ierr = PetscMalloc(n_local*sizeof(IS),&bjac->is);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: win32draw.c,v 1.12 2001/03/23 23:20:18 balay Exp bsmith $ */
+/* $Id: win32draw.c,v 1.13 2001/04/10 19:34:20 bsmith Exp bsmith $ */
 #include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
 #include "win32draw.h"
@@ -122,8 +122,7 @@ static int deletemouselist_Win32(WindowNode deletelist)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawGetMouseButton_Win32" 
-static int PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawButton *button,double *x_user,double *y_user, \
-                                    double *x_phys,double *y_phys)
+static int PetscDrawGetMouseButton_Win32(PetscDraw draw, PetscDrawButton *button,double *x_user,double *y_user,double *x_phys,double *y_phys)
 {
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   WindowNode      current;
