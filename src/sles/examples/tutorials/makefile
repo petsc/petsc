@@ -285,19 +285,19 @@ runex10_3:
 	   ${RM} -f ex10_3.tmp
 runex10_4:
 	-@${MPIRUN} -np 1 ex10 -options_left no -ksp_type bicg -pc_type lu \
-	   -f0 ${DATAFILESPATH}/matrices/medium -mat_type seqaij > ex10_4.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_4.tmp 2>&1; \
 	   if (${DIFF} output/ex10_4.out ex10_4.tmp) then true; \
 	   else echo "Possible problem with ex10_4, diffs above"; fi; \
 	   ${RM} -f ex10_4.tmp
 runex10_5:
 	-@${MPIRUN} -np 1 ex10 -options_left no -ksp_type bicg \
-	   -f0 ${DATAFILESPATH}/matrices/medium -mat_type seqaij > ex10_5.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium > ex10_5.tmp 2>&1; \
 	   if (${DIFF} output/ex10_5.out ex10_5.tmp) then true; \
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
 	   ${RM} -f ex10_5.tmp
 runex10_6:
 	-@${MPIRUN} -np 1 ex10 -pc_ilu_levels 2 -pc_ilu_fill 1.73 -ksp_gmres_irorthog \
-	   -f0 ${DATAFILESPATH}/matrices/fem1 -mat_type seqaij > ex10_6.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/fem1 > ex10_6.tmp 2>&1; \
 	   if (${DIFF} output/ex10_6.out ex10_6.tmp) then true; \
 	   else echo "Possible problem with ex10_6, diffs above"; fi; \
 	   ${RM} -f ex10_6.tmp
@@ -323,7 +323,7 @@ runex10_7:
 	-@${RM} -f ex10_7.tmp
 runex10_8:
 	-@${MPIRUN} -np 1 ex10 -sles_diagonal_scale -pc_type eisenstat -ksp_smonitor -sles_diagonal_scale_fix \
-	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_irorthog -options_left no -mat_type seqaij > ex10_8.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_irorthog -options_left no > ex10_8.tmp 2>&1; \
 	   if (${DIFF} output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \
 	   ${RM} -f ex10_8.tmp
@@ -360,7 +360,7 @@ runex10_11:
 	   else echo "Possible problem with ex10_11, diffs above"; fi; \
 	   ${RM} -f ex10_11.tmp
 runex10_12:
-	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_matlab -mat_type seqaij -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_12.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex10 -options_left no -mat_aij_matlab -pc_type lu -f0 ${DATAFILESPATH}/matrices/arco1 > ex10_12.tmp 2>&1;\
 	   if (${DIFF} output/ex10_12.out ex10_12.tmp) then true; \
 	   else echo "Possible problem with ex10_12, diffs above"; fi; \
 	   ${RM} -f ex10_12.tmp
@@ -397,7 +397,7 @@ runex10_19:
 	-@touch ex10_19aij.tmp
 	-@touch ex10_19sbaij.tmp
 	-@for levels in ${LEVELS}; do \
-	${MPIRUN} -np 1 ex10 -mat_type seqaij -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_icc_levels $$levels >> ex10_19aij.tmp 2>&1; \
+	${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_icc_levels $$levels >> ex10_19aij.tmp 2>&1; \
 	 ${MPIRUN} -np 1 ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_icc_levels $$levels -matload_type seqsbaij >> ex10_19sbaij.tmp 2>&1; \
 	done; 
 	-@if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
@@ -455,13 +455,13 @@ runex21f:
 	   else echo "Possible problem with ex21f_1, diffs above"; fi; \
 	   ${RM} -f ex21f_1.tmp
 runex22:
-	-@${MPIRUN} -np 1 ex22 -pc_mg_type full -dmmg_ksp_monitor -mat_type seqaij > ex22_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex22 -pc_mg_type full -dmmg_ksp_monitor > ex22_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 
 runex22f:
-	-@${MPIRUN} -np 1 ex22f -pc_mg_type full -dmmg_ksp_monitor -mat_type seqaij > ex22_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex22f -pc_mg_type full -dmmg_ksp_monitor > ex22_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22f_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
@@ -479,7 +479,7 @@ runex23_2:
 	   ${RM} -f ex23_2.tmp
 
 runex25:
-	-@${MPIRUN} -np 1 ex25 -mat_type seqaij > ex25_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ex25 > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1, diffs above"; fi; \
 	   ${RM} -f ex25_1.tmp

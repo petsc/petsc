@@ -291,7 +291,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
-        call DAGetMatrix(user%da,MATMPIAIJ,J,ierr)
+        call DAGetMatrix(user%da,MATAIJ,J,ierr)
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
       endif
 

@@ -183,7 +183,8 @@ int DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
 
     Input Parameter:
 +   dm - the DM object
--   mtype - MATMPIAIJ or MATMPIBAIJ
+-   mtype - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, or
+            any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
 
     Output Parameter:
 .   mat - the empty Jacobian 

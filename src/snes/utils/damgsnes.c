@@ -589,11 +589,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     
     if (!dmmg[i]->B) {
       ierr = MPI_Comm_size(dmmg[i]->comm,&size);CHKERRQ(ierr);
-      if (size==1) {
-        ierr = DMGetMatrix(dmmg[i]->dm,MATSEQAIJ,&dmmg[i]->B);CHKERRQ(ierr);
-      } else {
-        ierr = DMGetMatrix(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->B);CHKERRQ(ierr);
-      }
+      ierr = DMGetMatrix(dmmg[i]->dm,MATAIJ,&dmmg[i]->B);CHKERRQ(ierr);
     } 
     if (!dmmg[i]->J) {
       dmmg[i]->J = dmmg[i]->B;
