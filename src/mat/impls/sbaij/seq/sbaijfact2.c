@@ -1307,7 +1307,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   int         *rip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
   int         m,realloc = 0,*levtmp;
-  int         *prowl,*q,jumin,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
+  int         *prowl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   int         incrlev,*lev,shift,prow,nz;
   PetscTruth  perm_identity;
 

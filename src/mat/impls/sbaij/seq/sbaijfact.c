@@ -20,7 +20,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   int          *rip,ierr,i,mbs = a->mbs,*ai,*aj;
   int          *jutmp,bs = a->bs,bs2=a->bs2;
   int          m,realloc = 0,prow;
-  int          *jl,*q,jumin,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
+  int          *jl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   PetscTruth   perm_identity;
 
   PetscFunctionBegin;
