@@ -1,6 +1,6 @@
 #
-# This is the makefile for installing PETSc. See 
-# http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html for directions on installing PETSc.
+# This is the makefile for compiling PETSc. See 
+# http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html for directions on installing PETSc.
 # See also bmake/common for additional commands.
 #
 ALL: all
