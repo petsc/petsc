@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.19 2000/10/09 13:38:33 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.20 2000/10/09 16:47:15 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1417,11 +1417,10 @@ int MatZeroEntries_SeqSBAIJ(Mat A)
 int MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         ierr,i,j,k,n,row,bs,*ai,*aj,mbs,bs2;
-  Scalar      *x,zero = 0.0;
-  MatScalar   *aa,*aa_j,*ap;
-  int         ncols,bcol,col,krow,kcol;
-  double      atmp;
+  int         ierr,i,j,n,row,col,bs,*ai,*aj,mbs;
+  Scalar      *x,zero = 0.0,atmp;
+  MatScalar   *aa;
+  int         ncols,brow,bcol,krow,kcol;
 
   PetscFunctionBegin;
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
@@ -1430,28 +1429,27 @@ int MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
   ai   = a->i;
   aj   = a->j;
   mbs = a->mbs;
-  bs2  = a->bs2;  
 
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<mbs; i++) {
-    ap = aa + ai[i]*bs2;
-    ncols = ai[i+1] - ai[i];
+    ncols = ai[1] - ai[0]; ai++;
+    brow  = bs*i;
     for (j=0; j<ncols; j++){
-      bcol = *(aj + ai[i] + j); /* block col index */
+      bcol = bs*(*aj); 
       for (kcol=0; kcol<bs; kcol++){
+        col = bcol + kcol;      /* col index */
         for (krow=0; krow<bs; krow++){         
-          atmp = PetscAbsScalar(*ap); ap++;
-          col = bs*bcol + kcol; /* col index */
-          row = bs*i    + krow; /* row index */
-          /* printf(" val[%d,%d]: %g\n", row,col,atmp); */
+          atmp = PetscAbsScalar(*aa); aa++;         
+          row = brow + krow;    /* row index */
+          /* printf("val[%d,%d]: %g\n",row,col,atmp); */
           if (x[row] < atmp) x[row] = atmp;
-          if (bcol > i && x[col] < atmp) x[col] = atmp;
+          if (*aj > i && x[col] < atmp) x[col] = atmp;
         }
       }
-
+      aj++;
     }   
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
