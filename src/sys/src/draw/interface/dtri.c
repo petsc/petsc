@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.31 1999/05/12 03:26:28 bsmith Exp balay $";
+static char vcid[] = "$Id: dtri.c,v 1.32 1999/06/30 23:49:05 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: dtri.c,v 1.31 1999/05/12 03:26:28 bsmith Exp balay $"
    Input Parameters:
 +  draw - the drawing context
 .  x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
--  c1,c2,c3 - the colors of the corners in counter clockwise order
+-  c1,c2,c3 - the colors of the three vertices in the same order as the xi,yi
 
    Level: beginner
 
