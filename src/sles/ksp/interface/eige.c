@@ -1,4 +1,4 @@
-/*$Id: eige.c,v 1.30 2001/01/16 18:19:24 balay Exp balay $*/
+/*$Id: eige.c,v 1.31 2001/03/21 23:47:17 balay Exp balay $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -220,8 +220,8 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
     ierr     = PetscMalloc(2*n*sizeof(PetscReal),&realpart);CHKERRQ(ierr);
     imagpart = realpart + n;
     ierr     = PetscMalloc(5*n*sizeof(PetscReal),&work);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MISSING_DGEEV) 
-  SETERRQ(PETSC_ERR_SUP,"DGEEV - Lapack routine is unavilable\nNot able to provide eigen values.");
+#if defined(PETSC_MISSING_LAPACK_GEEV) 
+  SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavilable\nNot able to provide eigen values.");
 #else
     LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
 #endif
@@ -248,8 +248,8 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c)
     ierr = PetscMalloc(5*n*sizeof(Scalar),&work);CHKERRQ(ierr);
     ierr = PetscMalloc(2*n*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(Scalar),&eigs);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MISSING_DGEEV) 
-  SETERRQ(PETSC_ERR_SUP,"DGEEV - Lapack routine is unavilable\nNot able to provide eigen values.");
+#if defined(PETSC_MISSING_LAPACK_GEEV) 
+  SETERRQ(PETSC_ERR_SUP,"GEEV - Lapack routine is unavilable\nNot able to provide eigen values.");
 #else
     LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&ierr);
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.23 2000/05/05 18:28:31 bsmith Exp balay $"
+"$Id: petscconf.h,v 1.24 2000/09/07 03:00:32 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -37,7 +37,7 @@
 #define PETSC_SIZEOF_SHORT 4
 #define PETSC_SIZEOF_DOUBLE 8
 
-#define PETSC_HAVE_MISSING_DGESVD
+#define PETSC_MISSING_LAPACK_GESVD
 #define PETSC_HAVE_PXFGETARG
 #define PETSC_HAVE_SYS_RESOURCE_H
 #define PETSC_HAVE_CLOCK

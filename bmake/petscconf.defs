@@ -47,9 +47,13 @@ PETSC_HAVE_MEMALIGN
 the system routine memalign() exists and is used to ensure that all
 Scalars are allocated with the correct alignment
 
-PETSC_HAVE_MISSING_DGESVD
-the Lapack routine DGESVD is missing from the vendor provided math
-libraries. This is true on the Cray T3D/T3E
+PETSC_MISSING_LAPACK_GESVD
+the Lapack routine GESVD is missing from the vendor provided math
+libraries. This is true on the Cray T3D/T3E and with Intel MKL for PCs
+
+PETSC_MISSING_LAPACK_GEEV
+the Lapack routine GEEV is missing from the vendor provided math
+libraries. This is true for Intel Math Kernel Library (MKL) for PCs
 
 PETSC_HAVE_SLOW_NRM2
 BLAS nrm2() routine is so slow it is better to replace with code.
