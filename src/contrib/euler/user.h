@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.36 1997/10/19 23:24:50 curfman Exp curfman $ */
+/* $Id: user.h,v 1.37 1997/10/20 17:39:35 curfman Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -21,6 +21,13 @@
    This version of code supports only IMPLICIT BCs.
  */
 typedef enum {EXPLICIT=0, IMPLICIT_SIZE=1, IMPLICIT=2} BCType;
+
+/* type of limiter */
+typedef enum {LIM_NONE=0, LIM_MINMOD=1, LIM_SUPERBEE=2,
+              LIM_VAN_LEER=3, LIM_VAN_ALBADA=4} LimiterType;
+
+/* status of discretization order transition */
+typedef enum {TRANS_NONE=0, TRANS_WAIT=1, TRANS_START=2, TRANS_DONE=3} TransStatus;
 
 /* Are we advancing CFL? */
 typedef enum {CONSTANT=0, ADVANCE=1} CFLAdvanceType;
@@ -95,6 +102,13 @@ typedef struct {
     Scalar   f_reduction;                   /* reduce fnorm by this much before advancing CFL */
     Scalar   cfl_max_incr, cfl_max_decr;    /* maximum increase/decrease for CFL number */
     int      cfl_snes_it;                   /* number of SNES iterations at each CFL step */
+    Scalar      psi;                        /* can be used to blend discr order (from Julianne code) */
+    LimiterType limiter;                    /* type of limiter */
+    int         order;                      /* order of discretization */
+    TransStatus order_transition;           /* flag - 1: we will transition from 1st -> 2nd order */
+    Scalar      order_transition_rtol;      /* relative convergence tolerance for the switch */
+    Scalar      order_transition_theta;     /* parameter to blend discr order */
+    int         order_transition_it;        /* iteration for transition */
 
   /* ----------------- Output: visualization and debugging  ------------------- */
 
@@ -337,19 +351,11 @@ extern int jpressure_(Scalar*,Scalar*);
 extern void eigenv_(Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,TimeStepType*);
-extern int  localfortfct_euler_(int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+extern int  localfortfct_euler_(int*,LimiterType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int  residbc_(Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int julianne_(Scalar*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -368,20 +374,6 @@ extern int jformdt_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scal
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*);
-extern int jform_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int jform2_(Scalar*,Scalar*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*);
-extern int resid_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*);
 extern int rbuild_direct_fp_(Scalar*,ScaleType*,Scalar*,Scalar*);
 extern int rbuild_direct_euler_(Scalar*,ScaleType*,Scalar*,Scalar*);
 extern int rbuild_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,int*,int*);
@@ -398,7 +390,7 @@ extern int parsetup_(int*,int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,i
 extern int buildmat_(int*,ScaleType*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*);
-extern int nzmat_(MatType*,MMType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+extern int nzmat_(MatType*,MMType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
                       Scalar*,Scalar*,int*,int*);
