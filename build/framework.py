@@ -257,11 +257,11 @@ class Framework(base.Base):
         return 1
     return 0
 
-  def getProjectCompileGraph(self, maker, forceRebuild = 0):
+  def getProjectCompileGraph(self, forceRebuild = 0):
     '''Return the compile graph for the given project without dependencies'''
-    input        = {None: maker.filesets['sidl']}
-    sidlGraph    = maker.sidlTemplate.getTarget(forceRebuild = forceRebuild)
-    compileGraph = maker.compileTemplate.getTarget()
+    input        = {None: self.filesets['sidl']}
+    sidlGraph    = self.sidlTemplate.getTarget(forceRebuild = forceRebuild)
+    compileGraph = self.compileTemplate.getTarget()
     compileGraph.prependGraph(sidlGraph)
     return (compileGraph, input)
 
@@ -274,19 +274,23 @@ class Framework(base.Base):
     else:
       import build.buildGraph
 
-      (compileGraph, input) = self.getProjectCompileGraph(self)
-      # Add project dependency compile graphs
-      if len(self.dependenceGraph.outEdges[self.project]):
-        input = dict(map(lambda r: (r, self.filesets['sidl']), build.buildGraph.BuildGraph.getRoots(compileGraph)))
-      for p in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project):
+      compileGraph = build.buildGraph.BuildGraph()
+      input        = {}
+      for p in build.buildGraph.BuildGraph.topologicalSort(self.dependenceGraph, self.project):
         try:
-          maker = self.getMakeModule(p.getRoot()).PetscMake(None, self.argDB)
-          maker.setupProject()
-          maker.setupDependencies()
-          maker.setupSourceDB(maker.project)
-          maker.setupBuild()
-          (depGraph, depInput) = self.getProjectCompileGraph(maker, forceRebuild = self.missingClients())
+          if p == self.project:
+            maker        = self
+            forceRebuild = 0
+          else:
+            maker = self.getMakeModule(p.getRoot()).PetscMake(None, self.argDB)
+            maker.setupProject()
+            maker.setupDependencies()
+            maker.setupSourceDB(maker.project)
+            maker.setupBuild()
+            forceRebuild = maker.missingClients()
+          (depGraph, depInput) = maker.getProjectCompileGraph(forceRebuild = forceRebuild)
           compileGraph.prependGraph(depGraph)
+          self.debugPrint('Prepended graph for '+str(maker.project), 4, 'build')
           if None in depInput:
             for r in build.buildGraph.BuildGraph.getRoots(depGraph): depInput[r] = depInput[None]
             del depInput[None]

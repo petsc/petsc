@@ -170,9 +170,12 @@ class BuildGraph(object):
         yield vertex
     return
 
-  def topologicalSort(graph):
+  def topologicalSort(graph, start = None):
     '''Reorder the vertices using topological sort'''
-    vertices = [vertex for vertex in BuildGraph.depthFirstSearch(graph, returnFinished = 1)]
+    if start is None:
+      vertices = [vertex for vertex in BuildGraph.depthFirstSearch(graph, returnFinished = 1)]
+    else:
+      vertices = [vertex for vertex in BuildGraph.depthFirstVisit(graph, start, returnFinished = 1)]
     vertices.reverse()
     for vertex in vertices:
       yield vertex
