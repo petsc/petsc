@@ -24,6 +24,8 @@ all: chkpetsc_dir
 	-$(RM) -f $(PDIR)/*.a
 	-@echo "Beginning to compile libraries in all directories"
 	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
+	-@echo "Using base PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "Using base include paths: $(PETSC_INCLUDE)"
 	-@echo "------------------------------------------"
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=libfast  tree 
@@ -36,6 +38,8 @@ all: chkpetsc_dir
 testexamples: chkpetsc_dir
 	-@echo "Beginning to compile and run test examples"
 	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
+	-@echo "Using base PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "Using base include paths: $(PETSC_INCLUDE)"
 	-@echo "Using linker: $(CLINKER)"
 	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "------------------------------------------"
@@ -52,6 +56,8 @@ testexamples_uni: chkpetsc_dir
 	-@echo "Beginning to compile and run uniprocessor test examples"
 	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
 	-@echo "Using linker: $(CLINKER)"
+	-@echo "Using base PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "Using base include paths: $(PETSC_INCLUDE)"
 	-@echo "Using libraries: $(PETSC_LIB)"
 	-@echo "------------------------------------------"
 	-@echo "Due to different numerical round-off on certain"
