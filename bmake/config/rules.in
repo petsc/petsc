@@ -41,7 +41,7 @@ shared: chkopts_basic
 	        ${AR} x ../$$LIBNAME.${LIB_SUFFIX}; \
 	        ${AR} x ../lt_$$LIBNAME.${LIB_SUFFIX}; \
 	        ${LIBTOOL} --mode=link @CC@ ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${LDFLAGS} -rpath ${INSTALL_LIB_DIR} -o $$LIBNAME.la *.lo; \
-	        ${LIBTOOL} --mode=install ${PETSC_DIR}/config/install-sh $$LIBNAME.la ${INSTALL_LIB_DIR}; \
+	        ${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh $$LIBNAME.la ${INSTALL_LIB_DIR}; \
 	        ${RM} -f *; \
 	      fi; \
 	    fi; \
