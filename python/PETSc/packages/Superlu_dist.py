@@ -52,9 +52,9 @@ class Configure(config.base.Configure):
       elif 'with-'+package+'-dir' in self.framework.argDB:
         dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
         yield('based on found root directory',os.path.join(dir,'SRC'))
+    return
 
   def checkInclude(self,incl,hfile):
-    if not isinstance(incl,list): incl = [incl]
     incl.extend(self.mpi.include)
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
@@ -70,20 +70,20 @@ class Configure(config.base.Configure):
     package = self.name.lower()
     if 'with-'+package in self.framework.argDB:
       if 'with-'+package+'-lib' in self.framework.argDB: #~SuperLU_DIST_2.0/superlu_linux.a
-        yield ('User specified '+PACKAGE+' library',self.framework.argDB['with-'+package+'-lib'])
+        yield ('User specified '+PACKAGE+' library', self.framework.argDB['with-'+package+'-lib'])
       elif 'with-'+package+'-include' in self.framework.argDB:
         dir = self.framework.argDB['with-'+package+'-include'] #~SuperLU_DIST_2.0/SRC
         (dir,dummy) = os.path.split(dir)
-        yield('User specified '+PACKAGE+'/Include',os.path.join(dir,'superlu_linux.a'))
+        yield('User specified '+PACKAGE+'/Include', os.path.join(dir,'superlu_linux.a'))
       elif 'with-'+package+'-dir' in self.framework.argDB: 
         dir = os.path.abspath(self.framework.argDB['with-'+package+'-dir'])
-        yield('User specified '+PACKAGE+' root directory',os.path.join(dir,'superlu_linux.a'))
+        yield('User specified '+PACKAGE+' root directory', os.path.join(dir,'superlu_linux.a'))
       else:
         self.framework.log.write('Must specify either a library or installation root directory for '+PACKAGE+'\n')
+    return
         
   def checkLib(self,lib,func):
     '''We may need the MPI libraries here'''
-    if not isinstance(lib,list): lib = [lib]
     oldLibs = self.framework.argDB['LIBS']  
     found   = self.libraries.check(lib,func)
     self.framework.argDB['LIBS'] = oldLibs
@@ -97,17 +97,19 @@ class Configure(config.base.Configure):
     self.framework.log.write('Checking for a functional '+self.name+'\n')
     foundLibrary = 0
     foundHeader  = 0
-    for (configstr,lib) in self.generateLibGuesses():
-      self.framework.log.write('Checking for library '+configstr+': '+lib+'\n')
-      foundLibrary = self.executeTest(self.checkLib,[lib, 'dallocateA_dist'])  
+    for configstr, lib in self.generateLibGuesses():
+      if not isinstance(lib, list): lib = [lib]
+      self.framework.log.write('Checking for library '+configstr+': '+str(lib)+'\n')
+      foundLibrary = self.executeTest(self.checkLib, [lib, 'dallocateA_dist'])  
       if foundLibrary:
-        self.lib = [lib]
+        self.lib = lib
         break
-    for (inclstr,incl) in self.generateIncludeGuesses():
-      self.framework.log.write('Checking for headers '+inclstr+': '+incl+'\n')
-      foundHeader = self.executeTest(self.checkInclude,[incl,'superlu_ddefs.h'])
+    for inclstr, incl in self.generateIncludeGuesses():
+      if not isinstance(incl, list): incl = [incl]
+      self.framework.log.write('Checking for headers '+inclstr+': '+str(incl)+'\n')
+      foundHeader = self.executeTest(self.checkInclude, [incl, 'superlu_ddefs.h'])
       if foundHeader:
-        self.include = [incl]
+        self.include = incl
         break
     if foundLibrary and foundHeader:
       self.setFoundOutput()
