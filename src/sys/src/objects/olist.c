@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: olist.c,v 1.6 1998/08/26 22:01:46 balay Exp bsmith $";
+static char vcid[] = "$Id: olist.c,v 1.7 1998/12/03 03:58:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -105,17 +105,25 @@ int OListDestroy(OList *fl )
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNC__  
 #define __FUNC__ "OListFind"
 /*
     OListFind - givn a name, find the matching object
 
     Input Parameters:
-.   fl   - pointer to list
-.   name - name string
++   fl   - pointer to list
+-   name - name string
 
-    The id or name must have been registered with the OListAdd() before calling this 
+    Output Parameters:
+.   ob - the PETSc object
+
+    Notes:
+    The name must have been registered with the OListAdd() before calling this 
     routine.
+
+.seealso: OListReverseFind()
+
 */
 int OListFind(OList fl, const char name[], PetscObject *obj)
 {
@@ -125,6 +133,40 @@ int OListFind(OList fl, const char name[], PetscObject *obj)
   while (fl) {
     if (!PetscStrcmp(name,fl->name)) {
       *obj = fl->obj;
+      break;
+    }
+    fl = fl->next;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "OListReverseFind"
+/*
+    OListReverseFind - given a object, find the matching name if it exists
+
+    Input Parameters:
++   fl   - pointer to list
+-   ob - the PETSc object
+
+    Output Parameters:
+.   name - name string
+
+    Notes:
+    The name must have been registered with the OListAdd() before calling this 
+    routine.
+
+.seealso: OListFind()
+
+*/
+int OListReverseFind(OList fl, PetscObject obj, char **name)
+{
+  PetscFunctionBegin;
+
+  *name = 0;
+  while (fl) {
+    if (fl->obj == obj) {
+      *name = fl->name;
       break;
     }
     fl = fl->next;

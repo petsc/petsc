@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.238 1999/02/04 22:22:24 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.239 1999/02/26 03:59:11 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -214,7 +214,7 @@ extern int PetscObjectPublish(PetscObject);
 typedef struct _OList *OList;
 extern int OListDestroy(OList *);
 extern int OListFind(OList,const char[],PetscObject*);
-extern int OListReverseFind(OList,PetscObject,char*);
+extern int OListReverseFind(OList,PetscObject,char**);
 extern int OListAdd(OList *,const char[],PetscObject);
 extern int OListDuplicate(OList,OList *);
 
