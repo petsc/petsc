@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.149 2000/12/01 18:41:19 kaushik Exp kaushik $*/
+/*$Id: vpscat.c,v 1.150 2000/12/02 08:02:23 kaushik Exp kaushik $*/
 /*
     Defines parallel vector scatters.
 */
@@ -631,8 +631,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
   VecScatter_MPI_General *gen_to,*gen_from;
   Scalar                 *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  int                    i,*indices,*sstarts,iend,j;
-  int                    nrecvs,nsends,idx,ierr;
+  int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,ierr,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -657,38 +656,32 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (gen_to->sendfirst) {
-      /* this version packs and sends one at a time */
-      val  = svalues;
-      for (i=0; i<nsends; i++) {
-        iend = sstarts[i+1]-sstarts[i];
-
-        for (j=0; j<iend; j++) {
-          idx     = *indices++;
-          val[0] = xv[idx];
-          val[1] = xv[idx+1];
-          val[2] = xv[idx+2];
-          val[3] = xv[idx+3];
-          val[4] = xv[idx+4];
-          val[5] = xv[idx+5];
-          val[6] = xv[idx+6];
-          val[7] = xv[idx+7];
-          val[8] = xv[idx+8];
-          val[9] = xv[idx+9];
-          val[10] = xv[idx+10];
-          val[11] = xv[idx+11];
-          val    += 12;
-        } 
-        ierr = MPI_Start_isend(12*iend,swaits+i);CHKERRQ(ierr);
-      } 
-    }
-
-    if (!gen_from->use_readyreceiver) {  
+    if (!gen_from->use_readyreceiver && !gen_to->sendfirst) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
       ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);
     }
-
-    if (!gen_to->sendfirst) {
+    if (ctx->packtogether) {
+      /* this version packs all the messages together and sends, when -vecscatter_packtogether used */
+      len  = 12*sstarts[nsends];
+      val  = svalues;
+      for (i=0; i<len; i += 12) {
+        idx     = *indices++;
+        val[0]  = xv[idx];
+        val[1]  = xv[idx+1];
+        val[2]  = xv[idx+2];
+        val[3]  = xv[idx+3];
+	val[4]  = xv[idx+4];
+	val[5]  = xv[idx+5];
+	val[6]  = xv[idx+6];
+	val[7]  = xv[idx+7];
+	val[8]  = xv[idx+8];
+	val[9]  = xv[idx+9];
+	val[10] = xv[idx+10];
+	val[11] = xv[idx+11];
+        val    += 12;
+      }
+      ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
+    } else {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
@@ -696,22 +689,27 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
 
         for (j=0; j<iend; j++) {
           idx     = *indices++;
-          val[0] = xv[idx];
-          val[1] = xv[idx+1];
-          val[2] = xv[idx+2];
-          val[3] = xv[idx+3];
-          val[4] = xv[idx+4];
-          val[5] = xv[idx+5];
-          val[6] = xv[idx+6];
-          val[7] = xv[idx+7];
-          val[8] = xv[idx+8];
-          val[9] = xv[idx+9];
-          val[10] = xv[idx+10];
-          val[11] = xv[idx+11];
+	  val[0]  = xv[idx];
+	  val[1]  = xv[idx+1];
+	  val[2]  = xv[idx+2];
+	  val[3]  = xv[idx+3];
+	  val[4]  = xv[idx+4];
+	  val[5]  = xv[idx+5];
+	  val[6]  = xv[idx+6];
+	  val[7]  = xv[idx+7];
+	  val[8]  = xv[idx+8];
+	  val[9]  = xv[idx+9];
+	  val[10] = xv[idx+10];
+	  val[11] = xv[idx+11];
           val    += 12;
         } 
         ierr = MPI_Start_isend(12*iend,swaits+i);CHKERRQ(ierr);
       } 
+    }
+
+    if (!gen_from->use_readyreceiver && gen_to->sendfirst) {  
+      /* post receives since they were not posted in VecScatterPostRecvs()   */
+      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);
     }
   }
 
@@ -790,7 +788,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
   Scalar                 *rvalues,*yv,*val;
   int                    ierr,nrecvs,nsends,i,*indices,count,imdex,n,*rstarts,*lindices,idx;
   MPI_Request            *rwaits,*swaits;
-  MPI_Status             rstatus,*sstatus;
+  MPI_Status             *rstatus,*sstatus;
 
   PetscFunctionBegin;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
@@ -806,6 +804,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
     gen_to   = (VecScatter_MPI_General*)ctx->todata;
     gen_from = (VecScatter_MPI_General*)ctx->fromdata;
     rwaits   = gen_from->requests;
+    rstatus  = gen_to->rstatus;
     swaits   = gen_to->requests;
     sstatus  = gen_to->sstatus;
   }
@@ -817,28 +816,88 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
 
   /*  wait on receives */
   count = nrecvs;
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    val      = rvalues + 12*rstarts[imdex];
-    lindices = indices + rstarts[imdex];
-    n        = rstarts[imdex+1] - rstarts[imdex];
+  if (ctx->packtogether) { /* receive all messages, then unpack all, when -vecscatter_packtogether used */
+    ierr     = MPI_Waitall(nrecvs,rwaits,rstatus);CHKERRQ(ierr);
+    n        = rstarts[count];
+    val      = rvalues;
+    lindices = indices;
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {
-        idx        = lindices[i];
-        yv[idx]    = val[0];
-        yv[idx+1]  = val[1];
-        yv[idx+2]  = val[2];
-        yv[idx+3]  = val[3];
-        yv[idx+4]  = val[4];
-        yv[idx+5]  = val[5];
-        yv[idx+6]  = val[6];
-        yv[idx+7]  = val[7];
-        yv[idx+8]  = val[8];
-        yv[idx+9]  = val[9];
-        yv[idx+10] = val[10];
-        yv[idx+11] = val[11];
-        val       += 12;
+	idx        = lindices[i];
+	yv[idx]    = val[0];
+	yv[idx+1]  = val[1];
+	yv[idx+2]  = val[2];
+	yv[idx+3]  = val[3];
+	yv[idx+4]  = val[4];
+	yv[idx+5]  = val[5];
+	yv[idx+6]  = val[6];
+	yv[idx+7]  = val[7];
+	yv[idx+8]  = val[8];
+	yv[idx+9]  = val[9];
+	yv[idx+10] = val[10];
+	yv[idx+11] = val[11];
+	val       += 12;
+      }
+    } else if (addv == ADD_VALUES) {
+      for (i=0; i<n; i++) {
+	idx         = lindices[i];
+	yv[idx]    += val[0];
+	yv[idx+1]  += val[1];
+	yv[idx+2]  += val[2];
+	yv[idx+3]  += val[3];
+        yv[idx+4]  += val[4];
+        yv[idx+5]  += val[5];
+        yv[idx+6]  += val[6];
+        yv[idx+7]  += val[7];
+        yv[idx+8]  += val[8];
+        yv[idx+9]  += val[9];
+        yv[idx+10] += val[10];
+        yv[idx+11] += val[11];
+	val        += 12;
+      }
+#if !defined(PETSC_USE_COMPLEX)
+    } else if (addv == MAX_VALUES) {
+      for (i=0; i<n; i++) {
+	idx        = lindices[i];
+	yv[idx]    = PetscMax(yv[idx],val[0]);
+	yv[idx+1]  = PetscMax(yv[idx+1],val[1]);
+	yv[idx+2]  = PetscMax(yv[idx+2],val[2]);
+	yv[idx+3]  = PetscMax(yv[idx+3],val[3]);
+        yv[idx+4]  = PetscMax(yv[idx+4],val[4]);
+        yv[idx+5]  = PetscMax(yv[idx+5],val[5]);
+        yv[idx+6]  = PetscMax(yv[idx+6],val[6]);
+        yv[idx+7]  = PetscMax(yv[idx+7],val[7]);
+        yv[idx+8]  = PetscMax(yv[idx+8],val[8]);
+        yv[idx+9]  = PetscMax(yv[idx+9],val[9]);
+        yv[idx+10] = PetscMax(yv[idx+10],val[10]);
+        yv[idx+11] = PetscMax(yv[idx+11],val[11]);
+	val       += 12;
+      }
+#endif
+    }  else {SETERRQ(1,"Wrong insert option");}
+  } else { /* unpack each message as it arrives, default version */
+    while (count) {
+      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus[0]);CHKERRQ(ierr);
+      /* unpack receives into our local space */
+      val      = rvalues + 12*rstarts[imdex];
+      lindices = indices + rstarts[imdex];
+      n        = rstarts[imdex+1] - rstarts[imdex];
+      if (addv == INSERT_VALUES) {
+	for (i=0; i<n; i++) {
+	  idx        = lindices[i];
+	  yv[idx]    = val[0];
+	  yv[idx+1]  = val[1];
+	  yv[idx+2]  = val[2];
+	  yv[idx+3]  = val[3];
+	  yv[idx+4]  = val[4];
+	  yv[idx+5]  = val[5];
+	  yv[idx+6]  = val[6];
+	  yv[idx+7]  = val[7];
+	  yv[idx+8]  = val[8];
+	  yv[idx+9]  = val[9];
+	  yv[idx+10] = val[10];
+	  yv[idx+11] = val[11];
+	  val       += 12;
       }
     } else if (addv == ADD_VALUES) {
       for (i=0; i<n; i++) {
@@ -878,6 +937,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
 #endif
     }  else {SETERRQ(1,"Wrong insert option");}
     count--;
+    }
   }
   /* wait on sends */
   if (nsends) {
@@ -1119,7 +1179,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   VecScatter_MPI_General *gen_to,*gen_from;
   Scalar                 *xv,*yv,*val,*svalues;
   MPI_Request            *rwaits,*swaits;
-  int                    ierr,i,*indices,*sstarts,iend,j,nrecvs,nsends,idx,len;
+  int                    *indices,*sstarts,iend,i,j,nrecvs,nsends,idx,ierr,len;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
@@ -1154,12 +1214,12 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
       len  = 4*sstarts[nsends];
       val  = svalues;
       for (i=0; i<len; i += 4) {
-        idx     = *indices++;
+        idx    = *indices++;
         val[0] = xv[idx];
         val[1] = xv[idx+1];
         val[2] = xv[idx+2];
         val[3] = xv[idx+3];
-        val      += 4;
+        val    += 4;
       }
       ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
     } else {
@@ -1249,13 +1309,14 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     rwaits   = gen_from->rev_requests;
     swaits   = gen_to->rev_requests;
     sstatus  = gen_from->sstatus;
+    rstatus  = gen_from->rstatus;
   } else {
     gen_to   = (VecScatter_MPI_General*)ctx->todata;
     gen_from = (VecScatter_MPI_General*)ctx->fromdata;
     rwaits   = gen_from->requests;
-    rstatus  = gen_to->rstatus;
     swaits   = gen_to->requests;
     sstatus  = gen_to->sstatus;
+    rstatus  = gen_to->rstatus;
   }
   rvalues  = gen_from->values;
   nrecvs   = gen_from->n;
