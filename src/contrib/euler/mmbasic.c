@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbasic.c,v 1.9 1998/05/19 01:34:21 curfman Exp curfman $";
+static char vcid[] = "$Id: mmbasic.c,v 1.10 1998/08/05 03:23:46 curfman Exp bsmith $";
 #endif
 
 /*
     The MM (multi-model) interface routines, callable by users.
 */
 #include "mmimpl.h"
-#include "pinclude/pviewer.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MMPrintHelp"

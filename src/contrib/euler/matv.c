@@ -1,8 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matv.c,v 1.4 1998/08/03 16:10:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matv.c,v 1.5 1998/11/30 23:25:16 bsmith Exp bsmith $";
 #endif
 
-#include "pinclude/pviewer.h"
 #include "sys.h"
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
