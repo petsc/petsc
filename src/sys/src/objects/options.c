@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.62 1996/01/12 22:30:18 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.63 1996/01/12 22:40:00 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -929,7 +929,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
   }
   *nmax = n;
   *flg = 1;
-  return 1; 
+  return 0; 
 } 
 
 /*@C
@@ -957,7 +957,7 @@ int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
   *flg = 1;
   if (value) PetscStrncpy(string,value,len);
   else PetscMemzero(string,len);
-  return 1; 
+  return 0; 
 }
 
 /*@C

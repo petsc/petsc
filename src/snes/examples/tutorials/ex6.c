@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.29 1996/01/11 20:15:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.30 1996/01/12 22:09:58 bsmith Exp balay $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -62,7 +62,7 @@ int main( int argc, char **argv )
   if (flg) {
     ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    OptionsHasName(PETSC_NULL,"-user_precond",&flg)
+    OptionsHasName(PETSC_NULL,"-user_precond",&flg);
     if (flg) { /* user-defined precond */
       ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
       ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL); CHKERRA(ierr);
