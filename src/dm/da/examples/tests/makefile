@@ -74,7 +74,7 @@ runex3:
 	-@$(MPIRUN) -np 3 ex3 -time 50
 
 runex4:
-	-@$(MPIRUN) -np 4 ex4 -nox > ex4_1.tmp 2>&1;	  \
+	-@$(MPIRUN) -np 4 ex4 -test_order -nox > ex4_1.tmp 2>&1;	  \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   $(RM) -f ex4_1.tmp
@@ -83,6 +83,6 @@ runex5:
 	-@$(MPIRUN) -np 3 ex5 -time 50
 
 runex6:
-	-@$(MPIRUN) -np 6 ex6
+	-@$(MPIRUN) -np 6 ex6 -test_order
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
