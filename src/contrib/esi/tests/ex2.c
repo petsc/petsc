@@ -7,13 +7,13 @@
 extern int ESI_Vector_test(esi::Vector<double,int> *);
 int main(int argc,char **args)
 {
-  int    ierr;
-  double norm,dot;
-  esi_msg msg;
+  esi::ErrorCode ierr;
+  double         norm,dot;
+  esi::ErrorMsg  msg;
 
   PetscInitialize(&argc,&args,0,0);
 
-  PETSc_Map<int> *map = new PETSc_Map<int>(MPI_COMM_WORLD,5,PETSC_DECIDE);
+  esi::petsc::Map<int> *map = new esi::petsc::Map<int>(MPI_COMM_WORLD,5,PETSC_DECIDE);
 
   MPI_Comm *comm;
   map->getRunTimeModel("MPI",static_cast<void*>(comm),msg);
@@ -21,7 +21,7 @@ int main(int argc,char **args)
   MPI_Comm_rank(*comm,&rank);
 
 
-  PETSc_Vector<double,int> *vector = new PETSc_Vector<double,int>(map);
+  esi::petsc::Vector<double,int> *vector = new esi::petsc::Vector<double,int>(map);
 
   ierr = ESI_Vector_test((vector));
   if (ierr) {printf("Error in ESI_Vector_Test()\n");return ierr;}

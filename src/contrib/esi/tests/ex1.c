@@ -3,9 +3,9 @@
 
 int innerMap(esi::Map<int> *map)
 {
-  MPI_Comm *comm;
-  int      ierr;
-  esi_msg  msg;
+  MPI_Comm        *comm;
+  esi::ErrorCode  ierr;
+  esi::ErrorMsg   msg;
 
   int end;
   map->getRunTimeModel("MPI",static_cast<void*>(comm),msg);
@@ -27,11 +27,11 @@ extern int ESI_MapPartition_test(esi::MapPartition<int>*);
 
 int main(int argc,char **args)
 {
-  int ierr;
-  esi_msg msg;
+  esi::ErrorCode ierr;
+  esi::ErrorMsg  msg;
 
   PetscInitialize(&argc,&args,0,0);
-  PETSc_Map<int> *map = new PETSc_Map<int>(MPI_COMM_WORLD,5,PETSC_DECIDE);
+  esi::petsc::Map<int> *map = new esi::petsc::Map<int>(MPI_COMM_WORLD,5,PETSC_DECIDE);
 
   ierr = ESI_MapPartition_test(map); if (ierr) return 1;
 
@@ -71,7 +71,7 @@ int main(int argc,char **args)
 
   ierr = PetscMapCreateMPI(MPI_COMM_WORLD,5,PETSC_DECIDE,&pmap);
 
-  PETSc_Map<int> *Pmap = new PETSc_Map<int>(pmap);
+  esi::petsc::Map<int> *Pmap = new esi::petsc::Map<int>(pmap);
 
   PetscMapDestroy(pmap);
 
