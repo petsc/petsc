@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: psplit.c,v 1.2 1999/03/01 04:53:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: psplit.c,v 1.3 1999/03/17 23:21:54 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I    "petsc.h" I*/
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSplitOwnership"
-/*@
+/*@C
     PetscSplitOwnership - Given a global (or local) length determines a local 
         (or global) length via a simple formula
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.26 1999/04/02 17:22:27 bsmith Exp balay $";
+static char vcid[] = "$Id: partition.c,v 1.27 1999/04/02 19:37:58 balay Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -41,7 +41,6 @@ EXTERN_C_END
 
 /* ===========================================================================================*/
 
-#include "src/sys/nreg.h"
 #include "sys.h"
 
 FList MatPartitioningList = 0;
@@ -389,7 +388,7 @@ int MatPartitioningPrintHelp(MatPartitioning  part)
 
 #undef __FUNC__  
 #define __FUNC__ "MatPartitioningSetType"
-/*@
+/*@C
    MatPartitioningSetType - Sets the type of partitioner to use
 
    Collective on MatPartitioning

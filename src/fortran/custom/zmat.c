@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.62 1999/03/07 17:30:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.63 1999/03/11 16:24:18 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -10,10 +10,8 @@ static char vcid[] = "$Id: zmat.c,v 1.62 1999/03/07 17:30:21 bsmith Exp bsmith $
 #define matsetvalue_                     MATSETVALUE
 #define matgetrow_                       MATGETROW
 #define matrestorerow_                   MATRESTOREROW
-#define matgetorderingtypefromoptions_   MATGETORDERINGTYPEFROMOPTIONS
 #define matgettypefromoptions_           MATGETTYPEFROMOPTIONS
 #define matgetordering_                  MATGETORDERING
-#define matorderingregisterall_          MATORDERINGREGISTERALL
 #define matdestroy_                      MATDESTROY
 #define matcreatempiaij_                 MATCREATEMPIAIJ
 #define matcreateseqaij_                 MATCREATESEQAIJ
@@ -43,7 +41,9 @@ static char vcid[] = "$Id: zmat.c,v 1.62 1999/03/07 17:30:21 bsmith Exp bsmith $
 #define matcopy_                         MATCOPY
 #define matgetsubmatrices_               MATGETSUBMATRICES
 #define matgetcoloring_                  MATGETCOLORING
+#define matpartitioningsettype_          MATPARTITIONINGSETTYPE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
 #define matgetrow_                       matgetrow
 #define matrestorerow_                   matrestorerow
@@ -51,7 +51,6 @@ static char vcid[] = "$Id: zmat.c,v 1.62 1999/03/07 17:30:21 bsmith Exp bsmith $
 #define matgetinfo_                      matgetinfo
 #define matgettype_                      matgettype
 #define matgettypefromoptions_           matgettypefromoptions
-#define matorderingregisterall_          matorderingregisterall
 #define matdestroy_                      matdestroy
 #define matcreatempiaij_                 matcreatempiaij
 #define matcreateseqaij_                 matcreateseqaij
@@ -83,9 +82,20 @@ static char vcid[] = "$Id: zmat.c,v 1.62 1999/03/07 17:30:21 bsmith Exp bsmith $
 
 EXTERN_C_BEGIN
 
-void matgetcoloring_(Mat *mat,MatColoringType *type,ISColoring *iscoloring,int *__ierr)
+void matpartitioningsettype_(MatPartitioning *part,CHAR type, int *__ierr,int len)
 {
-  *__ierr = MatGetColoring(*mat,*type,iscoloring);
+  char *t;
+  FIXCHAR(type,len,t);
+  *__ierr = MatPartitioningSetType(*part,t);
+  FREECHAR(type,t);
+}
+
+void matgetcoloring_(Mat *mat,CHAR type,ISColoring *iscoloring,int *__ierr,int len)
+{
+  char *t;
+  FIXCHAR(type,len,t);
+  *__ierr = MatGetColoring(*mat,t,iscoloring);
+  FREECHAR(type,t);
 }
 
 void matsetvalue_(Mat *mat,int *i,int *j,Scalar *va,InsertMode *mode)
@@ -180,18 +190,6 @@ void matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,int *__ierr )
   finfo[13] = info.factor_mallocs;
 }
 
-  /*
-     this next one is TOTALLY wrong, or is it? 
-  */
-void matgetorderingtypefromoptions_(CHAR prefix,MatOrderingType *type,int *__ierr,int len )
-{
-  char *t;
-
-  FIXCHAR(prefix,len,t);
-  *__ierr = MatGetOrderingTypeFromOptions(t,type);
-  FREECHAR(prefix,t);
-}
-
 void matgettypefromoptions_(MPI_Comm *comm,CHAR prefix,MatType *type,
                               PetscTruth *set,int *__ierr,int len)
 {
@@ -276,10 +274,13 @@ void matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *nnz,
                                *m,*M,*nz,nnz,PETSC_NULL,newmat);
 }
 
-void matgetordering_(Mat *mat,MatOrderingType *type,IS *rperm,IS *cperm, 
-                       int *__ierr )
+void matgetordering_(Mat *mat,CHAR type,IS *rperm,IS *cperm, 
+                       int *__ierr,int len )
 {
-  *__ierr = MatGetOrdering(*mat,*type,rperm,cperm);
+  char *t;
+  FIXCHAR(type,len,t);
+  *__ierr = MatGetOrdering(*mat,t,rperm,cperm);
+  FREECHAR(type,t);
 }
 
 void matorderingregisterdestroy_(int *__ierr)
@@ -330,11 +331,6 @@ void matfdcoloringdestroy_(MatFDColoring *mat, int *__ierr )
 void matdestroy_(Mat *mat, int *__ierr )
 {
   *__ierr = MatDestroy(*mat);
-}
-
-void matorderingregisterall_(int *__ierr)
-{
-  *__ierr = MatOrderingRegisterAll();
 }
 
 void matcreatempiaij_(MPI_Comm *comm,int *m,int *n,int *M,int *N,
