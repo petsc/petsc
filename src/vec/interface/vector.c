@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.165 1999/03/05 18:47:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.166 1999/03/10 03:54:28 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1896,8 +1896,8 @@ int VecPlaceArray(Vec vec,const Scalar array[])
 
 #undef __FUNC__  
 #define __FUNC__ "VecReplaceArray"
-/*@
-   VecPlaceArray - Allows one to replace the array in a vector with an
+/*@C
+   VecReplaceArray - Allows one to replace the array in a vector with an
    array provided by the user. This is useful to avoid copying an array
    into a vector.  FOR EXPERTS ONLY!
 
@@ -1910,6 +1910,8 @@ int VecPlaceArray(Vec vec,const Scalar array[])
    Notes:
    This permanently replaces the array and frees the memory associated
    with the old array.
+
+   Not supported from Fortran
 
    Level: developer
 

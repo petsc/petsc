@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.87 1999/03/06 22:35:34 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.88 1999/03/07 17:17:44 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -127,6 +127,7 @@ extern int VecPipelineDestroy(VecPipeline ctx);
 extern int VecGetArray(Vec,Scalar*[]);
 extern int VecRestoreArray(Vec,Scalar*[]);
 extern int VecPlaceArray(Vec,const Scalar[]);
+extern int VecReplaceArray(Vec,const Scalar[]);
 extern int VecGetArrays(const Vec[],int,Scalar**[]);
 extern int VecRestoreArrays(const Vec[],int,Scalar**[]);
 
