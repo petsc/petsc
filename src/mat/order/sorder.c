@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.25 1996/09/18 17:28:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.26 1996/09/21 22:54:05 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -250,7 +250,7 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
   ierr = MatGetReorderingTypeFromOptions(0,&type); CHKERRQ(ierr);
   PLogEventBegin(MAT_GetReordering,mat,0,0,0);
   r =  (int (*)(Mat,MatReordering,IS*,IS*))NRFindRoutine(__MatReorderingList,(int)type,(char *)0);
-  if (!r) {SETERRQ(1,"MatGetReordering:Unknown type");}
+  if (!r) {SETERRQ(1,"MatGetReordering:Unknown or unregistered type");}
 
   ierr = (*r)(mat,type,rperm,cperm); CHKERRQ(ierr);
   ierr = ISSetPermutation(*rperm); CHKERRQ(ierr);

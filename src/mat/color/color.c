@@ -271,7 +271,7 @@ int MatGetColoring(Mat mat,MatColoring type,int *ncolors,IS **is)
   ierr = MatGetColoringTypeFromOptions(0,&type); CHKERRQ(ierr);
   PLogEventBegin(MAT_GetColoring,mat,0,0,0);
   r =  (int (*)(Mat,MatColoring,int*,IS**))NRFindRoutine(__MatColoringList,(int)type,(char *)0);
-  if (!r) {SETERRQ(1,"MatGetColoring:Unknown type");}
+  if (!r) {SETERRQ(1,"MatGetColoring:Unknown or unregistered type");}
 
   ierr = (*r)(mat,type,ncolors,is); CHKERRQ(ierr);
 
