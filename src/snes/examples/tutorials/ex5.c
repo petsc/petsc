@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.95 1998/10/09 19:26:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.96 1998/11/04 22:47:17 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -492,16 +492,24 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       ierr = MatSetValuesLocal(jac,1,&row,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
     }
   }
+  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
 
   /* 
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd().
-     By placing code between these two statements, computations can be
-     done while messages are in transition.
   */
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  /*
+     Normally since the matrix has already been assembled above; this
+     would do nothing. But in the matrix free mode -snes_mf_operator
+     this tells the "matrix-free" matrix that a new linear system solve
+     is about to be done.
+  */
+
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /*
      Set flag to indicate that the Jacobian matrix retains an identical
