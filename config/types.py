@@ -60,9 +60,6 @@ class Configure(config.base.Configure):
 
   def checkComplex(self):
     '''Check for complex numbers in namespace std, and if --enable-complex is given, defines PETSC_USE_COMPLEX if they are present'''
-    if not 'CXX' in self.framework.argDB: return
-    if not self.framework.argDB['CXX']: return
-
     self.pushLanguage('C++')
     includes = '#include <complex>\n'
     body     = 'std::complex<double> x;\n'
@@ -230,7 +227,8 @@ class Configure(config.base.Configure):
     map(lambda type: self.executeTest(self.check, type), ['size_t', 'pid_t', 'off_t', 'mode_t'])
     self.executeTest(self.checkUID)
     self.executeTest(self.checkSignal)
-    self.executeTest(self.checkComplex)
+    if 'CXX' in self.framework.argDB:
+      self.executeTest(self.checkComplex)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.checkFortranStar)
       self.executeTest(self.checkFortranDReal)

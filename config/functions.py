@@ -95,8 +95,6 @@ class Configure(config.base.Configure):
 
   def checkSignalHandlerType(self):
     '''Checks the type of C++ signals handlers, and defines SIGNAL_CAST to the correct value'''
-    if not 'CXX' in self.framework.argDB: return
-    if not self.framework.argDB['CXX']: return    
     self.pushLanguage('C++')
     if not self.checkCompile('#include <signal.h>\nstatic void myhandler(int sig) {}\n', 'signal(SIGFPE,myhandler);\n'):
       self.addDefine('SIGNAL_CAST', '(void (*)(int))')
@@ -115,7 +113,8 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkMemcmp)
     self.executeTest(self.checkSysinfo)
     self.executeTest(self.checkVPrintf)
-    self.executeTest(self.checkSignalHandlerType)
+    if 'CXX' in self.framework.argDB:
+      self.executeTest(self.checkSignalHandlerType)
     self.executeTest(self.checkFreeReturnType)
     map(lambda function: self.executeTest(self.check, function), self.functions)
     return
