@@ -29,7 +29,8 @@ homepage:
 	/usr/bin/cp  tex/ftp_readme /home/ftp/pub/petsc/README
 	/usr/bin/cp  ../Machines /home/ftp/pub/petsc
 	chmod ug+w /home/ftp/pub/petsc/installation /home/ftp/pub/petsc/README
-	chmod ug+w /home/ftp/pub/petsc/Machines
+	chmod ug+w /home/ftp/pub/petsc/Machines /home/ftp/pub/petsc/manual.ps
+	chmod ug+w /home/ftp/pub/petsc/onepager.ps /home/ftp/pub/petsc/intro.ps
 	/usr/bin/cp tex/petsc.html /mcs/www/petsc
 	/usr/bin/cp tex/petsc_color.gif /mcs/www/petsc
 	/usr/bin/cp tex/petsc.map /mcs/www/petsc
@@ -37,7 +38,7 @@ homepage:
 	/usr/bin/cp tex/onepager.html /mcs/www/petsc
 	/usr/bin/cp tex/summaries.html /mcs/www/petsc
 	/usr/bin/cp www.html /mcs/www/petsc
-	/usr/bin/cp tex/inttro.html /mcs/www/petsc
+	/usr/bin/cp tex/intro.html /mcs/www/petsc
 	/usr/bin/cp intro.ps /home/ftp/pub/petsc
 	chmod ug+w /mcs/www/petsc/*
 	tar cf $(HOME)/www.tar www 
