@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.280 1999/03/31 18:38:56 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.281 1999/04/06 19:19:15 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -18,6 +18,10 @@ all       : info chkpetsc_dir deletelibs build_c build_fortran shared
 # Prints information about the system and version of PETSc being compiled
 #
 info:
+	-@echo "=========================================="
+	-@echo "See docs/troubleshooting.html and docs/bugreporting.html"
+	-@echo "for help with installation problems. Please send EVERYTHING"
+	-@echo "printed out below when reporting problems"
 	-@echo "=========================================="
 	-@echo On `date` on `hostname`
 	-@echo Machine characteristics: `uname -a`
