@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.182 1998/04/15 22:52:30 curfman Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.183 1998/04/21 14:09:27 curfman Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -142,7 +142,7 @@ double PetscCompareTolerance = 1.e-10;
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-.   -compare - Activate PetscCompareDouble(), PetscCompareInt(), PetscCompareScalar(),
+.  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
 
 .seealso: PetscCompareDouble(), PetscCompareScalar()
 @*/
@@ -170,7 +170,7 @@ int PetscCompareInt(int d)
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-.   -compare - Activate PetscCompareDouble(), PetscCompareInt(), PetscCompareScalar(),
+.  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
 
 .seealso: PetscCompareInt(), PetscComparseScalar()
 @*/
@@ -201,7 +201,7 @@ int PetscCompareDouble(double d)
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-.   -compare - Activate PetscCompareDouble(), PetscCompareInt(), PetscCompareScalar(),
+.  -compare - Activates PetscCompareDouble(), PetscCompareInt(), and PetscCompareScalar()
 
 .seealso: PetscCompareInt(), PetscComparseDouble()
 @*/
@@ -227,7 +227,8 @@ int PetscCompareScalar(Scalar d)
     this routine calls MPI_Init() and sets up two PETSC_COMM_WORLD, one for 
     each program being compared.
 
-    Note: Only works with C programs.
+    Note: 
+    Only works with C programs.
 */
 int PetscCompareInitialize(double tol)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.103 1998/04/15 20:58:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: mtr.c,v 1.104 1998/04/15 22:52:24 curfman Exp curfman $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -423,7 +423,7 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
    Collective on PETSC_COMM_WORLD
 
    Options Database Key:
-$  -trdump : dumps unfreed memory during call to PetscFinalize()
+.  -trdump - Dumps unfreed memory during call to PetscFinalize()
 
    Notes: The calling sequence in Fortran is PetscTrDump(integer ierr)
 
@@ -459,7 +459,7 @@ int PetscTrDump( FILE *fp )
     Not Collective
 
     Options Database Key:
-$     -trmalloc_log
+.  -trmalloc_log - Activates PetscTrLog() and PetscTrLogDump()
 
 .seealso: PetscTrLogDump()
 @*/
@@ -483,7 +483,7 @@ int PetscTrLog(void)
     Collective on PETSC_COMM_WORLD
 
     Options Database Key:
-$   -trmalloc_log
+.  -trmalloc_log - Activates PetscTrLog() and PetscTrLogDump()
 
 .seealso: PetscTrLog()
 @*/
@@ -594,8 +594,9 @@ typedef union { long l[2]; double d; } NANDouble;
 .  n   - length of data (in Scalars)
 
    Not Collective
+
    Options Database Key:
-$   -trmalloc_nan
+.  -trmalloc_nan - Activates PetscInitializeLargeInts() and PetscInitializeNans()
 
    Notes:
    This routine is used to mark an array as being uninitialized, so that
@@ -639,14 +640,14 @@ int PetscInitializeNans(Scalar *p,int n )
    PetscInitializeLargeInts - Intializes an array of integers
    with very large values.
 
-   Input parameters:
+   Input Parameters:
 .  p   - pointer to data
 .  n   - length of data (in ints)
 
    Not Collective
 
    Options Database Key:
-$   -trmalloc_nan
+.  -trmalloc_nan - Activates PetscInitializeLargeInts() and PetscInitializeNans()
 
    Notes:
    This routine is useful for tracking down the use of uninitialized
