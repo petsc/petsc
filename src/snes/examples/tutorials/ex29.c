@@ -17,6 +17,7 @@ static char help[] = "Hall MHD with in two dimensions with time stepping and mul
 -snes_atol 1.e-10\n\
 -ksp_atol 1.e-10\n\
 -max_st 5\n\
+-resistivity <eta>\n\
 -viscosity <nu>\n\
 -skin_depth <d_e>\n\
 -larmor_radius <rho_s>\n\
@@ -99,11 +100,12 @@ typedef struct {
   int          cycles;           /* number of time steps for integration */ 
   PassiveReal  nu,eta,d_e,rho_s; /* physical parameters */
   PetscTruth   draw_contours;    /* flag - 1 indicates drawing contours */
+  PetscTruth   second_order;
   PetscTruth   PreLoading;
 } Parameter;
 
 typedef struct {
-  Vec          Xold,func;
+  Vec          Xoldold,Xold,func;
   TstepCtx     *tsCtx;
   Parameter    *param;
 } AppCtx;
@@ -113,6 +115,7 @@ extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 extern int Update(DMMG *);
 extern int Initialize(DMMG *);
 extern int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
+extern int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
 extern int Gnuplot(DA da, Vec X, double time);
 extern int AttachNullSpace(PC,Vec);
 
@@ -184,6 +187,9 @@ int main(int argc,char **argv)
     CHKERRQ(ierr);
 
     ierr = PetscOptionsHasName(PETSC_NULL, "-contours", &param.draw_contours);
+    CHKERRQ(ierr);
+
+    ierr = PetscOptionsHasName(PETSC_NULL, "-second_order", &param.second_order);
     CHKERRQ(ierr);
 
     ierr = DASetFieldName(DMMGGetDA(dmmg), 0, "phi");
@@ -259,6 +265,7 @@ int main(int argc,char **argv)
     for (i=0; i<param.mglevels; i++) {
       /* create work vectors to hold previous time-step solution and
          function value */
+      ierr = VecDuplicate(dmmg[i]->x, &user[i].Xoldold); CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x, &user[i].Xold); CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x, &user[i].func); CHKERRQ(ierr);
       user[i].tsCtx = &tsCtx;
@@ -327,6 +334,7 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     
     for (i=0; i<param.mglevels; i++) {
+      ierr = VecDestroy(user[i].Xoldold); CHKERRQ(ierr);
       ierr = VecDestroy(user[i].Xold); CHKERRQ(ierr);
       ierr = VecDestroy(user[i].func); CHKERRQ(ierr);
     }
@@ -686,6 +694,17 @@ int Update(DMMG *dmmg)
   CHKERRQ(ierr);
 
   for (tsCtx->itstep = 0; tsCtx->itstep < max_steps; tsCtx->itstep++) {
+
+    if ((param->second_order) && (tsCtx->itstep == 0))
+    {
+      for (i=param->mglevels-1; i>=0 ;i--)
+      {
+        ierr = VecCopy(((AppCtx*)dmmg[i]->user)->Xold,
+                       ((AppCtx*)dmmg[i]->user)->Xoldold);
+        CHKERRQ(ierr);
+      }
+    }
+
     for (i=param->mglevels-1; i>0 ;i--) {
       ierr = MatRestrict(dmmg[i]->R, dmmg[i]->x, dmmg[i-1]->x);
       CHKERRQ(ierr);
@@ -836,8 +855,9 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
   hx   = one/dhx;                 hy = one/dhy;
   hxhy = hx*hy;
 
-  ierr  = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
   dtinv = hxhy/(tsCtx->dt);
+
+  ierr  = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       f[j][i].U += dtinv*(x[j][i].U-xold[j][i].U);
@@ -845,6 +865,49 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
     }
   }
   ierr = DAVecRestoreArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "AddTSTermLocal2"
+int AddTSTermLocal2(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
+/*---------------------------------------------------------------------*/
+{
+  TstepCtx       *tsCtx = user->tsCtx;
+  DA             da = info->da;
+  int            ierr,i,j;
+  int            xints,xinte,yints,yinte;
+  PassiveReal    hx,hy,dhx,dhy,hxhy;
+  PassiveReal    one = 1.0, onep5 = 1.5, two = 2.0, p5 = 0.5;
+  PassiveScalar  dtinv;
+  PassiveField   **xoldold,**xold;
+
+  PetscFunctionBegin; 
+
+  xints = info->xs; xinte = info->xs+info->xm;
+  yints = info->ys; yinte = info->ys+info->ym;
+
+  dhx  = info->mx/lx;            dhy = info->my/ly;
+  hx   = one/dhx;                 hy = one/dhy;
+  hxhy = hx*hy;
+
+  dtinv = hxhy/(tsCtx->dt);
+
+  ierr  = DAVecGetArray(da,user->Xoldold,(void**)&xoldold);CHKERRQ(ierr);
+  ierr  = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  for (j=yints; j<yinte; j++) {
+    for (i=xints; i<xinte; i++) {
+      f[j][i].U += dtinv * (onep5 * x[j][i].U - two * xold[j][i].U +
+                            p5 * xoldold[j][i].U);
+      f[j][i].F += dtinv * (onep5 * x[j][i].F - two * xold[j][i].F +
+                            p5 * xoldold[j][i].F);
+    }
+  }
+  ierr = DAVecRestoreArray(da,user->Xoldold,(void**)&xoldold);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
