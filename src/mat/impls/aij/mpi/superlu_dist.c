@@ -83,7 +83,7 @@ void zCompRow_to_CompCol(int m, int n, int nnz,
     *at = (doublecomplex *) doublecomplexMalloc_dist(nnz);
     *rowind = (int *) intMalloc_dist(nnz);
     *colptr = (int *) intMalloc_dist(n+1);
-    marker = (int *) intCalloc_(n);
+    marker = (int *) intCalloc_dist(n);
  
     /* Get counts of each column of A, and set up column pointers */
     for (i = 0; i < m; ++i)
@@ -129,7 +129,7 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
   PetscFunctionBegin;
   /* Deallocate SuperLU_DIST storage */
 #if defined(PETSC_USE_COMPLEX)
-  Destroy_CompCol_Matrix(&lu->A_sup);
+  Destroy_CompCol_Matrix_dist(&lu->A_sup);
 #else
   Destroy_CompCol_Matrix_dist(&lu->A_sup);
 #endif
@@ -281,7 +281,7 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
 
   /* Create compressed column matrix A_sup. */
 #if defined(PETSC_USE_COMPLEX)
-  zCreate_CompCol_Matrix(&A_sup, M, N, aa->nz, a, asub, xa, SLU_NC, SLU_Z, SLU_GE);
+  zCreate_CompCol_Matrix_dist(&A_sup, M, N, aa->nz, a, asub, xa, SLU_NC, SLU_Z, SLU_GE);
 #else
   dCreate_CompCol_Matrix_dist(&A_sup, M, N, aa->nz, a, asub, xa, SLU_NC, SLU_D, SLU_GE);  
 #endif
