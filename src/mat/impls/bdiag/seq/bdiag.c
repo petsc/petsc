@@ -134,7 +134,6 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_USE_HASH_TABLE:
-  case MAT_USE_SINGLE_PRECISION_SOLVES:
     PetscLogInfo(A,"MatSetOption_SeqBDiag:Option ignored\n");
     break;
   default:

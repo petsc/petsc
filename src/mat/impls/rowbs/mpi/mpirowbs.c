@@ -1371,7 +1371,6 @@ int MatSetOption_MPIRowbs(Mat A,MatOption op)
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_ROWS_UNSORTED:
   case MAT_USE_HASH_TABLE:
-  case MAT_USE_SINGLE_PRECISION_SOLVES:
     PetscLogInfo(A,"MatSetOption_MPIRowbs:Option ignored\n");
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:

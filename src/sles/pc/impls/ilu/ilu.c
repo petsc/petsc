@@ -24,20 +24,6 @@ int PCDestroy_ILU_Internal(PC pc)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCILUSetSinglePrecisionSolves_ILU"
-int PCILUSetSinglePrecisionSolves_ILU(PC pc,PetscTruth flag)
-{
-  PC_ILU *dir;
-
-  PetscFunctionBegin;
-  dir = (PC_ILU*)pc->data;
-  dir->single_precision_solve = flag;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
 #define __FUNCT__ "PCILUSetDamping_ILU"
 int PCILUSetDamping_ILU(PC pc,PetscReal damping)
 {
@@ -201,39 +187,6 @@ int PCILUSetAllowDiagonalFill_ILU(PC pc)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-/* ------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetSinglePrecisionSolves"
-/*@
-   PCILUSetSinglePrecisionSolves - Sets precision of triangular solves to single precision
-
-   Collective on PC
-   
-   Input Parameters:
-+  pc - the preconditioner context
--  flag - PETSC_TRUE to use single precision, default is PETSC_FALSE
-
-   Options Database Key:
-.  -pc_ilu_single_precision_solves - activates PCILUSetSinglePrecisionSolves
-.  -pc_ilu_single_precision_solves <flag> - flag of TRUE/FALSE will override this call in the code.
-
-   Level: intermediate
-
-.keywords: PC, set, solve, precision
-@*/
-int PCILUSetSinglePrecisionSolves(PC pc,PetscTruth flag)
-{
-  int ierr,(*f)(PC,PetscTruth);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetSinglePrecisionSolves_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,flag);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetDamping"
@@ -632,10 +585,6 @@ static int PCSetFromOptions_ILU(PC pc)
     ilu->info.diagonal_fill = (double) flg;
     ierr = PetscOptionsName("-pc_iludt_reuse_fill","Reuse fill from previous ILUdt","PCILUDTSetReuseFill",&ilu->reusefill);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_ilu_reuse_ordering","Reuse previous reordering","PCILUSetReuseOrdering",&ilu->reuseordering);CHKERRQ(ierr);
-    ierr = PetscOptionsLogical("-pc_ilu_single_precision_solves","Precision for triangular solves","PCILUSetSinglePrecisionSolves",ilu->single_precision_solve,&single_prec,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCILUSetSinglePrecisionSolves(pc,single_prec);CHKERRQ(ierr);
-    }
     ierr = PetscOptionsName("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCILUSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
@@ -799,9 +748,6 @@ static int PCSetUp_ILU(PC pc)
     }
     ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact);CHKERRQ(ierr);
   }
-  if (ilu->single_precision_solve) {
-    ierr = MatSetOption(ilu->fact,MAT_USE_SINGLE_PRECISION_SOLVES);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -884,7 +830,6 @@ int PCCreate_ILU(PC pc)
   ilu->info.pivotinblocks      = 1.0;
   ilu->reusefill               = PETSC_FALSE;
   ilu->info.diagonal_fill      = 0;
-  ilu->single_precision_solve  = PETSC_FALSE;
   pc->data                     = (void*)ilu;
 
   pc->ops->destroy             = PCDestroy_ILU;
@@ -896,9 +841,6 @@ int PCCreate_ILU(PC pc)
   pc->ops->view                = PCView_ILU;
   pc->ops->applyrichardson     = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetSinglePrecisionSolves_C",
-                    "PCILUSetSinglePrecisionSolves_ILU",
-                     PCILUSetSinglePrecisionSolves_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetUseDropTolerance_C","PCILUSetUseDropTolerance_ILU",
                     PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetFill_C","PCILUSetFill_ILU",

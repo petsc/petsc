@@ -33,7 +33,6 @@ typedef struct {
   PetscScalar      *saved_values; 
 
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
-  PetscTruth       single_precision_solves; /* if true, use single precision for triangular solves */
 
 #if defined(PETSC_USE_MAT_SINGLE)
   int              setvalueslen;

@@ -87,7 +87,6 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
   case MAT_STRUCTURALLY_SYMMETRIC:
     a->symmetric = PETSC_TRUE;
     break;
-  case MAT_USE_SINGLE_PRECISION_SOLVES:
   default:
     PetscLogInfo(A,"MatSetOption_MPIAdj:Option ignored\n");
     break;

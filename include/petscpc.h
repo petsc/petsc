@@ -188,7 +188,6 @@ EXTERN int PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,int);
 EXTERN int PCILUDTSetReuseFill(PC,PetscTruth);
 EXTERN int PCILUSetAllowDiagonalFill(PC);
 EXTERN int PCILUSetDamping(PC,PetscReal);
-EXTERN int PCILUSetSinglePrecisionSolves(PC,PetscTruth);
 EXTERN int PCILUSetPivotInBlocks(PC,PetscTruth);
 
 EXTERN int PCICCSetMatOrdering(PC,MatOrderingType);

@@ -1550,7 +1550,6 @@ int MatSetOption_MPIBAIJ(Mat A,MatOption op)
   case MAT_ROWS_SORTED:
   case MAT_ROWS_UNSORTED:
   case MAT_YES_NEW_DIAGONALS:
-  case MAT_USE_SINGLE_PRECISION_SOLVES:
     PetscLogInfo(A,"Info:MatSetOption_MPIBAIJ:Option ignored\n");
     break;
   case MAT_COLUMN_ORIENTED:

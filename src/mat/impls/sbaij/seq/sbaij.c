@@ -174,7 +174,6 @@ int MatSetOption_SeqSBAIJ(Mat A,MatOption op)
   case MAT_YES_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
-  case MAT_USE_SINGLE_PRECISION_SOLVES:
     PetscLogInfo(A,"MatSetOption_SeqSBAIJ:Option ignored\n");
     break;
   case MAT_NO_NEW_DIAGONALS:

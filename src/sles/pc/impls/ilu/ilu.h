@@ -20,7 +20,6 @@ typedef struct {
   PetscTruth        reusefill;        /* reuse fill from previous ILUDT */
   double            actualfill;       /* expected fill in factorization */
   MatILUInfo        info;
-  PetscTruth        single_precision_solve; 
 } PC_ILU;
 
 #endif

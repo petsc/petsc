@@ -347,15 +347,6 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
     break;
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
-  case MAT_USE_SINGLE_PRECISION_SOLVES:
-    if (a->bs==4) {
-      a->single_precision_solves = PETSC_TRUE;
-      A->ops->solve              = MatSolve_SeqBAIJ_Update;
-      A->ops->solvetranspose     = MatSolveTranspose_SeqBAIJ_Update;
-      PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES set\n");
-    } else {
-      PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
-    }
     break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
@@ -1619,7 +1610,6 @@ int MatCreate_SeqBAIJ(Mat B)
   b->setvalueslen     = 0;
   b->setvaluescopy    = PETSC_NULL;
 #endif
-  b->single_precision_solves = PETSC_FALSE;
 
   ierr = PetscMapCreateMPI(B->comm,B->m,B->m,&B->rmap);CHKERRQ(ierr);
   ierr = PetscMapCreateMPI(B->comm,B->n,B->n,&B->cmap);CHKERRQ(ierr);
