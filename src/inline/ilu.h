@@ -131,11 +131,11 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 */
 #define Kernel_A_gets_A_times_B(bs,A,B,W) \
 { \
-  PetscBLASInt bbs = (PetscBLASInt)bs;\
+  PetscBLASInt _bbs = (PetscBLASInt)bs;\
   PetscScalar    _one = 1.0,_zero = 0.0; \
   PetscErrorCode _ierr; \
   _ierr = PetscMemcpy((W),(A),(bs)*(bs)*sizeof(MatScalar));CHKERRQ(_ierr); \
-  BLgemm_("N","N",&(bbs),&(bbs),&(bbs),&_one,(W),&(bbs),(B),&(bbs),&_zero,(A),&(bbs));\
+  BLgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_one,(W),&(_bbs),(B),&(_bbs),&_zero,(A),&(_bbs));\
 }
 
 /*
@@ -146,9 +146,9 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 */ 
 #define Kernel_A_gets_A_minus_B_times_C(bs,A,B,C) \
 { \
-  PetscBLASInt bbs = (PetscBLASInt)bs;\
+  PetscBLASInt _bbs = (PetscBLASInt)bs;\
   PetscScalar _mone = -1.0,_one = 1.0; \
-  BLgemm_("N","N",&(bbs),&(bbs),&(bbs),&_mone,(B),&(bbs),(C),&(bbs),&_one,(A),&(bbs));\
+  BLgemm_("N","N",&(_bbs),&(_bbs),&(_bbs),&_mone,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs));\
 }
 
 /*
@@ -159,9 +159,9 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 */ 
 #define Kernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) \
 { \
-  PetscBLASInt bbs = (PetscBLASInt)bs;\
+  PetscBLASInt _bbs = (PetscBLASInt)bs;\
   PetscScalar _one = 1.0; \
-  BLgemm_("T","N",&(bbs),&(bbs),&(bbs),&_one,(B),&(bbs),(C),&(bbs),&_one,(A),&(bbs));\
+  BLgemm_("T","N",&(_bbs),&(_bbs),&(_bbs),&_one,(B),&(_bbs),(C),&(_bbs),&_one,(A),&(_bbs));\
 }
 
 /*
@@ -174,8 +174,8 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 #define  Kernel_v_gets_v_plus_Atranspose_times_w(bs,v,A,w) \
 {  \
   PetscScalar _one = 1.0; \
-  PetscBLASInt bbs = (PetscBLASInt)bs, _ione = 1; \
-  LAgemv_("T",&(bbs),&(bbs),&_one,A,&(bbs),w,&_ione,&_one,v,&_ione); \
+  PetscBLASInt _bbs = (PetscBLASInt)bs, _ione = 1; \
+  LAgemv_("T",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione); \
 } 
 
 /*
@@ -188,8 +188,8 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 #define  Kernel_v_gets_v_minus_A_times_w(bs,v,A,w) \
 {  \
   PetscScalar _mone = -1.0,_one = 1.0; \
-  PetscBLASInt bbs = (PetscBLASInt)bs, _ione = 1; \
-  LAgemv_("N",&(bbs),&(bbs),&_mone,A,&(bbs),w,&_ione,&_one,v,&_ione); \
+  PetscBLASInt _bbs = (PetscBLASInt)bs, _ione = 1; \
+  LAgemv_("N",&(_bbs),&(_bbs),&_mone,A,&(_bbs),w,&_ione,&_one,v,&_ione); \
 }
 
 /*
@@ -202,8 +202,8 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 #define  Kernel_v_gets_v_plus_A_times_w(bs,v,A,w) \
 {  \
   PetscScalar _one = 1.0; \
-  PetscBLASInt bbs = (PetscBLASInt)bs,_ione = 1; \
-  LAgemv_("N",&(bbs),&(bbs),&_one,A,&(bbs),w,&_ione,&_one,v,&_ione); \
+  PetscBLASInt _bbs = (PetscBLASInt)bs,_ione = 1; \
+  LAgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),w,&_ione,&_one,v,&_ione); \
 }
 
 /*
@@ -216,8 +216,8 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 #define  Kernel_w_gets_w_plus_Ar_times_v(bs,ncols,v,A,w) \
 {  \
   PetscScalar _one = 1.0; \
-  PetscBLASInt bbs = (PetscBLASInt)bs,bncols = (PetscBLASInt)ncols,_ione = 1; \
-  LAgemv_("N",&(bbs),&(bncols),&_one,A,&(bbs),v,&_ione,&_one,w,&_ione); \
+  PetscBLASInt _bbs = (PetscBLASInt)bs,_bncols = (PetscBLASInt)ncols,_ione = 1; \
+  LAgemv_("N",&(_bbs),&(_bncols),&_one,A,&(_bbs),v,&_ione,&_one,w,&_ione); \
 }
 
 /*
@@ -230,8 +230,8 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 #define Kernel_w_gets_A_times_v(bs,v,A,w) \
 {  \
   PetscScalar _zero = 0.0,_one = 1.0; \
-  PetscBLASInt bbs = (PetscBLASInt)bs,_ione = 1; \
-  LAgemv_("N",&(bbs),&(bbs),&_one,A,&(bbs),v,&_ione,&_zero,w,&_ione); \
+  PetscBLASInt _bbs = (PetscBLASInt)bs,_ione = 1; \
+  LAgemv_("N",&(_bbs),&(_bbs),&_one,A,&(_bbs),v,&_ione,&_zero,w,&_ione); \
 }
 
 /*
@@ -240,8 +240,8 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 #define Kernel_w_gets_Ar_times_v(bs,ncols,x,A,z) \
 { \
   PetscScalar _one = 1.0,_zero = 0.0; \
-  PetscBLASInt bbs = (PetscBLASInt)bs,bncols = (PetscBLASInt)ncols,_ione = 1; \
-  LAgemv_("N",&bs,&bncols,&_one,A,&bs,x,&_ione,&_zero,z,&_ione); \
+  PetscBLASInt _bbs = (PetscBLASInt)bs,_bncols = (PetscBLASInt)ncols,_ione = 1; \
+  LAgemv_("N",&bs,&_bncols,&_one,A,&bs,x,&_ione,&_zero,z,&_ione); \
 }
 
 /*
@@ -250,8 +250,8 @@ EXTERN PetscErrorCode Kernel_A_gets_inverse_A_7(MatScalar *);
 #define Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,A,z) \
 { \
   PetscScalar _one = 1.0; \
-  PetscBLASInt bbs = (PetscBLASInt)bs,bncols = (PetscBLASInt)ncols,_ione = 1; \
-  LAgemv_("T",&bbs,&bncols,&_one,A,&bbs,x,&_ione,&_one,z,&_ione); \
+  PetscBLASInt __bbs = (PetscBLASInt)bs,_bncols = (PetscBLASInt)ncols,_ione = 1; \
+  LAgemv_("T",&_bbs,&_bncols,&_one,A,&__bbs,x,&_ione,&_one,z,&_ione); \
 }
 
 #else 
