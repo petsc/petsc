@@ -15,9 +15,9 @@ text(5,22,'SGI Origin 2000','Rotation',90)
 text(6,22,'NT Pentium PRO 200Mhz','Rotation',90)
 text(7,22,'IBM SP1','Rotation',90)
 text(8,22,'SGI PowerChallenge','Rotation',90)
-text(9,22,'Sun UltraSPARC','Rotation',90)
+text(9,22,'Sun Ultra 2 UPA/SBus (168MHz)','Rotation',90)
 
-% print -dps performance_cfd.2.10_1.ps
+% print -dps performance_cfd_2_10_1.ps
 
 figure(2)
 
@@ -35,6 +35,6 @@ text(5,22,'SGI Origin 2000','Rotation',90)
 text(6,22,'NT Pentium PRO 200Mhz ','Rotation',90)
 text(7,22,'IBM SP1','Rotation',90)
 text(8,22,'SGI PowerChallenge','Rotation',90)
-text(9,22,'Sun UltraSPARC','Rotation',90)
+text(9,22,'Sun Ultra 2 UPA/SBus (168MHz)','Rotation',90)
 
-% print -dps performance_cfd.2.10_2.ps
+% print -dps performance_cfd_2_10_2.ps
