@@ -8,6 +8,6 @@
 </H2>
 
 DA objects are used to manage parallel communications for structured mesh problems
-in PDE-based (or other) simulations.   See <A HREF="../../../src/snes/examples/tutorials/ex5.c">src/snes/examples/tutorials/ex5.c</A> for sample usage.
+in PDE-based (or other) simulations.   See <A HREF="${PETSC_DIR}src/snes/examples/tutorials/ex5.c">src/snes/examples/tutorials/ex5.c</A> for sample usage.
 
 <P>

@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.116 2000/09/22 20:42:15 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.117 2000/09/28 21:08:54 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -157,6 +157,8 @@ int PetscPopErrorHandler(void)
   PetscFunctionReturn(0);
 }
 
+static char PetscErrorBaseMessage[1024];
+
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PetscError" 
 /*@C
@@ -203,6 +205,9 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
     vsprintf(buf,mess,Argp);
     va_end(Argp);
     lbuf = buf;
+    if (p == 1) {
+      PetscStrncpy(PetscErrorBaseMessage,lbuf,1023);
+    }
   }
 
   if (!eh)     ierr = PetscTraceBackErrorHandler(line,func,file,dir,n,p,lbuf,0);
