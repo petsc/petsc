@@ -162,7 +162,7 @@ int main(int argc,char **args)
 
        Note: SLESSetUp() MUST be called before PCBJacobiGetSubSLES().
     */
-    ierr = SLESSetUp(sles,x,b);CHKERRQ(ierr);
+    ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
 
     /*
        Extract the array of SLES contexts for the local blocks
