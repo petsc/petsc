@@ -11,6 +11,7 @@ class Configure(config.base.Configure):
     self.updated      = 0
     self.strmsg       = ''
     self.hasdatafiles = 0
+    self.arch         = self.framework.require('PETSc.packages.arch', self)
     return
 
   def __str__(self):
@@ -25,88 +26,30 @@ class Configure(config.base.Configure):
     return
 
   def configureDirectories(self):
-    '''Checks PETSC_DIR and sets if not set'''
-    if not self.framework.argDB.has_key('PETSC_DIR'):
-      self.framework.argDB['PETSC_DIR'] = os.getcwd()
-    elif not os.path.samefile(self.framework.argDB['PETSC_DIR'],os.getcwd()) :
+    '''Verifies that PETSC_DIR is acceptable'''
+    if not os.path.samefile(self.arch.dir, os.getcwd()):
       raise RuntimeError('  Wrong PETSC_DIR option specified: '+ self.framework.argDB['PETSC_DIR'] + '\n  Configure invoked in: '+ os.path.realpath(os.getcwd()))
-    self.dir = self.framework.argDB['PETSC_DIR']
-    # Check for C:/ specification of PETSC_DIR and change it to cygwin specification, if using cygwin python
-    if self.dir[1]==':':
-      try:
-        (pdir,error,status)=self.executeShellCommand('cygpath -au '+self.framework.argDB['PETSC_DIR'])
-        if not status:
-          self.framework.argDB['PETSC_DIR']=pdir
-      except RuntimeError: pass
-    # Check for version
-    if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
-      raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
-    self.addSubstitution('DIR', self.dir)
-    self.addDefine('DIR', self.dir)
+    if not os.path.exists(os.path.join(self.arch.dir, 'include', 'petscversion.h')):
+      raise RuntimeError('Invalid PETSc directory '+str(self.arch.dir)+' it may not exist?')
     return
 
   def configureArchitecture(self):
-    '''Sets PETSC_ARCH'''
-    import sys
-    # Find auxilliary directory by checking for config.sub
-    auxDir = None
-    for dir in [os.path.abspath(os.path.join('bin', 'config')), os.path.abspath('config')] + sys.path:
-      if os.path.isfile(os.path.join(dir, 'config.sub')):
-        auxDir      = dir
-        configSub   = os.path.join(auxDir, 'config.sub')
-        configGuess = os.path.join(auxDir, 'config.guess')
-        break
-    if not auxDir: raise RuntimeError('Unable to locate config.sub in order to determine architecture.Your PETSc directory is incomplete.\n Get PETSc again')
-    try:
-      # Guess host type (should allow user to specify this
-      host = config.base.Configure.executeShellCommand(self.shell+' '+configGuess, log = self.framework.log)[0]
-      # Get full host description
-      output = config.base.Configure.executeShellCommand(self.shell+' '+configSub+' '+host, log = self.framework.log)[0]
-    except RuntimeError, e:
-      raise RuntimeError('Unable to determine host type using '+configSub+': '+str(e))
-    # Parse output
-    m = re.match(r'^(?P<cpu>[^-]*)-(?P<vendor>[^-]*)-(?P<os>.*)$', output)
-    if not m: raise RuntimeError('Unable to parse output of config.sub: '+output)
-    self.framework.host_cpu    = m.group('cpu')
-    self.host_vendor = m.group('vendor')
-    self.host_os     = m.group('os')
-
-##    results = self.executeShellCode(self.macroToShell(self.hostMacro))
-##    self.host_cpu    = results['host_cpu']
-##    self.host_vendor = results['host_vendor']
-##    self.host_os     = results['host_os']
-
-    if not self.framework.argDB.has_key('PETSC_ARCH'):
-      if 'PETSC_ARCH' in os.environ:
-        arch = os.environ['PETSC_ARCH']
-      else:
-        arch = self.host_os
-    else:
-      arch = self.framework.argDB['PETSC_ARCH']
-    archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', arch)
-    self.framework.argDB['PETSC_ARCH']      = arch
-    self.framework.argDB['PETSC_ARCH_BASE'] = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.host_os)
-    self.addArgumentSubstitution('ARCH', 'PETSC_ARCH')
-    self.addDefine('ARCH', archBase)
-    self.addDefine('ARCH_NAME', '"'+arch+'"')
-
+    '''Verify that PETSC_ARCH is acceptable and setup a default architecture'''
     # Check if PETSC_ARCH is a built-in arch
-    if os.path.isdir(os.path.join('bmake',self.framework.argDB['PETSC_ARCH'])) and not os.path.isfile(os.path.join('bmake',self.framework.argDB['PETSC_ARCH'],'configure.py')):
+    if os.path.isdir(os.path.join('bmake', self.arch.arch)) and not os.path.isfile(os.path.join('bmake', self.arch.arch, 'configure.py')):
       dirs   = os.listdir('bmake')
       arches = ''
       for d in dirs:
-        if os.path.isdir(os.path.join('bmake',d)) and not os.path.isfile(os.path.join('bmake',d,'configure.py')):
+        if os.path.isdir(os.path.join('bmake', d)) and not os.path.isfile(os.path.join('bmake', d, 'configure.py')):
           arches = arches + ' '+d
       raise RuntimeError('The selected PETSC_ARCH is not allowed with config/configure.py\nbecause it clashes with a built-in PETSC_ARCH, rerun config/configure.py with -PETSC_ARCH=somethingelse;\n   DO NOT USE the following names:'+arches)
-    
     # if PETSC_ARCH is not set use one last created with configure
     if self.framework.argDB['with-default-arch']:
       fd = file(os.path.join('bmake', 'variables'), 'w')
-      fd.write('PETSC_ARCH='+arch+'\n')
-      fd.write('include ${PETSC_DIR}/bmake/'+arch+'/variables\n')
+      fd.write('PETSC_ARCH='+self.arch.arch+'\n')
+      fd.write('include ${PETSC_DIR}/bmake/'+self.arch.arch+'/variables\n')
       fd.close()
-      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+arch+' in bmake/variables')
-      self.addSubstitution('PETSC_ARCH', arch)
+      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in bmake/variables')
     else:
       os.unlink(os.path.join('bmake', 'variables'))
     return
@@ -139,15 +82,14 @@ class Configure(config.base.Configure):
     '''Checks what DATAFILESPATH should be'''
     datafilespath = None
     if self.framework.argDB.has_key('DATAFILESPATH'):
-      if os.path.isdir(self.framework.argDB['DATAFILESPATH']) & os.path.isdir(os.path.join(self.framework.argDB['DATAFILESPATH'],'matrices')):
+      if os.path.isdir(self.framework.argDB['DATAFILESPATH']) & os.path.isdir(os.path.join(self.framework.argDB['DATAFILESPATH'], 'matrices')):
         datafilespath = self.framework.argDB['DATAFILESPATH']
       else:
         raise RuntimeError('Path given with option -DATAFILES='+self.framework.argDB['DATAFILESPATH']+' is not a valid datafiles directory')
     elif os.path.isdir(os.path.join('/home','petsc','datafiles')) & os.path.isdir(os.path.join('/home','petsc','datafiles','matrices')):
       datafilespath = os.path.join('/home','petsc','datafiles')
-    elif os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],'..','datafiles')) &  os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],'..','datafiles','matrices')):
-      datafilespath = os.path.join(self.framework.argDB['PETSC_DIR'],'..','datafiles')
-      
+    elif os.path.isdir(os.path.join(self.arch.dir, '..', 'datafiles')) &  os.path.isdir(os.path.join(self.arch.dir, '..', 'datafiles', 'matrices')):
+      datafilespath = os.path.join(self.arch.dir, '..', 'datafiles')
     if datafilespath:
       self.framework.addSubstitution('SET_DATAFILESPATH', 'DATAFILESPATH ='+datafilespath)
       self.hasdatafiles = 1

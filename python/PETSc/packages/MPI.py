@@ -18,6 +18,7 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     self.types        = self.framework.require('config.types',     self)
     self.libraries    = self.framework.require('config.libraries', self)
+    self.arch         = self.framework.require('PETSc.packages.arch', self)
     return
 
   def __str__(self):

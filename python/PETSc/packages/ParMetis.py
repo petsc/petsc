@@ -1,7 +1,10 @@
 #!/usr/bin/env python
-import user
 from __future__ import generators
+import user
 import config.base
+
+import re
+import os
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -12,6 +15,7 @@ class Configure(config.base.Configure):
     self.compilers     = self.framework.require('config.compilers', self)
     self.libraries     = self.framework.require('config.libraries', self)
     self.sourceControl = self.framework.require('config.sourceControl', self)
+    self.mpi           = self.framework.require('PETSc.packages.MPI', self)
     return
 
   def __str__(self):
@@ -37,14 +41,14 @@ class Configure(config.base.Configure):
     '''Check for ParMetis_Init in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    found   = self.libraries.check(libraries, 'ParMetis_Init')
+    found   = self.libraries.check(libraries, 'ParMETIS_V3_PartKway', otherLibs = ' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
     self.framework.argDB['LIBS'] = oldLibs
     return found
 
   def checkInclude(self, includeDir):
     '''Check that parmetis.h is present'''
     oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in includeDir:
+    for inc in includeDir+self.mpi.include:
       self.framework.argDB['CPPFLAGS'] += ' -I'+inc
     found = self.checkPreprocess('#include <parmetis.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
@@ -65,7 +69,7 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'lib', 'libparmetis.a'), os.path.join(root, 'lib', 'libmetis.a')]
     else:
       yield ['']
-      yield ['parmetis','metis']
+      yield ['parmetis', 'metis']
     return
 
   def generateGuesses(self):
@@ -74,7 +78,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['download-parmetis'] == 1:
       (name, lib, include) = self.downloadParMetis()
       yield (name, lib, include)
-      raise RuntimeError('Downloaded ParMetis could not be used. Please check install in '+os.path.dirname(include[0])+'\n')
+      raise RuntimeError('Downloaded ParMetis could not be used. Please check install in '+os.path.dirname(include[0][0])+'\n')
     # Try specified library and include
     if 'with-parmetis-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-parmetis-lib']
@@ -151,7 +155,7 @@ class Configure(config.base.Configure):
     if not self.found and self.framework.argDB['download-parmetis'] == 2:
       (name, lib, include) = self.downloadParMetis()
       yield (name, lib, include)
-      raise RuntimeError('Downloaded ParMetis could not be used. Please check in install in '+os.path.dirname(include)+'\n')
+      raise RuntimeError('Downloaded ParMetis could not be used. Please check in install in '+os.path.dirname(include[0][0])+'\n')
     return
 
   def getDir(self):
@@ -167,12 +171,12 @@ class Configure(config.base.Configure):
     if parmetisDir is None:
       self.framework.logPrint('Could not locate already downloaded ParMetis')
       raise RuntimeError('Error locating ParMetis directory')
-    return os.path.join(packages, mpichDir)
+    return os.path.join(packages, parmetisDir)
 
   def downloadParMetis(self):
     self.framework.logPrint('Downloading ParMetis')
     try:
-      mpichDir = self.getDir()
+      parmetisDir = self.getDir()
       self.framework.logPrint('ParMetis already downloaded, no need to ftp')
     except RuntimeError:
       import urllib
@@ -201,7 +205,7 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build ParMetis
-    args = ['--prefix='+installDir, '-cc='+self.framework.argDB['CC']]
+    args = ['--prefix='+installDir, '--with-cc='+self.framework.argDB['CC']]
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))
@@ -212,35 +216,23 @@ class Configure(config.base.Configure):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldargs+' new args '+args+'\n')
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+parmetisDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+parmetisDir+';./make.py '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ParMetis: '+str(e))
-      try:
-        output  = config.base.Configure.executeShellCommand('cd '+parmetisDir+';make; make install', timeout=2500, log = self.framework.log)[0]
-      except RuntimeError, e:
-        raise RuntimeError('Error running make; make install on ParMetis: '+str(e))
       fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
-      self.framework.actions.addArgument('MPI', 'Install', 'Installed ParMetis into '+installDir)
+      self.framework.actions.addArgument('ParMetis', 'Install', 'Installed ParMetis into '+installDir)
     lib     = [[os.path.join(installDir, 'lib', 'libparmetis.a'), os.path.join(installDir, 'lib', 'libmetis.a')]]
     include = [[os.path.join(installDir, 'include')]]
     return ('Downloaded ParMetis', lib, include)
 
   def configureVersion(self):
-    '''Determine the ParMetos version'''
-    raise RuntimeError('I have no fucking clue how to get the version')
-    if self.framework.argDB['can-execute']:
-      output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
-      if not status:
-        # need to strip out information from batch system
-        f = re.match('([0-9]*.[0-9]*)',output)
-        if not f: return 'Unknown'
-        return f.group()
+    '''Determine the ParMetis version, but there is no reliable way right now'''
     return 'Unknown'
 
   def configureLibrary(self):
-    '''Find all working MPI installations and then choose one'''
+    '''Find all working ParMetis installations and then choose one'''
     functionalParMetis = []
     for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
       self.framework.logPrint('================================================================================')
@@ -267,7 +259,7 @@ class Configure(config.base.Configure):
     # User chooses one or take first (sort by version)
     if self.found:
       self.name, self.lib, self.include, self.version = functionalParMetis[0]
-      self.framework.logPrint('Choose MPI '+self.version+' in '+self.name)
+      self.framework.logPrint('Choose ParMetis '+self.version+' in '+self.name)
     else:
       self.framework.logPrint('Could not locate any functional ParMetis')
     return

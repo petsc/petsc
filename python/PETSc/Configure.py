@@ -58,7 +58,6 @@ class Configure(config.base.Configure):
     desc.append('  PETSC_DIR: '+str(self.framework.argDB['PETSC_DIR']))
     return '\n'.join(desc)+'\n'
                               
-
   def setupHelp(self, help):
     import nargs
 
