@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.15 1998/06/12 21:24:35 balay Exp balay $ 
+# $Id: makefile,v 1.16 1998/06/15 16:10:07 balay Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC	 = mpibaij.c mmbaij.c mpibaijpc.c baijpc.c baijov.c
+SOURCEC	 = mpibaij.c mmbaij.c baijov.c
 SOURCEF	 =
 SOURCEH	 = mpibaij.h
-OBJSC	 = mpibaij.o mmbaij.o mpibaijpc.o baijpc.o baijov.o
+OBJSC	 = mpibaij.o mmbaij.o baijov.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 = 
