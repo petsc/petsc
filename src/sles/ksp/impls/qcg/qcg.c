@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.13 1996/01/08 15:09:25 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.14 1996/01/08 18:07:57 curfman Exp curfman $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -39,12 +39,11 @@ $  3 if convergence is reached along a truncated step.
   for unconstrained minimization, SNES_UM_TR.
 
   Notes:
-  Currently we allow the following scaling matrices:
+  Currently we allow symmetric preconditioning with the following scaling matrices:
       PCNONE:  D = Identity matrix
       PCSCALE: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])
       PCICC:   D = L^T, implemented with forward and backward solves.
                Here L is an incomplete Cholesky factor of H.
-               Also, we support D = LL^T, implemented with calls to PCApply().
  */
 int KSPSolve_QCG(KSP itP,int *its)
 {
