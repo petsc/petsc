@@ -3235,15 +3235,13 @@ Figure~\ref{fig_snesexample}, corresponding to
 \label{fig_snesexample}
 \end{figure}
 
-To create a SNES solver, one must first call SNESCreate() and indicate
-the class of problem being solved, using one of the following:
+To create a SNES solver, one must first call SNESCreate() as follows:
 \begin{tabbing}
-  SNESCreate(MPI\_Comm comm,SNES\_NONLINEAR\_EQUATIONS,SNES *snes);\\
-  SNESCreate(MPI\_Comm comm,SNES\_UNCONSTRAINED\_MINIMIZATION,SNES *snes);
+  SNESCreate(MPI\_Comm comm,SNES *snes);\\
 \end{tabbing}
-When solving a system of nonlinear equations, the user must then set
+The user must then set
 routines for evaluating the function of equation~(\ref{eq_F=0}) and its
-associated Jacobian matrix. 
+associated Jacobian matrix, as discussed in the following sections.
 
 To choose a nonlinear solution method, the user can either
 call \findex{SNESSetType()}
@@ -3285,8 +3283,8 @@ with
 \end{tabbing}
 
 %----------------------------------------------------------------------
-\subsection{Solving Systems of Nonlinear Equations}
-\label{sec_sneseq}
+\subsection{Nonlinear Function Evaluation}
+\label{sec_snesfunction}
 
 When solving a system of nonlinear equations, the user must provide
 a vector, \trl{f}, for storing the function of
@@ -3306,6 +3304,9 @@ context can be an integer array that contains both parameters and
 pointers to PETSc objects. \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c} and
 \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5f.F} give examples of user-defined
 application contexts in C and Fortran, respectively.
+
+\subsection{Jacobian Evaluation}
+\label{sec_snesjacobian}
 
 The user must also specify a routine to form some approximation of the
 Jacobian matrix, \trl{A}, at the current iterate, \trl{x},
@@ -3405,18 +3406,18 @@ SNESQuadraticLineSearch(), SNESNoLineSearch(), and SNESNoLineSearchNoNorms(),
 \findex{SNESNoLineSearch()} \findex{SNESNoLineSearchNoNorms()}
 \findex{SNESQuadraticLineSearch()}
 which can be set with the option
-\trl{-snes_eq_ls [cubic, quadratic, basic, basicnonorms]}. \findex{-snes_eq_ls}
+\trl{-snes_ls [cubic, quadratic, basic, basicnonorms]}. \findex{-snes_ls}
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
 can override the defaults by using the options
-\trl{-snes_eq_ls_alpha <alpha>}, \findex{-snes_eq_ls_alpha}
-\trl{-snes_eq_ls_maxstep <max>}, and \findex{-snes_eq_ls_maxstep}
-\trl{-snes_eq_ls_steptol <tol>}. \findex{-snes_eq_ls_steptol}
+\trl{-snes_ls_alpha <alpha>}, \findex{-snes_ls_alpha}
+\trl{-snes_ls_maxstep <max>}, and \findex{-snes_ls_maxstep}
+\trl{-snes_ls_steptol <tol>}. \findex{-snes_ls_steptol}
 
 
 \subsection{Trust Region Methods}\sindex{trust region}
 
-The most basic trust region method in SNES for solving systems of nonlinear
+The trust region method in SNES for solving systems of nonlinear
 equations, \trl{SNESTR} (\trl{-snes_type tr}), is taken from
 the MINPACK project \cite{more84}. Several parameters can be set to
 control the variation of the trust region size during the solution
@@ -3426,18 +3427,8 @@ radius, computed by
   \Delta = \Delta_0 \| F_0 \|_2,
 \]
 by setting $ \Delta_0 $ via the option 
-\trl{-snes_eq_tr_delta0 <delta0>}.
+\trl{-snes_tr_delta0 <delta0>}.
 
-The default trust region method for unconstrained minimization, 
-\trl{SNES_UM_NTR} (\trl{-snes_type umtr}), is based on the work of
-Steihaug \cite{steihaug:83}.  This method uses the preconditioned
-conjugate gradient method via the KSP solver \trl{KSPQCG} to determine
-the approximate minimizer of the resulting quadratic at each nonlinear
-iteration.  This formulation requires the use of a symmetric
-preconditioner, where the currently available options are Jacobi,
-incomplete Cholesky, and the null preconditioners, which can be set
-with the options \trl{-pc_type jacobi}, \trl{-pc_type icc}, and \trl{
--pc_type none}, respectively.
 
 \section{General Options}
 
@@ -3528,8 +3519,7 @@ command \findex{SNESSetMonitor()}
 The routine, \trl{mon}, indicates a user-defined monitoring routine,
 where \trl{its} and \trl{mctx} respectively denote the iteration
 number and an optional user-defined context for private data for the
-monitor routine.  The argument \trl{norm} is the function norm (or
-gradient norm for unconstrained minimization problems).
+monitor routine.  The argument \trl{norm} is the function norm.
 
 The routine set by SNESSetMonitor() is called once after every
 successful step computation within the nonlinear solver.  Hence, the
