@@ -1,21 +1,21 @@
 #ifndef lint
-static char vcid[] = "$Id: zis.c,v 1.3 1995/11/27 19:02:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: zis.c,v 1.4 1995/11/29 21:58:44 curfman Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
 #include "is.h"
 #ifdef FORTRANCAPS
-#define isdestroy_ ISDESTROY
-#define iscreatestrideseq_ ISCREATESTRIDESEQ
-#define iscreateseq_ ISCREATESEQ
-#define isgetindices        ISGETINDICES
-#define isrestoreindices        ISRESTOREINDICES
+#define isdestroy_          ISDESTROY
+#define iscreatestrideseq_   ISCREATESTRIDESEQ
+#define iscreateseq_         ISCREATESEQ
+#define isgetindices_        ISGETINDICES
+#define isrestoreindices_    ISRESTOREINDICES
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define isdestroy_ isdestroy
-#define iscreatestrideseq_ iscreatestrideseq
-#define iscreateseq_ iscreateseq
-#define isgetindices        isgetindices
-#define isrestoreindices    isrestoreindices
+#define isdestroy_           isdestroy
+#define iscreatestrideseq_   iscreatestrideseq
+#define iscreateseq_         iscreateseq
+#define isgetindices_        isgetindices
+#define isrestoreindices_    isrestoreindices
 #endif
 
 void isgetindices_(IS x,int *fa,int *ia,int *__ierr)
