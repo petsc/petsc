@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.11 2000/01/21 21:41:52 kaushik Exp bsmith $ 
+# $Id: makefile,v 1.12 2000/01/23 18:29:02 bsmith Exp bsmith $ 
 
 #requiresscalar real
 
@@ -41,7 +41,6 @@ puns3d: puns3d.a.o
 puns3d.a.o:
 
 runflow1:
-	echo ${MPIRUN}
 	-@${MPIRUN} -np 1 flow | grep clift | tail -1 > runflow1.tmp 2>&1;   \
 	   if (diff testgrid/coef.dat runflow1.tmp) then true; \
 	   else echo "Possible problem with runflow1, diffs above"; fi; \
