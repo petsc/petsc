@@ -1,27 +1,28 @@
 #! /bin/csh
-# $Id: buildtest,v 1.185 2001/02/06 16:12:26 balay Exp bsmith $ 
+# $Id: buildtest,v 1.2 2001/10/19 16:20:25 petsc Exp $ 
 # 
 # Compiles and tests PETSc in our nightly builds.
+# Run as buildtest ARCH where ARCH is one of the PETSc archs
+# This script runs on terra, and uses terra:/sandbox/petsc/petsc-test
 #
-# Run as buildtest ARCH where ARCH is one of the PETSc arcs
+# Example usage: buildtest solaris
 #
-source /home/bsmith/petsc/bmake/$1/buildtest
-set EJOBS=`grep PETSC_HAVE_ /home/bsmith/petsc/bmake/$1/base.site | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
+source /sandbox/petsc/petsc-test/bmake/$1/buildtest
+set EJOBS=`grep PETSC_HAVE_ /sandbox/petsc/petsc-test/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 #echo Testing packages ${EJOBS}
-
-
 #
-rsh $MACH -n /home/bsmith/petsc/maint/buildlinks $TMP >& /dev/null
+set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
+rsh $MACH -n "rsync -C -r --exclude=BitKeeper terra:/sandbox/petsc/petsc-test $RSYNC_DIR" >& /dev/null
 rsh $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
 rsh $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 
 rsh $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' >> maint/build_$ARCH.$BOPT.$MACH.log"
-rsh $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all >>& maint/build_$ARCH.$BOPT.$MACH.log"
+rsh $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT nall >>& maint/build_$ARCH.$BOPT.$MACH.log"
 
 rsh $MACH -n "cd $TMP;echo '****************************************************' >> maint/build_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/build_$ARCH.$BOPT.$MACH.log"
-rsh $MACH -n "cd $TMP;/bin/cp maint/build_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs;chmod g+rw /home/bsmith/petsc/maint/nightlylogs/build_$ARCH.$BOPT.$MACH.log"
+rsh $MACH -n "cd $TMP;/bin/cp maint/build_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly;chmod g+w /home/petsc/logs/nightly/build_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP;chmod -R g+w lib" >& /dev/null
 #
 #  Now run the test examples
@@ -34,7 +35,5 @@ end
 rsh $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP ;echo 'X******************************************************X' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 
-rsh $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs;chmod g+rw /home/bsmith/petsc/maint/nightlylogs/examples_$ARCH.$BOPT.$MACH.log"
-
-
+rsh $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly;chmod g+rw /home/petsc/logs/nightly/examples_$ARCH.$BOPT.$MACH.log"
 
