@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.40 1996/07/16 11:53:55 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.41 1996/08/04 23:13:13 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
-  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRA(ierr);
+  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,PETSC_NULL,&mtype,&set); CHKERRA(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);

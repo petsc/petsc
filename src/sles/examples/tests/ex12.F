@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.15 1996/08/22 22:43:52 curfman Exp curfman $";
+C      "$Id: ex12.F,v 1.16 1996/08/31 16:05:03 curfman Exp curfman $";
 
        implicit none
 
@@ -16,14 +16,17 @@ C        -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
 C                          use the file petsc/src/mat/examples/matbinary.ex
 C
 
-      integer          ierr, its, flg
+      integer          ierr, its, flg, set
       Scalar           time, norm,none
       Vec              x, b, u
-      Mat              A
+      Mat              A, A_factor
       SLES             sles
+      PCType           pctype
+      PC               pc
       character*(128)  f 
       Viewer           fd
       MatInfo          info(MAT_INFO_SIZE)
+      MatType          mtype
 
       none = -1.0
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -36,13 +39,21 @@ C Read in matrix and RHS
         SETERRA(1,' ')
       endif
 
-      call MatLoad(fd,MATSEQAIJ,A,ierr)
+      call MatGetTypeFromOptions(MPI_COMM_WORLD,PETSC_NULL_CHARACTER,
+     *                           mtype,set,ierr)
+      call MatLoad(fd,mtype,A,ierr)
 
+C Get information about matrix
       call MatGetInfo(A,MAT_GLOBAL_SUM,info,ierr)
-      write(6,100) info(1),info(2),info(3),info(4),info(5),info(6),
-     &             info(7),info(8),info(9),info(10),info(11),
-     &             info(12),info(13),info(14)
- 100  format(14(g7.1,1x))
+      write(6,100) info(MAT_INFO_ROWS_GLOBAL),
+     *  info(MAT_INFO_COLUMNS_GLOBAL),
+     *  info(MAT_INFO_ROWS_LOCAL),info(MAT_INFO_COLUMNS_LOCAL),
+     *  info(MAT_INFO_BLOCK_SIZE),info(MAT_INFO_NZ_ALLOCATED),
+     *  info(MAT_INFO_NZ_USED),info(MAT_INFO_NZ_UNNEEDED),
+     *  info(MAT_INFO_MEMORY),info(MAT_INFO_ASSEMBLIES),
+     *  info(MAT_INFO_MALLOCS)
+
+ 100  format(11(g7.1,1x))
       call VecLoad(fd,b,ierr)
       call ViewerDestroy(fd,ierr)
 
@@ -67,7 +78,17 @@ C Show result
       print*, 'Residual norm = ',norm
       print*, 'Time for solve = ',time
 
-C   /*   Cleanup   */
+C Get information about factored matrix
+      call SLESGetPC(sles,pc,ierr)
+      call PCGetType(pc,pctype,PETSC_NULL_CHARACTER,ierr)
+      if (pctype .eq. PCILU .or. pctype .eq. PCLU) then
+        call PCGetFactoredMatrix(pc,A_factor,ierr)
+        call MatGetInfo(A_factor,MAT_GLOBAL_SUM,info,ierr)
+        write(6,100) info(MAT_INFO_FILL_RATIO_GIVEN),
+     *    info(MAT_INFO_FILL_RATIO_NEEDED),info(MAT_FACTOR_MALLOCS)
+      endif
+
+C Cleanup
       call SLESDestroy(sles,ierr)
       call VecDestroy(b,ierr)
       call VecDestroy(x,ierr)
