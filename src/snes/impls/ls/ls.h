@@ -1,7 +1,7 @@
-/* $Id: ls.h,v 1.4 1995/07/22 20:37:39 curfman Exp bsmith $ */
+/* $Id: ls.h,v 1.5 1996/08/08 14:46:50 bsmith Exp curfman $ */
 
 /* 
-   Context for a Newton line search method for solving
+   Private context for a Newton line search method for solving
    systems of nonlinear equations
  */
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.83 1998/04/09 04:18:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.84 1998/04/13 17:56:13 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -189,7 +189,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 /*------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SNESSetUp_EQ_TR"
-static int SNESSetUp_EQ_TR( SNES snes )
+static int SNESSetUp_EQ_TR(SNES snes)
 {
   int ierr;
 

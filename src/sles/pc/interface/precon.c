@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.143 1998/04/13 17:32:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.144 1998/04/15 22:45:33 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -1034,3 +1034,48 @@ int PCView(PC pc,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*M
+   PCRegister - Adds a method to the preconditioner package.
+
+   Synopsis:
+   PCRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
+
+   Input Parameters:
+.  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+.  routine_create - routine to create method context
+
+   Notes:
+   PCRegister() may be called multiple times to add several user-defined preconditioners.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+   PCRegister("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
+                "MySolverCreate",MySolverCreate);
+
+   Then, your solver can be chosen with the procedural interface via
+$     PCSetType(pc,"my_solver")
+   or at runtime via the option
+$     -pc_type my_solver
+
+.keywords: PC, register
+
+.seealso: PCRegisterAll(), PCRegisterDestroy()
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "PCRegister_Private"
+int PCRegister_Private(char *sname,char *path,char *name,int (*function)(PC))
+{
+  int  ierr;
+  char fullname[256];
+
+  PetscFunctionBegin;
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = DLRegister_Private
+(&PCList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.144 1998/04/13 17:55:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.145 1998/04/21 19:38:21 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1144,7 +1144,7 @@ int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
    SNESSetUp - Sets up the internal data structures for the later use
    of a nonlinear solver.
 
-   Input Parameter:
+   Input Parameters:
 .  snes - the SNES context
 .  x - the solution vector
 
@@ -1634,16 +1634,16 @@ int SNESScaleStep_Private(SNES snes,Vec y,double *fnorm,double *delta,
    SNESSolve - Solves a nonlinear system.  Call SNESSolve after calling 
    SNESCreate() and optional routines of the form SNESSetXXX().
 
-   Input Parameter:
+   Input Parameters:
 .  snes - the SNES context
 .  x - the solution vector
 
    Output Parameter:
-   its - number of iterations until termination
+.  its - number of iterations until termination
 
    Collective on SNES
 
-   Note:
+   Notes:
    The user should initialize the vector, x, with the initial guess
    for the nonlinear solve prior to calling SNESSolve.  In particular,
    to employ an initial guess of zero, the user should explicitly set
@@ -2123,7 +2123,47 @@ int SNESPrintHelp(SNES snes)
   PetscFunctionReturn(0);
 }
 
+/*M
+   SNESRegister - Adds a method to the nonlinear solver package.
 
+   Synopsis:
+   SNESRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
 
+   Input Parameters:
+.  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+.  routine_create - routine to create method context
 
+   Notes:
+   SNESRegister() may be called multiple times to add several user-defined solvers.
 
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+   SNESRegister("my_solver",/home/username/my_lib/lib/libg/solaris/mylib.a,
+                "MySolverCreate",MySolverCreate);
+
+   Then, your solver can be chosen with the procedural interface via
+$     SNESSetType(snes,"my_solver")
+   or at runtime via the option
+$     -snes_type my_solver
+
+.keywords: SNES, nonlinear, register
+
+.seealso: SNESRegisterAll(), SNESRegisterDestroy()
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "SNESRegister_Private"
+int SNESRegister_Private(char *sname,char *path,char *name,int (*function)(SNES))
+{
+  char fullname[256];
+  int  ierr;
+
+  PetscFunctionBegin;
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = DLRegister_Private(&SNESList,sname,fullname, (int (*)(void*))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
