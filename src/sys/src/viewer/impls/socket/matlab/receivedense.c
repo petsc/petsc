@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: receivedense.c,v 1.3 1995/03/06 04:39:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: receivedense.c,v 1.4 1996/12/18 17:05:34 balay Exp balay $";
 #endif
 /* 
    This is part of the MatlabSockettool Package. It is called by 
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: receivedense.c,v 1.3 1995/03/06 04:39:21 bsmith Exp b
 #include "mex.h"
 #define ERROR(a) {fprintf(stderr,"RECEIVE %s \n",a); return -1;}
 /*-----------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "ReceiveDenseMatrix"
 int ReceiveDenseMatrix(Matrix *plhs[],int t)
 {
   int    m,n,compx = 0,i;
