@@ -121,7 +121,7 @@ class Configure(PETSc.package.Package):
 
       #need to run ranlib on the libraries using the full path
       try:
-        output  = config.base.Configure.executeShellCommand(self.setcompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on HYPRE libraries: '+str(e))
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed HYPRE into '+installDir)

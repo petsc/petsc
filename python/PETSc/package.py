@@ -11,7 +11,7 @@ class Package(config.base.Configure):
     self.headerPrefix = 'PETSc'
     self.substPrefix  = 'PETSc'
     self.compilers    = self.framework.require('config.compilers',self)
-    self.setcompilers = self.framework.require('config.setCompilers',self)  
+    self.setCompilers = self.framework.require('config.setCompilers',self)  
     self.libraries    = self.framework.require('config.libraries',self)
     self.clanguage    = self.framework.require('PETSc.utilities.clanguage',self)
     self.arch         = self.framework.require('PETSc.utilities.arch',self)        
@@ -46,11 +46,14 @@ class Package(config.base.Configure):
     self.includes     = []
     # list of libraries we wish to check for (can be overwritten by providing your own generateLibraryList()
     self.liblist      = [[]]
+    self.extraLib     = []
     # location of libraries and includes in packages directory tree
     self.libdir       = 'lib'
     self.includedir   = 'include'
     # package defaults to being required (MPI and BlasLapack)
     self.required     = 0
+    # Need this for the with-64-bit-ints option
+    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
 
   def getChecksum(self,source, chunkSize = 1024*1024):  
@@ -90,15 +93,31 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<dir,or list of libraries>',nargs.ArgLibrary(None,None,'Indicate the directory of the '+self.name+' libraries or a list of libraries'))    
     return
 
+  def checkLibrary(self, library):
+    if os.path.isfile(library):
+      return 1
+    libBase, ext = os.path.splitext(library)
+    if os.path.isfile(libBase+'.'+self.setCompilers.sharedLibraryExt):
+      return 1
+    if os.path.isfile(libBase+'.'+self.setCompilers.AR_LIB_SUFFIX):
+      return 1
+    self.framework.log.write('Nonexistent library '+str(library)+'\n')
+    return 0
+
   # by default, just check for all the libraries in self.liblist 
-  def generateLibList(self,dir):
+  def generateLibList(self, dir):
     '''Generates full path list of libraries from self.liblist'''
     alllibs = []
-    for l in self.liblist:
+    for libSet in self.liblist:
       libs = []
-      for ll in l:
-        if not self.libdir == dir: libs.append(os.path.join(dir,ll))
-        else: libs.append(ll)
+      for library in libSet:
+        if not self.libdir == dir:
+          fullLib = os.path.join(dir, library)
+        else:
+          fullLib = library
+        if self.checkLibrary(fullLib):
+          libs.append(fullLib)
+        libs.extend(self.extraLib)
       alllibs.append(libs)
     return alllibs
 
@@ -108,7 +127,7 @@ class Package(config.base.Configure):
 
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''
-    if self.download and self.framework.argDB['download-'+self.downloadname] == preOrPost:
+    if self.download and self.framework.argDB['download-'+self.downloadname.lower()] == preOrPost:
       if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
         self.framework.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
@@ -124,15 +143,15 @@ class Package(config.base.Configure):
   def generateGuesses(self):
     dir = self.checkDownload(1)
     if dir:
-      for l in self.generateLibList(os.path.join(dir,self.libdir)):
+      for l in self.generateLibList(os.path.join(dir, self.libdir)):
         self.framework.log.write('Testing library '+str(l)+'\n')
-        yield('Download '+self.PACKAGE,l,os.path.join(dir,self.includedir))
+        yield('Download '+self.PACKAGE, l, os.path.join(dir, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+dir+'\n')
 
     if 'with-'+self.package+'-dir' in self.framework.argDB:     
       dir = self.framework.argDB['with-'+self.package+'-dir']
-      for l in self.generateLibList(os.path.join(dir,self.libdir)):
-        yield('User specified root directory '+self.PACKAGE,l,os.path.join(dir,self.includedir))
+      for l in self.generateLibList(os.path.join(dir, self.libdir)):
+        yield('User specified root directory '+self.PACKAGE, l, os.path.join(dir,self.includedir))
 
     if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-'+self.package+'-lib']
@@ -142,12 +161,12 @@ class Package(config.base.Configure):
 
     for d in self.getSearchDirectories():
       for l in self.generateLibList(os.path.join(d,self.libdir)):
-        yield('User specified root directory '+self.PACKAGE,l,os.path.join(d,self.includedir))
+        yield('User specified root directory '+self.PACKAGE, l, os.path.join(d,self.includedir))
 
     dir = self.checkDownload(2)
     if dir:
       for l in self.generateLibList(os.path.join(dir,self.libdir)):
-        yield('Download '+self.PACKAGE,l,os.path.join(dir,self.includedir))
+        yield('Download '+self.PACKAGE, l, os.path.join(dir,self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+os.path.join(self.Install(),self.arch.arch)+'\n')
 
     raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
@@ -218,8 +237,8 @@ class Package(config.base.Configure):
       os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
 
-  def checkShared(self):
-    '''By default we don't care about checking if shared'''
+  def checkSharedLibrary(self):
+    '''By default we don\'t care about checking if shared'''
     return 1
 
   def configureLibrary(self):
@@ -240,10 +259,10 @@ class Package(config.base.Configure):
       if hasattr(l,'dlib'):    libs  += l.dlib
       if hasattr(l,'include'): incls += l.include
       
-    for location, lib,incl in self.generateGuesses():
+    for location, lib, incl in self.generateGuesses():
       if not isinstance(lib, list): lib = [lib]
       if not isinstance(incl, list): incl = [incl]
-      self.framework.log.write('Checking for library '+location+': '+str(lib)+'\n')
+      self.framework.log.write('Checking for library in '+location+': '+str(lib)+'\n')
       if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs}):      
         self.lib = lib	
         self.framework.log.write('Checking for headers '+location+': '+str(incl)+'\n')
@@ -252,6 +271,8 @@ class Package(config.base.Configure):
           if self.checkSharedLibrary():
             self.found   = 1
             self.dlib    = self.lib+libs
+            if not hasattr(self.framework, 'packages'):
+              self.framework.packages = []
             self.framework.packages.append(self)
             break
     if not self.found:
@@ -267,7 +288,7 @@ class Package(config.base.Configure):
     if self.framework.argDB['with-'+self.package]:
       if hasattr(self,'mpi') and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if self.framework.argDB['with-64-bit-ints']:
+      if self.libraryOptions.integerSize == 64:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
       if not self.clanguage.precision.lower() == 'double':
         raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')    

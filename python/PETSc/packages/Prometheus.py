@@ -31,7 +31,7 @@ class Configure(PETSc.package.Package):
     args += 'PETSC_INCLUDE = -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'bmake',self.arch.arch)+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'])+' -I'+os.path.join(self.framework.argDB['PETSC_DIR'],'include')+' '+' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include+self.parmetis.include])+'\n'
     args += 'BUILD_DIR  = '+prometheusDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
-    args += 'RANLIB = '+self.setcompilers.RANLIB+'\n'
+    args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
     self.framework.popLanguage()
     self.framework.pushLanguage('C++')+'\n'
     args += 'CC = '+self.framework.getCompiler()+'\n'    
@@ -65,7 +65,7 @@ class Configure(PETSc.package.Package):
       output  = config.base.Configure.executeShellCommand('cp '+os.path.join(self.prometheusDir,'include','*.*')+' '+os.path.join(self.prometheusDir,'fei_prom','*.h')+' '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
       self.framework.log.write(output)
       try:
-        output  = config.base.Configure.executeShellCommand(self.setcompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libprometheus.a', timeout=250, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libprometheus.a', timeout=250, log = self.framework.log)[0]
         self.framework.log.write(output)
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on PROMETHEUS libraries: '+str(e))

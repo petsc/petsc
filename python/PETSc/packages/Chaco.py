@@ -25,9 +25,9 @@ class Configure(PETSc.package.Package):
     if os.path.isfile(os.path.join(chacoDir,'make.inc')):
       output = config.base.Configure.executeShellCommand('cd '+chacoDir+'; rm -f make.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(chacoDir,'make.inc'),'w')
-    self.setcompilers.pushLanguage('C')
-    g.write('CC = '+self.setcompilers.getCompiler()+'\n')
-    self.setcompilers.popLanguage()
+    self.setCompilers.pushLanguage('C')
+    g.write('CC = '+self.setCompilers.getCompiler()+'\n')
+    self.setCompilers.popLanguage()
     g.close()
     
     if not os.path.isdir(installDir):
