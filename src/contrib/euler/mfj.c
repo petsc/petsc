@@ -118,7 +118,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
 {
   MFCtxEuler_Private *ctx;
   SNES          snes;
-  double        norm, sum, umin, noise;
+  double        ovalues[3],values[3], norm, sum, umin, noise;
   Scalar        h, dot, mone = -1.0, *ya, *aa, *dt, one = 1.0, dti;
   Vec           w,U,F;
   int           ierr, i, j, k, ijkv, ijkx, nc, jkx, dim, ikx;
@@ -151,12 +151,6 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
   /* We're doing a matrix-vector product now; set flag accordingly */
   user->matrix_free_mult = 1;
 
-  /* We log matrix-free matrix-vector products separately, so that we can
-     separate the performance monitoring from the cases that use conventional
-     storage.  We may eventually modify event logging to associate events
-     with particular objects, hence alleviating the more general problem. */
-  PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
-
   ierr = SNESGetSolution(snes,&U); CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
   /* F = user->F_low; */  /* use lower order function */
@@ -177,9 +171,35 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
             noise,ctx->error_rel,h);
         ctx->need_err = 0;
       }
+      /*
       ierr = VecDot(U,a,&dot); CHKERRQ(ierr);
       ierr = VecNorm(a,NORM_1,&sum); CHKERRQ(ierr);
       ierr = VecNorm(a,NORM_2,&norm); CHKERRQ(ierr);
+      */
+
+     /*
+        Call the Seq Vector routines and then do a single
+        reduction to reduce the number of communications required
+      */
+
+      PLogEventBegin(VEC_Dot,U,a,0,0);
+      ierr = VecDot_Seq(U,a,ovalues); CHKERRQ(ierr);
+      PLogEventEnd(VEC_Dot,U,a,0,0);
+      PLogEventBegin(VEC_Norm,a,0,0,0);
+      ierr = VecNorm_Seq(a,NORM_1,ovalues+1); CHKERRQ(ierr);
+      ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
+      ovalues[2] = ovalues[2]*ovalues[2];
+      MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm);
+      dot = values[0]; sum = values[1]; norm = sqrt(values[2]);
+      PLogEventEnd(VEC_Norm,a,0,0,0);
+
+     /* We log matrix-free matrix-vector products separately, so that we can
+        separate the performance monitoring from the cases that use conventional
+        storage.  We may eventually modify event logging to associate events
+        with particular objects, hence alleviating the more general problem. 
+        The PLogEventBegin() below should really be above, but these calls
+        cannot be nested so it excludes the time to compute h */
+      PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
 
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {dot = 1.0; norm = 1.0;}
