@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  Barry - fix scrwew2ed up locking in src/fortran/custom!!!!!!!!!!!!!
+
   - Add VecCreateWithData() and VecCreateXXXWithData().
 
   - Pur signalling nans into trmalloc()
