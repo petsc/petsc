@@ -33,7 +33,7 @@ manual.ps:
 
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit
-	cat ../../manualpages/www.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
+	cat ../../manualpages/manualpages.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
 	tohtml -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../manualpages/petsc.cit -nobottomnav
 	tohtml -mapman www.cit manual.tex -notopnames \
@@ -69,7 +69,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 # This is the split version; some users prefer this
 manual/manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	rm -f www.cit latex.err
-	cat ../../manualpages/www.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
+	cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
 	       -mapref ../../manualpages/petsc.cit -nobottomnav
 	tohtml -default -numbers -mapman www.cit manual.tex -notopnames \

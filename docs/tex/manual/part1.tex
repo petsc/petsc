@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.111 1998/03/13 20:14:20 gropp Exp curfman $ 
+% $Id: part1.tex,v 1.112 1998/03/18 16:17:37 curfman Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -257,7 +257,11 @@ or communication. They are of variable type {\tt MPI\_Comm}. In most cases
 you would use {\tt PETSC\_COMM\_WORLD} to indicate all processes in the 
 run and {\tt PETSC\_COMM\_SELF} to indicate the single process. MPI provides
 routines for generating new communicators consisting of subsets of processors,
-that most users rarely need.
+that most users rarely need. The book {\em Using MPI}, by Lusk, Gropp, and Skjellum
+\cite{using-mpi} provides an excellent introduction to the concepts in MPI. Note
+that PETSc users need not program much message passing directly with MPI, but they
+must be familar with the basic concepts of message passing and distributed 
+memory computing.
 
 Users who wish to employ PETSc routines on only a subset
 of processors within a larger parallel job, or who wish to use a
@@ -683,7 +687,6 @@ the root directory of PETSc contains the following directories:
  \subitem - {\tt manual pages} (on-line manual pages).
 \item {\tt bin} - Utilities and short scripts for use with PETSc, including
  \begin{itemize}
- \item {\tt petscman} (manual page viewer),
  \item {\tt petsarch} (utility for setting {\tt PETSC\_ARCH} environmental variable),
 % \item {\tt petscview} (GUI utility for high-level visualization of program activity),
 % \item {\tt petscopts} (GUI utility for setting runtime options), and

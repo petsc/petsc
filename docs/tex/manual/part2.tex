@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.259 1998/03/31 17:15:23 balay Exp balay $ 
+% $Id: part2.tex,v 1.260 1998/04/01 00:20:28 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -64,7 +64,9 @@ dimension, but not both, can be set to {\tt PETSC\_DECIDE} to
 
 We emphasize that all processors in {\tt comm} {\em must} call the
 vector creation routines, since these routines are collective over all
-processors in the communicator.  In addition, if a sequence of {\tt
+processors in the communicator. If you are not familar with MPI communicators,
+see the discussion in Section \ref{sec:writing} on page \pageref{sec:writing}. 
+In addition, if a sequence of {\tt
 VecCreateXXX()} routines is used, they must be called in the same
 order on each processor in the communicator.
 
@@ -99,6 +101,9 @@ to perform any needed message passing of nonlocal components.
 In order to allow the overlap of communication and calculation,
 the user's code can perform any series of other actions between these 
 two calls while the messages are in transition. 
+
+Example usage of {\tt VecSetValues()} may be found in 
+{src/vec/examples/tutorials/ex2.c or ex2f.F}
 
 Often, rather than inserting elements in a vector, one may wish to 
 add values. This process \sindex{vector values, setting}
@@ -306,7 +311,7 @@ to the ``natural'' orderings for the application.
 
 PETSc provides certain utility routines that allow one to deal cleanly
 and efficiently with the various orderings. To define a new application ordering
-({\tt AO}), one can call the routine 
+(called an {\tt AO} in PETSc), one can call the routine 
 \begin{verbatim}
    ierr = AOCreateBasic(MPI_Comm comm,int n,int *apordering,int *petscordering,AO *ao);
 \end{verbatim}
@@ -321,7 +326,10 @@ For example, consider a vector of length five, where node 0 in the application o
 corresponds to node 3 in the PETSc ordering.  In addition, nodes 1, 2, 3, and 4 of
 the application ordering correspond, respectively, to nodes 2, 1, 4, and 0 of
 the PETSc ordering.
-We can write this correspondence as \{ 0, 1, 2, 3, 4 \} $ \rightarrow $ \{ 3, 2, 1, 4, 0 \}. 
+We can write this correspondence as
+\[
+ { 0, 1, 2, 3, 4 }  \rightarrow  { 3, 2, 1, 4, 0 }. 
+\]
 The user can create the PETSc-AO mappings in a number of ways.  For example,
 if using two processors, one could call
 \begin{verbatim}
@@ -346,20 +354,26 @@ the mapped values.
 Since we, in general, employ a parallel database for the
 {\tt AO} mappings, it is crucial that all processors that
 called {\tt AOCreateBasic()} also call these routines; these
-routines {\em cannot} be called by just a subset of processors.
+routines {\em cannot} be called by just a subset of processors
+in the MPI communicator that was used in the call to {\tt AOCreateBasic()}.
 
 An alternative routine to create the application ordering, {\tt AO}, is 
 \begin{verbatim}
    ierr = AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
 \end{verbatim}
 \findex{AOCreateBasicIS}
-where index sets are used instead of integer arrays.  The corresponding
-mapping routines are
+where index sets are used instead of integer arrays. 
+
+The 
+mapping routines 
 \begin{verbatim}
    ierr = AOPetscToApplicationIS(AO ao,IS indices);
    ierr = AOApplicationToPetscIS(AO ao,IS indices);
 \end{verbatim}
 \findex{AOPetscToApplicationIS()} \findex{AOApplicationToPetscIS()}
+will map index sets (IS objects) between orderings. Both the {\tt AOXxxToYyy()} and 
+{\tt AOXxxToYyyIS()} routines can be used regardless of whether the {\tt AO} was 
+created with a {\tt AOCreateBasic()} or {\tt AOCreateBasicIS()}.
 
 \findex{AODestroy()}  \findex{AOView}
 The {\tt AO} context should be destroyed with {\tt AODestroy(AO ao)}
@@ -396,7 +410,7 @@ the PETSc global numbering scheme. This is done via the following routines
 \end{verbatim}
 \findex{ISLocalToGlobalMappingCreate()} \findex{ISLocalToGlobalMappingApply()}
 \findex{ISLocalToGlobalMappingApplyIS()} \findex{ISLocalToGlobalMappingDestroy()}
-Here {\tt N} denotes the number of local indices, {\tt globalnum} represents the
+Here {\tt N} denotes the number of local indices, {\tt globalnum} contains the
 global number of each local number, and {\tt ISLocalToGlobalMapping} is the 
 resulting PETSc object that contains the information needed to apply the mapping with 
 either {\tt ISLocalToGlobalMappingApply()} or 
@@ -417,17 +431,17 @@ numbering scheme back to the global PETSc numbering can be handled with the
 
 If one is given a list of indices in a global numbering, the routine
 \begin{verbatim}
-   ierr = ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,ISGlobalToLocalMappingType
-                                      type,int nin,int *idxin,int *nout,int *idxout);
-
+   ierr = ISGlobalToLocalMappingApply(ISLocalToGlobalMapping ctx,
+                                      ISGlobalToLocalMappingType type,int nin,
+                                      int *idxin,int *nout,int *idxout);
 \end{verbatim}
 \findex{ISGlobalToLocalMappingApply}  \sindex{global to local mapping} will provide
 a new list of indices in the local numbering. Again, negative values in 
 {\tt idxin} are left unmapped.  But, in addition, if {\tt type} is set to {\tt IS\_GTOLM\_MASK},
 \findex{IS_GTOLM_MASK}, then {\tt nout} is set to {\tt nin} and all global values
 in {\tt idxin} that are not represented in the local to global mapping
-are replaced by -1. When {\tt type} is set to {\tt IS\_GTOLM\_DROP}
-\findex{IS_GTOLM_DROP}, the values in {\tt idxin} that are not
+are replaced by -1. When {\tt type} is set to {\tt IS\_GTOLM\_DROP},
+\findex{IS_GTOLM_DROP} the values in {\tt idxin} that are not
 represented locally in the mapping are not included in {\tt idxout}, so that
 potentially {\tt nout} is smaller than {\tt nin}.  One must
 pass in an array long enough to hold all the indices. One can call
@@ -454,19 +468,23 @@ Now the {\tt indices} use the local numbering, rather than the global.
 \section{Structured Grids Using Distributed Arrays}
 \label{sec:da} \label{sec:struct}
 
-In this section we consider a distributed array ({\tt DA}) to be,
-not a matrix, but a one-, two- or three-dimensional array of numbers
-distributed across the processors, so that each processor contains a
-rectangular subarray.  Distributed arrays, which are used in
+  Distributed arrays ({\tt DA}s in PETSc, which are used in
 conjunction with PETSc vectors, are intended for use with {\em
 regular rectangular grids} when communication of nonlocal data is
 needed before certain local computations can occur.  PETSc distributed
 arrays are designed only for the case in which data can be thought of
 as being stored in a standard multidimensional array; thus, {\tt DA}s 
 are {\em not} intended for parallelizing unstructured grid problems, etc.
+{\tt DA}s are intended for communicating vector (field) information, they 
+are not for storing matrices. See Section \cite{sec:bdiag} for sparse matrix
+data structures intended specifically for problems defined on rectangular 
+grids; but note that general purpose sparse matrix formats discussed in 
+the next Chapter as also appropriate (in fact, on RISC based processors,
+often one sees no performance gain by using grid specific sparse matrix
+storage schemes).
 
-For example, a typical situation one encounters in solving parallel
-PDEs is that, to evaluate a local function, {\tt f(x)}, each processor
+For example, a typical situation one encounters in solving 
+PDEs in parallel is that, to evaluate a local function, {\tt f(x)}, each processor
 requires its local portion of the vector {\tt x} as well as its ghost
 points \sindex{ghost points} (the bordering portions of the vector
 that are owned by neighboring processors).  Figure~\ref{fig:ghosts}
@@ -518,8 +536,8 @@ may be passed in.
 Two types of distributed array communication data structures 
 can be created, as specified by {\tt st}.
 Star-type stencils that radiate outward only in the coordinate
-directions are indicated by {\tt DA\_STENCIL\_STAR}
-\findex{DA_STENCIL_STAR}, while box-type stencils are specified by
+directions are indicated by {\tt DA\_STENCIL\_STAR},
+\findex{DA_STENCIL_STAR} while box-type stencils are specified by
 {\tt DA\_STENCIL\_BOX}. \findex{DA_STENCIL_BOX} For example, for the
 two-dimensional case,
 {\tt DA\_STENCIL\_STAR} with width 1 corresponds to the standard 5-point
@@ -557,7 +575,7 @@ processors in the communicator {\tt comm} must call {\tt DACreateXXX()}.
 \subsection{Local/Global Vectors and Scatters}
 
 Each {\tt DA} object gives you access to two vectors: a distributed global vector
-and a local vector that includes the appropriate ghost points. These
+and a local vector that includes room for the appropriate ghost points. These
 vectors can be accessed \findex{DACreateLocalVector()}
 with the routines \findex{DACreateGlobalVector}
 \begin{verbatim}
@@ -631,7 +649,7 @@ generated by {\tt DACreateLocalVector()} \findex{DACreateLocalVector()}
 (or be duplicates of such vectors obtained via {\tt VecDuplicate()}).
 The {\tt InsertMode} can be either {\tt ADD\_VALUES} or {\tt INSERT\_VALUES}.
 
-It is possible to directly access the vector scatter contexts 
+It is possible to directly access the vector scatter contexts (see below)
 used in the local-to-global ({\tt ltog}), global-to-local 
 ({\tt gtol}), and local-to-local ({\tt ltol})
 scatters with the command \findex{DAGetScatter()}
@@ -650,10 +668,7 @@ as well as the local array size can be obtained with the commands
    ierr = DAGetGhostCorners(DA da,int *x,int *y,int *z,int *m,int *n,int *p);
 \end{verbatim}
 The first version excludes any ghost points, while the second version
-includes them. Note that for interior subarrays the ghost corners can
-easily be calculated from the true corners.  However, since the
-calculation of ghost corners for boundary subarrays is not so
-straightforward, both routines are provided.
+includes them. 
 The routine \findex{DAGetGhostCorners()} {\tt DAGetGhostCorners()}
 deals with the fact that subarrays along boundaries of the problem
 domain have ghost points only on their interior edges, but not on
@@ -669,8 +684,9 @@ two cases is that when {\tt DA\_STENCIL\_STAR} is used, the extra
 corner components are {\em not} scattered between the processors and thus
 contain undefined values that should {\em not} be used.
 
-To assemble global stiffness matrices, one needs to be 
-able to determine the global node number of each local node 
+To assemble global stiffness matrices, one needs either 
+
+1) to be able to determine the global node number of each local node 
 including the ghost nodes. The number may be determined by using the 
 command \findex{DAGetGlobalIndices()}
 \begin{verbatim}
@@ -681,6 +697,20 @@ local nodes, including ghost nodes, while {\tt idx} contains
 a list of the global indices that correspond to the local nodes.
 Note that the Fortran interface differs slightly; see Section~\ref{sec:fortranarrays}
 for details.
+
+2) or to set up the vectors and matrices so that their entries may be
+added using the local numbering. This is done by first calling 
+\begin{verbatim}
+   ierr = DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map);
+\end{verbatim}
+followed by 
+\begin{verbatim}
+   ierr = VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping map);
+   ierr = MatSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping map);
+\end{verbatim}
+Now entries may be added to the vector and matrix using the local numbering
+and {\tt VecSetValuesLocal()} and {\tt MatSetValuesLocal()}.
+
 
 Since the global ordering that PETSc uses to manage its parallel vectors 
 (and matrices) does not usually correspond to the ``natural'' ordering 
@@ -725,7 +755,8 @@ solvers.
 \subsection{Index Sets} \sindex{index sets}
 \label{sec:indexset}
 
-To facilitate general vector scatters and gathers, PETSc employs the 
+To facilitate general vector scatters and gathers used, for example, in updating 
+ghost points for problems defined on unstructured grids, PETSc employs the 
 concept of an index set.  An index set, which is a generalization of a 
 set of integer indices, is used to define scatters, gathers, and similar 
 operations on vectors and matrices. 
@@ -786,14 +817,6 @@ to those described above exist as well, including
 and {\tt ISBlock()}. See the man pages for details.
 \findex{ISBlockGetIndices()} \findex{ISBlockGetSize()} \findex{ISBlockGetBlockSize()}
 \findex{ISBlock()}
-
-One may reasonably ask why the scatter routines are based on 
-using index sets while the vector assembly routines simply use 
-arrays of integers. The reason for using index sets is to allow certain 
-implementations to deal with strides and dense blocks of elements 
-efficiently. In vector assembly, we are assuming that in the majority of 
-cases the gain from using index sets is more than lost by requiring 
-the users to build index sets for each insertion. 
 
 % -------------------------------------------------------------------------------------- 
 \subsection{Scatters and Gathers} \sindex{scatter} \sindex{gather}
@@ -980,7 +1003,7 @@ sequential representation of the parallel vector {\tt g}
 that shares the same array space (and hence numerical values); but allows one to 
 access the ``ghost'' values past ``the end of the'' array. Note that one access the 
 entries in {\tt l} using the local numbering of elements and ghosts, while they 
-access in {\tt g} using the global numbering.
+are accessed in {\tt g} using the global numbering.
 
 A common usage of a ghosted vector is given by
 \findex{VecGhostUpdateBegin()} \findex{VecGhostUpdateEnd()}
@@ -1026,7 +1049,7 @@ PETSc 2.0 provides a variety of matrix implementations because no
 single matrix format is appropriate for all problems.  Currently we
 support dense storage and compressed sparse row storage (both
 sequential and parallel versions), as well as several specialized
-formats.  Additional formats can be added easily.
+formats.  Additional formats can be added.
 
 This chapter describes the basics of using PETSc matrices in general
 (regardless of the particular format chosen) and discusses tips
@@ -1056,7 +1079,7 @@ facilitates switching among various matrix types, for example, to
 determine the format that is most efficient for a certain
 application.  By default, {\tt MatCreate()} employs the sparse AIJ
 format, which is discussed in detail Section~\ref{sec:matsparse}.  See
-the man page for further information about available matrix formats.
+the manual pages for further information about available matrix formats.
 
 To insert or add entries to a matrix, one can call a variant of {\tt
 MatSetValues}, either \findex{MatSetValues()}
@@ -1095,7 +1118,7 @@ When using the block compressed sparse row matrix format ({\tt MATSEQBAIJ} or
 variant, {\tt MatSetValuesBlocked()}. \findex{MatSetValuesBlocked()}
 
 The function {\tt MatSetOption()} accepts several other inputs; see
-the man page for details. We
+the manual page for details. We
 discuss two of these options, which are related to the efficiency of the
 assembly process.  To indicate to PETSc that the row ({\tt im}) or
 column ({\tt in}) indices set with {\tt MatSetValues()} are sorted,
@@ -1206,8 +1229,7 @@ matrix information for increased efficiency.  Related options database
 keys are {\tt -mat\_aij\_no\_inode} (do not use inodes) and {\tt
 -mat\_aij\_inode\_limit <limit>} (set inode limit (max limit=5)).
 Note that problems with a single degree of freedom per grid node
-should use the option {\tt -mat\_aij\_no\_inode} to avoid I-node
-overhead.
+will automatically not use I-nodes.
 
 By default the internal data representation for the AIJ formats employs
 zero-based indexing.  For compatibility with standard Fortran storage,
@@ -1234,7 +1256,7 @@ the actual number of nonzeros in a given row, then during the assembly
 process PETSc will automatically allocate additional needed space.
 However, this extra memory allocation can slow the computation,
 
-Thus, if different rows have very different numbers of nonzeros, one
+If different rows have very different numbers of nonzeros, one
 should attempt to indicate (nearly) the exact number of elements
 intended for the various rows with the optional array, {\tt nzz} of
 length {\tt m}, where {\tt m} is the number of rows, for example
@@ -1548,7 +1570,7 @@ Use \findex{VIEWER_DRAWX_WORLD}
 where {\tt viewer} was obtained with {\tt ViewerDrawOpenX()}.
 \findex{ViewerDrawOpenX} 
 Additional viewers \findex{MatCopy()} and options are given in the {\tt MatView()} man
-page and Section~ref{sec:viewers}.
+page and Section~\ref{sec:viewers}.
 
 \begin{table}[H]
 \begin{center}
@@ -1594,7 +1616,7 @@ ever actually generating the matrix:
 Here {\tt M} and {\tt N} are the global matrix dimensions (rows and
 columns), {\tt m} and {\tt n} are the local matrix dimensions, and
 {\tt ctx} is a pointer to data needed by any user-defined shell matrix
-operations; the man page has additional details about these
+operations; the manual page has additional details about these
 parameters.  Most matrix-free algorithms require only the application
 of the linear operator to a vector. To provide this action, the user
 must write a routine with the calling sequence
@@ -1616,7 +1638,7 @@ This shell matrix can be used with the iterative linear
 equation solvers discussed in the following chapters.
 
 The routine {\tt MatShellSetOperation()} can be used to set any other
-shell matrix operations as well.  The file 
+matrix operations as well.  The file 
 {\tt \$\{PETSC\_DIR\}/include/mat.h} provides a complete list of matrix
 operations, which have the form {\tt MATOP\_<OPERATION>}, where {\tt
 <OPERATION>} is the name (in all capital letters) of the user
@@ -1646,7 +1668,7 @@ its contents, one can employ \findex{MatZeroEntries()}
 \begin{verbatim}
    ierr = MatZeroEntries(Mat A);
 \end{verbatim}
-For sparse matrices this routine will zero the matrix entries in the 
+This routine will zero the matrix entries in the 
 data structure but keep all the data that indicates where the nonzeros
 are located.  In this way a new matrix assembly will be much less 
 expensive, since no memory allocations or copies will be needed. 
@@ -1739,9 +1761,6 @@ Once the user has finished using a row, he or she {\em must} call
    ierr = MatRestoreRow(Mat A,int row,int *ncols,int **cols,Scalar **vals);
 \end{verbatim}
 to free any space that was allocated during the call to {\tt MatGetRow()}.
-The reason for the {\tt MatRestoreRow()} command is that most of the
-sparse matrix storage formats require {\tt MatGetRow()} to allocate
-some space for reorganizing matrix data before presenting it to the user.
  
 
 % ------------------------------------------------------------------
@@ -1835,7 +1854,7 @@ solution vectors.  On return, the parameter {\tt its} contains
 either the iteration number at which convergence was successfully
 reached, or the {\em negative} of the iteration at which divergence or
 breakdown was detected.  Section~\ref{section:convergencetests} gives
-for details regarding convergence testing.
+more details regarding convergence testing.
 Note that multiple linear solves can be performed by the same SLES context.
 Once the SLES context is no longer needed, it should be destroyed with the 
 command \findex{SLESDestroy()}
@@ -1939,7 +1958,7 @@ The default technique for orthogonalization of the Hessenberg
 matrix in GMRES is the modified Gram-Schmidt method, which
 employs many {\tt VecDot()} operations and can thus be slow in parallel.
 A fast approach is to use the 
-unmodified Gram-Schmidt method, which can be set \sindex{Gram-Schmidt}
+unmodified (classical) Gram-Schmidt method, which can be set \sindex{Gram-Schmidt}
 with \findex{KSPGMRESSetOrthogonalization()} 
 \findex{KSPGMRESUnmodifiedGramSchmidtOrthogonalization}
 \begin{verbatim}
@@ -2185,7 +2204,8 @@ Here, {\tt n} is the size of the two arrays and the eigenvalues are
 inserted into those two arrays. \findex{KSPComputeEigenvalues()}
 There is an additional routine 
 \begin{verbatim}
-  ierr = KSPComputeEigenvaluesExplicitly(KSP ksp, int n,double *realpart,double *complexpart);
+  ierr = KSPComputeEigenvaluesExplicitly(KSP ksp, int n,double *realpart,
+                                         double *complexpart);
 \end{verbatim}
 that is useful only for very small problems. It explicitly computes the 
 full representation of the preconditioned operator and calles LAPACK to 
@@ -2243,7 +2263,7 @@ command \findex{PCSetType()} \findex{-pc_type}
 \begin{verbatim}
    ierr = PCSetType(PC pc,PCType method);
 \end{verbatim}
-In Table~\ref{tab:pcdefaults} we summarize the most basic
+In Table~\ref{tab:pcdefaults} we summarize the basic
 preconditioning methods supported in PETSc. \findex{PCNONE}
 \findex{PCJACOBI} \findex{PCSOR} \findex{PCICC} \findex{PCLU}
 \findex{PCILU} \findex{PCSHELL} \findex{PCASM} \findex{PCBGS}
@@ -2284,7 +2304,7 @@ Each preconditioner may have associated with it a set of options,
 which can be set with routines and options database commands provided
 for this purpose.  Such routine names and commands are all of the form
 {\tt PC<TYPE>Option} and {\tt -pc\_<type>\_option [value]}.  A
-complete list can be found by consulting the man pages; we discuss
+complete list can be found by consulting the manual pages; we discuss
 just a few in the sections below.
 
 \subsection{ILU and ICC Preconditioners}
@@ -2334,21 +2354,20 @@ By alleviating the considerable overhead for dynamic memory allocation,
 such tuning can significantly enhance performance.
 
 % --------------------------------------------------------------------
-We support incomplete factorization preconditioners for several matrix
+PETSc supports incomplete factorization preconditioners for several matrix
 types for the uniprocessor case.  \sindex{ILU, parallel}
 \sindex{ICC, parallel} In addition, for the parallel case
 we provide an interface to the ILU and ICC preconditioners
-of BlockSolve95 \cite{bs-user-ref}.  BlockSolve95 \sindex{BlockSolve95}
-is available by anonymous ftp at {\tt info.mcs.anl.gov} in the directory
-{\tt pub/BlockSolve95}; for further information see the WWW address: {\tt
-http://www.mcs.anl.gov/blocksolve95/index.html}.  PETSc enables users
+of BlockSolve95 \cite{bs-user-ref}.   PETSc enables users
 to employ the preconditioners within
 BlockSolve95 by using the BlockSolve95 matrix format {\tt MATMPIROWBS}
 and invoking either the {\tt PCILU} or {\tt PCICC} method within the linear
 solvers.  Since PETSc automatically handles matrix assembly,
 preconditioner setup, profiling, etc., users who employ BlockSolve95
 through the PETSc interface need not concern themselves with many
-details provided within the BlockSolve95 users manual.
+details provided within the BlockSolve95 users manual. Consult the file
+{\tt docs/installation.html} for details on installing PETSc to allow 
+the use of BlockSolve95.
 
 One can create a matrix that is compatible with BlockSolve95 by using
 {\tt MatCreate()} with the option {\tt -mat\_mpirowbs}, or by directly
@@ -2386,9 +2405,9 @@ exists, then PETSc will internally allocate a 0 value for the element
 $ A[j,i] $ during {\tt MatAssemblyEnd()} if the user has not already set
 a value for the matrix element $ A[j,i] $ .
 
-When manipulating a preconditioning matrix, $ A $ , BlockSolve95
+When manipulating a preconditioning matrix, $ A $, BlockSolve95
 internally works with a scaled and permuted matrix, $ \hat{A} = P
-D^{-1/2} A D^{-1/2},$ where $ D $ is the diagonal of $ A $ , and $ P $ is a
+D^{-1/2} A D^{-1/2},$ where $ D $ is the diagonal of $ A $, and $ P $ is a
 permutation matrix determined by a graph coloring for efficient
 parallel computation.  Thus, when solving a linear system, $ Ax=b $,
 using ILU/ICC preconditioning and the matrix format {\tt MATMPIROWBS}
@@ -2407,19 +2426,14 @@ linear system matrix, then this scaling and permuting is done only
 internally during the application of the preconditioner; 
 {\tt ksp\_bsmonitor} should not be used in this case.
 
-Users who wish to use these preconditioners via the PETSc interface and
-who have not already installed BlockSolve95 should see
-the file {\tt \$\{PETSC\_DIR\}/Installation} for details on building
-PETSc when BlockSolve95 is being used.  In particular, one must edit
-the file {\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.site} so that
-{\tt BS\_LIB} and {\tt BS\_INCLUDE} indicate the library location, and
-the {\tt PCONF} variable specifies the flag {\tt -DHAVE\_BLOCKSOLVE}.
-Then the PETSc library must be (re)compiled.
-
 
 % --------------------------------------------------------------------
 
 \subsection{SOR and SSOR Preconditioners}
+
+PETSc does not provide a parallel SOR, it can only be used on sequential 
+matrices or as the subblock preconditioner when using block Jacobi or 
+ASM preconditioning, see below.
 
 The options for SOR \sindex{SSOR} \sindex{SOR} \sindex{relaxation}
 preconditioning are \findex{PCSORSetOmega()}
@@ -2521,7 +2535,7 @@ Such tuning can significantly enhance performance, since it
 eliminates the considerable overhead for dynamic memory allocation.
 
 %----------------------------------------------------------------------
-\subsection{Block Jacobi, Block Gauss-Seidel, and 
+\subsection{Block Jacobi and 
             Overlapping Additive Schwarz Preconditioners}
 \label{sec:bjacobi}
 
@@ -2531,7 +2545,8 @@ The block Jacobi and overlapping additive Schwarz methods in PETSc are
 supported in parallel; however, only the uniprocessor
 version of the block Gauss-Seidel method is currently in place.
 By default, the PETSc implentations of these methods
-employ ILU(0) factorization on each individual block ({\tt PCType=PCILU,
+employ ILU(0) factorization on each individual block ( that is , the default solver on each 
+subblock is {\tt PCType=PCILU,
 KSPType=KSPPREONLY}); the user can set alternative linear solvers via the options 
 \findex{-sub_ksp_type} \findex{-sub_pc_type}
 {\tt -sub\_ksp\_type} and {\tt -sub\_pc\_type}. In fact, all of the KSP
@@ -2551,7 +2566,7 @@ of the first block on the processor. The blocks are numbered
 successively by processors from zero through $ gb-1$ , 
 where $ gb $ is the number of global blocks.  
 The array of SLES contexts for the local blocks is given by {\tt subsles}. 
-This mechanism enables the user to set completely different solvers for the 
+This mechanism enables the user to set different solvers for the 
 various blocks.  To set the appropriate data structures, the 
 user {\em must} explicitly call {\tt SLESSetUp()} \findex{SLESSetUp()} 
 before calling {\tt PCBJacobiGetSubSLES()}, {\tt PCBGSGetSubSLES()}, or
@@ -2806,7 +2821,7 @@ the routines \findex{MGSetNumberSmoothUp()} \findex{MGSetNumberSmoothDown()}
 \end{verbatim}
 Note that if the command {\tt MGSetSmoother()} (discussed below) has
 \findex{MGSetSmoother()} been employed, the same amounts of pre-
-and postsmoothing must be used.
+and postsmoothing will be used.
 
 The remainder of the multigrid routines, which determine
 the solvers and interpolation/restriction operators that are used,
@@ -3229,7 +3244,7 @@ Convergence of the nonlinear solvers can be detected in a variety of
 ways; the user can even specify a customized test, as discussed
 below. \sindex{convergence tests} The default convergence routines for
 the various nonlinear solvers within SNES are listed in
-Table~\ref{tab:snesdefaults}; see the corresponding man pages for
+Table~\ref{tab:snesdefaults}; see the corresponding manual pages for
 detailed descriptions.  Each of these convergence tests involves
 several parameters, which are set by default to values that should be
 reasonable for a wide range of problems.  The user can customize the
@@ -3256,7 +3271,7 @@ are {\tt -snes\_atol <atol>}, {\tt -snes\_rtol <rtol>}, {\tt -snes\_stol <stol>}
 \findex{-snes_atol} \findex{-snes_rtol}  \findex{-snes_stol}
 \findex{-snes_max_it} \findex{-snes_max_funcs}
 {\tt -snes\_max\_it <its>}, and {\tt -snes\_max\_funcs <fcts>}.
-A related routine is {\tt SNESGetTolerances()}. \findex{SNESGetTolerances()}.
+A related routine is {\tt SNESGetTolerances()}. \findex{SNESGetTolerances()}
 
 Convergence tests for trust regions methods often use an additional
 parameter that indicates the minimium allowable trust region radius.
@@ -3277,7 +3292,7 @@ Users can set their own customized convergence tests in SNES by using
 the command \findex{SNESSetConvergenceTest()}
 \begin{verbatim}
    ierr = SNESSetConvergenceTest(SNES snes,int (*test)(SNES snes,double xnorm,
-          double gnorm,double f,void *cctx),void *cctx);
+                                 double gnorm,double f,void *cctx),void *cctx);
 \end{verbatim}
 The final argument of the convergence test routine, {\tt cctx},
 denotes an optional user-defined context for private data.  When
@@ -3296,7 +3311,7 @@ about the iterations. The user can initiate monitoring with the
 command \findex{SNESSetMonitor()} 
 \begin{verbatim}
    ierr = SNESSetMonitor(SNES snes,int (*mon)(SNES,int its,double norm,void* mctx),
-          void *mctx);
+                         void *mctx);
 \end{verbatim}
 The routine, {\tt mon}, indicates a user-defined monitoring routine,
 where {\tt its} and {\tt mctx} respectively denote the iteration
@@ -3539,7 +3554,8 @@ $ ^\dagger $ Set user-defined matrix formation routine with {\tt SNESSetJacobian
 PETSc provides some tools to help approximate the Jacobian matrices efficiently via 
 finite differences.  These tools are intended for use in certain situations where
 one is unable to compute Jacobian matrices analytically, and matrix-free methods
-do not work well due to very poor conditioning.  The approximation requires several steps:
+do not work well without a preconditioner, due to very poor conditioning.  
+The approximation requires several steps:
 \begin{itemize}
 \item First, one colors the columns of the (not yet built) Jacobian matrix, so that 
       columns of the same color do not share any common rows.
@@ -3566,13 +3582,14 @@ A code fragment that demonstrates this process is given below.
        Color the matrix, i.e. determine groups of columns that share no common 
       rows. These columns in the Jacobian can all be computed simulataneously.
    */
-   MatGetColoring(J,COLORING_NATURAL,&iscoloring);
+   MatGetColoring(J,COLORING_SL,&iscoloring);
 
    /*
        Create the data structure that SNESDefaultComputeJacobianWithColoring() uses
        to compute the actual Jacobians via finite differences.
    */
    MatFDColoringCreate(J,iscoloring,&fdcoloring);
+   ISColoringDestroy(iscoloring);
    MatFDColoringSetFromOptions(fdcoloring);
 
    /*
@@ -3580,7 +3597,6 @@ A code fragment that demonstrates this process is given below.
       to compute Jacobians.
    */
    SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianWithColoring,fdcoloring);
-   ISColoringDestroy(iscoloring);
 
 \end{verbatim}
 
@@ -3592,7 +3608,7 @@ formula for computing the Jacobian, then how do we know what its
 nonzero structure is so that it may be colored?  Determining the
 structure is problem dependent, but fortunately, for most grid-based
 problems (the class of problems for which PETSc is designed) if one
-knows the stencil used for the nonlinear problem one can usually
+knows the stencil used for the nonlinear function one can usually
 fairly easily obtain an estimate of the location of nonzeros in
 the matrix.
 
@@ -3648,10 +3664,10 @@ works only on sequential routines.  Extensions may be forthcoming. However,
 if one can compute the coloring {\tt iscoloring} some other way, the routine
 {\tt MatFDColoringCreate()} does work in parallel. An example of this for 
 2D distributed arrays is given below that uses the utility routine
-{\tt DAGetColoring2dBox()}. \findex{DAGetColoring2dBox}
+{\tt DAGetColoring()}. \findex{DAGetColoring()}
 
 \begin{verbatim}
-    ierr = DAGetColoring2dBox(da,&iscoloring,&J);
+    ierr = DAGetColoring(da,&iscoloring,&J);
     ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); 
     ierr = MatFDColoringSetFromOptions(fdcoloring);
     ierr = ISColoringDestroy(iscoloring);
@@ -3687,7 +3703,8 @@ with centered finite differences results in
           (u_i)_t = \frac{u_{i+1} - 2 u_{i} + u_{i-1}}{h^2}.
 \]
 The TS component provides code to solve these equations (currently 
-using the forward or backward Euler method), in a clean and easy manner,
+using the forward or backward Euler method) as well as an interface to 
+other sophisticated ODE solvers, in a clean and easy manner,
 where the user need only provide code for the evaluation of $ F(u,t) $ and 
 (optionally) its associated Jacobian matrix.
 
@@ -3715,8 +3732,8 @@ pseudo-timestep for each node point to obtain the series of nonlinear equations
         Dt^{n^{-1}}(u^{n+1} - u^{n}) =  F(u^{n+1}).
 \]
 For this problem the user must provide $ F(u) $ and the diagonal 
-matrix $ Dt^{n} $ , (or optionally, if the timestep is position independent,
-a scalar timestep) as well as optionally the Jacobian of $ F(u) .$ 
+matrix $ Dt^{n} $, (or optionally, if the timestep is position independent,
+a scalar timestep) as well as optionally the Jacobian of $ F(u).$ 
 
 \section{Basic Usage}
 
@@ -3726,7 +3743,7 @@ The user first creates a TS object with the command
 \end{verbatim}
 \findex{TSCreate()} The {\tt TSProblemType} \findex{TSProblemType}
 is one of {\tt TS\_LINEAR} or {\tt TS\_NONLINEAR},
-to indicate whether $ F(u,t) $ is given by a matrix $ A $ , or $ A(t) $ , or a
+to indicate whether $ F(u,t) $ is given by a matrix $ A $, or $ A(t) $, or a
 function $ F(u,t). $
 
 One can set the solution method with the routine
@@ -3784,7 +3801,7 @@ To set up TS for solving an ODE, one must set the following:
   ierr = TSSetSolution(TS ts, Vec initialsolution);
 \end{verbatim}
 The vector {\tt initialsolution} should contain the ``initial conditions''
-for the PDE. \findex{TSSetSolution()}
+for the ODE. \findex{TSSetSolution()}
 
 \item Function: \\
 \subitem $ \bullet $ For linear functions (solved with implicit timestepping),
@@ -3839,7 +3856,7 @@ to {\tt SNESSetJacobian()}. \findex{SNESSetJacobian()}
 
 PVODE is a parallel ODE solver developed by Hindmarsh et al. at LLNL.
 The TS component provides an interface to use PVODE directly from PETSc.
-(To install PETSc to use PVODE, see the installation guide.) 
+(To install PETSc to use PVODE, see the installation guide, {\tt docs/installation.html}.) 
 
 To use the PVODE integrators, call 
 \begin{verbatim}
@@ -3964,321 +3981,10 @@ or \findex{TSPseudoSetTimeStepIncrement()} the option
       has not yet been created.
 \end{itemize}
 
-% --------------------------------------------------------
-\chapter{Advanced Features of Matrices and Solvers}
-\label{ch:advanced}
-
-This chapter introduces additional features of the PETSc matrices and solvers.
-Since most PETSc users should not need to use these features, 
-we recommend skipping this chapter during an initial reading.
-
-\medskip \medskip
-
-\section{Extracting Submatrices} \sindex{submatrices}
-
-One can extract a (parallel) submatrix from a given (parallel) using
-\begin{verbatim}
-   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatGetSubMatrixCall call,Mat *B);
-\end{verbatim}
-This extracts the {\tt rows} and {\tt col}umns of the matrix {\tt A} into {\tt B}. If 
-call is  {\tt MAT\_INITIAL\_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix
-{\tt B}. If call is {\tt MAT\_REUSE\_MATRIX} \findex{MAT_REUSE_MATRIX} it will reuse the {\tt B}
-created with a previous call. \findex{MatGetSubMatrix} The argument {\tt csize} is ignored 
-on sequential matrices, for parallel matrices it determines the ``local columns'' if the matrix
-format supports this concept. Often one can use the default by passing in {\tt PETSC\_DECIDE}.
-To create a {\tt B} matrix that may be multiplied with a vector {\tt x} one can use
-\begin{verbatim}
-   ierr = VecGetLocalSize(x,&csize);
-   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatGetSubMatrixCall call,Mat *B);
-\end{verbatim}
-
-
-\medskip \medskip
-
-\section{Matrix Factorization} \sindex{factorization}
-\label{sec:matfactor}
-
-Normally, PETSc users will access the matrix solvers through the 
-SLES interface, as discussed in Chapter \ref{ch:sles}, but the underlying 
-factorization and triangular solve routines are also directly 
-accessible to the user.
-
-\medskip \medskip
-
-The LU and Cholesky \sindex{Cholesky}
-matrix factorizations are split into \sindex{LU}
-two or three stages depending on the user's needs. The first stage is 
-to calculate an ordering for the matrix.  The ordering generally is 
-done to reduce fill in a sparse factorization; it does not make much 
-sense for a dense matrix. \findex{MatGetReordering()} \sindex{reorder}
-\begin{verbatim}
-   ierr = MatGetReordering(Mat matrix,MatReorderingType type,IS* rowperm,IS* colperm); 
-\end{verbatim}
-The currently available alternatives for the ordering {\tt type} are 
-\begin{itemize}
-\item {\tt ORDER\_NATURAL} - Natural
-\item {\tt ORDER\_ND} - Nested Dissection
-\item {\tt ORDER\_1WD} - One-way Dissection
-\item {\tt ORDER\_RCM} - Reverse Cuthill-McKee
-\item {\tt ORDER\_QMD} - Quotient Minimum Degree
-\end{itemize}
-These orderings can also be set through the options database by specifying 
-one of the following:  {\tt -mat\_order natural, -mat\_order nd, 
--mat\_order 1wd, -mat\_order rcm, -mat\_order qmd}.
-\findex{ORDER_NATURAL} \findex{ORDER_ND} \findex{ORDER_1WD}
-\findex{ORDER_RCM} \findex{ORDER_QMD} \sindex{nested dissection}
-\sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
-\sindex{quotient minimum degree} \findex{-mat_order}
-Certain matrix formats may support only a subset of these; more options may 
-be added. Check the man pages for up-to-date information. All of these orderings are 
-symmetric at the moment; ordering routines that are 
-not symmetric may be added. Currently we support reorderings only for 
-sequential matrices.
-
-Users can add their own reordering routines 
-by providing a function with the calling sequence
-\begin{verbatim}
-   int reorder(Mat A,MatReorderingType type,IS* rowperm,IS* colperm);
-\end{verbatim}
-Here {\tt A} is the matrix for which we wish to generate a new ordering, 
-{\tt type} may be ignored and {\tt rowperm} and {\tt colperm} are the row
-and column permutations generated by the reordering routine.
-The user registers the reordering routine
-with the command
-\begin{verbatim}
-   ierr = MatReorderingRegister(MatReorderingType inname,MatReorderingType *name,char *sname,
-                                int (*reorder)(Mat,MatReorderingType,IS*,IS*)));
-\end{verbatim}
-The \findex{MatReorderingRegister()} \sindex{reordering} \sindex{matrix reordering}
-input argument {\tt *sname} is a string of the user's choice, {\tt iname} is either 
-an ordering defined in {\tt mat.h} or {ORDER\_NEW} \findex{ORDER_NEW},
-to indicate one is introducing a new ordering, while the output
-argument {\tt *name} is the registration number returned to the user.
-See the code in {\tt src/mat/impls/order/sorder.c} and other files in that 
-directory for examples on how the reordering routines may be written.
-
-Once the reordering routine has been registered,
-it can be selected for use at runtime with the
-command line option {\tt -mat\_order sname}.  If reordering directly,
-the user should provide the {\tt name} as the second input argument of
-{\tt MatGetReordering()}.
-
-The following routines perform complete, in-place, symbolic, and numerical 
-factorizations for symmetric and nonsymmetric matrices, respectively:
-\begin{verbatim}
-   ierr = MatCholeskyFactor(Mat matrix,IS permutation,double pf);
-   ierr = MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,double pf); 
-\end{verbatim}
-The argument {\tt pf $ \ge $ 1} is the predicted fill
-expected in the factored matrix, as a ratio of the original fill. 
-For example, {\tt pf=2.0} would indicate that one expects the factored
-matrix to have twice as many nonzeros as the original.
-\findex{MatCholeskyFactor()} \findex{MatLUFactor()}
-
-For sparse matrices it is very unlikely that the factorization 
-is actually done in-place. More likely, new space is allocated 
-for the factored matrix and the old space deallocated, but to the 
-user it appears in-place because the factored matrix replaces
-the unfactored matrix.
-
-The \sindex{symbolic factorization}
-two \findex{MatCholeskyFactorSymbolic()} \findex{MatLUFactorSymbolic()}
-factorization 
-stages \findex{MatCholeskyFactorNumeric()} \findex{MatLUFactorNumeric()}
-can also be performed separately, by using the out-of-place mode:
-\begin{verbatim}
-   ierr = MatCholeskyFactorSymbolic(Mat matrix,IS perm, double pf,Mat *result);
-   ierr = MatLUFactorSymbolic(Mat matrix,IS rowperm,IS colperm,double pf,Mat *result);
-   ierr = MatCholeskyFactorNumeric(Mat matrix,Mat *result);
-   ierr = MatLUFactorNumeric(Mat matrix, Mat *result);
-\end{verbatim}
-In this case, the contents of the matrix {\tt result} is undefined between 
-the symbolic and numeric factorization stages. 
-It is possible to reuse the symbolic factorization. For the second and 
-succeeding factorizations, one simply calls the numerical factorization with a 
-new input {\tt matrix} and the {\em same} factored {\tt result} matrix.
-It is {\em essential} that the new input matrix 
-have   % subjunctive ... must be ``have'', not ``has''
-exactly the same nonzero structure as the original factored matrix.
-(The numerical factorization merely overwrites the numerical values in the 
-factored matrix and does not disturb the symbolic portion, thus enabling
-reuse of the symbolic phase.)
-In general, calling {\tt XXXFactorSymbolic} with a dense matrix will 
-do nothing except allocate the new matrix; the {\tt XXXFactorNumeric} 
-routines will do all of the work. 
-
-Why provide the plain {\tt XXXfactor} routines when one could simply 
-call the two-stage routines? The answer is that if one desires in-place 
-factorization of a sparse matrix, the intermediate stage between the 
-symbolic and numeric phases cannot be stored in a {\tt result} matrix, and
-it does not make sense to store the intermediate values
-inside the original matrix 
-that is being transformed.  We originally made the combined factor routines
-do either in-place or out-of-place factorization, but then decided that 
-this approach was not needed and could easily lead to confusion.
-
-We do not currently support sparse matrix factorization with pivoting
-for numerical stability. This is because trying to both reduce fill
-and do pivoting can become quite complicated. Instead, we provide a 
-poor stepchild substitute. After one has obtained a reordering, with
-{\tt MatGetRordering(Mat A,MatOrdering type,IS *row,IS *col)} one
-may call
-\begin{verbatim}
-   ierr = MatReorderForNonzeroDiagonal(Mat A,double tol,IS row, IS col);
-\end{verbatim}
-which will try to reorder the columns to ensure that no values along 
-the diagonal are smaller than {\tt tol} in a absolute value. If small 
-values are detected and corrected for, a nonsymmetric
-permutation of the rows and columns will result. This is not guaranteed to work, 
-but may help if one was simply unlucky in the original ordering.
-\findex{MatReorderForNonzeroDiagonal} When using the SLES solver interface
-the options {\tt -pc\_ilu\_nonzeros\_along\_diagonal <tol>} \findex{-pc_ilu_nonzeros_along_diagonal}
-and \findex{-pc_lu_nonzeros_along_diagonal}
-{\tt -pc\_lu\_nonzeros\_along\_diagonal <tol>} may be used.  Here, {\tt tol}
-is an optional tolerance to decide if a value is nonzero; by default it
-is $ 1.e-10.$ 
-
-Once a matrix has been factored, it is natural to solve linear systems.
-The following four routines enable this process: \findex{MatSolve()} 
-\begin{verbatim}
-   ierr = MatSolve(Mat A,Vec x, Vec y);
-   ierr = MatSolveTrans(Mat A, Vec x, Vec y);
-   ierr = MatSolveAdd(Mat A,Vec x, Vec y, Vec w);
-   ierr = MatSolveTransAdd(Mat A, Vec x, Vec y, Vec w);
-\end{verbatim}
-The \findex{MatSolveTrans()} \findex{MatSolveAdd()}
-matrix \findex{MatSolveTransAdd()}
-{\tt A} of these routines must have been obtained from a 
-factorization routine; otherwise, an error will be generated.
-In general, the user should use the SLES solvers introduced in the 
-next chapter rather than using these factorization and solve routines
-directly.
-
-\section{Unimportant Details of KSP}
-
-Again, virtually all users should use KSP through the SLES interface
-and, thus, will not need to know the details that follow. 
-
-It is possible to generate a Krylov subspace context with the 
-command \findex{KSPCreate()}
-\begin{verbatim}
-   ierr = KSPCreate(MPI_Comm comm,KSP *kps);
-\end{verbatim}
-Before using the Krylov context, one must set the matrix-vector multiplication routine and
-the preconditioner with the 
-commands \findex{PCSetOperators()} \findex{KSPSetPC()}
-\begin{verbatim}
-   ierr = PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);
-   ierr = KSPSetPC(KSP ksp,PC pc);
-\end{verbatim}
-In addition, the KSP solver must be initialized with \findex{KSPSetUp()}
-\begin{verbatim}
-   ierr = KSPSetUp(KSP ksp);
-\end{verbatim}
-Solving a linear system is done with the command \findex{KSPSolve()}
-\begin{verbatim}
-   ierr = KSPSolve(KSP ksp,int *its);
-\end{verbatim}
-Finally, the KSP context should be destroyed with \findex{KSPDestroy()}
-\begin{verbatim}
-   ierr = KSPDestroy(KSP ksp);
-\end{verbatim}
-
-It may seem strange to put the matrix in the preconditioner rather
-than directly in the KSP; this decision was the result of much
-agonizing. The reason is that for SSOR with Eisenstat's trick, and 
-certain other preconditioners, the
-preconditioner has to change the matrix-vector multiply.  This 
-procedure could not
-be done cleanly if the matrix were stashed in the KSP context that
-PC cannot access.
-
-Any preconditioner can supply not 
-only the preconditioner, but also a routine that essentially performs a
-complete Richardson step. The reason for this is mainly SOR. To 
-use SOR in the Richardson framework, that is,
-\[
-  u^{n+1} = u^{n} + B(f - A u^{n}), 
-\]
-is much more expensive than just updating the values.
-With this addition it is reasonable to state that {\em all} our
-iterative methods are obtained by combining a preconditioner from 
-the {\tt PC} component with a Krylov method from the {\tt KSP}
-component. This strategy makes things much simpler conceptually, so 
-(we hope)
-clean code will result. {\em Note}: We had this idea already implicitly in 
-older versions of SLES, but, for instance, just doing Gauss-Seidel
-with Richardson in old SLES was much more expensive than it had to be. 
-With PETSc 2.0 this should not be a problem. 
-
-\section{Unimportant Details of PC}
-
-Most users will obtain their preconditioner contexts from the SLES
-context with the command {\tt SLESGetPC()}. It is possible to create,
-manipulate, and destroy PC contexts directly, although this capability
-should rarely be needed. To create a PC context, one uses the command
-\findex{PCCreate()}
-\begin{verbatim}
-   ierr = PCCreate(MPI_Comm comm,PC *pc);
-\end{verbatim}
-The routine \findex{PCSetType()}
-\begin{verbatim}
-   ierr = PCSetType(PC pc,PCType method);
-\end{verbatim}
-sets the preconditioner method to be used. 
-The two routines \findex{PCSetOperators()} \findex{PCSetVector()}
-\begin{verbatim}
-   ierr = PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);
-   ierr = PCSetVector(PC pc,Vec vec);
-\end{verbatim}
-set the matrices and type of vector that are to be used with 
-the preconditioner.  The {\tt vec} argument is needed by the PC routines 
-to determine the format of the vectors. 
-The routine \findex{PCGetOperators()}
-\begin{verbatim}
-   ierr = PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag);
-\end{verbatim}
-returns the values set with {\tt PCSetOperators()}.
-
-\findex{PCApply()} \findex{PCApplyTrans()} 
-The preconditioners in PETSc can be used in several ways.  The two
-most basic routines simply apply the preconditioner or its transpose
-and are given, respectively, by
-\begin{verbatim}
-   ierr = PCApply(PC pc,Vec x,Vec y);
-   ierr = PCApplyTrans(PC pc,Vec x,Vec y);
-\end{verbatim}
-In particular, for a preconditioner matrix, {\tt B}, that has
-been set via {\tt PCSetOperators(pc,A,B,flag)},
-the routine {\tt PCApply(pc,x,y)} computes $y = B^{-1} x$
-by solving the linear system $By = x$ with the specified preconditioner
-method.
-
-\findex{PCApplyBAorAB()}
-\findex{PCApplyBAorABTrans()} \findex{PCApplyRichardson()}
-Additional preconditioner routines are
-\begin{verbatim}
-   ierr = PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work,int its);
-   ierr = PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work,int its);
-   ierr = PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,int its);
-\end{verbatim}
-The first two routines apply the action of the matrix followed by the
-preconditioner or the preconditioner followed by the matrix depending
-on whether the \sindex{Richardson's method} integer {\tt right} is
-zero or one. The final routine applies {\tt its} iterations of
-Richardson's method. The last three routines are provided to improve
-efficiency for certain Krylov subspace methods.
-
-A PC context that is no longer needed can be destroyed with the 
-command \findex{PCDestroy()}
-\begin{verbatim}
-   ierr = PCDestroy(PC pc);
-\end{verbatim}
 
 % ---------------------------------------------------------------
 \chapter{Graphics}\sindex{graphics}
 \label{ch:graphics}
-
 
 PETSc graphics components are not intended to compete with 
 high-quality graphics packages.  Instead, they are intended to be 
@@ -4295,7 +4001,7 @@ first create a viewer using the
 command \findex{ViewerDrawOpenX()}
 \begin{verbatim}
    ierr = ViewerDrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
-                    int h,Viewer *viewer);
+                          int h,Viewer *viewer);
 \end{verbatim}
 This viewer may be passed to any of the {\tt XXXView()} routines.
 To draw into the viewer, one must obtain the {\tt Draw} object with the
@@ -4323,7 +4029,8 @@ colormap can be used via the option {\tt -draw\_x\_shared\_colormap}.
 
 \section{Simple Drawing}
 
-One can open a window under the X11 Window System with the
+One can open a window that is not associated with a viewer directly 
+under the X11 Window System with the
 command \findex{DrawOpenX()} \sindex{X windows}
 \begin{verbatim}
    ierr = DrawOpenX(MPI_Comm comm,char *display,char *title,int x,int y,int w,
@@ -4352,7 +4059,9 @@ To draw a line, one uses
 \begin{verbatim}
    ierr = DrawLine(Draw win,double xl,double yl,double xr,double yr,int cl);
 \end{verbatim}
-The argument {\tt cl} indicates the color of the line.
+The argument {\tt cl} indicates the color (which is an integer between 0 and 255)
+of the line. A list of predefined colors may be found in {\tt include/draw.h}
+and includes {\tt DRAW\_BLACK}, {\tt DRAW\_RED}, {\tt DRAW\_BLUE} etc.
 
 To ensure that all graphics actually have been displayed, one should use 
 \sindex{flushing, graphics} the
@@ -4392,8 +4101,8 @@ commands \findex{DrawStringSetSize()} \findex{DrawStringGetSize()}
 PETSc includes a set of routines for manipulating simple two-dimensional
 graphs. These routines, which begin with {\tt DrawAxisDraw()}, are usually 
 not used directly by the application programmer.  Instead, the programmer 
-employs the line graph routines to draw simple line graphs
-As shown in the progra, within Figure~\ref{fig:plot}, line graphs 
+employs the line graph routines to draw simple line graphs.
+As shown in the program, within Figure~\ref{fig:plot}, line graphs 
 are created with the command \findex{DrawLGCreate()} \sindex{line graphs}
 \begin{verbatim}
    ierr = DrawLGCreate(Draw win,int ncurves,DrawLG *ctx);
@@ -4433,7 +4142,7 @@ command \findex{DrawLGSetLimits()}
 \end{verbatim}
 
 It is also possible to change the display of the axes and to label
-on them. This procedure is done by first obtaining the axes context with the 
+them. This procedure is done by first obtaining the axes context with the 
 command \findex{DrawLGGetAxis()} \sindex{axis, drawing}
 \begin{verbatim}
    ierr = DrawLGGetAxis(DrawLG ctx,DrawAxis *axis);
@@ -4509,10 +4218,9 @@ underlying numerical computations.
 \section{Differences between PETSc Interfaces for C and Fortran}
 
 Only a few differences exist between the C and Fortran PETSc
-interfaces, all of which are due to limitations in Fortran syntax.
+interfaces, all of which are due to differences in Fortran syntax.
 All Fortran routines have the same names as the corresponding C
-versions, and PETSc command line options are fully supported on most 
-machines.  The
+versions, and PETSc command line options are fully supported. The
 routine arguments follow the usual Fortran conventions; the user need
 not worry about passing pointers or values.  The calling sequences
 for the Fortran version are in most cases identical to the C version,
@@ -4630,6 +4338,9 @@ use code such as the following:
 \end{verbatim}
 Note that users of the Fortran {\tt .f} suffix {\em cannot} employ the
 macros {\tt SETERRA()} and {\tt CHKERRA()}.
+
+The most common reason for crashing PETSc Fortran code is forgetting the 
+final {\tt ierr} argument.
 
 \subsection{Array Arguments}
 \label{sec:fortranarrays}
@@ -4849,7 +4560,7 @@ on the link line.
 \label{sec:fortran_exceptions}
 
 The following Fortran routines differ slightly from their C counterparts; see the 
-man pages and previous discussion in this chapter for details:
+manual pages and previous discussion in this chapter for details:
 \begin{itemize}
 \item {\tt PetscInitialize(char *filename,int ierr)}
 \item {\tt PetscError(int errno,char *message,int ierr)}
@@ -4860,7 +4571,6 @@ man pages and previous discussion in this chapter for details:
 \end{itemize}
 The following functions are not supported in Fortran:
 \begin{itemize}
-\item {\tt PetscBinaryRead()}, {\tt PetscBinaryWrite()}
 \item {\tt PetscFClose()}, {\tt PetscFOpen()}, {\tt PetscFPrintf()}, {\tt PetscPrintf()}
 \item {\tt PetscPopErrorHandler()}, {\tt PetscPushErrorHandler()}
 \item {\tt PLogInfo()}
@@ -4882,7 +4592,7 @@ Current routines include:
 \item {\tt MatGetArrayF90()}, {\tt MatRestoreArrayF90()}
 \item {\tt ISGetIndicesF90()}, {\tt ISRestoreIndicesF90()}
 \end{itemize}
-See the man pages for details and pointers to example programs.  To
+See the manual pages for details and pointers to example programs.  To
 use the routines {\tt VecGetArrayF90()}, {\tt VecRestoreArrayF90()}
 {\tt VecDuplicateVecsF90()}, and {\tt VecDestroyVecsF90()}, one must
 use the Fortran90 vector include file,
@@ -4894,11 +4604,9 @@ Analogous include files for other components are {\tt da.h90},
 include files (as discussed in Section~\ref{sec:fortran_includes})
 are supported as well.
 
-Unfortunately, these routines currently work only with the NAG F90
-compiler.  We hope to support other compilers as well, but we will
-need assistance from vendors since the Fortran90/C interface is not a
-defined standard.  See the file {\tt petsc/Installation} for
-instructions on building the Fortran90 routines.
+Unfortunately, these routines currently work only on certain machines with 
+certain compilers. They currently work with the SGI, the
+IBM and the NAG Fortran 90 compiler.
 
 \section{Sample Fortran77 Programs}
 \label{sec:fortran-examples}
@@ -4996,7 +4704,7 @@ Section~\ref{sec:makeflags}.  The profiling options include the following:
      provide an overview of the computations within a program.  Since the
      detailed event logging can significantly slow program execution, 
      {\tt -log\_all} is not recommended for production runs.
-\item {\tt -log\_info} - Prints verbose information about code to stdout. 
+\item {\tt -log\_info} - Prints verbose information about code to the screen. 
      This option provides details about algorithms, data structures, etc.
      Since the overhead of printing such output slows a code, this
      option should not be used when evaluating a program's performance.
@@ -5033,7 +4741,7 @@ multiplication, division, addition, or subtraction.  For example, one
 {\tt VecAXPY()} operation, which computes $y = \alpha x + y$ for
 vectors of length $N$, requires $2N$ flops (consisting of $N$
 additions and $N$ multiplications).  Bear in mind that flop rates
-present only a limited view of performance, since loads and stores are
+present only a limited view of performance, since memory loads and stores are
 the real performance barrier.
 
 For simplicity, the remainder of this discussion focuses on
@@ -5267,7 +4975,7 @@ event for profiling purposes: \findex{PLogEventRegister()}
 \end{verbatim}
 Here {\tt string} is a user-defined event name, and {\tt color} is an
 optional user-defined event color (for use with {\em Upshot/Nupshot} logging);
-one should see the man page for details.  The argument returned in {\tt e} should then
+one should see the manual page for details.  The argument returned in {\tt e} should then
 be passed to the {\tt PLogEventBegin()} and {\tt PLogEventEnd()}
 routines.
 
@@ -5306,7 +5014,7 @@ stages of code by switching among the various stages with the comands
    PLogStagePush(int stage);
    PLogStagePop();
 \end{verbatim}
-where {\tt stage} is an integer (0-9); see the man pages for details.
+where {\tt stage} is an integer (0-9); see the manual pages for details.
 The command  \findex{PLogStageRegister()}
 \begin{verbatim}
    PLogStageRegister(int stage,char *name)
@@ -5396,7 +5104,7 @@ in MPE logging.
 \label{sec:ploginfo}
 
 Users can activate the printing of verbose information about
-algorithms, data structures, etc. to stdout by using the option {\tt
+algorithms, data structures, etc. to the screen by using the option {\tt
 -log\_info} \findex{-log_info} or by calling {\tt
 PLogInfoAllow(PETSC\_TRUE)}. \findex{PLogInfoAllow()}
 Such logging, which is used throughout the PETSc libraries,
@@ -5528,10 +5236,6 @@ are specified.  We briefly highlight usage of these features below.
 \item Run the code with the option {\tt -log\_summary} to print a performance
    summary for various phases of the code. \findex{-log_summary}
 
-\item Run the code with the option {\tt -log} (or {\tt -log\_all}), and use the utility
-   {\tt \$\{PETSC\_DIR\}/bin/petscview} to see where the code is fast and slow and
-   what PETSc objects are being created. \findex{-log_all} \findex{-log}
-
 \item Compile the code with {\tt BOPT=Opg} and then run {\tt gprof} for a good-sized 
    problem.  This will provide an idea of where most of the run time is being spent. 
    Generally {\tt gprof} cannot be used when running with more than one processor because
@@ -5576,7 +5280,7 @@ row formats, instead of the generic {\tt MatCreate()} routine.  For
 problems with multiple degrees of freedom per node, the block,
 compressed, sparse row formats, created by {\tt MatCreateSeqBAIJ()}
 and {\tt MatCreateMPIBAIJ()}, can significantly enhance performance.
-Also, Section~\ref{sec:matsparse} includes extensive details and
+Section~\ref{sec:matsparse} includes extensive details and
 examples regarding preallocation.
 
 \subsection{Sparse Matrix Factorization}
@@ -5594,13 +5298,13 @@ The symbolic factorization phase will then print information such as
 \end{verbatim}
 This indicates that the user should have used a fill estimate factor of
 about 2.17 (instead of 1) to prevent the 12 required mallocs and copies.
-The command line option 
+The command line option  \findex{-pc_ilu_fill} \findex{-pc_lu_fill}
 \begin{verbatim}
-    -mat_ilu_fill 2.17
+    -pc_ilu_fill 2.17
 \end{verbatim}
 will cause PETSc to preallocate the correct amount of space for incomplete
 (ILU) factorization.  The corresponding option for direct (LU) factorization
-is {\tt -mat\_lu\_fill <fill\_amount>}.
+is {\tt -pc\_lu\_fill <fill\_amount>}.
 
 \subsection{PetscMalloc() Calls}
 Users should employ a reasonable number of {\tt PetscMalloc()} calls in their codes.
@@ -5691,7 +5395,7 @@ PETSc memory allocation can be activated for other other cases, such
 as {\tt BOPT=O}, with the option {\tt -trmalloc}, while {\tt
 -trmalloc\_off} forces the use of conventional memory allocation for the
 {\tt BOPT=g}, {\tt BOPT=g\_c++}, and {\tt BOPT=g\_complex} versions.
-When running timing tests, one should always use {\tt -trmalloc\_off} or 
+When running timing tests, one should use  
 the {\tt BOPT=O} version of the libraries.
 
 \findex{-trdump} \findex{PetscTrDump()}
@@ -5723,8 +5427,8 @@ allocated memory that is used before it has been initialized.  This
 option calls {\tt PetscInitializeNans()} which marks an array as being
 uninitialized, so that if values are used for computation without
 first having been set, a floating point exception is generated.  This
-option also calls {PetscInitializeLargeInts()}; see the man pages for
-details.  Note that so far these work only on the sun4 system.
+option also calls {PetscInitializeLargeInts()}; see the manual pages for
+details.  Note that so far these work only on the certain systems.
 
 \item The utility {\tt \$\{PETSC\_DIR\}/bin/petscview} can illustrate graphically
 what PETSc objects have never been properly destroyed during a run.  
@@ -5775,20 +5479,21 @@ overcoming them.
       required to get the current time in a running program. On good
       systems it will on the order of 1.e-6 seconds or less.
 \item {\bf Problem too large for good cache performance}: Certain machines
-      with low memory bandwidths (slow memory access) attempt to 
+      with lower memory bandwidths (slow memory access) attempt to 
       compensate by having a very large cache.  Thus, if a significant
       portion of an application fits within the cache, the program will achieve very 
       good performance; if the code is too large, the performance can degrade markedly.
       To analyze whether this situation affects a particular code, one can
       try plotting the total flop rate as a function of problem
       size.  If the flop rate decreases rapidly at some point, then the
-      problem may likely be too large for the cache size.  There is really
-      no solution to this performance problem, except not purchasing such equipment.
+      problem may likely be too large for the cache size. 
 \item {\bf Inconsistent timings}:  Inconsistent timings are likely due to other
       users on the machine, thrashing (using more virtual memory than available
       physical memory), or paging in of the initial executable.  
       Section~\ref{sec:profaccuracy} provides information on overcoming paging
-      overhead when profiling a code.
+      overhead when profiling a code. We have found on all systems that if you 
+      follow all the advise above your timings will be consistent within a variation
+      of less than five percent.
 \end{itemize}
 
 %---------------------------------------------------------------------
@@ -5893,6 +5598,7 @@ commands \findex{OptionsHasName()} \findex{OptionsGetInt()}
    ierr = OptionsGetInt(char *pre,char *name,int *value,int *flg);
    ierr = OptionsGetDouble(char *pre,char *name,double *value,int *flg);
    ierr = OptionsGetString(char *pre,char *name,char *value,int maxlen,int *flg);
+   ierr = OptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,int *flg);
    ierr = OptionsGetIntArray(char *pre,char *name,int *value,int *nmax,int *flg);
    ierr = OptionsGetDoubleArray(char *pre,char *name,double *value, int *nmax,int *flg);
 \end{verbatim}
@@ -5917,18 +5623,12 @@ One useful means of keeping track of user-specified runtime options is
 use of {\tt -optionstable}, which prints to {\tt stdout} during {\tt
 PetscFinalize()} a table of all runtime options that the user has
 specified.  \findex{-optionstable} A related option is {\tt -optionsleft},
-\findex{-optionsleft}, which prints the options table and indicates
+\findex{-optionsleft} which prints the options table and indicates
 any options that have {\em not} been requested upon a call to {\tt
 PetscFinalize()}.  This feature is useful to check whether an option
 has been activated for a particular PETSc object (such as a solver or
 matrix format), or whether an option name may have been accidentally
 misspelled.
-
-Since PETSc has a large number of options that can be easily forgotten,
-we have included a Tk/Tcl program, {\tt \$\{PETSC\_DIR\}/bin/petscopts}, that
-provides a GUI interface to set the options.  This program sets
-the options in the user's {\tt .petscrc} file. \findex{PetscObts}
-Chapter \ref{sec:petscopts} gives details.
 
 \section{Viewers: Looking at PETSc Objects} \label{sec:viewers}
 
@@ -5943,10 +5643,10 @@ is {\tt Mat}, {\tt Vec}, {\tt SNES}, etc. There are several
 predefined viewers:
 \begin{itemize}
 \item Passing in a zero for the viewer causes the object to be printed 
-      to {\tt stdout}; this is most useful when viewing an object in 
+      to the screen; this is most useful when viewing an object in 
       a debugger.
 \item {\tt VIEWER\_STDOUT\_SELF} \findex{VIEWER_STDOUT_SELF}
-      causes the object to be printed to {\tt stdout}.
+      causes the object to be printed to the screen.
       For parallel objects the parts owned by individual processors are 
       printed in random order.
 \item {\tt VIEWER\_STDOUT\_WORLD} \findex{VIEWER_STDOUT_WORLD}
@@ -6021,7 +5721,7 @@ following routines: \findex{MatLoad()} \findex{VecLoad()}
 These routines generate parallel matrices and vectors if the viewer's
 communicator has more than one processor.  The particular matrix and
 vector formats are determined from the options database; see the
-man pages for details.
+manual pages for details.
 
 One can provide additional information about matrix data for matrices
 stored on disk by providing an optional file {\tt matrixfilename.info},
@@ -6243,13 +5943,13 @@ libraries).  To work with complex numbers,
 the user should compile the PETSc libraries (including the Fortran
 interface library) and the application code with
 {\tt BOPT=[g\_complex,O\_complex,Opg\_complex]} for debugging, optimized,
-and profiling versions, respectively.  The file {\tt \$\{PETSC\_DIR\}/Installation}
+and profiling versions, respectively.  The file {\tt \$\{PETSC\_DIR\}/docs/installation.html}
 provides detailed instructions for installing PETSc.
 
 We recommend using optimized Fortran kernels for some key numerical
 routines with complex numbers (such as matrix-vector products, vector
 norms, etc.) instead of the default C++ routines.  See the ``Complex
-Numbers'' section of the file {\tt \$\{PETSC\_DIR\}/Installation} for
+Numbers'' section of the file {\tt \$\{PETSC\_DIR\}/docs/installation.html} for
 details on building these kernels.  This implementation exploits the
 maturity of Fortran compilers while retaining the identical user
 interface.  For example, on rs6000 machines, the base single-node
@@ -6286,7 +5986,11 @@ not present, it should be generated by
 running {\tt make etags} from the PETSc home directory. 
 Once the file exists, from 
 Emacs the user should issue
-the command ``{\tt M-x visit-tags-table}'', where ``{\tt M}''
+the command 
+\begin{verbatim}
+ M-x visit-tags-table
+\end{verbatim}
+ where ``{\tt M}''
 denotes the Emacs Meta key, and enter the 
 name of the {\tt TAGS} file. Then the command ``{\tt M-.}'' will cause Emacs 
 to find the file and line number where a desired PETSc function 
@@ -6373,9 +6077,8 @@ not needed by users.
 \item {\tt co} - Uses the RCS {\tt co} mechanism to check out 
       all files in the directory. 
 \item {\tt fortranstubs} - Generates the Fortran wrapper routines.  
-% \item {\tt manpages} - Updates the UNIX version of the man pages.
-\item {\tt latexpages} - Updates the LaTeX version of the man pages.
-\item {\tt wwwpages} - Updates the HTML version of the man pages.
+\item {\tt latexpages} - Updates the LaTeX version of the manual pages.
+\item {\tt wwwpages} - Updates the HTML version of the manual pages.
 \end{itemize}
 
 The {\tt tree} command enables the user to execute a particular action
@@ -6434,11 +6137,11 @@ the variable {\tt PETSCFLAGS} within the base files of {\tt
 \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}}, discussed in Section
 ~\ref{sec:custom}.  The flags include
 \begin{itemize}
-\item PETSC\_DEBUG - The PETSc debugging options are activated. We 
+\item USE\_PETSC\_DEBUG - The PETSc debugging options are activated. We 
       recommend always using this. \findex{USE_PETSC_DEBUG}
-\item PETSC\_COMPLEX - The version with scalars represented 
+\item USE\_PETSC\_COMPLEX - The version with scalars represented 
       as complex numbers is used. \findex{USE_PETSC_COMPLEX}
-\item PETSC\_LOG - Various monitoring statistics on floating-point operations,
+\item USE\_PETSC\_LOG - Various monitoring statistics on floating-point operations,
       and message-passing activity are kept. \findex{USE_PETSC_LOG}
 \end{itemize}
 
@@ -6470,12 +6173,6 @@ within the makefile.
 
    CFLAGS          = ${CPPFLAGS} 
    FFLAGS          = 
-   SOURCEC         = 
-   SOURCEF         =
-   SOURCEH         =
-   OBJSC           =
-   OBJSF           = 
-   LIBBASE         = libpetscsles
    DIRS            = 
 
    include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -6505,12 +6202,6 @@ controls the generation of several example programs.
 {\small
 \begin{verbatim}
    CFLAGS        =  ${CPPFLAGS}
-   SOURCEC       = 
-   SOURCEF       =
-   SOURCEH       =
-   OBJSC         =
-   OBJSF         =
-   LIBBASE       = libpetscsles
    RUNEXAMPLES_1 = runex1 runex2
    RUNEXAMPLES_2 = runex4
    RUNEXAMPLES_3 = runex3
@@ -7130,7 +6821,7 @@ the name of a particular implementation is
 conventions are used to simplify code maintenance.
 
 Each object structure (named {\tt \_p\_Object}) consists of three parts:
-a common PETSc header (defined in {\tt include/phead.h},
+a common PETSc header (defined in {\tt include/petschead.h},
 a pointer to a list of operations for the
 object, and any additional information that is appropriate for the
 particular abstract object.  The PETSc header includes an integer
@@ -7549,9 +7240,6 @@ The parallel dense matrices are partitioned by rows across the
 processors, so that each local rectangular submatrix is stored in the
 dense format described above.
 
-\subsection{Parallel Cyclic Block Dense Matrices}
-Not yet implemented.
-
 \subsection{Parallel BlockSolve Sparse Matrices}
 
 PETSc provides a parallel, sparse, row-based matrix format that is
@@ -7621,36 +7309,315 @@ rows, {\tt n} global columns, and a block size of {\tt nb} is
 Either the {\tt m} or {\tt M} can be set to {\tt PETSC\_DECIDE} for PETSc
 to determine the corresponding quantity.
 
-\section{Other Libraries and Packages}
 
-It is not the intention of PETSc to provide all of the software pieces 
-to solve a user's application problem. The intention is that other 
-libraries can provide the pieces that are not in PETSc.  Unfortunately, 
-not many robust, general-purpose, easy-to-use software packages 
-are available, and some of those that do exist have a very low-level 
-user interface. 
+% --------------------------------------------------------
+\chapter{Advanced Features of Matrices and Solvers}
+\label{ch:advanced}
 
-\sindex{petsc-maint} \sindex{BLAS} \sindex{LAPACK} \sindex{LINPACK}
-\sindex{MINPACK} \sindex{SPARSPAK} \sindex{BlockSolve95} \sindex{ESSL} \sindex{Matlab}
-\sindex{ParMeTis} \sindex{PVODE} \sindex{SPAI}
-To simplify the use of certain packages, we have integrated into PETSc
-an interface to them.  The current collection includes parts of
-LAPACK, BLAS, LINPACK, MINPACK, SPARSPAK, BlockSolve95, ESSL, Matlab,
-ParMeTis, PVODE, and SPAI.  We invite users to let us know (by writing
-to {\tt petsc-maint@mcs.anl.gov}) whether they need particular
-libraries that are related to PETSc for an application; we may try to
-provide easy-to-use PETSc interfaces for them.
+This chapter introduces additional features of the PETSc matrices and solvers.
+Since most PETSc users should not need to use these features, 
+we recommend skipping this chapter during an initial reading.
 
-To allow the portable use of BLAS and LAPACK from C, we constructed a
-new include file, 
-\break{\tt \$\{PETSC\_DIR\}/include/pinclude/plapack.h}, that uses defines to make
-a uniform naming scheme for BLAS (all routines begin with BL) and
-LAPACK (all routines begin with LA). This file incorporates function
-prototypes for the BLAS and LAPACK routines used. In addition, the
-include file deals with different Fortran77 compilers' treatment of
-function names (for instance, Sun compilers put an underscore at the
-end of all functions created in Fortran77).  The include file also
-deals with the fact that on Crays, C double precision is the same as
-Fortran77 single precision.  Lastly, it also calls the appropriate
-complex LAPACK and BLAS routines when needed.
+\medskip \medskip
+
+\section{Extracting Submatrices} \sindex{submatrices}
+
+One can extract a (parallel) submatrix from a given (parallel) using
+\begin{verbatim}
+   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatGetSubMatrixCall call,Mat *B);
+\end{verbatim}
+This extracts the {\tt rows} and {\tt col}umns of the matrix {\tt A} into {\tt B}. If 
+call is  {\tt MAT\_INITIAL\_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix
+{\tt B}. If call is {\tt MAT\_REUSE\_MATRIX} \findex{MAT_REUSE_MATRIX} it will reuse the {\tt B}
+created with a previous call. \findex{MatGetSubMatrix} The argument {\tt csize} is ignored 
+on sequential matrices, for parallel matrices it determines the ``local columns'' if the matrix
+format supports this concept. Often one can use the default by passing in {\tt PETSC\_DECIDE}.
+To create a {\tt B} matrix that may be multiplied with a vector {\tt x} one can use
+\begin{verbatim}
+   ierr = VecGetLocalSize(x,&csize);
+   ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatGetSubMatrixCall call,Mat *B);
+\end{verbatim}
+
+
+\medskip \medskip
+
+\section{Matrix Factorization} \sindex{factorization}
+\label{sec:matfactor}
+
+Normally, PETSc users will access the matrix solvers through the 
+SLES interface, as discussed in Chapter \ref{ch:sles}, but the underlying 
+factorization and triangular solve routines are also directly 
+accessible to the user.
+
+\medskip \medskip
+
+The LU and Cholesky \sindex{Cholesky}
+matrix factorizations are split into \sindex{LU}
+two or three stages depending on the user's needs. The first stage is 
+to calculate an ordering for the matrix.  The ordering generally is 
+done to reduce fill in a sparse factorization; it does not make much 
+sense for a dense matrix. \findex{MatGetReordering()} \sindex{reorder}
+\begin{verbatim}
+   ierr = MatGetReordering(Mat matrix,MatReorderingType type,IS* rowperm,IS* colperm); 
+\end{verbatim}
+The currently available alternatives for the ordering {\tt type} are 
+\begin{itemize}
+\item {\tt ORDER\_NATURAL} - Natural
+\item {\tt ORDER\_ND} - Nested Dissection
+\item {\tt ORDER\_1WD} - One-way Dissection
+\item {\tt ORDER\_RCM} - Reverse Cuthill-McKee
+\item {\tt ORDER\_QMD} - Quotient Minimum Degree
+\end{itemize}
+These orderings can also be set through the options database by specifying 
+one of the following:  {\tt -mat\_order natural, -mat\_order nd, 
+-mat\_order 1wd, -mat\_order rcm, -mat\_order qmd}.
+\findex{ORDER_NATURAL} \findex{ORDER_ND} \findex{ORDER_1WD}
+\findex{ORDER_RCM} \findex{ORDER_QMD} \sindex{nested dissection}
+\sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
+\sindex{quotient minimum degree} \findex{-mat_order}
+Certain matrix formats may support only a subset of these; more options may 
+be added. Check the manual pages for up-to-date information. All of these orderings are 
+symmetric at the moment; ordering routines that are 
+not symmetric may be added. Currently we support reorderings only for 
+sequential matrices.
+
+Users can add their own reordering routines 
+by providing a function with the calling sequence
+\begin{verbatim}
+   int reorder(Mat A,MatReorderingType type,IS* rowperm,IS* colperm);
+\end{verbatim}
+Here {\tt A} is the matrix for which we wish to generate a new ordering, 
+{\tt type} may be ignored and {\tt rowperm} and {\tt colperm} are the row
+and column permutations generated by the reordering routine.
+The user registers the reordering routine
+with the command
+\begin{verbatim}
+   ierr = MatReorderingRegister(MatReorderingType inname,MatReorderingType *name,char *sname,
+                                int (*reorder)(Mat,MatReorderingType,IS*,IS*)));
+\end{verbatim}
+The \findex{MatReorderingRegister()} \sindex{reordering} \sindex{matrix reordering}
+input argument {\tt *sname} is a string of the user's choice, {\tt iname} is either 
+an ordering defined in {\tt mat.h} or {ORDER\_NEW} \findex{ORDER_NEW},
+to indicate one is introducing a new ordering, while the output
+argument {\tt *name} is the registration number returned to the user.
+See the code in {\tt src/mat/impls/order/sorder.c} and other files in that 
+directory for examples on how the reordering routines may be written.
+
+Once the reordering routine has been registered,
+it can be selected for use at runtime with the
+command line option {\tt -mat\_order sname}.  If reordering directly,
+the user should provide the {\tt name} as the second input argument of
+{\tt MatGetReordering()}.
+
+The following routines perform complete, in-place, symbolic, and numerical 
+factorizations for symmetric and nonsymmetric matrices, respectively:
+\begin{verbatim}
+   ierr = MatCholeskyFactor(Mat matrix,IS permutation,double pf);
+   ierr = MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,double pf); 
+\end{verbatim}
+The argument {\tt pf $ \ge $ 1} is the predicted fill
+expected in the factored matrix, as a ratio of the original fill. 
+For example, {\tt pf=2.0} would indicate that one expects the factored
+matrix to have twice as many nonzeros as the original.
+\findex{MatCholeskyFactor()} \findex{MatLUFactor()}
+
+For sparse matrices it is very unlikely that the factorization 
+is actually done in-place. More likely, new space is allocated 
+for the factored matrix and the old space deallocated, but to the 
+user it appears in-place because the factored matrix replaces
+the unfactored matrix.
+
+The \sindex{symbolic factorization}
+two \findex{MatCholeskyFactorSymbolic()} \findex{MatLUFactorSymbolic()}
+factorization 
+stages \findex{MatCholeskyFactorNumeric()} \findex{MatLUFactorNumeric()}
+can also be performed separately, by using the out-of-place mode:
+\begin{verbatim}
+   ierr = MatCholeskyFactorSymbolic(Mat matrix,IS perm, double pf,Mat *result);
+   ierr = MatLUFactorSymbolic(Mat matrix,IS rowperm,IS colperm,double pf,Mat *result);
+   ierr = MatCholeskyFactorNumeric(Mat matrix,Mat *result);
+   ierr = MatLUFactorNumeric(Mat matrix, Mat *result);
+\end{verbatim}
+In this case, the contents of the matrix {\tt result} is undefined between 
+the symbolic and numeric factorization stages. 
+It is possible to reuse the symbolic factorization. For the second and 
+succeeding factorizations, one simply calls the numerical factorization with a 
+new input {\tt matrix} and the {\em same} factored {\tt result} matrix.
+It is {\em essential} that the new input matrix 
+have   % subjunctive ... must be ``have'', not ``has''
+exactly the same nonzero structure as the original factored matrix.
+(The numerical factorization merely overwrites the numerical values in the 
+factored matrix and does not disturb the symbolic portion, thus enabling
+reuse of the symbolic phase.)
+In general, calling {\tt XXXFactorSymbolic} with a dense matrix will 
+do nothing except allocate the new matrix; the {\tt XXXFactorNumeric} 
+routines will do all of the work. 
+
+Why provide the plain {\tt XXXfactor} routines when one could simply 
+call the two-stage routines? The answer is that if one desires in-place 
+factorization of a sparse matrix, the intermediate stage between the 
+symbolic and numeric phases cannot be stored in a {\tt result} matrix, and
+it does not make sense to store the intermediate values
+inside the original matrix 
+that is being transformed.  We originally made the combined factor routines
+do either in-place or out-of-place factorization, but then decided that 
+this approach was not needed and could easily lead to confusion.
+
+We do not currently support sparse matrix factorization with pivoting
+for numerical stability. This is because trying to both reduce fill
+and do pivoting can become quite complicated. Instead, we provide a 
+poor stepchild substitute. After one has obtained a reordering, with
+{\tt MatGetRordering(Mat A,MatOrdering type,IS *row,IS *col)} one
+may call
+\begin{verbatim}
+   ierr = MatReorderForNonzeroDiagonal(Mat A,double tol,IS row, IS col);
+\end{verbatim}
+which will try to reorder the columns to ensure that no values along 
+the diagonal are smaller than {\tt tol} in a absolute value. If small 
+values are detected and corrected for, a nonsymmetric
+permutation of the rows and columns will result. This is not guaranteed to work, 
+but may help if one was simply unlucky in the original ordering.
+\findex{MatReorderForNonzeroDiagonal} When using the SLES solver interface
+the options {\tt -pc\_ilu\_nonzeros\_along\_diagonal <tol>} \findex{-pc_ilu_nonzeros_along_diagonal}
+and \findex{-pc_lu_nonzeros_along_diagonal}
+{\tt -pc\_lu\_nonzeros\_along\_diagonal <tol>} may be used.  Here, {\tt tol}
+is an optional tolerance to decide if a value is nonzero; by default it
+is $ 1.e-10.$ 
+
+Once a matrix has been factored, it is natural to solve linear systems.
+The following four routines enable this process: \findex{MatSolve()} 
+\begin{verbatim}
+   ierr = MatSolve(Mat A,Vec x, Vec y);
+   ierr = MatSolveTrans(Mat A, Vec x, Vec y);
+   ierr = MatSolveAdd(Mat A,Vec x, Vec y, Vec w);
+   ierr = MatSolveTransAdd(Mat A, Vec x, Vec y, Vec w);
+\end{verbatim}
+The \findex{MatSolveTrans()} \findex{MatSolveAdd()}
+matrix \findex{MatSolveTransAdd()}
+{\tt A} of these routines must have been obtained from a 
+factorization routine; otherwise, an error will be generated.
+In general, the user should use the SLES solvers introduced in the 
+next chapter rather than using these factorization and solve routines
+directly.
+
+\section{Unimportant Details of KSP}
+
+Again, virtually all users should use KSP through the SLES interface
+and, thus, will not need to know the details that follow. 
+
+It is possible to generate a Krylov subspace context with the 
+command \findex{KSPCreate()}
+\begin{verbatim}
+   ierr = KSPCreate(MPI_Comm comm,KSP *kps);
+\end{verbatim}
+Before using the Krylov context, one must set the matrix-vector multiplication routine and
+the preconditioner with the 
+commands \findex{PCSetOperators()} \findex{KSPSetPC()}
+\begin{verbatim}
+   ierr = PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);
+   ierr = KSPSetPC(KSP ksp,PC pc);
+\end{verbatim}
+In addition, the KSP solver must be initialized with \findex{KSPSetUp()}
+\begin{verbatim}
+   ierr = KSPSetUp(KSP ksp);
+\end{verbatim}
+Solving a linear system is done with the command \findex{KSPSolve()}
+\begin{verbatim}
+   ierr = KSPSolve(KSP ksp,int *its);
+\end{verbatim}
+Finally, the KSP context should be destroyed with \findex{KSPDestroy()}
+\begin{verbatim}
+   ierr = KSPDestroy(KSP ksp);
+\end{verbatim}
+
+It may seem strange to put the matrix in the preconditioner rather
+than directly in the KSP; this decision was the result of much
+agonizing. The reason is that for SSOR with Eisenstat's trick, and 
+certain other preconditioners, the
+preconditioner has to change the matrix-vector multiply.  This 
+procedure could not
+be done cleanly if the matrix were stashed in the KSP context that
+PC cannot access.
+
+Any preconditioner can supply not 
+only the preconditioner, but also a routine that essentially performs a
+complete Richardson step. The reason for this is mainly SOR. To 
+use SOR in the Richardson framework, that is,
+\[
+  u^{n+1} = u^{n} + B(f - A u^{n}), 
+\]
+is much more expensive than just updating the values.
+With this addition it is reasonable to state that {\em all} our
+iterative methods are obtained by combining a preconditioner from 
+the {\tt PC} component with a Krylov method from the {\tt KSP}
+component. This strategy makes things much simpler conceptually, so 
+(we hope)
+clean code will result. {\em Note}: We had this idea already implicitly in 
+older versions of SLES, but, for instance, just doing Gauss-Seidel
+with Richardson in old SLES was much more expensive than it had to be. 
+With PETSc 2.0 this should not be a problem. 
+
+\section{Unimportant Details of PC}
+
+Most users will obtain their preconditioner contexts from the SLES
+context with the command {\tt SLESGetPC()}. It is possible to create,
+manipulate, and destroy PC contexts directly, although this capability
+should rarely be needed. To create a PC context, one uses the command
+\findex{PCCreate()}
+\begin{verbatim}
+   ierr = PCCreate(MPI_Comm comm,PC *pc);
+\end{verbatim}
+The routine \findex{PCSetType()}
+\begin{verbatim}
+   ierr = PCSetType(PC pc,PCType method);
+\end{verbatim}
+sets the preconditioner method to be used. 
+The two routines \findex{PCSetOperators()} \findex{PCSetVector()}
+\begin{verbatim}
+   ierr = PCSetOperators(PC pc,Mat mat,Mat pmat,MatStructure flag);
+   ierr = PCSetVector(PC pc,Vec vec);
+\end{verbatim}
+set the matrices and type of vector that are to be used with 
+the preconditioner.  The {\tt vec} argument is needed by the PC routines 
+to determine the format of the vectors. 
+The routine \findex{PCGetOperators()}
+\begin{verbatim}
+   ierr = PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag);
+\end{verbatim}
+returns the values set with {\tt PCSetOperators()}.
+
+\findex{PCApply()} \findex{PCApplyTrans()} 
+The preconditioners in PETSc can be used in several ways.  The two
+most basic routines simply apply the preconditioner or its transpose
+and are given, respectively, by
+\begin{verbatim}
+   ierr = PCApply(PC pc,Vec x,Vec y);
+   ierr = PCApplyTrans(PC pc,Vec x,Vec y);
+\end{verbatim}
+In particular, for a preconditioner matrix, {\tt B}, that has
+been set via {\tt PCSetOperators(pc,A,B,flag)},
+the routine {\tt PCApply(pc,x,y)} computes $y = B^{-1} x$
+by solving the linear system $By = x$ with the specified preconditioner
+method.
+
+\findex{PCApplyBAorAB()}
+\findex{PCApplyBAorABTrans()} \findex{PCApplyRichardson()}
+Additional preconditioner routines are
+\begin{verbatim}
+   ierr = PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work,int its);
+   ierr = PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work,int its);
+   ierr = PCApplyRichardson(PC pc,Vec x,Vec y,Vec work,int its);
+\end{verbatim}
+The first two routines apply the action of the matrix followed by the
+preconditioner or the preconditioner followed by the matrix depending
+on whether the \sindex{Richardson's method} integer {\tt right} is
+zero or one. The final routine applies {\tt its} iterations of
+Richardson's method. The last three routines are provided to improve
+efficiency for certain Krylov subspace methods.
+
+A PC context that is no longer needed can be destroyed with the 
+command \findex{PCDestroy()}
+\begin{verbatim}
+   ierr = PCDestroy(PC pc);
+\end{verbatim}
 
