@@ -36,11 +36,10 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-cc=<prog>',  nargs.Arg(None, None, 'Specify the C compiler'))
     help.addArgument('Compilers', '-with-cxx=<prog>', nargs.Arg(None, None, 'Specify the C++ compiler'))
     help.addArgument('Compilers', '-with-fc=<prog>',  nargs.Arg(None, None, 'Specify the Fortran compiler'))
-    help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
 
-    help.addArgument('Compilers', '-with-gnu-compilers=<bool>',             nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
+    help.addArgument('Compilers', '-with-gnu-compilers=<bool>',      nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
     help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
-    help.addArgument('Compilers', '-with-64-bit-pointers=<bool>',                    nargs.ArgBool(None, 0, 'Use 64 bit compilers and libraries'))
+    help.addArgument('Compilers', '-with-64-bit-pointers=<bool>',    nargs.ArgBool(None, 0, 'Use 64 bit compilers and libraries'))
 
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C preprocessor options'))
@@ -53,15 +52,17 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-FC=<prog>',             nargs.Arg(None, None, 'Specify the Fortran compiler'))
     help.addArgument('Compilers', '-FFLAGS=<string>',       nargs.Arg(None, '',   'Specify the Fortran compiler options'))
 
-    help.addArgument('Compilers', '-LD=<prog>',         nargs.Arg(None, None, 'Specify the default linker'))
-    help.addArgument('Compilers', '-CC_LD=<prog>',      nargs.Arg(None, None, 'Specify the linker for C only'))
-    help.addArgument('Compilers', '-CXX_LD=<prog>',     nargs.Arg(None, None, 'Specify the linker for C++ only'))
-    help.addArgument('Compilers', '-FC_LD=<prog>',      nargs.Arg(None, None, 'Specify the linker for Fortran only'))
-    help.addArgument('Compilers', '-LDFLAGS=<string>',  nargs.Arg(None, '',   'Specify the linker options'))
-    help.addArgument('Compilers', '-with-ar',                    nargs.Arg(None, None,   'Specify the archiver'))
-    help.addArgument('Compilers', 'AR',                          nargs.Arg(None, None,   'Specify the archiver flags'))
-    help.addArgument('Compilers', 'AR_FLAGS',                    nargs.Arg(None, None,   'Specify the archiver flags'))
-    help.addArgument('Compilers', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
+    help.addArgument('Compilers', '-LD=<prog>',              nargs.Arg(None, None, 'Specify the default linker'))
+    help.addArgument('Compilers', '-CC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for C only'))
+    help.addArgument('Compilers', '-CXX_LD=<prog>',          nargs.Arg(None, None, 'Specify the linker for C++ only'))
+    help.addArgument('Compilers', '-FC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for Fortran only'))
+    help.addArgument('Compilers', '-LDFLAGS=<string>',       nargs.Arg(None, '',   'Specify the linker options'))
+    help.addArgument('Compilers', '-with-ar',                nargs.Arg(None, None,   'Specify the archiver'))
+    help.addArgument('Compilers', 'AR',                      nargs.Arg(None, None,   'Specify the archiver flags'))
+    help.addArgument('Compilers', 'AR_FLAGS',                nargs.Arg(None, None,   'Specify the archiver flags'))
+    help.addArgument('Compilers', '-with-ranlib',            nargs.Arg(None, None,   'Specify ranlib'))
+    help.addArgument('Compilers', '-with-shared',            nargs.ArgBool(None, 1, 'Enable shared libraries'))
+    help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     return
 
   def isGNU(compiler):
@@ -175,7 +176,7 @@ class Configure(config.base.Configure):
         import os
 
         if os.path.basename(self.framework.argDB['CC']) == 'mpicc':
-          self.framework.log.write(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
+          self.framework.logPrint(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         del self.framework.argDB['CC']
     if not 'CC' in self.framework.argDB:
       raise RuntimeError('Could not locate a functional C compiler')
@@ -310,7 +311,7 @@ class Configure(config.base.Configure):
           import os
 
           if os.path.basename(self.framework.argDB['CXX']) in ['mpicxx', 'mpiCC']:
-            self.framework.log.write('  MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
+            self.framework.logPrint('  MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
           self.popLanguage()
           del self.framework.argDB['CXX']
       if 'CXX' in self.framework.argDB:
@@ -344,7 +345,7 @@ class Configure(config.base.Configure):
         import os
 
         if os.path.basename(self.framework.argDB['CXXCPP']) in ['mpicxx', 'mpiCC']:
-          self.framework.log.write('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI\n')
+          self.framework.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
         self.popLanguage()
         del self.framework.argDB['CXXCPP']
     return
@@ -441,7 +442,7 @@ class Configure(config.base.Configure):
         import os
 
         if os.path.basename(self.framework.argDB['FC']) in ['mpif90', 'mpif77']:
-         self.framework.log.write(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
+         self.framework.logPrint(' MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
         self.popLanguage()
         del self.framework.argDB['FC']
     return
@@ -459,8 +460,8 @@ class Configure(config.base.Configure):
     # Since this is not what we intend with -PIC, just kick out if using borland.
     if self.CC == 'win32fe bcc32':
       return
-    if 'with-shared' in self.framework.argDB and not self.framework.argDB['with-shared']:
-      self.framework.log.write("Skipping checking PIC options since shared libraries are turned off")
+    if not self.framework.argDB['with-shared']:
+      self.framework.logPrint("Skipping checking PIC options since shared libraries are turned off")
       return
     languages = ['C']
     if 'CXX' in self.framework.argDB:
@@ -471,14 +472,14 @@ class Configure(config.base.Configure):
       self.pushLanguage(language)
       for testFlag in ['-PIC', '-fPIC', '-KPIC']:
         try:
-          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+          self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
           if not self.checkLinkerFlag(testFlag):
-            self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it\n')
+            self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it')
             continue
           self.addCompilerFlag(testFlag, compilerOnly = 1)
           break
         except RuntimeError:
-          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+          self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
       self.popLanguage()
     return
 
@@ -538,17 +539,17 @@ class Configure(config.base.Configure):
     '''Check that the archiver exists and can make a library usable by the compiler'''
     def checkArchive(command, status, output, error):
       if error or status:
-        self.framework.log.write('Possible ERROR while running archiver: '+output)
-        if status: self.framework.log.write('ret = '+str(status)+'\n')
-        if error: self.framework.log.write('error message = {'+error+'}\n')
+        self.framework.logPrint('Possible ERROR while running archiver: '+output)
+        if status: self.framework.logPrint('ret = '+str(status))
+        if error: self.framework.logPrint('error message = {'+error+'}')
         os.remove('conf1.o')
         raise RuntimeError('Archiver is not functional')
       return
     def checkRanlib(command, status, output, error):
       if error or status:
-        self.framework.log.write('Possible ERROR while running ranlib: '+output)
-        if status: self.framework.log.write('ret = '+str(status)+'\n')
-        if error: self.framework.log.write('error message = {'+error+'}\n')
+        self.framework.logPrint('Possible ERROR while running ranlib: '+output)
+        if status: self.framework.logPrint('ret = '+str(status))
+        if error: self.framework.logPrint('error message = {'+error+'}')
         os.remove('conf1.a')
         raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
       return
@@ -596,6 +597,12 @@ class Configure(config.base.Configure):
     return
 
   def generateSharedLinkerGuesses(self):
+    if not self.framework.argDB['with-shared']:
+      self.framework.argDB['LD_SHARED'] = ''
+      linker = self.framework.getSharedLinkerObject(self.language[-1])
+      linker.outputFlag = self.AR_FLAGS
+      yield (self.AR, [], 'a')
+      raise RuntimeError('Archiver failed static link check')
     if 'with-shared-ld' in self.framework.argDB:
       yield (self.framework.argDB['with-shared-ld'], [], 'so')
     # C compiler default
@@ -610,12 +617,13 @@ class Configure(config.base.Configure):
     for linker, flags, ext in self.generateSharedLinkerGuesses():
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
+        self.framework.argDB['LD_SHARED'] = self.LD_SHARED
         flagsArg = self.getLinkerFlagsArg()
         oldFlags = self.framework.argDB[flagsArg]
         goodFlags = filter(self.checkLinkerFlag, flags)
         testMethod = 'foo'
         self.framework.argDB[flagsArg] += ' '+' '.join(goodFlags)
-        if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', cleanup = 0, shared = 1):
+        if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
           os.rename(self.linkerObj, 'libfoo.'+ext)
           oldLibs = self.framework.argDB['LIBS']
           self.framework.argDB['LIBS'] += ' -L. -lfoo'
@@ -635,6 +643,7 @@ class Configure(config.base.Configure):
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         self.framework.argDB[flagsArg] = oldFlags
         del self.LD_SHARED
+        del self.framework.argDB['LD_SHARED']
     return
 
   def checkSharedLinkerPaths(self):
@@ -652,12 +661,12 @@ class Configure(config.base.Configure):
       flag = None
       self.pushLanguage(language)
       for testFlag in ['-Wl,-rpath,', '-rpath ', '-R', '-Wl,-R,']:
-        self.framework.log.write('Trying '+language+' linker flag '+testFlag+'\n')
+        self.framework.logPrint('Trying '+language+' linker flag '+testFlag)
         if self.checkLinkerFlag(testFlag+os.path.abspath(os.getcwd())):
           flag = testFlag
           break
         else:
-          self.framework.log.write('Rejected '+language+' linker flag '+testFlag+'\n')
+          self.framework.logPrint('Rejected '+language+' linker flag '+testFlag)
       self.popLanguage()
       setattr(self, language.replace('+', 'x')+'SharedLinkerFlag', flag)
     return

@@ -303,12 +303,20 @@ class LanguageProcessor(args.ArgumentProcessor):
     for obj in self.linkerObject.values():       obj.argDB = argDB
     if not self.compilers is None:
       self.compilers.argDB = argDB
-      for obj in self.preprocessorObject.values(): obj.configCompilers.argDB = argDB
-      for obj in self.compilerObject.values():     obj.configCompilers.argDB = argDB
-      for obj in self.linkerObject.values():       obj.configCompilers.argDB = argDB
+      for obj in self.preprocessorObject.values():
+        if hasattr(obj, 'configCompilers'):
+          obj.configCompilers.argDB = argDB
+      for obj in self.compilerObject.values():
+        if hasattr(obj, 'configCompilers'):
+          obj.configCompilers.argDB = argDB
+      for obj in self.linkerObject.values():
+        if hasattr(obj, 'configCompilers'):
+          obj.configCompilers.argDB = argDB
     if not self.libraries is None:
       self.libraries.argDB = argDB
-      for obj in self.linkerObject.values():       obj.configLibraries.argDB = argDB
+      for obj in self.linkerObject.values():
+        if hasattr(obj, 'configLibraries'):
+          obj.configLibraries.argDB = argDB
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
 
