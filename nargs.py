@@ -115,7 +115,7 @@ class ArgDict (RDict.RArgs):
 
   def __setitem__(self,key,value):
     if self.local.has_key(key):
-      self.local[key].value = value
+      self.local[key].value = Arg(value)
     else:
       # set the value into the remote dictionary
       RDict.RArgs.__setitem__(self,key,Arg(value))
