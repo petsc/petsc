@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.85 1998/11/19 20:15:26 balay Exp bsmith $ */
+/* $Id: pc.h,v 1.86 1999/01/27 19:50:01 bsmith Exp balay $ */
 
 /*
       Preconditioner module. 
@@ -140,6 +140,7 @@ extern int PCASMSetUseInPlace(PC);
 typedef enum {PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE} PCCompositeType;
 extern int PCCompositeSetType(PC,PCCompositeType);
 extern int PCCompositeAddPC(PC,PCType);
+extern int PCCompositeGetPC(PC pc,int n,PC *);
 
 #endif
 
