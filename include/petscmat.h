@@ -1,11 +1,11 @@
-/* $Id: mat.h,v 1.157 1998/04/15 18:03:11 balay Exp bsmith $ */
+/* $Id: mat.h,v 1.158 1998/05/12 19:14:44 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
      Any change to this file must also be made to finclude/mat.h
 */
-#ifndef __MAT_PACKAGE
-#define __MAT_PACKAGE
+#ifndef __MAT_H
+#define __MAT_H
 #include "vec.h"
 
 #define MAT_COOKIE         PETSC_COOKIE+5
@@ -137,6 +137,7 @@ extern int MatEqual(Mat,Mat, PetscTruth*);
 extern int MatNorm(Mat,NormType,double *);
 extern int MatZeroEntries(Mat);
 extern int MatZeroRows(Mat,IS,Scalar*);
+extern int MatZeroRowsBlockedLocal(Mat,IS,Scalar*);
 extern int MatZeroColumns(Mat,IS,Scalar*);
 
 extern int MatGetSize(Mat,int*,int*);
