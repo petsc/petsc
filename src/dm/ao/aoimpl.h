@@ -24,7 +24,7 @@ struct _AOOps {
 };
 
 struct _p_AO {
-  PETSCHEADER(struct _AOOps)
+  PETSCHEADER(struct _AOOps);
   void          *data;                   /* implementation-specific data */
   PetscInt      N,n;                    /* global, local vector size */
 };
@@ -107,7 +107,7 @@ struct __AODataAlias {
 };
 
 struct _p_AOData {
-  PETSCHEADER(struct _AODataOps)
+  PETSCHEADER(struct _AODataOps);
   PetscInt          nkeys;                   /* current number of keys */
   AODataKey         *keys;
   void              *data;

@@ -27,7 +27,7 @@ struct _VecPackOps {
 };
 
 struct _p_VecPack {
-  PETSCHEADER(struct _VecPackOps)
+  PETSCHEADER(struct _VecPackOps);
   PetscMPIInt        rank;
   PetscInt           n,N,rstart;   /* rstart is relative to all processors */
   Vec                globalvector;

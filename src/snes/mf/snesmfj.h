@@ -26,7 +26,7 @@ struct _MFOps {
 };
 
 struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
-  PETSCHEADER(struct _MFOps)
+  PETSCHEADER(struct _MFOps);
   SNES             snes;                   /* nonlinear solver */
   Vec              w;                      /* work vector */
   MatNullSpace     sp;                     /* null space context */

@@ -464,7 +464,7 @@ PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (
 }
 
 struct _p_PetscObjectContainer {
-  PETSCHEADER(int)
+  PETSCHEADER(int);
   void   *ptr;
   PetscErrorCode (*userdestroy)(void*);
 };

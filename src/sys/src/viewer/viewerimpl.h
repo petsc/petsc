@@ -17,7 +17,7 @@ struct _PetscViewerOps {
    Defines the viewer data structure.
 */
 struct _p_PetscViewer {
-  PETSCHEADER(struct _PetscViewerOps)
+  PETSCHEADER(struct _PetscViewerOps);
   PetscViewerFormat format,formats[10];
   int               iformat;
   void              *data;

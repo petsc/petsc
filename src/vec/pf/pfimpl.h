@@ -14,7 +14,7 @@ struct _PFOps {
 };
 
 struct _p_PF {
-  PETSCHEADER(struct _PFOps)
+  PETSCHEADER(struct _PFOps);
   PetscInt dimin,dimout;             /* dimension of input and output spaces */
   void     *data;
 };

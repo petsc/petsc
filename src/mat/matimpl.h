@@ -220,7 +220,7 @@ typedef struct {
 EXTERN PetscErrorCode Mat_CheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscInt,PetscReal);
 
 struct _p_Mat {
-  PETSCHEADER(struct _MatOps)
+  PETSCHEADER(struct _MatOps);
   PetscMap               rmap,cmap;
   void                   *data;            /* implementation-specific data */
   PetscInt               factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
@@ -262,7 +262,7 @@ struct _MatPartitioningOps {
 };
 
 struct _p_MatPartitioning {
-  PETSCHEADER(struct _MatPartitioningOps)
+  PETSCHEADER(struct _MatPartitioningOps);
   Mat         adj;
   PetscInt    *vertex_weights;
   PetscReal   *part_weights;
@@ -313,7 +313,7 @@ struct _p_MatPartitioning {
 */
 
 struct  _p_MatFDColoring{
-  PETSCHEADER(int)
+  PETSCHEADER(int);
   PetscInt   M,N,m;            /* total rows, columns; local rows */
   PetscInt   rstart;           /* first row owned by local processor */
   PetscInt   ncolors;          /* number of colors */
@@ -340,7 +340,7 @@ struct  _p_MatFDColoring{
    Null space context for preconditioner/operators
 */
 struct _p_MatNullSpace {
-  PETSCHEADER(int)
+  PETSCHEADER(int);
   PetscTruth  has_cnst;
   PetscInt    n;
   Vec*        vecs;

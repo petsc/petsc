@@ -7,7 +7,7 @@
 PetscCookie DRAWAXIS_COOKIE = 0;
 
 struct _p_DrawAxis {
-    PETSCHEADER(int)
+  PETSCHEADER(int);
     PetscReal      xlow,ylow,xhigh,yhigh;     /* User - coord limits */
     PetscErrorCode (*ylabelstr)(PetscReal,PetscReal,char **);/* routines to generate labels */ 
     PetscErrorCode (*xlabelstr)(PetscReal,PetscReal,char **);

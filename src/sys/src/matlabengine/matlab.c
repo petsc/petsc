@@ -4,7 +4,7 @@
 #include <stdarg.h>
 
 struct  _p_PetscMatlabEngine {
-  PETSCHEADER(int)
+  PETSCHEADER(int);
   Engine   *ep;
   char     buffer[1024];
 };

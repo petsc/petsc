@@ -24,7 +24,7 @@ struct _DMOps {
 };
 
 struct _p_DM {
-  PETSCHEADER(struct _DMOps)
+  PETSCHEADER(struct _DMOps);
 };
 
 typedef struct _DAOps *DAOps;
@@ -41,7 +41,7 @@ struct _DAOps {
 };
 
 struct _p_DA {
-  PETSCHEADER(struct _DAOps)
+  PETSCHEADER(struct _DAOps);
   PetscInt            M,N,P;                 /* array dimensions */
   PetscInt            m,n,p;                 /* processor layout */
   PetscInt            w;                     /* degrees of freedom per node */

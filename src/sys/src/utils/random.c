@@ -19,7 +19,7 @@ PetscCookie PETSC_RANDOM_COOKIE = 0;
 
 /* Private data */
 struct _p_PetscRandom {
-  PETSCHEADER(int)
+  PETSCHEADER(int);
   unsigned    long seed;
   PetscScalar low,width;       /* lower bound and width of the interval over
                                   which the random numbers are distributed */
