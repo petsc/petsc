@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.30 1997/02/22 02:28:27 bsmith Exp balay $";
+static char vcid[] = "$Id: binv.c,v 1.31 1997/02/28 00:34:09 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -114,7 +114,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
 
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
-#if defined(PARCH_nt_gnu)
+#if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
     if (type == BINARY_CREATE) {
       if ((v->fdes = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
         SETERRQ(1,0,"Cannot create file for writing");
