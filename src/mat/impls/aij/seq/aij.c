@@ -1,5 +1,5 @@
 
-/*$Id: aij.c,v 1.378 2001/08/06 21:15:14 bsmith Exp balay $*/
+/*$Id: aij.c,v 1.379 2001/08/07 03:02:47 balay Exp balay $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -1499,8 +1499,8 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
   ierr = ISStride(iscol,&stride);CHKERRQ(ierr);
   if (stride && step == 1) { 
     /* special case of contiguous rows */
-    ierr   = PetscMalloc((ncols+nrows+1)*sizeof(int),&lens);CHKERRQ(ierr);
-    starts = lens + ncols;
+    ierr   = PetscMalloc((2*nrows+1)*sizeof(int),&lens);CHKERRQ(ierr);
+    starts = lens + nrows;
     /* loop over new rows determining lens and starting points */
     for (i=0; i<nrows; i++) {
       kstart  = ai[irow[i]]+shift; 
