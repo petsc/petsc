@@ -1,4 +1,4 @@
-/* $Id: vecimpl.h,v 1.14 1995/08/07 21:57:35 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.15 1995/09/30 19:26:24 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 */
@@ -8,13 +8,13 @@
 #include "vec.h"
 
 struct _VeOps {
-  int  (*duplicate)(Vec,Vec*),       /*  Get single vector */
-       (*getvecs)(Vec,int,Vec**), /*  Get array of vectors */
-       (*freevecs)(Vec*,int),     /* Free array of vectors */
+  int  (*duplicate)(Vec,Vec*),           /*  Get single vector */
+       (*getvecs)(Vec,int,Vec**),        /*  Get array of vectors */
+       (*freevecs)(Vec*,int),            /* Free array of vectors */
        (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
        (*mdot)(int,Vec,Vec*,Scalar*),    /*   z[j] = x dot y[j] */
        (*norm)(Vec,double*),             /* z = sqrt(x^H * x) */
-       (*amax)(Vec,int*,double*),  /* z = max(|x|); idx = index of max(|x|) */
+       (*amax)(Vec,int*,double*),        /* z = max(|x|); idx = index of max(|x|) */
        (*asum)(Vec,double*),             /*  z = sum |x| */
        (*tdot)(Vec,Vec,Scalar*),         /* x'*y */
        (*mtdot)(int,Vec,Vec*,Scalar*),   /*   z[j] = x dot y[j] */
@@ -36,7 +36,7 @@ struct _VeOps {
        (*getownershiprange)(Vec,int*,int*),
        (*restorearray)(Vec,Scalar**),
        (*max)(Vec,int*,double*),
-       (*min)(Vec,int*,double*);  /* z = min(x); idx = index of min(x) */
+       (*min)(Vec,int*,double*);          /* z = min(x); idx = index of min(x) */
 };
 
 struct _Vec {
@@ -50,27 +50,32 @@ struct _Vec {
 */
 
 typedef struct {
-  int n,*slots;
+  int n,*slots;                /* number of components and their locations */
 } VecScatterGeneral;
 
 typedef struct {
-  int n,first,step;
+  int n,first,step;           
 } VecScatterStride;
 
 /*
    This is the parallel scatter
 */
 typedef struct { 
-  int               n,nbelow,nself;  /* number of processors */
-  int               *starts,*indices,*procs;
+  int               n;         /* number of processors to send/receive */
+  int               nbelow;    /* number with lower process id */
+  int               nself;     /* number sending to self */
+  int               *starts;   /* The starting point in indices and values for each proc*/ 
+  int               *indices;  /* List of all components sent or received */
+  int               *procs;    /* Processors we are communicating with in scatter */
   MPI_Request       *requests;
-  Scalar            *values;
-  VecScatterGeneral local;
+  Scalar            *values;   /* buffer for all sends or receives */
+                               /* note that we pack/unpack ourself,do not use MPI packing */
+  VecScatterGeneral local;     /* any part that happens to be local */
 } VecScatterMPI;
 
 struct _VecScatterCtx {
   PETSCHEADER
-  int     inuse;
+  int     inuse;               /* prevents corruption from mixing two scatters */
   int     (*scatterbegin)(Vec,Vec,InsertMode,int,VecScatterCtx);
   int     (*scatterend)(Vec,Vec,InsertMode,int,VecScatterCtx);
   int     (*pipelinebegin)(Vec,Vec,InsertMode,PipelineMode,VecScatterCtx);
