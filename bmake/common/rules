@@ -53,6 +53,7 @@ PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscf77
 # machine configuration.  See the users manual for details.
 #
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
+#
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
 
 # Checks that PETSC_DIR variable is set and creates library directory
@@ -210,9 +211,10 @@ lint:
            $(RM) -f *.ln ; fi
 
 # Builds Fortran-77 wrappers - not yet available
+# cannot use -ferr option!
 C2f77:
 	@-/home/bsmith/bin/sun4/bfort -dir /home/bsmith/petsc/c2f77 \
-          -mnative -ansi -nomsgs -anyname -mapptr -mpi -ferr $(SOURCEC)
+          -mnative -ansi -nomsgs -anyname -mapptr -mpi  $(SOURCEC)
 
 
 # Builds man pages (xman version)
