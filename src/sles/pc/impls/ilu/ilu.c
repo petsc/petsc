@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.141 1999/12/18 00:36:07 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.142 1999/12/18 00:39:07 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -523,7 +523,7 @@ static int PCView_ILU(PC pc,Viewer viewer)
     ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else if (isstring) {
-    ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->info.levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," lvls=%g,order=%s",ilu->info.levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for PCILU",((PetscObject)viewer)->type_name);
   }
