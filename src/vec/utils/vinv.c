@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.44 1999/01/27 21:20:26 balay Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.45 1999/02/21 16:09:13 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -54,8 +54,8 @@ int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ(1,1,"Start of stride subvector is too large for stride\n\
-            Have you set the vector blocksize correctly with VecSetBlockSize()?");
+    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
 
@@ -142,8 +142,8 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ(1,1,"Start of stride subvector is too large for stride\n\
-            Have you set the vector blocksize correctly with VecSetBlockSize()?");
+    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
 
@@ -220,8 +220,8 @@ int VecStrideMin(Vec v,int start,int *index,double *norm)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ(1,1,"Start of stride subvector is too large for stride\n\
-            Have you set the vector blocksize correctly with VecSetBlockSize()?");
+    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
 
@@ -292,11 +292,11 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ(1,1,"Start of stride subvector is too large for stride\n\
-            Have you set the vector blocksize correctly with VecSetBlockSize()?");
+    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ(1,1,"Subvector length not correct for gather from original vector");
+    SETERRQ2(1,1,"Subvector length * blocksize %d not correct for gather from original vector %d",ns*bs,n);
   }
   x += start;
   n =  n/bs;
@@ -365,11 +365,11 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 
   bs   = v->bs;
   if (start >= bs) {
-    SETERRQ(1,1,"Start of stride subvector is too large for stride\n\
-            Have you set the vector blocksize correctly with VecSetBlockSize()?");
+    SETERRQ2(1,1,"Start of stride subvector (%d) is too large for stride\n\
+            Have you set the vector blocksize (%d) correctly with VecSetBlockSize()?",start,bs);
   }
   if (n != ns*bs) {
-    SETERRQ(1,1,"Subvector length not correct for scatter to multicomponent vector");
+    SETERRQ2(1,1,"Subvector length * blocksize %d not correct for scatter to multicomponent vector %d",ns*bs,n);
   }
   x += start;
   n =  n/bs;
