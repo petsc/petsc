@@ -328,6 +328,20 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiGetTotalBlocks_BJacobi"
+int PCBJacobiGetTotalBlocks_BJacobi(PC pc, int *blocks, const int *lens[])
+{
+  PC_BJacobi *jac = (PC_BJacobi*) pc->data;
+
+  PetscFunctionBegin;
+  *blocks = jac->n;
+  if (lens) *lens = jac->g_lens;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiSetLocalBlocks_BJacobi"
 int PCBJacobiSetLocalBlocks_BJacobi(PC pc,int blocks,int *lens)
 {
@@ -345,6 +359,20 @@ int PCBJacobiSetLocalBlocks_BJacobi(PC pc,int blocks,int *lens)
     PetscLogObjectMemory(pc,blocks*sizeof(int));
     ierr = PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiGetLocalBlocks_BJacobi"
+int PCBJacobiGetLocalBlocks_BJacobi(PC pc, int *blocks, const int *lens[])
+{
+  PC_BJacobi *jac = (PC_BJacobi*) pc->data;
+
+  PetscFunctionBegin;
+  *blocks = jac->n_local;
+  if (lens) *lens = jac->l_lens;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -477,6 +505,41 @@ int PCBJacobiSetTotalBlocks(PC pc,int blocks,int *lens)
   } 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiGetTotalBlocks"
+/*@
+   PCBJacobiGetTotalBlocks - Gets the global number of blocks for the block
+   Jacobi preconditioner.
+
+   Collective on PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output parameters:
++  blocks - the number of blocks
+-  lens - integer array containing the size of each block
+
+   Level: intermediate
+
+.keywords:  get, number, Jacobi, global, total, blocks
+
+.seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiGetLocalBlocks()
+@*/
+int PCBJacobiGetTotalBlocks(PC pc, int *blocks, const int *lens[])
+{
+  int ierr,(*f)(PC,int*,const int *[]);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_COOKIE);
+  PetscValidIntPointer(blocks);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetTotalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
   
 #undef __FUNCT__  
 #define __FUNCT__ "PCBJacobiSetLocalBlocks"
@@ -508,6 +571,42 @@ int PCBJacobiSetLocalBlocks(PC pc,int blocks,int *lens)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must have nonegative blocks");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiSetLocalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+  
+#undef __FUNCT__  
+#define __FUNCT__ "PCBJacobiGetLocalBlocks"
+/*@
+   PCBJacobiGetLocalBlocks - Gets the local number of blocks for the block
+   Jacobi preconditioner.
+
+   Not Collective
+
+   Input Parameters:
++  pc - the preconditioner context
+.  blocks - the number of blocks
+-  lens - [optional] integer array containing size of each block
+
+   Note:  
+   Currently only a limited number of blocking configurations are supported.
+
+   Level: intermediate
+
+.keywords: PC, get, number, Jacobi, local, blocks
+
+.seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiGetTotalBlocks()
+@*/
+int PCBJacobiGetLocalBlocks(PC pc, int *blocks, const int *lens[])
+{
+  int ierr,(*f)(PC,int*,const int *[]);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_COOKIE);
+  PetscValidIntPointer(blocks);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCBJacobiGetLocalBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
   } 
@@ -581,8 +680,12 @@ int PCCreate_BJacobi(PC pc)
                     PCBJacobiGetSubSLES_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetTotalBlocks_C","PCBJacobiSetTotalBlocks_BJacobi",
                     PCBJacobiSetTotalBlocks_BJacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiGetTotalBlocks_C","PCBJacobiGetTotalBlocks_BJacobi",
+                    PCBJacobiGetTotalBlocks_BJacobi);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetLocalBlocks_C","PCBJacobiSetLocalBlocks_BJacobi",
                     PCBJacobiSetLocalBlocks_BJacobi);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiGetLocalBlocks_C","PCBJacobiGetLocalBlocks_BJacobi",
+                    PCBJacobiGetLocalBlocks_BJacobi);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
