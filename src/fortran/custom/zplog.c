@@ -40,6 +40,7 @@ void PETSC_STDCALL petsclogprintsummary_(MPI_Comm *comm,CHAR filename PETSC_MIXE
   char *t;
   FIXCHAR(filename,len,t);
   *ierr = PetscLogPrintSummary((MPI_Comm)PetscToPointerComm(*comm),t);
+  FREECHAR(filename,t);
 #endif
 }
 
@@ -117,6 +118,7 @@ void PETSC_STDCALL petsclogstageregister_(int *stage,CHAR sname PETSC_MIXED_LEN(
   char *t;
   FIXCHAR(sname,len,t);
   *ierr = PetscLogStageRegister(stage,t);
+  FREECHAR(sname,t);
 #endif
 }
 
