@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.98 1996/03/21 00:44:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.99 1996/03/23 20:42:25 bsmith Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -267,7 +267,7 @@ static int MatMultTransAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   Scalar       _DOne=1.0;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   VecGetArray(zz,&z);
-  if (zz != yy) PetscMemcpy(y,z,mat->m*sizeof(Scalar));
+  if (zz != yy) PetscMemcpy(y,z,mat->n*sizeof(Scalar));
   LAgemv_( "T", &(mat->m), &(mat->n), &_DOne, v, &(mat->m),x,&_One,&_DOne,y,&_One);
   PLogFlops(2*mat->m*mat->n);
   return 0;
