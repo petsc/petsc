@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.21 2001/03/23 23:25:49 balay Exp bsmith $*/
+/*$Id: pf.c,v 1.22 2001/04/10 19:37:43 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -226,13 +226,17 @@ int PFApplyVec(PF pf,Vec x,Vec y)
 
    Input Parameters:
 +  pf - the function context
-.  n - number of entries in input array
+.  n - number of pointwise function evaluations to perform, each pointwise function evaluation
+       is a function of dimin variables and computes dimout variables where dimin and dimout are defined
+       in the call to PFCreate()
 -  x - input array
 
    Output Parameter:
 .  y - output array
 
    Level: beginner
+
+   Notes: 
 
 .keywords: PF, apply
 
@@ -317,7 +321,7 @@ int PFView(PF pf,PetscViewer viewer)
    PFRegisterDynamic - Adds a method to the mathematical function package.
 
    Synopsis:
-   PFRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PF))
+   int PFRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PF))
 
    Not collective
 
@@ -503,4 +507,13 @@ int PFSetFromOptions(PF pf)
 
   PetscFunctionReturn(0);
 }
+
+
+
+
+
+
+
+
+
 
