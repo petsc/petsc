@@ -1,0 +1,186 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Cecelia DeLuca">
+   <meta name="GENERATOR" content="Mozilla/4.51 [en] (X11; U; SunOS 5.7 sun4u) [Netscape]">
+   <title>design_doc</title>
+</head>
+<body text="#000000" bgcolor="#FFF8DA" link="#990000" vlink="#663366" alink="#FF0000">
+
+<center><b><font size=+2>DGrid</font></b></center>
+
+<p>
+<hr SIZE=1 NOSHADE WIDTH="100%">
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=5 CELLPADDING=0 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td WIDTH="10%" NOSAVE><b>Class:&nbsp;</b></td>
+
+<td>DGrid, Decomposition, GridSpec</td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE><b>Authors:&nbsp;</b></td>
+
+<td NOSAVE></td>
+</tr>
+
+<tr NOSAVE>
+<td><b>Date:&nbsp;</b></td>
+
+<td NOSAVE></td>
+</tr>
+
+<tr>
+<td><b>Based on:</b></td>
+
+<td></td>
+</tr>
+</table>
+
+<p>
+<hr SIZE=1 NOSHADE WIDTH="100%">
+<p><b><font size=+1>Table of Contents</font></b>
+<p>1 DGrid
+<br>1.1 Description
+<br>1.2 Requirements
+<br>1.3 Attributes and Operations
+<br>1.4 Inheritance/Overloading
+<br>1.5 Restrictions
+<br>1.6 Development Plans
+<br>1.7 Usage and Examples
+<br>1.8 Prototype Code
+<p>2 Decomposition (rename this...)
+<br>2.1 Description
+<br>2.2 Requirements
+<br>2.3 Attributes and Operations
+<br>2.4 Inheritance/Overloading
+<br>2.5 Restrictions
+<br>2.6 Development Plans
+<br>2.7 Usage and Examples
+<br>2.8 Prototype Code
+<p>3 GridSpec
+<br>3.1 Description
+<br>3.2 Requirements
+<br>3.3 Attributes and Operations
+<br>3.4 Inheritance/Overloading
+<br>3.5 Restrictions
+<br>3.6 Development Plans
+<br>3.7 Usage and Examples
+<br>3.8 Prototype Code
+<p>4 Graph - did not begin to define this.
+<p>Reviewers
+<br>References
+<br>&nbsp;
+<p><b><font size=+1>1 DGrid</font></b>
+<p><font size=+1>1.1 Description</font>
+<p>DGrid (distributed or decomposed grid) contains a decomposition over
+nodes and threads as well as a grid specification.
+<p><font size=+1>1.2 Requirements</font>
+<p><font face="Times New Roman,Times">(very incomplete)</font>
+<p><font face="Times New Roman,Times">A grid may be defined on a specific
+set of nodes or threads, and different grids within the same executable
+may be mapped to different sets of</font>
+<br><font face="Times New Roman,Times">nodes and threads.&nbsp; The way
+grids are mapped may change over the course of model execution.&nbsp; Global
+grids and subsets (masks, regional grids) must be supported.&nbsp; Time
+dependent grid subsets, such as satellite swaths, are a projected capability.</font><font face="Times New Roman,Times"></font>
+<p><b><font face="Times New Roman,Times">Horizontal grids</font></b>
+<br><font face="Times New Roman,Times">&nbsp;&nbsp;&nbsp; Gaussian grid/Reduced
+grid</font>
+<br><font face="Times New Roman,Times">&nbsp;&nbsp;&nbsp; Spectral grid,
+general pentagonal truncation</font>
+<br><font face="Times New Roman,Times">&nbsp;&nbsp;&nbsp; Displaced pole
+grid</font>
+<br><font face="Times New Roman,Times">&nbsp;&nbsp;&nbsp; Arakawa B, C,
+D grids in spherical coordinates</font>
+<br><font face="Times New Roman,Times">&nbsp;&nbsp;&nbsp; Icosahedral grid</font>
+<br><font face="Times New Roman,Times">&nbsp;&nbsp;&nbsp; Cubed sphere
+grid</font>
+<p><font face="Times New Roman,Times">&nbsp;&nbsp;&nbsp; Some references
+below.</font>
+<p><font size=+1>1.3 Attributes and Operations</font>
+<p><b><i>Attributes</i></b>
+<p>&nbsp;&nbsp;&nbsp; decomposition
+<p>&nbsp;&nbsp;&nbsp; gridspec
+<p>&nbsp;&nbsp;&nbsp; <b><i>Operations</i></b>
+<p>&nbsp;&nbsp;&nbsp; <b>Public:</b>
+<br><b></b>&nbsp;
+<p><font size=+1>1.4 Inheritance/Overloading</font>
+<p><font size=+1>1.5 Restrictions</font>
+<p><font size=+1>1.6 Development Plans</font>
+<p><font size=+1>1.7 Usage and Examples</font>
+<p><font size=+1>1.8 Prototype Code</font>
+<p><b><font size=+1>2 Decomposition</font></b>
+<p><font size=+1>2.1 Description</font>
+<p>Decomposition contains a threadmap, a nodemap and a connectivity graph.
+<p><font size=+1>2.2 Requirements</font>
+<p><font size=+1>2.3 Attributes and Operations</font>
+<p><b><i>Attributes</i></b>
+<p>&nbsp;&nbsp;&nbsp; type or hints
+<br>&nbsp;&nbsp;&nbsp; threadmap
+<br>&nbsp;&nbsp;&nbsp; nodemap
+<br>&nbsp;&nbsp;&nbsp; graph
+<p>&nbsp;&nbsp;&nbsp; <b><i>Operations</i></b>
+<p>&nbsp;&nbsp;&nbsp; Redistribute
+<br>&nbsp;&nbsp;&nbsp; GetType (graph categorization )
+<br>&nbsp;&nbsp;&nbsp; Transpose methods (changing the parallel dimension)
+<p>&nbsp;&nbsp;&nbsp; <b>Public:</b>
+<p><font size=+1>2.4 Inheritance/Overloading</font>
+<p><font size=+1>2.5 Restrictions</font>
+<p><font size=+1>2.6 Development Plans</font>
+<p><font size=+1>2.7 Usage and Examples</font>
+<p><font size=+1>2.8 Prototype Code</font>
+<p><b><font size=+1>3 Gridspec</font></b>
+<p><font size=+1>3.1 Description</font>
+<p>Contains spatial locations and a connectivity graph.
+<p><font size=+1>3.2 Requirements</font>
+<p><font size=+1>3.3 Attributes and Operations</font>
+<p><b><i>Attributes</i></b>
+<p>&nbsp;&nbsp;&nbsp; locations
+<p>&nbsp;&nbsp;&nbsp; graph
+<p>&nbsp;&nbsp;&nbsp; type or hints
+<p>&nbsp;&nbsp;&nbsp; <b><i>Operations</i></b>
+<p>&nbsp;&nbsp;&nbsp; <b>Public:</b>
+<p><font size=+1>3.4 Inheritance/Overloading</font>
+<p><font size=+1>3.5 Restrictions</font>
+<p><font size=+1>3.6 Development Plans</font>
+<p><font size=+1>3.7 Usage and Examples</font>
+<p><font size=+1>3.8 Prototype Code</font>
+<p><b><font size=+2>Reviewers</font></b>
+<p><b><font size=+2>References</font></b>
+<p><b>Arakawa Grids</b>
+<br>Arakawa, A. and Vivian Lamb.&nbsp; Computational Design of the Basic
+Dynamical Processes of the UCLA General Circulation Model.&nbsp; In Methods
+in Computational Physics:&nbsp; Advances in Research and Applications.&nbsp;
+Vol. 17, General Circulation Models of the Atmosphere.&nbsp; Vol. Ed, J.
+Chang.&nbsp; Academic Press 1977.
+<p><b>C-D Grids:</b>
+<br>Lin, S.J., and R.B. Rood.&nbsp; An Explicit Flux-Form Semi-Lagrangian
+Shallow-Water Model on the Sphere.&nbsp; Q.J.R. Meteorological Society.&nbsp;
+Vol. 123, pp. 2477-2498.&nbsp; 1997.
+<p>Adcroft, A.J., C.N. Hill and J.C. Marshall.&nbsp; A New Treatment of
+Coriolis tems in C-Grid Models at Both High and Low Resolutions.&nbsp;
+Monthly Weather Review, Vol. 127, pp. 1928-1936.&nbsp; 1999.
+<p><b>Icosahedral Grids:</b>
+<br>Heikes, R. and D.A. Randall.&nbsp; Numerical Integration of the Shallow
+Water Equations on a Twisted Icosahedral Grid.&nbsp; Part I:&nbsp; Basic
+Design and Results of Tests.&nbsp; Monthly Weather Review, Vol. 123, pp.
+1862-1880.&nbsp; 1995.
+<p>Baumgardner, J.R. and P.O. Frederickson.&nbsp; Icosahedral Discretization
+of the Two-Sphere.&nbsp; Siam J. Numer. Anal. Vol. 22, No. 6, pp. 1107-1115.&nbsp;
+1985.
+<p>Williamson, D.&nbsp; Integration of the Barotropic Vorticity Equation
+on a Spherical Geodesic Grid.&nbsp; Tellus Vol. 20, No. 4, pp. 642-653.&nbsp;
+1968.
+<p>Sadourny, R., A. Arakawa, and Y. Mintz.&nbsp; Integration of the Nondivergent
+Barotropic Vorticity Equation with an Icosahedral-Hexagonal Grid for the
+Sphere.&nbsp; Monthly Weather Review, Vol. 96, No. 6, pp. 351-356.&nbsp;
+1968.
+<br>&nbsp;
+<br>&nbsp;
+<p><i>html interface documentation generated by <a href="http://www-unix.mcs.anl.gov/~gropp/manuals/doctext/doctext.html">doctext</a></i>
+<br>&nbsp;
+</body>
+</html>
