@@ -1,9 +1,45 @@
 '''
-  The cleanup() method performs the final output and logging actions
+  The Framework object serves as the central control for a configure run. It
+maintains a graph of all the configure modules involved, which is also used to
+track dependencies between them. It initiates the run, compiles the results, and
+handles the final output. It maintains the help list for all options available
+in the run.
+
+  The setup() method preforms generic Script setup and then is called recursively
+on all the child modules. The cleanup() method performs the final output and
+logging actions
     - Produce rrport from child __str__ methods
     - Subtitute files
     - Output configure header
     - Log filesystem actions
+
+  Children may be added to the Framework using addChild() or getChild(), but the
+far more frequent method is to use require(). Here a module is requested, as in
+getChild(), but it is also required to run before another module, usually the one
+executing the require(). This provides a simple local interface to establish
+dependencies between the child modules, and provides a partial order on the
+children to the Framework.
+
+  A backwards compatibility mode is provided for which the user specifies a
+configure header and set of files to experience substitution, mirroring the
+common usage of Autoconf. Slight improvements have been made in that all
+defines are now guarded, various prefixes are allowed for defines and
+substitutions, and C specific constructs such as function prototypes and
+typedefs are removed to a separate header. However, this is not the intended
+future usage.
+
+  The use of configure modules by other modules in the same run provides a model
+for the suggested interaction of a new build system with the Framework. If a
+module requires another, it merely executes a require(). For instance, the PETSc
+configure module for HYPRE requires information about MPI, and thus contains
+
+      self.mpi = self.framework.require(\'PETSc.packages.MPI\',self)
+
+Notice that passing self for the last arguments means that the MPI module will
+run before the HYPRE module. Furthermore, we save the resulting object as
+self.mpi so that we may interogate it later. HYPRE can initially test whether
+MPI was indeed found using self.mpi.foundMPI. When HYPRE requires the list of
+MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
 import script
 import config.base
@@ -138,6 +174,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def addChild(self, config):
+    '''Add a confgiure module to the framework'''
     self.childGraph.addVertex(config)
     return
 
