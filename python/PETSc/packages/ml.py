@@ -17,13 +17,8 @@ class Configure(PETSc.package.Package):
     return
 
   def generateLibList(self,dir):
-    libs = ['libml.a']
     alllibs = []
-    for l in libs:
-      alllibs.append(os.path.join(dir,l))
-    import config.setCompilers
-    self.framework.pushLanguage('C')
-    self.framework.popLanguage()    
+    alllibs.append(os.path.join(dir,'libml.a'))  
     return alllibs
           
   def Install(self):
@@ -38,6 +33,7 @@ class Configure(PETSc.package.Package):
     # Get the ML directories
     mlDir = self.getDir()
     installDir  = os.path.join(mlDir, self.arch.arch)
+    
     # Configure ML 
     args = ['--prefix='+installDir]
     
