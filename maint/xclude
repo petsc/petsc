@@ -1,3 +1,4 @@
+petsc/docs/splitmanual
 petsc/bmake/sun4
 petsc/bmake/t3d
 petsc/bmake/sun4_f90
@@ -33,7 +34,6 @@ petsc/bin/petscrun
 petsc/bin/petscrun.demo
 petsc/bin/demos
 petsc/bin/petscdemo
-petsc/docs/splitmanual
 petsc/docs/manualpages/sec
 petsc/src/blaslapack
 petsc/src/apps
