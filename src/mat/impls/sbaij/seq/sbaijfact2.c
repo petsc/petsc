@@ -1421,6 +1421,23 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   
   /* check whether perm is the identity mapping */  
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
+
+  /* special case that simply copies fill pattern */
+  if (!levels && perm_identity && bs==1) { 
+    ierr = MatDuplicate_SeqSBAIJ(A,MAT_DO_NOT_COPY_VALUES,B);CHKERRQ(ierr);
+    (*B)->factor = FACTOR_CHOLESKY;
+    b            = (Mat_SeqSBAIJ*)(*B)->data;
+    b            = (Mat_SeqSBAIJ*)(*B)->data;    
+    b->row       = perm;
+    b->icol      = perm;   
+    ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+    ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+    ierr         = PetscMalloc(((*B)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+    (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace;
+    (*B)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;    
+    PetscFunctionReturn(0);
+  }
+
   if (!perm_identity) a->permute = PETSC_TRUE;   
   if (perm_identity){
     ai = a->i; aj = a->j;
