@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.92 1997/12/06 00:08:36 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.93 1998/01/10 05:11:47 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -439,7 +439,7 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   int         ierr,i,j,ii,jj,row,col,k,l;
   int         roworiented = baij->roworiented,rstart=baij->rstart ;
-  int         rend=baij->rend,stepval,bs=baij->bs;
+  int         rend=baij->rend,stepval,bs=baij->bs,bs2=baij->bs2;
 
   int         h1,key,size=baij->ht_size;
   double      * HT  = baij->ht;
@@ -471,14 +471,20 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
             
             if (roworiented) { 
               value = v + i*(stepval+bs)*bs + j*bs;
+              for ( ii=0; ii<bs; ii++,value+=stepval,baij_a++ ) {
+                for ( jj=0; jj<bs2; jj+=bs ) {
+                  if (addv == ADD_VALUES) baij_a[jj]  += *value++; 
+                  else                    baij_a[jj]   = *value++; 
+                }
+              }
+              
             } else {
               value = v + j*(stepval+bs)*bs + i*bs;
-            }
-            for ( ii=0; ii<bs; ii++,value+=stepval ) {
-              for (jj=0; jj<bs; jj++ ) {
-                if (addv == ADD_VALUES) *baij_a  += *value; 
-                else                    *baij_a   = *value; 
-                baij++; value++;
+              for ( ii=0; ii<bs; ii++,value+=stepval,baij_a+=bs ) {
+                for ( jj=0; jj<bs; jj++ ) {
+                  if (addv == ADD_VALUES) baij_a[jj]  += *value++; 
+                  else                    baij_a[jj]   = *value++; 
+                }
               }
             }
             break;
