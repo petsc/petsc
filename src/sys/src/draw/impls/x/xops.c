@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.128 1999/03/07 17:26:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.129 1999/04/19 22:09:10 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -526,6 +526,8 @@ int DrawCreate_X(Draw ctx)
     ierr = DrawSetType(ctx,DRAW_NULL);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  if (w <= 0) w = ctx->w = 300;
+  if (h <= 0) h = ctx->h = 300; 
 
   /* allow user to set location and size of window */
   xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
