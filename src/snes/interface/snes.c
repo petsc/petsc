@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.65 1996/03/23 19:23:11 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.66 1996/03/23 20:18:42 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -167,6 +167,7 @@ int SNESSetFromOptions(SNES snes)
     if (!rank) {
       ierr = SNESLGMonitorCreate(0,0,0,0,300,300,&lg); CHKERRQ(ierr);
       ierr = SNESSetMonitor(snes,SNESLGMonitor,(void *)lg); CHKERRQ(ierr);
+      snes->xmonitor = lg;
       PLogObjectParent(snes,lg);
     }
   }
