@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.49 1996/02/01 18:54:09 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.50 1996/02/06 15:04:57 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -855,6 +855,7 @@ int SNESSetUp(SNES snes,Vec x)
     if (!snes->vec_func) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
     if (!snes->computefunction) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
     if (!snes->jacobian) SETERRQ(1,"SNESSetUp:Must call SNESSetJacobian() first");
+    if (snes->vec_func == snes->vec_sol) SETERRQ(1,"SNESSetUp:Solution vector cannot be function vector");
 
     /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
     if (snes->ksp_ewconv && snes->type != SNES_EQ_NTR) {
