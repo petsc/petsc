@@ -24,7 +24,6 @@ Additional Capabilities that PETSc Needs:
   - Make all systems use shared libraries if possible, and document how to
     use these variants.
 
-
   * add -mpidump option that lists all unfinished MPI operations at end, 
          including PetscMPIDump()
 
@@ -35,16 +34,6 @@ Additional Capabilities that PETSc Needs:
     is not just jumbled output.  If using same solvers on all blocks, print
     subSLES info once?  Or maybe better - collect info that differs among
     blocks/procs (such as LU nonzeros) and then print only from 1 proc.
-
-  * Explain profiling, performance tuning in users manual, Performance file
-
-  * Add to documentation tips on getting parallel performance numbers, 
-    including how to prevent the paging in of executable from screwing 
-    up timings. sles ex21.c
-
-  - Provide better registration mechanism for PC, KSP, etc (based on
-    MatReroderingRegister) to replace the lame procedure described in,
-    e.g., PCRegisterAll.  
 
   - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
 
@@ -70,6 +59,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
   To do sometime soon:
 -----------------------------------------------------------------------
+
+  - Provide better registration mechanism for PC, KSP, etc (based on
+    MatReroderingRegister) to replace the lame procedure described in,
+    e.g., PCRegisterAll.  
 
   - Chapter in users manual on how PETSc would be used with 
     different types of grid problems. Or different document.
@@ -232,6 +225,12 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
                 Accomplishments!  :) :)
 -----------------------------------------------------------------------
+
+  X Explain profiling, performance tuning in users manual
+
+  X Add to documentation tips on getting parallel performance numbers, 
+    including how to prevent the paging in of executable from screwing 
+    up timings. sles ex21.c
 
   X Add -viewer_matlab_machine -viewer_matlab_port 
 
