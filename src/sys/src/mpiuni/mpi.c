@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpi.c,v 1.14 1995/12/18 16:39:35 balay Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.15 1996/03/18 05:51:26 balay Exp balay $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -11,8 +11,8 @@ static char vcid[] = "$Id: mpi.c,v 1.14 1995/12/18 16:39:35 balay Exp balay $";
 #endif
 #include "pinclude/petscfix.h" 
 #define MPI_SUCCESS 0
-void * MPID_TMP_UNIPROCESSOR  = 0;
-double MPID_DUMMY_UNIPROCESSOR =0;
+void * MPIUNI_TMP   = 0;
+double MPIUNI_DUMMY = 0;
 
 double MPI_Wtime()
 {

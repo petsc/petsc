@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.24 1996/02/18 15:14:40 balay Exp balay $ */
+/* $Id: mpi.h,v 1.25 1996/03/18 05:51:35 balay Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -24,8 +24,8 @@ extern int exit(int);
 }
 #endif
 #endif
-extern double MPID_DUMMY_UNIPROCESSOR;
-extern void *MPID_TMP_UNIPROCESSOR;
+extern double MPIUNI_DUMMY;
+extern void *MPIUNI_TMP;
 extern double MPI_Wtime();
 
 /* External objects outside of MPI calls */
@@ -64,147 +64,147 @@ typedef char* MPI_Errhandler;
 
 /* Routines */
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (dest), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
                      MPI_SUCCESS)
 #define MPI_Recv( buf, count, datatype, source, tag, comm, status) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (source), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (status), \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (source), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (status), \
                      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Get_count(status,  datatype, count) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (status), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
+                     (MPIUNI_TMP = (void *) (status), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (count), \
                      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Bsend( buf, count, datatype, dest, tag, comm)  \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (dest), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
                      MPI_SUCCESS)
 #define MPI_Ssend( buf, count,  datatype, dest, tag, comm) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (dest), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
                      MPI_SUCCESS)
 #define MPI_Rsend( buf, count,  datatype, dest, tag, comm) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (dest), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
                      MPI_SUCCESS)
 #define MPI_Buffer_attach( buffer, size) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buffer), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (size), \
+                     (MPIUNI_TMP = (void *) (buffer), \
+                     MPIUNI_TMP = (void *) (size), \
                      MPI_SUCCESS)
 #define MPI_Buffer_detach( buffer, size)\
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buffer), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (size), \
+                     (MPIUNI_TMP = (void *) (buffer), \
+                     MPIUNI_TMP = (void *) (size), \
                      MPI_SUCCESS)
 #define MPI_Ibsend( buf, count,  datatype, dest, tag, comm, request) \
-                    ( MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (dest), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (request), \
+                    ( MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
                      MPI_SUCCESS)
 #define MPI_Issend( buf, count,  datatype, dest, tag, comm, request) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (dest), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (request), \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
                      MPI_SUCCESS)
 #define MPI_Irsend( buf, count,  datatype, dest, tag, comm, request) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (dest), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (request), \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
                      MPI_SUCCESS)
 #define MPI_Irecv( buf, count,  datatype, source, tag, comm, request) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (source), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (request), \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (source), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
                      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Isend( buf, count,  datatype, dest, tag, comm, request) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (dest), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (tag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (request), \
+                     (MPIUNI_TMP = (void *) (buf), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (dest), \
+                     MPIUNI_TMP = (void *) (tag), \
+                     MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (request), \
                      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Wait(request, status) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (request), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (status), \
+                     (MPIUNI_TMP = (void *) (request), \
+                     MPIUNI_TMP = (void *) (status), \
                    MPI_SUCCESS)
 #define MPI_Test(request, flag, status) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (request), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (status), \
+                     (MPIUNI_TMP = (void *) (request), \
+                     MPIUNI_TMP = (void *) (status), \
                      *(flag) = 0 \
                      MPI_SUCCESS)
 #define MPI_Request_free(request) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (request), \
+                     (MPIUNI_TMP = (void *) (request), \
                        MPI_SUCCESS)
 #define MPI_Waitany(a, b, c, d) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (a), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (b), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (c), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (d), \
+                     (MPIUNI_TMP = (void *) (a), \
+                     MPIUNI_TMP = (void *) (b), \
+                     MPIUNI_TMP = (void *) (c), \
+                     MPIUNI_TMP = (void *) (d), \
                     MPI_SUCCESS)
 #define MPI_Testany(a, b, c, d, e) \
-                    (MPID_TMP_UNIPROCESSOR = (void *) (a), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (b), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (c), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (d), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (e), \
+                    (MPIUNI_TMP = (void *) (a), \
+                     MPIUNI_TMP = (void *) (b), \
+                     MPIUNI_TMP = (void *) (c), \
+                     MPIUNI_TMP = (void *) (d), \
+                     MPIUNI_TMP = (void *) (e), \
                     MPI_SUCCESS)
 #define MPI_Waitall(count, array_of_requests, array_of_statuses) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (array_of_requests), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (array_of_statuses), \
+                     (MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (array_of_requests), \
+                     MPIUNI_TMP = (void *) (array_of_statuses), \
                      MPI_SUCCESS)
 #define MPI_Testall(count, array_of_requests, flag, array_of_statuses) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (array_of_requests), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (flag), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (array_of_statuses), \
+                     (MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (array_of_requests), \
+                     MPIUNI_TMP = (void *) (flag), \
+                     MPIUNI_TMP = (void *) (array_of_statuses), \
                      MPI_SUCCESS)
 #define MPI_Waitsome(incount, array_of_requests, outcount, \
 		 array_of_indices, array_of_statuses) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (incount), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (array_of_requests), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (outcount), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (array_of_indices), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (array_of_statuses), \
+                     (MPIUNI_TMP = (void *) (incount), \
+                     MPIUNI_TMP = (void *) (array_of_requests), \
+                     MPIUNI_TMP = (void *) (outcount), \
+                     MPIUNI_TMP = (void *) (array_of_indices), \
+                     MPIUNI_TMP = (void *) (array_of_statuses), \
                      MPI_SUCCESS)
 #define MPI_Testsome(incount, array_of_requests, outcount, \
 		 array_of_indices, array_of_statuses) MPI_SUCCESS
@@ -271,13 +271,13 @@ typedef char* MPI_Errhandler;
 #define MPI_Pack_size(incount,  datatype, comm, size) \
     MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Barrier(comm ) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                     (MPIUNI_TMP = (void *) (comm), \
                      MPI_SUCCESS)
 #define MPI_Bcast( buffer, count, datatype, root, comm ) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (buffer), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (count), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (datatype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                     (MPIUNI_TMP = (void *) (buffer), \
+                     MPIUNI_TMP = (void *) (count), \
+                     MPIUNI_TMP = (void *) (datatype), \
+                     MPIUNI_TMP = (void *) (comm), \
                      MPI_SUCCESS)
 #define MPI_Gather( sendbuf, sendcount,  sendtype, \
                    recvbuf, recvcount,  recvtype, \
@@ -294,21 +294,21 @@ typedef char* MPI_Errhandler;
 		  recvtype, root, comm) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Allgather( sendbuf, sendcount,  sendtype, \
 		   recvbuf, recvcount,  recvtype, comm) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (recvcount), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (recvtype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                     (MPIUNI_TMP = (void *) (recvcount), \
+                     MPIUNI_TMP = (void *) (recvtype), \
+                     MPIUNI_TMP = (void *) (comm), \
                      PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype)), \
                      MPI_SUCCESS)
 #define MPI_Allgatherv( sendbuf, sendcount,  sendtype, \
 		    recvbuf, recvcounts, displs, recvtype, comm) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (sendbuf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (sendcount), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (sendtype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (recvbuf), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (recvcounts), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (displs), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (recvtype), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                     (MPIUNI_TMP = (void *) (sendbuf), \
+                     MPIUNI_TMP = (void *) (sendcount), \
+                     MPIUNI_TMP = (void *) (sendtype), \
+                     MPIUNI_TMP = (void *) (recvbuf), \
+                     MPIUNI_TMP = (void *) (recvcounts), \
+                     MPIUNI_TMP = (void *) (displs), \
+                     MPIUNI_TMP = (void *) (recvtype), \
+                     MPIUNI_TMP = (void *) (comm), \
                      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Alltoall( sendbuf, sendcount,  sendtype, \
 		  recvbuf, recvcount,  recvtype, \
@@ -344,22 +344,22 @@ typedef char* MPI_Errhandler;
 #define MPI_Group_range_excl(group, n, ranges, newgroup) MPI_SUCCESS
 #define MPI_Group_free(group) MPI_SUCCESS
 #define MPI_Comm_size(comm, size) \
-                      (MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                      (MPIUNI_TMP = (void *) (comm), \
                        *(size)=1, \
                        MPI_SUCCESS)
 #define MPI_Comm_rank(comm, rank) \
-                      (MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                      (MPIUNI_TMP = (void *) (comm), \
                       *(rank)=0, \
                       MPI_SUCCESS)
 #define MPI_Comm_compare(comm1, comm2, result) \
-                      (MPID_TMP_UNIPROCESSOR = (void *) (comm1), \
-                      MPID_TMP_UNIPROCESSOR = (void *) (comm2), \
+                      (MPIUNI_TMP = (void *) (comm1), \
+                      MPIUNI_TMP = (void *) (comm2), \
                       *(result)=MPI_IDENT, \
                       MPI_SUCCESS )
 #define MPI_Comm_create(comm, group, newcomm) MPI_SUCCESS
 #define MPI_Comm_split(comm, color, key, newcomm) MPI_SUCCESS
 #define MPI_Comm_free(comm) \
-                      (MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                      (MPIUNI_TMP = (void *) (comm), \
                        MPI_SUCCESS)
 #define MPI_Comm_dup(comm, newcomm) *(newcomm) = comm, MPI_SUCCESS
 #define MPI_Comm_test_inter(comm, flag) (*(flag)=1,MPI_SUCCESS)
@@ -369,21 +369,21 @@ typedef char* MPI_Errhandler;
                     remote_leader, tag, newintercomm) MPI_SUCCESS
 #define MPI_Intercomm_merge(intercomm, high, newintracomm) MPI_SUCCESS
 #define MPI_Keyval_create(copy_fn, delete_fn, keyval, extra_state) \
-                      (MPID_TMP_UNIPROCESSOR = (void *) (copy_fn), \
-                      MPID_TMP_UNIPROCESSOR = (void *) (delete_fn), \
-                      MPID_TMP_UNIPROCESSOR = (void *) (keyval), \
-                      MPID_TMP_UNIPROCESSOR = (void *) (extra_state), \
+                      (MPIUNI_TMP = (void *) (copy_fn), \
+                      MPIUNI_TMP = (void *) (delete_fn), \
+                      MPIUNI_TMP = (void *) (keyval), \
+                      MPIUNI_TMP = (void *) (extra_state), \
                       MPI_SUCCESS)
 #define MPI_Keyval_free(keyval) MPI_SUCCESS
 #define MPI_Attr_put(comm, keyval, attribute_val) \
-                      (MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                      MPID_TMP_UNIPROCESSOR = (void *) (keyval), \
-                      MPID_TMP_UNIPROCESSOR = (void *) (attribute_val), \
+                      (MPIUNI_TMP = (void *) (comm), \
+                      MPIUNI_TMP = (void *) (keyval), \
+                      MPIUNI_TMP = (void *) (attribute_val), \
                       MPI_SUCCESS)
 #define MPI_Attr_get(comm, keyval, attribute_val, flag)  \
-                      (MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                      MPID_TMP_UNIPROCESSOR = (void *) (keyval), \
-                      (*(void**)attribute_val)= (void *)&MPID_DUMMY_UNIPROCESSOR, \
+                      (MPIUNI_TMP = (void *) (comm), \
+                      MPIUNI_TMP = (void *) (keyval), \
+                      (*(void**)attribute_val)= (void *)&MPIUNI_DUMMY, \
                       *(flag) = 1, \
                       MPI_SUCCESS) 
 #define MPI_Attr_delete(comm, keyval) MPI_SUCCESS
@@ -413,11 +413,11 @@ typedef char* MPI_Errhandler;
 #define MPI_Get_processor_name(name, result_len) \
       (PetscStrcpy(name,"localhost"), *(result_len) =10)
 #define MPI_Errhandler_create(function, errhandler) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (errhandler), \
+                     (MPIUNI_TMP = (void *) (errhandler), \
                      MPI_SUCCESS)
 #define MPI_Errhandler_set(comm, errhandler) \
-                     (MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                     MPID_TMP_UNIPROCESSOR = (void *) (errhandler), \
+                     (MPIUNI_TMP = (void *) (comm), \
+                     MPIUNI_TMP = (void *) (errhandler), \
                      MPI_SUCCESS)
 #define MPI_Errhandler_get(comm, errhandler) MPI_SUCCESS
 #define MPI_Errhandler_free(errhandler) MPI_SUCCESS
@@ -429,11 +429,11 @@ typedef char* MPI_Errhandler;
 #define MPI_Initialized(flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Pcontrol(level) MPI_SUCCESS
 /*#define MPI_Abort(comm, errorcode) \
-                        (MPID_TMP_UNIPROCESSOR = (void *) (comm), \
-                         MPID_TMP_UNIPROCESSOR = (void *) (errorcode), \
+                        (MPIUNI_TMP = (void *) (comm), \
+                         MPIUNI_TMP = (void *) (errorcode), \
                          fprintf(stderr,"[0] Aborting program!\n"), abort() )*/
 #define MPI_Abort(comm, errorcode) \
-                        (MPID_TMP_UNIPROCESSOR = (void *) (comm), \
+                        (MPIUNI_TMP = (void *) (comm), \
                PetscError(__LINE__,__DIR__,__FILE__,errorcode,"[0] Aborting program!"), \
                exit(errorcode))
 /*#define MPI_NULL_COPY_FN(oldcomm, keyval, extra_state, \
