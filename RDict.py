@@ -217,7 +217,10 @@ Arg class, which wraps the usual value.'''
         f.close()
         # Check if server is running
         #   This must provide the address, not the directory to prevent an infinite loop
-        if not RDict(parentAddr = addr).hasParent():
+        rdict     = RDict(parentAddr = addr)
+        hasParent = rdict.hasParent()
+        del rdict
+        if not hasParent:
           os.remove(filename)
           self.startServer(filename)
         return addr
@@ -338,9 +341,13 @@ Arg class, which wraps the usual value.'''
         return
 
     # check if server is running
-    if os.path.exists(self.addrFilename) and RDict(parentDirectory = '.').hasParent():
-      self.writeLogLine('SERVER: Another server is already running')
-      raise RuntimeError('Server already running')
+    if os.path.exists(self.addrFilename):
+      rdict     = RDict(parentDirectory = '.')
+      hasParent = rdict.hasParent()
+      del rdict
+      if hasParent:
+        self.writeLogLine('SERVER: Another server is already running')
+        raise RuntimeError('Server already running')
 
     # wish there was a better way to get a usable socket
     basePort = 8000
