@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.23 2001/04/20 15:11:15 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.24 2001/04/20 15:18:52 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -183,7 +183,7 @@ EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES(), DMMGSetSNESLocal()
 
 @*/
 int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
@@ -225,7 +225,6 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
        when possible 
     */
     if (nlevels > 1 && i == 0) {
-      PCType     stype;
       PC         pc;
       SLES       csles;
       PetscTruth flg1,flg2,flg3;
@@ -317,7 +316,6 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormFunction"
 /* 
@@ -375,38 +373,6 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   return 0; 
 } 
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMMGSetSNESLocal"
-/*@C
-    DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
-          that will use the grid hierarchy
-
-    Collective on DMMG
-
-    Input Parameter:
-+   dmmg - the context
-.   function - the function that defines the nonlinear system
--   jacobian - optional function to compute Jacobian
-
-
-    Level: advanced
-
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES()
-
-@*/
-int DMMGSetSNESLocal(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocalInfo*,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
-{
-  int         ierr,i,nlevels = dmmg[0]->nlevels;
-
-  PetscFunctionBegin;
-  ierr = DMMGSetSNES(dmmg,DMMGFormFunction,jacobian);CHKERRQ(ierr);
-  for (i=0; i<nlevels; i++) {
-    dmmg[i]->computefunctionlocal = function;
-  }
-  PetscFunctionReturn(0);
-}
-
-
 /* ---------------------------------------------------------------------------------------------------------------------------*/
 
 #if defined(PETSC_HAVE_ADIC)
@@ -418,7 +384,7 @@ void ad_AD_Final();
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PetscGetStructArray2d"
-static int PetscGetStructArray2d(int xs,int ys,int xm,int ym,int structsize,void ***ptr,void **array_start)
+static int PetscGetStructArray2d(int xs,int ys,int xm,int ym,void ***ptr,void **array_start)
 {
   int  ierr,j,deriv_type_size;
   void *tmpptr;
@@ -426,13 +392,13 @@ static int PetscGetStructArray2d(int xs,int ys,int xm,int ym,int structsize,void
   PetscFunctionBegin;
   deriv_type_size = my_AD_GetDerivTypeSize();
 
-  ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*structsize,(void **)array_start);CHKERRQ(ierr);
-  *ptr  = (void**)(*array_start + xm*ym*structsize - ys*sizeof(void*));
+  ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*deriv_type_size,(void **)array_start);CHKERRQ(ierr);
+  *ptr  = (void**)(*array_start + xm*ym*deriv_type_size - ys*sizeof(void*));
 
   for(j=ys;j<ys+ym;j++) {
-    (*ptr)[j] = *array_start + structsize*(xm*(j-ys) - xs);
+    (*ptr)[j] = *array_start + deriv_type_size*(xm*(j-ys) - xs);
   }
-  ierr = PetscMemzero(*array_start,xm*ym*structsize);CHKERRQ(ierr);
+  ierr = PetscMemzero(*array_start,xm*ym*deriv_type_size);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -450,14 +416,13 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   int            gxs,gys,gxm,gym;
   int            mx,my,*colorptr;
   Vec            localX;
-  Scalar         **x;
+  Scalar         *xstart;
   DALocalInfo    info;
   void           **ad_x,**ad_f;
-  int            dim,dof,stencil_size,stencil_width;
+  int            dim,dof,stencil_width,size;
   DAStencilType  stencil_type;
   DAPeriodicType periodicity;
   DA             da = (DA) dmmg->dm;
-  int            deriv_type_size,size;
   void           *ad_xstart,*ad_fstart;
 
   PetscFunctionBegin;
@@ -466,25 +431,10 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
     SETERRQ(1,"ISColoring must be of type IS_COLORING_GHOSTED");
   }
 
-  ad_AD_Init(dmmg->iscoloring->n);
-  deriv_type_size = my_AD_GetDerivTypeSize();
-
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
 
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-
   ierr = DAGetInfo(da,&dim,&mx,&my,0,0,0,0,&dof,&stencil_width,&periodicity,&stencil_type);CHKERRQ(ierr);
-
-  /* Verify that this DA type is supported */
-  if ((dim != 2) || (stencil_width != 1) || (stencil_type != DA_STENCIL_STAR)
-      || (periodicity != DA_NONPERIODIC)) {
-    SETERRQ(0,"This DA type is not yet supported. Sorry.\n");
-  }
-
-  stencil_size = 5;
 
   /*
      Get local grid boundaries
@@ -492,19 +442,23 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
 
-  /*  printf("myid = %d x[%d,%d], y[%d,%d], gx[%d,%d], gy[%d,%d]\n",myid); */
-
-
-
   /*
      Get pointer to vector data
   */
-  ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
+
 
   /* allocate space for derivative objects.  */
-  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,deriv_type_size,(void ***)&ad_x,&ad_xstart);CHKERRQ(ierr);
-  my_AD_SetValArray(ad_xstart,gxm*gym*dof,(&x[gys][gxs]));
-  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,deriv_type_size,(void ***)&ad_f,&ad_fstart);CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(gxs*dof,gys,gxm*dof,gym,(void ***)&ad_x,&ad_xstart);CHKERRQ(ierr);
+  ierr = PetscGetStructArray2d(xs*dof,ys,xm*dof,ym,(void ***)&ad_f,&ad_fstart);CHKERRQ(ierr);
+
+  /* copy over function inputs to derivate enhanced variable */
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&xstart);CHKERRQ(ierr);
+  my_AD_SetValArray(ad_xstart,gxm*gym*dof,xstart);
+  ierr = VecRestoreArray(localX,&xstart);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
 
   my_AD_ResetIndep();
@@ -515,48 +469,66 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   /* 
      Compute entries for the locally owned part of the Jacobian.
   */
-  ierr = (*dmmg->ad_computefunctionlocal)((Scalar**)ad_x,(Scalar**)ad_f,&info,dmmg->user);CHKERRQ(ierr); 
+  ierr = (*dmmg->ad_computefunctionlocal)(ad_x,ad_f,&info,dmmg->user);CHKERRQ(ierr); 
 
-  ierr = DAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+
 
   /* stick the values into the matrix */
   ierr = MatSetColoring(*B,dmmg->iscoloring);CHKERRQ(ierr);
-  ierr = MatSetValuesAD(*B,(Scalar**)ad_fstart,deriv_type_size);CHKERRQ(ierr);
+  ierr = MatSetValuesAD(*B,(Scalar**)ad_fstart);CHKERRQ(ierr);
 
   /* Assemble true Jacobian; if it is different */
-  ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*J != *B) {
+    ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   ierr  = MatSetOption(*B,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
 
+#endif
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMMGSetSNESLocalWithAD"
-/*@C
-    DMMGSetSNESLocalWithAD - Sets the local user function that defines the nonlinear set of equations
-          that will use the grid hierarchy and its AD derivate function
+/*M
+    DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
+          that will use the grid hierarchy and (optionally) its derivative
 
     Collective on DMMG
+
+   Synopsis:
+   int DMMGSetSNESLocal(DMMG *dmmg,int (*function)(void*,void*,DALocalInfo*,void*),
+                        int (*jacobian)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*))
 
     Input Parameter:
 +   dmmg - the context
 .   function - the function that defines the nonlinear system
--   jacobian - AD function to compute Jacobian
++   jacobian - function defines the local part of the Jacobian (not currently supported)
 
-    Level: advanced
+    Level: intermediate
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES()
+    Notes: If adiC is installed this can use adiC to compute the derivative, however the 
+       function and this call must be in the same file and the function cannot call other
+       functions except those in standard C math libraries.
 
-@*/
-int DMMGSetSNESLocalWithAD(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocalInfo*,void*),int (*ad_function)(Scalar **,Scalar**,DALocalInfo*,void*))
+       If adiC is not installed this used finite differencing to approximate the Jacobian
+
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES(), DMMGSetSNES()
+
+M*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetSNESLocal_Private"
+int DMMGSetSNESLocal_Private(DMMG *dmmg,int (*function)(void*,void*,DALocalInfo*,void*),int (*jacobian)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*),int (*ad_function)(void*,void*,DALocalInfo*,void*))
 {
   int ierr,i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_ADIC)
   ierr = DMMGSetSNES(dmmg,DMMGFormFunction,DMMGFormJacobianWithAD);CHKERRQ(ierr);
+#else 
+  ierr = DMMGSetSNES(dmmg,DMMGFormFunction,0);CHKERRQ(ierr);
+#endif
   for (i=0; i<nlevels; i++) {
     dmmg[i]->computefunctionlocal    = function;
     dmmg[i]->ad_computefunctionlocal = ad_function;
@@ -564,7 +536,6 @@ int DMMGSetSNESLocalWithAD(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocal
   PetscFunctionReturn(0);
 }
 
-#endif
 
 
 
