@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.45 2000/02/03 22:03:49 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.46 2000/04/09 03:11:53 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -19,6 +19,7 @@ extern int  PetscGetInitialDate(char[],int);
 
 extern int  PetscSortInt(int,int[]);
 extern int  PetscSortIntWithPermutation(int,const int[],int[]);
+extern int  PetscSortIntWithArray(int,int[],int[]);
 extern int  PetscSortDouble(int,double[]);
 extern int  PetscSortDoubleWithPermutation(int,const double[],int[]);
 
