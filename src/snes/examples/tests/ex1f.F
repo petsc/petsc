@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.32 1998/04/21 18:33:39 balay Exp bsmith $";
+! "$Id: ex4f.F,v 1.33 1999/01/12 23:17:53 bsmith Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -60,6 +60,7 @@
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
+#include "include/finclude/is.h"
 #include "include/finclude/draw.h"
 #include "include/finclude/mat.h"
 #include "include/finclude/ksp.h"
@@ -80,14 +81,18 @@
 !     lambda      - nonlinearity parameter
 !     draw        - drawing context
 !
-      SNES     snes
-      Vec      x, r
-      Draw     draw
-      Mat      J
-      integer  its, matrix_free, flg, N, ierr
-      integer  mx, my, size, rank
+      SNES               snes
+      Vec                x, r
+      Draw               draw
+      Mat                J
+      integer            its, matrix_free, flg, N, ierr
+      integer            mx, my, size, rank
+      integer            fd_coloring
       double precision   lambda_max, lambda_min, lambda
-
+      MatFDColoring      fdcoloring
+      ISColoring         iscoloring
+      MatStructure       str
+ 
 !  Store parameters in common block
 
       common /params/ lambda, mx, my
@@ -166,6 +171,45 @@
      &        J,ierr)
       endif
 
+!
+!     This option will cause the Jacobian to be computed via finite differences
+!    efficiently using a coloring of the columns of the matrix.
+!
+      fd_coloring = 0
+      call OptionsHasName(PETSC_NULL_CHARACTER,"-snes_fd_coloring",     &
+     &                    fd_coloring,ierr)
+      if (fd_coloring .eq. 1) then
+             
+! 
+!      This initializes the nonzero structure of the Jacobian. This is artificial
+!      because clearly if we had a routine to compute the Jacobian we won't need
+!      to use finite differences.
+!
+        call FormJacobian(snes,x,J,J,str,0,ierr)
+!
+!       Color the matrix, i.e. determine groups of columns that share no common 
+!      rows. These columns in the Jacobian can all be computed simulataneously.
+!
+        call MatGetColoring(J,COLORING_NATURAL,iscoloring,ierr)
+    
+!
+!       Create the data structure that SNESDefaultComputeJacobianColor() uses
+!       to compute the actual Jacobians via finite differences.
+!
+        call MatFDColoringCreate(J,iscoloring,fdcoloring,ierr)
+        call MatFDColoringSetFunctionSNES(fdcoloring,FormFunction,        &
+     &                                PETSC_NULL_OBJECT,ierr)
+        call MatFDColoringSetFromOptions(fdcoloring,ierr)
+!
+!        Tell SNES to use the routine SNESDefaultComputeJacobianColor()
+!      to compute Jacobians.
+!
+        call SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,    &
+     &                     fdcoloring,ierr)
+        call ISColoringDestroy(iscoloring,ierr)
+
+      else if (matrix_free .eq. 0) then
+
 !  Set Jacobian matrix data structure and default Jacobian evaluation
 !  routine.  Whenever the nonlinear solver needs to compute the
 !  Jacobian matrix, it will call this routine.
@@ -180,7 +224,6 @@
 !                          but use matrix-free approx for Jacobian-vector
 !                          products within Newton-Krylov method
 !
-      if (matrix_free .eq. 0) then
         call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,   &
      &        ierr)
       endif
@@ -224,6 +267,8 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       if (matrix_free .eq. 0) call MatDestroy(J,ierr)
+      if (fd_coloring) call MatFDColoringDestroy(fdcoloring,ierr)
+
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
       call SNESDestroy(snes,ierr)
@@ -545,8 +590,8 @@
 
 !  Assemble matrix
 
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
 
 !  Set flag to indicate that the Jacobian matrix retains an identical
 !  nonzero structure throughout all nonlinear iterations (although the
@@ -630,7 +675,7 @@
 !           boundary points
             if (i .eq. 1 .or. j .eq. 1                                  &
      &             .or. i .eq. mx .or. j .eq. my) then
-               call MatSetValues(jac,1,row,1,row,one,                   &
+               call MatSetValues(jac_prec,1,row,1,row,one,              &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else
@@ -645,7 +690,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + mx
-               call MatSetValues(jac,1,row,5,col,v,                     &
+               call MatSetValues(jac_prec,1,row,5,col,v,                &
      &                           INSERT_VALUES,ierr)
             endif
  10      continue

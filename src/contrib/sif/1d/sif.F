@@ -1,5 +1,5 @@
 C
-C "$Id: sif.F,v 1.5 1999/03/02 17:16:02 bsmith Exp bsmith $";
+C "$Id: sif.F,v 1.6 1999/03/02 19:40:23 bsmith Exp bsmith $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -202,7 +202,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call DAGetColoring(da,coloring,A,ierr)
       call MatFDColoringCreate(A,coloring,fd,ierr)
       call ISColoringDestroy(coloring,ierr)
-      call MatFDColoringSetFunction(fd,RHSFunction
+      call MatFDColoringSetFunctionTS(fd,RHSFunction
      &         ,PETSC_NULL_DOUBLE,ierr)
 
       call TSSetRHSJacobian(ts,A,A,TSDefaultComputeJacobianColor,

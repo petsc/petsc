@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.40 1998/12/21 00:59:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.41 1999/01/13 21:40:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -250,6 +250,11 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 .  f - the function
 -  fctx - the optional user-defined function context
 
+   Notes:
+    In Fortran you must call MatFDColoringSetFunctionSNES() for a coloring object to 
+  be used with the SNES solvers and MatFDColoringSetFunctionTS() if it is to be used
+  with the TS solvers.
+
 .keywords: Mat, Jacobian, finite differences, set, function
 @*/
 int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
@@ -395,7 +400,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   ierr = MatGetSize(mat,&M,&N); CHKERRQ(ierr);
   if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
 
-  PetscObjectGetComm((PetscObject)mat,&comm);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,
                     MatFDColoringDestroy,MatFDColoringView);
   PLogObjectCreate(c);
