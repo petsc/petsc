@@ -471,7 +471,13 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
       pA++;
     }
 
-    ierr = PetscMemzero(temp,cn*sizeof(MatScalar));CHKERRQ(ierr);
+    /* Note: The nonzero elements in the last touched row are a */
+    /*       superset of the nonzero elements in temp.  So, zeroing */
+    /*       these elements suffices, instead of zeroing all of */
+    /*       temp.  Something more precise could still be done. */
+    for (j=0;j<cnzj;j++) {
+      temp[cjj[j]] = 0.;
+    }
   }
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(logkey_matapplyptap_numeric,A,P,C,0);CHKERRQ(ierr);
