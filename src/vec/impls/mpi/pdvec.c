@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.72 1997/02/22 02:22:33 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.73 1997/03/26 01:34:30 bsmith Exp balay $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -92,7 +92,7 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
   MPI_Comm_size(xin->comm,&size);
 
   if (!rank) {
-    values = (Scalar *) PetscMalloc( len*sizeof(Scalar) ); CHKPTRQ(values);
+    values = (Scalar *) PetscMalloc( (len+1)*sizeof(Scalar) ); CHKPTRQ(values);
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_MATLAB) {
       ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
@@ -170,7 +170,7 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
     ierr = PetscBinaryWrite(fdes,x->array,x->n,BINARY_SCALAR,0); 
     CHKERRQ(ierr);
 
-    values = (Scalar *) PetscMalloc( len*sizeof(Scalar) ); CHKPTRQ(values);
+    values = (Scalar *) PetscMalloc( (len+1)*sizeof(Scalar) ); CHKPTRQ(values);
     /* receive and print messages */
     for ( j=1; j<size; j++ ) {
       MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
@@ -203,7 +203,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
   MPI_Comm_size(xin->comm,&size);
   if (!rank) {
     DrawLGReset(lg);
-    xx = (double *) PetscMalloc( 2*N*sizeof(double) ); CHKPTRQ(xx);
+    xx = (double *) PetscMalloc( 2*(N+1)*sizeof(double) ); CHKPTRQ(xx);
     for ( i=0; i<N; i++ ) {xx[i] = (double) i;}
     yy = xx + N;
     lens = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(lens);
@@ -215,7 +215,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
 #else
     {
       double *xr;
-      xr = (double *) PetscMalloc( x->n*sizeof(double) ); CHKPTRQ(xr);
+      xr = (double *) PetscMalloc( (x->n+1)*sizeof(double) ); CHKPTRQ(xr);
       for ( i=0; i<x->n; i++ ) {
         xr[i] = real(x->array[i]);
       }
@@ -234,7 +234,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
 #else
     {
       double *xr;
-      xr = (double *) PetscMalloc( x->n*sizeof(double) ); CHKPTRQ(xr);
+      xr = (double *) PetscMalloc( (x->n+1)*sizeof(double) ); CHKPTRQ(xr);
       for ( i=0; i<x->n; i++ ) {
         xr[i] = real(x->array[i]);
       }
@@ -341,7 +341,7 @@ int VecView_MPI_Matlab(Vec xin, Viewer viewer )
   MPI_Comm_rank(xin->comm,&rank);
   MPI_Comm_size(xin->comm,&size);
   if (!rank) {
-    xx = (double *) PetscMalloc( N*sizeof(double) ); CHKPTRQ(xx);
+    xx = (double *) PetscMalloc( (N+1)*sizeof(double) ); CHKPTRQ(xx);
     lens = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(lens);
     for (i=0; i<size; i++ ) {
       lens[i] = x->ownership[i+1] - x->ownership[i];
