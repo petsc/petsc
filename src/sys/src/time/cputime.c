@@ -41,7 +41,7 @@ int PetscGetCPUTime(PetscLogDouble *t)
 
   PetscFunctionBegin;
   times(&temp);
-  *t = ((double)temp.tms_utime)/((double)CLK_TCK);
+  *t = ((double)temp.tms_utime)/((double)CLOCKS_PER_SEC);
   PetscFunctionReturn(0);
 }
 
