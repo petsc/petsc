@@ -1,5 +1,5 @@
 !
-! ex1f.F,v 1.20 1999/03/02 16:20:11 balay Exp bsmith $"
+! "$Id: ex1f.F,v 1.20 1999/03/02 16:20:11 balay Exp bsmith $"
 !
 !   Solves the time dependent Bratu problem using pseudo-timestepping
 !

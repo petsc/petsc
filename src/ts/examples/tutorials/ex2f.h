@@ -1,4 +1,4 @@
-! ex1f.F,v 1.20 1999/03/02 16:20:11 balay Exp bsmith $"
+! "$Id: ex1f.F,v 1.20 1999/03/02 16:20:11 balay Exp bsmith $"
 !  This file contains include statements and a user-defined
 !  common block for application-specific data.  This file is
 !  included in each routine within the program ex2f. 

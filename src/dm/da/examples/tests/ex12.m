@@ -1,4 +1,5 @@
 function ex12(np,opt)
+% $Id: ex12.c,v 1.30 1999/11/05 14:47:57 bsmith Exp bsmith $
 %
 %   ex12(np) 
 % creates a series of vectors in PETSc and displays them in Matlab
@@ -16,7 +17,7 @@ if (nargin < 2)
   opt = ' ';
 end
 time = 20;
-err = launch(['ex12 -time ' int2str(time) ' -viewer_socket_machine ' getenv('HOST') opt] ,np);
+err = launch(['ex12 -time ' int2str(time) ' -viewer_socket_machine ' getenv('HOST') opt],np);
 if (err ~= 0) then 
   return;
 end
