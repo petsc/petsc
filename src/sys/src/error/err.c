@@ -1,4 +1,4 @@
-/*$Id: err.c,v 1.112 2000/04/09 04:34:23 bsmith Exp bsmith $*/
+/*$Id: err.c,v 1.113 2000/04/12 04:21:20 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -66,10 +66,11 @@ int PetscEmacsClientErrorHandler(int line,char *fun,char* file,char *dir,int n,i
   FILE        *fp;
 
   PetscFunctionBegin;
+  /* Note: don't check error codes since this an error handler :-) */
   sprintf(command,"emacsclient +%d %s/%s%s\n",line,PETSC_DIR,dir,file);
-  PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);
-  PetscFClose(MPI_COMM_WORLD,fp);
-  PetscPopErrorHandler(); /* remove this handler from the stack of handlers */
+  ierr = PetscPOpen(MPI_COMM_WORLD,(char*)ctx,command,"r",&fp);
+  ierr = PetscFClose(MPI_COMM_WORLD,fp);
+  ierr = PetscPopErrorHandler(); /* remove this handler from the stack of handlers */
   if (!eh)     ierr = PetscTraceBackErrorHandler(line,fun,file,dir,n,p,mess,0);
   else         ierr = (*eh->handler)(line,fun,file,dir,n,p,mess,eh->ctx);
   PetscFunctionReturn(ierr);
@@ -113,7 +114,7 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 @*/
 int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,void*),void *ctx)
 {
-  EH neweh = (EH) PetscMalloc(sizeof(struct _EH));CHKPTRQ(neweh);
+  EH neweh = (EH)PetscMalloc(sizeof(struct _EH));CHKPTRQ(neweh);
 
   PetscFunctionBegin;
   if (eh) {neweh->previous = eh;} 
