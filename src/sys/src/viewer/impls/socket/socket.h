@@ -1,4 +1,4 @@
-/* $Id: matlab.h,v 1.4 1995/07/20 04:00:08 bsmith Exp bsmith $ */
+/* $Id: matlab.h,v 1.5 1995/08/07 22:01:20 bsmith Exp bsmith $ */
 /* 
      This is the include file, it contains definitions 
   needed by different components of the package.
@@ -7,6 +7,7 @@
 */
 
 #include "petsc.h"
+#include "sysio.h"
 
 struct _Viewer {
   PETSCHEADER
@@ -24,7 +25,5 @@ struct _Viewer {
 /* DENSECHARACTER simply has a flag set which tells that it should be */
 /* interpreted as a string not a numeric vector                       */
 
-extern int SOCKWriteDouble_Private(int,double *,int);
-extern int SOCKWriteInt_Private(int,int *,int);
-extern int SOCKWrite_Private(int,void *,int);
+
 

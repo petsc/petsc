@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.34 1995/08/24 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.35 1995/09/30 19:27:41 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: tr.c,v 1.34 1995/08/24 22:27:16 bsmith Exp bsmith $";
 #include "pinclude/petscfix.h"
 
 void *TrMalloc(unsigned int, int, char *);
-int TrFree( void *, int, char * );
+int  TrFree( void *, int, char * );
 
 /*
   Code for checking if a pointer is out of the range 
@@ -35,7 +35,7 @@ int  TrMallocUsed = 0;
 
 int PetscSetUseTrMalloc_Private()
 {
-  PetscLow = (void *) 0xEEEEEEEE;
+  PetscLow  = (void *) 0xEEEEEEEE;
   PetscHigh = (void *) 0x0;
   PetscSetMalloc(TrMalloc,TrFree);
   TrMallocUsed = 1;
@@ -129,7 +129,7 @@ int TrValid(int line,char *file )
   TRSPACE *head;
   char    *a;
   unsigned long *nend;
-  int     errs = 0;
+  int      errs = 0;
 
   head = TRhead;
   while (head) {
@@ -186,8 +186,7 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
   nsize = a;
   if (nsize & TR_ALIGN_MASK) 
     nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
-  inew = (char *) malloc( (unsigned)( nsize + sizeof(TrSPACE) + 
-                                                sizeof(unsigned long) ) );
+  inew = (char *) malloc( (unsigned)(nsize+sizeof(TrSPACE)+sizeof(unsigned long)));
   if (!inew) return 0;
 
   /*
@@ -237,11 +236,11 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
  */
 int TrFree( void *aa, int line, char *file )
 {
-  char    *a = (char *) aa;
-  TRSPACE *head;
-  char    *ahead;
+  char     *a = (char *) aa;
+  TRSPACE  *head;
+  char     *ahead;
   unsigned long *nend;
-  int ierr;
+  int      ierr;
 
   /* Don't try to handle empty blocks */
   if (!a) {
@@ -270,11 +269,9 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 		head->id, head->size, a + sizeof(TrSPACE) );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
 	if (head->lineno > 0) 
-	    fprintf( stderr, 
-		    "Block freed in %s[%d]\n", head->fname, head->lineno );
+	  fprintf( stderr, "Block freed in %s[%d]\n", head->fname, head->lineno );
 	else
-	    fprintf( stderr, 
-	         "Block allocated at %s[%d]\n", head->fname, - head->lineno );
+	  fprintf( stderr, "Block allocated at %s[%d]\n",head->fname,-head->lineno);
 	  SETERRQ(1,"TrFree: memory already freed");
     }
     else {
@@ -283,8 +280,7 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
   "Block [id=%d(%lx)] at address %p is corrupted (probably write past end)\n", 
 		head->id, head->size, a );
 	head->fname[TR_FNAME_LEN-1]= 0;  /* Just in case */
-	fprintf( stderr, 
-		"Block allocated in %s[%d]\n", head->fname, head->lineno );
+	fprintf( stderr, "Block allocated in %s[%d]\n", head->fname, head->lineno );
 	SETERRQ(1,"TrFree: corrupted memory");
     }
   }
@@ -367,8 +363,7 @@ int TrDump( FILE *fp )
     }
     head = head->next;
   }
-  fprintf( fp, "[%d]The maximum space allocated was %d bytes\n",mytid,
-                                                              (int)TRMaxMem);
+  fprintf( fp, "[%d]The maximum space allocated was %d bytes\n",mytid,(int)TRMaxMem);
   return 0;
 }
 
@@ -386,8 +381,7 @@ static int IntCompare( TRINFO *a, TRINFO * b )
 static int  PrintSum(TRINFO ** a, VISIT order, int level )
 { 
   if (order == postorder || order == leaf) 
-    fprintf( TRFP, "[%d]%s[%d] has %d\n", 
-	     (*a)->id, (*a)->fname, (*a)->lineno, (*a)->size );
+    fprintf( TRFP, "[%d]%s[%d] has %d\n",(*a)->id,(*a)->fname,(*a)->lineno,(*a)->size);
   return 0;
 }
 
@@ -421,14 +415,12 @@ int TrSummary( FILE *fp )
     key->fname  = head->fname;
 #if !defined(PARCH_IRIX) && !defined(PARCH_solaris) && !defined(PARCH_hpux)\
      && !defined(PARCH_rs6000)
-    fnd    = (TRINFO **)tsearch( (char *) key, (char **) &root, 
-                                 (int (*)(void*,void*)) IntCompare );
+    fnd=(TRINFO **)tsearch((char *)key,(char **)&root,(int (*)(void*,void*))IntCompare);
 #elif defined(PARCH_solaris)
-    fnd    = (TRINFO **)tsearch( (void *) key, (void **) &root, 
-			      (int (*)(const void*,const void*))IntCompare );
+    fnd=(TRINFO **)tsearch((void *)key,(void **)&root, 
+                                         (int (*)(const void*,const void*))IntCompare);
 #else
-    fnd    = (TRINFO **)tsearch( (void *) key, (void **) &root, 
-				 (int (*)(void*,void*))IntCompare );
+    fnd=(TRINFO **)tsearch((void *)key,(void **)&root,(int (*)(void*,void*))IntCompare);
 #endif
     if (*fnd == key) {
 	key->size = 0;
@@ -441,15 +433,13 @@ int TrSummary( FILE *fp )
   /* Print the data */
   TRFP = fp;
   twalk( (char *)root, (void (*)(void*,VISIT,int))PrintSum );
-  fprintf( fp, "The maximum space allocated was %lx bytes [%lx]\n", 
-	 TRMaxMem, TRMaxMemId );
+  fprintf(fp,"The maximum space allocated was %lx bytes [%lx]\n",TRMaxMem,TRMaxMemId);
   return 0;
 }
 #else
 int TrSummary(FILE* fp )
 {
-  fprintf( fp, "The maximum space allocated was %ld bytes [%ld]\n", 
-	 TRMaxMem, TRMaxMemId );
+  fprintf(fp,"The maximum space allocated was %ld bytes [%ld]\n",TRMaxMem,TRMaxMemId);
   return 0;
 }	
 #endif
@@ -512,18 +502,18 @@ TRSPACE *TrImerge(TRSPACE * l1,TRSPACE * l2 )
   TRSPACE *head = 0, *tail = 0;
   int     sign;
   while (l1 && l2) {
-    sign = strcmp(l1->fname, l2->fname);
+    sign = PetscStrcmp(l1->fname, l2->fname);
     if (sign > 0 || (sign == 0 && l1->lineno >= l2->lineno)) {
-	if (head) tail->next = l1; 
-	else      head = tail = l1;
-	tail = l1;
-	l1   = l1->next;
+      if (head) tail->next = l1; 
+      else      head = tail = l1;
+      tail = l1;
+      l1   = l1->next;
     }
     else {
-	if (head) tail->next = l2; 
-	else      head = tail = l2;
-	tail = l2;
-	l2   = l2->next;
+      if (head) tail->next = l2; 
+      else      head = tail = l2;
+      tail = l2;
+      l2   = l2->next;
     }
   }
   /* Add the remaining elements to the end */
@@ -581,15 +571,13 @@ int TrDumpGrouped(FILE *fp )
     cur     = head->next;
     nblocks = 1;
     nbytes  = head->size;
-    while (cur && strcmp(cur->fname,head->fname) == 0 && 
-	   cur->lineno == head->lineno ) {
+    while (cur && !PETSCStrcmp(cur->fname,head->fname) && cur->lineno == head->lineno){
 	nblocks++;
 	nbytes += cur->size;
 	cur    = cur->next;
     }
     fprintf( fp, "File %13s line %5d: %d bytes in %d allocation%c\n", 
-	     head->fname, head->lineno, nbytes, nblocks, 
-	     (nblocks > 1) ? 's' : ' ' );
+	     head->fname, head->lineno, nbytes, nblocks,(nblocks > 1) ? 's' : ' ');
     head = cur;
   }
   fflush( fp );

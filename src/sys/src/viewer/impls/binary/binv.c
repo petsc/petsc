@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.6 1995/09/06 03:06:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.7 1995/09/07 04:27:41 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -50,11 +50,11 @@ $    BINARY_WRONLY - open existing file for binary output
 
 .seealso: ViewerDestroy()
 @*/
-int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,
-                         Viewer *binv)
+int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *binv)
 {  
   int    mytid;
   Viewer v;
+
   PETSCHEADERCREATE(v,_Viewer,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm);
   PLogObjectCreate(v);
   v->destroy = ViewerDestroy_BinaryFile;

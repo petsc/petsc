@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.40 1995/09/04 17:24:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.41 1995/09/30 19:27:41 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -42,9 +42,9 @@ typedef struct {
 static OptionsTable *options = 0;
        int          PetscBeganMPI = 0;
 
-int OptionsCheckInitial_Private(),
-    OptionsCreate_Private(int*,char***,char*,char*),
-    OptionsSetAlias_Private(char *,char *);
+int        OptionsCheckInitial_Private(),
+           OptionsCreate_Private(int*,char***,char*,char*),
+           OptionsSetAlias_Private(char *,char *);
 static int OptionsDestroy_Private();
 
 #if defined(PETSC_COMPLEX)
@@ -77,7 +77,7 @@ MPI_Datatype  MPIU_COMPLEX;
 @*/
 int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
 {
-  int    ierr,flag;
+  int        ierr,flag;
   static int PetscInitializedCalled = 0;
 
   if (PetscInitializedCalled) SETERRQ(1," PetscInitialize: CANNOT call twice");
@@ -134,19 +134,16 @@ $             this slows your code by at least a factor of 10.
 int PetscFinalize()
 {
   int  ierr,i,mytid = 0;
+  char mname[64];
 
   ViewerDestroy_Private();
 #if defined(PETSC_LOG)
   if (OptionsHasName(0,"-log_summary")) {
     PLogPrint(MPI_COMM_WORLD,stdout);
   }
-  {
-    char monitorname[64];
-    if (OptionsGetString(0,"-log_all",monitorname,64) || 
-        OptionsGetString(0,"-log",monitorname,64)) {
-      if (monitorname[0]) PLogDump(monitorname); 
-      else PLogDump(0);
-    }
+  if (OptionsGetString(0,"-log_all",mname,64) || OptionsGetString(0,"-log",mname,64)){
+    if (mname[0]) PLogDump(mname); 
+    else PLogDump(0);
   }
   PLogDestroy();
 #endif
@@ -187,7 +184,7 @@ int PetscFinalize()
     NRDestroyAll(); 
   }
   if (PetscBeganMPI) {
-      ierr = MPI_Finalize(); CHKERRQ(ierr);
+    ierr = MPI_Finalize(); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -236,8 +233,7 @@ int OptionsCheckInitial_Private()
     malloc_debug(2);
   }
 #endif
-  if (OptionsHasName(0,"-v") || OptionsHasName(0,"-version") ||
-      OptionsHasName(0,"-help")) {
+  if (OptionsHasName(0,"-v")||OptionsHasName(0,"-version")||OptionsHasName(0,"-help")){
     MPIU_printf(comm,"--------------------------------------------\
 ------------------------------\n");
     MPIU_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
@@ -315,8 +311,7 @@ int OptionsCheckInitial_Private()
     if (sfree) free(display);
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
     PetscAttachDebugger();
-    MPI_Errhandler_create((MPI_Handler_function*)abort_function,
-                                                       &abort_handler);
+    MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);
     MPI_Errhandler_set(comm,abort_handler);
   }
   if (!OptionsHasName(0,"-no_signal_handler")) {
@@ -432,8 +427,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
         }
         else if (first && !strcmp(first,"alias")) {
           third = PetscStrtok(0," ");
-          if (!third)
-            SETERRQ(1,"OptionsCreate_Private: Error in options file on alias");
+          if (!third) SETERRQ(1,"OptionsCreate_Private:Error in options file: alias");
           len = PetscStrlen(third); third[len-1] = 0;
           ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
         }
@@ -468,7 +462,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
         eargs++; left--;
       }
       else if ((left < 2) || ((eargs[1][0] == '-') && 
-          ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
+               ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
         OptionsSetValue(eargs[0],(char *)0);
         eargs++; left--;
       }
@@ -571,7 +565,7 @@ int OptionsSetValue(char *name,char *value)
   names = options->names; 
  
   for ( i=0; i<N; i++ ) {
-    if (strcmp(names[i],name) == 0) {
+    if (PetscStrcmp(names[i],name) == 0) {
       if (options->values[i]) free(options->values[i]);
       len = PetscStrlen(value);
       if (len) {
@@ -582,7 +576,7 @@ int OptionsSetValue(char *name,char *value)
       else { options->values[i] = 0;}
       return 0;
     }
-    else if (strcmp(names[i],name) > 0) {
+    else if (PetscStrcmp(names[i],name) > 0) {
       n = i;
       break;
     }
@@ -616,9 +610,7 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
 {
   int len,n = options->Naliases;
 
-  if (n >= MAXALIASES) {
-    SETERRQ(1,"OptionsSetAlias_Private: Too many option aliases defined");
-  }
+  if (n >= MAXALIASES) {SETERRQ(1,"OptionsSetAlias_Private:Aliases overflow");}
   len = (PetscStrlen(newname)+1)*sizeof(char);
   options->aliases1[n] = (char *) malloc( len ); CHKPTRQ(options->aliases1[n]);
   PetscStrcpy(options->aliases1[n],newname);
@@ -797,7 +789,6 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
   *nmax = n;
   return 1; 
 } 
-
 
 /*@C
    OptionsGetString - Gets the string value for a particular option in

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.10 1995/09/22 22:39:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.11 1995/09/30 19:29:59 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -14,6 +14,7 @@ static char vcid[] = "$Id: matio.c,v 1.10 1995/09/22 22:39:22 bsmith Exp bsmith 
 
 extern int MatLoad_MPIRowbs(Viewer,MatType,Mat *);
 extern int MatLoad_SeqAIJ(Viewer,MatType,Mat *);
+extern int MatLoad_SeqRow(Viewer,MatType,Mat *);
 extern int MatLoad_MPIAIJ(Viewer,MatType,Mat *);
 
 /* @
@@ -59,8 +60,11 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
   if (type == MATSEQAIJ) {
     ierr = MatLoad_SeqAIJ(bview,type,newmat); CHKERRQ(ierr);
   }
-  else if (type == MATMPIAIJ) {
+  else if (type == MATMPIAIJ || type == MATMPIROW) {
     ierr = MatLoad_MPIAIJ(bview,type,newmat); CHKERRQ(ierr);
+  }
+  else if (type == MATSEQROW) {
+    ierr = MatLoad_SeqRow(bview,type,newmat); CHKERRQ(ierr);
   }
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   else if (type == MATMPIROWBS) {

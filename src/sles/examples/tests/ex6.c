@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.3 1995/09/22 15:15:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.4 1995/09/30 19:30:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -33,7 +33,6 @@ int main(int argc,char **args)
   CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A); CHKERRA(ierr);
 
-/*  ierr = MatConvert(A,MATSEQAIJ,&A); CHKERRA(ierr); */
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
@@ -41,7 +40,7 @@ int main(int argc,char **args)
 /*
  MatView(A,STDOUT_VIEWER_WORLD); 
  VecView(b,STDOUT_VIEWER_WORLD);
-
+/*
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"Test1.matrix1",0,0,600,500,&draw);
 
   CHKERRA(ierr);

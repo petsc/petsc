@@ -3,17 +3,13 @@ static char help[] = "This example passes a sparse matrix to Matlab.\n\n";
 #include "sles.h"
 #include <stdio.h>
 #include "petsc.h"
-#include "stencil.h"
-#include "grid.h"
 
 int main(int argc,char **args)
 {
-  int     ierr,m = 4,n = 5;
-  Scalar  one = 1.0;
+  int     ierr,m = 4,n = 5,i,j,I,J;
+  Scalar  one = 1.0,v;
   Vec     x;
   Mat     A;
-  Stencil stencil;
-  Grid    grid;
   Viewer  viewer;
 
   PetscInitialize(&argc,&args,0,0,help);
@@ -21,21 +17,20 @@ int main(int argc,char **args)
   OptionsGetInt(0,"-n",&n);
 
   ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERRA(ierr);
+  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
 
-  if ((ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A)))
-                                                           SETERRA(ierr,0);
-  ierr = GridCreateUniform2d(MPI_COMM_WORLD,m,0.0,1.0,n,0.0,1.0,&grid);
-  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uxx,&stencil); CHKERRA(ierr);
-  ierr = StencilAddStage(stencil,grid,0,0,0,A); CHKERRA(ierr);
-  ierr = StencilDestroy(stencil); CHKERRA(ierr);
-  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uyy,&stencil); CHKERRA(ierr);
-  ierr = StencilAddStage(stencil,grid,0,0,0,A); CHKERRA(ierr);
-  ierr = StencilDestroy(stencil); CHKERRA(ierr);
+  for ( i=0; i<m; i++ ) {
+    for ( j=0; j<n; j++ ) {
+      v = -1.0;  I = j + n*i;
+      if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
+    }
+  }
   ierr = MatAssemblyBegin(A,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_DIRICHLET,&stencil); CHKERRA(ierr);  
-  ierr = StencilAddStage(stencil,grid,0,0,0,A); CHKERRA(ierr);
-  ierr = StencilDestroy(stencil); CHKERRA(ierr);
 
   ierr = MatView(A,viewer); CHKERRA(ierr);
 
@@ -48,7 +43,6 @@ int main(int argc,char **args)
 
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = MatDestroy(A); CHKERRA(ierr);
-  ierr = GridDestroy(grid); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.16 1995/08/24 22:27:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.17 1995/09/30 19:27:41 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -162,8 +162,7 @@ int MPIU_Seq_begin(MPI_Comm comm,int ng )
 
   /* Get the private communicator for the sequential operations */
   if (MPIU_Seq_keyval == MPI_KEYVAL_INVALID) {
-    MPI_Keyval_create( MPI_NULL_COPY_FN, MPI_NULL_DELETE_FN, 
-                       &MPIU_Seq_keyval, (void*)0 );
+    MPI_Keyval_create(MPI_NULL_COPY_FN, MPI_NULL_DELETE_FN,&MPIU_Seq_keyval,(void*)0);
   }
   MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) {
@@ -233,8 +232,7 @@ static int MPIU_Tag_keyval = MPI_KEYVAL_INVALID;
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
 */
-static int MPIU_DelTag(MPI_Comm *comm,int* keyval,void* attr_val,
-                       void* extra_state )
+static int MPIU_DelTag(MPI_Comm *comm,int* keyval,void* attr_val,void* extra_state )
 {
   PETSCFREE( attr_val );
   return MPI_SUCCESS;
@@ -263,8 +261,7 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   int ierr = MPI_SUCCESS, *tagvalp, *maxval, flag;
 
   if (MPIU_Tag_keyval == MPI_KEYVAL_INVALID) {
-    MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,
-                      (void *)0);
+    MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void *)0);
   }
 
   if ((ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag)))

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.22 1995/08/28 21:56:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.23 1995/09/30 19:30:50 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -54,7 +54,6 @@ extern "C" {
     !defined(PARCH_linux)
 extern int setsockopt(int,int,int,char*,int);
 #endif
-extern int write(int,char*,int);
 extern int close(int);
 #if !defined(PARCH_freebsd) && !defined(PARCH_linux) && !defined(PARCH_solaris)
 extern int socket(int,int,int);
@@ -74,23 +73,10 @@ extern int usleep(unsigned);
 #if defined(PARCH_IRIX) && defined(__cplusplus)
 extern "C" {
 extern int sleep(unsigned);
-extern int write(int,char*,int);
 extern int close(int);
 };
 #endif
 
-/*
-      Byte swapping for certain Machines.
-*/
-#if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)\
-    || defined(PARCH_linux)
-static int byteswapint(int *,int),byteswapdouble(double*,int);
-#define BYTESWAPINT(buff,n)    byteswapint(buff,n)
-#define BYTESWAPDOUBLE(buff,n) byteswapdouble(buff,n)
-#else
-#define BYTESWAPINT(buff,n)
-#define BYTESWAPDOUBLE(buff,n)
-#endif
 
 typedef struct { int onoff; int time; } Linger;
 static int ViewerDestroy_Matlab(PetscObject obj)
@@ -112,33 +98,6 @@ static int ViewerDestroy_Matlab(PetscObject obj)
   return 0;
 }
 
-/*-----------------------------------------------------------------*/
-int SOCKWriteInt_Private(int t,int *buff,int n)
-{
-  int err;
-  BYTESWAPINT(buff,n);
-  err = SOCKWrite_Private(t,(void *) buff,n*sizeof(int));
-  BYTESWAPINT(buff,n);
-  return err;
-}
-/*-----------------------------------------------------------------*/
-int SOCKWriteDouble_Private(int t,double *buff,int n)
-{
-  int err;
-  BYTESWAPDOUBLE((double*)buff,n);
-  err = SOCKWrite_Private(t,(void *) buff,n*sizeof(double)); 
-  BYTESWAPDOUBLE((double*)buff,n);
-  return err; 
-}
-/*-----------------------------------------------------------------*/
-int SOCKWrite_Private(int t,void *buff,int n)
-{
-  if ( n <= 0 ) return 0;
-  if ( write(t,(char *)buff,n) < 0 ) {
-    SETERRQ(1,"write_data: error writing "); 
-  }
-  return 0; 
-}
 /*--------------------------------------------------------------*/
 int SOCKCall_Private(char *hostname,int portnum)
 {
@@ -185,39 +144,6 @@ int SOCKCall_Private(char *hostname,int portnum)
   }
   return(s);
 }
-/*  ------------------- BYTE SWAPPING ROUTINES ---------------------*/
-#if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)\
-    || defined(PARCH_linux)
-static int byteswapint(int *buff,int n)
-{
-  int  i,j,tmp;
-  char *ptr1,*ptr2 = (char *) &tmp;
-  for ( j=0; j<n; j++ ) { 
-    ptr1 = (char *) (&buff[j]);                              
-    for (i=0; i<sizeof(int); i++) {                        
-      ptr2[i] = ptr1[sizeof(int)-1-i];             
-    } 
-    buff[j] = tmp;                                          
-  }
-  return 0;
-}
-static int byteswapdouble(double *buff,int n)
-{
-  int    i,j;
-  double tmp,*ptr3;
-  char   *ptr1,*ptr2 = (char *) &tmp;
-  for ( j=0; j<n; j++ ) { 
-    ptr3 = &buff[j];
-    ptr1 = (char *) ptr3;                              
-    for (i=0; i<sizeof(double); i++) {                        
-      ptr2[i] = ptr1[sizeof(double)-1-i];             
-    } 
-    buff[j] = tmp;                                          
-  }
-  return 0;
-}
-#endif
-
 
 /*@
    ViewerMatlabOpen - Opens a connection to a Matlab server.
@@ -258,3 +184,4 @@ int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
   *lab           = v;
   return 0;
 }
+
