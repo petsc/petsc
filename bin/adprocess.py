@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #!/bin/env python
-# $Id: adprocess.py,v 1.3 2001/05/03 03:28:27 bsmith Exp bsmith $ 
+# $Id: adprocess.py,v 1.4 2001/07/17 19:25:25 bsmith Exp bsmith $ 
 #
 # change python to whatever is needed on your system to invoke python
 #
@@ -31,11 +31,9 @@ def setupfunctionC(filename):
 	line = f.readline()
 	while line:
                 line = lstrip(line)+" "
-                if len(line) >= 14:
-                  reg = re.compile('typedef [ ]*struct')
-#                  if line[0:14] == "typedef struct":
-                  fl = reg.search(line)
-                  if fl:
+                reg = re.compile('typedef [ ]*struct')
+                fl = reg.search(line)
+                if fl:
                         struct = line
 			while line:
                                 if line[0] == "}":
