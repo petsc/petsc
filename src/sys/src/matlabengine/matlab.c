@@ -10,6 +10,8 @@ struct  _p_PetscMatlabEngine {
   char     buffer[1024];
 };
 
+int MATLABENGINE_COOKIE = -1;
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMatlabEngineCreate"
 /*@C
@@ -37,6 +39,9 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *mengi
   PetscMatlabEngine e;
 
   PetscFunctionBegin;
+  if (MATLABENGINE_COOKIE == -1) {
+    ierr = PetscLogClassRegister(&MATLABENGINE_COOKIE,"Matlab Engine");CHKERRQ(ierr);
+  }
   PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_COOKIE,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);
   PetscLogObjectCreate(e);
 

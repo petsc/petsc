@@ -4,6 +4,7 @@
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
 
 EXTERN int VecInitializePackage(char *);
+int IS_LTOGM_COOKIE = -1;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
@@ -173,13 +174,18 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
 @*/
 int ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidIntPointer(indices);
   PetscValidPointer(mapping);
   *mapping = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  {int ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);}
+  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
 #endif
+  if (IS_LTOGM_COOKIE == -1) {
+    ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,"IS Local to global mapping");CHKERRQ(ierr);
+  }
 
   PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
                     cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);

@@ -65,7 +65,7 @@ EXTERN int   ISAllGather(IS,IS*);
 EXTERN int   ISAllGatherIndices(MPI_Comm,int,const int[],int*,int*[]);
 
 /* --------------------------------------------------------------------------*/
-#define IS_LTOGM_COOKIE PETSC_COOKIE+12
+extern int IS_LTOGM_COOKIE;
 
 /*S
    ISLocalToGlobalMapping - mappings from an arbitrary
