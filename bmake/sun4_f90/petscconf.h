@@ -1,6 +1,8 @@
-/*
-    Defines the configuration for this machine
-*/
+#ifdef PETSC_RCS_HEADER
+"$Id: petscconf.h,v 1.4 1998/04/25 23:24:11 balay Exp $"
+"Defines the configuration for this machine"
+#endif
+
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
@@ -32,8 +34,6 @@
 
 #define HAVE_MEMALIGN
 
-#if !defined(HAVE_NAGF90)
 #define HAVE_NAGF90
-#endif
 
 #endif

@@ -1,4 +1,4 @@
-# $Id: base,v 1.6 1998/04/09 21:09:52 balay Exp balay $ 
+# $Id: base,v 1.7 1998/04/23 23:14:11 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -woff 1164 -woff 1048
@@ -18,11 +18,7 @@ SHELL    = /bin/sh
 CLINKER  = cc -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
 FLINKER  = f90 -cpp -64 ${FOPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
 LD       = ld -64
-
 SYS_LIB  = 
-
-FCONF    = -DHAVE_64BITS  -DHAVE_IRIXF90
-
 SHELL    = /bin/sh
 
 include ${PETSC_DIR}/bmake/common
@@ -38,10 +34,10 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 ###################
 
 .F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 
 .F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${FCONF}  ${CPPFLAGS} $*.F
+	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} $*.o
 

@@ -1,8 +1,8 @@
-/* $Id: petscconf.h,v 1.6 1998/04/23 21:02:25 balay Exp balay $ */
+#ifdef PETSC_RCS_HEADER
+"$Id: petscconf.h,v 1.4 1998/04/25 23:24:11 balay Exp $"
+"Defines the configuration for this machine"
+#endif
 
-/*
-    Defines the configuration for this machine
-*/
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
@@ -33,8 +33,7 @@
 #define HAVE_FAST_MPI_WTIME
 #define HAVE_T3EF90
 
-#if !defined(HAVE_64BITS)
+
 #define HAVE_64BITS
-#endif
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.5 1998/04/25 23:23:08 balay Exp $"
+"$Id: petscconf.h,v 1.5 1998/04/25 23:23:29 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -20,10 +20,7 @@
 #define HAVE_SYS_TIME_H 
 #define HAVE_UNAME  
 
-#if !defined(HAVE_64BITS)
 #define HAVE_64BITS
-#endif
-
 #define HAVE_FORTRAN_UNDERSCORE
 
 #define HAVE_READLINK

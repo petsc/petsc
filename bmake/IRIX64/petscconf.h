@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.10 1998/04/25 23:20:56 balay Exp $"
+"$Id: petscconf.h,v 1.12 1998/04/25 23:21:43 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -21,9 +21,7 @@
 #define USE_SHARED_MEMORY
 
 #define HAVE_FORTRAN_UNDERSCORE 
-#if !defined(HAVE_64BITS)
 #define HAVE_64BITS
-#endif
 #define HAVE_IRIXF90
 
 #define HAVE_MEMMOVE
