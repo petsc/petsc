@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.21 1995/11/01 23:18:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.22 1995/11/03 03:00:36 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -20,6 +20,25 @@ typedef struct {
   int  (*getsize)(void*,int*,int*);
   void *ctx;
 } Mat_Shell;      
+
+/*@
+    MatShellGetContext - Returns the user provided context associated 
+         with a MatShell.
+
+  Input Parameter:
+.   mat - the matrix, should have been created with MatCreateShell()
+
+  Output Parameter:
+.   ctx - the user provided context
+
+@*/
+int MatShellGetContext(Mat mat,void **ctx)
+{
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE); 
+  if (mat->type != MATSHELL) *ctx = 0; 
+  else                       *ctx = ((Mat_Shell *) (mat->data))->ctx; 
+  return 0;
+}
 
 static int MatGetSize_Shell(Mat mat,int *m,int *n)
 {

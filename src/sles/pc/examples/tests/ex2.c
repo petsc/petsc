@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.31 1995/11/01 19:09:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.32 1995/12/12 22:54:22 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,u); CHKERRA(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PetscNull,&mat); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;

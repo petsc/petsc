@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.20 1995/11/30 22:35:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.21 1995/12/01 14:49:19 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Plots a simple line graph\n";
@@ -19,9 +19,9 @@ int main(int argc,char **argv)
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  OptionsGetInt(PetscNull,"-width",&width); OptionsGetInt(0,"-height",&height);
-  OptionsGetInt(PetscNull,"-n",&n);
-  if (OptionsHasName(PetscNull,"-nolabels")) {
+  OptionsGetInt(PETSC_NULL,"-width",&width); OptionsGetInt(0,"-height",&height);
+  OptionsGetInt(PETSC_NULL,"-n",&n);
+  if (OptionsHasName(PETSC_NULL,"-nolabels")) {
     xlabel = (char *)0; toplabel = (char *)0;
   }
   ierr = DrawOpenX(MPI_COMM_SELF,0,"Title",x,y,width,height,&draw);CHKERRA(ierr);

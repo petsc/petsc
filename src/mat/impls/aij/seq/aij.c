@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.124 1995/12/11 16:40:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.125 1995/12/12 22:49:35 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1214,7 +1214,7 @@ extern int MatUseDXML_SeqAIJ(Mat);
    either one (as in Fortran) or zero.  See the users manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=0 and nnz=PetscNull for PETSc to control dynamic memory 
+   Set nz=0 and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.
 
    By default, this format uses inodes (identical nodes) when possible.
@@ -1242,16 +1242,16 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   B->view             = MatView_SeqAIJ;
   B->factor           = 0;
   B->lupivotthreshold = 1.0;
-  OptionsGetDouble(PetscNull,"-mat_lu_pivotthreshold",&B->lupivotthreshold);
+  OptionsGetDouble(PETSC_NULL,"-mat_lu_pivotthreshold",&B->lupivotthreshold);
   b->row              = 0;
   b->col              = 0;
   b->indexshift       = 0;
-  if (OptionsHasName(PetscNull,"-mat_aij_oneindex")) b->indexshift = -1;
+  if (OptionsHasName(PETSC_NULL,"-mat_aij_oneindex")) b->indexshift = -1;
 
   b->m       = m;
   b->n       = n;
   b->imax    = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(b->imax);
-  if (nnz == PetscNull) {
+  if (nnz == PETSC_NULL) {
     if (nz <= 0) nz = 1;
     for ( i=0; i<m; i++ ) b->imax[i] = nz;
     nz = nz*m;
@@ -1294,13 +1294,13 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->inode.max_limit  = 5;
 
   *A = B;
-  if (OptionsHasName(PetscNull,"-mat_aij_superlu")) {
+  if (OptionsHasName(PETSC_NULL,"-mat_aij_superlu")) {
     ierr = MatUseSuperLU_SeqAIJ(B); CHKERRQ(ierr);
   }
-  if (OptionsHasName(PetscNull,"-mat_aij_essl")) {
+  if (OptionsHasName(PETSC_NULL,"-mat_aij_essl")) {
     ierr = MatUseEssl_SeqAIJ(B); CHKERRQ(ierr);
   }
-  if (OptionsHasName(PetscNull,"-mat_aij_dxml")) {
+  if (OptionsHasName(PETSC_NULL,"-mat_aij_dxml")) {
     if (!b->indexshift) SETERRQ(1,"MatCreateSeqAIJ:need -mat_aij_oneindex with -mat_aij_dxml");
     ierr = MatUseDXML_SeqAIJ(B); CHKERRQ(ierr);
   }

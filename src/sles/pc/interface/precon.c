@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.53 1995/11/01 23:16:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.54 1995/11/19 00:17:54 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -342,10 +342,9 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if (!mat || !pmat || !flag) SETERRQ(PETSC_ERR_ARG,"PCGetOperators");
-  *mat  = pc->mat;
-  *pmat = pc->pmat;
-  *flag = pc->flag;
+  if (mat) *mat  = pc->mat;
+  if (pmat) *pmat = pc->pmat;
+  if (flag) *flag = pc->flag;
   return 0;
 }
 

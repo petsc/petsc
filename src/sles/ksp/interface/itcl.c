@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.43 1995/11/09 22:26:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.44 1995/11/30 22:32:08 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -29,7 +29,7 @@ int KSPSetFromOptions(KSP ctx)
   int       restart;
   PETSCVALIDHEADERSPECIFIC(ctx,KSP_COOKIE);
 
-  if (OptionsHasName(PetscNull,"-help")) {
+  if (OptionsHasName(PETSC_NULL,"-help")) {
     KSPPrintHelp(ctx);
   }
   if (KSPGetMethodFromOptions_Private(ctx,&method)) {
@@ -39,6 +39,10 @@ int KSPSetFromOptions(KSP ctx)
   OptionsGetDouble(ctx->prefix,"-ksp_rtol",&ctx->rtol);  
   OptionsGetDouble(ctx->prefix,"-ksp_atol",&ctx->atol);
   OptionsGetDouble(ctx->prefix,"-ksp_divtol",&ctx->divtol);
+  if (OptionsHasName(ctx->prefix,"-ksp_gmres_preallocate")){
+    KSPGMRESSetPreAllocateVectors(ctx);
+  }
+
   if (OptionsHasName(ctx->prefix,"-ksp_monitor")){
     int rank = 0;
     MPI_Comm_rank(ctx->comm,&rank);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.24 1995/11/30 22:36:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.25 1995/12/12 22:56:04 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -31,15 +31,15 @@ int main( int argc, char **argv )
   Scalar       v;
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(PetscNull,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n);
   h = 1.0/(n-1);
 
   /* Set up data structures */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PetscNull,&J); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,1,PetscNull,&JPrec); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,1,PETSC_NULL,&JPrec); CHKERRA(ierr);
 
   /* Store right-hand-side of PDE */
   for ( i=0; i<n; i++ ) {
@@ -60,10 +60,10 @@ int main( int argc, char **argv )
   ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0); CHKERRA(ierr);
 
   /* Set preconditioner for matrix-free method */
-  if (OptionsHasName(PetscNull,"-snes_mf")) {
+  if (OptionsHasName(PETSC_NULL,"-snes_mf")) {
     ierr = SNESGetSLES(snes,&sles); CHKERRA(ierr);
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-    if (OptionsHasName(PetscNull,"-user_precond")) { /* user-defined precond */
+    if (OptionsHasName(PETSC_NULL,"-user_precond")) { /* user-defined precond */
       ierr = PCSetMethod(pc,PCSHELL); CHKERRA(ierr);
       ierr = PCShellSetApply(pc,MatrixFreePreconditioner,(void*)0); 
              CHKERRA(ierr);

@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.30 1995/11/30 22:32:59 bsmith Exp $";
+static char vcid[] = "$Id: pcnull.c,v 1.1 1995/12/15 21:03:49 bsmith Exp bsmith $";
 #endif
 /*
-    Routines to set PC methods and options.
+    Routines to project vectors out of null spaces.
 */
 
 #include "petsc.h"
@@ -11,182 +11,86 @@ static char vcid[] = "$Id: pcset.c,v 1.30 1995/11/30 22:32:59 bsmith Exp $";
 #include "sys/nreg.h"
 #include "sys.h"
 
-static NRList *__PCList = 0;
 
 /*@
-  PCSetMethod - Builds PC for a particular preconditioner. It is 
-                best to use the SLESSetFromOptions() command and 
-                set the PC method from the command line rather then
-                by using this routine.
+  PCNullSpaceCreate - Creates a data-structure used to project vectors 
+       out of null spaces.
 
-  Input Parameter:
-.  pc - the preconditioner context.
-.  method - a known method
-
-   Options Database Command:
-$  -pc_method  <method>
-$      Use -help for a list of available methods
-$      (for instance, jacobi or bjacobi)
-
-  Notes:
-  See "petsc/include/pc.h" for available methods (for instance,
-  PCJACOBI, PCILU, or PCBJACOBI).
-
-.keywords: PC, set, method
-@*/
-int PCSetMethod(PC ctx,PCMethod method)
-{
-  int ierr,(*r)(PC);
-  PETSCVALIDHEADERSPECIFIC(ctx,PC_COOKIE);
-  if (ctx->setupcalled) {
-    if (ctx->destroy) ierr =  (*ctx->destroy)((PetscObject)ctx);
-    else {if (ctx->data) PetscFree(ctx->data);}
-    ctx->data = 0;
-  }
-  /* Get the function pointers for the method requested */
-  if (!__PCList) {PCRegisterAll();}
-  if (!__PCList) {SETERRQ(1,"PCSetMethod:Could not get list of methods");}
-  r =  (int (*)(PC))NRFindRoutine( __PCList, (int)method, (char *)0 );
-  if (!r) {SETERRQ(1,"PCSetMethod:Unknown method");}
-  if (ctx->data) PetscFree(ctx->data);
-  ctx->setfrom     = ( int (*)(PC) ) 0;
-  ctx->printhelp   = ( int (*)(PC) ) 0;
-  ctx->setup       = ( int (*)(PC) ) 0;
-  ctx->destroy     = ( int (*)(PetscObject) ) 0;
-  return (*r)(ctx);
-}
-
-/*@C
-   PCRegister - Adds the iterative method to the preconditioner
-   package,  given an iterative name (PCMethod) and a function pointer.
-
-   Input Parameters:
-.  name - for instance PCJACOBI, ...
-.  sname -  corresponding string for name
-.  create - routine to create method context
-
-.keywords: PC, register
-
-.seealso: PCRegisterAll(), PCRegisterDestroy()
-@*/
-int  PCRegister(PCMethod name,char *sname,int (*create)(PC))
-{
-  int ierr;
-  if (!__PCList) {ierr = NRCreate(&__PCList); CHKERRQ(ierr);}
-  return NRRegister( __PCList, (int) name, sname, (int (*)(void*)) create );
-}
-
-/*@C
-   PCRegisterDestroy - Frees the list of preconditioners that were
-   registered by PCRegister().
-
-.keywords: PC, register, destroy
-
-.seealso: PCRegisterAll(), PCRegisterAll()
-@*/
-int PCRegisterDestroy()
-{
-  if (__PCList) {
-    NRDestroy( __PCList );
-    __PCList = 0;
-  }
-  return 0;
-}
-
-/* 
-  PCGetMethodFromOptions_Private - Sets the selected PC method from the 
-  options database.
-
-  Input Parameter:
-. pc - the preconditioner context
+  Input Parameters:
+.  comm - the MPI communicator associated with the object.
+.  has_cnst - if the null spaces contains the constant vector, PETSC_TRUE or PETSC_FALSE
+.  n - number of vectors (excluding constant vector) in null space
+.  vecs - the vectors that span the null space (excluding the constant vector)
+.         these vectors must be orthonormal
 
   Output Parameter:
-. method - PC method
+.  SP - the null space context
 
-  Returns:
-  1 if method is found; otherwise 0.
 
-  Options Database Key:
-$ -pc_method  method
-*/
-int PCGetMethodFromOptions_Private(PC pc,PCMethod *method )
-{
-  int  ierr;
-  char sbuf[50];
-  if (OptionsGetString( pc->prefix,"-pc_method", sbuf, 50 )) {
-    if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-    *method = (PCMethod)NRFindID( __PCList, sbuf );
-    return 1;
-  }
-  return 0;
-}
-
-/*@C
-   PCGetMethodName - Gets the PC method name (as a string) from the 
-   method type.
-
-   Input Parameter:
-.  meth - preconditioner method
-
-   Output Parameter:
-.  name - name of preconditioner
-
-.keywords: PC, get, method, name
+.keywords: PC, Null space
 @*/
-int PCGetMethodName(PCMethod meth,char **name)
+int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace *SP)
 {
-  int ierr;
-  if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-  *name = NRFindName( __PCList, (int)meth );
-  return 0;
-}
+  PCNullSpace sp;
 
-/*
-   PCPrintMethods_Private - Prints the PC methods available from the options 
-   database.
+  PetscHeaderCreate(sp,_PCNullSpace,PCNULLSPACE_COOKIE,0,comm);
+  PLogObjectCreate(sp);
+  PLogObjectMemory(sp,sizeof(struct _PCNullSpace));
 
-   Input Parameters:
-.  prefix - prefix (usually "-")
-.  name - the options database name (by default "pc_method") 
-*/
-int PCPrintMethods_Private(char *prefix,char *name)
-{
-  FuncList *entry;
-  int      ierr;
-  if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-  entry = __PCList->head;
-  MPIU_printf(MPI_COMM_WORLD," %s%s (one of)",prefix,name);
-  while (entry) {
-    MPIU_printf(MPI_COMM_WORLD," %s",entry->name);
-    entry = entry->next;
-  }
-  MPIU_printf(MPI_COMM_WORLD,"\n");
+  sp->has_cnst = has_cnst; 
+  sp->n        = n;
+  sp->vecs     = vecs;
+
+  *SP          = sp;
   return 0;
 }
 
 /*@
-   PCSetFromOptions - Sets PC options from the options database.
-   This routine must be called before PCSetUp() if the user is to be
-   allowed to set the preconditioner method. 
+  PCNullSpaceDestroy - Destroys a data-structure used to project vectors 
+       out of null spaces.
 
-   Input Parameters:
-.  pc - the preconditioner context
+  Input Parameter:
+.    SP - the null space context to be destroyed
 
-.keywords: PC, set, from, options, database
-
-.seealso: PCPrintHelp()
+.keywords: PC, Null space
 @*/
-int PCSetFromOptions(PC pc)
+int PCNullSpaceDestroy(PCNullSpace sp)
 {
-  PCMethod method;
-  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  PLogObjectDestroy(sp);
+  PetscHeaderDestroy(sp);
+  return 0;
+}
 
-  if (PCGetMethodFromOptions_Private(pc,&method)) {
-    PCSetMethod(pc,method);
+/*@
+  PCNullSpaceRemove - Removes all the components of a null space from a vector.
+
+  Input Parameters:
+.    sp - the null space context
+.    vec - the vector you want the null space removed from
+
+
+.keywords: PC, Null space
+@*/
+int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
+{
+  Scalar sum;
+  int    j, n = sp->n, N,ierr;
+
+  if (sp->has_cnst) {
+    ierr = VecSum(vec,&sum); CHKERRQ(ierr);
+    ierr = VecGetSize(vec,&N); CHKERRQ(ierr);
+    sum  = -sum/N;
+    ierr = VecShift(&sum,vec); CHKERRQ(ierr);
+VecSum(vec,&sum);
+printf("sume of elemnts %g\n",sum);
+
   }
-  if (OptionsHasName(PetscNull,"-help")){
-    PCPrintHelp(pc);
+
+  for ( j=0; j<n; j++ ) {
+    ierr = VecDot(vec,sp->vecs[j],&sum);CHKERRQ(ierr);
+    sum  = -sum;
+    ierr = VecAYPX(&sum,sp->vecs[j],vec); CHKERRQ(ierr);
   }
-  if (pc->setfrom) return (*pc->setfrom)(pc);
+  
   return 0;
 }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.57 1995/11/20 04:46:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.58 1995/11/30 22:32:44 bsmith Exp bsmith $";
 #endif
 /*
   These routines simplify the use of command line, file options, etc.,
@@ -147,7 +147,7 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env,char *help)
     MPI_Comm_size(MPI_COMM_WORLD,&size);
     PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
   }
-  if (help && OptionsHasName(PetscNull,"-help")) {
+  if (help && OptionsHasName(PETSC_NULL,"-help")) {
     MPIU_printf(MPI_COMM_WORLD,help);
   }
   return 0;
@@ -184,25 +184,25 @@ int PetscFinalize()
 
   ViewerDestroy_Private();
 #if defined(PETSC_LOG)
-  if (OptionsHasName(PetscNull,"-log_summary")) {
+  if (OptionsHasName(PETSC_NULL,"-log_summary")) {
     PLogPrint(MPI_COMM_WORLD,stdout);
   }
   mname[0] = 0;
-  if (OptionsGetString(PetscNull,"-log_all",mname,64)||OptionsGetString(0,"-log",mname,64)){
+  if (OptionsGetString(PETSC_NULL,"-log_all",mname,64)||OptionsGetString(0,"-log",mname,64)){
     if (mname[0]) PLogDump(mname); 
     else PLogDump(0);
   }
   PLogDestroy();
 #endif
-  if (!OptionsHasName(PetscNull,"-no_signal_handler")) {
+  if (!OptionsHasName(PETSC_NULL,"-no_signal_handler")) {
     PetscPopSignalHandler();
   }
-  OptionsHasName(PetscNull,"-trdump");
+  OptionsHasName(PETSC_NULL,"-trdump");
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  if (OptionsHasName(PetscNull,"-optionstable")) {
+  if (OptionsHasName(PETSC_NULL,"-optionstable")) {
     if (!rank) OptionsPrint(stdout);
   }
-  if (OptionsHasName(PetscNull,"-optionsleft")) {
+  if (OptionsHasName(PETSC_NULL,"-optionsleft")) {
     if (!rank) {
       int nopt = OptionsAllUsed();
       if (nopt == 0) 
@@ -219,11 +219,11 @@ int PetscFinalize()
       }
     } 
   }
-  if (OptionsHasName(PetscNull,"-log_history")) {
+  if (OptionsHasName(PETSC_NULL,"-log_history")) {
     PLogCloseHistoryFile(&petsc_history);
     petsc_history = 0;
   }
-  if (OptionsHasName(PetscNull,"-trdump")) {
+  if (OptionsHasName(PETSC_NULL,"-trdump")) {
     OptionsDestroy_Private();
     NRDestroyAll();
     MPIU_Seq_begin(MPI_COMM_WORLD,1);
@@ -273,22 +273,22 @@ int OptionsCheckInitial_Private()
   MPI_Comm comm = MPI_COMM_WORLD;
 
 #if defined(PETSC_BOPT_g)
-  if (!OptionsHasName(PetscNull,"-notrmalloc")) {
+  if (!OptionsHasName(PETSC_NULL,"-notrmalloc")) {
     PetscSetUseTrMalloc_Private();
   }
 #else
-  if (OptionsHasName(PetscNull,"-trdump") || OptionsHasName(PetscNull,"-trmalloc")) {
+  if (OptionsHasName(PETSC_NULL,"-trdump") || OptionsHasName(PETSC_NULL,"-trmalloc")) {
     PetscSetUseTrMalloc_Private();
   }
 #endif
-  if (OptionsHasName(PetscNull,"-malloc_debug")) {
+  if (OptionsHasName(PETSC_NULL,"-malloc_debug")) {
     TrDebugLevel(1);
 #if defined(PARCH_sun4) && defined(PETSC_BOPT_g)
     malloc_debug(2);
 #endif
   }
-  if (OptionsHasName(PetscNull,"-v")||OptionsHasName(PetscNull,"-version")||
-      OptionsHasName(PetscNull,"-help")){
+  if (OptionsHasName(PETSC_NULL,"-v")||OptionsHasName(PETSC_NULL,"-version")||
+      OptionsHasName(PETSC_NULL,"-help")){
     MPIU_printf(comm,"--------------------------------------------\
 ------------------------------\n");
     MPIU_printf(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
@@ -299,13 +299,13 @@ int OptionsCheckInitial_Private()
     MPIU_printf(comm,"--------------------------------------------\
 ---------------------------\n");
   }
-  if (OptionsHasName(PetscNull,"-fp_trap")) {
+  if (OptionsHasName(PETSC_NULL,"-fp_trap")) {
     PetscSetFPTrap(FP_TRAP_ALWAYS);
   }
-  if (OptionsHasName(PetscNull,"-on_error_abort")) {
+  if (OptionsHasName(PETSC_NULL,"-on_error_abort")) {
     PetscPushErrorHandler(PetscAbortErrorHandler,0);
   }
-  if (OptionsGetString(PetscNull,"-on_error_attach_debugger",string,64)) {
+  if (OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64)) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0;
     if (PetscStrstr(string,"noxterm")) xterm = 0;
@@ -318,7 +318,7 @@ int OptionsCheckInitial_Private()
     if (PetscStrstr(string,"xldb"))    debugger = "xldb";
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (OptionsGetString(PetscNull,"-display",string,64)){
+    if (OptionsGetString(PETSC_NULL,"-display",string,64)){
       display = string;
     }
     if (!display) {
@@ -329,7 +329,7 @@ int OptionsCheckInitial_Private()
     if (sfree) free(display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
-  if (OptionsGetString(PetscNull,"-start_in_debugger",string,64)) {
+  if (OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64)) {
     char *debugger = 0, *display = 0;
     int  xterm     = 1, sfree = 0,size = 1;
     MPI_Errhandler abort_handler;
@@ -360,7 +360,7 @@ int OptionsCheckInitial_Private()
     if (PetscStrstr(string,"xldb"))    debugger = "xldb";
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (OptionsGetString(PetscNull,"-display",string,64)){
+    if (OptionsGetString(PETSC_NULL,"-display",string,64)){
       display = string;
     }
     if (!display) {
@@ -375,14 +375,14 @@ int OptionsCheckInitial_Private()
     MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);
     MPI_Errhandler_set(comm,abort_handler);
   }
-  if (!OptionsHasName(PetscNull,"-no_signal_handler")) {
+  if (!OptionsHasName(PETSC_NULL,"-no_signal_handler")) {
     PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);
   }
 #if defined(PETSC_LOG)
   {
   char mname[256];
   mname[0] = 0;
-  if (OptionsGetString(PetscNull,"-log_history",mname,256)) {
+  if (OptionsGetString(PETSC_NULL,"-log_history",mname,256)) {
     int ierr;
     if (mname[0]) {
       ierr = PLogOpenHistoryFile(mname,&petsc_history); CHKERRQ(ierr);
@@ -392,17 +392,17 @@ int OptionsCheckInitial_Private()
     }
   }
   }
-  if (OptionsHasName(PetscNull,"-info")) {
+  if (OptionsHasName(PETSC_NULL,"-info")) {
     PLogAllowInfo(PETSC_TRUE);
   }
-  if (OptionsHasName(PetscNull,"-log_all")) {
+  if (OptionsHasName(PETSC_NULL,"-log_all")) {
     PLogAllBegin();
   }
-  else if (OptionsHasName(PetscNull,"-log") || OptionsHasName(PetscNull,"-log_summary")) {
+  else if (OptionsHasName(PETSC_NULL,"-log") || OptionsHasName(PETSC_NULL,"-log_summary")) {
     PLogBegin();
   }
 #endif
-  if (OptionsHasName(PetscNull,"-help")) {
+  if (OptionsHasName(PETSC_NULL,"-help")) {
     MPIU_printf(comm,"Options for all PETSc programs:\n");
     MPIU_printf(comm," -on_error_abort: cause an abort when an error is");
     MPIU_printf(comm," detected. Useful \n       only when run in the debugger\n");
@@ -729,7 +729,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
 
    Input Parameters:
 .  name - the option one is seeking 
-.  pre - string to prepend to the name or PetscNull
+.  pre - string to prepend to the name or PETSC_NULL
 
    Returns:
 $   1 if the option is found;
@@ -754,7 +754,7 @@ int OptionsHasName(char* pre,char *name)
 
    Input Parameters:
 .  name - the option one is seeking
-.  pre - the string to prepend to the name or PetscNull
+.  pre - the string to prepend to the name or PETSC_NULL
 
    Output Parameter:
 .  ivalue - the integer value to return
@@ -784,7 +784,7 @@ int OptionsGetInt(char*pre,char *name,int *ivalue)
 
    Input Parameters:
 .  name - the option one is seeking
-.  pre - string to prepend to each name or PetscNull
+.  pre - string to prepend to each name or PETSC_NULL
 
    Output Parameter:
 .  dvalue - the double value to return
@@ -815,7 +815,7 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue)
 
    Input Parameters:
 .  name - the option one is seeking
-.  pre - string to prepend to each name or PetscNull
+.  pre - string to prepend to each name or PETSC_NULL
 
    Output Parameter:
 .  dvalue - the double value to return
@@ -846,7 +846,7 @@ int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
 
    Input Parameters:
 .  name - the option one is seeking
-.  pre - string to prepend to each name or PetscNull
+.  pre - string to prepend to each name or PETSC_NULL
 .  nmax - maximum number of values to retrieve
 
    Output Parameters:
@@ -886,7 +886,7 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax)
 
    Input Parameters:
 .  name - the option one is seeking
-.  pre - string to prepend to each name or PetscNull
+.  pre - string to prepend to each name or PETSC_NULL
 .  nmax - maximum number of values to retrieve
 
    Output Parameter:
@@ -926,7 +926,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax)
    Input Parameters:
 .  name - the option one is seeking
 .  len - maximum string length
-.  pre - string to prepend to name or PetscNull
+.  pre - string to prepend to name or PETSC_NULL
 
    Output Parameter:
 .  string - location to copy string

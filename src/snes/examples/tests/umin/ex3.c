@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.12 1995/11/13 16:48:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.13 1995/11/30 22:36:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "\n\
@@ -61,16 +61,16 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,0,0,help);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  OptionsGetInt(PetscNull,"-Nx",&Nx);
-  OptionsGetInt(PetscNull,"-Ny",&Ny);
+  OptionsGetInt(PETSC_NULL,"-Nx",&Nx);
+  OptionsGetInt(PETSC_NULL,"-Ny",&Ny);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
     SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;
-  OptionsGetDouble(PetscNull,"-par",&user.param);
-  OptionsGetInt(PetscNull,"-my",&my);
-  OptionsGetInt(PetscNull,"-mx",&mx);
+  OptionsGetDouble(PETSC_NULL,"-par",&user.param);
+  OptionsGetInt(PETSC_NULL,"-my",&my);
+  OptionsGetInt(PETSC_NULL,"-mx",&mx);
   user.ndim = mx * my;
   user.mx = mx;
   user.my = my;
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
 
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  if (OptionsHasName(PetscNull,"-snes_mf")) {
+  if (OptionsHasName(PETSC_NULL,"-snes_mf")) {
     ierr = MatShellCreate(MPI_COMM_WORLD,user.ndim,user.ndim,(void*)&user,&H);
            CHKERRA(ierr);
     ierr = MatShellSetMult(H,HessianProduct); CHKERRA(ierr);

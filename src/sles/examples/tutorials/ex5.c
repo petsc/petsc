@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.41 1995/11/30 22:34:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.42 1995/12/02 03:32:53 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   double  norm;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PetscNull,"-m",&m);
+  OptionsGetInt(PETSC_NULL,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   n = 2*size;

@@ -23,9 +23,9 @@ C
 C
 C  Fortran Null
 C
-      integer  PetscNull
+      integer  PETSC_NULL
 
-      common   /petscfortran/  PetscNull,
+      common   /petscfortran/  PETSC_NULL,
      *         STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,STDOUT_VIEWER_WORLD
 
 C

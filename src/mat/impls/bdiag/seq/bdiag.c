@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.75 1995/11/30 22:34:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.76 1995/12/12 22:54:56 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1429,10 +1429,10 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
 $     where for a matrix element A[i,j], 
 $     where i=row and j=column, the diagonal number is
 $     diag = i/nb - j/nb  (integer division)
-$     Set diag=PetscNull on input for PETSc to dynamically allocate memory
+$     Set diag=PETSC_NULL on input for PETSc to dynamically allocate memory
 $     as needed.
 .  diagv - pointer to actual diagonals (in same order as diag array), 
-   if allocated by user.  Otherwise, set diagv=PetscNull on input for PETSc
+   if allocated by user.  Otherwise, set diagv=PETSC_NULL on input for PETSc
    to control memory allocation.
 
    Output Parameters:
@@ -1486,7 +1486,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   a->diagv  = (Scalar**)PetscMalloc(nda*sizeof(Scalar*)); CHKPTRQ(a->diagv);
   sizetot = 0;
 
-  if (diagv != PetscNull) { /* user allocated space */
+  if (diagv != PETSC_NULL) { /* user allocated space */
     a->user_alloc = 1;
     for (i=0; i<nd; i++) a->diagv[i] = diagv[i];
   }
@@ -1537,7 +1537,7 @@ static int MatCopyPrivate_SeqBDiag(Mat A,Mat *matout,int cpvalues)
 
   if (!a->assembled) SETERRQ(1,"MatCopyPrivate_SeqBDiag:Assemble matrix");
 
-  ierr = MatCreateSeqBDiag(A->comm,a->m,a->n,a->nd,a->nb,a->diag,PetscNull,matout);
+  ierr = MatCreateSeqBDiag(A->comm,a->m,a->n,a->nd,a->nb,a->diag,PETSC_NULL,matout);
   CHKERRQ(ierr);
 
   /* Copy contents of diagonals */
@@ -1577,8 +1577,8 @@ int MatLoad_SeqBDiag(Viewer bview,MatType type,Mat *A)
 
   /* create our matrix */
   nb = 1;
-  OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);
-  ierr = MatCreateSeqBDiag(comm,M,N,0,nb,PetscNull,PetscNull,A); CHKERRQ(ierr);
+  OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);
+  ierr = MatCreateSeqBDiag(comm,M,N,0,nb,PETSC_NULL,PETSC_NULL,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBDiag *) B->data;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.38 1995/11/01 23:19:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.39 1995/11/30 22:34:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -39,7 +39,7 @@ int main(int argc,char **args)
   IS          is;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PetscNull,"-m",&m);
+  OptionsGetInt(PETSC_NULL,"-m",&m);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */

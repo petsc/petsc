@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.27 1995/11/30 22:33:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.28 1995/12/12 22:54:22 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   char      *kspname, *pcname;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PetscNull,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n);
 
   /* Create and initialize vectors */
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,u); CHKERRA(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PetscNull,&mat); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;

@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.16 1995/11/30 22:36:13 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.17 1995/12/06 00:25:54 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -26,7 +26,7 @@ C
 
       call PetscInitialize(ierr)
       N = 10
-      call OptionsGetInt(PetscNull,'-n',N,ierr)
+      call OptionsGetInt(PETSC_NULL,'-n',N,ierr)
       h = 1.d0/(N-1.d0)
       ctx(6) = N
 
@@ -47,7 +47,7 @@ C Set up data structures
       call PetscObjectSetName(U,'Exact Solution',ierr)
 
       call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,
-     *                     N,3,PetscNull,0,PetscNull,J,ierr)
+     *                     N,3,PETSC_NULL,0,PETSC_NULL,J,ierr)
 
       call MatGetName(J,matrixname,ierr)
 C     print*, 'Matrix name ',matrixname

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.30 1995/10/22 04:17:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.31 1995/11/30 22:31:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector into seqential vectors.\n\n";
@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
 
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
-  OptionsGetInt(PetscNull,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
 
   /* create two vectors */

@@ -1,11 +1,11 @@
-/* $Id: petsc.h,v 1.77 1995/12/15 15:28:33 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.78 1995/12/15 18:15:08 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.10, Released Dec. 15, 1995."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.11, Released ?."
 
 #include <stdio.h>
 #if defined(PARCH_sun4) && !defined(__cplusplus)
@@ -61,7 +61,7 @@ extern char* PetscStrrtok(char*,char*);
 #define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
 #define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
-#define PetscNull          0
+#define PETSC_NULL          0
 
 #if defined(PETSC_COMPLEX)
 #define PetscAbsScalar(a)     abs(a)

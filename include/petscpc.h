@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.39 1995/12/03 02:42:03 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.40 1995/12/21 16:39:01 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -53,6 +53,9 @@ extern int PCSORSetSymmetric(PC, MatSORType);
 extern int PCSORSetOmega(PC, double);
 extern int PCEisenstatSetOmega(PC, double);
 extern int PCSORSetIterations(PC, int);
+
+typedef enum {BGS_FORWARD_SWEEP=1,BGS_BACKWARD_SWEEP=2,BGS_SYMMETRIC_SWEEP=3} PCBGSType;
+extern int PCBGSSetSymmetric(PC, PCBGSType);
 
 #define USE_PRECONDITIONER_MATRIX 0
 #define USE_TRUE_MATRIX           1

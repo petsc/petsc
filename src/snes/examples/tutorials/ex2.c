@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.37 1995/11/30 22:36:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.38 1995/12/12 22:56:04 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
@@ -27,7 +27,7 @@ int main( int argc, char **argv )
   MonitorCtx   monP;               /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0,help );
-  OptionsGetInt(PetscNull,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n);
   h = 1.0/(n-1);
 
   /* Set up data structures */
@@ -38,7 +38,7 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PetscNull,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&J); CHKERRA(ierr);
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {

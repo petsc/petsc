@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.54 1995/12/06 00:24:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.55 1995/12/12 22:54:13 curfman Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -50,7 +50,7 @@ static int PCSetFromOptions_BJacobi(PC pc)
   int        blocks;
 
   if (OptionsGetInt(pc->prefix,"-pc_bjacobi_blocks",&blocks)) {
-    PCBJacobiSetTotalBlocks(pc,blocks,PetscNull,PetscNull);
+    PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL);
   }
   if (OptionsHasName(pc->prefix,"-pc_bjacobi_truelocal")) {
     PCBJacobiSetUseTrueLocal(pc);
@@ -191,6 +191,7 @@ int PCCreate_BJacobi(PC pc)
   pc->view               = PCView_BJacobi;
   pc->type               = PCBJACOBI;
   pc->data               = (void *) jac;
+  jac->gs                = PETSC_FALSE;
   jac->n                 = -1;
   jac->n_local           = -1;
   jac->first_local       = rank;
@@ -204,6 +205,17 @@ int PCCreate_BJacobi(PC pc)
   return 0;
 }
 
+int PCCreate_BGS(PC pc)
+{
+  int        ierr;
+  PC_BJacobi *jac;
+
+  ierr    = PCCreate_BJacobi(pc); CHKERRQ(ierr);
+  jac     = (PC_BJacobi*) pc->data;
+  jac->gs = PETSC_TRUE;
+  return 0;
+}
+  
 /*@
    PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
    Jacobi preconditioner.

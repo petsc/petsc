@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.14 1995/11/09 22:33:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.15 1995/11/30 22:36:31 bsmith Exp bsmith $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -26,16 +26,16 @@ int main(int argc,char **argv)
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,400,400,&win);
   CHKERRA(ierr);
  
-  OptionsGetInt(PetscNull,"-M",&M);
-  OptionsGetInt(PetscNull,"-N",&N);
-  OptionsGetInt(PetscNull,"-m",&m);
-  OptionsGetInt(PetscNull,"-n",&n);
-  OptionsGetInt(PetscNull,"-s",&s);
-  OptionsGetInt(PetscNull,"-w",&w);
-  if (OptionsHasName(PetscNull,"-xwrap")) wrap = DA_XPERIODIC;
-  if (OptionsHasName(PetscNull,"-ywrap")) wrap = DA_YPERIODIC;
-  if (OptionsHasName(PetscNull,"-xywrap")) wrap = DA_XYPERIODIC;
-  if (OptionsHasName(PetscNull,"-star")) st = DA_STENCIL_STAR;
+  OptionsGetInt(PETSC_NULL,"-M",&M);
+  OptionsGetInt(PETSC_NULL,"-N",&N);
+  OptionsGetInt(PETSC_NULL,"-m",&m);
+  OptionsGetInt(PETSC_NULL,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-s",&s);
+  OptionsGetInt(PETSC_NULL,"-w",&w);
+  if (OptionsHasName(PETSC_NULL,"-xwrap")) wrap = DA_XPERIODIC;
+  if (OptionsHasName(PETSC_NULL,"-ywrap")) wrap = DA_YPERIODIC;
+  if (OptionsHasName(PETSC_NULL,"-xywrap")) wrap = DA_XYPERIODIC;
+  if (OptionsHasName(PETSC_NULL,"-star")) st = DA_STENCIL_STAR;
 
   ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);

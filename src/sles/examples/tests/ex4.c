@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.34 1995/11/30 22:34:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.35 1995/12/12 22:55:28 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -36,13 +36,13 @@ int main(int argc,char **args)
   IS          is;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PetscNull,"-m",&m);
+  OptionsGetInt(PETSC_NULL,"-m",&m);
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
 
   /* create stiffness matrix */
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,9,PetscNull,&C); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,9,PETSC_NULL,&C); CHKERRA(ierr);
 
   /* forms the element stiffness for the Laplacian */
   ierr = FormElementStiffness(h*h,Ke); CHKERRA(ierr);

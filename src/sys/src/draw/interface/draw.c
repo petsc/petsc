@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.24 1995/11/09 22:31:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.25 1995/11/23 04:28:54 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -379,6 +379,23 @@ int DrawClear(Draw ctx)
   if (ctx->ops.clear) return (*ctx->ops.clear)(ctx);
   return 0;
 }
+/*@
+   DrawSyncClear - Clears graphical output. All processors must call this routine.
+       Does not return until the drawable is clear.
+
+   Input Parameters:
+.  ctx - the drawing context
+
+.keywords: draw, clear
+@*/
+int DrawSyncClear(Draw ctx)
+{
+  PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
+  if (ctx->type == NULLWINDOW) return 0;
+  if (ctx->ops.syncclear) return (*ctx->ops.syncclear)(ctx);
+  return 0;
+}
+
 /*@C
    DrawDestroy - Deletes a draw context.
 

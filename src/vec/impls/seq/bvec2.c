@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.55 1995/11/20 04:46:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.56 1995/12/06 00:23:50 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -260,7 +260,11 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 
 static int VecDuplicate_Seq(Vec win,Vec *V)
 {
+  int     ierr;
   Vec_Seq *w = (Vec_Seq *)win->data;
-  return VecCreateSeq(win->comm,w->n,V);
+  ierr = VecCreateSeq(win->comm,w->n,V);
+  (*V)->childcopy = win->childcopy;
+  if (win->child) return (*win->childcopy)(win->child,&(*V)->child);
+  return 0;
 }
 

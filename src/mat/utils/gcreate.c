@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.59 1995/11/30 22:34:51 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.60 1995/12/12 22:55:20 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -32,7 +32,7 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 
   if (pre) p = pre;
   MPI_Comm_size(comm,&size);
-  if (OptionsHasName(PetscNull,"-help")) {
+  if (OptionsHasName(PETSC_NULL,"-help")) {
     MPIU_printf(comm,"Matrix format options:\n");
     MPIU_printf(comm,"  %smat_aij, %smat_seqaij, %smat_mpiaij\n",p,p,p);
     MPIU_printf(comm,"  %smat_row, %smat_seqrow, %smat_mpirow\n",p,p,p);
@@ -161,57 +161,57 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 
   ierr = MatGetFormatFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (type == MATSEQDENSE) {
-    return MatCreateSeqDense(comm,m,n,PetscNull,V);
+    return MatCreateSeqDense(comm,m,n,PETSC_NULL,V);
   }
   if (type == MATSEQBDIAG || type == MATMPIBDIAG) {
     int nb = 1, ndiag = 0, ndiag2 = 0, *d = 0;
-    if (OptionsHasName(PetscNull,"-help")) {
+    if (OptionsHasName(PETSC_NULL,"-help")) {
       MPIU_printf(comm,"Options with -mat_bdiag, -mat_seqbdiag, -mat_mpibdiag:\n");
       MPIU_printf(comm,"  -mat_bdiag_bsize <block_size>\n");
       MPIU_printf(comm,"  -mat_bdiag_ndiag <number_diags> \n"); 
       MPIU_printf(comm,"  -mat_bdiag_dvals <d1,d2,d3,...> (diagonal numbers)\n"); 
       MPIU_printf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
     }
-    OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);
-    OptionsGetInt(PetscNull,"-mat_bdiag_ndiag",&ndiag);
+    OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);
+    OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&ndiag);
     if (ndiag) {
       d = (int *)PetscMalloc( ndiag * sizeof(int) ); CHKPTRQ(d);
       ndiag2 = ndiag;
-      OptionsGetIntArray(PetscNull,"-mat_bdiag_dvals",d,&ndiag2);
+      OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",d,&ndiag2);
       if (ndiag2 != ndiag)
         SETERRQ(1,"MatCreate: Incompatible number of diags and diagonal vals");
-    } else if (OptionsHasName(PetscNull,"-mat_bdiag_dvals")) {
+    } else if (OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals")) {
       SETERRQ(1,"MatCreate: Must specify number of diagonals with -mat_bdiag_ndiag");
     }
     if (type == MATMPIBDIAG) {
-      ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,PetscNull,V); CHKERRQ(ierr);
+      ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,PETSC_NULL,V); CHKERRQ(ierr);
     } else {
-      ierr = MatCreateSeqBDiag(comm,m,n,ndiag,nb,d,PetscNull,V); CHKERRQ(ierr);
+      ierr = MatCreateSeqBDiag(comm,m,n,ndiag,nb,d,PETSC_NULL,V); CHKERRQ(ierr);
     }
     if (d) PetscFree(d);
     return 0;
   }
   if (type == MATMPIROWBS) {
-    return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,PetscNull,PetscNull,V);
+    return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,PETSC_NULL,PETSC_NULL,V);
   }
   if (type == MATMPIROW) {
-    return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,PetscNull,0,PetscNull,V);
+    return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,PETSC_NULL,0,PETSC_NULL,V);
   }
   if (type == MATSEQROW) {
-    return MatCreateSeqRow(comm,m,n,10,PetscNull,V);
+    return MatCreateSeqRow(comm,m,n,10,PETSC_NULL,V);
   }
   if (type == MATMPIDENSE) {
-    return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PetscNull,V);
+    return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,V);
   }
-  if (OptionsHasName(PetscNull,"-help")) {
+  if (OptionsHasName(PETSC_NULL,"-help")) {
     MPIU_printf(comm,"Options with default formats (-mat_aij, -mat_seqaij, -mat_mpiaij):\n");
     MPIU_printf(comm,"  -mat_aij_no_inode : Do not use inodes\n");
     MPIU_printf(comm,"  -mat_aij_inode_limit <limit> : Set inode limit (max limit=5)\n");
   }
   if (type == MATMPIAIJ) { 
-    return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,PetscNull,0,PetscNull,V);
+    return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,PETSC_NULL,0,PETSC_NULL,V);
   }
-  return MatCreateSeqAIJ(comm,m,n,10,PetscNull,V); 
+  return MatCreateSeqAIJ(comm,m,n,10,PETSC_NULL,V); 
 }
 
 #include "matimpl.h"

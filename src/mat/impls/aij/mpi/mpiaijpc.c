@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.7 1995/12/03 02:42:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.8 1995/12/06 00:24:56 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -26,6 +26,10 @@ int PCDestroy_BJacobiMPIAIJ(PetscObject obj)
   ierr = SLESDestroy(jac->sles[0]); CHKERRQ(ierr);
   PetscFree(jac->sles);
   ierr = VecDestroy(bjac->x); CHKERRQ(ierr);
+  if (jac->l_lens) PetscFree(jac->l_lens);
+  if (jac->g_lens) PetscFree(jac->g_lens);
+  if (jac->l_true) PetscFree(jac->l_true);
+  if (jac->g_true) PetscFree(jac->g_true);
   PetscFree(bjac); PetscFree(jac); 
   return 0;
 }

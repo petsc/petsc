@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.36 1995/11/30 22:35:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.37 1995/12/13 04:16:51 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -198,6 +198,21 @@ static int DrawClear_X(Draw Win)
   return 0;
 }
 
+static int DrawSyncClear_X(Draw Win)
+{
+  int     rank;
+  Draw_X* XiWin = (Draw_X*) Win->data;
+
+  MPI_Barrier(Win->comm);
+  MPI_Comm_rank(Win->comm,&rank);
+  if (!rank) {
+    DrawClear_X(Win);
+    XFlush( XiWin->disp );
+  }
+  MPI_Barrier(Win->comm);
+  return 0;
+}
+
 static int DrawSetDoubleBuffer_X(Draw Win)
 {
   Draw_X*  win = (Draw_X*) Win->data;
@@ -270,7 +285,8 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawRectangle_X,
                                  DrawTriangle_X,
                                  DrawGetMouseButton_X,
-                                 DrawPause_X};
+                                 DrawPause_X,
+                                 DrawSyncClear_X};
 
 int DrawDestroy_X(PetscObject obj)
 {
@@ -314,7 +330,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   int    ierr,size,rank;
   char   string[128];
 
-  if (OptionsHasName(PetscNull,"-nox")) {
+  if (OptionsHasName(PETSC_NULL,"-nox")) {
     return DrawOpenNull(comm,inctx);
   }
 
@@ -330,7 +346,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
   ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
 
-  OptionsGetInt(PetscNull,"-draw_pause",&ctx->pause);
+  OptionsGetInt(PETSC_NULL,"-draw_pause",&ctx->pause);
 
   /* actually create and open the window */
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) ); CHKPTRQ(Xwin);
@@ -339,7 +355,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);
   if (rank == 0) {
-    if (!display && OptionsGetString(PetscNull,"-display",string,128)) {
+    if (!display && OptionsGetString(PETSC_NULL,"-display",string,128)) {
       display = string;
     }
     if (!display) {
@@ -352,7 +368,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   }
   else {
     unsigned long win;
-    if (!display && OptionsGetString(PetscNull,"-display",string,128)) {
+    if (!display && OptionsGetString(PETSC_NULL,"-display",string,128)) {
       display = string;
     }
     if (!display) {

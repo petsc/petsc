@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.4 1995/11/09 22:28:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.5 1995/12/12 22:54:20 curfman Exp bsmith $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -76,7 +76,7 @@ static int PCSetUp_ASM(PC pc)
       ierr = ISCreateStrideSeq(MPI_COMM_SELF,0,0,1,&isl); CHKERRQ(ierr);
       ierr = VecScatterCreate(pc->vec,isl,osm->x[i],isl,&osm->scat[i]); CHKERRQ(ierr);
       ierr = ISDestroy(isl); CHKERRQ(ierr);   
-      ierr = MatCreateSeqAIJ(MPI_COMM_SELF,0,PetscNull,0,PetscNull,&osm->pmat[i]); CHKERRQ(ierr); 
+      ierr = MatCreateSeqAIJ(MPI_COMM_SELF,0,PETSC_NULL,0,PETSC_NULL,&osm->pmat[i]); CHKERRQ(ierr); 
     }
 
     /* create the local solvers */

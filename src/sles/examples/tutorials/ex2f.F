@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.8 1995/11/23 13:41:18 bsmith Exp bsmith $";
+C    "$Id: ex7.F,v 1.9 1995/11/30 22:34:58 bsmith Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -23,14 +23,14 @@ C
       call PetscInitialize(ierr)
       m = 3
       n = 3
-      call OptionsGetInt(PetscNull,'-m',m,ierr)
-      call OptionsGetInt(PetscNull,'-n',n,ierr)
+      call OptionsGetInt(PETSC_NULL,'-m',m,ierr)
+      call OptionsGetInt(PETSC_NULL,'-n',n,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
 
 C Create and assemble matrix
       call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-     *                      m*n,m*n,0,PetscNull,0,PetscNull,A,ierr)
+     *                      m*n,m*n,0,PETSC_NULL,0,PETSC_NULL,A,ierr)
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
       do 10, II=Istart,Iend-1
         v = -1.0

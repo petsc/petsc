@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.24 1995/11/21 03:29:37 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.25 1995/12/12 22:54:22 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   ierr = VecCreateSeq(MPI_COMM_SELF,n,&u); CHKERRA(ierr);
 
   /* Create and assemble matrix */
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,n,n,PetscNull,&mat); CHKERRA(ierr);
+  ierr = MatCreateSeqDense(MPI_COMM_SELF,n,n,PETSC_NULL,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;

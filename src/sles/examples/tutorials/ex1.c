@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.35 1995/11/01 19:11:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.36 1995/11/30 22:34:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -16,7 +16,7 @@ int main(int argc,char **args)
   Scalar  none = -1.0, one = 1.0, value[3];
   double  norm;
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PetscNull,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-n",&n);
 
   /* Create vectors */
   ierr = VecCreate(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);

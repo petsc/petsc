@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.12 1995/11/30 22:34:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.13 1995/12/12 22:55:28 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for solving\n\
@@ -23,13 +23,13 @@ int main(int argc,char **args)
   PCMethod  pcmethod;
 
   PetscInitialize(&argc,&args,0,0,help);
-  OptionsGetInt(PetscNull,"-m",&m);
+  OptionsGetInt(PETSC_NULL,"-m",&m);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);  n = 2*size;
 
   /* Create and assemble matrix */
   ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,
-         0,PetscNull,0,PetscNull,&A); CHKERRA(ierr);
+         0,PETSC_NULL,0,PETSC_NULL,&A); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
@@ -85,7 +85,7 @@ int main(int argc,char **args)
     }
   }
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
-  if (!OptionsHasName(PetscNull,"-noslesview")) {
+  if (!OptionsHasName(PETSC_NULL,"-noslesview")) {
     ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   }
 

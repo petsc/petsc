@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.40 1995/11/06 02:30:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.41 1995/11/09 22:27:39 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -367,7 +367,9 @@ int TrDump( FILE *fp )
     }
     head = head->next;
   }
-  fprintf( fp, "[%d]The maximum space allocated was %d bytes\n",rank,(int)TRMaxMem);
+  /* The next line has nothing to do with dumping and should not be here because it 
+     screws up the nightly builds. */
+  /* fprintf( fp, "[%d]The maximum space allocated was %d bytes\n",rank,(int)TRMaxMem);*/
   return 0;
 }
 

@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.48 1995/11/19 00:25:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.49 1995/12/08 18:39:30 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
-#include "pcimpl.h"
+#include "pcimpl.h"                 /*I "pc.h"  I*/
 #include "ilu.h"
 #include "matimpl.h"
 #include "pinclude/pviewer.h"

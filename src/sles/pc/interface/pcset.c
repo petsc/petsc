@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.29 1995/11/19 00:15:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.30 1995/11/30 22:32:59 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -184,7 +184,7 @@ int PCSetFromOptions(PC pc)
   if (PCGetMethodFromOptions_Private(pc,&method)) {
     PCSetMethod(pc,method);
   }
-  if (OptionsHasName(PetscNull,"-help")){
+  if (OptionsHasName(PETSC_NULL,"-help")){
     PCPrintHelp(pc);
   }
   if (pc->setfrom) return (*pc->setfrom)(pc);

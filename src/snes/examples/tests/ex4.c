@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.25 1995/11/09 22:32:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.26 1995/11/30 22:36:13 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -70,10 +70,10 @@ int main( int argc, char **argv )
   user.mx    = 4;
   user.my    = 4;
   user.param = 6.0;
-  OptionsGetInt(PetscNull,"-mx",&user.mx);
-  OptionsGetInt(PetscNull,"-my",&user.my);
-  OptionsGetDouble(PetscNull,"-par",&user.param);
-  if (!OptionsHasName(PetscNull,"-cavity") && 
+  OptionsGetInt(PETSC_NULL,"-mx",&user.mx);
+  OptionsGetInt(PETSC_NULL,"-my",&user.my);
+  OptionsGetDouble(PETSC_NULL,"-par",&user.param);
+  if (!OptionsHasName(PETSC_NULL,"-cavity") && 
       (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min)) {
     SETERRA(1,"Lambda is out of range");
   }
@@ -82,7 +82,7 @@ int main( int argc, char **argv )
   /* Set up data structures */
   ierr = VecCreateSeq(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,PetscNull,&J); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,PETSC_NULL,&J); CHKERRA(ierr);
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);
@@ -90,7 +90,7 @@ int main( int argc, char **argv )
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  if (OptionsHasName(PetscNull,"-cavity")){
+  if (OptionsHasName(PETSC_NULL,"-cavity")){
     ierr = SNESSetSolution(snes,x,FormInitialGuess2,(void *)&user); 
            CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user,

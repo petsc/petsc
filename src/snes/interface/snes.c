@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.26 1995/11/09 22:32:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.27 1995/11/30 22:35:57 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -109,7 +109,7 @@ int SNESSetFromOptions(SNES snes)
   if (SNESGetMethodFromOptions_Private(snes,&method)) {
     SNESSetMethod(snes,method);
   }
-  if (OptionsHasName(PetscNull,"-help"))  SNESPrintHelp(snes);
+  if (OptionsHasName(PETSC_NULL,"-help"))  SNESPrintHelp(snes);
   if (OptionsGetDouble(snes->prefix,"-snes_stol",&tmp)) {
     SNESSetSolutionTolerance(snes,tmp);
   }
@@ -678,6 +678,7 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
     "SNESComputeJacobian: For SNES_NONLINEAR_EQUATIONS only");
   if (!snes->computejacobian) return 0;
   PLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);
+  *flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP); CHKERRQ(ierr);
   PLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);
   return 0;
@@ -740,6 +741,28 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
   snes->jacobian_pre    = B;
   return 0;
 }
+/*@
+     SNESGetJacobian - Returns the Jacobian matrix and optionally the user 
+          provided context for evaluating the Jacobian.
+
+  Input Parameter:
+.  snes - the nonlinear solver context
+
+  Output Parameters:
+.  A - location to stash Jacobian matrix (or PETSC_NULL)
+.  B - location to stash preconditioner matrix (or PETSC_NULL)
+.  ctx - location to stash Jacobian ctx (or PETSC_NULL)
+
+.seealso: SNESSetJacobian(), SNESComputeJacobian()
+@*/
+int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
+{
+  if (A)   *A = snes->jacobian;
+  if (B)   *B = snes->jacobian_pre;
+  if (ctx) *ctx = snes->jacP;
+  return 0;
+}
+
 /*@C
    SNESSetHessian - Sets the function to compute Hessian as well as the
    location to store it.
@@ -1238,7 +1261,7 @@ int SNESSolve(SNES snes,int *its)
   PLogEventBegin(SNES_Solve,snes,0,0,0);
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
-  if (OptionsHasName(PetscNull,"-snes_view")) {
+  if (OptionsHasName(PETSC_NULL,"-snes_view")) {
     SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
   }
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.31 1995/11/30 22:33:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.32 1995/12/12 22:54:22 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -50,13 +50,13 @@ int main(int Argc, char **Args)
 
   PetscInitialize(&Argc,&Args,0,0,help);
 
-  OptionsGetInt(PetscNull,"-x",&x_mesh);  
-  OptionsGetInt(PetscNull,"-l",&levels);  
-  OptionsGetInt(PetscNull,"-c",&cycles);  
-  OptionsGetInt(PetscNull,"-smooths",&smooths);  
-  if (OptionsHasName(PetscNull,"-a")) {am = MGADDITIVE;}
-  if (OptionsHasName(PetscNull,"-f")) {am = MGFULL;}
-  if (OptionsHasName(PetscNull,"-j")) {use_jacobi = 1;}
+  OptionsGetInt(PETSC_NULL,"-x",&x_mesh);  
+  OptionsGetInt(PETSC_NULL,"-l",&levels);  
+  OptionsGetInt(PETSC_NULL,"-c",&cycles);  
+  OptionsGetInt(PETSC_NULL,"-smooths",&smooths);  
+  if (OptionsHasName(PETSC_NULL,"-a")) {am = MGADDITIVE;}
+  if (OptionsHasName(PETSC_NULL,"-f")) {am = MGFULL;}
+  if (OptionsHasName(PETSC_NULL,"-j")) {use_jacobi = 1;}
          
   N = (int *) PetscMalloc(levels*sizeof(int)); CHKPTRA(N);
   N[0] = x_mesh;
@@ -306,7 +306,7 @@ int Create1dLaplacian(int n,Mat *mat)
   Scalar mone = -1.0, two = 2.0;
   int    ierr,i,idx;
 
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PetscNull,mat); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,mat); CHKERRQ(ierr);
   
   idx= n-1;
   ierr = MatSetValues(*mat,1,&idx,1,&idx,&two,INSERT_VALUES); CHKERRQ(ierr);

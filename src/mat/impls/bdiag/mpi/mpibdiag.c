@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.61 1995/12/12 22:55:00 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.62 1995/12/13 14:32:59 curfman Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -558,10 +558,10 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 
       if (!rank) {
         ierr = MatCreateMPIBDiag(mat->comm,M,M,N,mbd->gnd,Ambd->nb,
-               mbd->gdiag,PetscNull,&A); CHKERRQ(ierr);
+               mbd->gdiag,PETSC_NULL,&A); CHKERRQ(ierr);
       }
       else {
-        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,PetscNull,PetscNull,&A);
+        ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,PETSC_NULL,PETSC_NULL,&A);
                CHKERRQ(ierr);
       }
       PLogObjectParent(mat,A);
@@ -752,10 +752,10 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
 $     where for a matrix element A[i,j], 
 $     where i=row and j=column, the diagonal number is
 $     diag = i/nb - j/nb  (integer division)
-$     Set diag=PetscNull on input for PETSc to dynamically allocate
+$     Set diag=PETSC_NULL on input for PETSc to dynamically allocate
 $     memory as needed.
 .  diagv  - pointer to actual diagonals (in same order as diag array), 
-   if allocated by user. Otherwise, set diagv=PetscNull on input for PETSc
+   if allocated by user. Otherwise, set diagv=PETSC_NULL on input for PETSc
    to control memory allocation.
 
    Output Parameter:
@@ -842,7 +842,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
   k = 0;
   PLogObjectMemory(mat,(nd+1)*sizeof(int) + (mbd->size+2)*sizeof(int)
                         + sizeof(struct _Mat) + sizeof(Mat_MPIBDiag));
-  if (diagv != PetscNull) {
+  if (diagv != PETSC_NULL) {
     ldiagv = (Scalar **)PetscMalloc((nd+1)*sizeof(Scalar*)); CHKPTRQ(ldiagv); 
   }
   for (i=0; i<nd; i++) {
@@ -850,20 +850,20 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int nb,
     if (diag[i] > 0) { /* lower triangular */
       if (diag[i] < mbd->brend) {
         ldiag[k] = diag[i] - mbd->brstart;
-        if (diagv != PetscNull) ldiagv[k] = diagv[i];
+        if (diagv != PETSC_NULL) ldiagv[k] = diagv[i];
         k++;
       }
     } else { /* upper triangular */
       if (mbd->M/nb - diag[i] > mbd->N/nb) {
         if (mbd->M/nb + diag[i] > mbd->brstart) {
           ldiag[k] = diag[i] - mbd->brstart;
-          if (diagv != PetscNull) ldiagv[k] = diagv[i];
+          if (diagv != PETSC_NULL) ldiagv[k] = diagv[i];
           k++;
         }
       } else {
         if (mbd->M/nb > mbd->brstart) {
           ldiag[k] = diag[i] - mbd->brstart;
-          if (diagv != PetscNull) ldiagv[k] = diagv[i];
+          if (diagv != PETSC_NULL) ldiagv[k] = diagv[i];
           k++;
         }
       }
@@ -1030,8 +1030,8 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
 
   nb = 1;   /* uses a block size of 1 by default; maybe need a different options
               database key, since this is used for MatCreate() also? */
-  OptionsGetInt(PetscNull,"-mat_bdiag_bsize",&nb);
-  ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,PetscNull,PetscNull,newmat); CHKERRQ(ierr);
+  OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb);
+  ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,PETSC_NULL,PETSC_NULL,newmat); CHKERRQ(ierr);
   A = *newmat;
 
   if (!rank) {

@@ -1,4 +1,4 @@
-/* $Id: bjacobi.h,v 1.13 1995/12/03 02:41:53 bsmith Exp bsmith $ */
+/* $Id: bjacobi.h,v 1.14 1995/12/21 16:42:48 bsmith Exp bsmith $ */
 
 #if !defined(__BJACOBI_H)
 #define __BJACOBI_H
@@ -17,7 +17,9 @@ typedef struct {
   int  same_local_solves;   /* flag indicating whether all local solvers are same */
   int  *l_lens,*g_lens;     /* lens of each block */
   int  *l_true,*g_true;     /* select block from true matrix or preconditioner matrix */
-  int  gs;                  /* flag indicating we are using Gauss-Seidel */
+  /* -----------------Options related to Gauss-Seidel ----------------------------*/
+  int       gs;                  /* flag indicating we are using Gauss-Seidel */
+  PCBGSType gstype;
 } PC_BJacobi;
 
 #endif

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: str.c,v 1.2 1995/09/30 19:27:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: str.c,v 1.3 1995/10/02 20:20:59 curfman Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -16,6 +16,7 @@ static char vcid[] = "$Id: str.c,v 1.2 1995/09/30 19:27:41 bsmith Exp curfman $"
 
 int PetscStrlen(char *s)
 {
+  if (!s) return 0;
   return strlen(s);
 }
 

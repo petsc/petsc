@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.14 1995/11/09 22:33:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.15 1995/11/30 22:36:31 bsmith Exp bsmith $";
 #endif
 
 /* This file was created by Peter Mell  6/30/95 */
@@ -26,10 +26,10 @@ int main(int argc,char **argv)
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",280,258,600,200,&win2); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(win1); CHKERRA(ierr);
 
-  OptionsGetInt(PetscNull,"-M",&M);
-  OptionsGetInt(PetscNull,"-w",&w);  /* degrees of freedom */ 
-  OptionsGetInt(PetscNull,"-s",&s);  /* stencil width */
-  OptionsGetInt(PetscNull,"-wrap",&wrap);  /* wrap or not */
+  OptionsGetInt(PETSC_NULL,"-M",&M);
+  OptionsGetInt(PETSC_NULL,"-w",&w);  /* degrees of freedom */ 
+  OptionsGetInt(PETSC_NULL,"-s",&s);  /* stencil width */
+  OptionsGetInt(PETSC_NULL,"-wrap",&wrap);  /* wrap or not */
 
   ierr = DACreate1d(MPI_COMM_WORLD,(DAPeriodicType)wrap,M,w,s,&da); 
   CHKERRA(ierr);

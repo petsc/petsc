@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.7 1995/07/09 20:48:21 curfman Exp bsmith $ */
+/* $Id: pcimpl.h,v 1.8 1995/08/07 21:58:46 bsmith Exp bsmith $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -24,6 +24,14 @@ struct _PC {
   void         *data;
   char         *prefix;
   int          (*getfactmat)(PC,Mat*);
+  PCNullSpace  nullsp;
+};
+
+struct _PCNullSpace {
+  PETSCHEADER
+  int         has_cnst;
+  int         n;
+  Vec*        vecs;
 };
 
 #endif

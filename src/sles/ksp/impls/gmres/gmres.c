@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.47 1995/11/01 23:15:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.48 1995/11/09 22:27:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -325,7 +325,7 @@ static int KSPDestroy_GMRES(PetscObject obj)
   int       i;
 
   /* Free the Hessenberg matrix */
-  PetscFree( gmresP->hh_origin );
+  if (gmresP->hh_origin) PetscFree( gmresP->hh_origin );
 
   /* Free the pointer to user variables */
   PetscFree( gmresP->vecs );
@@ -333,8 +333,8 @@ static int KSPDestroy_GMRES(PetscObject obj)
   /* free work vectors */
   for (i=0; i<gmresP->nwork_alloc; i++) 
     VecFreeVecs(gmresP->user_work[i], gmresP->mwork_alloc[i] );
-  PetscFree( gmresP->user_work );
-  PetscFree( gmresP->mwork_alloc );
+  if (gmresP->user_work)  PetscFree( gmresP->user_work );
+  if (gmresP->mwork_alloc) PetscFree( gmresP->mwork_alloc );
   if (gmresP->nrs) PetscFree( gmresP->nrs );
   if (gmresP->sol_temp) VecDestroy(gmresP->sol_temp);
   PetscFree( gmresP ); 
@@ -578,6 +578,7 @@ int KSPCreate_GMRES(KSP itP)
   KSP_GMRES *gmresP;
 
   gmresP = (KSP_GMRES*) PetscMalloc(sizeof(KSP_GMRES)); CHKPTRQ(gmresP);
+  PetscMemzero(gmresP,sizeof(KSP_GMRES));
   PLogObjectMemory(itP,sizeof(KSP_GMRES));
   itP->data              = (void *) gmresP;
   itP->type              = KSPGMRES;
@@ -598,6 +599,25 @@ int KSPCreate_GMRES(KSP itP)
   gmresP->nrs            = 0;
   gmresP->sol_temp       = 0;
   gmresP->max_k          = GMRES_DEFAULT_MAXK;
+  return 0;
+}
+
+/*@
+     KSPGMRESSetPreAllocateVectors - Causes GMRES to preallocate all its
+         needed work vectors at initial setup rather then the default which 
+         is to allocate them in chunks when needed.
+
+  Input Paramter:
+.    ksp - the Krylov subspace context
+
+@*/
+int KSPGMRESSetPreAllocateVectors(KSP ksp)
+{
+  KSP_GMRES *gmresP;
+
+  if (ksp->type != KSPGMRES) return 0;
+  gmresP = (KSP_GMRES *)ksp->data;
+  gmresP->q_preallocate = 1;
   return 0;
 }
 

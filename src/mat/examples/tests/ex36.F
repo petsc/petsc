@@ -1,5 +1,5 @@
 
-C      "$Id: ex36.F,v 1.4 1995/11/29 22:10:22 curfman Exp balay $";
+C      "$Id: ex36.F,v 1.5 1995/12/13 21:18:14 balay Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/mat.h"
@@ -11,7 +11,7 @@ C  the array that stores a PETSc dense matrix.  The user declares an array
 C  (aa(1)) and index variable (ia), which are then used together to
 C  manipulate the array contents.
 C
-C  Note the use of PetscNull in MatCreateSeqDense() to indicate that no
+C  Note the use of PETSC_NULL in MatCreateSeqDense() to indicate that no
 C  storage is being provided by the user. (Do NOT pass a zero in that
 C  location.)
 C
@@ -24,7 +24,7 @@ C
       m = 5
 
 C  Create matrix
-      call MatCreateSeqDense(MPI_COMM_SELF,m,n,PetscNull,A,err)
+      call MatCreateSeqDense(MPI_COMM_SELF,m,n,PETSC_NULL,A,err)
 
 C  Access array storage
       call MatGetArray(A,aa,ia,err)

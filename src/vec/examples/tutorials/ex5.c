@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.14 1995/11/20 04:46:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex20.c,v 1.15 1995/11/30 22:31:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,0,0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  OptionsGetInt(PetscNull,"-m",&m);
+  OptionsGetInt(PETSC_NULL,"-m",&m);
 
   /* PART 1:  Generate vector, then write it in binary format */
 

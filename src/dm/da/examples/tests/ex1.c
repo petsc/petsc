@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.20 1995/11/09 22:33:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.21 1995/11/30 22:36:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various DA routines.\n\n";
@@ -22,10 +22,10 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,(char*)0,help);
   ierr = DrawOpenX(MPI_COMM_WORLD,0,"",300,0,300,300,&win); CHKERRA(ierr);
 
-  OptionsGetInt(PetscNull,"-M",&M);
-  OptionsGetInt(PetscNull,"-N",&N);
-  OptionsGetInt(PetscNull,"-m",&m);
-  OptionsGetInt(PetscNull,"-n",&n);
+  OptionsGetInt(PETSC_NULL,"-M",&M);
+  OptionsGetInt(PETSC_NULL,"-N",&N);
+  OptionsGetInt(PETSC_NULL,"-m",&m);
+  OptionsGetInt(PETSC_NULL,"-n",&n);
 
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
                     M,N,m,n,1,1,&da); CHKERRA(ierr);
