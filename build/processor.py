@@ -431,9 +431,15 @@ class SharedLinker(Linker):
 
   def getLinkerFlags(self, source):
     '''Return a list of the linker specific flags. The default is -shared plus the base class flags.'''
-    flags = ['-shared']
-    flags.extend(Linker.getLinkerFlags(self, source))
-    return flags
+    # this is crap; configure needs to figure out if -shared is needed; what were you thinking Matt?
+    import commands
+    output = commands.getoutput(self.processor+' -shared')
+    if output.find('unrecognized option'):
+      return Linker.getLinkerFlags(self, source)
+    else:
+      flags = ['-shared']
+      flags.extend(Linker.getLinkerFlags(self, source))
+      return flags
 
   def getOutputFlags(self, source):
     '''Return a list of the linker flags specifying the library'''
