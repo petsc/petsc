@@ -49,6 +49,7 @@ class Configure(config.base.Configure):
 
   def checkLib(self, lapackLibrary, blasLibrary = None):
     '''Checking for BLAS and LAPACK symbols'''
+    f2c = 0
     if blasLibrary is None:
       separateBlas = 0
       blasLibrary  = lapackLibrary
@@ -73,10 +74,21 @@ class Configure(config.base.Configure):
     if foundBlas and separateBlas:
       otherLibs = ' '.join(map(self.libraries.getLibArgument, blasLibrary))+' '+otherLibs
     oldLibs     = self.framework.argDB['LIBS']
-    foundLapack = self.libraries.check(lapackLibrary, 'dtrtrs', otherLibs = otherLibs, fortranMangle = mangleFunc)
+    foundLapack = self.libraries.check(lapackLibrary, 'dgetrs', otherLibs = otherLibs, fortranMangle = mangleFunc) or self.libraries.check(lapackLibrary, 'dgeev', otherLibs = otherLibs, fortranMangle = mangleFunc)
     if not foundLapack:
-      foundLapack = self.libraries.check(blasLibrary, 'dtrtrs_', otherLibs = otherLibs, fortranMangle = 0)
-      if foundLapack: self.addDefine('BLASLAPACK_F2C',1)
+      foundLapack = self.libraries.check(lapackLibrary, 'dgetrs_', otherLibs = otherLibs, fortranMangle = 0) or self.libraries.check(lapackLibrary, 'dgeev_', otherLibs = otherLibs, fortranMangle = 0)
+      if foundLapack:
+        self.addDefine('BLASLAPACK_F2C',1)
+        mangleFunc = 0
+        f2c        = 1
+    if foundLapack:
+      #check for missing symbols from lapack
+      for i in ['gesvd','geev','getrf','potrf','getrs','potrs']:
+        if f2c: ii = 'd'+i+'_'
+        else:   ii = 'd'+i
+        if not self.libraries.check(lapackLibrary, ii, otherLibs = otherLibs, fortranMangle = mangleFunc):
+           self.addDefine('MISSING_LAPACK_'+i.upper(),1)
+      
     self.framework.argDB['LIBS'] = oldLibs
     return (foundBlas, foundLapack)
 
@@ -93,11 +105,15 @@ class Configure(config.base.Configure):
     if 'with-blas-lapack-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-blas-lapack-dir']
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'))
+      yield ('User specified installation root', os.path.join(dir, 'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'))
+      yield ('User specified installation root', os.path.join(dir, 'libfblas.a'), os.path.join(dir, 'libflapack.a'))            
       dir = os.path.join(dir,'lib','32')
       yield ('User specified MKL installation root', None, [os.path.join(dir, 'libmkl_lapack.a'),os.path.join(dir, 'libmkl_def.a'),'guide','pthread'])
       raise RuntimeError('You set a value for --with-blas-lapack-dir, but '+self.framework.argDB['with-blas-lapack-dir']+' cannot be used\n')
     # IRIX locations
     yield ('IRIX Mathematics library', None, 'libcomplib.sgimath.a')
+    # IBM ESSL locations
+    yield ('IBM ESSL Mathematics library', None, 'libessl.a')
     # Try compiler defaults
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a')    
     yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'])
