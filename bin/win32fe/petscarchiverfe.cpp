@@ -1,5 +1,6 @@
-/* $Id: petscarchivefe.cpp,v 1.4 2001/03/23 19:31:16 buschelm Exp $ */
+/* $Id: petscarchiverfe.cpp,v 1.5 2001/04/11 07:48:16 buschelm Exp buschelm $ */
 #include <stdlib.h>
+#include <process.h>
 #include "petscarchiverfe.h"
 
 using namespace PETScFE;
@@ -29,12 +30,32 @@ void archiver::Parse(void) {
 void archiver::Execute(void) {
   tool::Execute();
   if (!helpfound) {
-    LI i = archivearg.begin();
-    string archive = *i++;
-    Merge(archive,archivearg,i);
-    Merge(archive,file,file.begin());
-    if (verbose) cout << archive << endl;
-    system(archive.c_str());
+    int len;
+    LI li;
+    const char **args; 
+    if (verbose) {
+      li = archivearg.begin();
+      string archive = *li++;
+      Merge(archive,archivearg,li);
+      Merge(archive,file,file.begin());
+      cout << archive << endl;
+      cout.flush();
+    }
+    /*      system(archive.c_str()); */
+    len = archivearg.size();
+    len += file.size();
+    args = (const char **)malloc((len+1)*sizeof(char *));
+    int i=0;
+    for (li=archivearg.begin();li!=archivearg.end();i++,li++) {
+      args[i] = (*li).c_str();
+    }
+    for (li=file.begin();li!=file.end();i++,li++) {
+      args[i] = (*li).c_str();
+    }
+    args[len+1] = NULL;
+    /*      _execvp(args[0],args); */ 
+    _spawnvp(_P_WAIT,args[0],args);
+    free(args);
   }
 }
 
