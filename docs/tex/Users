@@ -9,7 +9,7 @@ stodghil@CS.Cornell.EDU - Paul Stodghill, high performance parallel cg Beta.3
 keyes@cs.odu.edu - David Keyes, needs parallel nonlinear solvers for CFD
 balay@cs.odu.edu - Satish Balay, needs matrix-free nonlinear solvers Beta.2
 zhang_k@cs.odu.edu - Jie Zhang, needs parallel nonlinear solvers Beta.2
-ozturan@cs.rpi.edu - Can Ozturan, needs parallel linear solvers
+ozturanc@cs.rpi.edu - Can Ozturan, needs parallel linear solvers
 mday@opus.nersc.gov - Marcus Day, sequential nonlinear solvers Beta.3
 
 Local Users:
@@ -20,3 +20,6 @@ mell - Peter Mell
 hille - Matt Hille
 wan   - Justin
 
+
+Potential users:
+Sandra Carney carney@appsdiv.cray.com
