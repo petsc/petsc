@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.190 1998/06/05 20:30:03 balay Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.191 1998/06/21 02:53:11 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1114,7 +1114,6 @@ extern int  PLogEventColorMalloced[];
 
     Example of Usage:
 .vb
-      #include "petsclog.h"
       int USER_EVENT;
       int user_event_flops;
       PLogEventRegister(&USER_EVENT,"User event name","EventColor");
@@ -1846,3 +1845,169 @@ int PetscGetTime(PLogDouble *t)
   PetscTime(*t);
   PetscFunctionReturn(0);
 }
+
+/*MC
+   PLogFlops - Adds floating point operations to the global counter.
+
+   Input Parameter:
+.  f - flop counter
+
+   Synopsis:
+   void PLogFlops(int f)
+
+   Notes:
+   A global counter logs all PETSc flop counts.  The user can use
+   PLogFlops() to increment this counter to include flops for the 
+   application code.  
+
+   PETSc automatically logs library events if the code has been
+   compiled with -DUSE_PETSC_LOG (which is the default), and -log,
+   -log_summary, or -log_all are specified.  PLogFlops() is
+   intended for logging user flops to supplement this PETSc
+   information.
+
+    Example of Usage:
+$     int USER_EVENT;
+$     PLogEventRegister(&USER_EVENT,"User event","Color:");
+$     PLogEventBegin(USER_EVENT,0,0,0,0);
+$        [code segment to monitor]
+$        PLogFlops(user_flops)
+$     PLogEventEnd(USER_EVENT,0,0,0,0);
+
+.seealso: PLogEventRegister(), PLogEventBegin(), PLogEventEnd(), PetscGetFlops()
+
+.keywords: log, flops, floating point operations
+M*/
+
+
+/*MC
+   PLogEventBegin - Logs the beginning of a user event. 
+
+   Input Parameters:
+.  e - integer associated with the event obtained from PLogEventRegister()
+.  o1,o2,o3,o4 - objects associated with the event, or 0
+
+   Synopsis:
+   void PLogEventBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                  PetscObject o4)
+
+   Notes:
+   You should also register each integer event with the command 
+   PLogRegisterEvent().  The source code must be compiled with 
+   -DUSE_PETSC_LOG, which is the default.
+
+   PETSc automatically logs library events if the code has been
+   compiled with -DUSE_PETSC_LOG, and -log, -log_summary, or -log_all are
+   specified.  PLogEventBegin() is intended for logging user events
+   to supplement this PETSc information.
+
+    Example of Usage:
+$     int USER_EVENT;
+$     int user_event_flops;
+$     PLogEventRegister(&USER_EVENT,"User event","Color:");
+$     PLogEventBegin(&USER_EVENT,0,0,0,0);
+$        [code segment to monitor]
+$        PLogFlops(user_event_flops);
+$     PLogEventEnd(&USER_EVENT,0,0,0,0);
+
+.seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops()
+
+.keywords: log, event, begin
+M*/
+
+/*MC
+   PLogEventEnd - Log the end of a user event.
+
+   Input Parameters:
+.  e - integer associated with the event obtained with PLogEventRegister()
+.  o1,o2,o3,o4 - objects associated with the event, or 0
+
+   Synopsis:
+   void PLogEventEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                PetscObject o4)
+
+   Notes:
+   You should also register each additional integer event with the command 
+   PLogRegisterEvent(). Source code must be compiled with 
+   -DUSE_PETSC_LOG, which is the default.
+
+   PETSc automatically logs library events if the code has been
+   compiled with -DUSE_PETSC_LOG, and -log, -log_summary, or -log_all are
+   specified.  PLogEventEnd() is intended for logging user events
+   to supplement this PETSc information.
+
+    Example of Usage:
+$     int USER_EVENT;
+$     int user_event_flops;
+$     PLogEventRegister(&USER_EVENT,"User event","Color:");
+$     PLogEventBegin(USER_EVENT,0,0,0,0);
+$        [code segment to monitor]
+$        PLogFlops(user_event_flops);
+$     PLogEventEnd(USER_EVENT,0,0,0,0);
+
+.seealso: PLogEventRegister(), PLogEventBegin(), PLogFlops()
+
+.keywords: log, event, end
+M*/
+
+/*MC
+   PLogEventBarrierBegin - Logs the time in a barrier before an event.
+
+   Input Parameters:
+.  e - integer associated with the event obtained from PLogEventRegister()
+.  o1,o2,o3,o4 - objects associated with the event, or 0
+.  comm - communicator the barrier takes place over
+
+   Synopsis:
+   void PLogEventBarrierBegin(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                  PetscObject o4,MPI_Comm comm)
+
+   Notes:
+   This is for logging the amount of time spent in a barrier for an event
+   that requires synchronization. 
+
+    Example of Usage:
+$     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
+$       MPI_Allreduce()
+$     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,comm);
+
+   Additional Notes:
+   Synchronization events always come in pairs; for example, VEC_NormBarrier and 
+   VEC_NormComm = VEC_NormBarrier + 1
+
+.seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
+          PLogEventBarrierEnd()
+
+.keywords: log, event, begin, barrier
+M*/
+
+/*MC
+   PLogEventBarrierEnd - Logs the time in a barrier before an event.
+
+   Input Parameters:
+.  e - integer associated with the event obtained from PLogEventRegister()
+.  o1,o2,o3,o4 - objects associated with the event, or 0
+.  comm - communicator the barrier takes place over
+
+   Synopsis:
+   void PLogEventBarrierEnd(int e,PetscObject o1,PetscObject o2,PetscObject o3,
+                  PetscObject o4,MPI_Comm comm)
+
+   Notes:
+   This is for logging the amount of time spent in a barrier for an event
+   that requires synchronization. 
+
+    Example of Usage:
+$     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,comm);
+$       MPI_Allreduce()
+$     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,comm);
+
+   Additional Notes:
+   Synchronization events always come in pairs; for example, VEC_NormBarrier and 
+   VEC_NormComm = VEC_NormBarrier + 1
+
+.seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops(), PLogEventBegin(),
+          PLogEventBarrierBegin()
+
+.keywords: log, event, begin, barrier
+M*/
