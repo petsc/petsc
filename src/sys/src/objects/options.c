@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.199 1998/11/20 15:28:14 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.200 1998/11/25 20:13:09 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -745,7 +745,7 @@ int OptionsGetDouble(const char pre[],const char name[],double *dvalue,int *flg)
 
    Usage:
    A complex number 2+3i can be specified as 2,3 at the command line.
-   or a number 3.2-2i can be specified as 3.2,2.
+   or a number 2.0e-10 - 3.3e-20 i  can be specified as 2.0e-10,3.3e-20
 
 .keywords: options, database, get, double
 
