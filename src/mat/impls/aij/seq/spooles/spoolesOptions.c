@@ -7,7 +7,7 @@
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
-#include "src/mat/impls/aij/seq/spooles.h"
+#include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 /* Set Spooles' default and runtime options */
 #undef __FUNCT__  
@@ -135,7 +135,7 @@ int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   if (size == 1){
     if (A->ops->solve != MatSolve_SeqAIJ_Spooles) PetscFunctionReturn(0);
   } else {
-    if (A->ops->solve != MatSolve_MPIAIJ_Spooles) PetscFunctionReturn(0);
+/*     if (A->ops->solve != MatSolve_MPIAIJ_Spooles) PetscFunctionReturn(0); */
   }
 
   switch (lu->options.symflag) {

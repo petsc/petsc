@@ -22,6 +22,9 @@ EXTERN int MatCreate_Shell(Mat);
 EXTERN int MatCreate_ESI(Mat);
 EXTERN int MatCreate_PetscESI(Mat);
 #endif
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
+EXTERN int MatCreate_SeqAIJ_Spooles(Mat);
+#endif
 EXTERN_C_END
   
 /*
@@ -79,6 +82,9 @@ int MatRegisterAll(char *path)
 #if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
   ierr = MatRegisterDynamic(MATESI,       path,"MatCreate_ESI",    MatCreate_ESI);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATPETSCESI,  path,"MatCreate_PetscESI",    MatCreate_PetscESI);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
+  ierr = MatRegisterDynamic(MATSEQAIJSPOOLES,path,"MatCreate_SeqAIJ_Spooles",MatCreate_SeqAIJ_Spooles);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
