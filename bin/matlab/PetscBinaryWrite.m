@@ -21,12 +21,6 @@ for l=1:nargin-1
     nz   = sum(n_nz);
     header = fwrite(fd,[1211216,m,n,nz],'int32');
 
-    sum_nz = sum(n_nz);
-    if(sum_nz ~=nz)
-      str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
-      error(str);
-    end
-
     fwrite(fd,n_nz,'int32');  %nonzeros per row
     [i,j,s] = find((A' ~= 0).*(A'));
     fwrite(fd,i-1,'int32');
