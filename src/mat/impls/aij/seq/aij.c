@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.345 2000/05/05 22:15:38 balay Exp balay $*/
+/*$Id: aij.c,v 1.346 2000/05/08 15:08:03 balay Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -2156,6 +2156,36 @@ int MatRetrieveValues(Mat mat)
   PetscFunctionReturn(0);
 }
 
+/*
+   This allows SeqAIJ matrices to be passed to the matlab engine
+*/
+#if defined(PETSC_HAVE_MATLAB)
+#include "engine.h"   /* Matlab include file */
+#include "mex.h"      /* Matlab include file */
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatMatlabEnginePut_SeqAIJ"></a>*/"MatMatlabEnginePut_SeqAIJ"
+int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
+{
+  int     ierr,n,m;
+  Mat     B = (Mat)obj;
+  Scalar  *array;
+  mxArray *mat;
+
+  PetscFunctionBegin;
+
+#if !defined(PETSC_USE_COMPLEX)
+
+#else
+
+#endif
+  mxSetName(mat,obj->name);
+  engPutArray((Engine *)engine,mat);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+#endif
+
 /* --------------------------------------------------------------------------------*/
 
 #undef __FUNC__  
@@ -2329,6 +2359,9 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqAIJ",
                                      MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"PetscMatlabEnginePut_C","MatMatlabEnginePut_SeqAIJ",MatMatlabEnginePut_SeqAIJ);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
