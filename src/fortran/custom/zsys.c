@@ -1,4 +1,4 @@
-/*$Id: zsys.c,v 1.87 2001/01/15 21:49:49 bsmith Exp bsmith $*/
+/*$Id: zsys.c,v 1.88 2001/03/22 20:33:25 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
@@ -124,6 +124,11 @@ void PETSC_STDCALL petscoffsetfortran_(Scalar *x,Scalar *y,int *shift,int *ierr)
 {
   *ierr = 0;
   *shift = y - x;
+}
+
+void PETSC_STDCALL petscgetcputime_(PetscLogDouble *t, int *__ierr )
+{
+  *__ierr = PetscGetCPUTime(t);
 }
 
 void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),CHAR fmode PETSC_MIXED_LEN(len2),
