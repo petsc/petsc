@@ -101,10 +101,10 @@ class Base(logging.Logger):
       projects = None
     for project in self.argDB['installedprojects']:
       if project.getUrl() == url:
-        self.debugPrint('Project '+project.getName()+'('+url+') is installed', 3, 'install')
+        self.debugPrint('Project '+project.getName()+'('+url+') is installed', 4, 'install')
         if not returnAll:
           return project
         else:
           projects.append(project)
-    self.debugPrint('Project '+url+' is not installed', 3, 'install')
+    self.debugPrint('Project '+url+' is not installed', 4, 'install')
     return projects

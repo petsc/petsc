@@ -17,8 +17,20 @@ class UsingPython (base.Base):
       import build.templates.usingC
       self.usingC = build.templates.usingC.UsingC(self.sourceDB, self.project, self.usingSIDL)
     self.language = 'Python'
-    self.setupIncludeDirectories()
-    self.setupExtraLibraries()
+    self.setup()
+    return
+
+  def __getstate__(self):
+    '''Do not save the include directories and extra libraries'''
+    d = self.__dict__.copy()
+    del d['includeDirs']
+    del d['extraLibraries']
+    return d
+
+  def __setstate__(self, d):
+    '''Recreate the include directories and extra libraries'''
+    self.__dict__.update(d)
+    self.setup()
     return
 
   def setupArgDB(self, argDB, clArgs):
@@ -28,15 +40,28 @@ class UsingPython (base.Base):
     argDB.setType('PYTHON_LIB',     nargs.ArgLibrary(None, None, 'The library containing PyInitialize()', 1))
     return base.Base.setupArgDB(self, argDB, clArgs)
 
+  def setup(self):
+    '''Setup include directories and extra libraries'''
+    self.setupIncludeDirectories()
+    self.setupExtraLibraries()
+    return
+
   def setupIncludeDirectories(self):
     try:
       if not 'PYTHON_INCLUDE' in self.argDB:
         import distutils.sysconfig
         self.argDB['PYTHON_INCLUDE'] = distutils.sysconfig.get_python_inc()
     except: pass
-    self.includeDirs = self.argDB['PYTHON_INCLUDE']
-    if not isinstance(self.includeDirs, list):
-      self.includeDirs = [self.includeDirs]
+    if isinstance(self.argDB['PYTHON_INCLUDE'], list):
+      # We need separate includes in separate keys
+      self.includeDirs = []
+      i = 0
+      for dir in self.argDB['PYTHON_INCLUDE']:
+        self.argDB['PYTHON_INCLUDE_'+str(i)] = dir
+        self.includeDirs.append(project.ArgumentPath('PYTHON_INCLUDE_'+str(i)))
+        i += 1
+    else:
+      self.includeDirs = [project.ArgumentPath('PYTHON_INCLUDE')]
     return self.includeDirs
 
   def setupExtraLibraries(self):
@@ -59,11 +84,19 @@ class UsingPython (base.Base):
         except: pass
       except: pass
 
-    self.extraLibraries = [self.argDB['PYTHON_LIB']]
+    extraLibraries = [self.argDB['PYTHON_LIB']]
     if not distutils.sysconfig.get_config_var('LIBS') is None:
       for lib in distutils.sysconfig.get_config_var('LIBS').split():
         # Change -l<lib> to lib<lib>.so
-        self.extraLibraries.append('lib'+lib[2:]+'.so')
+        extraLibraries.append('lib'+lib[2:]+'.so')
+
+    # We need separate libraries in separate keys
+    self.extraLibraries = []
+    i = 0
+    for lib in extraLibraries:
+      self.argDB['PYTHON_LIB_'+str(i)] = lib
+      self.extraLibraries.append(project.ArgumentPath('PYTHON_LIB_'+str(i)))
+      i += 1
     return self.extraLibraries
 
   def getServerLibrary(self, package, proj = None, lang = None):

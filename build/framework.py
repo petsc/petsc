@@ -252,6 +252,7 @@ class Framework(base.Base):
       self.builder = cPickle.loads(self.argDB['checkpoint'])
       compileGraph = self.builder.buildGraph
       #del self.argDB['checkpoint']
+      self.debugPrint('Loaded checkpoint for '+str(self.project), 2, 'build')
     else:
       input        = self.filesets['sidl']
       sidlGraph    = self.sidlTemplate.getTarget()

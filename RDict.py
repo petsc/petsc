@@ -547,12 +547,12 @@ if __name__ ==  '__main__':
   import sys
   try:
     if len(sys.argv) < 2:
-      print 'RDict.py [server | client | clear | insert | remove]'
+      print 'RDict.py [server | client | clear | insert | remove] [parent]'
     else:
       action = sys.argv[1]
       parent = None
       if len(sys.argv) > 2:
-        if not parent == 'None': parent = sys.argv[2]
+        if not sys.argv[2] == 'None': parent = sys.argv[2]
       if action == 'server':
         RDict(parentDirectory = parent).serve()
       elif action == 'client':
