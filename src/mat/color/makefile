@@ -12,6 +12,7 @@ SOURCEC  = degr.c setr.c dsm.c ido.c numsrt.c seq.c slo.c color.c \
 SOURCEH  = color.h
 OBJSC    = degr.o setr.o dsm.o ido.o numsrt.o seq.o slo.o color.o \
            scolor.o
+DOCS     = readme
 LIBBASE  = libpetscmat
 LOCDIR   = src/mat/impls/color/
 MANSEC   = 2
