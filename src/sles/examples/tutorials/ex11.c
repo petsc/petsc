@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.14 1997/10/19 03:27:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.15 1997/11/28 16:20:38 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -50,7 +50,7 @@ int main(int argc,char **args)
   SLES        sles;         /* linear solver context */
   double      norm;         /* norm of solution error */
   int         dim, i, j, I, J, Istart, Iend, ierr, n = 6, its, flg, use_random;
-  Scalar      v, none = -1.0, sigma2, pfive = 0.5;
+  Scalar      v, none = -1.0, sigma2, pfive = 0.5, *xa;
   PetscRandom rctx;
   double      h2, sigma1 = 100.0;
 
@@ -176,6 +176,19 @@ int main(int argc,char **args)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  /*
+      Print the first 3 entries of x; this demonstrates extraction of the
+      real and imaginary components of the complex vector, x.
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-print_x3",&flg);
+  if (flg) {
+    ierr = VecGetArray(x,&xa); CHKERRA(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");
+    for (i=0; i<3; i++)
+      PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,real(xa[i]),imag(xa[i]));
+    ierr = VecRestoreArray(x,&xa); CHKERRA(ierr);
+  }
 
   /* 
      Check the error
