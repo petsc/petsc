@@ -29,7 +29,7 @@ if ($day == Sun) then
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc   )
 endif
 if ($day == Mon) then
-  set M =(snake  maverick   violet     elvis         doc         ptera       maverick    quad        tiamat      yukon        )
+  set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        tiamat      yukon        )
   set B =(g      Opg_c++    O_c++      g             O           g_c++       Opg         O           Opg_complex O_complex    )
   set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha_nolog sun4        rs6000_quad solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
@@ -42,7 +42,7 @@ if ($day == Mon) then
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc  $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc   )
 endif  
 if ($day == Tue) then
-  set M =(snake  maverick   violet     elvis         doc         ptera       maverick    quad        tiamat      yukon        )
+  set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        tiamat      yukon        )
   set B =(O      g          O_complex  O             g           O           Opg_c++     g           O_c++       g_c++        )
   set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha       sun4        rs6000_quad solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      noshared    shared      shared      shared       )
@@ -94,7 +94,7 @@ if ($day == Fri) then
   set H=($PETSC  /tmp/petsc /tmp/petsc /tmp/petsc    $SP         $LOIS       /tmp/petsc  $CCST       $BALAY      /tmp/petsc   )
 endif
 if ($day == Sat) then
-  set M =(snake  maverick   violet     elvis         doc         ptera       maverick    quad        tiamat      yukon        )
+  set M =(snake  maverick   violet     elvis         spnode013   ptera       maverick    quad        tiamat      yukon        )
   set B =(O      O          O          Opg_complex   O           Opg_c++     g_complex   Opg         O_complex   O_c++        )
   set A =(hpux   sun4       IRIX       freebsd       rs6000_p4   alpha       sun4_uni    rs6000_quad solaris     IRIX64       )
   set S =(shared noshared   shared     noshared      noshared    shared      shared      shared      shared      shared       )

@@ -17,9 +17,9 @@ proc CheckNightlyBuilds { } {
             puts $tmpfileid $mesg
         }
     }
-    # Either doc or clyde should exist
-    if { [ string first doc $files ] < 0  && [ string first clyde $files ] < 0  } {
-        set mesg "doc/clyde: File does not exist"
+    # Either spnode013 or clyde should exist
+    if { [ string first spnode013 $files ] < 0  && [ string first clyde $files ] < 0  } {
+        set mesg "spnode013/clyde: File does not exist"
         puts $tmpfileid  $mesg
     }
     
