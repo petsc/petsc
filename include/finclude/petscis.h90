@@ -1,8 +1,8 @@
-C
-C  $Id: is.h90,v 1.1 1997/01/16 02:18:45 bsmith Exp bsmith $;
-C
-C  Additional IS include file for use of PETSc with Fortran 90/HPF
-C
+!
+!  $Id: is.h90,v 1.2 1997/01/22 18:46:32 bsmith Exp balay $;
+!
+!  Additional IS include file for use of PETSc with Fortran 90/HPF
+!
       Interface 
         Subroutine ISGetIndicesF90(v,array,ierr)
           integer, pointer :: array(:)
@@ -20,7 +20,7 @@ C
         End Subroutine
       End Interface
 
-C ------------------------------------------------------
+! ------------------------------------------------------
 
       Interface 
         Subroutine ISBlockGetIndicesF90(v,array,ierr)
@@ -39,6 +39,6 @@ C ------------------------------------------------------
         End Subroutine
       End Interface
 
-C
-C     End of IS Fortran 90 include file for the PETSc package
-C
+!
+!     End of IS Fortran 90 include file for the PETSc package
+!

@@ -1,5 +1,5 @@
 !
-!  $Id: snes.h,v 1.15 1998/03/25 00:37:02 balay Exp balay $;
+!  $Id: snes.h,v 1.16 1998/03/27 21:17:47 balay Exp balay $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -21,11 +21,11 @@
 !
 !  Two classes of nonlinear solvers
 !
-      integer SNES_NONLINEAR_EQUATIONS,
-     *        SNES_UNCONSTRAINED_MINIMIZATION
+      integer SNES_NONLINEAR_EQUATIONS
+      integer SNES_UNCONSTRAINED_MINIMIZATION
 
-      parameter (SNES_NONLINEAR_EQUATIONS = 0,
-     *           SNES_UNCONSTRAINED_MINIMIZATION = 1)
+      parameter (SNES_NONLINEAR_EQUATIONS = 0)
+      parameter (SNES_UNCONSTRAINED_MINIMIZATION = 1)
 
 !
 !  End of Fortran include file for the SNES package in PETSc

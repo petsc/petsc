@@ -1,8 +1,8 @@
-C
-C  $Id: mat.h90,v 1.1 1997/01/16 21:20:55 bsmith Exp bsmith $;
-C
-C  Additional Mat include file for use of PETSc with Fortran 90/HPF
-C
+!
+!  $Id: mat.h90,v 1.2 1997/01/22 18:46:32 bsmith Exp balay $;
+!
+!  Additional Mat include file for use of PETSc with Fortran 90/HPF
+!
 
       Interface 
         Subroutine MatGetArrayF90(v,array,ierr)
@@ -21,6 +21,6 @@ C
         End Subroutine
       End Interface
 
-C
-C     End of Mat Fortran 90 include file for the PETSc package
-C
+!
+!     End of Mat Fortran 90 include file for the PETSc package
+!

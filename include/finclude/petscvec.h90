@@ -1,8 +1,8 @@
-C
-C  $Id: vec.h90,v 1.2 1997/01/17 03:08:14 bsmith Exp curfman $;
-C
-C  Additional Vec include file for use of PETSc with Fortran 90/HPF
-C
+!
+!  $Id: vec.h90,v 1.3 1997/05/02 13:33:40 curfman Exp balay $;
+!
+!  Additional Vec include file for use of PETSc with Fortran 90/HPF
+!
       Interface 
         Subroutine VecGetArrayF90(v,array,ierr)
           Scalar, pointer :: array(:)
@@ -19,7 +19,7 @@ C
         End Subroutine
       End Interface
 
-C -------------------------------------------------------------
+! -------------------------------------------------------------
 
       Interface 
         Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
@@ -28,11 +28,11 @@ C -------------------------------------------------------------
           Vec     v
         End Subroutine
       End Interface
-C
-C  Question: should VecDestroyVecsF90() take the m argument since
-C the array of vectors already knows how long it is? Yes, to 
-C match calling sequence for C/C++.
-C
+!
+!  Question: should VecDestroyVecsF90() take the m argument since
+! the array of vectors already knows how long it is? Yes, to 
+! match calling sequence for C/C++.
+!
       Interface 
         Subroutine VecDestroyVecsF90(vs,m,ierr)
           Vec, pointer :: vs(:)
@@ -40,6 +40,6 @@ C
         End Subroutine
       End Interface
 
-C
-C     End of Vec Fortran 90 include file for the PETSc package
-C
+!
+!     End of Vec Fortran 90 include file for the PETSc package
+!

@@ -1,5 +1,5 @@
 !
-!  $Id: pc.h,v 1.24 1998/03/25 00:37:10 balay Exp balay $;
+!  $Id: pc.h,v 1.25 1998/03/27 21:17:55 balay Exp balay $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
@@ -47,10 +47,11 @@
 !
 ! PCASMType
 !
-      integer PC_ASM_BASIC, PC_ASM_RESTRICT, PC_ASM_INTERPOLATE,
-     *        PC_ASM_NONE 
-      parameter (PC_ASM_BASIC = 3, PC_ASM_RESTRICT = 1, 
-     *           PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0)
+      integer PC_ASM_BASIC, PC_ASM_RESTRICT, PC_ASM_INTERPOLATE
+      integer PC_ASM_NONE
+
+      parameter (PC_ASM_BASIC = 3, PC_ASM_RESTRICT = 1)
+      parameter (PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0)
 !
 !  End of Fortran include file for the PC package in PETSc
 
