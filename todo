@@ -18,7 +18,7 @@
   (Priority 1) Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
   the are still pointwise. This will improve DAGlobalToLocalBegin/End() some (a few %, more?)
 
-   (Priority 0) Check if indices passed into matsetvalues_xxx MatZeroRows_MPIAIJ,MPIBAIJ,mpibdiag, MPIDense,rowbs are locally sorted 
+   (Priority 0) Check if indices passed into matsetvalues_mpi are locally sorted 
    (often they will be); if they are then do much faster check to which processor owns them
    like I did with VecScatterCreate_xxxxx().
 
