@@ -14,13 +14,16 @@
 !
 #define MPI_Comm integer
 !
-#define PetscTruth integer
-#define PetscDataType integer
-#define PetscFPTrap integer
+#define PetscEnum integer
+!
+#define PetscTruth PetscEnum
+#define PetscDataType PetscEnum
+#define PetscFPTrap PetscEnum
 
 #define PetscErrorCode integer
 #define PetscCookie integer
 #define PetscEvent integer
+#define PetscMPIInt integer
 !
 !
 ! The real*8,complex*16 notatiton is used so that the 
@@ -28,7 +31,7 @@
 ! compiler options like -r4,-r8, sometimes invoked 
 ! by the user. NAG compiler does not like integer*4,real*8
 !
-! ???? All integers should also be changed to PetscFortranInt ?????
+! ???? All integers should also be changed to PetscInt ?????
 !
 
 #if (PETSC_SIZEOF_VOID_P == 8)
@@ -42,12 +45,12 @@
 #define PetscFortranAddr integer*4
 #endif
 
-#if (PETSC_SIZEOF_INT == 8)
-#define PetscFortranInt integer*8
+#if defined(PETSC_USE_64BIT_INT)
+#define PetscInt integer*8
 #elif defined (PETSC_MISSING_FORTRANSTAR)
-#define PetscFortranInt integer
+#define PetscInt integer
 #else
-#define PetscFortranInt integer*4
+#define PetscInt integer*4
 #endif
 
 #if defined (PETSC_MISSING_FORTRANSTAR)

@@ -72,7 +72,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dasetblockfills_(DA *da,int *dfill,int *ofill,PetscErrorCode *ierr)
+void PETSC_STDCALL dasetblockfills_(DA *da,PetscInt *dfill,PetscInt *ofill,PetscErrorCode *ierr)
 {
   *ierr = DASetBlockFills(*da,dfill,ofill);
 }
@@ -127,7 +127,7 @@ static PetscErrorCode ourlf3d(DALocalInfo *info,PetscScalar ***in,PetscScalar **
 
 void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocalInfo*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  int dim;
+  PetscInt dim;
 
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
   if (dim == 2) {
@@ -144,7 +144,7 @@ void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocal
 
 
 void PETSC_STDCALL dasetlocaladiforfunction_(DA *da,
-void (PETSC_STDCALL *jfunc)(int*,DALocalInfo*,void*,void*,int*,void*,void*,int*,void*,PetscErrorCode*),PetscErrorCode *ierr)
+void (PETSC_STDCALL *jfunc)(PetscInt*,DALocalInfo*,void*,void*,PetscInt*,void*,void*,PetscInt*,void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   (*da)->adifor_lf = (DALocalFunction1)jfunc;
 }
@@ -157,7 +157,7 @@ void (PETSC_STDCALL *jfunc)(DALocalInfo*,void*,void*,void*,void*,void*,PetscErro
 
 void PETSC_STDCALL dasetlocaljacobian_(DA *da,void (PETSC_STDCALL *jac)(DALocalInfo*,void*,void*,void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  int dim;
+  PetscInt dim;
 
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
   if (dim == 2) {
@@ -193,14 +193,14 @@ void PETSC_STDCALL dagetinterpolation_(DA *dac,DA *daf,Mat *A,Vec *scale,PetscEr
   *ierr = DAGetInterpolation(*dac,*daf,A,scale);
 }
 
-void PETSC_STDCALL dasetfieldname_(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL dasetfieldname_(DA *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(name,len,t);
   *ierr = DASetFieldName(*da,*nf,t);
   FREECHAR(name,t);
 }
-void PETSC_STDCALL dagetfieldname(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL dagetfieldname(DA *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
@@ -215,7 +215,7 @@ void PETSC_STDCALL dagetfieldname(DA *da,int *nf,CHAR name PETSC_MIXED_LEN(len),
 #endif
 }
 
-void PETSC_STDCALL daload_(PetscViewer *viewer,int *M,int *N,int *P,DA *da,PetscErrorCode *ierr)
+void PETSC_STDCALL daload_(PetscViewer *viewer,PetscInt *M,PetscInt *N,PetscInt *P,DA *da,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
@@ -252,9 +252,9 @@ void PETSC_STDCALL daview_(DA *da,PetscViewer *vin,PetscErrorCode *ierr)
   *ierr = DAView(*da,v);
 }
 
-void PETSC_STDCALL dagetglobalindices_(DA *da,int *n,int *indices,long *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL dagetglobalindices_(DA *da,PetscInt *n,PetscInt *indices,long *ia,PetscErrorCode *ierr)
 {
-  int *idx;
+  PetscInt *idx;
   *ierr = DAGetGlobalIndices(*da,n,&idx);
   *ia   = PetscIntAddressToFortran(indices,idx);
 }
@@ -303,8 +303,8 @@ void PETSC_STDCALL dadestroy_(DA *da,PetscErrorCode *ierr)
 }
 
 void PETSC_STDCALL dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
-                  *stencil_type,int *M,int *N,int *m,int *n,int *w,
-                  int *s,int *lx,int *ly,DA *inra,PetscErrorCode *ierr)
+                  *stencil_type,PetscInt *M,PetscInt *N,PetscInt *m,PetscInt *n,PetscInt *w,
+                  PetscInt *s,PetscInt *lx,PetscInt *ly,DA *inra,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
@@ -312,16 +312,16 @@ void PETSC_STDCALL dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                        *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
-void PETSC_STDCALL dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
-                 int *lc,DA *inra,PetscErrorCode *ierr)
+void PETSC_STDCALL dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,PetscInt *M,PetscInt *w,PetscInt *s,
+                 PetscInt *lc,DA *inra,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(lc);
   *ierr = DACreate1d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,inra);
 }
 
 void PETSC_STDCALL dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
-                 *stencil_type,int *M,int *N,int *P,int *m,int *n,int *p,
-                 int *w,int *s,int *lx,int *ly,int *lz,DA *inra,PetscErrorCode *ierr)
+                 *stencil_type,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,
+                 PetscInt *w,PetscInt *s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DA *inra,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
@@ -330,7 +330,7 @@ void PETSC_STDCALL dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                         *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,inra);
 }
 
-void PETSC_STDCALL dagetinfo_(DA *da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,
+void PETSC_STDCALL dagetinfo_(DA *da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *w,PetscInt *s,
                 DAPeriodicType *wrap,DAStencilType *st,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(dim);

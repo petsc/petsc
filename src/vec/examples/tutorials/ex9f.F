@@ -27,8 +27,9 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 
-      integer      rank,nlocal,nghost,ifrom(2),size,ierr,i,rstart,rend
-      integer      flag
+      PetscMPIInt rank,size
+      PetscInt nlocal,nghost,ifrom(2),ierr,i,rstart,rend,ione
+      PetscTruth  flag
       PetscScalar  value,tarray(20)
       Vec          lx,gx,gxs
 
@@ -100,9 +101,10 @@
 
        call VecGetOwnershipRange(gx,rstart,rend,ierr)
 
+       ione = 1
        do 10, i=rstart,rend-1
          value = i
-         call VecSetValues(gx,1,i,value,INSERT_VALUES,ierr) 
+         call VecSetValues(gx,ione,i,value,INSERT_VALUES,ierr) 
  10    continue
 
        call VecAssemblyBegin(gx,ierr) 

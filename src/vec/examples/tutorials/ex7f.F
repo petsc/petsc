@@ -12,7 +12,8 @@
        PetscScalar      two
        Vec              vec
        MPI_Comm         comm
-       integer          ierr,rank
+       PetscErrorCode ierr
+       PetscMPIInt rank
 
        two  = 2.0
 

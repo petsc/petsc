@@ -80,11 +80,11 @@ static PetscErrorCode ourtsjacobian(TS ts,PetscReal d,Vec x,Mat* m,Mat* p,MatStr
 /*
    Note ctx is the same as ts so we need to get the Fortran context out of the TS
 */
-static PetscErrorCode ourtsmonitor(TS ts,int i,PetscReal d,Vec v,void*ctx)
+static PetscErrorCode ourtsmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void*ctx)
 {
   PetscErrorCode ierr = 0;
   void       (*mctx)(void) = ((PetscObject)ts)->fortran_func_pointers[6];
-  (*(void (PETSC_STDCALL *)(TS*,int*,PetscReal*,Vec*,FCNVOID,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[4]))(&ts,&i,&d,&v,mctx,&ierr);
+  (*(void (PETSC_STDCALL *)(TS*,PetscInt*,PetscReal*,Vec*,FCNVOID,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[4]))(&ts,&i,&d,&v,mctx,&ierr);
   return 0;
 }
 
@@ -99,7 +99,7 @@ static PetscErrorCode ourtsdestroy(void *ctx)
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL tssetrhsboundaryconditions_(TS *ts,int (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL tssetrhsboundaryconditions_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   ((PetscObject)*ts)->fortran_func_pointers[0] = (FCNVOID)f;
   *ierr = TSSetRHSBoundaryConditions(*ts,ourtsbcfunction,ctx);
@@ -149,7 +149,7 @@ void PETSC_STDCALL tssettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErrorCo
 }
 
 
-void PETSC_STDCALL tssetrhsfunction_(TS *ts,int (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
+void PETSC_STDCALL tssetrhsfunction_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
 {
   ((PetscObject)*ts)->fortran_func_pointers[1] = (FCNVOID)f;
   *ierr = TSSetRHSFunction(*ts,ourtsfunction,fP);
@@ -158,8 +158,8 @@ void PETSC_STDCALL tssetrhsfunction_(TS *ts,int (PETSC_STDCALL *f)(TS*,PetscReal
 
 /* ---------------------------------------------------------*/
 
-void PETSC_STDCALL tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,int (PETSC_STDCALL *f)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,
-                                                   void*,int *),void*fP,PetscErrorCode *ierr)
+void PETSC_STDCALL tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,
+                                                   void*,PetscInt *),void*fP,PetscErrorCode *ierr)
 {
   if (FORTRANNULLFUNCTION(f)) {
     *ierr = TSSetRHSMatrix(*ts,*A,*B,PETSC_NULL,fP);
@@ -224,7 +224,7 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCo
 }
 
 #if defined(PETSC_HAVE_PVODE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-void PETSC_STDCALL tspvodegetiterations_(TS *ts,int *nonlin,int *lin,PetscErrorCode *ierr)
+void PETSC_STDCALL tspvodegetiterations_(TS *ts,PetscInt *nonlin,PetscInt *lin,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nonlin);
   CHKFORTRANNULLINTEGER(lin);
@@ -236,13 +236,13 @@ void PETSC_STDCALL tsdestroy_(TS *ts,PetscErrorCode *ierr){
   *ierr = TSDestroy(*ts);
 }
 
-void PETSC_STDCALL tsdefaultmonitor_(TS *ts,int *step,PetscReal *dt,Vec *x,void *ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL tsdefaultmonitor_(TS *ts,PetscInt *step,PetscReal *dt,Vec *x,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = TSDefaultMonitor(*ts,*step,*dt,*x,ctx);
 }
 
 
-void PETSC_STDCALL tssetmonitor_(TS *ts,void (PETSC_STDCALL *func)(TS*,int*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL tssetmonitor_(TS *ts,void (PETSC_STDCALL *func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   if ((FCNVOID)func == (FCNVOID)tsdefaultmonitor_) {
     *ierr = TSSetMonitor(*ts,TSDefaultMonitor,0,0);

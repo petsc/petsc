@@ -18,7 +18,9 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscis.h"
 
-      integer     ierr,indices(5),rank,n,index1,index5
+      PetscErrorCode ierr
+      PetscInt indices(5),n,index1,index5
+      PetscMPIInt rank
       PetscOffset ix
       IS          is
 
@@ -33,7 +35,10 @@
       indices(3) = rank + 3 
       indices(4) = rank + 4 
       indices(5) = rank + 5 
-      call ISCreateGeneral(PETSC_COMM_SELF,5,indices,is,ierr)
+
+!     if using 64bit integers cannot pass 5 into routine expecting an integer*8
+      n = 5
+      call ISCreateGeneral(PETSC_COMM_SELF,n,indices,is,ierr)
 
 !  Print the index set to stdout
 

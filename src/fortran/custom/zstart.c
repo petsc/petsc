@@ -101,13 +101,13 @@ EXTERN_C_END
 extern MPI_Op PetscSum_Op;
 
 EXTERN_C_BEGIN
-extern void PetscSum_Local(void*,void *,int *,MPI_Datatype *);
+extern void PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 #endif
 extern MPI_Op PetscMaxSum_Op;
 
 EXTERN_C_BEGIN
-extern void PetscMaxSum_Local(void*,void *,int *,MPI_Datatype *);
+extern void PetscMaxSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 
 EXTERN PetscErrorCode PetscOptionsCheckInitial_Private(void);
@@ -125,11 +125,12 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 #if defined (PETSC_USE_NARGS)
   short i,flg;
 #else
-  int  i;
+  int   i;
 #endif
   PetscErrorCode ierr;
-  int warg = 256,rank;
-  char *p;
+  int            warg = 256;
+  PetscMPIInt    rank;
+  char           *p;
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
@@ -188,8 +189,8 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 extern MPI_Op PetscADMax_Op;
 extern MPI_Op PetscADMin_Op;
 EXTERN_C_BEGIN
-extern void PetscADMax_Local(void *,void *,PetscInt *,MPI_Datatype *);
-extern void PetscADMin_Local(void *,void *,PetscInt *,MPI_Datatype *);
+extern void PetscADMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+extern void PetscADMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 
 
@@ -204,12 +205,13 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined (PETSC_USE_NARGS)
-  short flg,i;
+  short       flg,i;
 #else
-  int   i,j;
+  int         i,j;
 #endif
-  int   flag,argc = 0,dummy_tag,size;
-  char  **args = 0,*t1,name[256],hostname[64];
+  int         flag,argc = 0;
+  PetscMPIInt dummy_tag,size;
+  char        **args = 0,*t1,name[256],hostname[64];
   
   *ierr = 1;
   *ierr = PetscMemzero(name,256); if (*ierr) return;
@@ -253,7 +255,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
   MPI_Initialized(&flag);
   if (!flag) {
-    int mierr;
+    PetscMPIInt mierr;
     mpi_init_(&mierr);
     if (mierr) {
       *ierr = mierr;
@@ -355,10 +357,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   
   *ierr = PetscOptionsCheckInitial_Components(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options");return;}
-
 }
 
-void PETSC_STDCALL petscfinalize_(int *ierr)
+void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
@@ -368,7 +369,7 @@ void PETSC_STDCALL petscfinalize_(int *ierr)
   *ierr = PetscFinalize();
 }
 
-void PETSC_STDCALL petscend_(int *ierr)
+void PETSC_STDCALL petscend_(PetscErrorCode *ierr)
 {
 #if defined(PETSC_HAVE_SUNMATHPRO)
   extern void standard_arithmetic();
@@ -378,7 +379,7 @@ void PETSC_STDCALL petscend_(int *ierr)
   *ierr = PetscEnd();
 }
 
-void PETSC_STDCALL petscsetcommworld_(MPI_Comm *comm,int *ierr)
+void PETSC_STDCALL petscsetcommworld_(MPI_Comm *comm,PetscErrorCode *ierr)
 {
   *ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm(*comm));
 }

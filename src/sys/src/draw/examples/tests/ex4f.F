@@ -9,7 +9,8 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscdraw.h"
       PetscDraw    draw
-      integer dummy,ierr
+      integer dummy
+      PetscErrorCode ierr
     
       integer i
 
@@ -23,7 +24,8 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscdraw.h"
       PetscDraw draw
-      integer  ierr,x,y,width,height
+      PetscErrorCode ierr
+      integer  x,y,width,height
       External zoomfunction
       x      = 0
       y      = 0
@@ -31,8 +33,6 @@
       height = 256
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-
-!     call PetscDrawOpenX(PETSC_COMM_SELF,0,'Title',x,y,width,height,draw,ierr)
       call PetscDrawCreate(PETSC_COMM_SELF,PETSC_NULL_CHARACTER,        &
      & 'Title',x,y,width,height,draw,ierr)
       call PetscDrawSetType(draw,PETSC_DRAW_X,ierr)

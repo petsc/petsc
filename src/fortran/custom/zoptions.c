@@ -216,10 +216,10 @@ long PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
 
 #if !defined(PETSC_HAVE_CRAY90_POINTER)
   if (tmp3 > tmp1) {
-    tmp2  = (tmp3 - tmp1)/sizeof(int);
+    tmp2  = (tmp3 - tmp1)/sizeof(PetscInt);
     itmp2 = (long) tmp2;
   } else {
-    tmp2  = (tmp1 - tmp3)/sizeof(int);
+    tmp2  = (tmp1 - tmp3)/sizeof(PetscInt);
     itmp2 = -((long) tmp2);
   }
 #else
@@ -235,13 +235,13 @@ long PetscIntAddressToFortran(PetscInt *base,PetscInt *addr)
   if (base + itmp2 != addr) {
     (*PetscErrorPrintf)("PetscIntAddressToFortran:C and Fortran arrays are\n");
     (*PetscErrorPrintf)("not commonly aligned or are too far apart to be indexed \n");
-    (*PetscErrorPrintf)("by an integer. Locations: C %ld Fortran %ld\n",tmp1,tmp3);
+    (*PetscErrorPrintf)("by an integer. Locations: C %uld Fortran %uld\n",tmp1,tmp3);
     MPI_Abort(PETSC_COMM_WORLD,1);
   }
   return itmp2;
 }
 
-int *PetscIntAddressFromFortran(int *base,long addr)
+PetscInt *PetscIntAddressFromFortran(PetscInt *base,long addr)
 {
   return base + addr;
 }
@@ -252,6 +252,7 @@ int *PetscIntAddressFromFortran(int *base,long addr)
        addr - C array address
        res  - will contain offset from C to Fortran
        shift - number of bytes that prevent base and addr from being commonly aligned
+       N - size of the array
 
    To fix! If tmp2 is larger than a signed long can handle MUST genrate error,
  currently we just stick into the signed and don't check.
@@ -290,7 +291,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
         Fortran and C not PetscScalar aligned,recover by copying values into
         memory that is aligned with the Fortran
     */
-    PetscErrorCode ierr;
+    PetscErrorCode       ierr;
     PetscScalar          *work;
     PetscObjectContainer container;
 

@@ -5,7 +5,8 @@
        program main
 #include "finclude/petsc.h"
 
-      integer          ierr,rank
+      PetscErrorCode ierr
+      PetscMPIInt rank
       PetscFortranAddr file
       character*100    joe
  

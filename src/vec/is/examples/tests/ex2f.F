@@ -6,7 +6,8 @@
 #include "finclude/petsc.h"
 #include "finclude/petscis.h"
 
-      integer     i,n,ierr,ii(1),start,stride
+      PetscErrorCode ierr
+      PetscInt  i,n,ii(1),start,stride,ssize,first
       IS          is
       PetscTruth  flag
       PetscOffset iis
@@ -14,8 +15,10 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
 !     Test IS of size 0 
-
-      call ISCreateStride(PETSC_COMM_SELF,0,0,2,is,ierr)
+      ssize = 0
+      stride = 0
+      first = 2
+      call ISCreateStride(PETSC_COMM_SELF,ssize,stride,first,is,ierr)
       call ISGetLocalSize(is,n,ierr)
       if (n .ne. 0) then 
         SETERRQ(1,0,ierr)
@@ -37,7 +40,10 @@
 
 !     Test ISGetIndices()
 
-      call ISCreateStride(PETSC_COMM_SELF,10000,-8,3,is,ierr)
+      ssize = 10000
+      stride = -8
+      first = 3
+      call ISCreateStride(PETSC_COMM_SELF,ssize,stride,first,is,ierr)
       call ISGetLocalSize(is,n,ierr)
       call ISGetIndices(is,ii,iis,ierr)
       do 10, i=1,10000
