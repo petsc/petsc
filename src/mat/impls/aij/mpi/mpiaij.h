@@ -50,6 +50,11 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat pr
   PetscInt brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
 } Mat_MatMatMultMPI;
 
+typedef struct { /* used by MatPtAP_MPIAIJ_MPIAIJ for reusing symbolic mat product */
+  Mat      *ploc,P_oth;
+  PetscInt prstart;
+} Mat_PtAPMPI;
+
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   PetscMap     rowmap;
   PetscInt     nsend,*bi,*bj,**buf_ri,**buf_rj;

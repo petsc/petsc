@@ -3290,6 +3290,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
   PetscFunctionReturn(0);
 }
 
+static PetscEvent logkey_getlocalmat = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalMat"
 /*@C
@@ -3308,7 +3309,6 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n
     Level: developer
 
 @*/
-static PetscEvent logkey_getlocalmat = 0;
 PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc) 
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
@@ -3364,6 +3364,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
   PetscFunctionReturn(0);
 }
 
+static PetscEvent logkey_GetBrowsOfAcols = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatGetBrowsOfAcols"
 /*@C
@@ -3384,7 +3385,6 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
     Level: developer
 
 @*/
-static PetscEvent logkey_GetBrowsOfAcols = 0;
 PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,PetscInt *brstart,Mat *B_seq) 
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
@@ -3443,6 +3443,9 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,P
   PetscFunctionReturn(0);
 }
 
+static PetscEvent logkey_GetBrowsOfAocols = 0;
+#undef __FUNCT__
+#define __FUNCT__ "MatGetBrowsOfAoCols"
 /*@C
     MatGetBrowsOfAoCols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns
      of the off-diagonal portion of A 
@@ -3462,9 +3465,6 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,P
     Level: developer
 
 @*/
-static PetscEvent logkey_GetBrowsOfAocols = 0;
-#undef __FUNCT__
-#define __FUNCT__ "MatGetBrowsOfAoCols"
 PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,PetscInt *brstart,Mat *B_seq) 
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
