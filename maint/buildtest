@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.140 1998/04/22 14:29:06 balay Exp balay $ 
+# $Id: buildtest,v 1.141 1998/04/24 14:57:03 balay Exp bsmith $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -75,7 +75,7 @@ if ($day == Wed) then
 endif
 if ($day == Thu) then
   set M =(snake  fire       violet     flight        tri63       ptera       lava         ico09       maverick    yukon       homer        )
-  set B =(O      g_complex  g_c++      O_c++         O_c++       g           Opg_complex  g_c++       g           O           g_c++        )
+  set B =(O      g_complex  g_c++      O_c++         O           g           Opg_complex  g_c++       g           O           g_c++        )
   set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha       solaris      rs6000      sun4_f90    IRIX64      freebsd_egcs )
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
   set J2=(0      2          2          2             2           2           2            2           2           2           2            )
@@ -99,7 +99,7 @@ if ($day == Fri) then
 endif
 if ($day == Sat) then
   set M =(snake  fire       violet     flight        tri63       ptera       lava         ico09       maverick    yukon       homer        )
-  set B =(O      O          O          Opg_complex   O_complex   Opg         g_complex    Opg         O_complex   O_c++       Opg          )
+  set B =(O      O          O          Opg_complex   O           Opg         g_complex    Opg         O_complex   O_c++       Opg          )
   set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha_nolog solaris_uni  rs6000      sun4        IRIX64      freebsd_egcs )
   set J1=(1      1          1          1             1           1           4            1           1           1           1            )
   set J2=(0      2          2          2             2           2           9            2           2           2           2            )
