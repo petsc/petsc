@@ -1,10 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ctable.c,v 1.7 1999/05/04 20:29:32 balay Exp balay $";
+static char vcid[] = "$Id: ctable.c,v 1.8 1999/06/30 23:49:46 balay Exp balay $";
 #endif
 /* Contributed by - Mark Adams */
 
 #include "petsc.h"
 #include "src/sys/ctable.h" 
+#if defined (PETSC_HAVE_LIMITS_H)
+#include <limits.h>
+#endif
+#define HASHT(ta,x) ((3*x)%ta->tablesize)
 
 #undef __FUNC__  
 #define __FUNC__ "TableCreate"
@@ -19,8 +23,10 @@ int TableCreate(const int n,Table *rta)
   int   ierr;
 
   PetscFunctionBegin;
+  if(n < 0) SETERRQ(1,1,"TABLE error: n < 0"); 
   ta            = (Table)PetscMalloc(sizeof(Table_struct));CHKPTRQ(ta);
   ta->tablesize = (3*n)/2 + 17;
+  if(ta->tablesize < n) ta->tablesize = INT_MAX/4; /* overflow */
   ta->keytable  = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->keytable);
   ierr          = PetscMemzero(ta->keytable,sizeof(int)*ta->tablesize);CHKERRQ(ierr);
   ta->table     = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->table);
@@ -51,9 +57,12 @@ int TableCreateCopy(const Table intable,Table *rta)
   for( i = 0 ; i < ta->tablesize ; i++ ){
     ta->keytable[i] = intable->keytable[i]; 
     ta->table[i]    = intable->table[i];
-  }
+#if defined(USE_PETSC_BOPT_g)    
+    if(ta->keytable[i] < 0) SETERRQ(1,1,"TABLE error: ta->keytable[i] < 0"); 
+#endif  
+ }
   ta->head  = 0;
-  ta->count = 0;
+  ta->count = intable->count;
   
   *rta      = ta;
 
@@ -109,9 +118,10 @@ int TableAdd(Table ta, const int key, const int data)
   const int tsize = ta->tablesize,tcount = ta->count; 
   
   PetscFunctionBegin;
-  if (key == 0 || data == 0) SETERRQ(1,1,"Table zero key or data");
+  if( key <= 0 ) SETERRQ(1,1,"TABLE error: key <= 0");
+  if( data == 0 ) SETERRQ(1,1,"TABLE error: Table zero data");
   
-  if (ta->count < (5*ta->tablesize)/6 - 1) {
+  if (ta->count < 5*(ta->tablesize/6) - 1) {
     while (ii++ < ta->tablesize){
       if (ta->keytable[hash] == key) {
 	ta->table[hash] = data; /* over write */
@@ -124,16 +134,22 @@ int TableAdd(Table ta, const int key, const int data)
       }
       hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
     }  
-    SETERRQ(1,1,"TABLE error"); 
+    SETERRQ(1,1,"TABLE error: full table");
   }
   else {
     int *oldtab = ta->table, *oldkt = ta->keytable, newk, ndata;
-    
+    int sz;
+
     /* alloc new (bigger) table */
+    if(ta->tablesize == INT_MAX/4) SETERRQ(1,1,"TABLE error: ta->tablesize < 0");
     ta->tablesize = 2*tsize; 
-    ta->table     = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->table);
-    ta->keytable  = (int*)PetscMalloc(sizeof(int)*ta->tablesize);CHKPTRQ(ta->keytable);
-    ierr          = PetscMemzero(ta->keytable,sizeof(int)*ta->tablesize);CHKERRQ(ierr);
+    if ( ta->tablesize <= tsize ) ta->tablesize = INT_MAX/4;
+
+    sz = sizeof(int)*ta->tablesize;
+    ta->table    = (int*)PetscMalloc( sz );CHKPTRQ(ta->table);
+    ta->keytable = (int*)PetscMalloc( sz );CHKPTRQ(ta->keytable);
+    ierr         = PetscMemzero( ta->keytable, sz );CHKERRQ(ierr);
+
     ta->count     = 0;
     ta->head      = 0; 
     
@@ -183,9 +199,11 @@ int TableRemoveAll(Table ta)
  */
 int TableFind(Table ta, const int key, int *data) 
 {  
-  int hash = HASHT( ta, key ), ii = 0;
+  int hash, ii = 0;
 
   PetscFunctionBegin;
+  if( key == 0 ) SETERRQ(1,1,"TABLE error: Table zero key");
+  hash = HASHT( ta, key );
   *data = 0;
   while ( ii++ < ta->tablesize ) {
     if (ta->keytable[hash] == 0) break;
@@ -218,7 +236,7 @@ int TableGetHeadPosition(Table ta, CTablePos *ppos)
       break;
     }
   } while (i++ < ta->tablesize);
-  if (!*ppos) SETERRQ(1,1,"No head");
+  if (!*ppos) SETERRQ(1,1,"TABLE error: No head");
 
   PetscFunctionReturn(0);
 }
@@ -237,7 +255,7 @@ int TableGetNext(Table ta, CTablePos *rPosition, int *pkey, int *data)
 
   PetscFunctionBegin;
   pos = *rPosition;
-  if (!pos) SETERRQ(1,1,"TABLE null position"); 
+  if (!pos) SETERRQ(1,1,"TABLE error: TABLE null position"); 
   *data = *pos; 
   if (!*data) SETERRQ(1,1,"TABLE error"); 
   index = pos - ta->table;

@@ -1,4 +1,4 @@
-/* $Id: ctable.h,v 1.3 1999/01/11 17:19:03 balay Exp balay $ */
+/* $Id: ctable.h,v 1.4 1999/02/17 21:38:10 balay Exp balay $ */
 /* Contributed by - Mark Adams */
 
 #if !defined(__CTABLE_H)
@@ -13,8 +13,6 @@ typedef struct TABLE_TAG
   int tablesize ;
   int head;
 }*Table,Table_struct;
-
-#define HASHT(ta,x) ((53*x)%ta->tablesize)
 
 extern int TableCreate(const int size,Table *ta);
 extern int TableCreateCopy(const Table intable,Table *rta);
