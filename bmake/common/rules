@@ -125,7 +125,6 @@ clean:
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log
 
 testexamples: examples runexamples clean
-	-@echo "Tests complete"
 
 
 tree: $(ACTION)
