@@ -162,6 +162,7 @@ clean:
 #    8 - Fortran .F examples that don't work with complex numbers
 #    9 - uniprocessor version of 3
 #   10 - Fortran examples that require complex
+#   11 - uniprocessor version of 5
 #
 testexamples_1: $(TESTEXAMPLES_1)
 testexamples_2: $(TESTEXAMPLES_2)
@@ -183,6 +184,7 @@ buildexamples_7: $(BUILDEXAMPLES_7)
 buildexamples_8: $(BUILDEXAMPLES_8)
 buildexamples_9: $(BUILDEXAMPLES_9)
 buildexamples_10: $(BUILDEXAMPLES_10)
+buildexamples_11: $(BUILDEXAMPLES_11)
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
