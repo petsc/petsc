@@ -1,4 +1,4 @@
-/*$Id: matregis.c,v 1.4 2000/08/24 22:41:43 bsmith Exp bsmith $*/
+/*$Id: matregis.c,v 1.5 2000/10/24 20:25:24 bsmith Exp bsmith $*/
 
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
@@ -52,7 +52,7 @@ int MatRegisterAll(char *path)
 
   ierr = MatRegisterDynamic(MATIS,      path,"MatCreate_IS",      MatCreate_IS);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSHELL,   path,"MatCreate_Shell",   MatCreate_Shell);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_BLOCKSOLVE)
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   ierr = MatRegisterDynamic(MATMPIROWBS,path,"MatCreate_MPIRowbs",MatCreate_MPIRowbs);CHKERRQ(ierr);
 #endif
 

@@ -1,4 +1,4 @@
-/*$Id: matioall.c,v 1.19 2000/09/01 20:35:59 balay Exp bsmith $*/
+/*$Id: matioall.c,v 1.20 2000/10/24 20:26:14 bsmith Exp bsmith $*/
 
 #include "petscmat.h"
 
@@ -51,7 +51,7 @@ int MatLoadRegisterAll(char *path)
   ierr = MatLoadRegisterDynamic(MATMPIBAIJ,path,"MatLoad_MPIBAIJ",MatLoad_MPIBAIJ);CHKERRQ(ierr);
   ierr = MatLoadRegisterDynamic(MATSEQSBAIJ,path,"MatLoad_SeqSBAIJ",MatLoad_SeqSBAIJ);CHKERRQ(ierr);
   ierr = MatLoadRegisterDynamic(MATMPISBAIJ,path,"MatLoad_MPISBAIJ",MatLoad_MPISBAIJ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_BLOCKSOLVE)
+#if defined(PETSC_HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   ierr = MatLoadRegisterDynamic(MATMPIROWBS,path,"MatLoad_MPIRowbs",MatLoad_MPIRowbs);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
