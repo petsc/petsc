@@ -1,4 +1,4 @@
-/*$Id: zf90mat.c,v 1.11 2000/09/28 21:16:27 bsmith Exp balay $*/
+/*$Id: zf90mat.c,v 1.12 2001/08/07 03:05:21 balay Exp bsmith $*/
 
 #include "petscmat.h"
 #include "petscf90.h"
@@ -12,20 +12,20 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL matgetarrayf90_(Mat *mat,F90Array2d *ptr,int *__ierr)
+void PETSC_STDCALL matgetarrayf90_(Mat *mat,F90Array2d *ptr,int *ierr)
 {
   PetscScalar *fa;
   int    m,n;
-  *__ierr = MatGetArray(*mat,&fa);       if (*__ierr) return;
-  *__ierr = MatGetLocalSize(*mat,&m,&n); if (*__ierr) return;
-  *__ierr = F90Array2dCreate(fa,PETSC_SCALAR,1,m,1,n,ptr);
+  *ierr = MatGetArray(*mat,&fa);       if (*ierr) return;
+  *ierr = MatGetLocalSize(*mat,&m,&n); if (*ierr) return;
+  *ierr = F90Array2dCreate(fa,PETSC_SCALAR,1,m,1,n,ptr);
 }
-void PETSC_STDCALL matrestorearrayf90_(Mat *mat,F90Array2d *ptr,int *__ierr)
+void PETSC_STDCALL matrestorearrayf90_(Mat *mat,F90Array2d *ptr,int *ierr)
 {
   PetscScalar *fa;
-  *__ierr = F90Array2dAccess(ptr,(void **)&fa);if (*__ierr) return;
-  *__ierr = F90Array2dDestroy(ptr);if (*__ierr) return;
-  *__ierr = MatRestoreArray(*mat,&fa);
+  *ierr = F90Array2dAccess(ptr,(void **)&fa);if (*ierr) return;
+  *ierr = F90Array2dDestroy(ptr);if (*ierr) return;
+  *ierr = MatRestoreArray(*mat,&fa);
 }
 EXTERN_C_END
 

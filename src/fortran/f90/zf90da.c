@@ -1,4 +1,4 @@
-/*$Id: zf90da.c,v 1.12 2000/09/22 18:53:58 balay Exp bsmith $*/
+/*$Id: zf90da.c,v 1.13 2000/09/28 21:16:27 bsmith Exp bsmith $*/
 
 #include "petscda.h"
 #include "petscf90.h"
@@ -10,11 +10,11 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetglobalindicesf90_(DA *da,int *n,F90Array1d *indices,int *__ierr)
+void PETSC_STDCALL dagetglobalindicesf90_(DA *da,int *n,F90Array1d *indices,int *ierr)
 {
   int *idx;
-  *__ierr = DAGetGlobalIndices(*da,n,&idx); if (*__ierr) return;
-  *__ierr = F90Array1dCreate(idx,PETSC_INT,1,*n,indices);
+  *ierr = DAGetGlobalIndices(*da,n,&idx); if (*ierr) return;
+  *ierr = F90Array1dCreate(idx,PETSC_INT,1,*n,indices);
 }
 EXTERN_C_END
 

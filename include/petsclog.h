@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.153 2001/04/10 22:34:32 balay Exp bsmith $ */
+/* $Id: petsclog.h,v 1.154 2001/08/06 21:14:23 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -192,17 +192,17 @@ extern int PetscLogEventDepth[];
 
 #if defined(PETSC_HAVE_MPE)
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { int __ierr; \
+  0; { int _1_ierr; \
     if (_PetscLogPLB && PetscLogEventFlags[e]) {                         \
-      __ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(__ierr);  \
+      _1_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_1_ierr);  \
       if (UseMPE && PetscLogEventMPEFlags[(e)])                      \
         MPE_Log_event(MPEBEGIN+2*(e),0,"");                      \
-      __ierr = MPI_Barrier(cm);CHKERRQ(__ierr);                  \
-      __ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(__ierr);    \
+      _1_ierr = MPI_Barrier(cm);CHKERRQ(_1_ierr);                  \
+      _1_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_1_ierr);    \
       if (UseMPE && PetscLogEventMPEFlags[(e)])                      \
         MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                  \
     }                                                            \
-    __ierr = PetscLogEventBegin(e+1,o1,o2,o3,o4);CHKERRQ(__ierr);    \
+    _1_ierr = PetscLogEventBegin(e+1,o1,o2,o3,o4);CHKERRQ(_1_ierr);    \
     if (UseMPE && PetscLogEventMPEFlags[(e)+1])                      \
       MPE_Log_event(MPEBEGIN+2*((e)+1),0,"");                    \
   }
@@ -215,13 +215,13 @@ extern int PetscLogEventDepth[];
   }
 #else
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
-  0; { int __ierr;\
+  0; { int _2_ierr;\
     if (_PetscLogPLB && PetscLogEventFlags[(e)]) {                         \
-      __ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(__ierr);    \
-      __ierr = MPI_Barrier(cm);CHKERRQ(__ierr);                    \
-      __ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(__ierr);      \
+      _2_ierr = PetscLogEventBegin((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);    \
+      _2_ierr = MPI_Barrier(cm);CHKERRQ(_2_ierr);                    \
+      _2_ierr = PetscLogEventEnd((e),o1,o2,o3,o4);CHKERRQ(_2_ierr);      \
     }                                                              \
-    __ierr = PetscLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(__ierr);    \
+    _2_ierr = PetscLogEventBegin((e)+1,o1,o2,o3,o4);CHKERRQ(_2_ierr);    \
   }
 #define PetscLogEventBegin(e,o1,o2,o3,o4)  \
   0; {  \
@@ -442,20 +442,20 @@ EXTERN int PetscLogObjectState(PetscObject,const char[],...);
 extern PetscTruth PetscPreLoadingUsed;       /* true if we are or have done preloading */
 extern PetscTruth PetscPreLoadingOn;         /* true if we are currently in a preloading calculation */
 
-#define PreLoadBegin(flag,name) {PetscTruth PreLoading = flag; int PreLoadMax,PreLoadIt,__ierr;\
-                                 __ierr = PetscOptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(__ierr);\
+#define PreLoadBegin(flag,name) {PetscTruth PreLoading = flag; int PreLoadMax,PreLoadIt,_3_ierr;\
+                                 _3_ierr = PetscOptionsGetLogical(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
                                  PreLoadMax = (int)(PreLoading);PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
                                  for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
                                    PetscPreLoadingOn = PreLoading;\
-                                   __ierr = PetscBarrier(PETSC_NULL);CHKERRQ(__ierr);\
-                                   __ierr = PetscLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
-                                   __ierr = PetscLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);\
-                                   __ierr = PetscLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
-#define PreLoadEnd()               __ierr = PetscLogStagePop();CHKERRQ(__ierr);PreLoading = PETSC_FALSE;}}
-#define PreLoadStage(name)         __ierr = PetscLogStagePop();CHKERRQ(__ierr);\
-                                   __ierr = PetscLogStagePush(PETSC_DETERMINE);CHKERRQ(__ierr);\
-                                   __ierr = PetscLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(__ierr);\
-                                   __ierr = PetscLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
+                                   _3_ierr = PetscBarrier(PETSC_NULL);CHKERRQ(_3_ierr);\
+                                   _3_ierr = PetscLogStagePush(PETSC_DETERMINE);CHKERRQ(_3_ierr);\
+                                   _3_ierr = PetscLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(_3_ierr);\
+                                   _3_ierr = PetscLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
+#define PreLoadEnd()               _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);PreLoading = PETSC_FALSE;}}
+#define PreLoadStage(name)         _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);\
+                                   _3_ierr = PetscLogStagePush(PETSC_DETERMINE);CHKERRQ(_3_ierr);\
+                                   _3_ierr = PetscLogStageRegister(PETSC_DETERMINE,name);CHKERRQ(_3_ierr);\
+                                   _3_ierr = PetscLogStagePrint(PETSC_DETERMINE,(PetscTruth)(!PreLoadMax || PreLoadIt));
 #endif
 
 
