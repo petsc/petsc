@@ -98,6 +98,7 @@ class Compile (action.Action):
     self.includeDirs   = []
     self.defines       = []
     self.rebuildAll    = 0
+    return
 
   def checkIncludeDirectory(self, dirname):
     if not os.path.isdir(dirname):
@@ -393,7 +394,13 @@ class TagEtags (transform.GenericTag):
 
 class CompileEtags (Compile):
   def __init__(self, sourceDB, tagsFile, sources = None, tag = 'etags', compiler = 'etags', compilerFlags = '-a'):
-    Compile.__init__(self, sourceDB, tagsFile, tag, sources, compiler, compilerFlags, '', '', 1, 'deferred')
+    (status, output) = commands.getstatusoutput(compiler+' --help')
+    if status:
+      # If etags does not exist, merely put in an identity node
+      transform.Transform(sources)
+    else:
+      Compile.__init__(self, sourceDB, tagsFile, tag, sources, compiler, compilerFlags, '', '', 1, 'deferred')
+    return
 
   def constructFlags(self, source, baseFlags):
     return baseFlags+' -f '+self.getLibraryName()
