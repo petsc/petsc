@@ -35,14 +35,14 @@
 @*/
 PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengths,int *nrecvs)
 {
-  int *recv_buf,size,rank,i,*iflags_local;
+  PetscMPIInt    size,rank;
+  int            *recv_buf,i,*iflags_local;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-
 
   /* If iflags not provided, compute iflags from ilengths */
   if (!iflags) {
@@ -108,12 +108,12 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm,int *iflags,int *ilengt
 PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm,int nsends,int nrecvs,int *ilengths,int **onodes,int **olengths)
 {
   PetscErrorCode ierr;
-  int         size,i,j,tag;
-  MPI_Request *s_waits,*r_waits;
-  MPI_Status  *w_status;
+  PetscMPIInt    size,tag;
+  int            i,j;
+  MPI_Request    *s_waits,*r_waits;
+  MPI_Status     *w_status;
 
   PetscFunctionBegin;
-
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
 

@@ -350,8 +350,8 @@ PetscErrorCode PetscIntView(int N,int idx[],PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
-    int *array,*sizes,rank,size,Ntotal,*displs;
-
+    int         *array,*sizes,Ntotal,*displs;
+    PetscMPIInt rank,size;
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
@@ -431,8 +431,9 @@ PetscErrorCode PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
-    int    *sizes,rank,size,Ntotal,*displs;
-    PetscReal *array;
+    int         *sizes,Ntotal,*displs;
+    PetscMPIInt rank,size;
+    PetscReal   *array;
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -525,7 +526,8 @@ PetscErrorCode PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
-    int         *sizes,rank,size,Ntotal,*displs;
+    int         *sizes,Ntotal,*displs;
+    PetscMPIInt size,rank;
     PetscScalar *array;
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

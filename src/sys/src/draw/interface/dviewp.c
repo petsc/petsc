@@ -60,9 +60,10 @@ PetscErrorCode PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pet
 PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
 {
   PetscErrorCode ierr;
-  int        rank,size,n;
-  PetscTruth isnull;
-  PetscReal  xl,xr,yl,yr,h;
+  PetscMPIInt    rank,size;
+  int            n;
+  PetscTruth     isnull;
+  PetscReal      xl,xr,yl,yr,h;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

@@ -175,7 +175,7 @@ $       XXXView(XXX object,PETSC_VIEWER_AMS_(comm));
 PetscViewer PETSC_VIEWER_AMS_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  int            flag,size,rank;
+  PetscMPIInt    flag,size,rank;
   PetscViewer    viewer;
   char           name[256];
 

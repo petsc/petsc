@@ -244,9 +244,9 @@ PetscErrorCode PetscViewerMathematicaSetFromOptions(PetscViewer v)
   int                      numPorts;
   int                      *ports;
   int                      numHosts;
-  char                     **hosts;
-  int                      size, rank;
   int                      h;
+  char                     **hosts;
+  PetscMPIInt              size, rank;
   PetscTruth               opt;
   PetscErrorCode           ierr;
 

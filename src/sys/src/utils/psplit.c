@@ -30,7 +30,7 @@
 PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm comm,int bs,int *n,int *N)
 {
   PetscErrorCode ierr;
-  int size,rank;
+  PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
   if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
@@ -75,7 +75,7 @@ PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm comm,int bs,int *n,int *N)
 PetscErrorCode PetscSplitOwnership(MPI_Comm comm,int *n,int *N)
 {
   PetscErrorCode ierr;
-  int size,rank;
+  PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
   if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");

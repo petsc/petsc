@@ -191,10 +191,11 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format
 PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  int        rank,size,i,j,n,tag;
-  char       message[QUEUESTRINGSIZE];
-  MPI_Status status;
-  FILE       *fd;
+  PetscMPIInt    rank,size;
+  int            i,j,n,tag;
+  char           message[QUEUESTRINGSIZE];
+  MPI_Status     status;
+  FILE           *fd;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

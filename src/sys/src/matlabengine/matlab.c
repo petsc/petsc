@@ -33,8 +33,8 @@ PetscCookie MATLABENGINE_COOKIE = -1;
 @*/
 PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],PetscMatlabEngine *mengine)
 {
-  PetscErrorCode ierr;
-  int               rank,size;
+  PetscErrorCode    ierr;
+  PetscMPIInt       rank,size;
   char              buffer[256];
   PetscMatlabEngine e;
 

@@ -766,6 +766,11 @@ PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
   if (gmres->Rsvd) {ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);}
   if (gmres->Dsvd) {ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);}
 
+  gmres->vv_allocated   = 0;
+  gmres->vecs_allocated = 0;
+  gmres->nrs            = 0;
+  gmres->sol_temp       = 0;
+  gmres->Rsvd           = 0;
   PetscFunctionReturn(0);
 }
 

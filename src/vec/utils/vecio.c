@@ -71,8 +71,8 @@ and PetscWriteBinary() to see how this may be done.
 PetscErrorCode VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
 {
   PetscErrorCode ierr;
-  PetscTruth  isbinary,isnetcdf,flg;
-  char        vtype[256],*prefix;
+  PetscTruth     isbinary,isnetcdf,flg;
+  char           vtype[256],*prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -87,9 +87,10 @@ PetscErrorCode VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
   if (isnetcdf) {
     ierr = VecLoad_Netcdf(viewer,newvec);CHKERRQ(ierr);
   } else {
-    Vec      factory;
-    MPI_Comm comm;
-    PetscErrorCode (*r)(PetscViewer,const VecType,Vec*),size;
+    Vec            factory;
+    MPI_Comm       comm;
+    PetscErrorCode (*r)(PetscViewer,const VecType,Vec*);
+    PetscMPIInt    size;
 
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
@@ -169,15 +170,16 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 #define __FUNCT__ "VecLoad_Binary"
 PetscErrorCode VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec)
 {
-  int         i,rows,type,fd,rank,size,n,*range,tag,bs;
+  PetscMPIInt    size,rank;
+  int            i,rows,type,fd,n,*range,tag,bs;
   PetscErrorCode ierr,nierr;
-  Vec         vec;
-  PetscScalar *avec;
-  MPI_Comm    comm;
-  MPI_Request request;
-  MPI_Status  status;
-  PetscMap    map;
-  PetscTruth  flag;
+  Vec            vec;
+  PetscScalar    *avec;
+  MPI_Comm       comm;
+  MPI_Request    request;
+  MPI_Status     status;
+  PetscMap       map;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
@@ -319,14 +321,15 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
 {
   PetscErrorCode ierr;
-  int         i,rows,type,fd,rank,size,n,*range,tag,bs;
-  PetscScalar *avec;
-  MPI_Comm    comm;
-  MPI_Request request;
-  MPI_Status  status;
-  PetscMap    map;
-  PetscTruth  flag;
-  char        *prefix;
+  PetscMPIInt    size,rank;
+  int            i,rows,type,fd,n,*range,tag,bs;
+  PetscScalar    *avec;
+  MPI_Comm       comm;
+  MPI_Request    request;
+  MPI_Status     status;
+  PetscMap       map;
+  PetscTruth     flag;
+  char           *prefix;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);

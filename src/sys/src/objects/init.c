@@ -70,9 +70,9 @@ FILE *petsc_history = PETSC_NULL;
 PetscErrorCode PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   PetscErrorCode ierr;
-  int  rank,size;
-  char pfile[PETSC_MAX_PATH_LEN],pname[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],date[64];
-  char version[256];
+  PetscMPIInt    rank,size;
+  char           pfile[PETSC_MAX_PATH_LEN],pname[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],date[64];
+  char           version[256];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -235,11 +235,12 @@ PetscErrorCode PetscCompareScalar(PetscScalar d)
 PetscErrorCode PetscCompareInitialize(double tol)
 {
   PetscErrorCode ierr;
-  int        i,rank,*gflag,size,mysize;
-  size_t     len;
-  char       pname[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
-  MPI_Group  group_all,group_sub;
-  PetscTruth work;
+  PetscMPIInt    rank,size;
+  int            i,*gflag,mysize;
+  size_t         len;
+  char           pname[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
+  MPI_Group      group_all,group_sub;
+  PetscTruth     work;
 
   PetscFunctionBegin;
   ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
@@ -495,7 +496,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-stop_for_debugger",string,64,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
-    int            size;
+    PetscMPIInt    size;
     MPI_Errhandler err_handler;
     /*
        we have to make sure that all processors have opened 

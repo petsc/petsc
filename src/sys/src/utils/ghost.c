@@ -52,7 +52,7 @@ PetscErrorCode PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs,
 #ifdef PETSC_USE_BOPT_g
   int          numLocVars;
 #endif
-  int          size, rank;
+  PetscMPIInt  size, rank;
   int          proc, ghost, locIndex, byte;
   PetscErrorCode ierr;
 

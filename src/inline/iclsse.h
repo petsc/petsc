@@ -182,8 +182,8 @@ PETSC_EXTERN_CXX_BEGIN
                                             _tmp_float_ptr[3]=(float)_tmp_double_ptr[3]; }
 
 /* Aligned Malloc */
-#define SSE_MALLOC(var,size)              { void *_tmp_void_ptr = *var; size_t _tmp_size; _tmp_size = size; \
-                                            *var = _mm_malloc(size,16); }
+#define SSE_MALLOC(var,sze)              { void *_tmp_void_ptr = *var; size_t _tmp_size; _tmp_size = sze; \
+                                            *var = _mm_malloc(sze,16); }
 #define SSE_FREE(var)                     { void *_tmp_void_ptr = var; \
                                             _mm_free(var); }
 

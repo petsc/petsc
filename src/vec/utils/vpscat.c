@@ -1914,9 +1914,10 @@ PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
 PetscErrorCode VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,int bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
-  PetscErrorCode ierr;
-  int                    *source,*lens,rank,*owners;
-  int                    size,*lowner,*start,lengthy;
+  PetscErrorCode         ierr;
+  PetscMPIInt            size,rank;
+  int                    *source,*lens,*owners;
+  int                    *lowner,*start,lengthy;
   int                    *nprocs,i,j,n,idx,nsends,nrecvs;
   int                    *owner,*starts,count,tag,slen;
   int                    *rvalues,*svalues,base,imdex,nmax,*values,len,*indx,nprocslocal;
@@ -2458,14 +2459,15 @@ PetscErrorCode VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin
 PetscErrorCode VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,VecScatter ctx)
 {
   PetscErrorCode ierr;
-  int         *lens,rank,*owners = xin->map->range,size;
-  int         *nprocs,i,j,n,idx,nsends,nrecvs,*local_inidx,*local_inidy;
-  int         *owner,*starts,count,tag,slen;
-  int         *rvalues,*svalues,base,imdex,nmax,*values;
-  MPI_Comm    comm;
-  MPI_Request *send_waits,*recv_waits;
-  MPI_Status  recv_status;
-  PetscTruth  duplicate = PETSC_FALSE,found;
+  PetscMPIInt    size,rank;
+  int            *lens,*owners = xin->map->range;
+  int            *nprocs,i,j,n,idx,nsends,nrecvs,*local_inidx,*local_inidy;
+  int            *owner,*starts,count,tag,slen;
+  int            *rvalues,*svalues,base,imdex,nmax,*values;
+  MPI_Comm       comm;
+  MPI_Request    *send_waits,*recv_waits;
+  MPI_Status     recv_status;
+  PetscTruth     duplicate = PETSC_FALSE,found;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);

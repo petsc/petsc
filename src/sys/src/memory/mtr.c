@@ -552,7 +552,8 @@ PetscErrorCode PetscTrLog(void)
 @*/
 PetscErrorCode PetscTrLogDump(FILE *fp)
 {
-  int            i,rank,j,n,*shortlength,dummy,size,tag = 1212 /* very bad programming */,*perm;
+  int            i,j,n,*shortlength,dummy,*perm;
+  int            rank,size,tag = 1212 /* very bad programming */;
   PetscTruth     match;
   const char     **shortfunction;
   PetscLogDouble rss;

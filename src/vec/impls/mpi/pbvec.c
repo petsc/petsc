@@ -159,9 +159,9 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
 */
 PetscErrorCode VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap map)
 {
-  Vec_MPI *s;
+  Vec_MPI        *s;
   PetscErrorCode ierr;
-  int     size,rank;
+  PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(v->comm,&size);CHKERRQ(ierr);

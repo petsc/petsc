@@ -512,15 +512,16 @@ PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlob
 PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int *procs[],int *numprocs[],int **indices[])
 {
   PetscErrorCode ierr;
-  int         i,n = mapping->n,Ng,ng,max = 0,*lindices = mapping->indices;
-  int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,nmax,nrecvs,*recvs,proc;
-  int         tag1,tag2,tag3,cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
-  int         node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
-  int         first_procs,first_numprocs,*first_indices;
-  MPI_Request *recv_waits,*send_waits;
-  MPI_Status  recv_status,*send_status,*recv_statuses;
-  MPI_Comm    comm = mapping->comm;
-  PetscTruth  debug = PETSC_FALSE;
+  PetscMPIInt    size,rank,tag1,tag2,tag3;
+  int            i,n = mapping->n,Ng,ng,max = 0,*lindices = mapping->indices;
+  int            *nprocs,*owner,nsends,*sends,j,*starts,nmax,nrecvs,*recvs,proc;
+  int            cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
+  int            node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
+  int            first_procs,first_numprocs,*first_indices;
+  MPI_Request    *recv_waits,*send_waits;
+  MPI_Status     recv_status,*send_status,*recv_statuses;
+  MPI_Comm       comm = mapping->comm;
+  PetscTruth     debug = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

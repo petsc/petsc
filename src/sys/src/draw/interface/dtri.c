@@ -146,7 +146,8 @@ PetscErrorCode PetscDrawTensorContour(PetscDraw win,int m,int n,const PetscReal 
   PetscTruth    isnull;
   PetscDraw     popup;
   MPI_Comm      comm;
-  int           xin=1,yin=1,i,size;
+  int           xin=1,yin=1,i;
+  PetscMPIInt   size;
   PetscReal     h;
   ZoomCtx       ctx;
 

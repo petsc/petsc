@@ -139,7 +139,8 @@ sum of the second entry.
 #define __FUNCT__ "PetscMaxSum"
 PetscErrorCode PetscMaxSum(MPI_Comm comm,const int nprocs[],int *max,int *sum)
 {
-  int size,rank,*work;
+  PetscMPIInt    size,rank;
+  int            *work;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -355,9 +356,10 @@ $       call PetscInitialize(file,ierr)
 PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
-  int        flag,dummy_tag,size;
-  PetscTruth flg;
-  char       hostname[256];
+  int            flag,dummy_tag;
+  PetscMPIInt    size;
+  PetscTruth     flg;
+  char           hostname[256];
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);

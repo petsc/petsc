@@ -202,9 +202,10 @@ PetscErrorCode ISGetLocalSize_Stride(IS is,int *size)
 #define __FUNCT__ "ISView_Stride" 
 PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
 {
-  IS_Stride   *sub = (IS_Stride *)is->data;
-  int         i,n = sub->n,rank,size;
-  PetscTruth  iascii;
+  IS_Stride      *sub = (IS_Stride *)is->data;
+  int            i,n = sub->n;
+  PetscMPIInt    rank,size;
+  PetscTruth     iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

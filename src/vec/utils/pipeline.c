@@ -502,8 +502,9 @@ PetscErrorCode ProcColorDown(int proc,PetscObject pipe_info)
 PetscErrorCode PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_colored_info *info;
-  PetscErrorCode ierr;
-  int                    size,i;
+  PetscErrorCode        ierr;
+  PetscMPIInt           size;
+  int                   i;
 
   PetscFunctionBegin;
   ierr = PetscNew(Pipeline_colored_info,&info);CHKERRQ(ierr);
@@ -520,10 +521,10 @@ PetscErrorCode PipelineRedblackSetup(VecPipeline vs,PetscObject x,PetscObject *o
 #define __FUNCT__ "PipelineMulticolorSetup"
 PetscErrorCode PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
-  Pipeline_colored_info *info;
+  Pipeline_colored_info  *info;
   Mat                    mat = (Mat) x;
-  PetscErrorCode ierr;
-  int                    size;
+  PetscErrorCode         ierr;
+  PetscMPIInt            size;
 
   PetscFunctionBegin;
   ierr = PetscNew(Pipeline_colored_info,&info);CHKERRQ(ierr);

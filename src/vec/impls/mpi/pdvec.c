@@ -41,8 +41,9 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 #define __FUNCT__ "VecView_MPI_ASCII"
 PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  int               i,rank,len,work = xin->n,n,j,size,cnt,tag = ((PetscObject)viewer)->tag;
+  PetscErrorCode    ierr;
+  int               i,len,work = xin->n,n,j,cnt;
+  PetscMPIInt       size,rank,tag = ((PetscObject)viewer)->tag;
   MPI_Status        status;
   PetscScalar       *values,*xarray;
   char              *name;
@@ -178,10 +179,11 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int         rank,len,work = xin->n,n,j,size,fdes,tag = ((PetscObject)viewer)->tag;
-  MPI_Status  status;
-  PetscScalar *values,*xarray;
-  FILE        *file;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
+  int            len,work = xin->n,n,j,fdes;
+  MPI_Status     status;
+  PetscScalar    *values,*xarray;
+  FILE           *file;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
@@ -227,12 +229,13 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int         i,rank,size,N = xin->N,*lens;
-  PetscDraw   draw;
-  PetscReal   *xx,*yy;
-  PetscDrawLG lg;
-  PetscTruth  isnull;
-  PetscScalar *xarray;
+  PetscMPIInt    size,rank;
+  int            i,N = xin->N,*lens;
+  PetscDraw      draw;
+  PetscReal      *xx,*yy;
+  PetscDrawLG    lg;
+  PetscTruth     isnull;
+  PetscScalar    *xarray;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);

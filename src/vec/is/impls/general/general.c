@@ -102,9 +102,10 @@ PetscErrorCode ISGetLocalSize_General(IS is,int *size)
 #define __FUNCT__ "ISInvertPermutation_General" 
 PetscErrorCode ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 {
-  IS_General *sub = (IS_General *)is->data;
-  int        i,*ii,n = sub->n,*idx = sub->idx,size,nstart;
-  IS         istmp,nistmp;
+  IS_General     *sub = (IS_General *)is->data;
+  int            i,*ii,n = sub->n,*idx = sub->idx,nstart;
+  PetscMPIInt    size;
+  IS             istmp,nistmp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -138,16 +139,16 @@ PetscErrorCode ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 #define __FUNCT__ "ISView_General" 
 PetscErrorCode ISView_General(IS is,PetscViewer viewer)
 {
-  IS_General  *sub = (IS_General *)is->data;
+  IS_General     *sub = (IS_General *)is->data;
   PetscErrorCode ierr;
-  int         i,n = sub->n,*idx = sub->idx;
-  PetscTruth  iascii;
+  int            i,n = sub->n,*idx = sub->idx;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    MPI_Comm comm;
-    int      rank,size;
+    MPI_Comm    comm;
+    PetscMPIInt rank,size;
 
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

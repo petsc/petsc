@@ -267,8 +267,9 @@ PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll*)in->todata,*sto;
-  PetscErrorCode ierr;
-  int                  size,i;
+  PetscErrorCode       ierr;
+  PetscMPIInt          size;
+  int                  i;
 
   PetscFunctionBegin;
   out->postrecvs      = 0;
@@ -758,13 +759,14 @@ EXTERN PetscErrorCode VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 @*/
 PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
-  VecScatter ctx;
+  VecScatter     ctx;
   PetscErrorCode ierr;
-  int        len,size,cando,totalv,*range,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID; 
-  PetscTruth flag;
-  MPI_Comm   comm,ycomm;
-  PetscTruth ixblock,iyblock,iystride,islocal;
-  IS         tix = 0,tiy = 0;
+  PetscMPIInt    size;
+  int            len,cando,totalv,*range,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID; 
+  PetscTruth     flag;
+  MPI_Comm       comm,ycomm;
+  PetscTruth     ixblock,iyblock,iystride,islocal;
+  IS             tix = 0,tiy = 0;
 
   PetscFunctionBegin;
 

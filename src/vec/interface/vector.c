@@ -34,10 +34,10 @@ PetscScalar VecSetValue_Value = 0.0;
 */
 static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 {
-  PetscTruth opt;
-  const char *defaultType;
-  char       typeName[256];
-  int        size;
+  PetscTruth     opt;
+  const char     *defaultType;
+  char           typeName[256];
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

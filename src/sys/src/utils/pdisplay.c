@@ -91,10 +91,10 @@ static char PetscDisplay[256];
 PetscErrorCode PetscSetDisplay(void)
 {
   PetscErrorCode ierr;
-  int        size,rank;
-  size_t     len;
-  PetscTruth flag;
-  char       *str,display[256];
+  PetscMPIInt    size,rank;
+  size_t         len;
+  PetscTruth     flag;
+  char           *str,display[256];
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetString(PETSC_NULL,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);

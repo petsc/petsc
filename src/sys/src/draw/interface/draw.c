@@ -332,7 +332,7 @@ EXTERN_C_END
 PetscErrorCode PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscErrorCode ierr;
-  int size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
@@ -371,7 +371,7 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
 PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
 {
   PetscErrorCode ierr;
-  int size;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

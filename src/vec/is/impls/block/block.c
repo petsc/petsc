@@ -97,8 +97,9 @@ PetscErrorCode ISGetLocalSize_Block(IS is,int *size)
 #define __FUNCT__ "ISInvertPermutation_Block" 
 PetscErrorCode ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 {
-  IS_Block *sub = (IS_Block *)is->data;
-  int      i,*ii,n = sub->n,*idx = sub->idx,size;
+  IS_Block       *sub = (IS_Block *)is->data;
+  int            i,*ii,n = sub->n,*idx = sub->idx;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

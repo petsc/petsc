@@ -92,8 +92,8 @@ typedef struct {
   PetscScalar   *array;                 /* array to hold stashed values */
   /* The following variables are used for communication */
   MPI_Comm      comm;
-  int           size,rank;
-  int           tag1,tag2;
+  PetscMPIInt   size,rank;
+  PetscMPIInt   tag1,tag2;
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
   MPI_Status    *send_status;           /* array of send status */

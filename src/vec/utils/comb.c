@@ -118,10 +118,11 @@ EXTERN_C_END
 PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 {
   PetscErrorCode ierr;
-  int         size,i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
-  PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
-  int         sum_flg = 0,max_flg = 0, min_flg = 0;
-  MPI_Comm    comm = sr->comm;
+  int            i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
+  PetscScalar    *lvalues = sr->lvalues,*gvalues = sr->gvalues;
+  int            sum_flg = 0,max_flg = 0, min_flg = 0;
+  MPI_Comm       comm = sr->comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   if (sr->numopsend > 0) {

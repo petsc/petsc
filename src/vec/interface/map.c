@@ -25,10 +25,10 @@ PetscCookie MAP_COOKIE = 0;
 */
 static PetscErrorCode PetscMapSetTypeFromOptions_Private(PetscMap map)
 {
-  PetscTruth opt;
-  const char *defaultType;
-  char       typeName[256];
-  int        size;
+  PetscTruth     opt;
+  const char     *defaultType;
+  char           typeName[256];
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -614,10 +614,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecCreate_Seq"
 PetscErrorCode VecCreate_Seq(Vec V)
 {
-  Vec_Seq      *s;
-  PetscScalar  *array;
+  Vec_Seq        *s;
+  PetscScalar    *array;
   PetscErrorCode ierr;
-  int          n = PetscMax(V->n,V->N),size;
+  int            n = PetscMax(V->n,V->N);
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(V->comm,&size);CHKERRQ(ierr);

@@ -210,9 +210,10 @@ PetscErrorCode ISColoringRestoreIS(ISColoring iscoloring,IS *is[])
 PetscErrorCode ISColoringCreate(MPI_Comm comm,int n,const ISColoringValue colors[],ISColoring *iscoloring)
 {
   PetscErrorCode ierr;
-  int        size,rank,base,top,tag,nc,ncwork,i;
-  PetscTruth flg;
-  MPI_Status status;
+  PetscMPIInt    size,rank;
+  int            base,top,tag,nc,ncwork,i;
+  PetscTruth     flg;
+  MPI_Status     status;
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _p_ISColoring,iscoloring);CHKERRQ(ierr);
@@ -281,9 +282,10 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm,int n,const ISColoringValue colors
 @*/
 PetscErrorCode ISPartitioningToNumbering(IS part,IS *is)
 {
-  MPI_Comm comm;
-  int      i,size,*indices,np,npt,n,*starts,*sums,*lsizes,*newi;
+  MPI_Comm       comm;
+  int            i,*indices,np,npt,n,*starts,*sums,*lsizes,*newi;
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
@@ -368,9 +370,10 @@ PetscErrorCode ISPartitioningToNumbering(IS part,IS *is)
 @*/
 PetscErrorCode ISPartitioningCount(IS part,int count[])
 {
-  MPI_Comm comm;
-  int      i,size,*indices,np,npt,n,*lsizes;
+  MPI_Comm       comm;
+  int            i,*indices,np,npt,n,*lsizes;
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
@@ -438,8 +441,9 @@ PetscErrorCode ISPartitioningCount(IS part,int count[])
 PetscErrorCode ISAllGather(IS is,IS *isout)
 {
   PetscErrorCode ierr;
-  int      *indices,*sizes,size,*offsets,n,*lindices,i,N;
-  MPI_Comm comm;
+  int            *indices,*sizes,*offsets,n,*lindices,i,N;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -500,7 +504,8 @@ PetscErrorCode ISAllGather(IS is,IS *isout)
 PetscErrorCode ISAllGatherIndices(MPI_Comm comm,int n,const int lindices[],int *outN,int *outindices[])
 {
   PetscErrorCode ierr;
-  int *indices,*sizes,size,*offsets,i,N;
+  int            *indices,*sizes,*offsets,i,N;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -555,8 +560,9 @@ PetscErrorCode ISAllGatherIndices(MPI_Comm comm,int n,const int lindices[],int *
 PetscErrorCode ISAllGatherColors(MPI_Comm comm,int n,ISColoringValue *lindices,int *outN,ISColoringValue *outindices[])
 {
   ISColoringValue *indices;
-  PetscErrorCode ierr;
-  int             *sizes,size,*offsets,i,N;
+  PetscErrorCode  ierr;
+  int             *sizes,*offsets,i,N;
+  PetscMPIInt     size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

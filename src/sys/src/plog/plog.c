@@ -1183,7 +1183,7 @@ PetscErrorCode PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   PetscLogDouble min, max, tot, ratio, avg, x, y;
   PetscLogDouble minf, maxf, totf, ratf, mint, maxt, tott, ratt, ratCt, totm, totml, totr;
   int            minCt, maxCt;
-  int            size, rank;
+  PetscMPIInt    size, rank;
   PetscTruth    *localStageUsed,    *stageUsed;
   PetscTruth    *localStageVisible, *stageVisible;
   int            numStages, localNumEvents, numEvents;
