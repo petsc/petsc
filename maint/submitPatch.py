@@ -16,9 +16,10 @@ class Help:
   #title = property(title, getTitle, setTitle, delTitle, 'Title of the Help Menu')
 
   def getArgName(self, name):
-    #varName = name.split('=')[0]
-    #while varName[0] == '-': varName = varName[1:]
-    return name.split('=')[0].strip('-')
+    #return name.split('=')[0].strip('-')
+    argName = name.split('=')[0]
+    while argName[0] == '-': argName = argName[1:]
+    return argName
 
   def addOption(self, section, name, type):
     if section in self.sections:
