@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grid.c,v 1.14 1997/10/17 19:46:31 curfman Exp bsmith $";
+static char vcid[] = "$Id: grid.c,v 1.15 1997/11/02 21:12:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -381,11 +381,11 @@ int UserSetGrid(Euler *app)
 
   if (app->print_debug) {
       sprintf(filename,"from_grid.%d",app->rank);
-      ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
+      ierr = ViewerASCIIOpen(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
       ierr = ISView(from,view); CHKERRQ(ierr);
       ierr = ViewerDestroy(view); CHKERRQ(ierr);
       sprintf(filename,"to_grid.%d",app->rank);
-      ierr = ViewerFileOpenASCII(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
+      ierr = ViewerASCIIOpen(PETSC_COMM_SELF,filename,&view); CHKERRQ(ierr);
       ierr = ISView(to,view); CHKERRQ(ierr);
       ierr = ViewerDestroy(view); CHKERRQ(ierr);
   }
