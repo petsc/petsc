@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.44 1998/04/22 01:00:23 balay Exp curfman $";
+static char vcid[] = "$Id: jacobi.c,v 1.45 1998/04/22 02:57:23 curfman Exp bsmith $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -56,8 +56,8 @@ static char vcid[] = "$Id: jacobi.c,v 1.44 1998/04/22 01:00:23 balay Exp curfman
 #include <math.h>
 
 /* 
-   Private context for the Jacobi preconditioner.  
- */
+   Private context (data structure) for the Jacobi preconditioner.  
+*/
 typedef struct {
   Vec diag;      /* vector containing the reciprocals of the diagonal elements
                     of the preconditioner matrix */
@@ -69,7 +69,7 @@ typedef struct {
 /* -------------------------------------------------------------------------- */
 /*
    PCSetUp_Jacobi - Prepares for the use of the Jacobi preconditioner
-   by setting data structures and options.   
+                    by setting data structures and options.   
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -84,48 +84,88 @@ typedef struct {
 #define __FUNC__ "PCSetUp_Jacobi"
 static int PCSetUp_Jacobi(PC pc)
 {
-  int        ierr, i, n,zeroflag = 0;
   PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
   Vec        diag, diagsqrt;
+  int        ierr,n,i,zeroflag;
   Scalar     *x;
 
   PetscFunctionBegin;
-  /* We set up both regular and symmetric preconditioning. Perhaps there
-     actually should be an option to use only one or the other? */
-  if (pc->setupcalled == 0) {
-    ierr = VecDuplicate(pc->vec,&diag); CHKERRQ(ierr);
-    PLogObjectParent(pc,diag);
-    ierr = VecDuplicate(pc->vec,&diagsqrt); CHKERRQ(ierr);
-    PLogObjectParent(pc,diagsqrt);
-  } else {
-    diag     = jac->diag;
-    diagsqrt = jac->diagsqrt;
-  }
-  ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
-  ierr = VecCopy(diag,diagsqrt); CHKERRQ(ierr);
-  ierr = VecReciprocal(diag); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(diag,&n); CHKERRQ(ierr);
-  ierr = VecGetArray(diag,&x); CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
-    if (x[i] == 0.0) {
-      x[i]     = 1.0;
-      zeroflag = 1;
-    }
-  }
-  ierr = VecRestoreArray(diag,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(diagsqrt,&x); CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
-    if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
-    else x[i] = 1.0;
-  }
-  jac->diag     = diag;
-  jac->diagsqrt = diagsqrt;
 
-  if (zeroflag) {
-    PLogInfo(pc,"PCSetUp_Jacobi:WARNING: Zero detected in diagonal while building Jacobi preconditioner\n");
+  diag     = jac->diag;
+  diagsqrt = jac->diagsqrt;
+
+  if (diag) {
+    ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
+    ierr = VecReciprocal(diag); CHKERRQ(ierr);
+    ierr = VecGetLocalSize(diag,&n); CHKERRQ(ierr);
+    ierr = VecGetArray(diag,&x); CHKERRQ(ierr);
+    for ( i=0; i<n; i++ ) {
+      if (x[i] == 0.0) {
+        x[i]     = 1.0;
+        zeroflag = 1;
+      }
+    }
+    ierr = VecRestoreArray(diag,&x); CHKERRQ(ierr);
   }
+  if (diagsqrt) {
+    ierr = MatGetDiagonal(pc->pmat,diagsqrt); CHKERRQ(ierr);
+    ierr = VecGetArray(diagsqrt,&x); CHKERRQ(ierr);
+    for ( i=0; i<n; i++ ) {
+      if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
+      else x[i] = 1.0;
+    }
+    ierr = VecRestoreArray(diagsqrt,&x); CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
+
+/*
+   PCSetUp_Jacobi_Symmetric - Allocates the vector needed to store the
+                              inverse of the diagonal entries in the matrix.
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+*/
+#undef __FUNC__  
+#define __FUNC__ "PCSetUp_Jacobi_Symmetric"
+static int PCSetUp_Jacobi_Symmetric(PC pc)
+{
+  int        ierr;
+  PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
+
+  PetscFunctionBegin;
+
+  ierr = VecDuplicate(pc->vec,&jac->diagsqrt); CHKERRQ(ierr);
+  PLogObjectParent(pc,jac->diagsqrt);
+  ierr = PCSetUp_Jacobi(pc); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*
+   PCSetUp_Jacobi_NonSymmetric - Allocates the vector needed to store the
+                              inverse of the square root of the diagonal entries in the matrix.
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+*/
+#undef __FUNC__  
+#define __FUNC__ "PCSetUp_Jacobi_NonSymmetric"
+static int PCSetUp_Jacobi_NonSymmetric(PC pc)
+{
+  int        ierr;
+  PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
+
+  PetscFunctionBegin;
+
+  ierr = VecDuplicate(pc->vec,&jac->diag); CHKERRQ(ierr);
+  PLogObjectParent(pc,jac->diag);
+  ierr = PCSetUp_Jacobi(pc); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
    PCApply_Jacobi - Applies the Jacobi preconditioner to a vector.
@@ -147,6 +187,9 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
   int       ierr;
 
   PetscFunctionBegin;
+  if (!jac->diag) {
+    ierr = PCSetUp_Jacobi_NonSymmetric(pc);CHKERRQ(ierr);
+  }
   ierr = VecPointwiseMult(x,jac->diag,y); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -168,9 +211,13 @@ static int PCApply_Jacobi(PC pc,Vec x,Vec y)
 #define __FUNC__ "PCApplySymmetricLeftOrRight_Jacobi"
 static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 {
+  int       ierr;
   PC_Jacobi *jac = (PC_Jacobi *) pc->data;
 
   PetscFunctionBegin;
+  if (!jac->diagsqrt) {
+    ierr = PCSetUp_Jacobi_Symmetric(pc);CHKERRQ(ierr);
+  }
   VecPointwiseMult(x,jac->diagsqrt,y);
   PetscFunctionReturn(0);
 }
@@ -194,6 +241,10 @@ static int PCDestroy_Jacobi(PC pc)
   PetscFunctionBegin;
   if (jac->diag)     {ierr = VecDestroy(jac->diag);CHKERRQ(ierr);}
   if (jac->diagsqrt) {ierr = VecDestroy(jac->diagsqrt);CHKERRQ(ierr);}
+
+  /*
+      Free the private data structure that was hanging off the PC
+  */
   PetscFree(jac);
   PetscFunctionReturn(0);
 }
@@ -212,18 +263,40 @@ static int PCDestroy_Jacobi(PC pc)
 #define __FUNC__ "PCCreate_Jacobi"
 int PCCreate_Jacobi(PC pc)
 {
-  PC_Jacobi *jac = PetscNew(PC_Jacobi); CHKPTRQ(jac);
+  PC_Jacobi *jac;
 
   PetscFunctionBegin;
+
+  /*
+     Create the private data structure for this preconditioner and
+    attach it to the PC object.
+  */
+  jac       = PetscNew(PC_Jacobi); CHKPTRQ(jac);
+  pc->data  = (void *) jac;
+
+  /*
+      Log the memory usage; this is not needed but allows PETSc to 
+    monitor how much memory is being used for various purposes
+  */
   PLogObjectMemory(pc,sizeof(PC_Jacobi));
 
+  /*
+      Initialize the pointers to vectors to contain the diagonal to ZERO
+  */
   jac->diag          = 0;
-  pc->apply          = PCApply_Jacobi;
-  pc->setup          = PCSetUp_Jacobi;
-  pc->destroy        = PCDestroy_Jacobi;
-  pc->data           = (void *) jac;
-  pc->view           = 0;
-  pc->applyrich      = 0;
+  jac->diagsqrt      = 0;
+
+  /*
+      Set the pointers for the functions that are provide above.
+      Now when the user level routines are called they will automatically call
+      these functions. Note we choose not to provide a couple of these functions
+      since they are not needed.
+  */
+  pc->apply               = PCApply_Jacobi;
+  pc->setup               = PCSetUp_Jacobi;
+  pc->destroy             = PCDestroy_Jacobi;
+  pc->view                = 0;
+  pc->applyrich           = 0;
   pc->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
   pc->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
   PetscFunctionReturn(0);
