@@ -78,6 +78,7 @@ int PetscGetResidentSetSize(PetscLogDouble *mem)
 {
 #define PETSC_USE_PROC_FOR_SIZE
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
+  FILE            *file;
   int             fd;
   char            proc[PETSC_MAX_PATH_LEN];
   prpsinfo_t      prusage;
