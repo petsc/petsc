@@ -28,12 +28,6 @@ class Compiler(config.compile.processor.Processor):
     self.flagsName.extend(Preprocessor(argDB).flagsName)
     return
 
-  def copy(self, other):
-    other.compiler = self.compiler
-    other.configLibraries = self.configLibraries
-    other.libraries = sets.Set(self.libraries)
-    return
-
   def getTarget(self, source):
     '''Return None for header files'''
     import os
