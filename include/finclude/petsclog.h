@@ -1,5 +1,5 @@
 !
-!  $Id: petsclog.h,v 1.17 2000/08/01 20:58:48 bsmith Exp balay $;
+!  $Id: petsclog.h,v 1.18 2001/04/10 22:37:56 balay Exp balay $;
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
@@ -33,7 +33,7 @@
        parameter (MAT_ILUFactorSymbolic = 11)
        integer    MAT_CholeskyFactorSymbolic
        parameter (MAT_CholeskyFactorSymbolic = 12)
-       integer    MAT_ICCFactorSymolic
+       integer    MAT_ICCFactorSymbolic
        parameter (MAT_ICCFactorSymbolic = 13)
        integer    MAT_LUFactorNumeric
        parameter (MAT_LUFactorNumeric = 14)
