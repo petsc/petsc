@@ -226,6 +226,13 @@ class Linker(Processor):
   def __str__(self):
     return 'Linker('+self.processor+') for '+str(self.inputTag)
 
+  def getLibExt(self):
+    return self._libExt
+
+  def setLibExt(self, ext):
+    self._libExt = ext
+  libExt = property(getLibExt, setLibExt, doc = 'The library extension')
+
   def extraLibrariesIter(self):
     '''Return an iterator for the extra libraries
        - Empty library names are possible, and they are ignored'''
@@ -412,11 +419,6 @@ class SharedLinker(Linker):
     if outputTag is None:
       outputTag = inputTag[0]+' shared library'
     Linker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
-    if self.libExt is None:
-      if self.argDB['HAVE_CYGWIN']:
-        self.libExt = 'dll'
-      else:
-        self.libExt = 'so'
     return
 
   def getLibExt(self):
@@ -426,10 +428,6 @@ class SharedLinker(Linker):
     else:
       self._libExt='so'
     return self._libExt
-
-  def setLibExt(self, ext):
-    self._libExt = ext
-  libExt = property(getLibExt, setLibExt, doc = 'The library extension')
 
   def __str__(self):
     if self.argDB['HAVE_CYGWIN']:
