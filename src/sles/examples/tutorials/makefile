@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.70 1999/11/27 17:49:16 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.71 1999/12/08 23:52:50 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -20,7 +20,8 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm clean 
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
-                   ex6f.PETSc ex6f.rm ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm clean
+                   ex6f.PETSc ex6f.rm ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm\
+                   ex21f.PETSc ex21f.rm clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
 TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 		   runex2_3 ex2.rm ex7.PETSc ex7.rm ex5.PETSc ex5.rm \
@@ -28,7 +29,7 @@ TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm clean
 TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
                    ex10.PETSc runex10_7 runex10_8 runex10_9 \
-                   runex10_5 runex10_6 runex10_8 ex10.rm clean
+                   runex10_5 runex10_6 runex10_8 runex10_10 ex10.rm clean
 TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm clean
 TESTEXAMPLES_8   = 
 TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
@@ -53,7 +54,7 @@ BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                   ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c
-EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F
+EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -172,6 +173,9 @@ ex18: ex18.o  chkopts
 ex20: ex20.o  chkopts
 	-${CLINKER} -o ex20 ex20.o  ${PETSC_SLES_LIB}
 	${RM} ex20.o
+ex21f: ex21f.o  chkopts
+	-${FLINKER} -o ex21f ex21f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SLES_LIB}
+	${RM} ex21f.o
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -351,6 +355,12 @@ runex10_9:
 	-@if (diff output/ex10_9.out ex10_9.tmp) then true; \
 	   else echo "Possible problem with ex10_9, diffs above"; fi;
 	-@${RM} -f ex10_9.tmp
+runex10_10:
+	-@${MPIRUN} -np 2 ex10 -options_left_off -ksp_type fgmres -pc_type sles \
+	   -f0 ../../../mat/examples/matrices/medium -ksp_fgmres_modifypcsles -ksp_smonitor> ex10_10.tmp 2>&1; \
+	   if (diff output/ex10_10.out ex10_10.tmp) then true; \
+	   else echo "Possible problem with ex10_10, diffs above"; fi; \
+	   ${RM} -f ex10_10.tmp
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex15f.F,v 1.11 1999/04/16 16:09:25 bsmith Exp $";
+!    "$Id: ex21f.F,v 1.1 1999/12/14 18:35:16 bsmith Exp bsmith $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -58,15 +58,16 @@
       Scalar           v, one, neg_one
       double precision norm, tol
       integer          i, j, II, JJ, Istart, Iend, ierr, m, n
-      integer          user_defined_pc, its, flg, rank
+      integer          its, flg, rank
 
 !  Note: Any user-defined Fortran routines MUST be declared as external.
 
       external SampleShellPCSetUp, SampleShellPCApply
 
 !  Common block to store data for user-provided preconditioner 
-      common /myshellpc/ diag
-      Vec    diag
+      common /mypcs/ jacobi,sor,work
+      PC jacobi,sor
+      Vec work
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -184,26 +185,19 @@
      &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
 !
-!  Set a user-defined shell preconditioner if desired
+!  Set a user-defined shell preconditioner
 !
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-user_defined_pc',      &
-     &                    user_defined_pc,ierr)
-
-      if (user_defined_pc .eq. 1) then
 
 !  (Required) Indicate to PETSc that we are using a shell preconditioner 
-         call PCSetType(pc,PCSHELL,ierr)
+      call PCSetType(pc,PCSHELL,ierr)
 
 !  (Required) Set the user-defined routine for applying the preconditioner
-         call PCShellSetApply(pc,SampleShellPCApply,PETSC_NULL_OBJECT,   &
+      call PCShellSetApply(pc,SampleShellPCApply,PETSC_NULL_OBJECT,     &
      &        ierr)
 
 !  (Optional) Do any setup required for the preconditioner
-         call SampleShellPCSetUp(A,x,ierr)
+      call SampleShellPCSetUp(A,x,ierr)
 
-      else 
-         call PCSetType(pc,PCJACOBI,ierr)
-      endif
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
@@ -244,10 +238,8 @@
       call VecDestroy(u,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
+      call VecDestroy(work,ierr)
       call MatDestroy(A,ierr)
-      if (user_defined_pc .eq. 1) then
-         call VecDestroy(diag,ierr)
-      endif
 
 
 !  Always call PetscFinalize() before exiting a program. 
@@ -289,12 +281,26 @@
       integer ierr
 
 !  Common block to store data for user-provided preconditioner 
-      common /myshellpc/ diag
-      Vec    diag
+      common /mypcs/ jacobi,sor,work
+      PC jacobi,sor
+      Vec work
 
-      call VecDuplicate(x,diag,ierr)
-      call MatGetDiagonal(pmat,diag,ierr)
-      call VecReciprocal(diag,ierr)
+      call PCCreate(PETSC_COMM_WORLD,jacobi,ierr)
+      call PCSetType(jacobi,PCJACOBI,ierr)
+      call PCSetVector(jacobi,x,ierr)
+      call PCSetOperators(jacobi,pmat,pmat,DIFFERENT_NONZERO_PATTERN,    &
+     &                     ierr)
+      call PCSetUp(jacobi,ierr)
+
+      call PCCreate(PETSC_COMM_WORLD,sor,ierr)
+      call PCSetType(sor,PCSOR,ierr)
+      call PCSetVector(sor,x,ierr)
+      call PCSetOperators(sor,pmat,pmat,DIFFERENT_NONZERO_PATTERN,       &
+     &                     ierr)
+!      call PCSORSetSymmetric(sor,SOR_LOCAL_SYMMETRIC_SWEEP,ierr)
+      call PCSetUp(sor,ierr)
+
+      call VecDuplicate(x,work,ierr)
 
       end
 
@@ -312,9 +318,11 @@
 !   ierr  - error code (nonzero if error has been detected)
 !
 !   Notes:
-!   This code implements the Jacobi preconditioner, merely as an
-!   example of working with a PCSHELL.  Note that the Jacobi method
-!   is already provided within PETSc.
+!   This code implements the Jacobi preconditioner plus the 
+!   SOR preconditioner
+!
+! YOU CAN GET THE EXACT SAME EFFECT WITH THE PCCOMPOSITE preconditioner using
+! mpirun -np 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
 !
       subroutine SampleShellPCApply(dummy,x,y,ierr)
 
@@ -325,12 +333,15 @@
 
       Vec     x, y
       integer dummy, ierr
-
+      
 !  Common block to store data for user-provided preconditioner 
-      common /myshellpc/ diag
-      Vec    diag
+      common /mypcs/ jacobi,sor,work
+      PC  jacobi,sor
+      Vec work
 
-      call VecPointwiseMult(x,diag,y,ierr)
+      call PCApply(jacobi,x,y,ierr)
+      call PCApply(sor,x,work,ierr)
+      call VecAXPY(1.0d0,work,y,ierr)
 
       end
 
