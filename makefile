@@ -138,6 +138,18 @@ testfortran: chkopts
 	-@echo "Using linker: $(FLINKER)"
 	-@echo "Using libraries: $(PETSC_FORTRAN_LIB) $(PETSC_LIB)"
 	-@echo "========================================="
+	-@echo "Due to different numerical round-off on certain"
+	-@echo "machines or the way Fortran formats numbers"
+	-@echo "some of the results may not match exactly."
+	-@echo "========================================="
+	-@echo "On some machines you may get messages of the form"
+	-@echo "PetscScalarAddressToFortran:C and Fortran arrays are"
+	-@echo "not commonly aligned or are too far apart to be indexed" 
+	-@echo "by an integer. Locations: C xxxc Fortran xxxf"
+	-@echo "Locations/sizeof(Scalar): C yyc Fortran yyf"
+	-@echo "This indicates that you may not be able to use the"
+	-@echo "PETSc routines VecGetArray() and MatGetArray() from Fortran" 
+	-@echo "========================================="
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
 	   ACTION=testexamples_3  tree 
 	-@echo "Completed compiling and running Fortran test examples"
