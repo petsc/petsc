@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.230 1998/04/16 21:51:14 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.231 1998/04/20 17:18:39 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -224,6 +224,9 @@ TAGS_BMAKE_FILES    = bmake/common bmake/*/base*
 TAGS_EXAMPLE_FILES  = src/*/examples/*/*.[c,h,F,f] src/*/examples/*/*/*.[c,h,F,f] \
                       src/benchmarks/*.c src/contrib/*/examples/*/*.[c,h,F,f]\
 		      src/fortran/f90/tests/*.[c,h,F,f]
+TAGS_FEXAMPLE_FILES = src/*/examples/*/*.[F,f] src/*/examples/*/*/*.[F,f] \
+                      src/contrib/*/examples/*/*.[F,f]\
+		      src/fortran/f90/tests/*.[F,f]
 TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
                       docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
                       docs/tex/manual/part1.tex docs/tex/manual/part2.tex
@@ -302,6 +305,10 @@ etags_examples:
 	-${RM} TAGS_EXAMPLES
 	-etags -f TAGS_EXAMPLES ${TAGS_EXAMPLE_FILES} 
 	-chmod g+w TAGS_EXAMPLES
+etags_fexamples: 
+	-${RM} TAGS_FEXAMPLES
+	-etags -f TAGS_FEXAMPLES ${TAGS_FEXAMPLE_FILES} 
+	-chmod g+w TAGS_FEXAMPLES
 
 #
 # To use the tags file from VI do the following:
