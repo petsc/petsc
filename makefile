@@ -1,3 +1,8 @@
+#
+# This makefile contains some basic commands for building PETSc.
+# See bmake/common for additional commands.
+#
+
 IPETSCDIR = .
 
 CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
@@ -14,6 +19,7 @@ DIRS     = src include docs
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
+# Builds PETSc libraries for a given BOPT and architecture
 all: chkpetsc_dir
 	-$(RM) -f $(PDIR)/*.a
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
@@ -21,9 +27,9 @@ all: chkpetsc_dir
 	$(RANLIB) $(PDIR)/*.a
 
 #
-#  libfast cannot run on .F files on certain machines thus we
+# Builds PETSc Fortran interface libary
+# Note:  libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
-#
 fortran: chkpetsc_dir
 	-@cd src/fortran/custom; \
           $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
@@ -38,34 +44,35 @@ fortran: chkpetsc_dir
 ranlib:
 	$(RANLIB) $(PDIR)/*.a
 
+# Deletes PETSc libraries
 deletelibs:
 	-$(RM) -f $(PDIR)/*.a $(PDIR)/complex/* $(PDIR)/c++/*
 
+# Deletes man pages (xman version)
 deletemanpages:
 	$(RM) -f $(PETSC_DIR)/Keywords $(PETSC_DIR)/docs/man/man*/*
 
+# Deletes man pages (HTML version)
 deletewwwpages:
 	$(RM) -f $(PETSC_DIR)/docs/www/man*/* $(PETSC_DIR)/docs/www/www.cit
 
+# Deletes man pages (LaTeX version)
 deletelatexpages:
 	$(RM) -f $(PETSC_DIR)/docs/tex/rsum/*sum*.tex
 
-allmanpages: deletemanpages deletewwwpages deletelatexpages
-	-make ACTION=manpages tree
-	-make ACTION=wwwpages tree
-	-make ACTION=latexpages tree
-	-maint/wwwman
+# To access the tags in emacs, type M-x visit-tags-table and specify
+# the file petsc/TAGS.  Then, to move to where a PETSc function is
+# defined, enter M-. and the function name.  To search for a string
+# and move to the first occurrence, use M-x tags-search and the string.
+# To locate later occurrences, use M-,
 
-allfortranstubs:
-	-@$(RM) $(PETSC_DIR)/fortran/auto/*.c
-	-make ACTION=fortranstubs tree
+# Builds all etags files
+alletags:
+	-make etags
+	-make etags_noexamples
+	-make etags_makefiles
 
-#  To access the tags in emacs, type M-x visit-tags-table and specify
-#  the file petsc/TAGS.  Then, to move to where a PETSc function is
-#  defined, enter M-. and the function name.  To search for a string
-#  and move to the first occurrence, use M-x tags-search and the string.
-#  To locate later occurrences, use M-,
-
+# Builds the basic etags file.  This should be employed by most users.
 etags:
 	$(RM) TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h 
@@ -87,13 +94,14 @@ etags:
 	etags -a -f TAGS docs/tex/intro.tex  docs/tex/part1.tex
 	chmod g+w TAGS
 
+# Builds the etags file that excludes the examples directories
 etags_noexamples:
 	$(RM) TAGS_NO_EXAMPLES
 	etags -f TAGS_NO_EXAMPLES src/*/impls/*/*.h src/*/impls/*/*/*.h 
 	etags -a -f TAGS_NO_EXAMPLES src/*/*.h src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*/*/*.c src/*/impls/*/*/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES include/*.h include/pinclude/*.h
-	etags -a -f TAGS_NO_EXAMPLES  bmake/common
+	etags -a -f TAGS_NO_EXAMPLES bmake/common
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*.c src/*/utils/*.c
 	etags -a -f TAGS_NO_EXAMPLES makefile src/*/src/makefile src/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/makefile src/*/impls/*/makefile
@@ -109,6 +117,7 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES docs/tex/intro.tex  docs/tex/part1.tex
 	chmod g+w TAGS_NO_EXAMPLES
 
+# Builds the etags file for makefiles
 etags_makefiles:
 	$(RM) TAGS_MAKEFILES
 	etags -a -f TAGS_MAKEFILES bmake/common
@@ -123,3 +132,22 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES bmake/hpux/hpux* bmake/alpha/alpha*
 	etags -a -f TAGS_MAKEFILES bmake/t3d/t3d* bmake/paragon/paragon*
 	chmod g+w TAGS_MAKEFILES
+
+# ------------------------------------------------------------------
+#
+# All remaining actions are intended for PETSc developers only.
+# PETSc users should not generally need to use these commands.
+#
+
+# Builds all versions of the man pages
+allmanpages: deletemanpages deletewwwpages deletelatexpages
+	-make ACTION=manpages tree
+	-make ACTION=wwwpages tree
+	-make ACTION=latexpages tree
+	-maint/wwwman
+
+# Builds Fortran stub files
+allfortranstubs:
+	-@$(RM) $(PETSC_DIR)/fortran/auto/*.c
+	-make ACTION=fortranstubs tree
+
