@@ -89,6 +89,8 @@ or matrices that generate a zero pivot.
 
   SNESGetJacobian() now has an additional optional final argument that can return the function pointer
 
+  SNESGetFunction() now has an additional optional final argument that can return the function pointer
+
   DA
 
   added -da_noao for DACreateXXX() makes them more scalable, but cannot use the natural numbering
