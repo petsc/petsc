@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.35 1996/08/22 23:31:57 curfman Exp curfman $";
+C    "$Id: ex12.F,v 1.36 1996/08/31 15:43:43 curfman Exp bsmith $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -66,7 +66,7 @@ C Store right-hand-side of PDE and exact solution
       nn = end - start
       ii = start
       do 10, i=0,nn-1
-        FF = 6.d0*xp + (xp+1.d-12)**6.d0
+        FF = 6.0*xp + (xp+1.e-12)**6.e0
         UU = xp*xp*xp
         call VecSetValues(F,1,ii,FF,INSERT_VALUES,ierr)
         call VecSetValues(U,1,ii,UU,INSERT_VALUES,ierr)

@@ -1,5 +1,5 @@
 
-C "$Id: ex1f.F,v 1.6 1996/09/28 14:02:04 curfman Exp curfman $";
+C "$Id: ex1f.F,v 1.7 1996/10/01 02:17:48 curfman Exp bsmith $";
 C
 C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -63,6 +63,7 @@ C
       Mat      J
       integer  ierr, its, size, rank
       Scalar   pfive
+      Double   tol
 
 C  Note: Any user-defined Fortran routines (such as FormJacobian)
 C  MUST be declared as external.
@@ -133,7 +134,8 @@ C  directly call any SLES, KSP, and PC routines to set various options.
       call SLESGetKSP(sles,ksp,ierr)
       call SLESGetPC(sles,pc,ierr)
       call PCSetType(pc,PCNONE,ierr)
-      call KSPSetTolerances(ksp,1.d-4,PETSC_DEFAULT_DOUBLE_PRECISION,
+      tol = 1.e-4
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
      &                      PETSC_DEFAULT_DOUBLE_PRECISION,20,ierr)
 
 C  Set SNES/SLES/KSP/PC runtime options, e.g.,

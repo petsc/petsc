@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.9 1996/09/30 22:55:28 balay Exp curfman $";
+C    "$Id: ex1f.F,v 1.10 1996/10/01 02:17:42 curfman Exp bsmith $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -59,7 +59,7 @@ C          as the Cray T3d, where "Double" -> "real"
       KSP      ksp
       PC       pc
       SLES     sles
-      Double   norm
+      Double   norm,tol
       integer  ierr, i, n, col(3), its, flg, size, rank
       Scalar   none, one, value(3)
 
@@ -152,7 +152,8 @@ C     SLESSetFromOptions();
       call SLESGetKSP(sles,ksp,ierr)
       call SLESGetPC(sles,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
-      call KSPSetTolerances(ksp,1.d-7,PETSC_DEFAULT_DOUBLE_PRECISION,
+      tol = 1.e-7
+      call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,
      &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
 C  Set runtime options, e.g.,
