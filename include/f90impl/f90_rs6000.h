@@ -1,4 +1,4 @@
-/* $Id: f90_rs6000.h,v 1.4 1998/04/26 15:16:13 bsmith Exp balay $ */
+/* $Id: f90_rs6000.h,v 1.5 1998/09/25 00:09:05 balay Exp balay $ */
 
 #if !defined (__F90_RS6000_H)
 #define __F90_RS6000_H
@@ -28,10 +28,10 @@ typedef struct {
 #endif
 
 #define f90_header() \
-void* addr;    /* Pointer to the data/array */ \       
+void* addr;    /* Pointer to the data/array */ \
 short id;      /* integer id representing the datatype */ \
 short cookie;  /* a wiered f90 cookie */ \
-int   sd;      /* sizeof(DataType) */          \          
+int   sd;      /* sizeof(DataType) */          \
 int   ndim;    /* No of dimentions */          \
 int   sum_d;   /* -sumof(lower*mult) */
 
