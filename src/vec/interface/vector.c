@@ -3244,7 +3244,7 @@ int VecConjugate(Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
-  PetscValidType(x,,1);
+  PetscValidType(x,1);
   ierr = (*x->ops->conjugate)(x);CHKERRQ(ierr);
   /* we need to copy norms here */
   ierr = PetscObjectIncreaseState((PetscObject)x); CHKERRQ(ierr);
