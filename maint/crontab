@@ -13,5 +13,5 @@
 #
 # makes the two shadow directories
 #
-15 23 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc >>& /dev/null
-15 23 * * * rsh clyde -n /home/bsmith/petsc/maint/buildlinks /sphome/curfman/petsc >>& /dev/null
+15 23 * * * /home/bsmith/petsc/maint/buildlinks /home/curfman/petsc > /dev/null
+15 23 * * * rsh clyde -n /home/bsmith/petsc/maint/buildlinks /sphome/curfman/petsc > /dev/null
