@@ -1,4 +1,4 @@
-# $Id: base,v 1.50 1998/12/06 15:56:54 bsmith Exp balay $ 
+# $Id: base,v 1.51 1998/12/06 17:24:44 balay Exp bsmith $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -83,18 +83,20 @@ shared: chkopts_basic
 	cd tmp; \
 	for LIBNAME in ${SHLIBS} ; \
 	do \
-	  flag=""; \
-	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-            flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	  else \
-	    flag="true"; \
-	  fi; \
-          if [ "$$flag" != "" ]; then \
-	    echo "building $$LIBNAME.${SLSUFFIX}"; \
-	    ${AR} x ../$$LIBNAME.a ;\
-	    ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
-	    ${RM} -f * ; \
-	  fi; \
+          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
+  	    flag=""; \
+	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	    else \
+	      flag="true"; \
+	    fi; \
+            if [ "$$flag" != "" ]; then \
+	      echo "building $$LIBNAME.${SLSUFFIX}"; \
+	      ${AR} x ../$$LIBNAME.a ;\
+	      ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
+	      ${RM} -f * ; \
+	    fi; \
+          fi; \
 	done ;\
 	cd ../ ; \
 	${RM} -rf tmp
