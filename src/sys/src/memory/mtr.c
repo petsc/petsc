@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.23 1995/06/20 01:46:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.24 1995/06/28 15:31:53 bsmith Exp curfman $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -441,13 +441,13 @@ int TrSummary(FILE* fp )
 #endif
 
 /*@
-    TrGetMaximumAllocated - If TrMalloc is used returns the 
-          maximum amount of space malloced.
+   TrGetMaximumAllocated - If TrMalloc is used, returns the 
+   maximum amount of space malloced.
 
-  Output Parameter:
-.   max - the maximum amount of space in bytes.
+   Output Parameter:
+.  max - the maximum amount of space in bytes.
 
-.seealso TrSummary(),TrDump()
+.seealso: TrSummary(), TrDump()
 @*/
 int TrGetMaximumAllocated(double *max)
 {
