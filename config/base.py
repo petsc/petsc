@@ -1,4 +1,3 @@
-import commands
 import os
 import re
 import select
@@ -588,10 +587,10 @@ class Configure:
       return ('', 1)
     command = './'+self.linkerObj
     self.framework.log.write('Executing: '+command+'\n')
-    (status, output) = commands.getstatusoutput(command)
-    if status:
-      self.framework.log.write('ERROR while running executable: '+output+'\n')
-      self.framework.log.write('ret = '+str(status)+'\n')
+    try:
+      (output, error, status) = self.executeShellCommand(command)
+    except RuntimeError, e:
+      self.framework.log.write('ERROR while running executable: '+str(e)+'\n')
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (output, status)

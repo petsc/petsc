@@ -70,12 +70,10 @@ class Configure(config.base.Configure):
   def isGNU(compiler):
     '''Returns true if the compiler is a GNU compiler'''
     try:
-      import commands
-
-      (status, output) = commands.getstatusoutput(compiler+' --help')
-      if not status and (output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0):
+      (output, error, status) = self.executeShellCommand(compiler+' --help')
+      if output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0:
         return 1
-    except Exception:
+    except RuntimeError:
       pass
     return 0
   isGNU = staticmethod(isGNU)
