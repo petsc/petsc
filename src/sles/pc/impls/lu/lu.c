@@ -679,7 +679,7 @@ int PCLUSetMatOrdering(PC pc,MatOrderingType ordering)
 -   dtcol - 0.0 implies no pivoting, 1.0 complete pivoting (slower, requires more memory but more stable)
 
     Options Database Key:
-.   -pc_lu_pivoting - dttol
+.   -pc_lu_pivoting <dtcol>
 
     Level: intermediate
 
@@ -740,7 +740,7 @@ int PCLUSetPivotInBlocks(PC pc,PetscTruth pivot)
 .  -pc_lu_damping <damping> - Sets damping amount
 .  -pc_lu_in_place - Activates in-place factorization
 .  -pc_lu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
-.  -pc_lu_pivoting - dttol
+.  -pc_lu_pivoting <dtcol>
 -  -pc_lu_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
                                          stability of factorization.
 

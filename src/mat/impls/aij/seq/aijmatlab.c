@@ -167,7 +167,7 @@ int MatSeqAIJFactorInfo_Matlab(Mat A,PetscViewer viewer)
   
   PetscFunctionBegin; 
   /* check if matrix is matlab type */
-  /* if (A->ops->solve != MatSolve_SeqAIJ_Matlab) PetscFunctionReturn(0); */
+  if (A->ops->solve != MatSolve_SeqAIJ_Matlab) PetscFunctionReturn(0); 
 
   ierr = PetscViewerASCIIPrintf(viewer,"Matlab run parameters:  -- not written yet!\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -125,6 +125,7 @@ int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   
+  ierr = PetscViewerASCIIPrintf(viewer,"Spooles run parameters:\n");CHKERRQ(ierr);
   switch (lu->options.symflag) {
   case 0: s = "SPOOLES_SYMMETRIC"; break;
   case 1: s = "SPOOLES_HERMITIAN"; break;
