@@ -26,6 +26,8 @@ e_doctext_verbatim  %n</pre>%n
 # These control .vb and .ve
 #    The default is <code><pre> </code></pre>, which uses a larger font and forces
 #    an extra blank line in the output.
-s_verbatim <listing>
-e_verbatim </listing>
+s_verbatim <code><pre>
+e_verbatim </code></pre>
 
+s_arg_list 
+e_arg_list 
