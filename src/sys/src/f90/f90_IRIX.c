@@ -1,4 +1,4 @@
-/*$Id: f90_IRIX.c,v 1.12 1999/10/24 14:04:23 bsmith Exp bsmith $*/
+/*$Id: f90_IRIX.c,v 1.13 2000/01/11 21:03:54 bsmith Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #if defined(PETSC_HAVE_IRIXF90)
@@ -19,6 +19,7 @@
 int PetscF90Create1dArrayScalar(Scalar *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
+  ptr->cookie        = F90_COOKIE;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(Scalar)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -70,6 +71,7 @@ int PetscF90Destroy1dArrayScalar(array1d *ptr)
 int PetscF90Create2dArrayScalar(Scalar *array,int m,int n,array2d *ptr)
 {
   ptr->addr          = (void *)array;
+  ptr->cookie        = F90_COOKIE;
   ptr->dim[0].extent = m;
   ptr->dim[0].mult   = sizeof(Scalar)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -124,6 +126,7 @@ int PetscF90Destroy2dArrayScalar(array2d *ptr)
 int PetscF90Create1dArrayInt(int *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
+  ptr->cookie        = F90_COOKIE;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(int)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -175,6 +178,7 @@ int PetscF90Destroy1dArrayInt(array1d *ptr)
 int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
+  ptr->cookie        = F90_COOKIE;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(PetscFortranAddr)/sizeof(int);
   ptr->dim[0].lower  = 1;
