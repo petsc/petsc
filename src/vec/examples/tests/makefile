@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.86 1999/01/11 17:20:45 balay Exp bsmith $ 
+# $Id: makefile,v 1.87 1999/01/26 01:26:02 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -41,115 +41,115 @@ EXAMPLESF       = ex17f.F ex19.F ex20.F
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts 
-	-${CLINKER} -o ex1 ex1.o ${PETSC_LIB}
+	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
 	${RM} -f ex1.o
 
 ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_VEC_LIB}
 	${RM} -f ex2.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_VEC_LIB}
 	${RM} -f ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_VEC_LIB}
 	${RM} -f ex4.o
 
 ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o  ${PETSC_LIB}
+	-${CLINKER} -o ex5 ex5.o  ${PETSC_VEC_LIB}
 	${RM} -f ex5.o
 
 ex6: ex6.o  chkopts
-	-${CLINKER} -o ex6 ex6.o  ${PETSC_LIB}
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_VEC_LIB}
 	${RM} -f ex6.o
 
 ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o  ${PETSC_LIB}
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_VEC_LIB}
 	${RM} -f ex7.o
 
 ex8: ex8.o  chkopts
-	-${CLINKER} -o ex8 ex8.o  ${PETSC_LIB}
+	-${CLINKER} -o ex8 ex8.o  ${PETSC_VEC_LIB}
 	${RM} -f ex8.o
 
 ex9: ex9.o  chkopts
-	-${CLINKER} -o ex9 ex9.o  ${PETSC_LIB}
+	-${CLINKER} -o ex9 ex9.o  ${PETSC_VEC_LIB}
 	${RM} -f ex9.o
 
 ex10: ex10.o  chkopts
-	-${CLINKER} -o ex10 ex10.o  ${PETSC_LIB}
+	-${CLINKER} -o ex10 ex10.o  ${PETSC_VEC_LIB}
 	${RM} -f ex10.o
 
 ex11: ex11.o  chkopts
-	-${CLINKER} -o ex11 ex11.o  ${PETSC_LIB}
+	-${CLINKER} -o ex11 ex11.o  ${PETSC_VEC_LIB}
 	${RM} -f ex11.o
 
 ex12: ex12.o  chkopts
-	-${CLINKER} -o ex12 ex12.o  ${PETSC_LIB}
+	-${CLINKER} -o ex12 ex12.o  ${PETSC_VEC_LIB}
 	${RM} -f ex12.o
 
 ex13: ex13.o  chkopts
-	-${CLINKER} -o ex13 ex13.o  ${PETSC_LIB}
+	-${CLINKER} -o ex13 ex13.o  ${PETSC_VEC_LIB}
 	${RM} -f ex13.o
 
 ex14: ex14.o  chkopts
-	-${CLINKER} -o ex14 ex14.o  ${PETSC_LIB}
+	-${CLINKER} -o ex14 ex14.o  ${PETSC_VEC_LIB}
 	${RM} -f ex14.o
 
 ex15: ex15.o  chkopts
-	-${CLINKER} -o ex15 ex15.o  ${PETSC_LIB} 
+	-${CLINKER} -o ex15 ex15.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex15.o
 
 ex16: ex16.o  chkopts
-	-${CLINKER} -o ex16 ex16.o  ${PETSC_LIB} 
+	-${CLINKER} -o ex16 ex16.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex16.o
 
 ex17: ex17.o  chkopts
-	-${CLINKER} -o ex17 ex17.o  ${PETSC_LIB}
+	-${CLINKER} -o ex17 ex17.o  ${PETSC_VEC_LIB}
 	${RM} -f ex17.o
 
 ex17f: ex17f.o  chkopts
-	-${FLINKER} -o ex17f ex17f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex17f ex17f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
 	${RM} -f ex17f.o
 
 ex18: ex18.o  chkopts
-	-${CLINKER} -o ex18 ex18.o  ${PETSC_LIB}
+	-${CLINKER} -o ex18 ex18.o  ${PETSC_VEC_LIB}
 	${RM} -f ex18.o
 
 ex19: ex19.o  chkopts
-	-${FLINKER} -o ex19 ex19.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex19 ex19.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
 	${RM} -f ex19.o
 
 ex20: ex20.o  chkopts
-	-${FLINKER} -o ex20 ex20.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex20 ex20.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
 	${RM} -f ex20.o
 
 ex21: ex21.o  chkopts
-	-${FLINKER} -o ex21 ex21.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex21 ex21.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
 	${RM} -f ex21.o
 
 ex22: ex22.o  chkopts
-	-${CLINKER} -o ex22 ex22.o   ${PETSC_LIB}
+	-${CLINKER} -o ex22 ex22.o   ${PETSC_VEC_LIB}
 	${RM} -f ex22.o
 
 ex23: ex23.o  chkopts
-	-${CLINKER} -o ex23 ex23.o  ${PETSC_LIB}
+	-${CLINKER} -o ex23 ex23.o  ${PETSC_VEC_LIB}
 	${RM} -f ex23.o
 
 ex24: ex24.o chkopts
-	-${CLINKER} -o ex24 ex24.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB} 
+	-${CLINKER} -o ex24 ex24.o ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB} 
 	${RM} -f ex24.o 
 
 ex25: ex25.o chkopts
-	-${CLINKER} -o ex25 ex25.o  ${PETSC_LIB} 
+	-${CLINKER} -o ex25 ex25.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex25.o 
 
 ex26: ex26.o chkopts
-	-${CLINKER} -o ex26 ex26.o  ${PETSC_LIB} 
+	-${CLINKER} -o ex26 ex26.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex26.o 
 
 ex27: ex27.o chkopts
-	-${CLINKER} -o ex27 ex27.o  ${PETSC_LIB} 
+	-${CLINKER} -o ex27 ex27.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex27.o 
 
 runex1:
