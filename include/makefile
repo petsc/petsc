@@ -1,5 +1,7 @@
-# $Id: makefile,v 1.38 1998/04/23 23:23:17 balay Exp balay $ 
+# $Id: makefile,v 1.39 1998/06/12 21:30:22 balay Exp balay $ 
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \

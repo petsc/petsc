@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.23 1998/06/12 21:07:55 balay Exp balay $ 
+# $Id: makefile,v 1.24 1998/06/12 21:21:06 balay Exp balay $ 
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = kspimpl.h

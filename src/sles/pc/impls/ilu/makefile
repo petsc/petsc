@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.25 1998/04/23 23:36:34 balay Exp balay $ 
+# $Id: makefile,v 1.26 1998/06/12 21:42:42 balay Exp balay $ 
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 CPPFLAGS = ${BS_INCLUDE}
 SOURCEC  = ilu.c
 SOURCEF  =

@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.26 1998/04/23 23:28:20 balay Exp balay $ 
+# $Id: makefile,v 1.27 1998/06/12 21:33:50 balay Exp balay $ 
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = da2.c da1.c da3.c daghost.c dacorn.c dagtol.c daltol.c \
            daltog.c daindex.c dascatter.c dadestroy.c dalocal.c \
            dadist.c daview.c dasub.c

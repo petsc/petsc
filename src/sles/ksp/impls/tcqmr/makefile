@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.30 1998/06/12 21:07:30 balay Exp balay $ 
+# $Id: makefile,v 1.31 1998/06/12 21:19:58 balay Exp balay $ 
 
 ALL: lib 
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = tcqmr.c
 SOURCEF  =
 SOURCEH  = tcqmrp.h

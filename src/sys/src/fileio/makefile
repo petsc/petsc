@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.3 1998/05/21 14:53:18 bsmith Exp balay $ 
+# $Id: makefile,v 1.4 1998/06/12 22:17:16 balay Exp balay $ 
 
 ALL: lib 
 
+CFLAGS    =
+FFLAGS    =
 CPPFLAGS  = -DPETSC_LDIR='"${LDIR}"' 
 SOURCEC	  = ffpath.c     ftest.c      ghome.c      mpiuopen.c   rpath.c \
             fpath.c      fwd.c        grpath.c     mprint.c     sysio.c

@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.4 1998/05/21 14:54:03 bsmith Exp balay $ 
+# $Id: makefile,v 1.5 1998/06/12 22:16:50 balay Exp balay $ 
 
 ALL: lib 
 
+CFLAGS    =
+FFLAGS    =
 SOURCEC	  = arch.c fhost.c fuser.c memc.c mpiu.c nreg.c psleep.c random.c sortd.c sorti.c \
             str.c sortip.c pbarrier.c pdisplay.c
 SOURCEF	  =

@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.28 1998/06/12 21:07:18 balay Exp balay $ 
+# $Id: makefile,v 1.29 1998/06/12 21:19:41 balay Exp balay $ 
 
 ALL: lib 
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = preonly.c
 SOURCEF  =
 OBJSC    = preonly.o

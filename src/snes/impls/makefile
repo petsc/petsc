@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.25 1998/03/19 02:12:54 balay Exp balay $
+# $Id: makefile,v 1.26 1998/06/12 21:37:38 balay Exp balay $
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  =  
 SOURCEF  =
 SOURCEH  = 

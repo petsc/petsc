@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.37 1998/04/23 23:29:54 balay Exp balay $
+# $Id: makefile,v 1.38 1998/06/12 21:34:38 balay Exp balay $
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c dlregis.c
 SOURCEF  =
 SOURCEH  = 

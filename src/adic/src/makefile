@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.2 1998/04/24 01:03:40 bsmith Exp balay $ 
+# $Id: makefile,v 1.3 1998/06/12 21:33:46 balay Exp balay $ 
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 CPPFLAGS = ${ADIC_INCLUDE}
 SOURCEC  = adpetscadic.c petscadic.c
 SOURCEF  =
