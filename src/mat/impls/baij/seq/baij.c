@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.68 1996/09/14 03:08:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.69 1996/11/07 15:09:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -74,8 +74,7 @@ static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn
   if (symmetric) {
     PetscFree(*ia);
     PetscFree(*ja);
-  }
-    if (oshift == 1) {
+  } else if (oshift == 1) {
     int nz = a->i[n]; 
     for ( i=0; i<nz; i++ ) a->j[i]--;
     for ( i=0; i<n+1; i++ ) a->i[i]--;
