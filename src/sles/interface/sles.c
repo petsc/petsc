@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.143 2000/09/22 20:44:52 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.144 2000/09/28 21:12:34 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -403,7 +403,10 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 
    Options Database:
 +   -sles_diagonal_scale - diagonally scale linear system before solving
--   -sles_diagonal_scale_fix - unscale the matrix and right hand side when done
+.   -sles_diagonal_scale_fix - unscale the matrix and right hand side when done
+.   -sles_view - print information about the solver used
+-   -sles_view_binary - save the matrix and right hand side to the default binary file (can be
+       read later with src/sles/examples/tutorials/ex10.c for testing solvers)
 
    Notes:
      Call KSPGetConvergedReason() to determine if the solver converged or failed and 
@@ -466,8 +469,15 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscCheckSameComm(sles,b);
   PetscCheckSameComm(sles,x);
-
   if (b == x) SETERRQ(PETSC_ERR_ARG_IDN,"b and x must be different vectors");
+
+  ierr = OptionsHasName(sles->prefix,"-sles_view_binary",&flg);CHKERRQ(ierr); 
+  if (flg) {
+    Mat mat;
+    ierr = PCGetOperators(sles->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatView(mat,VIEWER_BINARY_(sles->comm));CHKERRQ(ierr);
+    ierr = VecView(b,VIEWER_BINARY_(sles->comm));CHKERRQ(ierr);
+  }
   ksp  = sles->ksp;
   pc   = sles->pc;
   ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
