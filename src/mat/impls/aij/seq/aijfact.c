@@ -48,10 +48,15 @@ EXTERN int SPARSEKIT2msrcsr(int*,PetscScalar*,int*,PetscScalar*,int*,int*,PetscS
      ishift = 0, for indices start at 1
      ishift = 1, for indices starting at 0
      ------------------------------------------------------------
-  */
-
+*/
 int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 {
+#if defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
+  PetscFunctionBegin;
+  SETERRQ(1,"This distribution does not include GNU Copyright code\n\
+  You can obtain the drop tolerance routines by installing PETSc from\n\
+  www.mcs.anl.gov/petsc\n");
+#else
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data,*b;
   IS           iscolf,isicol,isirow;
   PetscTruth   reorder;
@@ -258,6 +263,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   PetscLogInfo(A,"MatILUDTFactor_SeqAIJ:for best performance.\n");
 
   PetscFunctionReturn(0);
+#endif
 }
 
 /*
