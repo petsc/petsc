@@ -161,6 +161,7 @@ typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4,NORM_1_AND_2=5}
 #define NORM_MAX NORM_INFINITY
 
 EXTERN int VecNorm(Vec,NormType,PetscReal *);
+EXTERN int VecNormComposedDataID(NormType,int*);
 EXTERN int VecNormalize(Vec,PetscReal *);
 EXTERN int VecSum(Vec,PetscScalar*);
 EXTERN int VecMax(Vec,int*,PetscReal *);

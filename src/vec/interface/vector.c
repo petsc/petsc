@@ -374,39 +374,17 @@ $     NORM_INFINITY denotes max_i |x_i|
 
 int VecNorm(Vec x,NormType type,PetscReal *val)  
 {
-  static int id_norm1=-1,id_norm2=-1,id_normInf=-1,id_normF=-1,id_norm12=-1;
   PetscTruth flg;
   int        type_id, ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidType(x);
-  switch (type) {
-  case NORM_1 :
-    if (id_norm1==-1) {
-      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
-    type_id = id_norm1; break;
-  case NORM_2 :
-    if (id_norm2==-1) {
-      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
-    type_id = id_norm2; break;
-  case NORM_1_AND_2 :
-    /* we don't handle this one yet */
-    if (id_norm1==-1) {
-      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
-    if (id_norm2==-1) {
-      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
-    type_id = id_norm12; break;
-  case NORM_INFINITY :
-    if (id_normInf==-1) {
-      ierr = PetscRegisterComposedData(&id_normInf); CHKERRQ(ierr);}
-    type_id = id_normInf; break;
-  case NORM_FROBENIUS :
-    if (id_normF==-1) {
-      ierr = PetscRegisterComposedData(&id_normF); CHKERRQ(ierr);}
-    type_id = id_normF; break;
-  }
 
+  /*
+   * Cached data?
+   */
+  ierr = VecNormComposedDataID(type,&type_id); CHKERRQ(ierr);
   PetscObjectGetRealComposedData((PetscObject)x,type_id,*val,flg);
   if (flg) PetscFunctionReturn(0);
   
@@ -430,6 +408,41 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
     PetscObjectSetRealComposedData((PetscObject)x,type_id,*val);
   }
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecNormRegisterComposedDataID"
+int VecNormComposedDataID(NormType type,int *type_id)
+{
+  static int id_norm1=-1,id_norm2=-1,id_normInf=-1,id_normF=-1,id_norm12=-1;
+  int ierr;
+  PetscFunctionBegin;
+  switch (type) {
+  case NORM_1 :
+    if (id_norm1==-1) {
+      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
+    *type_id = id_norm1; break;
+  case NORM_2 :
+    if (id_norm2==-1) {
+      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
+    *type_id = id_norm2; break;
+  case NORM_1_AND_2 :
+    /* we don't handle this one yet */
+    if (id_norm1==-1) {
+      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
+    if (id_norm2==-1) {
+      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
+    *type_id = id_norm12; break;
+  case NORM_INFINITY :
+    if (id_normInf==-1) {
+      ierr = PetscRegisterComposedData(&id_normInf); CHKERRQ(ierr);}
+    *type_id = id_normInf; break;
+  case NORM_FROBENIUS :
+    if (id_normF==-1) {
+      ierr = PetscRegisterComposedData(&id_normF); CHKERRQ(ierr);}
+    *type_id = id_normF; break;
+  }
   PetscFunctionReturn(0);
 }
 
