@@ -20,8 +20,8 @@ int main(int argc,char **args)
   Scalar    value[3], zero = 0.0;
 
   PetscInitialize(&argc,&args,0,0);
-  ierr = VecCreateSequential(n,&b);     CHKERRA(ierr);
-  ierr = VecCreateSequential(n,&u);     CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&u);     CHKERRA(ierr);
 
   ierr = MatCreateSequentialDense(MPI_COMM_SELF,n,n,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;

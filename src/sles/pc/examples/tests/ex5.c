@@ -99,17 +99,20 @@ int main(int Argc, char **Args)
       KSPSetInitialGuessNonzero(ksp);
       KSPSetIterations(ksp,smooths);
 
-      VecCreateSequential(N[i],&x); X[levels - 1 - i] = x;
+      VecCreateSequential(MPI_COMM_SELF,N[i],&x); X[levels - 1 - i] = x;
       MGSetX(pcmg,levels - 1 - i,x);
-      VecCreateSequential(N[i],&x); B[levels -1 - i] = x;
+      VecCreateSequential(MPI_COMM_SELF,N[i],&x); B[levels -1 - i] = x;
       MGSetRhs(pcmg,levels - 1 - i,x);
-      VecCreateSequential(N[i],&x); R[levels - 1 - i] = x;
+      VecCreateSequential(MPI_COMM_SELF,N[i],&x); R[levels - 1 - i] = x;
       MGSetR(pcmg,levels - 1 - i,x);
   } 
   /* create coarse level vectors */
-  VecCreateSequential(N[levels-1],&x); MGSetX(pcmg,0,x); X[0] = x;
-  VecCreateSequential(N[levels-1],&x); MGSetRhs(pcmg,0,x); B[0] = x;
-  VecCreateSequential(N[levels-1],&x); MGSetR(pcmg,0,x); R[0] = x;
+  VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x);
+  MGSetX(pcmg,0,x); X[0] = x;
+  VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x);
+  MGSetRhs(pcmg,0,x); B[0] = x;
+  VecCreateSequential(MPI_COMM_SELF,N[levels-1],&x); 
+  MGSetR(pcmg,0,x); R[0] = x;
 
   /* create matrix multiply for finest level */
   MatShellCreate(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat);
@@ -290,7 +293,7 @@ int CalculateSolution(int n,Vec *solution)
 {
   int    i,ierr;
   double h,x = 0.0,uu;
-  VecCreateSequential(n,solution);
+  VecCreateSequential(MPI_COMM_SELF,n,solution);
   h = 1.0/((double) (n+1));
   for ( i=0; i<n; i++ ) {
     x += h; uu = x*(1.-x); 

@@ -21,7 +21,7 @@ int main(int argc,char **args)
   ierr = PCSetMethod(pc,PCNONE);		CHKERRA(ierr);
 
   /* Vector and matrix must be set before PCSetUp */
-  ierr = VecCreateSequential(n,&u);		CHKERRA(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,n,&u);CHKERRA(ierr);
   ierr = PCSetVector(pc,u);			CHKERRA(ierr);
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&mat);	CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,0);		CHKERRA(ierr);
