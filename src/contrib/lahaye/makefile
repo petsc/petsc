@@ -20,3 +20,6 @@ DIRS     = ramg samg
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
+
+ex1: ex1.o matmatmult.o chkopts
+	${CLINKER}  -o ex1 ex1.o matmatmult.o ${PETSC_MAT_LIB} 
