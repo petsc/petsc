@@ -612,12 +612,12 @@ int MatConvert_Base_MUMPS(Mat A,MatType newtype,Mat *newmat) {
   mumps->MatDestroy                = A->ops->destroy;
   mumps->CleanUpMUMPS              = PETSC_FALSE;
 
-  A->spptr                         = (void *)mumps;
-  A->ops->view                     = MatView_AIJ_MUMPS;
-  A->ops->assemblyend              = MatAssemblyEnd_AIJ_MUMPS;
-  A->ops->lufactorsymbolic         = MatLUFactorSymbolic_AIJ_MUMPS;
-  A->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_AIJ_MUMPS;
-  A->ops->destroy                  = MatDestroy_AIJ_MUMPS;
+  B->spptr                         = (void *)mumps;
+  B->ops->view                     = MatView_AIJ_MUMPS;
+  B->ops->assemblyend              = MatAssemblyEnd_AIJ_MUMPS;
+  B->ops->lufactorsymbolic         = MatLUFactorSymbolic_AIJ_MUMPS;
+  B->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_AIJ_MUMPS;
+  B->ops->destroy                  = MatDestroy_AIJ_MUMPS;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (newtype == MATAIJMUMPS) { /* This is brutal and should probably be changed, but I didn't want 4 routines. */
