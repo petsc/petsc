@@ -1,4 +1,4 @@
-/*$Id: dacorn.c,v 1.29 1999/10/24 14:04:04 bsmith Exp bsmith $*/
+/*$Id: dacorn.c,v 1.30 2000/01/11 21:03:19 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -10,7 +10,7 @@
 #define __FUNC__ "DASetCoordinates"
 /*@
    DASetCoordinates - Sets into the DA a vector that indicates the 
-      coordinates of the local nodes (including ghost nodes).
+      coordinates of the local nodes (NOT including ghost nodes).
 
    Not Collective
 
@@ -19,7 +19,7 @@
 -  c - coordinate vector
 
    Note:
-    The coordinates should include those for all ghost points
+    The coordinates should NOT include those for all ghost points
 
   Level: intermediate
 
@@ -53,7 +53,7 @@ int DASetCoordinates(DA da,Vec c)
 .  c - coordinate vector
 
    Note:
-    Includes the coordinates for the the ghost nodes
+    Does NOT nclude the coordinates for the the ghost nodes
 
   Level: intermediate
 
