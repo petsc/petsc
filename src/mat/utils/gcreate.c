@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.42 1995/09/12 18:42:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.43 1995/09/21 20:11:31 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -88,16 +88,17 @@ int MatGetFormatFromOptions_Private(MPI_Comm comm,MatType *type,int *set)
 $  -mat_seqaij   : AIJ type, uses MatCreateSeqAIJ
 $  -mat_mpiaij   : AIJ type, uses MatCreateMPIAIJ
 $  -mat_aij      : AIJ type, (Seq or MPI depending on comm) 
-$  -mat_seqdense    : dense type, uses MatCreateSeqDense()
 $  -mat_seqrow   : row type, uses MatCreateSeqRow()
 $  -mat_mpirow   : MatCreateMPIRow()
-$  -mat_row      : row type,(Seq or MPI depending on comm)  
-$  -mat_mpirowbs : rowbs type.
-$                  uses MatCreateMPIRowbs()
-$  -mat_seqbdiag    : block diagonal type, uses 
-$                   MatCreateSeqBDiag()
-$  -mat_mpibdiag : MatCreateMPIBDiag()
-$  -mat_bdiag    : block diagonal type, (Seq or MPI depending on comm)
+$  -mat_row      : row type, (Seq or MPI depending on comm)  
+$  -mat_seqbdiag : block diagonal type, uses 
+$                  MatCreateSeqBDiag()
+$  -mat_mpibdiag : block diagonal type, uses 
+$                  MatCreateMPIBDiag()
+$  -mat_bdiag    : block diagonal type, 
+$                  (Seq or MPI depending on comm)
+$  -mat_mpirowbs : rowbs type, uses MatCreateMPIRowbs()
+$  -mat_seqdense : dense type, uses MatCreateSeqDense()
 
    Notes:
    The default matrix type is AIJ, using MatCreateSeqAIJ() and
