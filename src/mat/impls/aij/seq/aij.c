@@ -1,4 +1,4 @@
-/*$Id: aij.c,v 1.346 2000/05/08 15:08:03 balay Exp bsmith $*/
+/*$Id: aij.c,v 1.347 2000/05/08 21:12:28 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
@@ -2167,18 +2167,31 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name="MatMatlabEnginePut_SeqAIJ"></a>*/"MatMatlabEnginePut_SeqAIJ"
 int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
 {
-  int     ierr,n,m;
-  Mat     B = (Mat)obj;
-  Scalar  *array;
-  mxArray *mat;
+  int        ierr,i,*aj,*ai;
+  Mat        B = (Mat)obj;
+  Scalar     *array;
+  mxArray    *mat; 
+  Mat_SeqAIJ *aij = (Mat_SeqAIJ*)B->data;
+
 
   PetscFunctionBegin;
+  mat  = mxCreateSparse(B->n,B->m,aij->nz,(mxComplexity)0);
+  ierr = PetscMemcpy(mxGetPr(mat),aij->a,aij->nz*sizeof(Scalar));CHKERRQ(ierr);
+  /* Matlab stores by column, not row so we pass in the transpose of the matrix */
+  ai   = mxGetJc(mat);
+  aj   = mxGetIr(mat);
+  ierr = PetscMemcpy(aj,aij->j,aij->nz*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(ai,aij->i,(B->m+1)*sizeof(int));CHKERRQ(ierr);
 
-#if !defined(PETSC_USE_COMPLEX)
-
-#else
-
-#endif
+  /* Matlab indices always start at 1 */
+  if (!aij->indexshift) {
+    for (i=0; i<aij->m+1; i++) {
+      ai[i]++;
+    }
+    for (i=0; i<aij->nz; i++) {
+      aj[i]++;
+    }
+  }
   mxSetName(mat,obj->name);
   engPutArray((Engine *)engine,mat);
   PetscFunctionReturn(0);
