@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.136 1996/02/05 21:12:40 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.137 1996/02/07 19:42:58 bsmith Exp curfman $";
 #endif
 
 /*
@@ -490,10 +490,17 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
        for example 3.0; choosing this parameter well can result in 
        more efficient use of time and space.
 
-   Output Parameters:
+   Output Parameter:
 .  fact - new matrix that has been symbolically factored
 
-.keywords: matrix, factor, LU, symbol CHKERRQ(ierr);ic
+   Options Database Key:
+$     -mat_lu_fill <f>, where f is the fill ratio
+
+   Notes:
+   See the file $(PETSC_DIR)/Performace for additional information about
+   choosing the fill factor for better efficiency.
+
+.keywords: matrix, factor, LU, symbolic, fill
 
 .seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
@@ -1439,10 +1446,19 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 .  row - row permutation
 .  column - column permutation
 .  fill - number of levels of fill
-.  f - expected fill as ratio of original fill
+.  f - expected fill as ratio of the original number of nonzeros, 
+       for example 3.0; choosing this parameter well can result in 
+       more efficient use of time and space.
 
    Output Parameters:
-.  fact - puts factor
+.  fact - new matrix that has been symbolically factored
+
+   Options Database Key:
+$   -mat_ilu_fill <f>, where f is the fill ratio
+
+   Notes:
+   See the file $(PETSC_DIR)/Performace for additional information about
+   choosing the fill factor for better efficiency.
 
 .keywords: matrix, factor, incomplete, ILU, symbolic, fill
 
