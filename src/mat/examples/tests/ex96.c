@@ -1,5 +1,5 @@
 
-static char help[] ="Tests sequential and parallel MatMatMult() and MatPtAP()\n\
+static char help[] ="Tests sequential and parallel DAGetMatrix(), MatMatMult() and MatPtAP()\n\
   -Mx <xg>, where <xg> = number of coarse grid points in the x-direction\n\
   -My <yg>, where <yg> = number of coarse grid points in the y-direction\n\
   -Mz <zg>, where <zg> = number of coarse grid points in the z-direction\n\
@@ -7,7 +7,10 @@ static char help[] ="Tests sequential and parallel MatMatMult() and MatPtAP()\n\
   -Npy <npy>, where <npy> = number of processors in the y-direction\n\
   -Npz <npz>, where <npz> = number of processors in the z-direction\n\n";
 
-/*  This test is modified from ~src/ksp/examples/tests/ex19.c. */
+/*  
+    This test is modified from ~src/ksp/examples/tests/ex19.c. 
+    Example of usage: mpirun -np 3 ex96 -Mx 10 -My 10 -Mz 10
+*/
 
 #include "petscksp.h"
 #include "petscda.h"
@@ -50,11 +53,10 @@ int main(int argc,char **argv)
   PetscReal      fill=2.0;
   Mat            A,A_tmp,P,C;
   PetscScalar    *array,none = -1.0,alpha;
-  PetscTruth     flg;
   Vec           x,v1,v2,v3,v4;
   PetscReal     norm,norm_tmp,norm_tmp1,tol=1.e-12;
   PetscRandom   rdm;
-  PetscTruth    Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE;
+  PetscTruth    Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_FALSE,flg;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&tol,PETSC_NULL);CHKERRQ(ierr);
@@ -86,7 +88,21 @@ int main(int argc,char **argv)
                     1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.fine.da);CHKERRQ(ierr);
   }
 
+  /* Test DAGetMatrix()                                         */
+  /*------------------------------------------------------------*/
   ierr = DAGetMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = DAGetMatrix(user.fine.da,MATBAIJ,&C);CHKERRQ(ierr);
+  
+  ierr = MatConvert(C,MATMPIAIJ,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
+  ierr = MatEqual(A,A_tmp,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"A != C"); 
+  }
+  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(A_tmp);CHKERRQ(ierr);
+  
+  /*------------------------------------------------------------*/
+  
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
   /* set val=one to A */
