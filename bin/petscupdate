@@ -119,7 +119,9 @@ done
 #
 #  Remind the user to run petscupdate on any other arches that have libraries built
 #
-archs=`ls lib/lib*/*/libpetsc.a | sed -e "s?lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetsc.a?\1?g"  | sort | uniq`
+ls lib/lib*/*/libpetsc.a | sed -e "s?lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetsc.a?\1?g"  | sort  > .tmp 2>&1
+archs=`grep -v "No such" .tmp | uniq`
+rm -f .tmp
 for arch in $archs
 do
   flag=`ls -tl lib/lib*/$arch/libpetsc.a include/petscversion.h | tail -1 | grep include`
