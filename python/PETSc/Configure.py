@@ -165,16 +165,15 @@ class Configure(config.base.Configure):
     # print include and lib for external packages
     self.framework.packages.reverse()
     for i in self.framework.packages:
-      self.addDefine('HAVE_'+i.PACKAGE,1)
-      if not isinstance(i.lib,list): i.lib = [i.lib]
-      self.addMakeMacro(i.PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument, i.lib)))
+      self.addDefine('HAVE_'+i.PACKAGE, 1)
+      if not isinstance(i.lib, list):
+        i.lib = [i.lib]
+      self.addMakeMacro(i.PACKAGE+'_LIB', ' '.join([self.libraries.getLibArgument(l) for l in i.lib]))
       if hasattr(i,'include'):
-        if not isinstance(i.include,list): i.include = [i.include]      
-        self.addMakeMacro(i.PACKAGE+'_INCLUDE',' '.join(map(self.libraries.getIncludeArgument, i.include)))
-    text = ''
-    for i in self.framework.packages:
-      text += '${'+i.PACKAGE+'_LIB} '
-    self.addMakeMacro('PACKAGES_LIBS',text)
+        if not isinstance(i.include,list):
+          i.include = [i.include]
+        self.addMakeMacro(i.PACKAGE+'_INCLUDE', ' '.join([self.libraries.getIncludeArgument(inc) for inc in i.include]))
+    self.addMakeMacro('PACKAGES_LIBS',' '.join(['${'+package.PACKAGE+'_LIB}' for package in self.framework.packages]+[self.libraries.getLibArgument(l) for l in self.libraries.math]))
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
     self.addMakeMacro('top_builddir',self.installdir)                
