@@ -11,8 +11,10 @@
    Input Parameters:
 +  vsoln    - solution to use in computing residual
 .  vt1, vt2 - temporary work vectors
-.  vres     - calculated residual
 -  vb       - right-hand-side vector
+
+   Output Parameters:
+.  vres     - calculated residual
 
    Notes:
    This routine assumes that an iterative method, designed for
@@ -20,6 +22,10 @@ $     A x = b
    will be used with a preconditioner, C, such that the actual problem is either
 $     AC u = f (right preconditioning) or
 $     CA x = Cf (left preconditioning).
+   This means that the calculated residual will be scaled and/or preconditioned;
+   the true residual
+$     b-Ax
+   is returned in the vt2 temporary.
 
    Level: developer
 
@@ -48,6 +54,7 @@ PetscErrorCode KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec
     ierr = (ksp->pc_side == PC_RIGHT)?(VecCopy(vt2,vres)):(KSP_PCApply(ksp,vt2,vres));CHKERRQ(ierr);
     ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
   } else {
+    ierr = VecCopy(vb,vt2); CHKERRQ(ierr);
     if (ksp->pc_side == PC_RIGHT) {
       ierr = PCDiagonalScaleLeft(ksp->pc,vb,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_LEFT) {
@@ -57,8 +64,7 @@ PetscErrorCode KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec
       ierr = PCApplySymmetricLeft(ksp->pc, vb, vres);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
-  }
-
+    }
   }
   PetscFunctionReturn(0);
 }
