@@ -1906,7 +1906,6 @@ static struct _MatOps MatOps_Values = {
   0,
   0,
   0,
-  0,
   MatDuplicate_MPIBAIJ,
   0,
   0,

@@ -1462,7 +1462,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatZeroEntries_MPIAIJ,
        MatZeroRows_MPIAIJ,
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-				       MatLUFactorSymbolic_MPIAIJ_TFS,
+       MatLUFactorSymbolic_MPIAIJ_TFS,
 #else
        0,
 #endif
@@ -1470,7 +1470,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        MatSetUpPreallocation_MPIAIJ,
-       0,
        0,
        0,
        0,
