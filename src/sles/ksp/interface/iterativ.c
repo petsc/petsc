@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.14 1995/04/13 21:08:27 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.15 1995/04/16 00:50:07 curfman Exp curfman $";
 #endif
 
 /*
@@ -212,61 +212,3 @@ int KSPiDefaultDestroy(PetscObject obj)
   return 0;
 }
 
-/*@
-  KSPGetWorkCounts - Gets the counts of the number of operations
-  performed by the iterative routines.
-
-  Input Parameter:
-. itP - Iterative context
-
-  Output Parameters:
-. matop - number of applications of matrix-vector product AND preconditioner
-. amult - number of applications of matrix-vector product not counted in matop
-. binv  - number of applications of preconditioner not counted in matop
-. vecs  - number of operations on vectors
-. scalars - number of operations on scalars
-
-  Notes:
-  The counts provided by this routine depend on correctly counting the
-  number of operations in the iterative methods; those are not currently
-  very accurate.  Users are encouraged to look at the source codes and
-  send fixes to petsc-maint@mcs.anl.gov .
-
-  This routine does NOT clear the values; use KSPClearWorkCounts to do that.
-
-.keywords: KSP, work, counts, operations
-
-.seealso: KSPClearWorkCounts()
-@*/
-int KSPGetWorkCounts( KSP itP, int *matop, int *amult, int *binv, int *vecs,
-                      int * scalars )
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  *matop   = itP->nmatop;
-  *amult   = itP->namult;
-  *binv    = itP->nbinv;
-  *vecs    = itP->nvectors;
-  *scalars = itP->nscalar;
-  return 0;
-}
-/*@
-   KSPClearWorkCounts - Clears the work counts that are maintained for the
-   iterative solvers.
-
-   Input Parameter:
-.  itP - Iterative context
-
-.keywords: KSP, work, counts, operations, clear
-
-.seealso: KSPGetWorkCounts()
-@*/
-int KSPClearWorkCounts( KSP itP )
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  itP->nmatop        = 0;
-  itP->namult        = 0;
-  itP->nbinv         = 0;
-  itP->nvectors      = 0;
-  itP->nscalar       = 0;
-  return 0;
-}
