@@ -192,7 +192,11 @@ class DArgs:
         
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
     if os.path.exists(filename):
-      raise RuntimeError,filename+" already exists, are you sure the server is not running?\n"+                                                      "remove the file and restart server"
+      # check if server is running
+      running = 1
+      try: RArgs().dicts()
+      except: running = 0
+      if running: raise RuntimeError, "Server already running"
     f = open(filename, 'w')
     cPickle.dump(server.server_address, f)
     f.close()
@@ -337,5 +341,5 @@ if __name__ ==  '__main__':
       else:
         sys.exit('Unknown action: '+sys.argv[1])
   except Exception, e:
-    sys.exit('ERROR: '+str(e))
+    sys.exit(str(e))
   sys.exit(0)
