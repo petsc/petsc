@@ -19,21 +19,61 @@ typedef struct {
   PetscScalar *aux;
   int         naux;
 
+  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
   int (*MatDestroy)(Mat);
 } Mat_SeqAIJ_Essl;
+
+EXTERN int MatLUFactorSymbolic_SeqAIJ_Essl(Mat,IS,IS,MatFactorInfo*,Mat*);
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_Essl_SeqAIJ"
+int MatConvert_Essl_SeqAIJ(Mat A,MatType type,Mat *newmat) {
+  int             ierr;
+  Mat             B=*newmat;
+  Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)A->spptr;
+  
+  PetscFunctionBegin;
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);
+  } else {
+    /* free the Essl datastructures */
+    ierr = PetscFree(essl->a);CHKERRQ(ierr);
+    ierr = PetscFree(essl);CHKERRQ(ierr);
+    ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  }
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END  
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_Essl"
 int MatDestroy_SeqAIJ_Essl(Mat A)
 {
+  int             ierr;
   Mat_SeqAIJ_Essl *essl = (Mat_SeqAIJ_Essl*)A->spptr;
-  int             ierr,(*destroy)(Mat);
+  int             (*destroy)(Mat)=essl->MatDestroy;
 
   PetscFunctionBegin;
-  /* free the Essl datastructures */
-  destroy = essl->MatDestroy;
-  ierr = PetscFree(essl->a);CHKERRQ(ierr);
+  ierr = MatConvert_Essl_SeqAIJ(A,MATSEQAIJ,&A);
   ierr = (*destroy)(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_Essl"
+int MatAssemblyEnd_SeqAIJ_Essl(Mat A,MatAssemblyType mode) {
+  int             ierr;
+  Mat_SeqAIJ_Essl *essl=(Mat_SeqAIJ_Essl*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*essl->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+
+  essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
+  A->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJ_Essl;
+  PetscLogInfo(0,"Using ESSL for SeqAIJ LU factorization and solves");
   PetscFunctionReturn(0);
 }
 
@@ -124,15 +164,39 @@ int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseEssl_SeqAIJ"
-int MatUseEssl_SeqAIJ(Mat A)
-{
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqAIJ_Essl"
+int MatConvert_SeqAIJ_Essl(Mat A,MatType type,Mat *newmat) {
+  Mat             B=*newmat;
+  int             ierr;
+  Mat_SeqAIJ_Essl *essl;
+
   PetscFunctionBegin;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_Essl;
-  PetscLogInfo(0,"Using ESSL for SeqAIJ LU factorization and solves");
+
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+
+  ierr                      = PetscNew(Mat_SeqAIJ_Essl,&essl);CHKERRQ(ierr);
+  essl->MatAssemblyEnd      = A->ops->assemblyend;
+  essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
+  essl->MatDestroy          = A->ops->destroy;
+  B->spptr                  = (void *)essl;
+
+  B->ops->assemblyend       = MatAssemblyEnd_SeqAIJ_Essl;
+  B->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqAIJ_Essl;
+  B->ops->destroy           = MatDestroy_SeqAIJ_Essl;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_essl_C",
+                                           "MatConvert_SeqAIJ_Essl",MatConvert_SeqAIJ_Essl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_essl_seqaij_C",
+                                           "MatConvert_Essl_SeqAIJ",MatConvert_Essl_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
+  *newmat = B;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -143,13 +207,7 @@ int MatCreate_SeqAIJ_Essl(Mat A) {
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATSEQAIJ);
-  ierr = MatUseEssl_SeqAIJ(A);
-
-  ierr             = PetscNew(Mat_SeqAIJ_Essl,&essl);CHKERRQ(ierr);
-  essl->MatDestroy = A->ops->destroy;
-  A->spptr         = (void *)essl;
-
-  A->ops->destroy  = MatDestroy_SeqAIJ_Essl;
+  ierr = MatConvert_SeqAIJ_Essl(A,MATESSL,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

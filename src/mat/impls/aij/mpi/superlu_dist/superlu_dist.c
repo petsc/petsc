@@ -79,8 +79,9 @@ typedef struct {
 #define __FUNCT__ "MatDestroy_MPIAIJ_SuperLU_DIST"
 int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 {
+  int                     ierr;
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)A->spptr; 
-  int                     ierr,(*destroy)(Mat);
+  int                     (*destroy)(Mat)=lu->MatDestroy;
     
   PetscFunctionBegin;
   if (lu->CleanUpSuperLUDist) {
@@ -106,7 +107,6 @@ int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
     
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
-  destroy = lu->MatDestroy;
   ierr = PetscFree(lu);CHKERRQ(ierr); 
   ierr = (*destroy)(A);CHKERRQ(ierr);
   

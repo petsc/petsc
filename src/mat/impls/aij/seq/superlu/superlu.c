@@ -47,13 +47,11 @@ EXTERN_C_END
 #define __FUNCT__ "MatDestroy_SeqAIJ_SuperLU"
 int MatDestroy_SeqAIJ_SuperLU(Mat A)
 {
+  int                ierr;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)A->spptr;
-  int                ierr,(*destroy)(Mat);
+  int                (*destroy)(Mat)=lu->MatDestroy;
 
   PetscFunctionBegin;
-  /* It looks like this is decreasing the reference count a second time during MatDestroy?! */
- /*  if (--A->refct > 0)PetscFunctionReturn(0); */
-  destroy = lu->MatDestroy;
   ierr = MatConvert_SuperLU_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
   ierr = (*destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -415,7 +413,7 @@ int MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,Mat *newmat) {
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_seqaij_C",
                                            "MatConvert_SuperLU_SeqAIJ",MatConvert_SuperLU_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
- *newmat = B;
+  *newmat = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
