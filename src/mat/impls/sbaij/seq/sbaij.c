@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.41 2000/10/30 18:47:39 hzhang Exp balay $*/
+/*$Id: sbaij.c,v 1.42 2000/10/31 17:34:15 balay Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -935,6 +935,7 @@ extern int MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat,Mat*);
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat,Mat*);
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat,Mat*);
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat,Mat*);
+extern int MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat,Mat*);
 
 extern int MatMult_SeqSBAIJ_1(Mat,Vec,Vec);
 extern int MatMult_SeqSBAIJ_2(Mat,Vec,Vec);
