@@ -10,6 +10,10 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Split files into many files with one routine per file. Try to 
+    reduce the amount of irrelevent stuff that is linked into the 
+    executable.
+
   - Get a complete list of MPI routines used in PETSc
 
   - add info about help message printout to section 12.1 (version 2.0.15)
@@ -22,8 +26,6 @@ Additional Capabilities that PETSc Needs:
 
   - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
-
-  - Change MatConvert() and MatLoad() so that all matrix formats are not always loaded.
 
   - Add VecCreateWithData() and VecCreateXXXWithData().
 
@@ -43,8 +45,6 @@ Additional Capabilities that PETSc Needs:
 
   - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
 
-  * Need to allow repeated matix assembly for repeated linear solves with
-    in-place ILU(0). Perhaps new routine MatSetUnfactored(Mat)? 
 
   - Use MPI topology routines for DA codes.
 
@@ -69,7 +69,7 @@ Additional Capabilities that PETSc Needs:
     
   - Add a searchable index for the man pages (Jeff Scroggs Complaint)
 
-  - Check out the performance of VecOps ( noticed tnem to be extremely bad (Satish)
+  - Check out the performance of VecOps (noticed them to be extremely bad (Satish))
 
   - fix PetscView so that with scrolling in horizontal direction and click on icon
     it pops up detailed information in correct location.
@@ -716,3 +716,7 @@ Additional Capabilities that PETSc Needs:
   X Add feature in nightly builds to remove old libraries (maybe?)
     See maint/removelibs
 
+  X Change MatConvert() and MatLoad() so that all matrix formats are not always loaded.
+
+  X Need to allow repeated matix assembly for repeated linear solves with
+    in-place ILU(0). Perhaps new routine MatSetUnfactored(Mat)? 
