@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: da.h,v 1.7 1995/06/07 16:33:23 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallism of simple grid 
@@ -12,8 +12,9 @@
 #define DA_COOKIE PETSC_COOKIE+14
 
 typedef struct _DA* DA;
+typedef enum { DA_STENCIL_STAR, DA_STENCIL_BOX } DAStencilType;
 
-extern int   DACreate2d(MPI_Comm,int,int,int,int,int,int,DA *);
+extern int   DACreate2d(MPI_Comm,DAStencilType,int,int,int,int,int,int,DA *);
 extern int   DADestroy(DA);
 extern int   DAView(DA,Viewer);
 extern int   DAGlobalToLocalBegin(DA,Vec, InsertMode,Vec);

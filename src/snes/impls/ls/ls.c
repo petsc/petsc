@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.21 1995/06/03 04:25:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.22 1995/06/08 03:11:50 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -353,8 +353,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
            PLogInfo((PetscObject)snes, "f %g fnew %g ynorm %g lambda %g \n",
                    fnorm,*gnorm, *ynorm,lambda);
            VecCopy(w, y );
-           PLogEventEnd(SNES_LineSearch,snes,x,f,g);
-           return -1;
+           break;
       }
       t1 = *gnorm - fnorm - lambda*initslope;
       t2 = gnormprev  - fnorm - lambdaprev*initslope;
@@ -389,8 +388,7 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       if (*gnorm <= fnorm + alpha*initslope) {      /* is reduction enough */
          VecCopy(w, y );
          PLogInfo((PetscObject)snes,"Cubically determined step, lambda %g\n",lambda);
-         PLogEventEnd(SNES_LineSearch,snes,x,f,g);
-         return 0;
+         break;
       }
       count++;
    }
@@ -482,8 +480,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
       PLogInfo((PetscObject)snes, "f %g fnew %g ynorm %g lambda %g \n",
                    fnorm,*gnorm, *ynorm,lambda);
       VecCopy(w, y );
-      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
-      return 0;
+      break;
     }
     lambdatemp = -initslope/(2.0*(*gnorm - fnorm - initslope));
     lambdaprev = lambda;
@@ -502,8 +499,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
     if (*gnorm <= fnorm + alpha*initslope) {      /* sufficient reduction */
       VecCopy(w, y );
       PLogInfo((PetscObject)snes,"Quadratically determined step, lambda %g\n",lambda);
-      PLogEventEnd(SNES_LineSearch,snes,x,f,g);
-      return 0;
+      break;
     }
     count++;
   }

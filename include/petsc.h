@@ -1,9 +1,9 @@
-/* $Id: petsc.h,v 1.29 1995/06/07 16:30:52 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.30 1995/06/08 03:12:06 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.3 Released May 29, 1995."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.4 Released June ?, 1995."
 
 #include <stdio.h>
 #if defined(PARCH_sun4)
@@ -121,5 +121,9 @@ extern double _TotalFlops;
 #else
 #define PLogFlops(n)
 #endif 
+extern int PLogPrint(MPI_Comm,FILE *);
+extern int PLogBegin();
+extern int PLogAllBegin();
+extern int PLogDump(char*);
 
 #endif

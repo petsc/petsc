@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.16 1995/05/25 22:48:58 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -16,7 +16,7 @@ typedef enum { SNES_NLS,
                SNES_NTEST }
   SNESMethod;
 
-typedef enum { SNES_T, SUMS_T } SNESTYPE;
+typedef enum { SNES_T, SUMS_T } SNESType;
 
 extern int SNESCreate(MPI_Comm,SNES*);
 extern int SNESSetMethod(SNES,SNESMethod);
