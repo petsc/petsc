@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 1998/03/12 19:28:59 balay Exp balay $ 
+# $Id: makefile,v 1.2 1998/03/12 23:12:27 balay Exp balay $ 
 
 ALL: lib
 
@@ -12,7 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscfortran
 MANSEC   =
 LOCDIR   = src/fortran/f90/tests
-
+TESTS    = test_IRIX
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 
