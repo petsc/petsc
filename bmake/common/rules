@@ -66,6 +66,7 @@ chkpetsc_dir:
 	-@if [ ! -d $(PDIR) ]; then \
           echo Making directory $(PDIR) for library; mkdir -p $(PDIR) ; fi
 
+# checks that user has set BOPT variable
 chkopts: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
           echo "You must set the variable BOPT [g,O, or Opg]" ; false; fi
