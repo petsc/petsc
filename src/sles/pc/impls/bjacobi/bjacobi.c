@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.36 1995/07/26 19:55:04 curfman Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.37 1995/07/27 14:24:50 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -20,10 +20,19 @@ extern int PCSetUp_BJacobiMPIBDiag(PC);
 
 static int PCSetUp_BJacobi(PC pc)
 {
-  Mat        mat = pc->mat;
-  if (mat->type == MATMPIAIJ)        return PCSetUp_BJacobiMPIAIJ(pc);
-  else if (mat->type == MATMPIROW)   return PCSetUp_BJacobiMPIRow(pc);
-  else if (mat->type == MATMPIBDIAG) return PCSetUp_BJacobiMPIBDiag(pc);
+  Mat        mat = pc->mat, pmat = pc->pmat;
+  PC_BJacobi *jac = (PC_BJacobi *) pc->data;
+
+  if (pmat->type == MATMPIAIJ) {
+    if (!jac->usetruelocal || mat->type == MATMPIAIJ)
+      return PCSetUp_BJacobiMPIAIJ(pc);
+  } else if (pmat->type == MATMPIROW) {
+    if (!jac->usetruelocal || mat->type == MATMPIROW)
+      return PCSetUp_BJacobiMPIRow(pc);
+  } else if (pmat->type == MATMPIBDIAG) {
+    if (!jac->usetruelocal || mat->type == MATMPIBDIAG)
+      return PCSetUp_BJacobiMPIBDiag(pc);
+  } 
   SETERRQ(1,"PCSetUp_BJacobi: Cannot use block Jacobi on this matrix type\n");
 }
 

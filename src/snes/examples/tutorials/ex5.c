@@ -1,13 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.17 1995/08/01 19:10:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.18 1995/08/02 04:19:12 bsmith Exp curfman $";
 #endif
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\
-nonlinear equations in parallel.  This example uses matrix free Krylov\n\
-Newton methods with no preconditioner.\n\
-The Bratu (SFI - solid fuel ignition) test problem\n\
-is solved.  The command line options are:\n\
+nonlinear equations in parallel.  This example uses matrix-free Newton-\n\
+Krylov methods with no preconditioner to solve the Bratu (SFI - solid fuel\n\
+ignition) test problem.  The command line options are:\n\
    -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
    -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -85,7 +84,7 @@ int main( int argc, char **argv )
            CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,0); 
            CHKERRA(ierr);
-  ierr =  SNESDefaultMatrixFreeMatCreate(snes,x,&J);CHKERRA(ierr);
+  ierr = SNESDefaultMatrixFreeMatCreate(snes,x,&J); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,J,0,(void *)&user); CHKERRA(ierr);
 
   /* Set up nonlinear solver; then execute it */
@@ -182,14 +181,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   }
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
+
   /* stick values into global vector */
-
-
-
-
-
-
-
   ierr = DALocalToGlobal(user->da,localF,INSERTVALUES,F);
   PLogFlops(11*ym*xm);
   return 0; 
