@@ -105,7 +105,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ierr = DAVecGetArray(da, b, &array);CHKERRQ(ierr);
   for (j=ys; j<ys+ym; j++){
     for(i=xs; i<xs+xm; i++){
-      array[j][i] = PetscExpScalar(-(i*Hx)*(i*Hx)/user->nu)*PetscExpScalar(-(j*Hy)*(j*Hy)/user->nu)*Hx*Hy;
+      array[j][i] = PetscExpScalar(-((PetscReal)i*Hx)*((PetscReal)i*Hx)/user->nu)*PetscExpScalar(-((PetscReal)j*Hy)*((PetscReal)j*Hy)/user->nu)*Hx*Hy;
     }
   }
   ierr = DAVecRestoreArray(da, b, &array);CHKERRQ(ierr);
