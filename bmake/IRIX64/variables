@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.22 2000/05/22 15:51:42 balay Exp balay $ 
+# $Id: base_variables,v 1.23 2000/08/15 18:21:29 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -27,7 +27,7 @@ G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
 O_COPTFLAGS	   = -Ofast=ip27 -OPT:Olimit=0
 #O_COPTFLAGS	   = -O3
-O_FOPTFLAGS	   = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1
+O_FOPTFLAGS	   = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1 -OPT:Olimit=0
 #O_FOPTFLAGS	   = -O3
 # ########################## C++ compiler ##################################
 #
@@ -45,13 +45,13 @@ GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g
 # ------------------------- BOPT - O_c++ options ------------------------------
 OCXX_COPTFLAGS	   = -O3 -OPT:Olimit=0
-OCXX_FOPTFLAGS	   = -O3
+OCXX_FOPTFLAGS	   = -O3 -OPT:Olimit=0
 # -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS	   = -g 
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
 OCOMP_COPTFLAGS	   = -O3 -OPT:Olimit=0
-OCOMP_FOPTFLAGS	   = -O3
+OCOMP_FOPTFLAGS	   = -O3 -OPT:Olimit=0
 # ########################### PETSc install options ###########################
 #
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
