@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.12 1998/04/30 01:31:27 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.13 1998/05/05 19:58:55 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -33,5 +33,7 @@
 
 #define CANNOT_START_DEBUGGER
 #define HAVE_SYS_RESOURCE_H
+
+#define HAVE_GET_USER_NAME
 
 #endif
