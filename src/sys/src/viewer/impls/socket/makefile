@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.29 1997/09/10 19:00:58 balay Exp balay $ 
+# $Id: makefile,v 1.30 1998/03/19 02:12:20 balay Exp balay $ 
 
 ALL: lib 
 
@@ -6,7 +6,7 @@ ALL: lib
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
 # in Matlab. You cannot use a BOPT=*_C++ or BOPT=*_complex. If cmex fails 
 # in compiling these files and you are using the gcc compiler then try 
-# removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/$*(PETSC_ARCH)/base
+# removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 #
 matlabcodes: receive openport closeport launch
 
