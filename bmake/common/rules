@@ -62,10 +62,10 @@ chkpetsc_dir:
 	@if [ Holder = Holder$(BOPT) ] ; then \
           echo "You must set the variable BOPT=[g,O, or Opg]" ; false; fi
 	@if [ Holder = Holder$(PETSC_DIR) ] ; then \
-          echo "You must set the variable PETSC_DIR to the petsc directory.1";\
+          echo "You must set the variable PETSC_DIR to the PETSc directory.1";\
           false ;\
           elif [ ! -d $(PETSC_DIR)/ ] ; then \
-          echo "You must set the variable PETSC_DIR to the petsc directory.2";\
+          echo "You must set the variable PETSC_DIR to the PETSc directory.2";\
           false ;\
           fi
 	-@if [ ! -d $(PDIR) ]; then \
