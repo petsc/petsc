@@ -17,6 +17,28 @@ class UsingCxx (base.Base):
       import build.templates.usingC
       self.usingC = build.templates.usingC.UsingC(self.sourceDB, self.project, self.usingSIDL)
     self.language  = 'Cxx'
+    self.setup()
+    # Driver may need many outside includes and libraries
+    self.programIncludeDirs = {}
+    self.programLibraryTags = {}
+    self.programLibraries   = {}
+    return
+
+  def __getstate__(self):
+    '''Do not save the include directories and extra libraries'''
+    d = self.__dict__.copy()
+    del d['includeDirs']
+    del d['extraLibraries']
+    return d
+
+  def __setstate__(self, d):
+    '''Recreate the include directories and extra libraries'''
+    self.__dict__.update(d)
+    self.setup()
+    return
+
+  def setup(self):
+    '''Setup include directories and extra libraries'''
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     return
@@ -110,15 +132,26 @@ class UsingCxx (base.Base):
     name         = os.path.basename(program)
     prefix       = 'executable '+name
     (target, compiler) = self.getGenericCompileTarget([prefix])
+    if name in self.programIncludeDirs:
+      compiler.includeDirs.extend(self.programIncludeDirs[name])
     sharedTag    = self.language.lower()+' '+prefix+' shared library'
     clientTag    = self.language.lower()+' client shared library'
+    if name in self.programLibraryTags:
+      progTags   = self.programLibraryTags[name]
+    else:
+      progTags   = []
     library      = self.getExecutableLibrary(name)
     linker       = build.buildGraph.BuildGraph()
     sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag, isSetwise = 1, library = library)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
+    if name in self.programLibraries:
+      sharedLinker.extraLibraries.extend(self.programLibraries[name])
     sharedAdder  = build.processor.LibraryAdder([clientTag, 'old '+clientTag], sharedLinker)
     progLinker   = build.processor.Linker(self.sourceDB, compiler.processor, sharedTag, prefix, isSetwise = 1, library = program)
-    progAdder    = build.processor.LibraryAdder([clientTag, 'old '+clientTag], progLinker)
+    progAdder    = build.processor.LibraryAdder([clientTag, 'old '+clientTag]+progTags, progLinker)
+    progLinker.extraLibraries.extend(self.extraLibraries)
+    if name in self.programLibraries:
+      progLinker.extraLibraries.extend(self.programLibraries[name])
     linker.addVertex(sharedAdder)
     linker.addEdges(sharedLinker, [sharedAdder])
     linker.addEdges(progAdder,    [sharedLinker])
