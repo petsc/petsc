@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.12 1998/07/23 22:46:55 bsmith Exp balay $";
+static char vcid[] = "$Id: init.c,v 1.13 1998/07/24 19:49:42 balay Exp bsmith $";
 #endif
 /*
 
@@ -913,7 +913,7 @@ int AliceFinalize(void)
     ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   } else if (flg2) {
     MPI_Comm local_comm;
-    double maxm;
+    PLogDouble maxm;
 
     ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
     ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&maxm); CHKERRQ(ierr);
