@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sregis.c,v 1.7 1995/10/12 04:16:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sregis.c,v 1.8 1995/11/03 03:04:23 bsmith Exp bsmith $";
 #endif
 
 #include "../../matimpl.h"     /*I       "mat.h"   I*/
@@ -9,6 +9,7 @@ extern int MatOrder_ND(int*,int*,int*,int*,int*);
 extern int MatOrder_1WD(int*,int*,int*,int*,int*);
 extern int MatOrder_QMD(int*,int*,int*,int*,int*);
 extern int MatOrder_RCM(int*,int*,int*,int*,int*);
+extern int MatOrder_RowLength(int*,int*,int*,int*,int*);
 
 /*@C
   MatReorderingRegisterAll - Registers all of the sequential matrix 
@@ -37,11 +38,20 @@ $       routine requires recompilation.
 @*/
 int MatReorderingRegisterAll()
 {
-  MatReorderingRegister(ORDER_NATURAL   , "natural"  ,MatOrder_Natural);
-  MatReorderingRegister(ORDER_ND        , "nd"       ,MatOrder_ND);
-  MatReorderingRegister(ORDER_1WD       , "1wd"      ,MatOrder_1WD);
-  MatReorderingRegister(ORDER_RCM       , "rcm"      ,MatOrder_RCM);
-  MatReorderingRegister(ORDER_QMD       , "qmd"      ,MatOrder_QMD);
+  MatOrder   name;
+  static int called = 0;
+  if (called) return 0; else called = 1;
+
+  /*
+       Do not change the order of these unless similarly changing 
+    them in include/mat.h
+  */
+  MatReorderingRegister(&name,"natural",PETSC_TRUE,1,MatOrder_Natural);
+  MatReorderingRegister(&name,"nd"     ,PETSC_TRUE,1,MatOrder_ND);
+  MatReorderingRegister(&name,"1wd"    ,PETSC_TRUE,1,MatOrder_1WD);
+  MatReorderingRegister(&name,"rcm"    ,PETSC_TRUE,1,MatOrder_RCM);
+  MatReorderingRegister(&name,"qmd"    ,PETSC_TRUE,1,MatOrder_QMD);
+  MatReorderingRegister(&name,"rl"     ,PETSC_FALSE,0,MatOrder_RowLength);
   return 0;
 }
 

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.96 1996/03/04 04:26:04 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.97 1996/03/07 01:43:07 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -112,7 +112,7 @@ typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
 extern int MatGetReordering(Mat,MatOrdering,IS*,IS*);
 extern int MatGetReorderingTypeFromOptions(char *,MatOrdering*);
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
-extern int MatReorderingRegister(MatOrdering,char*,PetscTruth,int,
+extern int MatReorderingRegister(MatOrdering *,char*,PetscTruth,int,
                                  int (*)(int*,int*,int*,int*,int*));
 extern int MatReorderingRegisterAll();
 extern int MatReorderingRegisterDestroy();
