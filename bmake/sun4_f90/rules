@@ -1,4 +1,4 @@
-# $Id: base,v 1.21 1998/12/10 16:36:53 balay Exp balay $ 
+# $Id: base,v 1.22 1998/12/18 16:00:22 balay Exp balay $ 
 
 #
 #     See the file .... for a complete explanation of all these fields
@@ -27,7 +27,7 @@ O_COPTFLAGS      = -O -Wall -Wshadow -fomit-frame-pointer
 O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
-CXX_CC           = g++   -fPIC
+CXX_CC           = g++ -fPIC
 CXX_FC           = f90 -f77 ${FOPTFLAGS}
 CXX_CLINKER      = g++ ${COPTFLAGS} 
 CXX_FLINKER      = g++ ${COPTFLAGS}
@@ -36,16 +36,16 @@ CXX_SYS_LIB      = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \
 	           /home/petsc/lib/sun4/libm.a
 # ------------------------- BOPT=g_c++ options ------------------------------
-GCXX_COPTFLAGS   = -g -Wshadow -fomit-frame-pointer 
+GCXX_COPTFLAGS   = -g -fomit-frame-pointer 
 GCXX_FOPTFLAGS   = -g
 # ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -O -Wshadow -fomit-frame-pointer
+OCXX_COPTFLAGS   = -O -fomit-frame-pointer
 OCXX_FOPTFLAGS   = -O 
 # -------------------------- BOPT=g_complex options ------------------------
-GCOMP_COPTFLAGS  = -g -Wshadow -fomit-frame-pointer 
+GCOMP_COPTFLAGS  = -g -fomit-frame-pointer 
 GCOMP_FOPTFLAGS  = -g
 # --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -O -Wshadow -fomit-frame-pointer
+OCOMP_COPTFLAGS  = -O -fomit-frame-pointer
 OCOMP_FOPTFLAGS  = -O
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS     = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
