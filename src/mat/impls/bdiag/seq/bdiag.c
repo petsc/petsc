@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.160 1998/06/03 21:35:44 balay Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.161 1998/07/13 20:48:19 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -695,6 +695,12 @@ int MatDestroy_SeqBDiag(Mat A)
   }
   if (A->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(A->bmapping); CHKERRQ(ierr);
+  }
+  if (A->rmap) {
+    ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
+  }
+  if (A->cmap) {
+    ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
   }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d, BSize=%d, NDiag=%d",

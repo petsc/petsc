@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.252 1998/06/30 21:10:39 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.253 1998/07/13 20:29:17 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -778,6 +778,12 @@ int MatDestroy_MPIAIJ(Mat mat)
   }
   if (mat->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
+  if (mat->rmap) {
+    ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
+  }
+  if (mat->cmap) {
+    ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
   }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",aij->M,aij->N);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmap.c,v 1.1 1998/05/19 19:28:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmap.c,v 1.2 1998/05/29 20:35:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -79,6 +79,9 @@ static struct _MapOps DvOps = {
 
    Output Parameter:
 .  mm - the map object
+
+   Suggested by:
+     Robert Clay and Alan Williams, developers of ISIS++, SNL.
 
 .keywords: create, MPI
 

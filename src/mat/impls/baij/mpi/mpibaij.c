@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.130 1998/06/19 15:55:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.131 1998/07/13 20:45:04 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1135,6 +1135,12 @@ int MatDestroy_MPIBAIJ(Mat mat)
   }
   if (mat->bmapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
+  }
+  if (mat->rmap) {
+    ierr = MapDestroy(mat->rmap);CHKERRQ(ierr);
+  }
+  if (mat->cmap) {
+    ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
   }
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",baij->M,baij->N);
