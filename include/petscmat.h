@@ -854,7 +854,8 @@ EXTERN int MatUseDXML_SeqAIJ(Mat);
 EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
 EXTERN int MatUseSpooles_MPIAIJ(Mat);
 EXTERN int MatUseSpooles_SeqSBAIJ(Mat); 
-extern int MatUseSpooles_MPISBAIJ(Mat);
+EXTERN int MatUseSpooles_MPISBAIJ(Mat);
+EXTERN int MatUseMUMPS_MPIAIJ(Mat);
 
 #endif
 

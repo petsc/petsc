@@ -630,7 +630,7 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   int          fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax,ierr;
   int          m = A->m,*ip,N,*ailen = a->ilen,shift = a->indexshift,rmax = 0;
   PetscScalar  *aa = a->a,*ap;
-#if defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_UMFPACK)
+#if defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_UMFPACK) || defined(PETSC_HAVE_MUMPS)
   PetscTruth   flag;
 #endif
 
@@ -693,6 +693,11 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   ierr = PetscOptionsHasName(A->prefix,"-mat_aij_umfpack",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseUMFPACK_SeqAIJ(A);CHKERRQ(ierr); }
 #endif 
+
+#if defined(PETSC_HAVE_MUMPS) 
+  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_mumps",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseMUMPS_MPIAIJ(A);CHKERRQ(ierr); }
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -2889,7 +2894,7 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
   Mat          B;
   int          i,nz,ierr,fd,header[4],size,*rowlengths = 0,M,N,shift;
   MPI_Comm     comm;
-#if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_UMFPACK) 
+#if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_UMFPACK) || defined(PETSC_HAVE_MUMPS)
   PetscTruth   flag;
 #endif
   
@@ -2952,6 +2957,10 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
 #if defined(PETSC_HAVE_UMFPACK)
   ierr = PetscOptionsHasName(B->prefix,"-mat_aij_umfpack",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseUMFPACK_SeqAIJ(B);CHKERRQ(ierr); }
+#endif 
+#if defined(PETSC_HAVE_MUMPS)
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_mumps",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseMUMPS_MPIAIJ(B);CHKERRQ(ierr); }
 #endif 
   PetscFunctionReturn(0);
 }
