@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.34 1997/01/01 03:42:52 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.35 1997/01/06 20:44:57 bsmith Exp balay $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -15,9 +15,11 @@ C
 #if defined(PARCH_t3d)
 #define Double real
 #define DBLE(a) real(a)
+#define _fortran_two_ -2.0
 #else
 #define Double double precision
 #define DBLE(a) dble(a)
+#define _fortran_two_ -2.0d0
 #endif
 C
 C     Flags
@@ -29,7 +31,7 @@ C
 
       parameter (PETSC_TRUE = 1, PETSC_FALSE = 0, PETSC_DECIDE = -1,
      *           PETSC_DEFAULT_INTEGER = -2,
-     *           PETSC_DEFAULT_DOUBLE_PRECISION = -2.0d0)
+     *           PETSC_DEFAULT_DOUBLE_PRECISION = _fortran_two_)
       parameter (PETSC_FP_TRAP_OFF = 0, PETSC_FP_TRAP_ON = 1) 
 
 C
