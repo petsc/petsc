@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.29 1999/05/06 17:59:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdate.c,v 1.30 1999/05/12 03:27:19 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -48,15 +48,16 @@ int PetscGetDate(char name[],int len)
 #if defined (PARCH_win32)
   time_t aclock;
   int    ierr;
-
-  PetscFunctionBegin;
-  time( &aclock);
-  ierr = PetscStrncpy(name,asctime(localtime(&aclock)),len);CHKERRQ(ierr);
 #else
   struct timeval tp;
   int            ierr;
+#endif
 
   PetscFunctionBegin;
+#if defined (PARCH_win32)
+  time( &aclock);
+  ierr = PetscStrncpy(name,asctime(localtime(&aclock)),len);CHKERRQ(ierr);
+#else
   gettimeofday( &tp, (struct timezone *)0 );
   ierr = PetscStrncpy(name,asctime(localtime((time_t *) &tp.tv_sec)),len);CHKERRQ(ierr);
 #endif
@@ -68,7 +69,7 @@ int PetscGetDate(char name[],int len)
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetInitialDate"
+#define __FUNC__ "PetscSetInitialDate"
 int PetscSetInitialDate(void)
 {
   PetscFunctionBegin;

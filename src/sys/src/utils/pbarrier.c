@@ -1,10 +1,12 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbarrier.c,v 1.4 1999/03/17 23:21:54 bsmith Exp balay $";
+static char vcid[] = "$Id: pbarrier.c,v 1.5 1999/05/04 20:29:32 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
+#undef __FUNC__  
+#define __FUNC__ "PetscBarrier"
 /*@C
     PetscBarrier - Blocks until this routine is executed by all
                    processors owning the object A.

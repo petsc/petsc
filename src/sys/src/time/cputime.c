@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.26 1999/05/04 20:29:29 balay Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.27 1999/05/12 03:27:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -7,18 +7,11 @@ static char vcid[] = "$Id: cputime.c,v 1.26 1999/05/04 20:29:29 balay Exp bsmith
   NOT real time usage.
 */
 
-#include "petsc.h"                     /*I "petsc.h" I*/
-#include "sys.h"
+#include "sys.h"                       /*I "petsc.h" I*/
 #include "pinclude/ptime.h"
-#if defined(PETSC_HAVE_PWD_H)
-#include <pwd.h>
-#endif
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -33,20 +26,18 @@ static char vcid[] = "$Id: cputime.c,v 1.26 1999/05/04 20:29:29 balay Exp bsmith
 #if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
-#include <fcntl.h>
 #include <time.h>  
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
 #include "pinclude/petscfix.h"
 
-#undef __FUNC__
-#define __FUNC__ "PetscGetCPUTime"
-
 #if defined (PARCH_solaris)
 
 #include <sys/times.h>
 #include <limits.h>
+#undef __FUNC__  
+#define __FUNC__ "PetscGetCPUTime"
 int PetscGetCPUTime(PLogDouble *t)
 {
   struct tms temp;
@@ -62,6 +53,8 @@ int PetscGetCPUTime(PLogDouble *t)
 #include <time.h>
 #include <sys/types.h>
 
+#undef __FUNC__  
+#define __FUNC__ "PetscGetCPUTime"
 int PetscGetCPUTime(PLogDouble *t)
 {
   PetscFunctionBegin;
@@ -75,6 +68,8 @@ int PetscGetCPUTime(PLogDouble *t)
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#undef __FUNC__  
+#define __FUNC__ "PetscGetCPUTime"
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
 
