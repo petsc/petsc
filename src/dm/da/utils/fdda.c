@@ -529,11 +529,9 @@ int DAGetMatrix(DA da,MatType mtype,Mat *J)
    specialized setting routines depend only the particular preallocation
    details of the matrix, not the type itself.
   */
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
+  if (!aij) {
     ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&aij);CHKERRQ(ierr);
   }
   if (aij) {
     if (dim == 1) {
