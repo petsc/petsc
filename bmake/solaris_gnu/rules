@@ -1,4 +1,4 @@
-# $Id: base,v 1.15 1998/04/28 18:05:08 balay Exp balay $ 
+# $Id: base,v 1.16 1998/05/14 19:44:38 balay Exp balay $ 
 
 PARCH    = solaris
 CC       = gcc -fPIC
@@ -28,14 +28,6 @@ libf: ${OBJSF}
 	ar crl ${LIBNAME} ${OBJSF}
 
 #############
-.F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-
-.F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o
-
 shared: chkopts_basic
 	-@ if [ "${BOPT}" != "Opg" ] && [ "${BOPT}" != "Opg_c++" ] \
 	&&  [ "${BOPT}" != "Opg_complex" ] ; then \

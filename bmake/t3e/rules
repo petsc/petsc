@@ -1,4 +1,4 @@
-# $Id: base,v 1.18 1998/04/26 01:00:56 balay Exp balay $ 
+# $Id: base,v 1.19 1998/05/05 15:30:06 balay Exp balay $ 
 
 #
 #   The PARCH flag below is the same for the Cray T3D and T3E, so DO NOT change
@@ -35,13 +35,4 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 	@-true
 
 #########
-
-.F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-
-.F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o
-
 shared:

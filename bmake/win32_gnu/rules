@@ -28,13 +28,4 @@ libf: ${OBJSF}
 	ar crl ${LIBNAME} ${OBJSF}
 
 #############
-
-.F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-
-.F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o
-
 shared:

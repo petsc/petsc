@@ -1,4 +1,4 @@
-# $Id: base,v 1.37 1998/04/26 00:59:43 balay Exp balay $ 
+# $Id: base,v 1.38 1998/05/05 15:30:12 balay Exp balay $ 
 
 PARCH    = t3d
 CC       = cc -h jump
@@ -31,14 +31,4 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 	@-true
 
 #########
-
-.F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-
-.F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o
-
-
 shared:

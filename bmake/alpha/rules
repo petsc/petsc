@@ -1,4 +1,4 @@
-# $Id: base,v 1.29 1998/04/25 23:33:55 balay Exp balay $ 
+# $Id: base,v 1.30 1998/04/25 23:34:10 balay Exp balay $ 
 
 PARCH    = alpha
 CC       = cc
@@ -26,16 +26,6 @@ libf: ${OBJSF}
 	ar crl ${LIBNAME} ${OBJSF}
 
 #######
-
-.F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-
-.F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o
-
-
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\
 	cd ${LDIR}; \

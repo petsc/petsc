@@ -1,4 +1,4 @@
-# $Id: base,v 1.39 1998/04/25 23:35:27 balay Exp balay $ 
+# $Id: base,v 1.40 1998/04/27 21:10:32 balay Exp balay $ 
 
 PARCH    = hpux
 #
@@ -62,15 +62,6 @@ libf:
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ##############
-
-.F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-
-.F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o
-
 SLSUFFIX = sl
 
 #shared: chkopts_basic

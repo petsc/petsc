@@ -1,4 +1,4 @@
-# $Id: base,v 1.40 1998/04/23 23:14:11 balay Exp balay $ 
+# $Id: base,v 1.41 1998/04/25 23:33:06 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -woff 1164 -woff 1048
@@ -32,15 +32,6 @@ libf:
 libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ###################
-
-.F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-
-.F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o
-
 shared: chkopts_basic
 	-@echo making shared libraries in ${LDIR} ;\
 	cd ${LDIR}; \

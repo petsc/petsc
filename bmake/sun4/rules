@@ -1,4 +1,4 @@
-# $Id: base,v 1.35 1998/04/23 23:14:11 balay Exp balay $ 
+# $Id: base,v 1.36 1998/04/25 23:42:51 balay Exp balay $ 
 
 #
 #
@@ -30,15 +30,6 @@ libadic: ${LIBNAME}(${OBJSADIC})
 libf: ${LIBNAME}(${OBJSF})
 
 #############
-
-.F.o:
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-
-.F.a: 
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} ${CPPFLAGS} $*.F
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o
-
 #
 #   These are alternative rules for Fortran compilers that 
 #   do not understand the .F suffix
