@@ -736,12 +736,12 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
   if (iascii) {
     if (ilu->usedt) {
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: drop tolerance %g\n",ilu->info.dt);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max nonzeros per row %d\n",(int)ilu->info.dtcount);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max nonzeros per row %D\n",(PetscInt)ilu->info.dtcount);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  ILU: column permutation tolerance %g\n",ilu->info.dtcol);CHKERRQ(ierr);
     } else if (ilu->info.levels == 1) {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %d level of fill\n",(int)ilu->info.levels);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %D level of fill\n",(PetscInt)ilu->info.levels);CHKERRQ(ierr);
     } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %d levels of fill\n",(int)ilu->info.levels);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  ILU: %D levels of fill\n",(PetscInt)ilu->info.levels);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: max fill ratio allocated %g\n",ilu->info.fill);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: tolerance for zero pivot %g\n",ilu->info.zeropivot);CHKERRQ(ierr);
@@ -760,7 +760,7 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," lvls=%d,order=%s",(int)ilu->info.levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," lvls=%D,order=%s",(PetscInt)ilu->info.levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCILU",((PetscObject)viewer)->type_name);
   }

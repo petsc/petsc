@@ -292,7 +292,7 @@ int main(int argc,char **args)
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
     /* printf("lf: %d, error: %g\n", lf,norm2); */
     if (10*norm1 < norm2 && lf-inc != -1){
-      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%d, %d, Norm of error=%g, %g\n",lf-inc,lf,norm1,norm2);CHKERRQ(ierr); 
+      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%D, %D, Norm of error=%g, %g\n",lf-inc,lf,norm1,norm2);CHKERRQ(ierr); 
     } 
     norm1 = norm2;
     if (norm2 < tol && lf != -1) break;

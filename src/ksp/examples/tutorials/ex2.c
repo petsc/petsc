@@ -29,14 +29,15 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         x,b,u;  /* approx solution, RHS, exact solution */
-  Mat         A;        /* linear system matrix */
-  KSP         ksp;     /* linear solver context */
-  PetscRandom rctx;     /* random number generator context */
-  PetscReal   norm;     /* norm of solution error */
-  int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
-  PetscTruth  flg;
-  PetscScalar v,one = 1.0,neg_one = -1.0;
+  Vec            x,b,u;  /* approx solution, RHS, exact solution */
+  Mat            A;        /* linear system matrix */
+  KSP            ksp;     /* linear solver context */
+  PetscRandom    rctx;     /* random number generator context */
+  PetscReal      norm;     /* norm of solution error */
+  PetscInt       i,j,I,J,Istart,Iend,m = 8,n = 7,its;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscScalar    v,one = 1.0,neg_one = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -209,7 +210,7 @@ int main(int argc,char **args)
      print statement from all processes that share a communicator.
      An alternative is PetscFPrintf(), which prints to a file.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %D\n",
                      norm,its);CHKERRQ(ierr);
 
   /*

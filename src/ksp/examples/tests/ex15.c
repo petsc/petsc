@@ -7,13 +7,14 @@ static char help[] = "KSP on an operator with a null space.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec          x,b,u;      /* approx solution, RHS, exact solution */
-  Mat          A;            /* linear system matrix */
-  KSP          ksp;         /* KSP context */
-  int          ierr,i,n = 10,col[3],its,i1,i2;
-  PetscScalar  none = -1.0,value[3],avalue;
-  PetscReal    norm;
-  PC           pc;
+  Vec            x,b,u;      /* approx solution, RHS, exact solution */
+  Mat            A;            /* linear system matrix */
+  KSP            ksp;         /* KSP context */
+  PetscErrorCode ierr;
+  PetscInt       i,n = 10,col[3],its,i1,i2;
+  PetscScalar    none = -1.0,value[3],avalue;
+  PetscReal      norm;
+  PC             pc;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
@@ -69,7 +70,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* Free work space */
   ierr = VecDestroy(x);CHKERRQ(ierr);ierr = VecDestroy(u);CHKERRQ(ierr);

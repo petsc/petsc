@@ -47,13 +47,14 @@ EXTERN_C_END
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         x,b,u;  /* approx solution, RHS, exact solution */
-  Mat         A;        /* linear system matrix */
-  KSP         ksp;     /* linear solver context */
-  PetscReal   norm;     /* norm of solution error */
-  int         i,j,I,J,Istart,Iend,ierr,m = 8,n = 7,its;
-  PetscScalar v,one = 1.0,neg_one = -1.0;
-  PC          pc;      /* preconditioner context */
+  Vec            x,b,u;  /* approx solution, RHS, exact solution */
+  Mat            A;        /* linear system matrix */
+  KSP            ksp;     /* linear solver context */
+  PetscReal      norm;     /* norm of solution error */
+  PetscInt       i,j,I,J,Istart,Iend,m = 8,n = 7,its;
+  PetscErrorCode ierr;
+  PetscScalar    v,one = 1.0,neg_one = -1.0;
+  PC             pc;      /* preconditioner context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -186,7 +187,7 @@ int main(int argc,char **args)
      Print convergence information.  PetscPrintf() produces a single 
      print statement from all processes that share a communicator.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

@@ -19,9 +19,9 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d m %d w %d s %d\n",rank,da->M,
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,da->M,
                  da->m,da->w,da->s);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %d %d\n",da->xs,da->xe);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",da->xs,da->xe);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     PetscDraw       draw;
@@ -64,7 +64,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
     /* Put in index numbers */
     base = da->base / da->w;
     for (x=xmin; x<=xmax; x++) {
-      sprintf(node,"%d",base++);
+      sprintf(node,"%d",(int)base++);
       ierr = PetscDrawString(draw,x,ymin,PETSC_DRAW_RED,node);CHKERRQ(ierr);
     }
 
@@ -138,8 +138,8 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %d",dof);
-  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
+  if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
+  if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
 
   ierr = PetscOptionsBegin(comm,PETSC_NULL,"1d DA Options","DA");CHKERRQ(ierr);
     if (M < 0) {
@@ -169,8 +169,8 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,
 
   m = size;
 
-  if (M < m)     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"More processors than data points! %d %d",m,M);
-  if ((M-1) < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %d %d",M-1,s);
+  if (M < m)     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"More processors than data points! %D %D",m,M);
+  if ((M-1) < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Array is too small for stencil! %D %D",M-1,s);
 
   /* 
      Determine locally owned region 
@@ -204,7 +204,7 @@ PetscErrorCode DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,
       left += lc[i];
     }
     if (left != M) {
-      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of lc across processors not equal to M %d %d",left,M);
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of lc across processors not equal to M %D %D",left,M);
     }
   }
 

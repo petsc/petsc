@@ -33,9 +33,9 @@ int main(int argc,char **argv)
 
   ierr = AOPetscToApplication(ao,4,getapp);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,3,getpetsc);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,3,4 PetscToApplication %d %d %d %d\n",
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,3,4 PetscToApplication %D %D %D %D\n",
           rank,getapp[0],getapp[1],getapp[2],getapp[3]);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %d %d %d\n",
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %D %D %D\n",
           rank,getpetsc[0],getpetsc[1],getpetsc[2]);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 

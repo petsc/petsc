@@ -147,12 +147,12 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
   SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,(PetscReal)info->dt,&permtol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&sierr); 
   if (sierr) {
     switch (sierr) {
-      case -3: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix U overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
-      case -2: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix L overflows, need larger info->fill current fill %g space allocated %d",info->fill,jmax);
+      case -3: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix U overflows, need larger info->fill current fill %g space allocated %D",info->fill,jmax);
+      case -2: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix L overflows, need larger info->fill current fill %g space allocated %D",info->fill,jmax);
       case -5: SETERRQ(PETSC_ERR_LIB,"ilutp(), zero row encountered");
       case -1: SETERRQ(PETSC_ERR_LIB,"ilutp(), input matrix may be wrong");
-      case -4: SETERRQ1(PETSC_ERR_LIB,"ilutp(), illegal info->fill value %d",jmax);
-      default: SETERRQ1(PETSC_ERR_LIB,"ilutp(), zero pivot detected on row %d",sierr);
+      case -4: SETERRQ1(PETSC_ERR_LIB,"ilutp(), illegal info->fill value %D",jmax);
+      default: SETERRQ1(PETSC_ERR_LIB,"ilutp(), zero pivot detected on row %D",sierr);
     }
   }
 
@@ -365,7 +365,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   }
   if (ai[n] != 0) {
     PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
-    PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
     PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Run with -pc_lu_fill %g or use \n",af);
     PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:PCLUSetFill(pc,%g);\n",af);
     PetscLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:for best performance.\n");
@@ -536,7 +536,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
           ndamp++;
           break;
         } else {
-          SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %d value %g tolerance %g * rs %g",i,PetscAbsScalar(pv[diag]),zeropivot,rs);
+          SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",i,PetscAbsScalar(pv[diag]),zeropivot,rs);
         }
       }
     }
@@ -566,11 +566,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   C->assembled = PETSC_TRUE;
   PetscLogFlops(C->n);
   if (ndamp) {
-    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of damping tries %d damping value %g\n",ndamp,damping);
+    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of damping tries %D damping value %g\n",ndamp,damping);
   }
   if (nshift) {
     b->lu_shift_fraction = shift_fraction;
-    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %d\n",shift_fraction,shift_top,nshift);
+    PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %D\n",shift_fraction,shift_top,nshift);
   }
   PetscFunctionReturn(0);
 }
@@ -1035,7 +1035,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
     }
     /* make sure row has diagonal entry */
     if (ajnew[ainew[prow]+dloc[prow]] != prow) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %d has missing diagonal in factored matrix\n\
+      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Row %D has missing diagonal in factored matrix\n\
     try running with -pc_ilu_nonzeros_along_diagonal or -pc_ilu_diagonal_fill",prow);
     }
   }
@@ -1047,12 +1047,12 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 
   {
     PetscReal af = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
-    PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+    PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Reallocs %D Fill ratio:given %g needed %g\n",realloc,f,af);
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Run with -[sub_]pc_ilu_fill %g or use \n",af);
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:PCILUSetFill([sub]pc,%g);\n",af);
     PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
     if (diagonal_fill) {
-      PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Detected and replaced %d missing diagonals",dcount);
+      PetscLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Detected and replaced %D missing diagonals",dcount);
     }
   }
 
@@ -1099,7 +1099,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   PetscFunctionReturn(0); 
 }
 
-#include "src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
@@ -1111,11 +1110,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
   if (!a->sbaijMat){
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
   } 
-  
-  ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(a->sbaijMat,fact);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(a->sbaijMat,fact);CHKERRQ(ierr);
   ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
   a->sbaijMat = PETSC_NULL; 
-  
   PetscFunctionReturn(0); 
 }
 

@@ -1539,7 +1539,6 @@ PetscErrorCode MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
         for (krow=0; krow<bs; krow++){         
           atmp = PetscAbsScalar(*aa); aa++;         
           row = brow + krow;    /* row index */
-          /* printf("val[%d,%d]: %g\n",row,col,atmp); */
           if (PetscRealPart(x[row]) < atmp) x[row] = atmp;
           if (*aj > i && PetscRealPart(x[col]) < atmp) x[col] = atmp;
         }

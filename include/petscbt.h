@@ -48,11 +48,11 @@ extern PetscInt  _BT_idx;
 #define PetscBTDestroy(array)   PetscFree(array)
 
 #define PetscBTView(m,bt,viewer) 0; {\
-  int    __i,_8_ierr; \
+  PetscInt    __i; PetscErrorCode_8_ierr; \
   PetscViewer __viewer = viewer; \
   if (!__viewer) __viewer = PETSC_VIEWER_STDOUT_SELF;\
   for (__i=0; __i<m; __i++) { \
-    _8_ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%d %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(_8_ierr);\
+    _8_ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%D %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(_8_ierr);\
   }}
 
 #define PetscBTCreate(m,array)  \

@@ -37,7 +37,7 @@ PetscErrorCode MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 
   ierr = MatGetSize(X,&m1,&n1);CHKERRQ(ierr);
   ierr = MatGetSize(Y,&m2,&n2);CHKERRQ(ierr);
-  if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %d %d %d %d",(int)m1,(int)m2,(int)n1,(int)n2);
+  if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %D %D %D %D",m1,m2,n1,n2);
 
   if (X->ops->axpy) {
     ierr = (*X->ops->axpy)(a,X,Y,str);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ PetscErrorCode MatDiagonalSet(Mat Y,Vec D,InsertMode is)
     ierr = VecGetOwnershipRange(D,&vstart,&vend);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
     if (vstart != start || vend != end) {
-      SETERRQ4(PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %d %d vec %d %d mat",(int)vstart,(int)vend,(int)start,(int)end);
+      SETERRQ4(PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %D %D vec %D %D mat",vstart,vend,start,end);
     }
     ierr = VecGetArray(D,&v);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
@@ -208,7 +208,7 @@ PetscErrorCode MatAYPX(const PetscScalar *a,Mat X,Mat Y)
 
   ierr = MatGetSize(X,&mX,&nX);CHKERRQ(ierr);
   ierr = MatGetSize(X,&mY,&nY);CHKERRQ(ierr);
-  if (mX != mY || nX != nY) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrices: %d %d first %d %d second",(int)mX,(int)mY,(int)nX,(int)nY);
+  if (mX != mY || nX != nY) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrices: %D %D first %D %D second",mX,mY,nX,nY);
 
   ierr = MatScale(a,Y);CHKERRQ(ierr);
   ierr = MatAXPY(&one,X,Y,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -268,7 +268,9 @@ PetscErrorCode MatComputeExplicitOperator(Mat inmat,Mat *mat)
   ierr = MatCreate(comm,m,m,M,M,mat);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(*mat,MATSEQDENSE);CHKERRQ(ierr);
+#if !defined(PETSC_USE_64BIT_INT)
     ierr = MatSeqDenseSetPreallocation(*mat,PETSC_NULL);CHKERRQ(ierr);
+#endif
   } else {
     ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(*mat,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
@@ -326,7 +328,7 @@ PetscErrorCode MatAXPYGetxtoy_Private(PetscInt m,PetscInt *xi,PetscInt *xj,Petsc
           ycol = yj[*yi + jy]; 
         }
       }
-      if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",(int)row,(int)ycol);
+      if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%D,%D) is not in Y matrix",row,ycol);
       x2y[i++] = *yi + jy;
     }
     xi++; yi++;

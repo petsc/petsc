@@ -35,7 +35,7 @@ int main(int argc,char **argv)
                     PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
   for (i=0; i<dof; i++) {
-    sprintf(fname,"Field %d",i);
+    sprintf(fname,"Field %d",(int)i);
     ierr = DASetFieldName(da,i,fname);CHKERRQ(ierr);
   }
 

@@ -28,7 +28,7 @@ int main(int argc,char **args)
   PetscViewer           fd;               /* viewer */
   char                  file[2][PETSC_MAX_PATH_LEN];     /* input file name */
   IS                    isrow,iscol;      /* row and column permutations */
-  int                   ierr;
+  PetscErrorCode        ierr;
   const MatOrderingType rtype = MATORDERING_RCM;
   PetscTruth            flg,PreLoad = PETSC_FALSE;
 

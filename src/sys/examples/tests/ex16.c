@@ -9,9 +9,10 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        ierr,rank;
-  char       buffer[256],*output,user[256];
-  PetscTruth userhappy = PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank;
+  char           buffer[256],*output,user[256];
+  PetscTruth     userhappy = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,0);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);

@@ -29,21 +29,22 @@ extern int FormElementRhs(PetscReal,PetscReal,PetscReal,PetscScalar*);
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Vec         u,b,ustar; /* approx solution, RHS, exact solution */
-  Mat         A;           /* linear system matrix */
-  KSP         ksp;         /* Krylov subspace method context */
-  IS          is;          /* index set - used for boundary conditions */
-  int         N;           /* dimension of system (global) */
-  int         M;           /* number of elements (global) */
-  int         rank;        /* processor rank */
-  int         size;        /* size of communicator */
-  PetscScalar Ke[16];      /* element matrix */
-  PetscScalar r[4];        /* element vector */
-  PetscReal   h;           /* mesh width */
-  PetscReal   norm;        /* norm of solution error */
-  PetscReal   x,y;
-  PetscScalar val,zero = 0.0,one = 1.0,none = -1.0;
-  int         ierr,idx[4],count,*rows,i,m = 5,start,end,its;
+  Vec            u,b,ustar; /* approx solution, RHS, exact solution */
+  Mat            A;           /* linear system matrix */
+  KSP            ksp;         /* Krylov subspace method context */
+  IS             is;          /* index set - used for boundary conditions */
+  PetscInt       N;           /* dimension of system (global) */
+  PetscInt       M;           /* number of elements (global) */
+  PetscMPIInt    rank;        /* processor rank */
+  PetscMPIInt    size;        /* size of communicator */
+  PetscScalar    Ke[16];      /* element matrix */
+  PetscScalar    r[4];        /* element vector */
+  PetscReal      h;           /* mesh width */
+  PetscReal      norm;        /* norm of solution error */
+  PetscReal      x,y;
+  PetscScalar    val,zero = 0.0,one = 1.0,none = -1.0;
+  PetscErrorCode ierr;
+  PetscInt       idx[4],count,*rows,i,m = 5,start,end,its;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -172,7 +173,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,ustar,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %D\n",norm*h,its);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

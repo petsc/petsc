@@ -7,15 +7,15 @@ static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat          mat,fact;
-  MatInfo      info;
+  Mat            mat,fact;
+  MatInfo        info;
   PetscErrorCode ierr;
-  int          m = 10,n = 10,i = 4,rstart,rend;
-  PetscScalar  value = 1.0;
-  Vec          x,y,b;
-  PetscReal    norm;
-  IS           perm;
-  MatFactorInfo luinfo,factinfo;
+  PetscInt       m = 10,n = 10,i = 4,rstart,rend;
+  PetscScalar    value = 1.0;
+  Vec            x,y,b;
+  PetscReal      norm;
+  IS             perm;
+  MatFactorInfo  luinfo,factinfo;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
 
@@ -40,8 +40,8 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %d, allocated nonzeros = %d\n",
-    (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %D, allocated nonzeros = %D\n",
+    (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
   /* Cholesky factorization is not yet in place for this matrix format */
   factinfo.fill = 1.0;

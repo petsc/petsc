@@ -125,7 +125,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
   } else {
     for (i=0; i<n; i++) {
       if (format == PETSC_VIEWER_ASCII_INDEX) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%d: ",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%D: ",i);CHKERRQ(ierr);
       }
 #if defined(PETSC_USE_COMPLEX)
       if (PetscImaginaryPart(x->array[i]) > 0.0) {
@@ -232,9 +232,9 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file && xin->bs > 1) {
     if (xin->prefix) {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%s_vecload_block_size %d\n",xin->prefix,xin->bs);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%s_vecload_block_size %D\n",xin->prefix,xin->bs);CHKERRQ(ierr);
     } else {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %d\n",xin->bs);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->bs);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -364,7 +364,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",ix[i],xin->n);
+      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->n);
 #endif
       xx[ix[i]] = y[i];
     }
@@ -372,7 +372,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (ix[i] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",ix[i],xin->n);
+      if (ix[i] >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->n);
 #endif
       xx[ix[i]] += y[i];
     }  
@@ -397,7 +397,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",start,xin->n);
+      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] = y[j];
@@ -409,7 +409,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_BOPT_g)
-      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %d maximum %d",start,xin->n);
+      if (start >= xin->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] += y[j];
@@ -434,7 +434,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
   ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v,"Length=%d",v->n);
+  PetscLogObjectState((PetscObject)v,"Length=%D",v->n);
 #endif
   if (vs->array_allocated) {ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);}
   ierr = PetscFree(vs);CHKERRQ(ierr);

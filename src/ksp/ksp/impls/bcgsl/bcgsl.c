@@ -89,7 +89,6 @@ static int  KSPSolve_BCGSL(KSP ksp)
     ierr = PetscMalloc(ldMZ*sizeof(PetscScalar), &AYtc);CHKERRQ(ierr);
     ierr = PetscMalloc(ldMZ*ldMZ*sizeof(PetscScalar), &MZa);CHKERRQ(ierr);
     ierr = PetscMalloc(ldMZ*ldMZ*sizeof(PetscScalar), &MZb);CHKERRQ(ierr);
-    ierr = PetscMalloc(ldMZ*ldMZ*sizeof(PetscScalar), &MZb);CHKERRQ(ierr);
   }
 
   /* Prime the iterative solver */
@@ -491,8 +490,8 @@ EXTERN_C_END
 #define __FUNCT__ "KSPView_BCGSL"
 int KSPView_BCGSL(KSP ksp, PetscViewer viewer)
 {
-  KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *)ksp->data;
-  int        ierr;
+  KSP_BiCGStabL       *bcgsl = (KSP_BiCGStabL *)ksp->data;
+  PetscErrorCode      ierr;
   PetscTruth isascii, isstring;
 
   PetscFunctionBegin;
@@ -502,7 +501,7 @@ int KSPView_BCGSL(KSP ksp, PetscViewer viewer)
   ierr = PetscTypeCompare( (PetscObject)viewer, PETSC_VIEWER_STRING, &isstring);CHKERRQ(ierr);
 
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf( viewer, "  BCGSL: Ell = %d\n", bcgsl->ell);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf( viewer, "  BCGSL: Ell = %D\n", bcgsl->ell);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf( viewer, "  BCGSL: Delta = %lg\n", bcgsl->delta);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for KSP BCGSL", ((PetscObject)viewer)->type_name);

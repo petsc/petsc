@@ -413,9 +413,9 @@ static PetscErrorCode PetscDrawStringVertical_Win32(PetscDraw draw,double x,doub
   
   PetscFunctionBegin;
   x1           = XTRANS(draw,windraw,x);
-  y1           = XTRANS(draw,windraw,y);
-  r.bottom     = x1;
-  r.left       = y1 + 30;
+  y1           = YTRANS(draw,windraw,y);
+  r.left       = x1;
+  r.bottom     = y1 + 30;
   r.right      = x1 + 1;
   r.top        = y1 - 30;
   logfont.lfEscapement     = 2700; /* Causes verticle text drawing */
@@ -468,10 +468,12 @@ static PetscErrorCode PetscDrawStringSetSize_Win32(PetscDraw draw,double width,d
 static PetscErrorCode PetscDrawStringGetSize_Win32(PetscDraw draw,double *width,double *height)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
+  double scaleX = (draw->coor_xr - draw->coor_xl)/(draw->w)*(draw->port_xr - draw->port_xl);
+  double scaleY = (draw->coor_yr - draw->coor_yl)/(draw->h)*(draw->port_yr - draw->port_yl);
   
   PetscFunctionBegin;
-  *height = (double)windraw->stringheight;
-  *width  = (double)windraw->stringwidth;
+  *height = (double)windraw->stringheight*scaleY;
+  *width  = (double)windraw->stringwidth*scaleX;
   PetscFunctionReturn(0);
 }
 

@@ -89,9 +89,9 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   PetscScalar fval[7], tab[7][7], eps[7], f;
   double      rerrf, fder2;
   PetscErrorCode ierr;
-  int         iter, k, i, j,  info;
-  int         nf = 7;         /* number of function evaluations */
-  int         fcount;
+  PetscInt         iter, k, i, j,  info;
+  PetscInt         nf = 7;         /* number of function evaluations */
+  PetscInt         fcount;
   MPI_Comm    comm = snes->comm;
   FILE        *fp;
   PetscTruth  noise_test;
@@ -115,7 +115,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
 
   /* We have 5 tries to attempt to compute a good hopt value */
   ierr = SNESGetIterationNumber(snes,&i);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fp,"\n ------- SNES iteration %d ---------\n",i);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fp,"\n ------- SNES iteration %D ---------\n",i);CHKERRQ(ierr);
   for (iter=0; iter<5; iter++) {
     neP->h_first_try = h;
 
@@ -141,7 +141,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
     }
 
     /* Print the difference table */
-    ierr = PetscFPrintf(comm,fp,"Difference Table: iter = %d\n",iter);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm,fp,"Difference Table: iter = %D\n",iter);CHKERRQ(ierr);
     for (i=0; i<nf; i++) {
       for (j=0; j<nf-i; j++) {
         ierr = PetscFPrintf(comm,fp," %10.2e ",tab[i][j]);CHKERRQ(ierr);
@@ -212,7 +212,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   }
   */
   fcount = neP->function_count - fcount;
-  PetscLogInfo(snes,"DiffParameterCompute_More: fct_now = %d, fct_cum = %d, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",
+  PetscLogInfo(snes,"DiffParameterCompute_More: fct_now = %D, fct_cum = %D, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",
            fcount,neP->function_count,rerrf,sqrt(*fnoise),*hopt);
 
 
@@ -280,7 +280,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
 
     /* View product vector if desired */
     if (printv) {
-      sprintf(filename,"y2.%d.out",i);
+      sprintf(filename,"y2.%d.out",(int)i);
       ierr = PetscViewerASCIIOpen(comm,filename,&view2);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
       ierr = VecView(yy2,view2);CHKERRQ(ierr);
@@ -299,15 +299,15 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
 
 static int lin_its_total = 0;
 
-PetscErrorCode MyMonitor(SNES snes,int its,double fnorm,void *dummy)
+PetscErrorCode MyMonitor(SNES snes,PetscInt its,double fnorm,void *dummy)
 {
   PetscErrorCode ierr;
-  int  lin_its;
+  PetscInt       lin_its;
 
   PetscFunctionBegin;
   ierr = SNESGetNumberLinearIterations(snes,&lin_its);CHKERRQ(ierr);
   lin_its_total += lin_its;
-  ierr = PetscPrintf(snes->comm, "iter = %d, SNES Function norm = %g, lin_its = %d, total_lin_its = %d\n",its,fnorm,lin_its,lin_its_total);CHKERRQ(ierr);
+  ierr = PetscPrintf(snes->comm, "iter = %D, SNES Function norm = %g, lin_its = %D, total_lin_its = %D\n",its,fnorm,lin_its,lin_its_total);CHKERRQ(ierr);
 
   ierr = SNESUnSetMatrixFreeParameter(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);

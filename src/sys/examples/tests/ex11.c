@@ -7,7 +7,8 @@ static char help[] = "Tests PetscSynchronizedPrintf() and PetscSynchronizedFPrin
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int rank,ierr;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

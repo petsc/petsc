@@ -63,7 +63,7 @@ int main(int argc,char **args)
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) { 
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%D, flg =%D\n",rank,i,flg);CHKERRQ(ierr);
   }
 
   /* Free allocated memory */

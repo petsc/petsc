@@ -734,13 +734,13 @@ PetscErrorCode MatSNESMFKSPMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
 
   if (n > 0 || nonzeroinitialguess) {
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
+    ierr = PetscPrintf(comm,"%D KSP Residual norm %14.12e h %g + %g i\n",n,rnorm,
                 PetscRealPart(ctx->currenth),PetscImaginaryPart(ctx->currenth));CHKERRQ(ierr);
 #else
-    ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e h %g \n",n,rnorm,ctx->currenth);CHKERRQ(ierr); 
+    ierr = PetscPrintf(comm,"%D KSP Residual norm %14.12e h %g \n",n,rnorm,ctx->currenth);CHKERRQ(ierr); 
 #endif
   } else {
-    ierr = PetscPrintf(comm,"%d KSP Residual norm %14.12e\n",n,rnorm);CHKERRQ(ierr); 
+    ierr = PetscPrintf(comm,"%D KSP Residual norm %14.12e\n",n,rnorm);CHKERRQ(ierr); 
   }
   PetscFunctionReturn(0);
 }

@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
-    #self.mpi          = self.framework.require('PETSc.packages.MPI',self)
+    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.found        = 0
     self.lib          = []
     self.include      = []
@@ -55,11 +55,10 @@ class Configure(config.base.Configure):
 
   def checkInclude(self,incl,hfile):
     if not isinstance(incl,list): incl = [incl]
+    incl.extend(self.mpi.include)
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
-      #if not self.mpi.include is None:
-      #  mpiincl = ' -I' + ' -I'.join(self.mpi.include)
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc #+mpiincl
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
@@ -82,36 +81,36 @@ class Configure(config.base.Configure):
       else:
         self.framework.log.write('Must specify either a library or installation root directory for '+PACKAGE+'\n')
         
-  def checkLib(self,lib,libfile):
+  def checkLib(self,lib,func):
+    '''We may need the MPI libraries here'''
     if not isinstance(lib,list): lib = [lib]
     oldLibs = self.framework.argDB['LIBS']  
-    #found = self.libraries.check(lib,libfile,otherLibs=' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
-    found = self.libraries.check(lib,libfile);
-    self.framework.argDB['LIBS']=oldLibs  
+    found   = self.libraries.check(lib,func)
+    self.framework.argDB['LIBS'] = oldLibs
     if found:
-      self.framework.log.write('Found functional '+libfile+' in '+lib[0]+'\n')
+      self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')
     return found
   
   def configureLibrary(self):
     '''Find an installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
-    found      = 0
-    foundh     = 0
+    self.framework.log.write('Checking for a functional '+self.name+'\n')
+    foundLibrary = 0
+    foundHeader  = 0
     for (configstr,lib) in self.generateLibGuesses():
-      self.framework.log.write('Checking for a functional '+self.name+' in '+configstr+'\n')
-      found = self.executeTest(self.checkLib,[lib,'dallocateA_dist'])  
-      if found:
+      self.framework.log.write('Checking for library '+configstr+': '+lib+'\n')
+      foundLibrary = self.executeTest(self.checkLib,[lib, 'dallocateA_dist'])  
+      if foundLibrary:
         self.lib = [lib]
         break
-    if found:
-      for (inclstr,incl) in self.generateIncludeGuesses():
-        self.framework.log.write('Checking for headers '+inclstr+': '+incl+'\n')
-        foundh = self.executeTest(self.checkInclude,[incl,'superlu_ddefs.h'])
-        if foundh:
-          self.include = [incl]
-          self.found   = 1
-          self.setFoundOutput()
-          break
+    for (inclstr,incl) in self.generateIncludeGuesses():
+      self.framework.log.write('Checking for headers '+inclstr+': '+incl+'\n')
+      foundHeader = self.executeTest(self.checkInclude,[incl,'superlu_ddefs.h'])
+      if foundHeader:
+        self.include = [incl]
+        break
+    if foundLibrary and foundHeader:
+      self.setFoundOutput()
     else:
       self.framework.log.write('Could not find a functional '+self.name+'\n')
       self.setEmptyOutput()
@@ -134,7 +133,7 @@ class Configure(config.base.Configure):
 
   def configure(self):
     package = self.name.lower()
-    if not 'with-'+package in self.framework.argDB or self.framework.argDB['with-64-bit-int']:
+    if not 'with-'+package in self.framework.argDB or not self.mpi.foundMPI or self.framework.argDB['with-64-bit-int']:
       self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)

@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   ierr = DACreate1d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,M,dof,s,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,0.0,0.0,0.0);CHKERRQ(ierr);
   for (i=0; i<dof; i++) {
-    sprintf(fname,"Field %d",i);
+    sprintf(fname,"Field %d",(int)i);
     ierr = DASetFieldName(da,i,fname);
   }
 

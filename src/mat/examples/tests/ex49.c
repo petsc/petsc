@@ -45,8 +45,8 @@ int main(int argc,char **argv)
 
   /* Print info about original matrix */
   ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %d, allocated nonzeros = %d\n",
-                    (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix nonzeros = %D, allocated nonzeros = %D\n",
+                    (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRQ(ierr);
@@ -60,9 +60,9 @@ int main(int argc,char **argv)
   }
   if (isbdiag) {
     ierr = MatBDiagGetData(mat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix: block diag format: %d diagonals, block size = %d\n",nd,bs);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix: block diag format: %D diagonals, block size = %D\n",nd,bs);CHKERRQ(ierr);
     for (i=0; i<nd; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%d, bdlength=%d\n",diag[i],bdlen[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%D, bdlength=%D\n",diag[i],bdlen[i]);CHKERRQ(ierr);
     }
   }
 
@@ -77,8 +77,8 @@ int main(int argc,char **argv)
 
   /* Print info about transpose matrix */
   ierr = MatGetInfo(tmat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix nonzeros = %d, allocated nonzeros = %d\n",
-                     (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix nonzeros = %D, allocated nonzeros = %D\n",
+                     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   ierr = MatNorm(tmat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
   ierr = MatNorm(tmat,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(tmat,NORM_INFINITY,&normi);CHKERRQ(ierr);
@@ -88,9 +88,9 @@ int main(int argc,char **argv)
 
   if (isbdiag) {
     ierr = MatBDiagGetData(tmat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix: block diag format: %d diagonals, block size = %d\n",nd,bs);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix: block diag format: %D diagonals, block size = %D\n",nd,bs);CHKERRQ(ierr);
     for (i=0; i<nd; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%d, bdlength=%d\n",diag[i],bdlen[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%D, bdlength=%D\n",diag[i],bdlen[i]);CHKERRQ(ierr);
     }
   }
 

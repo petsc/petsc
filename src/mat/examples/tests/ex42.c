@@ -82,7 +82,7 @@ int main(int argc,char **args)
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) { 
     ierr = MatEqual(submatA[i],submatB[i],&flg);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%D, flg =%d\n",rank,i,(int)flg);CHKERRQ(ierr);
   }
 
   /* Free Allocated Memory */

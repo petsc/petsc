@@ -26,15 +26,16 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  KSP          ksp;             /* linear solver context */
-  Mat          C;                /* matrix */
-  Vec          x,u,b;          /* approx solution, RHS, exact solution */
-  PetscReal    norm;             /* norm of solution error */
-  PetscScalar  v,none = -1.0;
-  int          I,J,ldim,ierr,low,high,iglobal,Istart,Iend;
-  int          i,j,m = 3,n = 2,rank,size,its;
-  PetscTruth   mat_nonsymmetric;
-  int          stages[2];
+  KSP            ksp;             /* linear solver context */
+  Mat            C;                /* matrix */
+  Vec            x,u,b;          /* approx solution, RHS, exact solution */
+  PetscReal      norm;             /* norm of solution error */
+  PetscScalar    v,none = -1.0;
+  PetscInt       I,J,ldim,low,high,iglobal,Istart,Iend;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m = 3,n = 2,rank,size,its;
+  PetscTruth     mat_nonsymmetric;
+  PetscInt       stages[2];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -195,7 +196,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
   /* 
@@ -280,7 +281,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,u,x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

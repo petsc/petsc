@@ -37,39 +37,39 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = MPI_Reduce(&itmp,&alldata,1,MPIU_INT,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 
       ierr = PetscViewerASCIIPrintf(viewer,"VecScatter statistics\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number sends %d\n",nsend_max);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number receives %d\n",nrecv_max);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data sent %d\n",(int)(lensend_max*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data received %d\n",(int)(lenrecv_max*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %d\n",(int)(alldata*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number sends %D\n",nsend_max);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number receives %D\n",nrecv_max);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data sent %D\n",(int)(lensend_max*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data received %D\n",(int)(lenrecv_max*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %D\n",(int)(alldata*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
 
     } else { 
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %d; Number to self = %d\n",rank,to->n,to->local.n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %D; Number to self = %D\n",rank,to->n,to->local.n);CHKERRQ(ierr);
       if (to->n) {
         for (i=0; i<to->n; i++){
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]   %d length = %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]   %D length = %D to whom %D\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote sends (in order by process sent to)\n");CHKERRQ(ierr);
         for (i=0; i<to->starts[to->n]; i++){
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]%d \n",rank,to->indices[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]%D \n",rank,to->indices[i]);CHKERRQ(ierr);
         }
       }
 
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Number receives = %d; Number from self = %d\n",rank,from->n,from->local.n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Number receives = %D; Number from self = %D\n",rank,from->n,from->local.n);CHKERRQ(ierr);
       if (from->n) {
 	for (i=0; i<from->n; i++){
-	  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %d length %d from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
+	  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D length %D from whom %D\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);CHKERRQ(ierr);
 	}
 
 	ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Now the indices for all remote receives (in order by process received from)\n");CHKERRQ(ierr);
 	for (i=0; i<from->starts[from->n]; i++){
-	  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]%d \n",rank,from->indices[i]);CHKERRQ(ierr);
+	  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]%D \n",rank,from->indices[i]);CHKERRQ(ierr);
 	}
       }
       if (to->local.n) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Indices for local part of scatter\n",rank);CHKERRQ(ierr);
         for (i=0; i<to->local.n; i++){
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]From %d to %d \n",rank,from->local.slots[i],to->local.slots[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]From %D to %D \n",rank,from->local.slots[i],to->local.slots[i]);CHKERRQ(ierr);
         }
       }
 
@@ -103,7 +103,7 @@ PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,Ve
   if (!n_nonmatching) {
     gen_to->nonmatching_computed = PETSC_TRUE;
     gen_to->n_nonmatching        = gen_from->n_nonmatching = 0;
-    PetscLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %d to 0\n", n);
+    PetscLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %D to 0\n", n);
   } else if (n_nonmatching == n) {
     gen_to->nonmatching_computed = PETSC_FALSE;
     PetscLogInfo(0,"VecScatterLocalOptimize_Private:All values non-matching\n");
@@ -121,7 +121,7 @@ PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,Ve
         j++;
       }
     }
-    PetscLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %d to %d\n",n,n_nonmatching);
+    PetscLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %D to %D\n",n,n_nonmatching);
   } 
   PetscFunctionReturn(0);
 }
@@ -1955,7 +1955,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
         nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
-    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %d out of range",idx);
+    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
   }
   nprocslocal    = nprocs[2*rank]; 
   nprocs[2*rank] = nprocs[2*rank+1] = 0; 
@@ -2202,7 +2202,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
                            comm,rev_rwaits+i);CHKERRQ(ierr);
     } 
 
-    PetscLogInfo(0,"VecScatterCreate_PtoS:Using blocksize %d scatter\n",bs);
+    PetscLogInfo(0,"VecScatterCreate_PtoS:Using blocksize %D scatter\n",bs);
     switch (bs) {
     case 12: 
       ctx->begin     = VecScatterBegin_PtoP_12;
@@ -2279,7 +2279,7 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
         nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
-    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %d out of range",idx);
+    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
   }
   nprocslocal    = nprocs[2*rank];
   nprocs[2*rank] = nprocs[2*rank+1] = 0; 
@@ -2502,7 +2502,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
         nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
-    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %d out of range",idx);
+    if (!found) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range",idx);
   }
   nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];} 
 
@@ -2612,7 +2612,6 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
         }
         slen--;
         count--;
-        /* printf("found dup %d %d\n",local_inidx[i],local_inidy[i]);*/
       }
     }
     start = count;

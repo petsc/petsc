@@ -29,13 +29,20 @@
    in the bmake/common_variables definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
+
+/*
+   Currently cannot check formatting for PETSc print statements because we have our
+   own format %D
+*/
+#undef  PETSC_PRINTF_FORMAT_CHECK
+#define PETSC_PRINTF_FORMAT_CHECK(a,b)
+#undef  PETSC_FPRINTF_FORMAT_CHECK
+#define PETSC_FPRINTF_FORMAT_CHECK(a,b)
+
 /*
    Fixes for configure time choices which impact our interface. Currently only
    calling conventions and extra compiler checking falls under this category.
 */
-#if !defined(PETSC_PRINTF_FORMAT_CHECK)
-#define PETSC_PRINTF_FORMAT_CHECK(a,b)
-#endif
 #if !defined (PETSC_STDCALL)
 #define PETSC_STDCALL
 #endif
@@ -64,10 +71,6 @@ typedef int PetscMPIInt;
 #if defined(PETSC_USE_64BIT_INT)
 typedef long long PetscInt;
 #define MPIU_INT MPI_LONG_LONG_INT
-#undef  PETSC_PRINTF_FORMAT_CHECK
-#define PETSC_PRINTF_FORMAT_CHECK(a,b)
-#undef  PETSC_FPRINTF_FORMAT_CHECK
-#define PETSC_FPRINTF_FORMAT_CHECK(a,b)
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
@@ -484,8 +487,8 @@ EXTERN PetscErrorCode PetscObjectGetName(PetscObject,char*[]);
 EXTERN PetscErrorCode PetscObjectReference(PetscObject);
 EXTERN PetscErrorCode PetscObjectGetReference(PetscObject,int*);
 EXTERN PetscErrorCode PetscObjectDereference(PetscObject);
-EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject,int *);
-EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,int *);
+EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject,PetscMPIInt *);
+EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,PetscMPIInt *);
 EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
 EXTERN PetscErrorCode PetscObjectCompose(PetscObject,const char[],PetscObject);
 EXTERN PetscErrorCode PetscObjectQuery(PetscObject,const char[],PetscObject *);

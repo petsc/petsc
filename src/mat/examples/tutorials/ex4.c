@@ -10,7 +10,7 @@ static char help[] = "Reads U and V matrices from a file and performs y = V*U'*x
      petscis.h     - index sets            petscviewer.h - viewers               
 */
 #include "petscmat.h"
-extern int LowRankUpdate(Mat,Mat,Vec,Vec,Vec,Vec,int);
+extern PetscErrorCode LowRankUpdate(Mat,Mat,Vec,Vec,Vec,Vec,PetscInt);
 
 
 #undef __FUNCT__
@@ -20,10 +20,10 @@ int main(int argc,char **args)
   Mat                   U,V;                /* matrix */
   PetscViewer           fd;               /* viewer */
   char                  file[PETSC_MAX_PATH_LEN];     /* input file name */
-  int                   ierr;
+  PetscErrorCode        ierr;
   PetscTruth            flg;
   Vec                   x,y,work1,work2;
-  int                   i,N,n,M,m;
+  PetscInt              i,N,n,M,m;
   PetscScalar           *xx;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -52,8 +52,8 @@ int main(int argc,char **args)
 
   ierr = MatGetLocalSize(U,&N,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(V,&M,&m);CHKERRQ(ierr);
-  if (N != M) SETERRQ2(1,"U and V matrices must have same number of local rows %d %d",N,M);
-  if (n != m) SETERRQ2(1,"U and V matrices must have same number of local columns %d %d",n,m);
+  if (N != M) SETERRQ2(1,"U and V matrices must have same number of local rows %D %D",N,M);
+  if (n != m) SETERRQ2(1,"U and V matrices must have same number of local columns %D %D",n,m);
 
   ierr = VecCreateMPI(PETSC_COMM_WORLD,N,PETSC_DETERMINE,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
@@ -95,12 +95,13 @@ int main(int argc,char **args)
      U and V are stored as PETSc MPIDENSE (parallel) dense matrices with their rows partitioned the
      same way as x and y are partitioned
 */
-int LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,int nwork)
+PetscErrorCode LowRankUpdate(Mat U,Mat V,Vec x,Vec y,Vec work1,Vec work2,PetscInt nwork)
 {
-  Mat         Ulocal = ((Mat_MPIDense*)U->data)->A;
-  Mat         Vlocal = ((Mat_MPIDense*)V->data)->A;
-  int         ierr,Nsave = x->N;
-  PetscScalar *w1,*w2;
+  Mat            Ulocal = ((Mat_MPIDense*)U->data)->A;
+  Mat            Vlocal = ((Mat_MPIDense*)V->data)->A;
+  PetscInt       Nsave = x->N;
+  PetscErrorCode ierr;
+  PetscScalar    *w1,*w2;
 
   PetscFunctionBegin;
 

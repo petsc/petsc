@@ -64,9 +64,9 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
 
   ierr = MatGetInfo(C,MAT_LOCAL,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"original matrix nonzeros = %d\n",(int)info.nz_used);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"original matrix nonzeros = %D\n",(PetscInt)info.nz_used);CHKERRQ(ierr);
   ierr = MatGetInfo(LU,MAT_LOCAL,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"factored matrix nonzeros = %d\n",(int)info.nz_used);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"factored matrix nonzeros = %D\n",(PetscInt)info.nz_used);CHKERRQ(ierr);
 
   ierr = VecDestroy(u);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);

@@ -14,7 +14,7 @@ PetscErrorCode MatDestroy_SeqBDiag(Mat A)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d, BSize=%d, NDiag=%d",A->m,A->n,a->nz,a->bs,a->nd);
+  PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D, BSize=%D, NDiag=%D",A->m,A->n,a->nz,a->bs,a->nd);
 #endif
   if (!a->user_alloc) { /* Free the actual diagonals */
     for (i=0; i<a->nd; i++) {
@@ -68,7 +68,7 @@ PetscErrorCode MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
   for (i=0; i<a->nd; i++) {
     if (!a->diag[i]) {a->mainbd = i; break;}
   }
-  PetscLogInfo(A,"MatAssemblyEnd_SeqBDiag:Number diagonals %d,memory used %d, block size %d\n",a->nd,a->maxnz,a->bs);
+  PetscLogInfo(A,"MatAssemblyEnd_SeqBDiag:Number diagonals %D,memory used %D, block size %D\n",a->nd,a->maxnz,a->bs);
   PetscFunctionReturn(0);
 }
 

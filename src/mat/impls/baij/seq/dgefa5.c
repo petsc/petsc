@@ -45,7 +45,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_5(MatScalar *a)
 	ipvt[k-1] = l;
 
 	if (a[l + k3] == 0.0) {
-	  SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %d",k-1);
+	  SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",k-1);
 	}
 
 /*           interchange if necessary */
@@ -85,7 +85,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_5(MatScalar *a)
     }
     ipvt[4] = 5;
     if (a[30] == 0.0) {
-      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %d",4);
+      SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot, row %D",4);
     }
 
     /*

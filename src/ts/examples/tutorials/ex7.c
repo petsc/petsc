@@ -258,6 +258,6 @@ int Monitor(TS ts,int step,PetscReal ptime,Vec v,void *ctx)
   PetscFunctionBegin;
   ierr = VecNorm(v,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"timestep %d time %g norm %g\n",step,ptime,norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"timestep %D time %g norm %g\n",step,ptime,norm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
