@@ -15,7 +15,7 @@ class Defaults(logging.Logger):
     self.sources    = sources
     self.usingSIDL  = sidlDefaults.UsingSIDL(project, self.getPackages(), bootstrapPackages = bootstrapPackages)
     self.compileExt = []
-    self.masterCompiler = str(self.usingSIDL.compilerDefaults.getCompilerModule())
+    self.masterCompiler = self.usingSIDL.compilerDefaults.getCompilerModule().__name__
     # Add C for the IOR
     self.addLanguage('C')
     return
@@ -42,7 +42,7 @@ class Defaults(logging.Logger):
     self.addLanguage(lang)
 
   def isImpl(self, source):
-    if not str(self.usingSIDL.compilerDefaults.getCompilerModule()) == self.masterCompiler:
+    if not self.usingSIDL.compilerDefaults.getCompilerModule().__name__ == self.masterCompiler:
       return 0
     if os.path.splitext(source)[1] == '.pyc':
       return 0
@@ -73,7 +73,7 @@ class Defaults(logging.Logger):
 
   def getSIDLServerCompiler(self, lang, rootDir, generatedRoots):
     compiler           = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLServer(fileset.ExtensionFileSet(generatedRoots, self.compileExt),
-                                                                                               compilerFlags = self.usingSIDL.getCompilerFlags())
+                                                                                               compilerFlags = self.usingSIDL.getServerCompilerFlags())
     compiler.language  = lang
     compiler.outputDir = rootDir
     self.usingSIDL.compilerDefaults.setupIncludes(compiler)
@@ -81,7 +81,7 @@ class Defaults(logging.Logger):
 
   def getSIDLClientCompiler(self, lang, rootDir):
     compiler           = self.usingSIDL.compilerDefaults.getCompilerModule().CompileSIDLClient(fileset.ExtensionFileSet(rootDir, self.compileExt),
-                                                                                               compilerFlags = self.usingSIDL.getCompilerFlags())
+                                                                                               compilerFlags = self.usingSIDL.getClientCompilerFlags())
     compiler.language  = lang
     compiler.outputDir = rootDir
     self.usingSIDL.compilerDefaults.setupIncludes(compiler)

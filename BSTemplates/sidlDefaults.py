@@ -95,10 +95,12 @@ class UsingSIDL (logging.Logger):
       import BSTemplates.scandalTargets
       self.compilerDefaults = BSTemplates.scandalTargets.Defaults(self)
     # Flags for the SIDL compiler
-    self.compilerFlags  = ''
-    self.includeDirs    = SIDLPackageDict(self)
-    self.extraLibraries = SIDLPackageDict(self)
-    self.libDir         = os.path.join(self.getRootDir(), 'lib')
+    self.compilerFlags       = ''
+    self.serverCompilerFlags = ''
+    self.clientCompilerFlags = ''
+    self.includeDirs         = SIDLPackageDict(self)
+    self.extraLibraries      = SIDLPackageDict(self)
+    self.libDir              = os.path.join(self.getRootDir(), 'lib')
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
 
@@ -143,11 +145,37 @@ class UsingSIDL (logging.Logger):
   def getPackages(self):
     return self.packages
 
+  def getServerCompilerFlags(self):
+    return self.serverCompilerFlags
+
+  def getClientCompilerFlags(self):
+    return self.clientCompilerFlags
+
   def getCompilerFlags(self):
-    return self.compilerFlags
+    flags = ''
+    if self.serverCompilerFlags:
+      if flags: flags += ' '
+      flags += self.serverCompilerFlags
+    if self.clientCompilerFlags:
+      if flags: flags += ' '
+      flags += self.clientCompilerFlags
+    if self.compilerFlags:
+      if flags: flags += ' '
+      flags += self.compilerFlags
+    return flags
+
+  def setServerCompilerFlags(self, flags):
+    self.serverCompilerFlags = flags
+    return
+
+  def setClientCompilerFlags(self, flags):
+    self.clientCompilerFlags = flags
+    return
 
   def setCompilerFlags(self, flags):
-    self.compilerFlags = flags
+    self.compilerFlags       = flags
+    self.serverCompilerFlags = ''
+    self.clientCompilerFlags = ''
     return
 
   def getRootDir(self):
