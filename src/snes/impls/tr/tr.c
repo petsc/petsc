@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.61 1996/09/28 16:24:58 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.62 1996/10/03 17:54:29 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -98,7 +98,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERRQ(ierr);
-    PLogInfo(snes,"SNES: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
+    PLogInfo(snes,"SNESSolve_EQ_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
     ierr = VecNorm(Ytmp,NORM_2,&norm); CHKERRQ(ierr);
     norm1 = norm;
     while(1) {
@@ -110,13 +110,13 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
         norm = delta/norm;
         gpnorm = (1.0 - norm)*fnorm;
         cnorm = norm;
-        PLogInfo(snes,"SNES: Scaling direction by %g\n",norm );
+        PLogInfo(snes,"SNESSolve_EQ_TR: Scaling direction by %g\n",norm );
         ierr = VecScale(&cnorm,Y); CHKERRQ(ierr);
         norm = gpnorm;
         ynorm = delta;
       } else {
         gpnorm = 0.0;
-        PLogInfo(snes,"SNES: Direction is in Trust Region\n" );
+        PLogInfo(snes,"SNESSolve_EQ_TR: Direction is in Trust Region\n" );
         ynorm = norm;
       }
       ierr = VecAYPX(&mone,X,Y); CHKERRQ(ierr);            /* Y <- X - Y */
@@ -130,11 +130,11 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       if      (rho < neP->mu)  delta *= neP->delta1;
       else if (rho < neP->eta) delta *= neP->delta2;
       else                     delta *= neP->delta3;
-      PLogInfo(snes,"SNES: fnorm=%g, gnorm=%g, ynorm=%g\n",fnorm,gnorm,ynorm);
-      PLogInfo(snes,"SNES: gpred=%g, rho=%g, delta=%g\n",gpnorm,rho,delta);
+      PLogInfo(snes,"SNESSolve_EQ_TR: fnorm=%g, gnorm=%g, ynorm=%g\n",fnorm,gnorm,ynorm);
+      PLogInfo(snes,"SNESSolve_EQ_TR: gpred=%g, rho=%g, delta=%g\n",gpnorm,rho,delta);
       neP->delta = delta;
       if (rho > neP->sigma) break;
-      PLogInfo(snes,"SNES: Trying again in smaller region\n");
+      PLogInfo(snes,"SNESSolve_EQ_TR: Trying again in smaller region\n");
       /* check to see if progress is hopeless */
       neP->itflag = 0;
       if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
@@ -168,7 +168,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     } 
   }
   if (i == maxits) {
-    PLogInfo(snes,"SNES: Maximum number of iterations has been reached: %d\n",maxits);
+    PLogInfo(snes,"SNESSolve_EQ_TR: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
   *its = i+1;
@@ -301,7 +301,7 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
 
   if (neP->delta < xnorm * snes->deltatol) {
     PLogInfo(snes,
-      "SNES: Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
+      "SNESConverged_EQ_TR: Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
     return 1;
   }
   if (neP->itflag) {
@@ -310,7 +310,7 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
   } 
   if (neP->delta < xnorm * epsmch) {
     PLogInfo(snes,
-      "SNES: Converged due to trust region param %g < %g * %g\n",neP->delta,xnorm, epsmch);
+      "SNESConverged_EQ_TR: Converged due to trust region param %g < %g * %g\n",neP->delta,xnorm, epsmch);
     return -1;
   }
   return 0;

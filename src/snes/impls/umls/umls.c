@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.47 1996/09/28 16:24:55 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.48 1996/10/03 17:54:42 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -70,10 +70,10 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
         neP->gamma_factor *= two; 
         neP->gamma = neP->gamma_factor*(*gnorm); 
 #if !defined(PETSC_COMPLEX)
-        PLogInfo(snes,"  modify diagonal (assume same nonzero structure), gamma_factor=%g, gamma=%g\n",
+        PLogInfo(snes,"SNESSolve_UM_LS:  modify diagonal (assume same nonzero structure), gamma_factor=%g, gamma=%g\n",
           neP->gamma_factor,neP->gamma);
 #else
-        PLogInfo(snes,"  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n",
+        PLogInfo(snes,"SNESSolve_UM_LS:  modify diagonal (asuume same nonzero structure), gamma_factor=%g, gamma=%g\n",
           neP->gamma_factor,real(neP->gamma));
 #endif
         ierr = MatShift(&neP->gamma,snes->jacobian); CHKERRQ(ierr);
@@ -96,7 +96,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
 
     if (history && history_len > i+1) history[i+1] = *gnorm;
     SNESMonitor(snes,i+1,*gnorm);
-    PLogInfo(snes,"%d:  f=%g, gnorm=%g, snorm=%g, step=%g, KSP iters=%d\n",
+    PLogInfo(snes,"SNESSolve_UM_LS: %d:  f=%g, gnorm=%g, snorm=%g, step=%g, KSP iters=%d\n",
              snes->iter, *f, *gnorm, snorm, neP->step, iters );
 
     /* Test for convergence */
@@ -110,7 +110,7 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     snes->vec_func_always = snes->vec_func;
   }
   if (i == maxits) {
-    PLogInfo(snes,"SNES: Maximum number of iterations reached: %d\n",maxits);
+    PLogInfo(snes,"SNESSolve_UM_LS: Maximum number of iterations reached: %d\n",maxits);
     i--;
   }
   *outits = i+1;
@@ -235,26 +235,26 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,
   /* Test for successful convergence */
   if (f < snes->fmin) {
     PLogInfo(snes,
-      "SNES: Converged due to function value %g < minimum function value %g\n",f,snes->fmin);
+      "SNESConverged_UM_LS: Converged due to function value %g < minimum function value %g\n",f,snes->fmin);
     return 1;
   }
   if (gnorm < snes->atol) {
-    PLogInfo(snes,"SNES: Converged due to gradient norm %g < %g\n",gnorm,snes->atol);
+    PLogInfo(snes,"SNESConverged_UM_LS: Converged due to gradient norm %g < %g\n",gnorm,snes->atol);
     return 2;
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
  if (snes->nfuncs > snes->max_funcs) {
     PLogInfo(snes,
-             "SNES: Exceeded maximum number of function evaluations: %d > %d\n",
+             "SNESConverged_UM_LS: Exceeded maximum number of function evaluations: %d > %d\n",
              snes->nfuncs,snes->max_funcs );
     return -1;
   } 
   if (gnorm < epsmch) {
-    PLogInfo(snes,"SNES: Gradient norm %g < minimum tolerance %g\n",gnorm,epsmch);
+    PLogInfo(snes,"SNESConverged_UM_LS: Gradient norm %g < minimum tolerance %g\n",gnorm,epsmch);
     return -2;
   }
   if (neP->line != 1) {
-    PLogInfo(snes,"SNES: Line search failed for above reason\n");
+    PLogInfo(snes,"SNESConverged_UM_LS: Line search failed for above reason\n");
     return -3;
   }
   return 0;

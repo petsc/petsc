@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.74 1996/09/28 16:24:44 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.75 1996/10/03 17:54:19 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -59,7 +59,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg); CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg); CHKERRQ(ierr);
     ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERRQ(ierr);
-    PLogInfo(snes,"SNES: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
+    PLogInfo(snes,"SNESSolve_EQ_LS: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
 
     /* Compute a (scaled) negative update in the line search routine: 
          Y <- X - lambda*Y 
@@ -67,7 +67,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     */
     ierr = VecCopy(Y,snes->vec_sol_update_always); CHKERRQ(ierr);
     ierr = (*neP->LineSearch)(snes,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail); CHKERRQ(ierr);
-    PLogInfo(snes,"SNES: fnorm=%g, gnorm=%g, ynorm=%g, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
+    PLogInfo(snes,"SNESSolve_EQ_LS: fnorm=%g, gnorm=%g, ynorm=%g, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
     if (lsfail) snes->nfailures++;
 
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;

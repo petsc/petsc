@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.48 1996/10/03 17:54:35 curfman Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.49 1996/11/26 20:25:55 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -104,7 +104,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       ierr = SLESSolve(snes->sles,G,S,&qits); CHKERRQ(ierr);
       if (qits < 0) SETERRQ(1,"SNESSolve_UM_TR:Failure in SLESSolve");
       if (qcgP->info == 3) newton = 1;	            /* truncated Newton step */
-      PLogInfo(snes,"%d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
+      PLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
                i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
 
       ierr = VecWAXPY(&one,X,S,Xtrial); CHKERRQ(ierr); /* Xtrial <- X + S */
@@ -121,7 +121,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 
       if (neP->actred < neP->eta1 * neP->prered) {  /* Unsuccessful step */
 
-         PLogInfo(snes,"Rejecting step\n");
+         PLogInfo(snes,"SNESSolve_UM_TR: Rejecting step\n");
          snes->nfailures += 1;
 
          /* If iterate is Newton step, reduce delta to current step length */
@@ -134,7 +134,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       } else {          /* Successful iteration; adjust trust radius */
 
         neP->success = 1;
-        PLogInfo(snes,"Accepting step\n");
+        PLogInfo(snes,"SNESSolve_UM_TR: Accepting step\n");
         if (newton) {
            delta = sqrt(qcgP->ltsnrm*delta);
            if (neP->actred < neP->eta2 * neP->prered) delta /= two;
@@ -172,7 +172,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     snes->vec_func_always = snes->vec_func; 
   }
   if (i == maxits) {
-    PLogInfo(snes,"Maximum number of iterations reached: %d\n",maxits);
+    PLogInfo(snes,"SNESSolve_UM_TR: Maximum number of iterations reached: %d\n",maxits);
     i--;
   }
   *outits = i;  /* not i+1, since update for i happens in loop above */
@@ -250,27 +250,27 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,
   /* Test for successful convergence */
   if ((!neP->success || neP->sflag) && (delta <= snes->deltatol * xnorm)) {
     neP->sflag = 0;
-    PLogInfo(snes,"SNES: Trust region param satisfies tolerance: %g<=%g*%g\n",
+    PLogInfo(snes,"SNESConverged_UM_TR: Trust region param satisfies tolerance: %g<=%g*%g\n",
              delta,snes->deltatol,xnorm);  
     return 3;
   }
   if ((PetscAbsDouble(ared) <= PetscAbsDouble(f) * rtol) && (pred) <= rtol*PetscAbsDouble(f)) {
-    PLogInfo(snes,"SNES:Actual (%g) and predicted (%g) reductions<%g*%g\n",
+    PLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<%g*%g\n",
              PetscAbsDouble(ared),pred,rtol,PetscAbsDouble(f));
     return 2;
   }
   if (f < snes->fmin) {
-    PLogInfo(snes,"SNES:Function value (%g)<f_{minimum} (%g)\n",f,snes->fmin);
+    PLogInfo(snes,"SNESConverged_UM_TR:Function value (%g)<f_{minimum} (%g)\n",f,snes->fmin);
     return 1;
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
   if ( (PetscAbsDouble(ared) <= epsmch) && pred <= epsmch ) {
-    PLogInfo(snes,"SNES:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
+    PLogInfo(snes,"SNESConverged_UM_TR:Actual (%g) and predicted (%g) reductions<epsmch (%g)\n",
              PetscAbsDouble(ared),pred,epsmch);
     return -2;
   }
   if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,"SNES:Exceeded maximum number of function evaluations:%d>%d\n",
+    PLogInfo(snes,"SNESConverged_UM_TR:Exceeded maximum number of function evaluations:%d>%d\n",
              snes->nfuncs, snes->max_funcs );
     return -1;
   }
