@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.66 1999/04/01 22:23:36 balay Exp balay $ 
+# $Id: builddist,v 1.67 1999/04/06 21:59:01 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -15,6 +15,11 @@ echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run cor
 echo "(7) Made sure Fortran include files match C ones?"
 
 #
+set    SHORTHOST = "`hostname | sed -e 's/\..*//' | sed -e 's/[0-9][0-9]//'`"
+if ($SHORTHOST != fire) then
+    echo "---Error! This script should be run only on fire.mcs.anl.gov"
+endif
+
 if ($#argv == 1) then
   set version=$1
   echo "Building ~/petsc$version.tar.gz"

@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.61 1999/04/01 22:38:41 balay Exp balay $ */
+/* $Id: ptime.h,v 1.62 1999/04/02 21:26:18 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -91,6 +91,18 @@
 #define PetscTimeSubtract(v) (v)-=MPI_Wtime();
 
 #define PetscTimeAdd(v)      (v)+=MPI_Wtime();
+
+/* ------------------------------------------------------------------
+   Power1,2,3,PC machines have a fast clock read_real_time()
+*/ 
+#elif defined(USE_READ_REAL_TIME)
+extern PLogDouble rs6000_time();
+#define PetscTime(v)         (v)=rs6000_time();
+
+#define PetscTimeSubtract(v) (v)-=rs6000_time();
+
+#define PetscTimeAdd(v)      (v)+=rs6000_time();
+
 /* ------------------------------------------------------------------
 
     Defines the interface to the IBM rs6000 high accuracy clock. The 
@@ -103,18 +115,18 @@ struct my_timestruc_t {
   long          tv_nsec;/* and nanoseconds*/
 };
 EXTERN_C_BEGIN
-extern void rs6000_time(struct my_timestruc_t *);
+extern void rs6000_asmtime(struct my_timestruc_t *);
 EXTERN_C_END
 #define PetscTime(v)         {static struct  my_timestruc_t _tp; \
-                             rs6000_time(&_tp); \
+                             rs6000_asmtime(&_tp); \
                              (v)=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeSubtract(v) {static struct my_timestruc_t  _tp; \
-                             rs6000_time(&_tp); \
+                             rs6000_asmtime(&_tp); \
                              (v)-=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeAdd(v)      {static struct my_timestruc_t  _tp; \
-                             rs6000_time(&_tp); \
+                             rs6000_asmtime(&_tp); \
                              (v)+=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 /* ------------------------------------------------------------------

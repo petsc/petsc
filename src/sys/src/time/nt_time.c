@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: nt_time.c,v 1.12 1998/12/17 21:56:35 balay Exp balay $";
+static char vcid[] = "$Id: nt_time.c,v 1.13 1999/04/13 20:29:23 balay Exp balay $";
 #endif
 
 #include <petsc.h>
@@ -9,17 +9,17 @@ static char vcid[] = "$Id: nt_time.c,v 1.12 1998/12/17 21:56:35 balay Exp balay 
 
 #undef __FUNC__  
 #define __FUNC__ "nt_time"
-PetscDouble nt_time(void) 
+PLogDouble nt_time(void) 
 {
   static int    flag = 1;
   int           ierr;
 
   static LARGE_INTEGER StartTime,PerfFreq,CurTime; 
-  static PetscDouble SecInTick=0.0;
+  static PLogDouble SecInTick=0.0;
   
-  DWORD       dwStartHigh, dwCurHigh;
-  PetscDouble dTime, dHigh;
-  double      time;
+  DWORD      dwStartHigh, dwCurHigh;
+  PLogDouble dTime, dHigh;
+  PLogDouble time;
   
   
   PetscFunctionBegin;
