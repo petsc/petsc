@@ -27,7 +27,8 @@ static int logkey_matmatmult_numeric  = 0;
    Notes:
    C will be created and must be destroyed by the user with MatDestroy().
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices.
+   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
+   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
 
    Level: intermediate
 
@@ -58,12 +59,14 @@ int MatMatMult(Mat A,Mat B, Mat *C) {
 
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
 
-  ierr = PetscStrcpy(funct,"MatMatMult_");CHKERRQ(ierr);
-  ierr = PetscStrcat(funct,A->type_name);CHKERRQ(ierr);
-  ierr = PetscStrcat(funct,B->type_name);CHKERRQ(ierr);
+  /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
+  /* When other implementations exist, attack the multiple dispatch problem. */
+  ierr = PetscStrcpy(funct,"MatMatMult_seqaijseqaij");CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)B,funct,(PetscVoidFunction)&mult);CHKERRQ(ierr);
+  if (!mult) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
   ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&mult);CHKERRQ(ierr);
-  if (!mult) SETERRQ2(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s and B of type %s",
-                         A->type_name,B->type_name);
+  if (!mult) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
+
   ierr = (*mult)(A,B,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -72,24 +75,25 @@ int MatMatMult(Mat A,Mat B, Mat *C) {
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"
 int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B, Mat *C) {
   int ierr;
-  char symfunct[80],numfunct[80],types[80];
+  char symfunct[80],numfunct[80];
   int (*symbolic)(Mat,Mat,Mat*),(*numeric)(Mat,Mat,Mat);
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(types,A->type_name);CHKERRQ(ierr);
-  ierr = PetscStrcat(types,B->type_name);CHKERRQ(ierr);
-  ierr = PetscStrcpy(symfunct,"MatMatMultSymbolic_");CHKERRQ(ierr);
-  ierr = PetscStrcat(symfunct,types);CHKERRQ(ierr);
+
+  /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
+  /* When other implementations exist, attack the multiple dispatch problem. */
+  ierr = PetscStrcpy(symfunct,"MatMatMultSymbolic_seqaijseqaij");CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)B,symfunct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
+  if (!symbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
   ierr = PetscObjectQueryFunction((PetscObject)A,symfunct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
-  if (!symbolic) SETERRQ2(PETSC_ERR_SUP,
-                         "C=A*B not implemented for A of type %s and B of type %s",
-                         A->type_name,B->type_name);
-  ierr = PetscStrcpy(numfunct,"MatMatMultNumeric_");CHKERRQ(ierr);
-  ierr = PetscStrcat(numfunct,types);CHKERRQ(ierr);
+  if (!symbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
+
+  ierr = PetscStrcpy(numfunct,"MatMatMultNumeric_seqaijseqaij");CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,numfunct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
-  if (!numeric) SETERRQ2(PETSC_ERR_SUP,
-                         "C=A*B not implemented for A of type %s and B of type %s",
-                         A->type_name,B->type_name);
+  if (!numeric) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
+  ierr = PetscObjectQueryFunction((PetscObject)B,numfunct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
+  if (!numeric) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
+
   ierr = PetscLogEventBegin(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
   ierr = (*symbolic)(A,B,C);CHKERRQ(ierr);
   ierr = (*numeric)(A,B,*C);CHKERRQ(ierr);
@@ -113,9 +117,9 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B, Mat *C) {
 .  C - the matrix containing the ij structure of product matrix
 
    Notes:
-   C will be created and must be destroyed by the user with MatDestroy().
+   C will be created as a MATSEQAIJ matrix and must be destroyed by the user with MatDestroy().
 
-   This routine is currently only implemented for SeqAIJ type matrices.
+   This routine is currently only implemented for SeqAIJ matrices and classes which inherit from SeqAIJ.
 
    Level: intermediate
 
@@ -126,7 +130,7 @@ int MatMatMultSymbolic(Mat A,Mat B,Mat *C) {
   /* To facilitate implementations with varying types, QueryFunction is used.*/
   /* It is assumed that implementations will be composed as "MatMatMultSymbolic_<type of A><type of B>". */
   int  ierr;
-  char funct[80];
+  char symfunct[80];
   int  (*symbolic)(Mat,Mat,Mat *);
 
   PetscFunctionBegin;
@@ -146,13 +150,13 @@ int MatMatMultSymbolic(Mat A,Mat B,Mat *C) {
 
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
 
-  ierr = PetscStrcpy(funct,"MatMatMultSymbolic_");CHKERRQ(ierr);
-  ierr = PetscStrcat(funct,A->type_name);CHKERRQ(ierr);
-  ierr = PetscStrcat(funct,B->type_name);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
-  if (!symbolic) SETERRQ2(PETSC_ERR_SUP,
-                         "C=A*B not implemented for A of type %s and B of type %s",
-                         A->type_name,B->type_name);
+  /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
+  /* When other implementations exist, attack the multiple dispatch problem. */
+  ierr = PetscStrcpy(symfunct,"MatMatMultSymbolic_seqaijseqaij");CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)B,symfunct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
+  if (!symbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
+  ierr = PetscObjectQueryFunction((PetscObject)A,symfunct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
+  if (!symbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
   ierr = (*symbolic)(A,B,C);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -289,7 +293,7 @@ int MatMatMultNumeric(Mat A,Mat B,Mat C){
   /* To facilitate implementations with varying types, QueryFunction is used.*/
   /* It is assumed that implementations will be composed as "MatMatMultNumeric_<type of A><type of B>". */
   int ierr;
-  char funct[80];
+  char numfunct[80];
   int (*numeric)(Mat,Mat,Mat);
 
   PetscFunctionBegin;
@@ -316,14 +320,14 @@ int MatMatMultNumeric(Mat A,Mat B,Mat C){
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
   if (A->M!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",A->M,C->M);
 
-  /* Query A for ApplyPtAP implementation based on types of P */
-  ierr = PetscStrcpy(funct,"MatMatMultNumeric_");CHKERRQ(ierr);
-  ierr = PetscStrcat(funct,A->type_name);CHKERRQ(ierr);
-  ierr = PetscStrcat(funct,B->type_name);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
-  if (!numeric) SETERRQ2(PETSC_ERR_SUP,
-                         "C=A*B not implemented for A of type %s and B of type %s",
-                         A->type_name,B->type_name);
+  /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
+  /* When other implementations exist, attack the multiple dispatch problem. */
+  ierr = PetscStrcpy(numfunct,"MatMatMultNumeric_seqaijseqaij");CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,numfunct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
+  if (!numeric) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
+  ierr = PetscObjectQueryFunction((PetscObject)B,numfunct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
+  if (!numeric) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
+
   ierr = (*numeric)(A,B,C);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
