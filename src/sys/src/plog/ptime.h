@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.15 1995/12/07 19:35:20 bsmith Exp balay $ */
+/* $Id: ptime.h,v 1.16 1996/03/01 01:14:19 balay Exp balay $ */
 /*
      Low cost access to system time. This, in general, should not
   be included in user programs.
@@ -113,11 +113,13 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 .keywords:  Petsc, time, add
 */
 #if defined(PARCH_rs6000)
-struct timestruc_t {
-  unsigned long tv_sec;   /* seconds              */
-  long          tv_nsec;  /* and nanoseconds      */
-};
+#if defined(__cplusplus) 
+extern "C" {
 extern UTP_readTime(struct timestruc_t *);
+}
+#else 
+extern UTP_readTime(struct timestruc_t *);
+#endif
 
 #define PetscTime(v)         {static struct  timestruc_t _tp; \
                              UTP_readTime(&_tp); \
