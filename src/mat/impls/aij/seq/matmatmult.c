@@ -12,8 +12,8 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat pr
   Mat    *aseq,*bseq,C_seq;
 } Mat_MatMatMultMPI;
 
-static int logkey_matmatmult_symbolic = 0;
-static int logkey_matmatmult_numeric  = 0;
+static PetscEvent logkey_matmatmult_symbolic = 0;
+static PetscEvent logkey_matmatmult_numeric  = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult"
@@ -129,7 +129,7 @@ PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
   /* It is assumed that implementations will be composed as "MatMatMultSymbolic_<type of A><type of B>". */
   PetscErrorCode ierr;
   char symfunct[80];
-  int  (*symbolic)(Mat,Mat,PetscReal,Mat *);
+  PetscErrorCode (*symbolic)(Mat,Mat,PetscReal,Mat *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -352,7 +352,7 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C){
   /* It is assumed that implementations will be composed as "MatMatMultNumeric_<type of A><type of B>". */
   PetscErrorCode ierr;
   char numfunct[80];
-  int (*numeric)(Mat,Mat,Mat);
+  PetscErrorCode (*numeric)(Mat,Mat,Mat);
 
   PetscFunctionBegin;
 

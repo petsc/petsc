@@ -16,9 +16,10 @@ EXTERN PetscErrorCode DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetBlockFills_Private"
-static int DASetBlockFills_Private(int *dfill,int w,int **rfill)
+static PetscErrorCode DASetBlockFills_Private(int *dfill,int w,int **rfill)
 {
-  PetscErrorCode ierr,i,j,nz,*fill;
+  PetscErrorCode ierr;
+  int i,j,nz,*fill;
 
   PetscFunctionBegin;
   /* count number nonzeros */

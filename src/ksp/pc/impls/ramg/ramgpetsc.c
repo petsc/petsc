@@ -78,7 +78,7 @@ PetscErrorCode RamgShellPCCreate(RamgShellPC **shell)
  
 PetscErrorCode RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 {
-   int                numnodes, numnonzero, nnz_count; 
+   int                numnodes, numnonzero, nnz_count,rierr; 
    int                j, I, J, ncols_getrow, *cols_getrow,*diag; 
    PetscScalar        *vals_getrow;
    MatInfo            info;
@@ -215,12 +215,12 @@ PetscErrorCode RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    amg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
               &ndf, &ndig, &nnu, &matrix, &iswtch, &iout, &iprint, &levelx, 
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
-              &ecg2, &ewt2, &nwt, &ntr, &ierr);
-   if (ierr) {
-     if (ierr > 0 && ierr <= 6) {
+              &ecg2, &ewt2, &nwt, &ntr, &rierr);
+   if (rierr) {
+     if (rierr > 0 && rierr <= 6) {
        char *name[] = {"A","JA","IA","U","F","IG"};
        (*PetscErrorPrintf)("Error from RAMG setup, not enough array work space provided\n");
-       (*PetscErrorPrintf)("Increase the one for \n",name[ierr-1]);
+       (*PetscErrorPrintf)("Increase the one for \n",name[rierr-1]);
        (*PetscErrorPrintf)("A provided %d\n",nda);
        (*PetscErrorPrintf)("JA provided %d\n",ndja);
        (*PetscErrorPrintf)("IA provided %d\n",ndia);
@@ -228,14 +228,14 @@ PetscErrorCode RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
        (*PetscErrorPrintf)("F provided %d\n",ndf);
        (*PetscErrorPrintf)("IG provided %d\n",ndig);
      }
-     if (ierr == -12) {
+     if (rierr == -12) {
        (*PetscErrorPrintf)("Error from RAMG setup, could be matrix is symmetric but you have not\n");
        (*PetscErrorPrintf)("indicated it with MatSetOption(mat,MAT_SYMMETRIC); or -matload_symmetric\n");
      }
-     if (ierr == 14) {
+     if (rierr == 14) {
        (*PetscErrorPrintf)("Error from RAMG setup, diagonal element not positive\n");
      }
-     SETERRQ1(PETSC_ERR_LIB,"Error in RAMG setup. Error number %d",ierr);
+     SETERRQ1(PETSC_ERR_LIB,"Error in RAMG setup. Error number %d",rierr);
    }
 
    ierr = PetscLogInfo((PetscObject)pmat,"\n\n");CHKERRQ(ierr);  
@@ -502,7 +502,7 @@ PetscErrorCode RamgGetParam(Mat A,struct RAMG_PARAM *ramg_param)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_RAMG"
-static int PCSetUp_RAMG(PC pc)
+static PetscErrorCode PCSetUp_RAMG(PC pc)
 {
   PetscErrorCode ierr;
 
@@ -513,7 +513,7 @@ static int PCSetUp_RAMG(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_RAMG"
-static int PCApply_RAMG(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_RAMG(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -524,7 +524,7 @@ static int PCApply_RAMG(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_RAMG"
-static int PCDestroy_RAMG(PC pc)
+static PetscErrorCode PCDestroy_RAMG(PC pc)
 {
   PetscErrorCode ierr;
 

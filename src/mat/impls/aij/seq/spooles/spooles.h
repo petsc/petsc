@@ -46,13 +46,13 @@ typedef struct {
   VecScatter      scat;
   
   /* A few function pointers for inheritance */
-  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  int (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
-  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  int (*MatView)(Mat,PetscViewer);
-  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  int (*MatDestroy)(Mat);
-  int (*MatPreallocate)(Mat,int,int,int*,int,int*);
+  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatView)(Mat,PetscViewer);
+  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  PetscErrorCode (*MatDestroy)(Mat);
+  PetscErrorCode (*MatPreallocate)(Mat,int,int,int*,int,int*);
 
   MatType    basetype;
   PetscTruth CleanUpSpooles,useQR;

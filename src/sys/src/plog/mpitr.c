@@ -27,7 +27,8 @@
  @*/
 PetscErrorCode PetscMPIDump(FILE *fd)
 {
-  int    rank,ierr;
+  PetscErrorCode ierr;
+  int    rank;
   double tsends,trecvs,work;
 
   PetscFunctionBegin;

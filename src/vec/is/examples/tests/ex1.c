@@ -10,9 +10,10 @@ static char help[] = "Tests IS general routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        i,n,ierr,*indices,rank,size,*ii;
+  int        i,n,*indices,rank,size,*ii;
   IS         is,newis;
   PetscTruth flg;
+  PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

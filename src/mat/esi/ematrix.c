@@ -30,7 +30,8 @@ esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSp
 
 esi::petsc::Matrix<double,int>::Matrix(Mat imat)
 {
-  int m,n,M,N,ierr;
+  PetscErrorCode ierr;
+  int m,n,M,N;
 
   this->mat  = imat;
   
@@ -249,7 +250,8 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::rowMin(int row, double &result)
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>& rowSumVector)
 {
-  int               i,ierr,rstart,rend,length,j;
+  PetscErrorCode ierr;
+  int               i,rstart,rend,length,j;
   const PetscScalar *values;
   PetscScalar       sum;
   Vec               py;

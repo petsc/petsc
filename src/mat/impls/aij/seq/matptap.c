@@ -9,8 +9,8 @@
 
 EXTERN PetscErrorCode RegisterMatMatMultRoutines_Private(Mat);
 
-static int MAT_PtAPSymbolic = 0;
-static int MAT_PtAPNumeric  = 0;
+static PetscEvent MAT_PtAPSymbolic = 0;
+static PetscEvent MAT_PtAPNumeric  = 0;
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP"
@@ -78,7 +78,7 @@ PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic"
-/*@
+/*
    MatPtAPSymbolic - Creates the (i,j) structure of the matrix projection C = P^T * A * P
 
    Collective on Mat
@@ -100,11 +100,11 @@ PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
    Level: intermediate
 
 .seealso: MatPtAP(),MatPtAPNumeric(),MatMatMultSymbolic()
-@*/
+*/
 PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) {
   PetscErrorCode ierr;
   char funct[80];
-  int (*f)(Mat,Mat,Mat*);
+  PetscErrorCode (*f)(Mat,Mat,Mat*);
 
   PetscFunctionBegin;
 
@@ -317,7 +317,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPNumeric"
-/*@
+/*
    MatPtAPNumeric - Computes the matrix projection C = P^T * A * P
 
    Collective on Mat
@@ -339,11 +339,11 @@ EXTERN_C_END
    Level: intermediate
 
 .seealso: MatPtAP(),MatPtAPSymbolic(),MatMatMultNumeric()
-@*/
+*/
 PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C) {
   PetscErrorCode ierr;
   char funct[80];
-  int (*f)(Mat,Mat,Mat);
+  PetscErrorCode (*f)(Mat,Mat,Mat);
 
   PetscFunctionBegin;
 

@@ -55,9 +55,9 @@
     All PETSc C functions return this error code, it is the final argument of
    all Fortran subroutines
 */
-typedef int PetscErrorCode;
-typedef int PetscCookieCode;
-typedef int PetscLogCode;
+typedef long long PetscErrorCode;
+typedef int PetscCookie;
+typedef int PetscEvent;
 
 /*
     Declare extern C stuff after incuding external header files
@@ -229,7 +229,7 @@ extern MPI_Comm   PETSC_COMM_SELF;
 
 extern PetscTruth PetscInitializeCalled;
 EXTERN PetscErrorCode        PetscSetCommWorld(MPI_Comm);
-EXTERN PetscErrorCode        PetscSetHelpVersionFunctions(int (*)(MPI_Comm),int (*)(MPI_Comm));
+EXTERN PetscErrorCode        PetscSetHelpVersionFunctions(PetscErrorCode (*)(MPI_Comm),PetscErrorCode (*)(MPI_Comm));
 EXTERN PetscErrorCode        PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*);
 EXTERN PetscErrorCode        PetscCommDestroy(MPI_Comm*);
 
@@ -243,7 +243,7 @@ EXTERN PetscErrorCode        PetscCommDestroy(MPI_Comm*);
 .  result - memory allocated
 
    Synopsis:
-   int PetscMalloc(size_t m,void **result)
+   PetscErrorCode PetscMalloc(size_t m,void **result)
 
    Level: beginner
 
@@ -265,7 +265,7 @@ M*/
 .  result - memory allocated
 
    Synopsis:
-   int PetscNew(struct type,((type *))result)
+   PetscErrorCode PetscNew(struct type,((type *))result)
 
    Level: beginner
 
@@ -282,7 +282,7 @@ M*/
 .   memory - memory to free
 
    Synopsis:
-   int PetscFree(void *memory)
+   PetscErrorCode PetscFree(void *memory)
 
    Level: beginner
 
@@ -296,7 +296,7 @@ M*/
 #define PetscFree(a)         (*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__)
 EXTERN PetscErrorCode  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
 EXTERN PetscErrorCode  (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
-EXTERN PetscErrorCode  PetscSetMalloc(int (*)(size_t,int,const char[],const char[],const char[],void**),int (*)(void*,int,const char[],const char[],const char[]));
+EXTERN PetscErrorCode  PetscSetMalloc(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
 EXTERN PetscErrorCode  PetscClearMalloc(void);
 
 /*
@@ -443,7 +443,7 @@ EXTERN PetscErrorCode  PetscEnd(void);
 /*
    ParameterDict is an abstraction for arguments to interface mechanisms
 */
-extern int DICT_COOKIE;
+extern PetscCookie DICT_COOKIE;
 typedef struct _p_Dict *ParameterDict;
 
 typedef void (**PetscVoidFunction)(void);
@@ -453,12 +453,12 @@ typedef void (**PetscVoidFunction)(void);
               These are intended to be used only inside PETSc functions.
 */
 #define  PetscTryMethod(obj,A,B,C) \
-  0;{ int (*f)B, __ierr; \
+  0;{ PetscErrorCode (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,#A,(PetscVoidFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
   }
 #define  PetscUseMethod(obj,A,B,C) \
-  0;{ int (*f)B, __ierr; \
+  0;{ PetscErrorCode (*f)B, __ierr; \
     __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
     else {SETERRQ1(1,"Cannot locate function %s in object",A);} \
@@ -486,7 +486,7 @@ EXTERN PetscErrorCode PetscObjectQuery(PetscObject,const char[],PetscObject *);
 EXTERN PetscErrorCode PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
 
 typedef void (*FCNVOID)(void); /* cast in next macro should never be extern C */
-typedef int  (*FCNINTVOID)(void); /* used in casts to make sure they are not extern C */
+typedef PetscErrorCode (*FCNINTVOID)(void); /* used in casts to make sure they are not extern C */
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
                        
@@ -686,7 +686,7 @@ EXTERN PetscErrorCode  PetscVFPrintf(FILE*,const char*,va_list);
     Not Collective
 
    Synopsis:
-     int (*PetscErrorPrintf)(const char format[],...);
+     PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
 
     Input Parameters:
 .   format - the usual printf() format string 
@@ -714,7 +714,7 @@ EXTERN PetscErrorCode  (*PetscErrorPrintf)(const char[],...);
     Not Collective
 
    Synopsis:
-     int (*PetscHelpPrintf)(const char format[],...);
+     PetscErrorCode (*PetscHelpPrintf)(const char format[],...);
 
     Input Parameters:
 .   format - the usual printf() format string 

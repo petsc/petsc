@@ -123,7 +123,8 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 #else
   int  i;
 #endif
-  int warg = 256,rank,ierr;
+  PetscErrorCode ierr;
+  int warg = 256,rank;
   char *p;
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -191,7 +192,7 @@ EXTERN_C_BEGIN
       Since this is called from Fortran it does not return error codes
       
 */
-void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined (PETSC_USE_NARGS)
   short flg,i;
@@ -209,16 +210,22 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   if (*ierr) return;
   i = 0;
 #if defined(PETSC_HAVE_PXFGETARG)
-  { int ilen;
-    PXFGETARG(&i,_cptofcd(name,256),&ilen,ierr); 
-    if (*ierr) return;
+  { int ilen,sierr;
+    PXFGETARG(&i,_cptofcd(name,256),&ilen,&sierr); 
+    if (sierr) {
+      *ierr = sierr;
+      return;
+    }
     name[ilen] = 0;
   }
 #elif defined (PETSC_HAVE_PXFGETARG_NEW)
-  { int ilen;
-  getarg_(&i,name,&ilen,ierr,256);
-  if (*ierr) return;
-  name[ilen] = 0;
+  { int ilen,sierr;
+    getarg_(&i,name,&ilen,&sierr,256);
+    if (sierr) {
+      *ierr = sierr;
+      return;
+    }
+    name[ilen] = 0;
   }
 #elif defined (PETSC_USE_NARGS)
   GETARG(&i,name,256,&flg);
@@ -237,8 +244,13 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
 
   MPI_Initialized(&flag);
   if (!flag) {
-    mpi_init_(ierr);
-    if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:");return;}
+    int mierr;
+    mpi_init_(&mierr);
+    if (mierr) {
+      *ierr = mierr;
+      (*PetscErrorPrintf)("PetscInitialize:");
+      return;
+    }
     PetscBeganMPI    = PETSC_TRUE;
   }
   PetscInitializeCalled = PETSC_TRUE;

@@ -155,7 +155,8 @@ PetscErrorCode ISDestroy_Stride(IS is)
 PetscErrorCode ISGetIndices_Stride(IS in,int **idx)
 {
   IS_Stride *sub = (IS_Stride*)in->data;
-  int       i,ierr;
+  PetscErrorCode ierr;
+  int       i;
 
   PetscFunctionBegin;
   ierr      = PetscMalloc((sub->n+1)*sizeof(int),idx);CHKERRQ(ierr);
@@ -202,8 +203,9 @@ PetscErrorCode ISGetLocalSize_Stride(IS is,int *size)
 PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
 {
   IS_Stride   *sub = (IS_Stride *)is->data;
-  int         i,n = sub->n,ierr,rank,size;
+  int         i,n = sub->n,rank,size;
   PetscTruth  iascii;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -303,7 +305,8 @@ static struct _ISOps myops = { ISGetSize_Stride,
 @*/
 PetscErrorCode ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 {
-  int        min,max,ierr;
+  PetscErrorCode ierr;
+  int        min,max;
   IS         Nindex;
   IS_Stride  *sub;
   PetscTruth flg;

@@ -218,7 +218,8 @@ PetscErrorCode SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 {
   MPI_Comm      comm;
   MFCtx_Private *mfctx;
-  int           n,nloc,ierr;
+  PetscErrorCode ierr;
+  int           n,nloc;
   PetscTruth    flg;
   char          p[64];
 

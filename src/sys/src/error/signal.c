@@ -9,7 +9,7 @@
 
 struct SH {
   int    cookie;
-  int    (*handler)(int,void *);
+  PetscErrorCode (*handler)(int,void *);
   void   *ctx;
   struct SH* previous;
 };
@@ -165,7 +165,7 @@ PetscErrorCode PetscDefaultSignalHandler(int sig,void *ptr)
   (*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
   ierr =  PetscError(0,"User provided function"," unknown file","unknown directory",PETSC_ERR_SIG,1," ");
-  MPI_Abort(PETSC_COMM_WORLD,ierr);
+  MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
   PetscFunctionReturn(0);
 }
 
@@ -192,7 +192,7 @@ PetscErrorCode PetscDefaultSignalHandler(int sig,void *ptr)
 .seealso: PetscPopSignalHandler()
 
 @*/
-PetscErrorCode PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
+PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int,void*),void* ctx)
 {
   struct  SH *newsh;
   PetscErrorCode ierr;

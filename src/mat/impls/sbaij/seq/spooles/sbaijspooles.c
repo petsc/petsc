@@ -225,7 +225,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SBAIJSpooles"
 PetscErrorCode MatCreate_SBAIJSpooles(Mat A) 
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqSBAIJSpooles or MPISBAIJSpooles */

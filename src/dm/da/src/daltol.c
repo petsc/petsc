@@ -17,7 +17,8 @@
 */
 PetscErrorCode DALocalToLocalCreate(DA da)
 {
-  int *idx,left,j,ierr,count,up,down,i,bottom,top,k;
+  PetscErrorCode ierr;
+  int *idx,left,j,count,up,down,i,bottom,top,k;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

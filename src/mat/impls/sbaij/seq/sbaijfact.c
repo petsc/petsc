@@ -51,7 +51,8 @@ See page 85, "Iterative Methods ..." by Saad. */
 PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
-  int          *rip,ierr,i,mbs = a->mbs,*ai,*aj;
+  PetscErrorCode ierr;
+  int          *rip,i,mbs = a->mbs,*ai,*aj;
   int          *jutmp,bs = a->bs,bs2=a->bs2;
   int          m,realloc = 0,prow;
   int          *jl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
@@ -449,7 +450,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS                 perm = b->row;
-  int                *perm_ptr,ierr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscErrorCode ierr;
+  int                *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   int                *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   int                bs=a->bs,bs2 = a->bs2;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
@@ -738,7 +740,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS                 perm = b->row;
-  int                *perm_ptr,ierr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscErrorCode ierr;
+  int                *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   int                *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar          *u,*diag,*rtmp,*rtmp_ptr;
@@ -1045,7 +1048,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS                 ip = b->row;
-  int                *rip,ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
+  PetscErrorCode ierr;
+  int                *rip,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
   int                *ai,*aj,*r;
   int                k,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar          *rtmp;

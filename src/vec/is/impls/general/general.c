@@ -103,8 +103,9 @@ PetscErrorCode ISGetLocalSize_General(IS is,int *size)
 PetscErrorCode ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 {
   IS_General *sub = (IS_General *)is->data;
-  int        i,ierr,*ii,n = sub->n,*idx = sub->idx,size,nstart;
+  int        i,*ii,n = sub->n,*idx = sub->idx,size,nstart;
   IS         istmp,nistmp;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
@@ -138,7 +139,8 @@ PetscErrorCode ISInvertPermutation_General(IS is,int nlocal,IS *isout)
 PetscErrorCode ISView_General(IS is,PetscViewer viewer)
 {
   IS_General  *sub = (IS_General *)is->data;
-  int         i,n = sub->n,*idx = sub->idx,ierr;
+  PetscErrorCode ierr;
+  int         i,n = sub->n,*idx = sub->idx;
   PetscTruth  iascii;
 
   PetscFunctionBegin;
@@ -242,7 +244,8 @@ static struct _ISOps myops = { ISGetSize_General,
 @*/
 PetscErrorCode ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
 {
-  int        i,min,max,ierr;
+  PetscErrorCode ierr;
+  int        i,min,max;
   PetscTruth sorted = PETSC_TRUE;
   IS         Nindex;
   IS_General *sub;

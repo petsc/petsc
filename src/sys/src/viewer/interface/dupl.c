@@ -29,7 +29,8 @@
 @*/
 PetscErrorCode PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -65,7 +66,8 @@ PetscErrorCode PetscViewerGetSingleton(PetscViewer viewer,PetscViewer *outviewer
 @*/
 PetscErrorCode PetscViewerRestoreSingleton(PetscViewer viewer,PetscViewer *outviewer)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);

@@ -5,12 +5,12 @@
 #include "src/ksp/pc/pcimpl.h"              /*I "petscpc.h" I*/
 #include "src/ksp/pc/impls/bjacobi/bjacobi.h"
 
-static int PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
-static int PCSetUp_BJacobi_Multiblock(PC,Mat,Mat);
+static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
+static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC,Mat,Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_BJacobi"
-static int PCSetUp_BJacobi(PC pc)
+static PetscErrorCode PCSetUp_BJacobi(PC pc)
 {
   PC_BJacobi      *jac = (PC_BJacobi*)pc->data;
   Mat             mat = pc->mat,pmat = pc->pmat;
@@ -18,7 +18,7 @@ static int PCSetUp_BJacobi(PC pc)
   int N,M,start,i,rank,size,sum,end;
   int             bs,i_start=-1,i_end=-1;
   char            *pprefix,*mprefix;
-  int             (*f)(Mat,PetscTruth*,MatReuse,Mat*);
+  PetscErrorCode (*f)(Mat,PetscTruth*,MatReuse,Mat*);
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ static int PCSetUp_BJacobi(PC pc)
 /* Default destroy, if it has never been setup */
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_BJacobi"
-static int PCDestroy_BJacobi(PC pc)
+static PetscErrorCode PCDestroy_BJacobi(PC pc)
 {
   PC_BJacobi *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -197,10 +197,11 @@ static int PCDestroy_BJacobi(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_BJacobi"
-static int PCSetFromOptions_BJacobi(PC pc)
+static PetscErrorCode PCSetFromOptions_BJacobi(PC pc)
 {
   PC_BJacobi *jac = (PC_BJacobi*)pc->data;
-  int        blocks,ierr;
+  PetscErrorCode ierr;
+  int        blocks;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -219,10 +220,11 @@ static int PCSetFromOptions_BJacobi(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_BJacobi"
-static int PCView_BJacobi(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_BJacobi(PC pc,PetscViewer viewer)
 {
   PC_BJacobi  *jac = (PC_BJacobi*)pc->data;
-  int         rank,ierr,i;
+  PetscErrorCode ierr;
+  int         rank,i;
   PetscTruth  iascii,isstring;
   PetscViewer sviewer;
 
@@ -652,7 +654,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_BJacobi"
 PetscErrorCode PCCreate_BJacobi(PC pc)
 {
-  int          rank,ierr;
+  PetscErrorCode ierr;
+  int          rank;
   PC_BJacobi   *jac;
 
   PetscFunctionBegin;
@@ -864,7 +867,7 @@ PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_BJacobi_Singleblock"
-static int PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
+static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 {
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;
@@ -935,7 +938,8 @@ PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
-  int                   i,ierr;
+  PetscErrorCode ierr;
+  int                   i;
 
   PetscFunctionBegin;
   ierr = MatDestroyMatrices(jac->n_local,&bjac->pmat);CHKERRQ(ierr);
@@ -999,7 +1003,7 @@ PetscErrorCode PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
   PetscScalar           *xin,*yin;
   static PetscTruth     flag = PETSC_TRUE;
-  static int            SUBKspSolve;
+  static PetscEvent            SUBKspSolve;
 
   PetscFunctionBegin;
   if (flag) {
@@ -1039,7 +1043,7 @@ PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
   PetscScalar           *xin,*yin;
   static PetscTruth     flag = PETSC_TRUE;
-  static int            SUBKspSolve;
+  static PetscEvent            SUBKspSolve;
 
   PetscFunctionBegin;
   if (flag) {
@@ -1068,7 +1072,7 @@ PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_BJacobi_Multiblock"
-static int PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
+static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 {
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PetscErrorCode ierr;

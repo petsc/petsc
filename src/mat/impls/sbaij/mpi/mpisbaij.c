@@ -548,7 +548,8 @@ PetscErrorCode MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat mat,int m,const int
 PetscErrorCode MatGetValues_MPISBAIJ(Mat mat,int m,const int idxm[],int n,const int idxn[],PetscScalar v[])
 {
   Mat_MPISBAIJ *baij = (Mat_MPISBAIJ*)mat->data;
-  int          bs=baij->bs,ierr,i,j,bsrstart = baij->rstart*bs,bsrend = baij->rend*bs;
+  PetscErrorCode ierr;
+  int          bs=baij->bs,i,j,bsrstart = baij->rstart*bs,bsrend = baij->rend*bs;
   int          bscstart = baij->cstart*bs,bscend = baij->cend*bs,row,col,data;
 
   PetscFunctionBegin;
@@ -678,7 +679,8 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   Mat_MPISBAIJ *baij=(Mat_MPISBAIJ*)mat->data;
   Mat_SeqSBAIJ  *a=(Mat_SeqSBAIJ*)baij->A->data;
   Mat_SeqBAIJ  *b=(Mat_SeqBAIJ*)baij->B->data;
-  int         i,j,rstart,ncols,n,ierr,flg,bs2=baij->bs2;
+  PetscErrorCode ierr;
+  int         i,j,rstart,ncols,n,flg,bs2=baij->bs2;
   int         *row,*col,other_disassembled;
   PetscTruth  r1,r2,r3;
   MatScalar   *val;
@@ -779,7 +781,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPISBAIJ_ASCIIorDraworSocket"
-static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
+static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
   Mat_MPISBAIJ      *baij = (Mat_MPISBAIJ*)mat->data;
   PetscErrorCode ierr;
@@ -1145,7 +1147,8 @@ PetscErrorCode MatGetRow_MPISBAIJ(Mat matin,int row,int *nz,int **idx,PetscScala
 {
   Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
   PetscScalar    *vworkA,*vworkB,**pvA,**pvB,*v_p;
-  int            bs = mat->bs,bs2 = mat->bs2,i,ierr,*cworkA,*cworkB,**pcA,**pcB;
+  PetscErrorCode ierr;
+  int            bs = mat->bs,bs2 = mat->bs2,i,*cworkA,*cworkB,**pcA,**pcB;
   int            nztot,nzA,nzB,lrow,brstart = mat->rstart*bs,brend = mat->rend*bs;
   int            *cmap,*idx_p,cstart = mat->cstart;
 
@@ -1452,7 +1455,7 @@ PetscErrorCode MatSetUnfactored_MPISBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-static int MatDuplicate_MPISBAIJ(Mat,MatDuplicateOption,Mat *);
+static PetscErrorCode MatDuplicate_MPISBAIJ(Mat,MatDuplicateOption,Mat *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatEqual_MPISBAIJ"
@@ -1490,9 +1493,11 @@ PetscErrorCode MatSetUpPreallocation_MPISBAIJ(Mat A)
 #define __FUNCT__ "MatGetSubMatrices_MPISBAIJ"
 PetscErrorCode MatGetSubMatrices_MPISBAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
-  int        i,ierr;
+  PetscErrorCode ierr;
+  int        i;
   PetscTruth flg;
 
+  PetscFunctionBegin;
   for (i=0; i<n; i++) {
     ierr = ISEqual(irow[i],icol[i],&flg);CHKERRQ(ierr);
     if (!flg) {
@@ -1820,7 +1825,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SBAIJ"
 PetscErrorCode MatCreate_SBAIJ(Mat A) 
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSBAIJ);CHKERRQ(ierr);
@@ -2022,7 +2028,8 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B,int bs,int d_nz,const int d_nnz
 
 PetscErrorCode MatCreateMPISBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,const int d_nnz[],int o_nz,const int o_nnz[],Mat *A)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,m,n,M,N,A);CHKERRQ(ierr);
@@ -2040,7 +2047,7 @@ PetscErrorCode MatCreateMPISBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,in
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDuplicate_MPISBAIJ"
-static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
+static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat          mat;
   Mat_MPISBAIJ *a,*oldmat = (Mat_MPISBAIJ*)matin->data;
@@ -2157,7 +2164,8 @@ static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newm
 PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat          A;
-  int          i,nz,ierr,j,rstart,rend,fd;
+  PetscErrorCode ierr;
+  int          i,nz,j,rstart,rend,fd;
   PetscScalar  *vals,*buf;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;

@@ -4,7 +4,7 @@
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 /* Logging support */
-PetscCookieCode PF_COOKIE = 0;
+PetscCookie PF_COOKIE = 0;
 
 PetscFList PPetscFList         = PETSC_NULL; /* list of all registered PD functions */
 PetscTruth PFRegisterAllCalled = PETSC_FALSE;
@@ -30,7 +30,7 @@ PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 .seealso: PFCreate(), PFDestroy(), PFSetType(), PFApply(), PFApplyVec()
 @*/
-PetscErrorCode PFSet(PF pf,int(*apply)(void*,int,PetscScalar*,PetscScalar*),int(*applyvec)(void*,Vec,Vec),int(*view)(void*,PetscViewer),int(*destroy)(void*),void*ctx)
+PetscErrorCode PFSet(PF pf,PetscErrorCode (*apply)(void*,int,PetscScalar*,PetscScalar*),PetscErrorCode (*applyvec)(void*,Vec,Vec),PetscErrorCode (*view)(void*,PetscViewer),PetscErrorCode (*destroy)(void*),void*ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
@@ -85,7 +85,7 @@ PetscErrorCode PFDestroy(PF pf)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFPublish_Petsc"
-static int PFPublish_Petsc(PetscObject obj)
+static PetscErrorCode PFPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   PF          v = (PF) obj;
@@ -335,7 +335,7 @@ PetscErrorCode PFView(PF pf,PetscViewer viewer)
    PFRegisterDynamic - Adds a method to the mathematical function package.
 
    Synopsis:
-   int PFRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PF))
+   int PFRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PF))
 
    Not collective
 
@@ -374,7 +374,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFRegister"
-PetscErrorCode PFRegister(const char sname[],const char path[],const char name[],int (*function)(PF,void*))
+PetscErrorCode PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];

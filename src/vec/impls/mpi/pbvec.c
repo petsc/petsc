@@ -8,7 +8,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecPublish_MPI"
-static int VecPublish_MPI(PetscObject obj)
+static PetscErrorCode VecPublish_MPI(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   Vec          v = (Vec) obj;
@@ -99,7 +99,7 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
-extern int VecLoad_Binary(PetscViewer,const VecType, Vec*);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer,const VecType, Vec*);
 
 static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecDuplicateVecs_Default,
@@ -621,7 +621,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   Vec_MPI      *vw,*w = (Vec_MPI *)win->data;
   PetscScalar  *array;
 #if defined(PETSC_HAVE_AMS)
-  int          (*f)(AMS_Memory,char *,Vec);
+  PetscErrorCode (*f)(AMS_Memory,char *,Vec);
 #endif
 
   PetscFunctionBegin;

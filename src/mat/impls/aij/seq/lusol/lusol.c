@@ -75,9 +75,9 @@ typedef struct  {
   int nnz;			/* Number of nonzeros allocated for factors  */
   int luparm[30];		/* Input/output to LUSOL                     */
 
-  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  int (*MatDestroy)(Mat);
+  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatDestroy)(Mat);
   PetscTruth CleanUpLUSOL;
 
 } Mat_LUSOL;
@@ -235,11 +235,13 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__  "MatSolve_LUSOL"
-PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x) {
+PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x) 
+{
   Mat_LUSOL *lusol=(Mat_LUSOL*)A->spptr;
   double    *bb,*xx;
   int       mode=5;
-  int       i,m,n,nnz,status,ierr;
+  PetscErrorCode ierr;
+  int       i,m,n,nnz,status;
 
   PetscFunctionBegin;
   ierr = VecGetArray(x, &xx);CHKERRQ(ierr);
@@ -270,11 +272,13 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_LUSOL"
-PetscErrorCode MatLUFactorNumeric_LUSOL(Mat A, Mat *F) {
+PetscErrorCode MatLUFactorNumeric_LUSOL(Mat A, Mat *F)
+{
   Mat_SeqAIJ *a;
   Mat_LUSOL  *lusol = (Mat_LUSOL*)(*F)->spptr;
+  PetscErrorCode ierr;
   int        m, n, nz, nnz, status;
-  int        i, rs, re,ierr;
+  int        i, rs, re;
   int        factorizations;
 
   PetscFunctionBegin;

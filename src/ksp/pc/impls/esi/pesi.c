@@ -48,7 +48,7 @@ PetscErrorCode PCESISetPreconditioner(PC xin,esi::Preconditioner<double,int> *v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_ESI"
-static int PCSetUp_ESI(PC pc)
+static PetscErrorCode PCSetUp_ESI(PC pc)
 {
   PC_ESI                      *jac = (PC_ESI*)pc->data;
   PetscErrorCode ierr;
@@ -63,7 +63,7 @@ static int PCSetUp_ESI(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_ESI"
-static int PCApply_ESI(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_ESI(PC pc,Vec x,Vec y)
 {
   PC_ESI                  *jac = (PC_ESI*)pc->data;
   esi::Vector<double,int> *xx,*yy;
@@ -78,7 +78,7 @@ static int PCApply_ESI(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplySymmetricLeft_ESI"
-static int PCApplySymmetricLeft_ESI(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplySymmetricLeft_ESI(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PC_ESI                  *jac = (PC_ESI*)pc->data;
@@ -93,7 +93,7 @@ static int PCApplySymmetricLeft_ESI(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplySymmetricRight_ESI"
-static int PCApplySymmetricRight_ESI(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplySymmetricRight_ESI(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PC_ESI                  *jac = (PC_ESI*)pc->data;
@@ -108,7 +108,7 @@ static int PCApplySymmetricRight_ESI(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_ESI"
-static int PCDestroy_ESI(PC pc)
+static PetscErrorCode PCDestroy_ESI(PC pc)
 {
   PC_ESI *jac = (PC_ESI*)pc->data;
   PetscErrorCode ierr;
@@ -124,7 +124,7 @@ static int PCDestroy_ESI(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_ESI"
-static int PCSetFromOptions_ESI(PC pc)
+static PetscErrorCode PCSetFromOptions_ESI(PC pc)
 {
   /* PC_ESI  *jac = (PC_ESI*)pc->data; */
   PetscErrorCode ierr;

@@ -17,7 +17,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_NN"
-static int PCSetUp_NN(PC pc)
+static PetscErrorCode PCSetUp_NN(PC pc)
 {
   PetscErrorCode ierr;
   
@@ -46,7 +46,7 @@ static int PCSetUp_NN(PC pc)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_NN"
-static int PCApply_NN(PC pc,Vec r,Vec z)
+static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
 {
   PC_IS       *pcis = (PC_IS*)(pc->data);
   PetscErrorCode ierr;
@@ -115,7 +115,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_NN"
-static int PCDestroy_NN(PC pc)
+static PetscErrorCode PCDestroy_NN(PC pc)
 {
   PC_NN *pcnn = (PC_NN*)pc->data;
   PetscErrorCode ierr;
@@ -231,7 +231,8 @@ EXTERN_C_END
 PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 {
   MPI_Request    *send_request, *recv_request;
-  int            i, j, k, ierr;
+  PetscErrorCode ierr;
+  int            i, j, k;
 
   PetscScalar*   mat;    /* Sub-matrix with this subdomain's contribution to the coarse matrix             */
   PetscScalar**  DZ_OUT; /* proc[k].DZ_OUT[i][] = bit of vector to be sent from processor k to processor i */
@@ -438,7 +439,8 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 #define __FUNCT__ "PCNNApplySchurToChunk"
 PetscErrorCode PCNNApplySchurToChunk(PC pc, int n, int* idx, PetscScalar *chunk, PetscScalar* array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
-  int   i, ierr;
+  PetscErrorCode ierr;
+  int   i;
   PC_IS *pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
@@ -555,7 +557,8 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
 PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B,
                    Vec vec1_D, Vec vec2_D, PetscScalar *work_N)
 {
-  int            k, ierr;
+  PetscErrorCode ierr;
+  int            k;
   PetscScalar    zero     =  0.0;
   PetscScalar    m_one    = -1.0;
   PetscScalar    value;

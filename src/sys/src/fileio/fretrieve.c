@@ -35,7 +35,7 @@
 #include "petscfix.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode Petsc_DelTag(MPI_Comm,int,void*,void*);
+EXTERN int Petsc_DelTag(MPI_Comm,int,void*,void*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -363,7 +363,8 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibnam
   char              buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par;
   const char        *pdir;
   FILE              *fp;
-  int               i,rank,ierr;
+  PetscErrorCode ierr;
+  int               i,rank;
   size_t            len = 0;
   PetscTruth        flg1,flg2,sharedtmp,exists;
 

@@ -11,7 +11,7 @@
 typedef struct _EH *EH;
 struct _EH {
   int    cookie;
-  int    (*handler)(int,const char*,const char*,const char *,int,int,const char*,void *);
+  PetscErrorCode (*handler)(int,const char*,const char*,const char *,int,int,const char*,void *);
   void   *ctx;
   EH     previous;
 };
@@ -112,7 +112,7 @@ $    int handler(int line,char *func,char *file,char *dir,int n,int p,char *mess
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
 @*/
-PetscErrorCode PetscPushErrorHandler(int (*handler)(int,const char *,const char*,const char*,int,int,const char*,void*),void *ctx)
+PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char *,const char*,const char*,int,int,const char*,void*),void *ctx)
 {
   EH  neweh;
   PetscErrorCode ierr;
@@ -297,7 +297,7 @@ PetscErrorCode PetscError(int line,const char *func,const char* file,const char 
   PetscStrncmp(func,"main",4,&ismain);
   PetscStrncmp(func,"unknown",7,&isunknown);
   if (ismain || isunknown) {
-    MPI_Abort(PETSC_COMM_WORLD,ierr);
+    MPI_Abort(PETSC_COMM_WORLD,(int)ierr);
   }
   PetscFunctionReturn(ierr);
 }
@@ -322,7 +322,8 @@ PetscErrorCode PetscError(int line,const char *func,const char* file,const char 
 @*/
 PetscErrorCode PetscIntView(int N,int idx[],PetscViewer viewer)
 {
-  int        j,i,n = N/20,p = N % 20,ierr;
+  PetscErrorCode ierr;
+  int        j,i,n = N/20,p = N % 20;
   PetscTruth iascii,issocket;
   MPI_Comm   comm;
 
@@ -402,7 +403,8 @@ PetscErrorCode PetscIntView(int N,int idx[],PetscViewer viewer)
 @*/
 PetscErrorCode PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
 {
-  int        j,i,n = N/5,p = N % 5,ierr;
+  PetscErrorCode ierr;
+  int        j,i,n = N/5,p = N % 5;
   PetscTruth iascii,issocket;
   MPI_Comm   comm;
 
@@ -483,7 +485,8 @@ PetscErrorCode PetscRealView(int N,PetscReal idx[],PetscViewer viewer)
 @*/
 PetscErrorCode PetscScalarView(int N,PetscScalar idx[],PetscViewer viewer)
 {
-  int        j,i,n = N/3,p = N % 3,ierr;
+  PetscErrorCode ierr;
+  int        j,i,n = N/3,p = N % 3;
   PetscTruth iascii,issocket;
   MPI_Comm   comm;
 

@@ -18,10 +18,10 @@ typedef struct {
   PetscScalar *aux;
   int         naux;
 
-  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  int (*MatDestroy)(Mat);
+  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatDestroy)(Mat);
   PetscTruth CleanUpESSL;
 } Mat_Essl;
 
@@ -90,7 +90,8 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x) {
 PetscErrorCode MatLUFactorNumeric_Essl(Mat A,Mat *F) {
   Mat_SeqAIJ *aa=(Mat_SeqAIJ*)(A)->data;
   Mat_Essl   *essl=(Mat_Essl*)(*F)->spptr;
-  int        i,ierr,one = 1;
+  PetscErrorCode ierr;
+  int        i,one = 1;
 
   PetscFunctionBegin;
   /* copy matrix data into silly ESSL data structure (1-based Frotran style) */

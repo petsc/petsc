@@ -36,14 +36,14 @@ typedef struct {
   MPI_Comm       comm_mumps;
 
   PetscTruth     isAIJ,CleanUpMUMPS;
-  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  int (*MatView)(Mat,PetscViewer);
-  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  int (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
-  int (*MatDestroy)(Mat);
-  int (*specialdestroy)(Mat);
-  int (*MatPreallocate)(Mat,int,int,int*,int,int*);
+  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*MatView)(Mat,PetscViewer);
+  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatDestroy)(Mat);
+  PetscErrorCode (*specialdestroy)(Mat);
+  PetscErrorCode (*MatPreallocate)(Mat,int,int,int*,int,int*);
 } Mat_MUMPS;
 
 EXTERN PetscErrorCode MatDuplicate_MUMPS(Mat,MatDuplicateOption,Mat*);
@@ -179,7 +179,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   Mat_MUMPS *lu=(Mat_MUMPS*)A->spptr; 
   PetscErrorCode ierr;
   int       size=lu->size;
-  int       (*specialdestroy)(Mat);
+  PetscErrorCode (*specialdestroy)(Mat);
   PetscFunctionBegin;
   if (lu->CleanUpMUMPS) {
     /* Terminate instance, deallocate memories */
@@ -210,7 +210,8 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
 #define __FUNCT__ "MatDestroy_AIJMUMPS"
 PetscErrorCode MatDestroy_AIJMUMPS(Mat A) 
 {
-  PetscErrorCode ierr, size;
+  PetscErrorCode ierr;
+  int  size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
@@ -226,7 +227,8 @@ PetscErrorCode MatDestroy_AIJMUMPS(Mat A)
 #define __FUNCT__ "MatDestroy_SBAIJMUMPS"
 PetscErrorCode MatDestroy_SBAIJMUMPS(Mat A) 
 {
-  PetscErrorCode ierr, size;
+  PetscErrorCode ierr;
+  int  size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
@@ -437,7 +439,8 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
   Mat_MUMPS  *lu =(Mat_MUMPS*)(*F)->spptr; 
   Mat_MUMPS  *lua=(Mat_MUMPS*)(A)->spptr; 
-  int        rnz,nnz,ierr,nz,i,M=A->M,*ai,*aj,icntl;
+  PetscErrorCode ierr;
+  int        rnz,nnz,nz,i,M=A->M,*ai,*aj,icntl;
   PetscTruth valOnly,flg;
 
   PetscFunctionBegin; 	
@@ -907,7 +910,7 @@ PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newm
   /* I really don't like needing to know the tag: MatMPISBAIJSetPreallocation_C */
     ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
     if (f) {
-      mumps->MatPreallocate = (int (*)(Mat,int,int,int*,int,int*))f;
+      mumps->MatPreallocate = (PetscErrorCode (*)(Mat,int,int,int*,int,int*))f;
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
                                                "MatMPISBAIJSetPreallocation_MPISBAIJMUMPS",
                                                MatMPISBAIJSetPreallocation_MPISBAIJMUMPS);CHKERRQ(ierr);
@@ -982,7 +985,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SBAIJMUMPS"
 PetscErrorCode MatCreate_SBAIJMUMPS(Mat A) 
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   /* Change type name before calling MatSetType to force proper construction of SeqSBAIJ or MPISBAIJ */

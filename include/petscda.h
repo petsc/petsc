@@ -76,13 +76,9 @@ EXTERN PetscErrorCode DASetInterpolationType(DA,DAInterpolationType);
 
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
-extern int DA_COOKIE;
+extern PetscCookie DA_COOKIE;
 
-/* Logging support; why is this done this way? Should be changed to the pattern used by other objects */
-enum {DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction,DA_MAX_EVENTS};
-extern int DAEvents[DA_MAX_EVENTS];
-#define DALogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(DAEvents[e],o1,o2,o3,o4)
-#define DALogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(DAEvents[e],o1,o2,o3,o4)
+extern PetscEvent DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 
 EXTERN PetscErrorCode   DACreate1d(MPI_Comm,DAPeriodicType,int,int,int,int*,DA *);
 EXTERN PetscErrorCode   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,int,int,int,int,int,int,int*,int*,DA *);
@@ -199,7 +195,7 @@ typedef struct {
       DAForEachPointBegin2d - Starts a loop over the local part of a two dimensional DA
 
    Synopsis:
-   int  DAForEachPointBegin2d(DALocalInfo *info,int i,int j);
+   void  DAForEachPointBegin2d(DALocalInfo *info,int i,int j);
    
    Level: intermediate
 
@@ -214,7 +210,7 @@ M*/
       DAForEachPointEnd2d - Ends a loop over the local part of a two dimensional DA
 
    Synopsis:
-   int  DAForEachPointEnd2d;
+   void  DAForEachPointEnd2d;
    
    Level: intermediate
 
@@ -280,7 +276,7 @@ typedef struct {PetscScalar x,y,z;} DACoor3d;
     
 
 EXTERN PetscErrorCode DAGetLocalInfo(DA,DALocalInfo*);
-typedef int (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
+typedef PetscErrorCode (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
 EXTERN PetscErrorCode DAFormFunction1(DA,Vec,Vec,void*);
 EXTERN PetscErrorCode DAFormFunctioni1(DA,int,Vec,PetscScalar*,void*);
 EXTERN PetscErrorCode DAComputeJacobian1WithAdic(DA,Vec,Mat,void*);
@@ -291,7 +287,7 @@ EXTERN PetscErrorCode DAMultiplyByJacobian1WithAD(DA,Vec,Vec,Vec,void*);
 EXTERN PetscErrorCode DAComputeJacobian1(DA,Vec,Mat,void*);
 EXTERN PetscErrorCode DAGetLocalFunction(DA,DALocalFunction1*);
 EXTERN PetscErrorCode DASetLocalFunction(DA,DALocalFunction1);
-EXTERN PetscErrorCode DASetLocalFunctioni(DA,int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
+EXTERN PetscErrorCode DASetLocalFunctioni(DA,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
 EXTERN PetscErrorCode DASetLocalJacobian(DA,DALocalFunction1);
 EXTERN PetscErrorCode DASetLocalAdicFunction_Private(DA,DALocalFunction1);
 
@@ -326,15 +322,15 @@ EXTERN PetscErrorCode DASetLocalAdicMFFunction_Private(DA,DALocalFunction1);
 #else
 #  define DASetLocalAdicMFFunction(a,d) DASetLocalAdicMFFunction_Private(a,0)
 #endif
-EXTERN PetscErrorCode DASetLocalAdicFunctioni_Private(DA,int (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode DASetLocalAdicFunctioni_Private(DA,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-#  define DASetLocalAdicFunctioni(a,d) DASetLocalAdicFunctioni_Private(a,(int (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
+#  define DASetLocalAdicFunctioni(a,d) DASetLocalAdicFunctioni_Private(a,(PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
 #else
 #  define DASetLocalAdicFunctioni(a,d) DASetLocalAdicFunctioni_Private(a,0)
 #endif
-EXTERN PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA,int (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-#  define DASetLocalAdicMFFunctioni(a,d) DASetLocalAdicMFFunctioni_Private(a,(int (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
+#  define DASetLocalAdicMFFunctioni(a,d) DASetLocalAdicMFFunctioni_Private(a,(PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,void*,void*))d)
 #else
 #  define DASetLocalAdicMFFunctioni(a,d) DASetLocalAdicMFFunctioni_Private(a,0)
 #endif
@@ -344,7 +340,7 @@ EXTERN PetscErrorCode DAFormFunctioniTest1(DA,void*);
 #include "petscmat.h"
 EXTERN PetscErrorCode DAGetColoring(DA,ISColoringType,ISColoring *);
 EXTERN PetscErrorCode DAGetMatrix(DA,const MatType,Mat *);
-EXTERN PetscErrorCode DASetGetMatrix(DA,int (*)(DA,const MatType,Mat *));
+EXTERN PetscErrorCode DASetGetMatrix(DA,PetscErrorCode (*)(DA,const MatType,Mat *));
 EXTERN PetscErrorCode DAGetInterpolation(DA,DA,Mat*,Vec*);
 EXTERN PetscErrorCode DAGetInjection(DA,DA,VecScatter*);
 EXTERN PetscErrorCode DASetBlockFills(DA,int*,int*);
@@ -439,51 +435,51 @@ typedef struct NLF_DAAD* NLF;
 S*/
 typedef struct _p_DMMG *DMMG;
 struct _p_DMMG {
-  DM         dm;                   /* grid information for this level */
-  Vec        x,b,r;                /* global vectors used in multigrid preconditioner for this level*/
-  Mat        J;                    /* matrix on this level */
-  Mat        R;                    /* restriction to next coarser level (not defined on level 0) */
-  int        nlevels;              /* number of levels above this one (total number of levels on level 0)*/
-  MPI_Comm   comm;
-  int        (*solve)(DMMG*,int);
-  void       *user;         
-  PetscTruth galerkin;                  /* for A_c = R*A*R^T */
+  DM             dm;                   /* grid information for this level */
+  Vec            x,b,r;                /* global vectors used in multigrid preconditioner for this level*/
+  Mat            J;                    /* matrix on this level */
+  Mat            R;                    /* restriction to next coarser level (not defined on level 0) */
+  int            nlevels;              /* number of levels above this one (total number of levels on level 0)*/
+  MPI_Comm       comm;
+  PetscErrorCode (*solve)(DMMG*,int);
+  void           *user;         
+  PetscTruth     galerkin;                  /* for A_c = R*A*R^T */
 
   /* KSP only */
-  KSP        ksp;             
-  int        (*rhs)(DMMG,Vec);
-  PetscTruth matricesset;               /* User had called DMMGSetKSP() and the matrices have been computed */
+  KSP            ksp;             
+  PetscErrorCode (*rhs)(DMMG,Vec);
+  PetscTruth     matricesset;               /* User had called DMMGSetKSP() and the matrices have been computed */
 
   /* SNES only */
-  Mat           B;
-  Vec           Rscale;                 /* scaling to restriction before computing Jacobian */
-  int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
-  int           (*computefunction)(SNES,Vec,Vec,void*);  
+  Mat            B;
+  Vec            Rscale;                 /* scaling to restriction before computing Jacobian */
+  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
+  PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*);  
 
-  PetscTruth    updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
-  int           updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
+  PetscTruth     updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
+  int            updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
 
-  MatFDColoring fdcoloring;             /* only used with FD coloring for Jacobian */  
-  SNES          snes;                  
-  int           (*initialguess)(SNES,Vec,void*);
-  Vec           w,work1,work2;         /* global vectors */
-  Vec           lwork1;
+  MatFDColoring  fdcoloring;             /* only used with FD coloring for Jacobian */  
+  SNES           snes;                  
+  PetscErrorCode (*initialguess)(SNES,Vec,void*);
+  Vec            w,work1,work2;         /* global vectors */
+  Vec            lwork1;
 
   /* FAS only */
-  NLF           nlf;                   /* FAS smoother object */
-  VecScatter    inject;                /* inject from this level to the next coarsest */
-  PetscTruth    monitor,monitorall;
-  int           presmooth,postsmooth,coarsesmooth;
-  PetscReal     rtol,atol,rrtol;       /* convergence tolerance */   
+  NLF            nlf;                   /* FAS smoother object */
+  VecScatter     inject;                /* inject from this level to the next coarsest */
+  PetscTruth     monitor,monitorall;
+  int            presmooth,postsmooth,coarsesmooth;
+  PetscReal      rtol,atol,rrtol;       /* convergence tolerance */   
   
 };
 
 EXTERN PetscErrorCode DMMGCreate(MPI_Comm,int,void*,DMMG**);
 EXTERN PetscErrorCode DMMGDestroy(DMMG*);
 EXTERN PetscErrorCode DMMGSetUp(DMMG*);
-EXTERN PetscErrorCode DMMGSetKSP(DMMG*,int (*)(DMMG,Vec),int (*)(DMMG,Mat));
-EXTERN PetscErrorCode DMMGSetSNES(DMMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
-EXTERN PetscErrorCode DMMGSetInitialGuess(DMMG*,int (*)(SNES,Vec,void*));
+EXTERN PetscErrorCode DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat));
+EXTERN PetscErrorCode DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
+EXTERN PetscErrorCode DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(SNES,Vec,void*));
 EXTERN PetscErrorCode DMMGView(DMMG*,PetscViewer);
 EXTERN PetscErrorCode DMMGSolve(DMMG*);
 EXTERN PetscErrorCode DMMGSetUseMatrixFree(DMMG*);
@@ -499,11 +495,11 @@ EXTERN PetscErrorCode DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFun
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) DMMGSetSNESLocal_Private(dmmg,(DALocalFunction1)function,(DALocalFunction1)jacobian,(DALocalFunction1)0,(DALocalFunction1)0)
 #endif
 
-EXTERN PetscErrorCode DMMGSetSNESLocali_Private(DMMG*,int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),int (*)(DALocalInfo*,MatStencil*,void*,void*,void*),int (*)(DALocalInfo*,MatStencil*,void*,void*,void*));
+EXTERN PetscErrorCode DMMGSetSNESLocali_Private(DMMG*,PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*));
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-#  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(int (*)(DALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(int (*)(DALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
+#  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*))(ad_function),(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,void*,void*))(admf_function))
 #else
-#  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(int (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
+#  define DMMGSetSNESLocali(dmmg,function,ad_function,admf_function) DMMGSetSNESLocali_Private(dmmg,(PetscErrorCode(*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))function,0,0)
 #endif
 
 #define DMMGGetb(ctx)              (ctx)[(ctx)[0]->nlevels-1]->b

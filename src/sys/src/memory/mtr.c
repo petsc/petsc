@@ -483,7 +483,8 @@ PetscErrorCode PetscTrSpace(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDou
 PetscErrorCode PetscTrDump(FILE *fp)
 {
   TRSPACE *head;
-  int     rank,ierr;
+  PetscErrorCode ierr;
+  int     rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -551,11 +552,12 @@ PetscErrorCode PetscTrLog(void)
 @*/
 PetscErrorCode PetscTrLogDump(FILE *fp)
 {
-  int            i,rank,j,n,*shortlength,ierr,dummy,size,tag = 1212 /* very bad programming */,*perm;
+  int            i,rank,j,n,*shortlength,dummy,size,tag = 1212 /* very bad programming */,*perm;
   PetscTruth     match;
   const char     **shortfunction;
   PetscLogDouble rss;
   MPI_Status     status;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -8,14 +8,14 @@
 #include "vecimpl.h"                     /*I "petscvec.h" I*/
 
 /* Logging support */
-int VEC_SCATTER_COOKIE = 0;
+PetscCookie VEC_SCATTER_COOKIE = 0;
 
 /*
      Checks if any indices are less than zero and generates an error
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCheckIndicates_Private"
-static int VecScatterCheckIndices_Private(int nmax,int n,int *idx)
+static PetscErrorCode VecScatterCheckIndices_Private(int nmax,int n,int *idx)
 {
   int i;
 
@@ -157,7 +157,8 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
 #define __FUNCT__ "VecScatterBegin_MPI_ToOne"
 PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
-  int          rank,ierr,yy_n,xx_n,*range;
+  PetscErrorCode ierr;
+  int          rank,yy_n,xx_n,*range;
   PetscScalar  *xv,*yv;
   MPI_Comm     comm;
   PetscMap     map;
@@ -266,7 +267,8 @@ PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
 PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 {
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll*)in->todata,*sto;
-  int                  size,i,ierr;
+  PetscErrorCode ierr;
+  int                  size,i;
 
   PetscFunctionBegin;
   out->postrecvs      = 0;
@@ -302,7 +304,8 @@ PetscErrorCode VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mo
 {
   VecScatter_Seq_General *gen_to = (VecScatter_Seq_General*)ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
-  int                    i,n = gen_from->n,*fslots,*tslots,ierr;
+  PetscErrorCode ierr;
+  int                    i,n = gen_from->n,*fslots,*tslots;
   PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
@@ -339,7 +342,8 @@ PetscErrorCode VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,Scatte
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
   int                    i,n = gen_from->n,*fslots = gen_from->slots;
-  int                    first = gen_to->first,ierr;
+  PetscErrorCode ierr;
+  int                    first = gen_to->first;
   PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
@@ -383,7 +387,8 @@ PetscErrorCode VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mo
   VecScatter_Seq_Stride  *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
   VecScatter_Seq_General *gen_from = (VecScatter_Seq_General*)ctx->fromdata;
   int                    i,n = gen_from->n,*fslots = gen_from->slots;
-  int                    first = gen_to->first,step = gen_to->step,ierr;
+  PetscErrorCode ierr;
+  int                    first = gen_to->first,step = gen_to->step;
   PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
@@ -426,7 +431,8 @@ PetscErrorCode VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,Scatte
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
   int                    i,n = gen_from->n,*fslots = gen_to->slots;
-  int                    first = gen_from->first,ierr;
+  PetscErrorCode ierr;
+  int                    first = gen_from->first;
   PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
@@ -471,7 +477,8 @@ PetscErrorCode VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mo
   VecScatter_Seq_Stride  *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
   VecScatter_Seq_General *gen_to   = (VecScatter_Seq_General*)ctx->todata;
   int                    i,n = gen_from->n,*fslots = gen_to->slots;
-  int                    first = gen_from->first,step = gen_from->step,ierr;
+  PetscErrorCode ierr;
+  int                    first = gen_from->first,step = gen_from->step;
   PetscScalar            *xv,*yv;
   
   PetscFunctionBegin;
@@ -514,7 +521,8 @@ PetscErrorCode VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mo
   VecScatter_Seq_Stride *gen_to   = (VecScatter_Seq_Stride*)ctx->todata;
   VecScatter_Seq_Stride *gen_from = (VecScatter_Seq_Stride*)ctx->fromdata;
   int                   i,n = gen_from->n,to_first = gen_to->first,to_step = gen_to->step;
-  int                   from_first = gen_from->first,from_step = gen_from->step,ierr;
+  PetscErrorCode ierr;
+  int                   from_first = gen_from->first,from_step = gen_from->step;
   PetscScalar           *xv,*yv;
   
   PetscFunctionBegin;
@@ -751,7 +759,8 @@ EXTERN PetscErrorCode VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter ctx;
-  int        len,size,cando,totalv,ierr,*range,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID; 
+  PetscErrorCode ierr;
+  int        len,size,cando,totalv,*range,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID; 
   PetscTruth flag;
   MPI_Comm   comm,ycomm;
   PetscTruth ixblock,iyblock,iystride,islocal;

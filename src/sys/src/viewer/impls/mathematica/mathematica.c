@@ -80,7 +80,7 @@ PetscErrorCode PetscViewerInitializeMathematicaWorld_Private()
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_Mathematica"
-static int PetscViewerDestroy_Mathematica(PetscViewer viewer)
+static PetscErrorCode PetscViewerDestroy_Mathematica(PetscViewer viewer)
 {
   PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data; 
   PetscErrorCode          ierr;

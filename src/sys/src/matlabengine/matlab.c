@@ -9,7 +9,7 @@ struct  _p_PetscMatlabEngine {
   char     buffer[1024];
 };
 
-int MATLABENGINE_COOKIE = -1;
+PetscCookie MATLABENGINE_COOKIE = -1;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMatlabEngineCreate"

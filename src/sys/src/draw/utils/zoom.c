@@ -21,7 +21,7 @@
 
 .seealso:  
 @*/
-PetscErrorCode PetscDrawZoom(PetscDraw draw,int (*func)(PetscDraw,void *),void *ctx)
+PetscErrorCode PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void *),void *ctx)
 {
   PetscErrorCode ierr;
   int             pause;

@@ -30,9 +30,10 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningApply_Jostle"
-static int MatPartitioningApply_Jostle(MatPartitioning part, IS * partitioning)
+static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * partitioning)
 {
-    PetscErrorCode ierr, size, rank, i;
+    PetscErrorCode ierr;
+    int  size, rank, i;
     Mat mat = part->adj, matMPI;
     Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
     MatPartitioning_Jostle *jostle_struct =

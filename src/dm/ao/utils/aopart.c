@@ -17,7 +17,7 @@
 
 .seealso: AODataSegmentPartition()
 @*/
-int AODataKeyPartition(AOData aodata,const char key[])
+PetscErrorCode AODataKeyPartition(AOData aodata,const char key[])
 {
   AO              ao;
   Mat             adj;

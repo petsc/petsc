@@ -31,7 +31,8 @@
 */
 PetscErrorCode MatToSymmetricIJ_SeqAIJ(int m,int *ai,int *aj,int shiftin,int shiftout,int **iia,int **jja)
 {
-  int *work,*ia,*ja,*j,i,nz,row,col,ierr;
+  PetscErrorCode ierr;
+  int *work,*ia,*ja,*j,i,nz,row,col;
 
   PetscFunctionBegin;
   /* allocate space for row pointers */

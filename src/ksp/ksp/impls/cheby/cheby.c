@@ -84,7 +84,8 @@ PetscErrorCode KSPSetFromOptions_Chebychev(KSP ksp)
 #define __FUNCT__ "KSPSolve_Chebychev"
 PetscErrorCode KSPSolve_Chebychev(KSP ksp)
 {
-  int              k,kp1,km1,maxit,ktmp,i,ierr;
+  PetscErrorCode ierr;
+  int              k,kp1,km1,maxit,ktmp,i;
   PetscScalar      alpha,omegaprod,mu,omega,Gamma,c[3],scale,mone = -1.0,tmp;
   PetscReal        rnorm;
   Vec              x,b,p[3],r;

@@ -49,9 +49,8 @@ E*/
 #define KSPType char*
 
 /* Logging support */
-extern int KSP_COOKIE;
-extern int KSP_GMRESOrthogonalization;
-extern int KSP_SetUp, KSP_Solve;
+extern PetscCookie KSP_COOKIE;
+extern PetscEvent    KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 EXTERN PetscErrorCode KSPCreate(MPI_Comm,KSP *);
 EXTERN PetscErrorCode KSPSetType(KSP,const KSPType);
@@ -65,13 +64,13 @@ extern PetscFList KSPList;
 EXTERN PetscErrorCode KSPRegisterAll(const char[]);
 EXTERN PetscErrorCode KSPRegisterDestroy(void);
 
-EXTERN PetscErrorCode KSPRegister(const char[],const char[],const char[],int(*)(KSP));
+EXTERN PetscErrorCode KSPRegister(const char[],const char[],const char[],PetscErrorCode (*)(KSP));
 
 /*MC
    KSPRegisterDynamic - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
-   int KSPRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(KSP))
+   int KSPRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(KSP))
 
    Not Collective
 
@@ -137,7 +136,7 @@ EXTERN PetscErrorCode KSPGetNullSpace(KSP,MatNullSpace*);
 EXTERN PetscErrorCode KSPSetPC(KSP,PC);
 EXTERN PetscErrorCode KSPGetPC(KSP,PC*);
 
-EXTERN PetscErrorCode KSPSetMonitor(KSP,int (*)(KSP,int,PetscReal,void*),void *,int (*)(void*));
+EXTERN PetscErrorCode KSPSetMonitor(KSP,PetscErrorCode (*)(KSP,int,PetscReal,void*),void *,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode KSPClearMonitor(KSP);
 EXTERN PetscErrorCode KSPGetMonitorContext(KSP,void **);
 EXTERN PetscErrorCode KSPGetResidualHistory(KSP,PetscReal*[],int *);
@@ -161,7 +160,7 @@ EXTERN PetscErrorCode KSPGMRESSetRestart(KSP, int);
 EXTERN PetscErrorCode KSPGMRESSetHapTol(KSP,PetscReal);
 
 EXTERN PetscErrorCode KSPGMRESSetPreAllocateVectors(KSP);
-EXTERN PetscErrorCode KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
+EXTERN PetscErrorCode KSPGMRESSetOrthogonalization(KSP,PetscErrorCode (*)(KSP,int));
 EXTERN PetscErrorCode KSPGMRESModifiedGramSchmidtOrthogonalization(KSP,int);
 EXTERN PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP,int);
 
@@ -225,14 +224,14 @@ EXTERN PetscErrorCode KSPGMRESSetCGSRefinementType(KSP,KSPGMRESCGSRefinementType
 
 EXTERN PetscErrorCode KSPFGMRESModifyPCNoChange(KSP,int,int,PetscReal,void*);
 EXTERN PetscErrorCode KSPFGMRESModifyPCKSP(KSP,int,int,PetscReal,void*);
-EXTERN PetscErrorCode KSPFGMRESSetModifyPC(KSP,int (*)(KSP,int,int,PetscReal,void*),void*,int(*)(void*));
+EXTERN PetscErrorCode KSPFGMRESSetModifyPC(KSP,PetscErrorCode (*)(KSP,int,int,PetscReal,void*),void*,PetscErrorCode(*)(void*));
 
 EXTERN PetscErrorCode KSPQCGSetTrustRegionRadius(KSP,PetscReal);
 EXTERN PetscErrorCode KSPQCGGetQuadratic(KSP,PetscReal*);
 EXTERN PetscErrorCode KSPQCGGetTrialStepNorm(KSP,PetscReal*);
 
 EXTERN PetscErrorCode KSPSetFromOptions(KSP);
-EXTERN PetscErrorCode KSPAddOptionsChecker(int (*)(KSP));
+EXTERN PetscErrorCode KSPAddOptionsChecker(PetscErrorCode (*)(KSP));
 
 EXTERN PetscErrorCode KSPSingularValueMonitor(KSP,int,PetscReal,void *);
 EXTERN PetscErrorCode KSPDefaultMonitor(KSP,int,PetscReal,void *);
@@ -346,7 +345,7 @@ typedef enum {/* converged */
  
               KSP_CONVERGED_ITERATING          =  0} KSPConvergedReason;
 
-EXTERN PetscErrorCode KSPSetConvergenceTest(KSP,int (*)(KSP,int,PetscReal,KSPConvergedReason*,void*),void *);
+EXTERN PetscErrorCode KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,int,PetscReal,KSPConvergedReason*,void*),void *);
 EXTERN PetscErrorCode KSPGetConvergenceContext(KSP,void **);
 EXTERN PetscErrorCode KSPDefaultConverged(KSP,int,PetscReal,KSPConvergedReason*,void *);
 EXTERN PetscErrorCode KSPSkipConverged(KSP,int,PetscReal,KSPConvergedReason*,void *);

@@ -60,7 +60,7 @@ PetscErrorCode TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_CN_Linear_Constant_Matrix"
-static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
 {
   TS_CN       *cn = (TS_CN*)ts->data;
   Vec         sol = ts->vec_sol,update = cn->update;
@@ -108,7 +108,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_CN_Linear_Variable_Matrix"
-static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
 {
   TS_CN        *cn = (TS_CN*)ts->data;
   Vec          sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
@@ -168,7 +168,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_CN_Nonlinear"
-static int TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
 {
   Vec   sol = ts->vec_sol;
   PetscErrorCode ierr;
@@ -200,7 +200,7 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSDestroy_CN"
-static int TSDestroy_CN(TS ts)
+static PetscErrorCode TSDestroy_CN(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
   PetscErrorCode ierr;
@@ -276,7 +276,7 @@ PetscErrorCode TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,vo
 /* ------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUp_CN_Linear_Constant_Matrix"
-static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
+static PetscErrorCode TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
   TS_CN        *cn = (TS_CN*)ts->data;
   PetscErrorCode ierr;
@@ -299,7 +299,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUp_CN_Linear_Variable_Matrix"
-static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
+static PetscErrorCode TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
   PetscErrorCode ierr;
@@ -312,7 +312,7 @@ static int TSSetUp_CN_Linear_Variable_Matrix(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUp_CN_Nonlinear"
-static int TSSetUp_CN_Nonlinear(TS ts)
+static PetscErrorCode TSSetUp_CN_Nonlinear(TS ts)
 {
   TS_CN *cn = (TS_CN*)ts->data;
   PetscErrorCode ierr;
@@ -328,7 +328,7 @@ static int TSSetUp_CN_Nonlinear(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_CN_Linear"
-static int TSSetFromOptions_CN_Linear(TS ts)
+static PetscErrorCode TSSetFromOptions_CN_Linear(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -339,7 +339,7 @@ static int TSSetFromOptions_CN_Linear(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_CN_Nonlinear"
-static int TSSetFromOptions_CN_Nonlinear(TS ts)
+static PetscErrorCode TSSetFromOptions_CN_Nonlinear(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -350,7 +350,7 @@ static int TSSetFromOptions_CN_Nonlinear(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSView_CN"
-static int TSView_CN(TS ts,PetscViewer viewer)
+static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

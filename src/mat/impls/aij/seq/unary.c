@@ -5,7 +5,7 @@
 */
 #include "petsc.h"
 /* ----------------------------------------------------------------------- */
-static int SPARSEKIT2rperm(int *nrow,PetscScalar *a,int *ja,int *ia,PetscScalar *ao,int *jao,int *iao,int *perm,int *job)
+static PetscErrorCode SPARSEKIT2rperm(int *nrow,PetscScalar *a,int *ja,int *ia,PetscScalar *ao,int *jao,int *iao,int *perm,int *job)
 {
     /* System generated locals */
     int i__1,i__2;
@@ -113,7 +113,7 @@ static int SPARSEKIT2rperm(int *nrow,PetscScalar *a,int *ja,int *ia,PetscScalar 
 } /* rperm_ */
 
 /* ----------------------------------------------------------------------- */
-static int SPARSEKIT2cperm(int *nrow,PetscScalar * a,int * ja,int * ia,PetscScalar * ao,int * jao,int * iao,int * perm,int * job)
+static PetscErrorCode SPARSEKIT2cperm(int *nrow,PetscScalar * a,int * ja,int * ia,PetscScalar * ao,int * jao,int * iao,int * perm,int * job)
 {
     /* System generated locals */
     int i__1;

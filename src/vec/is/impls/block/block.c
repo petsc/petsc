@@ -33,7 +33,8 @@ PetscErrorCode ISDestroy_Block(IS is)
 PetscErrorCode ISGetIndices_Block(IS in,int **idx)
 {
   IS_Block *sub = (IS_Block*)in->data;
-  int      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj,ierr;
+  PetscErrorCode ierr;
+  int      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj;
 
   PetscFunctionBegin;
   if (sub->bs == 1) {
@@ -97,7 +98,8 @@ PetscErrorCode ISGetLocalSize_Block(IS is,int *size)
 PetscErrorCode ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 {
   IS_Block *sub = (IS_Block *)is->data;
-  int      i,ierr,*ii,n = sub->n,*idx = sub->idx,size;
+  int      i,*ii,n = sub->n,*idx = sub->idx,size;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
@@ -120,7 +122,8 @@ PetscErrorCode ISInvertPermutation_Block(IS is,int nlocal,IS *isout)
 PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
 {
   IS_Block    *sub = (IS_Block *)is->data;
-  int         i,n = sub->n,*idx = sub->idx,ierr;
+  PetscErrorCode ierr;
+  int         i,n = sub->n,*idx = sub->idx;
   PetscTruth  iascii;
 
   PetscFunctionBegin;
@@ -247,7 +250,8 @@ static struct _ISOps myops = { ISGetSize_Block,
 @*/
 PetscErrorCode ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 {
-  int        i,min,max,ierr;
+  PetscErrorCode ierr;
+  int        i,min,max;
   IS         Nindex;
   IS_Block   *sub;
   PetscTruth sorted = PETSC_TRUE;

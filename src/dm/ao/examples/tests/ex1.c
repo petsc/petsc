@@ -8,7 +8,8 @@ static char help[] = "Demonstrates constructing an application ordering.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int      n = 5,ierr,rank,size,getpetsc[] = {0,3,4};
+  PetscErrorCode ierr;
+  int      n = 5,rank,size,getpetsc[] = {0,3,4};
   int      getapp[] = {2,1,3,4};
   IS       ispetsc,isapp;
   AO       ao;

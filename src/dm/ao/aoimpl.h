@@ -12,7 +12,7 @@
 */
 struct _AOOps {
       /* Generic Operations */
-  int (*view)(AO, PetscViewer),
+  PetscErrorCode (*view)(AO, PetscViewer),
       (*destroy)(AO),
       /* AO-Specific Operations */
       (*petsctoapplication)(AO, int, int[]),
@@ -33,22 +33,22 @@ struct _p_AO {
     Defines the abstract AOData operations
 */
 struct _AODataOps {
-  int (*segmentadd)(AOData,const char[],const char[],int,int,int*,void*,PetscDataType);
-  int (*segmentget)(AOData,const char[],const char[],int,int*,void**);
-  int (*segmentrestore)(AOData,const char[],const char[],int,int*,void**);
-  int (*segmentgetlocal)(AOData,const char[],const char[],int,int*,void**);
-  int (*segmentrestorelocal)(AOData,const char[],const char[],int,int*,void**);
-  int (*segmentgetreduced)(AOData,const char[],const char[],int,int*,IS *);
-  int (*segmentgetextrema)(AOData,const char[],const char[],void *,void *);
-  int (*keyremap)(AOData,const char[],AO);
-  int (*keygetadjacency)(AOData,const char[],Mat*);
-  int (*keygetactive)(AOData,const char[],const char[],int,int*,int,IS*);
-  int (*keygetactivelocal)(AOData,const char[],const char[],int,int*,int,IS*);
-  int (*segmentpartition)(AOData,const char[],const char[]);
-  int (*keyremove)(AOData,const char[]);
-  int (*segmentremove)(AOData,const char[],const char[]);
-  int (*destroy)(AOData);
-  int (*view)(AOData,PetscViewer);
+  PetscErrorCode (*segmentadd)(AOData,const char[],const char[],int,int,int*,void*,PetscDataType);
+  PetscErrorCode (*segmentget)(AOData,const char[],const char[],int,int*,void**);
+  PetscErrorCode (*segmentrestore)(AOData,const char[],const char[],int,int*,void**);
+  PetscErrorCode (*segmentgetlocal)(AOData,const char[],const char[],int,int*,void**);
+  PetscErrorCode (*segmentrestorelocal)(AOData,const char[],const char[],int,int*,void**);
+  PetscErrorCode (*segmentgetreduced)(AOData,const char[],const char[],int,int*,IS *);
+  PetscErrorCode (*segmentgetextrema)(AOData,const char[],const char[],void *,void *);
+  PetscErrorCode (*keyremap)(AOData,const char[],AO);
+  PetscErrorCode (*keygetadjacency)(AOData,const char[],Mat*);
+  PetscErrorCode (*keygetactive)(AOData,const char[],const char[],int,int*,int,IS*);
+  PetscErrorCode (*keygetactivelocal)(AOData,const char[],const char[],int,int*,int,IS*);
+  PetscErrorCode (*segmentpartition)(AOData,const char[],const char[]);
+  PetscErrorCode (*keyremove)(AOData,const char[]);
+  PetscErrorCode (*segmentremove)(AOData,const char[],const char[]);
+  PetscErrorCode (*destroy)(AOData);
+  PetscErrorCode (*view)(AOData,PetscViewer);
 };
 
 /*

@@ -33,9 +33,10 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningApply_Party"
-static int MatPartitioningApply_Party(MatPartitioning part, IS * partitioning)
+static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * partitioning)
 {
-    PetscErrorCode ierr, *locals, *parttab = NULL, rank, size;
+    PetscErrorCode ierr;
+    int  *locals, *parttab = NULL, rank, size;
     Mat mat = part->adj, matMPI, matSeq;
     int nb_locals;              
     Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
@@ -178,7 +179,8 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
 {
 
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
-    PetscErrorCode ierr, rank;
+    PetscErrorCode ierr;
+    int  rank;
     PetscTruth iascii;
 
     PetscFunctionBegin;

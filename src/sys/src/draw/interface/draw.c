@@ -3,7 +3,7 @@
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
-PetscCookieCode PETSC_DRAW_COOKIE = 0;
+PetscCookie PETSC_DRAW_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawResizeWindow" 
@@ -331,7 +331,8 @@ EXTERN_C_END
 @*/
 PetscErrorCode PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
@@ -369,7 +370,8 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
 @*/
 PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);

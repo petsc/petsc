@@ -117,7 +117,8 @@ EXTERN_C_END
 */
 PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 {
-  int         size,ierr,i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
+  PetscErrorCode ierr;
+  int         size,i,numops = sr->numopsbegin,*reducetype = sr->reducetype;
   PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
   int         sum_flg = 0,max_flg = 0, min_flg = 0;
   MPI_Comm    comm = sr->comm;
@@ -195,7 +196,8 @@ PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 */
 PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *sr)
 {
-  int         maxops = sr->maxops,*reducetype = sr->reducetype,ierr;
+  PetscErrorCode ierr;
+  int         maxops = sr->maxops,*reducetype = sr->reducetype;
   PetscScalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
   void        *invecs = sr->invecs;
 
@@ -538,7 +540,8 @@ PetscErrorCode VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 @*/
 PetscErrorCode VecNormEnd(Vec x,NormType ntype,PetscReal *result) 
 {
-  int                 type_id,ierr;
+  PetscErrorCode ierr;
+  int                 type_id;
   PetscSplitReduction *sr;
   MPI_Comm            comm;
 

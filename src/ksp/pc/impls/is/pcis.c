@@ -11,7 +11,8 @@ PetscErrorCode PCISSetUp(PC pc)
 {
   PC_IS      *pcis = (PC_IS*)(pc->data);
   Mat_IS     *matis = (Mat_IS*)pc->mat->data; 
-  int        i, ierr;
+  int        i;
+  PetscErrorCode  ierr;
   PetscTruth flg;
   
   PetscFunctionBegin;
@@ -251,7 +252,7 @@ PetscErrorCode PCISDestroy(PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCISCreate"
-int PCISCreate(PC pc)
+PetscErrorCode PCISCreate(PC pc)
 {
   PC_IS *pcis = (PC_IS*)(pc->data);
 
@@ -303,7 +304,7 @@ int PCISCreate(PC pc)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCIterSuApplySchur"
-int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
+PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 {
   PetscErrorCode ierr;
   PetscScalar m_one = -1.0;
@@ -342,9 +343,10 @@ int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCISScatterArrayNToVecB"
-int PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
+PetscErrorCode PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
-  int         i, ierr, *idex;
+  int         i, *idex;
+  PetscErrorCode ierr;
   PetscScalar *array_B;
   PC_IS       *pcis = (PC_IS*)(pc->data);
 
@@ -394,7 +396,7 @@ int PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, Sc
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCISApplyInvSchur"
-int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
+PetscErrorCode PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 {
   PetscErrorCode ierr;
   PC_IS       *pcis = (PC_IS*)(pc->data);

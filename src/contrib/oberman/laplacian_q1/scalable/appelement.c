@@ -14,7 +14,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "InterpolatingFunctionsElement"
-static int InterpolatingFunctionsElement(int partial,int node,double xi,double eta, double *value)
+static PetscErrorCode InterpolatingFunctionsElement(int partial,int node,double xi,double eta, double *value)
 {
   /* 4 node bilinear interpolation functions */
   PetscFunctionBegin;

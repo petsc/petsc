@@ -1,8 +1,8 @@
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 /* Logging support */
-PetscCookieCode TS_COOKIE = 0;
-PetscLogCode    TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianEval = 0;
+PetscCookie TS_COOKIE = 0;
+PetscEvent    TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianEval = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetTypeFromOptions"
@@ -19,7 +19,7 @@ PetscLogCode    TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, 
 .keywords: TS, set, options, database, type
 .seealso: TSSetFromOptions(), TSSetType()
 */
-static int TSSetTypeFromOptions(TS ts)
+static PetscErrorCode TSSetTypeFromOptions(TS ts)
 {
   PetscTruth opt;
   const char *defaultType;
@@ -330,7 +330,7 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
 .seealso: TSSetRHSMatrix()
 @*/
-PetscErrorCode TSSetRHSFunction(TS ts,int (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+PetscErrorCode TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
 
@@ -389,7 +389,7 @@ $     func (TS ts,PetscReal t,Mat *A,Mat *B,int *flag,void *ctx);
 
 .seealso: TSSetRHSFunction()
 @*/
-PetscErrorCode TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode TSSetRHSMatrix(TS ts,Mat A,Mat B,PetscErrorCode (*f)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -455,7 +455,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
           SNESDefaultComputeJacobianColor(), TSSetRHSFunction(), TSSetRHSMatrix()
 
 @*/
-PetscErrorCode TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
+PetscErrorCode TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCode (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -526,7 +526,7 @@ $     func (TS ts,PetscReal t,Vec F,void *ctx);
 
 .keywords: TS, timestep, set, boundary conditions, function
 @*/
-PetscErrorCode TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,PetscReal,Vec,void*),void *ctx)
+PetscErrorCode TSSetRHSBoundaryConditions(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
 
@@ -927,7 +927,8 @@ PetscErrorCode TSSetUp(TS ts)
 @*/
 PetscErrorCode TSDestroy(TS ts)
 {
-  PetscErrorCode ierr,i;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1135,7 +1136,7 @@ PetscErrorCode TSSetSolution(TS ts,Vec x)
 
 .keywords: TS, Rhs, boundary conditions
 @*/
-PetscErrorCode TSSetRhsBC(TS ts, int (*func)(TS, Vec, void *))
+PetscErrorCode TSSetRhsBC(TS ts, PetscErrorCode (*func)(TS, Vec, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1188,7 +1189,7 @@ PetscErrorCode TSDefaultRhsBC(TS ts,  Vec rhs, void *ctx)
 
 .keywords: TS, System matrix, boundary conditions
 @*/
-PetscErrorCode TSSetSystemMatrixBC(TS ts, int (*func)(TS, Mat, Mat, void *))
+PetscErrorCode TSSetSystemMatrixBC(TS ts, PetscErrorCode (*func)(TS, Mat, Mat, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1243,7 +1244,7 @@ PetscErrorCode TSDefaultSystemMatrixBC(TS ts, Mat A, Mat B, void *ctx)
 
 .keywords: TS, solution, boundary conditions
 @*/
-PetscErrorCode TSSetSolutionBC(TS ts, int (*func)(TS, Vec, void *))
+PetscErrorCode TSSetSolutionBC(TS ts, PetscErrorCode (*func)(TS, Vec, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1293,7 +1294,7 @@ PetscErrorCode TSDefaultSolutionBC(TS ts, Vec sol, void *ctx)
 
 .keywords: TS, timestep
 @*/
-PetscErrorCode TSSetPreStep(TS ts, int (*func)(TS))
+PetscErrorCode TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1344,7 +1345,7 @@ PetscErrorCode TSDefaultPreStep(TS ts)
 
 .keywords: TS, update, timestep
 @*/
-PetscErrorCode TSSetUpdate(TS ts, int (*func)(TS, PetscReal, PetscReal *))
+PetscErrorCode TSSetUpdate(TS ts, PetscErrorCode (*func)(TS, PetscReal, PetscReal *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1395,7 +1396,7 @@ PetscErrorCode TSDefaultUpdate(TS ts, PetscReal t, PetscReal *dt)
 
 .keywords: TS, timestep
 @*/
-PetscErrorCode TSSetPostStep(TS ts, int (*func)(TS))
+PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -1460,7 +1461,7 @@ $    int func(TS ts,int steps,PetscReal time,Vec x,void *mctx)
 
 .seealso: TSDefaultMonitor(), TSClearMonitor()
 @*/
-PetscErrorCode TSSetMonitor(TS ts,int (*monitor)(TS,int,PetscReal,Vec,void*),void *mctx,int (*mdestroy)(void*))
+PetscErrorCode TSSetMonitor(TS ts,PetscErrorCode (*monitor)(TS,int,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1560,7 +1561,8 @@ PetscErrorCode TSStep(TS ts,int *steps,PetscReal *ptime)
 */
 PetscErrorCode TSMonitor(TS ts,int step,PetscReal ptime,Vec x)
 {
-  int i,ierr,n = ts->numbermonitors;
+  PetscErrorCode ierr;
+  int i,n = ts->numbermonitors;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {

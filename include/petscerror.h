@@ -243,7 +243,7 @@ M*/
 #define CHKMEMQ {int _7_ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
-extern  int __gierr;
+extern  PetscErrorCode __gierr;
 #define _   __gierr = 
 #define ___  CHKERRQ(__gierr);
 #endif
@@ -277,10 +277,10 @@ EXTERN PetscErrorCode PetscStopErrorHandler(int,const char*,const char*,const ch
 EXTERN PetscErrorCode PetscAbortErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*);
 EXTERN PetscErrorCode PetscAttachDebuggerErrorHandler(int,const char*,const char*,const char*,int,int,const char*,void*); 
 EXTERN PetscErrorCode PetscError(int,const char*,const char*,const char*,int,int,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
-EXTERN PetscErrorCode PetscPushErrorHandler(int (*handler)(int,const char*,const char*,const char*,int,int,const char*,void*),void*);
+EXTERN PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char*,const char*,const char*,int,int,const char*,void*),void*);
 EXTERN PetscErrorCode PetscPopErrorHandler(void);
 EXTERN PetscErrorCode PetscDefaultSignalHandler(int,void*);
-EXTERN PetscErrorCode PetscPushSignalHandler(int (*)(int,void *),void*);
+EXTERN PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*)(int,void *),void*);
 EXTERN PetscErrorCode PetscPopSignalHandler(void);
 
 typedef enum {PETSC_FP_TRAP_OFF=0,PETSC_FP_TRAP_ON=1} PetscFPTrap;

@@ -28,7 +28,8 @@ PetscErrorCode F90GetID(PetscDataType type,int *id)
 #define __FUNCT__ "F90Array1dCreate"
 PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d *ptr)
 {
-  int size,size_int,ierr,id;
+  int size,size_int,id;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(array,1);
@@ -55,7 +56,8 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,int start,int len
 #define __FUNCT__ "F90Array2dCreate"
 PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d *ptr)
 {
-  int size,size_int,ierr,id;
+  int size,size_int,id;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(array,1);

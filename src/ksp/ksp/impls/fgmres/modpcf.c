@@ -38,9 +38,9 @@
 .seealso: KSPFGMRESModifyPCNoChange(), KSPFGMRESModifyPCKSP()
 
 @*/
-PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void* ctx,int (*d)(void*))
+PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp,PetscErrorCode (*fcn)(KSP,int,int,PetscReal,void*),void* ctx,PetscErrorCode (*d)(void*))
 {
-  PetscErrorCode ierr,(*f)(KSP,int (*)(KSP,int,int,PetscReal,void*),void*,int (*)(void*));
+  PetscErrorCode ierr,(*f)(KSP,PetscErrorCode (*)(KSP,int,int,PetscReal,void*),void*,PetscErrorCode (*)(void*));
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);

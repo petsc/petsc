@@ -224,7 +224,8 @@ PetscErrorCode AODataView_Basic_ASCII(AOData ao,PetscViewer viewer)
 #define __FUNCT__ "AODataView_Basic"
 PetscErrorCode AODataView_Basic(AOData ao,PetscViewer viewer)
 {
-  int        rank,ierr;
+  PetscErrorCode ierr;
+  int        rank;
   PetscTruth iascii,isbinary;
 
   PetscFunctionBegin;
@@ -325,7 +326,8 @@ PetscErrorCode AODataSegmentAdd_Basic(AOData aodata,const char name[],const char
 {
   AODataSegment    *segment,*iseg;
   AODataKey        *key;
-  int              N,size,ierr,*lens,i,*disp,*akeys,datasize,*fkeys,Nb,j;
+  PetscErrorCode ierr;
+  int              N,size,*lens,i,*disp,*akeys,datasize,*fkeys,Nb,j;
   MPI_Datatype     mtype;
   char             *adata;
   MPI_Comm         comm = aodata->comm;
@@ -939,7 +941,8 @@ PetscErrorCode AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 PetscErrorCode AODataLoadBasic(PetscViewer viewer,AOData *aoout)
 {
   AOData        ao;
-  int           fd,nkeys,i,ierr,dsize,j,size,rank,Nb;
+  PetscErrorCode ierr;
+  int           fd,nkeys,i,dsize,j,size,rank,Nb;
   char          paddedname[256];
   AODataSegment *seg = 0;
   AODataKey     *key = 0;

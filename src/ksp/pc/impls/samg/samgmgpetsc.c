@@ -50,7 +50,7 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
    int         coarsegrid_n; 
    double      coarsegrid_rnorm; 
    /*..Variables that determine behaviour of the code..*/
-   static int  debug = *(options->DEBUG); 
+   static PetscErrorCode  debug = *(options->DEBUG); 
    /*..Other variables..*/
    int         I;   
    PetscTruth  flg, issamg, issamg_print; 

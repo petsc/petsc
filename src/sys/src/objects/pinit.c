@@ -74,8 +74,9 @@ PetscErrorCode PetscOptionsCheckInitial_Components(void)
 @*/
 PetscErrorCode PetscInitializeNoArguments(void)
 {
-  PetscErrorCode ierr,argc = 0;
-  char **args = 0;
+  PetscErrorCode ierr;
+  int            argc = 0;
+  char           **args = 0;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&args,PETSC_NULL,PETSC_NULL);
@@ -138,8 +139,9 @@ sum of the second entry.
 #define __FUNCT__ "PetscMaxSum"
 PetscErrorCode PetscMaxSum(MPI_Comm comm,const int nprocs[],int *max,int *sum)
 {
-  int size,rank,ierr,*work;
-  
+  int size,rank,*work;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);

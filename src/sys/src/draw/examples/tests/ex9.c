@@ -10,7 +10,8 @@ int main(int argc,char **argv)
   PetscDraw       draw;
   PetscDrawHG     hist;
   PetscDrawAxis   axis;
-  int             n = 20,i,ierr,x = 0,y = 0,width = 300,height = 300,bins = 8;
+  PetscErrorCode ierr;
+  int             n = 20,i,x = 0,y = 0,width = 300,height = 300,bins = 8;
   int             color = PETSC_DRAW_GREEN;
   const char      *xlabel,*ylabel,*toplabel;
   PetscReal       xd;

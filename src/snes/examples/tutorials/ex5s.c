@@ -110,7 +110,7 @@ int main(int argc,char **argv)
   AppCtx         user;                /* user-defined work context */
   int            its;                 /* iterations for convergence */
   int            N,ierr,rstart,rend,*colors,i,ii,ri,rj;
-  int            (*fnc)(SNES,Vec,Vec,void*);
+  PetscErrorCode (*fnc)(SNES,Vec,Vec,void*);
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   MatFDColoring  fdcoloring;           
   ISColoring     iscoloring;
@@ -225,7 +225,7 @@ int main(int argc,char **argv)
        to compute the actual Jacobians via finite differences.
   */
   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))fnc,&user);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))fnc,&user);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
   /*
         Tell SNES to use the routine SNESDefaultComputeJacobianColor()

@@ -39,7 +39,8 @@
 @*/
 PetscErrorCode PetscOptionsGetenv(MPI_Comm comm,const char name[],char env[],int len,PetscTruth *flag)
 {
-  int        rank,ierr;
+  PetscErrorCode ierr;
+  int        rank;
   char       *str,work[256];
   PetscTruth flg = PETSC_FALSE,spetsc;
    
@@ -89,7 +90,8 @@ static char PetscDisplay[256];
 #define __FUNCT__ "PetscSetDisplay" 
 PetscErrorCode PetscSetDisplay(void)
 {
-  int        size,rank,ierr;
+  PetscErrorCode ierr;
+  int        size,rank;
   size_t     len;
   PetscTruth flag;
   char       *str,display[256];

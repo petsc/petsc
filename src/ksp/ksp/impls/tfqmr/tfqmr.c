@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_TFQMR"
-static int KSPSetUp_TFQMR(KSP ksp)
+static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -17,9 +17,10 @@ static int KSPSetUp_TFQMR(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_TFQMR"
-static int  KSPSolve_TFQMR(KSP ksp)
+static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 {
-  int         i,m, ierr;
+  PetscErrorCode ierr;
+  int         i,m;
   PetscScalar rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
   PetscReal   dp,dpold,w,dpest,tau,psi,cm;
   Vec         X,B,V,P,R,RP,T,T1,Q,U,D,AUQ;

@@ -68,7 +68,8 @@ PetscErrorCode DAGetGlobalIndices(DA da,int *n,int **idx)
 */
 PetscErrorCode DAGetNatural_Private(DA da,int *outNlocal,IS *isnatural)
 {
-  int Nlocal,i,j,k,ierr,*lidx,lict = 0;
+  PetscErrorCode ierr;
+  int Nlocal,i,j,k,*lidx,lict = 0;
 
   PetscFunctionBegin;
   Nlocal = (da->xe-da->xs);
@@ -146,7 +147,8 @@ PetscErrorCode DAGetAO(DA da,AO *ao)
   */
   if (!da->ao) {
     IS  ispetsc,isnatural;
-    PetscErrorCode ierr,Nlocal;
+    PetscErrorCode ierr;
+    int  Nlocal;
 
     ierr = DAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
     ierr = ISCreateStride(da->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);

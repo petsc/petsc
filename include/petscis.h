@@ -7,7 +7,7 @@
 #include "petsc.h"
 PETSC_EXTERN_CXX_BEGIN
 
-extern int IS_COOKIE;
+extern PetscCookie IS_COOKIE;
 
 /*S
      IS - Abstract PETSc object that indexing.
@@ -63,7 +63,7 @@ EXTERN PetscErrorCode   ISAllGather(IS,IS*);
 EXTERN PetscErrorCode   ISAllGatherIndices(MPI_Comm,int,const int[],int*,int*[]);
 
 /* --------------------------------------------------------------------------*/
-extern int IS_LTOGM_COOKIE;
+extern PetscCookie IS_LTOGM_COOKIE;
 
 /*S
    ISLocalToGlobalMapping - mappings from an arbitrary

@@ -7,7 +7,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoadPrintHelp_Private"
-static int MatLoadPrintHelp_Private(Mat A)
+static PetscErrorCode MatLoadPrintHelp_Private(Mat A)
 {
   static PetscTruth called = PETSC_FALSE; 
   MPI_Comm          comm = A->comm;
@@ -117,7 +117,7 @@ PetscErrorCode MatLoad(PetscViewer viewer,const MatType outtype,Mat *newmat)
   PetscErrorCode ierr;
   PetscTruth  isbinary,flg;
   MPI_Comm    comm;
-  int         (*r)(PetscViewer,const MatType,Mat*);
+  PetscErrorCode (*r)(PetscViewer,const MatType,Mat*);
   char        mtype[256],*prefix;
 
   PetscFunctionBegin;

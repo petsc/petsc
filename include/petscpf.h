@@ -38,11 +38,11 @@ E*/
 S*/
 typedef struct _p_PF* PF;
 
-extern int PF_COOKIE;
+extern PetscCookie PF_COOKIE;
 
 EXTERN PetscErrorCode PFCreate(MPI_Comm,int,int,PF*);
 EXTERN PetscErrorCode PFSetType(PF,const PFType,void*);
-EXTERN PetscErrorCode PFSet(PF,int(*)(void*,int,PetscScalar*,PetscScalar*),int(*)(void*,Vec,Vec),int(*)(void*,PetscViewer),int(*)(void*),void*);
+EXTERN PetscErrorCode PFSet(PF,PetscErrorCode(*)(void*,int,PetscScalar*,PetscScalar*),PetscErrorCode(*)(void*,Vec,Vec),PetscErrorCode(*)(void*,PetscViewer),PetscErrorCode(*)(void*),void*);
 EXTERN PetscErrorCode PFApply(PF,int,PetscScalar*,PetscScalar*);
 EXTERN PetscErrorCode PFApplyVec(PF,Vec,Vec);
 
@@ -50,7 +50,7 @@ EXTERN PetscErrorCode        PFRegisterDestroy(void);
 EXTERN PetscErrorCode        PFRegisterAll(const char[]);
 extern PetscTruth PFRegisterAllCalled;
 
-EXTERN PetscErrorCode PFRegister(const char[],const char[],const char[],int(*)(PF,void*));
+EXTERN PetscErrorCode PFRegister(const char[],const char[],const char[],PetscErrorCode (*)(PF,void*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PFRegisterDynamic(a,b,c,d) PFRegister(a,b,c,0)
 #else

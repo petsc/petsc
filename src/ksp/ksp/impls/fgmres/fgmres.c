@@ -14,11 +14,11 @@
 #include "src/ksp/ksp/impls/fgmres/fgmresp.h"       /*I  "petscksp.h"  I*/
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
-static int    FGMRESGetNewVectors(KSP,int);
-static int    FGMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal *);
-static int    BuildFgmresSoln(PetscScalar*,Vec,Vec,KSP,int);
+static PetscErrorCode FGMRESGetNewVectors(KSP,int);
+static PetscErrorCode FGMRESUpdateHessenberg(KSP,int,PetscTruth,PetscReal *);
+static PetscErrorCode BuildFgmresSoln(PetscScalar*,Vec,Vec,KSP,int);
 
-extern int KSPView_GMRES(KSP,PetscViewer);
+EXTERN PetscErrorCode KSPView_GMRES(KSP,PetscViewer);
 /*
 
     KSPSetUp_FGMRES - Sets up the workspace needed by fgmres.
@@ -119,7 +119,7 @@ PetscErrorCode    KSPSetUp_FGMRES(KSP ksp)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "FGMRESResidual"
-static int FGMRESResidual(KSP ksp)
+static PetscErrorCode FGMRESResidual(KSP ksp)
 {
   KSP_FGMRES   *fgmres = (KSP_FGMRES *)(ksp->data);
   PetscScalar  mone = -1.0;
@@ -388,7 +388,8 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES*)ksp->data;
-  int       i,ierr;
+  PetscErrorCode ierr;
+  int       i;
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrices */
@@ -436,7 +437,7 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "BuildFgmresSoln"
-static int BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
+static PetscErrorCode BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
 {
   PetscScalar  tt,zero = 0.0,one = 1.0;
   PetscErrorCode ierr;
@@ -499,7 +500,7 @@ static int BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "FGMRESUpdateHessenberg"
-static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
+static PetscErrorCode FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
   PetscScalar   *hh,*cc,*ss,tt;
   int           j;
@@ -588,12 +589,13 @@ static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *re
 */
 #undef __FUNCT__  
 #define __FUNCT__ "FGMRESGetNewVectors" 
-static int FGMRESGetNewVectors(KSP ksp,int it)
+static PetscErrorCode FGMRESGetNewVectors(KSP ksp,int it)
 {
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
   int        nwork = fgmres->nwork_alloc; /* number of work vector chunks allocated */
   int        nalloc;                      /* number to allocate */
-  int        k,ierr;
+  PetscErrorCode ierr;
+  int        k;
  
   PetscFunctionBegin;
   nalloc = fgmres->delta_allocate; /* number of vectors to allocate 
@@ -703,7 +705,7 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
     if (flg) {
       PetscViewers viewers;
       ierr = PetscViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(int (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
+      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(PetscErrorCode (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
     }
     ierr = PetscOptionsLogicalGroupBegin("-ksp_fgmres_modifypcnochange","do not vary the preconditioner","KSPFGMRESSetModifyPC",&flg);CHKERRQ(ierr);
     if (flg) {ierr = KSPFGMRESSetModifyPC(ksp,KSPFGMRESModifyPCNoChange,0,0);CHKERRQ(ierr);} 
@@ -716,8 +718,8 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp)
 EXTERN PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
 EXTERN PetscErrorCode KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
-typedef int (*FCN1)(KSP,int,int,PetscReal,void*); /* force argument to next function to not be extern C*/
-typedef int (*FCN2)(void*);
+typedef PetscErrorCode (*FCN1)(KSP,int,int,PetscReal,void*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN2)(void*);
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESSetModifyPC_FGMRES" 
@@ -735,7 +737,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP);
 EXTERN PetscErrorCode KSPGMRESSetRestart_GMRES(KSP,int);
-EXTERN PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,int (*)(KSP,int));
+EXTERN PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)(KSP,int));
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -743,7 +745,8 @@ EXTERN_C_END
 PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
 {
   KSP_FGMRES *gmres = (KSP_FGMRES*)ksp->data;
-  int       i,ierr;
+  PetscErrorCode ierr;
+  int       i;
 
   PetscFunctionBegin;
   /* Free the Hessenberg matrix */

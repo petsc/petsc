@@ -36,9 +36,10 @@ $    is2 = {2, 3} {0, 1}
 @*/
 PetscErrorCode ISEqual(IS is1,IS is2,PetscTruth *flg)
 {
-  int        sz1,sz2,ierr,*ptr1,*ptr2,*a1,*a2;
+  int        sz1,sz2,*ptr1,*ptr2,*a1,*a2;
   PetscTruth flag;
   MPI_Comm   comm;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is1,IS_COOKIE,1);

@@ -95,7 +95,7 @@ PetscErrorCode PetscDLLibraryGetInfo(void *handle,const char type[],const char *
   PetscErrorCode ierr,(*sfunc)(const char *,const char*,const char *[]);
 
   PetscFunctionBegin;
-  sfunc   = (int (*)(const char *,const char*,const char *[])) dlsym(handle,"PetscDLLibraryInfo");
+  sfunc   = (PetscErrorCode (*)(const char *,const char*,const char *[])) dlsym(handle,"PetscDLLibraryInfo");
   if (!sfunc) {
     *mess = "No library information in the file\n";
   } else {
@@ -217,9 +217,10 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *l
 @*/
 PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 {
-  char       *par2,ierr;
+  PetscErrorCode ierr;
+  char       *par2;
   PetscTruth foundlibrary;
-  int        (*func)(const char*);
+  PetscErrorCode (*func)(const char*);
 
   PetscFunctionBegin;
 
@@ -254,16 +255,16 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **hand
   }
 
   /* run the function PetscFListAddDynamic() if it is in the library */
-  func  = (int (*)(const char *)) dlsym(*handle,"PetscDLLibraryRegister");
+  func  = (PetscErrorCode (*)(const char *)) dlsym(*handle,"PetscDLLibraryRegister");
   if (func) {
     ierr = (*func)(libname);CHKERRQ(ierr);
     PetscLogInfo(0,"PetscDLLibraryOpen:Loading registered routines from %s\n",libname);
   }
   if (PetscLogPrintInfo) {
-    int  (*sfunc)(const char *,const char*,char **);
+    PetscErrorCode (*sfunc)(const char *,const char*,char **);
     char *mess;
 
-    sfunc   = (int (*)(const char *,const char*,char **)) dlsym(*handle,"PetscDLLibraryInfo");
+    sfunc   = (PetscErrorCode (*)(const char *,const char*,char **)) dlsym(*handle,"PetscDLLibraryInfo");
     if (sfunc) {
       ierr = (*sfunc)(libname,"Contents",&mess);CHKERRQ(ierr);
       if (mess) {

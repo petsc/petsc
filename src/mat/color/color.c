@@ -54,7 +54,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatFDColoringSL_Minpack" 
 PetscErrorCode MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
-  int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
+  PetscErrorCode ierr;
+  int        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   int        ncolors,i;
   PetscTruth done;
 
@@ -100,7 +101,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatFDColoringLF_Minpack" 
 PetscErrorCode MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
-  int        *list,*work,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
+  PetscErrorCode ierr;
+  int        *list,*work,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   int        n1, none,ncolors,i;
   PetscTruth done;
 
@@ -148,7 +150,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatFDColoringID_Minpack" 
 PetscErrorCode MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
-  int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
+  PetscErrorCode ierr;
+  int        *list,*work,clique,*ria,*rja,*cia,*cja,*seq,*coloring,n;
   int        ncolors,i;
   PetscTruth done;
 
@@ -194,7 +197,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatColoring_Natural" 
 PetscErrorCode MatColoring_Natural(Mat mat,const MatColoringType color, ISColoring *iscoloring)
 {
-  int             start,end,ierr,i;
+  PetscErrorCode ierr;
+  int             start,end,i;
   ISColoringValue *colors;
   MPI_Comm        comm;
 
@@ -220,7 +224,7 @@ PetscTruth MatColoringRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringRegister" 
-PetscErrorCode MatColoringRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,const MatColoringType,ISColoring*))
+PetscErrorCode MatColoringRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,const MatColoringType,ISColoring*))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];

@@ -55,7 +55,7 @@ Return:
 Description: This function frees the storage associated with an xxt handle
 Usage: XXT_free(xxt_handle);
 **************************************xxt.h***********************************/
-EXTERN PetscErrorCode XXT_free(xxt_ADT xxt_handle);
+EXTERN int XXT_free(xxt_ADT xxt_handle);
 
 
 /*************************************xxt.h************************************

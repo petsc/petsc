@@ -527,7 +527,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,int level)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal()
 
 @*/
-PetscErrorCode DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscErrorCode ierr;
   int         size,i,nlevels = dmmg[0]->nlevels,period = 1;
@@ -571,7 +571,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*
       ierr = PetscObjectGetComm((PetscObject)dmmg[i]->snes,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
       ierr = PetscViewerASCIISetTab(ascii,nlevels-i);CHKERRQ(ierr);
-      ierr = SNESSetMonitor(dmmg[i]->snes,SNESDefaultMonitor,ascii,(int(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = SNESSetMonitor(dmmg[i]->snes,SNESDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
     if (mffdoperator) {
@@ -639,7 +639,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*
       ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(dmmg[i]->B,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(dmmg[i]->fdcoloring,(int(*)(void))function,dmmg[i]);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(dmmg[i]->fdcoloring,(PetscErrorCode(*)(void))function,dmmg[i]);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(dmmg[i]->fdcoloring);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
@@ -741,7 +741,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP()
 
 @*/
-PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
+PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(SNES,Vec,void*))
 {
   int i,nlevels = dmmg[0]->nlevels;
 
@@ -802,8 +802,9 @@ M*/
 #define __FUNCT__ "DMMGSetSNESLocal_Private"
 PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function,DALocalFunction1 admf_function)
 {
-  PetscErrorCode ierr,i,nlevels = dmmg[0]->nlevels;
-  int (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = 0;
+  PetscErrorCode ierr;
+  int i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = 0;
 
 
   PetscFunctionBegin;
@@ -824,7 +825,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGFunctioni"
-static int DMMGFunctioni(int i,Vec u,PetscScalar* r,void* ctx)
+static PetscErrorCode DMMGFunctioni(int i,Vec u,PetscScalar* r,void* ctx)
 {
   DMMG       dmmg = (DMMG)ctx;
   Vec        U = dmmg->lwork1;
@@ -842,7 +843,7 @@ static int DMMGFunctioni(int i,Vec u,PetscScalar* r,void* ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGFunctioniBase"
-static int DMMGFunctioniBase(Vec u,void* ctx)
+static PetscErrorCode DMMGFunctioniBase(Vec u,void* ctx)
 {
   DMMG dmmg = (DMMG)ctx;
   Vec  U = dmmg->lwork1;
@@ -856,9 +857,10 @@ static int DMMGFunctioniBase(Vec u,void* ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocali_Private"
-PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),int (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*),int (*adimf)(DALocalInfo*,MatStencil*,void*,void*,void*))
+PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,PetscErrorCode (*functioni)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*),PetscErrorCode (*adi)(DALocalInfo*,MatStencil*,void*,void*,void*),PetscErrorCode (*adimf)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
-  PetscErrorCode ierr,i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr;
+  int i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   for (i=0; i<nlevels; i++) {

@@ -10,7 +10,7 @@ and matrices.
 #include "petscis.h"
 
 struct _ISOps {
-  int  (*getsize)(IS,int*),
+  PetscErrorCode (*getsize)(IS,int*),
        (*getlocalsize)(IS,int*),
        (*getindices)(IS,int**),
        (*restoreindices)(IS,int**),

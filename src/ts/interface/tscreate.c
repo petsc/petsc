@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSPublish_Petsc"
-static int TSPublish_Petsc(PetscObject obj)
+static PetscErrorCode TSPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   TS   v = (TS) obj;

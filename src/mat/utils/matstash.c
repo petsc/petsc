@@ -103,7 +103,8 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
 #define __FUNCT__ "MatStashScatterEnd_Private"
 PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
 { 
-  int         nsends=stash->nsends,ierr,bs2,oldnmax;
+  PetscErrorCode ierr;
+  int         nsends=stash->nsends,bs2,oldnmax;
   MPI_Status  *send_status;
 
   PetscFunctionBegin;
@@ -214,9 +215,10 @@ PetscErrorCode MatStashSetInitialSize_Private(MatStash *stash,int max)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashExpand_Private"
-static int MatStashExpand_Private(MatStash *stash,int incr)
+static PetscErrorCode MatStashExpand_Private(MatStash *stash,int incr)
 { 
-  int       *n_idx,*n_idy,newnmax,bs2,ierr;
+  PetscErrorCode ierr;
+  int       *n_idx,*n_idy,newnmax,bs2;
   MatScalar *n_array;
 
   PetscFunctionBegin;
@@ -432,7 +434,8 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,int *owners)
 { 
   int         *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
   int         size=stash->size,*nprocs,nsends,nreceives;
-  int         nmax,count,ierr,*sindices,*rindices,i,j,idx;
+  PetscErrorCode ierr;
+  int         nmax,count,*sindices,*rindices,i,j,idx;
   MatScalar   *rvalues,*svalues;
   MPI_Comm    comm = stash->comm;
   MPI_Request *send_waits,*recv_waits;
@@ -548,7 +551,8 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,int *owners)
 #define __FUNCT__ "MatStashScatterGetMesg_Private"
 PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,int *nvals,int **rows,int** cols,MatScalar **vals,int *flg)
 {
-  int         i,ierr,*flg_v,i1,i2,*rindices,bs2;
+  PetscErrorCode ierr;
+  int         i,*flg_v,i1,i2,*rindices,bs2;
   MPI_Status  recv_status;
   PetscTruth  match_found = PETSC_FALSE;
 

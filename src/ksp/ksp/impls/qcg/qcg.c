@@ -2,7 +2,7 @@
 #include "src/ksp/ksp/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/qcg/qcg.h"
 
-static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+static PetscErrorCode QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPQCGSetTrustRegionRadius" 
@@ -159,7 +159,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscScalar  zero = 0.0,negone = -1.0,scal,nstep,btx,xtax,beta,rntrn,step;
   PetscReal    ptasp,q1,q2,wtasp,bstp,rtr,xnorm,step1,step2,rnrm,p5 = 0.5;
   PetscReal    dzero = 0.0,bsnrm;
-  int          i,maxit,ierr;
+  PetscErrorCode ierr;
+  int          i,maxit;
   PC           pc = ksp->pc;
   PCSide       side;
 #if defined(PETSC_USE_COMPLEX)
@@ -531,7 +532,7 @@ EXTERN_C_END
    C code is translated from the Fortran version of the MINPACK-2 Project,
    Argonne National Laboratory, Brett M. Averick and Richard G. Carter.
 */
-static int QuadraticRoots_Private(Vec s,Vec p,PetscReal *delta,PetscReal *step1,PetscReal *step2)
+static PetscErrorCode QuadraticRoots_Private(Vec s,Vec p,PetscReal *delta,PetscReal *step1,PetscReal *step2)
 { 
   PetscReal zero = 0.0,dsq,ptp,pts,rad,sts;
   PetscErrorCode ierr;

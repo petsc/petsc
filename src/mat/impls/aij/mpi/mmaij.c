@@ -9,7 +9,8 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ         *B = (Mat_SeqAIJ*)(aij->B->data);  
-  int                i,j,*aj = B->j,ierr,ec = 0,*garray;
+  PetscErrorCode ierr;
+  int                i,j,*aj = B->j,ec = 0,*garray;
   IS                 from,to;
   Vec                gvec;
 #if defined (PETSC_USE_CTABLE)

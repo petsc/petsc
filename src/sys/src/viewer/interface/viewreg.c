@@ -119,7 +119,7 @@ PetscErrorCode PetscViewerRegisterDestroy(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerRegister" 
-PetscErrorCode PetscViewerRegister(const char *sname,const char *path,const char *name,int (*function)(PetscViewer))
+PetscErrorCode PetscViewerRegister(const char *sname,const char *path,const char *name,PetscErrorCode (*function)(PetscViewer))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];

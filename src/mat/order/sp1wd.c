@@ -10,7 +10,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatOrdering_1WD"
 PetscErrorCode MatOrdering_1WD(Mat mat,const MatOrderingType type,IS *row,IS *col)
 {
-  int        i,*mask,*xls,nblks,*xblk,*ls,nrow,*perm,ierr,*ia,*ja;
+  PetscErrorCode ierr;
+  int        i,*mask,*xls,nblks,*xblk,*ls,nrow,*perm,*ia,*ja;
   PetscTruth done;
 
   PetscFunctionBegin;

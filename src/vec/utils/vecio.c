@@ -13,10 +13,10 @@ EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
 #endif
-EXTERN int VecLoad_Binary(PetscViewer,const VecType, Vec*);
-EXTERN int VecLoad_Netcdf(PetscViewer, Vec*);
-EXTERN int VecLoadIntoVector_Binary(PetscViewer, Vec);
-EXTERN int VecLoadIntoVector_Netcdf(PetscViewer, Vec);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer,const VecType, Vec*);
+EXTERN PetscErrorCode VecLoad_Netcdf(PetscViewer, Vec*);
+EXTERN PetscErrorCode VecLoadIntoVector_Binary(PetscViewer, Vec);
+EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad"
@@ -89,7 +89,7 @@ PetscErrorCode VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
   } else {
     Vec      factory;
     MPI_Comm comm;
-    int      (*r)(PetscViewer,const VecType,Vec*),size;
+    PetscErrorCode (*r)(PetscViewer,const VecType,Vec*),size;
 
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,&prefix);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(prefix,"-vec_type",vtype,256,&flg);CHKERRQ(ierr);
@@ -122,7 +122,8 @@ PetscErrorCode VecLoad(PetscViewer viewer,const VecType outtype,Vec *newvec)
 PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 {
 #if defined(PETSC_HAVE_PNETCDF)
-  int         i,N,ierr,n,rank,bs;
+  PetscErrorCode ierr;
+  int         i,N,n,rank,bs;
   int         ncid,start;
   Vec         vec;
   PetscScalar *avec;
@@ -168,7 +169,8 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 #define __FUNCT__ "VecLoad_Binary"
 PetscErrorCode VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec)
 {
-  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs,nierr;
+  int         i,rows,type,fd,rank,size,n,*range,tag,bs;
+  PetscErrorCode ierr,nierr;
   Vec         vec;
   PetscScalar *avec;
   MPI_Comm    comm;
@@ -271,7 +273,8 @@ PetscErrorCode VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 {
 #if defined(PETSC_HAVE_PNETCDF)
-  int         i,N,rows,ierr,n,rank,bs;
+  PetscErrorCode ierr;
+  int         i,N,rows,n,rank,bs;
   int         ncid,start;
   PetscScalar *avec;
   MPI_Comm    comm;
@@ -315,7 +318,8 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 #define __FUNCT__ "VecLoadIntoVector_Binary"
 PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
 {
-  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
+  PetscErrorCode ierr;
+  int         i,rows,type,fd,rank,size,n,*range,tag,bs;
   PetscScalar *avec;
   MPI_Comm    comm;
   MPI_Request request;

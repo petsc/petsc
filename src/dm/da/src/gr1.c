@@ -24,7 +24,8 @@
 @*/
 PetscErrorCode DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
-  int            i,j,k,ierr,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
+  PetscErrorCode ierr;
+  int            i,j,k,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
   PetscReal      hx,hy,hz_;
   Vec            xcoor;
   DAPeriodicType periodic;
@@ -99,7 +100,8 @@ PetscErrorCode DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,Petsc
 PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 {
   DA             da;
-  int            i,rank,size,ierr,n,tag1,tag2,N,step;
+  PetscErrorCode ierr;
+  int            i,rank,size,n,tag1,tag2,N,step;
   int            istart,isize,j;
   MPI_Status     status;
   PetscReal      coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;

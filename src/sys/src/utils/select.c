@@ -35,10 +35,11 @@
 @*/
 PetscErrorCode PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
 {
-  int    i,ierr,rank,rows = n + 2;
+  int    i,rank,rows = n + 2;
   size_t cols,len;
   char   buffer[2048],display[256],geometry[64];
   FILE   *fp;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!title) SETERRQ(PETSC_ERR_ARG_NULL,"Must pass in a title line");

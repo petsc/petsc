@@ -113,7 +113,8 @@ PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op)
 PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj*)A->data; 
-  int        i,j,*diag,m = A->m,ierr;
+  PetscErrorCode ierr;
+  int        i,j,*diag,m = A->m;
 
   PetscFunctionBegin;
   ierr = PetscMalloc((m+1)*sizeof(int),&diag);CHKERRQ(ierr);
@@ -384,7 +385,8 @@ EXTERN_C_BEGIN
 PetscErrorCode MatCreate_MPIAdj(Mat B)
 {
   Mat_MPIAdj *b;
-  int        ii,ierr,size,rank;
+  PetscErrorCode ierr;
+  int        ii,size,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
@@ -508,7 +510,8 @@ EXTERN_C_BEGIN
 PetscErrorCode MatConvertTo_MPIAdj(Mat A,MatType type,Mat *newmat)
 {
   Mat               B;
-  int               i,ierr,m,N,nzeros = 0,*ia,*ja,len,rstart,cnt,j,*a;
+  PetscErrorCode ierr;
+  int               i,m,N,nzeros = 0,*ia,*ja,len,rstart,cnt,j,*a;
   const int         *rj;
   const PetscScalar *ra;
   MPI_Comm          comm;

@@ -34,7 +34,7 @@ PetscErrorCode PetscDrawUtilitySetGamma(PetscReal g)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawUtilityHlsHelper" 
-static int PetscDrawUtilityHlsHelper(int h,int n1,int n2)
+static PetscErrorCode PetscDrawUtilityHlsHelper(int h,int n1,int n2)
 {
   PetscFunctionBegin;
   while (h > 360) h = h - 360;
@@ -47,7 +47,7 @@ static int PetscDrawUtilityHlsHelper(int h,int n1,int n2)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawUtilityHlsToRgb" 
-static int PetscDrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
+static PetscErrorCode PetscDrawUtilityHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
 {
   int m1,m2;         /* in 0 to 100 */
 

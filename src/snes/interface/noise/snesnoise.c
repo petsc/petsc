@@ -15,7 +15,7 @@ typedef struct {
 
 
 extern int dnest_(int*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,int*,PetscScalar*);
-extern int JacMatMultCompare(SNES,Vec,Vec,double);
+EXTERN PetscErrorCode JacMatMultCompare(SNES,Vec,Vec,double);
 EXTERN PetscErrorCode SNESDefaultMatrixFreeSetParameters2(Mat,double,double,double);
 EXTERN PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes);
 
@@ -88,7 +88,8 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   PetscScalar alpha;
   PetscScalar fval[7], tab[7][7], eps[7], f;
   double      rerrf, fder2;
-  int         iter, k, i, j, ierr, info;
+  PetscErrorCode ierr;
+  int         iter, k, i, j,  info;
   int         nf = 7;         /* number of function evaluations */
   int         fcount;
   MPI_Comm    comm = snes->comm;
@@ -235,7 +236,8 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   MatStructure sparsity = DIFFERENT_NONZERO_PATTERN;
   PetscScalar  alpha;
   PetscReal    yy1n,yy2n,enorm;
-  int          i, ierr;
+  PetscErrorCode ierr;
+  int          i;
   PetscTruth   printv;
   char         filename[32];
   MPI_Comm     comm = snes->comm;
@@ -299,7 +301,8 @@ static int lin_its_total = 0;
 
 PetscErrorCode MyMonitor(SNES snes,int its,double fnorm,void *dummy)
 {
-  PetscErrorCode ierr, lin_its;
+  PetscErrorCode ierr;
+  int  lin_its;
 
   PetscFunctionBegin;
   ierr = SNESGetNumberLinearIterations(snes,&lin_its);CHKERRQ(ierr);

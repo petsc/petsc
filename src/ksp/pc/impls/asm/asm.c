@@ -30,10 +30,11 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_ASM"
-static int PCView_ASM(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
 {
   PC_ASM      *jac = (PC_ASM*)pc->data;
-  int         rank,ierr,i;
+  PetscErrorCode ierr;
+  int         rank,i;
   const char  *cstring = 0;
   PetscTruth  iascii,isstring;
   PetscViewer sviewer;
@@ -89,10 +90,11 @@ static int PCView_ASM(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_ASM"
-static int PCSetUp_ASM(PC pc)
+static PetscErrorCode PCSetUp_ASM(PC pc)
 {
   PC_ASM   *osm  = (PC_ASM*)pc->data;
-  int      i,ierr,m,n_local = osm->n_local,n_local_true = osm->n_local_true;
+  PetscErrorCode ierr;
+  int      i,m,n_local = osm->n_local,n_local_true = osm->n_local_true;
   int      start,start_val,end_val,size,sz,bs;
   MatReuse scall = MAT_REUSE_MATRIX;
   IS       isl;
@@ -209,10 +211,11 @@ static int PCSetUp_ASM(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUpOnBlocks_ASM"
-static int PCSetUpOnBlocks_ASM(PC pc)
+static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
-  int    i,ierr;
+  PetscErrorCode ierr;
+  int    i;
 
   PetscFunctionBegin;
   for (i=0; i<osm->n_local_true; i++) {
@@ -230,10 +233,11 @@ static int PCSetUpOnBlocks_ASM(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_ASM"
-static int PCApply_ASM(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
-  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr;
+  PetscErrorCode ierr;
+  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true;
   PetscScalar zero = 0.0;
   ScatterMode forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
 
@@ -276,10 +280,11 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyTranspose_ASM"
-static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 {
   PC_ASM      *osm = (PC_ASM*)pc->data;
-  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true,ierr;
+  PetscErrorCode ierr;
+  int         i,n_local = osm->n_local,n_local_true = osm->n_local_true;
   PetscScalar zero = 0.0;
   ScatterMode forward = SCATTER_FORWARD,reverse = SCATTER_REVERSE;
 
@@ -325,10 +330,11 @@ static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_ASM"
-static int PCDestroy_ASM(PC pc)
+static PetscErrorCode PCDestroy_ASM(PC pc)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
-  int    i,ierr;
+  PetscErrorCode ierr;
+  int    i;
 
   PetscFunctionBegin;
   for (i=0; i<osm->n_local; i++) {
@@ -357,10 +363,11 @@ static int PCDestroy_ASM(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_ASM"
-static int PCSetFromOptions_ASM(PC pc)
+static PetscErrorCode PCSetFromOptions_ASM(PC pc)
 {
   PC_ASM     *osm = (PC_ASM*)pc->data;
-  int        blocks,ovl,ierr,indx;
+  PetscErrorCode ierr;
+  int        blocks,ovl,indx;
   PetscTruth flg,set,sym;
   const char *type[] = {"none","restrict","interpolate","basic"};
 
@@ -416,7 +423,8 @@ EXTERN_C_BEGIN
 PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc,int N,IS *is)
 {
   PC_ASM *osm = (PC_ASM*)pc->data;
-  int    rank,size,ierr,n;
+  PetscErrorCode ierr;
+  int    rank,size,n;
 
   PetscFunctionBegin;
 
@@ -909,7 +917,8 @@ EXTERN_C_END
 PetscErrorCode PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsub,IS **is)
 {
   int i,j,height,width,ystart,xstart,yleft,yright,xleft,xright,loc_outter;
-  int nidx,*idx,loc,ii,jj,ierr,count;
+  PetscErrorCode ierr;
+  int nidx,*idx,loc,ii,jj,count;
 
   PetscFunctionBegin;
   if (dof != 1) SETERRQ(PETSC_ERR_SUP," ");

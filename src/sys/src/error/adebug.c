@@ -89,7 +89,7 @@ PetscErrorCode PetscSetDefaultDebugger(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCheckDebugger_Private"
-static int PetscCheckDebugger_Private(const char defaultDbg[], const char string[], const char *debugger[])
+static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const char string[], const char *debugger[])
 {
   PetscTruth exists;
   char      *f;
@@ -164,7 +164,8 @@ PetscErrorCode PetscSetDebuggerFromString(char *string)
 PetscErrorCode PetscAttachDebugger(void)
 {
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
-  int   child=0,sleeptime=0,ierr=0;
+  int   child=0,sleeptime=0;
+  PetscErrorCode ierr;
   char  program[PETSC_MAX_PATH_LEN],display[256],hostname[64];
 #endif
 

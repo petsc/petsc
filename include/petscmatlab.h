@@ -6,7 +6,7 @@
 #define __PETSCMATLAB_H
 PETSC_EXTERN_CXX_BEGIN
 
-extern int MATLABENGINE_COOKIE;
+extern PetscCookie MATLABENGINE_COOKIE;
 
 /*S
      PetscMatlabEngine - Object used to communicate with Matlab

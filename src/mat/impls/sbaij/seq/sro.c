@@ -36,7 +36,8 @@ C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).
 PetscErrorCode MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ    *a=(Mat_SeqSBAIJ *)A->data;
-  int             *r,ierr,i,mbs=a->mbs,*rip,*riip;
+  PetscErrorCode ierr;
+  int             *r,i,mbs=a->mbs,*rip,*riip;
   int             *ai,*aj;
   int             *nzr,nz,jmin,jmax,j,k,ajk,len;
   IS              iperm;  /* inverse of perm */

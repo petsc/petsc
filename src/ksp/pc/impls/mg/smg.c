@@ -16,7 +16,8 @@
 #define __FUNCT__ "MGACycle_Private"
 PetscErrorCode MGACycle_Private(MG *mg)
 {
-  int    i,l = mg[0]->levels,ierr;
+  PetscErrorCode ierr;
+  int    i,l = mg[0]->levels;
   PetscScalar zero = 0.0;
 
   PetscFunctionBegin;

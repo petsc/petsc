@@ -5,9 +5,9 @@
 #include "src/mat/impls/baij/mpi/mpibaij.h"
 #include "petscbt.h"
 
-static int MatIncreaseOverlap_MPIBAIJ_Once(Mat,int,IS *);
-static int MatIncreaseOverlap_MPIBAIJ_Local(Mat,int,char **,int*,int**);
-static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat,int,int **,int**,int*);
+static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat,int,IS *);
+static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat,int,char **,int*,int**);
+static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat,int,int **,int**,int*);
 EXTERN PetscErrorCode MatGetRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
 EXTERN PetscErrorCode MatRestoreRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
 
@@ -16,7 +16,8 @@ EXTERN PetscErrorCode MatRestoreRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
 PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS is[],int ov)
 {
   Mat_MPIBAIJ  *c = (Mat_MPIBAIJ*)C->data;
-  int          i,ierr,N=C->N, bs=c->bs;
+  PetscErrorCode ierr;
+  int          i,N=C->N, bs=c->bs;
   IS           *is_new;
 
   PetscFunctionBegin;
@@ -59,11 +60,12 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS is[],int ov)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ_Once"
-static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS is[])
+static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS is[])
 {
   Mat_MPIBAIJ  *c = (Mat_MPIBAIJ*)C->data;
   int         **idx,*n,*w1,*w2,*w3,*w4,*rtable,**data,len,*idx_i;
-  int         size,rank,Mbs,i,j,k,ierr,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
+  PetscErrorCode ierr;
+  int         size,rank,Mbs,i,j,k,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
   int         *ctr,*pa,*tmp,nrqr,*isz,*isz1,**xdata,**rbuf2;
   int         *onodes1,*olengths1,tag1,tag2,*onodes2,*olengths2;
   PetscBT     *table;
@@ -369,7 +371,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS is[])
                to each index set;
       data   - pointer to the solutions
 */
-static int MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,PetscBT *table,int *isz,int **data)
+static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat C,int imax,PetscBT *table,int *isz,int **data)
 {
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)C->data;
   Mat         A = c->A,B = c->B;
@@ -432,15 +434,16 @@ rather than all previous rows as it is now where a single large chunck of
 memory is used.
 
 */
-static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xdata,int * isz1)
+static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xdata,int * isz1)
 {
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)C->data;
   Mat         A = c->A,B = c->B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)B->data;
+  PetscErrorCode ierr;
   int         rstart,cstart,*ai,*aj,*bi,*bj,*garray,i,j,k;
   int         row,total_sz,ct,ct1,ct2,ct3,mem_estimate,oct2,l,start,end;
   int         val,max1,max2,rank,Mbs,no_malloc =0,*tmp,new_estimate,ctr;
-  int         *rbuf_i,kmax,rbuf_0,ierr;
+  int         *rbuf_i,kmax,rbuf_0;
   PetscBT     xtable;
 
   PetscFunctionBegin;
@@ -549,7 +552,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
   PetscFunctionReturn(0);
 }  
 
-static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,const IS[],const IS[],MatReuse,Mat *);
+static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat,int,const IS[],const IS[],MatReuse,Mat *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIBAIJ"
@@ -557,7 +560,8 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,const IS isrow[],const 
 { 
   IS          *isrow_new,*iscol_new;
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)C->data;
-  int         nmax,nstages_local,nstages,i,pos,max_no,ierr,N=C->N,bs=c->bs;
+  PetscErrorCode ierr;
+  int         nmax,nstages_local,nstages,i,pos,max_no,N=C->N,bs=c->bs;
 
   PetscFunctionBegin;
   /* The compression and expansion should be avoided. Does'nt point
@@ -619,13 +623,14 @@ PetscErrorCode PetscGetProc(const int gid, const int size, const int proc_gnode[
 /* -------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIBAIJ_local"
-static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
+static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 { 
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)C->data;
   Mat         A = c->A;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)c->B->data,*mat;
   int         **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,start,end,size;
-  int         **sbuf1,**sbuf2,rank,i,j,k,l,ct1,ct2,ierr,**rbuf1,row,proc;
+  PetscErrorCode ierr;
+  int         **sbuf1,**sbuf2,rank,i,j,k,l,ct1,ct2,**rbuf1,row,proc;
   int         nrqs,msz,**ptr,idex,*req_size,*ctr,*pa,*tmp,tcol,nrqr;
   int         **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2;
   int         **lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;

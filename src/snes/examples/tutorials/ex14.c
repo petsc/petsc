@@ -137,7 +137,7 @@ int main(int argc,char **argv)
       ierr = DAGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,&user);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
     } else {

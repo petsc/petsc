@@ -87,7 +87,7 @@ PetscErrorCode PFCreate_Constant(PF pf,void *value)
 EXTERN_C_END
 
 
-typedef int (*FCN)(void*,int,PetscScalar*,PetscScalar*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN)(void*,int,PetscScalar*,PetscScalar*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PFCreate_Quick"

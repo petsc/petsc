@@ -213,7 +213,8 @@ PetscErrorCode MatAssemblyBegin_ESI(Mat mat,MatAssemblyType mode)
 PetscErrorCode MatAssemblyEnd_ESI(Mat mat,MatAssemblyType mode)
 { 
   Mat_ESI     *a = (Mat_ESI*)mat->data;
-  int         i,j,rstart,ncols,n,ierr,flg;
+  PetscErrorCode ierr;
+  int         i,j,rstart,ncols,n,flg;
   int         *row,*col;
   PetscScalar *val;
   InsertMode  addv = mat->insertmode;
@@ -441,7 +442,8 @@ PetscErrorCode MatLoad_ESI(PetscViewer viewer,const MatType type,Mat *newmat)
   PetscScalar  *vals,*svals;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
-  int          i,nz,ierr,j,rstart,rend,fd;
+  PetscErrorCode ierr;
+  int          i,nz,j,rstart,rend,fd;
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
   int          *ourlens,*sndcounts = 0,*procsnz = 0,*offlens,jj,*mycols,*smycols;
   int          tag = ((PetscObject)viewer)->tag,cend,cstart,n;

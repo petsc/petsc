@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_CR"
-static int KSPSetUp_CR(KSP ksp)
+static PetscErrorCode KSPSetUp_CR(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -16,9 +16,10 @@ static int KSPSetUp_CR(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_CR"
-static int  KSPSolve_CR(KSP ksp)
+static PetscErrorCode  KSPSolve_CR(KSP ksp)
 {
-  int          i = 0, ierr;
+  PetscErrorCode ierr;
+  int          i = 0;
   MatStructure pflag;
   PetscReal    dp;
   PetscScalar  ai, bi;

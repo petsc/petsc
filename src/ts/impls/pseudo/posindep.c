@@ -10,9 +10,9 @@ typedef struct {
 
   /* information used for Pseudo-timestepping */
 
-  int    (*dt)(TS,PetscReal*,void*);              /* compute next timestep, and related context */
+  PetscErrorCode (*dt)(TS,PetscReal*,void*);              /* compute next timestep, and related context */
   void   *dtctx;              
-  int    (*verify)(TS,Vec,void*,PetscReal*,int*); /* verify previous timestep and related context */
+  PetscErrorCode (*verify)(TS,Vec,void*,PetscReal*,int*); /* verify previous timestep and related context */
   void   *verifyctx;     
 
   PetscReal  initial_fnorm,fnorm;                  /* original and current norm of F(u) */
@@ -138,7 +138,7 @@ PetscErrorCode TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,int *flag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Pseudo"
-static int TSStep_Pseudo(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_Pseudo(TS ts,int *steps,PetscReal *ptime)
 {
   Vec       sol = ts->vec_sol;
   PetscErrorCode ierr;
@@ -180,7 +180,7 @@ static int TSStep_Pseudo(TS ts,int *steps,PetscReal *ptime)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSDestroy_Pseudo"
-static int TSDestroy_Pseudo(TS ts)
+static PetscErrorCode TSDestroy_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -259,7 +259,7 @@ PetscErrorCode TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *st
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUp_Pseudo"
-static int TSSetUp_Pseudo(TS ts)
+static PetscErrorCode TSSetUp_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -288,7 +288,7 @@ PetscErrorCode TSPseudoDefaultMonitor(TS ts,int step,PetscReal ptime,Vec v,void 
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
-static int TSSetFromOptions_Pseudo(TS ts)
+static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -313,7 +313,7 @@ static int TSSetFromOptions_Pseudo(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSView_Pseudo"
-static int TSView_Pseudo(TS ts,PetscViewer viewer)
+static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -352,9 +352,9 @@ static int TSView_Pseudo(TS ts,PetscViewer viewer)
 
 .seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
-PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,PetscReal*,int*),void* ctx)
+PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void*,PetscReal*,int*),void* ctx)
 {
-  PetscErrorCode ierr,(*f)(TS,int (*)(TS,Vec,void*,PetscReal *,int *),void *);
+  PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,Vec,void*,PetscReal *,int *),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -469,9 +469,9 @@ PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
 
 .seealso: TSPseudoDefaultTimeStep(), TSPseudoComputeTimeStep()
 @*/
-PetscErrorCode TSPseudoSetTimeStep(TS ts,int (*dt)(TS,PetscReal*,void*),void* ctx)
+PetscErrorCode TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,void*),void* ctx)
 {
-  PetscErrorCode ierr,(*f)(TS,int (*)(TS,PetscReal *,void *),void *);
+  PetscErrorCode ierr,(*f)(TS,PetscErrorCode (*)(TS,PetscReal *,void *),void *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -485,7 +485,7 @@ PetscErrorCode TSPseudoSetTimeStep(TS ts,int (*dt)(TS,PetscReal*,void*),void* ct
 
 /* ----------------------------------------------------------------------------- */
 
-typedef int (*FCN1)(TS,Vec,void*,PetscReal*,int*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,int*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"
@@ -527,7 +527,7 @@ PetscErrorCode TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
 }
 EXTERN_C_END
 
-typedef int (*FCN2)(TS,PetscReal*,void*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN2)(TS,PetscReal*,void*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPseudoSetTimeStep_Pseudo"

@@ -73,21 +73,17 @@ E*/
 
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
-extern int MAT_COOKIE;
-extern int MATSNESMFCTX_COOKIE;
-extern int MAT_FDCOLORING_COOKIE;
-extern int MAT_PARTITIONING_COOKIE;
-extern int MAT_NULLSPACE_COOKIE;
-extern int MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
-extern int MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
-extern int MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
-extern int MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
-extern int MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
-extern int MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering;
-extern int MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
-extern int MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
-extern int MAT_MatMult;
-extern int MAT_PtAP;
+extern PetscCookie MAT_COOKIE, MATSNESMFCTX_COOKIE, MAT_FDCOLORING_COOKIE, MAT_PARTITIONING_COOKIE, MAT_NULLSPACE_COOKIE;
+extern PetscEvent    MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
+extern PetscEvent    MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
+extern PetscEvent    MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
+extern PetscEvent    MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
+extern PetscEvent    MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
+extern PetscEvent    MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering;
+extern PetscEvent    MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
+extern PetscEvent    MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
+extern PetscEvent    MAT_MatMult;
+extern PetscEvent    MAT_PtAP;
 
 EXTERN PetscErrorCode MatInitializePackage(char *);
 
@@ -96,13 +92,13 @@ EXTERN PetscErrorCode MatSetType(Mat,const MatType);
 EXTERN PetscErrorCode MatSetFromOptions(Mat);
 EXTERN PetscErrorCode MatSetUpPreallocation(Mat);
 EXTERN PetscErrorCode MatRegisterAll(const char[]);
-EXTERN PetscErrorCode MatRegister(const char[],const char[],const char[],int(*)(Mat));
+EXTERN PetscErrorCode MatRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat));
 
 /*MC
    MatRegisterDynamic - Adds a new matrix type
 
    Synopsis:
-   int MatRegisterDynamic(char *name,char *path,char *name_create,int (*routine_create)(Mat))
+   int MatRegisterDynamic(char *name,char *path,char *name_create,PetscErrorCode (*routine_create)(Mat))
 
    Not Collective
 
@@ -300,7 +296,7 @@ EXTERN PetscErrorCode MatMultTransposeConstrained(Mat,Vec,Vec);
 E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES} MatDuplicateOption;
 
-EXTERN PetscErrorCode MatConvertRegister(const char[],const char[],const char[],int (*)(Mat,MatType,Mat*));
+EXTERN PetscErrorCode MatConvertRegister(const char[],const char[],const char[],PetscErrorCode (*)(Mat,MatType,Mat*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatConvertRegisterDynamic(a,b,c,d) MatConvertRegister(a,b,c,0)
 #else
@@ -471,7 +467,7 @@ EXTERN PetscErrorCode MatGetVecs(Mat,Vec*,Vec*);
 M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
-  int _4_ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
+  PetscErrorCode _4_ierr; int __tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
   _4_ierr = PetscMalloc(2*__tmp*sizeof(int),&dnz);CHKERRQ(_4_ierr);onz = dnz + __tmp;\
   _4_ierr = PetscMemzero(dnz,2*__tmp*sizeof(int));CHKERRQ(_4_ierr);\
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\
@@ -510,7 +506,7 @@ M*/
 M*/
 #define MatPreallocateSymmetricInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
-  int _4_ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__end; \
+  PetscErrorCode _4_ierr; int __tmp = (nrows),__ctmp = (ncols),__rstart,__end; \
   _4_ierr = PetscMalloc(2*__tmp*sizeof(int),&dnz);CHKERRQ(_4_ierr);onz = dnz + __tmp;\
   _4_ierr = PetscMemzero(dnz,2*__tmp*sizeof(int));CHKERRQ(_4_ierr);\
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr);\
@@ -769,14 +765,14 @@ E*/
 #define MATORDERING_REVERSE   "reverse"
 
 EXTERN PetscErrorCode MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode MatOrderingRegister(const char[],const char[],const char[],int(*)(Mat,const MatOrderingType,IS*,IS*));
+EXTERN PetscErrorCode MatOrderingRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,const MatOrderingType,IS*,IS*));
 
 /*MC
    MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the 
                                matrix package. 
 
    Synopsis:
-   int MatOrderingRegisterDynamic(char *name_ordering,char *path,char *name_create,int (*routine_create)(MatOrdering))
+   int MatOrderingRegisterDynamic(char *name_ordering,char *path,char *name_create,PetscErrorCode (*routine_create)(MatOrdering))
 
    Not Collective
 
@@ -911,14 +907,14 @@ E*/
 #define MATCOLORING_ID      "id"
 
 EXTERN PetscErrorCode MatGetColoring(Mat,const MatColoringType,ISColoring*);
-EXTERN PetscErrorCode MatColoringRegister(const char[],const char[],const char[],int(*)(Mat,const MatColoringType,ISColoring *));
+EXTERN PetscErrorCode MatColoringRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,const MatColoringType,ISColoring *));
 
 /*MC
    MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the 
                                matrix package. 
 
    Synopsis:
-   int MatColoringRegisterDynamic(char *name_coloring,char *path,char *name_create,int (*routine_create)(MatColoring))
+   int MatColoringRegisterDynamic(char *name_coloring,char *path,char *name_create,PetscErrorCode (*routine_create)(MatColoring))
 
    Not Collective
 
@@ -976,7 +972,7 @@ typedef struct _p_MatFDColoring *MatFDColoring;
 EXTERN PetscErrorCode MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
 EXTERN PetscErrorCode MatFDColoringDestroy(MatFDColoring);
 EXTERN PetscErrorCode MatFDColoringView(MatFDColoring,PetscViewer);
-EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring,int (*)(void),void*);
+EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring,PetscErrorCode (*)(void),void*);
 EXTERN PetscErrorCode MatFDColoringSetParameters(MatFDColoring,PetscReal,PetscReal);
 EXTERN PetscErrorCode MatFDColoringSetFrequency(MatFDColoring,int);
 EXTERN PetscErrorCode MatFDColoringGetFrequency(MatFDColoring,int*);
@@ -1029,14 +1025,14 @@ EXTERN PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning,const P
 EXTERN PetscErrorCode MatPartitioningApply(MatPartitioning,IS*);
 EXTERN PetscErrorCode MatPartitioningDestroy(MatPartitioning);
 
-EXTERN PetscErrorCode MatPartitioningRegister(const char[],const char[],const char[],int(*)(MatPartitioning));
+EXTERN PetscErrorCode MatPartitioningRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatPartitioning));
 
 /*MC
    MatPartitioningRegisterDynamic - Adds a new sparse matrix partitioning to the 
    matrix package. 
 
    Synopsis:
-   int MatPartitioningRegisterDynamic(char *name_partitioning,char *path,char *name_create,int (*routine_create)(MatPartitioning))
+   int MatPartitioningRegisterDynamic(char *name_partitioning,char *path,char *name_create,PetscErrorCode (*routine_create)(MatPartitioning))
 
    Not Collective
 

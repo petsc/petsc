@@ -11,7 +11,8 @@
 PetscErrorCode MatDumpSPAI(Mat A,FILE *file)
 {
   const PetscScalar *vals;
-  int               i,j,ierr,n,size,nz;
+  PetscErrorCode ierr;
+  int               i,j,n,size,nz;
   const int         *cols;
   MPI_Comm          comm;
 
@@ -37,7 +38,8 @@ PetscErrorCode MatDumpSPAI(Mat A,FILE *file)
 
 PetscErrorCode VecDumpSPAI(Vec b,FILE *file)
 {
-  int    n,i,ierr;
+  PetscErrorCode ierr;
+  int    n,i;
   PetscScalar *array;
 
   ierr = VecGetSize(b,&n);CHKERRQ(ierr);

@@ -14,7 +14,8 @@ esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm icomm, int n, int N)
 
 esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace)
 {
-  int      ierr,n,N;
+  PetscErrorCode ierr;
+  int      n,N;
   MPI_Comm *icomm;
 
   ierr = sourceIndexSpace.getRunTimeModel("MPI",reinterpret_cast<void *&>(icomm));if (ierr) return;
@@ -86,7 +87,8 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
 
 ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionOffsets(int *globaloffsets)
 { 
-  PetscErrorCode ierr,*iglobaloffsets;
+  PetscErrorCode ierr;
+  int *iglobaloffsets;
   int size;   
 
   ierr = PetscMapGetGlobalRange(this->map,&iglobaloffsets);CHKERRQ(ierr);
@@ -97,7 +99,8 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
 
 ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
 { 
-  PetscErrorCode ierr,i,n,*globalranges;
+  PetscErrorCode ierr;
+  int i,n,*globalranges;
 
 
   ierr = MPI_Comm_size(this->comm,&n);CHKERRQ(ierr);

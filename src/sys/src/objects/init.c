@@ -23,7 +23,7 @@
 */
 PetscTruth PetscBeganMPI         = PETSC_FALSE;
 PetscTruth PetscInitializeCalled = PETSC_FALSE;
-PetscErrorCode        PetscGlobalRank = -1,PetscGlobalSize = -1;
+int        PetscGlobalRank = -1,PetscGlobalSize = -1;
 MPI_Comm   PETSC_COMM_WORLD = 0;
 MPI_Comm   PETSC_COMM_SELF  = 0;
 
@@ -106,7 +106,8 @@ PetscErrorCode PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 #define __FUNCT__ "PetscLogCloseHistoryFile"
 PetscErrorCode PetscLogCloseHistoryFile(FILE **fd)
 {
-  int  rank,ierr;
+  PetscErrorCode ierr;
+  int  rank;
   char date[64];
 
   PetscFunctionBegin;
@@ -146,7 +147,8 @@ PetscReal  PetscCompareTolerance = 1.e-10;
 @*/
 PetscErrorCode PetscCompareInt(int d)
 {
-  int work = d,ierr;
+  PetscErrorCode ierr;
+  int work = d;
 
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,1,MPI_INT,0,MPI_COMM_WORLD);CHKERRQ(ierr);
@@ -366,7 +368,7 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = 0;
    Concepts: package help message
 
 @*/
-PetscErrorCode PetscSetHelpVersionFunctions(int (*help)(MPI_Comm),int (*version)(MPI_Comm))
+PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),PetscErrorCode (*version)(MPI_Comm))
 {
   PetscFunctionBegin;
   PetscExternalHelpFunction    = help;

@@ -10,7 +10,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_KSP"
-static int PCApply_KSP(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   int its;
@@ -25,9 +25,10 @@ static int PCApply_KSP(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyTranspose_KSP"
-static int PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 {
-  int     its,ierr;
+  PetscErrorCode ierr;
+  int     its;
   PC_KSP *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
@@ -39,7 +40,7 @@ static int PCApplyTranspose_KSP(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_KSP"
-static int PCSetUp_KSP(PC pc)
+static PetscErrorCode PCSetUp_KSP(PC pc)
 {
   PetscErrorCode ierr;
   PC_KSP *jac = (PC_KSP*)pc->data;
@@ -58,7 +59,7 @@ static int PCSetUp_KSP(PC pc)
 /* Default destroy, if it has never been setup */
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_KSP"
-static int PCDestroy_KSP(PC pc)
+static PetscErrorCode PCDestroy_KSP(PC pc)
 {
   PC_KSP *jac = (PC_KSP*)pc->data;
   PetscErrorCode ierr;
@@ -71,7 +72,7 @@ static int PCDestroy_KSP(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_KSP"
-static int PCView_KSP(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
 {
   PC_KSP    *jac = (PC_KSP*)pc->data;
   PetscErrorCode ierr;
@@ -99,7 +100,7 @@ static int PCView_KSP(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_KSP"
-static int PCSetFromOptions_KSP(PC pc){
+static PetscErrorCode PCSetFromOptions_KSP(PC pc){
   PetscErrorCode ierr;
   PetscTruth flg;
 

@@ -1721,7 +1721,7 @@ and then associate it with the matrix, \trl{mat}, by using the
 command \findex{MatShellSetOperation()}
 \begin{tabbing}
   MatShellSetOperation\=(Mat mat,MatOperation MATOP\_MULT,\\
-                      \>         (void(*)(void)) int (*UserMult)(Mat,Vec,Vec));
+                      \>         (void(*)(void)) PetscErrorCode (*UserMult)(Mat,Vec,Vec));
 \end{tabbing}
 Here \trl{MATOP_MULT} is the name of the operation for matrix-vector
 multiplication. Within each user-defined routine (such as
@@ -1845,7 +1845,7 @@ In certain applications it may be necessary for application codes
 to directly access elements of a matrix. This may be done by using the 
 the command (for local rows only)
 \begin{tabbing}
-  MatGetRow(Mat A,int row, int *ncols,const int (*cols)[],const PetscScalar (*vals)[]);
+  MatGetRow(Mat A,int row, int *ncols,const PetscErrorCode (*cols)[],const PetscScalar (*vals)[]);
 \end{tabbing}
 The argument \trl{ncols} returns the number of nonzeros in that row, 
 while \trl{cols} and \trl{vals} returns the column indices (with indices
@@ -2333,7 +2333,7 @@ customized convergence-testing routines.  \sindex{convergence tests}
 The user can specify a customized 
 routine with the command \findex{KSPSetConvergenceTest()}
 \begin{tabbing}
-  KSPSetConvergenceTest\=(KSP ksp,int (*test)(KSP ksp,int it,double rnorm,\\
+  KSPSetConvergenceTest\=(KSP ksp,PetscErrorCode (*test)(KSP ksp,int it,double rnorm,\\
                        \>KSPConvergedReason *reason,void *ctx),void *ctx);
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
@@ -2358,8 +2358,8 @@ the options must be specified. \findex{-ksp_xmonitor}
 Application programmers can also provide their own routines to perform 
 the monitoring by using the command \findex{KSPSetMonitor()}
 \begin{tabbing}
-  KSPSetMonitor(\=KSP ksp,int (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
-                \>        void *ctx,int (*mondestroy)(void*));
+  KSPSetMonitor(\=KSP ksp,PetscErrorCode (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
+                \>        void *ctx,PetscErrorCode (*mondestroy)(void*));
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined monitoring routine, \trl{mon}.  Other
@@ -2898,7 +2898,7 @@ The shell preconditioner simply uses an application-provided routine to
 implement the preconditioner. To set this routine, one uses the 
 command \findex{PCShellSetApply()}
 \begin{tabbing}
-  PCShellSetApply(PC pc,int (*apply)(void *ctx,Vec,Vec),void *ctx);
+  PCShellSetApply(PC pc,PetscErrorCode (*apply)(void *ctx,Vec,Vec),void *ctx);
 \end{tabbing}
 The final argument \trl{ctx} is a pointer to the application-provided 
 data structure needed by the preconditioner routine.
@@ -2911,7 +2911,7 @@ provide a ``setup'' routine that is called everytime the operator is
 changed (usually via KSPSetOperators()).
 \findex{PCShellSetSetUp()}
 \begin{tabbing}
-  PCShellSetSetUp(PC pc,int (*setup)(void *ctx));
+  PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(void *ctx));
 \end{tabbing}
 The argument to the ``setup'' routine is the same application-provided 
 data structure passed in with the PCShellSetApply() routine.
@@ -3128,7 +3128,7 @@ passed to both MGSetRestriction() and MGSetInterpolation().
 On each level except the coarsest, one must also set the routine to 
 compute the residual.  The following command suffices: \findex{MGSetResidual()}
 \begin{tabbing}
-   MGSetResidual(PC pc,int level,int (*residual)(Mat,Vec,Vec,Vec),Mat mat);
+   MGSetResidual(PC pc,int level,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat);
 \end{tabbing}
 The residual() function can be set to be MGDefaultResidual()
 if \findex{MGDefaultResidual()}
@@ -3408,7 +3408,7 @@ function at the vector \trl{x}.  This information should be set with
 the command \findex{SNESSetFunction()}
 \begin{tabbing}
   SNESSetFunction(SNES snes,Vec f,\\
-          int (*FormFunction)(SNES snes,Vec x,Vec f,void *ctx),void *ctx);
+          PetscErrorCode (*FormFunction)(SNES snes,Vec x,Vec f,void *ctx),void *ctx);
 \end{tabbing}
 The argument \trl{ctx} is an optional user-defined context, which can
 store any private, application-specific data required by the
@@ -3427,7 +3427,7 @@ The user must also specify a routine to form some approximation of the
 Jacobian matrix, \trl{A}, at the current iterate, \trl{x},
 as is typically done with
 \begin{tabbing}
-  SNESSetJacobian(SNES snes,Mat A,Mat B,int (*FormJacobian)(SNES snes,\\
+  SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*FormJacobian)(SNES snes,\\
           Vec x,Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
 \end{tabbing}
 The \findex{SNESSetJacobian()} arguments of the routine \trl{
@@ -3513,7 +3513,7 @@ default, this technique employs cubic backtracking \cite{dennis:83}.
 An alternative line search routine can be set with the command
 \findex{SNESSetLineSearch()}
 \begin{tabbing}
-  SNESSetLineSearch(SNES snes,int (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),void *lsctx);
+  SNESSetLineSearch(SNES snes,PetscErrorCode (*ls)(SNES,Vec,Vec,Vec,Vec,double,double*,double*),void *lsctx);
 \end{tabbing}
 Other line search methods provided by PETSc are 
 SNESQuadraticLineSearch(), SNESNoLineSearch(), and SNESNoLineSearchNoNorms(),
@@ -3605,7 +3605,7 @@ with the routine
 Users can set their own customized convergence tests in SNES by using
 the command \findex{SNESSetConvergenceTest()}
 \begin{tabbing}
-  SNESSetConvergenceTest(\=SNES snes,int (*test)(SNES snes,double xnorm,\\
+  SNESSetConvergenceTest(\=SNES snes,PetscErrorCode (*test)(SNES snes,double xnorm,\\
                          \>double gnorm,double f,SNESConvergedReason reason,\\
                          \>void *cctx),void *cctx);
 \end{tabbing}
@@ -3627,8 +3627,8 @@ By default the SNES solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the
 command \findex{SNESSetMonitor()} 
 \begin{tabbing}
-  SNESSetMonitor(\=SNES snes,int (*mon)(SNES,int its,double norm,void* mctx),\\
-                 \>        void *mctx,int (*monitordestroy)(void*));
+  SNESSetMonitor(\=SNES snes,PetscErrorCode (*mon)(SNES,int its,double norm,void* mctx),\\
+                 \>        void *mctx,PetscErrorCode (*monitordestroy)(void*));
 \end{tabbing}
 The routine, \trl{mon}, indicates a user-defined monitoring routine,
 where \trl{its} and \trl{mctx} respectively denote the iteration
@@ -4177,7 +4177,7 @@ for the ODE. \findex{TSSetSolution()}
  the user must call 
 \begin{tabbing}
  TSSetRHSMatrix(TS ts,Mat A, Mat B,\\
- int (*f)(TS,double,Mat*,Mat*,MatStructure*,void*),void *fP);
+ PetscErrorCode (*f)(TS,double,Mat*,Mat*,MatStructure*,void*),void *fP);
 \end{tabbing}
 The matrix \trl{B} (although usually the same as \trl{A}) allows one to 
 provide \findex{TSSetRHSMatrix()}
@@ -4197,7 +4197,7 @@ explicit timestepping methods) the user  passes the function with
 the routine
 
 \begin{tabbing}
- TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *fP);
+ TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
 \end{tabbing}
 The \findex{TSSetRHSFunction} arguments to the function \trl{f()} are
 the timestep context, the current time, the input for the function,
@@ -4208,7 +4208,7 @@ variable \trl{fP}.
 (approximate) Jacobian matrix of \trl{F(u,t)} and a function to
 compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat A, Mat B,int (*fjac)(TS,double,Vec,Mat*,Mat*,\\
+ TSSetRHSJacobian(\=TS ts,Mat A, Mat B,PetscErrorCode (*fjac)(TS,double,Vec,Mat*,Mat*,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The \findex{TSSetRHSJacobian} arguments for the function \trl{fjac()} are
@@ -4294,7 +4294,7 @@ as follows.
 \begin{itemize}
 \item Provide the function \trl{F(u)} with the routine
 \begin{tabbing}
- TSSetRHSFunction(TS ts,int (*f)(TS,double,Vec,Vec,void*),void *fP);
+ TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
 \end{tabbing}
 The \findex{TSSetRHSFunction} arguments to the function \trl{f()} are
 the timestep context, the current time, the input for the function,
@@ -4304,7 +4304,7 @@ variable \trl{fP}.
 \item Provide the (approximate) Jacobian matrix of \trl{F(u,t)} and a 
 function to compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat A, Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,\\
+ TSSetRHSJacobian(\=TS ts,Mat A, Mat B,PetscErrorCode (*f)(TS,double,Vec,Mat*,Mat*,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The \findex{TSSetRHSJacobian} arguments for the function \trl{f()} are
@@ -4447,14 +4447,14 @@ solvers are being used.
 
 For nonlinear problems one replaces the DMMGSetKSP() with 
 \begin{tabbing}
-  DMMGSetSNES(\=DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),\\
-             \>int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+  DMMGSetSNES(\=DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),\\
+             \>PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 \end{tabbing}
 or the prefered approach
 \begin{tabbing}
   DMMGSetSNESLocal(\=DMMG *dmmg,\\
-  \>int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),\\
-  \>int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),\\
+  \>PetscErrorCode (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),\\
+  \>PetscErrorCode (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),\\
   \>ad\_function,ad\_mf\_function);
 \end{tabbing}
 The \trl{ad_function} and \trl{ad_mf_function} are described in the next chapter. \findex{DMMGSetSNES()} \findex{DMMGSetSNESLocal()}
@@ -4519,7 +4519,7 @@ where one lists the functions. In Fortran use
 Next one uses the call
 \begin{tabbing}
   DMMGSetSNESLocal(DMMG *dmmg,\\
-   int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),PETSC\_NULL,\\
+   PetscErrorCode (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),PETSC\_NULL,\\
   ad\_localfunction,ad\_mf\_localfunction);
 \end{tabbing}
 where the names of the last two functions are obtained 
@@ -4542,7 +4542,8 @@ second approach will require some hand massaging. For example,
   subroutine TrueFormFunctionLocal(info,x,f,ctx,ierr)\\
   double precision x(gxs:gxe,gys:gye),f(xs:xe,ys:ye)\\
   DA info(DA\_LOCAL\_INFO\_SIZE)\\
-  integer ctx,ierr\\
+  integer ctx\\
+  PetscErrorCode ierr\\
   double precision work(gxs:gxe,gys:gye)\\
    
   .... do the work ....\\
@@ -4554,7 +4555,8 @@ second approach will require some hand massaging. For example,
 
   double precision x(*),f(*)\\
   DA info(DA\_LOCAL\_INFO\_SIZE)\\
-  integer ctx,ierr\\
+  PetscErrorCode ierr\\
+  integer ctx\\
   double precision work(10000)\\
 
   call TrueFormFunctionLocal(info,x,f,work,ctx,ierr)\\
@@ -4879,7 +4881,8 @@ integer index to the actual array used for data storage within PETSc.
 The Fortran interface for several routines is as follows:
 \begin{tabbing}
    double precision xx\_v(1), aa\_v(1)\\
-   integer          ss\_v(1), dd\_v(1), ierr, nloc\\
+   PetscErrorCode ierr\\
+   integer          ss\_v(1), dd\_v(1), nloc\\
    PetscOffset      ss\_i, xx\_i, aa\_i, dd\_i\\
    Vec x\\
    Mat A\\
@@ -4904,7 +4907,8 @@ Fortran manner.
 
     double precision xx\_v(1)\\
     PetscOffset      xx\_i\\
-    integer          i, ierr, n\\
+    PetscErrorCode ierr\\
+    integer          i, n\\
     Vec              x\\
     call VecGetArray(x,xx\_v,xx\_i,ierr)\\
     call VecGetLocalSize(x,n,ierr)\\
@@ -6361,7 +6365,7 @@ If the stack is empty, it selects PetscTraceBackErrorHandler(),
 which \findex{PetscTraceBackErrorHandler()} tries to print a traceback. 
 A new error handler can be put on the stack with
 \begin{tabbing}
-  PetscPushErrorHandler(int (*HandlerFunction)(int line,char *dir,char *file,\\
+  PetscPushErrorHandler(PetscErrorCode (*HandlerFunction)(int line,char *dir,char *file,\\
                                 char *message,int number,void*),void *HandlerContext)
 \end{tabbing}
 The arguments to \trl{HandlerFunction()} are the line number where 
@@ -6399,7 +6403,7 @@ command \trl{PetscLogTraceBegin(FILE*)}. \findex{-log_trace} \findex{PetscLogTra
 It is also possible to trap signals by using the \sindex{signals}
 command \findex{PetscPushSignalHandler()}
 \begin{tabbing}
-  PetscPushSignalHandler( int (*Handler)(int,void *),void *ctx);
+  PetscPushSignalHandler( PetscErrorCode (*Handler)(int,void *),void *ctx);
 \end{tabbing}
 The default handler PetscDefaultSignalHandler() 
 calls \findex{PetscDefaultSignalHandler()} 
@@ -7166,7 +7170,7 @@ The user registers the ordering routine
 with the command
 \begin{tabbing}
   MatOrderingRegisterDynamic(MatOrderingType inname,char *path,char *sname,\\
-                             int (*reorder)(Mat,MatOrderingType,IS*,IS*)));
+                             PetscErrorCode (*reorder)(Mat,MatOrderingType,IS*,IS*)));
 \end{tabbing}
 The \findex{MatOrderingRegisterDynamic()} \sindex{ordering} \sindex{matrix ordering}
 input argument \trl{inname} is a string of the user's choice, \trl{iname} is either 

@@ -12,22 +12,22 @@
 #include "mat.h"  
 PETSC_EXTERN_CXX_BEGIN
 
-extern int ad_PetscInitialize(int *,char ***,char *,char*);
-extern int ad_PetscFinalize(void);
-extern int ad_AD_Init(void);
-extern int ad_AD_Final(void);
+EXTERN PetscErrorCode  ad_PetscInitialize(int *,char ***,char *,char*);
+EXTERN PetscErrorCode  ad_PetscFinalize(void);
+EXTERN PetscErrorCode  ad_AD_Init(void);
+EXTERN PetscErrorCode  ad_AD_Final(void);
 
 typedef struct _p_PetscADICFunction *PetscADICFunction;
 
-extern int PetscADICFunctionCreate(Vec,Vec,int (*)(Vec,Vec),int (*)(void **),PetscADICFunction*);
-extern int PetscADICFunctionInitialize(PetscADICFunction);
-extern int PetscADICFunctionEvaluateGradient(PetscADICFunction,Vec,Vec,Mat);
-extern int PetscADICFunctionApplyGradientInitialize(PetscADICFunction,Vec,Mat*);
-extern int PetscADICFunctionApplyGradientReset(Mat,Vec);
-extern int PetscADICFunctionDestroy(PetscADICFunction);
+EXTERN PetscErrorCode  PetscADICFunctionCreate(Vec,Vec,PetscErrorCode (*)(Vec,Vec),PetscErrorCode (*)(void **),PetscADICFunction*);
+EXTERN PetscErrorCode  PetscADICFunctionInitialize(PetscADICFunction);
+EXTERN PetscErrorCode  PetscADICFunctionEvaluateGradient(PetscADICFunction,Vec,Vec,Mat);
+EXTERN PetscErrorCode  PetscADICFunctionApplyGradientInitialize(PetscADICFunction,Vec,Mat*);
+EXTERN PetscErrorCode  PetscADICFunctionApplyGradientReset(Mat,Vec);
+EXTERN PetscErrorCode  PetscADICFunctionDestroy(PetscADICFunction);
 
-extern int PetscADICFunctionSetFunction(PetscADICFunction,int (*)(Vec,Vec),int (*)(void **));
-extern int PetscADICFunctionEvaluateGradientFD(PetscADICFunction,Vec,Vec,Mat);
+EXTERN PetscErrorCode  PetscADICFunctionSetFunction(PetscADICFunction,PetscErrorCode (*)(Vec,Vec),PetscErrorCode (*)(void **));
+EXTERN PetscErrorCode  PetscADICFunctionEvaluateGradientFD(PetscADICFunction,Vec,Vec,Mat);
 
 PETSC_EXTERN_CXX_END
 #endif

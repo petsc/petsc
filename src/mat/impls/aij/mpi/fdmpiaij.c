@@ -10,7 +10,8 @@ EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],i
 PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
-  int        i,*is,n,nrows,j,k,m,*rows = 0,ierr,*A_ci,*A_cj,ncols,col;
+  PetscErrorCode ierr;
+  int        i,*is,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
   int        nis = iscoloring->n,*ncolsonproc,size,nctot,*cols,*disp,*B_ci,*B_cj;
   int        *rowhit,M = mat->m,cstart = aij->cstart,cend = aij->cend,colb;
   int        *columnsforrow,l;

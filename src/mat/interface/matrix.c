@@ -7,17 +7,17 @@
 #include "vecimpl.h"  
 
 /* Logging support */
-PetscCookieCode MAT_COOKIE = 0, MATSNESMFCTX_COOKIE = 0;
-PetscLogCode    MAT_Mult = 0, MAT_MultMatrixFree = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
-PetscLogCode    MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0;
-PetscLogCode    MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
-PetscLogCode    MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
-PetscLogCode    MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
-PetscLogCode    MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0;
-PetscLogCode    MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
-PetscLogCode    MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
-PetscLogCode    MAT_MatMult = 0;
-PetscLogCode    MAT_PtAP = 0;
+PetscCookie MAT_COOKIE = 0, MATSNESMFCTX_COOKIE = 0;
+PetscEvent    MAT_Mult = 0, MAT_MultMatrixFree = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
+PetscEvent    MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0;
+PetscEvent    MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
+PetscEvent    MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
+PetscEvent    MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
+PetscEvent    MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0;
+PetscEvent    MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
+PetscEvent    MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
+PetscEvent    MAT_MatMult = 0;
+PetscEvent    MAT_PtAP = 0;
 
 /* nasty global values for MatSetValue() */
 int         MatSetValue_Row = 0, MatSetValue_Column = 0;
@@ -89,7 +89,8 @@ PetscScalar MatSetValue_Value = 0.0;
 
 PetscErrorCode MatGetRow(Mat mat,int row,int *ncols,const int *cols[],const PetscScalar *vals[])
 {
-  int   incols,ierr;
+  PetscErrorCode ierr;
+  int   incols;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -621,7 +622,8 @@ $    idxm(MatStencil_c,1) = c
 @*/
 PetscErrorCode MatSetValuesStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
-  int j,i,ierr,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+  PetscErrorCode ierr;
+  int j,i,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
   int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
 
   PetscFunctionBegin;
@@ -729,7 +731,8 @@ $    idxm(MatStencil_k,1) = k
 @*/
 PetscErrorCode MatSetValuesBlockedStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
-  int j,i,ierr,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+  PetscErrorCode ierr;
+  int j,i,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
   int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
 
   PetscFunctionBegin;
@@ -1065,7 +1068,8 @@ PetscErrorCode MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping mapp
 @*/
 PetscErrorCode MatSetValuesLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
 {
-  PetscErrorCode ierr,irowm[2048],icolm[2048];
+  PetscErrorCode ierr;
+  int irowm[2048],icolm[2048];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -1141,7 +1145,8 @@ PetscErrorCode MatSetValuesLocal(Mat mat,int nrow,const int irow[],int ncol,cons
 @*/
 PetscErrorCode MatSetValuesBlockedLocal(Mat mat,int nrow,const int irow[],int ncol,const int icol[],const PetscScalar y[],InsertMode addv) 
 {
-  PetscErrorCode ierr,irowm[2048],icolm[2048];
+  PetscErrorCode ierr;
+  int irowm[2048],icolm[2048];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2618,7 +2623,7 @@ PetscFList MatConvertList              = 0;
 .seealso: MatConvertRegisterAll(), MatConvert()
 
 @*/
-PetscErrorCode MatConvertRegister(const char sname[],const char path[],const char name[],int (*function)(Mat,MatType,Mat*))
+PetscErrorCode MatConvertRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatType,Mat*))
 {
   PetscErrorCode ierr;
   char fullname[PETSC_MAX_PATH_LEN];
@@ -2681,7 +2686,7 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,Mat *M)
   if ((sametype || issame) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    int (*conv)(Mat,const MatType,Mat*)=PETSC_NULL;
+    PetscErrorCode (*conv)(Mat,const MatType,Mat*)=PETSC_NULL;
     /* 
        Order of precedence:
        1) See if a specialized converter is known to the current matrix.
@@ -4229,7 +4234,8 @@ PetscErrorCode MatRestoreArray(Mat mat,PetscScalar *v[])
 @*/
 PetscErrorCode MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
-  int        i,ierr;
+  PetscErrorCode ierr;
+  int        i;
   PetscTruth eq;
 
   PetscFunctionBegin;
@@ -4291,7 +4297,8 @@ PetscErrorCode MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],M
 @*/
 PetscErrorCode MatDestroyMatrices(int n,Mat *mat[])
 {
-  PetscErrorCode ierr,i;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %d",n);
@@ -4953,7 +4960,8 @@ PetscErrorCode MatStashSetInitialSize(Mat mat,int size, int bsize)
 @*/
 PetscErrorCode MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
 {
-  int M,N,ierr;
+  PetscErrorCode ierr;
+  int M,N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -4996,7 +5004,8 @@ PetscErrorCode MatInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
 @*/
 PetscErrorCode MatInterpolate(Mat A,Vec x,Vec y)
 {
-  int M,N,ierr;
+  PetscErrorCode ierr;
+  int M,N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5037,7 +5046,8 @@ PetscErrorCode MatInterpolate(Mat A,Vec x,Vec y)
 @*/
 PetscErrorCode MatRestrict(Mat A,Vec x,Vec y)
 {
-  int M,N,ierr;
+  PetscErrorCode ierr;
+  int M,N;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -5303,7 +5313,7 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat,Vec diag)
       SETERRQ(PETSC_ERR_SUP,"Only supported for sequential matrices when no ghost points/periodic conditions");
     }
   } else {
-    int (*f)(Mat,Vec);
+    PetscErrorCode (*f)(Mat,Vec);
     ierr = PetscObjectQueryFunction((PetscObject)mat,"MatDiagonalScaleLocal_C",(void (**)(void))&f);CHKERRQ(ierr);
     if (f) {
       ierr = (*f)(mat,diag);CHKERRQ(ierr);
@@ -5558,7 +5568,7 @@ PetscErrorCode MatIsHermitian(Mat A,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashGetInfo"
-extern int MatStashGetInfo_Private(MatStash*,int*,int*);
+extern PetscErrorCode MatStashGetInfo_Private(MatStash*,int*,int*);
 /*@ 
    MatStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
        to be communicated to other processors during the MatAssemblyBegin/End() process

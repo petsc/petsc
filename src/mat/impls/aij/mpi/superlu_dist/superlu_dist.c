@@ -38,11 +38,11 @@ typedef struct {
 #endif
 
   /* A few function pointers for inheritance */
-  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  int (*MatView)(Mat,PetscViewer);
-  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  int (*MatDestroy)(Mat);
+  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*MatView)(Mat,PetscViewer);
+  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatDestroy)(Mat);
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
   PetscTruth CleanUpSuperLU_Dist;
@@ -209,7 +209,8 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
   Mat              *tseq,A_seq = PETSC_NULL;
   Mat_SeqAIJ       *aa,*bb;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(*F)->spptr;
-  int              M=A->M,N=A->N,info,ierr,size,rank,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
+  PetscErrorCode ierr;
+  int              M=A->M,N=A->N,info,size,rank,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
                    m=A->m, irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
   SuperLUStat_t    stat;
   double           *berr=0;
@@ -685,7 +686,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SuperLU_DIST"
 PetscErrorCode MatCreate_SuperLU_DIST(Mat A) 
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
   Mat A_diag;
 
   PetscFunctionBegin;

@@ -88,7 +88,8 @@ PetscErrorCode TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat
 PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   Vec         jj1,jj2,xx2;
-  int         i,ierr,N,start,end,j;
+  PetscErrorCode ierr;
+  int         i,N,start,end,j;
   PetscScalar dx,mone = -1.0,*y,scale,*xx,wscale;
   PetscReal   amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
   PetscReal   dx_min = 1.e-16,dx_par = 1.e-1;

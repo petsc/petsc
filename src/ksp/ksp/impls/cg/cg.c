@@ -56,7 +56,8 @@ EXTERN PetscErrorCode KSPComputeEigenvalues_CG(KSP,int,PetscReal *,PetscReal *,i
 PetscErrorCode KSPSetUp_CG(KSP ksp)
 {
   KSP_CG *cgP = (KSP_CG*)ksp->data;
-  int    maxit = ksp->max_it,ierr;
+  PetscErrorCode ierr;
+  int    maxit = ksp->max_it;
 
   PetscFunctionBegin;
   /* 

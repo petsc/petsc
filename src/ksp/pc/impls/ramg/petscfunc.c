@@ -174,7 +174,8 @@ PetscErrorCode MyConvTest(KSP ksp,int n, double rnorm, KSPConvergedReason *reaso
 #define __FUNCT__ "ReorderSubmatrices"
 PetscErrorCode ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
-  int               i, ierr;
+  PetscErrorCode ierr;
+  int               i;
   IS                isrow,iscol;      /* row and column permutations */
   MatOrderingType   rtype = MATORDERING_RCM;
 
@@ -190,7 +191,8 @@ PetscErrorCode ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,voi
 #define __FUNCT__ "PrintSubMatrices"
 PetscErrorCode PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
-  int    i, j, ierr, nloc, *glo_row_ind;
+  PetscErrorCode ierr;
+  int    i, j,  nloc, *glo_row_ind;
 
   PetscPrintf(PETSC_COMM_WORLD,"***  Overzicht van opdeling matrix *** \n");
   for (i=0; i<nsub; i++) {
@@ -211,7 +213,8 @@ PetscErrorCode PrintSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void 
 #define __FUNCT__ "ViewSubMatrices"
 PetscErrorCode ViewSubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
-  int         i, ierr;
+  PetscErrorCode ierr;
+  int         i;
   PetscViewer viewer; 
   PetscDraw   draw; 
 

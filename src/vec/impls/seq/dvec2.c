@@ -14,7 +14,8 @@
 PetscErrorCode VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 {
   Vec_Seq     *xv = (Vec_Seq *)xin->data;
-  int         i,nv_rem,n = xin->n,ierr;
+  PetscErrorCode ierr;
+  int         i,nv_rem,n = xin->n;
   PetscScalar sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,*x;
   Vec         *yy;
 
@@ -95,7 +96,8 @@ PetscErrorCode VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 PetscErrorCode VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
 {
   Vec_Seq     *xv = (Vec_Seq *)xin->data;
-  int          n = xin->n,i,j,nv_rem,j_rem,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n,i,j,nv_rem,j_rem;
   PetscScalar  sum0,sum1,sum2,sum3,x0,x1,x2,x3,* restrict x;
   PetscScalar  * restrict yy0,* restrict yy1,* restrict yy2,*restrict yy3; 
   Vec          *yy;
@@ -295,7 +297,8 @@ PetscErrorCode VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict
 PetscErrorCode VecMTDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 {
   Vec_Seq      *xv = (Vec_Seq *)xin->data;
-  int          n = xin->n,i,j,nv_rem,j_rem,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n,i,j,nv_rem,j_rem;
   PetscScalar  sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec          *yy;
   
@@ -556,7 +559,8 @@ PetscErrorCode VecMin_Seq(Vec xin,int* idx,PetscReal * z)
 PetscErrorCode VecSet_Seq(const PetscScalar* alpha,Vec xin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  int          n = xin->n,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n;
   PetscScalar  *xx = x->array,oalpha = *alpha;
 
   PetscFunctionBegin;
@@ -573,7 +577,8 @@ PetscErrorCode VecSet_Seq(const PetscScalar* alpha,Vec xin)
 #define __FUNCT__ "VecSetRandom_Seq"
 PetscErrorCode VecSetRandom_Seq(PetscRandom r,Vec xin)
 {
-  int          n = xin->n,i,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n,i;
   PetscScalar  *xx;
 
   PetscFunctionBegin;
@@ -588,7 +593,8 @@ PetscErrorCode VecSetRandom_Seq(PetscRandom r,Vec xin)
 PetscErrorCode VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
 {
   Vec_Seq      *xdata = (Vec_Seq*)xin->data;
-  int          n = xin->n,ierr,j,j_rem;
+  PetscErrorCode ierr;
+  int          n = xin->n,j,j_rem;
   PetscScalar  *xx,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -658,7 +664,8 @@ PetscErrorCode VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
 PetscErrorCode VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  int          n = xin->n,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n;
   PetscScalar  *xx = x->array,*yy;
 
   PetscFunctionBegin;
@@ -690,7 +697,8 @@ PetscErrorCode VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 PetscErrorCode VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  int          i,n = xin->n,ierr;
+  PetscErrorCode ierr;
+  int          i,n = xin->n;
   PetscScalar  *xx = x->array,*yy,*ww,oalpha = *alpha;
 
   PetscFunctionBegin;
@@ -723,7 +731,8 @@ PetscErrorCode VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
 PetscErrorCode VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  int          n = xin->n,i,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n,i;
   PetscScalar  *xx = x->array,*yy,*ww;
 
   PetscFunctionBegin;
@@ -759,7 +768,8 @@ PetscErrorCode VecPointwiseMult_Seq(Vec xin,Vec yin,Vec win)
 PetscErrorCode VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  int          n = xin->n,i,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n,i;
   PetscScalar  *xx = x->array,*yy,*ww;
 
   PetscFunctionBegin;
@@ -778,7 +788,8 @@ PetscErrorCode VecPointwiseDivide_Seq(Vec xin,Vec yin,Vec win)
 PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
 {
   Vec_Seq      *x = (Vec_Seq *)xin->data;
-  int          n = xin->n,i,ierr;
+  PetscErrorCode ierr;
+  int          n = xin->n,i;
   PetscScalar  *xx = x->array,*yy;
   PetscReal    m = 0.0;
 

@@ -11,7 +11,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_LSQR"
-static int KSPSetUp_LSQR(KSP ksp)
+static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
   int  nw;
@@ -42,9 +42,10 @@ static int KSPSetUp_LSQR(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_LSQR"
-static int KSPSolve_LSQR(KSP ksp)
+static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 {
-  int          i,ierr;
+  PetscErrorCode ierr;
+  int          i;
   PetscScalar  rho,rhobar,phi,phibar,theta,c,s,tmp,zero = 0.0,mone=-1.0;
   PetscReal    beta,alpha,rnorm;
   Vec          X,B,V,V1,U,U1,TMP,W;

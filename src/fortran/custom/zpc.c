@@ -78,14 +78,14 @@
 #endif
 
 EXTERN_C_BEGIN
-static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*);
-static void (PETSC_STDCALL *f1)(void*,Vec*,Vec*,int*);
-static void (PETSC_STDCALL *f3)(void*,Vec*,Vec*,int*);
-static void (PETSC_STDCALL *f9)(void*,int*);
+static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,PetscErrorCode*);
+static void (PETSC_STDCALL *f1)(void*,Vec*,Vec*,PetscErrorCode*);
+static void (PETSC_STDCALL *f3)(void*,Vec*,Vec*,PetscErrorCode*);
+static void (PETSC_STDCALL *f9)(void*,PetscErrorCode*);
 EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
+static PetscErrorCode ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
 {
   PetscErrorCode ierr = 0;
 
@@ -93,21 +93,21 @@ static int ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscRe
   return 0;
 }
 
-static int ourshellapply(void *ctx,Vec x,Vec y)
+static PetscErrorCode ourshellapply(void *ctx,Vec x,Vec y)
 {
   PetscErrorCode ierr = 0;
   (*f1)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
-static int ourshellapplytranspose(void *ctx,Vec x,Vec y)
+static PetscErrorCode ourshellapplytranspose(void *ctx,Vec x,Vec y)
 {
   PetscErrorCode ierr = 0;
   (*f3)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
-static int ourshellsetup(void *ctx)
+static PetscErrorCode ourshellsetup(void *ctx)
 {
   PetscErrorCode ierr = 0;
 
@@ -115,21 +115,21 @@ static int ourshellsetup(void *ctx)
   return 0;
 }
 
-typedef int (*MVVVV)(Mat,Vec,Vec,Vec);
-static int ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
+typedef PetscErrorCode (*MVVVV)(Mat,Vec,Vec,Vec);
+static PetscErrorCode ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,int*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&b,&x,&R,&ierr);
+  (*(void (PETSC_STDCALL *)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[0]))(&mat,&b,&x,&R,&ierr);
   return 0;
 }
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL pccompositespecialsetalpha_(PC *pc,PetscScalar *alpha,int *ierr)
+void PETSC_STDCALL pccompositespecialsetalpha_(PC *pc,PetscScalar *alpha,PetscErrorCode *ierr)
 {
   *ierr = PCCompositeSpecialSetAlpha(*pc,*alpha);
 }
 
-void PETSC_STDCALL pccompositesettype_(PC *pc,PCCompositeType *type,int *ierr)
+void PETSC_STDCALL pccompositesettype_(PC *pc,PCCompositeType *type,PetscErrorCode *ierr)
 {
   *ierr = PCCompositeSetType(*pc,*type);
 }
@@ -143,25 +143,25 @@ void PETSC_STDCALL pccompositeaddpc_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *
   FREECHAR(type,t);
 }
 
-void PETSC_STDCALL pccompositegetpc_(PC *pc,int *n,PC *subpc,int *ierr)
+void PETSC_STDCALL pccompositegetpc_(PC *pc,int *n,PC *subpc,PetscErrorCode *ierr)
 {
   *ierr = PCCompositeGetPC(*pc,*n,subpc);
 }
 
-void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, int *ierr)
+void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(comms);
   *ierr = MGSetLevels(*pc,*levels,comms);
 }
 
-void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, int *ierr)
+void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PCView(*pc,v);
 }
 
-void PETSC_STDCALL matnullspacecreate_(MPI_Comm *comm,int *has_cnst,int *n,Vec *vecs,MatNullSpace *SP,int *ierr)
+void PETSC_STDCALL matnullspacecreate_(MPI_Comm *comm,int *has_cnst,int *n,Vec *vecs,MatNullSpace *SP,PetscErrorCode *ierr)
 {
   *ierr = MatNullSpaceCreate((MPI_Comm)PetscToPointerComm(*comm),*has_cnst,*n,vecs,SP);
 }
@@ -176,22 +176,22 @@ void PETSC_STDCALL pcsettype_(PC *pc,CHAR type PETSC_MIXED_LEN(len),int *ierr PE
 }
 
 
-void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,int*),void *ptr,
-                                    int *ierr)
+void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,PetscErrorCode*),void *ptr,
+                                    PetscErrorCode *ierr)
 {
   f1 = apply;
   *ierr = PCShellSetApply(*pc,ourshellapply,ptr);
 }
 
-void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,int*),
-                                             int *ierr)
+void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,PetscErrorCode*),
+                                             PetscErrorCode *ierr)
 {
   f3 = applytranspose;
   *ierr = PCShellSetApplyTranspose(*pc,ourshellapplytranspose);
 }
 
 
-void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,int*),int *ierr)
+void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   f9 = setup;
   *ierr = PCShellSetSetUp(*pc,ourshellsetup);
@@ -200,34 +200,34 @@ void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,int
 /* -----------------------------------------------------------------*/
 
 void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
-         void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,int*,int*),
-         void *ptr,int *ierr)
+         void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,int*,PetscErrorCode*),
+         void *ptr,PetscErrorCode *ierr)
 {
   f2 = apply;
   *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson,ptr);
 }
 
-void PETSC_STDCALL mggetcoarsesolve_(PC *pc,KSP *ksp,int *ierr)
+void PETSC_STDCALL mggetcoarsesolve_(PC *pc,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = MGGetCoarseSolve(*pc,ksp);
 }
 
-void PETSC_STDCALL mggetsmoother_(PC *pc,int *l,KSP *ksp,int *ierr)
+void PETSC_STDCALL mggetsmoother_(PC *pc,int *l,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = MGGetSmoother(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL mggetsmootherup_(PC *pc,int *l,KSP *ksp,int *ierr)
+void PETSC_STDCALL mggetsmootherup_(PC *pc,int *l,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = MGGetSmootherUp(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL mggetsmootherdown_(PC *pc,int *l,KSP *ksp,int *ierr)
+void PETSC_STDCALL mggetsmootherdown_(PC *pc,int *l,KSP *ksp,PetscErrorCode *ierr)
 {
   *ierr = MGGetSmootherDown(*pc,*l,ksp);
 }
 
-void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp,int *ierr)
+void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP *tksp;
   int  i,nloc;
@@ -240,7 +240,7 @@ void PETSC_STDCALL pcbjacobigetsubksp_(PC *pc,int *n_local,int *first_local,KSP 
   }
 }
 
-void PETSC_STDCALL pcasmgetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp,int *ierr)
+void PETSC_STDCALL pcasmgetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP *tksp;
   int  i,nloc;
@@ -253,7 +253,7 @@ void PETSC_STDCALL pcasmgetsubksp_(PC *pc,int *n_local,int *first_local,KSP *ksp
   }
 }
 
-void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,int *ierr)
+void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(flag);
   CHKFORTRANNULLOBJECT(mat);
@@ -261,7 +261,7 @@ void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,
   *ierr = PCGetOperators(*pc,mat,pmat,flag);
 }
 
-void PETSC_STDCALL pcgetfactoredmatrix_(PC *pc,Mat *mat,int *ierr)
+void PETSC_STDCALL pcgetfactoredmatrix_(PC *pc,Mat *mat,PetscErrorCode *ierr)
 {
   *ierr = PCGetFactoredMatrix(*pc,mat);
 }
@@ -286,17 +286,17 @@ void PETSC_STDCALL pcappendoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len
   FREECHAR(prefix,t);
 }
 
-void PETSC_STDCALL pcdestroy_(PC *pc,int *ierr)
+void PETSC_STDCALL pcdestroy_(PC *pc,PetscErrorCode *ierr)
 {
   *ierr = PCDestroy(*pc);
 }
 
-void PETSC_STDCALL pccreate_(MPI_Comm *comm,PC *newpc,int *ierr)
+void PETSC_STDCALL pccreate_(MPI_Comm *comm,PC *newpc,PetscErrorCode *ierr)
 {
   *ierr = PCCreate((MPI_Comm)PetscToPointerComm(*comm),newpc);
 }
 
-void PETSC_STDCALL pcregisterdestroy_(int *ierr)
+void PETSC_STDCALL pcregisterdestroy_(PetscErrorCode *ierr)
 {
   *ierr = PCRegisterDestroy();
 }
@@ -332,19 +332,19 @@ void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
 #endif
 }
 
-void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,int *n,IS *is, int *ierr)
+void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,int *n,IS *is, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(is);
   *ierr = PCASMSetLocalSubdomains(*pc,*n,is);
 }
 
-void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,int *N,IS *is, int *ierr)
+void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,int *N,IS *is, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(is);
   *ierr = PCASMSetTotalSubdomains(*pc,*N,is);
 }
 
-void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,int *n,Mat *mat, int *ierr)
+void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,int *n,Mat *mat, PetscErrorCode *ierr)
 {
   int nloc,i;
   Mat  *tmat;
@@ -358,7 +358,7 @@ void PETSC_STDCALL pcasmgetlocalsubmatrices_(PC *pc,int *n,Mat *mat, int *ierr)
     }
   }
 }
-void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS *is, int *ierr)
+void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS *is, PetscErrorCode *ierr)
 {
   int nloc,i;
   IS  *tis;
@@ -373,12 +373,12 @@ void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS *is, int *ierr)
   }
 }
 
-void mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, int *ierr)
+void mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
 {
   *ierr = MGDefaultResidual(*mat,*b,*x,*r);
 }
 
-void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,int (*residual)(Mat*,Vec*,Vec*,Vec*,int*),Mat *mat, int *ierr)
+void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
 {
   MVVVV rr;
   if ((FCNVOID)residual == (FCNVOID)mgdefaultresidual_) rr = MGDefaultResidual;

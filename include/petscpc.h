@@ -63,9 +63,9 @@ E*/
 #define PCHYPRE      "hypre"
 
 /* Logging support */
-extern int PC_COOKIE;
-extern int PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
-extern int PC_ApplySymmetricRight, PC_ModifySubMatrices;
+extern PetscCookie PC_COOKIE;
+extern PetscEvent    PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
+extern PetscEvent    PC_ApplySymmetricRight, PC_ModifySubMatrices;
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right
@@ -95,13 +95,13 @@ EXTERN PetscErrorCode        PCRegisterDestroy(void);
 EXTERN PetscErrorCode        PCRegisterAll(const char[]);
 extern PetscTruth PCRegisterAllCalled;
 
-EXTERN PetscErrorCode PCRegister(const char[],const char[],const char[],int(*)(PC));
+EXTERN PetscErrorCode PCRegister(const char[],const char[],const char[],PetscErrorCode(*)(PC));
 
 /*MC
    PCRegisterDynamic - Adds a method to the preconditioner package.
 
    Synopsis:
-   int PCRegisterDynamic(char *name_solver,char *path,char *name_create,int (*routine_create)(PC))
+   int PCRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(PC))
 
    Not collective
 
@@ -191,11 +191,11 @@ EXTERN PetscErrorCode PCBJacobiSetLocalBlocks(PC,int,const int[]);
 
 EXTERN PetscErrorCode PCKSPSetUseTrue(PC);
 
-EXTERN PetscErrorCode PCShellSetApply(PC,int (*)(void*,Vec,Vec),void*); 
-EXTERN PetscErrorCode PCShellSetApplyTranspose(PC,int (*)(void*,Vec,Vec));
-EXTERN PetscErrorCode PCShellSetSetUp(PC,int (*)(void*));
-EXTERN PetscErrorCode PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void*);
-EXTERN PetscErrorCode PCShellSetView(PC,int (*)(void*,PetscViewer));
+EXTERN PetscErrorCode PCShellSetApply(PC,PetscErrorCode (*)(void*,Vec,Vec),void*); 
+EXTERN PetscErrorCode PCShellSetApplyTranspose(PC,PetscErrorCode (*)(void*,Vec,Vec));
+EXTERN PetscErrorCode PCShellSetSetUp(PC,PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode PCShellSetApplyRichardson(PC,PetscErrorCode (*)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int),void*);
+EXTERN PetscErrorCode PCShellSetView(PC,PetscErrorCode (*)(void*,PetscViewer));
 EXTERN PetscErrorCode PCShellSetName(PC,const char[]);
 EXTERN PetscErrorCode PCShellGetName(PC,char*[]);
 

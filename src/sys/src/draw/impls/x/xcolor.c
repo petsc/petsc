@@ -75,7 +75,8 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
 {
   XColor        colordef,ecolordef;
   unsigned char *red,*green,*blue;
-  int           i,ierr,ncolors;
+  int           i,ncolors;
+  PetscErrorCode ierr;
   PetscTruth    fast;
 
   PetscFunctionBegin;

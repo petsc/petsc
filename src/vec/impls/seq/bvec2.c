@@ -20,7 +20,8 @@ EXTERN PetscErrorCode PetscViewerAMSGetAMSComm(PetscViewer,AMS_Comm *);
 PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 {
   PetscScalar *xx;
-  int         n=xin->n,ierr,one = 1;
+  PetscErrorCode ierr;
+  int         n=xin->n,one = 1;
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
@@ -91,7 +92,8 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 {
   Vec_Seq           *x = (Vec_Seq *)xin->data;
-  int               i,n = xin->n,ierr;
+  PetscErrorCode ierr;
+  int               i,n = xin->n;
   char              *name;
   PetscViewerFormat format;
 
@@ -146,10 +148,11 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq_Draw_LG"
-static int VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
+static PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
-  int         i,n = xin->n,ierr;
+  PetscErrorCode ierr;
+  int         i,n = xin->n;
   PetscDraw   win;
   PetscReal   *xx;
   PetscDrawLG lg;
@@ -184,7 +187,7 @@ static int VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq_Draw"
-static int VecView_Seq_Draw(Vec xin,PetscViewer v)
+static PetscErrorCode VecView_Seq_Draw(Vec xin,PetscViewer v)
 {
   PetscErrorCode ierr;
   PetscDraw         draw;
@@ -211,7 +214,7 @@ static int VecView_Seq_Draw(Vec xin,PetscViewer v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq_Binary"
-static int VecView_Seq_Binary(Vec xin,PetscViewer viewer)
+static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
@@ -243,7 +246,8 @@ static int VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_Seq_Netcdf"
 PetscErrorCode VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 {
-  int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart=0;
+  PetscErrorCode ierr;
+  int         n = xin->n,ncid,xdim,xdim_num=1,xin_id,xstart=0;
   MPI_Comm    comm = xin->comm;  
   PetscScalar *values,*xarray;
 
@@ -434,7 +438,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPublish_Seq"
-static int VecPublish_Seq(PetscObject obj)
+static PetscErrorCode VecPublish_Seq(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
   Vec          v = (Vec) obj;
@@ -467,7 +471,7 @@ static int VecPublish_Seq(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
-extern int VecLoad_Binary(PetscViewer,const VecType, Vec*);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer,const VecType, Vec*);
 
 static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecDuplicateVecs_Default,
@@ -521,7 +525,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate_Seq_Private"
-static int VecCreate_Seq_Private(Vec v,const PetscScalar array[])
+static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
 {
   Vec_Seq *s;
   PetscErrorCode ierr;

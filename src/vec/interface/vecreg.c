@@ -31,7 +31,7 @@ PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
 @*/
 PetscErrorCode VecSetType(Vec vec, const VecType method)
 {
-  int      (*r)(Vec);
+  PetscErrorCode (*r)(Vec);
   PetscTruth match;
   PetscErrorCode ierr;
 
@@ -98,7 +98,7 @@ PetscErrorCode VecGetType(Vec vec, VecType *type)
 
   Level: advanced
 @*/
-PetscErrorCode VecRegister(const char sname[], const char path[], const char name[], int (*function)(Vec))
+PetscErrorCode VecRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(Vec))
 {
   char fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;

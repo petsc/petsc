@@ -18,11 +18,11 @@ typedef struct {
   PetscTruth   PetscMatOdering;
 
   /* A few function pointers for inheritance */
-  int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  int (*MatView)(Mat,PetscViewer);
-  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  int (*MatDestroy)(Mat);
+  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
+  PetscErrorCode (*MatView)(Mat,PetscViewer);
+  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*MatDestroy)(Mat);
   
   /* Flag to clean up UMFPACK objects during Destroy */
   PetscTruth CleanUpUMFPACK;
@@ -33,7 +33,8 @@ EXTERN PetscErrorCode MatDuplicate_UMFPACK(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_UMFPACK_SeqAIJ"
-PetscErrorCode MatConvert_UMFPACK_SeqAIJ(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_UMFPACK_SeqAIJ(Mat A,const MatType type,Mat *newmat)
+{
   /* This routine is only called to convert an unfactored PETSc-UMFPACK matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
@@ -83,7 +84,8 @@ PetscErrorCode MatDestroy_UMFPACK(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_UMFPACK"
-PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x) {
+PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
+{
   Mat_UMFPACK *lu = (Mat_UMFPACK*)A->spptr;
   PetscScalar *av=lu->av,*ba,*xa;
   PetscErrorCode ierr;
@@ -110,9 +112,11 @@ PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_UMFPACK"
-PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,Mat *F) {
+PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,Mat *F) 
+{
   Mat_UMFPACK *lu=(Mat_UMFPACK*)(*F)->spptr;
-  int         *ai=lu->ai,*aj=lu->aj,m=A->m,status,ierr;
+  PetscErrorCode ierr;
+  int         *ai=lu->ai,*aj=lu->aj,m=A->m,status;
   PetscScalar *av=lu->av;
 
   PetscFunctionBegin;
@@ -141,7 +145,8 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,Mat *F) {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_UMFPACK"
-PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
+PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) 
+{
   Mat         B;
   Mat_SeqAIJ  *mat=(Mat_SeqAIJ*)A->data;
   Mat_UMFPACK *lu;
@@ -251,7 +256,8 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_UMFPACK"
-PetscErrorCode MatAssemblyEnd_UMFPACK(Mat A,MatAssemblyType mode) {
+PetscErrorCode MatAssemblyEnd_UMFPACK(Mat A,MatAssemblyType mode)
+{
   PetscErrorCode ierr;
   Mat_UMFPACK *lu=(Mat_UMFPACK*)(A->spptr);
 
@@ -265,7 +271,8 @@ PetscErrorCode MatAssemblyEnd_UMFPACK(Mat A,MatAssemblyType mode) {
 /* used by -ksp_view */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_UMFPACK"
-PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer) {
+PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
+{
   Mat_UMFPACK *lu= (Mat_UMFPACK*)A->spptr;
   PetscErrorCode ierr;
 
@@ -305,7 +312,8 @@ PetscErrorCode MatFactorInfo_UMFPACK(Mat A,PetscViewer viewer) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_UMFPACK"
-PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer) {
+PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer) 
+{
   PetscErrorCode ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
@@ -327,7 +335,8 @@ PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_UMFPACK"
-PetscErrorCode MatConvert_SeqAIJ_UMFPACK(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_UMFPACK(Mat A,const MatType type,Mat *newmat) 
+{
   /* This routine is only called to convert to MATUMFPACK */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
@@ -367,7 +376,8 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_UMFPACK"
-PetscErrorCode MatDuplicate_UMFPACK(Mat A, MatDuplicateOption op, Mat *M) {
+PetscErrorCode MatDuplicate_UMFPACK(Mat A, MatDuplicateOption op, Mat *M) 
+{
   PetscErrorCode ierr;
   Mat_UMFPACK *lu=(Mat_UMFPACK*)A->spptr;
 

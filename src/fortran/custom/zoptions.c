@@ -237,7 +237,7 @@ long PetscIntAddressToFortran(int *base,int *addr)
   return itmp2;
 }
 
-PetscErrorCode *PetscIntAddressFromFortran(int *base,long addr)
+int *PetscIntAddressFromFortran(int *base,long addr)
 {
   return base + addr;
 }
@@ -388,7 +388,8 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,l
 @*/
 PetscErrorCode MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   /* call to MPI_Comm_size() is for error checking on comm */
@@ -427,7 +428,8 @@ PetscErrorCode MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 @*/
 PetscErrorCode MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
 {
-  PetscErrorCode ierr,size;
+  PetscErrorCode ierr;
+  int size;
 
   PetscFunctionBegin;
   *comm = (MPI_Comm)PetscToPointerComm(fcomm);

@@ -9,7 +9,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetUp_Euler"
-static int TSSetUp_Euler(TS ts)
+static PetscErrorCode TSSetUp_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
   PetscErrorCode ierr;
@@ -21,7 +21,7 @@ static int TSSetUp_Euler(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Euler"
-static int TSStep_Euler(TS ts,int *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_Euler(TS ts,int *steps,PetscReal *ptime)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
   Vec      sol = ts->vec_sol,update = euler->update;
@@ -49,7 +49,7 @@ static int TSStep_Euler(TS ts,int *steps,PetscReal *ptime)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TSDestroy_Euler"
-static int TSDestroy_Euler(TS ts)
+static PetscErrorCode TSDestroy_Euler(TS ts)
 {
   TS_Euler *euler = (TS_Euler*)ts->data;
   PetscErrorCode ierr;
@@ -63,7 +63,7 @@ static int TSDestroy_Euler(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_Euler"
-static int TSSetFromOptions_Euler(TS ts)
+static PetscErrorCode TSSetFromOptions_Euler(TS ts)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -71,7 +71,7 @@ static int TSSetFromOptions_Euler(TS ts)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSView_Euler"
-static int TSView_Euler(TS ts,PetscViewer viewer)
+static PetscErrorCode TSView_Euler(TS ts,PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

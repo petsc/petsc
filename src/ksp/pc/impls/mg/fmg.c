@@ -22,7 +22,8 @@ EXTERN PetscErrorCode MGMCycle_Private(MG *,PetscTruth*);
 #define __FUNCT__ "MGFCycle_Private"
 PetscErrorCode MGFCycle_Private(MG *mg)
 {
-  int    i,l = mg[0]->levels,ierr;
+  PetscErrorCode ierr;
+  int    i,l = mg[0]->levels;
   PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
@@ -54,7 +55,8 @@ PetscErrorCode MGFCycle_Private(MG *mg)
 #define __FUNCT__ "MGKCycle_Private"
 PetscErrorCode MGKCycle_Private(MG *mg)
 {
-  int    i,l = mg[0]->levels,ierr;
+  PetscErrorCode ierr;
+  int    i,l = mg[0]->levels;
   PetscScalar zero = 0.0;
 
   PetscFunctionBegin;

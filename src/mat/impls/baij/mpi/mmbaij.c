@@ -11,7 +11,8 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
 {
   Mat_MPIBAIJ        *baij = (Mat_MPIBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
-  int                i,j,*aj = B->j,ierr,ec = 0,*garray;
+  PetscErrorCode ierr;
+  int                i,j,*aj = B->j,ec = 0,*garray;
   int                bs = baij->bs,*stmp;
   IS                 from,to;
   Vec                gvec;

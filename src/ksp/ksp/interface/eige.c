@@ -127,7 +127,9 @@ PetscErrorCode KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,PetscReal *c) 
 {
   Mat                BA;
-  int                i,n,ierr,size,rank,dummy;
+  PetscErrorCode ierr;
+  int                lierr;
+  int                i,n,size,rank,dummy;
   MPI_Comm           comm = ksp->comm;
   PetscScalar        *array;
   Mat                A;
@@ -233,10 +235,10 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
 #else
     {
       PetscScalar sdummy;
-      LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
+      LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
     }
 #endif
-    if (ierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",ierr);
+    if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",lierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);
     for (i=0; i<n; i++) { perm[i] = i;}
@@ -264,10 +266,10 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,PetscReal *r,Pet
 #else
     {
       PetscScalar sdummy;
-      LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&ierr);
+      LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
     }
 #endif
-    if (ierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",ierr);
+    if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",lierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
     ierr = PetscMalloc(n*sizeof(int),&perm);CHKERRQ(ierr);

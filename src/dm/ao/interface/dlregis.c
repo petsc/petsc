@@ -25,18 +25,18 @@ PetscErrorCode DMInitializePackage(const char path[]) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
+  if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&AODATA_COOKIE, "Application Data");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&AOEvents[AO_PetscToApplication], "AOPetscToApplication", AO_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&AOEvents[AO_ApplicationToPetsc], "AOApplicationToPetsc", AO_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DAEvents[DA_GlobalToLocal],      "DAGlobalToLocal",      DA_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DAEvents[DA_LocalToGlobal],      "DALocalToGlobal",      DA_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DAEvents[DA_LocalADFunction],    "DALocalADFunc",        DA_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&AO_PetscToApplication, "AOPetscToApplication", AO_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&AO_ApplicationToPetsc, "AOApplicationToPetsc", AO_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DA_GlobalToLocal,      "DAGlobalToLocal",      DA_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DA_LocalToGlobal,      "DALocalToGlobal",      DA_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DA_LocalADFunction,    "DALocalADFunc",        DA_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {

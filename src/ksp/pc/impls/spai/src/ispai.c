@@ -56,7 +56,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_SPAI"
-static int PCSetUp_SPAI(PC pc)
+static PetscErrorCode PCSetUp_SPAI(PC pc)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
@@ -117,7 +117,7 @@ static int PCSetUp_SPAI(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_SPAI"
-static int PCApply_SPAI(PC pc,Vec xx,Vec y)
+static PetscErrorCode PCApply_SPAI(PC pc,Vec xx,Vec y)
 {
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
@@ -132,7 +132,7 @@ static int PCApply_SPAI(PC pc,Vec xx,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_SPAI"
-static int PCDestroy_SPAI(PC pc)
+static PetscErrorCode PCDestroy_SPAI(PC pc)
 {
   PetscErrorCode ierr;
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
@@ -148,7 +148,7 @@ static int PCDestroy_SPAI(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_SPAI"
-static int PCView_SPAI(PC pc,PetscViewer viewer)
+static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
@@ -548,7 +548,7 @@ PetscErrorCode PCSPAISetSp(PC pc,int sp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_SPAI"
-static int PCSetFromOptions_SPAI(PC pc)
+static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
 {
   PC_SPAI    *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
@@ -929,7 +929,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
 #define __FUNCT__ "ConvertVectorToVec"
 PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
 {
-  int size,rank,ierr,m,M,i,*mnls,*start_indices,*global_indices;
+  PetscErrorCode ierr;
+  int size,rank,m,M,i,*mnls,*start_indices,*global_indices;
   
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

@@ -8,7 +8,8 @@ EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int*[],i
 #define __FUNCT__ "MatFDColoringCreate_SeqAIJ"
 PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
-  int        i,*is,n,nrows,N = mat->N,j,k,m,*rows,ierr,*ci,*cj,ncols,col;
+  PetscErrorCode ierr;
+  int        i,*is,n,nrows,N = mat->N,j,k,m,*rows,*ci,*cj,ncols,col;
   int        nis = iscoloring->n,*rowhit,*columnsforrow,l;
   IS         *isa;
   PetscTruth done,flg;
@@ -163,7 +164,8 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,const ISColoringValue coloring[],ISColoring *iscoloring)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)mat->data;
-  int             n = mat->n,ierr,m = a->inode.node_count,j,*ns = a->inode.size,row;
+  PetscErrorCode ierr;
+  int             n = mat->n,m = a->inode.node_count,j,*ns = a->inode.size,row;
   int             *colorused,i;
   ISColoringValue *newcolor;
 

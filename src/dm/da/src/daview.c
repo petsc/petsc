@@ -17,7 +17,8 @@ EXTERN_C_END
 #define __FUNCT__ "DAView_Matlab"
 PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
 {
-  int            rank,ierr;
+  PetscErrorCode ierr;
+  int            rank;
   int            dim,m,n,p,dof,swidth;
   DAStencilType  stencil;
   DAPeriodicType periodic;
@@ -51,7 +52,8 @@ PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
 #define __FUNCT__ "DAView_Binary"
 PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 {
-  int            rank,ierr;
+  PetscErrorCode ierr;
+  int            rank;
   int            i,dim,m,n,p,dof,swidth,M,N,P;
   size_t         j,len;
   DAStencilType  stencil;

@@ -6,15 +6,16 @@
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h" 
 #include "petscbt.h"
 
-static int MatIncreaseOverlap_MPISBAIJ_Once(Mat,int,IS*);
-static int MatIncreaseOverlap_MPISBAIJ_Local(Mat,int*,int,int*,PetscBT*);
+static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat,int,IS*);
+static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat,int*,int,int*,PetscBT*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ"
 PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
 {
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
-  int           i,ierr,N=C->N, bs=c->bs;
+  PetscErrorCode ierr;
+  int           i,N=C->N, bs=c->bs;
   IS            *is_new;
 
   PetscFunctionBegin;
@@ -54,11 +55,12 @@ typedef enum {MINE,OTHER} WhoseOwner;
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPISBAIJ_Once"
-static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
+static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
 {
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
+  PetscErrorCode ierr;
   int         len,idx,*idx_i,isz,col,*n,*data1,**data1_start,*data2,*data2_i,*data,*data_i,
-              size,rank,Mbs,i,j,k,ierr,nrqs,nrqr,*odata1,*odata2,
+              size,rank,Mbs,i,j,k,nrqs,nrqr,*odata1,*odata2,
               tag1,tag2,flag,proc_id,**odata2_ptr,*ctable=0,*btable,len_max,len_est;
   int         *id_r1,*len_r1,proc_end=0,*iwork,*len_s,len_unused,nodata2;
   int         ois_max; /* max no of is[] in each of processor */
@@ -386,7 +388,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int is_max,IS is[])
        table - table[i]: mark the indices of is[i], i=0,...,is_max. Used only in the case 'whose=MINE'.
 */
 /* Would computation be reduced by swapping the loop 'for each is' and 'for each row'? */
-static int MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whose,int *nidx,PetscBT *table)
+static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C,int *data,int whose,int *nidx,PetscBT *table)
 {
   Mat_MPISBAIJ *c = (Mat_MPISBAIJ*)C->data;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)(c->A)->data;

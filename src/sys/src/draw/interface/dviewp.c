@@ -59,7 +59,8 @@ PetscErrorCode PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pet
 @*/
 PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
 {
-  int        rank,size,n,ierr;
+  PetscErrorCode ierr;
+  int        rank,size,n;
   PetscTruth isnull;
   PetscReal  xl,xr,yl,yr,h;
 
@@ -120,7 +121,8 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
 @*/
 PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw,int nports,PetscDrawViewPorts **ports)
 {
-  int        i,ierr,n;
+  int        i,n;
+  PetscErrorCode ierr;
   PetscTruth isnull;
   PetscReal  *xl,*xr,*yl,*yr,h;
 

@@ -108,7 +108,8 @@ PetscErrorCode SamgGetCoarseMat(int level, int ia_shift, int ja_shift,
                           /* of each row. This vector will be used to      */
                           /* allocate memory for the matrix, and to store  */
                           /* elements in the matrix                        */
-   int      I, ierr; 
+  PetscErrorCode ierr;
+   int      I; 
 
    /*..Get size (nnu_k) and number of non-zeros (nna_k) of operator 
      on level k..*/
@@ -188,7 +189,8 @@ PetscErrorCode SamgGetInterpolation(int level, int iw_shift, int jw_shift,
                           /* of each row. This vector will be used to      */
                           /* allocate memory for the matrix, and to store  */
                           /* elements in the matrix                        */
-   int      I, ierr, coarser_level=level+1, dummy; 
+  PetscErrorCode ierr;
+   int      I,  coarser_level=level+1, dummy; 
 
    /*..Get number of rows and number of nonzeros of interpolation operator..*/
    SAMGPETSC_get_dim_interpol(&level, &rows_weights, &nna_weights);
@@ -391,7 +393,8 @@ PetscErrorCode SamgCheckGalerkin(int levels, Mat A, GridCtx* grid,
 PetscErrorCode MatSubstract(Mat Term1, Mat Term2, Mat* Diff)
 {
    Vec          col_vec1, col_vec2, diff_vec; 
-   int          rows1, cols1, rows2, cols2, col, row, ierr;
+  PetscErrorCode ierr;
+   int          rows1, cols1, rows2, cols2, col, row;
    static PetscScalar dminusone = -1.; 
    PetscScalar  matrix_element ;
    PetscScalar  *vec_getvalues ;

@@ -58,7 +58,7 @@ PetscErrorCode MatLUFactorNumeric_MPIAIJ_XXT(Mat A,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "LocalMult_XXT"
-static int LocalMult_XXT(Mat A,PetscScalar *xin,PetscScalar *xout)
+static PetscErrorCode LocalMult_XXT(Mat A,PetscScalar *xin,PetscScalar *xout)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data; 
   PetscErrorCode ierr;
@@ -185,7 +185,7 @@ PetscErrorCode MatLUFactorNumeric_MPIAIJ_XYT(Mat A,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "LocalMult_XYT"
-static int LocalMult_XYT(Mat A,PetscScalar *xin,PetscScalar *xout)
+static PetscErrorCode LocalMult_XYT(Mat A,PetscScalar *xin,PetscScalar *xout)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data; 
   PetscErrorCode ierr;

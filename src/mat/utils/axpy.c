@@ -27,7 +27,8 @@
  @*/
 PetscErrorCode MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int         m1,m2,n1,n2,ierr;
+  PetscErrorCode ierr;
+  int         m1,m2,n1,n2;
 
   PetscFunctionBegin;
   PetscValidScalarPointer(a,1);
@@ -51,7 +52,8 @@ PetscErrorCode MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 #define __FUNCT__ "MatAXPY_Basic"
 PetscErrorCode MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int               i,start,end,j,ncols,ierr,m,n;
+  int               i,start,end,j,ncols,m,n;
+  PetscErrorCode    ierr;
   const int         *row;
   PetscScalar       *val;
   const PetscScalar *vals;
@@ -101,7 +103,8 @@ PetscErrorCode MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
  @*/
 PetscErrorCode MatShift(const PetscScalar *a,Mat Y)
 {
-  int    i,start,end,ierr;
+  PetscErrorCode ierr;
+  int    i,start,end;
 
   PetscFunctionBegin;
   PetscValidScalarPointer(a,1);
@@ -141,7 +144,8 @@ PetscErrorCode MatShift(const PetscScalar *a,Mat Y)
 @*/
 PetscErrorCode MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
-  int    i,start,end,ierr;
+  PetscErrorCode ierr;
+  int    i,start,end;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
@@ -194,7 +198,8 @@ PetscErrorCode MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 PetscErrorCode MatAYPX(const PetscScalar *a,Mat X,Mat Y)
 {
   PetscScalar one = 1.0;
-  int         mX,mY,nX,nY,ierr;
+  PetscErrorCode ierr;
+  int         mX,mY,nX,nY;
 
   PetscFunctionBegin;
   PetscValidScalarPointer(a,1);
@@ -295,7 +300,8 @@ PetscErrorCode MatComputeExplicitOperator(Mat inmat,Mat *mat)
 #define __FUNCT__ "MatAXPYGetxtoy_Private"
 PetscErrorCode MatAXPYGetxtoy_Private(int m,int *xi,int *xj,int *xgarray, int *yi,int *yj,int *ygarray, int **xtoy)
 {
-  PetscErrorCode ierr,row,i,nz,xcol,ycol,jx,jy,*x2y;
+  PetscErrorCode ierr;
+  int            row,i,nz,xcol,ycol,jx,jy,*x2y;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(xi[m]*sizeof(int),&x2y);CHKERRQ(ierr);

@@ -82,7 +82,7 @@ PetscErrorCode MGGetCoarseSolve(PC pc,KSP *ksp)
 
 .seealso: MGDefaultResidual()
 @*/
-PetscErrorCode MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
+PetscErrorCode MGSetResidual(PC pc,int l,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
   MG *mg = (MG*)pc->data;
 

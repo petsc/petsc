@@ -1,4 +1,4 @@
-#define HERE do { int ierr, rank; ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank); ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] LINE %d (%s)\n", rank, __LINE__, __FUNCTION__);CHKERRQ(ierr); } while (0)
+#define HERE do { PetscErrorCode ierr, rank; ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank); ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] LINE %d (%s)\n", rank, __LINE__, __FUNCTION__);CHKERRQ(ierr); } while (0)
 
 #define CE do { CHKERRQ(ierr); } while (0)
 

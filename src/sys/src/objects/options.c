@@ -447,7 +447,8 @@ PetscErrorCode PetscOptionsInsert(int *argc,char ***args,const char file[])
 @*/
 PetscErrorCode PetscOptionsPrint(FILE *fd)
 {
-  int i,ierr;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   if (!fd) fd = stdout;
@@ -480,7 +481,8 @@ PetscErrorCode PetscOptionsPrint(FILE *fd)
 @*/
 PetscErrorCode PetscOptionsGetAll(char *copts[])
 {
-  int    i,ierr;
+  PetscErrorCode ierr;
+  int    i;
   size_t len = 1,lent;
   char   *coptions;
 
@@ -569,7 +571,8 @@ PetscErrorCode PetscOptionsDestroy(void)
 PetscErrorCode PetscOptionsSetValue(const char iname[],const char value[])
 {
   size_t     len;
-  int        N,n,i,ierr;
+  PetscErrorCode ierr;
+  int        N,n,i;
   char       **names;
   const char *name = (char*)iname;
   PetscTruth gt,match;
@@ -654,7 +657,8 @@ PetscErrorCode PetscOptionsSetValue(const char iname[],const char value[])
 @*/
 PetscErrorCode PetscOptionsClearValue(const char iname[])
 {
-  int        N,n,i,ierr;
+  PetscErrorCode ierr;
+  int        N,n,i;
   char       **names,*name=(char*)iname;
   PetscTruth gt,match;
 
@@ -740,9 +744,10 @@ PetscErrorCode PetscOptionsSetAlias(const char inewname[],const char ioldname[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsFindPair_Private"
-static int PetscOptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscTruth *flg)
+static PetscErrorCode PetscOptionsFindPair_Private(const char pre[],const char name[],char *value[],PetscTruth *flg)
 {
-  int        i,N,ierr;
+  PetscErrorCode ierr;
+  int        i,N;
   size_t     len;
   char       **names,tmp[256];
   PetscTruth match;
@@ -1153,7 +1158,8 @@ PetscErrorCode PetscOptionsGetScalar(const char pre[],const char name[],PetscSca
 PetscErrorCode PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue[],int *nmax,PetscTruth *flg)
 {
   char       *value;
-  int        n = 0,ierr;
+  PetscErrorCode ierr;
+  int        n = 0;
   PetscTruth flag;
   PetscToken *token;
 
@@ -1212,7 +1218,8 @@ PetscErrorCode PetscOptionsGetRealArray(const char pre[],const char name[],Petsc
 PetscErrorCode PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax,PetscTruth *flg)
 {
   char       *value;
-  int        n = 0,ierr;
+  PetscErrorCode ierr;
+  int        n = 0;
   PetscTruth flag;
   PetscToken *token;
 
@@ -1341,7 +1348,8 @@ PetscErrorCode PetscOptionsGetStringArray(const char pre[],const char name[],cha
 {
   char       *value;
   size_t     len;
-  int        n,ierr;
+  PetscErrorCode ierr;
+  int        n;
   PetscTruth flag;
   PetscToken *token;
  
@@ -1413,7 +1421,8 @@ PetscErrorCode PetscOptionsAllUsed(int *N)
 @*/
 PetscErrorCode PetscOptionsLeft(void)
 {
-  int        i,ierr;
+  PetscErrorCode ierr;
+  int        i;
 
   PetscFunctionBegin;
   for (i=0; i<options->N; i++) {

@@ -15,7 +15,8 @@ EXTERN_C_END
 #define __FUNCT__ "DAView_3d"
 PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
 {
-  int        rank,ierr;
+  PetscErrorCode ierr;
+  int        rank;
   PetscTruth iascii,isdraw;
 
   PetscFunctionBegin;
@@ -205,7 +206,8 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 PetscErrorCode DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
                int N,int P,int m,int n,int p,int dof,int s,int *lx,int *ly,int *lz,DA *inra)
 {
-  int           rank,size,ierr,start,end,pm;
+  PetscErrorCode ierr;
+  int           rank,size,start,end,pm;
   int           xs,xe,ys,ye,zs,ze,x,y,z,Xs,Xe,Ys,Ye,Zs,Ze;
   int           left,up,down,bottom,top,i,j,k,*idx,nn,*flx = 0,*fly = 0,*flz = 0;
   int           n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;

@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_Mat"
-static int PCApply_Mat(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApply_Mat(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -14,7 +14,7 @@ static int PCApply_Mat(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyTranspose_Mat"
-static int PCApplyTranspose_Mat(PC pc,Vec x,Vec y)
+static PetscErrorCode PCApplyTranspose_Mat(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
 
@@ -25,7 +25,7 @@ static int PCApplyTranspose_Mat(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_Mat"
-static int PCDestroy_Mat(PC pc)
+static PetscErrorCode PCDestroy_Mat(PC pc)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -60,7 +60,7 @@ typedef struct {
 .  h - the scale computed
 
 */
-static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
+static PetscErrorCode MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
   PetscReal        nrm,sum,umin = hctx->umin;
@@ -113,7 +113,7 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h)
 +  ctx - the matrix free context
 -  viewer - the PETSc viewer
 */   
-static int MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
+static PetscErrorCode MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
 {
   MatSNESMFDefault *hctx = (MatSNESMFDefault *)ctx->hctx;
   PetscErrorCode ierr;
@@ -144,7 +144,7 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,PetscViewer viewer)
 .  ctx - the matrix free context
 
 */
-static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
+static PetscErrorCode MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
 {
   PetscErrorCode ierr;
   MatSNESMFDefault *hctx = (MatSNESMFDefault*)ctx->hctx;
@@ -168,7 +168,7 @@ static int MatSNESMFSetFromOptions_Default(MatSNESMFCtx ctx)
    Notes: 
    Does not free the ctx, that is handled by the calling routine
 */
-static int MatSNESMFDestroy_Default(MatSNESMFCtx ctx)
+static PetscErrorCode MatSNESMFDestroy_Default(MatSNESMFCtx ctx)
 {
   PetscErrorCode ierr;
 

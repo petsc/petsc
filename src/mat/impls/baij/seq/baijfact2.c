@@ -463,7 +463,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,*rout,*cout;
   int             *diag = a->diag;
   MatScalar       *aa=a->a,*v;
   PetscScalar     s1,*x,*b,*t;
@@ -524,7 +525,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
   int             *diag = a->diag,ii,ic,ir,oidx;
   MatScalar       *aa=a->a,*v;
   PetscScalar     s1,s2,x1,x2;
@@ -607,7 +609,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
   int             *diag = a->diag,ii,ic,ir,oidx;
   MatScalar       *aa=a->a,*v;
   PetscScalar     s1,s2,s3,x1,x2,x3;
@@ -695,7 +698,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
   int             *diag = a->diag,ii,ic,ir,oidx;
   MatScalar       *aa=a->a,*v;
   PetscScalar     s1,s2,s3,s4,x1,x2,x3,x4;
@@ -788,7 +792,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
   int             *diag = a->diag,ii,ic,ir,oidx;
   MatScalar       *aa=a->a,*v;
   PetscScalar     s1,s2,s3,s4,s5,x1,x2,x3,x4,x5;
@@ -886,7 +891,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
   int             *diag = a->diag,ii,ic,ir,oidx;
   MatScalar       *aa=a->a,*v;
   PetscScalar     s1,s2,s3,s4,s5,s6,x1,x2,x3,x4,x5,x6;
@@ -992,7 +998,8 @@ PetscErrorCode MatSolveTranspose_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,*rout,*cout;
   int             *diag = a->diag,ii,ic,ir,oidx;
   MatScalar       *aa=a->a,*v;
   PetscScalar     s1,s2,s3,s4,s5,s6,s7,x1,x2,x3,x4,x5,x6,x7;
@@ -1104,7 +1111,8 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
   int             nz,bs=a->bs,bs2=a->bs2,*rout,*cout;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,*s,*t,*ls;
@@ -1159,7 +1167,8 @@ PetscErrorCode MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   MatScalar       *aa=a->a,*v;
   PetscScalar     s1,s2,s3,s4,s5,s6,s7,x1,x2,x3,x4,x5,x6,x7;
@@ -1356,7 +1365,8 @@ PetscErrorCode MatSolve_SeqBAIJ_6(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,s1,s2,s3,s4,s5,s6,x1,x2,x3,x4,x5,x6,*t;
@@ -1530,7 +1540,8 @@ PetscErrorCode MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,s1,s2,s3,s4,s5,x1,x2,x3,x4,x5,*t;
@@ -1687,7 +1698,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,s1,s2,s3,s4,x1,x2,x3,x4,*t;
@@ -1763,7 +1775,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_Demotion(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   MatScalar       *aa=a->a,*v,s1,s2,s3,s4,x1,x2,x3,x4,*t;
   PetscScalar     *x,*b;
@@ -1866,7 +1879,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_SSE_Demotion(Mat A,Vec bb,Vec xx)
   */
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag,ai16;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,*t;
@@ -2664,7 +2678,8 @@ PetscErrorCode MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,s1,s2,s3,x1,x2,x3,*t;
@@ -2802,7 +2817,8 @@ PetscErrorCode MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,s1,s2,x1,x2,*t;
@@ -2931,7 +2947,8 @@ PetscErrorCode MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ     *a=(Mat_SeqBAIJ *)A->data;
   IS              iscol=a->col,isrow=a->row;
-  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,*rout,*cout;
+  PetscErrorCode ierr;
+  int             *r,*c,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,*rout,*cout;
   int             *diag = a->diag;
   MatScalar       *aa=a->a,*v;
   PetscScalar     *x,*b,s1,*t;
@@ -3052,7 +3069,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b;
   IS          isicol;
-  int         *r,*ic,ierr,prow,n = a->mbs,*ai = a->i,*aj = a->j;
+  PetscErrorCode ierr;
+  int         *r,*ic,prow,n = a->mbs,*ai = a->i,*aj = a->j;
   int         *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
   int         *dloc,idx,row,m,fm,nzf,nzi,len, reallocate = 0,dcount = 0;
   int         incrlev,nnz,i,bs = a->bs,bs2 = a->bs2,levels,diagonal_fill;

@@ -6,12 +6,12 @@
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
-PetscErrorCode DRAWSP_COOKIE = 0;
+PetscCookie DRAWSP_COOKIE = 0;
 
 struct _p_DrawSP {
   PETSCHEADER(int) 
-  int           (*destroy)(PetscDrawSP);
-  int           (*view)(PetscDrawSP,PetscViewer);
+  PetscErrorCode (*destroy)(PetscDrawSP);
+  PetscErrorCode (*view)(PetscDrawSP,PetscViewer);
   int           len,loc;
   PetscDraw     win;
   PetscDrawAxis axis;
@@ -193,7 +193,8 @@ PetscErrorCode PetscDrawSPDestroy(PetscDrawSP sp)
 @*/
 PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 {
-  int i,ierr;
+  PetscErrorCode ierr;
+  int i;
 
   PetscFunctionBegin;
   if (sp && sp->cookie == PETSC_DRAW_COOKIE) PetscFunctionReturn(0);
@@ -245,7 +246,8 @@ PetscErrorCode PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 @*/
 PetscErrorCode PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 {
-  int       i,j,k,ierr;
+  PetscErrorCode ierr;
+  int       i,j,k;
   PetscReal *x,*y;
 
   PetscFunctionBegin;

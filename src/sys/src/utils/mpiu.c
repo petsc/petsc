@@ -5,7 +5,8 @@
 #define __FUNCT__ "PetscSequentialPhaseBegin_Private" 
 PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 {
-  int        lidx,np,tag = 0,ierr;
+  PetscErrorCode ierr;
+  int        lidx,np,tag = 0;
   MPI_Status status;
 
   PetscFunctionBegin;
@@ -26,7 +27,8 @@ PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm comm,int ng)
 #define __FUNCT__ "PetscSequentialPhaseEnd_Private" 
 PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm comm,int ng)
 {
-  int        lidx,np,tag = 0,ierr;
+  PetscErrorCode ierr;
+  int        lidx,np,tag = 0;
   MPI_Status status;
 
   PetscFunctionBegin;

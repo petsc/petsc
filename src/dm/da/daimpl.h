@@ -14,13 +14,13 @@
 */
 typedef struct _DMOps *DMOps;
 struct _DMOps {
-  int  (*view)(DM,PetscViewer);
-  int  (*createglobalvector)(DM,Vec*);
-  int  (*getcoloring)(DM,ISColoringType,ISColoring*);
-  int  (*getmatrix)(DM,const MatType,Mat*);
-  int  (*getinterpolation)(DM,DM,Mat*,Vec*);
-  int  (*refine)(DM,MPI_Comm,DM*);
-  int  (*getinjection)(DM,DM,VecScatter*);
+  PetscErrorCode (*view)(DM,PetscViewer);
+  PetscErrorCode (*createglobalvector)(DM,Vec*);
+  PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
+  PetscErrorCode (*getmatrix)(DM,const MatType,Mat*);
+  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
+  PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
+  PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
 };
 
 struct _p_DM {
@@ -29,13 +29,13 @@ struct _p_DM {
 
 typedef struct _DAOps *DAOps;
 struct _DAOps {
-  int  (*view)(DA,PetscViewer);
-  int  (*createglobalvector)(DA,Vec*);
-  int  (*getcoloring)(DA,ISColoringType,ISColoring*);
-  int  (*getmatrix)(DA,const MatType,Mat*);
-  int  (*getinterpolation)(DA,DA,Mat*,Vec*);
-  int  (*refine)(DA,MPI_Comm,DA*);
-  int  (*getinjection)(DA,DA,VecScatter*);
+  PetscErrorCode (*view)(DA,PetscViewer);
+  PetscErrorCode (*createglobalvector)(DA,Vec*);
+  PetscErrorCode (*getcoloring)(DA,ISColoringType,ISColoring*);
+  PetscErrorCode (*getmatrix)(DA,const MatType,Mat*);
+  PetscErrorCode (*getinterpolation)(DA,DA,Mat*,Vec*);
+  PetscErrorCode (*refine)(DA,MPI_Comm,DA*);
+  PetscErrorCode (*getinjection)(DA,DA,VecScatter*);
 };
 
 struct _p_DA {
@@ -104,9 +104,9 @@ struct _p_DA {
   DALocalFunction1       adifor_lf;
   DALocalFunction1       adiformf_lf;
 
-  int                    (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
-  int                    (*adic_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
-  int                    (*adicmf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*);
+  PetscErrorCode (*adic_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
+  PetscErrorCode (*adicmf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
 
   /* this is used by DASetBlockFills() */
   int                    *ofill,*dfill;

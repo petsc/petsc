@@ -9,7 +9,8 @@ int main(int argc,char **argv)
 {
   Mat          mat,fact;
   MatInfo      info;
-  int          m = 10,n = 10,i = 4,ierr,rstart,rend;
+  PetscErrorCode ierr;
+  int          m = 10,n = 10,i = 4,rstart,rend;
   PetscScalar  value = 1.0;
   Vec          x,y,b;
   PetscReal    norm;

@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   ierr = DAGetMatrix(da,MATMPIAIJ,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(matfdcoloring,(int (*)(void))FormFunction,da);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,da);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -10,7 +10,8 @@ static char help[] = "Tests ISAllGather().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int        i,n,ierr,*indices,rank,size;
+  PetscErrorCode ierr;
+  int        i,n,*indices,rank,size;
   IS         is,newis;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

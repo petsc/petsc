@@ -10,7 +10,7 @@
 #include "petscvec.h"
 
 struct _PetscMapOps {
-  int (*setfromoptions)(PetscMap),
+  PetscErrorCode (*setfromoptions)(PetscMap),
       (*destroy)(PetscMap);
 };
 
@@ -25,7 +25,7 @@ struct _p_PetscMap {
 
 typedef struct _VecOps *VecOps;
 struct _VecOps {
-  int  (*duplicate)(Vec,Vec*),              /* get single vector */
+  PetscErrorCode (*duplicate)(Vec,Vec*),              /* get single vector */
        (*duplicatevecs)(Vec,int,Vec**),     /* get array of vectors */
        (*destroyvecs)(const Vec[],int),     /* free array of vectors */
        (*dot)(Vec,Vec,PetscScalar*),             /* z = x^H * y */
@@ -210,12 +210,12 @@ struct _p_VecScatter {
                                           function are called together, VecScatterEnd()
                                           is then treated as a nop */
   PetscTruth packtogether; /* packs all the messages before sending, same with receive */
-  int        (*postrecvs)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-  int        (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-  int        (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-  int        (*copy)(VecScatter,VecScatter);
-  int        (*destroy)(VecScatter);
-  int        (*view)(VecScatter,PetscViewer);
+  PetscErrorCode (*postrecvs)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  PetscErrorCode (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  PetscErrorCode (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  PetscErrorCode (*copy)(VecScatter,VecScatter);
+  PetscErrorCode (*destroy)(VecScatter);
+  PetscErrorCode (*view)(VecScatter,PetscViewer);
   void       *fromdata,*todata;
 };
 
