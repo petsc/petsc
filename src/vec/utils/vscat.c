@@ -56,7 +56,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
   if (mode & SCATTER_REVERSE) {
     PetscScalar          *xvt,*xvt2;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-    PetscInt                  i;
+    PetscInt             i;
 
     if (addv == INSERT_VALUES) {
       PetscInt rstart,rend;
@@ -773,10 +773,9 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   VecScatter     ctx;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt            len,cando,totalv,*range,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID; 
-  PetscTruth     flag;
+  PetscInt       len,totalv,*range,xin_type = VEC_SEQ_ID,yin_type = VEC_SEQ_ID; 
   MPI_Comm       comm,ycomm;
-  PetscTruth     ixblock,iyblock,iystride,islocal;
+  PetscTruth     ixblock,iyblock,iystride,islocal,cando,flag;
   IS             tix = 0,tiy = 0;
 
   PetscFunctionBegin;
@@ -848,7 +847,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   /* ---------------------------------------------------------------------------*/
   if (xin_type == VEC_SEQ_ID && yin_type == VEC_SEQ_ID) {
     if (ix->type == IS_GENERAL && iy->type == IS_GENERAL){
-      PetscInt                    nx,ny,*idx,*idy;
+      PetscInt               nx,ny,*idx,*idy;
       VecScatter_Seq_General *to,*from;
 
       ierr = ISGetLocalSize(ix,&nx);CHKERRQ(ierr);
@@ -880,7 +879,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PetscLogInfo(xin,"VecScatterCreate:Special case: sequential vector general scatter\n");
       goto functionend;
     } else if (ix->type == IS_STRIDE &&  iy->type == IS_STRIDE){
-      PetscInt                    nx,ny,to_first,to_step,from_first,from_step;
+      PetscInt               nx,ny,to_first,to_step,from_first,from_step;
       VecScatter_Seq_Stride  *from8,*to8;
 
       ierr = ISGetLocalSize(ix,&nx);CHKERRQ(ierr); 
@@ -909,7 +908,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PetscLogInfo(xin,"VecScatterCreate:Special case: sequential vector stride to stride\n");
       goto functionend; 
     } else if (ix->type == IS_GENERAL && iy->type == IS_STRIDE){
-      PetscInt                    nx,ny,*idx,first,step;
+      PetscInt               nx,ny,*idx,first,step;
       VecScatter_Seq_General *from9;
       VecScatter_Seq_Stride  *to9;
 
@@ -941,7 +940,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PetscLogInfo(xin,"VecScatterCreate:Special case: sequential vector general to stride\n");
       goto functionend;
     } else if (ix->type == IS_STRIDE && iy->type == IS_GENERAL){
-      PetscInt                    nx,ny,*idy,first,step;
+      PetscInt               nx,ny,*idy,first,step;
       VecScatter_Seq_General *to10;
       VecScatter_Seq_Stride  *from10;
 
@@ -974,7 +973,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       PetscLogInfo(xin,"VecScatterCreate:Special case: sequential vector stride to general\n");
       goto functionend;
     } else {
-      PetscInt                    nx,ny,*idx,*idy;
+      PetscInt               nx,ny,*idx,*idy;
       VecScatter_Seq_General *to11,*from11;
       PetscTruth             idnx,idny;
 
@@ -1070,13 +1069,13 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         from12->step        = from_step;
         to12->type          = VEC_SCATTER_SEQ_STRIDE; 
         from12->type        = VEC_SCATTER_SEQ_STRIDE; 
-        ctx->todata       = (void*)to12; 
-        ctx->fromdata     = (void*)from12;
-        ctx->postrecvs    = 0;
-        ctx->begin        = VecScatterBegin_SStoSS; 
-        ctx->end          = 0; 
-        ctx->destroy      = VecScatterDestroy_SGtoSG;
-        ctx->copy         = VecScatterCopy_PStoSS;
+        ctx->todata         = (void*)to12; 
+        ctx->fromdata       = (void*)from12;
+        ctx->postrecvs      = 0;
+        ctx->begin          = VecScatterBegin_SStoSS; 
+        ctx->end            = 0; 
+        ctx->destroy        = VecScatterDestroy_SGtoSG;
+        ctx->copy           = VecScatterCopy_PStoSS;
         PetscLogInfo(xin,"VecScatterCreate:Special case: processors only getting local values\n");
         goto functionend;
       }

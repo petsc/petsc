@@ -8,11 +8,12 @@ static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int           n = 6,ierr,loc[6] = {0,1,2,3,4,5};
-  PetscScalar   two = 2.0,vals[6] = {10,11,12,13,14,15};
-  Vec           x,y;
-  IS            is1,is2;
-  VecScatter    ctx = 0;
+  PetscErrorCode ierr;
+  PetscInt       n = 6,loc[6] = {0,1,2,3,4,5};
+  PetscScalar    two = 2.0,vals[6] = {10,11,12,13,14,15};
+  Vec            x,y;
+  IS             is1,is2;
+  VecScatter     ctx = 0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

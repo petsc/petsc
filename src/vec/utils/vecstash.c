@@ -387,7 +387,7 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals
     ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
     /* Now pack the received message into a structure which is useable by others */
     if (i % 2) { 
-      ierr = MPI_Get_count(&recv_status,MPI_INT,nvals);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&recv_status,MPIU_INT,nvals);CHKERRQ(ierr);
       flg_v[2*recv_status.MPI_SOURCE+1] = i/2; 
     } else { 
       ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRQ(ierr);

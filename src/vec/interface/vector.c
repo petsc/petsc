@@ -1669,7 +1669,7 @@ PetscErrorCode VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping mapp
 PetscErrorCode VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode iora) 
 {
   PetscErrorCode ierr;
-  PetscInt lixp[128],*lix = lixp;
+  PetscInt       lixp[128],*lix = lixp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);

@@ -38,8 +38,8 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,work = xin->n,j,cnt,len;
-  PetscMPIInt       n,size,rank,tag = ((PetscObject)viewer)->tag;
+  PetscInt          i,work = xin->n,cnt,len;
+  PetscMPIInt       j,n,size,rank,tag = ((PetscObject)viewer)->tag;
   MPI_Status        status;
   PetscScalar       *values,*xarray;
   char              *name;
@@ -225,17 +225,22 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 #define __FUNCT__ "VecView_MPI_Draw_LG"
 PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 {
+  PetscDraw      draw;
+  PetscTruth     isnull;
+  PetscErrorCode ierr;
+
 #if defined(PETSC_USE_64BIT_INT)
   PetscFunctionBegin;
+  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
   SETERRQ(PETSC_ERR_SUP,"Not supported with 64 bit integers");
 #else
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   int            i,N = xin->N,*lens;
   PetscDraw      draw;
   PetscReal      *xx,*yy;
   PetscDrawLG    lg;
-  PetscTruth     isnull;
   PetscScalar    *xarray;
 
   PetscFunctionBegin;
@@ -617,10 +622,10 @@ PetscErrorCode VecGetSize_MPI(Vec xin,PetscInt *N)
 #define __FUNCT__ "VecSetValues_MPI"
 PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const PetscScalar y[],InsertMode addv)
 {
-  PetscMPIInt    rank = xin->stash.rank;
-  PetscInt            *owners = xin->map->range,start = owners[rank];
   PetscErrorCode ierr;
-  PetscInt            end = owners[rank+1],i,row;
+  PetscMPIInt    rank = xin->stash.rank;
+  PetscInt       *owners = xin->map->range,start = owners[rank];
+  PetscInt       end = owners[rank+1],i,row;
   PetscScalar    *xx;
 
   PetscFunctionBegin;
@@ -757,9 +762,9 @@ PetscErrorCode VecAssemblyBegin_MPI(Vec xin)
   ierr = VecStashScatterBegin_Private(&xin->stash,owners);CHKERRQ(ierr);
   ierr = VecStashScatterBegin_Private(&xin->bstash,bowners);CHKERRQ(ierr);
   ierr = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"VecAssemblyBegin_MPI:Stash has %d entries, uses %d mallocs.\n",nstash,reallocs);
+  PetscLogInfo(0,"VecAssemblyBegin_MPI:Stash has %d entries, uses %d mallocs.\n",(int)nstash,(int)reallocs);
   ierr = VecStashGetInfo_Private(&xin->bstash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"VecAssemblyBegin_MPI:Block-Stash has %d entries, uses %d mallocs.\n",nstash,reallocs);
+  PetscLogInfo(0,"VecAssemblyBegin_MPI:Block-Stash has %d entries, uses %d mallocs.\n",(int)nstash,(int)reallocs);
 
   PetscFunctionReturn(0);
 }
