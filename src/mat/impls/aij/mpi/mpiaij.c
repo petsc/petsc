@@ -3736,7 +3736,7 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
 
   ierr = PetscFree(bufj);CHKERRQ(ierr);
   ierr = PetscFree(bufa);CHKERRQ(ierr);
-  ierr = PetscFree(sstartsj);CHKERRQ(ierr); *startsj=PETSC_NULL; /* tobe removed! */
+  ierr = PetscFree(sstartsj);CHKERRQ(ierr); *startsj=PETSC_NULL;*bufaa=PETSC_NULL; /* tobe removed! */
 
   ierr = PetscLogEventEnd(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
 
