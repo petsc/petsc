@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.146 1998/04/15 22:50:42 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.147 1998/04/27 03:53:19 curfman Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
 */
 
 #include "src/mat/impls/dense/seq/dense.h"
-#include "pinclude/plapack.h"
+#include "pinclude/blaslapack.h"
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  

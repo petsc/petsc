@@ -1,8 +1,45 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.20 1998/04/04 01:24:35 balay Exp balay $";
+static char vcid[] = "$Id: fdate.c,v 1.21 1998/04/04 01:37:26 balay Exp bsmith $";
 #endif
 
-#include "src/sys/src/files.h"
+#include "petsc.h"
+#include "sys.h"
+#include "pinclude/ptime.h"
+#if defined(HAVE_PWD_H)
+#include <pwd.h>
+#endif
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#if defined(HAVE_UNISTD_H)
+#include <unistd.h>
+#endif
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+#if !defined(PARCH_nt)
+#include <sys/param.h>
+#include <sys/utsname.h>
+#endif
+#if defined(PARCH_nt)
+#include <windows.h>
+#include <io.h>
+#include <direct.h>
+#endif
+#if defined (PARCH_nt_gnu)
+#include <windows.h>
+#endif
+#include <fcntl.h>
+#include <time.h>  
+#if defined(HAVE_SYS_SYSTEMINFO_H)
+#include <sys/systeminfo.h>
+#endif
+#include "pinclude/petscfix.h"
+
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 1024
+#endif
+
 #if defined (NEEDS_GETTIMEOFDAY_PROTO)
 #include <sys/resource.h>
 #if defined(__cplusplus)

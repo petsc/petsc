@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: olist.c,v 1.2 1998/04/03 23:13:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: olist.c,v 1.3 1998/04/16 03:50:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -17,7 +17,7 @@ struct _OList {
 };
 
 #undef __FUNC__  
-#define __FUNC__ "OListCreate"
+#define __FUNC__ "OListAdd"
 /*
 
        Notes: Replaces item if it is already in list. Removes item if you pass in a 

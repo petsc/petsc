@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.20 1998/04/03 23:17:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.21 1998/04/13 17:54:51 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -55,7 +55,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
   if (v->type != STRING_VIEWER) PetscFunctionReturn(0);
 
   va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
   vsprintf(tmp,format,(char *)Argp);
 #else
   vsprintf(tmp,format,Argp);

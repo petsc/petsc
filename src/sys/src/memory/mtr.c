@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.109 1998/05/05 13:59:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.110 1998/05/05 14:01:04 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -29,7 +29,11 @@ int  PetscTrFreeDefault( void *, int, char *,char *,char *);
   of malloced memory. This will only work on flat memory models and 
   even then is suspicious.
 */
+#if defined(HAVE_64BITS)
+void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEEEEEEEEEE;
+#else
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
+#endif
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetUseTrMalloc_Private"
@@ -38,10 +42,12 @@ int PetscSetUseTrMalloc_Private(void)
   int ierr;
 
   PetscFunctionBegin;
-#if !defined(PETSC_INSIGHT)
+#if defined(HAVE_64BITS)
+  PetscLow     = (void *) 0xEEEEEEEEEEEEEEEE;
+#else
   PetscLow     = (void *) 0xEEEEEEEE;
-  PetscHigh    = (void *) 0x0;
 #endif
+  PetscHigh    = (void *) 0x0;
   ierr         = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -222,11 +228,9 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
   /*
    Keep track of range of memory locations we have malloced in 
   */
-#if !defined(PETSC_INSIGHT)
   if (PetscLow > (void *) inew) PetscLow = (void *) inew;
   if (PetscHigh < (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long)))
       PetscHigh = (void *) (inew+nsize+sizeof(TrSPACE)+sizeof(unsigned long));
-#endif
 
   head   = (TRSPACE *)inew;
   inew  += sizeof(TrSPACE);
@@ -307,12 +311,10 @@ int PetscTrFreeDefault( void *aa, int line, char *function, char *file, char *di
     ierr = PetscTrValid(line,function,file,dir); CHKERRQ(ierr);
   }
 
-#if !defined(PETSC_INSIGHT)
   if (PetscLow > aa || PetscHigh < aa){
     (*PetscErrorPrintf)("PetscTrFreeDefault called from %s() line %d in %s%s\n",function,line,dir,file);
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"PetscTrFreeDefault called with address not allocated by PetscTrMallocDefault");
   } 
-#endif
 
   ahead = a;
   a     = a - sizeof(TrSPACE);

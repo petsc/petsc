@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.87 1998/04/15 22:50:39 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.88 1998/04/27 03:53:09 curfman Exp bsmith $";
 #endif
 
 /*
@@ -864,7 +864,7 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
   PetscFunctionReturn(0);
 }
 
-#include "pinclude/plapack.h"
+#include "pinclude/blaslapack.h"
 #undef __FUNC__  
 #define __FUNC__ "MatScale_MPIDense"
 int MatScale_MPIDense(Scalar *alpha,Mat inA)

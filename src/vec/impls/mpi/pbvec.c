@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.100 1998/04/15 22:45:08 curfman Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.101 1998/04/26 02:53:33 curfman Exp bsmith $";
 #endif
 
 /*
@@ -143,13 +143,13 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   } else {
     s->array           = (Scalar *) PetscMalloc((n+nghost+1)*sizeof(Scalar));CHKPTRQ(s->array);
     s->array_allocated = s->array;
+    PetscMemzero(s->array,n*sizeof(Scalar));
   }
 
   /* By default parallel vectors do not have local representation */
   s->localrep    = 0;
   s->localupdate = 0;
 
-  PetscMemzero(s->array,n*sizeof(Scalar));
   s->ownership   = (int *) (s + 1);
   s->insertmode  = NOT_SET_VALUES;
   if (owners) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.30 1998/03/24 20:59:24 balay Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.31 1998/04/13 18:01:08 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -297,8 +297,8 @@ extern char *PLogEventName[];
    Collective over PETSC_COMM_WORLD
 
    Options Database Keys:
-$  -log_mpe : Prints extensive log information (for code compiled
-$      with USE_PETSC_LOG)
+. -log_mpe - Prints extensive log information (for code compiled
+             with USE_PETSC_LOG)
 
    Notes:
    A related routine is PLogBegin (with the options key -log), which is 
@@ -370,10 +370,10 @@ int PLogEventMPEDeactivate(int event)
        PETSc event (found in include/petsclog.h) or an event number obtained
        with PLogEventRegister().
 
+   Not Collective
+
   Input Parameter:
 .   event - integer indicating event
-
-   Not Collective
 
    Example of Usage:
 $

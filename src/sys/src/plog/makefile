@@ -1,11 +1,11 @@
-# $Id: makefile,v 1.9 1998/03/19 02:14:59 balay Exp balay $ 
+# $Id: makefile,v 1.10 1998/04/23 23:28:27 balay Exp bsmith $ 
 
 ALL: lib 
 CFLAGS	  = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
-SOURCEC	  = plog.c plogmpe.c ploginfo.c
+SOURCEC	  = plog.c plogmpe.c ploginfo.c mpitr.c
 SOURCEF	  =
 SOURCEH	  = 
-OBJSC	  = plog.o plogmpe.o ploginfo.o
+OBJSC	  = plog.o plogmpe.o ploginfo.o mpitr.o
 OBJSF	  =
 MANSEC	  = p
 LIBBASE	  = libpetscsys

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.8 1998/04/13 17:28:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: eige.c,v 1.9 1998/04/24 22:10:32 curfman Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -84,7 +84,7 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
   PetscFunctionReturn(0);
 }
 
-#include "pinclude/plapack.h"
+#include "pinclude/blaslapack.h"
 
 #undef __FUNC__  
 #define __FUNC__ "KSPComputeEigenvaluesExplicitly"

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.11 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.12 1998/04/29 14:31:50 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -62,14 +62,14 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VFPRINTF_CHAR)
     vfprintf(stdout,format,(char*)Argp);
 #else
     vfprintf(stdout,format,Argp);
 #endif
     fflush(stdout);
     if (petsc_history) {
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VFPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -85,7 +85,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VFPRINTF_CHAR)
     vsprintf(next->string,format,(char *)Argp);
 #else
     vsprintf(next->string,format,Argp);
@@ -134,7 +134,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
     vfprintf(fp,format,(char*)Argp);
 #else
     vfprintf(fp,format,Argp);
@@ -142,7 +142,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
     fflush(fp);
     queuefile = fp;
     if (petsc_history) {
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -158,7 +158,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
     vsprintf(next->string,format,(char *)Argp);
 #else
     vsprintf(next->string,format,Argp);
@@ -266,14 +266,14 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
     vfprintf(fd,format,(char*)Argp);
 #else
     vfprintf(fd,format,Argp);
 #endif
     fflush(fd);
     if (petsc_history) {
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -314,14 +314,14 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
     vfprintf(stdout,format,(char *)Argp);
 #else
     vfprintf(stdout,format,Argp);
 #endif
     fflush(stdout);
     if (petsc_history) {
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -363,14 +363,14 @@ int PetscHelpPrintfDefault(MPI_Comm comm,char *format,...)
   if (!rank) {
     va_list Argp;
     va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
     vfprintf(stdout,format,(char *)Argp);
 #else
     vfprintf(stdout,format,Argp);
 #endif
     fflush(stdout);
     if (petsc_history) {
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
       vfprintf(petsc_history,format,(char *)Argp);
 #else
       vfprintf(petsc_history,format,Argp);
@@ -449,7 +449,7 @@ int PetscErrorPrintfDefault(char *format,...)
   }
 
   va_start( Argp, format );
-#if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
+#if defined(HAVE_VPRINTF_CHAR)
   vfprintf(stderr,format,(char *)Argp);
 #else
   vfprintf(stderr,format,Argp);

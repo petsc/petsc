@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.25 1998/04/03 23:15:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.26 1998/04/13 17:39:42 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -221,7 +221,7 @@ int MatGetSubMatrices_SeqBAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall
 /* -------------------------------------------------------*/
 /* Should check that shapes of vectors and matrices match */
 /* -------------------------------------------------------*/
-#include "pinclude/plapack.h"
+#include "pinclude/blaslapack.h"
 
 #undef __FUNC__  
 #define __FUNC__ "MatMult_SeqBAIJ_1"

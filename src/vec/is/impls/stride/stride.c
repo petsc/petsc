@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.70 1998/04/27 17:00:29 curfman Exp curfman $";
+static char vcid[] = "$Id: stride.c,v 1.71 1998/04/27 17:01:36 curfman Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -189,13 +189,13 @@ int ISView_Stride(IS is, Viewer viewer)
     MPI_Comm_rank(is->comm,&rank);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (is->isperm) {
-      fprintf(fd,"[%d] Index set is permutation\n",rank);
+      PetscSynchronizedFPrintf(is->comm,fd,"[%d] Index set is permutation\n",rank);
     }
-    fprintf(fd,"[%d] Number of indices in (stride) set %d\n",rank,n);
+    PetscSynchronizedFPrintf(is->comm,fd,"[%d] Number of indices in (stride) set %d\n",rank,n);
     for ( i=0; i<n; i++ ) {
-      fprintf(fd,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);
+      PetscSynchronizedFPrintf(is->comm,fd,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);
     }
-    fflush(fd);
+    PetscSynchronizedFlush(is->comm);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
