@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.192 1998/05/12 21:51:18 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.193 1998/05/13 14:00:01 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -653,13 +653,13 @@ runex60:
 	   ${RM} -f ex60_1.tmp
 
 runex61:
-	-@${MPIRUN}  ex61  > ex61_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ex61  > ex61_1.tmp 2>&1;   \
 	   if (diff output/ex61_1.out ex61_1.tmp) then true; \
 	   else echo "Possible problem with ex61_1, diffs above"; fi; \
 	   ${RM} -f ex61_1.tmp
 
 runex61_2:
-	-@${MPIRUN}   ex61 -baij  > ex61_2.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ex61 -baij  > ex61_2.tmp 2>&1;   \
 	   if (diff output/ex61_1.out ex61_2.tmp) then true; \
 	   else echo "Possible problem with ex61_2, diffs above"; fi; \
 	   ${RM} -f ex61_2.tmp

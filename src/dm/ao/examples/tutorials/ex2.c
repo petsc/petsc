@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.8 1998/04/29 14:32:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.9 1998/04/30 13:08:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -150,6 +150,7 @@ int main(int argc,char **args)
   ierr = DataDestroy(&gdata); CHKERRA(ierr);
 
   PetscFinalize();
+  return 0;
 }
 
 

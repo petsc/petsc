@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.263 1998/05/07 21:09:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.264 1998/05/13 14:13:43 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1328,11 +1328,12 @@ int MatTranspose_SeqAIJ(Mat A,Mat *B)
     */
     PetscMemcpy(A->ops,C->ops,sizeof(struct _MatOps));
     PetscMemcpy(A->bops,C->bops,sizeof(PetscOps));
-    Abops = A->bops;
-    Aops  = A->ops;
+    Abops    = A->bops;
+    Aops     = A->ops;
     PetscMemcpy(A,C,sizeof(struct _p_Mat));
-    A->bops = Abops;
-    A->ops  = Aops;
+    A->bops  = Abops;
+    A->ops   = Aops;
+    A->qlist = 0;
 
     PetscHeaderDestroy(C);
   }

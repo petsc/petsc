@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.134 1998/04/15 22:50:50 curfman Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.135 1998/04/27 03:52:29 curfman Exp bsmith $";
 #endif
 
 /*
@@ -293,11 +293,12 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
       A pointers for the bops and ops but copy everything 
       else from C.
     */
-    Abops = A->bops;
-    Aops  = A->ops;
+    Abops    = A->bops;
+    Aops     = A->ops;
     PetscMemcpy(A,C,sizeof(struct _p_Mat));
-    A->bops = Abops;
-    A->ops  = Aops;
+    A->bops  = Abops;
+    A->ops   = Aops;
+    A->qlist = 0;
 
     PetscHeaderDestroy(C);
   }
@@ -1125,6 +1126,64 @@ int MatPrintHelp_SeqBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "MatSeqBAIJSetColumnIndices_SeqBAIJ"
+int MatSeqBAIJSetColumnIndices_SeqBAIJ(Mat mat,int *indices)
+{
+  Mat_SeqBAIJ *baij = (Mat_SeqBAIJ *)mat->data;
+  int         i,nz,n;
+
+  PetscFunctionBegin;
+  nz = baij->maxnz;
+  n  = baij->n;
+  for (i=0; i<nz; i++) {
+    baij->j[i] = indices[i];
+  }
+  baij->nz = nz;
+  for ( i=0; i<n; i++ ) {
+    baij->ilen[i] = baij->imax[i];
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatSeqBAIJSetColumnIndices"
+/*@
+    MatSeqBAIJSetColumnIndices - Set the column indices for all the rows
+       in the matrix.
+
+  Input Parameters:
++  mat - the SeqBAIJ matrix
+-  indices - the column indices
+
+  Notes:
+    This can be called if you have precomputed the nonzero structure of the 
+  matrix and want to provide it to the matrix object to improve the performance
+  of the MatSetValues() operation.
+
+    You MUST have set the correct numbers of nonzeros per row in the call to 
+  MatCreateSeqBAIJ().
+
+    MUST be called before any calls to MatSetValues();
+
+@*/ 
+int MatSeqBAIJSetColumnIndices(Mat mat,int *indices)
+{
+  int ierr,(*f)(Mat,int *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqBAIJSetColumnIndices_C",(void **)&f); 
+         CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(mat,indices);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Wrong type of matrix to set column indices");
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
@@ -1319,6 +1378,11 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   *A = B;
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) {ierr = MatPrintHelp(B); CHKERRQ(ierr); }
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatSeqBAIJSetColumnIndices_C",
+                                     "MatSeqBAIJSetColumnIndices_SeqBAIJ",
+                                     (void*)MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
 
@@ -1328,7 +1392,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
 {
   Mat         C;
   Mat_SeqBAIJ *c,*a = (Mat_SeqBAIJ *) A->data;
-  int         i,len, mbs = a->mbs,nz = a->nz,bs2 =a->bs2;
+  int         i,len, mbs = a->mbs,nz = a->nz,bs2 =a->bs2,ierr;
 
   PetscFunctionBegin;
   if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,0,"Corrupt matrix");
@@ -1395,6 +1459,9 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
   c->mult_work          = 0;
   *B = C;
+  ierr = PetscObjectComposeFunction((PetscObject)C,"MatSeqBAIJSetColumnIndices_C",
+                                     "MatSeqBAIJSetColumnIndices_SeqBAIJ",
+                                     (void*)MatSeqBAIJSetColumnIndices_SeqBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
