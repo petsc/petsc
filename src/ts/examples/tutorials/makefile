@@ -17,7 +17,7 @@ TESTEXAMPLES_4  =
 BUILDEXAMPLES_1 =
 BUILDEXAMPLES_3 =
 
-EXAMPLESC       = ex1.c
+EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       = ex1f.F
 #
 
@@ -28,6 +28,14 @@ ex1: ex1.o  chkopts
 ex1f: ex1f.o  chkopts
 	-$(FLINKER) -o ex1f ex1f.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex1f.o
+
+ex2: ex2.o  chkopts
+	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
+	$(RM) ex2.o
+
+ex2f: ex2f.o  chkopts
+	-$(FLINKER) -o ex2f ex2f.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex2f.o
 
 runex1:
 	-@$(MPIRUN) -np 1 ex1  > ex1_1.tmp 2>&1;	  \
