@@ -13,17 +13,15 @@
 #define __FUNC__ "AppCxtCreate"
 int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 {
-  int    ierr;
+  int        ierr;
   PetscTruth flag;
-  Viewer binary;
-  char   filename[256];
-  AppView *view;  /*added by H. */
-  AppElement *element; /*added by H. */
+  Viewer     binary;
+  char       filename[256];
+  AppView    *view;  /*added by H. */
 
   (*appctx) = (AppCtx *) PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
   (*appctx)->comm = comm;
   view    = &(*appctx)->view; /*added by H. */
-  element = &(*appctx)->element; /*added by H. */
 
   /*-----------------------------------------------------------------------
      Load in the grid database
