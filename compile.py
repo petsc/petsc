@@ -100,7 +100,7 @@ class Compile (action.Action):
 
   def checkIncludeDirectory(self, dirname):
     if not os.path.isdir(dirname):
-      if not dirname or not dirname[0:1] == '-I' or not os.path.isdir(dirname[2:]):
+      if not dirname or not dirname[0:2] == '-I':
         raise RuntimeError('Include directory '+dirname+' does not exist')
 
   def getIncludeFlags(self):
