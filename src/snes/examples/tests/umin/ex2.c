@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.5 1995/08/31 00:22:09 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.6 1995/08/31 20:38:13 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -10,6 +10,8 @@ Minimal Surface Area problem (dmsa) from the MINPACK-2 test suite.  The\n\
 command line options are:\n\
   -mx xg, where xg = number of grid points in the 1st coordinate direction\n\
   -my yg, where yg = number of grid points in the 2nd coordinate direction\n";
+
+#if !defined(PETSC_COMPLEX)
 
 #include "petsc.h"
 #include "snes.h"
@@ -201,7 +203,6 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   }
   if (fg & GradientEval) {
     ierr = VecSet(&zero,gvec); CHKERRQ(ierr);
-    ierr = VecView(gvec,STDOUT_VIEWER_SELF); CHKERRQ(ierr);
   }
 
   /* Compute function and gradient over the lower triangular elements */
@@ -209,31 +210,19 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
     for (i=0; i<nx1; i++) {
       k = nx*(j-1) + i-1;
       if (i >= 1 && j >= 1) {
-#if defined(PETSC_COMPLEX)
-        v = real(x[k]);
-#else
         v = x[k];
-#endif
       } else {
         if (j == 0) v = bottom[i];
         if (i == 0) v = left[j];
       }
       if (i<nx && j>0) {
-#if defined(PETSC_COMPLEX)
-        vr = real(x[k+1]);
-#else
         vr = x[k+1];
-#endif
       } else {
         if (i == nx) vr = right[j];
         if (j == 0)  vr = bottom[i+1];
       }
       if (i>0 && j<ny) {
-#if defined(PETSC_COMPLEX)
-         vt =real( x[k+nx]);
-#else
          vt = x[k+nx];
-#endif
       } else {
          if (i == 0)  vt = left[j+1];
          if (j == ny) vt = top[i];
@@ -247,17 +236,14 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       if (fg & GradientEval) {
         if (i>=1 && j>=1) {
           ind = k; val = -(dvdx/hx+dvdy/hy)/fl;
- printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i<nx && j>0) {
           ind = k+1; val = (dvdx/hx)/fl;
- printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i>0 && j<ny) {
           ind = k+nx; val = (dvdy/hy)/fl;
- printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
       }
@@ -269,31 +255,19 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
     for (i=1; i<=nx1; i++) {
       k = nx*(j-1) + i-1;
       if (i<=nx && j>1) {
-#if defined(PETSC_COMPLEX)
-        vb = real(x[k-nx]);
-#else
         vb = x[k-nx];
-#endif
       } else {
         if (j == 1)    vb = bottom[i];
         if (i == nx+1) vb = right[j-1];
       }
       if (i>1 && j<=ny) {
-#if defined(PETSC_COMPLEX)
-         vl = real(x[k-1]);
-#else
          vl = x[k-1];
-#endif
       } else {
          if (j == ny+1) vl = top[i-1];
          if (i == 1)    vl = left[j];
       }
       if (i<=nx && j<=ny) {
-#if defined(PETSC_COMPLEX)
-         v = real(x[k]);
-#else
          v = x[k];
-#endif
       } else {
          if (i == nx+1) v = right[j];
          if (j == ny+1) v = top[i];
@@ -306,17 +280,14 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
       } if (fg & GradientEval) {
         if (i<= nx && j>1) {
           ind = k-nx; val = -(dvdy/hy)/fu;
- printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i>1 && j<=ny) {
           ind = k-1; val = -(dvdx/hx)/fu;
- printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i<=nx && j<=ny) {
           ind = k; val = (dvdx/hx+dvdy/hy)/fu;
- printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
       }
@@ -330,7 +301,6 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
     ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(gvec); CHKERRQ(ierr);
     ierr = VecScale((Scalar*)&area,gvec); CHKERRQ(ierr);
-    ierr = VecView(gvec,STDOUT_VIEWER_SELF); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -615,5 +585,13 @@ int BoundaryValues(AppCtx *user)
   }
   return 0;
 }
+#else
+#include <stdio.h>
+int main(int argc,char **args)
+{
+  fprintf(stdout,"This example does not work for complex numbers.\n");
+  return 0;
+}
+#endif
 
 
