@@ -9,7 +9,7 @@ static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       n = 5,N;
+  PetscInt       n = 5,N,i;
   PetscMPIInt    size,rank;
   PetscScalar    value,zero = 0.0;
   Vec            x,y;
@@ -21,19 +21,27 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /* create two vectors */
-  N = size*n;
+  N = size*n; 
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
-  ierr = VecSetSizes(y,PETSC_DECIDE,N);CHKERRQ(ierr);
+  ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr)
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
+
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,N);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+
   /* create two index sets */
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&is1);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,(n*(rank+1))%N,1,&is2);CHKERRQ(ierr);
 
+  /* fill local part of parallel vector x */
   value = (PetscScalar)(rank+1); 
-  ierr = VecSet(&value,x);CHKERRQ(ierr);
+  for (i=n*rank; i<n*(rank+1); i++) {
+    ierr = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+
   ierr = VecSet(&zero,y);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
