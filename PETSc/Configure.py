@@ -17,9 +17,11 @@ class Configure(configure.Configure):
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'realpath', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'uname']
+    libraries = [('dl', 'dlopen')]
     framework.checkTypes()
     framework.checkHeaders(headersC)
     framework.checkFunctions(functions)
+    framework.checkLibraries(libraries)
     framework.checkCompilers()
     return
 
@@ -89,7 +91,7 @@ class Configure(configure.Configure):
     # Compiler optimized options
     var = langName+'FLAGS_O'
     if not self.framework.argDB.has_key('PETSC_'+var):
-      (status, output) = commands.getstatusoutput(optionsCmd+' g')
+      (status, output) = commands.getstatusoutput(optionsCmd+' O')
       if not status:
         setattr(self, var, output)
       else:
@@ -117,6 +119,28 @@ class Configure(configure.Configure):
     self.addSubstitution('PETSCFLAGS', self.framework.argDB['PETSCFLAGS'])
     self.addSubstitution('COPTFLAGS',  self.framework.argDB['COPTFLAGS'])
     self.addSubstitution('FOPTFLAGS',  self.framework.argDB['FOPTFLAGS'])
+    return
+
+  def checkF77CompilerOption(self, option):
+    oldFlags = self.framework.argDB['FFLAGS']
+    success  = 0
+    self.framework.argDB['FFLAGS'] = option
+    self.pushLanguage('F77')
+    if self.checkCompile('', ''):
+      success = 1
+    self.framework.argDB['FFLAGS'] = oldFlags
+    self.popLanguage()
+    return success
+
+  def configureFortranPIC(self):
+    option = ''
+    if self.checkF77CompilerOption('-PIC'):
+      option = '-PIC'
+    elif self.checkF77CompilerOption('-fPIC'):
+      option = '-fPIC'
+    elif self.checkF77CompilerOption('-KPIC'):
+      option = '-KPIC'
+    self.addSubstitution('FC_SHARED_OPT', option)
     return
 
   def configureDebuggers(self):
@@ -158,10 +182,34 @@ class Configure(configure.Configure):
       self.addDefine('USE_LARGEP_FOR_DEBUGGER', 1, comment = 'Use -P to indicate a process to the debugger')
     return
 
+  def checkMkdir(self):
+    self.getExecutable('mkdir', getFullPath = 1, comment = 'Mkdir utility')
+    if hasattr(self, 'mkdir'):
+      if os.path.exists('.conftest'): os.rmdir('.conftest')
+      (status, output) = commands.getstatusoutput(self.mkdir+' -p .conftest/.tmp')
+      if not status and os.path.isdir('.conftest/.tmp'):
+        self.mkdir = self.mkdir+' -p'
+        self.addSubstitution('MKDIR', self.mkdir)
+      if os.path.exists('.conftest'): os.removedirs('.conftest/.tmp')
+    return
+
+  def configurePrograms(self):
+    self.checkMkdir()
+    self.getExecutable('sh',   getFullPath = 1, comment = 'Bourne shell', substName = 'SHELL')
+    self.getExecutable('sed',  getFullPath = 1, comment = 'Sed utility')
+    self.getExecutable('diff', getFullPath = 1, comment = 'Diff utility')
+    self.getExecutable('ar',   getFullPath = 1, comment = 'Archive utility')
+    self.getExecutable('make', comment = 'Build utility')
+    self.addSubstitution('AR_FLAGS', 'cr')
+    self.getExecutable('ranlib', comment = 'Ranlib utility')
+    self.addSubstitution('SET_MAKE', '', comment = 'Obsolete')
+    self.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
+    return
+
   def configureMissingPrototypes(self):
     '''Checks for missing prototypes, which it adds to petscfix.h'''
     self.addSubstitution('MISSING_PROTOTYPES',     '', comment = 'C compiler')
-    self.addSubstitution('MISSING_PROTOTYPES_CPP', '', comment = 'C compiler')
+    self.addSubstitution('MISSING_PROTOTYPES_CXX', '', comment = 'C compiler')
     self.missingPrototypesExternC = ''
     if self.archBase == 'linux':
       self.missingPrototypesExternC += 'extern void *memalign(int, int);'
@@ -253,12 +301,27 @@ class Configure(configure.Configure):
 ##      print '**********     Use --with-mpi option to specify a full MPI     **********'
     return
 
+  def configureMisc(self):
+    '''Fix up all the things that we currently need to run'''
+    self.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
+    self.addSubstitution('CC_SHARED_OPT', '')
+    self.addSubstitution('LDFLAGS', self.framework.argDB['LDFLAGS'])
+    self.addSubstitution('LIBS',    self.framework.argDB['LIBS'])
+    return
+
   def configure(self):
     self.configureDirectories()
     self.configureArchitecture()
+    self.framework.header = 'bmake/'+self.arch+'-test/petscconfig.h'
+    self.framework.addSubstitutionFile('bmake/config-test/packages.in',   'bmake/'+self.arch+'-test/packages')
+    self.framework.addSubstitutionFile('bmake/config-test/rules.in',      'bmake/'+self.arch+'-test/rules')
+    self.framework.addSubstitutionFile('bmake/config-test/variables.in',  'bmake/'+self.arch+'-test/variables')
+    self.framework.addSubstitutionFile('bmake/config-test/petscfix.h.in', 'bmake/'+self.arch+'-test/petscfix.h')
     self.configureLibraryOptions()
     self.configureCompilerFlags()
+    self.configureFortranPIC()
     self.configureDebuggers()
+    self.configurePrograms()
     self.configureMissingPrototypes()
     self.configureMissingFunctions()
     self.configureMissingSignals()
@@ -267,5 +330,6 @@ class Configure(configure.Configure):
     self.configureIRIX()
     self.configureLinux()
     self.configureMachineInfo()
+    self.configureMisc()
     self.mpiuniWarning()
     return
