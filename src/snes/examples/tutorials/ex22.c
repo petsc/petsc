@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.12 2001/01/05 05:06:04 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.13 2001/01/15 21:48:06 bsmith Exp balay $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -223,7 +223,7 @@ int Monitor(SNES snes,int its,PetscReal rnorm,void *dummy)
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
   ierr = VecPackGetAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->u_lambda_viewer); 
-  ierr = VecPackRestoreAccess(packer,F,&w,&u_lambda);CHKERRQ(ierr);
+  ierr = VecPackRestoreAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
 
   ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
   ierr = VecPackGetAccess(packer,F,&w,&u_lambda);CHKERRQ(ierr);

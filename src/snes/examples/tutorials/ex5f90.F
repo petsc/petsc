@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.35 2001/01/15 21:48:06 bsmith Exp bsmith $";
+! "$Id: ex5f90.F,v 1.36 2001/01/17 22:26:26 bsmith Exp balay $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -209,10 +209,12 @@
       user%lambda     = 6.0
       user%mx         = 4
       user%my         = 4
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user%mx,flg,ierr)
-      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',user%my,flg,ierr)
-      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',user%lambda,    &
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user%mx,       &
      &     flg,ierr)
+      call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',user%my,       &
+     &     flg,ierr)
+      call PetscOptionsGetDouble(PETSC_NULL_CHARACTER,'-par',           &
+     &     user%lambda,flg,ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &
      &     then
          if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
@@ -313,8 +315,8 @@
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
-     &                    ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
+     &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
         if (user%size .eq. 1) then
            call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,                 &

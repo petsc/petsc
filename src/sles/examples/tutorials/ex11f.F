@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.27 2000/10/27 21:27:32 bsmith Exp bsmith $";
+!    "$Id: ex11f.F,v 1.28 2001/01/15 21:47:36 bsmith Exp balay $";
 !
 !/*T
 !  Concepts: SLES^solving a Helmholtz equation
@@ -123,7 +123,8 @@
 !     appropriate processor during matrix assembly). 
 !   - Always specify global rows and columns of matrix entries.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-norandom',flg,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-norandom',        &
+     &     flg,ierr)
       if (flg .eq. 1) then
          use_random = .false.
          sigma2 = 10.0*PETSC_i

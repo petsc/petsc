@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.49 2001/01/19 23:20:21 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.50 2001/01/22 23:03:27 bsmith Exp balay $*/
 
 static char help[] = "Parallel vector layout.\n\n";
 
@@ -78,7 +78,7 @@ int main(int argc,char **argv)
 
   */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,PETSC_NULL,0,0,300,300,&viewer);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)viewer,,"Line graph Plot");CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)viewer,"Line graph Plot");CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_DRAW_LG);CHKERRQ(ierr);
   /*
      View the vector

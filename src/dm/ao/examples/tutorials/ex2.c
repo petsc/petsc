@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.33 2001/01/16 18:21:07 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.34 2001/01/17 22:27:34 bsmith Exp balay $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\
@@ -75,7 +75,7 @@ typedef struct {
   int    n_vert,n_ele;
   int    mlocal_vert,mlocal_ele;
   int    *ele;
-  double *vert;
+  Scalar *vert;
   int    *ia,*ja;
   IS     isnewproc;
   int    *localvert,nlocal; /* used to stash temporarily old global vertex number of new vertex */
@@ -534,7 +534,7 @@ int DataMoveElements(GridData *gdata)
   ierr = PetscMalloc(3*gdata->mlocal_ele*sizeof(int),&gdata->ele);CHKERRQ(ierr);
   ierr = VecGetArray(vele,&array);CHKERRQ(ierr);
   for (i=0; i<3*gdata->mlocal_ele; i++) {
-    gdata->ele[i] = (int)array[i];
+    gdata->ele[i] = (int)PetscReal(array[i]);
   }
   ierr = VecRestoreArray(vele,&array);CHKERRQ(ierr);
   ierr = VecDestroy(vele);CHKERRQ(ierr);
