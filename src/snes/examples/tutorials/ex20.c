@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.4 2000/09/08 17:48:55 bsmith Exp bsmith $ */
+/* $Id: ex20.c,v 1.5 2000/09/22 20:46:14 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -106,24 +106,26 @@ int main(int argc,char **argv)
   user.beta   = 2.5; 
   user.bm1    = 1.5; 
   user.coef   = 1.25;
-  ierr = OptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL);CHKERRA(ierr);
-
   /* set number of levels and grid size on coarsest level */
   user.ratio      = 2;
   user.nlevels    = 2;
   mx              = 5; 
   my              = 5; 
   mz              = 5; 
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&user.nlevels,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flag);CHKERRA(ierr);
+
+  ierr = OptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Application options","None");
+  ierr = OptionsDouble("-tleft","left value","Manualpage",user.tleft,&user.tleft,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsDouble("-tright","right value","Manualpage",user.tright,&user.tright,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsDouble("-beta","beta","Manualpage",user.beta,&user.beta,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsDouble("-bm1","bm1","Manualpage",user.bm1,&user.bm1,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsDouble("-coef","coefficient","Manualpage",user.coef,&user.coef,PETSC_NULL);CHKERRA(ierr);
+
+  ierr = OptionsInt("-ratio","grid ration","Manualpage",user.ratio,&user.ratio,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsInt("-nlevels","number levels","Manualpage",user.nlevels,&user.nlevels,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsInt("-mx","grid points in x","Manualpage",mx,&mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsInt("-my","grid points in y","Manualpage",my,&my,&flag);CHKERRA(ierr);
   if (!flag) { my = mx;}
-  ierr = OptionsGetInt(PETSC_NULL,"-mz",&mz,&flag);CHKERRA(ierr);
+  ierr = OptionsInt("-mz","grid points in z","Manualpage",mz,&mz,&flag);CHKERRA(ierr);
   if (!flag) { mz = mx;}
 
   /* Set grid size for all finer levels */
@@ -131,9 +133,10 @@ int main(int argc,char **argv)
   }
 
   /* set partitioning of domains accross processors */
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Nz",&Nz,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsInt("-Nx","Nx","Manualpage",Nx,&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsInt("-Ny","Ny","Manualpage",Ny,&Ny,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsInt("-Nz","Nz","Manualpage",Nz,&Nz,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsEnd();
 
   /* Set up distributed array for each level */
   for (i=0; i<user.nlevels; i++) {
