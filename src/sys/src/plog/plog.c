@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.27 1995/08/05 20:55:34 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.28 1995/08/06 17:40:41 curfman Exp curfman $";
 #endif
 
 #include "ptscimpl.h"    /*I "petsc.h"  I*/
@@ -343,16 +343,19 @@ $
 @ */
 int PLogDestroy()
 {
+  /* Destroying phase */
   if (objects) {PETSCFREE(objects); objects = 0;}
   if (events)  {PETSCFREE(events); events = 0;}
+  _PHC             = 0;
+  _PHD             = 0;
+
+  /* Resetting phase */
   PETSCMEMSET(EventsType,0,sizeof(EventsType));
   PETSCMEMSET(ObjectsType,0,sizeof(ObjectsType));
   _TotalFlops      = 0;
   nobjects         = 0;
   nevents          = 0;
   ObjectsDestroyed = 0;
-  _PHC             = 0;
-  _PHD             = 0;
   return 0;
 }
 
