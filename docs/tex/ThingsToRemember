@@ -57,7 +57,6 @@ PETScView info:
 
 ------------Accounts (around the world and around the block) -----
 
-   Freebsd in MCS homer, snowy
 
 LLNL: unsecure
 
@@ -74,7 +73,8 @@ MCS:
 1. mcs network 
     Solaris machines: caffeine,tiamat,dew
     DEC Alpha: ptera,dactile
-    Linux    : butthead
+    Linux    : timewalk,raist,flight
+    Freebsd  : homer, snowy
 2. ccsthome  (quad)
 3. sphome    (bonnie/clyde)
 4. Cave Lab  (alaska)
