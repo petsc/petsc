@@ -1,7 +1,7 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      = $(PCONF) $(PETSC_INCLUDE) $(BS_INCLUDE)
+CFLAGS	      =   $(CPPFLAGS) -I.. -D__DIR__='"$(LOCDIR)"' $(BS_INCLUDE)
 FFLAGS	      = 
 SOURCEC	      = 
 SOURCEF	      =
@@ -9,6 +9,7 @@ SOURCEH	      = pargrid.h
 OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscsles
+LOCDIR        = src/slesexamples/
 EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex8 ex19
 RUNEXAMPLES_1 = runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
 		runex2 runex2_2 runex2_3 runex2_4 runex2_5\

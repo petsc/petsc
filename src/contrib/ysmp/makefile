@@ -1,8 +1,8 @@
 PETSC_DIR = ../../../
 ALL: ex1
 
-CFLAGS    = $(PCONF) $(PETSC_INCLUDE) -I$(PETSC_DIR)/src/mat \
-            -I$(PETSC_DIR)/src/mat/impls/aij/seq
+CFLAGS    = $(CPPFLAGS) -I.. $(CONF) -D__DIR__='"$(LOCDIR)"' \
+	    -I$(PETSC_DIR)/src/mat -I$(PETSC_DIR)/src/mat/impls/aij/seq
 SOURCEC   = 
 SOURCEF   =
 WSOURCEC  = 
@@ -11,6 +11,7 @@ OBJSC     =
 WOBJS     = 
 OBJSF     =
 LIBBASE   = libpetscsles
+LOCDIR    = src/contrib/ysmp/
 EXAMPLES  = ex1
 EXAMPLESC = ex1.c
 LINCLUDE  = $(SOURCEH)
