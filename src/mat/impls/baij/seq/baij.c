@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.3 1996/02/13 23:29:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.4 1996/02/17 05:41:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -51,11 +51,11 @@ static int MatGetReordering_SeqBAIJ(Mat A,MatOrdering type,IS *rperm,IS *cperm)
 int MatMarkDiag_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data; 
-  int         i,j, *diag, m = a->m;
+  int         i,j, *diag, m = a->mbs;
 
   diag = (int *) PetscMalloc( (m+1)*sizeof(int)); CHKPTRQ(diag);
   PLogObjectMemory(A,(m+1)*sizeof(int));
-  for ( i=0; i<a->m; i++ ) {
+  for ( i=0; i<m; i++ ) {
     for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
       if (a->j[j] == i) {
         diag[i] = j;
@@ -366,9 +366,14 @@ static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,int *nz,int *nza,int *mem)
 }
 
 extern int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,double,Mat*);
-extern int MatLUFactorNumeric_SeqBAIJ(Mat,Mat*);
 extern int MatLUFactor_SeqBAIJ(Mat,IS,IS,double);
 extern int MatSolve_SeqBAIJ(Mat,Vec,Vec);
+extern int MatLUFactorNumeric_SeqBAIJ_N(Mat,Mat*);
+extern int MatLUFactorNumeric_SeqBAIJ_1(Mat,Mat*);
+extern int MatLUFactorNumeric_SeqBAIJ_2(Mat,Mat*);
+extern int MatLUFactorNumeric_SeqBAIJ_3(Mat,Mat*);
+extern int MatLUFactorNumeric_SeqBAIJ_4(Mat,Mat*);
+extern int MatLUFactorNumeric_SeqBAIJ_5(Mat,Mat*);
 
 static int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
 {
@@ -429,7 +434,7 @@ static int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
   if (!a->diag) {
     ierr = MatMarkDiag_SeqBAIJ(inA); CHKERRQ(ierr);
   }
-  ierr = MatLUFactorNumeric_SeqBAIJ(inA,&outA); CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(inA,&outA); CHKERRQ(ierr);
   return 0;
 }
 
@@ -445,7 +450,6 @@ static int MatScale_SeqBAIJ(Scalar *alpha,Mat inA)
 int MatPrintHelp_SeqBAIJ(Mat A)
 {
   static int called = 0; 
-  MPI_Comm   comm = A->comm;
 
   if (called) return 0; else called = 1;
   return 0;
@@ -466,7 +470,7 @@ static struct _MatOps MatOps = {0,
        0,
        MatSetOption_SeqBAIJ,MatZeroEntries_SeqBAIJ,0,
        MatGetReordering_SeqBAIJ,
-       MatLUFactorSymbolic_SeqBAIJ,MatLUFactorNumeric_SeqBAIJ,0,0,
+       MatLUFactorSymbolic_SeqBAIJ,MatLUFactorNumeric_SeqBAIJ_N,0,0,
        MatGetSize_SeqBAIJ,MatGetSize_SeqBAIJ,MatGetOwnershipRange_SeqBAIJ,
        MatILUFactorSymbolic_SeqBAIJ,0,
        0,0,/*MatConvert_SeqBAIJ*/ 0,
@@ -523,6 +527,11 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(b);
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  switch (bs) {
+    case 1:
+      B->ops.lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
+    break;
+  }
   B->destroy          = MatDestroy_SeqBAIJ;
   B->view             = MatView_SeqBAIJ;
   B->factor           = 0;
@@ -647,7 +656,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   c->maxnz              = a->maxnz;
   c->solve_work         = 0;
   c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
-
+  c->mult_work          = 0;
   *B = C;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.2 1996/02/15 04:38:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.3 1996/02/17 05:41:36 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -166,7 +166,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   BLgemm_("N","N",&bs,&bs,&bs,&_DMOne,v1,&bs,v2+bs2*idx2,&bs,&_DOne,v3+bs2*idx3,&bs);} 
 
 /* ----------------------------------------------------------- */
-int MatLUFactorNumeric_SeqBAIJ(Mat A,Mat *B)
+int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data, *b = (Mat_SeqBAIJ *)C->data;
@@ -234,6 +234,76 @@ int MatLUFactorNumeric_SeqBAIJ(Mat A,Mat *B)
   PLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */
   return 0;
 }
+
+/* ----------------------------------------------------------- */
+/*
+     Version for when blocks are 1 by 1.
+*/
+int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
+{
+  Mat         C = *B;
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data, *b = (Mat_SeqBAIJ *)C->data;
+  IS          iscol = b->col, isrow = b->row, isicol;
+  int         *r,*ic, ierr, i, j, n = a->mbs, *ai = b->i, *aj = b->j;
+  int         *ajtmpold, *ajtmp, nz, row;
+  int         *diag_offset = b->diag,diag;
+  register Scalar *pv,*v,*rtmp,multiplier,*pc;
+  register int    *pj;
+
+  ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+  PLogObjectParent(*B,isicol);
+  ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
+  rtmp  = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));CHKPTRQ(rtmp);
+
+  for ( i=0; i<n; i++ ) {
+    nz    = ai[i+1] - ai[i];
+    ajtmp = aj + ai[i];
+    for  ( j=0; j<nz; j++ ) rtmp[ajtmp[j]] = 0.0;
+
+    /* load in initial (unfactored row) */
+    nz       = a->i[r[i]+1] - a->i[r[i]];
+    ajtmpold = a->j + a->i[r[i]];
+    v        = a->a + a->i[r[i]];
+    for ( j=0; j<nz; j++ ) rtmp[ic[ajtmpold[j]]] =  v[j];
+
+    row = *ajtmp++;
+    while (row < i) {
+      pc = rtmp + row;
+      if (*pc != 0.0) {
+        pv         = b->a + diag_offset[row];
+        pj         = b->j + diag_offset[row] + 1;
+        multiplier = *pc * *pv++;
+        *pc        = multiplier;
+        nz         = ai[row+1] - diag_offset[row] - 1;
+        for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
+        PLogFlops(2*nz);
+      }
+      row = *ajtmp++;
+    }
+    /* finished row so stick it into b->a */
+    pv = b->a + ai[i];
+    pj = b->j + ai[i];
+    nz = ai[i+1] - ai[i];
+    for ( j=0; j<nz; j++ ) {pv[j] = rtmp[pj[j]];}
+    diag = diag_offset[i] - ai[i];
+    /* check pivot entry for current row */
+    if (pv[diag] == 0.0) {
+      SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");
+    }
+    pv[diag] = 1.0/pv[diag];
+  }
+
+  PetscFree(rtmp);
+  ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISDestroy(isicol); CHKERRQ(ierr);
+  C->factor    = FACTOR_LU;
+  C->assembled = PETSC_TRUE;
+  PLogFlops(b->n);
+  return 0;
+}
+
 /* ----------------------------------------------------------- */
 int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
 {
@@ -242,7 +312,7 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   Mat         C;
 
   ierr = MatLUFactorSymbolic_SeqBAIJ(A,row,col,f,&C); CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric_SeqBAIJ(A,&C); CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(A,&C); CHKERRQ(ierr);
 
   /* free all the data structures from mat */
   PetscFree(mat->a); 
