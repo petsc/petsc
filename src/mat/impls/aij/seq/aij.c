@@ -1,10 +1,10 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.176 1996/07/03 13:51:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.177 1996/07/08 22:19:12 bsmith Exp balay $";
 #endif
 
 /*
-    Defines the basic matrix operations for the AIJ (compressed row)
+B    Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.
 */
 #include "aij.h"
@@ -1250,6 +1250,12 @@ static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatr
   return 0;
 }
 
+static int MatGetBlockSize_SeqAIJ(Mat A, int *bs)
+{
+  *bs = 1;
+  return 0;
+}
+
 static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
@@ -1345,7 +1351,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ,0,
        MatPrintHelp_SeqAIJ,
-       MatScale_SeqAIJ,0,0,MatILUDTFactor_SeqAIJ};
+       MatScale_SeqAIJ,0,0,
+       MatILUDTFactor_SeqAIJ,MatGetBlockSize_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);

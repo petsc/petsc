@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.58 1996/04/07 22:47:28 curfman Exp bsmith $ */
+/* $Id: matimpl.h,v 1.59 1996/07/02 18:06:05 bsmith Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -11,9 +11,9 @@
 
 /* matrix operations */
 struct _MatOps {
-  int       (*setvalues)(Mat,int,int*,int,int*,Scalar*,InsertMode),
-            (*getrow)(Mat,int,int*,int**,Scalar**),
-            (*restorerow)(Mat,int,int*,int**,Scalar**),
+  int       (*setvalues)(Mat,int,int *,int,int *,Scalar *,InsertMode),
+            (*getrow)(Mat,int,int *,int **,Scalar **),
+            (*restorerow)(Mat,int,int *,int **,Scalar **),
             (*mult)(Mat,Vec,Vec),
             (*multadd)(Mat,Vec,Vec,Vec),
             (*multtrans)(Mat,Vec,Vec),
@@ -25,32 +25,32 @@ struct _MatOps {
             (*lufactor)(Mat,IS,IS,double),
             (*choleskyfactor)(Mat,IS,double),
             (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),
-            (*transpose)(Mat,Mat*),
-            (*getinfo)(Mat,MatInfoType,int*,int*,int*),
-            (*equal)(Mat,Mat,PetscTruth*),
+            (*transpose)(Mat,Mat *),
+            (*getinfo)(Mat,MatInfoType,int *,int *,int *),
+            (*equal)(Mat,Mat,PetscTruth *),
             (*getdiagonal)(Mat,Vec),
             (*diagonalscale)(Mat,Vec,Vec),
-            (*norm)(Mat,NormType,double*),
+            (*norm)(Mat,NormType,double *),
             (*assemblybegin)(Mat,MatAssemblyType),
             (*assemblyend)(Mat,MatAssemblyType),
             (*compress)(Mat),
             (*setoption)(Mat,MatOption),
             (*zeroentries)(Mat),
             (*zerorows)(Mat,IS,Scalar *),
-            (*getreordering)(Mat,MatReordering,IS*,IS*),
+            (*getreordering)(Mat,MatReordering,IS *,IS *),
             (*lufactorsymbolic)(Mat,IS,IS,double,Mat *),
-            (*lufactornumeric)(Mat,Mat* ),
+            (*lufactornumeric)(Mat,Mat *),
             (*choleskyfactorsymbolic)(Mat,IS,double,Mat *),
-            (*choleskyfactornumeric)(Mat,Mat* ),
-            (*getsize)(Mat,int*,int*),
-            (*getlocalsize)(Mat,int*,int*),
-            (*getownershiprange)(Mat,int*,int*),
+            (*choleskyfactornumeric)(Mat,Mat *),
+            (*getsize)(Mat,int *,int *),
+            (*getlocalsize)(Mat,int *,int *),
+            (*getownershiprange)(Mat,int *,int *),
             (*ilufactorsymbolic)(Mat,IS,IS,double,int,Mat *),
             (*incompletecholeskyfactorsymbolic)(Mat,IS,double,int,Mat *),
             (*getarray)(Mat,Scalar **),
             (*restorearray)(Mat,Scalar **),
             (*convert)(Mat,MatType,Mat *),
-            (*getsubmatrix)(Mat,IS,IS,MatGetSubMatrixCall,Mat*),
+            (*getsubmatrix)(Mat,IS,IS,MatGetSubMatrixCall,Mat *),
             (*getsubmatrixinplace)(Mat,IS,IS),
             (*convertsametype)(Mat,Mat *,int),
             (*forwardsolve)(Mat,Vec,Vec),
@@ -60,13 +60,14 @@ struct _MatOps {
             (*axpy)(Scalar *,Mat,Mat),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
-            (*getvalues)(Mat,int,int*,int,int*,Scalar*),
+            (*getvalues)(Mat,int,int *,int,int *,Scalar *),
             (*copy)(Mat,Mat),
             (*printhelp)(Mat),
             (*scale)(Scalar *,Mat),
             (*shift)(Scalar *,Mat),
             (*diagonalshift)(Vec,Mat),
-            (*iludtfactor)(Mat,double,int,IS,IS,Mat *);
+            (*iludtfactor)(Mat,double,int,IS,IS,Mat *),
+            (*getblocksize)(Mat,int *);
 };
 
 #define FACTOR_LU       1

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.57 1996/07/09 17:06:28 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.58 1996/07/10 14:56:44 balay Exp balay $";
 #endif
 
 /*
@@ -1457,6 +1457,13 @@ static int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
   return 0;
 } 
 
+static int MatGetBlockSize_SeqBAIJ(Mat mat, int *bs)
+{
+  Mat_SeqBAIJ *baij = (Mat_SeqBAIJ *) mat->data;
+  *bs = baij->bs;
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
@@ -1483,7 +1490,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetSubMatrices_SeqBAIJ,MatIncreaseOverlap_SeqBAIJ,
        MatGetValues_SeqBAIJ,0,
        0,MatScale_SeqBAIJ,
-       0};
+       0,0,0,MatGetBlockSize_SeqBAIJ};
 
 /*@C
    MatCreateSeqBAIJ - Creates a sparse matrix in block AIJ (block

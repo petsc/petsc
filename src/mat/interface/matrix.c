@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.178 1996/07/08 22:18:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.179 1996/07/10 01:49:52 bsmith Exp balay $";
 #endif
 
 /*
@@ -1864,3 +1864,24 @@ int MatPrintHelp(Mat mat)
   return 0;
 }
 
+/*@
+   MatGetBlockSize - Returns the block size. useful especially for
+    MATBAIJ, MATBDIAG formats
+   
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
+.  bs - block size
+
+.keywords: mat, block, size 
+
+.seealso: MatCreateXXXBAIJ()
+@*/
+int MatGetBlockSize(Mat mat,int *bs)
+{
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!mat->ops.getblocksize) SETERRQ(PETSC_ERR_SUP,"MatGetBlockSize");
+  return (*mat->ops.getblocksize)(mat,bs);
+}

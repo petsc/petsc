@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.11 1996/07/08 12:45:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.12 1996/07/08 22:20:04 bsmith Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -723,6 +723,13 @@ int MatRestoreRow_MPIBAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
   return 0;
 }
 
+static int MatGetBlockSize_MPIBAIJ(Mat mat, int *bs)
+{
+  Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
+  *bs = baij->bs;
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {
   MatSetValues_MPIBAIJ,MatGetRow_MPIBAIJ,MatRestoreRow_MPIBAIJ,MatMult_MPIBAIJ,
@@ -738,7 +745,7 @@ static struct _MatOps MatOps = {
   0,0,0,0,
   0,0,0,MatGetSubMatrices_MPIBAIJ,
   MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,0,
-  MatScale_MPIBAIJ,0,0};
+  MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ};
                                 
 
 /*@C

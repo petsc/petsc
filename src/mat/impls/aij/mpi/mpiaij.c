@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.152 1996/07/08 12:42:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.153 1996/07/08 22:19:18 bsmith Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -1338,6 +1338,12 @@ static int MatPrintHelp_MPIAIJ(Mat A)
   else return 0;
 }
 
+static int MatGetBlockSize_MPIAIJ(Mat A,int *bs)
+{
+  *bs = 1;
+  return 0;
+}
+
 extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
 static int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
 extern int MatIncreaseOverlap_MPIAIJ(Mat , int, IS *, int);
@@ -1365,7 +1371,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        0,0,0,
        MatGetSubMatrices_MPIAIJ,MatIncreaseOverlap_MPIAIJ,MatGetValues_MPIAIJ,0,
        MatPrintHelp_MPIAIJ,
-       MatScale_MPIAIJ};
+       MatScale_MPIAIJ,0,0,0,MatGetBlockSize_MPIAIJ};
 
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
