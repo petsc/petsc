@@ -14,9 +14,31 @@ set RSH='ssh -1'
 set RCP='scp -q -B -oProtocol=1'
 set CONFIGURE='no'
 
-source /sandbox/petsc/petsc-test/bmake/$1/buildtest
+set dir=`dirname $0`
+source $dir/buildtests/$1
+set dir=`dirname $dir`
 
-set EJOBS=`grep PETSC_HAVE_ /sandbox/petsc/petsc-test/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
+
+#
+set RSYNC_DIR=$TMP
+
+rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete $dir/* ${MACH}:$RSYNC_DIR
+# should delete all previously build libraries
+
+
+$RSH $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
+
+$RSH $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
+
+# Run Configure
+if ("${CONFIGURE}" == "yes") then
+  $RSH $MACH -n "cd $TMP; config/configure_$ARCH.py $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
+  $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
+  $RCP ${MACH}:$TMP/configure.log /home/petsc/logs/nightly/configure__$ARCH.$BOPT.$MACH.log
+endif
+
+#  Get the list of packages installed on the machine WHERE THE BUILD IS HAPPENING
+set EJOBS=`$RSH $MACH -n grep PETSC_HAVE_ $TMP/bmake/$1/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
 
 if ("${BOPT}" == "g_complex") then
   set EJOBS=""
@@ -24,34 +46,13 @@ endif
 if ("${BOPT}" == "O_complex") then
   set EJOBS=""
 endif
-#
-set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
-rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR
-# rsync -C does not clear lib - so do this separately
-rsync -z -e "$RSH" -r --exclude=BitKeeper --delete /sandbox/petsc/petsc-test/lib ${MACH}:$RSYNC_DIR/lib
-
-
-#$RSH $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
-$RSH $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
-
-$RSH $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-
-# Run Configure
-if ("${CONFIGURE}" == "yes") then
-  #$RSH $MACH -n "rm -f $TMP/configure.log" >& /dev/null
-  $RSH $MACH -n "cd $TMP; config/configure_$ARCH.py $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-  $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-  #$RSH $MACH -n "cd $TMP; cat configure.log $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-  #$RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-  $RCP ${MACH}:$TMP/configure.log /home/petsc/logs/nightly/configure__$ARCH.$BOPT.$MACH.log
-endif
 
 $RSH $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 
 $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-$RCP ${MACH}:$TMP/maint/build_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly
-chmod a+r /home/petsc/logs/nightly/build_$ARCH.$BOPT.$MACH.log
+$RCP ${MACH}:$TMP/maint/build_$ARCH.$BOPT.$MACH.log petsc@shakey.mcs.anl.gov:/home/petsc/logs/nightly
+$RSH petsc@shakey.mcs.anl.gov -n chmod ugo+r /home/petsc/logs/nightly/*
 $RSH $MACH -n "cd $TMP;chmod -R g+w lib" >& /dev/null
 #
 #  Now run the test examples
