@@ -1,7 +1,8 @@
-/*$Id: zstartf.c,v 1.32 2001/04/09 19:46:20 balay Exp balay $*/
+/*$Id: zstartf.c,v 1.33 2001/08/10 16:50:45 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h" 
 #include "petscsys.h"
+
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
