@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.113 2001/01/15 21:46:44 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.114 2001/01/29 19:25:52 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -14,9 +14,28 @@
 extern PetscFList PCList;
 typedef char *PCType;
 
-/*
-    Standard PETSc preconditioners
-*/
+
+#define PC_COOKIE     PETSC_COOKIE+9
+/*S
+     PC - Abstract PETSc object that manages all preconditioners
+
+   Level: beginner
+
+  Concepts: preconditioners
+
+.seealso:  PCCreate(), PCSetType(), PCType
+S*/
+typedef struct _p_PC* PC;
+
+/*E
+    PCType - String with the name of a PETSc preconditioner method or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:mypccreate()
+
+   Level: beginner
+
+.seealso: PCSetType(), PC
+E*/
 #define PCNONE      "none"
 #define PCJACOBI    "jacobi"
 #define PCSOR       "sor"
@@ -37,10 +56,14 @@ typedef char *PCType;
 #define PCCHOLESKY  "cholesky"
 #define PCRAMG      "ramg"
 
-typedef struct _p_PC* PC;
-#define PC_COOKIE     PETSC_COOKIE+9
+/*E
+    PCSide - If the preconditioner is to be applied to the left, right
+     or symmetrically around the operator.
 
+   Level: beginner
 
+.seealso: 
+E*/
 typedef enum { PC_LEFT,PC_RIGHT,PC_SYMMETRIC } PCSide;
 
 EXTERN int PCCreate(MPI_Comm,PC*);
@@ -96,8 +119,9 @@ EXTERN int PCComputeExplicitOperator(PC,Mat*);
    operator for time-stepping schemes like in PVODE 
 */
 EXTERN int PCDiagonalScale(PC,PetscTruth*);
-EXTERN int PCDiagonalScaleleft(PC,Vec);
-EXTERN int PCDiagonalScaleRight(PC,Vec);
+EXTERN int PCDiagonalScaleLeft(PC,Vec,Vec);
+EXTERN int PCDiagonalScaleRight(PC,Vec,Vec);
+EXTERN int PCDiagonalScaleSet(PC,Vec);
 
 /* ------------- options specific to particular preconditioners --------- */
 
@@ -156,12 +180,43 @@ EXTERN int PCICCSetLevels(PC,int);
 EXTERN int PCASMSetLocalSubdomains(PC,int,IS *);
 EXTERN int PCASMSetTotalSubdomains(PC,int,IS *);
 EXTERN int PCASMSetOverlap(PC,int);
+/*E
+    PCASMType - Type of additive Schwarz method to use
+
+$  PC_ASM_BASIC - symmetric version where residuals from the ghost points are used
+$                 and computed values in ghost regions are added together. Classical
+$                 standard additive Schwarz
+$  PC_ASM_RESTRICT - residuals from ghost points are used but computed values in ghost
+$                    region are discarded. Default
+$  PC_ASM_INTERPOLATE - residuals from ghost points are not used, computed values in ghost
+$                       region are added back in
+$  PC_ASM_NONE - ghost point residuals are not used, computed ghost values are discarded
+$                not very good.                
+
+   Level: beginner
+
+.seealso: PCASMSetType()
+E*/
 typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
 EXTERN int PCASMSetType(PC,PCASMType);
 EXTERN int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 EXTERN int PCASMSetUseInPlace(PC);
 EXTERN int PCASMGetLocalSubdomains(PC,int*,IS**);
 
+/*E
+    PCCompositeType - Determines how two or more preconditioner are composed
+
+$  PC_COMPOSITE_ADDITIVE - results from application of all preconditioners are added together
+$  PC_COMPOSITE_MULTIPLICATIVE - preconditioners are applied sequentially to the residual freshly
+$                                computed after the previous preconditioner application
+$  PC_COMPOSITE_SPECIAL - This is very special for a matrix of the form alpha I + R + S
+$                         where first preconditioner is built from alpha I + S and second from
+$                         alpha I + R
+
+   Level: beginner
+
+.seealso: PCCompositeSetType()
+E*/
 typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE,PC_COMPOSITE_SPECIAL} PCCompositeType;
 EXTERN int PCCompositeSetType(PC,PCCompositeType);
 EXTERN int PCCompositeAddPC(PC,PCType);
