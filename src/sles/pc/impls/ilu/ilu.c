@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.65 1996/03/24 16:05:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.66 1996/03/31 16:50:30 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -25,6 +25,82 @@ static int (*setups[])(PC) = {0,
                               0,   
                               0,
                               0,0,0,0,0};
+
+/*@
+   PCILUSetUseDropTolerance - The preconditioner will use a ILU 
+     based on a drop tolerance.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  dt - the drop tolerance
+.  dtcount - the max number of nonzeros allowed in a row?
+
+   Options Database Key:
+$  -pc_ilu_use_drop_tolerance <dt,dtcount>
+
+.keywords: PC, levels, reordering, factorization, incomplete, ILU
+
+@*/
+int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
+{
+  PC_ILU *ilu;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCILU) return 0;
+  ilu = (PC_ILU *) pc->data;
+  ilu->usedt    = 1;
+  ilu->dt       = dt;
+  ilu->dtcount  = dtcount;
+  return 0;
+}  
+
+/*@
+   PCILUSetReuseReordering - When similar matrices are are factored this
+      causes the ordering computed in the first factor to be used for all
+      following factors; applies to both fill and drop tolerance ILUs.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  flag - PETSC_TRUE to reuse else PETSC_FALSE
+
+   Options Database Key:
+$  -pc_ilu_reuse_reordering
+
+.keywords: PC, levels, reordering, factorization, incomplete, ILU
+
+@*/
+int PCILUSetReuseReordering(PC pc,PetscTruth flag)
+{
+  PC_ILU *ilu;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCILU) return 0;
+  ilu = (PC_ILU *) pc->data;
+  ilu->reusereordering = (int) flag;
+  return 0;
+}
+
+/*@
+   PCILUSetReuseFill - When matrices with same nonzero structure are ILUDT factored,
+     this causes later ones to use the fill computed in the initial factorization.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  flag - PETSC_TRUE to reuse else PETSC_FALSE
+
+   Options Database Key:
+$  -pc_ilu_reuse_fill
+
+.keywords: PC, levels, reordering, factorization, incomplete, ILU
+
+@*/
+int PCILUSetReuseFill(PC pc,PetscTruth flag)
+{
+  PC_ILU *ilu;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCILU) return 0;
+  ilu = (PC_ILU *) pc->data;
+  ilu->reusefill = (int) flag;
+  return 0;
+}
 
 /*@
    PCILUSetLevels - Sets the number of levels of fill to use.
@@ -83,14 +159,31 @@ int PCILUSetUseInPlace(PC pc)
 
 static int PCSetFromOptions_ILU(PC pc)
 {
-  int         levels,ierr,flg;
+  int         levels,ierr,flg,dtmax = 2;
+  double      dt[2];
   ierr = OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels,&flg); CHKERRQ(ierr);
   if (flg) {
-    PCILUSetLevels(pc,levels);
+    ierr = PCILUSetLevels(pc,levels); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(pc->prefix,"-pc_ilu_in_place",&flg); CHKERRQ(ierr);
   if (flg) {
-    PCILUSetUseInPlace(pc);
+    ierr = PCILUSetUseInPlace(pc); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(pc->prefix,"-pc_ilu_reuse_fill",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCILUSetReuseFill(pc,PETSC_TRUE); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(pc->prefix,"-pc_ilu_reuse_reordering",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCILUSetReuseReordering(pc,PETSC_TRUE); CHKERRQ(ierr);
+  }
+  ierr = OptionsGetDoubleArray(pc->prefix,"-pc_ilu_use_drop_tolerance",dt,&dtmax,&flg);
+         CHKERRQ(ierr);
+  if (flg) {
+    if (dtmax != 2) {
+      SETERRQ(1,"PCSetFromOptions_ILU:Bad args to -pc_ilu_use_drop_tolerance");
+    }
+    ierr = PCILUSetUseDropTolerance(pc,dt[0],(int)dt[1]); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -102,9 +195,10 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   PetscPrintf(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);
   PetscPrintf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
-  PetscPrintf(pc->comm," %spc_ilu_factorpointwise: Do NOT use block factorization\n",p);
-  PetscPrintf(pc->comm,"    (Note: This only applies to the MATMPIROWBS matrix format;\n");
-  PetscPrintf(pc->comm,"    all others currently only support point factorization.\n");
+  PetscPrintf(pc->comm," %spc_ilu_factorpointwise:Do NOT use block factorization\n",p);
+  PetscPrintf(pc->comm," %spc_ilu_use_drop_tolerance dt,maxrowcount:   \n",p);
+  PetscPrintf(pc->comm," %spc_ilu_reuse_reordering:                    \n",p);
+  PetscPrintf(pc->comm," %spc_ilu_reuse_fill:                    \n",p);
   return 0;
 }
 
@@ -154,12 +248,41 @@ static int PCSetUp_ILU(PC pc)
     ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,f,ilu->levels); CHKERRQ(ierr);
     ilu->fact = pc->pmat;
   }
-  else {
+  else if (ilu->usedt) {
     if (!pc->setupcalled) {
-      if (ilu->row) {ISDestroy(ilu->row); ISDestroy(ilu->col);}
       ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
-      ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
-      if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
+      ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);
+             CHKERRQ(ierr);
+      PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);
+      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,
+                                   &ilu->fact);CHKERRQ(ierr);
+      PLogObjectParent(pc,ilu->fact);
+    } else if (pc->flag != SAME_NONZERO_PATTERN) { 
+      ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
+      if (!ilu->reusereordering) {
+        ISDestroy(ilu->row); ISDestroy(ilu->col);
+        ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);
+               CHKERRQ(ierr);
+        PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);
+      }
+      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,
+                                   &ilu->fact);CHKERRQ(ierr);
+      PLogObjectParent(pc,ilu->fact);
+    } else if (!ilu->reusefill) { 
+      ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,
+                                   &ilu->fact);CHKERRQ(ierr);
+      PLogObjectParent(pc,ilu->fact);
+    } else {
+      ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact); CHKERRQ(ierr);
+    }
+  } else {
+    if (!pc->setupcalled) {
+      /* first time in so compute reordering and symbolic factorization */
+      ierr = MatGetReorderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
+      ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);
+             CHKERRQ(ierr);
+      PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);
       if (setups[pc->pmat->type]) {
         ierr = (*setups[pc->pmat->type])(pc);
       }
@@ -171,9 +294,13 @@ static int PCSetUp_ILU(PC pc)
       PLogObjectParent(pc,ilu->fact);
     }
     else if (pc->flag != SAME_NONZERO_PATTERN) { 
-      if (ilu->row) {ISDestroy(ilu->row); ISDestroy(ilu->col);}
-      ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
-      if (ilu->row) {PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);}
+      if (!ilu->reusereordering) {
+        /* compute a new ordering for the ILU */
+        ISDestroy(ilu->row); ISDestroy(ilu->col);
+        ierr = MatGetReordering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);
+               CHKERRQ(ierr);
+        PLogObjectParent(pc,ilu->row); PLogObjectParent(pc,ilu->col);
+      }
       ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,2.0,ilu->levels,
                                   &ilu->fact); CHKERRQ(ierr);
