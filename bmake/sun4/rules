@@ -1,7 +1,7 @@
 #
 #
 #  If you are not using the Gnu C compiler then replace the compiler name 
-# gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__.
+# gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__ and the -fPIC.
 #
 CC       = gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__ -fPIC
 FC       = f77
