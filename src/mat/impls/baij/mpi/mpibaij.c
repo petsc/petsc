@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.8 1996/07/02 19:50:37 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.9 1996/07/05 19:55:05 balay Exp curfman $";
 #endif
 
 #include "mpibaij.h"
@@ -747,20 +747,24 @@ static struct _MatOps MatOps = {
 .  comm - MPI communicator
 .  bs   - size of blockk
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
-.  n - number of local columns (or PETSC_DECIDE to have calculated 
-           if N is given)
+           This value should be the same as the local size used in creating the 
+           y vector for the matrix-vector product y = Ax.
+.  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
+           This value should be the same as the local size used in creating the 
+           x vector for the matrix-vector product y = Ax.
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DECIDE to have calculated 
-           if n is given)
+.  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local 
            submatrix  (same for all local rows)
-.  d_nzz - number of block nonzeros per block row in diagonal portion of local 
-           submatrix or null (possibly different for each row).  You must leave 
-           room for the diagonal entry even if it is zero.
-.  o_nz  - number of block nonzeros per block row in off-diagonal portion of local
+.  d_nzz - array containing the number of block nonzeros in the various block rows 
+           of the in diagonal portion of the local (possibly different for each block
+           row) or PETSC_NULL.  You must leave room for the diagonal entry even if
+           it is zero.
+.  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
-.  o_nzz - number of block nonzeros per block row in off-diagonal portion of local 
-           submatrix or null (possibly different for each row).
+.  o_nzz - array containing the number of nonzeros in the various block rows of the
+           off-diagonal portion of the local submatrix (possibly different for
+           each block row) or PETSC_NULL.
 
    Output Parameter:
 .  A - the matrix 
@@ -800,10 +804,11 @@ $
    Now d_nz should indicate the number of nonzeros per row in the d matrix,
    and o_nz should indicate the number of nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects d_nz >> o_nz.   For additional details, see the users manual
-   chapter on matrices and the file $(PETSC_DIR)/Performance.
+   one expects d_nz >> o_nz.   For large problems you MUST preallocate memory
+   or you will get TERRIBLE performance; see the users' manual chapter on
+   matrices and the file $(PETSC_DIR)/Performance.
 
-.keywords: matrix, aij, compressed row, sparse, parallel
+.keywords: matrix, block, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqBAIJ(), MatSetValues()
 @*/

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.149 1996/07/02 18:06:22 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.150 1996/07/05 19:19:25 balay Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1380,19 +1380,17 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
    Input Parameters:
 .  comm - MPI communicator
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
-.      This should be the same as the local size used in creating the 
-.      y vector in y = Ax
-.  n - number of local columns (or PETSC_DECIDE to have calculated 
-           if N is given)
-.      This should be the same as the local size used in creating the 
-.      x vector in y = Ax
+           This value should be the same as the local size used in creating the 
+           y vector for the matrix-vector product y = Ax.
+.  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
+           This value should be the same as the local size used in creating the 
+           x vector for the matrix-vector product y = Ax.
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DECIDE to have calculated 
-           if n is given)
+.  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
 .  d_nz - number of nonzeros per row in diagonal portion of local submatrix
            (same for all local rows)
 .  d_nzz - array containing the number of nonzeros in the various rows of the 
-           diagonal portion of local submatrix (possibly different for each row)
+           diagonal portion of the local submatrix (possibly different for each row)
            or PETSC_NULL. You must leave room for the diagonal entry even if
            it is zero.
 .  o_nz - number of nonzeros per row in the off-diagonal portion of local
@@ -1457,7 +1455,7 @@ $
    and o_nz should indicate the number of nonzeros per row in the o matrix.
    In general, for PDE problems in which most nonzeros are near the diagonal,
    one expects d_nz >> o_nz. For large problems you MUST preallocate memory
-   or you will get TERRIBLE performance, see the users' manual chapter on
+   or you will get TERRIBLE performance; see the users' manual chapter on
    matrices and the file $(PETSC_DIR)/Performance.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
