@@ -487,7 +487,6 @@ int MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
 
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SuperLU(*M,MATSUPERLU,M);CHKERRQ(ierr);
   ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_SuperLU));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

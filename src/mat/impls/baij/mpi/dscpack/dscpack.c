@@ -727,7 +727,6 @@ int MatDuplicate_DSCPACK(Mat A, MatDuplicateOption op, Mat *M) {
 
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = MatConvert_Base_DSCPACK(*M,MATDSCPACK,M);CHKERRQ(ierr);
   ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_DSC));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
