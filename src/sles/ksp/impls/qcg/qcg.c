@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.36 1997/03/13 03:42:45 curfman Exp balay $";
+static char vcid[] = "$Id: qcg.c,v 1.37 1997/07/09 20:51:09 balay Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -280,7 +280,7 @@ int KSPSetUp_QCG(KSP ksp)
     SETERRQ(2,0,"no left preconditioning for QCG");}
 
   /* Get work vectors from user code */
-  if ((ierr = KSPDefaultGetWork(ksp, 7))) return ierr;
+  ierr = KSPDefaultGetWork(ksp, 7); CHKERRQ(ierr);
   return 0;
 }
 

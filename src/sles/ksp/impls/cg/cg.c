@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.57 1997/03/13 03:42:05 curfman Exp balay $";
+static char vcid[] = "$Id: cg.c,v 1.58 1997/07/09 20:50:32 balay Exp bsmith $";
 #endif
 
 /*                       
@@ -36,7 +36,7 @@ int KSPSetUp_CG(KSP ksp)
     {SETERRQ(2,0,"no symmetric preconditioning for KSPCG");}
 
   /* get work vectors from user code */
-  if ((ierr = KSPDefaultGetWork( ksp, 3 ))) return ierr;
+  ierr = KSPDefaultGetWork( ksp, 3 ); CHKERRQ(ierr);
 
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczo */
