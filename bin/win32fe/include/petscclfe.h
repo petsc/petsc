@@ -1,4 +1,4 @@
-/* $Id: petscclfe.h,v 1.1 2001/03/06 23:57:40 buschelm Exp $ */
+/* $Id: petscclfe.h,v 1.5 2001/03/28 21:04:59 buschelm Exp buschelm $ */
 #ifndef PETScClFE_h
 #define PETScClFE_h
 
@@ -16,6 +16,7 @@ namespace PETScFE {
     virtual void Compile(void);
 
     virtual void FoundD(LI &);
+    virtual void FoundL(LI &);
     virtual void Foundl(LI &);
     virtual void Foundo(LI &);
     virtual void FixFx(void);

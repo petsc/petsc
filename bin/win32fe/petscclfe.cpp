@@ -1,4 +1,4 @@
-/* $Id: petscclfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
+/* $Id: petscclfe.cpp,v 1.7 2001/03/28 21:03:26 buschelm Exp buschelm $ */
 #include <iostream>
 #include <stdlib.h>
 #include "petscclfe.h"
@@ -52,6 +52,14 @@ void cl::FoundD(LI &i) {
   string temp = *i;
   ProtectQuotes(temp);
   compilearg.push_back(temp);  
+}
+
+void cl::FoundL(LI &i) {
+  string temp = i->substr(2);
+  ReplaceSlashWithBackslash(temp);
+  GetShortPath(temp);
+  temp = "-libpath:"+temp;
+  linkarg.push_back(temp);
 }
 
 void cl::Foundl(LI &i) {
