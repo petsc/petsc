@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.40 2000/10/26 15:48:52 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.41 2000/10/30 18:47:39 hzhang Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -919,6 +919,15 @@ extern int MatSolveTranspose_SeqSBAIJ_3(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_2(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_1(Mat,Vec,Vec);
 
+extern int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolve_SeqSBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolve_SeqSBAIJ_5_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolve_SeqSBAIJ_6_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolve_SeqSBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
+extern int MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat,Vec,Vec);
+
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat,Mat*);
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat,Mat*);
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat,Mat*);
@@ -978,8 +987,8 @@ int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,PetscReal fill,int level
   */
   switch (a->bs) {
   case 1:
-    inA->ops->solvetranspose   = MatSolve_SeqSBAIJ_2_NaturalOrdering; /* 2? */
-    PLogInfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
+    inA->ops->solvetranspose   = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+    Ploginfo(inA,"MatIncompleteCholeskyFactor_SeqSBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
   case 2:
     inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_2_NaturalOrdering;
