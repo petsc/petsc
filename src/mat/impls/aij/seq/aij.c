@@ -1787,8 +1787,8 @@ int MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   int               i,ierr,nz,m = A->m,n = A->n,*col;
   int               *row,*cnew,j,*lens;
   IS                icolp,irowp;
-  const int         *cwork;
-  const PetscScalar *vwork;
+  int               *cwork;
+  PetscScalar       *vwork;
 
   PetscFunctionBegin;
   ierr = ISInvertPermutation(rowp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
@@ -1808,10 +1808,10 @@ int MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 
   ierr = PetscMalloc(n*sizeof(int),&cnew);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-    ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+    ierr = MatGetRow_SeqAIJ(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     for (j=0; j<nz; j++) { cnew[j] = col[cwork[j]];}
     ierr = MatSetValues(*B,1,&row[i],nz,cnew,vwork,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqAIJ(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
   }
   ierr = PetscFree(cnew);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

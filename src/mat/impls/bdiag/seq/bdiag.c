@@ -218,19 +218,19 @@ int MatGetBlockSize_SeqBDiag(Mat A,int *bs)
 #define __FUNCT__ "MatZeroRows_SeqBDiag"
 int MatZeroRows_SeqBDiag(Mat A,IS is,const PetscScalar *diag)
 {
-  Mat_SeqBDiag      *a = (Mat_SeqBDiag*)A->data;
-  int               i,ierr,N,*rows,m = A->m - 1,nz;
-  PetscScalar       *dd;
-  const PetscScalar *val;
+  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  int          i,ierr,N,*rows,m = A->m - 1,nz;
+  PetscScalar  *dd;
+  PetscScalar  *val;
 
   PetscFunctionBegin;
   ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     if (rows[i]<0 || rows[i]>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
-    ierr = MatGetRow(A,rows[i],&nz,PETSC_NULL,&val);CHKERRQ(ierr);
+    ierr = MatGetRow_SeqBDiag(A,rows[i],&nz,PETSC_NULL,&val);CHKERRQ(ierr);
     ierr = PetscMemzero((void*)val,nz*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,rows[i],&nz,PETSC_NULL,&val);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqBDiag(A,rows[i],&nz,PETSC_NULL,&val);CHKERRQ(ierr);
   }
   if (diag) {
     if (a->mainbd == -1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Main diagonal does not exist");
@@ -279,7 +279,7 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 
   /* Fill new matrix */
   for (i=0; i<newr; i++) {
-    ierr = MatGetRow(A,irow[i],&nz,&col,&val);CHKERRQ(ierr);
+    ierr = MatGetRow_SeqBDiag(A,irow[i],&nz,&col,&val);CHKERRQ(ierr);
     nznew = 0;
     for (j=0; j<nz; j++) {
       if (smap[col[j]]) {
@@ -288,7 +288,7 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
       }
     }
     ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(A,i,&nz,&col,&val);CHKERRQ(ierr);
+    ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
