@@ -3,6 +3,7 @@
 /* The following functions do the integration over one element to
  compute the  Jacobian, Stiffness, Rhs etc */
 
+/*-----------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "ComputeJacobian"
 
@@ -28,13 +29,13 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
 */
 
   /* could  exploit symmetry to cut down on iterations tohere */
-/* Make a database of integrals of phi_i*phi_j(dx or dy)*phi_k */
+/* Make a database of integrals of phi_i(dx or dy)*phi_j*phi_k */
   for(j=0;j<4;j++){
     for(i=0;i<4;i++){
       for(k=0;k < 4;k++){
 	 dxint[i][j][k] = 0; 
 	 dyint[i][j][k] = 0;
-	for(ii=0;ii<4;ii++){/* loop over basis points */
+	for(ii=0;ii<4;ii++){/* loop over basis gauss points */
 	  dxint[i][j][k] += 
 	    phi->dx[4*i+ii]*phi->Values[j][ii]*phi->Values[k][ii]*
 	    PetscAbsDouble(phi->detDh[ii]);
@@ -48,14 +49,14 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
 
   /* now loop over the columns of the matrix */
   for( k=0;k<4;k++ ){ 
-    /* the terms are u*ux + v*uy and u*vx+v*vy  */
+    /* the terms are u*u_x + v*u_y and u*v_x+v*v_y  */
     for(i = 0;i<4;i++){  
       result[16*k + 2*i] = 0;
       result[16*k + 2*i + 1] = 0;   /* Stuff from Term 1 */
       result[16*k + 8 + 2*i]=0; 
       result[16*k + 8 + 2*i + 1] = 0;  /* Stuff from Term 2 */
       for(j=0;j<4;j++){
-	result[16*k + 2*i] +=   u[j]*dxint[i][j][k] + u[j]*dxint[j][i][k] + v[j]*dyint[j][i][k];
+	result[16*k + 2*i] +=   u[j]*dxint[i][j][k] + u[j]*dxint[j][i][k] + v[j]*dyint[i][j][k];
 	result[16*k+2*i+1] +=   u[j]*dyint[j][i][k];
 
 	result[16*k + 8 + 2*i] += v[j]*dxint[j][i][k];
@@ -66,6 +67,7 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
   PetscFunctionReturn(0);
 }
 
+/*----------------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "ComputeNonlinear"
 /* input is x, output the nonlinear part into f for a particular element */
@@ -108,6 +110,7 @@ Put the result in index k.  Add all possibilities up to get contribution to k, a
    PetscFunctionReturn(0);
 }
 
+/*-----------------------------------------------------------------------*/
 int ComputeRHS( DFP f, DFP g, AppElement *phi, double *integrals){
   int i,j;
   /* need to go over each element , then each variable */
@@ -124,7 +127,11 @@ int ComputeRHS( DFP f, DFP g, AppElement *phi, double *integrals){
 PetscFunctionReturn(0);
 }
 
-/* ComputeMatrix: computes integrals of gradients of local phi_i and phi_j on the given quadrangle by changing variables to the reference quadrangle and reference basis elements phi_i and phi_j.  The formula used is
+/*---------------------------------------------------------------------------- 
+ComputeMatrix: 
+   computes integrals of gradients of local phi_i and phi_j on the given quadrangle 
+by changing variables to the reference quadrangle and reference basis elements phi_i 
+and phi_j.  The formula used is
 
 integral (given element) of <grad phi_j', grad phi_i'> =
 integral over (ref element) of 
@@ -165,7 +172,10 @@ int ComputeMatrix( AppElement *phi, double *result){
 PetscFunctionReturn(0);
 }
 
-/* The following functions set the reference element, and the local element for the quadrature.  Set reference element is called only once, at initialization, while set reference element must be called over each element.  */
+/*-------------------------------------------------------------------------------------- 
+The following functions set the reference element, and the local element for the quadrature.  
+Set reference element is called only once, at initialization, while set reference element 
+must be called over each element.  */
 int AppCtxSetReferenceElement(AppCtx* appctx){
 
   AppElement *phi = &appctx->element;
@@ -202,6 +212,7 @@ PetscFunctionReturn(0);
 }
 
 
+/*-------------------------------------------------------------*/
 int SetLocalElement(AppElement *phi, double *coords)
 {
   int i,j,k;
@@ -213,7 +224,7 @@ int SetLocalElement(AppElement *phi, double *coords)
   /* Could put in a flag to skip computing this when it isn't needed */
 
   /* the image of the reference element is given by sum (coord i)*phi_i */
-    for(j=0;j<4;j++){ /* loop over points */
+    for(j=0;j<4;j++){ /* loop over gauss points */
       x[j] = 0; y[j] = 0;
       for( k=0;k<4;k++ ){
 	x[j] += coords[2*k]*phi->Values[k][j];
