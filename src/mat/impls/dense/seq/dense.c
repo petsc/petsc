@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.99 1996/03/23 20:42:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.100 1996/04/05 19:41:25 curfman Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -27,6 +27,17 @@ static int MatGetInfo_SeqDense(Mat A,MatInfoType flag,int *nz,int *nzalloc,int *
   if (nz)      *nz      = count; 
   if (nzalloc) *nzalloc = N;
   if (mem)     *mem     = (int)A->mem;
+  return 0;
+}
+
+static int MatScale_SeqDense(Scalar *alpha,Mat inA)
+{
+  Mat_SeqDense *a = (Mat_SeqDense *) inA->data;
+  int          one = 1, nz;
+
+  nz = a->m*a->n;
+  BLscal_( &nz, alpha, a->v, &one );
+  PLogFlops(nz);
   return 0;
 }
   
@@ -448,6 +459,25 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
   if (format == ASCII_FORMAT_INFO) {
     ;  /* do nothing for now */
   } 
+  /* We retain dense format as default; use ASCII_FORMAT_IMPL to get
+     sparse format output ... maybe should switch this? */
+  else if (format == ASCII_FORMAT_IMPL) {
+    for ( i=0; i<a->m; i++ ) {
+      fprintf(fd,"row %d:",i);
+      for ( j=0; j<a->n; j++ ) {
+#if defined(PETSC_COMPLEX)
+        if (real(*v) != 0.0 && imag(*v) != 0.0)
+          fprintf(fd," %d %g + %g i",j,real(*v),imag(*v));
+        else if (real(*v)) fprintf(fd," %d %g ",j,real(*v));
+        v += a->m;
+#else
+        if (*v) fprintf(fd," %d %g ",j,*v); 
+        v += a->m;
+#endif
+      }
+      fprintf(fd,"\n");
+    }
+  }
   else {
 #if defined(PETSC_COMPLEX)
     int allreal = 1;
@@ -879,7 +909,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
        MatConvertSameType_SeqDense,0,0,0,0,
        MatAXPY_SeqDense,0,0,
        MatGetValues_SeqDense,
-       MatCopy_SeqDense};
+       MatCopy_SeqDense,0,MatScale_SeqDense};
 
 
 /*@C
