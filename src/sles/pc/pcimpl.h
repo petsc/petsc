@@ -1,4 +1,4 @@
-/* $Id: pcimpl.h,v 1.15 1996/03/19 22:25:19 bsmith Exp curfman $ */
+/* $Id: pcimpl.h,v 1.16 1996/08/19 23:03:09 curfman Exp balay $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -11,7 +11,7 @@
 /*
    Preconditioner context
 */
-struct _PC {
+struct _p_PC {
   PETSCHEADER
   int          setupcalled;
   MatStructure flag;

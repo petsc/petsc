@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.123 1997/04/12 19:13:42 balay Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.124 1997/04/12 19:21:32 balay Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -92,7 +92,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   if (size == 1) initialtype = PCILU;
   else           initialtype = PCBJACOBI;
 
-  PetscHeaderCreate(pc,_PC,PC_COOKIE,initialtype,comm);
+  PetscHeaderCreate(pc,_p_PC,PC_COOKIE,initialtype,comm);
   PLogObjectCreate(pc);
   pc->type               = -1;
   pc->vec                = 0;
