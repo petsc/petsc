@@ -66,7 +66,7 @@ EXTERN_C_BEGIN
 int PCLUSetShift_LU(PC pc,PetscTruth shift)
 {
   PC_LU *dir;
-
+ 
   PetscFunctionBegin;
   dir = (PC_LU*)pc->data;
   dir->info.shift = shift;
