@@ -1,7 +1,6 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.20 1995/09/30 19:28:49 bsmith Exp $";
+static char vcid[] = "$Id: mmdense.c,v 1.1 1995/10/22 18:20:52 bsmith Exp curfman $";
 #endif
-
 
 /*
    Support for the parallel dense matrix vector multiply
