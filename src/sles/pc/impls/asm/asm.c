@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.112 2000/05/04 14:04:23 balay Exp balay $*/
+/*$Id: asm.c,v 1.113 2000/05/05 22:17:17 balay Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -143,13 +143,13 @@ static int PCSetUp_ASM(PC pc)
 
     /*  Extend the "overlapping" regions by a number of steps  */
     ierr = MatIncreaseOverlap(pc->pmat,n_local_true,osm->is,osm->overlap);CHKERRQ(ierr);
-    for (i=0; i< n_local_true; i++) {
+    for (i=0; i<n_local_true; i++) {
       ierr = ISSort(osm->is[i]);CHKERRQ(ierr);
     }
 
     /* create the local work vectors and scatter contexts */
     for (i=0; i<n_local_true; i++) {
-      ierr = ISGetSize(osm->is[i],&m);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(osm->is[i],&m);CHKERRQ(ierr);
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->x[i]);CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
@@ -595,7 +595,7 @@ int PCASMSetUseInPlace(PC pc)
 .keywords: PC, ASM, set, local, subdomains, additive Schwarz
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
-          PCASMCreateSubdomains2D()
+          PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains()
 @*/
 int PCASMSetLocalSubdomains(PC pc,int n,IS *is)
 {
@@ -699,7 +699,7 @@ int PCASMSetTotalSubdomains(PC pc,int N,IS *is)
 .keywords: PC, ASM, set, overlap
 
 .seealso: PCASMSetTotalSubdomains(), PCASMSetLocalSubdomains(), PCASMGetSubSLES(),
-          PCASMCreateSubdomains2D()
+          PCASMCreateSubdomains2D(), PCASMGetLocalSubdomains()
 @*/
 int PCASMSetOverlap(PC pc,int ovl)
 {
@@ -928,3 +928,45 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PCASMGetLocalSubdomains"
+/*@
+    PCASMGetLocalSubdomains - Gets the local subdomains (for this processor
+    only) for the additive Schwarz preconditioner. 
+
+    Collective on PC 
+
+    Input Parameter:
+.   pc - the preconditioner context
+
+    Output Parameters:
++   n - the number of subdomains for this processor (default value = 1)
+-   is - the index sets that define the subdomains for this processor
+         
+
+    Notes:
+    The IS numbering is in the parallel, global numbering of the vector.
+
+    Level: advanced
+
+.keywords: PC, ASM, set, local, subdomains, additive Schwarz
+
+.seealso: PCASMSetTotalSubdomains(), PCASMSetOverlap(), PCASMGetSubSLES(),
+          PCASMCreateSubdomains2D(), PCASMSetLocalSubdomains()
+@*/
+int PCASMGetLocalSubdomains(PC pc,int *n,IS **is)
+{
+  int    ierr;
+  PC_ASM *osm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (!pc->setupcalled) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call after SLESSetUP() or PCSetUp().");
+  }
+
+  osm = (PC_ASM*)pc->data;
+  if (n)   *n = osm->n_local_true;
+  if (is) *is = osm->is;
+  PetscFunctionReturn(0);
+}

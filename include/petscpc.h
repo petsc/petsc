@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.99 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscpc.h,v 1.100 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -31,6 +31,8 @@ typedef char *PCType;
 #define PCSLES      "sles"
 #define PCCOMPOSITE "composite"
 #define PCREDUNDANT "redundant"
+#define PCSPAI      "spai"
+#define PCMILU      "milu"
 
 typedef struct _p_PC* PC;
 #define PC_COOKIE     PETSC_COOKIE+9
@@ -122,6 +124,7 @@ EXTERN int PCLUSetReuseOrdering(PC,PetscTruth);
 EXTERN int PCLUSetReuseFill(PC,PetscTruth);
 EXTERN int PCLUSetUseInPlace(PC);
 EXTERN int PCLUSetFill(PC,double);
+EXTERN int PCLUSetColumnPivoting(PC,PetscReal);
 
 EXTERN int PCILUSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCILUSetUseInPlace(PC);
@@ -139,6 +142,7 @@ typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM
 EXTERN int PCASMSetType(PC,PCASMType);
 EXTERN int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
 EXTERN int PCASMSetUseInPlace(PC);
+EXTERN int PCASMGetLocalSubdomains(PC,int*,IS**);
 
 typedef enum {PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE} PCCompositeType;
 EXTERN int PCCompositeSetType(PC,PCCompositeType);
