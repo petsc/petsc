@@ -1,10 +1,22 @@
 long MPID_DUMMY = 0;
-#include <sys/time.h>
+#define MPI_SUCCESS 0
 double MPI_Wtime()
 {
-
-  struct timeval _tp; 
-  
-  gettimeofday(&_tp,(struct timezone *)0);
-  return ((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);
+ printf("MPI_Wtime: use Petsctime instead\n");
+ return 0.0;
 }
+void mpi_init__(int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void  MPI_INIT (int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void  mpi_init_ (int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
