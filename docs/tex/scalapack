@@ -51,3 +51,31 @@ In fact, on the rare occasions that dense matrix operations are
 required PETSc calles Lapack (Scalapack perhaps in the future)
 routines without requiring the user to deal with the arcane 
 and old fashion Lapack calling sequences.
+
+-------------------------------------------------------------------
+
+Lois' draft #2:
+
+PETSc is not a replacement or competitor of ScaLAPACK, LAPACK, or
+MINPACK.  Rather, PETSc is a complementary package that provides the
+infrastructure and software for large-scale (possibly parallel)
+numerical solution of partial differential equations.  Our uniquely
+wide perspective markedly contrasts with traditional software
+packages, which typically address only one facet of solving PDEs.  In
+addition to providing a higher level of functionality and abstraction,
+PETSc can provide transparent access to such special-purpose libraries
+for particular cases. 
+
+PETSc currently employs parts of LAPACK, SPARSPAK, and BlockSolve, and
+extensions to include ScaLAPACK and BLACS (and/or others?) are
+intended.  For example, the PETSc interface for solving linear
+equations uses {\em the same} calling sequence for uniprocessor and
+parallel sparse and dense systems.  PETSc automatically employs the
+appropriate LAPACK routines on the few occasions requiring
+uniprocessor dense matrix operations; likewise, application
+programmers can specify the use of BlockSolve for preconditioning
+sparse, symmetric, parallel systems.  PETSc shields the user from
+dealing with the involved calling sequences and data structures of
+LAPACK and BlockSolve, while also providing enhanced functionality for
+data structure manipulation.
+
