@@ -22,8 +22,6 @@ Additional Capabilities that PETSc Needs:
   - Make all systems use shared libraries if possible, and document how to
     use these variants.
 
-  - Fix SNES so that calling SNESSolve(), SNESDestroy() (without calling
-    SNESSolve() in between) doesn't cause a seg fault.
 
   * add -mpidump option that lists all unfinished MPI operations at end, 
          including PetscMPIDump()
@@ -232,6 +230,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
                 Accomplishments!  :) :)
 -----------------------------------------------------------------------
+
+  X Fix SNES so that calling SNESSolve(), SNESDestroy() (without calling
+    SNESSolve() in between) doesn't cause a seg fault.
 
   X Make ViewerGetFormat() a real public routine (seems good to me); else
     make it obviously private.

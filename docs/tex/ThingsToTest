@@ -10,3 +10,6 @@
  - PETScView with all possible log files
 
  - Complex numbers with Fortran
+
+ - All viewers work with all matrices properly (for example -draw_pause on all matrix types)
+   those that don't work have good error messages.
