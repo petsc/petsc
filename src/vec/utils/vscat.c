@@ -98,7 +98,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 	    xvt[i] = PetscMax(xvt[i],xvt2[i]);
 	  }
 #endif
-        } else {SETERRQ(1,"Wrong insert option");}
+        } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
         ierr = MPI_Scatterv(xvt,scat->count,map->range,MPIU_SCALAR,yv,yy_n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
       } else {
         ierr = VecGetPetscMap(y,&map);CHKERRQ(ierr);
@@ -139,7 +139,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
           yv[i] = PetscMax(yv[i],yvt[i]);
 	}
 #endif
-      } else {SETERRQ(1,"Wrong insert option");}
+      } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
     }
   }
   ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
           yv[i] = PetscMax(yv[i],yvt[i]);
 	}
 #endif
-      } else {SETERRQ(1,"Wrong insert option");}
+      } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
     }
   /* ---------  Forward scatter; gather all values onto processor 0 */
   } else { 
@@ -231,7 +231,7 @@ int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
             yv[i] = PetscMax(yv[i],yvt[i]);
           }
 #endif
-        }  else {SETERRQ(1,"Wrong insert option");}
+        }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
       }
     }
   }
@@ -322,7 +322,7 @@ int VecScatterBegin_SGtoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
   } else  if (addv == MAX_VALUES) {
     for (i=0; i<n; i++) {yv[tslots[i]] = PetscMax(yv[tslots[i]],xv[fslots[i]]);}
 #endif
-  } else {SETERRQ(1,"Wrong insert option");}
+  } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -354,7 +354,7 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
     } else  if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[i]);}
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   } else {
     yv += first;
     if (addv == INSERT_VALUES) {
@@ -365,7 +365,7 @@ int VecScatterBegin_SGtoSS_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[i] = PetscMax(yv[i],xv[fslots[i]]);}
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   }
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
@@ -398,7 +398,7 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[first + i*step]);}
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   } else {
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {yv[first + i*step] = xv[fslots[i]];}
@@ -408,7 +408,7 @@ int VecScatterBegin_SGtoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[first + i*step] = PetscMax(yv[first + i*step],xv[fslots[i]]);}
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   }
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
@@ -442,7 +442,7 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
     } else  if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[i] = PetscMax(yv[i],xv[fslots[i]]);}
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   } else {
     xv += first;
     if (addv == INSERT_VALUES) {
@@ -453,7 +453,7 @@ int VecScatterBegin_SStoSG_Stride1(Vec x,Vec y,InsertMode addv,ScatterMode mode,
     } else  if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[i]);}
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   } 
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
@@ -486,7 +486,7 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
     } else  if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[first + i*step] = PetscMax(yv[first + i*step],xv[fslots[i]]);}
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   } else {
     if (addv == INSERT_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] = xv[first + i*step];}
@@ -496,7 +496,7 @@ int VecScatterBegin_SStoSG(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
     } else  if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[first + i*step]);}
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   }
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
@@ -559,7 +559,7 @@ int VecScatterBegin_SStoSS(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatt
       }
     }
 #endif
-  } else {SETERRQ(1,"Wrong insert option");}
+  } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   if (x != y) {ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

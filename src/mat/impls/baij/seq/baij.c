@@ -72,7 +72,7 @@ int MatInvertBlockDiagonal_SeqBAIJ(Mat A)
       }
       break;
     default: 
-      SETERRQ1(1,"not supported for block size %d",a->bs);
+      SETERRQ1(PETSC_ERR_SUP,"not supported for block size %d",a->bs);
   }
   a->idiagvalid = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -172,7 +172,7 @@ int MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal 
       PetscLogFlops(4*(a->nz));
     }
   } else {
-    SETERRQ(1,"Only supports point block SOR with zero initial guess");
+    SETERRQ(PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
@@ -280,7 +280,7 @@ int MatPBRelax_SeqBAIJ_3(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal 
       PetscLogFlops(9*(a->nz));
     }
   } else {
-    SETERRQ(1,"Only supports point block SOR with zero initial guess");
+    SETERRQ(PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
@@ -395,7 +395,7 @@ int MatPBRelax_SeqBAIJ_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal 
       PetscLogFlops(16*(a->nz));
     }
   } else {
-    SETERRQ(1,"Only supports point block SOR with zero initial guess");
+    SETERRQ(PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
@@ -517,7 +517,7 @@ int MatPBRelax_SeqBAIJ_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal 
       PetscLogFlops(25*(a->nz));
     }
   } else {
-    SETERRQ(1,"Only supports point block SOR with zero initial guess");
+    SETERRQ(PETSC_ERR_SUP,"Only supports point block SOR with zero initial guess");
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
@@ -692,7 +692,7 @@ int MatMissingDiagonal_SeqBAIJ(Mat A)
   diag = a->diag;
   for (i=0; i<a->mbs; i++) {
     if (jj[diag[i]] != i) {
-      SETERRQ1(1,"Matrix is missing diagonal number %d",i);
+      SETERRQ1(PETSC_ERR_PLIB,"Matrix is missing diagonal number %d",i);
     }
   }
   PetscFunctionReturn(0);
@@ -1630,7 +1630,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is,const PetscScalar *diag)
       } /* end (!diag) */
     } else { /* (sizes[i] != bs) */
 #if defined (PETSC_USE_DEBUG)
-      if (sizes[i] != 1) SETERRQ(1,"Internal Error. Value should be 1");
+      if (sizes[i] != 1) SETERRQ(PETSC_ERR_PLIB,"Internal Error. Value should be 1");
 #endif
       for (k=0; k<count; k++) { 
         aa[0] =  zero; 
@@ -1772,7 +1772,7 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
   if (!row_identity || !col_identity) {
-    SETERRQ(1,"Row and column permutations must be identity for in-place ILU");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Row and column permutations must be identity for in-place ILU");
   }
 
   outA          = inA; 
@@ -1880,7 +1880,7 @@ int MatSeqBAIJSetColumnIndices(Mat mat,int *indices)
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"Wrong type of matrix to set column indices");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Wrong type of matrix to set column indices");
   }
   PetscFunctionReturn(0);
 }
@@ -2095,7 +2095,7 @@ int MatStoreValues_SeqBAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
   }
 
   /* allocate space for values if not already there */
@@ -2119,10 +2119,10 @@ int MatRetrieveValues_SeqBAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
   }
   if (!aij->saved_values) {
-    SETERRQ(1,"Must call MatStoreValues(A);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
   }
 
   /* copy values over */
@@ -2150,7 +2150,7 @@ int MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,int bs,int nz,int *nnz)
   B->preallocated = PETSC_TRUE;
   ierr = PetscOptionsGetInt(B->prefix,"-mat_block_size",&newbs,PETSC_NULL);CHKERRQ(ierr);
   if (nnz && newbs != bs) {
-    SETERRQ(1,"Cannot change blocksize from command line if setting nnz");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot change blocksize from command line if setting nnz");
   }
   bs   = newbs;
 

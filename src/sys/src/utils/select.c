@@ -40,8 +40,8 @@ int PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choice
   FILE *fp;
 
   PetscFunctionBegin;
-  if (!title) SETERRQ(1,"Must pass in a title line");
-  if (n < 1) SETERRQ(1,"Must pass in at least one selection");
+  if (!title) SETERRQ(PETSC_ERR_ARG_NULL,"Must pass in a title line");
+  if (n < 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Must pass in at least one selection");
   if (n == 1) {*choice = 0; PetscFunctionReturn(0);}
 
   ierr = PetscStrlen(title,&cols);CHKERRQ(ierr);

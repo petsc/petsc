@@ -339,7 +339,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
     } else if (addv == MAX_VALUES) {
       for (i=0; i<n; i++) {yv[fslots[i]] = PetscMax(yv[fslots[i]],xv[tslots[i]]);}
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   }
 
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
@@ -401,7 +401,7 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
         yv[lindices[i]] = PetscMax(yv[lindices[i]],*val); val++;
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
     count--;
   }
 
@@ -780,7 +780,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
         yv[il+11] = PetscMax(yv[il+11],xv[ir+11]);
       }
 #endif
-    } else {SETERRQ(1,"Wrong insert option");}
+    } else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   }  
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -884,7 +884,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
 	val       += 12;
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   } else { /* unpack each message as it arrives, default version */
     while (count) {
       ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus[0]);CHKERRQ(ierr);
@@ -945,7 +945,7 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
         val        += 12;
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
     count--;
     }
   }
@@ -1087,7 +1087,7 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+4] = PetscMax(yv[il+4],xv[ir+4]);
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   }
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -1169,7 +1169,7 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         val       += 5;
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1290,7 +1290,7 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+3] = PetscMax(yv[il+3],xv[ir+3]);
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   }
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -1370,7 +1370,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 	val       += 4;
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   } else { /* unpack each message as it arrives, default version */
     while (count) {
       ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus[0]);CHKERRQ(ierr);
@@ -1407,7 +1407,7 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 	  val       += 4;
 	}
 #endif
-      }  else {SETERRQ(1,"Wrong insert option");}
+      }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
       count--;
     }
   }
@@ -1542,7 +1542,7 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+3] = PetscMax(yv[il+3],xv[ir+3]);
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   }
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -1618,7 +1618,7 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         val       += 3;
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
     count--;
   }
   /* wait on sends */
@@ -1741,7 +1741,7 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
         yv[il+1] = PetscMax(yv[il+1],xv[ir+1]);
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
   }
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
@@ -1814,7 +1814,7 @@ int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
         val       += 2;
       }
 #endif
-    }  else {SETERRQ(1,"Wrong insert option");}
+    }  else {SETERRQ(PETSC_ERR_ARG_UNKNOWN_TYPE,"Wrong insert option");}
     count--;
   }
   /* wait on sends */

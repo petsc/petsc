@@ -206,7 +206,7 @@ int PetscSharedMalloc(MPI_Comm comm,int llen,int len,void **result)
   if (!flag) { 
     ierr = PetscSharedInitialize(comm);CHKERRQ(ierr);
     ierr = MPI_Attr_get(comm,Petsc_Shared_keyval,(void**)&arena,&flag);CHKERRQ(ierr);
-    if (!flag) SETERRQ(1,"Unable to initialize shared memory");
+    if (!flag) SETERRQ(PETSC_ERR_LIB,"Unable to initialize shared memory");
   } 
 
   ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -219,7 +219,7 @@ int PetscSharedMalloc(MPI_Comm comm,int llen,int len,void **result)
       (*PetscErrorPrintf)("PETSC ERROR: Unable to allocate shared memory location\n");
       (*PetscErrorPrintf)("PETSC ERROR: Run with option -shared_size <size> \n");
       (*PetscErrorPrintf)("PETSC_ERROR: with size > %d \n",(int)(1.2*(Petsc_Shared_size+len)));
-      SETERRQ(1,"Unable to malloc shared memory");
+      SETERRQ(PETSC_ERR_LIB,"Unable to malloc shared memory");
     }
   }
   ierr = MPI_Bcast(&value,8,MPI_BYTE,0,comm);CHKERRQ(ierr);
@@ -244,7 +244,7 @@ int VecCreate_Shared(Vec vv)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(vv->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
-    SETERRQ(1,"No supported for shared memory vector objects on this machine");
+    SETERRQ(PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
   }
   ierr = VecCreate_Seq(vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);

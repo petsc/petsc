@@ -176,7 +176,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
   for (i=0; i<nrows; i++) vary[irow[i]/bs]++;
   count = 0;
   for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(1,"Index set does not match blocks");
+    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,"Index set does not match blocks");
     if (vary[i]==bs) iary[count++] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is1);CHKERRQ(ierr);
@@ -185,7 +185,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
   for (i=0; i<ncols; i++) vary[icol[i]/bs]++;
   count = 0;
   for (i=0; i<a->mbs; i++) {
-    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(1,"Internal error in PETSc");
+    if (vary[i]!=0 && vary[i]!=bs) SETERRQ(PETSC_ERR_PLIB,"Internal error in PETSc");
     if (vary[i]==bs) iary[count++] = i;
   }
   ierr = ISCreateGeneral(PETSC_COMM_SELF,count,iary,&is2);CHKERRQ(ierr);

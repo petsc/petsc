@@ -329,12 +329,12 @@ int PetscViewerBinaryLoadInfo(PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
       ierr = PetscStrncmp(first,"-mat_double",11,&wrongtype);CHKERRQ(ierr);
       if (wrongtype) {
-        SETERRQ(1,"Loading double number matrix with complex number code");
+        SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Loading double number matrix with complex number code");
       }
 #else
       ierr = PetscStrncmp(first,"-mat_complex",12,&wrongtype);CHKERRQ(ierr);
       if (wrongtype) {
-        SETERRQ(1,"Loading complex number matrix with double number code");
+        SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Loading complex number matrix with double number code");
       }
 #endif
 

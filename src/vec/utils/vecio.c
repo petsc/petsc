@@ -160,7 +160,7 @@ int VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
   PetscFunctionReturn(0);
 #else
   PetscFunctionBegin;
-  SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
+  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with NetCDF to use this viewer");
 #endif
 }
 
@@ -223,7 +223,8 @@ int VecLoad_Binary(PetscViewer viewer,const VecType itype,Vec *newvec)
     }
   } else {
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
-    if (rows == -1)  SETERRQ(1,"Error loading vector");
+    /* this is a marker sent to indicate that the file does not have a vector at this location */
+    if (rows == -1)  SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Error loading vector");
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
     ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
@@ -288,7 +289,7 @@ int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
   ierr = ncmpi_inq_dim(ncid,0,name,(size_t*)&N);CHKERRQ(ierr); /* N gets the global vector size */
   if (!rank) {
     ierr = VecGetSize(vec,&rows);CHKERRQ(ierr);
-    if (N != rows) SETERRQ(1,"Vector in file different length then input vector");
+    if (N != rows) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");
     ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
@@ -306,7 +307,7 @@ int VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
   PetscFunctionReturn(0);
 #else
   PetscFunctionBegin;
-  SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
+  SETERRQ(PETSC_ERR_SUP_SYS,"Build PETSc with NetCDF to use this viewer");
 #endif
 }
 
@@ -337,7 +338,7 @@ int VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
     if (type != VEC_FILE_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);CHKERRQ(ierr);
     ierr = VecGetSize(vec,&n);CHKERRQ(ierr);
-    if (n != rows) SETERRQ(1,"Vector in file different length then input vector");
+    if (n != rows) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Vector in file different length then input vector");
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
 
     ierr = PetscObjectGetOptionsPrefix((PetscObject)vec,&prefix);CHKERRQ(ierr);

@@ -32,10 +32,10 @@ int PetscSplitOwnershipBlock(MPI_Comm comm,int bs,int *n,int *N)
   int ierr,size,rank;
 
   PetscFunctionBegin;
-  if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(1,"Both n and N cannot be PETSC_DECIDE");
+  if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
 
   if (*N == PETSC_DECIDE) { 
-    if (*n % bs != 0) SETERRQ2(1,"local size %d not divisible by block size %d",*n,bs);
+    if (*n % bs != 0) SETERRQ2(PETSC_ERR_ARG_INCOMP,"local size %d not divisible by block size %d",*n,bs);
     ierr = MPI_Allreduce(n,N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   } else if (*n == PETSC_DECIDE) { 
     int Nbs = *N/bs;
@@ -76,7 +76,7 @@ int PetscSplitOwnership(MPI_Comm comm,int *n,int *N)
   int ierr,size,rank;
 
   PetscFunctionBegin;
-  if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(1,"Both n and N cannot be PETSC_DECIDE");
+  if (*N == PETSC_DECIDE && *n == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and N cannot be PETSC_DECIDE");
 
   if (*N == PETSC_DECIDE) { 
     ierr = MPI_Allreduce(n,N,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
