@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.24 1996/04/04 22:03:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.25 1996/04/05 05:58:08 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -27,7 +27,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
 
 static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
-  int       i = 0, maxit, m, conv, hist_len, cerr = 0, ierr;
+  int       i=0, maxit, m, conv=0, hist_len, cerr=0, ierr;
   Scalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
   double    *history,dp,dpold,w,dpest,tau,psi,cm;
   Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.138 1996/04/07 22:45:55 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.139 1996/04/09 18:54:19 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1529,7 +1529,7 @@ static int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
 {
   Mat        mat;
   Mat_MPIAIJ *a,*oldmat = (Mat_MPIAIJ *) matin->data;
-  int        ierr, len,flg;
+  int        ierr, len=0, flg;
 
   *newmat       = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIAIJ,matin->comm);
