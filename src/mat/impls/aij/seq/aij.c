@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.243 1997/11/28 16:19:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.244 1997/12/01 01:54:26 bsmith Exp balay $";
 #endif
 
 /*
@@ -856,7 +856,7 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   v    = a->a;
   ii   = a->i;
 #if defined(USE_FORTRAN_KERNELS)
-  fortranmultaij_(&m,x,ii,idx,v,y);
+  fortranmultaij_(&m,x,ii,idx+shift,v+shift,y);
 #else
   v    += shift; /* shift for Fortran start by 1 indexing */
   idx  += shift;
@@ -889,7 +889,7 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   v    = a->a;
   ii   = a->i;
 #if defined(USE_FORTRAN_KERNELS)
-  fortranmultaddaij_(&m,x,ii,idx,v,y,z);
+  fortranmultaddaij_(&m,x,ii,idx+shift,v+shift,y,z);
 #else
   v   += shift; /* shift for Fortran start by 1 indexing */
   idx += shift;
