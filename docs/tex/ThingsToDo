@@ -7,9 +7,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  Add C_FCV to all base_variables files; see solaris
+  Read /home/bsmith/petsc/docs/tex/applications/damien.ps and fix anything 
+  fixable.
 
-   Add DrawZoom fortran to PETSC
+*  Add C_FCV to all base_variables files; see solaris
 
   Add Tony Coaola's ILUDT stuff to PETSc, see src/contrib/tonycoaloailu
 
@@ -1108,3 +1109,6 @@ SPARSEPAK, as was done with MINPACK coloring to prevent name space pollution.
 
  X Make PetscFree() be always "wrapped" so returns an int error code on 
     all machines.
+
+X   Add DrawZoom fortran to PETSC
+
