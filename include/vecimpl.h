@@ -72,7 +72,10 @@ struct _VecOps {
        (*resetarray)(Vec),      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
        (*setfromoptions)(Vec),
        (*maxpointwisedivide)(Vec,Vec,PetscReal*),      /* m = max abs(x ./ y) */
-       (*load)(PetscViewer,const VecType,Vec*);
+       (*load)(PetscViewer,const VecType,Vec*),
+       (*pointwisemax)(Vec,Vec,Vec),                 /* w = max(x , y) */
+       (*pointwisemaxabs)(Vec,Vec,Vec),                 /* w = max(abs(x) , abs(y)) */
+       (*pointwisemin)(Vec,Vec,Vec);                 /* w = min(x , y) */
 };
 
 /* 

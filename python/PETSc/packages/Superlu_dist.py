@@ -56,9 +56,7 @@ class Configure(config.base.Configure):
     incl.extend(self.mpi.include)
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
-      if not self.mpi.include is None:
-        mpiincl = ' -I' + ' -I'.join(self.mpi.include)
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc+mpiincl
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:

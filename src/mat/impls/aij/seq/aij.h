@@ -13,15 +13,6 @@ typedef struct {
   PetscTruth checked;                       /* if inodes have been checked for */
 } Mat_SeqAIJ_Inode;
 
-/* Info about using compressed row format */
-typedef struct {
-  PetscTruth use;
-  PetscInt   nrows;                         /* number of non-zero rows */
-  PetscInt   *i;                            /* compressed row pointer  */
-  PetscInt   *rindex;                       /* compressed row index               */
-  PetscTruth checked;                       /* if compressed row format have been checked for */
-} Mat_SeqAIJ_CompressedRow;
-
 /*  
   MATSEQAIJ format - Compressed row storage (also called Yale sparse matrix
   format).  The i[] and j[] arrays start at 0. For example,
@@ -35,18 +26,17 @@ typedef struct {
   PetscInt         nonew;            /* 1 don't add new nonzeros, -1 generate error on new */
   PetscTruth       singlemalloc;     /* if true a, i, and j have been obtained with
                                           one big malloc */
-  PetscTruth       freedata;        /* free the i,j,a data when the matrix is destroyed; true by default */
-  PetscInt         nz,maxnz;        /* nonzeros, allocated nonzeros */
+  PetscTruth       freedata;         /* free the i,j,a data when the matrix is destroyed; true by default */
+  PetscInt         nz,maxnz;         /* nonzeros, allocated nonzeros */
   PetscInt         *diag;            /* pointers to diagonal elements */
   PetscInt         *i;               /* pointer to beginning of each row */
   PetscInt         *imax;            /* maximum space allocated for each row */
   PetscInt         *ilen;            /* actual length of each row */
   PetscInt         *j;               /* column values: j + i[k] - 1 is start of row k */
   PetscScalar      *a;               /* nonzero elements */
-  IS               row,col,icol;   /* index sets, used for reorderings */
+  IS               row,col,icol;     /* index sets, used for reorderings */
   PetscScalar      *solve_work;      /* work space used in MatSolve */
   Mat_SeqAIJ_Inode inode;            /* identical node informaton */
-  Mat_SeqAIJ_CompressedRow compressedrow; /* use compressed row format */
   PetscInt         reallocs;         /* number of mallocs done during MatSetValues() 
                                         as more values are set than were prealloced */
   PetscInt         rmax;             /* max nonzeros in any row */
@@ -66,6 +56,7 @@ typedef struct {
 
   PetscInt         *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */
   Mat              XtoY;             /* used by MatAXPY() */
+  Mat_CompressedRow compressedrow;   /* use compressed row format */
 } Mat_SeqAIJ;
 
 EXTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
@@ -91,7 +82,6 @@ EXTERN PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat,PetscInt,PetscIn
 EXTERN PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
 EXTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt**,PetscInt**);
 EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
-EXTERN PetscErrorCode Mat_AIJ_CheckCompressedRow(Mat,PetscTruth);
 EXTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
 EXTERN PetscErrorCode MatLUFactor_SeqAIJ(Mat,IS,IS,MatFactorInfo*);
@@ -118,6 +108,9 @@ EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscSc
 EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatPrintHelp_SeqAIJ(Mat);
 EXTERN PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
+
+EXTERN PetscErrorCode MatMult_SeqAIJ_CompressedRow(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatMultAdd_SeqAIJ_CompressedRow(Mat,Vec,Vec,Vec);
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,Mat*);

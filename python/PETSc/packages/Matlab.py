@@ -83,7 +83,7 @@ class Configure(config.base.Configure):
               matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
             else:
               matlab_sys = ''
-            self.lib = '${CC_LINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl
+            self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+matlab_sys+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -L'+os.path.join(matlab,'bin',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
             self.framework.packages.append(self)
             return
       except RuntimeError:

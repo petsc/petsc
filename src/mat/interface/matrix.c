@@ -5781,8 +5781,8 @@ PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *info)
    Notes:
    C will be created and must be destroyed by the user with MatDestroy().
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
-   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
+   This routine is currently only implemented for pairs of AIJ matrices and classes
+   which inherit from AIJ.  
 
    Level: intermediate
 
@@ -5958,3 +5958,259 @@ PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult"
+/*@
+   MatMatMult - Performs Matrix-Matrix Multiplication C=A*B.
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the left matrix
+.  B - the right matrix
+.  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B))
+
+   Output Parameters:
+.  C - the product matrix
+
+   Notes:
+   C will be created and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for pairs of AIJ matrices and classes
+   which inherit from AIJ.  C will be of type MATAIJ.
+
+   Level: intermediate
+
+.seealso: MatMatMultSymbolic(),MatMatMultNumeric()
+@*/
+PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidType(B,2);
+  MatPreallocated(B);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->M,A->N);
+
+  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
+
+  /* For now, we do not dispatch based on the type of A and B */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  fA = A->ops->matmult;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatMatMult not supported for A of type %s",A->type_name);
+  fB = B->ops->matmult;
+  if (!fB) SETERRQ1(PETSC_ERR_SUP,"MatMatMult not supported for B of type %s",B->type_name);
+  if (fB!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);
+
+  ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->matmult)(A,B,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
+  
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic"
+/*@
+   MatMatMultSymbolic - Performs construction, preallocation, and computes the ij structure
+   of the matrix-matrix product C=A*B.  Call this routine before calling MatMatMultNumeric().
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the left matrix
+.  B - the right matrix
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B))
+
+   Output Parameters:
+.  C - the matrix containing the ij structure of product matrix
+
+   Notes:
+   C will be created as a MATSEQAIJ matrix and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for SeqAIJ matrices and classes which inherit from SeqAIJ.
+
+   Level: intermediate
+
+.seealso: MatMatMult(),MatMatMultNumeric()
+@*/
+PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*Asymbolic)(Mat,Mat,PetscReal,Mat *);
+  PetscErrorCode (*Bsymbolic)(Mat,Mat,PetscReal,Mat *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidType(B,2);
+  MatPreallocated(B);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+
+  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->M,A->N);
+  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
+
+  /* For now, we do not dispatch based on the type of A and P */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  Asymbolic = A->ops->matmultsymbolic;
+  if (!Asymbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
+  Bsymbolic = B->ops->matmultsymbolic;
+  if (!Bsymbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
+  if (Bsymbolic!=Asymbolic) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMultSymbolic requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);
+
+  ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*Asymbolic)(A,B,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultNumeric"
+/*@
+   MatMatMultNumeric - Performs the numeric matrix-matrix product.
+   Call this routine after first calling MatMatMultSymbolic().
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the left matrix
+-  B - the right matrix
+
+   Output Parameters:
+.  C - the product matrix, whose ij structure was defined from MatMatMultSymbolic().
+
+   Notes:
+   C must have been created with MatMatMultSymbolic.
+
+   This routine is currently only implemented for SeqAIJ type matrices.
+
+   Level: intermediate
+
+.seealso: MatMatMult(),MatMatMultSymbolic()
+@*/
+PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C)
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*Anumeric)(Mat,Mat,Mat);
+  PetscErrorCode (*Bnumeric)(Mat,Mat,Mat);
+
+  PetscFunctionBegin;
+
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidType(B,2);
+  MatPreallocated(B);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  PetscValidHeaderSpecific(C,MAT_COOKIE,3);
+  PetscValidType(C,3);
+  MatPreallocated(C);
+  if (!C->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+
+  if (B->N!=C->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->N,C->N);
+  if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->M,A->N);
+  if (A->M!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",A->M,C->M);
+
+  /* For now, we do not dispatch based on the type of A and B */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  Anumeric = A->ops->matmultnumeric;
+  if (!Anumeric) SETERRQ1(PETSC_ERR_SUP,"MatMatMultNumeric not supported for A of type %s",A->type_name);
+  Bnumeric = B->ops->matmultnumeric;
+  if (!Bnumeric) SETERRQ1(PETSC_ERR_SUP,"MatMatMultNumeric not supported for B of type %s",B->type_name);
+  if (Bnumeric!=Anumeric) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMultNumeric requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);
+
+  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*Anumeric)(A,B,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultTranspose"
+/*@
+   MatMatMultTranspose - Performs Matrix-Matrix Multiplication C=A^T*B.
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the left matrix
+.  B - the right matrix
+.  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B))
+
+   Output Parameters:
+.  C - the product matrix
+
+   Notes:
+   C will be created and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
+   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
+
+   Level: intermediate
+
+.seealso: MatMatMultTransposeSymbolic(),MatMatMultTransposeNumeric()
+@*/
+PetscErrorCode MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidType(B,2);
+  MatPreallocated(B);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+  if (B->M!=A->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->M,A->M);
+
+  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
+
+  fA = A->ops->matmulttranspose;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatMatMultTranspose not supported for A of type %s",A->type_name);
+  fB = B->ops->matmulttranspose;
+  if (!fB) SETERRQ1(PETSC_ERR_SUP,"MatMatMultTranspose not supported for B of type %s",B->type_name);
+  if (fB!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMultTranspose requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);
+
+  ierr = PetscLogEventBegin(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->matmulttranspose)(A,B,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
+  
+  PetscFunctionReturn(0);
+} 

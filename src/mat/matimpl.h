@@ -178,6 +178,16 @@ typedef struct {
   PetscTruth noc;        /* this is a single component problem, hence user will not set MatStencil.c */
 } MatStencilInfo;
 
+/* Info about using compressed row format */
+typedef struct {
+  PetscTruth use;
+  PetscInt   nrows;                         /* number of non-zero rows */
+  PetscInt   *i;                            /* compressed row pointer  */
+  PetscInt   *rindex;                       /* compressed row index               */
+  PetscTruth checked;                       /* if compressed row format have been checked for */
+} Mat_CompressedRow;
+EXTERN PetscErrorCode Mat_CheckCompressedRow(Mat,Mat_CompressedRow*,PetscInt*,PetscReal);
+
 struct _p_Mat {
   PETSCHEADER(struct _MatOps)
   PetscMap               rmap,cmap;
