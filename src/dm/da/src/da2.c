@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.96 1998/04/09 04:18:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.97 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -104,32 +104,31 @@ int DAView_2d(DA da,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ "DACreate2d"
 /*@C
-    DACreate2d -  Creates an object that will manage the communication of  two-dimensional 
-      regular array data that is distributed across some processors.
+   DACreate2d -  Creates an object that will manage the communication of  two-dimensional 
+   regular array data that is distributed across some processors.
+
+   Collective on MPI_Comm
 
    Input Parameters:
-.  comm - MPI communicator
-.  wrap - type of periodicity should the array have, if any
-$         DA_NONPERIODIC, DA_XPERIODIC, 
-$         DA_YPERIODIC, DA_XYPERIODIC  
-.  stencil_type - stencil type either DA_STENCIL_BOX or DA_STENCIL_STAR
++  comm - MPI communicator
+.  wrap - type of periodicity should the array have. 
+         Use one of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, or DA_XYPERIODIC.
+.  stencil_type - stencil type.  Use either DA_STENCIL_BOX or DA_STENCIL_STAR.
 .  M,N - global dimension in each direction of the array
 .  m,n - corresponding number of processors in each dimension 
          (or PETSC_DECIDE to have calculated)
 .  w - number of degrees of freedom per node
-.  s - stencil width
 .  lx, ly - arrays containing the number of nodes in each cell along
-$           the x and y coordinates, or PETSC_NULL. If non-null, these
-$           must be of length as m and n, and the corresponding
-$           m, or n cannot be PETSC_DECIDE.
+           the x and y coordinates, or PETSC_NULL. If non-null, these
+           must be of length as m and n, and the corresponding
+           m and n cannot be PETSC_DECIDE.
+-  s - stencil width
 
    Output Parameter:
 .  inra - the resulting distributed array object
 
-   Collective on MPI_Comm
-
    Options Database Key:
-$  -da_view : call DAView() at the conclusion of DACreate2d()
+.  -da_view - Calls DAView() at the conclusion of DACreate2d()
 
    Notes:
    The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
@@ -889,12 +888,12 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 #undef __FUNC__  
 #define __FUNC__ "DAPrintHelp"
 /*@
-     DAPrintHelp - Prints command line options for DA.
-
-  Input Parameters:
-.   da - the distributed array
+   DAPrintHelp - Prints command line options for DA.
 
    Collective on DA
+
+   Input Parameters:
+.  da - the distributed array
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d()
 
@@ -925,13 +924,13 @@ int DAPrintHelp(DA da)
    DARefine - Creates a new distributed array that is a refinement of a given
    distributed array.
 
+   Collective on DA
+
    Input Parameter:
 .  da - initial distributed array
 
    Output Parameter:
 .  daref - refined distributed array
-
-   Collective on DA
 
    Note:
    Currently, refinement consists of just doubling the number of grid spaces

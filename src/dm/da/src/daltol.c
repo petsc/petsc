@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daltol.c,v 1.11 1998/03/20 22:53:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daltol.c,v 1.12 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
  
 /*
@@ -15,17 +15,17 @@ static char vcid[] = "$Id: daltol.c,v 1.11 1998/03/20 22:53:07 bsmith Exp bsmith
    that contain irrelevant values) to another local vector where the ghost
    points in the second are set correctly. Must be followed by DALocalToLocalEnd().
 
+   Collective on DA and Vec
+
    Input Parameters:
-.  da - the distributed array context
++  da - the distributed array context
 .  g - the original local vector
-.  mode - one of INSERT_VALUES or ADD_VALUES
+-  mode - one of INSERT_VALUES or ADD_VALUES
 
    Output Parameter:
 .  l  - the local vector with correct ghost values
 
-   Collective on DA and Vec
-
-   Note:
+   Notes:
    The local vectors used here need not be the same as those
    obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
@@ -53,15 +53,15 @@ int DALocalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
    points in the second are set correctly.  Must be preceeded by 
    DALocalToLocalBegin().
 
+   Collective on DA and Vec
+
    Input Parameters:
-.  da - the distributed array context
++  da - the distributed array context
 .  g - the original local vector
-.  mode - one of INSERT_VALUES or ADD_VALUES
+-  mode - one of INSERT_VALUES or ADD_VALUES
 
    Output Parameter:
 .  l  - the local vector with correct ghost values
-
-   Collective on DA and Vec
 
    Note:
    The local vectors used here need not be the same as those

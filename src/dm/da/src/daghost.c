@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daghost.c,v 1.13 1997/10/19 03:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daghost.c,v 1.14 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
  
 /*
@@ -11,25 +11,25 @@ static char vcid[] = "$Id: daghost.c,v 1.13 1997/10/19 03:30:13 bsmith Exp bsmit
 #undef __FUNC__  
 #define __FUNC__ "DAGetGhostCorners"
 /*@
-    DAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
-    corner of the local region, including ghost points.
+   DAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
+   corner of the local region, including ghost points.
+
+   Not Collective
 
    Input Parameter:
 .  da - the distributed array
 
    Output Parameters:
-.  x,y,z - the corner indices
-$    y and z are optional (used for 2D and 3D problems)
-.  m,n,p - widths in the corresponding directions
-$    n and p are optional (used for 2D and 3D problems)
-
-   Not Collective
++  x,y,z - the corner indices (where y and z are optional; these are used
+           for 2D and 3D problems)
+-  m,n,p - widths in the corresponding directions (where n and p are optional;
+           these are used for 2D and 3D problems)
 
    Note:
    The corner information is independent of the number of degrees of 
-freedom per node set with the DACreateXX() routine. Thus the x, y, z, and
-m, n, p can be thought of as coordinates on a logical grid, where each
-grid point has (potentially) several degrees of freedom.
+   freedom per node set with the DACreateXX() routine. Thus the x, y, z, and
+   m, n, p can be thought of as coordinates on a logical grid, where each
+   grid point has (potentially) several degrees of freedom.
    Any of y, z, n, and p can be passed in as PETSC_NULL if not needed.
 
 .keywords: distributed array, get, ghost, corners, nodes, local indices

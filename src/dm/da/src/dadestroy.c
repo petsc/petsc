@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.16 1998/04/24 21:59:10 balay Exp balay $";
+static char vcid[] = "$Id: dadestroy.c,v 1.17 1998/04/24 22:03:13 balay Exp curfman $";
 #endif
  
 /*
@@ -13,10 +13,10 @@ static char vcid[] = "$Id: dadestroy.c,v 1.16 1998/04/24 21:59:10 balay Exp bala
 /*@C
    DADestroy - Destroys a distributed array.
 
+   Collective on DA
+
    Input Parameter:
 .  da - the distributed array to destroy 
-
-   Collective on DA
 
 .keywords: distributed array, destroy
 
@@ -50,13 +50,13 @@ int DADestroy(DA da)
 /*@C
    DAGetISLocalToGlobalMapping - Accesses the local to global mapping in a DA.
 
+   Not Collective
+
    Input Parameter:
 .  da - the distributed array to destroy 
 
    Output Parameter:
 .  ltog - the mapping
-
-   Not Collective
 
 .keywords: distributed array, destroy
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daltog.c,v 1.10 1998/03/20 22:53:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daltog.c,v 1.11 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
  
 /*
@@ -14,15 +14,15 @@ static char vcid[] = "$Id: daltog.c,v 1.10 1998/03/20 22:53:07 bsmith Exp bsmith
    DALocalToGlobal - Maps values from the local patch back to the 
    global vector. The ghost points are discarded.
 
+   Not Collective
+
    Input Parameters:
-.  da - the distributed array context
++  da - the distributed array context
 .  l  - the local values
-.  mode - one of INSERT_VALUES or ADD_VALUES
+-  mode - one of INSERT_VALUES or ADD_VALUES
 
    Output Parameter:
 .  g - the global vector
-
-   Not Collective
 
    Note:
    The global and local vectors used here need not be the same as those

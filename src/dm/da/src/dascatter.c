@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dascatter.c,v 1.12 1997/10/19 03:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dascatter.c,v 1.13 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
  
 /*
@@ -14,17 +14,17 @@ static char vcid[] = "$Id: dascatter.c,v 1.12 1997/10/19 03:30:13 bsmith Exp bsm
    DAGetScatter - Gets the local-to-global, local-to-global, and 
    local-to-local vector scatter contexts for a distributed array.
 
+   Not Collective, but VecScatter is parallel if DA is parallel
+
    Input Parameter:
 .  da - the distributed array
 
    Output Parameters:
-.  ltog - local-to-global scatter context (may be PETSC_NULL)
++  ltog - local-to-global scatter context (may be PETSC_NULL)
 .  gtol - global-to-local scatter context (may be PETSC_NULL) 
-.  ltol - local-to-local scatter context (may be PETSC_NULL)
+-  ltol - local-to-local scatter context (may be PETSC_NULL)
 
-   Not Collective, but VecScatter is parallel if DA is parallel
-
-Notes:
+   Notes:
    The output contexts are valid only as long as the input da is valid.
    If you delete the da, the scatter contexts will become invalid.
 

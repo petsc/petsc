@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dasub.c,v 1.17 1997/12/01 01:57:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dasub.c,v 1.18 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
  
 /*
@@ -15,15 +15,15 @@ static char vcid[] = "$Id: dasub.c,v 1.17 1997/12/01 01:57:12 bsmith Exp bsmith 
    processors in a DA that own a particular global x, y, or z grid point
    (corresponding to a logical plane in a 3D grid or a line in a 2D grid).
 
+   Collective on DA
+
    Input Parameters:
-.  da - the distributed array
++  da - the distributed array
 .  dir - Cartesian direction, either DA_X, DA_Y, or DA_Z
-.  gp - global grid point number in this direction
+-  gp - global grid point number in this direction
 
    Output Parameters:
 .  comm - new communicator
-
-   Collective on DA
 
    Notes:
    This routine is particularly useful to compute boundary conditions

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.76 1998/04/09 04:18:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.77 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -93,23 +93,23 @@ int DAView_1d(DA da,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ "DACreate1d"
 /*@C
-    DACreate1d - Creates an object that will manage the communication of  one-dimensional 
-      regular array data that is distributed across some processors.
+   DACreate1d - Creates an object that will manage the communication of  one-dimensional 
+   regular array data that is distributed across some processors.
+
+   Collective on MPI_Comm
 
    Input Parameters:
-.  comm - MPI communicator
-.  wrap - Do you want ghost points to wrap around? Use one of
-$         DA_NONPERIODIC, DA_XPERIODIC
++  comm - MPI communicator
+.  wrap - type of periodicity should the array have, if any. Use 
+          either DA_NONPERIODIC or DA_XPERIODIC
 .  M - global dimension of the array
 .  w - number of degrees of freedom per node
-.  s - stencil width  
-.  lc - array containing number of nodes in the X direction on each processor, or PETSC_NULL.
-$       If non-null, must be of length as m.
+.  lc - array containing number of nodes in the X direction on each processor, 
+        or PETSC_NULL. If non-null, must be of length as m.
+-  s - stencil width  
 
    Output Parameter:
 .  inra - the resulting distributed array object
-
-   Collective on MPI_Comm
 
    Notes:
    The array data itself is NOT stored in the DA, it is stored in Vec objects;
@@ -117,7 +117,7 @@ $       If non-null, must be of length as m.
    and DACreateLocalVector() and calls to VecDuplicate() if more are needed.
 
    Options Database Key:
-$  -da_view : call DAView() at the conclusion of DACreate1d()
+.  -da_view - Calls DAView() at the conclusion of DACreate1d()
 
 .keywords: distributed array, create, one-dimensional
 

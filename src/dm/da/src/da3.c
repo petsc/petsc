@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.73 1998/04/09 04:18:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.74 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
 
 /*
@@ -148,34 +148,31 @@ int DAView_3d(DA da,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ "DACreate3d"
 /*@C
-    DACreate3d - Creates an object that will manage the communication of three-dimensional 
-      regular array data that is distributed across some processors.
+   DACreate3d - Creates an object that will manage the communication of three-dimensional 
+   regular array data that is distributed across some processors.
+
+   Collective on MPI_Comm
 
    Input Parameters:
-.  comm - MPI communicator
-.  wrap - type of periodicity the array should have, if any. 
-$      DA_NONPERIODIC, DA_XPERIODIC, 
-$      DA_YPERIODIC, DA_XYPERIODIC
-$      DA_XYZPERIODIC, DA_XZPERIODIC, 
-$      DA_YZPERIODIC
++  comm - MPI communicator
+.  wrap - type of periodicity the array should have, if any.  Use one
+          of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, or DA_YZPERIODIC.
 .  stencil_type - Type of stencil (DA_STENCIL_STAR or DA_STENCIL_BOX)
 .  M,N,P - global dimension in each direction of the array
 .  m,n,p - corresponding number of processors in each dimension 
            (or PETSC_DECIDE to have calculated)
 .  w - number of degrees of freedom per node
-.  s - stencil width
 .  lx, ly, lz - arrays containing the number of nodes in each cell along
-$           the x, y, and z coordinates, or PETSC_NULL. If non-null, these
-$           must be of length as m,n,p and the corresponding
-$           m,n, or p cannot be PETSC_DECIDE.
+          the x, y, and z coordinates, or PETSC_NULL. If non-null, these
+          must be of length as m,n,p and the corresponding
+          m,n, or p cannot be PETSC_DECIDE.
+-  s - stencil width
 
    Output Parameter:
 .  inra - the resulting distributed array object
 
-   Collective on MPI_Comm
-
    Options Database Key:
-$  -da_view : call DAView() at the conclusion of DACreate3d()
+.  -da_view - Calls DAView() at the conclusion of DACreate3d()
 
    Notes:
    The stencil type DA_STENCIL_STAR with width 1 corresponds to the 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.16 1997/10/19 03:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.17 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
  
 /*
@@ -14,14 +14,14 @@ static char vcid[] = "$Id: daindex.c,v 1.16 1997/10/19 03:30:13 bsmith Exp bsmit
    DAGetGlobalIndices - Returns the global node number of all local nodes,
    including ghost nodes.
 
+   Not Collective
+
    Input Parameter:
 .  da - the distributed array
 
    Output Parameters:
-.  n - the number of local elements, including ghost nodes (or PETSC_NULL)
-.  idx - the global indices
-
-   Not Collective
++  n - the number of local elements, including ghost nodes (or PETSC_NULL)
+-  idx - the global indices
 
    Note: 
    For DA_STENCIL_STAR stencils the inactive corner ghost nodes are also included
@@ -52,13 +52,13 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 /*@C
    DAGetAO - Gets the application ordering context for a distributed array.
 
+   Not Collective, but AO is parallel if DA is parallel
+
    Input Parameter:
 .  da - the distributed array
 
    Output Parameters:
 .  ao - the application ordering context for DAs
-
-   Not Collective, but AO is parallel if DA is parallel
 
    Notes:
    In this case, the AO maps to the natural grid ordering that would be used
@@ -85,16 +85,16 @@ int DAGetAO(DA da, AO *ao)
     global indices (global node number of all local nodes, including
     ghost nodes).
 
+    Synopsis:
+    DAGetGlobalIndicesF90(DA da,integer n,{Scalar, pointer :: idx(:)},integer ierr)
+
     Input Parameter:
 .   da - the distributed array
 
     Output Parameters:
-.   n - the number of local elements, including ghost nodes (or PETSC_NULL)
++   n - the number of local elements, including ghost nodes (or PETSC_NULL)
 .   idx - the Fortran90 pointer to the global indices
-.   ierr - error code
-
-    Synopsis:
-    DAGetGlobalIndicesF90(DA da,integer n,{Scalar, pointer :: idx(:)},integer ierr)
+-   ierr - error code
 
     Notes:
     Currently only supported using the NAG F90 compiler.

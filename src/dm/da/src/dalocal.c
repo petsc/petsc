@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dalocal.c,v 1.12 1998/04/03 23:18:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dalocal.c,v 1.13 1998/04/13 17:58:52 bsmith Exp curfman $";
 #endif
  
 /*
@@ -12,7 +12,9 @@ static char vcid[] = "$Id: dalocal.c,v 1.12 1998/04/03 23:18:16 bsmith Exp bsmit
 #define __FUNC__ "DACreateLocalVector"
 /*@C
    DACreateLocalVector - Creates a parallel PETSc vector that
-    may be used with the DAXXX routines.
+   may be used with the DAXXX routines.
+
+   Not Collective
 
    Input Parameter:
 .  da - the distributed array
@@ -20,11 +22,9 @@ static char vcid[] = "$Id: dalocal.c,v 1.12 1998/04/03 23:18:16 bsmith Exp bsmit
    Output Parameter:
 .  g - the local vector
 
-   Not Collective
-
    Note:
-    This is a regular PETSc vector that should be destroyed with 
-a call to VecDestroy().
+   This is a regular PETSc vector that should be destroyed with 
+   a call to VecDestroy().
 
 .keywords: distributed array, get, local, distributed, vector
 
