@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.74 1996/09/12 16:25:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.75 1996/09/14 03:05:33 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -113,7 +113,7 @@ int KSPSetFromOptions(KSP ksp)
       PLogObjectParent(ksp,(PetscObject) lg);
       KSPSetMonitor(ksp,KSPLGMonitor,(void *)lg);
       ksp->xmonitor = lg; 
-    }
+    } else ksp->monitor = 0;
     mset = 1;
   }
   /*
@@ -121,12 +121,16 @@ int KSPSetFromOptions(KSP ksp)
   */
   ierr = OptionsGetIntArray(ksp->prefix,"-ksp_xtruemonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg){
+    int    rank = 0;
     DrawLG lg;
+    MPI_Comm_rank(ksp->comm,&rank);
     if (mset) SETERRQ(1,"KSPSetFromOptions:Monitor for KSP is already set");
-    ierr = KSPLGTrueMonitorCreate(ksp->comm,0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
-    PLogObjectParent(ksp,(PetscObject) lg);
-    KSPSetMonitor(ksp,KSPLGTrueMonitor,(void *)lg);
-    ksp->xmonitor = lg; 
+    if (!rank) {
+      ierr = KSPLGTrueMonitorCreate(ksp->comm,0,0,loc[0],loc[1],loc[2],loc[3],&lg);CHKERRQ(ierr);
+      PLogObjectParent(ksp,(PetscObject) lg);
+      KSPSetMonitor(ksp,KSPLGTrueMonitor,(void *)lg);
+      ksp->xmonitor = lg; 
+    } else ksp->monitor = 0;
     mset = 1;
   }
   /* -----------------------------------------------------------------------*/
@@ -145,7 +149,7 @@ int KSPSetFromOptions(KSP ksp)
              KSPGMRESUnmodifiedGramSchmidtOrthogonalization ); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_irorthog",&flg);CHKERRQ(ierr);
   if (flg) { KSPGMRESSetOrthogonalization(ksp, KSPGMRESIROrthogonalization);}
-  ierr = OptionsHasName(ksp->prefix,"-ksp_eigen",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(ksp->prefix,"-ksp_compute_singularvalues",&flg); CHKERRQ(ierr);
   if (flg) { KSPSetComputeSingularValues(ksp); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flg);CHKERRQ(ierr);
   if (flg) { KSPSetComputeSingularValues(ksp); }
@@ -200,16 +204,21 @@ int KSPPrintHelp(KSP ksp)
     PetscPrintf(ksp->comm," %sksp_preres: use preconditioned residual norm in convergence test\n",p);
     PetscPrintf(ksp->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
     PetscPrintf(ksp->comm," KSP Monitoring Options: Choose 1 of the following\n");
-    PetscPrintf(ksp->comm,"   %sksp_monitor: at each iteration print (usually precond.) resid. norm to stdout\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually precond.) resid. norm\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_truemonitor: at each iteration print true and precond. resid. norms to stdout\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_xtruemonitor [x,y,w,h]: use X graphics monitor of true resid. norm\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_monitor: at each iteration print (usually preconditioned) \n\
+    residual norm to stdout\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually \n\
+    preconditioned) residual norm\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_truemonitor: at each iteration print true and preconditioned\n\
+    residual norms to stdout\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_xtruemonitor [x,y,w,h]: use X graphics monitor of true\n\
+    residual norm\n",p);
     PetscPrintf(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n                     (only for CG and GMRES)\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_bsmonitor: at each iteration print the unscaled and scaled residual\n                   norms to stdout (only for ICC and ILU in BlockSolve95)\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_bsmonitor: at each iteration print the unscaled and \n                   scaled residual norms to stdout\n
+          (only for ICC and ILU in BlockSolve95)\n",p);
     PetscPrintf(ksp->comm," GMRES Options:\n");
     PetscPrintf(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative GMRES orthogonalization\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_gmres_irorthog: use iterative refinement in GMRES orthogonalization\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_gmres_irorthog: use iterative refinement in orthogonalization\n",p);
     PetscPrintf(ksp->comm,"   %sksp_gmres_preallocate: preallocate GMRES work vectors\n",p);
 #if defined(PETSC_COMPLEX)
     PetscPrintf(ksp->comm," CG Options:\n");
@@ -222,7 +231,8 @@ int KSPPrintHelp(KSP ksp)
 
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
-   KSP options in the database.
+   KSP options in the database. You must not include the - at the beginning of 
+   the prefix name.
 
    Input Parameters:
 .  ksp - the Krylov context
@@ -233,12 +243,13 @@ int KSPPrintHelp(KSP ksp)
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  return PetscObjectSetPrefix((PetscObject)ksp, prefix);
+  return PetscObjectSetOptionsPrefix((PetscObject)ksp, prefix);
 }
  
 /*@C
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
-   KSP options in the database.
+   KSP options in the database. You must NOT include the - at the beginning of 
+   the prefix name. 
 
    Input Parameters:
 .  ksp - the Krylov context
@@ -249,7 +260,7 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  return PetscObjectAppendPrefix((PetscObject)ksp, prefix);
+  return PetscObjectAppendOptionsPrefix((PetscObject)ksp, prefix);
 }
 
 /*@
@@ -267,7 +278,7 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 int KSPGetOptionsPrefix(KSP ksp,char **prefix)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  return PetscObjectGetPrefix((PetscObject)ksp, prefix);
+  return PetscObjectGetOptionsPrefix((PetscObject)ksp, prefix);
 }
 
  

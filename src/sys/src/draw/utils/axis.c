@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axis.c,v 1.31 1996/07/15 17:55:01 balay Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.32 1996/09/04 22:48:58 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -237,7 +237,43 @@ int DrawAxisDraw(DrawAxis ad)
 }
 
 /*
-     Removes the extraneous zeros in numbers like 1.10000e6
+    Removes all zeros but one from .0000 
+*/
+static int PetscStripAllZeros(char *buf)
+{
+  int i,n = (int) PetscStrlen(buf);
+  if (buf[0] != '.') return 0;
+  for ( i=1; i<n; i++ ) {
+    if (buf[i] != '0') return 0;
+  }
+  buf[0] = '0';
+  buf[1] = 0;
+  return 0;
+}
+
+/*
+    Removes trailing zeros
+*/
+static int PetscStripTrailingZeros(char *buf)
+{
+  int i,n = (int) PetscStrlen(buf),m = -1;
+
+  /* locate decimal point */
+  for ( i=0; i<n; i++ ) {
+    if (buf[i] == '.') {m = i; break;}
+  }
+  /* if not decimal point then no zeros to remove */
+  if (m == -1) return 0;
+  /* start at right end of string removing 0s */
+  for ( i=n-1; i>m; i++ ) {
+    if (buf[i] != '0') return 0;
+    buf[i] = 0;
+  }
+  return 0;
+}
+
+/*
+    Removes leading 0 from 0.22 or -0.22
 */
 static int PetscStripInitialZero(char *buf)
 {
@@ -254,6 +290,9 @@ static int PetscStripInitialZero(char *buf)
   return 0;
 }
 
+/*
+     Removes the extraneous zeros in numbers like 1.10000e6
+*/
 static int PetscStripZeros(char *buf)
 {
   int i,j,n = (int) PetscStrlen(buf);
@@ -267,6 +306,10 @@ static int PetscStripZeros(char *buf)
   }
   return 0;
 }
+
+/*
+      Removes the plus in something like 1.1e+2
+*/
 static int PetscStripZerosPlus(char *buf)
 {
   int i,j,n = (int) PetscStrlen(buf);
@@ -281,10 +324,16 @@ static int PetscStripZerosPlus(char *buf)
         for ( j=i+1; j<n+1; j++ ) buf[j] = buf[j+1];
         return 0;  
       }
+    } else if (buf[i] == '-') {
+      if (buf[i+1] == '0') {
+        for ( j=i+1; j<n+1; j++ ) buf[j] = buf[j+1];
+        return 0;
+      }
     }
   }
   return 0;
 }
+
 /*
    val is the label value.  sep is the separation to the next (or previous)
    label; this is useful in determining how many significant figures to   
@@ -297,7 +346,9 @@ static char *PetscADefLabel(double val,double sep )
   int    w, d;
 
   /* Find the string */
-  if (PetscAbsDouble(val) < 1.0e6) {
+  if (PetscAbsDouble(val)/sep <  1.e-6) {
+    buf[0] = '0'; buf[1] = 0;
+  } else if (PetscAbsDouble(val) < 1.0e6 && PetscAbsDouble(val) > 1.e-4) {
     /* Compute the number of digits */
     w = 0;
     d = 0;
@@ -321,6 +372,8 @@ static char *PetscADefLabel(double val,double sep )
 	else PetscStrcpy( fmat, "%d" );
 	sprintf( buf, fmat, (int)val );
         PetscStripInitialZero(buf);
+        PetscStripAllZeros(buf);
+        PetscStripTrailingZeros(buf);
     } else {
 	/* The code used here is inappropriate for a val of 0, which
 	   tends to print with an excessive numer of digits.  In this
@@ -330,6 +383,8 @@ static char *PetscADefLabel(double val,double sep )
 	else PetscStrcpy( fmat, "%lf" );
 	sprintf( buf, fmat, val );
         PetscStripInitialZero(buf);
+        PetscStripAllZeros(buf);
+        PetscStripTrailingZeros(buf);
     }
   } else {
     sprintf( buf, "%e", val );
@@ -337,20 +392,22 @@ static char *PetscADefLabel(double val,double sep )
     PetscStripZeros(buf);
     PetscStripZerosPlus(buf);
     PetscStripInitialZero(buf);
+    PetscStripAllZeros(buf);
+    PetscStripTrailingZeros(buf);
   }
   return buf;
 }
 
-/* This is a simple routine that finds "nice" locations for the ticks */
+/* Finds "nice" locations for the ticks */
 static int PetscADefTicks( double low, double high, int num, int *ntick,
-                        double * tickloc,int  maxtick )
+                           double * tickloc,int  maxtick )
 {
   int    i;
   double x, base;
   int    power;
 
   /* patch if low == high */
-  if (PetscAbsScalar(low-high) < 1.e-5) {
+  if (PetscAbsDouble(low-high) < 1.e-8) {
     low  -= .01;
     high += .01;
   }
