@@ -1699,7 +1699,6 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatLUInfo *info,Mat *fact)
 int MatLUFactorNumeric(Mat mat,Mat *fact)
 {
   int        ierr;
-  PetscTruth flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);

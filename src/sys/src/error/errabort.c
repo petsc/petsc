@@ -57,7 +57,7 @@ $     SETERRQ(number,mess)
 @*/
 int PetscAbortErrorHandler(int line,char *fun,char *file,char* dir,int n,int p,char *mess,void *ctx)
 {
-  int ierr,rank;
+  int rank;
 
   PetscFunctionBegin;
   if (!fun)  fun = "User provided function";
