@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.33 1996/04/15 22:09:27 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.34 1996/07/08 22:23:15 bsmith Exp curfman $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -94,7 +94,8 @@ C Write results if first processor
       endif
   100 format('Number of Newton iterations = ',i5)
 
-C Free data structures
+C  Free work space.  All PETSc objects should be destroyed when they
+C  are no longer needed.
       call VecDestroy(x,ierr)
       call VecDestroy(ctx(3),ierr)
       call VecDestroy(r,ierr)
