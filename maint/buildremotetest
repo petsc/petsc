@@ -24,6 +24,8 @@ sleep 21600
 autoftp joshua.math.ucla.edu bsmith get buildtest.log /home/bsmith/petsc/maint/nightlylogs/solaris.log >>& ftp.log
 autoftp h4p.llnl.gov bsmith get buildtest.log /home/bsmith/petsc/maint/nightlylogs/t3d.log >>& ftp.log
 autoftp ursula.cs.msstate.edu curfman get buildtest.log /home/bsmith/petsc/maint/nightlylogs/linux.log >>& ftp.log
+
+chmod -f g+rw /home/bsmith/petsc/maint/nightlylogs/solaris.log /home/bsmith/petsc/maint/nightlylogs/t3d.log /home/bsmith/petsc/maint/nightlylogs/linux.log >>& ftp.log
 echo "ftp logging complete: `date` " >> ftp.log
 
 
