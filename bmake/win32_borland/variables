@@ -1,9 +1,9 @@
-# $Id: base_variables,v 1.1 2001/03/09 19:52:32 balay Exp balay $ 
+# $Id: base_variables,v 1.2 2001/03/09 21:02:02 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
 WIN32FE            = ${PETSC_DIR}/bin/win32fe/win32fe.exe
-AR		   = ${WIN32FE} tlib -P128 --quiet
+AR		   = ${WIN32FE} tlib -c -P128 --quiet
 AR_FLAGS	   = -u
 LIB_SUFFIX         = lib
 RM		   = rm -f

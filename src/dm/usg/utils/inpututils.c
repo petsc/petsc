@@ -1,4 +1,4 @@
-/* $Id: inpututils.c,v 1.14 2001/03/09 19:18:47 balay Exp balay $ */
+/* $Id: inpututils.c,v 1.15 2001/03/09 20:57:41 balay Exp balay $ */
 
 /*
        Utilities for inputing, creating and managing simple two dimensional grids
@@ -101,9 +101,9 @@ int AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
      Open help window and enter helpful messages
   */
   ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-  ierr = PetscDrawString(popup,.1,.9,PETSC_DRAW_BLUE,"Use left button to\n   enter cell.");
-  ierr = PetscDrawString(popup,.1,.7,PETSC_DRAW_BLUE,"Use center button to\n   end.");
-  ierr = PetscDrawFlush(popup);
+  ierr = PetscDrawString(popup,.1,.9,PETSC_DRAW_BLUE,"Use left button to\n   enter cell.");CHKERRQ(ierr);
+  ierr = PetscDrawString(popup,.1,.7,PETSC_DRAW_BLUE,"Use center button to\n   end.");CHKERRQ(ierr);
+  ierr = PetscDrawFlush(popup);CHKERRQ(ierr);
 
   ierr     = PetscDrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
@@ -119,7 +119,8 @@ int AOData2dGridInput(AOData2dGrid agrid,PetscDraw draw)
     ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn);CHKERRQ(ierr);
     cell[4*agrid->cell_n+1] = cn;
     ierr = PetscDrawLine(draw,vertex[2*cell[4*agrid->cell_n]],vertex[1+2*cell[4*agrid->cell_n]],
-                         vertex[2*cell[4*agrid->cell_n+1]],vertex[1+2*cell[4*agrid->cell_n+1]],PETSC_DRAW_RED);
+                         vertex[2*cell[4*agrid->cell_n+1]],vertex[1+2*cell[4*agrid->cell_n+1]],
+                         PETSC_DRAW_RED);CHKERRQ(ierr);
     sprintf(title,"Input grid: Number vertex %d Number cell %d",agrid->vertex_n,agrid->cell_n);
     ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);
     /* wait for third vertex */

@@ -1,4 +1,4 @@
-/*$Id: aijbaij.c,v 1.4 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: aijbaij.c,v 1.5 2001/01/16 18:17:47 balay Exp balay $*/
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -39,7 +39,7 @@ int MatConvert_SeqBAIJ_SeqAIJ(Mat A,MatType newtype,Mat *B)
       }
       aj++;
     }
-    ierr  = MatSetValues(*B,bs,rows,bs*ncols,cols,aa,INSERT_VALUES);
+    ierr  = MatSetValues(*B,bs,rows,bs*ncols,cols,aa,INSERT_VALUES);CHKERRQ(ierr);
     aa   += ncols*bs*bs;
   }
   ierr = PetscFree(cols);CHKERRQ(ierr);
