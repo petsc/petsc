@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.3 1998/08/26 21:55:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.4 1998/09/25 03:15:54 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -225,7 +225,7 @@ int ViewerDestroyAMS_Private(void)
 
   PetscFunctionBegin;
   ierr = VIEWER_AMS_Destroy(PETSC_COMM_SELF);CHKERRQ(ierr);
-  ierr = ViewerDestroy(VIEWER_AMS_WORLD);CHKERRQ(ierr);
+  ierr = VIEWER_AMS_Destroy(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
