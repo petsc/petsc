@@ -1447,9 +1447,6 @@ int MatIsSymmetric_SeqAIJ(Mat A,Mat B,PetscTruth *f)
   int ma,na,mb,nb, i,ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetType(B,&type); CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,MATSEQAIJ,&flg); CHKERRQ(ierr);
-  if (!flg) SETERRQ(1,"Second matrix needs to be SeqAIJ too");
   bij = (Mat_SeqAIJ *) B->data;
   
   ierr = MatGetSize(A,&ma,&na); CHKERRQ(ierr);

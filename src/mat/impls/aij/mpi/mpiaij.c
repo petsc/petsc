@@ -654,11 +654,6 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
 
   PetscFunctionBegin;
 
-  /* Compatible types */
-  ierr = MatGetType(Bmat,&type); CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,MATMPIAIJ,f); CHKERRQ(ierr);
-  if (!*f) SETERRQ(1,"Second matrix needs to be MPIAIJ too");
-
   /* Easy test: symmetric diagonal block */
   Bij = (Mat_MPIAIJ *) Bmat->data; Bdia = Bij->A;
   ierr = MatIsSymmetric(Adia,Bdia,f); CHKERRQ(ierr);

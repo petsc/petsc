@@ -2690,14 +2690,19 @@ int MatTranspose(Mat mat,Mat *B)
 @*/
 int MatIsSymmetric(Mat A,Mat B,PetscTruth *flg)
 {
-  int ierr,(*f)(Mat,Mat,PetscTruth*);
+  int ierr,(*f)(Mat,Mat,PetscTruth*),(*g)(Mat,Mat,PetscTruth*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
   PetscValidHeaderSpecific(B,MAT_COOKIE);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsSymmetric_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(A,B,flg);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsSymmetric_C",(void (**)(void))&g);CHKERRQ(ierr);
+  if (f && g) {
+    if (f==g) {
+      ierr = (*f)(A,B,flg);CHKERRQ(ierr);
+    } else {
+      SETERRQ(1,"Matrices do not have the same comparator for symmetry test");
+    }
   }
   PetscFunctionReturn(0);
 }
