@@ -55,7 +55,7 @@ extern int PetscML_matvec(ML_Operator *ML_data, int in_length, double p[], int o
 extern int PetscML_comm(double x[], void *ML_data);
 extern PetscErrorCode MatMult_ML(Mat,Vec,Vec);
 extern PetscErrorCode MatMultAdd_ML(Mat,Vec,Vec,Vec);
-extern PetscErrorCode MatConvert_MPIAIJ_ML(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_MPIAIJ_ML(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode MatDestroy_ML(Mat);
 extern PetscErrorCode MatWrapML_SeqAIJ(ML_Operator*,Mat*);
 extern PetscErrorCode MatWrapML_MPIAIJ(ML_Operator*,Mat*);
@@ -564,7 +564,7 @@ PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
 /* newtype is ignored because "ml" is not listed under Petsc MatType yet */
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_MPIAIJ_ML"
-PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,const MatType newtype,MatReuse scall,Mat *Aloc) 
+PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,Mat *Aloc) 
 {
   PetscErrorCode  ierr;
   Mat_MPIAIJ      *mpimat=(Mat_MPIAIJ*)A->data; 

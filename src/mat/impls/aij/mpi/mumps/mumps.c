@@ -49,7 +49,7 @@ typedef struct {
 
 EXTERN PetscErrorCode MatDuplicate_MUMPS(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat,const MatType,MatReuse,Mat*);
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat,MatType,MatReuse,Mat*);
 EXTERN_C_END
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
@@ -151,7 +151,7 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MUMPS_Base"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MUMPS_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) \
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MUMPS_Base(Mat A,MatType type,MatReuse reuse,Mat *newmat) \
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -693,7 +693,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *in
   PetscFunctionBegin;
   /* Create the factorization matrix */ 
   ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
-  ierr = MatSizes(B,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
@@ -727,7 +727,7 @@ PetscErrorCode MatAssemblyEnd_AIJMUMPS(Mat A,MatAssemblyType mode) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_AIJ_AIJMUMPS"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_AIJMUMPS(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -889,7 +889,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SBAIJ_SBAIJMUMPS"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat A,MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

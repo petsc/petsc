@@ -34,7 +34,7 @@ EXTERN PetscErrorCode MatDuplicate_UMFPACK(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_UMFPACK_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_UMFPACK_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_UMFPACK_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
   /* This routine is only called to convert an unfactored PETSc-UMFPACK matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
@@ -340,7 +340,7 @@ PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_UMFPACK"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_UMFPACK(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_UMFPACK(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATUMFPACK */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
