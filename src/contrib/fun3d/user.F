@@ -2399,7 +2399,7 @@ c
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,
      &             nstage,ncyct,iramp,nitfo
-      integer n,node1,node2
+      integer n,node1,node2,ierr
       integer flops
       Scalar dx1,dy1,dz1,dx2,dy2,dz2,
      &       dq1,dq2,dq3,dq4,
@@ -2459,7 +2459,7 @@ c       grady(4,i) = 0.0
 c       gradz(4,i) = 0.0
 c
 c1000  continue
-      call PetscMemzero(grad,12*8*nnodes)
+      call PetscMemzero(grad,12*8*nnodes,ierr)
 c
 c If second order, loop over all the faces accumulate sums
 c
