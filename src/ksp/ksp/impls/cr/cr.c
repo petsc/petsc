@@ -39,14 +39,14 @@ static int  KSPSolve_CR(KSP ksp)
   Q       = ksp->work[5];
 
   /* R is the true residual norm, RT is the preconditioned residual norm */
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);     /*   R <- A*X           */
     ierr = VecAYPX(&mone,B,R);CHKERRQ(ierr);            /*   R <- B-R == B-A*X  */
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);                  /*   R <- B (X is 0)    */
   }
-  ierr = KSP_PCApply(ksp,ksp->B,R,P);CHKERRQ(ierr);     /*   P   <- B*R         */
+  ierr = KSP_PCApply(ksp,R,P);CHKERRQ(ierr);     /*   P   <- B*R         */
   ierr = KSP_MatMult(ksp,Amat,P,AP);CHKERRQ(ierr);      /*   AP  <- A*P         */
   ierr = VecCopy(P,RT);CHKERRQ(ierr);                   /*   RT  <- P           */
   ierr = VecCopy(AP,ART);CHKERRQ(ierr);                 /*   ART <- AP          */
@@ -69,7 +69,7 @@ static int  KSPSolve_CR(KSP ksp)
 
   i = 0;
   do {
-    ierr   = KSP_PCApply(ksp,ksp->B,AP,Q);CHKERRQ(ierr);/*   Q <- B* AP          */
+    ierr   = KSP_PCApply(ksp,AP,Q);CHKERRQ(ierr);/*   Q <- B* AP          */
                                                         /* Step 3                */
 
     ierr   = VecDot(AP,Q,&apq);CHKERRQ(ierr);  

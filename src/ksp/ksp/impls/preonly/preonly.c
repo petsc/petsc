@@ -19,7 +19,7 @@ static int  KSPSolve_PREONLY(KSP ksp)
   PetscTruth diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
   if (!ksp->guess_zero) {
     SETERRQ(1,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
@@ -29,7 +29,7 @@ static int  KSPSolve_PREONLY(KSP ksp)
   ksp->its    = 0;
   X           = ksp->vec_sol;
   B           = ksp->vec_rhs;
-  ierr        = KSP_PCApply(ksp,ksp->B,B,X);CHKERRQ(ierr);
+  ierr        = KSP_PCApply(ksp,B,X);CHKERRQ(ierr);
   ksp->its    = 1;
   ksp->reason = KSP_CONVERGED_ITS;
   PetscFunctionReturn(0);

@@ -154,7 +154,7 @@ int KSPSetUpOnBlocks(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  ierr = PCSetUpOnBlocks(ksp->B);CHKERRQ(ierr);
+  ierr = PCSetUpOnBlocks(ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -200,7 +200,7 @@ int KSPSetUp(KSP ksp)
   /* scale the matrix if requested */
   if (ksp->dscale) {
     Mat mat,pmat;
-    ierr = PCGetOperators(ksp->B,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
     if (mat == pmat) {
       PetscScalar  *xx;
       int          i,n;
@@ -230,13 +230,13 @@ int KSPSetUp(KSP ksp)
     }
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
-  ierr = PCSetUp(ksp->B);CHKERRQ(ierr);
+  ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   if (ksp->nullsp) {
     PetscTruth test;
     ierr = PetscOptionsHasName(ksp->prefix,"-ksp_test_null_space",&test);CHKERRQ(ierr);
     if (test) {
       Mat mat;
-      ierr = PCGetOperators(ksp->B,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatNullSpaceTest(ksp->nullsp,mat);CHKERRQ(ierr);
     }
   }
@@ -316,7 +316,7 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_binary",&flg);CHKERRQ(ierr); 
   if (flg) {
     Mat mat;
-    ierr = PCGetOperators(ksp->B,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
     ierr = VecView(ksp->vec_rhs,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
   }
@@ -330,7 +330,7 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
   ksp->transpose_solve = PETSC_FALSE;
-  ierr = PCPreSolve(ksp->B,ksp);CHKERRQ(ierr);
+  ierr = PCPreSolve(ksp->pc,ksp);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
     ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_rhs,ksp->vec_rhs);CHKERRQ(ierr);
@@ -338,7 +338,7 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
     if (ksp->dscalefix && ksp->dscalefix2) {
       Mat mat;
 
-      ierr = PCGetOperators(ksp->B,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
     }
   }
@@ -346,7 +346,7 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
-    ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+    ierr            = PCApply(ksp->pc,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
     ierr            = KSP_RemoveNullSpace(ksp,ksp->vec_sol);CHKERRQ(ierr);
     ksp->guess_zero = PETSC_FALSE;
   }
@@ -371,13 +371,13 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
 
       ierr = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
       ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_rhs,ksp->vec_rhs);CHKERRQ(ierr);
-      ierr = PCGetOperators(ksp->B,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
       ierr = VecReciprocal(ksp->diagonal);CHKERRQ(ierr);
       ksp->dscalefix2 = PETSC_TRUE;
     }
   }
-  ierr = PCPostSolve(ksp->B,ksp);CHKERRQ(ierr);
+  ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
@@ -461,7 +461,7 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_operator",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat A,B;
-    ierr = PCGetOperators(ksp->B,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(ksp->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
@@ -471,7 +471,7 @@ int KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_operator_binary",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat A,B;
-    ierr = PCGetOperators(ksp->B,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
@@ -568,7 +568,7 @@ int KSPDestroy(KSP ksp)
       ierr = (*ksp->monitordestroy[i])(ksp->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
-  ierr = PCDestroy(ksp->B);CHKERRQ(ierr);
+  ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   PetscLogObjectDestroy(ksp);
   PetscHeaderDestroy(ksp);
@@ -983,7 +983,7 @@ int KSPGetSolution(KSP ksp,Vec *v)
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
--  B   - the preconditioner object
+-  pc   - the preconditioner object
 
    Notes:
    Use KSPGetPC() to retrieve the preconditioner context (for example,
@@ -995,17 +995,17 @@ int KSPGetSolution(KSP ksp,Vec *v)
 
 .seealso: KSPGetPC()
 @*/
-int KSPSetPC(KSP ksp,PC B)
+int KSPSetPC(KSP ksp,PC pc)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  PetscValidHeaderSpecific(B,PC_COOKIE,2);
-  PetscCheckSameComm(ksp,1,B,2);
-  if (ksp->B) {ierr = PCDestroy(ksp->B);CHKERRQ(ierr);}
-  ksp->B = B;
-  ierr = PetscObjectReference((PetscObject)ksp->B);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,2);
+  PetscCheckSameComm(ksp,1,pc,2);
+  if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
+  ksp->pc = pc;
+  ierr = PetscObjectReference((PetscObject)ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1021,7 +1021,7 @@ int KSPSetPC(KSP ksp,PC B)
 .  ksp - iterative context obtained from KSPCreate()
 
    Output Parameter:
-.  B - preconditioner context
+.  pc - preconditioner context
 
    Level: developer
 
@@ -1029,12 +1029,12 @@ int KSPSetPC(KSP ksp,PC B)
 
 .seealso: KSPSetPC()
 @*/
-int KSPGetPC(KSP ksp,PC *B)
+int KSPGetPC(KSP ksp,PC *pc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  PetscValidPointer(B,2);
-  *B = ksp->B; 
+  PetscValidPointer(pc,2);
+  *pc = ksp->pc; 
   PetscFunctionReturn(0);
 }
 

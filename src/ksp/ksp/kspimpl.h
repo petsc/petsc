@@ -68,7 +68,7 @@ struct _p_KSP {
   int        (*converged)(KSP,int,PetscReal,KSPConvergedReason*,void*);
   void       *cnvP; 
 
-  PC         B;
+  PC         pc;
 
   void       *data;                      /* holder for misc stuff associated 
                                    with a particular iterative solver */
@@ -117,15 +117,14 @@ EXTERN int KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
 EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
 
 /*
-       These allow the various Krylov methods to apply to either the linear system
-    or its transpose.
+       These allow the various Krylov methods to apply to either the linear system or its transpose.
 */
 #define KSP_RemoveNullSpace(ksp,y) ((ksp->nullsp && ksp->pc_side == PC_LEFT) ? MatNullSpaceRemove(ksp->nullsp,y,PETSC_NULL) : 0)
 
-#define KSP_MatMult(ksp,A,x,y)               (!ksp->transpose_solve) ?  MatMult(A,x,y)               : MatMultTranspose(A,x,y) 
-#define KSP_MatMultTranspose(ksp,A,x,y)      (!ksp->transpose_solve) ?  MatMultTranspose(A,x,y)      : MatMult(A,x,y) 
-#define KSP_PCApply(ksp,B,x,y)               (!ksp->transpose_solve) ?  (PCApply(B,x,y) || KSP_RemoveNullSpace(ksp,y)) : PCApplyTranspose(B,x,y) 
-#define KSP_PCApplyTranspose(ksp,B,x,y)      (!ksp->transpose_solve) ?  PCApplyTranspose(B,x,y)      : (PCApply(B,x,y) || KSP_RemoveNullSpace(ksp,y)) 
-#define KSP_PCApplyBAorAB(ksp,B,side,x,y,w)  (!ksp->transpose_solve) ?  (PCApplyBAorAB(B,side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorABTranspose(B,side,x,y,w)
+#define KSP_MatMult(ksp,A,x,y)          (!ksp->transpose_solve) ? MatMult(A,x,y)                                                            : MatMultTranspose(A,x,y) 
+#define KSP_MatMultTranspose(ksp,A,x,y) (!ksp->transpose_solve) ? MatMultTranspose(A,x,y)                                                   : MatMult(A,x,y) 
+#define KSP_PCApply(ksp,x,y)            (!ksp->transpose_solve) ? (PCApply(ksp->pc,x,y) || KSP_RemoveNullSpace(ksp,y))                      : PCApplyTranspose(ksp->pc,x,y) 
+#define KSP_PCApplyTranspose(ksp,x,y)   (!ksp->transpose_solve) ? PCApplyTranspose(ksp->pc,x,y)                                             : (PCApply(ksp->pc,x,y) || KSP_RemoveNullSpace(ksp,y)) 
+#define KSP_PCApplyBAorAB(ksp,x,y,w)    (!ksp->transpose_solve) ? (PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w)
 
 #endif

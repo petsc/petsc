@@ -31,7 +31,7 @@ static int  KSPSolve_CGS(KSP ksp)
   PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   X       = ksp->vec_sol;
@@ -87,7 +87,7 @@ static int  KSPSolve_CGS(KSP ksp)
   ierr = VecDot(R,RP,&rhoold);CHKERRQ(ierr);        /* rhoold = (r,rp)      */
   ierr = VecCopy(R,U);CHKERRQ(ierr);
   ierr = VecCopy(R,P);CHKERRQ(ierr);
-  ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,T);CHKERRQ(ierr);
+  ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);
 
   i = 0;
   do {
@@ -98,7 +98,7 @@ static int  KSPSolve_CGS(KSP ksp)
     ierr = VecWAXPY(&tmp,V,U,Q);CHKERRQ(ierr);      /* q <- u - a v         */
     ierr = VecWAXPY(&one,U,Q,T);CHKERRQ(ierr);      /* t <- u + q           */
     ierr = VecAXPY(&a,T,X);CHKERRQ(ierr);           /* x <- x + a (u + q)   */
-    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,T,AUQ,U);CHKERRQ(ierr);
+    ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,U);CHKERRQ(ierr);
     ierr = VecAXPY(&tmp,AUQ,R);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
@@ -120,7 +120,7 @@ static int  KSPSolve_CGS(KSP ksp)
     ierr = VecWAXPY(&b,Q,R,U);CHKERRQ(ierr);        /* u <- r + b q         */
     ierr = VecAXPY(&b,P,Q);CHKERRQ(ierr);
     ierr = VecWAXPY(&b,Q,U,P);CHKERRQ(ierr);        /* p <- u + b(q + b p)  */
-    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,Q);CHKERRQ(ierr);      /* v <- K p    */
+    ierr = KSP_PCApplyBAorAB(ksp,P,V,Q);CHKERRQ(ierr);      /* v <- K p    */
     rhoold = rho;
     i++;
   } while (i<ksp->max_it);

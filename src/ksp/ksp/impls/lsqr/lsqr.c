@@ -54,10 +54,10 @@ static int KSPSolve_LSQR(KSP ksp)
   PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
-  ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   /* vectors of length m, where system size is mxn */
   B        = ksp->vec_rhs;

@@ -81,9 +81,9 @@ int  KSPSolve_CGNE(KSP ksp)
   PetscTruth   diagonalscale,transpose_pc;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale); CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale); CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
-  ierr = PCHasApplyTranspose(ksp->B,&transpose_pc); CHKERRQ(ierr);
+  ierr = PCHasApplyTranspose(ksp->pc,&transpose_pc); CHKERRQ(ierr);
 
   cg            = (KSP_CG*)ksp->data;
   eigs          = ksp->calc_sings;
@@ -102,7 +102,7 @@ int  KSPSolve_CGNE(KSP ksp)
 #endif
 
   if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; b = 0.0; }
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   ksp->its = 0;
   ierr = MatMultTranspose(Amat,B,T); CHKERRQ(ierr);
@@ -113,11 +113,11 @@ int  KSPSolve_CGNE(KSP ksp)
   } else { 
     ierr = VecCopy(T,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
-  ierr = KSP_PCApply(ksp,ksp->B,R,T); CHKERRQ(ierr);
+  ierr = KSP_PCApply(ksp,R,T); CHKERRQ(ierr);
   if (transpose_pc) {
-    ierr = KSP_PCApplyTranspose(ksp,ksp->B,T,Z); CHKERRQ(ierr);
+    ierr = KSP_PCApplyTranspose(ksp,T,Z); CHKERRQ(ierr);
   } else {
-    ierr = KSP_PCApply(ksp,ksp->B,T,Z); CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,T,Z); CHKERRQ(ierr);
   }
 
   ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
@@ -172,11 +172,11 @@ int  KSPSolve_CGNE(KSP ksp)
      ierr = VecAXPY(&a,P,X);CHKERRQ(ierr);          /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                      /*     r <- r - az     */
      if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-       ierr = KSP_PCApply(ksp,ksp->B,R,T); CHKERRQ(ierr);
+       ierr = KSP_PCApply(ksp,R,T); CHKERRQ(ierr);
        if (transpose_pc) {
-	 ierr = KSP_PCApplyTranspose(ksp,ksp->B,T,Z); CHKERRQ(ierr);
+	 ierr = KSP_PCApplyTranspose(ksp,T,Z); CHKERRQ(ierr);
        } else {
-	 ierr = KSP_PCApply(ksp,ksp->B,T,Z); CHKERRQ(ierr);
+	 ierr = KSP_PCApply(ksp,T,Z); CHKERRQ(ierr);
        }
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
      } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
@@ -192,7 +192,7 @@ int  KSPSolve_CGNE(KSP ksp)
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
      if (ksp->normtype != KSP_PRECONDITIONED_NORM) {
-       ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /* z <- Br  */
+       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /* z <- Br  */
      }
      i++;
   } while (i<ksp->max_it);

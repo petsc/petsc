@@ -40,22 +40,22 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
   PetscValidHeaderSpecific(vsoln,VEC_COOKIE,2);
   PetscValidHeaderSpecific(vres,VEC_COOKIE,5);
   PetscValidHeaderSpecific(vb,VEC_COOKIE,6);
-  PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
+  PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);
   if (!ksp->guess_zero) {
     /* skip right scaling since current guess already has it */
     ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);
     ierr = VecCopy(vb,vt2);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,vt1,vt2);CHKERRQ(ierr);
-    ierr = (ksp->pc_side == PC_RIGHT)?(VecCopy(vt2,vres)):(KSP_PCApply(ksp,ksp->B,vt2,vres));CHKERRQ(ierr);
-    ierr = PCDiagonalScaleLeft(ksp->B,vres,vres);CHKERRQ(ierr);
+    ierr = (ksp->pc_side == PC_RIGHT)?(VecCopy(vt2,vres)):(KSP_PCApply(ksp,vt2,vres));CHKERRQ(ierr);
+    ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
   } else {
     if (ksp->pc_side == PC_RIGHT) {
-      ierr = PCDiagonalScaleLeft(ksp->B,vb,vres);CHKERRQ(ierr);
+      ierr = PCDiagonalScaleLeft(ksp->pc,vb,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_LEFT) {
-      ierr = KSP_PCApply(ksp,ksp->B,vb,vres);CHKERRQ(ierr);
-      ierr = PCDiagonalScaleLeft(ksp->B,vres,vres);CHKERRQ(ierr);
+      ierr = KSP_PCApply(ksp,vb,vres);CHKERRQ(ierr);
+      ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_SYMMETRIC) {
-      ierr = PCApplySymmetricLeft(ksp->B, vb, vres);CHKERRQ(ierr);
+      ierr = PCApplySymmetricLeft(ksp->pc, vb, vres);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Invalid preconditioning side %d", ksp->pc_side);
   }
@@ -100,13 +100,13 @@ int KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec vt1)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidHeaderSpecific(vsoln,VEC_COOKIE,2);
   if (ksp->pc_side == PC_RIGHT) {
-    ierr = KSP_PCApply(ksp,ksp->B,vsoln,vt1);CHKERRQ(ierr);
-    ierr = PCDiagonalScaleRight(ksp->B,vt1,vsoln);CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,vsoln,vt1);CHKERRQ(ierr);
+    ierr = PCDiagonalScaleRight(ksp->pc,vt1,vsoln);CHKERRQ(ierr);
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    ierr = PCApplySymmetricRight(ksp->B,vsoln,vt1);CHKERRQ(ierr);
+    ierr = PCApplySymmetricRight(ksp->pc,vsoln,vt1);CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln);CHKERRQ(ierr);
   } else {
-    ierr = PCDiagonalScaleRight(ksp->B,vsoln,vsoln);CHKERRQ(ierr);
+    ierr = PCDiagonalScaleRight(ksp->pc,vsoln,vsoln);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -95,11 +95,11 @@ int KSPSolve_Chebychev(KSP ksp)
   PetscTruth       diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   ksp->its = 0;
-  ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   maxit    = ksp->max_it;
 
   /* These three point to the three active solutions, we
@@ -131,7 +131,7 @@ int KSPSolve_Chebychev(KSP ksp)
     ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
                   
-  ierr = KSP_PCApply(ksp,ksp->B,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
+  ierr = KSP_PCApply(ksp,r,p[k]);CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
   ierr = VecAYPX(&scale,x,p[k]);CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
@@ -143,7 +143,7 @@ int KSPSolve_Chebychev(KSP ksp)
 
     ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);                 /*  r = b - Ap[k]    */
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);                       
-    ierr = KSP_PCApply(ksp,ksp->B,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}z  */
+    ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}z  */
 
     /* calculate residual norm if requested */
     if (ksp->normtype != KSP_NO_NORM) {
@@ -176,7 +176,7 @@ int KSPSolve_Chebychev(KSP ksp)
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
     if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
     else {
-      ierr = KSP_PCApply(ksp,ksp->B,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
+      ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
       ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
     }
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);

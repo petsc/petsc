@@ -85,7 +85,7 @@ int KSPView(KSP ksp,PetscViewer viewer)
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
     }
   }
-  ierr = PCView(ksp->B,viewer);CHKERRQ(ierr);
+  ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +232,7 @@ int KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidHeaderSpecific(Amat,MAT_COOKIE,2);
   PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
-  PCSetOperators(ksp->B,Amat,Pmat,flag);
+  PCSetOperators(ksp->pc,Amat,Pmat,flag);
   if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
   PetscFunctionReturn(0);
 }
@@ -302,7 +302,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 
   ksp->vec_sol         = 0;
   ksp->vec_rhs         = 0;
-  ksp->B               = 0;
+  ksp->pc              = 0;
 
   ksp->ops->solve      = 0;
   ksp->ops->setup      = 0;
@@ -318,7 +318,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 
   ksp->setupcalled     = 0;
   ierr = PetscPublishAll(ksp);CHKERRQ(ierr);
-  ierr = PCCreate(comm,&ksp->B);CHKERRQ(ierr);
+  ierr = PCCreate(comm,&ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
  
@@ -499,7 +499,7 @@ int KSPSetFromOptions(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  ierr = PCSetFromOptions(ksp->B);CHKERRQ(ierr);
+  ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
 
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(ksp->comm,ksp->prefix,"Krylov Method (KSP) Options","KSP");CHKERRQ(ierr);

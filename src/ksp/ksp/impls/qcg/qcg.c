@@ -161,7 +161,7 @@ int KSPSolve_QCG(KSP ksp)
   PetscReal    ptasp,q1,q2,wtasp,bstp,rtr,xnorm,step1,step2,rnrm,p5 = 0.5;
   PetscReal    dzero = 0.0,bsnrm;
   int          i,maxit,ierr;
-  PC           pc = ksp->B;
+  PC           pc = ksp->pc;
   PCSide       side;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar  cstep1,cstep2,cbstp,crtr,cwtasp,cptasp;
@@ -169,7 +169,7 @@ int KSPSolve_QCG(KSP ksp)
   PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
   if (ksp->transpose_solve) {
     SETERRQ(1,"Currently does not support transpose solve");

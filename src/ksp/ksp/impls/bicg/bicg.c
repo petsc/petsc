@@ -35,7 +35,7 @@ int  KSPSolve_BiCG(KSP ksp)
   MatStructure pflag;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   X       = ksp->vec_sol;
@@ -47,7 +47,7 @@ int  KSPSolve_BiCG(KSP ksp)
   Zr      = ksp->work[4];
   Pr      = ksp->work[5];
 
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   if (!ksp->guess_zero) {
     ierr = KSP_MatMult(ksp,Amat,X,Rr);CHKERRQ(ierr);      /*   r <- b - Ax       */
@@ -56,9 +56,9 @@ int  KSPSolve_BiCG(KSP ksp)
     ierr = VecCopy(B,Rr);CHKERRQ(ierr);           /*     r <- b (x is 0) */
   }
   ierr = VecCopy(Rr,Rl);CHKERRQ(ierr);
-  ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);     /*     z <- Br         */
+  ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);     /*     z <- Br         */
   ierr = VecConjugate(Rl);CHKERRQ(ierr);
-  ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
+  ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
   ierr = VecConjugate(Rl);CHKERRQ(ierr);
   ierr = VecConjugate(Zl);CHKERRQ(ierr);
   if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
@@ -105,9 +105,9 @@ int  KSPSolve_BiCG(KSP ksp)
      ma = PetscConj(ma);
      ierr = VecAXPY(&ma,Zl,Rl);CHKERRQ(ierr);
      if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-       ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
+       ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
        ierr = VecConjugate(Rl);CHKERRQ(ierr);
-       ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
+       ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
        ierr = VecConjugate(Rl);CHKERRQ(ierr);
        ierr = VecConjugate(Zl);CHKERRQ(ierr);
        ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
@@ -123,9 +123,9 @@ int  KSPSolve_BiCG(KSP ksp)
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
-       ierr = KSP_PCApply(ksp,ksp->B,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
+       ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
        ierr = VecConjugate(Rl);CHKERRQ(ierr);
-       ierr = KSP_PCApplyTranspose(ksp,ksp->B,Rl,Zl);CHKERRQ(ierr);
+       ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
        ierr = VecConjugate(Rl);CHKERRQ(ierr);
        ierr = VecConjugate(Zl);CHKERRQ(ierr);
      }

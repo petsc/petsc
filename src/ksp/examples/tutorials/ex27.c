@@ -22,7 +22,7 @@ T*/
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  KSP           ksp;             /* linear solver context */
+  KSP            ksp;             /* linear solver context */
   Mat            A,N;                /* matrix */
   Vec            x,b,u,Ab;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
@@ -30,7 +30,6 @@ int main(int argc,char **args)
   int            ierr,its,ierrp,n,m;
   PetscReal      norm;
   PetscScalar    zero = 0.0,none = -1.0;
-  KSP            ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -87,7 +86,7 @@ int main(int argc,char **args)
        to match the block size of the system), then create a new padded vector.
     */
     { 
-      int         j,mvec,start,end,index;
+      int         j,mvec,start,end,idex;
       Vec         tmp;
       PetscScalar *bold;
 
@@ -99,8 +98,8 @@ int main(int argc,char **args)
       ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
       ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
       for (j=0; j<mvec; j++) {
-        index = start+j;
-        ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRQ(ierr);
+        idex = start+j;
+        ierr  = VecSetValues(tmp,1,&idex,bold+j,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
       ierr = VecDestroy(b);CHKERRQ(ierr);

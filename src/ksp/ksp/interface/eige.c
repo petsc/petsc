@@ -61,7 +61,7 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
     ierr = MatMPIAIJSetPreallocation(*mat,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   }
   
-  ierr = PCGetOperators(ksp->B,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   for (i=0; i<M; i++) {
 
@@ -71,7 +71,7 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
     ierr = KSP_MatMult(ksp,A,in,out);CHKERRQ(ierr);
-    ierr = KSP_PCApply(ksp,ksp->B,out,in);CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,out,in);CHKERRQ(ierr);
     
     ierr = VecGetArray(in,&array);CHKERRQ(ierr);
     ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 

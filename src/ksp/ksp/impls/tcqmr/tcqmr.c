@@ -59,7 +59,7 @@ static int KSPSolve_TCQMR(KSP ksp)
     KSPMonitor(ksp,ksp->its,rnorm);
     ksp->its++;
 
-    ierr   = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
+    ierr   = KSP_PCApplyBAorAB(ksp,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
     ierr   = VecDot(v0,y,&dp11);CHKERRQ(ierr);
     ierr   = VecDot(v0,u,&dp2);CHKERRQ(ierr);
     alpha  = dp11 / dp2;                          /* alpha = v0'*y/v0'*u */
@@ -74,7 +74,7 @@ static int KSPSolve_TCQMR(KSP ksp)
 					         (z-2*beta*p) + f*beta*
 					         beta*um1 */
     tmp    = -2.0*beta;VecAXPY(&tmp,p,utmp);
-    ierr   = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,utmp,up1,vtmp);CHKERRQ(ierr);
+    ierr   = KSP_PCApplyBAorAB(ksp,utmp,up1,vtmp);CHKERRQ(ierr);
     tmp    = -alpha; ierr = VecAXPY(&tmp,utmp,up1);CHKERRQ(ierr);
     tmp    = f*beta*beta; ierr = VecAXPY(&tmp,um1,up1);CHKERRQ(ierr);
     ierr   = VecNorm(up1,NORM_2,&dp1);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ static int KSPSolve_TCQMR(KSP ksp)
     ierr   = VecCopy(up1,u);CHKERRQ(ierr);
     beta   = beta/Gamma;
     eptmp  = beta;
-    ierr   = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,v,vp1,vtmp);CHKERRQ(ierr);
+    ierr   = KSP_PCApplyBAorAB(ksp,v,vp1,vtmp);CHKERRQ(ierr);
     tmp    = -alpha; ierr = VecAXPY(&tmp,v,vp1);CHKERRQ(ierr);
     tmp    = -beta; ierr = VecAXPY(&tmp,vm1,vp1);CHKERRQ(ierr);
     ierr   = VecNorm(vp1,NORM_2,&Gamma);CHKERRQ(ierr);

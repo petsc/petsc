@@ -32,21 +32,21 @@ int  KSPSolve_Richardson(KSP ksp)
   PetscTruth      exists,diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   ksp->its = 0;
 
-  ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr    = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   x       = ksp->vec_sol;
   b       = ksp->vec_rhs;
   r       = ksp->work[0];
   maxit   = ksp->max_it;
 
   /* if user has provided fast Richardson code use that */
-  ierr = PCApplyRichardsonExists(ksp->B,&exists);CHKERRQ(ierr);
+  ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
-    ierr = PCApplyRichardson(ksp->B,b,x,r,ksp->rtol,ksp->atol,ksp->divtol,maxit);CHKERRQ(ierr);
+    ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->atol,ksp->divtol,maxit);CHKERRQ(ierr);
     ksp->reason = KSP_DIVERGED_ITS; /* what should we really put here? */
     PetscFunctionReturn(0);
   }
@@ -71,7 +71,7 @@ int  KSPSolve_Richardson(KSP ksp)
       KSPMonitor(ksp,i,rnorm);
     }
 
-    ierr = KSP_PCApply(ksp,ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
+    ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);    /*   z <- B r          */
 
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
       ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
@@ -98,7 +98,7 @@ int  KSPSolve_Richardson(KSP ksp)
       if (ksp->normtype == KSP_UNPRECONDITIONED_NORM){
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- r'*r     */
       } else {
-        ierr = KSP_PCApply(ksp,ksp->B,r,z);CHKERRQ(ierr);   /*   z <- B r          */
+        ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);   /*   z <- B r          */
         ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- z'*z     */
       }
     }

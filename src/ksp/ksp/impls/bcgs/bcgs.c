@@ -68,11 +68,11 @@ static int  KSPSolve_BCGS(KSP ksp)
     beta = (rho/rhoold) * (alpha/omegaold);
     tmp = -omegaold; VecAXPY(&tmp,V,P);            /*   p <- p - w v       */
     ierr = VecAYPX(&beta,R,P);CHKERRQ(ierr);      /*   p <- r + p beta    */
-    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
+    ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     alpha = rho / d1; tmp = -alpha;                /*   a <- rho / (v,rp)  */
     ierr = VecWAXPY(&tmp,V,R,S);CHKERRQ(ierr);    /*   s <- r - a v       */
-    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
+    ierr = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
     ierr = VecDot(S,T,&d1);CHKERRQ(ierr);
     ierr = VecDot(T,T,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {

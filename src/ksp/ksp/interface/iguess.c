@@ -102,7 +102,7 @@ int  KSPGuessUpdate(KSP ksp,Vec x,KSPIGUESS *itg)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidPointer(itg,3);
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (curl == itg->maxl) {
     ierr = KSP_MatMult(ksp,Amat,x,itg->btilde[0]);CHKERRQ(ierr);
     ierr = VecNorm(itg->btilde[0],NORM_2,&normax);CHKERRQ(ierr);

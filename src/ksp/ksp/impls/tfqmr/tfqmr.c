@@ -64,7 +64,7 @@ static int  KSPSolve_TFQMR(KSP ksp)
   ierr = VecDot(R,RP,&rhoold);CHKERRQ(ierr);       /* rhoold = (r,rp)     */
   ierr = VecCopy(R,U);CHKERRQ(ierr);
   ierr = VecCopy(R,P);CHKERRQ(ierr);
-  ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,T);CHKERRQ(ierr);
+  ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);
   ierr = VecSet(&zero,D);CHKERRQ(ierr);
 
   i=0;
@@ -76,7 +76,7 @@ static int  KSPSolve_TFQMR(KSP ksp)
     a = rhoold / s;                                 /* a <- rho / s         */
     tmp = -a; VecWAXPY(&tmp,V,U,Q);CHKERRQ(ierr);  /* q <- u - a v         */
     ierr = VecWAXPY(&one,U,Q,T);CHKERRQ(ierr);     /* t <- u + q           */
-    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,T,AUQ,T1);CHKERRQ(ierr);
+    ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,T1);CHKERRQ(ierr);
     ierr = VecAXPY(&tmp,AUQ,R);CHKERRQ(ierr);      /* r <- r - a K (u + q) */
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     for (m=0; m<2; m++) {
@@ -116,7 +116,7 @@ static int  KSPSolve_TFQMR(KSP ksp)
     ierr = VecWAXPY(&b,Q,R,U);CHKERRQ(ierr);       /* u <- r + b q        */
     ierr = VecAXPY(&b,P,Q);CHKERRQ(ierr);
     ierr = VecWAXPY(&b,Q,U,P);CHKERRQ(ierr);       /* p <- u + b(q + b p) */
-    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,P,V,Q);CHKERRQ(ierr); /* v <- K p  */
+    ierr = KSP_PCApplyBAorAB(ksp,P,V,Q);CHKERRQ(ierr); /* v <- K p  */
 
     rhoold = rho;
     dpold  = dp;

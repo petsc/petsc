@@ -82,7 +82,7 @@ int    KSPSetUp_GMRES(KSP ksp)
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int),&gmres->mwork_alloc);CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
 
-  ierr = PCGetOperators(ksp->B,0,&pmat,0);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
   ierr = MatGetVecs(pmat,&vec,0);CHKERRQ(ierr);
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
@@ -159,7 +159,7 @@ int GMREScycle(int *itcount,KSP ksp)
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
       ierr = GMRESGetNewVectors(ksp,it+1);CHKERRQ(ierr);
     }
-    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,VEC_VV(it),VEC_VV(1+it),VEC_TEMP_MATOP);CHKERRQ(ierr);
+    ierr = KSP_PCApplyBAorAB(ksp,VEC_VV(it),VEC_VV(1+it),VEC_TEMP_MATOP);CHKERRQ(ierr);
 
     /* update hessenberg matrix and do Gram-Schmidt */
     ierr = (*gmres->orthog)(ksp,it);CHKERRQ(ierr);

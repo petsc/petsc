@@ -423,17 +423,17 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
   int ierr;
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
-    if (ksp->B) {
-      if (v) {ierr = KSP_PCApply(ksp,ksp->B,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
+    if (ksp->pc) {
+      if (v) {ierr = KSP_PCApply(ksp,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else {SETERRQ(PETSC_ERR_SUP,"Not working with right preconditioner");}
     } else {
       if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else { *V = ksp->vec_sol;}
     }
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    if (ksp->B) {
+    if (ksp->pc) {
       if (ksp->transpose_solve) SETERRQ(PETSC_ERR_SUP,"Not working with symmetric preconditioner and transpose solve");
-      if (v) {ierr = PCApplySymmetricRight(ksp->B,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
+      if (v) {ierr = PCApplySymmetricRight(ksp->pc,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else {SETERRQ(PETSC_ERR_SUP,"Not working with symmetric preconditioner");}
     } else  {
       if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
@@ -474,7 +474,7 @@ int KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   Mat          Amat,Pmat;
 
   PetscFunctionBegin;
-  PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
+  PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);
   ierr = KSPBuildSolution(ksp,t,&T);CHKERRQ(ierr);
   ierr = KSP_MatMult(ksp,Amat,t,v);CHKERRQ(ierr);
   ierr = VecAYPX(&mone,ksp->vec_rhs,v);CHKERRQ(ierr);
@@ -504,7 +504,7 @@ int  KSPGetVecs(KSP ksp,int nw,Vec **work)
   if (ksp->vec_rhs) vec = ksp->vec_rhs;
   else {
     Mat pmat;
-    ierr = PCGetOperators(ksp->B,0,&pmat,0);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
     ierr = MatGetVecs(pmat,&vec,0);CHKERRQ(ierr);
   }
   ierr = VecDuplicateVecs(vec,nw,work);CHKERRQ(ierr);

@@ -37,7 +37,7 @@ int  KSPSolve_MINRES(KSP ksp)
   PetscTruth   diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   X       = ksp->vec_sol;
@@ -52,7 +52,7 @@ int  KSPSolve_MINRES(KSP ksp)
   WOLD    = ksp->work[7];
   WOOLD   = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   ksp->its = 0;
 
@@ -68,7 +68,7 @@ int  KSPSolve_MINRES(KSP ksp)
     ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
   }
 
-  ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /*     z  <- B*r       */
+  ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*     z  <- B*r       */
 
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
   if (PetscAbsScalar(dp) < minres->haptol) {
@@ -109,7 +109,7 @@ int  KSPSolve_MINRES(KSP ksp)
 
      ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*      r <- A*u   */
      ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- r'*u  */
-     ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /*      z <- B*r   */
+     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*      z <- B*r   */
 
      malpha = - alpha;
      ierr = VecAXPY(&malpha,V,R);CHKERRQ(ierr);     /*  r <- r - alpha v     */

@@ -129,7 +129,7 @@ static int FGMRESResidual(KSP ksp)
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   /* put A*x into VEC_TEMP */
   ierr = MatMult(Amat,ksp->vec_sol,VEC_TEMP);CHKERRQ(ierr);
@@ -235,9 +235,9 @@ int FGMREScycle(int *itcount,KSP ksp)
   
     /* apply PRECONDITIONER to direction vector and store with 
        preconditioned vectors in prevec */
-    ierr = KSP_PCApply(ksp,ksp->B,VEC_VV(loc_it),PREVEC(loc_it));CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp,VEC_VV(loc_it),PREVEC(loc_it));CHKERRQ(ierr);
      
-    ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+    ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
     /* Multiply preconditioned vector by operator - put in VEC_VV(loc_it+1) */
     ierr = MatMult(Amat,PREVEC(loc_it),VEC_VV(1+loc_it));CHKERRQ(ierr);
 
@@ -344,7 +344,7 @@ int KSPSolve_FGMRES(KSP ksp)
   PetscTruth diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
+  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);

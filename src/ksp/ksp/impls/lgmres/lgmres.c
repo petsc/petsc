@@ -249,8 +249,8 @@ int LGMREScycle(int *itcount,KSP ksp)
     }
 
     /*LGMRES_MOD: decide whether this is an arnoldi step or an aug step */ 
-    if (loc_it < it_arnoldi) { /* arnoldi */
-       ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,VEC_VV(loc_it),VEC_VV(1+loc_it),VEC_TEMP_MATOP);CHKERRQ(ierr);
+    if (loc_it < it_arnoldi) { /* Arnoldi */
+       ierr = KSP_PCApplyBAorAB(ksp,VEC_VV(loc_it),VEC_VV(1+loc_it),VEC_TEMP_MATOP);CHKERRQ(ierr);
     } else { /*aug step */
        order = loc_it - it_arnoldi + 1; /* which aug step */ 
        for (ii=0; ii<aug_dim; ii++) {
