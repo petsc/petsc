@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.81 1998/03/06 00:14:09 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.82 1998/03/12 23:18:01 bsmith Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -144,19 +144,19 @@ struct _p_Partitioning {
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently
-  via coloring. The data structure is explained below in an example
+  via coloring. The data structure is explained below in an example.
 
    Color =   0    1     0    2   |   2      3       0 
-   -------------------------------------------------
+   ---------------------------------------------------
             00   01              |          05
             10   11              |   14     15               Processor  0
                        22    23  |          25
                        32    33  | 
-   ================================================
+   ===================================================
                                  |   44     45     46
             50                   |          55               Processor 1
                                  |   64            66
-   ------------------------------------------------
+   ---------------------------------------------------
 
     ncolors = 4;
 
@@ -173,7 +173,7 @@ struct _p_Partitioning {
     columnsforrow = {{6,0,6},{},{4,4},{5,5}}
 
     See the routine MatFDColoringApply() for how this data is used
-  to compute the Jacobian.
+    to compute the Jacobian.
 
 */
 
@@ -181,7 +181,7 @@ struct  _p_MatFDColoring{
   PETSCHEADER(int)
   int    M,N,m;            /* total rows, columns; local rows */
   int    rstart;           /* first row owned by local processor */
-  int    ncolors;          
+  int    ncolors;          /* number of colors */
   int    *ncolumns;        /* number of local columns for a color */ 
   int    **columns;        /* lists the local columns of each color */
   int    *nrows;           /* number of local rows for each color */
