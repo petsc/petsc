@@ -27,7 +27,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     /*
       This is because the Fortran BLAS 1 Norm is very slow! 
     */
-#if defined(PETSC_HAVE_SLOW_NRM2)
+#if defined(PETSC_HAVE_SLOW_BLAS_NORM2)
 #if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
     fortrannormsqr_(xx,&n,z);
     *z = sqrt(*z);

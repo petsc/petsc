@@ -33,15 +33,20 @@ typedef struct _p_PetscMap*         PetscMap;
 extern PetscCookie MAP_COOKIE;
 
 EXTERN PetscErrorCode PetscMapCreate(MPI_Comm,PetscMap*);
+PetscPolymorphicSubroutine(PetscMapCreate,(PetscMap*m),(m))
+PetscPolymorphicFunction(PetscMapCreate,(void),(PETSC_COMM_SELF,&m),PetscMap,m)
 EXTERN PetscErrorCode PetscMapCreateMPI(MPI_Comm,PetscInt,PetscInt,PetscMap*);
+PetscPolymorphicFunction(PetscMapCreateMPI,(MPI_Comm comm,PetscInt l,PetscInt g),(comm,l,g,&m),PetscMap,m)
 EXTERN PetscErrorCode PetscMapSetFromOptions(PetscMap);
 EXTERN PetscErrorCode PetscMapPrintHelp(PetscMap);
 EXTERN PetscErrorCode PetscMapDestroy(PetscMap);
 
 EXTERN PetscErrorCode PetscMapSetLocalSize(PetscMap,PetscInt);
 EXTERN PetscErrorCode PetscMapGetLocalSize(PetscMap,PetscInt *);
+PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap m),(m,&s),PetscInt,s);
 EXTERN PetscErrorCode PetscMapSetSize(PetscMap,PetscInt);
 EXTERN PetscErrorCode PetscMapGetSize(PetscMap,PetscInt *);
+PetscPolymorphicFunction(PetscMapGetSize,(PetscMap m),(m,&s),PetscInt,s);
 EXTERN PetscErrorCode PetscMapGetLocalRange(PetscMap,PetscInt *,PetscInt *);
 EXTERN PetscErrorCode PetscMapGetGlobalRange(PetscMap,PetscInt *[]);
 
@@ -50,6 +55,7 @@ extern PetscFList PetscMapList;
 extern PetscTruth PetscMapRegisterAllCalled;
 EXTERN PetscErrorCode PetscMapSetType(PetscMap, const PetscMapType);
 EXTERN PetscErrorCode PetscMapGetType(PetscMap, PetscMapType *);
+PetscPolymorphicFunction(PetscMapGetType,(PetscMap m),(m,&t),PetscMapType,t);
 EXTERN PetscErrorCode PetscMapRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscMap));
 EXTERN PetscErrorCode PetscMapRegisterAll(const char []);
 EXTERN PetscErrorCode PetscMapRegisterDestroy(void);

@@ -361,7 +361,7 @@ $     NORM_INFINITY denotes max_i |x_i|
      others
 
    Compile Option:
-   PETSC_HAVE_SLOW_NRM2 will cause a C (loop unrolled) version of the norm to be used, rather
+   PETSC_HAVE_SLOW_BLAS_NORM2 will cause a C (loop unrolled) version of the norm to be used, rather
  than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines 
  (as opposed to vendor provided) because the FORTRAN BLAS NRM2() routine is very slow. 
 

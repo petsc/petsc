@@ -87,7 +87,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {
 
-#if defined(PETSC_HAVE_SLOW_NRM2)
+#if defined(PETSC_HAVE_SLOW_BLAS_NORM2)
 #if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
     fortrannormsqr_(xx,&n,&work);
 #elif defined(PETSC_USE_UNROLLED_NORM)
