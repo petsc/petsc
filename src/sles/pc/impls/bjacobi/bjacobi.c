@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.59 1996/01/02 19:50:39 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.60 1996/01/02 20:17:48 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -250,6 +250,8 @@ static int PCPrintHelp_BGS(PC pc)
   MPIU_printf(pc->comm," %spc_bgs_blocks blks: blocks in preconditioner\n",p);
   MPIU_printf(pc->comm, " %spc_bgs_truelocal: use blocks from the local linear\
  system matrix \n      instead of the preconditioning matrix\n",p);
+  MPIU_printf(pc->comm, " %spc_bgs_backward: use backward sweep instead of forward\n",p);
+  MPIU_printf(pc->comm, " %spc_bgs_symmetric: use both, a forward and backward sweep\n",p);
   MPIU_printf(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (i.e., -sub_ksp_type\
  <meth>)\n",p);
