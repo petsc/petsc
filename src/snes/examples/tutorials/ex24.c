@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.10 2001/01/23 20:57:12 balay Exp bsmith $*/
+/*$Id: ex24.c,v 1.11 2001/02/26 16:13:25 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint\n\n";
 
@@ -49,9 +49,7 @@ int main(int argc,char **argv)
   DA         da;
   DMMG       *dmmg;
   VecPack    packer;
-  ISColoring coloring;
   Mat        J;
-  MatFDColoring fd;
 
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
@@ -92,19 +90,14 @@ int main(int argc,char **argv)
   for (i=0; i<nlevels; i++) {
     packer = (VecPack)dmmg[i]->dm;
     ierr   = VecPackGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
-    ierr   = DAGetColoring(da,MATMPIAIJ,&coloring,&J);CHKERRQ(ierr);
-    ierr   = MatFDColoringCreate(J,coloring,&fd);CHKERRQ(ierr);
-    ierr   = MatFDColoringSetFromOptions(fd);CHKERRQ(ierr);
-    ierr   = MatFDColoringSetFunction(fd,(int (*)(void))PDEFormFunction,da);CHKERRQ(ierr);
-    ierr   = ISColoringDestroy(coloring);CHKERRQ(ierr);
-    ierr   = PetscObjectCompose((PetscObject)J,"FDColoring",(PetscObject)fd);CHKERRQ(ierr);
-    ierr   = MatFDColoringDestroy(fd);CHKERRQ(ierr);
+    ierr   = DAGetColoring(da,MATMPIAIJ,PETSC_NULL,&J);CHKERRQ(ierr);
     dmmg[i]->user = (void*)J;
   }
 
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
+  ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_SOCKET_WORLD);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
     ierr = MatDestroy((Mat)dmmg[i]->user);CHKERRQ(ierr);
   }
@@ -122,34 +115,29 @@ int main(int argc,char **argv)
 */
 #undef __FUNC__
 #define __FUNC__ "PDEFormFunction"
-int PDEFormFunction(Scalar *w,Vec U,Vec FU,DA da)
+int PDEFormFunction(Scalar *w,Vec vu,Vec vfu,DA da)
 {
   int     ierr,xs,xm,i,N;
   Scalar  *u,*fu,d,h;
-  Vec     vu;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,U,INSERT_VALUES,vu);CHKERRQ(ierr);
 
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,FU,(void**)&fu);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
   d    = N-1.0;
   h    = 1.0/d;
 
   for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   fu[0]   = 2.0*d*(u[0] - w[0]);
-    else if (i == N-1) fu[N-1] = 2.0*d*u[N-1];
-    else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h);
+    if      (i == 0)   fu[0]   = 2.0*d*(u[0] - w[0]) + h*u[0]*u[0];
+    else if (i == N-1) fu[N-1] = 2.0*d*u[N-1] + h*u[N-1]*u[N-1];
+    else               fu[i]   = -(d*(u[i+1] - 2.0*u[i] + u[i-1]) - 2.0*h) + h*u[i]*u[i];
   } 
 
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,FU,(void**)&fu);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
-  PetscLogFlops(6*N);
+  ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
+  PetscLogFlops(9*N);
   PetscFunctionReturn(0);
 }
 
@@ -170,11 +158,10 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 {
   DMMG    dmmg = (DMMG)dummy;
   int     ierr,xs,xm,i,N,nredundant;
-  Scalar  *u,*w,*fw,*fu,*lambda,*flambda,d,h;
+  Scalar  *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
   Vec     vu,vlambda,vfu,vflambda,vglambda;
   DA      da,dadummy;
   VecPack packer = (VecPack)dmmg->dm;
-  MatFDColoring fd;
 
   PetscFunctionBegin;
   ierr = VecPackGetEntries(packer,&nredundant,&da,&dadummy);CHKERRQ(ierr);
@@ -184,12 +171,11 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = VecPackGetAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
   /* Evaluate the Jacobian of PDEFormFunction() */
-  ierr = PetscObjectQuery((PetscObject)dmmg->user,"FDColoring",(PetscObject*)&fd);CHKERRQ(ierr);
-  ierr = MatFDColoringApply((Mat)dmmg->user,fd,vu,PETSC_NULL,w);CHKERRQ(ierr);
-  ierr = MatMultTranspose((Mat)dmmg->user,vglambda,vflambda);CHKERRQ(ierr);
+  /*  ierr = PDEFormJacobian(da,w,vu,(Mat)dmmg->user);CHKERRQ(ierr);
+      ierr = MatMultTranspose((Mat)dmmg->user,vglambda,vflambda);CHKERRQ(ierr); */
 
   PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
-  ierr = MatView((Mat)dmmg->user,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  /*  ierr = MatView((Mat)dmmg->user,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
   PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* derivative of constraint portion of L() w.r.t. u */
@@ -203,29 +189,30 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DAVecGetArray(da,vflambda,(void**)&flambda);CHKERRQ(ierr);
   d    = (N-1.0);
   h    = 1.0/d;
+  h2   = 2.0*h;
 
   /* derivative of L() w.r.t. w */
   if (xs == 0) { /* only first processor computes this */
     fw[0] = -2.*d*lambda[0];
   }
 
-  /* derivative of L() constraint portion of L() w.r.t. u */
-  /*    for (i=xs; i<xs+xm; i++) {
-    if      (i == 0)   flambda[0]   = 2.*d*lambda[0]   - d*lambda[1];
-    else if (i == 1)   flambda[1]   = 2.*d*lambda[1]   - d*lambda[2];
-    else if (i == N-1) flambda[N-1] = 2.*d*lambda[N-1] - d*lambda[N-2];
-    else if (i == N-2) flambda[N-2] = 2.*d*lambda[N-2] - d*lambda[N-3];
-    else               flambda[i]   = - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]);
-    }  */
+for (i=xs; i<xs+xm; i++) {
+     if      (i == 0)   flambda[0]   = 2.*d*lambda[0]   - d*lambda[1] + h2*lambda[0]*u[0];
+     else if (i == 1)   flambda[1]   = 2.*d*lambda[1]   - d*lambda[2] + h2*lambda[1]*u[1];
+     else if (i == N-1) flambda[N-1] = 2.*d*lambda[N-1] - d*lambda[N-2] + h2*lambda[N-1]*u[N-1];
+     else if (i == N-2) flambda[N-2] = 2.*d*lambda[N-2] - d*lambda[N-3] + h2*lambda[N-2]*u[N-2];
+     else               flambda[i]   = - d*(lambda[i+1] - 2.0*lambda[i] + lambda[i-1]) + h2*lambda[i]*u[i];
+     }  
 
   /* derivative of function part of L() w.r.t. u */
   for (i=xs; i<xs+xm; i++) {
     if      (i == 0)   flambda[0]   +=    h*u[0];
-    else if (i == 1)   flambda[1]   += 2.*h*u[1];
+    else if (i == 1)   flambda[1]   +=    h2*u[1];
     else if (i == N-1) flambda[N-1] +=    h*u[N-1];
-    else if (i == N-2) flambda[N-2] += 2.*h*u[N-2];
-    else               flambda[i]   += 2.*h*u[i];
+    else if (i == N-2) flambda[N-2] +=    h2*u[N-2];
+    else               flambda[i]   +=    h2*u[i];
   } 
+
 
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
@@ -237,7 +224,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = VecPackRestoreAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
   ierr = VecPackRestoreAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
-  PetscLogFlops(13*N);
+  PetscLogFlops(9*N);
   PetscFunctionReturn(0);
 }
 
