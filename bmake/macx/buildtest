@@ -6,7 +6,7 @@
 set DATAFILESPATH=/Users/petsc/datafiles
 set TMP=/Users/petsc/petsc-test
 set MACH=playstation
-set ARCH=darwin6.2
+set ARCH=darwin6.3
 set CONFIGURE='yes'
 set TEST=testexamples_
 #
