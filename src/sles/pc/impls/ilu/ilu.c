@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.139 1999/12/17 04:24:59 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.140 1999/12/17 19:17:25 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -77,7 +77,7 @@ int PCILUSetReuseFill_ILU(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   ilu = (PC_ILU *) pc->data;
-  ilu->reusefill = (int) flag;
+  ilu->reusefill = flag;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -695,7 +695,7 @@ int PCCreate_ILU(PC pc)
   ilu->info.dt            = PETSC_DEFAULT;
   ilu->info.dtcount       = PETSC_DEFAULT;
   ilu->info.dtcol         = PETSC_DEFAULT;
-  ilu->reusefill          = PETSC_DEFAULT;
+  ilu->reusefill          = PETSC_FALSE;
   ilu->info.diagonal_fill = 0;
   pc->data                = (void *) ilu;
 
