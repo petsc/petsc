@@ -392,10 +392,10 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr = MPI_Allreduce(&mat->was_assembled,&other_disassembled,1,MPI_INT,MPI_PROD,mat->comm);CHKERRQ(ierr);
     if (mat->was_assembled && !other_disassembled) {
       ierr = DisAssemble_MPIAIJ(mat);CHKERRQ(ierr);
-      /* reaccess the b because aij->B was changed */
-      b    = (Mat_SeqAIJ *)aij->B->data;
     }
   }
+  /* reaccess the b because aij->B was changed in MatSetValues() or DisAssemble() */
+  b    = (Mat_SeqAIJ *)aij->B->data;
 
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
