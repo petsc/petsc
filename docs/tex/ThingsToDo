@@ -21,7 +21,7 @@ Lois - Add info about which library components do what.  Mention SLES_LIB.
 
  - Add table of all preconditioners and options to PETSc manual.
 
-Satish  * MatSetValuesBlocked() TEST
+Satish  X MatSetValuesBlocked() TEST
 
 Lois  - add info about help message printout to section 12.1 (version 2.0.15)
     of users manual.
@@ -30,13 +30,13 @@ Lois  - add info about help message printout to section 12.1 (version 2.0.15)
 Satish/Lois  - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
 
-Satish  * Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
+Satish  X Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
            A prototype is on poseidon:~mcinnes/mpibaij.bak
 
        Maybe, like, say, test one or two BDiag routines before making a release?
        More test cases that involve, zero size vectors, matrices, IS's etc.
 
-Satish  * Try debugger on HP (unset the EDITOR environmental variable)
+Satish  X Try debugger on HP (unset the EDITOR environmental variable)
         Document in Troubleshooting and Machines
 
 Lois - Update figure of PETSc directory structure (add BAIJ (MPI)), etc.
