@@ -1,4 +1,4 @@
-/* "$Id: general.h,v 1.5 2000/05/04 16:25:02 bsmith Exp balay $"; */
+/* "$Id: general.h,v 1.6 2000/05/05 22:14:40 balay Exp bsmith $"; */
 
 #if !defined(__GENERAL_H)
 #define __GENERAL_H
@@ -10,7 +10,8 @@
 #include "petscsys.h"
 
 typedef struct {
-  int        n;         /* number of indices */ 
+  int        N;         /* number of indices */ 
+  int        n;         /* local number of indices */ 
   PetscTruth sorted;    /* indicates the indices are sorted */ 
   int        *idx;
 } IS_General;

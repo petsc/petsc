@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.53 2000/05/10 16:44:25 bsmith Exp balay $ */
+/* $Id: petscis.h,v 1.54 2000/05/24 22:17:59 balay Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -30,6 +30,7 @@ EXTERN int   ISIdentity(IS,PetscTruth*);
 EXTERN int   ISGetIndices(IS,int *[]);
 EXTERN int   ISRestoreIndices(IS,int *[]);
 EXTERN int   ISGetSize(IS,int *);
+EXTERN int   ISGetLocalSize(IS,int *);
 EXTERN int   ISInvertPermutation(IS,int,IS*);
 EXTERN int   ISView(IS,Viewer);
 EXTERN int   ISEqual(IS,IS,PetscTruth *);
