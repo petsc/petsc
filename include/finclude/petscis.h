@@ -1,5 +1,5 @@
 C
-C  "$Id: petsc.h,v 1.18 1996/02/12 20:26:22 bsmith Exp $";
+C  $Id: is.h,v 1.4 1996/02/12 20:27:49 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the IS (index set) package in PETSc
 C

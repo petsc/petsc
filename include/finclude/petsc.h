@@ -1,5 +1,5 @@
 C
-C  "$Id: somefort.F,v 1.8 1996/01/30 00:40:19 bsmith Exp bsmith $";
+C  $Id: petsc.h,v 1.18 1996/02/12 20:26:22 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C

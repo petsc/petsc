@@ -1,4 +1,6 @@
 C
+C  $Id: petsc.h,v 1.18 1996/02/12 20:26:22 bsmith Exp bsmith $;
+C
 C  Include file for Fortran use of the Mat package in PETSc
 C
 #define Mat             integer
@@ -30,11 +32,11 @@ C  Matrix options
 C
       integer ROW_ORIENTED,COLUMN_ORIENTED,ROWS_SORTED,
      *        COLUMNS_SORTED,NO_NEW_NONZERO_LOCATIONS,
-     *        YES_NEW_NONZERO_LOCATIONS
+     *        YES_NEW_NONZERO_LOCATIONS,SYMMETRIC_MATRIX
 
       parameter( ROW_ORIENTED=1,COLUMN_ORIENTED=2,ROWS_SORTED=4,
      *           COLUMNS_SORTED=8,NO_NEW_NONZERO_LOCATIONS=16,
-     *           YES_NEW_NONZERO_LOCATIONS=32)
+     *           YES_NEW_NONZERO_LOCATIONS=32,SYMMETRIC_MATRIX=64)
 C
 C  Matrix orderings
 C

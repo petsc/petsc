@@ -1,4 +1,6 @@
 C
+C  $Id: petsc.h,v 1.18 1996/02/12 20:26:22 bsmith Exp bsmith $;
+C
 C  Include file for Fortran use of the DA (distributed array) package in PETSc
 C
 #define DA             integer

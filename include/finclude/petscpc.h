@@ -1,5 +1,5 @@
 C
-C  "$Id: petsc.h,v 1.18 1996/02/12 20:26:22 bsmith Exp $";
+C  $Id: pc.h,v 1.11 1996/02/12 20:26:43 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the PC (preconditioner) package in PETSc
 C
