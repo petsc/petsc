@@ -34,6 +34,7 @@ aclocal.m4: configure.in
 bmake/config/petscconf.h.in: config/acconfig.h config/acsite.m4 configure.in
 	@echo "Making $@" >> $(CONFIGURE_LOG_FILE)
 	@echo "----------------------------------------" >> $(CONFIGURE_LOG_FILE)
+	@if test -f $@; then ${RM} $@ >> $(CONFIGURE_LOG_FILE); fi
 	@autoheader -l config >> $(CONFIGURE_LOG_FILE)
 
 $(AUTOMAKE_ADD_FILES):
