@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.10 1998/04/15 18:02:01 balay Exp balay $";
+!    "$Id: ex14f.F,v 1.11 1998/04/21 18:31:00 balay Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -292,8 +292,7 @@
       temp1  = lambda/(lambda + one)
 
 !  Get a pointer to vector data.
-!    - For default PETSc vectors, VecGetArray() returns a pointer to
-!      the data array.  Otherwise, the routine is implementation dependent.
+!    - VecGetArray() returns a pointer to the data array.  
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
        call VecGetArray(localX,xx,idx,ierr)
