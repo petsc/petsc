@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.348 2001/06/19 18:18:12 bsmith Exp balay $ 
+# $Id: makefile,v 1.349 2001/06/19 18:27:16 balay Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -163,7 +163,9 @@ update:
 #
 chk_petsc_dir:
 	@if [ ! -f ${PETSC_DIR}/include/petscversion.h ]; then \
-	  echo "Incorrect PETSC_DIR specified: ${PETSC_DIR}! Aborting build"; \
+	  echo "Incorrect PETSC_DIR specified: ${PETSC_DIR}!"; \
+	  echo "You need to use / to separate directories, not \\!"; \
+	  echo "Aborting build"; \
 	  false; fi
 
 # ------------------------------------------------------------------
