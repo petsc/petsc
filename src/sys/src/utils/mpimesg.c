@@ -148,9 +148,9 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,PetscM
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
-#define __FUNCT__ "PetscGatherMessageLengths_2"
+#define __FUNCT__ "PetscGatherMessageLengths2"
 /*@C
-  PetscGatherMessageLengths_2 - Computes info about messages that a MPI-node will receive, 
+  PetscGatherMessageLengths2 - Computes info about messages that a MPI-node will receive, 
   including (from-id,length) pairs for each message. Same functionality as PetscGatherMessageLengths()
   except it takes TWO ilenths and output TWO olengths.
 
@@ -181,7 +181,7 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,PetscM
 
 .seealso: PetscGatherMessageLengths() and PetscGatherNumberOfMessages()
 @*/
-PetscErrorCode PetscGatherMessageLengths_2(MPI_Comm comm,PetscMPIInt nsends,PetscMPIInt nrecvs,PetscMPIInt *ilengths1,PetscMPIInt *ilengths2,PetscMPIInt **onodes,PetscMPIInt **olengths1,PetscMPIInt **olengths2)
+PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,PetscMPIInt nrecvs,PetscMPIInt *ilengths1,PetscMPIInt *ilengths2,PetscMPIInt **onodes,PetscMPIInt **olengths1,PetscMPIInt **olengths2)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,tag,i,j,*buf_s,*buf_r,*buf_j;
@@ -198,14 +198,14 @@ PetscErrorCode PetscGatherMessageLengths_2(MPI_Comm comm,PetscMPIInt nsends,Pets
   /* Post the Irecv to get the message length-info */
   ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),olengths1);CHKERRQ(ierr);
   ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),olengths2);CHKERRQ(ierr);
-  ierr = PetscMalloc((2*nrecvs+1)*sizeof(PetscMPIInt),&buf_r);CHKERRQ(ierr);
+  ierr = PetscMalloc((2*(nsends+nrecvs)+1)*sizeof(PetscMPIInt),&buf_r);CHKERRQ(ierr);
+  buf_s = buf_r + 2*nrecvs;
   for (i=0; i<nrecvs; i++) {
     buf_j = buf_r + (2*i);
     ierr = MPI_Irecv(buf_j,2,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRQ(ierr);
   }
 
   /* Post the Isends with the message length-info */
-  ierr = PetscMalloc((2*nsends+1)*sizeof(PetscMPIInt),&buf_s);CHKERRQ(ierr);
   for (i=0,j=0; i<size; ++i) {
     if (ilengths1[i]) {
       buf_j = buf_s + (2*j);
@@ -232,7 +232,6 @@ PetscErrorCode PetscGatherMessageLengths_2(MPI_Comm comm,PetscMPIInt nsends,Pets
 
   ierr = PetscFree(r_waits);CHKERRQ(ierr);
   ierr = PetscFree(w_status);CHKERRQ(ierr);
-  ierr = PetscFree(buf_s);CHKERRQ(ierr);
   ierr = PetscFree(buf_r);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
