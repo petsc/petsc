@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.91 1997/09/10 20:50:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.92 1997/10/19 03:27:12 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -63,14 +63,15 @@ int SLESView(SLES sles,Viewer viewer)
 int SLESPrintHelp(SLES sles)
 {
   char    *prefix = "-";
+  int     ierr;
 
   PetscFunctionBegin;
   if (sles->prefix) prefix = sles->prefix;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   PetscPrintf(sles->comm,"SLES options:\n");
   PetscPrintf(sles->comm," %ssles_view: view SLES info after each linear solve\n",prefix);
-  KSPPrintHelp(sles->ksp);
-  PCPrintHelp(sles->pc);
+  ierr = KSPPrintHelp(sles->ksp);CHKERRQ(ierr);
+  ierr = PCPrintHelp(sles->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

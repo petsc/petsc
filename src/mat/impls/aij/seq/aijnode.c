@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.78 1997/10/20 17:45:45 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.79 1997/10/20 18:39:43 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -391,7 +391,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   int        shift = a->indexshift;
   
   PetscFunctionBegin;  
-  if (!a->inode.size)SETERRQ(1,0,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(1,0,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
@@ -756,8 +756,7 @@ int Mat_AIJ_CheckInode(Mat A)
   if (flg) {PLogInfo(A,"Mat_AIJ_CheckInode: Not using Inode routines\n"); PetscFunctionReturn(0);}
   ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg); CHKERRQ(ierr);
   if (flg) {PLogInfo(A,"Mat_AIJ_CheckInode: Not unrolling\n"); PetscFunctionReturn(0);}
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit, 
-                       &flg);  CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_aij_inode_limit",&a->inode.limit,&flg);CHKERRQ(ierr);
   if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
   m = a->m;    
   if (a->inode.size) {ns = a->inode.size;}
@@ -772,7 +771,7 @@ int Mat_AIJ_CheckInode(Mat A)
     /* Limits the number of elements in a node to 'a->inode.limit' */
     for (j=i+1, idy=idx, blk_size=1; j<m && blk_size <a->inode.limit; ++j,++blk_size) {
       nzy     = ii[j+1] - ii[j]; /* Same number of nonzeros */
-      if(nzy != nzx) break;
+      if (nzy != nzx) break;
       idy    += nzx;             /* Same nonzero pattern */
       if (PetscMemcmp(idx, idy, nzx*sizeof(int))) break;
     }
@@ -781,8 +780,8 @@ int Mat_AIJ_CheckInode(Mat A)
     idx +=blk_size*nzx;
     i    = j;
   }
-  /* If not enough inodes found,, lets not use inode version of the routines */
-  if (node_count > 0.9*m) {
+  /* If not enough inodes found,, do not use inode version of the routines */
+  if (!a->inode.size && m && node_count > 0.9*m) {
     PetscFree(ns);
     PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes out of %d rows. Not using Inode routines\n",node_count,m);
   } else {
@@ -797,7 +796,7 @@ int Mat_AIJ_CheckInode(Mat A)
     A->ops.coloringpatch   = MatColoringPatch_SeqAIJ_Inode;
     a->inode.node_count    = node_count;
     a->inode.size          = ns;
-    PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes. Limit used: %d. Using Inode routines\n",node_count,a->inode.limit);
+    PLogInfo(A,"Mat_AIJ_CheckInode: Found %d nodes of %d. Limit used: %d. Using Inode routines\n",node_count,m,a->inode.limit);
   }
   PetscFunctionReturn(0);
 }

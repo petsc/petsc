@@ -1,93 +1,65 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex58.c,v 1.1 1997/08/18 17:16:03 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
+static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n\n";
 
-#include <stdio.h>
 #include <math.h>
 #include "mat.h"
 
 int main(int argc,char **argv)
 {
-  Mat     mat, tmat = 0;
-  int     m = 7, n, i, j, ierr, size, rank, rstart, rend, rect = 0, flg;
-  Scalar  v;
-  double  normf, normi, norm1;
+  Mat        A,B;
+  int        m = 7, n, i, ierr, rstart, rend,  flg,cols[3];
+  Scalar     v[3];
+  PetscTruth equal;
+  char       *eq[2];
 
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
   n = m;
-  ierr = OptionsHasName(PETSC_NULL,"-rectA",&flg); CHKERRA(ierr);
-  if (flg) {n += 2; rect = 1;}
-  ierr = OptionsHasName(PETSC_NULL,"-rectB",&flg); CHKERRA(ierr);
-  if (flg) {n -= 2; rect = 1;}
 
   /* ------- Assemble matrix, test MatValid() --------- */
 
-  ierr = MatCreate(MPI_COMM_WORLD,m,n,&mat); CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(mat,&rstart,&rend); CHKERRA(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,0,0,0,0,&A);CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRA(ierr);
+  if (rstart == 0) {
+    cols[0] = 0;
+    cols[1] = 1;
+    v[0]    = 2.0; v[1] = -1.0;
+    ierr = MatSetValues(A,1,&rstart,2,cols,v,INSERT_VALUES); CHKERRA(ierr);
+    rstart++;
+  }
+  if (rend == m) {
+    rend--;
+    cols[0] = rend-1;
+    cols[1] = rend;
+    v[0]    = -1.0; v[1] = 2.0;
+    ierr = MatSetValues(A,1,&rend,2,cols,v,INSERT_VALUES); CHKERRA(ierr);
+  }
+  v[0] = -1.0; v[1] = 2.0; v[2] = -1.0;
   for ( i=rstart; i<rend; i++ ) { 
-    for ( j=0; j<n; j++ ) { 
-      v=10*i+j; 
-      ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
-    }
+    cols[0] = i-1;
+    cols[1] = i;
+    cols[2] = i+1;
+    ierr = MatSetValues(A,1,&i,3,cols,v,INSERT_VALUES); CHKERRA(ierr);
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  /* Test whether matrix has been corrupted (just to demonstrate this
-     routine) not needed in most application codes. */
-  ierr = MatValid(mat,(PetscTruth*)&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Corrupted matrix.");
+  ierr = MatTranspose(A,&B); CHKERRA(ierr);
 
-  /* ----------------- Test MatNorm()  ----------------- */
+  ierr = MatEqual(A,B,&equal);
 
-  ierr = MatNorm(mat,NORM_FROBENIUS,&normf); CHKERRA(ierr);
-  ierr = MatNorm(mat,NORM_1,&norm1); CHKERRA(ierr);
-  ierr = MatNorm(mat,NORM_INFINITY,&normi); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,
-    "original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
-    normf,norm1,normi);
-  ierr = MatView(mat,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-
-  /* --------------- Test MatTranspose()  -------------- */
-
-  ierr = OptionsHasName(PETSC_NULL,"-in_place",&flg); CHKERRA(ierr);
-  if (!rect && flg) {
-    ierr = MatTranspose(mat,0); CHKERRA(ierr);   /* in-place transpose */
-    tmat = mat; mat = 0;
-  } else {      /* out-of-place transpose */
-    ierr = MatTranspose(mat,&tmat); CHKERRA(ierr); 
-  }
-
-  /* ----------------- Test MatNorm()  ----------------- */
-
-  /* Print info about transpose matrix */
-  ierr = MatNorm(tmat,NORM_FROBENIUS,&normf); CHKERRA(ierr);
-  ierr = MatNorm(tmat,NORM_1,&norm1); CHKERRA(ierr);
-  ierr = MatNorm(tmat,NORM_INFINITY,&normi); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_WORLD,
-    "transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
-    normf,norm1,normi);
-  ierr = MatView(tmat,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-
-  /* ----------------- Test MatAXPY()  ----------------- */
-
-  if (mat && !rect) {
-    Scalar alpha = 1.0;
-    ierr = OptionsGetScalar(PETSC_NULL,"-alpha",&alpha,&flg); CHKERRA(ierr);
-    PetscPrintf(MPI_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");
-    ierr = MatAXPY(&alpha,mat,tmat); CHKERRA(ierr); 
-    ierr = MatView(tmat,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  }
+  eq[0] = "not equal";
+  eq[1] = "equal";
+  PetscPrintf(PETSC_COMM_WORLD,"Matrices are %s\n",eq[equal]);
 
   /* Free data structures */  
-  ierr = MatDestroy(tmat); CHKERRA(ierr);
-  if (mat) {ierr = MatDestroy(mat); CHKERRA(ierr);}
+  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = MatDestroy(B); CHKERRA(ierr);
+
 
   PetscFinalize();
   return 0;

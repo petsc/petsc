@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.24 1997/09/19 22:15:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.25 1997/10/19 03:31:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,7 +19,19 @@ typedef struct {
 } AO_Basic;
 
 #undef __FUNC__  
-#define __FUNC__ "AODestroy_Basic" /* ADIC Ignore */
+#define __FUNC__ "AOBasicGetIndices_Private" 
+int AOBasicGetIndices_Private(AO ao,int **app,int **petsc)
+{
+  AO_Basic *basic = (AO_Basic *) ao->data;
+
+  PetscFunctionBegin;
+  if (app)   *app   = basic->app;
+  if (petsc) *petsc = basic->petsc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODestroy_Basic" 
 int AODestroy_Basic(PetscObject obj)
 {
   AO       ao = (AO) obj;
@@ -34,7 +46,7 @@ int AODestroy_Basic(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOView_Basic" /* ADIC Ignore */
+#define __FUNC__ "AOView_Basic" 
 int AOView_Basic(PetscObject obj,Viewer viewer)
 {
   AO          ao = (AO) obj;
@@ -63,7 +75,7 @@ int AOView_Basic(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOPetscToApplication_Basic"  /* ADIC Ignore */
+#define __FUNC__ "AOPetscToApplication_Basic"  
 int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 {
   int      i;
@@ -77,7 +89,7 @@ int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetsc_Basic" /* ADIC Ignore */
+#define __FUNC__ "AOApplicationToPetsc_Basic" 
 int AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
 {
   int      i;
@@ -94,7 +106,7 @@ static struct _AOOps myops = {AOPetscToApplication_Basic,
                               AOApplicationToPetsc_Basic};
 
 #undef __FUNC__  
-#define __FUNC__ "AOCreateBasic" /* ADIC Ignore */
+#define __FUNC__ "AOCreateBasic" 
 /*@C
    AOCreateBasic - Creates a basic application ordering using two integer arrays.
 
@@ -180,12 +192,11 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOCreateBasicIS" /* ADIC Ignore */
+#define __FUNC__ "AOCreateBasicIS" 
 /*@C
    AOCreateBasicIS - Creates a basic application ordering using two index sets.
 
    Input Parameters:
-.  comm - MPI communicator that is to share AO
 .  isapp - index set that defines an ordering
 .  ispetsc - index set that defines another ordering
 
@@ -199,11 +210,13 @@ $   -ao_view : call AOView() at the conclusion of AOCreateBasicIS()
 
 .seealso: AOCreateBasic(),  AODestroy()
 @*/
-int AOCreateBasicIS(MPI_Comm comm,IS isapp,IS ispetsc,AO *aoout)
+int AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 {
   int       *mypetsc,*myapp,ierr,napp,npetsc;
+  MPI_Comm  comm;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
   ierr = ISGetSize(isapp,&napp); CHKERRQ(ierr);
   ierr = ISGetSize(ispetsc,&npetsc); CHKERRQ(ierr);
   if (napp != npetsc) SETERRQ(1,0,"Local IS lengths must match");

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.2 1997/10/01 22:45:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.3 1997/10/19 03:26:35 bsmith Exp bsmith $";
 #endif
  
 
@@ -12,8 +12,8 @@ static char vcid[] = "$Id: partition.c,v 1.2 1997/10/01 22:45:42 bsmith Exp bsmi
    Simplest partitioning, keeps the current partitioning.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatPartitioning_Current" 
-int MatPartitioning_Current(Mat mat,MatPartitioning color, int nu,ISPartitioning *partitioning)
+#define __FUNC__ "MatGetPartitioning_Current" 
+int MatGetPartitioning_Current(Mat mat,MatPartitioning color, int nu,ISPartitioning *partitioning)
 {
   int   ierr,i,m,rank,*locals,size;
 

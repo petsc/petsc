@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.14 1997/10/10 04:04:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dviewp.c,v 1.15 1997/10/19 03:27:39 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -65,9 +65,9 @@ int DrawSplitViewPort(Draw draw)
   while ( n*n < size) {n++;}
 
   h  = 1.0/n;
-  xl = (rank % size)*h;
+  xl = (rank % n)*h;
   xr = xl + h;
-  yl = (rank/size)*h;
+  yl = (rank/n)*h;
   yr = yl + h;
 
   ierr = DrawLine(draw,xl,yl,xl,yr,DRAW_BLACK); CHKERRQ(ierr);

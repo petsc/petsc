@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.95 1997/10/12 23:25:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.96 1997/10/19 03:27:52 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -91,8 +91,7 @@ static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2,
     pt[2].y = YTRANS(Win,XiWin,Y3); 
     XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,pt,3,Convex,
                  CoordModeOrigin);
-  }
-  else {
+  } else {
     int x1,y1,x2,y2,x3,y3;
     x1 = XTRANS(Win,XiWin,X1);
     y1 = YTRANS(Win,XiWin,Y1); 
@@ -788,22 +787,46 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
   PetscFunctionReturn(0);
 }
 
-int ViewersDrawOpenX(MPI_Comm comm,char* display,char **titles,int n,
-                    int w,int h,Viewer **viewer)
+#undef __FUNC__  
+#define __FUNC__ "ViewerDrawClear" 
+/*@
+    ViewerDrawClear - Clears a Draw graphic associated with a viewer.
+
+  Input Parameter:
+.  viewer - the viewer 
+
+@*/
+int ViewerDrawClear(Viewer viewer)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  if (viewer->type != DRAW_VIEWER) return 0;
+  ierr = DrawClear(viewer->draw); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ViewersDrawOpenX" 
+int ViewersDrawOpenX(MPI_Comm comm,char* display,char **titles,int n,int w,int h,Viewer **viewer)
 {
   int i,ierr;
 
+  PetscFunctionBegin;
   *viewer = (Viewer * ) PetscMalloc((n+1)*sizeof(Viewer *));CHKPTRQ(*viewer);
   for ( i=0; i<n; i++ ) {
-    ierr = ViewerDrawOpenX(comm,display,titles[i],PETSC_DECIDE,PETSC_DECIDE,w,h,(*viewer+i));
-    CHKERRQ(ierr);
+    ierr = ViewerDrawOpenX(comm,display,titles[i],PETSC_DECIDE,PETSC_DECIDE,w,h,(*viewer+i));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "ViewersDestroy" 
 int ViewersDestroy(int n,Viewer *viewer)
 {
   int i,ierr;
+
+  PetscFunctionBegin;
   for ( i=0; i<n; i++ ) {
     ierr = ViewerDestroy(viewer[i]);CHKERRQ(ierr);
   }

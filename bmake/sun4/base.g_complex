@@ -1,4 +1,4 @@
-# $Id: base.g_complex,v 1.12 1997/10/08 15:51:20 curfman Exp bsmith $ 
+# $Id: base.g_complex,v 1.13 1997/10/19 03:20:08 bsmith Exp bsmith $ 
 
 CLINKER    = g++ $(COPTFLAGS)
 FLINKER    = g++ $(COPTFLAGS)
@@ -12,7 +12,7 @@ CC         = g++ -DPARCH_sun4  -fPIC
 #   KERNEL_LIB =
 #
 PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g -DUSE_PETSC_COMPLEX  \
-             -DUSES_TEMPLATED_COMPLEX -DUSE_FORTRAN_KERNELS
+             -DUSES_TEMPLATED_COMPLEX -DUSE_FORTRAN_KERNELS -DUSE_PETSC_STACK
 KERNEL_LIB = -lpetsckernels
 #
 COPTFLAGS  = -g 

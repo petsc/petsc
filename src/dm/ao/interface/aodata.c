@@ -1,7 +1,6 @@
 
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.10 1997/10/20 04:00:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.11 1997/10/23 01:56:52 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -9,9 +8,9 @@ static char vcid[] = "$Id: aodata.c,v 1.10 1997/10/20 04:00:44 bsmith Exp bsmith
 #include "src/ao/aoimpl.h"      /*I "ao.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "AODataFindKey_Private" 
+#define __FUNC__ "AODataKeyFind_Private" 
 /*
-   AODataFindKey_Private - Given a key finds the int key coordinates. Generates a flag if not found.
+   AODataKeyFind_Private - Given a key finds the int key coordinates. Generates a flag if not found.
 
    Input Paramters:
 .    keyname - string name of key
@@ -21,7 +20,7 @@ static char vcid[] = "$Id: aodata.c,v 1.10 1997/10/20 04:00:44 bsmith Exp bsmith
 .     key - integer of keyname
 
 */
-int AODataFindKey_Private(AOData aodata,char *keyname, int *flag,int *key)
+int AODataKeyFind_Private(AOData aodata,char *keyname, int *flag,int *key)
 {
   int i;
 
@@ -43,11 +42,10 @@ int AODataFindKey_Private(AOData aodata,char *keyname, int *flag,int *key)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
-#define __FUNC__ "AODataFindSegment_Private" 
+#define __FUNC__ "AODataSegmentFind_Private" 
 /*
-   AODataFindSegment_Private - Given a key and segment finds the int key, segment
+   AODataSegmentFind_Private - Given a key and segment finds the int key, segment
      coordinates. Generates a flag if not found.
 
    Input Paramters:
@@ -59,7 +57,7 @@ int AODataFindKey_Private(AOData aodata,char *keyname, int *flag,int *key)
      key - integer of keyname
      segment - integer of segment
 */
-int AODataFindSegment_Private(AOData aodata,char *keyname, char *segname, int *flag,int *key,int *segment)
+int AODataSegmentFind_Private(AOData aodata,char *keyname, char *segname, int *flag,int *key,int *segment)
 {
   int i,j;
 
@@ -523,7 +521,7 @@ int AODataKeyAddLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
-  ierr = AODataFindKey_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
+  ierr = AODataKeyFind_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
   if (flag)  SETERRQ(1,1,"Key does not exist");
 
   aodata->keys[ikey].ltog = map;
@@ -558,7 +556,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N,int nsegments)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
-  ierr = AODataFindKey_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
+  ierr = AODataKeyFind_Private(aodata,name,&flag,&ikey);CHKERRQ(ierr);
   if (flag == 0)  SETERRQ(1,1,"Key already exists with given name");
   if (flag == -1) SETERRQ(1,1,"Already full set of keys defined");
   if (nlocal == PETSC_DECIDE && N == PETSC_DECIDE) SETERRQ(1,1,"nlocal and N both PETSC_DECIDE");
@@ -709,7 +707,7 @@ int AODataKeyGetInfoOwnership(AOData aodata,char *name,int *rstart,int *rend)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
-  ierr = AODataFindKey_Private(aodata,name,&flag,&key); CHKERRQ(ierr);
+  ierr = AODataKeyFind_Private(aodata,name,&flag,&key); CHKERRQ(ierr);
   if (flag) SETERRQ(1,1,"Key never created");
 
   *rstart = aodata->keys[key].rstart;
@@ -743,7 +741,7 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
-  ierr = AODataFindKey_Private(aodata,name,&flag,&key); CHKERRQ(ierr);
+  ierr = AODataKeyFind_Private(aodata,name,&flag,&key); CHKERRQ(ierr);
   if (flag) SETERRQ(1,1,"Key never created");
 
   if (nglobal)   *nglobal   = aodata->keys[key].N;
@@ -782,7 +780,7 @@ int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *nglobal,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
-  ierr = AODataFindSegment_Private(aodata,keyname,segname,&flag,&key,&seg); CHKERRQ(ierr);
+  ierr = AODataSegmentFind_Private(aodata,keyname,segname,&flag,&key,&seg); CHKERRQ(ierr);
   if (flag) SETERRQ(1,1,"Key or segment never created");
   if (nglobal)   *nglobal   = aodata->keys[key].N;
   if (nlocal)    *nlocal    = aodata->keys[key].nlocal;
@@ -850,23 +848,48 @@ int AODataDestroy(AOData aodata)
    Input Parameters:
 .  aodata - the database
 .  key  - the key to remap
-.  is - index set indicating the new numbers to be owned by this processor
+.  ao - the old to new ordering
 
 .keywords: database remapping
 
 .seealso: 
 @*/
-int AODataKeyRemap(AOData aodata, char *key,IS is)
+int AODataKeyRemap(AOData aodata, char *key,AO ao)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  ierr = (*aodata->ops.keyremap)(aodata,key,is);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(ao,AO_COOKIE);
+  ierr = (*aodata->ops.keyremap)(aodata,key,ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyGetAdjacency" 
+/*@
+   AODataKeyGetAdjacency - Gets the adjacency graph for a key.
+
+   Input Parameters:
+.  aodata - the database
+.  key  - the key
+
+   Output Parameter:
+.  adj - the adjacency graph
+
+.keywords: database, adjacency graph
+
+.seealso: 
+@*/
+int AODataKeyGetAdjacency(AOData aodata, char *key,Mat *adj)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops.keygetadjacency)(aodata,key,adj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 

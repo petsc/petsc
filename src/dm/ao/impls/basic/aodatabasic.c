@@ -1,9 +1,6 @@
 
-
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.12 1997/10/19 03:31:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.13 1997/10/23 01:57:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -211,6 +208,8 @@ int AODataView_Basic(PetscObject obj,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentAdd_Basic"
 int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,int *keys,void *data,
                            PetscDataType dtype)
 {
@@ -222,7 +221,7 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
   MPI_Comm         comm = aodata->comm;
 
   PetscFunctionBegin;
-  ierr = AODataFindSegment_Private(aodata,name,segname,&flag,&ikey,&iseg);CHKERRQ(ierr);
+  ierr = AODataSegmentFind_Private(aodata,name,segname,&flag,&ikey,&iseg);CHKERRQ(ierr);
   if (flag == 0) SETERRQ(1,1,"Segment already defined");
   if (flag == -1) SETERRQ(1,1,"No room for additional segments");
 
@@ -300,6 +299,8 @@ int AODataSegmentAdd_Basic(AOData aodata,char *name,char *segname,int bs,int n,i
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentGet_Basic"
 int AODataSegmentGet_Basic(AOData ao,char *name,char *segname,int n,int *keys,void **data)
 {
   AODataSegment    *segment; 
@@ -308,7 +309,7 @@ int AODataSegmentGet_Basic(AOData ao,char *name,char *segname,int n,int *keys,vo
   
   PetscFunctionBegin;
   /* find the correct segment */
-  ierr = AODataFindSegment_Private(ao,name,segname,&flag,&ikey,&iseg);CHKERRQ(ierr);
+  ierr = AODataSegmentFind_Private(ao,name,segname,&flag,&ikey,&iseg);CHKERRQ(ierr);
   if (flag) SETERRQ(1,1,"Cannot locate segment");
 
   segment = ao->keys[ikey].segments+iseg;
@@ -324,6 +325,8 @@ int AODataSegmentGet_Basic(AOData ao,char *name,char *segname,int n,int *keys,vo
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentRestore_Basic"
 int AODataSegmentRestore_Basic(AOData aodata,char *name,char *segname,int n,int *keys,void **data)
 {
   PetscFunctionBegin;
@@ -331,13 +334,15 @@ int AODataSegmentRestore_Basic(AOData aodata,char *name,char *segname,int n,int 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentGetLocal_Basic"
 int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *keys,void **data)
 {
   int           ierr,flag,ikey,*globals,*locals,bs;
   PetscDataType dtype;
 
   PetscFunctionBegin;
-  ierr = AODataFindKey_Private(ao,segname,&flag,&ikey);CHKERRQ(ierr);
+  ierr = AODataKeyFind_Private(ao,segname,&flag,&ikey);CHKERRQ(ierr);
   if (flag) SETERRQ(1,1,"Segment does not have corresponding key");
   if (!ao->keys[ikey].ltog) SETERRQ(1,1,"No local to global mapping set for key");
   ierr = AODataSegmentGetInfo(ao,name,segname,PETSC_NULL,PETSC_NULL,&bs,&dtype); CHKERRQ(ierr);
@@ -358,6 +363,8 @@ int AODataSegmentGetLocal_Basic(AOData ao,char *name,char *segname,int n,int *ke
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AODataSegmentRestoreLocal_Basic"
 int AODataSegmentRestoreLocal_Basic(AOData aodata,char *name,char *segname,int n,int *keys,void **data)
 {
   PetscFunctionBegin;
@@ -365,24 +372,16 @@ int AODataSegmentRestoreLocal_Basic(AOData aodata,char *name,char *segname,int n
   PetscFunctionReturn(0);
 }
 
-int AODataKeyRemap_Basic(AOData aodata, char *key,IS is)
+extern int AOBasicGetIndices_Private(AO,int **,int **);
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyRemap_Basic"
+int AODataKeyRemap_Basic(AOData aodata, char *key,AO ao)
 {
-  IS   isall;
-  int  ierr,*gindices,i,j,nkey,nseg,k,*ii,nk,ikey,nisall,*igindices,flag,dsize,bs;
+  int  ierr,*inew,i,j,nkey,nseg,k,*ii,nk,ikey,flag,dsize,bs;
   char *data,*tmpdata;
 
   PetscFunctionBegin;
-
-  /* get the old to new mapping for all key indices */
-  ierr = ISAllGather(is,&isall);CHKERRQ(ierr);
-  ierr = ISGetIndices(isall,&gindices);CHKERRQ(ierr);
-
-  /* invert the gindices */
-  ierr = ISGetSize(isall,&nisall);CHKERRQ(ierr);
-  igindices = (int *) PetscMalloc( nisall*sizeof(int) ); CHKPTRQ(igindices);
-  for ( i=0; i<nisall; i++ ) {
-    igindices[gindices[i]] = i;
-  }
 
   /* remap all the values in the segments that match the key */
   nkey = aodata->nkeys;
@@ -393,18 +392,15 @@ int AODataKeyRemap_Basic(AOData aodata, char *key,IS is)
       if (aodata->keys[i].segments[j].datatype != PETSC_INT) {
         SETERRQ(1,1,"Segment name same as key but not integer type");
       }
-      /* Could also create and use a AOCreateXXX() for these */
       nk = aodata->keys[i].segments[j].bs*aodata->keys[i].N;
       ii = (int *) aodata->keys[i].segments[j].data;
-      for ( k=0; k<nk; k++ ) {
-        if (ii[k] >= 0) ii[k] = igindices[ii[k]];
-      }
+      ierr = AOApplicationToPetsc(ao,nk,ii); CHKERRQ(ierr);
     }
   }
-  PetscFree(igindices);
-
+  
+  ierr = AOBasicGetIndices_Private(ao,&inew,PETSC_NULL);CHKERRQ(ierr);
   /* reorder in the arrays all the values for the key */
-  ierr = AODataFindKey_Private(aodata,key,&flag,&ikey);CHKERRQ(ierr);
+  ierr = AODataKeyFind_Private(aodata,key,&flag,&ikey);CHKERRQ(ierr);
   if (flag) SETERRQ(1,1,"Could not find key");
   nseg = aodata->keys[ikey].nsegments;
   nk   = aodata->keys[ikey].N;
@@ -415,15 +411,56 @@ int AODataKeyRemap_Basic(AOData aodata, char *key,IS is)
     tmpdata = (char *) PetscMalloc((nk+1)*bs*dsize);CHKPTRQ(tmpdata);
 
     for ( k=0; k<nk; k++ ) {
-      PetscMemcpy(tmpdata+k*bs*dsize,data+gindices[k]*bs*dsize,bs*dsize);
+      PetscMemcpy(tmpdata+inew[k]*bs*dsize,data+k*bs*dsize,bs*dsize);
     }
     
     PetscMemcpy(data,tmpdata,bs*nk*dsize);
     PetscFree(tmpdata);
   }
 
-  ierr = ISRestoreIndices(isall,&gindices);CHKERRQ(ierr);
-  ierr = ISDestroy(isall);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyGetAdjacency_Basic"
+int AODataKeyGetAdjacency_Basic(AOData aodata, char *key,Mat *adj)
+{
+  int ierr,cnt,i,j,*jj,*ii,nlocal,n,ikey,flag,iseg,*nb,bs;
+
+  PetscFunctionBegin;
+  ierr = AODataSegmentFind_Private(aodata,key,key,&flag,&ikey,&iseg);CHKERRQ(ierr);
+  if (flag) SETERRQ(1,1,"Cannot locate key with neighbor segment");
+
+  /*
+     Get the beginning of the neighbor list for this processor 
+  */
+  bs     = aodata->keys[ikey].segments[iseg].bs;
+  nb     = (int *) aodata->keys[ikey].segments[iseg].data;
+  nb    += bs*aodata->keys[ikey].rstart;
+  nlocal = aodata->keys[ikey].rend - aodata->keys[ikey].rstart;
+  n      = bs*aodata->keys[ikey].N;
+
+  /*
+      Assemble the adjacency graph: first we determine total number of entries
+  */
+  cnt = 0;
+  for ( i=0; i<bs*nlocal; i++ ) {
+    if (nb[i] != -1) cnt++;
+  }
+  ii    = (int *) PetscMalloc((nlocal + 1)*sizeof(int)); CHKPTRQ(ii);
+  jj    = (int *) PetscMalloc((cnt+1)*sizeof(int));CHKPTRQ(jj);
+  ii[0] = 0;
+  cnt   = 0;
+  for ( i=0; i<nlocal; i++ ) {
+    for ( j=0; j<bs; j++ ) {
+      if (nb[bs*i+j] != -1) {
+        jj[cnt++] = nb[bs*i+j];
+      }
+    }
+    ii[i+1] = cnt;
+  }
+
+  ierr = MatCreateMPIAdj(aodata->comm,nlocal,n,ii,jj,adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -435,7 +472,8 @@ static struct _AODataOps myops = {AODataSegmentAdd_Basic,
                                   AODataSegmentGetLocal_Basic,
                                   AODataSegmentRestoreLocal_Basic,
                                   AODataSegmentGetReduced_Basic,
-                                  AODataKeyRemap_Basic};
+                                  AODataKeyRemap_Basic,
+                                  AODataKeyGetAdjacency_Basic};
 
 #undef __FUNC__  
 #define __FUNC__ "AODataCreateBasic" 

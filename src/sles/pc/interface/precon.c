@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.134 1997/10/01 13:08:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.135 1997/10/19 03:24:21 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -27,6 +27,7 @@ $  -help, -h
 int PCPrintHelp(PC pc)
 {
   char p[64]; 
+  int  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -36,7 +37,9 @@ int PCPrintHelp(PC pc)
   PCPrintTypes_Private(pc->comm,p,"pc_type");
   PetscPrintf(pc->comm,"Run program with -help %spc_type <method> for help on ",p);
   PetscPrintf(pc->comm,"a particular method\n");
-  if (pc->printhelp) (*pc->printhelp)(pc,p);
+  if (pc->printhelp) {
+    ierr = (*pc->printhelp)(pc,p);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

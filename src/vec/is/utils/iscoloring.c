@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.16 1997/10/12 23:23:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.17 1997/10/19 03:22:23 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -244,14 +244,54 @@ int ISPartitioningToLocalIS(ISPartitioning part,IS *is)
   ierr = ISCreateGeneral(comm,trlen,rvalues,is); CHKERRQ(ierr);
   PetscFree(rvalues);
 
-  ISView(*is,VIEWER_STDOUT_WORLD);
-
-
+  ierr = ISView(*is,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "ISAllGather"
+/*@
+      ISAllGather - Given an IS on each processor, generates a large IS
+         on each processor by concatenating together each processors IS.
 
+  Input Parameter:
+.   is - the distributed index set
+
+  Output Parameter:
+.   isout - the concatenated IS, same on all processors
+
+@*/
+extern int ISAllGather(IS is,IS *isout)
+{
+  int      *indices,*sizes,size,*offsets,n,*lindices,i,N,ierr;
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+
+  PetscObjectGetComm((PetscObject)is,&comm);
+  MPI_Comm_size(comm,&size);
+  sizes   = (int *) PetscMalloc(2*size*sizeof(int));CHKPTRQ(sizes);
+  offsets = sizes + size;
+  
+  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  MPI_Allgather(&n,1,MPI_INT,sizes,1,MPI_INT,comm); 
+  offsets[0] = 0;
+  for ( i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+  N = offsets[size-1] + sizes[size-1];
+
+  indices = (int *) PetscMalloc((N+1)*sizeof(int));CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
+  MPI_Allgatherv(lindices,n,MPI_INT,indices,sizes,offsets,MPI_INT,comm); 
+  ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
+
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
+  PetscFree(indices);
+
+  PetscFree(sizes);
+  PetscFunctionReturn(0);
+}
 
 
 

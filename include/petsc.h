@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.182 1997/10/07 20:11:07 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.183 1997/10/19 03:31:51 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -163,7 +163,7 @@ extern int PetscObjectGetChild(PetscObject,void **child);
 extern int PetscObjectGetType(PetscObject,int *type);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
-extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),int (*)(void*));
+extern int PetscObjectCompose(PetscObject,void *, int (*)(void *,void **),int (*)(void*));
 extern int PetscObjectReference(PetscObject);
 extern int PetscObjectDereference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
@@ -171,15 +171,15 @@ extern int PetscObjectRestoreNewTag(PetscObject,int *);
 extern int PetscObjectView(PetscObject,Viewer);
 
 typedef enum {PETSC_INT = 0, PETSC_DOUBLE = 1, PETSC_SHORT = 2, PETSC_FLOAT = 3,
-              PETSC_DCOMPLEX = 4, PETSC_CHAR = 5} PetscDataType;
+              PETSC_COMPLEX = 4, PETSC_CHAR = 5} PetscDataType;
 #if defined(USE_PETSC_COMPLEX)
-#define PETSC_SCALAR PETSC_DCOMPLEX
+#define PETSC_SCALAR PETSC_COMPLEX
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif
 
 typedef enum {PETSC_INT_SIZE = sizeof(int), PETSC_DOUBLE_SIZE = sizeof(double),
-              PETSC_SCALAR_SIZE = sizeof(Scalar), PETSC_DCOMPLEX_SIZE = sizeof(double),
+              PETSC_SCALAR_SIZE = sizeof(Scalar), PETSC_COMPLEX_SIZE = sizeof(double),
               PETSC_CHAR_SIZE = sizeof(char)} PetscDataTypeSize;
 extern int PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 extern int PetscDataTypeGetSize(PetscDataType,int*);

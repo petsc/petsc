@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.47 1997/09/30 13:58:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.48 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -31,7 +31,7 @@ static char *SIGNAME[] = { "Unknown signal",
                            "FPE:\nPETSC ERROR: Floating Point Exception, probably divide by zero",
                            "KILL", 
                            "BUS: Bus Error",  
-                           "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory corruption", 
+                           "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory out of range", 
                            "SYS",
                            "PIPE",
                            "ALRM",
@@ -100,10 +100,14 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   PetscStrcat(buf,"-on_error_attach_debugger ");
   PetscStrcat(buf,"to\nPETSC ERROR: determine where problem occurs\n");
 #if defined(USE_PETSC_STACK)
-  PetscStrcat(buf,"PETSC ERROR: or try option -log_stack\n");
-  PetscStackPop();  /* remove stack frames for error handlers */
-  PetscStackPop();
-  PetscStackView(0);
+  if (!PetscStackActive) {
+    PetscStrcat(buf,"PETSC ERROR: or try option -log_stack\n");
+  } else {
+    PetscStackPop;  /* remove stack frames for error handlers */
+    PetscStackPop;
+    PetscStrcat(buf,"PETSC ERROR: likely location of problem given above in stack\n");
+    PetscStackView(0);
+  }
 #endif
   ierr =  PetscError(0,"unknownfunction","unknown file"," ",PETSC_ERR_SIG,0,buf);
   MPI_Abort(PETSC_COMM_WORLD,ierr);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.24 1997/10/14 20:15:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.25 1997/10/19 03:24:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -228,7 +228,7 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 
 #undef __FUNC__  
 #define __FUNC__ "MatFDColoringSetFunction"
-/*@
+/*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
    Input Parameters:

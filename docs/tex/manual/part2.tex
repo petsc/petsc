@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.236 1997/10/18 14:38:07 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.237 1997/10/19 22:43:29 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -351,7 +351,7 @@ routines {\em cannot} be called by just a subset of processors.
 
 An alternative routine to create the application ordering, {\tt AO}, is 
 \begin{verbatim}
-   ierr = AOCreateBasicIS(MPI_Comm comm,IS apordering,IS petscordering,AO *ao);
+   ierr = AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
 \end{verbatim}
 \findex{AOCreateBasicIS}
 where index sets are used instead of integer arrays.  The corresponding

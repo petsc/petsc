@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.6 1997/07/09 21:02:05 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.7 1997/09/26 02:21:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
@@ -21,11 +21,11 @@ int main(int argc,char **argv)
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
   /* create the index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,rank,size,&ispetsc); CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,n*rank,1,&isapp); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&ispetsc); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&isapp); CHKERRA(ierr);
 
   /* create the application ordering */
-  ierr = AOCreateBasicIS(PETSC_COMM_WORLD,isapp,ispetsc,&ao); CHKERRA(ierr);
+  ierr = AOCreateBasicIS(isapp,ispetsc,&ao); CHKERRA(ierr);
 
   ierr = ISDestroy(ispetsc); CHKERRA(ierr);
   ierr = ISDestroy(isapp); CHKERRA(ierr);

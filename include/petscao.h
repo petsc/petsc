@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.9 1997/10/10 04:08:45 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.10 1997/10/20 16:59:05 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -8,6 +8,7 @@
 #if !defined(__AO_PACKAGE)
 #define __AO_PACKAGE
 #include "is.h"
+#include "mat.h"
 
 typedef enum {AO_BASIC=0, AO_ADVANCED=1} AOType;
 
@@ -16,7 +17,7 @@ typedef enum {AO_BASIC=0, AO_ADVANCED=1} AOType;
 typedef struct _p_AO* AO;
 
 extern int AOCreateBasic(MPI_Comm,int,int*,int*,AO*);
-extern int AOCreateBasicIS(MPI_Comm,IS,IS,AO*);
+extern int AOCreateBasicIS(IS,IS,AO*);
 
 extern int AOPetscToApplication(AO,int,int*);
 extern int AOApplicationToPetsc(AO,int,int*);
@@ -38,7 +39,7 @@ extern int AODataCreateBasic(MPI_Comm,int,AOData *);
 
 extern int AODataKeyAdd(AOData,char*,int,int,int);
 extern int AODataKeyAddLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping);
-extern int AODataKeyRemapIS(AOData,char *,IS);
+extern int AODataKeyRemap(AOData,char *,AO);
 
 extern int AODataSegmentAdd(AOData,char*,char *,int, int, int *,void *,PetscDataType);
 extern int AODataSegmentAddIS(AOData,char*,char *,int, IS,void *,PetscDataType);
@@ -62,6 +63,7 @@ extern int AODataSegmentGetReducedIS(AOData,char *,char *,IS,IS *);
 
 extern int AODataKeyGetNeighbors(AOData,char *,int,int*,IS *);
 extern int AODataKeyGetNeighborsIS(AOData,char *,IS,IS *);
+extern int AODataKeyGetAdjacency(AOData,char *,Mat*);
 
 extern int AODataView(AOData,Viewer);
 extern int AODataDestroy(AOData);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.89 1997/09/18 16:47:24 balay Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.90 1997/10/19 03:25:18 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -13,6 +13,9 @@ int MatOrder_Flow_SeqAIJ(Mat mat,MatReordering type,IS *irow,IS *icol)
   PetscFunctionBegin;
 
   SETERRQ(PETSC_ERR_SUP,0,"Code not written");
+#if !defined(USE_PETSC_DEBUG)
+  PetscFunctionReturn(0);
+#endif
 }
 
 /*

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.131 1997/09/26 02:18:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.132 1997/10/19 03:25:08 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -552,15 +552,15 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
     ierr = MatCreateSeqDense(comm,M,N,PETSC_NULL,A); CHKERRQ(ierr);
-    B = *A;
-    a = (Mat_SeqDense *) B->data;
+    B    = *A;
+    a    = (Mat_SeqDense *) B->data;
 
     /* read in nonzero values */
     ierr = PetscBinaryRead(fd,a->v,M*N,PETSC_SCALAR); CHKERRQ(ierr);
 
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-    ierr = MatTranspose(B,PETSC_NULL); CHKERRQ(ierr);
+    /* ierr = MatTranspose(B,PETSC_NULL); CHKERRQ(ierr); */
   } else {
     /* read row lengths */
     rowlengths = (int*) PetscMalloc( (M+1)*sizeof(int) ); CHKPTRQ(rowlengths);
@@ -617,14 +617,12 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
       fprintf(fd,"row %d:",i);
       for ( j=0; j<a->n; j++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        if (real(*v) != 0.0 && imag(*v) != 0.0)
-          fprintf(fd," %d %g + %g i",j,real(*v),imag(*v));
+        if (real(*v) != 0.0 && imag(*v) != 0.0) fprintf(fd," %d %g + %g i",j,real(*v),imag(*v));
         else if (real(*v)) fprintf(fd," %d %g ",j,real(*v));
-        v += a->m;
 #else
         if (*v) fprintf(fd," %d %g ",j,*v); 
-        v += a->m;
 #endif
+        v += a->m;
       }
       fprintf(fd,"\n");
     }
@@ -781,12 +779,22 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
   PetscFunctionBegin;
   v = mat->v; m = mat->m; n = mat->n;
   if (matout == PETSC_NULL) { /* in place transpose */
-    if (m != n) SETERRQ(PETSC_ERR_SUP,0,"Supports square matrix only in-place");
-    for ( j=0; j<m; j++ ) {
-      for ( k=0; k<j; k++ ) {
-        tmp = v[j + k*n]; 
-        v[j + k*n] = v[k + j*n];
-        v[k + j*n] = tmp;
+    if (m != n) { /* malloc temp to hold transpose */
+      Scalar *w = (Scalar *) PetscMalloc((m+1)*(n+1)*sizeof(Scalar));CHKPTRQ(w);
+      for ( j=0; j<m; j++ ) {
+        for ( k=0; k<n; k++ ) {
+          w[k + j*n] = v[j + k*m];
+        }
+      }
+      PetscMemcpy(v,w,m*n*sizeof(Scalar));
+      PetscFree(w);
+    } else {
+      for ( j=0; j<m; j++ ) {
+        for ( k=0; k<j; k++ ) {
+          tmp = v[j + k*n]; 
+          v[j + k*n] = v[k + j*n];
+          v[k + j*n] = tmp;
+        }
       }
     }
   } else { /* out-of-place transpose */

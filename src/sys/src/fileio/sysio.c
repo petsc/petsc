@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.30 1997/10/06 02:48:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.31 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -27,10 +27,10 @@ static char vcid[] = "$Id: sysio.c,v 1.30 1997/10/06 02:48:27 curfman Exp bsmith
 int PetscByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp =0;
-  int  *tptr = &tmp;            /* Need to access tmp indirectly to get */
-                                /* arround the bug in DEC-ALPHA compilers*/
+  int  *tptr = &tmp;                /* Need to access tmp indirectly to get */
+  char *ptr1,*ptr2 = (char *) &tmp; /* arround the bug in DEC-ALPHA compilers*/
+                                   
   PetscFunctionBegin;
-  char *ptr1,*ptr2 = (char *) &tmp;
 
   for ( j=0; j<n; j++ ) {
     ptr1 = (char *) (buff + j);
@@ -296,13 +296,11 @@ int PetscBinaryOpen(char *name,int type,int *fd)
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
       SETERRQ(1,0,"Cannot create file for writing");
     }
-  } 
-  else if (type == BINARY_RDONLY) {
+  } else if (type == BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
     SETERRQ(1,0,"Cannot open file for reading");
     }
-  }
-  else if (type == BINARY_WRONLY) {
+  } else if (type == BINARY_WRONLY) {
     if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
       SETERRQ(1,0,"Cannot open file for writing");
     }
@@ -311,8 +309,7 @@ int PetscBinaryOpen(char *name,int type,int *fd)
     if ((*fd = creat(name,0666)) == -1) {
       SETERRQ(1,0,"Cannot create file for writing");
     }
-  } 
-  else if (type == BINARY_RDONLY) {
+  } else if (type == BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY,0)) == -1) {
       SETERRQ(1,0,"Cannot open file for reading");
     }

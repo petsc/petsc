@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.34 1997/10/10 16:04:06 balay Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.35 1997/10/19 03:30:37 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -21,12 +21,83 @@ PLogDouble MPI_Wtime()
   return PetscGetTime();
 }
 
-int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
+#define MAX_ATTR 128
+
+typedef struct {
+  void                *extra_state;
+  void                *attribute_val;
+  int                 active;
+  MPI_Delete_function *del;
+} MPI_Attr;
+
+static MPI_Attr attr[MAX_ATTR];
+static int      num_attr = 1,mpi_tag_ub = 10000;
+
+/*
+   Used to set the built in MPI_TAG_UB attribute
+*/
+static int Keyval_setup()
 {
-  *flag   = 1;
-  *((int**)attribute_val) = MPIUNI_DUMMY;
+  attr[0].active        = 1;
+  attr[0].attribute_val = &mpi_tag_ub;
+  return 0;
+}
+
+int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,
+                      void *extra_state)
+{
+  if (num_attr >= MAX_ATTR) MPI_Abort(MPI_COMM_WORLD,1);
+
+  attr[num_attr].extra_state = extra_state;
+  attr[num_attr].del         = delete_fn;
+  *keyval                    = num_attr++;
+  return 0;
+}
+
+int MPI_Keyval_free(int *keyval)
+{
+  attr[*keyval].active = 0;
   return MPI_SUCCESS;
 }
+
+int MPI_Attr_put(MPI_Comm comm, int keyval, void *attribute_val)
+{
+  attr[keyval].active        = 1;
+  attr[keyval].attribute_val = attribute_val;
+  return MPI_SUCCESS;
+}
+  
+int MPI_Attr_delete(MPI_Comm comm, int keyval)
+{
+  if (attr[keyval].active && attr[keyval].del) {
+    (*(attr[keyval].del))(comm,keyval,attr[keyval].attribute_val,attr[keyval].extra_state);
+  }
+  attr[keyval].active        = 0;
+  attr[keyval].attribute_val = 0;
+  return MPI_SUCCESS;
+}
+
+int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
+{
+  if (keyval == 0) Keyval_setup();
+  *flag                  = attr[keyval].active;
+  *(int **)attribute_val = (int *)attr[keyval].attribute_val;
+  return MPI_SUCCESS;
+}
+
+int MPI_Comm_free(MPI_Comm *comm)
+{
+  int i;
+  for ( i=0; i<num_attr; i++ ) {
+    if (attr[i].active && attr[i].del) {
+      (*attr[i].del)(*comm,i,attr[i].attribute_val,attr[i].extra_state);
+    }
+    attr[i].active = 0;
+  }
+  return MPI_SUCCESS;
+}
+
+/* --------------------------------------------------------------------------*/
 
 int MPI_Abort(MPI_Comm comm,int errorcode) 
 {
@@ -35,6 +106,13 @@ int MPI_Abort(MPI_Comm comm,int errorcode)
   return MPI_SUCCESS;
 }
 
+static int MPI_was_initialized = 0;
+
+int MPI_Initialized(int *flag)
+{
+  *flag = MPI_was_initialized;
+  return 0;
+}
 
 /*     Fortran versions of several routines */
 
@@ -45,21 +123,25 @@ extern "C" {
 /******mpi_init*******/
 void  mpi_init(int *ierr)
 {
+  MPI_was_initialized = 1;
   *ierr = MPI_SUCCESS;
 }
 
 void  mpi_init_(int *ierr)
 {
+  MPI_was_initialized = 1;
   *ierr = MPI_SUCCESS;
 }
 
 void  mpi_init__(int *ierr)
 {
+  MPI_was_initialized = 1;
   *ierr = MPI_SUCCESS;
 }
 
 void  MPI_INIT(int *ierr)
 {
+  MPI_was_initialized = 1;
   *ierr = MPI_SUCCESS;
 }
 

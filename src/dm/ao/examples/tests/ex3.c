@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.3 1997/10/01 22:47:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.4 1997/10/10 04:08:05 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData \n\n";
@@ -30,8 +30,8 @@ int main(int argc,char **argv)
   /*
        Put two segments in the first key and one in the second
   */
-  ierr = AODataAddKey(aodata,"key1",PETSC_DECIDE,nglobal,2); CHKERRA(ierr);
-  ierr = AODataAddKey(aodata,"key2",PETSC_DECIDE,nglobal,1); CHKERRA(ierr);
+  ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal,2); CHKERRA(ierr);
+  ierr = AODataKeyAdd(aodata,"key2",PETSC_DECIDE,nglobal,1); CHKERRA(ierr);
 
   /* allocate space for the keys each processor will provide */
   keys = (int *) PetscMalloc( n*sizeof(int) );CHKPTRA(keys);
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
     data[2*i]   = -(start + i);
     data[2*i+1] = -(start + i) - 10000;
   }
-  ierr = AODataAddSegment(aodata,"key1","seg1",bs,n,keys,data,PETSC_INT);CHKERRA(ierr); 
+  ierr = AODataSegmentAdd(aodata,"key1","seg1",bs,n,keys,data,PETSC_INT);CHKERRA(ierr); 
   PetscFree(data);
 
   /*
@@ -68,12 +68,12 @@ int main(int argc,char **argv)
     gd[3*i+1] = -(start + i) - 10000;
     gd[3*i+2] = -(start + i) - 100000;
   }
-  ierr = AODataAddSegment(aodata,"key1","seg2",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
+  ierr = AODataSegmentAdd(aodata,"key1","seg2",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
 
   /*
        Use same data for second key and first segment 
   */
-  ierr = AODataAddSegment(aodata,"key2","seg1",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
+  ierr = AODataSegmentAdd(aodata,"key2","seg1",bs,n,keys,gd,PETSC_DOUBLE);CHKERRA(ierr); 
   PetscFree(gd);
   PetscFree(keys);
 

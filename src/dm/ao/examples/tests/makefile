@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.14 1997/09/10 19:10:48 balay Exp bsmith $ 
+# $Id: makefile,v 1.15 1997/09/30 16:42:36 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -15,7 +15,7 @@ BUILDEXAMPLES_2 =
 BUILDEXAMPLES_3 = 
 BUILDEXAMPLES_4 = 
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
 EXAMPLESF       = 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
@@ -35,6 +35,10 @@ ex3: ex3.o  chkopts
 ex4: ex4.o  chkopts
 	-$(CLINKER) -o ex4 ex4.o  $(SLES_LIB)
 	$(RM) -f ex4.o
+
+ex5: ex5.o  chkopts
+	-$(CLINKER) -o ex5 ex5.o  $(SLES_LIB)
+	$(RM) -f ex5.o
 
 runex1:
 	-@$(MPIRUN) -np 1 ex1 > ex1_1.tmp 2>&1;   \

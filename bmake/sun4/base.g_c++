@@ -1,8 +1,8 @@
-# $Id: base.g_c++,v 1.6 1997/09/10 18:10:56 balay Exp bsmith $ 
+# $Id: base.g_c++,v 1.7 1997/10/19 03:20:08 bsmith Exp bsmith $ 
 
 CLINKER    = g++ $(COPTFLAGS)
 CC         = g++  -DPARCH_sun4  -fPIC
-PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g
+PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g -DUSE_PETSC_STACK
 COPTFLAGS  = -g 
 FOPTFLAGS  = -g -dalign
 SYS_LIB    = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o

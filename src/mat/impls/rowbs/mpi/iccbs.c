@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.24 1997/07/09 20:54:23 balay Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.25 1997/10/19 03:25:37 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -215,6 +215,9 @@ int PCBSIterSolve(PC pc,Vec b,Vec x,int *its)
 
   PetscFunctionBegin;  
   SETERRQ(1,0,"Currently out of commission.");
+#if !defined(USE_PETSC_DEBUG)
+  PetscFunctionReturn(0);
+#endif
   /* Note: The vectors x and b are permuted within BSpar_solve */
 /*
   if (amat != pc->pmat->data) SETERRQ(1,0,"Need same pre and matrix");
@@ -282,6 +285,9 @@ int PCBSIterSetBlockSolve(PC pc)
 {
   PetscFunctionBegin;  
   SETERRQ(1,0,"Not currently supported.");
+#if !defined(USE_PETSC_DEBUG)
+  PetscFunctionReturn(0);
+#endif
 /*
   PC_ICC *icc = (PC_ICC *) pc->data;
   PetscValidHeaderSpecific(pc,PC_COOKIE);

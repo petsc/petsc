@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.20 1997/10/01 22:44:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.21 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -52,13 +52,13 @@ int PetscHeaderDestroy_Private(PetscObject h)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectInherit_DefaultCopy"
+#define __FUNC__ "PetscObjectCompose_DefaultCopy"
 /*
     The default copy simply copies the pointer and adds one to the 
   reference counter.
 
 */
-static int PetscObjectInherit_DefaultCopy(void *in, void **out)
+static int PetscObjectCompose_DefaultCopy(void *in, void **out)
 {
   PetscObject obj = (PetscObject) in;
 
@@ -69,12 +69,12 @@ static int PetscObjectInherit_DefaultCopy(void *in, void **out)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectInherit_DefaultDestroy"
+#define __FUNC__ "PetscObjectCompose_DefaultDestroy"
 /*
     The default destroy treats it as a PETSc object and calls 
   its destroy routine.
 */
-static int PetscObjectInherit_DefaultDestroy(void *in)
+static int PetscObjectCompose_DefaultDestroy(void *in)
 {
   int         ierr;
   PetscObject obj = (PetscObject) in;
@@ -94,7 +94,7 @@ static int PetscObjectInherit_DefaultDestroy(void *in)
    Input Parameter:
 .  obj - the PETSc object
 
-.seealso: PetscObjectInherit(), PetscObjectDereference()
+.seealso: PetscObjectCompose(), PetscObjectDereference()
 
 @*/
 int PetscObjectReference(PetscObject obj)
@@ -115,7 +115,7 @@ int PetscObjectReference(PetscObject obj)
    Input Parameter:
 .  obj - the PETSc object
 
-.seealso: PetscObjectInherit(), PetscObjectReference()
+.seealso: PetscObjectCompose(), PetscObjectReference()
 
 @*/
 int PetscObjectDereference(PetscObject obj)
@@ -133,10 +133,10 @@ int PetscObjectDereference(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectInherit"
+#define __FUNC__ "PetscObjectCompose"
 /*@C
-   PetscObjectInherit - Associates another object with a given PETSc object. 
-                        This is to provide a limited support for inheritance.
+   PetscObjectCompose - Associates another object with a given PETSc object. 
+                        This is to provide a limited support for composition.
 
    Input Parameters:
 .  obj - the PETSc object
@@ -150,25 +150,25 @@ int PetscObjectDereference(PetscObject obj)
    When ptr is a PetscObject one should almost always use PETSC_NULL as the 
    third and fourth argument.
    
-   PetscObjectInherit() can be used with any PETSc object such at
+   PetscObjectCompose() can be used with any PETSc object such at
    Mat, Vec, KSP, SNES, etc, or any user provided object. 
 
    Current limitation: 
    Each object can have only one child - we may extend this eventually.
 
-.keywords: object, inherit
+.keywords: object, composition
 
 .seealso: PetscObjectGetChild()
 @*/
-int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),int (*destroy)(void*))
+int PetscObjectCompose(PetscObject obj,void *ptr, int (*copy)(void *,void **),int (*destroy)(void*))
 {
   PetscFunctionBegin;
   if (obj->child) {
     PLogInfo(obj,"Child already set; releasing old child");
     PetscObjectDereference((PetscObject)obj->child);
   }
-  if (copy == PETSC_NULL)    copy = PetscObjectInherit_DefaultCopy;
-  if (destroy == PETSC_NULL) destroy = PetscObjectInherit_DefaultDestroy;
+  if (copy == PETSC_NULL)    copy = PetscObjectCompose_DefaultCopy;
+  if (destroy == PETSC_NULL) destroy = PetscObjectCompose_DefaultDestroy;
   obj->child        = ptr;
   obj->childcopy    = copy;
   obj->childdestroy = destroy;
@@ -188,7 +188,7 @@ int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),in
 
 .keywords: object, get, child
 
-.seealso: PetscObjectInherit()
+.seealso: PetscObjectCompose()
 @*/
 int PetscObjectGetChild(PetscObject obj,void **child)
 {
@@ -211,7 +211,7 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
   } else if (ptype == PETSC_SCALAR) {
     *mtype = MPIU_SCALAR;
 #if defined(USE_PETSC_COMPLEX)
-  } else if (ptype == PETSC_DCOMPLEX) {
+  } else if (ptype == PETSC_COMPLEX) {
     *mtype = MPIU_COMPLEX;
 #endif
   } else if (ptype == PETSC_CHAR) {
@@ -234,8 +234,8 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
   } else if (ptype == PETSC_SCALAR) {
     *size = PETSC_SCALAR_SIZE;
 #if defined(USE_PETSC_COMPLEX)
-  } else if (ptype == PETSC_DCOMPLEX) {
-    *size = PETSC_DCOMPLEX_SIZE;
+  } else if (ptype == PETSC_COMPLEX) {
+    *size = PETSC_COMPLEX_SIZE;
 #endif
   } else if (ptype == PETSC_CHAR) {
     *size = PETSC_CHAR_SIZE;
@@ -257,7 +257,7 @@ int PetscDataTypeGetName(PetscDataType ptype,char **name)
   } else if (ptype == PETSC_SCALAR) {
     *name = "Scalar";
 #if defined(USE_PETSC_COMPLEX)
-  } else if (ptype == PETSC_DCOMPLEX) {
+  } else if (ptype == PETSC_COMPLEX) {
     *name = "complex";
 #endif
   } else if (ptype == PETSC_CHAR) {

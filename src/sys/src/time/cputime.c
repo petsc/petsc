@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.10 1997/07/23 19:42:23 balay Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.11 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,22 +13,37 @@ static char vcid[] = "$Id: cputime.c,v 1.10 1997/07/23 19:42:23 balay Exp bsmith
 #define __FUNC__ "PetscGetCPUTime"
 
 #if defined (PARCH_solaris)
+
 #include <sys/times.h>
 #include <limits.h>
 PLogDouble PetscGetCPUTime()
 {
   struct tms temp;
+  PLogDouble t;
 
   PetscFunctionBegin;
   times(&temp);
-  PetscFunctionReturn((double) temp.tms_utime)/((double) CLK_TCK);
+  t = ((double) temp.tms_utime)/((double) CLK_TCK);
+  PetscFunctionReturn(t);
 }
 
-#elif defined(PARCH_t3d) || defined(PARCH_hpux) || defined (PARCH_nt)  
+#elif defined(PARCH_hpux)  
+
 #include "src/sys/src/files.h"
-#if defined(PARCH_hpux)
 #include <time.h>
-#endif
+#include <sys/types.h>
+PLogDouble PetscGetCPUTime()
+{
+  PLogDouble t;
+
+  PetscFunctionBegin;
+  t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
+  PetscFunctionReturn(t);
+}  
+
+#elif defined(PARCH_t3d) || defined (PARCH_nt)  
+
+#include "src/sys/src/files.h"
 #include <sys/types.h>
 PLogDouble PetscGetCPUTime()
 {

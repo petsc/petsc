@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.86 1997/10/10 04:06:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.87 1997/10/19 03:30:13 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -329,7 +329,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
   ierr = VecGetOwnershipRange(global,&start,&end); CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,x*y,start,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStride(comm,x*y,start,1,&to);CHKERRQ(ierr);
 
   left  = xs - Xs; down  = ys - Ys; up    = down + y;
   idx = (int *) PetscMalloc( x*(up - down)*sizeof(int) ); CHKPTRQ(idx);
@@ -339,7 +339,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       idx[count++] = left + i*(Xe-Xs) + j;
     }
   }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,count,idx,&from);CHKERRQ(ierr);
   PetscFree(idx);
 
   ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
@@ -350,7 +350,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* global to local must include ghost points */
   if (stencil_type == DA_STENCIL_BOX) {
-    ierr = ISCreateStride(PETSC_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to);CHKERRQ(ierr); 
+    ierr = ISCreateStride(comm,(Xe-Xs)*(Ye-Ys),0,1,&to);CHKERRQ(ierr); 
   } else {
     /* must drop into cross shape region */
     /*       ---------|
@@ -384,7 +384,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
         idx[count++] = left + i*(Xe-Xs) + j;
       }
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,&to);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,count,idx,&to);CHKERRQ(ierr);
     PetscFree(idx);
   }
 
@@ -635,7 +635,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   */
   {
     ISLocalToGlobalMapping isltog;
-    ierr        = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nn,idx,&isltog); CHKERRQ(ierr);
+    ierr        = ISLocalToGlobalMappingCreate(comm,nn,idx,&isltog); CHKERRQ(ierr);
     ierr        = VecSetLocalToGlobalMapping(da->global,isltog); CHKERRQ(ierr);
     da->ltogmap = isltog; PetscObjectReference((PetscObject)isltog);
     PLogObjectParent(da,isltog);
@@ -804,7 +804,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     IS  ispetsc, isnatural;
     int *lidx,lict = 0, Nlocal = (da->xe-da->xs)*(da->ye-da->ys);
 
-    ierr = ISCreateStride(PETSC_COMM_SELF,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
 
     lidx = (int *) PetscMalloc(Nlocal*sizeof(int)); CHKPTRQ(lidx);
     for (j=ys; j<ye; j++) {
@@ -813,10 +813,10 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
         lidx[lict++] = i + j*M*w;
       }
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,Nlocal,lidx,&isnatural);CHKERRQ(ierr);
     PetscFree(lidx);
 
-    ierr = AOCreateBasicIS(comm,isnatural,ispetsc,&da->ao); CHKERRQ(ierr);
+    ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao); CHKERRQ(ierr);
     PLogObjectParent(da,da->ao);
     ierr = ISDestroy(ispetsc); CHKERRQ(ierr);
     ierr = ISDestroy(isnatural); CHKERRQ(ierr);

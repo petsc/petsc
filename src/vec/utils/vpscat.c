@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.91 1997/09/08 16:26:45 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.92 1997/10/19 03:22:27 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -128,8 +128,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
-  }
-  else {
+  } else {
     gen_to   = (VecScatter_MPI_General *) ctx->todata;
     gen_from = (VecScatter_MPI_General *) ctx->fromdata;
   }
@@ -182,8 +181,7 @@ int VecScatterBegin_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
       int n       = gen_to->local.n_nonmatching;
       for ( i=0; i<n; i++ ) {yv[fslots[i]] = xv[tslots[i]];}
     } 
-  }
-  else if (gen_to->local.n) {
+  } else if (gen_to->local.n) {
     int *tslots = gen_to->local.slots, *fslots = gen_from->local.slots;
     int n = gen_to->local.n;
     for ( i=0; i<n; i++ ) {yv[fslots[i]] += xv[tslots[i]];}
@@ -210,8 +208,7 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
     gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
     gen_from = (VecScatter_MPI_General *) ctx->todata;
     sstatus  = gen_from->sstatus;
-  }
-  else {
+  } else {
     gen_to   = (VecScatter_MPI_General *) ctx->todata;
     gen_from = (VecScatter_MPI_General *) ctx->fromdata;
     sstatus  = gen_to->sstatus;

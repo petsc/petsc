@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.23 1997/09/26 02:20:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.24 1997/10/19 03:28:16 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -186,9 +186,7 @@ int TSPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 
    Output Parameter:
 .  method -  solver method
-
-   Returns:
-   Returns 1 if the method is found; 0 otherwise.
+.  flg  - indicates if method found
 
    Options Database Key:
 $  -ts_type  method
@@ -203,6 +201,7 @@ int TSGetTypeFromOptions_Private(TS ctx,TSType *method,int *flg)
   if (*flg) {
     if (!__TSList) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
     *method = (TSType)NRFindID( __TSList, sbuf );
+    if (*method == (TSType) -1) SETERRQ(1,1,"Invalid TS Type");
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.122 1997/09/26 02:19:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.123 1997/10/19 03:25:52 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -1094,6 +1094,10 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);
     if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object");
   }
+  if (header[3] < 0) {
+    SETERRQ(1,1,"Matrix stored in special format on disk, cannot load as MPIBDiag");
+  }
+
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
   M = header[1]; N = header[2];
 

@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spartition.c,v 1.2 1997/10/01 22:45:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spartition.c,v 1.3 1997/10/19 03:26:35 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
 #include "mat.h"
 
-extern int MatPartitioning_Current(Mat,MatPartitioning, int,ISPartitioning *);
+extern int MatGetPartitioning_Current(Mat,MatPartitioning, int,ISPartitioning *);
 
 #undef __FUNC__  
 #define __FUNC__ "MatPartitioningRegisterAll" 
@@ -33,7 +33,7 @@ int MatPartitioningRegisterAll()
 
   PetscFunctionBegin;
   MatPartitioningRegisterAllCalled = 1;  
-  ierr = MatPartitioningRegister(PARTITIONING_CURRENT,0,"natural",MatPartitioning_Current);CHKERRQ(ierr);
+  ierr = MatPartitioningRegister(PARTITIONING_CURRENT,0,"natural",MatGetPartitioning_Current);CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);

@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.53 1997/08/21 01:06:19 balay Exp balay $ */
+/* $Id: mpi.h,v 1.54 1997/08/22 15:16:51 balay Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -14,9 +14,8 @@
 
 #define PETSC_USING_MPIUNI
 
-extern int MPIUNI_DUMMY[2];
-extern void   *MPIUNI_TMP;
-
+extern int  MPIUNI_DUMMY[2];
+extern void *MPIUNI_TMP;
 
 #define MPI_COMM_WORLD       1
 #define MPI_COMM_SELF        MPI_COMM_WORLD
@@ -54,18 +53,26 @@ typedef char*   MPI_Errhandler;
 */
 
 extern double MPI_Wtime();
-extern int MPI_Abort(MPI_Comm,int);
-extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag);
+extern int    MPI_Abort(MPI_Comm,int);
+extern int    MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag);
+extern int    MPI_Keyval_free(int*);
+extern int    MPI_Attr_put(MPI_Comm, int, void *);
+extern int    MPI_Attr_delete(MPI_Comm, int);
+typedef int   (MPI_Copy_function)( MPI_Comm, int, void *, void *, void *, int *);
+typedef int   (MPI_Delete_function)( MPI_Comm, int, void *, void * );
+extern int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
+extern int    MPI_Comm_free(MPI_Comm*);
+extern int    MPI_Initialized(int *);
 
 /* Routines */
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
-(MPIUNI_TMP = (void *) (buf), \
- MPIUNI_TMP = (void *) (count), \
- MPIUNI_TMP = (void *) (datatype), \
- MPIUNI_TMP = (void *) (dest), \
- MPIUNI_TMP = (void *) (tag), \
- MPIUNI_TMP = (void *) (comm), \
- MPI_SUCCESS)
+     (MPIUNI_TMP = (void *) (buf), \
+      MPIUNI_TMP = (void *) (count), \
+      MPIUNI_TMP = (void *) (datatype), \
+      MPIUNI_TMP = (void *) (dest), \
+      MPIUNI_TMP = (void *) (tag), \
+      MPIUNI_TMP = (void *) (comm), \
+      MPI_SUCCESS)
 #define MPI_Recv( buf, count, datatype, source, tag, comm, status) \
      (MPIUNI_TMP = (void *) (buf), \
       MPIUNI_TMP = (void *) (count), \
@@ -195,12 +202,12 @@ extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *fla
       MPI_SUCCESS)
 #define MPI_Waitsome(incount, array_of_requests, outcount, \
                      array_of_indices, array_of_statuses) \
-(MPIUNI_TMP = (void *) (incount), \
- MPIUNI_TMP = (void *) (array_of_requests), \
- MPIUNI_TMP = (void *) (outcount), \
- MPIUNI_TMP = (void *) (array_of_indices), \
- MPIUNI_TMP = (void *) (array_of_statuses), \
- MPI_SUCCESS)
+     (MPIUNI_TMP = (void *) (incount), \
+      MPIUNI_TMP = (void *) (array_of_requests), \
+      MPIUNI_TMP = (void *) (outcount), \
+      MPIUNI_TMP = (void *) (array_of_indices), \
+      MPIUNI_TMP = (void *) (array_of_statuses), \
+      MPI_SUCCESS)
 #define MPI_Comm_group(comm, group) \
      (MPIUNI_TMP = (void *) (comm), \
       MPIUNI_TMP = (void *) (group), \
@@ -214,10 +221,10 @@ extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *fla
 #define MPI_Testsome(incount, array_of_requests, outcount, \
                      array_of_indices, array_of_statuses) MPI_SUCCESS
 #define MPI_Iprobe(source, tag, comm, flag, status)  \
-*(flag)=0,  MPI_SUCCESS)
+      *(flag)=0,  MPI_SUCCESS)
 #define MPI_Probe(source, tag, comm, status) MPI_SUCCESS
 #define MPI_Cancel(request) (MPIUNI_TMP = (void *) (request), \
-     MPI_SUCCESS)
+      MPI_SUCCESS)
 #define MPI_Test_cancelled(status, flag)  \
      (*(flag)=0, MPI_SUCCESS)
 #define MPI_Send_init( buf, count,  datatype, dest, tag, comm, request) \
@@ -428,9 +435,6 @@ extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *fla
      MPIUNI_TMP = (void *) (group), \
      MPI_SUCCESS )
 #define MPI_Comm_split(comm, color, key, newcomm) MPI_SUCCESS
-#define MPI_Comm_free(comm) \
-     (MPIUNI_TMP = (void *) (comm), \
-     MPI_SUCCESS)
 #define MPI_Comm_dup(comm, newcomm) *(newcomm) = comm, MPI_SUCCESS
 #define MPI_Comm_test_inter(comm, flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Comm_remote_size(comm, size) (*(size)=1,MPI_SUCCESS)
@@ -438,19 +442,7 @@ extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *fla
 #define MPI_Intercomm_create(local_comm, local_leader, peer_comm, \
      remote_leader, tag, newintercomm) MPI_SUCCESS
 #define MPI_Intercomm_merge(intercomm, high, newintracomm) MPI_SUCCESS
-#define MPI_Keyval_create(copy_fn, delete_fn, keyval, extra_state) \
-     (MPIUNI_TMP = (void *) (copy_fn), \
-     MPIUNI_TMP = (void *) (delete_fn), \
-     MPIUNI_TMP = (void *) (keyval), \
-     MPIUNI_TMP = (void *) (extra_state), \
-     MPI_SUCCESS)
-#define MPI_Keyval_free(keyval) MPI_SUCCESS
-#define MPI_Attr_put(comm, keyval, attribute_val) \
-     (MPIUNI_TMP = (void *) (comm), \
-     MPIUNI_TMP = (void *) (keyval), \
-     MPIUNI_TMP = (void *) (attribute_val), \
-     MPI_SUCCESS)
-#define MPI_Attr_delete(comm, keyval) (MPIUNI_TMP = (void *) (comm),MPI_SUCCESS)
+
 #define MPI_Topo_test(comm, status) MPI_SUCCESS
 #define MPI_Cart_create(comm_old, ndims, dims, periods,\
      reorder, comm_cart) MPI_SUCCESS
@@ -490,7 +482,6 @@ extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *fla
 #define MPI_Wtick() 1.0
 #define MPI_Init(argc, argv) MPI_SUCCESS
 #define MPI_Finalize() MPI_SUCCESS
-#define MPI_Initialized(flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Pcontrol(level) MPI_SUCCESS
 
 #define MPI_NULL_COPY_FN   0

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.239 1997/10/06 16:23:56 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.240 1997/10/19 03:25:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -27,6 +27,9 @@ int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS row,IS col,Mat *fact)
 
   PetscFunctionBegin;  
   SETERRQ(ierr,0,"Not implemented");
+#if !defined(USE_PETSC_DEBUG)
+  PetscFunctionReturn(0);
+#endif
 }
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
@@ -352,8 +355,7 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
     for (i=0; i<m; i++) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(USE_PETSC_COMPLEX)
-        fprintf(fd,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,real(a->a[j]),
-                   imag(a->a[j]));
+        fprintf(fd,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,real(a->a[j]),imag(a->a[j]));
 #else
         fprintf(fd,"%d %d  %18.16e\n", i+1, a->j[j]+!shift, a->a[j]);
 #endif
@@ -849,13 +851,15 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
-  x    = x + shift; /* shift for Fortran start by 1 indexing */
+  x    = x + shift;    /* shift for Fortran start by 1 indexing */
   idx  = a->j;
-  v    = a->a + shift; /* shift for Fortran start by 1 indexing */
+  v    = a->a;
   ii   = a->i;
 #if defined(USE_FORTRAN_KERNELS)
   fortranmultaij_(&m,x,ii,idx,v,y);
 #else
+  v    += shift; /* shift for Fortran start by 1 indexing */
+  idx  += shift;
   for ( i=0; i<m; i++ ) {
     jrow = ii[i];
     n    = ii[i+1] - jrow;
@@ -878,16 +882,17 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   Scalar     *x, *y, *z, *v, sum;
   int        m = a->m, n, i, *idx, shift = a->indexshift,*ii,jrow,j;
 
-
   PetscFunctionBegin;
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y); VecGetArray_Fast(zz,z); 
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
-  v    = a->a + shift; /* shift for Fortran start by 1 indexing */
+  v    = a->a;
   ii   = a->i;
 #if defined(USE_FORTRAN_KERNELS)
   fortranmultaddaij_(&m,x,ii,idx,v,y,z);
 #else
+  v   += shift; /* shift for Fortran start by 1 indexing */
+  idx += shift;
   for ( i=0; i<m; i++ ) {
     jrow = ii[i];
     n    = ii[i+1] - jrow;
@@ -1121,8 +1126,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
         a->a[a->i[rows[i]]+shift] = *diag;
         a->j[a->i[rows[i]]+shift] = rows[i]+shift;
       } else {
-        ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],diag,INSERT_VALUES);
-        CHKERRQ(ierr);
+        ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],diag,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   } else {
@@ -1343,9 +1347,9 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat
   Mat          C;
 
   PetscFunctionBegin;
-  ierr = ISSorted(isrow,(PetscTruth*)&i);
+  ierr = ISSorted(isrow,(PetscTruth*)&i);CHKERRQ(ierr);
   if (!i) SETERRQ(1,0,"ISrow is not sorted");
-  ierr = ISSorted(iscol,(PetscTruth*)&i);
+  ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
   if (!i) SETERRQ(1,0,"IScol is not sorted");
 
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
@@ -1377,7 +1381,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat
     if (scall == MAT_REUSE_MATRIX) {
       int n_cols,n_rows;
       ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
-      if (n_rows != nrows || n_cols != ncols) SETERRQ(1,0,"");
+      if (n_rows != nrows || n_cols != ncols) SETERRQ(1,0,"Reused submatrix wrong size");
       ierr = MatZeroEntries(*B); CHKERRQ(ierr);
       C = *B;
     } else {  
@@ -1936,6 +1940,10 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
+
+  if (nz < 0) {
+    SETERRQ(1,1,"Matrix stored in special format on disk, cannot load as SeqAIJ");
+  }
 
   /* read in row lengths */
   rowlengths = (int*) PetscMalloc( M*sizeof(int) ); CHKPTRQ(rowlengths);

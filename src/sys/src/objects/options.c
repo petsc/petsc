@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.146 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.147 1997/10/27 00:45:16 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -843,6 +843,7 @@ int OptionsCheckInitial_Private()
   }
 #endif
 #endif
+
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
   if (flg1) {

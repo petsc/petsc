@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.13 1997/05/20 03:00:06 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.14 1997/10/19 03:31:51 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -123,16 +123,35 @@ extern PetscStack *petscstack;
   } \
   return(a);}
 
+#define PetscStackPop \
+  { \
+    if (petscstack && petscstacksize) petscstacksize--;\
+  } 
+
+#define PetscStackPush(f) \
+  { \
+    if (petscstack && (petscstacksize < petscstacksize_max)) {    \
+    petscstack[petscstacksize].function  = f; \
+    petscstack[petscstacksize].file      = "unknown"; \
+    petscstack[petscstacksize].directory = "/unknown/";  \
+    petscstack[petscstacksize].line      = 0; \
+    petscstacksize++; \
+  }}
+
+#define PetscStackActive (petscstack != 0)
+
 #else
 
 #define PetscFunctionBegin 
 #define PetscFunctionReturn(a)  return(a)
+#define PetscStackPop 
+#define PetscStackPush(f) 
+#define PetscStackActive        0
 
 #endif
 
 extern int PetscStackCreate(int);
 extern int PetscStackView(Viewer);
 extern int PetscStackDestroy();
-extern int PetscStackPop();
 
 #endif

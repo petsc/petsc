@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.68 1997/10/10 04:06:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.69 1997/10/19 03:30:13 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -208,8 +208,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
   VecGetOwnershipRange(global,&start,&end);
-  ierr = ISCreateStride(PETSC_COMM_SELF,x,start,1,&to);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,x,xs-Xs,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(comm,x,start,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStride(comm,x,xs-Xs,1,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);
@@ -218,7 +218,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
 
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
-  ierr=ISCreateStride(PETSC_COMM_SELF,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
+  ierr=ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
   idx = (int *) PetscMalloc( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
   PLogObjectMemory(da,(x+2*s)*sizeof(int));
@@ -282,7 +282,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   */
   {
     ISLocalToGlobalMapping isltog;
-    ierr        = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nn,idx,&isltog); CHKERRQ(ierr);
+    ierr        = ISLocalToGlobalMappingCreate(comm,nn,idx,&isltog); CHKERRQ(ierr);
     ierr        = VecSetLocalToGlobalMapping(da->global,isltog); CHKERRQ(ierr);
     da->ltogmap = isltog; PetscObjectReference((PetscObject)isltog);
     PLogObjectParent(da,isltog);
@@ -312,8 +312,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   {
     IS is;
     
-    ierr = ISCreateStride(PETSC_COMM_SELF,da->xe-da->xs,da->base,1,&is);CHKERRQ(ierr);
-    ierr = AOCreateBasicIS(comm,is,is,&da->ao); CHKERRQ(ierr);
+    ierr = ISCreateStride(comm,da->xe-da->xs,da->base,1,&is);CHKERRQ(ierr);
+    ierr = AOCreateBasicIS(is,is,&da->ao); CHKERRQ(ierr);
     PLogObjectParent(da,da->ao);
     ierr = ISDestroy(is); CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.141 1997/09/26 02:19:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.142 1997/10/19 03:25:44 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -2380,6 +2380,10 @@ int MatLoad_SeqBDiag(Viewer viewer,MatType type,Mat *A)
   if (header[0] != MAT_COOKIE) SETERRQ(1,0,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
   if (M != N) SETERRQ(1,0,"Can only load square matrices");
+  if (header[3] < 0) {
+    SETERRQ(1,1,"Matrix stored in special format on disk, cannot load as SeqBDiag");
+  }
+
   /* 
      This code adds extra rows to make sure the number of rows is 
     divisible by the blocksize

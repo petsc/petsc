@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.103 1997/09/09 15:32:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.104 1997/10/19 03:23:06 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -269,21 +269,25 @@ int KSPRegisterDestroy()
 
    Output Parameter:
 .  itmethod - iterative method
+.  flag - indicates if option was set
 
-   Returns:
-   Returns 1 if the method is found; 0 otherwise.
+   Options Database Key:
+.  -ksp_type <type>
+
 */
-int KSPGetTypeFromOptions_Private(KSP ksp,KSPType *itmethod)
+int KSPGetTypeFromOptions_Private(KSP ksp,KSPType *itmethod,int *flag)
 {
   char sbuf[50];
   int  flg,ierr;
 
   PetscFunctionBegin;
-  ierr = OptionsGetString(ksp->prefix,"-ksp_type", sbuf, 50,&flg); CHKERRQ(ierr);
+  *flag = 0;
+  ierr  = OptionsGetString(ksp->prefix,"-ksp_type", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
-    if (!__KSPList) KSPRegisterAll();
+    if (!__KSPList) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
     *itmethod = (KSPType)NRFindID( __KSPList, sbuf );
-    PetscFunctionReturn(0);
+    if (*itmethod == (KSPType) -1) SETERRQ(1,1,"Invalid KSP type");
+    *flag     = 1;
   }
   PetscFunctionReturn(0);
 }

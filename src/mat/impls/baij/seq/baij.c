@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.113 1997/10/01 22:39:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.114 1997/10/19 03:26:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2345,6 +2345,10 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);
   if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not Mat object");
   M = header[1]; N = header[2]; nz = header[3];
+
+  if (header[3] < 0) {
+    SETERRQ(1,1,"Matrix stored in special format on disk, cannot load as SeqBAIJ");
+  }
 
   if (M != N) SETERRQ(1,0,"Can only do square matrices");
 

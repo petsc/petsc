@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.100 1997/09/04 22:32:21 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.101 1997/10/19 03:23:06 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: itcl.c,v 1.100 1997/09/04 22:32:21 curfman Exp bsmith
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
 #include "sys.h"
 
-extern int KSPGetTypeFromOptions_Private(KSP,KSPType *);
+extern int KSPGetTypeFromOptions_Private(KSP,KSPType *,int*);
 extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 
 /*
@@ -68,8 +68,9 @@ int KSPSetFromOptions(KSP ksp)
 
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
-  if (flg) { KSPPrintHelp(ksp);  }
-  if (KSPGetTypeFromOptions_Private(ksp,&method)) {
+  if (flg) { ierr = KSPPrintHelp(ksp); CHKERRQ(ierr);  }
+  ierr = KSPGetTypeFromOptions_Private(ksp,&method,&flg);CHKERRQ(ierr);
+  if (flg) {
     ierr = KSPSetType(ksp,method); CHKERRQ(ierr);
   }
   ierr = OptionsGetInt(ksp->prefix,"-ksp_max_it",&ksp->max_it, &flg); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.46 1997/09/26 02:22:17 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.47 1997/10/10 04:08:45 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -25,6 +25,7 @@ extern int ViewerMatlabOpen(MPI_Comm,char*,int,Viewer *);
 extern int ViewerStringOpen(MPI_Comm,char *,int, Viewer *);
 extern int ViewerDrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Viewer*);
 extern int ViewerDrawOpenVRML(MPI_Comm,char *,char *,Viewer*);
+extern int ViewerDrawClear(Viewer);
 
 extern int ViewerGetType(Viewer,ViewerType*);
 extern int ViewerDestroy(Viewer);

@@ -1,6 +1,7 @@
 
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aoreduced.c,v 1.2 1997/10/10 04:07:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aoreduced.c,v 1.3 1997/10/19 03:31:10 bsmith Exp bsmith $";
 #endif
 
 #include "src/ao/aoimpl.h"
@@ -8,15 +9,16 @@ static char vcid[] = "$Id: aoreduced.c,v 1.2 1997/10/10 04:07:52 bsmith Exp bsmi
 #include "sys.h"
 #include "src/inline/bitarray.h"
 
-int AODataGetReducedSegment_Basic(AOData ao,char *name,char *segname,int n,int *keys,IS *is)
+int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *keys,IS *is)
 {
   AODataSegment    *segment; 
   int              ierr,dsize,i,bs,ikey,iseg,flag,*found,count,imin,imax,*out;
   char             *idata, *odata;
   BT               mask;
 
+  PetscFunctionBegin;
   /* find the correct segment */
-  ierr = AODataFindSegment_Private(ao,name,segname,&flag,&ikey,&iseg);CHKERRQ(ierr);
+  ierr = AODataSegmentFind_Private(ao,name,segname,&flag,&ikey,&iseg);CHKERRQ(ierr);
   if (flag) SETERRQ(1,1,"Cannot locate segment");
 
   segment = ao->keys[ikey].segments+iseg;
@@ -71,5 +73,9 @@ int AODataGetReducedSegment_Basic(AOData ao,char *name,char *segname,int n,int *
   PetscFree(out);
   PetscFunctionReturn(0);
 }
+
+
+
+
 
 

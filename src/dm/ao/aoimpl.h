@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.6 1997/10/08 01:32:19 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.7 1997/10/10 04:07:40 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -26,12 +26,14 @@ struct _p_AO {
     Defines the abstract AOData operations
 */
 struct _AODataOps {
-  int (*addsegment)(AOData,char *,char *,int,int,int*,void*,PetscDataType);
-  int (*getsegment)(AOData,char *,char*,int,int*,void**);
-  int (*restoresegment)(AOData,char *,char *,int,int*,void**);
-  int (*getreducedsegment)(AOData,char *,char*,int,int*,IS *);
-  int (*getlocalsegment)(AOData,char *,char*,int,int*,void**);
-  int (*restorelocalsegment)(AOData,char *,char *,int,int*,void**);
+  int (*segmentadd)(AOData,char *,char *,int,int,int*,void*,PetscDataType);
+  int (*segmentget)(AOData,char *,char*,int,int*,void**);
+  int (*segmentrestore)(AOData,char *,char *,int,int*,void**);
+  int (*segmentgetlocal)(AOData,char *,char*,int,int*,void**);
+  int (*segmentrestorelocal)(AOData,char *,char *,int,int*,void**);
+  int (*segmentgetreduced)(AOData,char *,char*,int,int*,IS *);
+  int (*keyremap)(AOData,char *,AO);
+  int (*keygetadjacency)(AOData,char *,Mat*);
 };
 
 /*
@@ -88,8 +90,8 @@ struct _p_AOData {
   int               datacomplete;            /* indicates all AOData object is fully set */
 };
 
-extern int AODataFindKey_Private(AOData, char *, int *,int *);
-extern int AODataFindSegment_Private(AOData,char *, char *, int *,int *,int *);
+extern int AODataKeyFind_Private(AOData, char *, int *,int *);
+extern int AODataSegmentFind_Private(AOData,char *, char *, int *,int *,int *);
 
 
 #endif

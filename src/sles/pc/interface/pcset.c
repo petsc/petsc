@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.57 1997/08/22 15:12:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.58 1997/10/19 03:24:21 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -158,24 +158,25 @@ int PCRegisterDestroy()
 
   Output Parameter:
 . method - PC method
+. flag - indicates if method found
 
-  Returns:
-  1 if method is found; otherwise 0.
 
   Options Database Key:
 $ -pc_type  method
 */
-int PCGetTypeFromOptions_Private(PC pc,PCType *method )
+int PCGetTypeFromOptions_Private(PC pc,PCType *method,int *flag )
 {
   int  ierr,flg;
   char sbuf[50];
 
   PetscFunctionBegin;
-  ierr = OptionsGetString( pc->prefix,"-pc_type", sbuf, 50,&flg );CHKERRQ(ierr);
+  *flag = 0;
+  ierr  = OptionsGetString( pc->prefix,"-pc_type", sbuf, 50,&flg );CHKERRQ(ierr);
   if (flg) {
     if (!__PCList) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
     *method = (PCType)NRFindID( __PCList, sbuf );
-    PetscFunctionReturn(1);
+    if (*method == (PCType) -1) SETERRQ(1,1,"Invalid PC type");
+    *flag   = 1;
   }
   PetscFunctionReturn(0);
 }
@@ -258,12 +259,13 @@ int PCSetFromOptions(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
-  if (PCGetTypeFromOptions_Private(pc,&method)) {
-    PCSetType(pc,method);
+  ierr = PCGetTypeFromOptions_Private(pc,&method,&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSetType(pc,method); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); 
   if (flg){
-    PCPrintHelp(pc);
+    ierr = PCPrintHelp(pc); CHKERRQ(ierr);
   }
   if (pc->setfrom) {
     ierr = (*pc->setfrom)(pc);CHKERRQ(ierr);

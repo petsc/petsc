@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.2 1997/10/12 23:25:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsfd.c,v 1.3 1997/10/19 03:28:16 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -63,7 +63,7 @@ int TSDefaultComputeJacobianWithColoring(TS ts,double t,Vec x1,Mat *J,Mat *B,Mat
 
 #undef __FUNC__  
 #define __FUNC__ "TSSetRHSJacobianDefault"
-/*@
+/*@C
       TSSetRHSJacobianDefault - Sets TS to use the default coloring
                                             computation of the Jacobian.
 

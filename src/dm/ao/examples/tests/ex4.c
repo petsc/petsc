@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.2 1997/10/01 22:47:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.3 1997/10/10 04:08:05 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData loading\n\n";
@@ -28,12 +28,12 @@ int main(int argc,char **argv)
         Access part of the data 
   */
   indices[0] = 0; indices[1] = 2; indices[2] = 1; indices[3] = 5;
-  ierr = AODataGetSegment(aodata,"key1","seg1",4,indices,(void **)&intv);CHKERRQ(ierr);
+  ierr = AODataSegmentGet(aodata,"key1","seg1",4,indices,(void **)&intv);CHKERRQ(ierr);
   for (i=0; i<4; i++ ) {
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %d %d\n",rank,i,intv[i]);
   }
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
-  ierr = AODataRestoreSegment(aodata,"key1","seg1",4,indices,(void **)&intv);CHKERRQ(ierr);
+  ierr = AODataSegmentRestore(aodata,"key1","seg1",4,indices,(void **)&intv);CHKERRQ(ierr);
  
   ierr = AODataDestroy(aodata); CHKERRA(ierr);
 
