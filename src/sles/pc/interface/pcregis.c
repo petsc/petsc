@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.13 1995/04/29 15:40:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcregis.c,v 1.14 1995/05/10 02:43:43 curfman Exp bsmith $";
 #endif
 
 
@@ -16,6 +16,7 @@ extern int PCCreate_MG(PC);
 extern int PCCreate_Eisenstat(PC);
 extern int PCCreate_ILU(PC);
 extern int PCCreate_ICC(PC);
+extern int PCCreate_SPAI(PC);
 
 /*@
    PCRegisterAll - Registers all the iterative methods
@@ -43,6 +44,7 @@ int PCRegisterAll()
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   PCRegister(PCICC          , "icc",        PCCreate_ICC);
 #endif
+  PCRegister(PCSPAI         , "spai",       PCCreate_SPAI);
   return 0;
 }
 
