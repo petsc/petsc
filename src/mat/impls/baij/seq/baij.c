@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.156 1999/01/27 19:47:47 bsmith Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.157 1999/02/03 03:18:57 curfman Exp balay $";
 #endif
 
 /*
@@ -847,21 +847,47 @@ int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 }
 
 
-/* idx should be of length atlease bs */
-#undef __FUNC__  
-#define __FUNC__ "MatZeroRows_SeqBAIJ_Check_Block"
-static int MatZeroRows_SeqBAIJ_Check_Block(int *idx, int bs, PetscTruth *flg)
-{
-  int i,row;
 
-  PetscFunctionBegin;
-  row = idx[0];
-  if (row%bs!=0) { *flg = PETSC_FALSE; PetscFunctionReturn(0); }
-  
-  for ( i=1; i<bs; i++ ) {
-    if (row+i != idx[i]) { *flg = PETSC_FALSE; PetscFunctionReturn(0); }
+/* 
+   This function returns an array of flags which indicate the locations of contiguous
+   blocks that should be zeroed. for eg: if bs = 3  and is = [0,1,2,3,5,6,7,8,9]
+   then the resulting sizes = [3,1,1,3,1] correspondig to sets [(0,1,2),(3),(5),(6,7,8),(9)]
+   Assume: sizes should be long enough to hold all the values.
+*/
+#undef __FUNC__  
+#define __FUNC__ "MatZeroRows_SeqBAIJ_Check_Blocks"
+static int MatZeroRows_SeqBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], int *bs_max)
+{
+  int i,j,k,row;
+  PetscTruth flg;
+
+  /*   PetscFunctionBegin;*/
+  for ( i=0,j=0; i<n; j++ ) {
+    row = idx[i];
+    if (row%bs!=0) { /* Not the begining of a block */
+      sizes[j] = 1;
+      i++; 
+    } else if (i+bs >= n) { /* complete block doesn't exist (at idx end) */
+      sizes[j] = 1;         /* Also makes sure atleast 'bs' values exist for next else */
+      i++; 
+    } else { /* Begining of the block, so check if the complete block exists */
+      flg = PETSC_TRUE;
+      for ( k=1; k<bs; k++ ) {
+        if (row+k != idx[i+k]) { /* break in the block */
+          flg = PETSC_FALSE;
+          break;
+        }
+      }
+      if (flg == PETSC_TRUE) { /* No break in the bs */
+        sizes[j] = bs;
+        i+= bs;
+      } else {
+        sizes[j] = 1;
+        i++;
+      }
+    }
   }
-  *flg = PETSC_TRUE;
+  *bs_max = j;
   PetscFunctionReturn(0);
 }
   
@@ -871,8 +897,8 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 {
   Mat_SeqBAIJ *baij=(Mat_SeqBAIJ*)A->data;
   IS          is_local;
-  int         ierr,i,j,count,m=baij->m,is_n,*is_idx,*rows,bs=baij->bs,bs2=baij->bs2;
-  PetscTruth  flg;
+  int         ierr,i,j,k,count,m=baij->m,is_n,*is_idx,*rows;
+  int         bs=baij->bs,bs2=baij->bs2,*sizes,row,bs_max;
   Scalar      zero = 0.0;
   MatScalar   *aa;
 
@@ -880,40 +906,50 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
   /* Make a copy of the IS and  sort it */
   ierr = ISGetSize(is,&is_n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&is_idx);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(A->comm,is_n,is_idx,&is_local); CHKERRQ(ierr);
-  ierr = ISSort(is_local); CHKERRQ(ierr);
-  ierr = ISGetIndices(is_local,&rows); CHKERRQ(ierr);
 
-  i = 0;
-  while (i < is_n) {
-    if (rows[i]<0 || rows[i]>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"row out of range");
-    flg = PETSC_FALSE;
-    if (i+bs <= is_n) {ierr = MatZeroRows_SeqBAIJ_Check_Block(rows+i,bs,&flg); CHKERRQ(ierr); }
-    count = (baij->i[rows[i]/bs +1] - baij->i[rows[i]/bs])*bs;
-    aa    = baij->a + baij->i[rows[i]/bs]*bs2 + (rows[i]%bs);
-    if (flg) { /* There exists a block of rows to be Zerowed */
-      if (baij->ilen[rows[i]/bs] > 0) {
-        PetscMemzero(aa,count*bs*sizeof(MatScalar));
-        baij->ilen[rows[i]/bs] = 1;
-        baij->j[baij->i[rows[i]/bs]] = rows[i]/bs;
-      }
-      i += bs;
-    } else { /* Zero out only the requested row */
-      for ( j=0; j<count; j++ ) { 
+  /* allocate memory for rows,sizes */
+  rows  = (int*)PetscMalloc((3*is_n+1)*sizeof(int)); CHKPTRQ(rows);
+  sizes = rows + is_n;
+
+  /* initialize copy IS valurs to rows, and sort them */
+  for (i=0; i<is_n; i++) { rows[i] = is_idx[i]; }
+  ierr = PetscSortInt(is_n,rows); CHKERRQ(ierr);
+  ierr = MatZeroRows_SeqBAIJ_Check_Blocks(rows,is_n,bs,sizes,&bs_max); CHKERRQ(ierr);
+
+  for ( i=0,j=0; i<bs_max; j+=sizes[i],i++ ) {
+    row   = rows[j];
+    count = (baij->i[row/bs +1] - baij->i[row/bs])*bs;
+    aa    = baij->a + baij->i[row/bs]*bs2 + (row%bs);
+    if (sizes[i] == bs) {
+      if (diag) {
+        if (baij->ilen[row/bs] > 0) {
+          baij->ilen[row/bs] = 1;
+          baij->j[baij->i[row/bs]] = row/bs;
+          ierr = PetscMemzero(aa,count*bs*sizeof(MatScalar)); CHKERRQ(ierr);
+        } 
+        /* Now insert all the diagoanl values for this bs */
+        for ( k=0; k<bs; k++ ) {
+          ierr = (*A->ops->setvalues)(A,1,rows+j+k,1,rows+j+k,diag,INSERT_VALUES);CHKERRQ(ierr);
+        } 
+      } else { /* (!diag) */
+        baij->ilen[row/bs] = 0;
+      } /* end (!diag) */
+    } else { /* (sizes[i] != bs) */
+#if defined (USE_PETSC_DEBUG)
+      if (sizes[i] != 1) SETERRQ(1,0,"Internal Error. Value should be 1");
+#endif
+      for ( k=0; k<count; k++ ) { 
         aa[0] = zero; 
         aa+=bs;
       }
-      i++;
-    }
-  } 
-  if (diag) {
-    for ( j=0; j<is_n; j++ ) {
-      ierr = (*A->ops->setvalues)(A,1,rows+j,1,rows+j,diag,INSERT_VALUES);CHKERRQ(ierr);
+      if (diag) {
+        ierr = (*A->ops->setvalues)(A,1,rows+j,1,rows+j,diag,INSERT_VALUES);CHKERRQ(ierr);
+      }
     }
   }
+
+  PetscFree(rows);
   ierr = ISRestoreIndices(is,&is_idx); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is_local,&rows); CHKERRQ(ierr);
-  ierr = ISDestroy(is_local); CHKERRQ(ierr);
   ierr = MatAssemblyEnd_SeqBAIJ(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
