@@ -9,6 +9,7 @@ class Configure(config.base.Configure):
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers', self)
+    self.headers      = self.framework.require('config.headers', self)
     return
 
   def setupHelp(self, help):
