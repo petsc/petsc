@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.129 1998/04/06 22:51:01 balay Exp balay $ 
+# $Id: buildtest,v 1.130 1998/04/07 15:42:53 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -40,8 +40,8 @@ if ($day == Sun) then
 endif
 if ($day == Mon) then
   set M =(snake  fire       alaska     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
-  set B =(g      Opg_c++    O_c++      g             O           g           Opg          O           Opg_complex O_complex   O_c++        )
-  set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha_nolog solaris      rs6000      sun4        IRIX64      freebsd_egcs )
+  set B =(g      Opg_c++    O_c++      g             O           g           O_complex    O           Opg_complex O_complex   O_c++        )
+  set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha_nolog solaris_gnu  rs6000      sun4        IRIX64      freebsd_egcs )
   set S =(shared noshared   shared     shared        noshared    shared      noshared     shared      noshared    shared      nonshared    )
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
   set J2=(1      2          2          2             2           2           2            2           2           2           2            )
@@ -53,8 +53,8 @@ if ($day == Mon) then
 endif  
 if ($day == Tue) then
   set M =(snake  fire       violet     flight        tri63       ptera       lava         quad        eagle       yukon       homer        )
-  set B =(O      g          O_complex  O             g           O           Opg_c++      g           O_c++       g_c++       O_complex    )
-  set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha       solaris      rs6000      sun4        IRIX64      freebsd_egcs )
+  set B =(O      g          O_complex  O             g           O           g            g           O_c++       g_c++       O_complex    )
+  set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha       solaris_gnu  rs6000      sun4        IRIX64      freebsd_egcs )
   set S =(shared noshared   shared     shared        noshared    shared      noshared     shared      shared      shared      noshared     )
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
   set J2=(2      2          2          2             2           2           2            2           2           2           2            )
