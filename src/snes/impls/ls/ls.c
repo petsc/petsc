@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.126 1999/03/14 17:54:40 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.127 1999/03/14 22:00:47 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -302,13 +302,15 @@ int SNESNoLineSearchNoNorms(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
   PetscTruth change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
-  *flag = 0; 
+  *flag = 1; 
   PLogEventBegin(SNES_LineSearch,snes,x,f,g);
   ierr = VecAYPX(&mone,x,y); CHKERRQ(ierr);            /* y <- y - x      */
   if (neP->CheckStep) {
    ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y); CHKERRQ(ierr);
   }
   ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr); /* Compute F(y)    */
+  *gnorm = 0.0;
+  *ynorm = 0.0;
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   PetscFunctionReturn(0);
 }
