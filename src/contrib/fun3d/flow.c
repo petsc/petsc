@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.14 2000/01/23 18:37:05 bsmith Exp kaushik $";*/
+/* "$Id: flow.c,v 1.15 2000/01/25 14:17:54 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -82,7 +82,7 @@ int main(int argc,char **args)
   SNES          snes;                  /* SNES context */
   Mat           Jpc;                   /* Jacobian and Preconditioner matrices */
   Scalar        *qnode;
-  int 		ierr,solIt;
+  int 		ierr,solIt,ileast;
   PETSCTRUTH    flg;
   
   ierr = PetscInitialize(&argc,&args,"testgrid/petsc.opt",help);CHKERRA(ierr);
