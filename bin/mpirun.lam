@@ -1,0 +1,21 @@
+#!/bin/sh
+#set -x
+
+#
+# This program is a wrapper over lam's mpirun. It converts
+# the mpich's mpirun formated command to lam's format.
+# and invokes lam's mpirun with it.
+#
+
+if [ $1 !=  "-np" ]; then
+echo "Error in  mpirun command"
+exit 1
+fi
+shift
+np=$1
+shift
+progname=$1
+shift
+options=$*
+
+/home/petsc/lam/solaris/bin/mpirun -w -D -c -s n0 $np $progname -- $options
