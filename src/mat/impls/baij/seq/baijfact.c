@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.20 1996/04/28 02:09:52 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.21 1996/05/02 15:40:00 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -575,10 +575,10 @@ int MatLUFactorNumeric_SeqBAIJ_3(Mat A,Mat *B)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS              iscol = b->col, isrow = b->row, isicol;
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
-  int             *ajtmpold, *ajtmp, nz, row, v_pivots[3],*ai=a->i,*aj=a->j;
-  int             *diag_offset = b->diag,bs = 3,idx;
+  int             *ajtmpold, *ajtmp, nz, row, *ai=a->i,*aj=a->j;
+  int             *diag_offset = b->diag,idx;
   register Scalar *pv,*v,*rtmp,*pc,*w,*x;
-  Scalar          p1,p2,p3,p4,v_work[3],m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
+  Scalar          p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   Scalar          p5,p6,p7,p8,p9,x5,x6,x7,x8,x9;
   Scalar          *ba = b->a,*aa = a->a;
   register int    *pj;
@@ -892,7 +892,10 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     sum = tmp + bs*i;
     PetscMemcpy(sum,b+bs*(*r++),bs*sizeof(Scalar));
     while (nz--) {
+      Kernel_v_gets_v_minus_A_times_w(bs,sum,v,tmp+bs*(*vi++));
+/*
       LAgemv_("N",&bs,&bs,&_DMOne,v,&bs,tmp+bs*(*vi++),&_One,&_DOne,sum,&_One);
+*/
       v += bs2;
     }
   }
@@ -904,11 +907,18 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
     nz  = ai[i+1] - a->diag[i] - 1;
     PetscMemcpy(lsum,tmp+i*bs,bs*sizeof(Scalar));
     while (nz--) {
+      Kernel_v_gets_v_minus_A_times_w(bs,lsum,v,tmp+bs*(*vi++));
+/*
       LAgemv_("N",&bs,&bs,&_DMOne,v,&bs,tmp+bs*(*vi++),&_One,&_DOne,lsum,&_One);
+*/
       v += bs2;
     }
+
+    Kernel_w_gets_A_times_v(bs,lsum,aa+bs2*a->diag[i],tmp+i*bs);
+/*
     LAgemv_("N",&bs,&bs,&_DOne,aa+bs2*a->diag[i],&bs,lsum,&_One,&_DZero,
                 tmp+i*bs,&_One);
+*/
     PetscMemcpy(x + bs*(*c--),tmp+i*bs,bs*sizeof(Scalar));
   }
 
