@@ -1,4 +1,4 @@
-/*$Id: mpiuopen.c,v 1.27 2000/04/09 04:34:31 bsmith Exp bsmith $*/
+/*$Id: mpiuopen.c,v 1.28 2000/04/12 04:21:24 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
@@ -42,7 +42,7 @@ int PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
 {
   int  rank,ierr;
   FILE *fd;
-  char fname[256];
+  char fname[256],tname[256];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -55,8 +55,10 @@ int PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
     } else if (isstderr) {
       fd = stderr;
     } else {
-      ierr = PetscFixFilename(name,fname);CHKERRQ(ierr);
-      fd = fopen(fname,mode);
+      ierr = PetscStrreplace(PETSC_COMM_SELF,name,tname,256);CHKERRQ(ierr);
+      ierr = PetscFixFilename(tname,fname);CHKERRQ(ierr);
+      PLogInfo(0,"Opening file %s\n",fname);
+      fd   = fopen(fname,mode);
     }
   } else fd = 0;
   *fp = fd;
@@ -120,7 +122,7 @@ int PetscPClose(MPI_Comm comm,FILE *fd)
       PetscPOpen - Runs a program on processor zero and sends either its input or output to 
           a file.
 
-     Not Collective
+     Collective on MPI_Comm, but only process 0 runs the command
 
    Input Parameters:
 +   comm - MPI communicator, only processor zero runs the program
