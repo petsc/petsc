@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.161 1999/05/25 19:40:25 bsmith Exp balay $ 
+# $Id: buildtest,v 1.162 1999/06/05 15:35:14 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -156,8 +156,9 @@ foreach job ($*)
 
   rsh $mach -n /home/bsmith/petsc/maint/buildlinks $hme >& /dev/null
   rsh $mach -n "cd $hme/maint ;rm -f build_$arch.$bopt.$mach.log examples_$arch.$bopt.$mach.log"
+  rsh $mach -n "cd $hme/maint ; touch build_$arch.$bopt.$mach.log examples_$arch.$bopt.$mach.log"
 
-  rsh $mach -n "cd $hme ; echo 'Build on $mach $arch $bopt `date` ' > maint/build_$arch.$bopt.$mach.log"
+  rsh $mach -n "cd $hme ; echo 'Build on $mach $arch $bopt `date` ' >> maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all >>& maint/build_$arch.$bopt.$mach.log"
 
   if ( $arch == solaris || $arch == IRIX64 || $arch == linux || $arch == rs6000_sp ) then
