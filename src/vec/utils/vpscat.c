@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.52 1996/07/08 22:16:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.53 1996/07/10 01:48:47 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -103,7 +103,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
   int            rank,nrecvs, nsends,iend,jmax;
 
   MPI_Comm_rank(comm,&rank);
-  fprintf(stdout,"[%d]Begun scatter \n",rank); 
+  /* fprintf(stdout,"[%d]Begun scatter \n",rank);  */
 
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI *) ctx->fromdata;
@@ -242,7 +242,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter 
                  MPIU_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
     }
   }
-  fprintf(stdout,"[%d]Completed scatter\n",rank); 
+  /* fprintf(stdout,"[%d]Completed scatter\n",rank);  */
   return 0;
 }
 
