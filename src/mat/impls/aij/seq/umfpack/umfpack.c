@@ -26,6 +26,7 @@ typedef struct {
   /* Flag to clean up UMFPACK objects during Destroy */
   PetscTruth CleanUpUMFPACK;
 } Mat_SeqAIJ_UMFPACK;
+EXTERN int MatSeqAIJFactorInfo_UMFPACK(Mat,PetscViewer);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_UMFPACK"

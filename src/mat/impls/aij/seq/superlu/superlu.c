@@ -34,7 +34,7 @@ typedef struct {
 } Mat_SeqAIJ_SuperLU;
 
 
-extern int MatDestroy_SeqAIJ(Mat);
+EXTERN int MatSeqAIJFactorInfo_SuperLU(Mat,PetscViewer);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_SuperLU"

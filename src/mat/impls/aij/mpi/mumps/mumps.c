@@ -39,6 +39,8 @@ typedef struct {
   int (*MatView)(Mat,PetscViewer);
 } Mat_AIJ_MUMPS;
 
+EXTERN int MatFactorInfo_MUMPS(Mat,PetscViewer);
+
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
   input: 
@@ -168,7 +170,7 @@ int MatDestroy_AIJ_MUMPS(Mat A)
 #define __FUNCT__ "MatAssemblyEnd_AIJ_MUMPS"
 int MatAssemblyEnd_AIJ_MUMPS(Mat A,MatAssemblyType mode) {
   int           ierr;
-  Mat_AIJ_MUMPS *mumps;
+  Mat_AIJ_MUMPS *mumps=(Mat_AIJ_MUMPS*)A->spptr;
 
   PetscFunctionBegin;
   ierr = (*mumps->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
@@ -476,7 +478,7 @@ int MatLUFactorSymbolic_AIJ_MUMPS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 
   B->ops->lufactornumeric = MatFactorNumeric_AIJ_MUMPS;
   B->factor               = FACTOR_LU;  
-  lu                      = B->spptr;
+  lu                      = (Mat_AIJ_MUMPS*)B->spptr;
   lu->sym                 = 0;
   lu->matstruc            = DIFFERENT_NONZERO_PATTERN;
 
