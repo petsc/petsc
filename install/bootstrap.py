@@ -70,7 +70,8 @@ class CursesInstall:
     curses.nocbreak()
 
   def GetBrowser(self,stdscr):
-    list = ['A different browser or a browser on a different machine (you will be prompted for it)']
+    list = ['No browser']
+    list.append('A different browser or a browser on a different machine (you will be prompted for it)')
     for l in ['netscape','lynx','opera','mozilla','galeon']:
       (status,output) = commands.getstatusoutput('which '+l)
       if status == 0:  # found it :-)
@@ -79,6 +80,9 @@ class CursesInstall:
     stdscr.clear()
     key = SelectFromList(stdscr,list,my = 1,text = 'Select browser to view documentation')
     if key == 0:
+      self.browser = None
+      return
+    if key == 1:
       stdscr.clear()
       CenterAddStr(stdscr,1,'Enter complete path of browser (for example /usr/bin/netscape or ssh mymachine netscape)')
       self.browser = CenterGetStr(stdscr,2)
@@ -212,7 +216,7 @@ if __name__ ==  '__main__':
   curses.wrapper(installer.Welcome)
 
   curses.wrapper(installer.GetBrowser)
-  print 'Browser '+installer.browser
+  #print 'Browser '+installer.browser
   
   # need to have a more complete search for bk, but cannot use configure stuff
   (status,output) = commands.getstatusoutput('which bk')
@@ -237,5 +241,5 @@ if __name__ ==  '__main__':
 
   sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install'))
   import installer
-  installer.runinstaller()
+  installer.runinstaller({'-debugSections':[],'-debugLevel':0})
       
