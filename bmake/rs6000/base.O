@@ -1,8 +1,8 @@
-# $Id: base.O,v 1.4 1997/09/10 18:16:40 balay Exp bsmith $ 
+# $Id: base.O,v 1.5 1997/10/19 03:20:08 bsmith Exp balay $ 
 
 #
 PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_LOG  -DUSE_PETSC_BOPT_O
-COPTFLAGS = -O -qmaxmem=2400
+COPTFLAGS = -O3 -qstrict -qmaxmem=4000
 # For Fortran, there are lots of options
 # -P is a preprocessor that seems to unroll loops.
 # -Wp,-ew    invokes the most common optimizations = -ea2478
@@ -38,7 +38,7 @@ COPTFLAGS = -O -qmaxmem=2400
 # generate INCORRECT code for relatively simple doubly-nested loops, even
 # when the only operations are ASSIGNMENTS!  See the ANL/IBM-SP1 User's
 # guide for an example.
-FOPTFLAGS = -O 
+FOPTFLAGS = -O3 -qstrict 
 # For ANL, the following are also useful (cache is for RS6000/370)
 #-qarch=pwr \
 #-qhot  \
