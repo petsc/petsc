@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.18 1997/01/14 22:56:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.19 1997/01/21 18:42:07 bsmith Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -109,7 +109,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,double *time)
 static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
 {
   Vec       sol = ts->vec_sol;
-  int       ierr,i,max_steps = ts->max_steps,its;
+  int       ierr,i,max_steps = ts->max_steps,its,lits;
   TS_BEuler *beuler = (TS_BEuler*) ts->data;
   
   *steps = -ts->steps;
@@ -120,7 +120,8 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,beuler->update); CHKERRQ(ierr);
     ierr = SNESSolve(ts->snes,beuler->update,&its); CHKERRQ(ierr);
-    ts->nonlinear_its += PetscAbsInt(its);
+    ierr = SNESGetNumberLinearIterations(ts->snes,&lits); CHKERRQ(ierr);
+    ts->nonlinear_its += PetscAbsInt(its); ts->linear_its += lits;
     ierr = VecCopy(beuler->update,sol); CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);

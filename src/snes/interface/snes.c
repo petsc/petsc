@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.109 1997/01/21 03:26:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.110 1997/01/21 03:37:35 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -66,8 +66,8 @@ int SNESView(SNES snes,Viewer viewer)
       snes->rtol, snes->atol, snes->trunctol, snes->xtol);
     PetscFPrintf(snes->comm,fd,
     "  total number of linear solver iterations=%d\n",snes->linear_its);
-     PetscFPrintf(snes->comm,fd,
-     "  total number of function evaluation=%d\n",snes->nfuncs);
+    PetscFPrintf(snes->comm,fd,
+     "  total number of function evaluations=%d\n",snes->nfuncs);
     if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
       PetscFPrintf(snes->comm,fd,"  min function tolerance=%g\n",snes->fmin);
     if (snes->ksp_ewconv) {
