@@ -1,7 +1,7 @@
 PETSC_DIR = ../..
 
 ALL: lib 
-CFLAGS    =  $(PETSC_INCLUDE) $(CONF) -D__DIR__='"sys/"' $(PCONF)
+CFLAGS    =
 SOURCEC   =
 SOURCEF   =
 SOURCEH   = nreg.h
@@ -9,5 +9,6 @@ OBJSC     =
 OBJSF     =
 LIBBASE   = libpetscsys
 DIRS      = src examples
+LOCDIR    = src/sys
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

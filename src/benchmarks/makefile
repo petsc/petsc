@@ -1,7 +1,7 @@
 PETSC_DIR = ../..
 ALL: 
 
-CFLAGS	      =	 $(PETSC_INCLUDE) $(COPT) $(PCONF)
+CFLAGS	      =	 $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
 FFLAGS	      =	 
 SOURCEC	      = 
 SOURCEF	      =
@@ -9,6 +9,7 @@ SOURCEH	      =
 OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscsys
+LOCDIR        = src/benchmarks/
 EXAMPLES_1    = 
 RUNEXAMPLES_1 = 
 EXAMPLES_2    = 

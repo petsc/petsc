@@ -2,7 +2,7 @@ PETSC_DIR = ../..
 
 ALL: lib
 
-CFLAGS   =  $(PETSC_INCLUDE) -I.. -I$(PETSC_DIR) $(CONF) $(PCONF)
+CFLAGS   = 
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = 
@@ -10,5 +10,6 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = 
+LOCDIR   = src/inline/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
