@@ -317,7 +317,7 @@ int MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscFunctionBegin;  
   ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO_LONG || format == PETSC_VIEWER_ASCII_INFO) {
+  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL || format == PETSC_VIEWER_ASCII_INFO) {
     if (a->inode.size) {
       ierr = PetscViewerASCIIPrintf(viewer,"using I-node routines: found %d nodes, limit used is %d\n",a->inode.node_count,a->inode.limit);CHKERRQ(ierr);
     } else {

@@ -612,7 +612,7 @@ int PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char n
     count++;
     if (count == 8) {ierr = PetscFPrintf(comm,fd,"\n     ");CHKERRQ(ierr);}
   }
-  ierr = PetscFPrintf(comm,fd," (see manual page %s)\n",man);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd," (%s)\n",man);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

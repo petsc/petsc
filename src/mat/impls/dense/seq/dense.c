@@ -703,7 +703,7 @@ static int MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     PetscFunctionReturn(0);  /* do nothing for now */
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);

@@ -23,7 +23,7 @@
 .    PETSC_VIEWER_ASCII_IMPL - implementation-specific format
       (which is in many cases the same as the default)
 .    PETSC_VIEWER_ASCII_INFO - basic information about object
-.    PETSC_VIEWER_ASCII_INFO_LONG - more detailed info
+.    PETSC_VIEWER_ASCII_INFO_DETAIL - more detailed info
        about object
 .    PETSC_VIEWER_ASCII_COMMON - identical output format for
        all objects of a particular type
@@ -72,7 +72,7 @@ int PetscViewerSetFormat(PetscViewer viewer,PetscViewerFormat format)
 .    PETSC_VIEWER_ASCII_IMPL - implementation-specific format
       (which is in many cases the same as the default)
 .    PETSC_VIEWER_ASCII_INFO - basic information about object
-.    PETSC_VIEWER_ASCII_INFO_LONG - more detailed info
+.    PETSC_VIEWER_ASCII_INFO_DETAIL - more detailed info
        about object
 .    PETSC_VIEWER_ASCII_COMMON - identical output format for
        all objects of a particular type

@@ -435,7 +435,7 @@ static int MatView_MPIRowbs_ASCII(Mat mat,PetscViewer viewer)
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
 
-  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     int ind_l,ind_g,clq_l,clq_g,color;
     ind_l = BSlocal_num_inodes(a->pA);CHKERRBS(0);
     ind_g = BSglobal_num_inodes(a->pA);CHKERRBS(0);

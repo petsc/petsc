@@ -544,7 +544,7 @@ static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
      Level: intermediate
 
    Options Database Keys:
-$    -viewer_BINARY_filename <name>
+$    -viewer_binary_filename <name>
 
    Environmental variables:
 -   PETSC_VIEWER_BINARY_FILENAME

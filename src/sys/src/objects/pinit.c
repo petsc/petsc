@@ -270,7 +270,7 @@ int PetscGetArgs(int *argc,char ***args)
 .  -stop_for_debugger - Print message on how to attach debugger manually to 
                         process and wait (-debugger_pause) seconds for attachment
 .  -trmalloc - Indicates use of PETSc error-checking malloc
-.  -trmalloc_off - Indicates not to use error-checking malloc
+.  -trmalloc no - Indicates not to use error-checking malloc
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
 .  -no_signal_handler - Indicates not to trap error signals

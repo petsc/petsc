@@ -118,7 +118,7 @@ int VecSetFromOptions(Vec vec)
 #undef __FUNCT__  
 #define __FUNCT__ "VecPrintHelp"
 /*@
-  VecPrintHelp - Prints all options for the Vec.
+  VecPrintHelp - Prints some options for the Vec.
 
   Input Parameter:
 . vec - The vector
@@ -133,19 +133,8 @@ $  -help, -h
 @*/
 int VecPrintHelp(Vec vec)
 {
-  char p[64];
-  int  ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_COOKIE);
-
-  ierr = PetscStrcpy(p, "-");                                                                             CHKERRQ(ierr);
-  if (vec->prefix != PETSC_NULL) {
-    ierr = PetscStrcat(p, vec->prefix);                                                                   CHKERRQ(ierr);
-  }
-
-  (*PetscHelpPrintf)(vec->comm, "Vec options ------------------------------------------------\n");
-  (*PetscHelpPrintf)(vec->comm,"   %svec_type <typename> : Sets the vector type\n", p);
   PetscFunctionReturn(0);
 }
 

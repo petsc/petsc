@@ -569,7 +569,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_LONG) {
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %d\n",bs);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
     Mat aij;

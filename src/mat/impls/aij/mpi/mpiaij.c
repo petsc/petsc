@@ -736,7 +736,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) { 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_INFO_LONG) {
+    if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       MatInfo info;
       ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
