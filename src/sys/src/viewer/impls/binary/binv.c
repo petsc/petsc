@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.99 2001/04/10 19:34:06 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.100 2001/09/19 14:45:04 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -97,10 +97,15 @@ int PetscViewerBinaryGetDescriptor(PetscViewer viewer,int *fdes)
 
     Not Collective
 
+    Input Paramter:
 .   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+
+    Options Database:
+.   -viewer_binary_skip_info
 
     Level: advanced
 
+    Notes: This must be called after PetscViewerSetType() but before PetscViewerBinarySetFilename()
 
    Concepts: PetscViewerBinary^accessing info file
 
