@@ -163,6 +163,10 @@ ex35: ex35.o chkopts
 	-$(CLINKER) -o ex35 ex35.o $(PETSC_LIB)
 	$(RM) ex35.o
 
+ex36: ex36.o chkopts
+	-$(FLINKER) -o ex36 ex36.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex36.o
+
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \
