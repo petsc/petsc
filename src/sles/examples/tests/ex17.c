@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.1 1996/01/22 03:05:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.2 1996/01/23 00:20:56 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -34,9 +34,13 @@ int main(int argc,char **args)
   /* Create and assemble matrix */
   ierr = MatCreate(MPI_COMM_WORLD,n,n,&A); CHKERRA(ierr);
   ierr = FormTestMatrix(A,n,kind); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-matprint",&flg); CHKERRA(ierr);
-  if (flg) {ierr = MatView(A,STDOUT_VIEWER_WORLD); CHKERRA(ierr);}
   ierr = MatMult(A,u,b); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-printout",&flg); CHKERRA(ierr);
+  if (flg) {
+    ierr = MatView(A,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+    ierr = VecView(u,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+    ierr = VecView(b,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  }
 
   /* Create SLES context; set operators and options; solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
@@ -97,8 +101,8 @@ int FormTestMatrix(Mat A,int n,int kind)
     ierr = MatSetValues(A,1,&i,2,col,&val[2],INSERT_VALUES); CHKERRQ(ierr);
   } 
   else if (kind == 2) {
-    val[0] = 3.0;
-   /* val[0] = complex(0.0,2.0); */
+    complex tmp(0.0,2.0);
+    val[0] = tmp;
     val[1] = 4.0; val[2] = 0.0; val[3] = 1.0; val[4] = 0.7;
     for (i=1; i<n-3; i++ ) {
       col[0] = i-1; col[1] = i; col[2] = i+1; col[3] = i+2; col[4] = i+3;
