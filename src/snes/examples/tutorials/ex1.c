@@ -14,7 +14,7 @@ T*/
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscsles.h   - linear solvers
+     petscksp.h   - linear solvers
 */
 #include "petscsnes.h"
 
@@ -31,9 +31,8 @@ extern int FormFunction2(SNES,Vec,Vec,void*);
 int main(int argc,char **argv)
 {
   SNES         snes;         /* nonlinear solver context */
-  SLES         sles;         /* linear solver context */
+  KSP          ksp;         /* linear solver context */
   PC           pc;           /* preconditioner context */
-  KSP          ksp;          /* Krylov subspace method context */
   Vec          x,r;         /* solution, residual vectors */
   Mat          J;            /* Jacobian matrix */
   int          ierr,its,size;
@@ -88,17 +87,16 @@ int main(int argc,char **argv)
 
   /* 
      Set linear solver defaults for this problem. By extracting the
-     SLES, KSP, and PC contexts from the SNES context, we can then
-     directly call any SLES, KSP, and PC routines to set various options.
+     KSP, KSP, and PC contexts from the SNES context, we can then
+     directly call any KSP, KSP, and PC routines to set various options.
   */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20);CHKERRQ(ierr);
 
   /* 
-     Set SNES/SLES/KSP/PC runtime options, e.g.,
+     Set SNES/KSP/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
      These options will override those specified above as long as
      SNESSetFromOptions() is called _after_ any other customization

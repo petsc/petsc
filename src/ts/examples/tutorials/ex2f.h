@@ -10,7 +10,6 @@
 !     petscmat.h    - matrices
 !     petscksp.h    - Krylov subspace methods
 !     petscpc.h     - preconditioners
-!     petscsles.h   - SLES interface
 !     petscsnes.h   - SNES interface
 !     petscts.h     - TS interface
 !     petscviewer.h - viewers
@@ -27,7 +26,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 #include "include/finclude/petscts.h"
 #include "include/finclude/petscviewer.h"

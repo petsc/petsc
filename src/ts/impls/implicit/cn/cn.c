@@ -70,7 +70,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
   KSP         ksp;
 
   PetscFunctionBegin;
-  ierr   = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
+  ierr   = TSGetKSP(ts,&ksp);CHKERRQ(ierr);
   *steps = -ts->steps;
   ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
@@ -90,7 +90,9 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
     ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
-    ierr = SLESSolve(ts->sles,rhs,update);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ts->ksp,rhs);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ts->ksp,update);CHKERRQ(ierr);
+    ierr = KSPSolve(ts->ksp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
@@ -117,7 +119,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
   KSP          ksp;
 
   PetscFunctionBegin;
-  ierr   = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
+  ierr   = TSGetKSP(ts,&ksp);CHKERRQ(ierr);
   *steps = -ts->steps;
   ierr   = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
@@ -148,8 +150,10 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
     ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
-    ierr = SLESSetOperators(ts->sles,ts->A,ts->B,str);CHKERRQ(ierr);
-    ierr = SLESSolve(ts->sles,rhs,update);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,str);CHKERRQ(ierr);
+    ierr = KSPSetRhs(ts->ksp,rhs);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ts->ksp,update);CHKERRQ(ierr);
+    ierr = KSPSolve(ts->ksp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
@@ -288,7 +292,7 @@ static int TSSetUp_CN_Linear_Constant_Matrix(TS ts)
     ierr = MatScale(&neg_dt,ts->B);CHKERRQ(ierr);
     ierr = MatShift(&two,ts->B);CHKERRQ(ierr);
   }
-  ierr = SLESSetOperators(ts->sles,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -328,7 +332,7 @@ static int TSSetFromOptions_CN_Linear(TS ts)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = SLESSetFromOptions(ts->sles);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -377,8 +381,8 @@ int TSCreate_CN(TS ts)
       ts->ops->step   = TSStep_CN_Linear_Variable_Matrix;
     }
     ts->ops->setfromoptions  = TSSetFromOptions_CN_Linear;
-    ierr = SLESCreate(ts->comm,&ts->sles);CHKERRQ(ierr);
-    ierr = SLESGetKSP(ts->sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPCreate(ts->comm,&ts->ksp);CHKERRQ(ierr);
+    ierr = TSGetKSP(ts,&ksp);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     ts->ops->setup           = TSSetUp_CN_Nonlinear;  

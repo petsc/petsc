@@ -5,7 +5,7 @@ static char help[] = "Tests ILU factorization and illustrates drawing of matrix 
   -lf <level> : level of fill for ILU (default is 0)\n\
   -lu : use full LU factorization\n\
   -m <value>,-n <value> : grid dimensions\n\
-Note that most users should employ the SLES interface to the\n\
+Note that most users should employ the KSP interface to the\n\
 linear solvers instead of using the factorization routines\n\
 directly.\n\n";
 

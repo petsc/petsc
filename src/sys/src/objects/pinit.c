@@ -53,8 +53,8 @@ int PetscOptionsCheckInitial_Components(void)
   if (flg1) {
 #if defined (PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm,"------Additional PETSc component options--------\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,sles,snes>\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -log_info_exclude: <null,vec,mat,sles,snes,ts>\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_summary_exclude: <vec,mat,pc.ksp,snes>\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log_info_exclude: <null,vec,mat,pc,ksp,snes,ts>\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"-----------------------------------------------\n");CHKERRQ(ierr);
 #endif
   }
@@ -299,7 +299,7 @@ int PetscGetArgs(int *argc,char ***args)
         to the screen (useful to determine where a program
         hangs without running in the debugger).  See PetscLogTraceBegin().
 .  -log_info <optional filename> - Prints verbose information to the screen
--  -log_info_exclude <null,vec,mat,sles,snes,ts> - Excludes some of the verbose messages
+-  -log_info_exclude <null,vec,mat,pc,ksp,snes,ts> - Excludes some of the verbose messages
 
    Environmental Variables:
 +   PETSC_TMP - alternative tmp directory

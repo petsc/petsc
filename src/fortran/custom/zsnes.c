@@ -28,7 +28,7 @@
 #define snessetjacobian_                 SNESSETJACOBIAN
 #define snescreate_                      SNESCREATE
 #define snessetfunction_                 SNESSETFUNCTION
-#define snesgetsles_                     SNESGETSLES
+#define snesgetksp_                     SNESGETKSP
 #define snessetmonitor_                  SNESSETMONITOR
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
 #define snesregisterdestroy_             SNESREGISTERDESTROY
@@ -86,7 +86,7 @@
 #define snessetjacobian_                 snessetjacobian
 #define snescreate_                      snescreate
 #define snessetfunction_                 snessetfunction
-#define snesgetsles_                     snesgetsles
+#define snesgetksp_                     snesgetksp
 #define snesdestroy_                     snesdestroy
 #define snessetmonitor_                  snessetmonitor
 #define snessetconvergencetest_          snessetconvergencetest
@@ -423,9 +423,9 @@ void PETSC_STDCALL snesdestroy_(SNES *snes,int *ierr)
   *ierr = SNESDestroy(*snes);
 }
 
-void PETSC_STDCALL snesgetsles_(SNES *snes,SLES *sles,int *ierr)
+void PETSC_STDCALL snesgetksp_(SNES *snes,KSP *ksp,int *ierr)
 {
-  *ierr = SNESGetSLES(*snes,sles);
+  *ierr = SNESGetKSP(*snes,ksp);
 }
 
 /* ---------------------------------------------------------*/

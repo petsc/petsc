@@ -39,7 +39,7 @@ T*/
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscsles.h   - linear solvers 
+     petscksp.h   - linear solvers 
 */
 #include "petscsnes.h"
 #include "petscda.h"
@@ -284,21 +284,19 @@ int main(int argc,char **argv)
 
     /* attach nullspace to each level of the preconditioner */
     {
-      SLES       subsles,sles;
+      KSP       subksp,ksp;
       PC         pc,subpc;
       PetscTruth mg;
       KSP        ksp;
 
-      ierr = SNESGetSLES(DMMGGetSNES(dmmg),&sles);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);
-      ierr = KSPGetPC(sles,&pc);
+      ierr = SNESGetKSP(DMMGGetSNES(dmmg),&ksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(ksp,&pc);
       ierr = AttachNullSpace(pc,DMMGGetx(dmmg));CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCMG,&mg);CHKERRQ(ierr);
       if (mg) {
         for (i=0; i<param.mglevels; i++) {
-	  ierr = MGGetSmoother(pc,i,&subsles);CHKERRQ(ierr);
-	  ierr = SLESGetKSP(subsles,&ksp);CHKERRQ(ierr);
-	  ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
+	  ierr = MGGetSmoother(pc,i,&subksp);CHKERRQ(ierr);
+	  ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
 	  ierr = AttachNullSpace(subpc,dmmg[i]->x);CHKERRQ(ierr);
         }
       }
@@ -738,7 +736,7 @@ int Update(DMMG *dmmg)
 
     if (tsCtx->itstep == 665000)
     {
-      SLES sles;
+      KSP ksp;
       PC pc;
       Mat mat, pmat;
       MatStructure flag;
@@ -752,11 +750,9 @@ int Update(DMMG *dmmg)
                                    PETSC_FILE_CREATE, &viewer);
       CHKERRQ(ierr);
 
-      ierr = SNESGetSLES(snes, &sles);
+      ierr = SNESGetKSP(snes, &ksp);
       CHKERRQ(ierr);
 
-      ierr = SLESGetKSP(sles, &ksp);
-      CHKERRQ(ierr);
       ierr = KSPGetPC(ksp, &pc);
       CHKERRQ(ierr);
 

@@ -90,7 +90,7 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
   PetscFunctionReturn(0);
 }
 
-/* used by -sles_view */
+/* used by -ksp_view */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_Spooles"
 int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)

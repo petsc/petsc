@@ -63,9 +63,9 @@ int TSSetType(TS ts, TSType type)
   ierr = PetscFListFind(ts->comm, TSList, type, (void (**)(void)) &r);                                    CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Unknown TS type: %s", type);
 
-  if (ts->sles != PETSC_NULL) {
-    ierr = SLESDestroy(ts->sles);                                                                         CHKERRQ(ierr);
-    ts->sles = PETSC_NULL;
+  if (ts->ksp != PETSC_NULL) {
+    ierr = KSPDestroy(ts->ksp);                                                                         CHKERRQ(ierr);
+    ts->ksp = PETSC_NULL;
   }
   if (ts->snes != PETSC_NULL) {
     ierr = SNESDestroy(ts->snes);                                                                         CHKERRQ(ierr);

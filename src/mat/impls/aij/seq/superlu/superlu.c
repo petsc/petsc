@@ -389,7 +389,7 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   B->ops->lufactornumeric = MatLUFactorNumeric_SuperLU;
   B->ops->solve           = MatSolve_SuperLU;
   B->factor               = FACTOR_LU;
-  B->assembled            = PETSC_TRUE;  /* required by -sles_view */
+  B->assembled            = PETSC_TRUE;  /* required by -ksp_view */
   
   lu = (Mat_SuperLU*)(B->spptr);
 
@@ -458,7 +458,7 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-/* used by -sles_view */
+/* used by -ksp_view */
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_SuperLU"
 int MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)

@@ -44,7 +44,7 @@ int SNESView(SNES snes,PetscViewer viewer)
 {
   SNES_KSP_EW_ConvCtx *kctx;
   int                 ierr;
-  SLES                sles;
+  KSP                ksp;
   char                *type;
   PetscTruth          isascii,isstring;
 
@@ -90,9 +90,9 @@ int SNESView(SNES snes,PetscViewer viewer)
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
   }
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = SLESView(sles,viewer);CHKERRQ(ierr);
+  ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -133,7 +133,7 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES))
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFromOptions"
 /*@
-   SNESSetFromOptions - Sets various SNES and SLES parameters from user options.
+   SNESSetFromOptions - Sets various SNES and KSP parameters from user options.
 
    Collective on SNES
 
@@ -183,7 +183,7 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES))
 @*/
 int SNESSetFromOptions(SNES snes)
 {
-  SLES                sles;
+  KSP                ksp;
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
   PetscTruth          flg;
   int                 ierr, i;
@@ -261,8 +261,8 @@ int SNESSetFromOptions(SNES snes)
 
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
   PetscFunctionReturn(0); 
 }
@@ -504,34 +504,34 @@ int SNESGetNumberLinearIterations(SNES snes,int* lits)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESGetSLES"
+#define __FUNCT__ "SNESGetKSP"
 /*@C
-   SNESGetSLES - Returns the SLES context for a SNES solver.
+   SNESGetKSP - Returns the KSP context for a SNES solver.
 
-   Not Collective, but if SNES object is parallel, then SLES object is parallel
+   Not Collective, but if SNES object is parallel, then KSP object is parallel
 
    Input Parameter:
 .  snes - the SNES context
 
    Output Parameter:
-.  sles - the SLES context
+.  ksp - the KSP context
 
    Notes:
-   The user can then directly manipulate the SLES context to set various
+   The user can then directly manipulate the KSP context to set various
    options, etc.  Likewise, the user can then extract and manipulate the 
    KSP and PC contexts as well.
 
    Level: beginner
 
-.keywords: SNES, nonlinear, get, SLES, context
+.keywords: SNES, nonlinear, get, KSP, context
 
-.seealso: KSPGetPC(), SLESGetKSP()
+.seealso: KSPGetPC()
 @*/
-int SNESGetSLES(SNES snes,SLES *sles)
+int SNESGetKSP(SNES snes,KSP *ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  *sles = snes->sles;
+  *ksp = snes->ksp;
   PetscFunctionReturn(0);
 }
 
@@ -646,8 +646,8 @@ int SNESCreate(MPI_Comm comm,SNES *outsnes)
   kctx->lresid_last = 0;
   kctx->norm_last   = 0;
 
-  ierr = SLESCreate(comm,&snes->sles);CHKERRQ(ierr);
-  PetscLogObjectParent(snes,snes->sles)
+  ierr = KSPCreate(comm,&snes->ksp);CHKERRQ(ierr);
+  PetscLogObjectParent(snes,snes->ksp)
 
   *outsnes = snes;
   ierr = PetscPublishAll(snes);CHKERRQ(ierr);
@@ -768,14 +768,14 @@ int SNESComputeFunction(SNES snes,Vec x,Vec y)
    Most users should not need to explicitly call this routine, as it 
    is used internally within the nonlinear solvers. 
 
-   See SLESSetOperators() for important information about setting the
+   See KSPSetOperators() for important information about setting the
    flag parameter.
 
    Level: developer
 
 .keywords: SNES, compute, Jacobian, matrix
 
-.seealso:  SNESSetJacobian(), SLESSetOperators()
+.seealso:  SNESSetJacobian(), KSPSetOperators()
 @*/
 int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
@@ -821,11 +821,11 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 .  A - Jacobian matrix
 .  B - preconditioner matrix, usually the same as A
 .  flag - flag indicating information about the preconditioner matrix
-   structure (same as flag in SLESSetOperators())
+   structure (same as flag in KSPSetOperators())
 -  ctx - [optional] user-defined Jacobian context
 
    Notes: 
-   See SLESSetOperators() for important information about setting the flag
+   See KSPSetOperators() for important information about setting the flag
    output parameter in the routine func().  Be sure to read this information!
 
    The routine func() takes Mat * as the matrix arguments rather than Mat.  
@@ -838,7 +838,7 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: SLESSetOperators(), SNESSetFunction()
+.seealso: KSPSetOperators(), SNESSetFunction()
 @*/
 int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
@@ -967,9 +967,8 @@ int SNESSetUp(SNES snes,Vec x)
    */
   if (flg) {
     Mat  J;
-    SLES sles;
+    KSP ksp;
     PC   pc;
-    KSP  ksp;
 
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
@@ -978,8 +977,7 @@ int SNESSetUp(SNES snes,Vec x)
     ierr = MatDestroy(J);CHKERRQ(ierr);
 
     /* force no preconditioner */
-    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
     if (!flg) {
@@ -997,9 +995,8 @@ int SNESSetUp(SNES snes,Vec x)
   /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
   ierr = PetscTypeCompare((PetscObject)snes,SNESTR,&iseqtr);CHKERRQ(ierr);
   if (snes->ksp_ewconv && !iseqtr) {
-    SLES sles; KSP ksp;
-    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    KSP ksp;
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,snes);CHKERRQ(ierr);
   }
 
@@ -1040,7 +1037,7 @@ int SNESDestroy(SNES snes)
   if (snes->kspconvctx) {ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);}
   if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
   if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
-  ierr = SLESDestroy(snes->sles);CHKERRQ(ierr);
+  ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);
   if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
   for (i=0; i<snes->numbermonitors; i++) {
     if (snes->monitordestroy[i]) {
@@ -1955,7 +1952,7 @@ int SNESSetOptionsPrefix(SNES snes,const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
-  ierr = SLESSetOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1988,7 +1985,7 @@ int SNESAppendOptionsPrefix(SNES snes,const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
-  ierr = SLESAppendOptionsPrefix(snes->sles,prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

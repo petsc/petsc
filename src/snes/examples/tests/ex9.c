@@ -42,7 +42,7 @@ extern int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(AppCtx*,Vec);
 int main(int argc,char **argv)
 {
   SNES          snes;                 /* nonlinear solver */
-  SLES          sles;                 /* linear solver */
+  KSP           ksp;                 /* linear solver */
   PC            pc;                   /* preconditioner */
   Mat           J;                    /* Jacobian matrix */
   AppCtx        user;                 /* user-defined application context */
@@ -52,7 +52,6 @@ int main(int argc,char **argv)
   PetscTruth    flg;
   int           Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,Nz = PETSC_DECIDE; 
   PetscReal     bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  KSP           ksp;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRQ(ierr);
@@ -91,8 +90,7 @@ int main(int argc,char **argv)
 
   /* Force no preconditioning to be used.  Note that this overrides whatever
      choices may have been specified in the options database. */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
 

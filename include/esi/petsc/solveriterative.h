@@ -2,7 +2,7 @@
 #define __PETSc_SolverIterative_h__
 
 // this contains the PETSc definition of solveriterative
-#include "petscsles.h"
+#include "petscksp.h"
 
 #include "esi/petsc/vector.h"
 
@@ -27,8 +27,8 @@ class SolverIterative : public virtual esi::SolverIterative<Scalar,Ordinal>,
     // Construct a solveriterative from a MPI_Comm
     SolverIterative(MPI_Comm comm);
 
-    // Construct a solveriterative from a PETSc SLES
-    SolverIterative(SLES sles);
+    // Construct a solveriterative from a PETSc KSP
+    SolverIterative(KSP ksp);
 
     //  Interface for esi::Object  ---------------
 
@@ -86,7 +86,7 @@ class SolverIterative : public virtual esi::SolverIterative<Scalar,Ordinal>,
     };
 
   private:
-    SLES                                  sles;
+    KSP                                  ksp;
     ::esi::Preconditioner<Scalar,Ordinal> *pre;
     ::esi::Operator<Scalar,Ordinal>       *op;
 };
@@ -103,8 +103,8 @@ class SolverIterative<double,int> : public virtual esi::SolverIterative<double,i
     // Construct a solveriterative from a MPI_Comm
     SolverIterative(MPI_Comm comm);
 
-    // Construct a solveriterative from a PETSc SLES
-    SolverIterative(SLES sles);
+    // Construct a solveriterative from a PETSc KSP
+    SolverIterative(KSP ksp);
 
     //  Interface for esi::Object  ---------------
 
@@ -163,7 +163,7 @@ class SolverIterative<double,int> : public virtual esi::SolverIterative<double,i
     };
 
   private:
-    SLES                              sles;
+    KSP                              ksp;
     ::esi::Preconditioner<double,int> *pre;
     ::esi::Operator<double,int>       *op;
 };

@@ -345,7 +345,7 @@ EXTERN MPI_Op PetscSum_Op;
 EXTERN int PetscMaxSum(MPI_Comm,const int[],int*,int*);
 
 /*S
-     PetscObject - any PETSc object, PetscViewer, Mat, Vec, SLES etc
+     PetscObject - any PETSc object, PetscViewer, Mat, Vec, KSP etc
 
    Level: beginner
 

@@ -287,7 +287,7 @@ int MatView(Mat mat,PetscViewer viewer)
    internally scaled, so this does nothing. For MPIROWBS it
    permutes and diagonally scales.
 
-   The SLES methods automatically call this routine when required
+   The KSP methods automatically call this routine when required
    (via PCPreSolve()) so it is rarely used directly.
 
    Level: Developer            
@@ -333,7 +333,7 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
    internally scaled, so this does nothing. For MPIROWBS it
    permutes and diagonally scales.
 
-   The SLES methods automatically call this routine when required
+   The KSP methods automatically call this routine when required
    (via PCPreSolve()) so it is rarely used directly.
 
    Level: Developer            
@@ -1475,9 +1475,9 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
    Level: developer
 
    Notes:
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    This is currently only supported for the SeqAIJ matrix format using code
    from Yousef Saad's SPARSEKIT2  package (translated to C with f2c) and/or
@@ -1526,9 +1526,9 @@ $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
 $                   Run with the option -log_info to determine an optimal value to use
 
    Notes:
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    This changes the state of the matrix to a factored matrix; it cannot be used
    for example with MatSetValues() unless one first calls MatSetUnfactored().
@@ -1581,9 +1581,9 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    Probably really in-place only when level of fill is zero, otherwise allocates
    new space to store factored matrix and deletes previous memory.
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -1634,9 +1634,9 @@ $                   Run with the option -log_info to determine an optimal value 
    See the users manual for additional information about
    choosing the fill factor for better efficiency.
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -1682,9 +1682,9 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
    See MatLUFactor() for in-place factorization.  See 
    MatCholeskyFactorNumeric() for the symmetric, positive definite case.  
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -1735,9 +1735,9 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
    See MatLUFactor() for the nonsymmetric case.  See also
    MatCholeskyFactorSymbolic(), and MatCholeskyFactorNumeric().
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -1791,9 +1791,9 @@ $                   Run with the option -log_info to determine an optimal value 
    See MatLUFactorSymbolic() for the nonsymmetric case.  See also
    MatCholeskyFactor() and MatCholeskyFactorNumeric().
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -1840,9 +1840,9 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
 .  fact - the factored matrix
 
    Notes:
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -1893,9 +1893,9 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
    call MatSolve(A,x,x).
 
    Notes:
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -1951,9 +1951,9 @@ int MatSolve(Mat mat,Vec b,Vec x)
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatForwardSolve(A,x,x).
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -2008,9 +2008,9 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatBackwardSolve(A,x,x).
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -2063,9 +2063,9 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatSolveAdd(A,x,y,x).
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -2137,9 +2137,9 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatSolveTranspose(A,x,x).
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -2192,9 +2192,9 @@ int MatSolveTranspose(Mat mat,Vec b,Vec x)
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatSolveTransposeAdd(A,x,y,x).
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -2285,16 +2285,16 @@ int MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
    on each processor. 
 
    Application programmers will not generally use MatRelax() directly,
-   but instead will employ the SLES/PC interface.
+   but instead will employ the KSP/PC interface.
 
    Notes for Advanced Users:
    The flags are implemented as bitwise inclusive or operations.
    For example, use (SOR_ZERO_INITIAL_GUESS | SOR_SYMMETRIC_SWEEP)
    to specify a zero initial guess for SSOR.
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -3408,7 +3408,7 @@ int MatCompress(Mat mat)
    that would generate a new entry in the nonzero structure instead produces 
    an error. (Currently supported for AIJ and BAIJ formats only.)
    This is a useful flag when using SAME_NONZERO_PATTERN in calling
-   SLESSetOperators() to ensure that the nonzero pattern truely does 
+   KSPSetOperators() to ensure that the nonzero pattern truely does 
    remain unchanged. Set after the first MatAssemblyEnd()
 
    MAT_NEW_NONZERO_ALLOCATION_ERR indicates that any add or insertion 
@@ -3777,9 +3777,9 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    See the users manual for additional information about
    choosing the fill factor for better efficiency.
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -3836,9 +3836,9 @@ $      expected fill - as ratio of original fill.
    Notes:
    Currently only no-fill factorization is supported.
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -4437,9 +4437,9 @@ int MatColoringPatch(Mat mat,int n,int ncolors,const ISColoringValue colorarray[
    of these preconditioners in the users manual for details on setting
    local solver options.
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -4861,9 +4861,9 @@ int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
    Probably really in-place only when level of fill is zero, otherwise allocates
    new space to store factored matrix and deletes previous memory.
 
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 
@@ -5115,9 +5115,9 @@ int MatGetInertia(Mat mat,int *nneg,int *nzero,int *npos)
    call MatSolves(A,x,x).
 
    Notes:
-   Most users should employ the simplified SLES interface for linear solvers
+   Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., SLESCreate().
+   See, e.g., KSPCreate().
 
    Level: developer
 

@@ -214,7 +214,7 @@ runex5_9:
 	   else echo "Possible problem with ex5_9, diffs above"; fi; \
 	   ${RM} -f ex5_9.tmp
 runex5_10:
-	-@${MPIRUN} -np 2 ex5 -sles_diagonal_scale -ksp_smonitor -snes_smonitor -ksp_gmres_cgs_refinement_type always > ex5_10.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ex5 -ksp_diagonal_scale -ksp_smonitor -snes_smonitor -ksp_gmres_cgs_refinement_type always > ex5_10.tmp 2>&1;\
 	   if (${DIFF} output/ex5_10.out ex5_10.tmp) then true; \
 	   else echo "Possible problem with ex5_10, diffs above"; fi; \
 	   ${RM} -f ex5_10.tmp

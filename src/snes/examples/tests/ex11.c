@@ -54,8 +54,8 @@ typedef struct {
    double      param;           /* test problem parameter */
    GridCtx     fine;
    GridCtx     coarse;
-   SLES        sles_coarse;
-   SLES        sles_fine;
+   KSP        ksp_coarse;
+   KSP        ksp_fine;
    int         ratio;
    Mat         R;               /* restriction fine to coarse */
    Vec         Rscale;
@@ -84,7 +84,7 @@ int main( int argc, char **argv )
   int           ierr, its, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
   int           size, nlocal,Nlocal;
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
-  SLES          sles;
+  KSP          ksp;
   PC            pc;
   KSP           ksp;
 
@@ -158,8 +158,7 @@ int main( int argc, char **argv )
   ierr = SNESSetJacobian(snes,user.fine.J,user.fine.J,FormJacobian,&user);CHKERRQ(ierr);
 
   /* set two level additive Schwarz preconditioner */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
@@ -170,25 +169,24 @@ int main( int argc, char **argv )
   ierr = PetscOptionsSetValue("-coarse_redundant_pc_type","lu");CHKERRQ(ierr);
 
   /* Create coarse level */
-  ierr = MGGetCoarseSolve(pc,&user.sles_coarse);CHKERRQ(ierr);
-  ierr = SLESSetOptionsPrefix(user.sles_coarse,"coarse_");CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(user.sles_coarse);CHKERRQ(ierr);
-  ierr = SLESSetOperators(user.sles_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MGGetCoarseSolve(pc,&user.ksp_coarse);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(user.ksp_coarse,"coarse_");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(user.ksp_coarse);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user.ksp_coarse,user.coarse.J,user.coarse.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MGSetX(pc,COARSE_LEVEL,user.coarse.x);CHKERRQ(ierr); 
   ierr = MGSetRhs(pc,COARSE_LEVEL,user.coarse.b);CHKERRQ(ierr); 
   if (user.redundant_build) {
     PC  rpc;
     KSP rksp;
-    ierr = SLESGetKSP(user.sles_coarse,&rksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(rksp,&rpc);CHKERRQ(ierr);
+    ierr = KSPGetPC(user.ksp_coarse,&rpc);CHKERRQ(ierr);
     ierr = PCRedundantSetScatter(rpc,user.tolocalall,user.fromlocalall);CHKERRQ(ierr);
   }
 
   /* Create fine level */
-  ierr = MGGetSmoother(pc,FINE_LEVEL,&user.sles_fine);CHKERRQ(ierr);
-  ierr = SLESSetOptionsPrefix(user.sles_fine,"fine_");CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(user.sles_fine);CHKERRQ(ierr);
-  ierr = SLESSetOperators(user.sles_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MGGetSmoother(pc,FINE_LEVEL,&user.ksp_fine);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(user.ksp_fine,"fine_");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(user.ksp_fine);CHKERRQ(ierr);
+  ierr = KSPSetOperators(user.ksp_fine,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MGSetR(pc,FINE_LEVEL,user.fine.r);CHKERRQ(ierr); 
   ierr = MGSetResidual(pc,FINE_LEVEL,MGDefaultResidual,user.fine.J);CHKERRQ(ierr);
 
@@ -433,7 +431,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
   int        ierr;
-  SLES       sles;
+  KSP       ksp;
   PC         pc;
   PetscTruth ismg;
   KSP        ksp;
@@ -442,14 +440,13 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   ierr = FormJacobian_Grid(user,&user->fine,X,J,B);CHKERRQ(ierr);
 
   /* create coarse grid jacobian for preconditioner */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
-    ierr = SLESSetOperators(user->sles_fine,user->fine.J,user->fine.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(user->ksp_fine,user->fine.J,user->fine.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     /* restrict X to coarse grid */
     ierr = MatMult(user->R,X,user->coarse.x);CHKERRQ(ierr);
@@ -466,7 +463,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
       /* coarse grid Jacobian computed in parallel */
       ierr = FormJacobian_Grid(user,&user->coarse,user->coarse.x,&user->coarse.J,&user->coarse.J);CHKERRQ(ierr);
     }
-    ierr = SLESSetOperators(user->sles_coarse,user->coarse.J,user->coarse.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetOperators(user->ksp_coarse,user->coarse.J,user->coarse.J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   }
 
   return 0;

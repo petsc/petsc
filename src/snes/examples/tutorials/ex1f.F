@@ -24,7 +24,6 @@
 !     petscmat.h    - matrices
 !     petscksp.h    - Krylov subspace methods
 !     petscpc.h     - preconditioners
-!     petscsles.h   - SLES interface
 !     petscsnes.h   - SNES interface
 !  Other include statements may be needed if using additional PETSc
 !  routines in a Fortran program, e.g.,
@@ -36,7 +35,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +43,7 @@
 !
 !  Variables:
 !     snes        - nonlinear solver
-!     sles        - linear solver
+!     ksp        - linear solver
 !     pc          - preconditioner context
 !     ksp         - Krylov subspace method context
 !     x, r        - solution, residual vectors
@@ -53,7 +51,7 @@
 !     its         - iterations for convergence
 !
       SNES     snes
-      SLES     sles
+      KSP     ksp
       PC       pc
       KSP      ksp
       Vec      x,r
@@ -129,18 +127,17 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Set linear solver defaults for this problem. By extracting the
-!  SLES, KSP, and PC contexts from the SNES context, we can then
-!  directly call any SLES, KSP, and PC routines to set various options.
+!  KSP, KSP, and PC contexts from the SNES context, we can then
+!  directly call any KSP, KSP, and PC routines to set various options.
 
-      call SNESGetSLES(snes,sles,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
+      call SNESGetKSP(snes,ksp,ierr)
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,PCNONE,ierr)
       tol = 1.e-4
       call KSPSetTolerances(ksp,tol,PETSC_DEFAULT_DOUBLE_PRECISION,     &
      &                      PETSC_DEFAULT_DOUBLE_PRECISION,20,ierr)
 
-!  Set SNES/SLES/KSP/PC runtime options, e.g.,
+!  Set SNES/KSP/KSP/PC runtime options, e.g.,
 !      -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
 !  These options will override those specified above as long as
 !  SNESSetFromOptions() is called _after_ any other customization
@@ -312,7 +309,6 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
-#include "include/finclude/petscsles.h"
 #include "include/finclude/petscsnes.h"
 
       SNES              snes

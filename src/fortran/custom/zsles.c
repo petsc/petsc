@@ -1,17 +1,10 @@
 /*$Id: zsles.c,v 1.37 2001/09/11 16:34:57 bsmith Exp $*/
 
 #include "src/fortran/custom/zpetsc.h"
-#include "petscsles.h"
+#include "petscksp.h"
 #include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define slesdestroy_             SLESDESTROY
-#define slescreate_              SLESCREATE
-#define slessetoptionsprefix_    SLESSETOPTIONSPREFIX
-#define slesappendoptionsprefix_ SLESAPPENDOPTIONSPREFIX
-#define slesgetksp_              SLESGETKSP
-#define slesgetoptionsprefix_    SLESGETOPTIONSPREFIX
-#define slesview_                SLESVIEW
 #define dmmgcreate_              DMMGCREATE
 #define dmmgdestroy_             DMMGDESTROY
 #define dmmgsetup_               DMMGSETUP
@@ -19,30 +12,23 @@
 #define dmmgview_                DMMGVIEW
 #define dmmgsolve_               DMMGSOLVE
 #define dmmggetda_               DMMGGETDA
-#define dmmgsetsles_             DMMGSETSLES
+#define dmmgsetksp_             DMMGSETKSP
 #define dmmggetx_                DMMGGETX
 #define dmmggetj_                DMMGGETJ
 #define dmmggetb_                DMMGGETB
-#define dmmggetsles_             DMMGGETSLES
+#define dmmggetksp_             DMMGGETKSP
 #define dmmggetlevels_           DMMGGETLEVELS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmggetx_                dmmggetx
 #define dmmggetj_                dmmggetj
 #define dmmggetb_                dmmggetb
-#define dmmggetsles_             dmmggetsles
+#define dmmggetksp_             dmmggetksp
 #define dmmggetda_               dmmggetda
 #define dmmggetlevels_           dmmggetlevels
-#define dmmgsetsles_             dmmgsetsles
+#define dmmgsetksp_             dmmgsetksp
 #define dmmgdestroy_             dmmgdestroy
 #define dmmgcreate_              dmmgcreate
 #define dmmgsetup_               dmmgsetup
-#define slessetoptionsprefix_    slessetoptionsprefix
-#define slesappendoptionsprefix_ slesappendoptionsprefix
-#define slesdestroy_             slesdestroy
-#define slescreate_              slescreate
-#define slesgetksp_              slesgetksp
-#define slesgetoptionsprefix_    slesgetoptionsprefix
-#define slesview_                slesview
 #define dmmgsetdm_               dmmgsetdm
 #define dmmgview_                dmmgview
 #define dmmgsolve_               dmmgsolve
@@ -68,10 +54,10 @@ void PETSC_STDCALL dmmggetB_(DMMG **dmmg,Mat *x,int *ierr)
   *x    = DMMGGetB(*dmmg);
 }
 
-void PETSC_STDCALL dmmggetsles_(DMMG **dmmg,SLES *x,int *ierr)
+void PETSC_STDCALL dmmggetksp_(DMMG **dmmg,KSP *x,int *ierr)
 {
   *ierr = 0;
-  *x    = DMMGGetSLES(*dmmg);
+  *x    = DMMGGetKSP(*dmmg);
 }
 
 void PETSC_STDCALL dmmggetlevels_(DMMG **dmmg,int *x,int *ierr)
@@ -89,7 +75,7 @@ static int ourrhs(DMMG dmmg,Vec vec)
 }
 
 /*
-   Since DMMGSetSLES() immediately calls the matrix functions for each level we do not need to store
+   Since DMMGSetKSP() immediately calls the matrix functions for each level we do not need to store
   the mat() function inside the DMMG object
 */
 static int (PETSC_STDCALL *theirmat)(DMMG*,Mat*,int*);
@@ -100,11 +86,11 @@ static int ourmat(DMMG dmmg,Mat mat)
   return ierr;
 }
 
-void PETSC_STDCALL dmmgsetsles_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(DMMG*,Vec*,int*),int (PETSC_STDCALL *mat)(DMMG*,Mat*,int*),int *ierr)
+void PETSC_STDCALL dmmgsetksp_(DMMG **dmmg,int (PETSC_STDCALL *rhs)(DMMG*,Vec*,int*),int (PETSC_STDCALL *mat)(DMMG*,Mat*,int*),int *ierr)
 {
   int i;
   theirmat = mat;
-  *ierr = DMMGSetSLES(*dmmg,ourrhs,ourmat);
+  *ierr = DMMGSetKSP(*dmmg,ourrhs,ourmat);
   /*
     Save the fortran rhs function in the DM on each level; ourrhs() pulls it out when needed
   */
@@ -154,65 +140,6 @@ void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,int *ierr)
 void PETSC_STDCALL dmmgsetup_(DMMG **dmmg,int *ierr)
 {
   *ierr = DMMGSetUp(*dmmg);
-}
-
-void PETSC_STDCALL slesview_(SLES *sles,PetscViewer *viewer, int *ierr)
-{
-  PetscViewer v;
-  PetscPatchDefaultViewers_Fortran(viewer,v);
-  *ierr = SLESView(*sles,v);
-}
-
-void PETSC_STDCALL slessetoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_LEN(len),
-                                         int *ierr PETSC_END_LEN(len))
-{
-  char *t;
-
-  FIXCHAR(prefix,len,t);
-  *ierr = SLESSetOptionsPrefix(*sles,t);
-  FREECHAR(prefix,t);
-}
-
-void PETSC_STDCALL slesappendoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_LEN(len),
-                                            int *ierr PETSC_END_LEN(len))
-{
-  char *t;
-
-  FIXCHAR(prefix,len,t);
-  *ierr = SLESAppendOptionsPrefix(*sles,t);
-  FREECHAR(prefix,t);
-}
-
-void PETSC_STDCALL slesgetksp_(SLES *sles,KSP *ksp,int *ierr)
-{
-  *ierr = SLESGetKSP(*sles,ksp);
-}
-
-void PETSC_STDCALL slesdestroy_(SLES *sles,int *ierr)
-{
-  *ierr = SLESDestroy(*sles);
-}
-
-void PETSC_STDCALL slescreate_(MPI_Comm *comm,SLES *outsles,int *ierr)
-{
-  *ierr = SLESCreate((MPI_Comm)PetscToPointerComm(*comm),outsles);
-
-}
-
-void PETSC_STDCALL slesgetoptionsprefix_(SLES *sles,CHAR prefix PETSC_MIXED_LEN(len),
-                                         int *ierr PETSC_END_LEN(len))
-{
-  char *tname;
-
-  *ierr = SLESGetOptionsPrefix(*sles,&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    *ierr = PetscStrncpy(t,tname,len1);
-  }
-#else
-  *ierr = PetscStrncpy(prefix,tname,len);
-#endif
 }
 
 EXTERN_C_END

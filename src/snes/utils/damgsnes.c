@@ -19,12 +19,11 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
 {
   DMMG         *dmmg = (DMMG*)ptr;
   int          ierr,i,nlevels = dmmg[0]->nlevels,it;
-  SLES         sles,lsles;
+  KSP          ksp,lksp;
   PC           pc;
   PetscTruth   ismg;
   Vec          W;
   MatStructure flg;
-  KSP          ksp;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(1,"Passing null as user context which should contain DMMG");
@@ -40,14 +39,13 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
   ierr = MatSNESMFSetBase(DMMGGetFine(dmmg)->J,X);CHKERRQ(ierr);
 
   /* create coarser grid Jacobians for preconditioner if multigrid is the preconditioner */
-  ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
 
-    ierr = MGGetSmoother(pc,nlevels-1,&lsles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(lsles,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
+    ierr = MGGetSmoother(pc,nlevels-1,&lksp);CHKERRQ(ierr);
+    ierr = KSPSetOperators(lksp,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
 
     for (i=nlevels-1; i>0; i--) {
 
@@ -74,8 +72,8 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
         flg = SAME_PRECONDITIONER;
       }
 
-      ierr = MGGetSmoother(pc,i-1,&lsles);CHKERRQ(ierr);
-      ierr = SLESSetOperators(lsles,dmmg[i-1]->J,dmmg[i-1]->B,flg);CHKERRQ(ierr);
+      ierr = MGGetSmoother(pc,i-1,&lksp);CHKERRQ(ierr);
+      ierr = KSPSetOperators(lksp,dmmg[i-1]->J,dmmg[i-1]->B,flg);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -368,7 +366,7 @@ extern int NLFDAADSetNewtonIterations_DAAD(NLF,int);
 EXTERN_C_END
 
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-#include "src/sles/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
+#include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
 /*
           This is pre-beta FAS code. It's design should not be taken seriously!
 */
@@ -381,7 +379,7 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
   PetscScalar zero = 0.0,mone = -1.0,one = 1.0;
   MG          *mg;
   PC          pc;
-  SLES        sles;
+  KSP         ksp;
   KSP         ksp;
 
   PetscFunctionBegin;
@@ -392,8 +390,7 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
     }
   }
 
-  ierr = SNESGetSLES(dmmg[level]->snes,&sles);CHKERRQ(ierr);
-  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+  ierr = SNESGetKSP(dmmg[level]->snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   mg   = ((MG*)pc->data);
 
@@ -521,7 +518,7 @@ int DMMGSolveFAS(DMMG *dmmg,int level)
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES(), DMMGSetSNESLocal()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal()
 
 @*/
 int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
@@ -531,7 +528,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth  mfadoperator,mfad,adjacobian;
 #endif
-  SLES        sles;
+  KSP        ksp;
   PetscViewer ascii;
   MPI_Comm    comm;
 
@@ -599,8 +596,8 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
       dmmg[i]->J = dmmg[i]->B;
     }
 
-    ierr = SNESGetSLES(dmmg[i]->snes,&sles);CHKERRQ(ierr);
-    ierr = DMMGSetUpLevel(dmmg,sles,i+1);CHKERRQ(ierr);
+    ierr = SNESGetKSP(dmmg[i]->snes,&ksp);CHKERRQ(ierr);
+    ierr = DMMGSetUpLevel(dmmg,ksp,i+1);CHKERRQ(ierr);
     
     /*
        if the number of levels is > 1 then we want the coarse solve in the grid sequencing to use LU
@@ -608,15 +605,12 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     */
     if (nlevels > 1 && i == 0) {
       PC         pc;
-      SLES       csles;
+      KSP        cksp;
       PetscTruth flg1,flg2,flg3;
-      KSP        ksp;
 
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = MGGetCoarseSolve(pc,&csles);CHKERRQ(ierr);
-      ierr = SLESGetKSP(csles,&ksp);CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+      ierr = MGGetCoarseSolve(pc,&cksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCILU,&flg1);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PCSOR,&flg2);CHKERRQ(ierr);
       ierr = PetscTypeCompare((PetscObject)pc,PETSC_NULL,&flg3);CHKERRQ(ierr);
@@ -737,7 +731,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP()
 
 @*/
 int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
@@ -793,7 +787,7 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
     If ADIC/ADIFOR have not been installed and the Jacobian is not provided, this routine
     uses finite differencing to approximate the Jacobian.
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES(), DMMGSetSNES()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES()
 
 M*/
 

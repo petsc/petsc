@@ -16,7 +16,7 @@ EXTERN int KSPInitializePackage(const char[]);
 
   Concepts: Krylov methods
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, SLES
+.seealso:  KSPCreate(), KSPSetType(), KSPType, SNES, TS, PC, KSP
 S*/
 typedef struct _p_KSP*     KSP;
 
@@ -174,7 +174,7 @@ typedef enum {KSP_GMRES_CGS_REFINEMENT_NONE, KSP_GMRES_CGS_REFINEMENT_IFNEEDED, 
 EXTERN int KSPGMRESSetCGSRefinementType(KSP,KSPGMRESCGSRefinementType);
 
 EXTERN int KSPFGMRESModifyPCNoChange(KSP,int,int,PetscReal,void*);
-EXTERN int KSPFGMRESModifyPCSLES(KSP,int,int,PetscReal,void*);
+EXTERN int KSPFGMRESModifyPCKSP(KSP,int,int,PetscReal,void*);
 EXTERN int KSPFGMRESSetModifyPC(KSP,int (*)(KSP,int,int,PetscReal,void*),void*,int(*)(void*));
 
 EXTERN int KSPQCGSetTrustRegionRadius(KSP,PetscReal);
@@ -215,7 +215,7 @@ EXTERN int KSPView(KSP,PetscViewer);
 
    Notes: this must match finclude/petscksp.h 
 
-.seealso: SLESSolve(), KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
+.seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest()
 E*/
 typedef enum {KSP_NO_NORM               = 0,
@@ -233,10 +233,10 @@ EXTERN int KSPSetNormType(KSP,KSPNormType);
    Notes: this must match finclude/petscksp.h 
 
    Developer note: The string versions of these are in 
-     src/sles/ksp/interface/itfunc.c called convergedreasons.
+     src/ksp/ksp/interface/itfunc.c called convergedreasons.
      If these enums are changed you much change those.
 
-.seealso: SLESSolve(), KSPSolve(), KSPGetConvergedReason()
+.seealso: KSPSolve(), KSPSolve(), KSPGetConvergedReason()
 E*/
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL               =  2,

@@ -1,0 +1,196 @@
+/*$Id: ex10.c,v 1.58 2001/09/11 16:33:29 bsmith Exp $*/
+
+static char help[] = "Reads a PETSc matrix and vector from a file and solves the normal equations.\n\n";
+/*T
+   Concepts: KSP^solving a linear system
+   Concepts: Normal equations
+   Processors: n
+T*/
+
+/* 
+  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
+  automatically includes:
+     petsc.h       - base PETSc routines   petscvec.h - vectors
+     petscsys.h    - system routines       petscmat.h - matrices
+     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+     petscviewer.h - viewers               petscpc.h  - preconditioners
+*/
+#include "petscksp.h"
+
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **args)
+{
+  KSP           ksp;             /* linear solver context */
+  Mat            A,N;                /* matrix */
+  Vec            x,b,u,Ab;          /* approx solution, RHS, exact solution */
+  PetscViewer    fd;               /* viewer */
+  char           file[128];     /* input file name */
+  int            ierr,its,ierrp,n,m;
+  PetscReal      norm;
+  PetscScalar    zero = 0.0,none = -1.0;
+  KSP            ksp;
+
+  PetscInitialize(&argc,&args,(char *)0,help);
+
+
+  /* 
+     Determine files from which we read the linear system
+     (matrix and right-hand-side vector).
+  */
+  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,PETSC_NULL);CHKERRQ(ierr);
+
+  /* -----------------------------------------------------------
+                  Beginning of linear solver loop
+     ----------------------------------------------------------- */
+  /* 
+     Loop through the linear solve 2 times.  
+      - The intention here is to preload and solve a small system;
+        then load another (larger) system and solve it as well.
+        This process preloads the instructions with the smaller
+        system so that more accurate performance monitoring (via
+        -log_summary) can be done with the larger one (that actually
+        is the system of interest). 
+  */
+  PreLoadBegin(PETSC_FALSE,"Load system");
+
+    /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
+                           Load system
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    /* 
+       Open binary file.  Note that we use PETSC_FILE_RDONLY to indicate
+       reading from this file.
+    */
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
+
+    /*
+       Load the matrix and vector; then destroy the viewer.
+    */
+    ierr  = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
+    ierr  = PetscPushErrorHandler(PetscIgnoreErrorHandler,PETSC_NULL);CHKERRQ(ierr);
+    ierrp = VecLoad(fd,&b);
+    ierr  = PetscPopErrorHandler();CHKERRQ(ierr);
+    ierr  = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    if (ierrp) { /* if file contains no RHS, then use a vector of all ones */
+      PetscScalar one = 1.0;
+      ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
+      ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(b);CHKERRQ(ierr);
+      ierr = VecSet(&one,b);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+
+    /* 
+       If the loaded matrix is larger than the vector (due to being padded 
+       to match the block size of the system), then create a new padded vector.
+    */
+    { 
+      int         j,mvec,start,end,index;
+      Vec         tmp;
+      PetscScalar *bold;
+
+      /* Create a new vector b by padding the old one */
+      ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
+      ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
+      ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
+      for (j=0; j<mvec; j++) {
+        index = start+j;
+        ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
+      ierr = VecDestroy(b);CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
+      b = tmp;
+    }
+    ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
+    ierr = VecCreateMPI(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);
+    ierr = VecDuplicate(x,&Ab);CHKERRQ(ierr);
+    ierr = VecSet(&zero,x);CHKERRQ(ierr);
+
+    /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
+                      Setup solve for system
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    /*
+       Conclude profiling last stage; begin profiling next stage.
+    */
+    PreLoadStage("KSPSetUp");
+
+    ierr = MatCreateNormal(A,&N);CHKERRQ(ierr);
+    ierr = MatMultTranspose(A,b,Ab);CHKERRQ(ierr);
+
+    /*
+       Create linear solver; set operators; set runtime options.
+    */
+    ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+
+    ierr = KSPSetOperators(ksp,N,N,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+
+    /* 
+       Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
+       enable more precise profiling of setting up the preconditioner.
+       These calls are optional, since both will be called within
+       KSPSolve() if they haven't been called already.
+    */
+    ierr = KSPSetRhs(ksp,Ab);CHKERRQ(ierr);
+    ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+    ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+
+    /*
+                           Solve system
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    /*
+       Begin profiling next stage
+    */
+    PreLoadStage("KSPSolve");
+
+    /*
+       Solve linear system
+    */
+    ierr = KSPSolve(ksp);CHKERRQ(ierr);
+
+   /* 
+       Conclude profiling this stage
+    */
+    PreLoadStage("Cleanup");
+
+    /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
+            Check error, print output, free data structures.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+    /* 
+       Check error
+    */
+    ierr = MatMult(A,x,u);CHKERRQ(ierr);
+    ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
+    ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
+
+    /* 
+       Free work space.  All PETSc objects should be destroyed when they
+       are no longer needed.
+    */
+    ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
+    ierr = MatDestroy(N);CHKERRQ(ierr); ierr = VecDestroy(Ab);CHKERRQ(ierr);
+    ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
+  PreLoadEnd();
+  /* -----------------------------------------------------------
+                      End of linear solver loop
+     ----------------------------------------------------------- */
+
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  return 0;
+}
+

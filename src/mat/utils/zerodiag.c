@@ -33,7 +33,7 @@
 
     Only works for SeqAIJ matrices
 
-    Options Database Keys (When using SLES):
+    Options Database Keys (When using KSP):
 +      -pc_ilu_nonzeros_along_diagonal
 -      -pc_lu_nonzeros_along_diagonal
 

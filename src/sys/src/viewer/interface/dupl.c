@@ -22,7 +22,7 @@
 
      This is most commonly used to view a sequential object that is part of a 
     parallel object. For example block Jacobi PC view could use this to obtain a
-    PetscViewer that is used with the sequential SLES on one block of the preconditioner.
+    PetscViewer that is used with the sequential KSP on one block of the preconditioner.
 
    Concepts: PetscViewer^sequential version
 

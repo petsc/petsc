@@ -17,7 +17,7 @@
 	DA             = "typedef int DA;"
 	DMMG           = "typedef int DMMG;"
 	PC             = "typedef int PC;"
-	SLES           = "typedef int SLES;"
+	KSP           = "typedef int KSP;"
 	SNES           = "typedef int SNES;"
 	SNESConvergedReason           = "typedef int SNESConvergedReason;"
 	DAPeriodicType = "typedef int DAPeriodicType;"
@@ -75,7 +75,7 @@
         DA
         DMMG
         PC
-        SLES
+        KSP
         SNES
         CHKMEMQ
         VecPack

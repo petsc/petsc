@@ -62,7 +62,7 @@ Input parameters include:\n\
      sys.h    - system routines       mat.h  - matrices
      is.h     - index sets            ksp.h  - Krylov subspace methods
      viewer.h - viewers               pc.h   - preconditioners
-     sles.h   - linear solvers        snes.h - nonlinear solvers
+     snes.h - nonlinear solvers
 */
 
 #include "petscts.h"

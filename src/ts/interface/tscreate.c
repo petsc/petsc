@@ -84,7 +84,7 @@ int TSCreate(MPI_Comm comm, TS *ts) {
   t->isGTS              = PETSC_FALSE;
   t->isExplicit         = PETSC_NULL;
   t->Iindex             = PETSC_NULL;
-  t->sles               = PETSC_NULL;
+  t->ksp               = PETSC_NULL;
   t->A                  = PETSC_NULL;
   t->B                  = PETSC_NULL;
   t->snes               = PETSC_NULL;

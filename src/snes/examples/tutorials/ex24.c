@@ -53,7 +53,7 @@ extern int PDEFormFunctionLocal(DALocalInfo*,PetscScalar*,PetscScalar*,PassiveSc
 
 typedef struct {
   Mat        J;           /* Jacobian of PDE system */
-  SLES       sles;        /* Solver for that Jacobian */
+  KSP       ksp;        /* Solver for that Jacobian */
 } AppCtx;
 
 #undef __FUNCT__
@@ -72,8 +72,13 @@ int myPCApply(DMMG dmmg,Vec x,Vec y)
   if (yw && xw) {
     yw[0] = xw[0];
   }
-  ierr = SLESSolve(appctx->sles,xu,yu);CHKERRQ(ierr);
-  ierr = SLESSolveTranspose(appctx->sles,xlambda,ylambda);CHKERRQ(ierr);
+  ierr = KSPSetRhs(appctx->ksp,xu);CHKERRQ(ierr);
+  ierr = KSPSetSolution(appctx->ksp,yu);CHKERRQ(ierr);
+  ierr = KSPSolve(appctx->ksp);CHKERRQ(ierr);
+
+  ierr = KSPSetRhs(appctx->ksp,xlambda);CHKERRQ(ierr);
+  ierr = KSPSetSolution(appctx->ksp,ylambda);CHKERRQ(ierr);
+  ierr = KSPSolveTranspose(appctx->ksp);CHKERRQ(ierr);
   /*  ierr = VecCopy(xu,yu);CHKERRQ(ierr);
       ierr = VecCopy(xlambda,ylambda);CHKERRQ(ierr); */
   ierr = VecPackRestoreAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
@@ -89,7 +94,7 @@ int myPCView(DMMG dmmg,PetscViewer v)
   AppCtx  *appctx = (AppCtx*)dmmg->user;
 
   PetscFunctionBegin;
-  ierr = SLESView(appctx->sles,v);CHKERRQ(ierr);
+  ierr = KSPView(appctx->ksp,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -157,21 +162,18 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-bdp",&bdp);CHKERRQ(ierr);
   if (bdp) {
     for (i=0; i<nlevels; i++) {
-      SLES sles;
-      PC   pc,mpc;
       KSP  ksp;
+      PC   pc,mpc;
 
       appctx = (AppCtx*) dmmg[i]->user;
-      ierr   = SLESCreate(PETSC_COMM_WORLD,&appctx->sles);CHKERRQ(ierr);
-      ierr   = SLESSetOptionsPrefix(appctx->sles,"bdp_");CHKERRQ(ierr);
-      ierr   = SLESSetFromOptions(appctx->sles);CHKERRQ(ierr);
+      ierr   = KSPCreate(PETSC_COMM_WORLD,&appctx->ksp);CHKERRQ(ierr);
+      ierr   = KSPSetOptionsPrefix(appctx->ksp,"bdp_");CHKERRQ(ierr);
+      ierr   = KSPSetFromOptions(appctx->ksp);CHKERRQ(ierr);
 
-      ierr = SNESGetSLES(dmmg[i]->snes,&sles);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+      ierr = SNESGetKSP(dmmg[i]->snes,&ksp);CHKERRQ(ierr);
       ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
       for (j=0; j<=i; j++) {
-	ierr = MGGetSmoother(pc,j,&sles);CHKERRQ(ierr);
-	ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+	ierr = MGGetSmoother(pc,j,&ksp);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp,&mpc);CHKERRQ(ierr);
 	ierr = PCSetType(mpc,PCSHELL);CHKERRQ(ierr);
 	ierr = PCShellSetApply(mpc,(int (*)(void*,Vec,Vec))myPCApply,dmmg[j]);CHKERRQ(ierr);
@@ -186,7 +188,7 @@ int main(int argc,char **argv)
   for (i=0; i<nlevels; i++) {
     appctx = (AppCtx*)dmmg[i]->user;
     ierr   = MatDestroy(appctx->J);CHKERRQ(ierr);
-    if (appctx->sles) {ierr = SLESDestroy(appctx->sles);CHKERRQ(ierr);}
+    if (appctx->ksp) {ierr = KSPDestroy(appctx->ksp);CHKERRQ(ierr);}
     ierr   = PetscFree(appctx);CHKERRQ(ierr);  
   }
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
@@ -268,8 +270,8 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   if (!skipadic) { 
     /* lambda^T G_u() */
     ierr = DAComputeJacobian1WithAdic(da,vu,appctx->J,w);CHKERRQ(ierr);  
-    if (appctx->sles) {
-      ierr = SLESSetOperators(appctx->sles,appctx->J,appctx->J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    if (appctx->ksp) {
+      ierr = KSPSetOperators(appctx->ksp,appctx->J,appctx->J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     }
     ierr = MatMultTranspose(appctx->J,vglambda,vflambda);CHKERRQ(ierr); 
   }

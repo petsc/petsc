@@ -25,7 +25,7 @@
 #define PCILU 'ilu'
 #define PCICC 'icc'
 #define PCASM 'asm'
-#define PCSLES 'sles'
+#define PCKSP 'ksp'
 #define PCCOMPOSITE 'composite'
 #define PCREDUNDANT 'redundant'
 #define PCSPAI 'spai'

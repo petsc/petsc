@@ -13,7 +13,7 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscsles.h   - linear solvers
+     petscksp.h   - linear solvers
 */
 #include "petscda.h"
 #include "petscts.h"

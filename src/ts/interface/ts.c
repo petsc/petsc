@@ -116,8 +116,8 @@ int TSSetFromOptions(TS ts)
   switch(ts->problem_type) {
     /* Should check for implicit/explicit */
   case TS_LINEAR:
-    if (ts->sles != PETSC_NULL) {
-      ierr = SLESSetFromOptions(ts->sles);                                                                CHKERRQ(ierr);
+    if (ts->ksp != PETSC_NULL) {
+      ierr = KSPSetFromOptions(ts->ksp);                                                                CHKERRQ(ierr);
     }
     break;
   case TS_NONLINEAR:
@@ -218,7 +218,7 @@ int TSViewFromOptions(TS ts,const char title[])
    Most users should not need to explicitly call this routine, as it 
    is used internally within the nonlinear solvers. 
 
-   See SLESSetOperators() for important information about setting the
+   See KSPSetOperators() for important information about setting the
    flag parameter.
 
    TSComputeJacobian() is valid only for TS_NONLINEAR
@@ -227,7 +227,7 @@ int TSViewFromOptions(TS ts,const char title[])
 
 .keywords: SNES, compute, Jacobian, matrix
 
-.seealso:  TSSetRHSJacobian(), SLESSetOperators()
+.seealso:  TSSetRHSJacobian(), KSPSetOperators()
 @*/
 int TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
@@ -368,11 +368,11 @@ $     func (TS ts,PetscReal t,Mat *A,Mat *B,int *flag,void *ctx);
 .  A - matrix A, where U_t = A(t) U
 .  B - preconditioner matrix, usually the same as A
 .  flag - flag indicating information about the preconditioner matrix
-          structure (same as flag in SLESSetOperators())
+          structure (same as flag in KSPSetOperators())
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
    Notes: 
-   See SLESSetOperators() for important information about setting the flag
+   See KSPSetOperators() for important information about setting the flag
    output parameter in the routine func().  Be sure to read this information!
 
    The routine func() takes Mat * as the matrix arguments rather than Mat.  
@@ -434,11 +434,11 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 .  A - matrix A, where U_t = A(t)u
 .  B - preconditioner matrix, usually the same as A
 .  flag - flag indicating information about the preconditioner matrix
-          structure (same as flag in SLESSetOperators())
+          structure (same as flag in KSPSetOperators())
 -  ctx - [optional] user-defined context for matrix evaluation routine
 
    Notes: 
-   See SLESSetOperators() for important information about setting the flag
+   See KSPSetOperators() for important information about setting the flag
    output parameter in the routine func().  Be sure to read this information!
 
    The routine func() takes Mat * as the matrix arguments rather than Mat.  
@@ -608,7 +608,7 @@ int TSView(TS ts,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  if (ts->sles) {ierr = SLESView(ts->sles,viewer);CHKERRQ(ierr);}
+  if (ts->ksp) {ierr = KSPView(ts->ksp,viewer);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);}
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -933,7 +933,7 @@ int TSDestroy(TS ts)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
 
-  if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
+  if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
   ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
   for (i=0; i<ts->numbermonitors; i++) {
@@ -963,7 +963,7 @@ int TSDestroy(TS ts)
    Notes:
    The user can then directly manipulate the SNES context to set various
    options, etc.  Likewise, the user can then extract and manipulate the 
-   SLES, KSP, and PC contexts as well.
+   KSP, KSP, and PC contexts as well.
 
    TSGetSNES() does not work for integrators that do not use SNES; in
    this case TSGetSNES() returns PETSC_NULL in snes.
@@ -976,43 +976,43 @@ int TSGetSNES(TS ts,SNES *snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,"Nonlinear only; use TSGetSLES()");
+  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,"Nonlinear only; use TSGetKSP()");
   *snes = ts->snes;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSGetSLES"
+#define __FUNCT__ "TSGetKSP"
 /*@C
-   TSGetSLES - Returns the SLES (linear solver) associated with 
+   TSGetKSP - Returns the KSP (linear solver) associated with 
    a TS (timestepper) context.
 
-   Not Collective, but SLES is parallel if TS is parallel
+   Not Collective, but KSP is parallel if TS is parallel
 
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
    Output Parameter:
-.  sles - the nonlinear solver context
+.  ksp - the nonlinear solver context
 
    Notes:
-   The user can then directly manipulate the SLES context to set various
+   The user can then directly manipulate the KSP context to set various
    options, etc.  Likewise, the user can then extract and manipulate the 
    KSP and PC contexts as well.
 
-   TSGetSLES() does not work for integrators that do not use SLES;
-   in this case TSGetSLES() returns PETSC_NULL in sles.
+   TSGetKSP() does not work for integrators that do not use KSP;
+   in this case TSGetKSP() returns PETSC_NULL in ksp.
 
    Level: beginner
 
-.keywords: timestep, get, SLES
+.keywords: timestep, get, KSP
 @*/
-int TSGetSLES(TS ts,SLES *sles)
+int TSGetKSP(TS ts,KSP *ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (ts->problem_type != TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,"Linear only; use TSGetSNES()");
-  *sles = ts->sles;
+  *ksp = ts->ksp;
   PetscFunctionReturn(0);
 }
 
@@ -1733,7 +1733,7 @@ int TSSetOptionsPrefix(TS ts,const char prefix[])
       ierr = SNESSetOptionsPrefix(ts->snes,prefix);CHKERRQ(ierr);
       break;
     case TS_LINEAR:
-      ierr = SLESSetOptionsPrefix(ts->sles,prefix);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(ts->ksp,prefix);CHKERRQ(ierr);
       break;
   }
   PetscFunctionReturn(0);
@@ -1778,7 +1778,7 @@ int TSAppendOptionsPrefix(TS ts,const char prefix[])
       ierr = SNESAppendOptionsPrefix(ts->snes,prefix);CHKERRQ(ierr);
       break;
     case TS_LINEAR:
-      ierr = SLESAppendOptionsPrefix(ts->sles,prefix);CHKERRQ(ierr);
+      ierr = KSPAppendOptionsPrefix(ts->ksp,prefix);CHKERRQ(ierr);
       break;
   }
   PetscFunctionReturn(0);

@@ -30,7 +30,7 @@ struct _p_SNES {
   Mat   jacobian;                               /* Jacobian matrix */
   Mat   jacobian_pre;                           /* preconditioner matrix */
   void  *jacP;                                  /* user-defined Jacobian context */
-  SLES  sles;                                   /* linear solver context */
+  KSP  ksp;                                   /* linear solver context */
 
   int   (*computescaling)(Vec,Vec,void*);       /* scaling routine */
   Vec   scaling;                                /* scaling vector */

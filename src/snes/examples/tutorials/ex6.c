@@ -23,7 +23,7 @@ T*/
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscsles.h   - linear solvers
+     petscksp.h   - linear solvers
 */
 #include "petscsnes.h"
 
@@ -37,9 +37,8 @@ int MatrixFreePreconditioner(void*,Vec,Vec);
 int main(int argc,char **argv)
 {
   SNES         snes;                /* SNES context */
-  SLES         sles;                /* SLES context */
+  KSP          ksp;                /* KSP context */
   PC           pc;                  /* PC context */
-  KSP          ksp;                 /* KSP context */
   Vec          x,r,F;               /* vectors */
   Mat          J,JPrec;             /* Jacobian,preconditioner matrices */
   int          ierr,it,n = 5,i,size;
@@ -93,8 +92,7 @@ int main(int argc,char **argv)
   /* Set preconditioner for matrix-free method */
   ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-user_precond",&flg);CHKERRQ(ierr);
     if (flg) { /* user-defined precond */
@@ -117,8 +115,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = PetscMalloc(Khistl*sizeof(PetscReal),&Khist);CHKERRQ(ierr);
     ierr = KSPSetResidualHistory(ksp,Khist,Khistl,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscMalloc(Shistl*sizeof(PetscReal),&Shist);CHKERRQ(ierr);

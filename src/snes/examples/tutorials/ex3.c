@@ -24,7 +24,7 @@ T*/
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscsles.h   - linear solvers
+     petscksp.h   - linear solvers
 */
 
 #include "petscda.h"
@@ -163,7 +163,7 @@ int main(int argc,char **argv)
   ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
 
   /* 
-     Set SNES/SLES/KSP/PC runtime options, e.g.,
+     Set SNES/KSP/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
   */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);

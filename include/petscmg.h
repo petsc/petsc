@@ -4,7 +4,7 @@
 */
 #if !defined(__PETSCMG_H)
 #define __PETSCMG_H
-#include "petscsles.h"
+#include "petscksp.h"
 PETSC_EXTERN_CXX_BEGIN
 
 /*E
@@ -41,10 +41,10 @@ EXTERN int MGSetNumberSmoothDown(PC,int);
 EXTERN int MGSetCycles(PC,int);
 EXTERN int MGSetCyclesOnLevel(PC,int,int);
 
-EXTERN int MGGetSmoother(PC,int,SLES*);
-EXTERN int MGGetSmootherDown(PC,int,SLES*);
-EXTERN int MGGetSmootherUp(PC,int,SLES*);
-EXTERN int MGGetCoarseSolve(PC,SLES*);
+EXTERN int MGGetSmoother(PC,int,KSP*);
+EXTERN int MGGetSmootherDown(PC,int,KSP*);
+EXTERN int MGGetSmootherUp(PC,int,KSP*);
+EXTERN int MGGetCoarseSolve(PC,KSP*);
 
 EXTERN int MGSetRhs(PC,int,Vec);
 EXTERN int MGSetX(PC,int,Vec);

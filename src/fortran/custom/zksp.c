@@ -7,7 +7,7 @@
 #define kspgetresidualnorm_        KSPGETRESIDUALNORM
 #define kspgetconvergedreason_     KSPGETCONVERGEDREASON
 #define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC
-#define kspfgmresmodifypcsles_     KSPFGMRESMODIFYPCSLES
+#define kspfgmresmodifypcksp_     KSPFGMRESMODIFYPCKSP
 #define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
 #define kspdefaultconverged_       KSPDEFAULTCONVERGED
 #define kspskipconverged_          KSPSKIPCONVERGED
@@ -43,7 +43,7 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspgetconvergedreason_     kspgetconvergedreason
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
-#define kspfgmresmodifypcsles_     kspfgmresmodifypcsles
+#define kspfgmresmodifypcksp_     kspfgmresmodifypcksp
 #define kspfgmresmodifypcnochange_ kspfgmresmodifypcnochange
 #define kspdefaultconverged_       kspdefaultconverged
 #define kspskipconverged_          kspskipconverged
@@ -365,15 +365,15 @@ void PETSC_STDCALL kspfgmresmodifypcnochange_(KSP *ksp,int *total_its,int *loc_i
   *ierr = KSPFGMRESModifyPCNoChange(*ksp,*total_its,*loc_its,*res_norm,dummy);
 }
 
-void PETSC_STDCALL kspfgmresmodifypcsles_(KSP *ksp,int *total_its,int *loc_its,PetscReal *res_norm,void*dummy,int *ierr)
+void PETSC_STDCALL kspfgmresmodifypcksp_(KSP *ksp,int *total_its,int *loc_its,PetscReal *res_norm,void*dummy,int *ierr)
 {
-  *ierr = KSPFGMRESModifyPCSLES(*ksp,*total_its,*loc_its,*res_norm,dummy);
+  *ierr = KSPFGMRESModifyPCKSP(*ksp,*total_its,*loc_its,*res_norm,dummy);
 }
 
 void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*,int*,int*,PetscReal*,void*,int*),void* ctx,void (PETSC_STDCALL *d)(void*,int*),int *ierr)
 {
-  if ((void(*)(void))fcn == (void(*)(void))kspfgmresmodifypcsles_) {
-    *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCSLES,0,0);
+  if ((void(*)(void))fcn == (void(*)(void))kspfgmresmodifypcksp_) {
+    *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCKSP,0,0);
   } else if ((void(*)(void))fcn == (void(*)(void))kspfgmresmodifypcnochange_) {
     *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCNoChange,0,0);
   } else {
