@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.12 1995/03/17 04:56:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.13 1995/03/21 23:19:08 bsmith Exp curfman $";
 #endif
 
 /*
@@ -541,6 +541,14 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
   ISRestoreIndices(is,&rows);
   return 0;
 }
+
+static int MatiSDSize(Mat matin,int *m,int *n)
+{
+  MatiSD *mat = (MatiSD *) matin->data;
+  *m = mat->m; *n = mat->n;
+  return 0;
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatiSDinsert,
        MatiSDgetrow, MatiSDrestorerow,
@@ -555,7 +563,9 @@ static struct _MatOps MatOps = {MatiSDinsert,
        0,0,
        0, MatiDenseinsopt,MatiZero,MatiZerorows,0,
        MatiSDlufactorsymbolic,MatiSDlufactornumeric,
-       MatiSDchfactorsymbolic,MatiSDchfactornumeric
+       MatiSDchfactorsymbolic,MatiSDchfactornumeric,
+       MatiSDSize,MatiSDSize,0,
+       0,0
 };
 /*@
     MatCreateSequentialDense - Creates a sequential dense matrix that 
