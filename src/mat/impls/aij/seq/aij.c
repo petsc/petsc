@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.305 1999/03/09 04:09:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.306 1999/03/09 04:51:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1038,9 +1038,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
 
     /*  x = (E + U)^{-1} b */
     for ( i=m-1; i>=0; i-- ) {
-      d    = a->a[diag[i]];
       n    = a->i[i+1] - diag[i] - 1;
-      PLogFlops(2*n-1);
       idx  = a->j + diag[i] + 1;
       v    = a->a + diag[i] + 1;
       sum  = b[i];
@@ -1051,14 +1049,12 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
     /*  t = b - (2*E - D)x */
     v = a->a;
     for ( i=0; i<m; i++ ) { t[i] = b[i] - (v[*diag++])*x[i]; }
-    PLogFlops(2*m);
 
     /*  t = (E + L)^{-1}t */
     diag = a->diag;
     for ( i=0; i<m; i++ ) {
       d    = a->a[diag[i]];
       n    = diag[i] - a->i[i];
-      PLogFlops(2*n-1);
       idx  = a->j + a->i[i];
       v    = a->a + a->i[i];
       sum  = t[i];
@@ -1068,7 +1064,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
 
     /*  x = x + t */
     for ( i=0; i<m; i++ ) { x[i] += t[i]; }
-    PLogFlops(m-1);
+    PLogFlops(3*m-1 + 2*a->nz);
     ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
