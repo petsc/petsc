@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.190 1999/11/19 20:35:39 bsmith Exp balay $*/
+/*$Id: baij.c,v 1.191 1999/11/20 18:32:45 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -19,10 +19,11 @@
 int MatMissingDiagonal_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data; 
-  int         *diag = a->diag, *jj = a->j,i,ierr;
+  int         *diag, *jj = a->j,i,ierr;
 
   PetscFunctionBegin;
   ierr = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
+  diag = a->diag;
   for ( i=0; i<a->mbs; i++ ) {
     if (jj[diag[i]] != i) {
       SETERRQ1(1,1,"Matrix is missing diagonal number %d",i);
@@ -39,6 +40,8 @@ int MatMarkDiagonal_SeqBAIJ(Mat A)
   int         i,j, *diag, m = a->mbs;
 
   PetscFunctionBegin;
+  if (a->diag) PetscFunctionReturn(0);
+
   diag = (int *) PetscMalloc( (m+1)*sizeof(int));CHKPTRQ(diag);
   PLogObjectMemory(A,(m+1)*sizeof(int));
   for ( i=0; i<m; i++ ) {
@@ -1620,6 +1623,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->mult_work        = 0;
   b->spptr            = 0;
   B->info.nz_unneeded = (double)b->maxnz;
+  b->keepzeroedrows   = PETSC_FALSE;
 
   *A = B;
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg);CHKERRQ(ierr);

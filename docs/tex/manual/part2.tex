@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.330 1999/11/05 14:48:41 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.331 1999/11/17 16:19:41 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -6822,8 +6822,9 @@ Additional preconditioner routines are
 The first two routines apply the action of the matrix followed by the
 preconditioner or the preconditioner followed by the matrix depending
 on whether the \sindex{Richardson's method} {\tt right} is
-PC_LEFT or PC_RIGHT. The final routine applies {\tt its} iterations of
-Richardson's method. The last three routines are provided to improve
+{\em PC\_LEFT} or {\em PC\_RIGHT}. The final routine applies {\tt its} iterations of
+Richardson's method. \findex{PC_RIGHT} \findex{PC_LEFT} \sindex{preconditioning, right and left}
+The last three routines are provided to improve
 efficiency for certain Krylov subspace methods.
 
 A PC context that is no longer needed can be destroyed with the 
