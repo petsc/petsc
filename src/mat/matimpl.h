@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.46 1995/12/23 19:28:17 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.47 1996/01/02 18:42:43 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -51,6 +51,8 @@ struct _MatOps {
             (*getvalues)(Mat,int,int*,int,int*,Scalar*),
             (*copy)(Mat,Mat),
             (*printhelp)(Mat);
+            (*scale)(Scalar *,Mat);
+            (*shift)(Scalar *,Mat);
 };
 
 #define FACTOR_LU       1
