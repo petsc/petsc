@@ -53,7 +53,7 @@ E*/
 #define MATSEQSBAIJSPOOLES "seqsbaijspooles"
 #define MATMPISBAIJSPOOLES "mpisbaijspooles"
 #define MATSUPERLU         "superlu"
-#define MATSUPERLUDIST     "superludist"
+#define MATSUPERLU_DIST    "superlu_dist"
 #define MATUMFPACK         "umfpack"
 #define MATESSL            "essl"
 #define MATLUSOL           "lusol"

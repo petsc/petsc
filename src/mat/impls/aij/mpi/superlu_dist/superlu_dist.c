@@ -10,28 +10,31 @@
 #endif
 
 /*MC
-  SuperLU - an external package providing director solvers for MPIAIJ
-  matrices.
+  MATSUPERLU_DIST - a matrix type providing direct solvers for parallel matrices 
+  via the external package SuperLU_DIST.
 
-  Notes: PETSc does not natively support PCLU for MPIAIJ
-  matrices. However, if SuperLU_dist is installed (see the manual for
+  If SuperLU_DIST is installed (see the manual for
   instructions on how to declare the existence of external packages),
-  it can be specified as the solver to be used by a call to
-  MatUseSuperLU_DIST_MPIAIJ(). This is only supported for
-  double precision real.
+  a matrix type can be constructed which invokes SuperLU_DIST solvers.
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU_DIST).
+  This matrix type is only supported for double precision real.
+
+  This matrix inherits from MATSEQAIJ when constructed with a single process communicator,
+  and from MATMPIAIJ otherwise.
 
   Options Database Keys:
-+ -mat_aij_superlu_dist_r <n> : number of rows in processor partition
-. -mat_aij_superlu_dist_c <n> : number of columns in processor partition
-. -mat_aij_superlu_dist_matinput 0|1 : matrix input mode; 0=global, 1=distributed
-. -mat_aij_superlu_dist_equil :, equilibrate the matrix
-. -mat_aij_superlu_dist_rowperm LargeDiag|NATURAL : row permutation
-. -mat_aij_superlu_dist_colperm MMD_AT_PLUS_A|MMD_ATA|COLAMD|NATURAL : column permutation
-. -mat_aij_superlu_dist_replacetinypivot : replace tiny pivots
-. -mat_aij_superlu_dist_iterrefine : use iterative refinement
-- -mat_aij_superlu_dist_statprint : print factorization information
++ -mat_type superlu_dist
+. -mat_superlu_dist_r <n> : number of rows in processor partition
+. -mat_superlu_dist_c <n> : number of columns in processor partition
+. -mat_superlu_dist_matinput 0|1 : matrix input mode; 0=global, 1=distributed
+. -mat_superlu_dist_equil :, equilibrate the matrix
+. -mat_superlu_dist_rowperm LargeDiag|NATURAL : row permutation
+. -mat_superlu_dist_colperm MMD_AT_PLUS_A|MMD_ATA|COLAMD|NATURAL : column permutation
+. -mat_superlu_dist_replacetinypivot : replace tiny pivots
+. -mat_superlu_dist_iterrefine : use iterative refinement
+- -mat_superlu_dist_statprint : print factorization information
 
-.seealso: MatUseSuperLU_DIST_MPIAIJ(), PCLU
+.seealso: PCLU
 M*/
 
 EXTERN_C_BEGIN 
@@ -445,7 +448,7 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
 	
   /* Create the factorization matrix */
   ierr = MatCreate(A->comm,A->m,A->n,M,N,&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSUPERLUDIST);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSUPERLU_DIST);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -466,19 +469,19 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
 
   ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
   
-    ierr = PetscOptionsInt("-mat_aij_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_aij_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,PETSC_NULL);CHKERRQ(ierr);
     if (size != lu->nprow * lu->npcol) SETERRQ(1,"Number of processes should be equal to nprow*npcol");
   
-    ierr = PetscOptionsInt("-mat_aij_superlu_dist_matinput","Matrix input mode (0: GLOBAL; 1: DISTRIBUTED)","None",lu->MatInputMode,&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_superlu_dist_matinput","Matrix input mode (0: GLOBAL; 1: DISTRIBUTED)","None",lu->MatInputMode,&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
     if(lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
 
-    ierr = PetscOptionsLogical("-mat_aij_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
+    ierr = PetscOptionsLogical("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
     if (!flg) {
       options.Equil = NO;
     }
 
-    ierr = PetscOptionsEList("-mat_aij_superlu_dist_rowperm","Row permutation","None",prtype,2,prtype[0],buff,32,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_dist_rowperm","Row permutation","None",prtype,2,prtype[0],buff,32,&flg);CHKERRQ(ierr);
     while (flg) {
       ierr = PetscStrcmp(buff,"LargeDiag",&flg);CHKERRQ(ierr);
       if (flg) {
@@ -493,7 +496,7 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
       SETERRQ1(1,"Unknown row permutation %s",buff);
     }
 
-    ierr = PetscOptionsEList("-mat_aij_superlu_dist_colperm","Column permutation","None",ptype,4,ptype[0],buff,32,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",ptype,4,ptype[0],buff,32,&flg);CHKERRQ(ierr);
     while (flg) {
       ierr = PetscStrcmp(buff,"MMD_AT_PLUS_A",&flg);CHKERRQ(ierr);
       if (flg) {
@@ -518,13 +521,13 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
       SETERRQ1(1,"Unknown column permutation %s",buff);
     }
 
-    ierr = PetscOptionsLogical("-mat_aij_superlu_dist_replacetinypivot","Replace tiny pivots","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
+    ierr = PetscOptionsLogical("-mat_superlu_dist_replacetinypivot","Replace tiny pivots","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 
     if (!flg) {
       options.ReplaceTinyPivot = NO;
     }
 
     options.IterRefine = NOREFINE;
-    ierr = PetscOptionsLogical("-mat_aij_superlu_dist_iterrefine","Use iterative refinement","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    ierr = PetscOptionsLogical("-mat_superlu_dist_iterrefine","Use iterative refinement","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
     if (flg) {
       options.IterRefine = DOUBLE;    
     }
@@ -534,7 +537,7 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
     } else {
       lu->StatPrint = (int)PETSC_FALSE; 
     }
-    ierr = PetscOptionsLogical("-mat_aij_superlu_dist_statprint","Print factorization information","None",
+    ierr = PetscOptionsLogical("-mat_superlu_dist_statprint","Print factorization information","None",
                               (PetscTruth)lu->StatPrint,(PetscTruth*)&lu->StatPrint,0);CHKERRQ(ierr); 
   PetscOptionsEnd();
 
@@ -554,17 +557,6 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatUseSuperLU_DIST_MPIAIJ"
-/*@
-  MatUseSuperLU_DIST_MPIAIJ -- Let the distributed SuperLU package
-  be the solver used by PCLU
-
-  Input Parameter:
-. A - the matrix
-
-  Level: intermediate
-
-.seealso: SuperLU, PCSetType(), PCLU
-@*/
 int MatUseSuperLU_DIST_MPIAIJ(Mat A)
 {
   PetscFunctionBegin;
