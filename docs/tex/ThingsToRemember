@@ -265,7 +265,7 @@ Short jobs log into splogin.tc.cornell.edu limited to 20 cpu minutes
 Long jobs splong.tc.cornell.edu limited to 6CPU hours per day
 
 
-Scheduler use: llsubmit
+Scheduler use: llsubmit,spsubmit (in ~bsmith/bin)
 http://www.tc.cornell.edu/Resources/
 spstatus
 use kpasswd to change the password
@@ -278,7 +278,9 @@ use kpasswd to change the password
 > this fits the majority of our nodes. 
 
 ---------
-
+Other tc.cornell.edu machines
+rs6000: corylus,rhus,populus etc..
+IRIX  : thuja,laburnum,juglans
 Accounts on NAS machines
 For your convenience NAS User Services is available to answer questions
 and resolve problems 24 hours each day, 7 days each week.  They can be
