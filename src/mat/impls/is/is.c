@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.3 2000/06/10 14:42:28 bsmith Exp bsmith $*/
+/*$Id: nn.c,v 1.4 2000/06/18 03:59:43 bsmith Exp bsmith $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -36,6 +36,9 @@ int MatDestroy_NN(Mat A)
   }
   if (b->zeroedrows) {
     ierr = PetscFree(b->zeroedrows);CHKERRQ(ierr);
+  }
+  if (b->mapping) {
+    ierr = ISLocalToGlobalMappingDestroy(b->mapping);CHKERRQ(ierr);
   }
   ierr = PetscFree(b);CHKERRQ(ierr);
   PetscHeaderDestroy(A);
@@ -86,6 +89,7 @@ int MatSetLocalToGlobalMapping_NN(Mat A,ISLocalToGlobalMapping mapping)
 
   PetscFunctionBegin;
   nn->mapping = mapping;
+  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
 
   /* Create the local matrix A */
   ierr = ISLocalToGlobalMappingGetSize(mapping,&n);CHKERRQ(ierr);

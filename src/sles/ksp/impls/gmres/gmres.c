@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.146 2000/05/10 16:42:08 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.147 2000/06/19 03:03:03 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -200,7 +200,7 @@ int GMREScycle(int *itcount,KSP ksp)
     *HES(it+1,it)   = tt;
 
     /* check for the happy breakdown */
-    hapbnd  = gmres->epsabs * PetscAbsScalar(*HH(it,it) / *RS(it));
+    hapbnd  = PetscAbsScalar(*HH(it,it) / *RS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt > hapbnd) {
       tmp = 1.0/tt; ierr = VecScale(&tmp,VEC_VV(it+1));CHKERRQ(ierr);
@@ -455,7 +455,7 @@ static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res
             be zero...so we will multiply "zero" by the last residual.  This might
             not be exactly what we want to do here -could just return "zero". */
  
-    *res = PetscAbsScalar(gmres->epsabs * *RS(it));
+    *res = 0.0;
   }
   PetscFunctionReturn(0);
 }
@@ -537,6 +537,7 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
   }
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  GMRES: restart=%d, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  GMRES: happy breakdown tolerance %g\n",gmres->haptol);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer,"%s restart %d",cstr,gmres->max_k);CHKERRQ(ierr);
   } else {
@@ -749,8 +750,7 @@ int KSPCreate_GMRES(KSP ksp)
                                     "KSPGMRESSetHapTol_GMRES",
                                      KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
 
-  gmres->haptol              = 1.0e-10;
-  gmres->epsabs              = 1.0e-8;
+  gmres->haptol              = 1.0e-16;
   gmres->q_preallocate       = 0;
   gmres->delta_allocate      = GMRES_DELTA_DIRECTIONS;
   gmres->orthog              = KSPGMRESUnmodifiedGramSchmidtOrthogonalization;
