@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddistlite,v 1.2 2001/04/06 04:42:38 balay Exp balay $ 
+# $Id: builddistlite,v 1.3 2001/04/06 04:54:53 balay Exp balay $ 
 
 # 
 #  takes a full distribution tar file, and creates a 'lite' distribution
@@ -21,8 +21,16 @@ gunzip -c $fulldistfile | tar -xf -
 
 /bin/rm -rf $tmpdir/petsc-lite/petsc*/docs
 
+# Update readme.html
+cd $tmpdir/petsc-lite/petsc*
+cat readme.html | sed s@href=\"docs@href=\"www.mcs.anl.gov/petsc/docs@g > readme.bak
+
 # remove all the .html files
 find $tmpdir/petsc-lite -type f -name "*.html" -exec rm {} \;
+
+# Complete updating readme.html
+cd $tmpdir/petsc-lite/petsc*
+/bin/mv readme.bak readme.html
 
 # Tar up the remaning files to create the 'lite' distribution
 cd $tmpdir/petsc-lite
