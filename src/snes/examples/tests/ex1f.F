@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.46 2000/05/05 22:18:34 balay Exp balay $";
+! "$Id: ex4f.F,v 1.47 2000/08/03 20:15:01 balay Exp balay $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -466,7 +466,7 @@
       call VecRestoreArray(X,lx_v,lx_i,ierr)
       call VecRestoreArray(F,lf_v,lf_i,ierr)
 
-      call PLogFlops(11*mx*my,ierr)
+      call PLogFlops(11*mx*my)
 
       return 
       end
