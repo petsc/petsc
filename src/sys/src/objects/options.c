@@ -185,8 +185,7 @@ int PetscSetProgramName(const char name[])
 int PetscOptionsInsertString(const char* in_str)
 {
   char       *str,*first,*second,*third,*final;
-  int        len,ierr,i;
-  FILE       *fd;
+  int        len,ierr;
   PetscToken *token;
 
   PetscFunctionBegin;
@@ -210,8 +209,7 @@ int PetscOptionsInsertString(const char* in_str)
     ierr = PetscStrcmp(first,"alias",&match);CHKERRQ(ierr);
     if (match) {
       ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
-      if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options
-string:alias missing (%s)",second);
+      if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options string:alias missing (%s)",second);
       ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
       if (third[len-1] == 'n') third[len-1] = 0;
       ierr = PetscOptionsSetAlias(second,third);CHKERRQ(ierr);
