@@ -80,9 +80,15 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
-  /* shift coloring numbers to start at zero */
-  for (i=0; i<n; i++) coloring[i]--;
-  ierr = MatColoringPatch(mat,n,ncolors,coloring,iscoloring);CHKERRQ(ierr);
+  /* shift coloring numbers to start at zero and shorten */
+  if (ncolors > IS_COLORING_MAX-1) SETERRQ(1,"Maximum color size exceeded");
+  { 
+    ISColoringValue *s = (ISColoringValue*) coloring;
+    for (i=0; i<n; i++) {
+      s[i] = (ISColoringValue) (coloring[i]-1);
+    }
+    ierr = MatColoringPatch(mat,n,ncolors,s,iscoloring);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -122,9 +128,15 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
-  /* shift coloring numbers to start at zero */
-  for (i=0; i<n; i++) coloring[i]--;
-  ierr = MatColoringPatch(mat,n,ncolors,coloring,iscoloring);CHKERRQ(ierr);
+  /* shift coloring numbers to start at zero and shorten */
+  if (ncolors > IS_COLORING_MAX-1) SETERRQ(1,"Maximum color size exceeded");
+  { 
+    ISColoringValue *s = (ISColoringValue*) coloring;
+    for (i=0; i<n; i++) {
+      s[i] = (ISColoringValue) (coloring[i]-1);
+    }
+    ierr = MatColoringPatch(mat,n,ncolors,s,iscoloring);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -163,9 +175,15 @@ int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
-  /* shift coloring numbers to start at zero */
-  for (i=0; i<n; i++) coloring[i]--;
-  ierr = MatColoringPatch(mat,n,ncolors,coloring,iscoloring);CHKERRQ(ierr);
+  /* shift coloring numbers to start at zero and shorten */
+  if (ncolors > IS_COLORING_MAX-1) SETERRQ(1,"Maximum color size exceeded");
+  { 
+    ISColoringValue *s = (ISColoringValue*) coloring;
+    for (i=0; i<n; i++) {
+      s[i] = (ISColoringValue) (coloring[i]-1);
+    }
+    ierr = MatColoringPatch(mat,n,ncolors,s,iscoloring);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -178,8 +196,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatColoring_Natural" 
 int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 {
-  int      start,end,ierr,i,*colors;
-  MPI_Comm comm;
+  int             start,end,ierr,i;
+  ISColoringValue *colors;
+  MPI_Comm        comm;
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);

@@ -142,6 +142,10 @@ $   IS_COLORING_GHOSTED - includes colors for ghost points
 E*/
 typedef enum {IS_COLORING_LOCAL,IS_COLORING_GHOSTED} ISColoringType;
 
+#define MPIU_COLORING_VALUE MPI_CHAR
+#define IS_COLORING_MAX     255
+typedef unsigned char ISColoringValue;
+EXTERN int ISAllGatherColors(MPI_Comm,int,ISColoringValue*,int*,ISColoringValue**);
 /*S
      ISColorings - sets of IS's that define a coloring
               of the underlying indices
@@ -156,17 +160,17 @@ typedef enum {IS_COLORING_LOCAL,IS_COLORING_GHOSTED} ISColoringType;
 .seealso:  ISColoringCreate(), ISColoringGetIS(), ISColoringView(), ISColoringGetIS()
 S*/
 struct _p_ISColoring {
-  int            refct;
-  int            n;                /* number of colors */
-  IS             *is;              /* for each color indicates columns */
-  MPI_Comm       comm;
-  int            *colors;          /* for each column indicates color */
-  int            N;                /* number of columns */
-  ISColoringType ctype;
+  int             refct;
+  int             n;                /* number of colors */
+  IS              *is;              /* for each color indicates columns */
+  MPI_Comm        comm;
+  ISColoringValue *colors;          /* for each column indicates color */
+  int             N;                /* number of columns */
+  ISColoringType  ctype;
 };
 typedef struct _p_ISColoring* ISColoring;
 
-EXTERN int ISColoringCreate(MPI_Comm,int,const int[],ISColoring*);
+EXTERN int ISColoringCreate(MPI_Comm,int,const ISColoringValue[],ISColoring*);
 EXTERN int ISColoringDestroy(ISColoring);
 EXTERN int ISColoringView(ISColoring,PetscViewer);
 EXTERN int ISColoringGetIS(ISColoring,int*,IS*[]);

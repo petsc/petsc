@@ -4257,7 +4257,7 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
 .seealso: MatGetRowIJ(), MatGetColumnIJ()
 
 @*/
-int MatColoringPatch(Mat mat,int n,int ncolors,int *colorarray,ISColoring *iscoloring)
+int MatColoringPatch(Mat mat,int n,int ncolors,ISColoringValue *colorarray,ISColoring *iscoloring)
 {
   int ierr;
 
