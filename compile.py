@@ -35,7 +35,7 @@ class Process (action.Action):
       action.Action.shellSetAction(self, set)
       if self.updateType == 'immediate':
         for file in set:
-          self.updateSourceDB(file)
+          bs.sourceDB.updateSource(file)
       elif self.updateType == 'deferred':
         set.tag = 'update '+set.tag
         if isinstance(self.products, fileset.FileSet):
@@ -57,7 +57,7 @@ class Process (action.Action):
     output   = self.executeShellCommand(command, self.errorHandler)
     # Update source DB if it compiled successfully
     if self.updateType == 'immediate':
-      self.updateSourceDB(source)
+      bs.sourceDB.updateSource(source)
     elif self.updateType == 'deferred':
       self.deferredUpdates.append(source)
     return source
@@ -126,7 +126,7 @@ class Compile (action.Action):
     output   = self.executeShellCommand(command, self.errorHandler)
     # Update source DB if it compiled successfully
     if self.updateType == 'immediate':
-      self.updateSourceDB(source)
+      bs.sourceDB.updateSource(source)
     elif self.updateType == 'deferred':
       self.deferredUpdates.append(source)
     # Archive file

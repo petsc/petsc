@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import action
+import bs
 import fileset
 import logging
 import transform
@@ -67,7 +68,7 @@ class LinkSharedLibrary (action.Action):
     os.chdir(oldDir)
     self.cleanupDir(linkDir, remove = 1)
     self.checkLibrary(sharedLibrary)
-    self.updateSourceDB(source)
+    bs.sourceDB.updateSource(source)
     return self.products
 
   def setExecute(self, set):
@@ -122,7 +123,7 @@ class LinkExecutable (action.Action):
           command += ' -l'+base[3:]
       output = self.executeShellCommand(command, self.errorHandler)
 #    for source in files:
-#      self.updateSourceDB(source)
+#      bs.sourceDB.updateSource(source)
     return self.products
 
   def setAction(self, set):

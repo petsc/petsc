@@ -2,15 +2,16 @@
 import bs
 import fileset
 import logging
+import maker
 
 import os
 import string
 import time
 import types
 
-class Transform (bs.Maker):
+class Transform (maker.Maker):
   def __init__(self, sources = None):
-    bs.Maker.__init__(self)
+    maker.Maker.__init__(self)
     if isinstance(sources, fileset.FileSet):
       self.sources = sources
     else:
@@ -45,6 +46,16 @@ class Transform (bs.Maker):
     (dir, file) = os.path.split(source)
     (base, dum) = os.path.splitext(file)
     return os.path.join(self.tmpDir, string.replace(dir, '/', '_')+'_'+base+ext)
+
+class SimpleFunction (Transform):
+  def __init__(self, func):
+    Transform.__init__(self, None)
+    if not callable(func): raise RuntimeError('Invalid function: '+str(func))
+    self.func = func
+
+  def execute(self):
+    self.func()
+    return Transform.execute(self)
 
 class FileFilter (Transform):
   def __init__(self, filter, sources = None, tags = None):
@@ -171,7 +182,7 @@ class Update (Transform):
     self.products  = []
 
   def fileExecute(self, source):
-    self.updateSourceDB(source)
+    bs.sourceDB.updateSource(source)
 
   def setExecute(self, set):
     if self.tags and set.tag in self.tags:
