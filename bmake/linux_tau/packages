@@ -15,7 +15,7 @@ BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux -lflapack -lfblas
 # Location of MPI (Message Passing Interface) software
 #
 MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
-MPI_LIB        = ${MPI_HOME}/lib/libmpich.a
+MPI_LIB        = ${CLINKER_SLFLAG}${MPI_HOME}/lib ${MPI_HOME}/lib/libmpich.a
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 
