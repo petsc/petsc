@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.159 1999/03/09 21:33:04 balay Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.160 1999/03/11 22:30:22 balay Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -76,12 +76,8 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   MPI_Comm     comm = mat->comm;
-  int          size = mbd->size, *owners = mbd->rowners, rank = mbd->rank;
-  int          *nprocs, i, j, idx, *procs, nsends, nreceives, nmax, *work;
-  int          tag = mat->tag, *owner, *starts, count, ierr;
-  MPI_Request  *send_waits,*recv_waits;
+  int          ierr;
   InsertMode   addv;
-  Scalar       *rvalues,*svalues;
 
   PetscFunctionBegin;
   ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
@@ -89,79 +85,9 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
+  ierr =  StashScatterBegin_Private(&mbd->stash,mbd->rowners); CHKERRQ(ierr);
 
-  /*  first count number of contributors to each processor */
-  nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
-  owner = (int *) PetscMalloc( (mbd->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
-  for ( i=0; i<mbd->stash.n; i++ ) {
-    idx = mbd->stash.idx[i];
-    for ( j=0; j<size; j++ ) {
-      if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; break;
-      }
-    }
-  }
-  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
-
-  /* inform other processors of number of messages and max length*/
-  work      = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
-  ierr      = MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nreceives = work[rank]; 
-  ierr      = MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  nmax      = work[rank];
-  PetscFree(work);
-
-  /* post receives: 
-       1) each message will consist of ordered pairs 
-     (global index,value) we store the global index as a double 
-     to simplify the message passing. 
-       2) since we don't know how long each individual message is we 
-     allocate the largest needed buffer for each receive. Potentially 
-     this is a lot of wasted space.
-
-       This could be done better.
-  */
-  rvalues    = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
-  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
-  for ( i=0; i<nreceives; i++ ) {
-    ierr = MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
-  }
-
-  /* do sends:
-      1) starts[i] gives the starting index in svalues for stuff going to 
-         the ith processor
-  */
-  svalues = (Scalar *) PetscMalloc(3*(mbd->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  starts = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
-  starts[0] = 0; 
-  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  for ( i=0; i<mbd->stash.n; i++ ) {
-    svalues[3*starts[owner[i]]]       = (Scalar)  mbd->stash.idx[i];
-    svalues[3*starts[owner[i]]+1]     = (Scalar)  mbd->stash.idy[i];
-    svalues[3*(starts[owner[i]]++)+2] =  mbd->stash.array[i];
-  }
-  PetscFree(owner);
-  starts[0] = 0;
-  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  count = 0;
-  for ( i=0; i<size; i++ ) {
-    if (procs[i]) {
-      ierr = MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
-    }
-  }
-  PetscFree(starts); PetscFree(nprocs);
-
-  /* Free cache space */
   PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Number of off-processor values %d\n",mbd->stash.n);
-  ierr = StashScatterEnd_Private(&mbd->stash); CHKERRQ(ierr);
-
-  mbd->svalues    = svalues;    mbd->rvalues = rvalues;
-  mbd->nsends     = nsends;     mbd->nrecvs = nreceives;
-  mbd->send_waits = send_waits; mbd->recv_waits = recv_waits;
-  mbd->rmax       = nmax;
-
   PetscFunctionReturn(0);
 }
 extern int MatSetUpMultiply_MPIBDiag(Mat);
@@ -172,39 +98,28 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *mlocal;
-  MPI_Status   *send_status, recv_status;
-  int          imdex, nrecvs = mbd->nrecvs, count = nrecvs, i, n, row, col;
-  int          *tmp1, *tmp2, ierr, len, ict, Mblock, Nblock;
-  Scalar       *values, val;
+  int          i, n, *row, *col;
+  int          *tmp1, *tmp2, ierr, len, ict, Mblock, Nblock,flg,j,rstart,ncols;
+  Scalar       *val;
   InsertMode   addv = mat->insertmode;
 
   PetscFunctionBegin;
-  /*  wait on receives */
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,mbd->recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    values = mbd->rvalues + 3*imdex*mbd->rmax;
-    ierr   = MPI_Get_count(&recv_status,MPIU_SCALAR,&n);CHKERRQ(ierr);
-    n = n/3;
-    for ( i=0; i<n; i++ ) {
-      row = (int) PetscReal(values[3*i]) - mbd->rstart;
-      col = (int) PetscReal(values[3*i+1]);
-      val = values[3*i+2];
-      if (col >= 0 && col < mbd->N) {
-        ierr = MatSetValues(mbd->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
-      } else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid column");}
+
+  while (1) {
+    ierr = StashScatterGetMesg_Private(&mbd->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
+    if (!flg) break;
+  
+    for ( i=0; i<n; ) {
+      /* Now identify the consecutive vals belonging to the same row */
+      for ( j=i,rstart=row[j]; j<n; j++ ) { if (row[j] != rstart) break; }
+      if (j < n) ncols = j-i;
+      else       ncols = n-i;
+      /* Now assemble all these values with a single function call */
+      ierr = MatSetValues_MPIBDiag(mat,1,row+i,ncols,col+i,val+i,addv); CHKERRQ(ierr);
+      i = j;
     }
-    count--;
   }
-  PetscFree(mbd->recv_waits); PetscFree(mbd->rvalues);
- 
-  /* wait on sends */
-  if (mbd->nsends) {
-    send_status = (MPI_Status *) PetscMalloc(mbd->nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
-    ierr = MPI_Waitall(mbd->nsends,mbd->send_waits,send_status);CHKERRQ(ierr);
-    PetscFree(send_status);
-  }
-  PetscFree(mbd->send_waits); PetscFree(mbd->svalues);
+  ierr = StashScatterEnd_Private(&mbd->stash); CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(mbd->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mbd->A,mode); CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: dot.h,v 1.13 1998/10/19 22:16:03 bsmith Exp balay $ */
+/* $Id: dot.h,v 1.14 1998/12/21 21:18:54 balay Exp balay $ */
 
 #ifndef DOT
 
@@ -87,6 +87,15 @@ extern void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
 #define fortransolvebaij4blas_      fortransolvebaij4blas
 #endif
 extern void fortransolvebaij4blas_(int *,void*,int *,int *,int*,void *,void*,void *);
+#endif
+
+#if defined(USE_FORTRAN_KERNEL_XTIMESY)
+#ifdef HAVE_FORTRAN_CAPS
+#define fortranxtimesy_ FORTRANXTIMESY
+#elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define fortranxtimesy_ fortranxtimesy
+#endif
+extern void fortranxtimesy_(void *,void *,void *,int *);
 #endif
 
 EXTERN_C_END

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.62 1999/03/09 23:15:34 bsmith Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.63 1999/03/10 04:04:39 bsmith Exp balay $"
 #endif
 
 /* 
@@ -705,15 +705,6 @@ int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win )
   }
   PetscFunctionReturn(0);
 }
-
-#if defined(USE_FORTRAN_KERNEL_XTIMESY)
-#ifdef HAVE_FORTRAN_CAPS
-#define fortranxtimesy_ FORTRANXTIMESY
-#elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define fortranxtimesy_ fortranxtimesy
-#endif
-extern void fortranxtimesy_(Scalar *,Scalar *,Scalar *,int *);
-#endif
 
 #undef __FUNC__  
 #define __FUNC__ "VecPointwiseMult_Seq"
