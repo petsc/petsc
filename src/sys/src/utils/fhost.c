@@ -1,11 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.14 1997/02/05 21:57:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.15 1997/02/22 02:23:29 bsmith Exp balay $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "src/sys/src/files.h"   /*I  "sys.h"   I*/
-
 #undef __FUNC__  
 #define __FUNC__ "PetscGetHostName" /* ADIC Ignore */
 /*@C
@@ -26,7 +25,9 @@ static char vcid[] = "$Id: fhost.c,v 1.14 1997/02/05 21:57:42 bsmith Exp bsmith 
 @*/
 int PetscGetHostName( char *name, int nlen )
 {
-#if defined(HAVE_UNAME)
+#if defined(PARCH_nt) || defined(PARCH_nt_gnu)
+  GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
+#elif defined(HAVE_UNAME)
   struct utsname utname;
   /* Note we do not use gethostname since that is not POSIX */
   uname(&utname); PetscStrncpy(name,utname.nodename,nlen);
@@ -56,4 +57,3 @@ int PetscGetHostName( char *name, int nlen )
   }
   return 0;
 }
-
