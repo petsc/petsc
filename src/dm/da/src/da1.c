@@ -234,10 +234,10 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
 
   /* allocate the base parallel and sequential vectors */
   da->Nlocal = x;
-  ierr = VecCreateMPI(comm,da->Nlocal,PETSC_DECIDE,&global);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(comm,da->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
   da->nlocal = (Xe-Xs);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,da->nlocal,&local);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,da->nlocal,0,&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
     
   /* Create Local to Global Vector Scatter Context */
@@ -291,17 +291,14 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   PetscLogObjectParent(da,gtol);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = VecDestroy(local);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
 
   da->M  = M;  da->N  = 1;  da->m  = m; da->n = 1;
   da->xs = xs; da->xe = xe; da->ys = 0; da->ye = 1; da->zs = 0; da->ze = 1;
   da->Xs = Xs; da->Xe = Xe; da->Ys = 0; da->Ye = 1; da->Zs = 0; da->Ze = 1;
   da->P  = 1;  da->p  = 1;  da->w = dof; da->s = s/dof;
 
-  PetscLogObjectParent(da,global);
-  PetscLogObjectParent(da,local);
-
-  da->global       = global; 
-  da->local        = local;
   da->gtol         = gtol;
   da->ltog         = ltog;
   da->idx          = idx;
@@ -316,9 +313,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
      of VecSetValuesLocal().
   */
   ierr = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMapping(da->global,da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMappingBlock(da->global,da->ltogmapb);CHKERRQ(ierr);
   PetscLogObjectParent(da,da->ltogmap);
 
   da->ltol = PETSC_NULL;
@@ -332,17 +327,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
   *inra = da;
   ierr = PetscPublishAll(da);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  if (((PetscObject)global)->amem > -1) {
-    ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
-  }
-#endif
-  ierr = VecSetOperation(global,VECOP_VIEW,(void(*)(void))VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void(*)(void))VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

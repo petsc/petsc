@@ -104,8 +104,6 @@ int DADestroy(DA da)
   if (da->ltog)   {ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);}
   if (da->gtol)   {ierr = VecScatterDestroy(da->gtol);CHKERRQ(ierr);}
   if (da->ltol)   {ierr = VecScatterDestroy(da->ltol);CHKERRQ(ierr);}
-  if (da->global) {ierr = VecDestroy(da->global);CHKERRQ(ierr);}
-  if (da->local)  {ierr = VecDestroy(da->local);CHKERRQ(ierr);}
   if (da->natural){
     ierr = VecDestroy(da->natural);CHKERRQ(ierr);
   }
