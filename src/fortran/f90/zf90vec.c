@@ -1,4 +1,4 @@
-/*$Id: zf90vec.c,v 1.10 2000/05/29 07:16:39 balay Exp balay $*/
+/*$Id: zf90vec.c,v 1.11 2000/07/11 21:00:01 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #include "petscis.h"
@@ -81,7 +81,7 @@ void PETSC_STDCALL iscoloringgetisf90_(ISColoring *iscoloring,int *n,array1d *pt
   *__ierr = PetscF90Create1dArrayPetscFortranAddr(newisint,*n,ptr);
 }
 
-void PETSC_STDCALL iscoloringrestoreisf90__(ISColoring *iscoloring,array1d *ptr,int *__ierr)
+void PETSC_STDCALL iscoloringrestoreisf90_(ISColoring *iscoloring,array1d *ptr,int *__ierr)
 {
   PetscFortranAddr *is;
 
