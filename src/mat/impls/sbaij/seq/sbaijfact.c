@@ -1299,6 +1299,10 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
   if (ndamp) {
     PetscLogInfo(0,"MatCholeskyFactorNumerical_SeqSBAIJ_1_NaturalOrdering: number of damping tries %d damping value %g\n",ndamp,damping);
   }
+ if (nshift) {
+    PetscLogInfo(0,"MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering diagonal shifted %d shifts\n",nshift);
+  }
+ 
   PetscFunctionReturn(0);
 }
 

@@ -213,7 +213,7 @@ int VecLoad_Binary(PetscViewer viewer,Vec *newvec)
   /* tell the other processors we've had an error */
   handleerror:
     nierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(nierr);
-    MPI_Bcast(&ierr,1,MPI_INT,0,comm);
+    nierr = -1; MPI_Bcast(&nierr,1,MPI_INT,0,comm);
     SETERRQ(ierr,"Error loading vector");
 }
 
