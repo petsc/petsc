@@ -1,5 +1,5 @@
 c
-c  $Id: param.h,v 1.19 1997/10/17 19:46:53 curfman Exp curfman $;
+c  $Id: param.h,v 1.20 1997/10/20 17:39:43 curfman Exp curfman $;
 c
 c PETSc include files needed by Fortran routines
 c   petsc.h - basic PETSc interface
@@ -32,6 +32,12 @@ c   Type of scaling of system
 c   Type of timestepping
         integer LOCAL_TS, GLOBAL_TS
         parameter(LOCAL_TS=0, GLOBAL_TS=1)
+
+c   Type of limiter
+        integer LIM_NONE, LIM_MINMOD, LIM_SUPERBEE, LIM_VAN_LEER, 
+     &          LIM_VAN_ALBADA
+        parameter(LIM_NONE=0, LIM_MINMOD=1, LIM_SUPERBEE=2,
+     &          LIM_VAN_LEER=3, LIM_VAN_ALBADA=4)
 
 c   The following are the test problem dimensions:
        integer d_ni,d_nj,d_nk,d_ni1,d_nj1,d_nk1
