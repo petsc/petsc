@@ -17,6 +17,7 @@ class Template(base.Base):
     self.dependenceGraph = dependenceGraph
     self.usingSIDL       = usingSIDL
     self.packages        = packages
+    self.defines         = []
     self.includeDirs     = []
     self.extraLibraries  = []
     return
@@ -44,10 +45,13 @@ class Template(base.Base):
     useRuntime = not self.project.getUrl() == 'bk://sidl.bkbits.net/BuildSystem'
 
     for vertex in compileGraph.vertices:
+      if hasattr(vertex, 'defines'):
+        # Custom defines
+        vertex.defines.extend(self.defines)
       if hasattr(vertex, 'includeDirs'):
-        dft = build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project)
+        dfs = build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, self.project)
         # Client includes for project dependencies
-        vertex.includeDirs.extend([project.ProjectPath(self.usingSIDL.getClientRootDir(lang), v.getUrl()) for v in dft])
+        vertex.includeDirs.extend([project.ProjectPath(self.usingSIDL.getClientRootDir(lang), v.getUrl()) for v in dfs])
         # Runtime includes
         if useRuntime:
           vertex.includeDirs.extend(self.usingSIDL.getRuntimeIncludes())

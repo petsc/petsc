@@ -77,8 +77,8 @@ class ExtensionFileSet (TreeFileSet):
       return 0
 
 class RootedFileSet(FileSet, base.Base):
-  def __init__(self, projectUrl, filenames = None, tag = None, filesets = []):
-    FileSet.__init__(self, tag = tag, filesets = filesets)
+  def __init__(self, projectUrl, filenames = None, tag = None, filesets = [], mustExist = 1):
+    FileSet.__init__(self, None, tag, filesets, mustExist)
     base.Base.__init__(self)
     self.projectUrl = projectUrl
     if not filenames is None:

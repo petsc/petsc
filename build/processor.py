@@ -158,7 +158,7 @@ class Compiler(Processor):
     '''Return a lsit of the compiler flags specifying defines'''
     flags = []
     for define in self.defines:
-      if type(define) == types.TupleType:
+      if isinstance(define, tuple):
         flags.append('-D'+define[0]+'='+define[1])
       else:
         flags.append('-D'+define)
