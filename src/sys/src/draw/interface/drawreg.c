@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.1 1999/01/11 04:51:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.2 1999/01/12 23:16:28 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -99,10 +99,13 @@ int DrawSetType(Draw draw,DrawType type)
   if (draw->data) {
     /* destroy the old private Draw context */
     ierr = (*draw->ops->destroy)(draw); CHKERRQ(ierr);
-    if (draw->type_name) PetscFree(draw->type_name);
     draw->data      = 0;
+  }
+  if (draw->type_name) {
+    PetscFree(draw->type_name);
     draw->type_name = 0;
   }
+
   /* Get the function pointers for the graphics method requested */
   if (!DrawRegisterAllCalled) {ierr = DrawRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
 
