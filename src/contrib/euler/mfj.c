@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfj.c,v 1.20 1997/10/19 21:33:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: mfj.c,v 1.21 1998/05/14 02:46:23 curfman Exp curfman $";
 #endif
 
 /* 
@@ -448,7 +448,7 @@ int FixJacobian(Euler *user,Mat mat)
   /* edges of grid */
   mx = user->mx; my = user->my; mz = user->mz;
 
-  if (user->mmtype == MMHYBRID_F) {
+  if (!PetscStrcmp(user->mmtype,MMHYBRID_F)) {
     /* Set all Jacobian rows corresponding to Euler equations to 1 on diagonal
        and zeros elsewhere.  This assumes that no other values have been set
        already for these rows, so we need not explicitly call MatZeroRows(). */
@@ -467,10 +467,12 @@ int FixJacobian(Euler *user,Mat mat)
     }
     return 0;
   }
-  else if (user->mmtype == MMFP) {
+  else if (!PetscStrcmp(user->mmtype,MMFP)) {
     /* Do nothing for this case */
     return 0;
-  } else if (user->mmtype == MMEULER || user->mmtype == MMHYBRID_E || user->mmtype == MMHYBRID_EF1) {
+  } else if ((!PetscStrcmp(user->mmtype,MMEULER)) || 
+             (!PetscStrcmp(user->mmtype,MMHYBRID_E)) || 
+             (!PetscStrcmp(user->mmtype,MMHYBRID_EF1))) {
 
   /* Boundary edges of brick: rows of Jacobian are identity;
      corresponding residual values are 0.  So, we modify the
@@ -580,7 +582,7 @@ int FixJacobian(Euler *user,Mat mat)
     }
   } else SETERRQ(1,0,"Unsupported model type");
 
-  if (user->mmtype == MMHYBRID_E) {
+  if (!PetscStrcmp(user->mmtype,MMHYBRID_E)) {
     /* Set all Jacobian rows corresponding to full potential equations to 1 on diagonal
        and zeros elsewhere.  This assumes that no other values have been set
        already for these rows, so we need not explicitly call MatZeroRows(). */
