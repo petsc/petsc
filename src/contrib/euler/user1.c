@@ -112,6 +112,10 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRA(ierr);
   if (flg) {PetscPrintf(comm,help2);PetscPrintf(comm,help3);PetscPrintf(comm,help4);}
 
+  /* Temporarily deactivate these events */
+  PLogEventDeactivate(VEC_SetValues);
+  PLogEventDeactivate(MAT_SetValues);
+
   /* -----------------------------------------------------------
                   Beginning of nonlinear solver loop
      ----------------------------------------------------------- */
@@ -1683,6 +1687,7 @@ int UserSetGrid(Euler *app)
 
   /* Create local mesh and free global mesh if using > 1 processor;
      otherwise, return. */
+  /*
   if (app->size > 1) {
     mx_l = (app->gxef01 - app->gxsf1 + 1); mx_g = app->ni1-1;
     my_l = (app->gyef01 - app->gysf1 + 1); my_g = app->nj1-1;
@@ -1713,5 +1718,6 @@ int UserSetGrid(Euler *app)
     app->yc = yt;
     app->zc = zt;
   }
+  */
   return 0;
 }
