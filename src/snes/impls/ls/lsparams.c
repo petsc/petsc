@@ -1,4 +1,4 @@
-/*$Id: lsparams.c,v 1.9 2001/01/15 21:47:55 bsmith Exp balay $*/
+/*$Id: lsparams.c,v 1.10 2001/03/23 23:24:13 balay Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -12,7 +12,7 @@
 
    Input Parameters:
 +  snes    - The nonlinear context obtained from SNESCreate()
-.  alpha   - The scalar such that x_{n+1} . x_{n+1} <= x_n . x_n - alpha |x_n . J . x_n|
+.  alpha   - The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |f_n . J . f_n|
 .  maxstep - The maximum norm of the update vector
 -  steptol - The minimum norm fraction of the original step after scaling
 
@@ -20,6 +20,9 @@
 
    Note:
    Pass in PETSC_DEFAULT for any parameter you do not wish to change.
+
+   We are finding the zero of f() so the one dimensional minimization problem we are
+   solving in the line search is minimize .5*f(x_n + lambda*step_direction) . f(x_n + lambda*step_direction)
 
    Contributed by: Mathew Knepley
 
@@ -51,7 +54,7 @@ int SNESSetLineSearchParams(SNES snes,double alpha,double maxstep,double steptol
 
    Input Parameters:
 +  snes    - The nonlinear context obtained from SNESCreate()
-.  alpha   - The scalar such that x_{n+1} . x_{n+1} <= x_n . x_n - alpha |x_n . J . x_n|
+.  alpha   - The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |f_n . J . f_n|
 .  maxstep - The maximum norm of the update vector
 -  steptol - The minimum norm fraction of the original step after scaling
 
@@ -59,6 +62,9 @@ int SNESSetLineSearchParams(SNES snes,double alpha,double maxstep,double steptol
 
    Note:
     To not get a certain parameter, pass in PETSC_NULL
+
+   We are finding the zero of f() so the one dimensional minimization problem we are
+   solving in the line search is minimize .5*f(x_n + lambda*step_direction) . f(x_n + lambda*step_direction)
 
    Contributed by: Mathew Knepley
 
