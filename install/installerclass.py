@@ -20,10 +20,11 @@ class Installer(install.urlMapping.UrlMapping):
     '''Setup argument types, using the database created by base.Base'''
     import nargs
 
-    argDB.setType('backup',            nargs.ArgBool(None, 0, 'Backup makes a tar archive of the generated source rather than installing'), forceLocal = 1)
-    argDB.setType('forceInstall',      nargs.ArgBool(None, 0, 'Forced installation overwrites any existing project'), forceLocal = 1)
+    argDB.setType('backup',            nargs.ArgBool(None, 0, 'Backup makes a tar archive of the generated source rather than installing', isTemporary = 1), forceLocal = 1)
+    argDB.setType('remove',            nargs.ArgBool(None, 0, 'Remove the indicated project rather than installing', isTemporary = 1), forceLocal = 1)
+    argDB.setType('forceInstall',      nargs.ArgBool(None, 0, 'Forced installation overwrites any existing project', isTemporary = 1), forceLocal = 1)
+    argDB.setType('retrievalCanExist', nargs.ArgBool(None, 0, 'Allow a project to exist prior to installation', isTemporary = 1), forceLocal = 1)
     argDB.setType('userRepositories',  nargs.ArgBool(None, 0, 'Trys a user level login for all repositories'), forceLocal = 1)
-    argDB.setType('retrievalCanExist', nargs.ArgBool(None, 0, 'Allow a project to exist prior to installation'), forceLocal = 1)
     argDB.setType('urlMappingModules', nargs.Arg(None, '', 'Module name or list of names with a method setupUrlMapping(urlMaps)'), forceLocal = 1)
     install.urlMapping.UrlMapping.setupArgDB(self, argDB, clArgs)
     return argDB
@@ -77,3 +78,30 @@ class Installer(install.urlMapping.UrlMapping):
     shutil.rmtree(os.path.dirname(root))
     return
 
+  def removeProject(self, url):
+    '''Remove a project'''
+    import shutil
+
+    proj = self.getInstalledProject(url)
+    if proj is None:
+      self.debugPrint(url+' is not installed', 1, 'install')
+      return
+    self.debugPrint('Removing '+url, 3, 'install')
+    # Uninstall project
+    print self.builder.build(proj.getRoot(), ['activate', 'uninstall'], ignoreDependencies = 1)
+    # Remove files
+    print shutil.rmtree(proj.getRoot())
+    return
+
+  def remove(self, url):
+    '''Remove a project and all project which depend on it'''
+    import build.buildGraph
+
+    self.debugPrint('Removing '+url+' and dependents', 3, 'install')
+    proj = self.getInstalledProject(url)
+    if proj is None:
+      self.debugPrint(url+' is not installed', 1, 'install')
+      return
+    for p in build.buildGraph.BuildGraph.depthFirstVisit(self.argDB['projectDependenceGraph'], proj, outEdges = 0):
+      self.removeProject(p.getUrl())
+    return

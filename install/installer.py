@@ -21,6 +21,8 @@ def runinstaller(opts = []):
       url = compilerUrl
     if installer.argDB['backup']:
       installer.backup(url)
+    elif installer.argDB['remove']:
+      installer.remove(url)
     else:
       if installer.checkBootstrap():
         booter = installerclass.Installer(argDB = installer.argDB)
