@@ -9,6 +9,31 @@
 #include "stdlib.h"
 #endif
 
+/*MC
+  SuperLU - an external package providing director solvers for MPIAIJ
+  matrices.
+
+  Notes: PETSc does not natively support PCLU for MPIAIJ
+  matrices. However, if SuperLU_dist is installed (see the manual for
+  instructions on how to declare the existence of external packages),
+  it can be specified as the solver to be used by a call to
+  MatUseSuperLU_DIST_MPIAIJ(). This is only supported for
+  double precision real.
+
+  Options Database Keys:
++ -mat_aij_superlu_dist_r <n> : number of rows in processor partition
+. -mat_aij_superlu_dist_c <n> : number of columns in processor partition
+. -mat_aij_superlu_dist_matinput 0|1 : matrix input mode; 0=global, 1=distributed
+. -mat_aij_superlu_dist_equil :, equilibrate the matrix
+. -mat_aij_superlu_dist_rowperm LargeDiag|NATURAL : row permutation
+. -mat_aij_superlu_dist_colperm MMD_AT_PLUS_A|MMD_ATA|COLAMD|NATURAL : column permutation
+. -mat_aij_superlu_dist_replacetinypivot : replace tiny pivots
+. -mat_aij_superlu_dist_iterrefine : use iterative refinement
+- -mat_aij_superlu_dist_statprint : print factorization information
+
+.seealso: MatUseSuperLU_DIST_MPIAIJ(), PCLU
+M*/
+
 #if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
 
 EXTERN_C_BEGIN 
@@ -495,6 +520,17 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatUseSuperLU_DIST_MPIAIJ"
+/*@
+  MatUseSuperLU_DIST_MPIAIJ -- Let the distributed SuperLU package
+  be the solver used by PCLU
+
+  Input Parameter:
+. A - the matrix
+
+  Level: intermediate
+
+.seealso: SuperLU, PCSetType(), PCLU
+@*/
 int MatUseSuperLU_DIST_MPIAIJ(Mat A)
 {
   PetscFunctionBegin;
