@@ -159,13 +159,12 @@ while(n--){sum1+= *x**y1++;sum2+=*x++**y2++;}}
 while(n--) {sum+= *x * *x; x++;}}
 
 #elif defined(PETSC_USE_BLAS_KERNELS)
-EXTERN double ddot_();
 #define DOT(sum,x,y,n) {PetscBLASInt one=1;\
-sum=ddot_(&n,x,&one,y,&one);}
+sum=BLdot_(&n,x,&one,y,&one);}
 #define DOT2(sum1,sum2,x,y1,y2,n) {PetscInt __i;\
 for(__i=0;__i<n;__i++){sum1+=x[__i]*y1[__i];sum2+=x[__i]*y2[__i];}}
 #define SQR(sum,x,n)   {PetscBLASInt one=1;\
-sum=ddot_(&n,x,&one,x,&one);}
+sum=BLdot_(&n,x,&one,x,&one);}
 
 #else
 #define DOT(sum,x,y,n) {PetscInt __i;\

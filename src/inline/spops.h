@@ -5,7 +5,7 @@
 /* take (x,i) into dense vector r; there are nnz entries in (x,i)
    r(xi) -= alpha * xv */
 #ifdef PETSC_USE_UNROLL_KERNELS
-#define SPARSEDENSESMAXPY(r,alpha,xv,xi,nnz) {int __noff;\
+#define SPARSEDENSESMAXPY(r,alpha,xv,xi,nnz) {PetscInt __noff;\
 __noff = nnz & 0x3;\
 switch (__noff) {\
 case 3: r[xi[2]] -= alpha * xv[2];\
@@ -24,7 +24,7 @@ while (nnz-->0) r[*xi++] -= alpha * *xv++;}
 
 #elif defined(PETSC_USE_FOR_KERNELS)
 #define SPARSEDENSESMAXPY(r,alpha,xv,xi,nnz) {\
- int __i,__j1,__j2; double __s1,__s2;\
+ PetscInt __i,__j1,__j2; PetscScalar__s1,__s2;\
 for(__i=0;__i<nnz-1;__i+=2){__j1=xi[__i];__j2=xi[__i+1];__s1=alpha*xv[__i];\
 __s2=alpha*xv[__i+1];__s1=r[__j1]-__s1;__s2=r[__j2]-__s2;\
 r[__j1]=__s1;r[__j2]=__s2;}\
@@ -32,7 +32,7 @@ if (nnz & 0x1) r[xi[__i]] -= alpha * xv[__i];}
 
 #else
 #define SPARSEDENSESMAXPY(r,alpha,xv,xi,nnz) {\
-int __i;\
+PetscInt __i;\
 for(__i=0;__i<nnz;__i++)r[xi[__i]] -= alpha * xv[__i];}
 #endif
 
@@ -56,14 +56,14 @@ while (nnz--) sum -= *xv++ * r[*xi++];}
 
 #elif defined(PETSC_USE_FOR_KERNELS) && defined(MEMQUEST)
 #define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
-int __i,__i1,__i2;\
+PetscInt __i,__i1,__i2;\
 for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
 sum -= (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
 if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]];}
 
 #else
 #define SPARSEDENSEMDOT(sum,r,xv,xi,nnz) {\
-int __i;\
+PetscInt __i;\
 for(__i=0;__i<nnz;__i++) sum -= xv[__i] * r[xi[__i]];}
 #endif
 
@@ -89,14 +89,14 @@ while (nnz--) sum += *xv++ * r[*xi++];}
 
 #elif defined(PETSC_USE_FOR_KERNELS) && defined(MEMQUEST)
 #define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
-int __i,__i1,__i2;\
+PetscInt __i,__i1,__i2;\
 for(__i=0;__i<nnz-1;__i+=2) {__i1 = xi[__i]; __i2=xi[__i+1];\
 sum += (xv[__i]*r[__i1] + xv[__i+1]*r[__i2]);}\
 if (nnz & 0x1) sum += xv[__i] * r[xi[__i]];}
 
 #else
 #define SPARSEDENSEDOT(sum,r,xv,xi,nnz) {\
- int __i;\
+ PetscInt __i;\
 for(__i=0;__i<nnz;__i++) sum += xv[__i] * r[xi[__i]];}
 #endif
 
@@ -120,13 +120,13 @@ while (nnz--) sum += *xv++ * r[map[*xi++]];}
 
 #else
 #define SPARSEDENSEMAPDOT(sum,r,xv,xi,map,nnz) {\
-int __i;\
+PetscInt __i;\
 for(__i=0;__i<nnz;__i++) sum += xv[__i] * r[map[xi[__i]]];}
 #endif
 
 /* Gather xv = r[xi] */
 #ifdef PETSC_USE_UNROLL_KERNELS
-#define GATHER(xv,xi,r,nz) {int __noff;\
+#define GATHER(xv,xi,r,nz) {PetscInt __noff;\
 if (nz > 0) {\
 __noff = nz & 0x3;\
 switch (nz & 0x3) {\
@@ -142,12 +142,12 @@ xi  += 4;xv  += 4;nz -= 4;}}}
 #define GATHER(xv,xi,r,nz) while (nz--) *xv++ = r[*xi++];
 
 #elif defined(PETSC_USE_FOR_KERNELS)
-#define GATHER(xv,xi,r,nz) {int __i; double __s1,__s2;\
+#define GATHER(xv,xi,r,nz) {PetscInt __i; PetscScalar__s1,__s2;\
 for(__i=0;__i<nz-1;__i+=2){__s1=r[xi[__i]];__s2=r[xi[__i+1]];\
 xv[__i]=__s1;xv[__i+1]=__s2;}if ((nz)&0x1) xv[__i]=r[xi[__i]];}
 
 #else
-#define GATHER(xv,xi,r,nz) {int __i;for(__i=0;__i<nz;__i++)xv[__i]=r[xi[__i]];}
+#define GATHER(xv,xi,r,nz) {PetscInt __i;for(__i=0;__i<nz;__i++)xv[__i]=r[xi[__i]];}
 #endif
 
 /* Scatter r[xi] = xv */
@@ -167,12 +167,12 @@ xi  += 4;xv  += 4;nz -= 4;}}
 #define SCATTER(xv,xi,r,nz) while (nz--) r[*xi++]=*xv++;
 
 #elif defined(PETSC_USE_FOR_KERNELS)
-#define SCATTER(xv,xi,r,nz) {int __i; double __s1,__s2;\
+#define SCATTER(xv,xi,r,nz) {PetscInt __i; PetscScalar__s1,__s2;\
 for(__i=0;__i<nz-1;__i+=2){__s1=xv[__i];__s2=xv[__i+1];\
 r[xi[__i]]=__s1;r[xi[__i+1]]=__s2;}if ((nz)&0x1)r[xi[__i]]=xv[__i];}
 
 #else
-#define SCATTER(xv,xi,r,nz) {int __i;\
+#define SCATTER(xv,xi,r,nz) {PetscInt __i;\
 for(__i=0;__i<nz;__i++)r[xi[__i]]=xv[__i];}
 #endif
 
@@ -191,7 +191,7 @@ r[xi[0]]=val; r[xi[1]]=val; r[xi[2]]=val; r[xi[3]]=val;xi  += 4;n -= 4;}
 #define SCATTERVAL(r,xi,n,val) while (n--) r[*xi++]=val;
 
 #else
-#define SCATTERVAL(r,xi,n,val) {int __i;for(__i=0;__i<n;__i++)r[xi[__i]]=val;}
+#define SCATTERVAL(r,xi,n,val) {PetscInt __i;for(__i=0;__i<n;__i++)r[xi[__i]]=val;}
 #endif
 
 /* Copy vo[xi] = vi[xi] */
@@ -210,7 +210,7 @@ vo[xi[3]]=vi[xi[3]];xi  += 4;n -= 4;}}
 #define COPYPERM(vo,xi,vi,n) while (n--) {vo[*xi]=vi[*xi];xi++;}
 
 #else
-#define COPYPERM(vo,xi,vi,n) {int __i;\
+#define COPYPERM(vo,xi,vi,n) {PetscInt __i;\
 for(__i=0;__i<n;__i++)vo[xi[__i]]=vi[xi[__i]];}
 #endif
 
@@ -230,7 +230,7 @@ v[xi[0]]*=val;vo[xi[1]]*=val; vo[xi[2]]*=val;vo[xi[3]]*=val;xi  += 4;n -= 4;}}}
 while (n--) v[*xi++] *= val;}
 
 #else
-#define SPARSESCALE(v,xi,n,val) {int __i;\
+#define SPARSESCALE(v,xi,n,val) {PetscInt __i;\
 for(__i=0;__i<n;__i++)v[xi[__i]*=val;}
 #endif
 
@@ -252,7 +252,7 @@ while (n--) {sum += a[*xi]*b[*xi];xi++;}}
 
 #else
 #define SPARSEDOT(sum,a,b,xi,n) {\
-int __i;\
+PetscInt __i;\
 for(__i=0;__i<n;__i++)sum+= a[xi[__i]]*b[xi[__i]];}
 #endif
 
@@ -275,15 +275,15 @@ xi  += 4;xv  += 4;nz -= 4;}}}
 while (nz--) r[*xi++]+= *xv++;}
 
 #elif defined(PETSC_USE_FOR_KERNELS)
-#define SCATTERADD(xv,xi,r,nz) { double __s1,__s2;\
- int __i,__i1,__i2;\
+#define SCATTERADD(xv,xi,r,nz) { PetscScalar__s1,__s2;\
+ PetscInt __i,__i1,__i2;\
 for(__i=0;__i<nz-1;__i+=2){__i1 = xi[__i]; __i2 = xi[__i+1];\
 __s1 = r[__i1]; __s2 = r[__i2]; __s1 += xv[__i]; __s2 += xv[__i+1];\
 r[__i1]=__s1;r[__i2]=__s2;}if ((nz)&0x1)r[xi[__i]]+=xv[__i];}
 
 #else
 #define SCATTERADD(xv,xi,r,nz) {\
-int __i;\
+PetscInt __i;\
 for(__i=0;__i<nz;__i++) r[xi[__i]]+= xv[__i];}
 #endif
 
@@ -306,7 +306,7 @@ while (nz--) *xv++ += r[*xi++];}
 
 #else
 #define GATHERADD(xv,xi,r,nz) {\
-int __i;\
+PetscInt __i;\
 for(__i=0;__i<nz;__i++)xv[__i] += r[xi[__i]];}
 #endif
 

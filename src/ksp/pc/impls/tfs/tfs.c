@@ -136,7 +136,7 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
 
   /*  ierr =  MatIsSymmetric(A,tol,&issymmetric); */
   /*  if (issymmetric) { */
-  PetscBarrier(pc);
+  ierr = PetscBarrier((PetscObject)pc);CHKERRQ(ierr);
   if (A->symmetric) {
     tfs->xxt       = XXT_new();
     ierr           = XXT_factor(tfs->xxt,localtoglobal,A->m,ncol,(void*)LocalMult_TFS,pc);CHKERRQ(ierr);

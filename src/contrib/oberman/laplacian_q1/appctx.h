@@ -23,7 +23,7 @@ typedef struct {
   /* ---- coordinates of each of the 4 vertices corresponding to each cell
      cell_coords[0],cell_coords[1] represent x,y of the first cell's first vertice 
      cell_coords[0],cell_coords[1] represent x,y of the first cell's second vertice etc, */
-  double *cell_coords;
+  PetscReal *cell_coords;
 
   /* ---- index  for each of the 4 vertices of a given cell in the local (per processor) numbering */
   int *cell_vertex;
@@ -39,8 +39,8 @@ typedef struct {
   /********* Data structures for the boundary conditions ************/
   IS      vertex_boundary;  /* local indices of vertices on the boundary */
   int     boundary_n;   /* number of vertices on boundary (including ghost vertices) */
-  double *boundary_values;  /* work space for the boundary values */
-  double *boundary_coords;  /* the coordinates of the boundary points */
+  PetscReal *boundary_values;  /* work space for the boundary values */
+  PetscReal *boundary_coords;  /* the coordinates of the boundary points */
 
   /********* Data structures for graphics ******************** */
   IS     iscell;                   /* cells owned by this processor in global numbering */
@@ -82,23 +82,23 @@ typedef struct {
 */
 typedef struct {
   /* ********** same for all elements, i.e. for the reference element********* */
-  double RefVal[4][4];/* values of the reference interpolating functions at the Gauss pts */
-  double RefDx[4][4];
-  double RefDy[4][4];
+  PetscReal RefVal[4][4];/* values of the reference interpolating functions at the Gauss pts */
+  PetscReal RefDx[4][4];
+  PetscReal RefDy[4][4];
 
-  double weights[4];  /* quadrature weights */
+  PetscReal weights[4];  /* quadrature weights */
  
   /* **********computed for each element while computing the stiffness ******** */
 
-  double dx[4][4], dy[4][4];/* values of the local interpolating functions at the Gauss pts */
-  double detDh[4];
+  PetscReal dx[4][4], dy[4][4];/* values of the local interpolating functions at the Gauss pts */
+  PetscReal detDh[4];
 
-  double xy[8];  /* the images of the Gauss pts in the local element */
+  PetscReal xy[8];  /* the images of the Gauss pts in the local element */
 
-  double rhsresult[4];  /* results of local integrations */
-  double stiffnessresult[4][4];
+  PetscReal rhsresult[4];  /* results of local integrations */
+  PetscReal stiffnessresult[4][4];
 
-  double *coords;  /* pointer to coords of current cell */
+  PetscReal *coords;  /* pointer to coords of current cell */
   PF     rhs;
 } AppElement;
 

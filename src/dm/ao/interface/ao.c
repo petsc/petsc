@@ -332,7 +332,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt ar
 
 .seealso: AOCreateBasic(), AOView(), AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, double array[])
+PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal array[])
 {
   PetscErrorCode ierr;
 
@@ -362,7 +362,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, double arr
 
 .seealso: AOCreateBasic(), AOView(),AOApplicationToPetsc(), AOPetscToApplicationIS()
 @*/
-PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, double array[])
+PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[])
 {
   PetscErrorCode ierr;
 
