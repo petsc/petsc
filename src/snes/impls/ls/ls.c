@@ -771,7 +771,6 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 }
 EXTERN_C_END
 /* -------------------------------------------------------------------------- */
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetLineSearch"
 /*@C
@@ -840,7 +839,6 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,Petsc
   }
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 /* -------------------------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  

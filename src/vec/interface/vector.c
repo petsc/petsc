@@ -467,9 +467,7 @@ int VecNormComposedDataID(NormType type,int *type_id)
 @*/
 int VecNormalize (Vec x,PetscReal *val)
 {
-  PetscReal  norm1=0.0,normInf=0.0,normF=0.0, scale;
-  PetscTruth flg1,flgInf,flgF;
-  int        type_id1,type_id2,type_idInf,type_idF,ierr;
+  int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
