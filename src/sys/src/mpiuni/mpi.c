@@ -12,18 +12,8 @@
 #define MPIUNI_STDCALL
 #endif
 
-/*
-     The system call exit() is not properly prototyped on all systems
-   hence we fake it by creating our own prototype
-*/
-
-/* This file does not include petsc.h hence cannot use EXTERN_C_XXXX*/
-#if defined(__cplusplus)
-extern "C" {
-  void exit(int);
-}
-#else
-  void exit(int);
+#if defined(STDLIB_H)
+#include <stdlib.h>
 #endif
 
 #define MPI_SUCCESS 0
@@ -137,7 +127,7 @@ int Petsc_MPI_Comm_free(MPI_Comm *comm)
 
 int Petsc_MPI_Abort(MPI_Comm comm,int errorcode) 
 {
-  exit(errorcode); 
+  abort();
   return MPI_SUCCESS;
 }
 
@@ -260,25 +250,25 @@ void MPIUNI_STDCALL MPI_COMM_RANK(MPI_Comm *comm,int *rank,int *ierr)
 /*******mpi_abort******/
 void MPIUNI_STDCALL mpi_abort(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  exit(*errorcode); 
+  abort();
   *ierr = MPI_SUCCESS;
 }
 
 void MPIUNI_STDCALL mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  exit(*errorcode);
+  abort();
   *ierr = MPI_SUCCESS;
 }
 
 void MPIUNI_STDCALL mpi_abort__(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  exit(*errorcode);
+  abort();
   *ierr = MPI_SUCCESS;
 }
 
 void MPIUNI_STDCALL MPI_ABORT(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  exit(*errorcode);
+  abort();
   *ierr = MPI_SUCCESS;
 }
 /*******mpi_allreduce******/
