@@ -1,8 +1,7 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.31 1997/07/28 21:40:39 balay Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.32 1997/08/21 01:06:04 balay Exp bsmith $";
 #endif
 
-/* #include <signal.h> */
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <stdio.h>
 #if defined(HAVE_UNISTD_H)
@@ -13,20 +12,16 @@ static char vcid[] = "$Id: mpi.c,v 1.31 1997/07/28 21:40:39 balay Exp balay $";
 #endif
 #include "pinclude/petscfix.h" 
 #define MPI_SUCCESS 0
-void   *MPIUNI_TMP   = 0;
-int    MPIUNI_DUMMY[2] = {100000,0};
-int    MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
-                              2*sizeof(double),sizeof(char)};
+void    *MPIUNI_TMP   = 0;
+int     MPIUNI_DUMMY[2] = {100000,0};
+int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
+                               2*sizeof(double),sizeof(char)};
 
 PLogDouble MPI_Wtime()
 {
   return PetscGetTime();
 }
 
-/* 
-   Implemented as a function to comply with ANSI aliasing. 
-   The problem appeared om IBM's with -O 
-*/
 int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
 {
   static int locflag = 0;
