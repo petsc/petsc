@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.166 2001/05/14 15:27:37 balay Exp buschelm $*/
+/*$Id: ilu.c,v 1.168 2001/07/12 01:49:48 buschelm Exp buschelm $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -176,7 +176,7 @@ EXTERN_C_END
 @*/
 int PCILUSetSinglePrecisionSolves(PC pc,PetscTruth flag)
 {
-  int ierr,(*f)(PC,PetscReal);
+  int ierr,(*f)(PC,PetssTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
