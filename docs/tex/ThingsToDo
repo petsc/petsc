@@ -28,6 +28,9 @@ Additional Capabilities that PETSc Needs:
     
  - Finish converting examples to tutorials/tests formats
 
+ - Add SLES example showing multiple linear solves with same matrices but
+   difference RHS.
+
 
 -----------------------------------------------------------------------
   To do sometime soon:
