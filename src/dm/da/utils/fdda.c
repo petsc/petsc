@@ -1,7 +1,5 @@
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.13 1997/08/22 15:19:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.14 1997/09/26 02:21:32 bsmith Exp curfman $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -11,16 +9,16 @@ static char vcid[] = "$Id: fdda.c,v 1.13 1997/08/22 15:19:00 bsmith Exp bsmith $
 #define __FUNC__ "DAGetColoring2dBox" 
 /*@C
       DAGetColoring2dBox - Gets the coloring required for computing the Jacobian via
-          finite differences on a function defined using the nine point stencil
-          on a two dimensional grid. 
+      finite differences on a function defined using the nine point stencil
+      on a two dimensional grid. 
 
-          This is a utility routine that will change over time, not part of the 
-          core PETSc package.
+      This is a utility routine that will change over time, not part of the 
+      core PETSc package.
 
-  Input Parameter:
+     Input Parameter:
 .    da - the distributed array
 
-  Output Parameters:
+     Output Parameters:
 .    coloring - matrix coloring for compute Jacobians
 .    J  - matrix with the correct nonzero structured 
             (obviously without the correct Jacobian values)
