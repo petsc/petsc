@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: zmat.c,v 1.28 1996/09/29 14:39:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.29 1997/01/12 04:31:37 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: zmat.c,v 1.28 1996/09/29 14:39:15 bsmith Exp bsmith $
 #define matdestroy_                      MATDESTROY
 #define matcreatempiaij_                 MATCREATEMPIAIJ
 #define matcreateseqaij_                 MATCREATESEQAIJ
+#define matcreatempibaij_                MATCREATEMPIBAIJ
+#define matcreateseqbaij_                MATCREATESEQBAIJ
 #define matcreate_                       MATCREATE
 #define matcreateshell_                  MATCREATESHELL
 #define matreorderingregisterdestroy_    MATREORDERINGREGISTERDESTROY
@@ -42,6 +44,8 @@ static char vcid[] = "$Id: zmat.c,v 1.28 1996/09/29 14:39:15 bsmith Exp bsmith $
 #define matdestroy_                      matdestroy
 #define matcreatempiaij_                 matcreatempiaij
 #define matcreateseqaij_                 matcreateseqaij
+#define matcreatempibaij_                matcreatempibaij
+#define matcreateseqbaij_                matcreateseqbaij
 #define matcreate_                       matcreate
 #define matcreateshell_                  matcreateshell
 #define matreorderingregisterdestroy_    matreorderingregisterdestroy
@@ -254,6 +258,16 @@ void matcreateseqaij_(MPI_Comm comm,int *m,int *n,int *nz,
   *(int*) newmat = PetscFromPointer(mm);
 }
 
+void matcreateseqbaij_(MPI_Comm comm,int *bs,int *m,int *n,int *nz,
+                           int *nnz,Mat *newmat, int *__ierr )
+{
+  Mat mm;
+  if (FORTRANNULL(nnz)) nnz = PETSC_NULL;
+  *__ierr = MatCreateSeqBAIJ((MPI_Comm)PetscToPointerComm(*(int*)(comm)),
+                            *bs,*m,*n,*nz,nnz,&mm);
+  *(int*) newmat = PetscFromPointer(mm);
+}
+
 void matdestroy_(Mat mat, int *__ierr )
 {
   *__ierr = MatDestroy((Mat)PetscToPointer( *(int*)(mat) ));
@@ -273,6 +287,16 @@ void matcreatempiaij_(MPI_Comm comm,int *m,int *n,int *M,int *N,
   if (FORTRANNULL(o_nnz)) o_nnz = PETSC_NULL;
   *__ierr = MatCreateMPIAIJ((MPI_Comm)PetscToPointerComm(*(int*)(comm)),
       *m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
+  *(int*)newmat = PetscFromPointer(mm);
+}
+void matcreatempibaij_(MPI_Comm comm,int *bs,int *m,int *n,int *M,int *N,
+         int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat, int *__ierr )
+{
+  Mat mm;
+  if (FORTRANNULL(d_nnz)) d_nnz = PETSC_NULL;
+  if (FORTRANNULL(o_nnz)) o_nnz = PETSC_NULL;
+  *__ierr = MatCreateMPIBAIJ((MPI_Comm)PetscToPointerComm(*(int*)(comm)),
+      *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,&mm);
   *(int*)newmat = PetscFromPointer(mm);
 }
 
