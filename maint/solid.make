@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.28 2000/03/27 22:53:06 balay Exp balay $ 
+# $Id: solid.make,v 1.29 2000/03/29 19:17:58 balay Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.28"
@@ -71,9 +71,7 @@ make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n maple "cd $hme/$src_dir; $make BOPT=g"
 rsh -n maple "cd $hme/$src_dir; $make BOPT=O"
 rsh -n maple "cd $hme/$src_dir; $make BOPT=g_c++"
-#rsh -n maple "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n maple "cd $hme/$src_dir; $make BOPT=g_complex"
-#rsh -n maple "cd $hme/$src_dir; $make BOPT=O_complex"
 
 # solaris_uni
 arch=solaris_uni
@@ -90,12 +88,6 @@ rsh -n denali "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=g_complex"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=O_complex"
 
-# yukon uses a different ARCH as binaries are not
-# compatible between yukon and denali
-###arch=IRIX64_yukon
-###make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-###rsh -n yukon "cd $hme/$src_dir; $make BOPT=g"
-###rsh -n yukon "cd $hme/$src_dir; $make BOPT=O"
 
 # rs6000_sp
 arch=rs6000_sp
@@ -110,25 +102,11 @@ rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_complex"
 # IRIX
 arch=IRIX
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-#make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
-rsh -n violet "cd $hme/$src_dir; $make BOPT=g"
-#rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
-rsh -n violet "cd $hme/$src_dir; $make BOPT=g_c++"
+rsh -n rock "cd $hme/$src_dir; $make BOPT=g"
+rsh -n rock "cd $hme/$src_dir; $make BOPT=g_c++"
 
-# rs6000_shmem is used by Tom Canfeild on octa nodes
-##arch=rs6000_shmem
-##make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-##rsh -n octa01 "cd $hme/$src_dir; $make BOPT=O"
 
-# sun4
 arch=linux
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n gaea "cd $hme/$src_dir; $make BOPT=g_c++"
 rsh -n gaea "cd $hme/$src_dir; $make BOPT=O_c++"
-
-# rs6000
-##arch=rs6000
-##make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-##rsh -n doc "cd $hme/$src_dir; $make BOPT=g"
-##rsh -n doc "cd $hme/$src_dir; $make BOPT=O"
-
