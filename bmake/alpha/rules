@@ -1,4 +1,4 @@
-# $Id: base,v 1.27 1998/04/16 16:07:59 bsmith Exp balay $ 
+# $Id: base,v 1.28 1998/04/23 23:14:11 balay Exp balay $ 
 
 PARCH    = alpha
 CC       = cc
@@ -17,9 +17,6 @@ SHELL    = /bin/sh
 CLINKER  = cc ${COPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 FLINKER  = f77 ${FOPTFLAGS} -Wl,-rpath,${LDIR}:${DYLIBPATH}
 SYS_LIB  =
-
-FCONF    =  -DHAVE_64BITS
-
 
 include ${PETSC_DIR}/bmake/common
 
