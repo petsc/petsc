@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.22 1999/06/15 19:16:42 balay Exp balay $ 
+# $Id: solid.make,v 1.23 1999/07/24 21:46:22 balay Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.24"
@@ -85,6 +85,8 @@ arch=IRIX64
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action deleteshared shared"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=g"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=O"
+rsh -n denali "cd $hme/$src_dir; $make BOPT=g_c++"
+rsh -n denali "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=g_complex"
 rsh -n denali "cd $hme/$src_dir; $make BOPT=O_complex"
 
