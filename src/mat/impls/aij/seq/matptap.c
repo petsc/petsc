@@ -9,9 +9,6 @@
 
 EXTERN PetscErrorCode RegisterMatMatMultRoutines_Private(Mat);
 
-static PetscEvent MAT_PtAPSymbolic = 0;
-static PetscEvent MAT_PtAPNumeric  = 0;
-
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP"
 /*@
@@ -40,6 +37,8 @@ static PetscEvent MAT_PtAPNumeric  = 0;
 @*/
 PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) {
   PetscErrorCode ierr;
+  PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat *);
+  PetscErrorCode (*fP)(Mat,Mat,MatReuse,PetscReal,Mat *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -53,12 +52,21 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C) {
   if (!P->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
+
   if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",P->M,A->N);
 
   if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 
+  /* For now, we do not dispatch based on the type of A and P */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  fA = A->ops->ptap;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatPtAP not supported for A of type %s",A->type_name);
+  fP = P->ops->ptap;
+  if (!fP) SETERRQ1(PETSC_ERR_SUP,"MatPtAP not supported for P of type %s",P->type_name);
+  if (fP!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatPtAP requires A, %s, to be compatible with P, %s",A->type_name,P->type_name);
+
   ierr = PetscLogEventBegin(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
-  ierr = (*A->ops->matptap)(A,P,scall,fill,C);CHKERRQ(ierr);
+  ierr = (*fA)(A,P,scall,fill,C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_PtAP,A,P,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
@@ -103,8 +111,8 @@ PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
 */
 PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) {
   PetscErrorCode ierr;
-  char funct[80];
-  PetscErrorCode (*f)(Mat,Mat,Mat*);
+  PetscErrorCode (*fA)(Mat,Mat,PetscReal,Mat*);
+  PetscErrorCode (*fP)(Mat,Mat,PetscReal,Mat*);
 
   PetscFunctionBegin;
 
@@ -125,15 +133,17 @@ PetscErrorCode MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat *C) {
   if (P->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",P->M,A->N);
   if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %d != %d",A->M,A->N);
 
-  /* Currently only _seqaij_seqaij is implemented, so just query for it. */
-  /* When other implementations exist, attack the multiple dispatch problem. */
-  ierr = PetscStrcpy(funct,"MatPtAPSymbolic_seqaij_seqaij");CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)P,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic is not supported for P of type %s",P->type_name);
-  ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic is not supported for A of type %s",A->type_name);
+  /* For now, we do not dispatch based on the type of A and P */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  fA = A->ops->ptapsymbolic;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic not supported for A of type %s",A->type_name);
+  fP = P->ops->ptapsymbolic;
+  if (!fP) SETERRQ1(PETSC_ERR_SUP,"MatPtAPSymbolic not supported for P of type %s",P->type_name);
+  if (fP!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatPtAPSymbolic requires A, %s, to be compatible with P, %s",A->type_name,P->type_name);
 
-  ierr = (*f)(A,P,C);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
+  ierr = (*fA)(A,P,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPSymbolic,A,P,0,0);CHKERRQ(ierr); 
  
   PetscFunctionReturn(0);
 }
@@ -343,8 +353,8 @@ EXTERN_C_END
 */
 PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C) {
   PetscErrorCode ierr;
-  char funct[80];
-  PetscErrorCode (*f)(Mat,Mat,Mat);
+  PetscErrorCode (*fA)(Mat,Mat,Mat);
+  PetscErrorCode (*fP)(Mat,Mat,Mat);
 
   PetscFunctionBegin;
 
@@ -371,15 +381,17 @@ PetscErrorCode MatPtAPNumeric(Mat A,Mat P,Mat C) {
   if (A->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %d != %d",A->M,A->N);
   if (P->N!=C->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",P->N,C->N);
 
-  /* Currently only _seqaij_seqaij is implemented, so just query for it. */
-  /* When other implementations exist, attack the multiple dispatch problem. */
-  ierr = PetscStrcpy(funct,"MatPtAPNumeric_seqaij_seqaij");CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)P,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric is not supported for P of type %s",P->type_name);
-  ierr = PetscObjectQueryFunction((PetscObject)A,funct,(PetscVoidFunction)&f);CHKERRQ(ierr);
-  if (!f) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric is not supported for A of type %s",A->type_name);
+  /* For now, we do not dispatch based on the type of A and P */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  fA = A->ops->ptapnumeric;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric not supported for A of type %s",A->type_name);
+  fP = P->ops->ptapnumeric;
+  if (!fP) SETERRQ1(PETSC_ERR_SUP,"MatPtAPNumeric not supported for P of type %s",P->type_name);
+  if (fP!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatPtAPNumeric requires A, %s, to be compatible with P, %s",A->type_name,P->type_name);
 
-  ierr = (*f)(A,P,C);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr); 
+  ierr = (*fA)(A,P,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_PtAPNumeric,A,P,0,0);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
 }
@@ -467,12 +479,6 @@ PetscErrorCode RegisterPtAPRoutines_Private(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!MAT_PtAPSymbolic) {
-    ierr = PetscLogEventRegister(&MAT_PtAPSymbolic,"MatPtAPSymbolic",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  if (!MAT_PtAPNumeric) {
-    ierr = PetscLogEventRegister(&MAT_PtAPNumeric,"MatPtAPNumeric",MAT_COOKIE);CHKERRQ(ierr);
-  }
   ierr = RegisterMatMatMultRoutines_Private(A);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);

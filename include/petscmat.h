@@ -83,7 +83,7 @@ extern PetscEvent    MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, 
 extern PetscEvent    MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
 extern PetscEvent    MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 extern PetscEvent    MAT_MatMult;
-extern PetscEvent    MAT_PtAP;
+extern PetscEvent    MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
 
 EXTERN PetscErrorCode MatInitializePackage(char *);
 
