@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.34 1998/05/29 20:37:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.35 1998/07/06 03:11:22 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -138,6 +138,7 @@ int MatDiagonalShift(Mat Y,Vec D)
     for ( i=start; i<end; i++ ) {
       ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,ADD_VALUES); CHKERRQ(ierr);
     }
+    ierr = VecRestoreArray(D,&v); CHKERRQ(ierr);
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.39 1998/06/15 16:08:51 balay Exp bsmith $ 
+# $Id: makefile,v 1.40 1998/09/29 02:32:55 bsmith Exp bsmith $ 
 
 #
 #   matlabcodes makes the Matlab mex files for receiving PETSc objects
@@ -6,6 +6,7 @@
 # in compiling these files and you are using the gcc compiler then try 
 # removing the -fPIC from the CC declaration in ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 #
+ALL: lib
 matlabcodes: receive openport closeport launch
 
 CFLAGS    =

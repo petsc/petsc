@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.162 1998/09/24 22:15:07 balay Exp bsmith $ */
+/* $Id: mat.h,v 1.163 1998/09/25 03:16:46 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -92,8 +92,10 @@ extern int MatMultAdd(Mat,Vec,Vec,Vec);
 extern int MatMultTrans(Mat,Vec,Vec);
 extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
+typedef enum {MAT_DO_NOT_COPY_VALUES, MAT_COPY_VALUES} MatDuplicateOption;
+
 extern int MatConvert(Mat,MatType,Mat*);
-extern int MatDuplicate(Mat,Mat*);
+extern int MatDuplicate(Mat,MatDuplicateOption,Mat*);
 extern int MatConvertRegister(MatType,MatType,int (*)(Mat,MatType,Mat*));
 extern int MatConvertRegisterAll(void);
 
@@ -170,6 +172,9 @@ extern int MatSetValuesBlockedLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 extern int MatSeqAIJSetColumnIndices(Mat,int *);
 extern int MatSeqBAIJSetColumnIndices(Mat,int *);
+
+extern int MatStoreValues(Mat);
+extern int MatRetrieveValues(Mat);
 
 /* 
   These routines are not usually accessed directly, rather solving is 
@@ -389,7 +394,7 @@ extern int MatCreateSeqCSNIndices_Single(MPI_Comm,MatAIJIndices,int,Mat *);
 extern int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,ScalarPrecision,Mat *);
 
 extern int MatMPIBAIJSetHashTableFactor(Mat,double);
-extern int MatSeqAIJGetInodeSizes(Mat,int *,int *[]);
+extern int MatSeqAIJGetInodeSizes(Mat,int *,int *[],int *);
 
 
 #endif

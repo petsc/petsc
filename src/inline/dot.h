@@ -1,4 +1,4 @@
-/* $Id: dot.h,v 1.10 1998/07/13 19:10:11 balay Exp bsmith $ */
+/* $Id: dot.h,v 1.11 1998/10/08 15:40:21 bsmith Exp bsmith $ */
 
 #ifndef DOT
 
@@ -70,13 +70,13 @@ extern void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 #define fortransolvebaij4blas_     FORTRANSOLVEBAIJ4BLAS_
 #define fortransolvebaij4unroll_   FORTRANSOLVEBAIJ4UNROLL_
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define fortransolveaij4_          fortransolveaij4
-#define fortransolveaij4blas_      fortransolveaij4blas
-#define fortransolveaij4unroll_    fortransolveaij4unroll
+#define fortransolvebaij4_          fortransolvebaij4
+#define fortransolvebaij4blas_      fortransolvebaij4blas
+#define fortransolvebaij4unroll_    fortransolvebaij4unroll
 #endif
-extern void fortransolveaij4_(int *,void*,int *,int *,int*,void *,void*,void *);
-extern void fortransolveaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
-extern void fortransolveaij4blas_(int *,void*,int *,int *,int*,void *,void*,void *);
+extern void fortransolvebaij4_(int *,void*,int *,int *,int*,void *,void*,void *);
+extern void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
+extern void fortransolvebaij4blas_(int *,void*,int *,int *,int*,void *,void*,void *);
 #endif
 
 #if defined(__cplusplus)

@@ -1,72 +1,61 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex62.c,v 1.2 1998/07/28 15:52:55 bsmith Exp $";
+static char vcid[] = "$Id: ex64.c,v 1.1 1998/10/07 18:20:02 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests the use of MatSolveTrans().\n\n";
+static char help[] = "Saves 4by4 block matrix.\n\n";
 
 #include "mat.h"
 
 int main(int argc,char **args)
 {
-  Mat     C, A;
-  int     i, j,m, ierr, flg,size;
-  IS      row,col;
-  Vec     x, u, b;
-  double  norm;
+  Mat     A;
+  int     i, j, ierr,size;
   Viewer  fd;
-  MatType mtype = MATSEQAIJ;
-  char    file[128];
-  Scalar  one = 1.0, mone = -1.0;
+  Scalar  values[16],one = 1.0;
+  Vec     x;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (size > 1) SETERRA(1,1,"Can only run on one processor");
 
-  ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f option");
   /* 
-     Open binary file.  Note that we use BINARY_RDONLY to indicate
-     reading from this file.
+     Open binary file.  Note that we use BINARY_CREATE to indicate
+     writing to this file.
   */
-  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
+  ierr = ViewerFileOpenBinary(PETSC_COMM_WORLD,"4by4",BINARY_CREATE,&fd);CHKERRA(ierr);
 
-  /* 
-     Determine matrix format to be used (specified at runtime).
-     See the manpage for MatLoad() for available formats.
-  */
-  ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,4,12,12,0,0,&A);CHKERRA(ierr);
 
-  /*
-     Load the matrix and vector; then destroy the viewer.
-  */
-  ierr = MatLoad(fd,mtype,&C); CHKERRA(ierr);
-  ierr = VecLoad(fd,&u);CHKERRA(ierr);
-  ierr = ViewerDestroy(fd); CHKERRA(ierr);
+  for ( i=0; i<16; i++ ) values[i] = i; for (i=0; i<4; i++) values[4*i+i] += 5;
+  i = 0; j = 0;
+  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
+  for ( i=0; i<16; i++ ) values[i] = i;
+  i = 0; j = 2;
+  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
+  for ( i=0; i<16; i++ ) values[i] = i;
+  i = 1; j = 0;
+  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
+  for ( i=0; i<16; i++ ) values[i] = i;for (i=0; i<4; i++) values[4*i+i] += 6;
+  i = 1; j = 1;
+  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
+  for ( i=0; i<16; i++ ) values[i] = i;
+  i = 2; j = 0;
+  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
+  for ( i=0; i<16; i++ ) values[i] = i;for (i=0; i<4; i++) values[4*i+i] += 7;
+  i = 2; j = 2;
+  ierr = MatSetValuesBlocked(A,1,&i,1,&j,values,INSERT_VALUES);CHKERRA(ierr);
 
-  ierr = VecDuplicate(u,&x); CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b); CHKERRA(ierr);
-
-  ierr = MatMultTrans(C,u,b); CHKERRA(ierr);
-
-  /* Set default ordering to be Quotient Minimum Degree; also read
-     orderings from the options database */
-  ierr = MatGetReordering(C,ORDER_QMD,&row,&col); CHKERRA(ierr);
-
-  ierr = MatLUFactorSymbolic(C,row,col,1.0,&A); CHKERRA(ierr);
-  ierr = MatLUFactorNumeric(C,&A); CHKERRA(ierr);
-  ierr = MatSolveTrans(A,b,x); CHKERRA(ierr);
-
-  ierr = VecAXPY(&mone,u,x); CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);
-
-  ierr = ISDestroy(row); CHKERRA(ierr);
-  ierr = ISDestroy(col); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = MatDestroy(C); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatView(A,fd);CHKERRA(ierr);
   ierr = MatDestroy(A); CHKERRA(ierr);
+
+  ierr = VecCreateSeq(PETSC_COMM_WORLD,12,&x);CHKERRA(ierr);
+  ierr = VecSet(&one,x);CHKERRA(ierr);
+  ierr = VecView(x,fd);CHKERRA(ierr);
+  ierr = VecDestroy(x);CHKERRA(ierr);
+
+  ierr = ViewerDestroy(fd);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

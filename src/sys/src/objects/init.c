@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.15 1998/07/25 05:49:09 balay Exp balay $";
+static char vcid[] = "$Id: init.c,v 1.16 1998/08/26 22:01:46 balay Exp bsmith $";
 #endif
 /*
 
@@ -585,14 +585,14 @@ int OptionsCheckInitial_Alice(void)
         * TSInitialize()
 */
          
+#undef __FUNC__  
+#define __FUNC__ "AliceInitializeNoArguments"
 /*@C
       AliceInitializeNoArguments - Calls AliceInitialize() from C/C++ without
         the command line arguments.
 
 .seealso: AliceInitialize(), AliceInitializeFortran()
 @*/
-#undef __FUNC__  
-#define __FUNC__ "AliceInitializeNoArguments"
 int AliceInitializeNoArguments(void)
 {
   int  argc = 0, ierr;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.3 1998/07/23 22:46:55 bsmith Exp balay $";
+static char vcid[] = "$Id: pinit.c,v 1.4 1998/08/26 22:01:46 balay Exp bsmith $";
 #endif
 /*
 
@@ -91,14 +91,14 @@ int OptionsCheckInitial_Components(void)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscInitializeNoArguments"
 /*@C
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without
         the command line arguments.
 
 .seealso: PetscInitialize(), PetscInitializeFortran()
 @*/
-#undef __FUNC__  
-#define __FUNC__ "PetscInitializeNoArguments"
 int PetscInitializeNoArguments(void)
 {
   int ierr;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.302 1998/09/24 16:24:52 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.303 1998/09/25 03:14:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1768,8 +1768,8 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
   }
 
   PLogEventBegin(MAT_Convert,mat,0,0,0); 
-  if ((newtype == mat->type || newtype == MATSAME) && mat->ops->convertsametype) {
-    ierr = (*mat->ops->convertsametype)(mat,M,COPY_VALUES); CHKERRQ(ierr);
+  if ((newtype == mat->type || newtype == MATSAME) && mat->ops->duplicate) {
+    ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M); CHKERRQ(ierr);
   } else {
     if (!MatConvertersSet) {
       ierr = MatConvertRegisterAll(); CHKERRQ(ierr);
@@ -1786,22 +1786,23 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
 #undef __FUNC__  
 #define __FUNC__ "MatDuplicate"
 /*@C  
-   MatDuplicate - Duplicates a matrix including the non-zero structure, but 
-   does not copy over the values.
+   MatDuplicate - Duplicates a matrix including the non-zero structure.
 
    Collective on Mat
 
    Input Parameters:
-.  mat - the matrix
++  mat - the matrix
+-  op - either MAT_DO_NO_COPY_VALUES or MAT_COPY_VALUES, cause it to copy nonzero
+        values as well or not
 
    Output Parameter:
 .  M - pointer to place new matrix
 
 .keywords: matrix, copy, convert, duplicate
 
-.seealso: MatCopy(), MatDuplicate(), MatConvert()
+.seealso: MatCopy(), MatConvert()
 @*/
-int MatDuplicate(Mat mat,Mat *M)
+int MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
 {
   int ierr;
 
@@ -1813,10 +1814,10 @@ int MatDuplicate(Mat mat,Mat *M)
 
   *M  = 0;
   PLogEventBegin(MAT_Convert,mat,0,0,0); 
-  if (!mat->ops->convertsametype) {
+  if (!mat->ops->duplicate) {
     SETERRQ(PETSC_ERR_SUP,1,"Not written for this matrix type");
   }
-  ierr = (*mat->ops->convertsametype)(mat,M,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
+  ierr = (*mat->ops->duplicate)(mat,op,M); CHKERRQ(ierr);
   PLogEventEnd(MAT_Convert,mat,0,0,0); 
   PetscFunctionReturn(0);
 }

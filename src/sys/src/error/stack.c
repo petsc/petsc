@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.11 1998/08/27 14:51:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.12 1998/09/25 03:13:53 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -89,7 +89,7 @@ int PetscStackView(Viewer viewer)
     }
   } else {
     for ( i=petscstacksize-1; i>=0; i-- ) {
-      fprintf(stdout,"[%d] %s line %d %s%s\n",PetscGlobalRank,
+      fprintf(file,"[%d] %s line %d %s%s\n",PetscGlobalRank,
                                               petscstack->function[i],
                                               petscstack->line[i],
                                               petscstack->directory[i],

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.73 1998/06/11 19:55:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.74 1998/08/06 13:32:49 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -379,25 +379,6 @@ int  KSPDefaultGetWork( KSP ksp, int nw )
   ksp->nwork = nw;
   ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&ksp->work); CHKERRQ(ierr);
   PLogObjectParents(ksp,nw,ksp->work);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "KSPDefaultAdjustWork"
-/*
-  KSPDefaultAdjustWork - Adjusts work vectors.
-
-  Input Parameters:
-. ksp  - iterative context
- */
-int KSPDefaultAdjustWork( KSP ksp )
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  if ( ksp->adjust_work_vectors ) {
-    ierr = (ksp->adjust_work_vectors)(ksp, ksp->work,ksp->nwork); CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

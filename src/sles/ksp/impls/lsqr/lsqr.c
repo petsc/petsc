@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.42 1998/08/11 01:09:33 curfman Exp balay $";
+static char vcid[] = "$Id: lsqr.c,v 1.43 1998/09/03 18:12:31 balay Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -194,16 +194,15 @@ int KSPCreate_LSQR(KSP ksp)
   lsqr = (KSP_LSQR*) PetscMalloc(sizeof(KSP_LSQR)); CHKPTRQ(lsqr);
   PetscMemzero(lsqr,sizeof(KSP_LSQR));
   PLogObjectMemory(ksp,sizeof(KSP_LSQR));
-  ksp->data                 = (void *) lsqr;
-  ksp->pc_side              = PC_LEFT;
-  ksp->calc_res             = 1;
-  ksp->setup                = KSPSetUp_LSQR;
-  ksp->solve                = KSPSolve_LSQR;
-  ksp->adjustwork           = KSPDefaultAdjustWork;
-  ksp->destroy              = KSPDestroy_LSQR;
-  ksp->converged            = KSPDefaultConverged;
-  ksp->buildsolution        = KSPDefaultBuildSolution;
-  ksp->buildresidual        = KSPDefaultBuildResidual;
-  ksp->view                 = 0;
+  ksp->data                      = (void *) lsqr;
+  ksp->pc_side                   = PC_LEFT;
+  ksp->calc_res                  = 1;
+  ksp->ops->setup                = KSPSetUp_LSQR;
+  ksp->ops->solve                = KSPSolve_LSQR;
+  ksp->ops->destroy              = KSPDestroy_LSQR;
+  ksp->converged                 = KSPDefaultConverged;
+  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->view                 = 0;
   PetscFunctionReturn(0);
 }

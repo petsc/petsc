@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.48 1998/06/11 15:25:02 balay Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.49 1998/07/28 15:50:16 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -307,17 +307,16 @@ int KSPCreate_QCG(KSP ksp)
   PetscFunctionBegin;
   PetscMemzero(cgP,sizeof(KSP_QCG));
   PLogObjectMemory(ksp,sizeof(KSP_QCG));
-  ksp->data                 = (void *) cgP;
-  ksp->pc_side              = PC_SYMMETRIC;
-  ksp->calc_res             = 1;
-  ksp->setup                = KSPSetUp_QCG;
-  ksp->solve                = KSPSolve_QCG;
-  ksp->adjustwork           = KSPDefaultAdjustWork;
-  ksp->destroy              = KSPDestroy_QCG;
-  ksp->converged            = KSPDefaultConverged;
-  ksp->buildsolution        = KSPDefaultBuildSolution;
-  ksp->buildresidual        = KSPDefaultBuildResidual;
-  ksp->view                 = 0;
+  ksp->data                      = (void *) cgP;
+  ksp->pc_side                   = PC_SYMMETRIC;
+  ksp->calc_res                  = 1;
+  ksp->ops->setup                = KSPSetUp_QCG;
+  ksp->ops->solve                = KSPSolve_QCG;
+  ksp->ops->destroy              = KSPDestroy_QCG;
+  ksp->converged                 = KSPDefaultConverged;
+  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->view                 = 0;
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------- */

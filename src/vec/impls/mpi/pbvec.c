@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.107 1998/08/16 22:06:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.108 1998/09/04 18:00:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -153,7 +153,8 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecGetArray_Seq,
             VecGetSize_MPI,
             VecGetSize_Seq,
-            VecGetOwnershipRange_MPI,0,
+            VecGetOwnershipRange_MPI,
+            VecRestoreArray_Seq,
             VecMax_MPI,VecMin_MPI,
             VecSetRandom_Seq,
             VecSetOption_MPI,
@@ -620,8 +621,8 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   if (w->localrep) {
     ierr = VecGetArray(*v,&array); CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,w->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
-    PLogObjectParent(*v,vw->localrep);
     ierr = VecRestoreArray(*v,&array); CHKERRQ(ierr);
+    PLogObjectParent(*v,vw->localrep);
     vw->localupdate = w->localupdate;
     PetscObjectReference((PetscObject)vw->localupdate);
   }    

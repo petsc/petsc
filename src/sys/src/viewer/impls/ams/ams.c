@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.4 1998/09/25 03:15:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.5 1998/10/06 16:04:11 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -85,7 +85,7 @@ static int ViewerDestroy_AMS(Viewer viewer)
 int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
 {
   Viewer v;
-  int    ierr,port = -1;
+  int    ierr,port = -1,flag;
 
   PetscFunctionBegin;
   PetscHeaderCreate(v,_p_Viewer,int,VIEWER_COOKIE,AMS_VIEWER,comm,ViewerDestroy,0);
@@ -94,6 +94,11 @@ int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
 
   ierr = OptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
   ierr = AMS_Comm_publish((char *)name,&v->ams_comm,MPI_TYPE,comm,&port);CHKERRQ(ierr);
+
+  ierr = OptionsHasName(PETSC_NULL,"-viewer_ams_printf",&flag);CHKERRQ(ierr);
+  if (!flag) {
+    ierr = AMS_Set_output_file("/dev/null"); CHKERRQ(ierr);
+  }
 
   *lab           = v;
   PetscFunctionReturn(0);
@@ -182,7 +187,6 @@ Viewer VIEWER_AMS_(MPI_Comm comm)
   ierr = MPI_Attr_get( comm, Petsc_Viewer_Ams_keyval, (void **)&viewer, &flag );
   if (ierr) {PetscError(__LINE__,"VIEWER_AMS_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
   if (!flag) { /* viewer not yet created */
-
     if (csize == 1) {
       MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
       sprintf(name,"PETSc_%d",rank);

@@ -1,8 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex37.c,v 1.5 1998/09/25 03:15:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex37.c,v 1.6 1998/09/25 14:50:43 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests MatCopy().\n\n"; 
+static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
 
 #include "mat.h"
 
@@ -51,6 +51,17 @@ int main(int argc,char **args)
   } else {
     SETERRA(1,1,"Matrices are NOT equal");
   }
+
+  ierr = MatStoreValues(A);CHKERRA(ierr);
+  ierr = MatZeroEntries(A);CHKERRA(ierr);
+  ierr = MatRetrieveValues(A);CHKERRA(ierr);
+  ierr = MatEqual(A,C,&flag);CHKERRA(ierr);
+  if (flag) {
+    PetscPrintf(PETSC_COMM_WORLD,"Matrices are equal\n");
+  } else {
+    SETERRA(1,1,"Matrices are NOT equal");
+  }
+
   ierr = MatDestroy(C); CHKERRA(ierr);
   ierr = MatDestroy(A); CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.158 1998/05/29 22:49:25 balay Exp $";
+static char vcid[] = "$Id: bdiag2.c,v 1.1 1998/06/03 21:31:29 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -278,6 +278,8 @@ int MatMult_SeqBDiag_1(Mat A,Vec xx,Vec yy)
     for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
     PLogFlops(2*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -318,6 +320,8 @@ int MatMult_SeqBDiag_2(Mat A,Vec xx,Vec yy)
     }
     PLogFlops(8*len);
   }
+  ierr = VecRestoreArray(xx,&vin);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -359,6 +363,8 @@ int MatMult_SeqBDiag_3(Mat A,Vec xx,Vec yy)
     }
     PLogFlops(18*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -401,6 +407,8 @@ int MatMult_SeqBDiag_4(Mat A,Vec xx,Vec yy)
     }
     PLogFlops(32*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -444,6 +452,8 @@ int MatMult_SeqBDiag_5(Mat A,Vec xx,Vec yy)
     }
     PLogFlops(50*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -480,6 +490,8 @@ int MatMult_SeqBDiag_N(Mat A,Vec xx,Vec yy)
     }
     PLogFlops(2*bs2*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -515,6 +527,8 @@ int MatMultAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
     for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
     PLogFlops(2*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -555,6 +569,8 @@ int MatMultAdd_SeqBDiag_2(Mat A,Vec xx,Vec zz,Vec yy)
     }
     PLogFlops(8*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -596,6 +612,8 @@ int MatMultAdd_SeqBDiag_3(Mat A,Vec xx,Vec zz,Vec yy)
     }
     PLogFlops(18*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -638,6 +656,8 @@ int MatMultAdd_SeqBDiag_4(Mat A,Vec xx,Vec zz,Vec yy)
     }
     PLogFlops(32*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -681,6 +701,8 @@ int MatMultAdd_SeqBDiag_5(Mat A,Vec xx,Vec zz,Vec yy)
     }
     PLogFlops(50*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -717,6 +739,8 @@ int MatMultAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
     }
     PLogFlops(2*bs2*len);
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -753,6 +777,8 @@ int MatMultTrans_SeqBDiag_1(Mat A,Vec xx,Vec yy)
     }
     for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -763,7 +789,7 @@ int MatMultTrans_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
   int             ierr,nd = a->nd, bs = a->bs, diag,kshift, kloc;
   register int    d, i, j, k, len;
-  Scalar *pvin, *pvout, *dv;
+  Scalar          *pvin, *pvout, *dv;
   Scalar          *vin, *vout;
   
   PetscFunctionBegin;
@@ -793,6 +819,8 @@ int MatMultTrans_SeqBDiag_N(Mat A,Vec xx,Vec yy)
       }
     }
   }
+  ierr = VecRestoreArray(xx,&vin);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -806,7 +834,7 @@ int MatMultTransAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
   Mat_SeqBDiag    *a = (Mat_SeqBDiag *) A->data;
   int             ierr, nd = a->nd, diag;
   register int    d, j, len;
-  Scalar *pvin, *pvout, *dv;
+  Scalar          *pvin, *pvout, *dv;
   Scalar          *vin, *vout;
   
   PetscFunctionBegin;
@@ -829,6 +857,8 @@ int MatMultTransAdd_SeqBDiag_1(Mat A,Vec xx,Vec zz,Vec yy)
     }
     for (j=0; j<len; j++) pvout[j] += dv[j] * pvin[j];
   }
+  ierr = VecRestoreArray(xx,&vin); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -869,6 +899,8 @@ int MatMultTransAdd_SeqBDiag_N(Mat A,Vec xx,Vec zz,Vec yy)
       }
     }
   }
+  ierr = VecRestoreArray(xx,&vin);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&vout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNC__  
@@ -909,6 +941,8 @@ int MatRelax_SeqBDiag_N(Mat A,Vec bb,double omega,MatSORType flag,
         x[kloc+i] = sum;
       }
     }
+    ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -933,8 +967,7 @@ int MatRelax_SeqBDiag_N(Mat A,Vec bb,double omega,MatSORType flag,
         }
       }
       xb = x;
-    }
-    else xb = b;
+    } else xb = b;
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
       for ( k=0; k<mblock; k++ ) {
@@ -1030,6 +1063,8 @@ int MatRelax_SeqBDiag_N(Mat A,Vec bb,double omega,MatSORType flag,
       }
     }
   }
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -1062,6 +1097,8 @@ int MatRelax_SeqBDiag_1(Mat A,Vec bb,double omega,MatSORType flag,
       }
       x[i] = sum;
     }
+    ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+    ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1122,5 +1159,7 @@ int MatRelax_SeqBDiag_1(Mat A,Vec bb,double omega,MatSORType flag,
       }
     }
   }
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

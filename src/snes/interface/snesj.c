@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.51 1998/05/29 22:51:22 balay Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.52 1998/10/05 16:23:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -64,7 +64,6 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
 
   ierr = VecGetSize(x1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
-  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
   ierr = eval_fct(snes,x1,j1a); CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time. 
@@ -74,7 +73,9 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
   for ( i=0; i<N; i++ ) {
     ierr = VecCopy(x1,x2); CHKERRQ(ierr);
     if ( i>= start && i<end) {
+      ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
       dx = xx[i-start];
+      ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
 #if !defined(USE_PETSC_COMPLEX)
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
@@ -84,7 +85,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;
-      VecSetValues(x2,1,&i,&dx,ADD_VALUES); 
+      ierr = VecSetValues(x2,1,&i,&dx,ADD_VALUES); CHKERRQ(ierr);
     } else {
       wscale = 0.0;
     }
@@ -96,19 +97,18 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
 #else
     ierr = MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #endif
-    VecScale(&scale,j2a);
-    VecGetArray(j2a,&y);
-    VecNorm(j2a,NORM_INFINITY,&amax); amax *= 1.e-14;
+    ierr = VecScale(&scale,j2a);CHKERRQ(ierr);
+    ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
+    ierr = VecNorm(j2a,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {
       if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES); CHKERRQ(ierr);
       }
     }
-    VecRestoreArray(j2a,&y);
+    ierr = VecRestoreArray(j2a,&y);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr  = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   *flag =  DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.59 1998/05/29 20:35:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.60 1998/07/28 15:49:56 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -205,21 +205,20 @@ int KSPCreate_Chebychev(KSP ksp)
   PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_Chebychev));
 
-  ksp->data                 = (void *) chebychevP;
-  ksp->pc_side              = PC_LEFT;
-  ksp->calc_res             = 1;
+  ksp->data                      = (void *) chebychevP;
+  ksp->pc_side                   = PC_LEFT;
+  ksp->calc_res                  = 1;
 
-  chebychevP->emin          = 1.e-2;
-  chebychevP->emax          = 1.e+2;
+  chebychevP->emin               = 1.e-2;
+  chebychevP->emax               = 1.e+2;
 
-  ksp->setup                = KSPSetUp_Chebychev;
-  ksp->solve                = KSPSolve_Chebychev;
-  ksp->adjustwork           = KSPDefaultAdjustWork;
-  ksp->destroy              = KSPDefaultDestroy;
-  ksp->converged            = KSPDefaultConverged;
-  ksp->buildsolution        = KSPDefaultBuildSolution;
-  ksp->buildresidual        = KSPDefaultBuildResidual;
-  ksp->view                 = KSPView_Chebychev;
+  ksp->ops->setup                = KSPSetUp_Chebychev;
+  ksp->ops->solve                = KSPSolve_Chebychev;
+  ksp->ops->destroy              = KSPDefaultDestroy;
+  ksp->converged                 = KSPDefaultConverged;
+  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->view                 = KSPView_Chebychev;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",
                                     "KSPChebychevSetEigenvalues_Chebychev",

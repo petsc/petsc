@@ -1,9 +1,29 @@
-/* $Id: kspimpl.h,v 1.36 1998/06/11 19:55:09 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.37 1998/07/28 15:49:24 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
 
 #include "ksp.h"
+
+typedef struct _KSPOps *KSPOps;
+
+struct _KSPOps {
+  int  (*buildsolution)(KSP,Vec,Vec*);       /* Returns a pointer to the solution, or
+                                                calculates the solution in a 
+				                user-provided area. */
+  int  (*buildresidual)(KSP,Vec,Vec,Vec*);   /* Returns a pointer to the residual, or
+				                calculates the residual in a 
+				                user-provided area.  */
+  int  (*solve)(KSP,int*);                   /* actual solver */
+  int  (*solvetrans)(KSP,int*);              /* actual solver */
+  int  (*setup)(KSP);
+  int  (*setfromoptions)(KSP);
+  int  (*printhelp)(KSP,char*);
+  int  (*computeextremesingularvalues)(KSP,double*,double*);
+  int  (*computeeigenvalues)(KSP,int,double*,double*,int *);
+  int  (*destroy)(KSP);
+  int  (*view)(KSP,Viewer);
+};
 
 /*
      Maximum number of monitors you can run with a single KSP
@@ -14,7 +34,7 @@
    Defines the KSP data structure.
 */
 struct _p_KSP {
-  PETSCHEADER(int)
+  PETSCHEADER(struct _KSPOps)
   /*------------------------- User parameters--------------------------*/
   int max_it,                      /* maximum number of iterations */
       guess_zero,                  /* flag for whether initial guess is 0 */
@@ -42,42 +62,23 @@ struct _p_KSP {
   int  (*monitor[MAXKSPMONITORS])(KSP,int,double,void*); /* returns control to user after */
   void *monitorcontext[MAXKSPMONITORS];            /* residual calculation, allows user */
   int  numbermonitors;                   /* to, for instance, print residual norm, etc. */
-  int (*converged)(KSP,int,double,void*);
-  void *cnvP; 
-  int (*buildsolution)(KSP,Vec,Vec*);  /* Returns a pointer to the solution, or
-				      calculates the solution in a 
-				      user-provided area. */
-  int (*buildresidual)(KSP,Vec,Vec,Vec*); /* Returns a pointer to the residual, or
-				      calculates the residual in a 
-				      user-provided area.  */
-  int (*adjust_work_vectors)(KSP,Vec*,int); /* should pre-allocate the vectors*/
-  PC  B;
 
-  /*------------ Major routines which act on KSPCtx-----------------*/
-  int  (*solve)(KSP,int*);      /* actual solver */
-  int  (*solvetrans)(KSP,int*);      /* actual solver */
-  int  (*setup)(KSP);
-  int  (*adjustwork)(KSP);
-  void *data;                      /* holder for misc stuff associated 
+  int  (*converged)(KSP,int,double,void*);
+  void       *cnvP; 
+
+  PC         B;
+
+  void       *data;                      /* holder for misc stuff associated 
                                    with a particular iterative solver */
 
   /* ----------------Default work-area management -------------------- */
-  int    nwork;
-  Vec    *work;
+  int        nwork;
+  Vec        *work;
 
-  int    setupcalled;
+  int        setupcalled;
 
-  DrawLG xmonitor;  /* location for stashing default xmonitor context */
-
-  int    (*setfromoptions)(KSP);
-  int    (*printhelp)(KSP,char*);
-
-  int    its;       /* number of iterations so far computed */
-  int    (*computeextremesingularvalues)(KSP,double*,double*);
-  int    (*computeeigenvalues)(KSP,int,double*,double*,int *);
-  int    (*destroy)(KSP);
-  int    (*view)(KSP,Viewer);
-
+  DrawLG     xmonitor;  /* location for stashing default xmonitor context */
+  int        its;       /* number of iterations so far computed */
   PetscTruth avoidnorms; /* does not compute residual norms when possible */
 };
 
@@ -89,7 +90,6 @@ struct _p_KSP {
 	  } \
 	}
 
-extern int KSPDefaultAdjustWork(KSP);
 extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 extern int KSPDefaultDestroy(KSP);

@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.25 1998/09/23 01:02:43 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.26 1998/09/23 15:48:45 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -136,8 +136,8 @@ extern PetscStack *petscstack;
 #define PetscStackPush(n) \
   {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
     petscstack->function[petscstacksize]  = n; \
-    petscstack->file[petscstacksize]      = 0; \
-    petscstack->directory[petscstacksize] = 0; \
+    petscstack->file[petscstacksize]      = "unknown"; \
+    petscstack->directory[petscstacksize] = "unknown"; \
     petscstack->line[petscstacksize]      = 0; \
     petscstacksize++; \
   }}
@@ -187,8 +187,8 @@ extern int        stack_err;
   {if (petscstack && (petscstacksize < petscstacksize_max)) {    \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_take_access(stack_mem);\
     petscstack->function[petscstacksize]  = n; \
-    petscstack->file[petscstacksize]      = 0; \
-    petscstack->directory[petscstacksize] = 0; \
+    petscstack->file[petscstacksize]      = "unknown"; \
+    petscstack->directory[petscstacksize] = "unknown"; \
     petscstack->line[petscstacksize]      = 0; \
     petscstacksize++; \
     if (!(stack_mem < 0)) stack_err = AMS_Memory_grant_access(stack_mem);\

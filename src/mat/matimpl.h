@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.89 1998/07/23 22:47:37 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.90 1998/09/25 03:14:21 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -52,7 +52,7 @@ struct _MatOps {
             (*incompletecholeskyfactorsymbolic)(Mat,IS,double,int,Mat *),
 /*35*/      (*getarray)(Mat,Scalar **),
             (*restorearray)(Mat,Scalar **),
-            (*convertsametype)(Mat,Mat *,int),
+            (*duplicate)(Mat,MatDuplicateOption,Mat *),
             (*forwardsolve)(Mat,Vec,Vec),
             (*backwardsolve)(Mat,Vec,Vec),
 /*40*/      (*ilufactor)(Mat,IS,IS,double,int),
@@ -104,9 +104,6 @@ struct _p_Mat {
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
 };
 
-/* final argument for MatConvertSameType() */
-#define DO_NOT_COPY_VALUES 0
-#define COPY_VALUES        1
 
 /* 
     The stash is used to temporarily store inserted matrix values that 

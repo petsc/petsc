@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.135 1998/07/28 15:49:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.136 1998/09/25 03:13:33 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -52,7 +52,7 @@ int KSPView(KSP ksp,Viewer viewer)
     PetscFPrintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetType(ksp,&method);
     PetscFPrintf(ksp->comm,fd,"  method: %s\n",method);
-    if (ksp->view) (*ksp->view)(ksp,viewer);
+    if (ksp->ops->view) (*ksp->ops->view)(ksp,viewer);
     if (ksp->guess_zero) PetscFPrintf(ksp->comm,fd,
       "  maximum iterations=%d, initial guess is zero\n",ksp->max_it);
     else PetscFPrintf(ksp->comm,fd,"  maximum iterations=%d\n", ksp->max_it);
@@ -169,60 +169,58 @@ static int KSPPublish_Petsc(PetscObject object)
 
 .seealso: KSPSetUp(), KSPSolve(), KSPDestroy()
 @*/
-int KSPCreate(MPI_Comm comm,KSP *ksp)
+int KSPCreate(MPI_Comm comm,KSP *inksp)
 {
-  KSP ctx;
+  KSP ksp;
 
   PetscFunctionBegin;
-  *ksp = 0;
-  PetscHeaderCreate(ctx,_p_KSP,int,KSP_COOKIE,-1,comm,KSPDestroy,KSPView);
-  PLogObjectCreate(ctx);
-  *ksp               = ctx;
-  ctx->bops->publish = KSPPublish_Petsc;
+  *inksp = 0;
+  PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,comm,KSPDestroy,KSPView);
+  PLogObjectCreate(ksp);
+  *inksp               = ksp;
+  ksp->bops->publish = KSPPublish_Petsc;
 
-  ctx->type          = -1;
-  ctx->max_it        = 10000;
-  ctx->pc_side       = PC_LEFT;
-  ctx->use_pres      = 0;
-  ctx->rtol          = 1.e-5;
-  ctx->atol          = 1.e-50;
-  ctx->divtol        = 1.e4;
-  ctx->avoidnorms    = PETSC_FALSE;
+  ksp->type          = -1;
+  ksp->max_it        = 10000;
+  ksp->pc_side       = PC_LEFT;
+  ksp->use_pres      = 0;
+  ksp->rtol          = 1.e-5;
+  ksp->atol          = 1.e-50;
+  ksp->divtol        = 1.e4;
+  ksp->avoidnorms    = PETSC_FALSE;
 
-  ctx->rnorm               = 0.0;
-  ctx->its                 = 0;
-  ctx->guess_zero          = 1;
-  ctx->calc_sings          = 0;
-  ctx->calc_res            = 0;
-  ctx->residual_history    = 0;
-  ctx->res_hist_size       = 0;
-  ctx->res_act_size        = 0;
-  ctx->numbermonitors      = 0;
-  ctx->adjust_work_vectors = 0;
-  ctx->converged           = KSPDefaultConverged;
-  ctx->buildsolution       = KSPDefaultBuildSolution;
-  ctx->buildresidual       = KSPDefaultBuildResidual;
+  ksp->rnorm               = 0.0;
+  ksp->its                 = 0;
+  ksp->guess_zero          = 1;
+  ksp->calc_sings          = 0;
+  ksp->calc_res            = 0;
+  ksp->residual_history    = 0;
+  ksp->res_hist_size       = 0;
+  ksp->res_act_size        = 0;
+  ksp->numbermonitors      = 0;
+  ksp->converged           = KSPDefaultConverged;
+  ksp->ops->buildsolution       = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual       = KSPDefaultBuildResidual;
 
-  ctx->setfromoptions      = 0;
-  ctx->printhelp           = 0;
+  ksp->ops->setfromoptions      = 0;
+  ksp->ops->printhelp           = 0;
 
-  ctx->vec_sol   = 0;
-  ctx->vec_rhs   = 0;
-  ctx->B         = 0;
+  ksp->vec_sol         = 0;
+  ksp->vec_rhs         = 0;
+  ksp->B               = 0;
 
-  ctx->solve      = 0;
-  ctx->solvetrans = 0;
-  ctx->setup      = 0;
-  ctx->destroy    = 0;
-  ctx->adjustwork = 0;
+  ksp->ops->solve      = 0;
+  ksp->ops->solvetrans = 0;
+  ksp->ops->setup      = 0;
+  ksp->ops->destroy    = 0;
 
-  ctx->data          = 0;
-  ctx->nwork         = 0;
-  ctx->work          = 0;
+  ksp->data            = 0;
+  ksp->nwork           = 0;
+  ksp->work            = 0;
 
-  ctx->cnvP          = 0;
+  ksp->cnvP            = 0;
 
-  ctx->setupcalled   = 0;
+  ksp->setupcalled     = 0;
   PetscFunctionReturn(0);
 }
  
@@ -234,7 +232,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
    Collective on KSP
 
    Input Parameter:
-.  ctx      - the Krylov space context
+.  ksp      - the Krylov space context
 .  itmethod - a known method
 
    Options Database Command:
@@ -270,7 +268,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
   if (ksp->setupcalled) {
     /* destroy the old private KSP context */
-    ierr = (*(ksp)->destroy)(ksp); CHKERRQ(ierr);
+    ierr = (*ksp->ops->destroy)(ksp); CHKERRQ(ierr);
     ksp->data = 0;
   }
   /* Get the function pointers for the iterative method requested */
@@ -403,8 +401,8 @@ int KSPPrintHelp(KSP ksp)
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_eigenvalues\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_singularvalues\n",p);
 
-  if (ksp->printhelp) {
-    ierr = (*ksp->printhelp)(ksp,p);CHKERRQ(ierr);
+  if (ksp->ops->printhelp) {
+    ierr = (*ksp->ops->printhelp)(ksp,p);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -577,8 +575,8 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
   if (flg) { ierr = KSPPrintHelp(ksp); CHKERRQ(ierr);  }
 
-  if (ksp->setfromoptions) {
-    ierr = (*ksp->setfromoptions)(ksp);CHKERRQ(ierr);
+  if (ksp->ops->setfromoptions) {
+    ierr = (*ksp->ops->setfromoptions)(ksp);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

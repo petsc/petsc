@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.50 1998/05/29 20:35:23 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.51 1998/07/23 22:45:57 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -74,6 +74,7 @@ struct _p_Vec {
   int                    bs;
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
+  PetscTruth             array_gotten;
 };
 
 /*

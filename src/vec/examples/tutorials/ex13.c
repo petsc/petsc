@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.1 1998/09/12 01:43:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.2 1998/09/14 18:26:06 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests PetscObjectPublish().\n\n";
@@ -50,6 +50,7 @@ int main(int argc,char **argv)
     /*
        Access the vector entries and add to them
     */
+    PetscBarrier((PetscObject)x);
     ierr = VecGetArray(x,&array);CHKERRA(ierr);
     for ( i=0; i<n; i++ ) {
       array[i]++;

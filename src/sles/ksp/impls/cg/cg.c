@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.74 1998/06/11 19:55:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.75 1998/07/28 15:49:45 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -49,8 +49,8 @@ int KSPSetUp_CG(KSP ksp)
     cgP->ee = (double *)PetscMalloc(2*(maxit+1)*sizeof(double));CHKPTRQ(cgP->ee);
     PLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->dd                        = cgP->ee + maxit + 1;
-    ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
-    ksp->computeeigenvalues           = KSPComputeEigenvalues_CG;
+    ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
+    ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
   }
   PetscFunctionReturn(0);
 }
@@ -259,23 +259,22 @@ int KSPCreate_CG(KSP ksp)
   PetscMemzero(cg,sizeof(KSP_CG));
   PLogObjectMemory(ksp,sizeof(KSP_CG));
 #if !defined(USE_PETSC_COMPLEX)
-  cg->type                  = KSP_CG_SYMMETRIC;
+  cg->type                       = KSP_CG_SYMMETRIC;
 #else
-  cg->type                  = KSP_CG_HERMITIAN;
+  cg->type                       = KSP_CG_HERMITIAN;
 #endif
-  ksp->data                 = (void *) cg;
-  ksp->pc_side              = PC_LEFT;
-  ksp->calc_res             = 1;
-  ksp->setup                = KSPSetUp_CG;
-  ksp->solve                = KSPSolve_CG;
-  ksp->adjustwork           = KSPDefaultAdjustWork;
-  ksp->destroy              = KSPDestroy_CG;
-  ksp->view                 = KSPView_CG;
-  ksp->printhelp            = KSPPrintHelp_CG;
-  ksp->setfromoptions       = KSPSetFromOptions_CG;
-  ksp->converged            = KSPDefaultConverged;
-  ksp->buildsolution        = KSPDefaultBuildSolution;
-  ksp->buildresidual        = KSPDefaultBuildResidual;
+  ksp->data                      = (void *) cg;
+  ksp->pc_side                   = PC_LEFT;
+  ksp->calc_res                  = 1;
+  ksp->ops->setup                = KSPSetUp_CG;
+  ksp->ops->solve                = KSPSolve_CG;
+  ksp->ops->destroy              = KSPDestroy_CG;
+  ksp->ops->view                 = KSPView_CG;
+  ksp->ops->printhelp            = KSPPrintHelp_CG;
+  ksp->ops->setfromoptions       = KSPSetFromOptions_CG;
+  ksp->converged                 = KSPDefaultConverged;
+  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG",
                                      (void*)KSPCGSetType_CG);CHKERRQ(ierr);

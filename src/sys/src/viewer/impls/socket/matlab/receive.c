@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: receive.c,v 1.8 1998/04/03 21:00:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: receive.c,v 1.9 1998/06/01 03:33:05 bsmith Exp bsmith $";
 #endif
 /*
  
@@ -157,7 +157,10 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     err = read( fd, pp, wsize );
     if (err < 0 && errno == EINTR) continue;
     if (err == 0 && wsize > 0) return 1;
-    if (err < 0) printf("error reading");
+    if (err < 0) {
+      perror("error reading");
+      return err;
+    }
     n  -= err;
     pp += err;
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgs.c,v 1.41 1998/05/13 17:03:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.42 1998/07/28 15:49:49 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -118,16 +118,15 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
 int KSPCreate_CGS(KSP ksp)
 {
   PetscFunctionBegin;
-  ksp->data                 = (void *) 0;
-  ksp->pc_side              = PC_LEFT;
-  ksp->calc_res             = 1;
-  ksp->setup                = KSPSetUp_CGS;
-  ksp->solve                = KSPSolve_CGS;
-  ksp->adjustwork           = KSPDefaultAdjustWork;
-  ksp->destroy              = KSPDefaultDestroy;
-  ksp->converged            = KSPDefaultConverged;
-  ksp->buildsolution        = KSPDefaultBuildSolution;
-  ksp->buildresidual        = KSPDefaultBuildResidual;
-  ksp->view                 = 0;
+  ksp->data                      = (void *) 0;
+  ksp->pc_side                   = PC_LEFT;
+  ksp->calc_res                  = 1;
+  ksp->ops->setup                = KSPSetUp_CGS;
+  ksp->ops->solve                = KSPSolve_CGS;
+  ksp->ops->destroy              = KSPDefaultDestroy;
+  ksp->converged                 = KSPDefaultConverged;
+  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->view                 = 0;
   PetscFunctionReturn(0);
 }

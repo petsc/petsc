@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.2 1998/07/28 02:43:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bicg.c,v 1.3 1998/07/28 15:50:20 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -138,22 +138,24 @@ int KSPDestroy_BiCG(KSP ksp)
 int KSPCreate_BiCG(KSP ksp)
 {
   PetscFunctionBegin;
-  ksp->data                 = (void *) 0;
-  ksp->pc_side              = PC_LEFT;
-  ksp->calc_res             = 1;
-  ksp->setup                = KSPSetUp_BiCG;
-  ksp->solve                = KSPSolve_BiCG;
-  ksp->adjustwork           = KSPDefaultAdjustWork;
-  ksp->destroy              = KSPDestroy_BiCG;
-  ksp->view                 = 0;
-  ksp->printhelp            = 0;
-  ksp->setfromoptions       = 0;
-  ksp->converged            = KSPDefaultConverged;
-  ksp->buildsolution        = KSPDefaultBuildSolution;
-  ksp->buildresidual        = KSPDefaultBuildResidual;
+  ksp->data                      = (void *) 0;
+  ksp->pc_side                   = PC_LEFT;
+  ksp->calc_res                  = 1;
+  ksp->ops->setup                = KSPSetUp_BiCG;
+  ksp->ops->solve                = KSPSolve_BiCG;
+  ksp->ops->destroy              = KSPDestroy_BiCG;
+  ksp->ops->view                 = 0;
+  ksp->ops->printhelp            = 0;
+  ksp->ops->setfromoptions       = 0;
+  ksp->converged                 = KSPDefaultConverged;
+  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
 
   PetscFunctionReturn(0);
 }
+
+
+
 
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.108 1998/07/27 21:53:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.109 1998/09/25 03:14:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -617,7 +617,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
   /* special case that simply copies fill pattern */
   ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);
   if (levels == 0 && row_identity && col_identity) {
-    ierr = MatConvertSameType_SeqAIJ(A,fact,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
+    ierr = MatDuplicate_SeqAIJ(A,MAT_DO_NOT_COPY_VALUES,fact); CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqAIJ *) (*fact)->data;
     if (!b->diag) {

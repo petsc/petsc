@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.88 1998/06/01 21:59:28 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.89 1998/09/28 18:11:11 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -557,6 +557,8 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported");
     }
   }
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->m);
   PetscFunctionReturn(0);
 }
@@ -578,7 +580,12 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   ns       = a->inode.size;     /* Node Size array */
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+  if (zz != yy) {
+    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+  } else {
+    z = y;
+  }
+
   x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v1   = a->a;
@@ -738,6 +745,11 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
     default :
       SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported");
     }
+  }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  if (zz != yy) {
+    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
   }
   PLogFlops(2*a->nz);
   PetscFunctionReturn(0);
@@ -1175,6 +1187,8 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   }
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout); CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
   PetscFunctionReturn(0);
 }

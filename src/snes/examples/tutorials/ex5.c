@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.93 1998/07/23 22:50:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.94 1998/09/25 03:16:11 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -149,7 +149,7 @@ int main( int argc, char **argv )
      vectors that are the same types
   */
   ierr = DACreateGlobalVector(user.da,&x); CHKERRA(ierr);
-  ierr = PetscObjectPublish((PetscObject)x);CHKERRA(ierr);
+  ierr = PetscObjectPublish((PetscObject)x);CHKERRA(ierr); 
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = PetscObjectPublish((PetscObject)r);CHKERRA(ierr);
 

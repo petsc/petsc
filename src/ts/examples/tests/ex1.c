@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.21 1998/03/06 00:17:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.22 1998/03/20 22:51:36 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -323,6 +323,7 @@ int RHSFunctionHeat(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
     copyptr[i] = sc * (localptr[i+1] + localptr[i-1] - 2.0*localptr[i]);
   }
   copyptr[localsize-1] = localptr[localsize-1];
+  ierr = VecRestoreArray(local,&localptr); CHKERRQ(ierr);
   ierr = VecRestoreArray(localwork,&copyptr); CHKERRQ(ierr);
 
   /* Local to Global */

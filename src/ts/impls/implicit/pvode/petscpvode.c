@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.28 1998/05/29 20:38:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.29 1998/09/25 03:15:34 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -57,7 +57,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
 
     /* copy the Jacobian matrix */
     if (!cvode->pmat) {
-      ierr = MatDuplicate(Jac,&cvode->pmat); CHKERRQ(ierr);
+      ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat); CHKERRQ(ierr);
       PLogObjectParent(ts,cvode->pmat); 
     }
     ierr = MatCopy(Jac, cvode->pmat,SAME_NONZERO_PATTERN); CHKERRQ(ierr);

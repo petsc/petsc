@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.63 1998/05/13 16:55:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.64 1998/07/28 15:49:58 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -177,19 +177,18 @@ int KSPCreate_Richardson(KSP ksp)
 
   PetscFunctionBegin;
   PLogObjectMemory(ksp,sizeof(KSP_Richardson));
-  ksp->data                   = (void *) richardsonP;
-  richardsonP->scale          = 1.0;
-  ksp->setup                  = KSPSetUp_Richardson;
-  ksp->solve                  = KSPSolve_Richardson;
-  ksp->adjustwork             = KSPDefaultAdjustWork;
-  ksp->destroy                = KSPDefaultDestroy;
-  ksp->calc_res               = 1;
-  ksp->converged              = KSPDefaultConverged;
-  ksp->buildsolution          = KSPDefaultBuildSolution;
-  ksp->buildresidual          = KSPDefaultBuildResidual;
-  ksp->view                   = KSPView_Richardson;
-  ksp->printhelp              = KSPPrintHelp_Richardson;
-  ksp->setfromoptions         = KSPSetFromOptions_Richardson;
+  ksp->data                        = (void *) richardsonP;
+  richardsonP->scale               = 1.0;
+  ksp->calc_res                    = 1;
+  ksp->ops->setup                  = KSPSetUp_Richardson;
+  ksp->ops->solve                  = KSPSolve_Richardson;
+  ksp->ops->destroy                = KSPDefaultDestroy;
+  ksp->converged                   = KSPDefaultConverged;
+  ksp->ops->buildsolution          = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual          = KSPDefaultBuildResidual;
+  ksp->ops->view                   = KSPView_Richardson;
+  ksp->ops->printhelp              = KSPPrintHelp_Richardson;
+  ksp->ops->setfromoptions         = KSPSetFromOptions_Richardson;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",
                                     "KSPRichardsonSetScale_Richardson",

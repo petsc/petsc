@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.260 1998/08/25 19:52:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.261 1998/09/25 03:14:35 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -971,7 +971,9 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   int        n = mat->n, m = mat->m, i,shift = A->indexshift;
 
   PetscFunctionBegin;
-  VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr); 
+  ierr = VecGetArray(bb,&b); CHKERRQ(ierr); 
+  ierr = VecGetArray(mat->lvec,&ls);CHKERRQ(ierr);
   xs = x + shift; /* shift by one for index start of 1 */
   ls = ls + shift;
   if (!A->diag) {ierr = MatMarkDiag_SeqAIJ(AA); CHKERRQ(ierr);}
@@ -979,9 +981,12 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
+      ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr); 
+      ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr); 
+      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
     ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
     while (its--) {
       /* go down through the rows */
@@ -1018,9 +1023,12 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   } else if (flag & SOR_LOCAL_FORWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
+      ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr); 
+      ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr); 
+      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
     ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
     while (its--) {
       for ( i=0; i<m; i++ ) {
@@ -1041,12 +1049,13 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   } else if (flag & SOR_LOCAL_BACKWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       ierr = (*mat->A->ops->relax)(mat->A,bb,omega,flag,fshift,its,xx);CHKERRQ(ierr);
+      ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr); 
+      ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr); 
+      ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
-    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,
-                            mat->Mvctx); CHKERRQ(ierr);
-    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,
-                            mat->Mvctx); CHKERRQ(ierr);
+    ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
+    ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_FORWARD,mat->Mvctx);CHKERRQ(ierr);
     while (its--) {
       for ( i=m-1; i>-1; i-- ) {
         n    = A->i[i+1] - A->i[i]; 
@@ -1066,6 +1075,9 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   } else {
     SETERRQ(PETSC_ERR_SUP,0,"Parallel SOR not supported");
   }
+  ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr); 
+  ierr = VecRestoreArray(bb,&b); CHKERRQ(ierr); 
+  ierr = VecRestoreArray(mat->lvec,&ls);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -1552,7 +1564,7 @@ int MatCopy_MPIAIJ(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-extern int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
+extern int MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
 extern int MatIncreaseOverlap_MPIAIJ(Mat , int, IS *, int);
 extern int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
 extern int MatGetSubMatrices_MPIAIJ (Mat ,int , IS *,IS *,MatGetSubMatrixCall,Mat **);
@@ -1596,7 +1608,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        0,
-       MatConvertSameType_MPIAIJ,
+       MatDuplicate_MPIAIJ,
        0,
        0,
        0,
@@ -1626,6 +1638,33 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        MatGetMaps_Petsc};
 
+/* ----------------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "MatStoreValues_MPIAIJ"
+int MatStoreValues_MPIAIJ(Mat mat)
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr = MatStoreValues(aij->A);CHKERRQ(ierr);
+  ierr = MatStoreValues(aij->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatRetrieveValues_MPIAIJ"
+int MatRetrieveValues_MPIAIJ(Mat mat)
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
+  int        ierr;
+
+  PetscFunctionBegin;
+  ierr = MatRetrieveValues(aij->A);CHKERRQ(ierr);
+  ierr = MatRetrieveValues(aij->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateMPIAIJ"
@@ -1828,13 +1867,19 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
 
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",
+                                     "MatStoreValues_MPIAIJ",
+                                     (void*)MatStoreValues_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
+                                     "MatRetrieveValues_MPIAIJ",
+                                     (void*)MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
   *A = B;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatConvertSameType_MPIAIJ"
-int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
+#define __FUNC__ "MatDuplicate_MPIAIJ"
+int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat        mat;
   Mat_MPIAIJ *a,*oldmat = (Mat_MPIAIJ *) matin->data;
@@ -1887,9 +1932,9 @@ int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   PLogObjectParent(mat,a->lvec);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,a->Mvctx);
-  ierr =  MatConvert(oldmat->A,MATSAME,&a->A); CHKERRQ(ierr);
+  ierr =  MatDuplicate(oldmat->A,cpvalues,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);
-  ierr =  MatConvert(oldmat->B,MATSAME,&a->B); CHKERRQ(ierr);
+  ierr =  MatDuplicate(oldmat->B,cpvalues,&a->B); CHKERRQ(ierr);
   PLogObjectParent(mat,a->B);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (flg) {

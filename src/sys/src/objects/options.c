@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.196 1998/08/20 15:20:33 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.197 1998/08/20 15:23:01 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -35,6 +35,11 @@ typedef struct {
 } OptionsTable;
 
 static OptionsTable *options = 0;
+
+int OptionsAtoi(char name[])
+{
+  return atoi(name);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetProgramName"

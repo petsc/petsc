@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.30 1997/03/26 01:35:45 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.31 1998/03/06 00:14:28 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 #include <math.h>
@@ -44,11 +44,12 @@ typedef struct {
   int              reallocs;         /* number of mallocs done during MatSetValues() 
                                         as more values are set than were prealloced */
   PetscTruth       ilu_preserve_row_sums;
+  Scalar           *saved_values;     /* location for stashing nonzero values of matrix */
 } Mat_SeqAIJ;
 
 extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,double,int,Mat *);
 extern int MatConvert_SeqAIJ(Mat,MatType,Mat *);
-extern int MatConvertSameType_SeqAIJ(Mat, Mat*,int);
+extern int MatDuplicate_SeqAIJ(Mat,MatDuplicateOption, Mat*);
 extern int MatMarkDiag_SeqAIJ(Mat);
 
 extern int MatMult_SeqAIJ(Mat A,Vec,Vec);

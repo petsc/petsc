@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.16 1998/03/20 22:52:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.17 1998/06/11 19:57:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -91,12 +91,6 @@ int main(int argc,char **argv)
 
   }
 
-  /*
-     The sleep is so that the viewer port is not closed before Matlab is 
-     finished reading.
-  */
-  PetscSleep(100);
-  /* ierr = ViewerDestroy(viewer); CHKERRA(ierr); */
   ierr = VecDestroy(copy); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);

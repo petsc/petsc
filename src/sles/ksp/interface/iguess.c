@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iguess.c,v 1.22 1997/10/19 03:23:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.23 1997/11/28 16:18:41 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -18,35 +18,35 @@ typedef struct {
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessCreate" 
-int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
+int KSPGuessCreate(KSP ksp,int  maxl,void **ITG )
 {
   KSPIGUESS *itg;
   int       ierr;
 
   *ITG = 0;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(itctx,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   itg  = (KSPIGUESS* ) PetscMalloc(sizeof(KSPIGUESS)); CHKPTRQ(itg);
   itg->curl = 0;
   itg->maxl = maxl;
   itg->alpha = (Scalar *)PetscMalloc( maxl * sizeof(Scalar) );  CHKPTRQ(itg->alpha);
-  PLogObjectMemory(itctx,sizeof(KSPIGUESS) + maxl*sizeof(Scalar));
-  ierr = VecDuplicateVecs(itctx->vec_rhs,maxl,&itg->xtilde);CHKERRQ(ierr);
-  PLogObjectParents(itctx,maxl,itg->xtilde);
-  ierr = VecDuplicateVecs(itctx->vec_rhs,maxl,&itg->btilde);CHKERRQ(ierr);
-  PLogObjectParents(itctx,maxl,itg->btilde);
+  PLogObjectMemory(ksp,sizeof(KSPIGUESS) + maxl*sizeof(Scalar));
+  ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->xtilde);CHKERRQ(ierr);
+  PLogObjectParents(ksp,maxl,itg->xtilde);
+  ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->btilde);CHKERRQ(ierr);
+  PLogObjectParents(ksp,maxl,itg->btilde);
   *ITG = (void *)itg;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessDestroy" 
-int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
+int KSPGuessDestroy( KSP ksp, KSPIGUESS *itg )
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(itctx,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscFree( itg->alpha );
   ierr = VecDestroyVecs( itg->btilde, itg->maxl );CHKERRQ(ierr);
   ierr = VecDestroyVecs( itg->xtilde, itg->maxl );CHKERRQ(ierr);
@@ -56,13 +56,13 @@ int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessFormB"
-int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
+int KSPGuessFormB( KSP ksp, KSPIGUESS *itg, Vec b )
 {
   int    i,ierr;
   Scalar tmp;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(itctx,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   for (i=1; i<=itg->curl; i++) {
     ierr = VecDot(itg->btilde[i-1],b,&(itg->alpha[i-1]));CHKERRQ(ierr);
     tmp = -itg->alpha[i-1];
@@ -73,12 +73,12 @@ int KSPGuessFormB( KSP itctx, KSPIGUESS *itg, Vec b )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessFormX"
-int KSPGuessFormX( KSP itctx, KSPIGUESS *itg, Vec x )
+int KSPGuessFormX( KSP ksp, KSPIGUESS *itg, Vec x )
 {
   int i,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(itctx,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ierr = VecCopy(x,itg->xtilde[itg->curl]);CHKERRQ(ierr);
   for (i=1; i<=itg->curl; i++) {
     ierr = VecAXPY(&itg->alpha[i-1],itg->xtilde[i-1],x);CHKERRQ(ierr);
@@ -88,7 +88,7 @@ int KSPGuessFormX( KSP itctx, KSPIGUESS *itg, Vec x )
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGuessUpdate"
-int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
+int  KSPGuessUpdate( KSP ksp, Vec x, KSPIGUESS *itg )
 {
   double       normax, norm;
   Scalar       tmp;
@@ -97,13 +97,13 @@ int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
   Mat          Amat, Pmat;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(itctx,KSP_COOKIE);
-  ierr = PCGetOperators(itctx->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (curl == itg->maxl) {
     ierr = MatMult(Amat,x,itg->btilde[0] );CHKERRQ(ierr);
     ierr = VecNorm(itg->btilde[0],NORM_2,&normax);CHKERRQ(ierr);
     tmp = 1.0/normax; ierr = VecScale(&tmp,itg->btilde[0]);CHKERRQ(ierr);
-    /* VCOPY(itctx->vc,x,itg->xtilde[0]); */
+    /* VCOPY(ksp->vc,x,itg->xtilde[0]); */
     ierr = VecScale(&tmp,itg->xtilde[0]);CHKERRQ(ierr);
   } else {
     ierr = MatMult( Amat, itg->xtilde[curl], itg->btilde[curl] );CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.103 1998/07/28 03:18:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.104 1998/07/28 15:49:26 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -46,8 +46,8 @@ int KSPComputeExtremeSingularValues(KSP ksp,double *emax,double *emin)
     SETERRQ(4,0,"Singular values not requested before KSPSetUp");
   }
 
-  if (ksp->computeextremesingularvalues) {
-    ierr = (*ksp->computeextremesingularvalues)(ksp,emax,emin);CHKERRQ(ierr);
+  if (ksp->ops->computeextremesingularvalues) {
+    ierr = (*ksp->ops->computeextremesingularvalues)(ksp,emax,emin);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -108,8 +108,8 @@ int KSPComputeEigenvalues(KSP ksp,int n,double *r,double *c,int *neig)
     SETERRQ(4,0,"Eigenvalues not requested before KSPSetUp");
   }
 
-  if (ksp->computeeigenvalues) {
-    ierr = (*ksp->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
+  if (ksp->ops->computeeigenvalues) {
+    ierr = (*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -142,7 +142,7 @@ int KSPSetUp(KSP ksp)
 
   if (ksp->setupcalled) PetscFunctionReturn(0);
   ksp->setupcalled = 1;
-  ierr = (*ksp->setup)(ksp);CHKERRQ(ierr);
+  ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +199,7 @@ int KSPSolve(KSP ksp, int *its)
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
-  ierr = (*ksp->solve)(ksp,its); CHKERRQ(ierr);
+  ierr = (*ksp->ops->solve)(ksp,its); CHKERRQ(ierr);
 
   MPI_Comm_rank(ksp->comm,&rank);
 
@@ -312,8 +312,8 @@ int KSPSolveTrans(KSP ksp, int *its)
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol); CHKERRQ(ierr);}
-  if (!ksp->solvetrans) SETERRQ(1,1,"No transpose solver for this Krylov method");
-  ierr = (*ksp->solvetrans)(ksp,its); CHKERRQ(ierr);
+  if (!ksp->ops->solvetrans) SETERRQ(1,1,"No transpose solver for this Krylov method");
+  ierr = (*ksp->ops->solvetrans)(ksp,its); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -338,8 +338,8 @@ int KSPDestroy(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (--ksp->refct > 0) PetscFunctionReturn(0);
-  if (ksp->destroy) {
-    ierr = (*ksp->destroy)(ksp); CHKERRQ(ierr);
+  if (ksp->ops->destroy) {
+    ierr = (*ksp->ops->destroy)(ksp); CHKERRQ(ierr);
   }
   if (ksp->xmonitor) KSPLGMonitorDestroy(ksp->xmonitor);
   PLogObjectDestroy(ksp);
@@ -1036,9 +1036,9 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
    This routine must be called after SLESSolve().
    This routine can be used in one of two ways
 .vb
-      KSPBuildSolution(ctx,PETSC_NULL,&V);
+      KSPBuildSolution(ksp,PETSC_NULL,&V);
    or
-      KSPBuildSolution(ctx,v,PETSC_NULL); 
+      KSPBuildSolution(ksp,v,PETSC_NULL); 
 .ve
    In the first case an internal vector is allocated to store the solution
    (the user cannot destroy this vector). In the second case the solution
@@ -1051,15 +1051,15 @@ int KSPGetConvergenceContext(KSP ksp, void **ctx)
 
 .seealso: KSPGetSolution(), KSPBuildResidual()
 @*/
-int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
+int KSPBuildSolution(KSP ksp, Vec v, Vec *V)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!V && !v) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must provide either v or V");
   if (!V) V = &v;
-  ierr = (*ctx->buildsolution)(ctx,v,V);CHKERRQ(ierr);
+  ierr = (*ksp->ops->buildsolution)(ksp,v,V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1071,7 +1071,7 @@ int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
    Collective on KSP
 
    Input Parameter:
-.  ctx - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 
    Output Parameters:
 +  v - optional location to stash residual.  If v is not provided,
@@ -1087,22 +1087,22 @@ int KSPBuildSolution(KSP ctx, Vec v, Vec *V)
 
 .seealso: KSPBuildSolution()
 @*/
-int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)
+int KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
 {
   int flag = 0, ierr;
   Vec w = v, tt = t;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (!w) {
-    ierr = VecDuplicate(ctx->vec_rhs,&w); CHKERRQ(ierr);
-    PLogObjectParent((PetscObject)ctx,w);
+    ierr = VecDuplicate(ksp->vec_rhs,&w); CHKERRQ(ierr);
+    PLogObjectParent((PetscObject)ksp,w);
   }
   if (!tt) {
-    ierr = VecDuplicate(ctx->vec_rhs,&tt); CHKERRQ(ierr); flag = 1;
-    PLogObjectParent((PetscObject)ctx,tt);
+    ierr = VecDuplicate(ksp->vec_rhs,&tt); CHKERRQ(ierr); flag = 1;
+    PLogObjectParent((PetscObject)ksp,tt);
   }
-  ierr = (*ctx->buildresidual)(ctx,tt,w,V); CHKERRQ(ierr);
+  ierr = (*ksp->ops->buildresidual)(ksp,tt,w,V); CHKERRQ(ierr);
   if (flag) {ierr = VecDestroy(tt); CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

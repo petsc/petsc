@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.143 1998/07/16 16:00:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.144 1998/08/03 20:10:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1241,7 +1241,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        0,
        0,
        0,
-       MatConvertSameType_SeqBAIJ,
+       MatDuplicate_SeqBAIJ,
        0,
        0,
        MatILUFactor_SeqBAIJ,
@@ -1447,8 +1447,8 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatConvertSameType_SeqBAIJ"
-int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
+#define __FUNC__ "MatDuplicate_SeqBAIJ"
+int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
   Mat         C;
   Mat_SeqBAIJ *c,*a = (Mat_SeqBAIJ *) A->data;
@@ -1464,10 +1464,10 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));
   C->ops->destroy    = MatDestroy_SeqBAIJ;
   C->ops->view       = MatView_SeqBAIJ;
-  C->factor     = A->factor;
-  c->row        = 0;
-  c->col        = 0;
-  C->assembled  = PETSC_TRUE;
+  C->factor          = A->factor;
+  c->row             = 0;
+  c->col             = 0;
+  C->assembled       = PETSC_TRUE;
 
   c->m = C->m   = a->m;
   c->n = C->n   = a->n;
@@ -1495,8 +1495,10 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   PetscMemcpy(c->i,a->i,(mbs+1)*sizeof(int));
   if (mbs > 0) {
     PetscMemcpy(c->j,a->j,nz*sizeof(int));
-    if (cpvalues == COPY_VALUES) {
+    if (cpvalues == MAT_COPY_VALUES) {
       PetscMemcpy(c->a,a->a,bs2*nz*sizeof(Scalar));
+    } else {
+      PetscMemzero(c->a,bs2*nz*sizeof(Scalar));
     }
   }
 

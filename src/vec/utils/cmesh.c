@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.53 1998/05/13 18:06:44 bsmith Exp balay $";
+static char vcid[] = "$Id: cmesh.c,v 1.54 1998/05/29 23:50:52 balay Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -70,8 +70,8 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
   PetscObject   vobj = (PetscObject) win;
   Draw          popup;
 #if !defined(USE_PETSC_COMPLEX)
-  int          xin=1,yin=1,i,pause,showgrid;
-  double        h, *v, min, max, scale = 1.0;
+  int           xin=1,yin=1,i,pause,showgrid;
+  double        h, min, *v,max, scale = 1.0;
 #endif
 
   PetscFunctionBegin;
@@ -105,8 +105,6 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
 #if !defined(USE_PETSC_COMPLEX)
     double  xl = 0.0, yl = 0.0, xr = 1.0, yr = .1;
 
-    ierr = VecGetArray(W,&v); CHKERRQ(ierr);
-
     ierr = VecMax(W,0,&max); CHKERRQ(ierr); ierr = VecMin(W,0,&min); CHKERRQ(ierr);
     if (max - min < 1.e-7) {min -= 5.e-8; max += 5.e-8;}
 
@@ -134,14 +132,17 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
     /* Draw the contour plot */
     ierr = DrawGetPause(win,&pause); CHKERRA(ierr);
     while (1) {
+      
+      ierr = VecGetArray(W,&v);CHKERRQ(ierr);
       ierr = DrawTensorContourPatch(win,m,n,x,y,max,min,v);CHKERRQ(ierr);
+      ierr = VecRestoreArray(W,&v);CHKERRQ(ierr);
 
       if (showgrid) {
         for ( i=0; i<m; i++ ) {
-          DrawLine(win,x[i],y[0],x[i],y[n-1],DRAW_BLACK);
+          ierr = DrawLine(win,x[i],y[0],x[i],y[n-1],DRAW_BLACK);CHKERRQ(ierr);
         }
         for ( i=0; i<n; i++ ) {
-          DrawLine(win,x[0],y[i],x[m-1],y[i],DRAW_BLACK);
+          ierr = DrawLine(win,x[0],y[i],x[m-1],y[i],DRAW_BLACK);CHKERRQ(ierr);
         }
       }
       ierr = DrawFlush(win); CHKERRQ(ierr);
@@ -168,7 +169,6 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
       if (!rank) {ierr = DrawClear(win); CHKERRQ(ierr);}
       ierr = DrawFlush(win); CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(W,&v); CHKERRQ(ierr);
     
     if (!xin) PetscFree(x); 
     if (!yin) PetscFree(y);
@@ -208,8 +208,8 @@ int VecContourScale(Vec v,double vmin,double vmax)
     scale = (245.0 - DRAW_BASIC_COLORS)/(vmax - vmin); 
   }
 
-  ierr = VecGetArray(v,&values);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&values);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     values[i] = (double)DRAW_BASIC_COLORS + scale*(values[i] - vmin);
   }

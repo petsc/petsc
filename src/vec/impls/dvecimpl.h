@@ -1,4 +1,4 @@
-/* $Id: dvecimpl.h,v 1.10 1998/05/19 02:01:53 bsmith Exp bsmith $ */
+/* $Id: dvecimpl.h,v 1.11 1998/05/29 20:35:28 bsmith Exp bsmith $ */
 /* 
    This should not be included in users code.
 
@@ -28,6 +28,7 @@ extern int VecWAXPY_Seq(Scalar*,Vec,Vec,Vec);
 extern int VecPointwiseMult_Seq( Vec, Vec, Vec);
 extern int VecPointwiseDivide_Seq(Vec,Vec,Vec);
 extern int VecGetArray_Seq(Vec,Scalar **);
+extern int VecRestoreArray_Seq(Vec,Scalar **);
 extern int VecPlaceArray_Seq(Vec,Scalar *);
 extern int VecGetSize_Seq(Vec,int *);
 extern int VecDot_Seq(Vec, Vec,Scalar *);

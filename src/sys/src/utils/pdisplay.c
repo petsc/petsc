@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pdisplay.c,v 1.2 1998/05/29 20:36:18 bsmith Exp balay $";
+static char vcid[] = "$Id: pdisplay.c,v 1.3 1998/08/26 22:01:52 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"        
@@ -9,6 +9,40 @@ static char vcid[] = "$Id: pdisplay.c,v 1.2 1998/05/29 20:36:18 bsmith Exp balay
 #include <stdlib.h>
 #endif
 #include "pinclude/petscfix.h"
+
+#undef __FUNC__  
+#define __FUNC__ "OptionsGetenv" /*
+     OptionsGetenv - Gets an environmental variable, broadcasts to all
+          processors in communicator from first.
+
+    comm - communicator to share variable
+
+    name - name of environmental variable
+    len - amount of space allocated to hold variable
+    flag - if not PETSC_NULL tells if variable found or not
+
+*/
+int OptionsGetenv(MPI_Comm comm,const char *name,char env[],int len,int *flag)
+{
+  int  rank,ierr;
+  char *str;
+   
+  PetscFunctionBegin;
+  PetscMemzero(env,len*sizeof(char));
+
+  MPI_Comm_rank(comm,&rank);
+  if (!rank) {
+    str = getenv(name);
+    if (str) PetscStrncpy(env,str,len);
+  }
+  ierr = MPI_Bcast(env,len,MPI_CHAR,0,comm);CHKERRQ(ierr);
+  if (flag && env[0]) {
+    *flag = 1;
+  } else if (flag) {
+    *flag = 0;
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
      PetscSetDisplay - Tries to set the X windows display variable for all processors.

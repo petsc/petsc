@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.39 1998/06/16 14:52:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.40 1998/07/28 15:50:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -170,15 +170,14 @@ static int KSPSetUp_TCQMR(KSP ksp)
 int KSPCreate_TCQMR(KSP ksp)
 {
   PetscFunctionBegin;
-  ksp->data          = (void *) 0;
-  ksp->pc_side       = PC_LEFT;
-  ksp->converged     = KSPDefaultConverged;
-  ksp->buildsolution = KSPDefaultBuildSolution;
-  ksp->buildresidual = KSPDefaultBuildResidual;
-  ksp->setup         = KSPSetUp_TCQMR;
-  ksp->solve         = KSPSolve_TCQMR;
-  ksp->adjustwork    = KSPDefaultAdjustWork;
-  ksp->destroy       = KSPDefaultDestroy;
-  ksp->view          = 0;
+  ksp->data               = (void *) 0;
+  ksp->pc_side            = PC_LEFT;
+  ksp->converged          = KSPDefaultConverged;
+  ksp->ops->buildsolution = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual = KSPDefaultBuildResidual;
+  ksp->ops->setup         = KSPSetUp_TCQMR;
+  ksp->ops->solve         = KSPSolve_TCQMR;
+  ksp->ops->destroy       = KSPDefaultDestroy;
+  ksp->ops->view          = 0;
   PetscFunctionReturn(0);
 }

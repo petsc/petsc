@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.43 1998/05/20 16:22:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.44 1998/08/31 14:49:47 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -115,8 +115,8 @@ int VecLoad(Viewer viewer,Vec *newvec)
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec); CHKERRQ(ierr);
     ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
-    ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
     ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
+    ierr = VecGetArray(vec,&avec); CHKERRQ(ierr);
     ierr = MPI_Recv(avec,n,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
     ierr = VecRestoreArray(vec,&avec); CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaijpc.c,v 1.36 1998/04/03 23:15:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.37 1998/07/28 03:28:42 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the SeqAIJ/MPIAIJ format.
@@ -57,7 +57,7 @@ int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
   int               ierr,its;
   PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
   PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
-  Scalar            *x_array,*x_true_array, *y_array,*y_true_array;
+  Scalar            *x_array,*y_array;
 
   PetscFunctionBegin;
   /* 
@@ -68,13 +68,11 @@ int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
   */
   ierr = VecGetArray(x,&x_array); CHKERRQ(ierr); 
   ierr = VecGetArray(y,&y_array); CHKERRQ(ierr); 
-  ierr = VecGetArray(bjac->x,&x_true_array); CHKERRQ(ierr); 
-  ierr = VecGetArray(bjac->y,&y_true_array); CHKERRQ(ierr);  
   ierr = VecPlaceArray(bjac->x,x_array); CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array); CHKERRQ(ierr); 
   ierr = SLESSolve(jac->sles[0],bjac->x,bjac->y,&its); CHKERRQ(ierr); 
-  ierr = VecPlaceArray(bjac->x,x_true_array); CHKERRQ(ierr); 
-  ierr = VecPlaceArray(bjac->y,y_true_array);CHKERRQ(ierr);  
+  ierr = VecRestoreArray(x,&x_array); CHKERRQ(ierr); 
+  ierr = VecRestoreArray(y,&y_array); CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -85,7 +83,7 @@ int PCApplyTrans_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
   int               ierr,its;
   PC_BJacobi        *jac = (PC_BJacobi *) pc->data;
   PC_BJacobi_MPIAIJ *bjac = (PC_BJacobi_MPIAIJ *) jac->data;
-  Scalar            *x_array,*x_true_array, *y_array,*y_true_array;
+  Scalar            *x_array, *y_array;
 
   PetscFunctionBegin;
   /* 
@@ -96,13 +94,11 @@ int PCApplyTrans_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
   */
   ierr = VecGetArray(x,&x_array); CHKERRQ(ierr); 
   ierr = VecGetArray(y,&y_array); CHKERRQ(ierr); 
-  ierr = VecGetArray(bjac->x,&x_true_array); CHKERRQ(ierr); 
-  ierr = VecGetArray(bjac->y,&y_true_array); CHKERRQ(ierr);  
   ierr = VecPlaceArray(bjac->x,x_array); CHKERRQ(ierr); 
   ierr = VecPlaceArray(bjac->y,y_array); CHKERRQ(ierr); 
   ierr = SLESSolveTrans(jac->sles[0],bjac->x,bjac->y,&its); CHKERRQ(ierr); 
-  ierr = VecPlaceArray(bjac->x,x_true_array); CHKERRQ(ierr); 
-  ierr = VecPlaceArray(bjac->y,y_true_array);CHKERRQ(ierr);  
+  ierr = VecRestoreArray(x,&x_array); CHKERRQ(ierr); 
+  ierr = VecRestoreArray(y,&y_array); CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

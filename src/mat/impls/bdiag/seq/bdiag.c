@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.163 1998/07/14 02:50:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.164 1998/07/22 18:27:31 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -413,7 +413,7 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-static int MatConvertSameType_SeqBDiag(Mat,Mat *,int);
+static int MatDuplicate_SeqBDiag(Mat,MatDuplicateOption,Mat *);
 extern int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,double,int,Mat*);
 extern int MatILUFactor_SeqBDiag(Mat,IS,IS,double,int);
@@ -464,7 +464,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        0,
        0,
        0,
-       MatConvertSameType_SeqBDiag,
+       MatDuplicate_SeqBDiag,
        0,
        0,
        MatILUFactor_SeqBDiag,
@@ -674,8 +674,8 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatConvertSameType_SeqBDiag"
-static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
+#define __FUNC__ "MatDuplicate_SeqBDiag"
+static int MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Mat *matout)
 { 
   Mat_SeqBDiag *newmat, *a = (Mat_SeqBDiag *) A->data;
   int          i, ierr, len,diag,bs = a->bs;
@@ -687,7 +687,7 @@ static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
   /* Copy contents of diagonals */
   mat = *matout;
   newmat = (Mat_SeqBDiag *) mat->data;
-  if (cpvalues == COPY_VALUES) {
+  if (cpvalues == MAT_COPY_VALUES) {
     for (i=0; i<a->nd; i++) {
       len = a->bdlen[i] * bs * bs * sizeof(Scalar);
       diag = a->diag[i];
@@ -697,7 +697,7 @@ static int MatConvertSameType_SeqBDiag(Mat A,Mat *matout,int cpvalues)
         PetscMemcpy(newmat->diagv[i],a->diagv[i],len);
       }
     }
-  }
+  } 
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   PetscFunctionReturn(0);

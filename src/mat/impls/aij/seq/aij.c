@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.282 1998/09/25 03:14:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.283 1998/09/26 21:57:04 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -797,9 +797,9 @@ int MatMultTransAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   int        ierr,m = a->m, n, i, *idx,shift = a->indexshift;
 
   PetscFunctionBegin;
+  if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) VecCopy(zz,yy);
   y = y + shift; /* shift for Fortran start by 1 indexing */
   for ( i=0; i<m; i++ ) {
     idx   = a->j + a->i[i] + shift;
@@ -871,7 +871,11 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
-  ierr = VecGetArray(zz,&z); CHKERRQ(ierr);
+  if (zz != yy) {
+    ierr = VecGetArray(zz,&z); CHKERRQ(ierr);
+  } else {
+    z = y;
+  }
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v    = a->a;
@@ -894,7 +898,9 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   PLogFlops(2*a->nz);
   ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
-  ierr = VecRestoreArray(zz,&z); CHKERRQ(ierr);
+  if (zz != yy) {
+    ierr = VecRestoreArray(zz,&z); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

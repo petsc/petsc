@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.135 1998/08/25 19:52:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.136 1998/08/25 19:53:08 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1802,7 +1802,7 @@ int MatSetUnfactored_MPIBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-static int MatConvertSameType_MPIBAIJ(Mat,Mat *,int);
+static int MatDuplicate_MPIBAIJ(Mat,MatDuplicateOption,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {
@@ -1843,7 +1843,7 @@ static struct _MatOps MatOps_Values = {
   0,
   0,
   0,
-  MatConvertSameType_MPIBAIJ,
+  MatDuplicate_MPIBAIJ,
   0,
   0,
   0,
@@ -2127,8 +2127,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatConvertSameType_MPIBAIJ"
-static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
+#define __FUNC__ "MatDuplicate_MPIBAIJ"
+static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat         mat;
   Mat_MPIBAIJ *a,*oldmat = (Mat_MPIBAIJ *) matin->data;
@@ -2142,8 +2142,8 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
   PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));
   mat->ops->destroy    = MatDestroy_MPIBAIJ;
   mat->ops->view       = MatView_MPIBAIJ;
-  mat->factor     = matin->factor;
-  mat->assembled  = PETSC_TRUE;
+  mat->factor          = matin->factor;
+  mat->assembled       = PETSC_TRUE;
 
   a->m = mat->m   = oldmat->m;
   a->n = mat->n   = oldmat->n;
@@ -2198,9 +2198,9 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
   PLogObjectParent(mat,a->lvec);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,a->Mvctx);
-  ierr =  MatConvert(oldmat->A,MATSAME,&a->A); CHKERRQ(ierr);
+  ierr =  MatDuplicate(oldmat->A,cpvalues,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);
-  ierr =  MatConvert(oldmat->B,MATSAME,&a->B); CHKERRQ(ierr);
+  ierr =  MatDuplicate(oldmat->B,cpvalues,&a->B); CHKERRQ(ierr);
   PLogObjectParent(mat,a->B);
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (flg) {

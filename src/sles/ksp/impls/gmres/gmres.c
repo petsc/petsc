@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.108 1998/08/24 16:48:06 balay Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.109 1998/09/25 03:13:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -367,23 +367,6 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPAdjustWork_GMRES" 
-static int KSPAdjustWork_GMRES(KSP ksp )
-{
-  KSP_GMRES *gmres;
-  int       i,ierr;
-
-  PetscFunctionBegin;
-  if ( ksp->adjust_work_vectors ) {
-    gmres = (KSP_GMRES *) ksp->data;
-    for (i=0; i<gmres->vv_allocated; i++) {
-      ierr = (*ksp->adjust_work_vectors)(ksp,gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
-    }  
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
 #define __FUNC__ "KSPDestroy_GMRES" 
 int KSPDestroy_GMRES(KSP ksp)
 {
@@ -721,19 +704,18 @@ int KSPCreate_GMRES(KSP ksp)
   gmres = (KSP_GMRES*) PetscMalloc(sizeof(KSP_GMRES)); CHKPTRQ(gmres);
   PetscMemzero(gmres,sizeof(KSP_GMRES));
   PLogObjectMemory(ksp,sizeof(KSP_GMRES));
-  ksp->data              = (void *) gmres;
-  ksp->converged         = KSPDefaultConverged_GMRES;
-  ksp->buildsolution     = KSPBuildSolution_GMRES;
+  ksp->data                              = (void *) gmres;
+  ksp->converged                         = KSPDefaultConverged_GMRES;
+  ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
 
-  ksp->setup             = KSPSetUp_GMRES;
-  ksp->solve             = KSPSolve_GMRES;
-  ksp->adjustwork        = KSPAdjustWork_GMRES;
-  ksp->destroy           = KSPDestroy_GMRES;
-  ksp->view              = KSPView_GMRES;
-  ksp->printhelp         = KSPPrintHelp_GMRES;
-  ksp->setfromoptions    = KSPSetFromOptions_GMRES;
-  ksp->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
-  ksp->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
+  ksp->ops->setup                        = KSPSetUp_GMRES;
+  ksp->ops->solve                        = KSPSolve_GMRES;
+  ksp->ops->destroy                      = KSPDestroy_GMRES;
+  ksp->ops->view                         = KSPView_GMRES;
+  ksp->ops->printhelp                    = KSPPrintHelp_GMRES;
+  ksp->ops->setfromoptions               = KSPSetFromOptions_GMRES;
+  ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
+  ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",

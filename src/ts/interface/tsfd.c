@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.7 1998/05/29 22:51:18 balay Exp bsmith $";
+static char vcid[] = "$Id: tsfd.c,v 1.8 1998/08/26 03:17:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -137,7 +137,6 @@ int TSDefaultComputeJacobianSlow(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructu
 
   ierr = VecGetSize(xx1,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xx1,&start,&end); CHKERRQ(ierr);
-  VecGetArray(xx1,&xx);
   ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1); CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time.
@@ -147,7 +146,9 @@ int TSDefaultComputeJacobianSlow(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructu
   for ( i=0; i<N; i++ ) {
     ierr = VecCopy(xx1,xx2); CHKERRQ(ierr);
     if ( i>= start && i<end) {
-      dx = xx[i-start];
+      ierr =  VecGetArray(xx1,&xx);CHKERRQ(ierr);
+      dx   = xx[i-start];
+      ierr =  VecRestoreArray(xx1,&xx);CHKERRQ(ierr);
 #if !defined(USE_PETSC_COMPLEX)
       if (dx < dx_min && dx >= 0.0) dx = dx_par;
       else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
@@ -157,9 +158,8 @@ int TSDefaultComputeJacobianSlow(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructu
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;
-      VecSetValues(xx2,1,&i,&dx,ADD_VALUES);
-    }
-    else {
+      ierr =  VecSetValues(xx2,1,&i,&dx,ADD_VALUES);CHKERRQ(ierr);
+    } else {
       wscale = 0.0;
     }
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2); CHKERRQ(ierr);
@@ -169,15 +169,15 @@ int TSDefaultComputeJacobianSlow(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructu
     ierr = MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
 #else
 #endif
-    VecScale(&scale,jj2);
-    VecGetArray(jj2,&y);
-    VecNorm(jj2,NORM_INFINITY,&amax); amax *= 1.e-14;
+    ierr = VecScale(&scale,jj2);CHKERRQ(ierr);
+    ierr = VecNorm(jj2,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
+    ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);
     for ( j=start; j<end; j++ ) {
       if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES); CHKERRQ(ierr);
       }
     }
-    VecRestoreArray(jj2,&y);
+    ierr = VecRestoreArray(jj2,&y);
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
