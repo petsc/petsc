@@ -7,6 +7,7 @@ OMAKE    = make
 SHELL    = /bin/sh
 CLINKER  = cc -64 $(COPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
 FLINKER  = f77 -64 $(FOPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
+LD       = ld -64
 
 SYS_LIB    = 
 
