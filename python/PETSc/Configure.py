@@ -612,6 +612,21 @@ acfindx:
       self.missingPrototypesExternC.append('int getdomainname(char *, size_t);')
     return
 
+  def configureMPIUNI(self):
+    '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
+    if self.mpi.foundInclude and self.mpi.foundLib: return
+    print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
+    print '**********     Use --with-mpi options to specify a full MPI    **********'
+    self.framework.addDefine('HAVE_MPI', 1)
+    self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/src/sys/src/mpiuni')
+    self.framework.addSubstitution('MPI_LIB',     '${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a')
+    self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/src/sys/src/mpiuni/mpirun')
+    self.framework.addSubstitution('MPE_INCLUDE', '')
+    self.framework.addSubstitution('MPE_LIB',     '')
+    self.addDefine('HAVE_MPI_COMM_F2C', 1)
+    self.addDefine('HAVE_MPI_COMM_C2F', 1)
+    return
+
   def configureMissingPrototypes(self):
     '''Checks for missing prototypes, which it adds to petscfix.h'''
     if not 'HAVE_MPI_COMM_F2C' in self.mpi.defines:
@@ -628,19 +643,6 @@ acfindx:
   def configureMachineInfo(self):
     '''Define a string incorporating all configuration data needed for a bug report'''
     self.addDefine('PETSC_MACHINE_INFO', '"Libraries compiled on `date` on `hostname`\\nMachine characteristics: `uname -a`\\n-----------------------------------------\\nUsing C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}\\nC Compiler version: ${C_VERSION}\\nUsing C compiler: ${CXX} ${CXXOPTFLAGS} ${CXXCPPFLAGS}\\nC++ Compiler version: ${CXX_VERSION}\\nUsing Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\nFortran Compiler version: ${F_VERSION}\\n-----------------------------------------\\nUsing PETSc flags: ${PETSCFLAGS} ${PCONF}\\n-----------------------------------------\\nUsing include paths: ${PETSC_INCLUDE}\\n-----------------------------------------\\nUsing PETSc directory: ${PETSC_DIR}\\nUsing PETSc arch: ${PETSC_ARCH}"\\n')
-    return
-
-  def configureMPIUNI(self):
-    '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
-    if self.mpi.foundInclude and self.mpi.foundLib: return
-    print '********** Warning: Using uniprocessor MPI (mpiuni) from Petsc **********'
-    print '**********     Use --with-mpi options to specify a full MPI    **********'
-    self.framework.addDefine('HAVE_MPI', 1)
-    self.framework.addSubstitution('MPI_INCLUDE', '-I'+'${PETSC_DIR}/src/sys/src/mpiuni')
-    self.framework.addSubstitution('MPI_LIB',     '${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a')
-    self.framework.addSubstitution('MPIRUN',      '${PETSC_DIR}/src/sys/src/mpiuni/mpirun')
-    self.framework.addSubstitution('MPE_INCLUDE', '')
-    self.framework.addSubstitution('MPE_LIB',     '')
     return
 
   def configureMisc(self):
@@ -678,8 +680,8 @@ acfindx:
     self.executeTest(self.configureIRIX)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureMacOSX)
+    self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
     self.executeTest(self.configureMisc)
-    self.executeTest(self.configureMPIUNI)
     return
