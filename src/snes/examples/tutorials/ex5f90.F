@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.27 2000/07/21 02:49:37 bsmith Exp bsmith $";
+! "$Id: ex5f90.F,v 1.28 2000/08/07 22:23:12 bsmith Exp balay $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -45,13 +45,14 @@
 !  into a module or interface. This is because they can't handle declarations
 !  in them
 !
-#define PETSC_AVOID_DECLARATIONS
 
       module f90module
       type userctx
+#define PETSC_AVOID_DECLARATIONS
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscda.h"
+#undef PETSC_AVOID_DECLARATIONS
         Vec     localX,localF
         DA      da
         integer xs,xe,xm,gxs,gxe,gxm
@@ -59,9 +60,16 @@
         integer mx,my,rank,size
         double precision lambda
       end type userctx
+      contains
+      subroutine viewvector(x)
+      implicit none
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+      Vec x
+      integer ierr
+      call VecView(x,VIEWER_STDOUT_WORLD,ierr)
+      end subroutine viewvector
       end module f90module
-#undef PETSC_AVOID_DECLARATIONS
-
       program main
       use f90module
       implicit none
@@ -277,6 +285,8 @@
 
       call FormInitialGuess(user,x,ierr)
       call SNESSolve(snes,x,its,ierr) 
+!  Call a subroutine form the module
+      call viewvector(x)
       if (user%rank .eq. 0) then
          write(6,100) its
       endif
