@@ -338,7 +338,7 @@ if __name__ ==  '__main__':
         print 'Entries in server dictionary'
         for d in RArgs().dicts():
           for k in RArgs(d).keys():
-            print d+' '+str(k)+' '+str(RArgs(d)[k].getValue(k)[1])
+            print d+' '+str(k)+' '+str(RArgs(d)[k])
       elif action == 'clear':
         print 'Clearing remote dictionary database'
         RArgs('ArgDict').clear()

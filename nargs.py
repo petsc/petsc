@@ -46,12 +46,20 @@ def findArgument(arg, argList):
 # is obtained from the object with getValue(), this allows
 # us to provide properties of the option before the option is set
 class ArgEmpty:
+  def __str__(self):
+    if not hasattr(self,'value'):
+      return ''
+    if isinstance(self.value, list):
+      return str(map(str, self.value))
+    return str(self.value)
+
   def getValue(self,key):
     return (0,None)
 
 class Arg(ArgEmpty):
   def __init__(self,value):
     self.value = value
+    return
 
   def getValue(self,key):
     #   First argument = 0 indicates already contains value
