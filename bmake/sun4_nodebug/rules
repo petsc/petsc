@@ -1,0 +1,75 @@
+#
+#
+#  If you are not using the Gnu C compiler then replace the compiler name 
+# gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__ and the -fPIC.
+#
+PARCH    = sun4
+CC       = gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__ -fPIC
+FC       = f77
+AR       = ar
+RM       = rm -f
+OMAKE    = make
+RANLIB   = ranlib
+SHELL    = /bin/sh
+CLINKER  = gcc $(COPTFLAGS)
+FLINKER  = f77 $(FOPTFLAGS)
+
+FCONF    = -DHAVE_FORTRAN_UNDERSCORE 
+CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
+           -DHAVE_MALLOC_H -DHAVE_X11 \
+           -DHAVE_DRAND48 -DHAVE_GETDOMAINNAME  -DHAVE_UNISTD_H \
+           -DHAVE_SYS_TIME_H -DHAVE_UNAME $(FCONF) 
+
+include $(PETSC_DIR)/bmake/common
+
+libc: $(LIBNAME)($(OBJSC))
+libadic: $(LIBNAME)($(OBJSADIC))
+libf: $(LIBNAME)($(OBJSF))
+
+#############
+
+.F.o: 
+	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
+.F.a: 
+	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
+	$(AR) clr $(LIBNAME) $*.o
+	$(RM) $*.o
+#
+#   These are alternative rules for Fortran compilers that 
+#  do not understand the .F suffix
+#
+#   Note: it is not possible to use the NAG F90 compiler with 
+#  PETSc and a Fortran main problem. This is because the NAG
+#  compiler actually generates a C main program while MPICH and
+#  PETSc naturally expect the command line arguments to be 
+#  handled in the Fortran manner, so MPICH crashes on initializing
+#  the command line arguments.
+#
+#.F.o:
+#	-$(RM) $*.f
+#	-cpp $(CFLAGS) $< | grep -v '^ *#' > $*.f
+#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+#	-$(RM) $*.f
+#.F.a:
+#	-$(RM) $*.f
+#	-cpp $(CFLAGS)  $< | grep -v '^ *#' > $*.f
+#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
+#	-$(AR) cr $(LIBNAME) $*.o
+#	-$(RM) $*.o	$*.f
+
+
+SLSUFFIX = so.1.0 
+shared: chkopts_basic
+	-@ echo making shared libraries in $(LDIR) ;\
+	cd $(LDIR); \
+	$(RM) -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+	for LIBNAME in $(SHLIBS) ; \
+	do \
+	  $(AR) x ../$$LIBNAME.a ;\
+	  gcc $(COPTFLAGS) -fPIC -shared  *.o  -o ../$$LIBNAME.$(SLSUFFIX) ; \
+	  $(RM) -f * ; \
+	done ;\
+	cd ../ ; \
+	$(RM) -rf tmp
