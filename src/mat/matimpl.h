@@ -1,14 +1,15 @@
-/* $Id: matimpl.h,v 1.39 1995/11/22 03:40:16 curfman Exp curfman $ */
+/* $Id: matimpl.h,v 1.40 1995/11/22 03:58:40 curfman Exp curfman $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
 #include "mat.h"
 
 /*
-     Defines the part of the matrix data structure shared by 
-  all matrix types.
+  This file defines the parts of the matrix data structure that are 
+  shared by all matrix types.
 */
 
+/* matrix operations */
 struct _MatOps {
   int       (*setvalues)(Mat,int,int*,int,int*,Scalar*,InsertMode),
             (*getrow)(Mat,int,int*,int**,Scalar**),
@@ -54,11 +55,11 @@ struct _MatOps {
 #define FACTOR_CHOLESKY 2
 
 struct _Mat {
-  PETSCHEADER
-  struct _MatOps   ops;
-  void             *data;
-  int              factor;   /* 0, FACTOR_LU or FACTOR_CHOLESKY */
-  double           lupivotthreshold;
+  PETSCHEADER                         /* general PETSc header */
+  struct _MatOps   ops;               /* matrix operations */
+  void             *data;             /* implementation-specific data */
+  int              factor;            /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
+  double           lupivotthreshold;  /* threshold for pivoting */
 };
 
 /* final argument for MatCopyPrivate_XXX() */
@@ -69,8 +70,11 @@ struct _Mat {
    we move it to a common place. Perhaps it ultimately belongs elsewhere. */
 
 typedef struct {
-  int    nmax, n, *idx, *idy; 
-  Scalar *array;
+  int    nmax;            /* maximum stash size */
+  int    n;               /* stash size */
+  int    *idx;            /* global row numbers in stash */
+  int    *idy;            /* global column numbers in stash */
+  Scalar *array;          /* array to hold stashed values */
 } Stash;
 
 extern int StashValues_Private(Stash*,int,int,int*,Scalar*,InsertMode);
@@ -80,8 +84,7 @@ extern int StashDestroy_Private(Stash*);
 extern int StashInfo_Private(Stash*);
 
 /*
-   Does reorderings for sequential IJ format. By default uses 
-  SparsePak routines.
+  Reorderings for sequential IJ format. By default uses SparsePak routines.
 */
 extern int MatGetReordering_IJ(int,int*,int*,MatOrdering,IS *,IS*);
 extern int MatConvert_Basic(Mat,MatType,Mat*);
