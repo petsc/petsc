@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.27 1995/07/17 03:54:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.28 1995/07/30 14:57:20 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -332,7 +332,10 @@ int Trspace( int *space, int *fr )
 }
 
 /*@C
-  Trdump - Dump the allocated memory blocks to a file.
+  Trdump - Dump the allocated memory blocks to a file. The information 
+           printed is: size of space, address of space, id of space, 
+           file space was allocated from, and line number it was 
+           allocated from.
 
   Input Parameter:
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
@@ -345,8 +348,8 @@ int Trdump( FILE *fp )
   if (fp == 0) fp = stderr;
   head = TRhead;
   while (head) {
-    fprintf( fp, "%lx at [%p], id = ", 
-	     head->size, head + sizeof(TrSPACE) );
+    fprintf( fp, "%d at [%p], id = ", 
+	     (int) head->size, head + sizeof(TrSPACE) );
     if (head->id >= 0) {
 	head->fname[TR_FNAME_LEN-1] = 0;
 	fprintf( fp, "%d %s[%d]\n", head->id, head->fname, head->lineno );
