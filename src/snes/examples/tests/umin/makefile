@@ -30,7 +30,7 @@ runex1:
            else echo "Possible problem with ex1_1, diffs above"; fi; \
            $(RM) -f ex1_1.tmp
 runex1_2:
-	-@$(MPIRUN) ex1 -nox -snes_smonitor -umls > ex1_2.tmp 2>&1;   \
+	-@$(MPIRUN) ex1 -nox -snes_smonitor -snes_method umls > ex1_2.tmp 2>&1;   \
            if (diff output/ex1_2.out ex1_2.tmp) then true; \
            else echo "Possible problem with ex1_2, diffs above"; fi; \
            $(RM) -f ex1_2.tmp
