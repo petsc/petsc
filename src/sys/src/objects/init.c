@@ -1,4 +1,4 @@
-/*$Id: init.c,v 1.54 2000/01/11 20:59:32 bsmith Exp bsmith $*/
+/*$Id: init.c,v 1.55 2000/01/21 19:09:45 bsmith Exp bsmith $*/
 /*
 
    This file defines the initialization of PETSc, including PetscInitialize()
@@ -611,9 +611,9 @@ int OptionsCheckInitial(void)
     ierr = (*PetscHelpPrintf)(comm," -options_table: dump list of options inputted\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_left: dump list of unused options\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_left_off: don't dump list of unused options\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -petsc_tmp tmpdir: alternative /tmp directory\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -petsc_shared_tmp: tmp directory is shared by all processors\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -petsc_not_shared_tmp: each processor has seperate tmp directory\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -tmp tmpdir: alternative /tmp directory\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -shared_tmp: tmp directory is shared by all processors\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -not_shared_tmp: each processor has seperate tmp directory\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -get_resident_set_size: print memory usage at end of run\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");CHKERRQ(ierr);
