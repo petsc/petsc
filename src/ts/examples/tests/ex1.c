@@ -1,32 +1,33 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.9 1996/07/02 18:07:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.10 1996/07/08 22:22:07 bsmith Exp bsmith $";
 #endif
-
 /*
+       Formatted test for TS routines.
+
           Solves U_t = U_xx 
-
-    1) F(t,u) = (u_i+1 - 2u_i + u_i-1)/h^2
-
+     F(t,u) = (u_i+1 - 2u_i + u_i-1)/h^2
+       using several different schemes. 
 */
 
 static char help[] = "Solves 1D heat equation.\n\n";
 
-#include "petsc.h"
 #include "da.h"
 #include "sys.h"
 #include "draw.h"
 #include <math.h>
 #include "ts.h"
 
+#define PETSC_NEAR(a,b,c) (!(PetscAbsDouble((a)-(b)) > (c)*PetscMax(PetscAbsDouble(a),PetscAbsDouble(b))))
+
 #define PETSC_PI 3.14159265358979
 typedef struct {
-  Vec    localwork,solution;
-  DA     da;
+  Vec    localwork,solution;    /* location for local work (with ghost points) vector */
+  DA     da;                    /* manages ghost point communication */
   Viewer viewer1,viewer2;
-  int    M;
-  double h;
+  int    M;                     /* total number of grid points */
+  double h;                     /* mesh width h = 1/(M-1) */
   double norm_2,norm_max;
-  int    nox;
+  int    nox;                   /* indicates problem is to be run without graphics */ 
 } AppCtx;
 
 int Monitor(TS, int, double , Vec, void *);
@@ -44,11 +45,11 @@ int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 
 int main(int argc,char **argv)
 {
-  int           M = 60, ierr,  time_steps = 100, steps, flg, size, m;
+  int           ierr,  time_steps = 100, steps, flg, size, m;
   int           problem = linear_no_matrix;
   AppCtx        appctx;
   Vec           local, global;
-  double        h, dt,ftime;
+  double        dt,ftime;
   TS            ts;
   TSType        type;
   Mat           A = 0;
@@ -59,26 +60,27 @@ int main(int argc,char **argv)
   char          tsinfo[120];
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
-  OptionsGetInt(PETSC_NULL,"-M",&M,&flg); appctx.M = M;
-  OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);
+  appctx.M = 60;
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.M,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
     
-  OptionsHasName(PETSC_NULL,"-nox",&flg); 
+  ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRA(ierr); 
   if (flg) appctx.nox = 1; else appctx.nox = 0;
   appctx.norm_2 = 0.0; appctx.norm_max = 0.0;
 
-  /* Set up the array */ 
-  ierr = DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,1,1,&appctx.da);CHKERRA(ierr);
+  /* Set up the ghost point communication pattern */ 
+  ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.M,1,1,&appctx.da);CHKERRA(ierr);
   ierr = DAGetDistributedVector(appctx.da,&global); CHKERRA(ierr);
   ierr = VecGetLocalSize(global,&m); CHKERRA(ierr);
   ierr = DAGetLocalVector(appctx.da,&local); CHKERRA(ierr);
 
   /* Set up display to show wave graph */
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(appctx.viewer1,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
-  ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
+  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2); CHKERRA(ierr);
   ierr = ViewerDrawGetDraw(appctx.viewer2,&draw); CHKERRA(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRA(ierr);
 
@@ -88,11 +90,10 @@ int main(int argc,char **argv)
   /* make work array for storing exact solution */
   ierr = VecDuplicate(global,&appctx.solution); CHKERRA(ierr);
 
-  h  = 1.0/(M-1.0); appctx.h = h;
+  appctx.h = 1.0/(appctx.M-1.0);
 
   /* set initial conditions */
   ierr = Initial(global,&appctx); CHKERRA(ierr);
-
  
   /*
      This example is written to allow one to easily test parts 
@@ -124,35 +125,32 @@ int main(int argc,char **argv)
     tsproblem = TS_NONLINEAR;
     problem   = nonlinear;
   }
-
     
   /* make time step context */
-  ierr = TSCreate(MPI_COMM_WORLD,tsproblem,&ts); CHKERRA(ierr);
+  ierr = TSCreate(PETSC_COMM_WORLD,tsproblem,&ts); CHKERRA(ierr);
   ierr = TSSetMonitor(ts,Monitor,&appctx); CHKERRA(ierr);
 
-  OptionsHasName(PETSC_NULL,"-unstable",&flg);
-  if (flg) dt = h*h;
-  else     dt = h*h/2.01;
+  dt = appctx.h*appctx.h/2.01;
 
   if (problem == linear_no_matrix) {
     /*
          The user provides the RHS as a Shell matrix.
     */
-    ierr = MatCreateShell(MPI_COMM_WORLD,m,M,M,M,&appctx,&A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(A,MAT_MULT,(void*)RHSMatrixFree);CHKERRQ(ierr);
+    ierr = MatCreateShell(PETSC_COMM_WORLD,m,appctx.M,appctx.M,appctx.M,&appctx,&A);CHKERRA(ierr);
+    ierr = MatShellSetOperation(A,MAT_MULT,(void*)RHSMatrixFree);CHKERRA(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
   } else if (problem == linear_no_time) {
     /*
          The user provides the RHS as a matrix
     */
-    ierr = MatCreate(MPI_COMM_WORLD,M,M,&A); CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,appctx.M,appctx.M,&A); CHKERRA(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);
   } else if (problem == linear) {
     /*
          The user provides the RHS as a time dependent matrix
     */
-    ierr = MatCreate(MPI_COMM_WORLD,M,M,&A); CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,appctx.M,appctx.M,&A); CHKERRA(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx); CHKERRA(ierr);
   } else if (problem == nonlinear_no_jacobian) {
@@ -160,15 +158,15 @@ int main(int argc,char **argv)
          The user provides the RHS and a Shell Jacobian
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
-    ierr = MatCreateShell(MPI_COMM_WORLD,m,M,M,M,&appctx,&A);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(A,MAT_MULT,(void*)RHSMatrixFree);CHKERRQ(ierr);
+    ierr = MatCreateShell(PETSC_COMM_WORLD,m,appctx.M,appctx.M,appctx.M,&appctx,&A);CHKERRA(ierr);
+    ierr = MatShellSetOperation(A,MAT_MULT,(void*)RHSMatrixFree);CHKERRA(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,PETSC_NULL,&appctx); CHKERRA(ierr);  
   } else if (problem == nonlinear) {
     /*
          The user provides the RHS and Jacobian
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx); CHKERRA(ierr);
-    ierr = MatCreate(MPI_COMM_WORLD,M,M,&A); CHKERRQ(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,appctx.M,appctx.M,&A); CHKERRA(ierr);
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);  CHKERRA(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,&appctx); CHKERRA(ierr);  
   }
@@ -177,17 +175,30 @@ int main(int argc,char **argv)
   ierr = TSGetType(ts,&type,PETSC_NULL); CHKERRA(ierr);
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
-  ierr = TSSetDuration(ts,time_steps,100.); CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,time_steps,100.); CHKERRA(ierr);
   ierr = TSSetSolution(ts,global); CHKERRA(ierr);
 
 
   ierr = TSSetUp(ts); CHKERRA(ierr);
   ierr = TSStep(ts,&steps,&ftime); CHKERRA(ierr);
-  ViewerStringOpen(MPI_COMM_WORLD,tsinfo,120,&viewer);
-  TSView(ts,viewer);
+  ierr = ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer); CHKERRA(ierr);
+  ierr = TSView(ts,viewer); CHKERRA(ierr);
 
-  PetscPrintf(MPI_COMM_WORLD,"%d Procs Avg. error 2 norm %g max norm %g %s\n",
-              size,appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);
+  ierr = OptionsHasName(PETSC_NULL,"-test",&flg); CHKERRA(ierr);
+  if (flg) {
+    if (type == TS_EULER) {
+      if (!PETSC_NEAR(appctx.norm_2/steps,0.00257244,1.e-4)) {
+        fprintf(stderr,"Error in Euler method: 2-norm %g expecting: 0.00257244\n",appctx.norm_2/steps);
+      }
+    } else {
+      if (!PETSC_NEAR(appctx.norm_2/steps,0.00506174,1.e-4)) {
+        fprintf(stderr,"Error in %s method: 2-norm %g expecting: 0.00506174\n",tsinfo,appctx.norm_2/steps);
+      }
+    }
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"%d Procs Avg. error 2 norm %g max norm %g %s\n",
+                size,appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);
+  }
 
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = TSDestroy(ts); CHKERRA(ierr);
@@ -195,7 +206,7 @@ int main(int argc,char **argv)
   ierr = ViewerDestroy(appctx.viewer1); CHKERRA(ierr);
   ierr = ViewerDestroy(appctx.viewer2); CHKERRA(ierr);
   ierr = VecDestroy(appctx.localwork); CHKERRA(ierr);
-  ierr = VecDestroy(appctx.solution); CHKERRQ(ierr);
+  ierr = VecDestroy(appctx.solution); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);
   if (A) {ierr= MatDestroy(A); CHKERRA(ierr);}
@@ -224,6 +235,9 @@ int Initial(Vec global, void *ctx)
   return 0;
 }
 
+/*
+       Exact solution 
+*/
 int Solution(double t,Vec solution, void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
@@ -234,7 +248,7 @@ int Solution(double t,Vec solution, void *ctx)
   ierr = VecGetOwnershipRange(solution,&mybase,&myend); CHKERRQ(ierr);
 
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
-  sc1 = PETSC_PI*6.*h;           sc2 = PETSC_PI*2.*h;
+  sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
   ierr = VecGetArray(solution,&localptr); CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
     localptr[i-mybase] = sin(i*sc1)*ex1 + 3.*sin(i*sc2)*ex2;
@@ -262,8 +276,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max); CHKERRQ(ierr);
 
   if (!appctx->nox) {
-    PetscPrintf(comm,"Time-step %d time %g norm of error %g %g\n",step,time,
-                     norm_2,norm_max);
+    PetscPrintf(comm,"Time-step %d time %g norm of error %g %g\n",step,time,norm_2,norm_max);
   }
 
   appctx->norm_2   += norm_2;
@@ -279,6 +292,7 @@ int RHSMatrixFree(Mat mat,Vec x,Vec y)
 {
   int  ierr;
   void *ctx;
+
   MatShellGetContext(mat,(void **)&ctx);
   ierr = RHSFunctionHeat(0,0.0,x,y,ctx); CHKERRQ(ierr);
   return 0;
@@ -328,8 +342,8 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 
   *str = SAME_NONZERO_PATTERN;
 
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
 
   ierr = MatGetOwnershipRange(A,&mstart,&mend); CHKERRQ(ierr);
   if (mstart == 0) {
@@ -357,8 +371,12 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
   return 0;
 }
 
-int RHSJacobianHeat(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,
-                    void *ctx)
+int RHSJacobianHeat(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
   return RHSMatrixHeat(ts,t,AA,BB,str,ctx);
 }
+
+
+
+
+
