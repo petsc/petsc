@@ -12,6 +12,7 @@ add to it).
   MAT
 
    Changed MatDiagonalShift(Mat,Vec) to MatDiagonalSet(Mat,Vec,InsertMode);
+   Dropped the second to last argument to MatCreateRowbs()
   
 
   KSP
