@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.25 1995/07/17 03:54:41 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.26 1995/07/20 04:11:54 curfman Exp curfman $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -331,9 +331,25 @@ static int PCPrintHelp_MG(PC pc)
 
 static int PCView_MG(PetscObject obj,Viewer viewer)
 {
-  PC    pc = (PC)obj;
-  FILE  *fd = ViewerFileGetPointer_Private(viewer);
-  PC_MG *mg = (PC_MG *) pc->data;
+  PC     pc = (PC)obj;
+  FILE   *fd = ViewerFileGetPointer_Private(viewer);
+  MG     *mg = (MG *) pc->data;
+  KSP    kspu, kspd;
+  int    itu, itd;
+  double dtol, atol, rtol;
+  char   *cstring;
+  SLESGetKSP(mg[0]->smoothu,&kspu);
+  SLESGetKSP(mg[0]->smoothd,&kspd);
+  KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu);
+  KSPGetTolerances(kspd,&dtol,&atol,&rtol,&itd);
+  if (mg[0]->am == MGMULTIPLICATIVE) cstring = "multiplicative";
+  else if (mg[0]->am == MGADDITIVE)  cstring = "additive";
+  else if (mg[0]->am == MGFULL)      cstring = "full";
+  else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
+  else cstring = "unknown";
+  MPIU_fprintf(pc->comm,fd,
+    "   MG: method is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+    cstring,mg[0]->cycles,itu,itd); 
   return 0;
 }
 

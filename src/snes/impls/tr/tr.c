@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.15 1995/07/14 21:56:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.16 1995/07/17 20:43:01 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -16,9 +16,9 @@ int TRConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   SNES_TR *neP = (SNES_TR*)snes->data;
   double  rtol,atol,dtol,norm;
   Vec     x;
-  int     ierr;
+  int     ierr, mkit;
 
-  KSPGetTolerances(ksp,&rtol,&atol,&dtol);
+  KSPGetTolerances(ksp,&rtol,&atol,&dtol,&mkit);
 
   if ( n == 0 ) {
     neP->ttol   = MAX(rtol*rnorm,atol);
@@ -200,13 +200,14 @@ static int SNESPrintHelp_TR(SNES snes)
   SNES_TR *ctx = (SNES_TR *)snes->data;
   char    *prefix = "-";
   if (snes->prefix) prefix = snes->prefix;
-  fprintf(stderr,"%smu mu (default %g)\n",prefix,ctx->mu);
-  fprintf(stderr,"%seta eta (default %g)\n",prefix,ctx->eta);
-  fprintf(stderr,"%ssigma sigma (default %g)\n",prefix,ctx->sigma);
-  fprintf(stderr,"%sdelta0 delta0 (default %g)\n",prefix,ctx->delta0);
-  fprintf(stderr,"%sdelta1 delta1 (default %g)\n",prefix,ctx->delta1);
-  fprintf(stderr,"%sdelta2 delta2 (default %g)\n",prefix,ctx->delta2);
-  fprintf(stderr,"%sdelta3 delta3 (default %g)\n",prefix,ctx->delta3);
+  MPIU_fprintf(snes->comm,stdout," method tr:\n");
+  MPIU_fprintf(snes->comm,stdout,"   %smu mu (default %g)\n",prefix,ctx->mu);
+  MPIU_fprintf(snes->comm,stdout,"   %seta eta (default %g)\n",prefix,ctx->eta);
+  MPIU_fprintf(snes->comm,stdout,"   %ssigma sigma (default %g)\n",prefix,ctx->sigma);
+  MPIU_fprintf(snes->comm,stdout,"   %sdelta0 delta0 (default %g)\n",prefix,ctx->delta0);
+  MPIU_fprintf(snes->comm,stdout,"   %sdelta1 delta1 (default %g)\n",prefix,ctx->delta1);
+  MPIU_fprintf(snes->comm,stdout,"   %sdelta2 delta2 (default %g)\n",prefix,ctx->delta2);
+  MPIU_fprintf(snes->comm,stdout,"   %sdelta3 delta3 (default %g)\n",prefix,ctx->delta3);
   return 0;
 }
 
@@ -228,8 +229,8 @@ int SNESCreate_TR(SNES snes )
 {
   SNES_TR *neP;
 
-  snes->type 		= SNES_NTR;
-  snes->method_class	= SNES_T;
+  snes->type 		= SNES_EQ_NTR;
+  snes->method_class	= SNES_EQ;
   snes->setup		= SNESSetUp_TR;
   snes->solve		= SNESSolve_TR;
   snes->destroy		= SNESDestroy_TR;

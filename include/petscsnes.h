@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.25 1995/07/14 21:56:04 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.26 1995/07/17 20:43:13 bsmith Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -7,27 +7,33 @@
 typedef struct _SNES* SNES;
 #define SNES_COOKIE PETSC_COOKIE+13
 
-typedef enum { SNES_NLS,
-               SNES_NTR,
-               SNES_NTR_DOG_LEG,
-               SNES_NTR2_LIN,
+typedef enum { SNES_EQ_NLS,
+               SNES_EQ_NTR,
+               SNES_EQ_NTR_DOG_LEG,
+               SNES_EQ_NTR2_LIN,
+               SNES_EQ_NTEST,
                SNES_UM_NLS,
-               SNES_UM_NTR,
-               SNES_NTEST }
+               SNES_UM_NTR }
   SNESMethod;
 
-typedef enum { SNES_T, SUMS_T } SNESType;
+#define SNES_NLS         SNES_EQ_NLS
+#define SNES_NTR         SNES_EQ_NTR
+#define SNES_NTR2_LIN    SNES_EQ_NTR2_LIN
+#define SNES_NTR_DOG_LEG SNES_EQ_NTR_DOG_LEG
+#define SNES_NTEST       SNES_EQ_NTEST
+
+typedef enum { SNES_EQ, SNES_UM } SNESType;
 
 extern int SNESCreate(MPI_Comm,SNES*);
 extern int SNESSetMethod(SNES,SNESMethod);
-extern int SNESSetMonitor(SNES, int (*)(SNES,int,double,void*),void *);
-extern int SNESSetSolution(SNES,Vec,int (*)(SNES,Vec,void*),void *);
-extern int SNESSetFunction(SNES, Vec, int (*)(SNES,Vec,Vec,void*),void *,int);
+extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *);
+extern int SNESSetSolution(SNES,Vec,int(*)(SNES,Vec,void*),void *);
+extern int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *,int);
 extern int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESDestroy(SNES);
 extern int SNESSetUp(SNES);
 extern int SNESSolve(SNES,int*);
-extern int SNESRegister(int, char*, int (*)(SNES));
+extern int SNESRegister(int,char*,int(*)(SNES));
 extern int SNESRegisterAll();
 extern int SNESGetSLES(SNES,SLES*);
 extern int SNESNoLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
@@ -77,14 +83,19 @@ extern int SNESDestroy(SNES);
 
 /* Unconstrained minimization routines ... Some of these may change! */
 
+/* temporarily define this */
+#define KSPQCG 2000
+
 extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
 extern int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
 extern int SNESGetGradient(SNES,Vec*);
+extern int SNESGetGradientNorm(SNES,Scalar*);
 extern int SNESComputeGradient(SNES,Vec,Vec);
-extern int SNESSetUMFunction(SNES,int(*)(SNES,Vec,Scalar*,void*),void*);
-extern int SNESComputeUMFunction(SNES,Vec,Scalar*);
-extern int SNESGetUMFunction(SNES,Scalar*);
+extern int SNESSetMinimizationFunction(SNES,int(*)(SNES,Vec,double*,void*),void*);
+extern int SNESComputeMinimizationFunction(SNES,Vec,double*);
+extern int SNESGetMinimizationFunction(SNES,double*);
+extern int SNESSetMinFunctionTolerance(SNES,double);
 
 #endif
 

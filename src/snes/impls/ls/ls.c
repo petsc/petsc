@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.31 1995/07/14 21:57:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.32 1995/07/17 20:42:58 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -562,10 +562,11 @@ int SNESSetLineSearchRoutine(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
 static int SNESPrintHelp_LS(SNES snes)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
-  fprintf(stderr,"-snes_line_search [basic,quadratic,cubic]\n");
-  fprintf(stderr,"-snes_line_search_alpha alpha (default %g)\n",ls->alpha);
-  fprintf(stderr,"-snes_line_search_maxstep max (default %g)\n",ls->maxstep);
-  fprintf(stderr,"-snes_line_search_steptol tol (default %g)\n",ls->steptol);
+  MPIU_fprintf(snes->comm,stdout," method ls:\n");
+  MPIU_fprintf(snes->comm,stdout,"   -snes_line_search [basic,quadratic,cubic]\n");
+  MPIU_fprintf(snes->comm,stdout,"   -snes_line_search_alpha alpha (default %g)\n",ls->alpha);
+  MPIU_fprintf(snes->comm,stdout,"   -snes_line_search_maxstep max (default %g)\n",ls->maxstep);
+  MPIU_fprintf(snes->comm,stdout,"   -snes_line_search_steptol tol (default %g)\n",ls->steptol);
   return 0;
 }
 
@@ -625,8 +626,8 @@ int SNESCreate_LS(SNES  snes )
 {
   SNES_LS *neP;
 
-  snes->type		= SNES_NLS;
-  snes->method_class	= SNES_T;
+  snes->type		= SNES_EQ_NLS;
+  snes->method_class	= SNES_EQ;
   snes->setup		= SNESSetUp_LS;
   snes->solve		= SNESSolve_LS;
   snes->destroy		= SNESDestroy_LS;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.22 1995/07/07 16:16:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.23 1995/07/20 04:25:24 bsmith Exp curfman $";
 #endif
 
 /*
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: eisen.c,v 1.22 1995/07/07 16:16:10 bsmith Exp bsmith 
 
 */
 #include "pcimpl.h"
+#include "pviewer.h"
 
 typedef struct {
   Mat    shell,A;
@@ -107,9 +108,19 @@ static int PCPrintHelp_Eisenstat(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  MPIU_print(pc->comm," %spc_sor_omega omega: relaxation factor (0 < omega < 2)\n",p);
+  MPIU_printf(pc->comm," %spc_sor_omega omega: relaxation factor (0 < omega < 2)\n",p);
   return 0;
 }
+
+static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
+{
+  PC   pc = (PC)obj;
+  FILE *fd = ViewerFileGetPointer_Private(viewer);
+  PC_Eisenstat  *jac = ( PC_Eisenstat  *) pc->data; 
+  MPIU_fprintf(pc->comm,fd,"    Eisenstat: omega = %g\n",jac->omega);
+  return 0;
+}
+
 int PCCreate_Eisenstat(PC pc)
 {
   int      ierr;
@@ -122,6 +133,7 @@ int PCCreate_Eisenstat(PC pc)
   pc->setfrom   = PCSetFrom_Eisenstat;
   pc->printhelp = PCPrintHelp_Eisenstat ;
   pc->destroy   = PCDestroy_Eisenstat;
+  pc->view      = PCView_Eisenstat;
   pc->type      = PCESOR;
   pc->data      = (void *) jac;
   pc->setup     = 0;
