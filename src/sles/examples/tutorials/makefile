@@ -188,7 +188,13 @@ runex2_5:
 	-@${MPIRUN} -np 2 ex2 -ksp_smonitor -m 5 -n 5 -mat_view_draw -ksp_gmres_irorthog    > ex2_5.tmp 2>&1; \
 	   if (${DIFF} output/ex2_2.out ex2_5.tmp) then true; \
 	   else echo "Possible problem with ex2_5, diffs above"; fi; \
-	   ${RM} -f ex2_4.tmp
+	   ${RM} -f ex2_5.tmp
+runex2_6:
+	-@${MPIRUN} -np 2 ex2 -pc_type none -vec_type esi -vec_esi_type esi::petsc::Vector \
+               -mat_type esi -mat_esi_type esi::petsc::Matrix -is_esi_type esi::petsc::IndexSpace   > ex2_6.tmp 2>&1; \
+	   if (${DIFF} output/ex2_2.out ex2_6.tmp) then true; \
+	   else echo "Possible problem with ex2_6, diffs above"; fi; \
+	   ${RM} -f ex2_6.tmp
 runex2f:
 	-@${MPIRUN} -np 2 ex2f -pc_type jacobi -ksp_smonitor -ksp_gmres_irorthog > ex2f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
@@ -430,7 +436,7 @@ runex25_2:
 	   ${RM} -f ex25_1.tmp
 
 TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
-		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
+		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 runex2_6 \
 		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
 		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm \
                    ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \

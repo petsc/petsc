@@ -60,6 +60,7 @@ class Object : public virtual esi::Object
 
 }}
 
+#if defined(PETSC_HAVE_CCA)
 namespace gov{namespace cca{namespace petsc{
 class Services  {
   public:
@@ -122,6 +123,7 @@ class Services  {
 };
 
 }}}
+#endif
 
 #endif
 

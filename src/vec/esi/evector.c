@@ -324,7 +324,6 @@ template<class Scalar,class Ordinal> class Petra_ESI_VectorFactory : public virt
       return 0;
     }; 
 };
-#endif
 
 EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_CCA)
@@ -339,6 +338,7 @@ void *create_petra_esi_vectorfactory(void)
 }
 #endif
 EXTERN_C_END
+#endif
 
 // --------------------------------------------------------------------------------------------------------
 

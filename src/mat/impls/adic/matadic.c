@@ -123,6 +123,7 @@ int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,
   void*         *ad_vu;
 
   PetscFunctionBegin;
+  if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
   if (!a->diagonal) {
     ierr = DACreateGlobalVector(a->da,&a->diagonal);CHKERRQ(ierr);
   }
