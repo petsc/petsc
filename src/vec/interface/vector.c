@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.188 1999/11/05 14:44:51 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.189 1999/11/24 21:53:28 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -180,6 +180,11 @@ $     NORM_2 denotes sqrt( sum_i (x_i)^2 )
 $     NORM_INFINITY denotes max_i |x_i|
 
    Level: intermediate
+
+   Compile Option:
+   PETSC_HAVE_SLOW_NRM2 will cause a C (loop unrolled) version of the norm to be used, rather
+ than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines 
+ (as opposed to vendor provided) because the FORTRAN BLAS NRM2() routine is very slow. 
 
 .keywords: vector, norm
 

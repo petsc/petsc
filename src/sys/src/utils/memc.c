@@ -1,4 +1,4 @@
-/*$Id: memc.c,v 1.56 1999/12/21 21:02:43 bsmith Exp bsmith $*/
+/*$Id: memc.c,v 1.57 1999/12/21 21:10:02 bsmith Exp bsmith $*/
 /*
     We define the memory operations here. The reason we just don't use 
   the standard memory routines in the PETSc code is that on some machines 
@@ -142,6 +142,10 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
 -  n - length (in bytes) of memory to initialize
 
    Level: intermediate
+
+   Compile Option:
+   PETSC_PREFER_BZERO - on certain machines (the IBM RS6000) the bzero() routine happens
+  to be faster than the memset() routine. This flag causes the bzero() routine to be used.
 
 .keywords: Petsc, zero, initialize, memory
 
