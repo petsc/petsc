@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.87 1996/09/08 22:53:38 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.88 1996/09/28 16:25:02 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -757,7 +757,8 @@ int SNESComputeGradient(SNES snes,Vec x, Vec y)
    Most users should not need to explicitly call this routine, as it
    is used internally within the nonlinear solvers. 
 
-   See SLESSetOperators() for information about setting the flag parameter.
+   See SLESSetOperators() for important information about setting the
+   flag parameter.
 
    SNESComputeJacobian() is valid only for SNES_NONLINEAR_EQUATIONS
    methods. An analogous routine for SNES_UNCONSTRAINED_MINIMIZATION 
@@ -800,7 +801,8 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
    Most users should not need to explicitly call this routine, as it
    is used internally within the nonlinear solvers. 
 
-   See SLESSetOperators() for information about setting the flag parameter.
+   See SLESSetOperators() for important information about setting the
+   flag parameter.
 
    SNESComputeHessian() is valid only for 
    SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
@@ -850,8 +852,8 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
 .  ctx - optional user-defined Jacobian context
 
    Notes: 
-   See SLESSetOperators() for information about setting the flag input
-   parameter in the routine func().  Be sure to read this information!
+   See SLESSetOperators() for important information about setting the flag
+   input parameter in the routine func().  Be sure to read this information!
 
    The routine func() takes Mat * as the matrix arguments rather than Mat.  
    This allows the Jacobian evaluation routine to replace A and/or B with a 
@@ -923,8 +925,8 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 .  ctx - optional user-defined Hessian context
 
    Notes: 
-   See SLESSetOperators() for information about setting the flag input
-   parameter in the routine func().  Be sure to read this information!
+   See SLESSetOperators() for important information about setting the flag
+   input parameter in the routine func().  Be sure to read this information!
 
    The function func() takes Mat * as the matrix arguments rather than Mat.  
    This allows the Hessian evaluation routine to replace A and/or B with a 

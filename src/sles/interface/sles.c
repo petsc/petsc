@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.67 1996/08/18 20:04:03 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.68 1996/09/30 17:42:28 curfman Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -383,8 +383,16 @@ $      successive linear solves.
 $    DIFFERENT_NONZERO_PATTERN -
 $      Pmat does not have the same nonzero structure.
 
+    Caution:
+    If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
+    and does not check the structure of the matrix.  If you erroneously
+    claim that the structure is the same when it actually is not, the new
+    preconditioner will not function correctly.  Thus, use this optimization
+    feature carefully!
+
     If in doubt about whether your preconditioner matrix has changed
     structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
+
 
 .keywords: SLES, set, operators, matrix, preconditioner, linear system
 

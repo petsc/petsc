@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.104 1996/09/28 16:17:51 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.105 1996/09/30 17:42:22 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -542,6 +542,13 @@ $      Pmat has the same nonzero structure during
 $      successive linear solves. 
 $    DIFFERENT_NONZERO_PATTERN -
 $      Pmat does not have the same nonzero structure.
+
+    Caution:
+    If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
+    and does not check the structure of the matrix.  If you erroneously
+    claim that the structure is the same when it actually is not, the new
+    preconditioner will not function correctly.  Thus, use this optimization
+    feature carefully!
 
     If in doubt about whether your preconditioner matrix has changed
     structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
