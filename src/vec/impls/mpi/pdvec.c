@@ -238,7 +238,6 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin,PetscViewer viewer)
 #else
   PetscMPIInt    size,rank;
   int            i,N = xin->N,*lens;
-  PetscDraw      draw;
   PetscReal      *xx,*yy;
   PetscDrawLG    lg;
   PetscScalar    *xarray;
