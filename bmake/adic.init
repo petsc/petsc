@@ -37,15 +37,15 @@
         VecPack          = "typedef int VecPack;"
 
 [DEFINES]
-	PetscAbsScalar = fabs
-	PetscExpScalar = exp
-	PetscPowScalar = pow
-	PetscSqrtScalar = sqrt
-        PetscFunctionBegin = 
-        PETSC_TRUE         = 1
-        PETSC_FALSE        = 0
-        PETSC_NULL         = 0
-        PETSC_IGNORE       = -1
+	PetscAbsScalar     = fabs
+	PetscExpScalar     = exp
+	PetscPowScalar     = pow
+	PetscSqrtScalar    = sqrt
+        PetscFunctionBegin       = 
+        PETSC_TRUE               = 1
+        PETSC_FALSE              = 0
+        PETSC_NULL               = 0
+        PETSC_IGNORE             = -1
 
 [ACTIVE_FUNCTIONS]
 
@@ -56,6 +56,7 @@
 	Pressure 
 	CalcJunk	
 	PetscMin
+        PetscExpPassiveScalar
 
 [INACTIVE_VARIABLES]
 

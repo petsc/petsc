@@ -17,28 +17,6 @@ struct SH {
 static struct SH* sh        = 0;
 static PetscTruth SignalSet = PETSC_FALSE;
 
-static char *SIGNAME[] = { 
-    "Unknown signal",
-    "HUP",
-    "INT",
-    "QUIT",
-    "ILL",
-    "TRAP",
-    "ABRT",
-    "EMT", 
-    "FPE:\nPETSC ERROR: Floating Point Exception,probably divide by zero",
-    "KILL",
-    "BUS: \nPETSC ERROR: Bus Error, possibly illegal memory access", 
-    "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory access out of range",
-    "SYS",
-    "PIPE",
-    "ALRM",
-    "TERM",
-    "URG",
-    "STOP",
-    "TSTP",
-    "CONT",
-    "CHLD" }; 
 
 
 EXTERN_C_BEGIN
@@ -97,11 +75,40 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
 {
   int         ierr;
   static char buf[1024];
+  char        *SIGNAME[20];
 
   PetscFunctionBegin;
+  SIGNAME[0]       = "Unknown signal";
+  SIGNAME[SIGHUP]  = "Hang up";
+  SIGNAME[SIGINT]  = "INT";
+#if !defined(PETSC_MISSING_SIGQUIT)
+  SIGNAME[SIGQUIT] = "Quit";
+#endif
+  SIGNAME[SIGILL]  = "Illegal instruction";
+  SIGNAME[SIGTRAP] = "TRAP";
+  SIGNAME[SIGABRT] = "Abort";
+  SIGNAME[SIGFPE]  = "FPE:\nPETSC ERROR: Floating Point Exception,probably divide by zero";
+  SIGNAME[SIGKILL] = "Kill";
+#if !defined(PETSC_MISSING_SIGBUS)
+  SIGNAME[SIGBUS]  = "BUS: \nPETSC ERROR: Bus Error, possibly illegal memory access";
+#endif
+  SIGNAME[SIGSEGV] = "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory access out of range";
+#if !defined(PETSC_MISSING_SIGSYS)
+  SIGNAME[SIGSYS]  = "SYS";
+#endif
+  SIGNAME[SIGUSR1] = "User1";
+  SIGNAME[SIGPIPE] = "Pipe";
+  SIGNAME[SIGALRM] = "Alarm";
+  SIGNAME[SIGTERM] = "Term";
+  SIGNAME[SIGURG]  = "URG";
+  SIGNAME[SIGSTOP] = "STOP";
+  SIGNAME[SIGTSTP] = "TSTP";
+  SIGNAME[SIGCONT] = "CONT";
+  SIGNAME[SIGCHLD] = "CHLD";
+
   signal(sig,SIG_DFL);
   if (sig >= 0 && sig <= 20) {
-    sprintf(buf,"Caught signal %s\n",SIGNAME[sig]);
+    sprintf(buf,"Caught signal number %d %s\n",sig,SIGNAME[sig]);
   } else {
     ierr = PetscStrcpy(buf,"Caught signal\n");CHKERRQ(ierr);
   }
@@ -160,6 +167,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGILL,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
     signal(SIGFPE,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
     signal(SIGSEGV, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    signal(SIGUSR1, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
@@ -175,6 +183,7 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
+    signal(SIGUSR1, 0);
 #if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);
 #endif
@@ -211,6 +220,7 @@ int PetscPopSignalHandler(void)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
+    signal(SIGUSR1, 0);
 #if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);
 #endif
