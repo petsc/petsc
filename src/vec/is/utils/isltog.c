@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.25 1999/01/04 21:47:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.26 1999/01/31 16:03:37 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -16,6 +16,8 @@ static char vcid[] = "$Id: isltog.c,v 1.25 1999/01/04 21:47:10 bsmith Exp bsmith
     Input Parameters:
 .   ltog - local to global mapping
 .   viewer - viewer
+
+    Level: advanced
 
 .keywords: IS, local-to-global mapping, create
 
@@ -42,11 +44,13 @@ int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
 
     Collective on IS
 
-    Input Parameters:
+    Input Parameter:
 .   is - index set containing the global numbers for each local
 
-    Output Parameters:
+    Output Parameter:
 .   mapping - new mapping data structure
+
+    Level: advanced
 
 .keywords: IS, local-to-global mapping, create
 
@@ -82,8 +86,10 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 .   n - the number of local elements
 -   indices - the global index for each local element
 
-    Output Parameters:
+    Output Parameter:
 .   mapping - new mapping data structure
+
+    Level: advanced
 
 .keywords: IS, local-to-global mapping, create
 
@@ -123,6 +129,8 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
    Input Parameters:
 .  mapping - mapping data structure
 
+   Level: advanced
+
 .keywords: IS, local-to-global mapping, destroy
 
 .seealso: ISLocalToGlobalMappingCreate()
@@ -155,6 +163,8 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 
     Output Parameters:
 .   newis - index set in global numbering
+
+    Level: advanced
 
 .keywords: IS, local-to-global mapping, apply
 
@@ -201,6 +211,8 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
 
    Notes: 
    The in and out array parameters may be identical.
+
+   Level: advanced
 
 .seealso: ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(), 
           ISLocalToGlobalMappingApplyIS(),AOCreateBasic(),AOApplicationToPetsc(),
@@ -262,8 +274,8 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 #undef __FUNC__  
 #define __FUNC__ "ISGlobalToLocalMappingApply"
 /*@
-    ISGlobalToLocalMappingApply - Takes a list of integers in global numbering
-      and returns the local numbering.
+    ISGlobalToLocalMappingApply - Provides the local numbering for a list of integers
+    specified with a global numbering.
 
     Not collective
 
@@ -284,6 +296,8 @@ static int ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 
     Notes:
     Either nout or idxout may be PETSC_NULL. idx and idxout may be identical.
+
+    Level: advanced
 
 .keywords: IS, global-to-local mapping, apply
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscomp.c,v 1.15 1998/04/13 17:25:58 bsmith Exp curfman $";
+static char vcid[] = "$Id: iscomp.c,v 1.16 1998/04/27 17:14:05 curfman Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -19,6 +19,8 @@ static char vcid[] = "$Id: iscomp.c,v 1.15 1998/04/13 17:25:58 bsmith Exp curfma
 .  flg - output flag, either PETSC_TRUE (if both index sets have the
          same indices), or PETSC_FALSE if the index sets differ by size 
          or by the set of indices)
+
+   Level: intermediate
 
    Note: 
    This routine sorts the contents of the index sets before

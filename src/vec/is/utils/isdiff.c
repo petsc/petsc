@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isdiff.c,v 1.7 1998/06/01 20:16:26 balay Exp balay $";
+static char vcid[] = "$Id: isdiff.c,v 1.8 1998/08/03 14:57:41 balay Exp curfman $";
 #endif
 
 #include "is.h"                    /*I "is.h"  I*/
@@ -21,10 +21,12 @@ static char vcid[] = "$Id: isdiff.c,v 1.7 1998/06/01 20:16:26 balay Exp balay $"
    Output Parameters:
 .  isout - is1 - is2
 
-  Notes:
-  Negative values are removed from the lists. is2 may have values
-  that are not in is1. This requires O(imax-imin) memory and O(imax-imin)
-  work, where imin and imax are the bounds on the indices in is1.
+   Notes:
+   Negative values are removed from the lists. is2 may have values
+   that are not in is1. This requires O(imax-imin) memory and O(imax-imin)
+   work, where imin and imax are the bounds on the indices in is1.
+
+   Level: intermediate
 
 .seealso: ISDestroy(), ISView(), ISSum()
 
@@ -111,9 +113,11 @@ int ISDifference(IS is1,IS is2, IS *isout)
    memory and O(imax-imin) work, where imin and imax are the bounds on the 
    indices in is1 and is2.
 
+   Level: intermediate
+
 .seealso: ISDestroy(), ISView(), ISDifference()
 
-.keywords: Index set sum
+.keywords: Index set, sum
 @*/
 int ISSum(IS is1,IS is2, IS *isout)
 {
