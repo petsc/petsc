@@ -1,4 +1,4 @@
-/*$Id: matmatmult.c,v 1.3 2001/08/31 19:06:18 buschelm Exp buschelm $*/
+/*$Id: matmatmult.c,v 1.4 2001/08/31 20:54:07 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
