@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.3 1996/02/16 00:55:20 curfman Exp curfman $";
+static char vcid[] = "$Id: daview.c,v 1.4 1996/02/16 01:10:37 curfman Exp curfman $";
 #endif
  
 /*
@@ -54,18 +54,20 @@ int DAView(DA da, Viewer v)
 .  da - the distributed array
 
    Output Parameters:
+.  dim - size of the distributed array
 .  m, n, p - number of processors in each dimension of distributed array
 
 .keywords: distributed array, get, information
 
 .seealso: DAView()
 @*/
-int DAGetInfo(DA da,int *m,int *n,int *p)
+int DAGetInfo(DA da,int *dim,int *m,int *n,int *p)
 {
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
-  if (m != PETSC_NULL) *m   = da->m;
-  if (n != PETSC_NULL) *n   = da->n;
-  if (p != PETSC_NULL) *p   = da->p;
+  if (dim != PETSC_NULL) *dim = da->dim;
+  if (m != PETSC_NULL)   *m   = da->m;
+  if (n != PETSC_NULL)   *n   = da->n;
+  if (p != PETSC_NULL)   *p   = da->p;
   return 0;
 }  
 

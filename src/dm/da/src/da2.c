@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.34 1996/02/15 22:14:18 curfman Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.35 1996/02/16 01:11:12 curfman Exp curfman $";
 #endif
  
 /*
@@ -613,7 +613,51 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
 
+  return 0;
+}
 
+/*@
+   DaRefine - Creates a new distributed array that is a refinement of a given
+   distributed array.
+
+   Input Parameter:
+.  da - initial distributed array
+
+   Output Parameter:
+.  daref - refined distributed array
+
+   Note:
+   Currently, refinement consists of just doubling the number of grid spaces in
+   each dimentsion of the DA.
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy()
+@*/
+int DARefine(DA da, DA *daref)
+{
+  int M, N, P, ierr;
+  DA  da2;
+
+  PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
+
+  if (da->dim == 1) {
+    M = 2*da->M - 1;
+    ierr = DACreate1d(da->comm,da->wrap,M,da->w,da->s,&da2); CHKERRQ(ierr);
+  }
+  else if (da->dim == 2) {
+    M = 2*da->M - 1;
+    N = 2*da->N - 1;
+    ierr = DACreate2d(da->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,&da2); CHKERRQ(ierr);
+  }
+  else if (da->dim == 3) {
+    M = 2*da->M - 1;
+    N = 2*da->N - 1;
+    P = 2*da->P - 1;
+    ierr = DACreate3d(da->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,
+           da->w,da->s,&da2); CHKERRQ(ierr);
+  }
+  *daref = da2;
   return 0;
 }
 
