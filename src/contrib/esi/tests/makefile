@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.1 1999/01/28 22:33:30 bsmith Exp bsmith $
+# $Id: makefile,v 1.1 2000/03/05 03:42:22 bsmith Exp balay $
 
 ALL: lib
 
-CFLAGS   = -I/home/bsmith/esi
+CFLAGS   = -I../include -I/home/alice/esi/cxx/include
 #CFLAGS   = -I/home/bsmith/esi -features=castop,rtti
 FFLAGS   =
 SOURCEC  = PETSc_Map.c ESIf77_Map.c  PETSc_Vector.c ESIf77_Vector.c \
