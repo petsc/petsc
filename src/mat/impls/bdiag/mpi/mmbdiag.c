@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.1 1995/05/04 23:35:12 curfman Exp curfman $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.2 1995/05/08 02:09:56 curfman Exp curfman $";
 #endif
 
 /*
@@ -17,6 +17,9 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   IS           from, to;
   Vec          gvec;
 
+  int i, high, low, iglobal, lsize, mytid;
+  Scalar zero = 0.0, value;
+
   /* create local vector that is used to scatter into */
   ierr = VecCreateSequential(MPI_COMM_SELF,N,&mbd->lvec); CHKERR(ierr);
 
@@ -28,7 +31,9 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,mbd->n,mbd->N,&gvec); CHKERR(ierr);
+
+  /* We should really associate a vector with the matrix!! */
+  ierr = VecCreateMPI(mat->comm,PETSC_DECIDE,mbd->N,&gvec); CHKERR(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCtxCreate(gvec,from,mbd->lvec,to,&mbd->Mvctx); 
@@ -37,7 +42,27 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
   PLogObjectParent(mat,mbd->lvec);
   ierr = ISDestroy(from); CHKERR(ierr);
   ierr = ISDestroy(to); CHKERR(ierr);
-  ierr = VecDestroy(gvec);
+
+  MPI_Comm_rank(mat->comm,&mytid);
+  ierr = VecSet(&zero,mbd->lvec); CHKERRA(ierr);
+  ierr = VecGetOwnershipRange(gvec,&low,&high); CHKERRA(ierr);
+  ierr = VecGetSize(gvec,&lsize); CHKERRA(ierr);
+  printf("[%d] low=%d, high=%d \n", mytid, low, high);
+  for ( i=0; i<lsize; i++ ) {
+    iglobal = i + low; value = (Scalar) (i + 100*mytid);
+    ierr = VecSetValues(gvec,1,&iglobal,&value,INSERTVALUES); CHKERRA(ierr);
+  }
+
+  ierr = VecScatterBegin(gvec,0,mbd->lvec,0,ADDVALUES,SCATTERALL,mbd->Mvctx);
+  CHKERR(ierr);
+  ierr = VecScatterEnd(gvec,0,mbd->lvec,0,ADDVALUES,SCATTERALL,mbd->Mvctx);
+  CHKERR(ierr);
+
+  printf("processor %d\n", mytid);
+  ierr = VecView(mbd->lvec,STDOUT_VIEWER); CHKERR(ierr);
+
+  ierr = VecDestroy(gvec); CHKERR(ierr);
+
   return 0;
 }
 

@@ -20,8 +20,8 @@ manual.ps:
 	-@chmod g+w ../manual.ps
 
 manual.html: manual.tex
-	tohtml -mapman ../www/www.cit manual.tex -notopnames
-	tohtml -mapman ../www/www.cit manual.tex -notopnames
+	tohtml -mapman ../www/www.cit manual.tex -notopnames -mapref ../www/petsc.cit
+	tohtml -mapman ../www/www.cit manual.tex -notopnames -mapref ../www/petsc.cit
 	-@chmod g+w manual.hux latex.err manual.html
 	-mv *.html ..
 	rm -f *.html *.xbm
