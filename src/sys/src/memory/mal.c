@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.41 1999/03/17 23:21:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.42 1999/05/12 03:27:09 bsmith Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: mal.c,v 1.41 1999/03/17 23:21:40 bsmith Exp bsmith $"
 */
 #define SHIFT_COOKIE 456123
 
-void *PetscMallocAlign(int mem)
+void *PetscMallocAlign(int mem,int line,char *func,char *file,char *dir)
 {
 #if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && !defined(PETSC_USE_COMPLEX)
   return malloc(mem);
@@ -47,41 +47,59 @@ void *PetscMallocAlign(int mem)
 #endif
 }
 
-int PetscFreeAlign(void *ptr)
+int PetscFreeAlign(void *ptr,int line,char *func,char *file,char *dir)
 {
-#if defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && !defined(PETSC_USE_COMPLEX)
-  free(ptr);
-  return 0;
-#elif defined(PETSC_HAVE_MEMALIGN)
-  free(ptr);
-  return 0;
-#else
+  int ierr = 0;
+
+#if (!(defined(PETSC_HAVE_DOUBLE_ALIGN_MALLOC) && !defined(PETSC_USE_COMPLEX))) && !defined(PETSC_HAVE_MEMALIGN)
   int shift;
   /*
        Previous int tells us how many ints the pointer has been shifted from
     the original address provided by the system malloc().
   */
   shift = ((int *)ptr)[-1] - SHIFT_COOKIE;   
-  if (shift > 15) SETERRQ(1,1,"Likely memory corruption in heap");
+  if (shift > 15) PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
   ptr   = (void *) (((int *) ptr) - shift);
   free(ptr);
-  return 0;
 #endif
+
+#if defined(PETSC_HAVE_FREE_RETURN_INT)
+  ierr = free(ptr); 
+  if (ierr) {
+    return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",ierr);
+  }
+#else 
+  free(ptr);
+#endif
+  return ierr;
+}
+
+/*
+        We never use the system free directly because on many machines it 
+    does not return an error code.
+*/
+int PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
+{
+#if defined(PETSC_HAVE_FREE_RETURN_INT)
+  int ierr = free(ptr); 
+  if (ierr) {
+    return PetscError(line,func,file,dir,1,1,"System free returned error %d\n",ierr);
+  }
+#else 
+  free(ptr);
+#endif
+  return 0;
 }
 
 /*
     Set the default malloc and free to be the usual system versions unless using complex
 */
 #if defined(PETSC_USE_COMPLEX)
-void *(*PetscTrMalloc)(int,int,char*,char*,char*) = 
-     (void*(*)(int,int,char*,char*,char*)) PetscMallocAlign;
-int  (*PetscTrFree)(void *,int,char*,char *,char*)         = 
-     (int (*)(void*,int,char*,char*,char*)) PetscFreeAlign;
+void *(*PetscTrMalloc)(int,int,char*,char*,char*)  = PetscMallocAlign;
+int  (*PetscTrFree)(void *,int,char*,char *,char*) = PetscFreeAlign;
 #else
-void *(*PetscTrMalloc)(int,int,char*,char*,char*) = 
-     (void*(*)(int,int,char*,char*,char*))malloc;
-int  (*PetscTrFree)(void *,int,char*,char *,char*)         = 
-     (int (*)(void*,int,char*,char*,char*))free;
+void *(*PetscTrMalloc)(int,int,char*,char*,char*)  = (void *(*)(int,int,char*,char*,char*))malloc;
+int  (*PetscTrFree)(void *,int,char*,char *,char*) = PetscFreeDefault;
 #endif
 
 
@@ -128,7 +146,7 @@ int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
    Notes:
     In general one should never run a PETSc program with different malloc() and 
     free() settings for different parts; this is because one NEVER wants to 
-    free() and address that was malloced by a different memory management system
+    free() an address that was malloced by a different memory management system
 
 .keywords: Petsc, set, malloc, free, memory allocation
 @*/
@@ -140,7 +158,7 @@ int PetscClearMalloc(void)
   PetscTrFree                 = (int (*)(void*,int,char*,char*,char*))PetscFreeAlign;
 #else
   PetscTrMalloc               = (void*(*)(int,int,char*,char*,char*))malloc;
-  PetscTrFree                 = (int (*)(void*,int,char*,char*,char*))free;
+  PetscTrFree                 = PetscFreeDefault;
 #endif
   petscsetmallocvisited       = 0;
   PetscFunctionReturn(0);
