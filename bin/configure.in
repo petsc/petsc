@@ -295,6 +295,24 @@ if test -z "$CCC" ; then
 fi
 AC_SUBST(CCC)
 
+AC_CHECK_PROGS(MKDIRBASE,mkdir)
+dnl
+dnl We need to check for the -p option (MKDIR in PETSc is mkdir -p, not
+dnl just mkdir).  Define MKDIR as false to ensure that an error is 
+dnl generated if we need to create a directory and we can't find mkdir -p.
+dnl
+MKDIR=false
+if test -n "$MKDIRBASE" ; then
+   rm -rf .conftest
+   if $MKDIRBASE -p .conftest/.tmp && -d .conftest/.tmp ; then
+       MKDIR="$MKDIRBASE -p"
+   else
+       AC_MSG_WARN([])
+   fi
+   rm -rf .conftest
+fi
+AC_SUBST(MKDIR)
+
 dnl Use --with-matlab-mex=path to select matlab support
 dnl if test -z "$MATLABINCPATH" ; then
 dnl     MATLABINCPATH=/usr/local/matlab/extern
