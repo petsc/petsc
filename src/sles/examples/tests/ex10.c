@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.25 1995/07/29 03:16:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.26 1995/07/29 03:28:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -14,6 +14,9 @@ diagonal data structure.\n\n";
 
 /* This code is not intended as an efficient implementation, it is only
    here to produce an interesting sparse matrix quickly.*/
+
+/* PLEASE DO NOT BASE ANY OF YOUR CODES ON CODE LIKE THIS, THERE ARE MUCH 
+   BETTER WAYS TO DO THIS*/
 
 extern int GetElasticityMatrix(int,Mat*);
 extern int Elastic20Stiff(double**);
