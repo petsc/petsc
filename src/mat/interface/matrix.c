@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.118 1995/11/30 22:33:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.119 1995/12/21 18:31:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -862,6 +862,54 @@ int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,
   PLogEventBegin(MAT_Relax,mat,b,x,0); 
   ierr =(*mat->ops.relax)(mat,b,omega,flag,shift,its,x); CHKERRQ(ierr);
   PLogEventEnd(MAT_Relax,mat,b,x,0); 
+  return 0;
+}
+
+/*
+      Default matrix copy routine.
+*/
+static int MatCopy_Basic(Mat A,Mat B)
+{
+  int    ierr,i,rstart,rend,nz,*cwork;
+  Scalar *vwork;
+
+  ierr = MatZeroEntries(B); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) {
+    ierr = MatGetRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+    ierr = MatSetValues(B,1,&i,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
+
+/*@C  
+   MatCopy - Copys a matrix to another matrix.
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameter:
+.  B - where the copy is put
+
+.keywords: matrix, copy, convert
+@*/
+int MatCopy(Mat A,Mat B)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(A,MAT_COOKIE);
+  PETSCVALIDHEADERSPECIFIC(B,MAT_COOKIE);
+
+  PLogEventBegin(MAT_Copy,A,B,0,0); 
+  if (A->ops.copy) { 
+    ierr = (*A->ops.copy)(A,B); CHKERRQ(ierr);
+  }
+  else { /* generic conversion */
+    ierr = MatCopy_Basic(A,B); CHKERRQ(ierr);
+  }
+  PLogEventEnd(MAT_Copy,A,B,0,0); 
   return 0;
 }
 
