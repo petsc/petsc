@@ -25,6 +25,7 @@ int StageInfoDestroy(StageInfo *stageInfo) {
   int ierr;
 
   PetscFunctionBegin;
+  ierr = PetscFree(stageInfo->name);                                                                      CHKERRQ(ierr);
   ierr = EventPerfLogDestroy(stageInfo->eventLog);                                                        CHKERRQ(ierr);
   ierr = ClassPerfLogDestroy(stageInfo->classLog);                                                        CHKERRQ(ierr);
   PetscFunctionReturn(0);

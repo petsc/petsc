@@ -138,6 +138,66 @@ int ClassPerfLogDestroy(ClassPerfLog classLog) {
   PetscFunctionReturn(0);
 }
 
+/*------------------------------------------------ General Functions -------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "ClassPerfInfoClear"
+/*
+  ClassPerfInfoClear - This clears a ClassPerfInfo object.
+
+  Not collective
+
+  Input Paramter:
+. classInfo - The ClassPerfInfo
+
+  Level: beginner
+
+.keywords: log, class, destroy
+.seealso: ClassPerfLogCreate()
+*/
+int ClassPerfInfoClear(ClassPerfInfo *classInfo) {
+  PetscFunctionBegin;
+  classInfo->id           = -1;
+  classInfo->creations    = 0;
+  classInfo->destructions = 0;
+  classInfo->mem          = 0.0;
+  classInfo->descMem      = 0.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ClassPerfLogEnsureSize"
+/*
+  ClassPerfLogEnsureSize - This ensures that a ClassPerfLog is at least of a certain size.
+
+  Not collective
+
+  Input Paramters:
++ classLog - The ClassPerfLog
+- size     - The size
+
+  Level: intermediate
+
+.keywords: log, class, size, ensure
+.seealso: ClassPerfLogCreate()
+*/
+int ClassPerfLogEnsureSize(ClassPerfLog classLog, int size) {
+  ClassPerfInfo *classInfo;
+  int            ierr;
+
+  PetscFunctionBegin;
+  while(size > classLog->maxClasses) {
+    ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(ClassPerfInfo), &classInfo);                       CHKERRQ(ierr);
+    ierr = PetscMemcpy(classInfo, classLog->classInfo, classLog->maxClasses * sizeof(ClassPerfInfo));     CHKERRQ(ierr);
+    ierr = PetscFree(classLog->classInfo);                                                                CHKERRQ(ierr);
+    classLog->classInfo   = classInfo;
+    classLog->maxClasses *= 2;
+  }
+  while(classLog->numClasses < size) {
+    ierr = ClassPerfInfoClear(&classLog->classInfo[classLog->numClasses++]);                              CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /*--------------------------------------------- Registration Functions ----------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "ClassRegLogRegister"

@@ -112,6 +112,9 @@ EXTERN int EventRegLogCreate(EventRegLog *);
 EXTERN int EventRegLogDestroy(EventRegLog);
 EXTERN int EventPerfLogCreate(EventPerfLog *);
 EXTERN int EventPerfLogDestroy(EventPerfLog);
+/* General functions */
+EXTERN int EventPerfLogEnsureSize(EventPerfLog, int);
+EXTERN int EventPerfInfoClear(EventPerfInfo *);
 /* Registration functions */
 EXTERN int EventRegLogRegister(EventRegLog, const char [], int, int *);
 /* Query functions */
@@ -138,6 +141,9 @@ EXTERN int ClassRegLogDestroy(ClassRegLog);
 EXTERN int ClassPerfLogCreate(ClassPerfLog *);
 EXTERN int ClassPerfLogDestroy(ClassPerfLog);
 EXTERN int ClassRegInfoDestroy(ClassRegInfo *);
+/* General functions */
+EXTERN int ClassPerfLogEnsureSize(ClassPerfLog, int);
+EXTERN int ClassPerfInfoClear(ClassPerfInfo *);
 /* Registration functions */
 EXTERN int ClassRegLogRegister(ClassRegLog, const char [], int *);
 /* Query functions */
@@ -145,9 +151,5 @@ EXTERN int ClassRegLogGetClass(ClassRegLog, int, int *);
 /* Logging functions */
 EXTERN int PetscLogObjCreateDefault(PetscObject);
 EXTERN int PetscLogObjDestroyDefault(PetscObject);
-
-/* Creation and destruction functions */
-EXTERN int PerfInfoDestroy(PerfInfo *);
-EXTERN int ClassPerfInfoDestroy(ClassPerfInfo *);
 
 #endif /* PETSC_USE_LOG */
