@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.72 1999/03/31 23:54:20 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.73 1999/04/05 21:16:27 bsmith Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -67,6 +67,8 @@ extern void *MPIUNI_TMP;
 #define MPI_COMM_NULL        0
 #define MPI_SUCCESS          0
 #define MPI_IDENT            0
+#define MPI_CONGRUENT        0
+#define MPI_SIMILAR          0
 #define MPI_UNEQUAL          3
 #define MPI_ANY_SOURCE     (-2)
 #define MPI_KEYVAL_INVALID   0
