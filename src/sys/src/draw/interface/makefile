@@ -2,8 +2,8 @@ IPETSCDIR = ../../..
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(PETSC_INCLUDE) -I..  \
-          $(CONF) -D__DIR__='"draw/src/"'
+CFLAGS   = $(PETSC_INCLUDE) -I..  \
+           $(CONF) -D__DIR__='"draw/src/"'
 SOURCEC  = draw.c 
 SOURCEF  =
 SOURCEH  = 
