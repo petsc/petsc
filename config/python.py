@@ -15,27 +15,36 @@ class Configure(config.base.Configure):
   def __str__(self):
     return ''
 
+  def getIncludeArgument(self, include):
+    '''Return the proper include line argument for the given filename
+       - If the path is empty, return it unchanged
+       - If starts with - then return unchanged
+       - Otherwise return -I<include>'''
+    if not include:
+      return ''
+    if include[0] == '-':
+      return include
+    return '-I'+include
+
   def checkInclude(self, includeDir):
     '''Check that Python.h is present'''
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    for inc in includeDir:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '+' '.join([self.getIncludeArgument(inc) for inc in includeDir])
     found = self.checkPreprocess('#include <Python.h>\n')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     return found
 
   def checkPythonLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None):
     '''Analogous to checkLink(), but the Python includes and libraries are automatically provided'''
     success  = 0
-    oldFlags = self.framework.argDB['CPPFLAGS']
+    oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.framework.argDB['LIBS']
-    for inc in self.include:
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc
+    self.compilers.CPPFLAGS += ' '+' '.join([self.getIncludeArgument(inc) for inc in self.include])
     self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib])+' '+self.framework.argDB['LIBS']
     if self.checkLink(includes, body, cleanup, codeBegin, codeEnd):
       success = 1
-    self.framework.argDB['CPPFLAGS'] = oldFlags
-    self.framework.argDB['LIBS']     = oldLibs
+    self.compilers.CPPFLAGS = oldFlags
+    self.framework.argDB['LIBS'] = oldLibs
     return success
 
   def configurePythonLibraries(self):
