@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.165 2001/01/31 04:31:45 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.166 2001/01/31 04:35:31 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -246,7 +246,6 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
-  ierr            = KSPUnwindPreconditioner(ksp,VEC_SOLN,VEC_TEMP);CHKERRQ(ierr);
   *outits         = itcount;
   PetscFunctionReturn(0);
 }
@@ -326,6 +325,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
   ierr = VecSet(&zero,VEC_TEMP);CHKERRQ(ierr);
   ierr = VecMAXPY(it+1,nrs,VEC_TEMP,&VEC_VV(0));CHKERRQ(ierr);
 
+  ierr = 
   /* If we preconditioned on the right, we need to solve for the correction to
      the unpreconditioned problem */
   if (ksp->pc_side == PC_RIGHT) {
@@ -463,7 +463,8 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
   }
 
   ierr = BuildGmresSoln(gmres->nrs,VEC_SOLN,ptr,ksp,gmres->it);CHKERRQ(ierr);
-  *result = ptr; PetscFunctionReturn(0);
+  *result = ptr;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
