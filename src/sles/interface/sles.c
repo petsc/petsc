@@ -1,8 +1,41 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.24 1995/06/18 16:24:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.25 1995/07/07 16:14:56 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
+#include "pviewer.h"
+
+/*@ 
+   SLESView - Prints the SLES data structure.
+
+   Input Parameters:
+.  SLES - the SLES context
+.  viewer - the location to display context (usually 0)
+
+.keywords: SLES, view
+@*/
+int SLESView(SLES sles,Viewer viewer)
+{
+  PetscObject vobj = (PetscObject) viewer;
+  FILE *fd;
+  KSP ksp;
+  PC pc;
+  int ierr;
+  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
+                                        vobj->type == FILES_VIEWER)){
+    fd = ViewerFileGetPointer_Private(viewer);
+    fprintf(fd,"SLES Object\n");
+    SLESGetKSP(sles,&ksp);
+    ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
+    SLESGetPC(sles,&pc);
+    ierr = PCView(pc,viewer); CHKERRQ(ierr);
+  }
+  return 0;
+}
+int _SLESView(PetscObject obj,Viewer viewer)
+{
+  return SLESView((SLES) obj,viewer);
+}
 
 /*@
    SLESPrintHelp - Prints SLES options.
@@ -84,6 +117,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   *outsles = 0;
   PETSCHEADERCREATE(sles,_SLES,SLES_COOKIE,0,comm);
   PLogObjectCreate(sles);
+  sles->view = _SLESView;
   ierr = KSPCreate(comm,&sles->ksp); CHKERRQ(ierr);
   ierr = PCCreate(comm,&sles->pc); CHKERRQ(ierr);
   PLogObjectParent(sles,sles->ksp);
