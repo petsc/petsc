@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.169 1998/03/20 22:47:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.170 1998/03/23 21:18:59 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -57,7 +57,7 @@ Scalar PETSC_i = 0.0;
 /*
      These are needed by src/inline/bitarray.H
 */
-char _mask, _BT_c;
+char _BT_mask, _BT_c;
 int  _BT_idx;
 
 /* 

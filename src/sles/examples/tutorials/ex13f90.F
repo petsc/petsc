@@ -1,34 +1,34 @@
-C
-C    "$Id: ex13f.F,v 1.4 1997/09/10 17:52:58 balay Exp bsmith $";
-C
-C
-C/*T
-C   Concepts: SLES^Solving a system of linear equations (basic sequential example)
-C   Concepts: SLES^Laplacian, 2d
-C   Concepts: Laplacian, 2d
-C   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-C   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); MatCreateSeqAIJ();
-C   Routines: KSPSetTolerances(); PCSetType();
-C   Routines: VecGetArray(); VecPlaceArray();
-C   Processors: 1
-CT*/
-C -----------------------------------------------------------------------
+!
+!    "$Id: ex13f.F,v 1.5 1998/03/24 16:53:22 bsmith Exp balay $";
+!
+!
+!/*T
+!   Concepts: SLES^Solving a system of linear equations (basic sequential example)
+!   Concepts: SLES^Laplacian, 2d
+!   Concepts: Laplacian, 2d
+!   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+!   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); MatCreateSeqAIJ();
+!   Routines: KSPSetTolerances(); PCSetType();
+!   Routines: VecGetArray(); VecPlaceArray();
+!   Processors: 1
+!T*/
+! -----------------------------------------------------------------------
 
       program main
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  The following include statements are required for SLES Fortran programs:
-C     petsc.h  - base PETSc routines
-C     vec.h    - vectors
-C     mat.h    - matrices
-C     ksp.h    - Krylov subspace methods
-C     pc.h     - preconditioners
-C     sles.h   - SLES interface
-C
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  The following include statements are required for SLES Fortran programs:
+!     petsc.h  - base PETSc routines
+!     vec.h    - vectors
+!     mat.h    - matrices
+!     ksp.h    - Krylov subspace methods
+!     pc.h     - preconditioners
+!     sles.h   - SLES interface
+!
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/mat.h"
@@ -36,32 +36,32 @@ C
 #include "include/FINCLUDE/pc.h"
 #include "include/FINCLUDE/sles.h"
 
-C    User-defined context that contains all the data structures used
-C    in the linear solution process.
+!    User-defined context that contains all the data structures used
+!    in the linear solution process.
 
-C   Vec    x,b;      /* solution vector, right hand side vector and work vector */
-C   Mat    A;        /* sparse matrix */
-C   SLES   sles;     /* linear solver context */
-C   int    m,n;      /* grid dimensions */
-C   Scalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
+!   Vec    x,b;      /* solution vector, right hand side vector and work vector */
+!   Mat    A;        /* sparse matrix */
+!   SLES   sles;     /* linear solver context */
+!   int    m,n;      /* grid dimensions */
+!   Scalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
 
-C  Note: Any user-defined Fortran routines MUST be declared as external.
+!  Note: Any user-defined Fortran routines MUST be declared as external.
 
       external UserInitializeLinearSolver, UserFinalizeLinearSolver
       external UserDoLinearSolver
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                   Variable declarations
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C
-C  Variables:
-C     sles     - linear solver context
-C     ksp      - Krylov subspace method context
-C     pc       - preconditioner context
-C     x, b, u  - approx solution, right-hand-side, exact solution vectors
-C     A        - matrix that defines linear system
-C     its      - iterations for convergence
-C     norm     - norm of error in solution
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                   Variable declarations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!
+!  Variables:
+!     sles     - linear solver context
+!     ksp      - Krylov subspace method context
+!     pc       - preconditioner context
+!     x, b, u  - approx solution, right-hand-side, exact solution vectors
+!     A        - matrix that defines linear system
+!     its      - iterations for convergence
+!     norm     - norm of error in solution
 
 
       Vec     x, b, u
@@ -82,9 +82,9 @@ C     norm     - norm of error in solution
       double precision hxy, hy2
 
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
@@ -95,34 +95,34 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          SETERRA(1,0,' ')
       endif
 
-C  The next two lines are for testing only; these allow the user to
-C  decide the grid size at runtime.
+!  The next two lines are for testing only; these allow the user to
+!  decide the grid size at runtime.
 
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
 
-C  Create the empty sparse matrix and linear solver data structures
+!  Create the empty sparse matrix and linear solver data structures
 
       call UserInitializeLinearSolver(m,n,userctx,ierr)
       Ntot = m*n
 
-C  Allocate arrays to hold the solution to the linear system.
-C  This is not normally done in PETSc programs, but in this case, 
-C  since we are calling these routines from a non-PETSc program, we 
-C  would like to reuse the data structures from another code. So in 
-C  the context of a larger application these would be provided by
-C  other (non-PETSc) parts of the application code.
+!  Allocate arrays to hold the solution to the linear system.
+!  This is not normally done in PETSc programs, but in this case, 
+!  since we are calling these routines from a non-PETSc program, we 
+!  would like to reuse the data structures from another code. So in 
+!  the context of a larger application these would be provided by
+!  other (non-PETSc) parts of the application code.
 
   userx    = (Scalar *) PetscMalloc(Ntot*sizeof(Scalar)); CHKPTRA(userx);
   userb    = (Scalar *) PetscMalloc(Ntot*sizeof(Scalar)); CHKPTRA(userb);
   solution = (Scalar *) PetscMalloc(Ntot*sizeof(Scalar)); CHKPTRA(solution);
 
-C  Allocate an array to hold the coefficients in the elliptic operator
+!  Allocate an array to hold the coefficients in the elliptic operator
 
   rho = (Scalar *) PetscMalloc(Ntot*sizeof(Scalar)); CHKERRA(ierr);
 
-C  Fill up the array rho[] with the function rho(x,y) = x; fill the
-C  right-hand-side b[] and the solution with a known problem for testing.
+!  Fill up the array rho[] with the function rho(x,y) = x; fill the
+!  right-hand-side b[] and the solution with a known problem for testing.
 
       hx = 1.0/(m+1)
       hy = 1.0/(n+1)
@@ -141,19 +141,19 @@ C  right-hand-side b[] and the solution with a known problem for testing.
          y = y + hy
  20   continue
 
-C  Loop over a bunch of timesteps, setting up and solver the linear
-C  system for each time-step.
-C
-C  Note this is somewhat artificial. It is intended to demonstrate how
-C  one may reuse the linear solver stuff in each time-step.
+!  Loop over a bunch of timesteps, setting up and solver the linear
+!  system for each time-step.
+!
+!  Note this is somewhat artificial. It is intended to demonstrate how
+!  one may reuse the linear solver stuff in each time-step.
 
       do 100 t=1,tmax
          call UserDoLinearSolver(rho,userctx,userb,userx,ierr)
 
-C        Compute error: Note that this could (and usually should) all be done
-C        using the PETSc vector operations. Here we demonstrate using more 
-C        standard programming practices to show how they may be mixed with 
-C        PETSc.
+!        Compute error: Note that this could (and usually should) all be done
+!        using the PETSc vector operations. Here we demonstrate using more 
+!        standard programming practices to show how they may be mixed with 
+!        PETSc.
          enorm = 0.0
          do 90 i=1,N
             enorm = enorm + 
@@ -163,8 +163,8 @@ C        PETSc.
          enorm = enorm * PetscReal(hx*hy);
          write(6,*) 'm, n, error norm =',m,n,enorm
 
-C  We are all finished solving linear systems, so we clean up the
-C  data structures.
+!  We are all finished solving linear systems, so we clean up the
+!  data structures.
 
   PetscFree(rho);
   PetscFree(solution);
@@ -173,7 +173,7 @@ C  data structures.
       ierr = UserFinalizeLinearSolver(&userctx); CHKERRA(ierr);
       call PetscFinalize(ierr)
       end
-C ----------------------------------------------------------------
+! ----------------------------------------------------------------
 integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 
       implicit none
@@ -191,26 +191,26 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
       integer m, n, user(*)
       integer Ntot, ierr
 
-C  Here we assume use of a grid of size m x n, with all points on the
-C  interior of the domain, i.e., we do not include the points corresponding 
-C  to homogeneous Dirichlet boundary conditions.  We assume that the domain
-C  is [0,1]x[0,1].
+!  Here we assume use of a grid of size m x n, with all points on the
+!  interior of the domain, i.e., we do not include the points corresponding 
+!  to homogeneous Dirichlet boundary conditions.  We assume that the domain
+!  is [0,1]x[0,1].
 
       hx2 = (m+1)*(m+1)
       hy2 = (n+1)*(n+1)
       Ntot = m*n
 
-C  Create the sparse matrix. Preallocate 5 nonzeros per row.
+!  Create the sparse matrix. Preallocate 5 nonzeros per row.
 
       call MatCreateSeqAIJ(PETSC_COMM_SELF,Ntot,Ntot,5,0,A,ierr)
 
-C  Create vectors
+!  Create vectors
 
       call VecCreateSeq(PETSC_COMM_SELF,N,b,ierr)
       call VecDuplicate(b,x,ierr)
 
-C  Create linear solver context. This will be used repeatedly for all 
-C  the linear solves needed.
+!  Create linear solver context. This will be used repeatedly for all 
+!  the linear solves needed.
 
       call SLESCreate(PETSC_COMM_SELF,sles,ierr)
 
@@ -223,11 +223,11 @@ C  the linear solves needed.
 
       return
       end
-C -----------------------------------------------------------------------
+! -----------------------------------------------------------------------
 
-C   Solves -div ( rho grad psi) = F using finite differences.
-C   rho is a 2-dimensional array of size m by n, stored in Fortran
-C   style by columns. userb is a standard one-dimensional array.
+!   Solves -div ( rho grad psi) = F using finite differences.
+!   rho is a 2-dimensional array of size m by n, stored in Fortran
+!   style by columns. userb is a standard one-dimensional array.
 
       integer function UserDoLinearSolver(rho,userctx,
      &                                    userb,userx,ierr)
@@ -241,17 +241,17 @@ C   style by columns. userb is a standard one-dimensional array.
       common /param/ hx2, hy2
       double precision hxy, hy2
 
-C  This is not the most efficient way of generating the matrix 
-C  but let's not worry about it. We should have separate code for
-C  the four corners, each edge and then the interior. Then we won't
-C  have the slow if-tests inside the loop.
-C
-C  Computes the operator 
-C          -div rho grad 
-C  on an m by n grid with zero Dirichlet boundary conditions. The rho
-C  is assumed to be given on the same grid as the finite difference 
-C  stencil is applied.  For a staggered grid, one would have to change
-C  things slightly.
+!  This is not the most efficient way of generating the matrix 
+!  but let's not worry about it. We should have separate code for
+!  the four corners, each edge and then the interior. Then we won't
+!  have the slow if-tests inside the loop.
+!
+!  Computes the operator 
+!          -div rho grad 
+!  on an m by n grid with zero Dirichlet boundary conditions. The rho
+!  is assumed to be given on the same grid as the finite difference 
+!  stencil is applied.  For a staggered grid, one would have to change
+!  things slightly.
 
   I = 0;
   for ( j=0; j<n; j++ ) {
