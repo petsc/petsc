@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.183 1999/11/24 21:55:57 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.184 1999/12/14 18:00:39 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -22,7 +22,7 @@ typedef struct _p_Mat*           Mat;
 */
 typedef enum { MATSAME=-1,  MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,   MATSHELL, 
                MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG, MATMPIDENSE, MATSEQBAIJ,
-               MATMPIBAIJ,  MATMPICSN,   MATSEQCSN,   MATSEQADJ,   MATMPIADJ, 
+               MATMPIBAIJ,  MATMPICSN,   MATSEQCSN,   MATMPICSR, 
                MATLASTTYPE } MatType;
 
 extern int MatCreate(MPI_Comm,int,int,int,int,Mat*);
@@ -35,8 +35,7 @@ extern int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,Scalar**,Mat*);
 extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*); 
 extern int MatCreateSeqBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
 extern int MatCreateMPIBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
-extern int MatCreateSeqAdj(MPI_Comm,int,int,int*,int*,Mat *);
-extern int MatCreateMPIAdj(MPI_Comm,int,int,int*,int*,Mat*);
+extern int MatCreateMPICSR(MPI_Comm,int,int,int*,int*,MatScalar *,Mat*);
 
 extern int MatDestroy(Mat);
 
@@ -95,7 +94,7 @@ extern int MatMultAdd(Mat,Vec,Vec,Vec);
 extern int MatMultTranspose(Mat,Vec,Vec);
 extern int MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 
-typedef enum {MAT_DO_NOT_COPY_VALUES, MAT_COPY_VALUES} MatDuplicateOption;
+typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES} MatDuplicateOption;
 
 extern int MatConvert(Mat,MatType,Mat*);
 extern int MatDuplicate(Mat,MatDuplicateOption,Mat*);
@@ -121,14 +120,14 @@ extern int MatRestoreColumnIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth 
          to adjust MAT_INFO_SIZE in finclude/mat.h
  */
 typedef struct {
-  PLogDouble rows_global, columns_global;         /* number of global rows and columns */
-  PLogDouble rows_local, columns_local;           /* number of local rows and columns */
+  PLogDouble rows_global,columns_global;         /* number of global rows and columns */
+  PLogDouble rows_local,columns_local;           /* number of local rows and columns */
   PLogDouble block_size;                          /* block size */
-  PLogDouble nz_allocated, nz_used, nz_unneeded;  /* number of nonzeros */
+  PLogDouble nz_allocated,nz_used,nz_unneeded;  /* number of nonzeros */
   PLogDouble memory;                              /* memory allocated */
   PLogDouble assemblies;                          /* number of matrix assemblies */
   PLogDouble mallocs;                             /* number of mallocs during MatSetValues() */
-  PLogDouble fill_ratio_given, fill_ratio_needed; /* fill ratio for LU/ILU */
+  PLogDouble fill_ratio_given,fill_ratio_needed; /* fill ratio for LU/ILU */
   PLogDouble factor_mallocs;                      /* number of mallocs during factorization */
 } MatInfo;
 
@@ -140,7 +139,7 @@ extern int MatTranspose(Mat,Mat*);
 extern int MatPermute(Mat,IS,IS,Mat *);
 extern int MatDiagonalScale(Mat,Vec,Vec);
 extern int MatDiagonalShift(Mat,Vec);
-extern int MatEqual(Mat,Mat, PetscTruth*);
+extern int MatEqual(Mat,Mat,PetscTruth*);
 
 extern int MatNorm(Mat,NormType,double *);
 extern int MatZeroEntries(Mat);
@@ -155,9 +154,9 @@ extern int MatGetSize(Mat,int*,int*);
 extern int MatGetLocalSize(Mat,int*,int*);
 extern int MatGetOwnershipRange(Mat,int*,int*);
 
-typedef enum {MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX} MatReuse;
+typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 extern int MatGetSubMatrices(Mat,int,IS *,IS *,MatReuse,Mat **);
-extern int MatDestroyMatrices(int, Mat **);
+extern int MatDestroyMatrices(int,Mat **);
 extern int MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
 
 extern int MatIncreaseOverlap(Mat,int,IS *,int);
@@ -169,13 +168,13 @@ extern int MatCompress(Mat);
 extern int MatScale(Scalar *,Mat);
 extern int MatShift(Scalar *,Mat);
 
-extern int MatSetLocalToGlobalMapping(Mat, ISLocalToGlobalMapping);
-extern int MatSetLocalToGlobalMappingBlock(Mat, ISLocalToGlobalMapping);
+extern int MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping);
+extern int MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping);
 extern int MatZeroRowsLocal(Mat,IS,Scalar*);
 extern int MatSetValuesLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 extern int MatSetValuesBlockedLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
-extern int MatSetStashInitialSize(Mat,int, int);
+extern int MatSetStashInitialSize(Mat,int,int);
 
 extern int MatInterpolateAdd(Mat,Vec,Vec,Vec);
 extern int MatInterpolate(Mat,Vec,Vec);
@@ -186,15 +185,15 @@ extern int MatRestrict(Mat,Vec,Vec);
 */
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) \
 { \
-  int __ierr,__tmp = (nrows),__ctmp = (ncols), __rstart,__start,__end; \
-  dnz = (int *) PetscMalloc(2*__tmp*sizeof(int));CHKPTRQ(dnz);onz = dnz + __tmp;\
+  int __ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
+  dnz = (int*)PetscMalloc(2*__tmp*sizeof(int));CHKPTRQ(dnz);onz = dnz + __tmp;\
   __ierr = PetscMemzero(dnz,2*__tmp*sizeof(int));CHKERRQ(__ierr);\
   __ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __start = __end - __ctmp;\
   __ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __rstart = __rstart - __tmp;
 
 #define MatPreallocateSet(row,nc,cols,dnz,onz)\
 { int __i; \
-  for ( __i=0; __i<nc; __i++) {\
+  for (__i=0; __i<nc; __i++) {\
     if (cols[__i] < __start || cols[__i] >= __end) onz[row - __rstart]++; \
   }\
   dnz[row - __rstart] = nc - onz[row - __rstart];\
@@ -206,6 +205,7 @@ extern int MatRestrict(Mat,Vec,Vec);
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 extern int MatSeqAIJSetColumnIndices(Mat,int *);
 extern int MatSeqBAIJSetColumnIndices(Mat,int *);
+extern int MatCreateSeqAIJWithArrays(MPI_Comm,int,int,int*,int*,Scalar *,Mat*);
 
 extern int MatStoreValues(Mat);
 extern int MatRetrieveValues(Mat);
@@ -249,9 +249,13 @@ extern int MatCholeskyFactorNumeric(Mat,Mat*);
          Fortran
  */
 typedef struct {
-  double levels;  /* ILU(levels) */ 
-  double fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
-  double diagonal_fill;  /* force diagonal to fill in if initially not filled */
+  double     levels;  /* ILU(levels) */ 
+  double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
+  double     diagonal_fill;  /* force diagonal to fill in if initially not filled */
+
+  double     dt;             /* drop tolerance */
+  double     dtcol;          /* tolerance for pivoting */
+  double     dtcount;        /* maximum nonzeros to be allowed per row */
 } MatILUInfo;
 
 extern int MatLUFactor(Mat,IS,IS,double);
@@ -260,7 +264,7 @@ extern int MatLUFactorSymbolic(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic(Mat,IS,IS,MatILUInfo*,Mat*);
 extern int MatIncompleteCholeskyFactorSymbolic(Mat,IS,double,int,Mat*);
 extern int MatLUFactorNumeric(Mat,Mat*);
-extern int MatILUDTFactor(Mat,double,int,IS,IS,Mat *);
+extern int MatILUDTFactor(Mat,MatILUInfo*,IS,IS,Mat *);
 
 extern int MatSolve(Mat,Vec,Vec);
 extern int MatForwardSolve(Mat,Vec,Vec);
@@ -323,7 +327,7 @@ extern int MatFDColoringApplyTS(Mat,MatFDColoring,double,Vec,MatStructure*,void 
 
 /* 
     These routines are for partitioning matrices: currently used only 
-  for adjacency matrix, MatCreateSeqAdj() or MatCreateMPIAdj().
+  for adjacency matrix, MatCreateMPICSR().
 */
 #define MATPARTITIONING_COOKIE PETSC_COOKIE + 25
 
@@ -376,7 +380,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_TRANSPOSE=14,
                MATOP_GETINFO=15,
                MATOP_EQUAL=16,
-               MATOP_GET_DIAGONAL=17, 
+               MATOP_GET_DIAGONAL=17,
                MATOP_DIAGONAL_SCALE=18,
                MATOP_NORM=19,
                MATOP_ASSEMBLY_BEGIN=20,
@@ -457,7 +461,7 @@ extern int MatCopyAIJIndices(MatAIJIndices,MatAIJIndices*);
 extern int MatValidateAIJIndices(int,MatAIJIndices);
 extern int MatShiftAIJIndices(MatAIJIndices);
 extern int MatShrinkAIJIndices(MatAIJIndices);
-extern int MatTransposeAIJIndices(MatAIJIndices, MatAIJIndices*);
+extern int MatTransposeAIJIndices(MatAIJIndices,MatAIJIndices*);
 
 extern int MatCreateSeqCSN(MPI_Comm,int,int,int*,int,Mat*);
 extern int MatCreateSeqCSN_Single(MPI_Comm,int,int,int*,int,Mat*);
