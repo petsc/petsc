@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.341 2000/07/25 19:47:59 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.342 2000/08/01 20:58:56 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3673,6 +3673,12 @@ approximations can also be invoked with the command \url{-snes_mf}. \findex{-sne
 Or, one can retain the user-provided Jacobian preconditioner, but replace the 
 user-provided Jacobian matrix with the default matrix free variant with the
 option \url{-snes_mf_operator}. \findex{-snes_mf_operator}
+
+See also
+\begin{verbatim}
+   ierr = MatCreateMF(Vec x, Mat *mat);
+\end{verbatim}
+for users who need a matrix-free matrix but are not using SNES.
 
 The user can set one parameter to control the Jacobian-vector
 product approximation with the command
