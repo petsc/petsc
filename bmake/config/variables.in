@@ -12,8 +12,8 @@ PARCH            = @PETSC_ARCH@
 #
 C_CC       = @CC@ -DPARCH_@PETSC_ARCH@ @CC_SHARED_OPT@
 C_FC       = @FC@ @FC_SHARED_OPT@
-C_CLINKER  = @CC@ $(COPTFLAGS)
-C_FLINKER  = @FC@ $(FOPTFLAGS)
+C_CLINKER  = @CC@
+C_FLINKER  = @FC@
 # What is CCV? Solaris base is cc -V -c
 C_CCV      = @CC@ -c
 C_SYS_LIB  = @LIBS@ @FC_LIB@
@@ -27,8 +27,8 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = @CCC@
 CXX_FC           = @FC@   -xpp=cpp
-CXX_CLINKER      = @CCC@    ${COPTFLAGS}
-CXX_FLINKER      = @CCC@    ${COPTFLAGS}
+CXX_CLINKER      = @CCC@
+CXX_FLINKER      = @CCC@
 CXX_CCV          = @CCC@  -c
 CXX_SYS_LIB      = @LIBS@ @FC_LIB@
 # ------------------------- BOPT=g_c++ options ------------------------------
