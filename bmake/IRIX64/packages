@@ -10,6 +10,8 @@
 #
 FC_LIB         = -lF77 -lU77 -lI77 -lisam
 # FC_LIB         = -lsun -lF77 -lU77 -lI77 -lisam
+# ON  6.2 the above should proably be replaced by
+# FC_LIB         =  -lftn
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(BS_DIR)/readme for information on retrieving a subset.
