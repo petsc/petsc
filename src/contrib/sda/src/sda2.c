@@ -49,6 +49,8 @@ $         DA_NONPERIODIC, DA_XPERIODIC
    Output Parameter:
 .  sda - the resulting array object
 
+  Level: beginner
+
 .keywords: distributed array, create, two-dimensional
 
 .seealso: SDADestroy(), SDACreate2d(), SDACreate3d()
@@ -112,6 +114,8 @@ $           the x and y coordinates, or PETSC_NULL
 
    Output Parameter:
 .  inra - the resulting array object
+
+  Level: beginner
 
 .keywords: distributed array, create, two-dimensional
 
@@ -178,6 +182,8 @@ $           the x, y, and z coordinates, or PETSC_NUL
    Output Parameter:
 .  inra - the resulting array object
 
+  Level: beginner
+
 .keywords: distributed array, create, two-dimensional
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
@@ -225,6 +231,12 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
 
   Input parameters:
     sda - distributed array
+
+  Level: beginner
+
+.keywords: distributed array
+
+.seealso: SDACreate1d(), SDACreate2d(), SDACreate3d()
 @*/
 int SDADestroy(SDA sda)
 {
@@ -253,6 +265,8 @@ int SDADestroy(SDA sda)
 
    Output Parameter:
 .  l  - the vector with correct ghost values
+
+   Level: beginner
 
 .keywords: distributed array, global to local, begin
 
@@ -285,6 +299,8 @@ int SDALocalToLocalBegin(SDA sda,PetscScalar *g,InsertMode mode,PetscScalar *l)
 
    Output Parameter:
 .  l  - the vector with correct ghost values
+
+  Level: beginner
 
 .keywords: distributed array, global to local, end
 
@@ -321,6 +337,8 @@ $    n and p are optional (used for 2D and 3D problems)
    Note:
    Any of y, z, n, and p should be set to PETSC_NULL if not needed.
 
+  Level: beginner
+
 .keywords: distributed array, get, corners, nodes, local indices
 
 .seealso: SDAGetGhostCorners()
@@ -351,6 +369,8 @@ $    n and p are optional (used for 2D and 3D problems)
 
    Note:
    Any of y, z, n, and p should be set to PETSC_NULL if not needed.
+
+  Level: beginner
 
 .keywords: distributed array, get, ghost, corners, nodes, local indices
 
