@@ -153,29 +153,46 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 
     /* Calculate new pseudo-transient continuation term, dt */
     /*    if (app->sctype == DT_MULT || next iteration forms Jacobian || matrix-free mult) */
-    eigenv_(app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
+    eigenv_(app->dt,app->xx,app->p,
          app->sadai,app->sadaj,app->sadak,
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
          app->aiz,app->ajz,app->akz,&app->ts_type);
+    /*  eigenv_(app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
+         app->sadai,app->sadaj,app->sadak,
+         app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+         app->aiz,app->ajz,app->akz,&app->ts_type); */
 
     /* Extract solution and update vectors; convert to Julianne format */
     ierr = SNESGetSolutionUpdate(snes,&DX); CHKERRQ(ierr);
     ierr = VecScale(&negone,DX); CHKERRQ(ierr);
     ierr = PackWork(app,DX,app->localDX,
-                app->dr,app->dru,app->drv,app->drw,app->de); CHKERRQ(ierr);
+                app->dr,app->dru,app->drv,app->drw,app->de,&app->dxx); CHKERRQ(ierr);
 
     /* Call Julianne monitoring routine and update CFL number */
     ierr = jmonitor_(&app->flog[its],&app->cfl,
+           app->work_p,app->xx,app->p,app->dxx,
+           app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
+           app->aiz,app->ajz,app->akz); CHKERRQ(ierr); 
+
+    /*    ierr = jmonitor_(&app->flog[its],&app->cfl,
            app->work_p,app->r,app->ru,app->rv,app->rw,app->e,
            app->p,app->dr,app->dru,app->drv,app->drw,app->de,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-           app->aiz,app->ajz,app->akz); CHKERRQ(ierr);
+           app->aiz,app->ajz,app->akz); CHKERRQ(ierr); */
 
     if (!app->no_output) {
       /* Check solution */
       if (app->check_solution && app->bctype == IMPLICIT) {
         ierr = SNESGetSolution(snes,&X); CHKERRQ(ierr);
         ierr = CheckSolution(app,X); CHKERRQ(ierr);
+      }
+      if (app->print_vecs) {
+        ierr = SNESGetSolution(snes,&X); CHKERRQ(ierr);
+        sprintf(filename,"x.%d.out",its);
+        ierr = ViewerFileOpenASCII(app->comm,filename,&view1); CHKERRQ(ierr);
+        ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+        ierr = DFVecView(X,view1); CHKERRQ(ierr);
+        ierr = ViewerDestroy(view1); CHKERRQ(ierr);
       }
 
       /* Print factored matrix - intended for debugging */
@@ -567,9 +584,10 @@ int TECPLOTMonitor(SNES snes,Vec X,Euler *app)
 
   PetscObjectGetComm((PetscObject)snes,&comm);
   ierr = PackWork(app,X,app->localX,
-                  app->r,app->ru,app->rv,app->rw,app->e); CHKERRQ(ierr);
+                  app->r,app->ru,app->rv,app->rw,app->e,&app->xx); CHKERRQ(ierr);
   /* Compute pressures */
-  ierr = jpressure_(app->r,app->ru,app->rv,app->rw,app->e,app->p); CHKERRQ(ierr);
+  ierr = jpressure_(app->xx,app->p); CHKERRQ(ierr);
+  /* ierr = jpressure_(app->r,app->ru,app->rv,app->rw,app->e,app->p); CHKERRQ(ierr); */
 
   for (k=0; k<app->nk; k++) {
     sprintf(filename,"plot.%d.out",k);
