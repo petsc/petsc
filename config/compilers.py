@@ -475,36 +475,38 @@ class Configure(config.base.Configure):
     raise RuntimeError('Unknown Fortran name mangling: '+self.fortranMangling)
 
   def checkFortranNameMangling(self):
-    '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, or HAVE_FORTRAN_CAPS
+    '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, HAVE_FORTRAN_CAPS, or HAVE_FORTRAN_STDCALL
     Also checks wierd g77 behavior, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
     if not self.framework.argDB.has_key('FC'): return
     oldLIBS = self.framework.argDB['LIBS']
 
     # Define known manglings and write tests in C
-    numtest = [0,1,2]
-    cobj    = ['confc0.o','confc1.o','confc2.o']
-    cfunc   = ['void d1chk_(void){return;}\n','void d1chk(void){return;}\n','void D1CHK(void){return;}\n']
-    mangler = ['underscore','unchanged','capitalize']
-    manglDEF= ['HAVE_FORTRAN_UNDERSCORE','HAVE_FORTRAN_NOUNDERSCORE','HAVE_FORTRAN_CAPS']
+    cobjs    = ['confc0.o','confc1.o','confc2.o']
+    cfuncs   = ['void d1chk_(void){return;}\n','void d1chk(void){return;}\n','void D1CHK(void){return;}\n','__stdcall void D1CHK(void){return;}\n']
+    manglers = ['underscore','unchanged','capitalize','stdcall']
+    manglDEFs= ['HAVE_FORTRAN_UNDERSCORE','HAVE_FORTRAN_NOUNDERSCORE','HAVE_FORTRAN_CAPS','HAVE_FORTRAN_STDCALL']
 
     # Compile each of the C test objects
     self.pushLanguage('C')
-    for i in numtest:
-      if not self.checkCompile(cfunc[i],None,cleanup = 0):
-        raise RuntimeError('Cannot compile C function: '+cfunc[i])
+    for cfunc, cobj in zip(cfuns, cobjs):
+      if not self.checkCompile(cfunc,None,cleanup = 0):
+        raise RuntimeError('Cannot compile C function: '+cfunc)
       if not os.path.isfile(self.compilerObj):
         raise RuntimeError('Cannot locate object file: '+os.path.abspath(self.compilerObj))
-      os.rename(self.compilerObj,cobj[i])
+      os.rename(self.compilerObj,cobj)
     self.popLanguage()
 
     # Link each test object against F77 driver.  If successful, then mangling found.
     self.pushLanguage('F77')
-    for i in numtest:
-      self.framework.argDB['LIBS'] += ' '+cobj[i]
+    for mangler,manglDEF,cobj in zip(manglers,manglDEFs,cobjs):
+      self.framework.argDB['LIBS'] += ' '+cobj
       if self.checkLink(None,'       call d1chk()\n'):
-        self.fortranMangling = mangler[i]
-        self.addDefine(manglDEF[i],1)
+        self.fortranMangling = mangler
+        self.addDefine(manglDEF,1)
         self.framework.argDB['LIBS'] = oldLIBS
+        if mangler=='stdcall':
+          self.addDefine('STDCALL','__stdcall')
+          self.addDefine('HAVE_FORTRAN_CAPS',1)b
         break
       self.framework.argDB['LIBS'] = oldLIBS
     else:
@@ -512,8 +514,8 @@ class Configure(config.base.Configure):
     self.popLanguage()
 
     # Clean up C test objects
-    for i in numtest:
-      if os.path.isfile(cobj[i]): os.remove(cobj[i])
+    for cobj in cobjs:
+      if os.path.isfile(cobj): os.remove(cobj)
 
     # Check double trailing underscore
     #
