@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.25 1995/06/08 03:08:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.26 1995/06/18 16:23:48 bsmith Exp curfman $";
 #endif
 
 /*  
@@ -107,8 +107,11 @@ int PCCreate(MPI_Comm comm,PC *newpc)
 @*/
 int PCApply(PC pc,Vec x,Vec y)
 {
+  int ierr;
   VALIDHEADER(pc,PC_COOKIE);
-  return (*pc->apply)(pc,x,y);
+  PLogEventBegin(PC_Apply,pc,x,y,0);
+  ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
+  PLogEventEnd(PC_Apply,pc,x,y,0);
 }
 /*@
    PCApplyTrans - Applies the transpose of preconditioner to a vector.
