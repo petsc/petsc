@@ -1,5 +1,6 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.15 1998/03/04 16:43:14 balay Exp balay $ 
+#!/bin/env python1.5
+# $Id: urlget.py,v 1.16 1998/03/11 16:45:13 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
