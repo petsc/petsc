@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.8 1998/01/15 03:40:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.9 1998/01/17 17:36:33 bsmith Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -83,11 +83,12 @@ struct FuncList_struct {
 };
 typedef struct FuncList_struct FuncList;
 
+#define DL_MAX_ITEMS 10000
+
 struct _DLList {
     FuncList *head, *tail;
     int      nextid;          /* next id available */
-    int      nextidflag;      /* value passed to DLListRegister() to request id */
-    char     *regname;        /* registration type name, for example, KSPRegister */
+    char     *regname;        /* registration type name */
 };
 
 /*
@@ -103,20 +104,15 @@ static DLList *Registers[10];
 /*
   DLCreate - create a name registry.
 
-  Input Parameter:
-.    preallocated - the number of pre-defined ids for this type object;
-                    for example, KSPNEW.
-
 .seealso: DLRegister(), DLDestroy()
 */
-int DLCreate(int preallocated,DLList *fl )
+int DLCreate(DLList *fl )
 {
   PetscFunctionBegin;
   *fl                = PetscNew(struct _DLList);CHKPTRQ(*fl);
   (*fl)->head        = 0;
   (*fl)->tail        = 0;
-  (*fl)->nextid      = preallocated;
-  (*fl)->nextidflag  = preallocated;
+  (*fl)->nextid      = DL_MAX_ITEMS;
 
   Registers[NumberRegisters++] = fl;
   PetscFunctionReturn(0);
@@ -165,9 +161,10 @@ int DLDestroyAll()
 
 #undef __FUNC__  
 #define __FUNC__ "DLRegister_Private"
-int DLRegister_Private( DLList fl, int id, char *name, char *rname,int (*fnc)(void *),int *idout)
+int DLRegister_Private( DLList *fl, int id, char *name, char *rname,int (*fnc)(void *),int *idout)
 {
   FuncList *entry;
+  int      ierr;
 
   PetscFunctionBegin;
   entry          = (FuncList*) PetscMalloc(sizeof(FuncList));CHKPTRQ(entry);
@@ -177,13 +174,17 @@ int DLRegister_Private( DLList fl, int id, char *name, char *rname,int (*fnc)(vo
   PetscStrcpy( entry->rname, rname );
   entry->routine = fnc;
 
+  if (!*fl) {
+    ierr = DLCreate(fl);CHKERRQ(ierr);
+  }
+
   entry->next = 0;
-  if (fl->tail) fl->tail->next = entry;
-  else          fl->head       = entry;
-  fl->tail = entry;
+  if ((*fl)->tail) (*fl)->tail->next = entry;
+  else             (*fl)->head       = entry;
+  (*fl)->tail = entry;
   
-  if (id == fl->nextidflag) {
-    entry->id  = fl->nextid++;
+  if (id == DL_NEW_ITEM) {
+    entry->id  = (*fl)->nextid--;
   } else {
     entry->id  = id;
   }
@@ -352,9 +353,9 @@ int DLPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
    DLGetTypeFromOptions
 
    Input Parameter:
+.  list - list of registered types
 .  prefix - optional database prefix
 .  name - type name
-.  list - list of registered types
 
    Output Parameter:
 .  type -  method
@@ -366,18 +367,29 @@ int DLPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
 
 .seealso: 
 */
-int DLGetTypeFromOptions(char *prefix,char *name,DLList list,int *type,char *oname,int len,int *flag)
+int DLGetTypeFromOptions(DLList *list,char *prefix,char *name,int *type,char *oname,int len,int *flag)
 {
   char sbuf[256];
   int  ierr,itype;
   
   PetscFunctionBegin;
   ierr = OptionsGetString(prefix,name, sbuf, 256,flag); CHKERRQ(ierr);
+  if (oname) {
+    PetscStrncpy(oname,sbuf,len);
+  }
   if (*flag) {
-    ierr = DLFindID( list, sbuf,&itype ); CHKERRQ(ierr);
-    if (name) {
-      PetscStrncpy(oname,sbuf,len);
+    ierr = DLFindID( *list, sbuf,&itype ); CHKERRQ(ierr);
+#if defined(USE_DYNAMIC_LIBRARIES)
+    if (itype ==  -1) { /* indicates method not yet registered */
+
+      /* strip off path, call DLOpen and call DLFindID() again; in case library calls register */
+
+      /* last hope, register the exact name */
+      ierr = DLRegister(list,DL_NEW_ITEM,sbuf,sbuf,0,&itype); CHKERRQ(ierr);
+      ierr = DLFindID( *list, sbuf,&itype ); CHKERRQ(ierr);
+
     }
+#endif
     *(int *)type = itype;
   }
   PetscFunctionReturn(0);
