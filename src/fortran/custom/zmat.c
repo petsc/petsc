@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.75 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.76 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "mat.h"
@@ -42,6 +42,10 @@
 #define matduplicate_                    MATDUPLICATE
 #define matzerorows_                     MATZEROROWS
 #define matzerorowslocal_                MATZEROROWSLOCAL
+#define matpartitioningview_             MATPARTITIONINGVIEW
+#define matpartitioningcreate_           MATPARTITIONINGCREATE
+#define matpartitioningsetadjacency_     MATPARTITIONINGSETADJACENCY
+#define matpartitioningapply_            MATPARTITIONINGAPPLY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
@@ -81,10 +85,33 @@
 #define matduplicate_                    matduplicate
 #define matzerorows_                     matzerorows
 #define matzerorowslocal_                matzerorowslocal
+#define matpartitioningview_             matpartitioningview
+#define matpartitioningcreate_           matpartitioningcreate
+#define matpartitioningsetadjacency_     matpartitioningsetadjacency
+#define matpartitioningapply_            matpartitioningapply            
 #endif
 
 EXTERN_C_BEGIN
 
+void PETSC_STDCALL matpartitioningcreate_(MPI_Comm *comm,MatPartitioning *part, int *__ierr)
+{
+  *__ierr = MatPartitioningCreate((MPI_Comm)PetscToPointerComm(*comm),part);
+}
+
+void PETSC_STDCALL matpartitioningapply_(MatPartitioning *part,IS *is,int *__ierr)
+{
+  *__ierr = MatPartitioningApply(*part,is);
+}
+
+void PETSC_STDCALL matpartitioningsetadjacency_(MatPartitioning *part,Mat *mat,int *__ierr)
+{
+  *__ierr = MatPartitioningSetAdjacency(*part,*mat);
+}
+
+void PETSC_STDCALL matpartitioningview_(MatPartitioning  *part,Viewer *viewer, int *__ierr)
+{
+  *__ierr = MatPartitioningView(*part,*viewer);
+}
 
 void PETSC_STDCALL matpartitioningsettype_(MatPartitioning *part,CHAR type PETSC_MIXED_LEN(len),
                                            int *ierr PETSC_END_LEN(len))
