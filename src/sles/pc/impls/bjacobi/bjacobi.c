@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.22 1995/06/18 16:23:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.23 1995/07/07 16:16:01 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -12,6 +12,7 @@ static char vcid[] = "$Id: bjacobi.c,v 1.22 1995/06/18 16:23:59 bsmith Exp bsmit
 #include "src/mat/matimpl.h"
 #include "pcimpl.h"
 #include "bjacobi.h"
+#include "pviewer.h"
 
 extern int PCSetUp_BJacobiMPIAIJ(PC);
 extern int PCSetUp_BJacobiMPIRow(PC);
@@ -90,6 +91,19 @@ int PCPrintHelp_BJacobi(PC pc)
   return 0;
 }
 
+int PCView_BJacobi(PetscObject obj,Viewer viewer)
+{
+  PC         pc = (PC)obj;
+  FILE       *fd = ViewerFileGetPointer_Private(viewer);
+  PC_BJacobi *jac = (PC_BJacobi *) pc->data;
+  if (jac->usetruelocal) 
+    MPIU_fprintf(pc->comm,fd,
+       "   using true local matrix, number of blocks = %d\n",jac->n);
+  MPIU_fprintf(pc->comm,fd,"     number of blocks = %d\n",jac->n);
+  if (jac->view) (*jac->view)(obj,viewer);
+  return 0;
+}
+
 int PCCreate_BJacobi(PC pc)
 {
   PC_BJacobi   *jac = PETSCNEW(PC_BJacobi); CHKPTRQ(jac);
@@ -100,8 +114,10 @@ int PCCreate_BJacobi(PC pc)
   pc->printhelp     = PCPrintHelp_BJacobi;
   pc->type          = PCBJACOBI;
   pc->data          = (void *) jac;
+  pc->view          = PCView_BJacobi;
   jac->n            = 0;
   jac->usetruelocal = 0;
+  jac->view         = 0;
   return 0;
 }
 /*@

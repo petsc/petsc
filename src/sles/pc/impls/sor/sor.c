@@ -1,11 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.22 1995/06/14 17:23:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.23 1995/06/18 16:23:54 bsmith Exp curfman $";
 #endif
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation
 */
 #include "pcimpl.h"
+#include "pviewer.h"
 
 typedef struct {
   int        its;
@@ -75,6 +76,17 @@ int PCPrintHelp_SOR(PC pc)
   fprintf(stderr," %spc_sor_its its: number of inner SOR iterations to use\n",p);
   return 0;
 }
+
+int PCView_SOR(PetscObject obj,Viewer viewer)
+{
+  PC pc = (PC)obj;
+  PC_SOR *jac = (PC_SOR *) pc->data;
+  FILE *fd = ViewerFileGetPointer_Private(viewer);
+  MPIU_fprintf(pc->comm,fd,"     SOR type = %d, iterations = %d, omega = %g\n",
+     jac->sym,jac->its,jac->omega);
+  return 0;
+}
+
 int PCCreate_SOR(PC pc)
 {
   PC_SOR *jac   = PETSCNEW(PC_SOR); CHKPTRQ(jac);
@@ -85,6 +97,7 @@ int PCCreate_SOR(PC pc)
   pc->setup     = 0;
   pc->type      = PCSOR;
   pc->data      = (void *) jac;
+  pc->view      = PCView_SOR;
   jac->sym      = SOR_FORWARD_SWEEP;
   jac->omega    = 1.0;
   jac->its      = 1;
