@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.38 1997/02/03 05:58:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.39 1997/02/04 21:24:50 bsmith Exp balay $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -178,7 +178,7 @@ $    -mat_order rcm, -mat_order qmd
 
 .keywords: matrix, set, ordering, factorization, direct, ILU, LU,
            fill, reordering, natural, Nested Dissection,
-           One-way Dissection, Cholesky, Reverse Cuthill-McGee, 
+           One-way Dissection, Cholesky, Reverse Cuthill-McKee, 
            Quotient Minimum Degree
 
 .seealso: MatGetReordering()
@@ -232,7 +232,7 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
 $      ORDER_NATURAL - Natural
 $      ORDER_ND - Nested Dissection
 $      ORDER_1WD - One-way Dissection
-$      ORDER_RCM - Reverse Cuthill-McGee
+$      ORDER_RCM - Reverse Cuthill-McKee
 $      ORDER_QMD - Quotient Minimum Degree
 
    Output Parameters:
