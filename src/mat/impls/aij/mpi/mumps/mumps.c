@@ -620,7 +620,9 @@ int MatConvert_Base_MUMPS(Mat A,MatType newtype,Mat *newmat) {
   B->ops->destroy                  = MatDestroy_AIJ_MUMPS;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
-  if (newtype == MATAIJMUMPS) { /* This is brutal and should probably be changed, but I didn't want 4 routines. */
+  /* This switch is brutal and should probably be changed, but I didn't want 4 routines. */
+  if (newtype == MATAIJMUMPS) { 
+    mumps->isAIJ = PETSC_TRUE;
     if (size == 1) {
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_aijmumps_C",
                                              "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
@@ -633,6 +635,7 @@ int MatConvert_Base_MUMPS(Mat A,MatType newtype,Mat *newmat) {
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
     }
   } else {
+    mumps->isAIJ = PETSC_FALSE;
     if (size == 1) {
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaij_mumps_C",
                                              "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
