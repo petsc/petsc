@@ -9,7 +9,7 @@
       Question: Where to put MM_COOKIE??  Not here ...
 */
 struct _p_MM {
-  PETSCHEADER
+  PETSCHEADER(int)
   int          MM_COOKIE;
   int          ncomponents;
   int          setupcalled;

@@ -154,7 +154,7 @@ int MMCreate(MPI_Comm comm,MM *newmm)
   MPI_Comm_size(comm,&size);
 
   ierr = PetscRegisterCookie(&MM_COOKIE); CHKERRQ(ierr);
-  PetscHeaderCreate(mm,_p_MM,MM_COOKIE,MMEULER,comm,MMDestroy,MMView); 
+  PetscHeaderCreate(mm,_p_MM,int,MM_COOKIE,MMEULER,comm,MMDestroy,MMView); 
   PLogObjectCreate(mm);
   mm->MM_COOKIE = MM_COOKIE;
   mm->type      = -1;
