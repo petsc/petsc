@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
   The Framework object serves as the central control for a configure run. It
 maintains a graph of all the configure modules involved, which is also used to
@@ -33,7 +34,7 @@ for the suggested interaction of a new build system with the Framework. If a
 module requires another, it merely executes a require(). For instance, the PETSc
 configure module for HYPRE requires information about MPI, and thus contains
 
-      self.mpi = self.framework.require(\'PETSc.packages.MPI\',self)
+      self.mpi = self.framework.require("PETSc.packages.MPI", self)
 
 Notice that passing self for the last arguments means that the MPI module will
 run before the HYPRE module. Furthermore, we save the resulting object as
@@ -41,6 +42,7 @@ self.mpi so that we may interogate it later. HYPRE can initially test whether
 MPI was indeed found using self.mpi.foundMPI. When HYPRE requires the list of
 MPI libraries in order to link a test object, the module can use self.mpi.lib.
 '''
+import user
 import script
 import config.base
 
@@ -618,5 +620,6 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return 1
 
 if __name__ == '__main__':
+  import sys
   framework = Framework(sys.argv[1:], loadArgDB = 0)
   framework.configure(out = sys.stdout)

@@ -41,6 +41,7 @@ Output
 ------
 
   addDefine(), addSubstitution(), addArgumentSubstitution(), addTypedef(), addPrototype()
+  addMakeMacro(), addMakeRule()
 
   The object may define a headerPrefix member, which will be appended, followed
 by an underscore, to every define which is output from it. Similarly, a substPrefix
