@@ -4,7 +4,7 @@
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_Shell"
-PetscErrorCode MatConvert_Shell(Mat oldmat,const MatType newtype,Mat *newmat)
+PetscErrorCode MatConvert_Shell(Mat oldmat,const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat;
   Vec            in,out;
@@ -48,7 +48,7 @@ PetscErrorCode MatConvert_Shell(Mat oldmat,const MatType newtype,Mat *newmat)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Fake support for "inplace" convert. */
-  if (*newmat == oldmat) {
+  if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatDestroy(oldmat);CHKERRQ(ierr);
   }
   *newmat = mat;

@@ -287,7 +287,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
   PetscFunctionBegin;
   if (bs > 1) {
     if (!a->sbaijMat){
-      ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
+      ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&a->sbaijMat);CHKERRQ(ierr); 
     } 
     ierr = (a->sbaijMat)->ops->choleskyfactornumeric(a->sbaijMat,info,B);CHKERRQ(ierr);
     ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
@@ -562,7 +562,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
   PetscFunctionBegin;
   if (bs > 1){
     if (!a->sbaijMat){
-      ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
+      ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&a->sbaijMat);CHKERRQ(ierr);
     }
     ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
     B = *fact;
@@ -659,7 +659,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
       i     = jmin - ui[prow];
       cols = uj_ptr[prow] + i; /* points to the 2nd nzero entry in U(prow,k:am-1) */
       for (j=0; j<ncols; j++) cols_lvl[j] = *(uj_lvl_ptr[prow] + i + j);
-      ierr = PetscIncompleteLLAddSorted(ncols,cols,levels,cols_lvl,prow,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr); 
+      ierr = PetscIncompleteLLAddSorted(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr); 
       nzk += nlnk;
 
       /* update il and jl for prow */
@@ -786,7 +786,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
   PetscFunctionBegin;
   if (bs > 1) { /* convert to seqsbaij */
     if (!a->sbaijMat){
-      ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
+      ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&a->sbaijMat);CHKERRQ(ierr);
     }
     ierr = MatCholeskyFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr); 
     B    = *fact;
@@ -856,7 +856,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
       jmax = ui[prow+1]; 
       ncols = jmax-jmin;
       uj_ptr = ui_ptr[prow] + jmin - ui[prow]; /* points to the 2nd nzero entry in U(prow,k:mbs-1) */
-      ierr = PetscLLAddSorted(ncols,uj_ptr,prow,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(ncols,uj_ptr,mbs,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       nzk += nlnk;
 
       /* update il and jl for prow */

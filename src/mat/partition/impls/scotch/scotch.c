@@ -75,7 +75,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
     /* convert the the matrix to MPIADJ type if necessary */
     if (!flg) {
-        ierr = MatConvert(matSeq, MATMPIADJ, &matMPI);CHKERRQ(ierr);
+        ierr = MatConvert(matSeq, MATMPIADJ, MAT_INITIAL_MATRIX, &matMPI);CHKERRQ(ierr);
     } else
         matMPI = matSeq;
 

@@ -419,11 +419,11 @@ void PETSC_STDCALL matload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len
   FREECHAR(outtype,t);
 }
 
-void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatReuse *reuse,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
   FIXCHAR(outtype,len,t);
-  *ierr = MatConvert(*mat,t,M);
+  *ierr = MatConvert(*mat,t,*reuse,M);
   FREECHAR(outtype,t);
 }
 

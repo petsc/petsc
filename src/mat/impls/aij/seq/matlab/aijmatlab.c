@@ -83,14 +83,14 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Matlab_SeqAIJ"
-PetscErrorCode MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,Mat *newmat) 
+PetscErrorCode MatConvert_Matlab_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_Matlab    *lu=(Mat_Matlab*)A->spptr;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   B->ops->duplicate        = lu->MatDuplicate;
@@ -330,7 +330,7 @@ PetscErrorCode MatDuplicate_Matlab(Mat A, MatDuplicateOption op, Mat *M) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_Matlab"
-PetscErrorCode MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat) 
+PetscErrorCode MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATMATLAB */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
@@ -340,7 +340,7 @@ PetscErrorCode MatConvert_SeqAIJ_Matlab(Mat A,const MatType type,Mat *newmat)
   PetscTruth     qr;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
@@ -414,7 +414,7 @@ PetscErrorCode MatCreate_Matlab(Mat A)
   PetscFunctionBegin;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMATLAB);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_Matlab(A,MATMATLAB,&A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_Matlab(A,MATMATLAB,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1629,7 +1629,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
         i     = jmin - ui[prow];
         cols  = uj_ptr[prow] + i; /* points to the 2nd nzero entry in U(prow,k:am-1) */
         for (j=0; j<ncols; j++) cols_lvl[j] = *(uj_lvl_ptr[prow] + i + j);
-        ierr = PetscIncompleteLLAddSorted(ncols,cols,levels,cols_lvl,prow,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr); 
+        ierr = PetscIncompleteLLAddSorted(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr); 
         nzk += nlnk;
 
         /* update il and jl for prow */

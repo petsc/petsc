@@ -16,7 +16,7 @@ PetscErrorCode MatDestroy_SeqSBAIJSpooles(Mat A)
   /* invoke Spooles' sequential cholesky solver. */
   /* As a result, we don't have to clean up the stuff set by spooles */
   /* as in MatDestroy_SeqAIJ_Spooles. */
-  ierr = MatConvert_Spooles_Base(A,MATSEQSBAIJ,&A);CHKERRQ(ierr);
+  ierr = MatConvert_Spooles_Base(A,MATSEQSBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -93,7 +93,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInf
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqSBAIJSpooles"
-PetscErrorCode MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
   /* This routine is only called to convert a MATSEQSBAIJ matrix */
   /* to a MATSEQSBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
@@ -101,7 +101,7 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,Mat 
   Mat_Spooles *lu;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
@@ -179,7 +179,7 @@ PetscErrorCode MatCreate_SeqSBAIJSpooles(Mat A)
   /*   and SeqSBAIJSpooles types */
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,&A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -232,10 +232,10 @@ PetscErrorCode MatCreate_SBAIJSpooles(Mat A)
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
-    ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,&A);CHKERRQ(ierr);
+    ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
     ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-    ierr = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,&A);CHKERRQ(ierr);
+    ierr = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   
   PetscFunctionReturn(0);

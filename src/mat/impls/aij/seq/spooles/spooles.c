@@ -8,7 +8,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_Spooles_Base"
-PetscErrorCode MatConvert_Spooles_Base(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_Spooles_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
   /* This routine is only called to convert an unfactored PETSc-Spooles matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
@@ -17,7 +17,7 @@ PetscErrorCode MatConvert_Spooles_Base(Mat A,const MatType type,Mat *newmat) {
   void           (*f)(void);
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   /* Reset the stashed function pointers set by inherited routines */
@@ -67,7 +67,7 @@ PetscErrorCode MatDestroy_SeqAIJSpooles(Mat A)
     SubMtxManager_free(lu->mtxmanager); 
     Graph_free(lu->graph);
   }
-  ierr = MatConvert_Spooles_Base(A,lu->basetype,&A);
+  ierr = MatConvert_Spooles_Base(A,lu->basetype,MAT_REUSE_MATRIX,&A);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -496,7 +496,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqAIJSpooles"
-PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *newmat) {
+PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,MatReuse reuse,Mat *newmat) {
   /* This routine is only called to convert a MATSEQAIJ matrix */
   /* to a MATSEQAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
@@ -504,7 +504,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *new
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
@@ -596,7 +596,7 @@ PetscErrorCode MatCreate_SeqAIJSpooles(Mat A)
   /* Change type name before calling MatSetType to force proper construction of SeqAIJ and SeqAIJSpooles types */
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,&A);CHKERRQ(ierr);
+  ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -650,10 +650,10 @@ PetscErrorCode MatCreate_AIJSpooles(Mat A)
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,&A);CHKERRQ(ierr);
+    ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
     ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,&A);CHKERRQ(ierr);
+    ierr = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

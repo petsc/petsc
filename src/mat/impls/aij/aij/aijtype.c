@@ -1,28 +1,28 @@
 #include "src/mat/matimpl.h"
 
 typedef struct {
-  PetscErrorCode (*MatConvert)(Mat,const MatType,Mat*);
+  PetscErrorCode (*MatConvert)(Mat,const MatType,MatReuse,Mat*);
   PetscErrorCode (*MatDestroy)(Mat);
 } Mat_AIJ;
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode MatConvert_SeqAIJ_AIJ(Mat,const MatType,Mat *);
-EXTERN PetscErrorCode MatConvert_MPIAIJ_AIJ(Mat,const MatType,Mat *);
-EXTERN PetscErrorCode MatConvert_AIJ_SeqAIJ(Mat,const MatType,Mat *);
-EXTERN PetscErrorCode MatConvert_AIJ_MPIAIJ(Mat,const MatType,Mat *);
+EXTERN PetscErrorCode MatConvert_SeqAIJ_AIJ(Mat,const MatType,MatReuse,Mat *);
+EXTERN PetscErrorCode MatConvert_MPIAIJ_AIJ(Mat,const MatType,MatReuse,Mat *);
+EXTERN PetscErrorCode MatConvert_AIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat *);
+EXTERN PetscErrorCode MatConvert_AIJ_MPIAIJ(Mat,const MatType,MatReuse,Mat *);
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_AIJ_SeqAIJ"
-PetscErrorCode MatConvert_AIJ_SeqAIJ(Mat A, const MatType type, Mat *newmat)
+PetscErrorCode MatConvert_AIJ_SeqAIJ(Mat A, const MatType type, MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_AIJ        *aij=(Mat_AIJ *)A->spptr;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES, &B);CHKERRQ(ierr);
   }
 
@@ -42,14 +42,14 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_AIJ_MPIAIJ"
-PetscErrorCode MatConvert_AIJ_MPIAIJ(Mat A, const MatType type, Mat *newmat)
+PetscErrorCode MatConvert_AIJ_MPIAIJ(Mat A, const MatType type, MatReuse reuse, Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_AIJ        *aij=(Mat_AIJ *)A->spptr;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES, &B);CHKERRQ(ierr);
   }
 
@@ -76,9 +76,9 @@ PetscErrorCode MatDestroy_AIJ(Mat A)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatConvert_AIJ_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_AIJ_SeqAIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert_AIJ_MPIAIJ(A,MATMPIAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_AIJ_MPIAIJ(A,MATMPIAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -86,34 +86,30 @@ PetscErrorCode MatDestroy_AIJ(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvertFrom_AIJviaSeqAIJ"
-PetscErrorCode MatConvertFrom_AIJviaSeqAIJ(Mat A, const MatType type, Mat *newmat)
+PetscErrorCode MatConvertFrom_AIJviaSeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
-  PetscTruth     inplace=PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (*newmat == A) inplace = PETSC_TRUE;
-  ierr = MatConvert_AIJ_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = MatConvert(A,type,newmat);CHKERRQ(ierr);
-  if (!inplace) {
-    ierr = MatConvert_SeqAIJ_AIJ(A,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = MatConvert_AIJ_SeqAIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert(A,type,reuse,newmat);CHKERRQ(ierr);
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatConvert_SeqAIJ_AIJ(A,MATAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvertFrom_AIJviaMPIAIJ"
-PetscErrorCode MatConvertFrom_AIJviaMPIAIJ(Mat A, const MatType type, Mat *newmat)
+PetscErrorCode MatConvertFrom_AIJviaMPIAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
-  PetscTruth     inplace=PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (A == *newmat) inplace = PETSC_TRUE;
-  ierr = MatConvert_AIJ_MPIAIJ(A,PETSC_NULL,&A);CHKERRQ(ierr);
-  ierr = MatConvert(A,type,newmat);CHKERRQ(ierr);
-  if (!inplace) { 
-    ierr = MatConvert_MPIAIJ_AIJ(A,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = MatConvert_AIJ_MPIAIJ(A,PETSC_NULL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert(A,type,reuse,newmat);CHKERRQ(ierr);
+  if (reuse == MAT_INITIAL_MATRIX) { 
+    ierr = MatConvert_MPIAIJ_AIJ(A,MATAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -121,14 +117,14 @@ PetscErrorCode MatConvertFrom_AIJviaMPIAIJ(Mat A, const MatType type, Mat *newma
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqAIJ_AIJ"
-PetscErrorCode MatConvert_SeqAIJ_AIJ(Mat A, const MatType type, Mat *newmat)
+PetscErrorCode MatConvert_SeqAIJ_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_AIJ        *aij;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES, &B);CHKERRQ(ierr);
   }
   
@@ -153,14 +149,14 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_AIJ"
-PetscErrorCode MatConvert_MPIAIJ_AIJ(Mat A, const MatType type, Mat *newmat)
+PetscErrorCode MatConvert_MPIAIJ_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_AIJ        *aij;
 
   PetscFunctionBegin;
-  if (B != A) {
+  if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES, &B);CHKERRQ(ierr);
   }
 
@@ -187,7 +183,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvertTo_AIJ"
-PetscErrorCode MatConvertTo_AIJ(Mat A, const MatType type, Mat *newmat)
+PetscErrorCode MatConvertTo_AIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -196,11 +192,11 @@ PetscErrorCode MatConvertTo_AIJ(Mat A, const MatType type, Mat *newmat)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);
   if (size == 1) {
-    ierr = MatConvert(A,MATSEQAIJ,&B);CHKERRQ(ierr);
-    ierr = MatConvert_SeqAIJ_AIJ(B,MATAIJ,&B);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQAIJ,reuse,&B);CHKERRQ(ierr);
+    ierr = MatConvert_SeqAIJ_AIJ(B,MATAIJ,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert(A,MATMPIAIJ,&B);CHKERRQ(ierr);
-    ierr = MatConvert_MPIAIJ_AIJ(B,MATAIJ,&B);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATMPIAIJ,reuse,&B);CHKERRQ(ierr);
+    ierr = MatConvert_MPIAIJ_AIJ(B,MATAIJ,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
   }
   *newmat = B;
   PetscFunctionReturn(0);
@@ -237,10 +233,10 @@ PetscErrorCode MatCreate_AIJ(Mat A)
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatConvert_SeqAIJ_AIJ(A,MATAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_SeqAIJ_AIJ(A,MATAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatConvert_MPIAIJ_AIJ(A,MATAIJ,&A);CHKERRQ(ierr);
+    ierr = MatConvert_MPIAIJ_AIJ(A,MATAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -76,9 +76,8 @@ def petsc_configure(configure_options):
   # Check for broken cygwin
   if chkcygwin():
     print ' *** cygwin-1.5.11-1 detected. configure fails with this version   ***'
-    print ' *** Please downgrade to cygwin-1.5.10-3. This can be done by      ***'
-    print ' *** running cygwin setup, and in "up to date" view - click on the ***'
-    print ' *** "cirular arrow" next to "cygwin" until it changes to 1.5.10-3.***'
+    print ' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***'
+    print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
     sys.exit(3)
           
   # Should be run from the toplevel

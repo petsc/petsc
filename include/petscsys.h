@@ -369,31 +369,28 @@ M*/
   (PetscMalloc(2*nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
 
 /*
-  Add a index set into a sorted linked list
+  Initialize a sorted linked list used for ILU and ICC
   Input Parameters:
-    nidx      - number of input indices
-    indices   - interger array used for storing column indices
-    level     - level of fill, e.g., ICC(level)
-    indices_lvl - level of indices 
+    nidx      - number of input idx
+    idx       - interger array used for storing column indices
     idx_start - starting index of the list
+    perm      - indices of an IS
     lnk       - linked list(an integer array) that is created
-    lnk_lvl   - levels of lnk
+    lnklvl    - levels of lnk
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
-    nlnk      - number of newly added indices
-    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
-    lnk_lvl   - levels of lnk
-    bt        - updated PetscBT (bitarray) 
+    nlnk     - number of newly added idx
+    lnk      - the sorted(increasing order) linked list containing new and non-redundate entries from idx
+    lnklvl   - levels of lnk
+    bt       - updated PetscBT (bitarray) 
 */
-#define PetscIncompleteLLAdd(nidx,indices,level,indices_lvl,idx_start,nlnk,lnk,lnk_lvl,bt) 0;\
+#define PetscIncompleteLLInit(nidx,idx,idx_start,perm,nlnk,lnk,lnklvl,bt) 0;\
 {\
-  int _k,_entry,_location,_lnkdata,_incrlev;\
+  int _k,_entry,_location,_lnkdata;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
   for (_k=0; _k<nidx; _k++){\
-    _incrlev = indices_lvl[_k] + 1;\
-    if (_incrlev > level) {_k++; continue;} \
-    _entry = indices[_k];\
+    _entry = perm[idx[_k]];\
     if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
       /* search for insertion location */\
       if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
@@ -404,11 +401,102 @@ M*/
       /* insertion location is found, add entry into lnk */\
       lnk[_location]  = _entry;\
       lnk[_entry]     = _lnkdata;\
-      lnk_lvl[_entry] = _incrlev;\
+      lnklvl[_entry] = 0;\
       nlnk++;\
       _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
-    } else { /* existing entry: update lnk_lvl */\
-      if (lnk_lvl[_entry] > _incrlev) lnk_lvl[_entry] = _incrlev;\
+    }\
+  }\
+}
+
+/*
+  Add a SORTED index set into a sorted linked list for ILU
+  Input Parameters:
+    nidx      - number of input indices
+    idx       - sorted interger array used for storing column indices
+    level     - level of fill, e.g., ICC(level)
+    idxlvl    - level of idx 
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    lnklvl    - levels of lnk
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+    prow      - the row number of idx
+  output Parameters:
+    nlnk     - number of newly added idx
+    lnk      - the sorted(increasing order) linked list containing new and non-redundate entries from idx
+    lnklvl   - levels of lnk
+    bt       - updated PetscBT (bitarray) 
+
+  Note: the level of factor(i,j) is set as lvl(i,j) = min{ lvl(i,j), lvl(i,prow)+lvl(prow,j)+1)
+        where idx = non-zero columns of U(prow,prow+1:n-1), prow<i
+*/
+#define PetscILULLAddSorted(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,lnklvl_prow) 0;\
+{\
+  int _k,_entry,_location,_lnkdata,_incrlev,_lnklvl_prow=lnklvl[prow];\
+  nlnk     = 0;\
+  _lnkdata = idx_start;\
+  for (_k=0; _k<nidx; _k++){\
+    _incrlev = idxlvl[_k] + _lnklvl_prow + 1;\
+    if (_incrlev > level) continue;\
+    _entry = idx[_k];\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk */\
+      lnk[_location]  = _entry;\
+      lnk[_entry]     = _lnkdata;\
+      lnklvl[_entry] = _incrlev;\
+      nlnk++;\
+      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
+    } else { /* existing entry: update lnklvl */\
+      if (lnklvl[_entry] > _incrlev) lnklvl[_entry] = _incrlev;\
+    }\
+  }\
+}
+
+/*
+  Add a index set into a sorted linked list
+  Input Parameters:
+    nidx      - number of input idx
+    idx   - interger array used for storing column indices
+    level     - level of fill, e.g., ICC(level)
+    idxlvl - level of idx 
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    lnklvl   - levels of lnk
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    nlnk      - number of newly added idx
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from idx
+    lnklvl   - levels of lnk
+    bt        - updated PetscBT (bitarray) 
+*/
+#define PetscIncompleteLLAdd(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt) 0;\
+{\
+  int _k,_entry,_location,_lnkdata,_incrlev;\
+  nlnk     = 0;\
+  _lnkdata = idx_start;\
+  for (_k=0; _k<nidx; _k++){\
+    _incrlev = idxlvl[_k] + 1;\
+    if (_incrlev > level) continue;\
+    _entry = idx[_k];\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk */\
+      lnk[_location]  = _entry;\
+      lnk[_entry]     = _lnkdata;\
+      lnklvl[_entry] = _incrlev;\
+      nlnk++;\
+      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
+    } else { /* existing entry: update lnklvl */\
+      if (lnklvl[_entry] > _incrlev) lnklvl[_entry] = _incrlev;\
     }\
   }\
 }
@@ -417,28 +505,28 @@ M*/
   Add a SORTED index set into a sorted linked list
   Input Parameters:
     nidx      - number of input indices
-    indices   - sorted interger array used for storing column indices
+    idx   - sorted interger array used for storing column indices
     level     - level of fill, e.g., ICC(level)
-    indices_lvl - level of indices 
+    idxlvl - level of idx 
     idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
-    lnk_lvl   - levels of lnk
+    lnklvl    - levels of lnk
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
-    nlnk      - number of newly added indices
-    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
-    lnk_lvl   - levels of lnk
+    nlnk      - number of newly added idx
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from idx
+    lnklvl    - levels of lnk
     bt        - updated PetscBT (bitarray) 
 */
-#define PetscIncompleteLLAddSorted(nidx,indices,level,indices_lvl,idx_start,nlnk,lnk,lnk_lvl,bt) 0;\
+#define PetscIncompleteLLAddSorted(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt) 0;\
 {\
   int _k,_entry,_location,_lnkdata,_incrlev;\
   nlnk = 0;\
   _lnkdata = idx_start;\
   for (_k=0; _k<nidx; _k++){\
-    _incrlev = indices_lvl[_k] + 1;\
-    if (_incrlev > level) {_k++; continue;} \
-    _entry = indices[_k];\
+    _incrlev = idxlvl[_k] + 1;\
+    if (_incrlev > level) continue;\
+    _entry = idx[_k];\
     if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
       /* search for insertion location */\
       do {\
@@ -448,11 +536,58 @@ M*/
       /* insertion location is found, add entry into lnk */\
       lnk[_location] = _entry;\
       lnk[_entry]    = _lnkdata;\
-      lnk_lvl[_entry] = _incrlev;\
+      lnklvl[_entry] = _incrlev;\
       nlnk++;\
       _lnkdata = _entry; /* next search starts from here */\
-    } else { /* existing entry: update lnk_lvl */\
-      if (lnk_lvl[_entry] > _incrlev) lnk_lvl[_entry] = _incrlev;\
+    } else { /* existing entry: update lnklvl */\
+      if (lnklvl[_entry] > _incrlev) lnklvl[_entry] = _incrlev;\
+    }\
+  }\
+}
+
+/*
+  Add a SORTED index set into a sorted linked list for ICC
+  Input Parameters:
+    nidx      - number of input indices
+    idx       - sorted interger array used for storing column indices
+    level     - level of fill, e.g., ICC(level)
+    idxlvl    - level of idx 
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    lnklvl    - levels of lnk
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+    idxlvl_prow - idxlvl[prow], where prow is the row number of the idx
+  output Parameters:
+    nlnk   - number of newly added indices
+    lnk    - the sorted(increasing order) linked list containing new and non-redundate entries from idx
+    lnklvl - levels of lnk
+    bt     - updated PetscBT (bitarray) 
+  Note: the level of U(i,j) is set as lvl(i,j) = min{ lvl(i,j), lvl(prow,i)+lvl(prow,j)+1)
+        where idx = non-zero columns of U(prow,prow+1:n-1), prow<i
+*/
+#define PetscICCLLAddSorted(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,idxlvl_prow) 0;\
+{\
+  int _k,_entry,_location,_lnkdata,_incrlev;\
+  nlnk = 0;\
+  _lnkdata = idx_start;\
+  for (_k=0; _k<nidx; _k++){\
+    _incrlev = idxlvl[_k] + idxlvl_prow + 1;\
+    if (_incrlev > level) continue;\
+    _entry = idx[_k];\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk */\
+      lnk[_location] = _entry;\
+      lnk[_entry]    = _lnkdata;\
+      lnklvl[_entry] = _incrlev;\
+      nlnk++;\
+      _lnkdata = _entry; /* next search starts from here */\
+    } else { /* existing entry: update lnklvl */\
+      if (lnklvl[_entry] > _incrlev) lnklvl[_entry] = _incrlev;\
     }\
   }\
 }
@@ -464,22 +599,22 @@ M*/
     lnk_max   - max value of lnk indicating the end of the list 
     nlnk      - number of data on the list to be copied
     lnk       - linked list
-    lnk_lvl   - level of lnk
+    lnklvl    - level of lnk
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
   output Parameters:
-    indices   - array that contains the copied data
-    lnk       -llinked list that is cleaned and initialize
-    lnk_lvl   - level of lnk that is reinitialized 
-    bt        - PetscBT (bitarray) with all bits set to false
+    indices - array that contains the copied data
+    lnk     - linked list that is cleaned and initialize
+    lnklvl  - level of lnk that is reinitialized 
+    bt      - PetscBT (bitarray) with all bits set to false
 */
-#define PetscIncompleteLLClean(idx_start,lnk_max,nlnk,lnk,lnk_lvl,indices,indices_lvl,bt) 0;\
+#define PetscIncompleteLLClean(idx_start,lnk_max,nlnk,lnk,lnklvl,indices,indiceslvl,bt) 0;\
 {\
   int _j,_idx=idx_start;\
   for (_j=0; _j<nlnk; _j++){\
     _idx = lnk[_idx];\
     *(indices+_j) = _idx;\
-    *(indices_lvl+_j) = lnk_lvl[_idx];\
-    lnk_lvl[_idx] = -1;\
+    *(indiceslvl+_j) = lnklvl[_idx];\
+    lnklvl[_idx] = -1;\
     PetscBTClear(bt,_idx);\
   }\
   lnk[idx_start] = lnk_max;\

@@ -7,7 +7,7 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat               C,A = PETSC_NULL;
+  Mat               C,A;
   PetscInt          i,j,m = 5,n = 4,I,J;
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size;
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   
   ierr = PetscStrcpy(mtype,MATSAME);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-conv_mat_type",mtype,256,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatConvert(C,mtype,&A);CHKERRQ(ierr);
+  ierr = MatConvert(C,mtype,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

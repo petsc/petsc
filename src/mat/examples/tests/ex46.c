@@ -37,7 +37,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatConvert(C,MATMPIAIJ,&A);CHKERRQ(ierr);
+  ierr = MatConvert(C,MATMPIAIJ,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
 #endif
