@@ -188,6 +188,8 @@ typedef struct {
     Vec    localXBC;
     int    fort_ao;
     int    sles_tot;
+    int    event_pack, event_unpack, event_localf;
+    int    post_process, pvar;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -398,7 +400,7 @@ extern int buildbdmat_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
 extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,Scalar*,Scalar*);
 /*
 extern int rscale_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
