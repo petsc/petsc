@@ -706,7 +706,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunction(SNES snes,Vec r,PetscErrorCod
 
 .keywords: SNES, nonlinear, set, function, right hand side
 
-.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
+.seealso: SNESGetRhs(), SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRhs(SNES snes,Vec rhs)
 {
@@ -723,6 +723,35 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRhs(SNES snes,Vec rhs)
     ierr = VecDestroy(snes->afine);CHKERRQ(ierr);
   }
   snes->afine = rhs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetRhs"
+/*@C
+   SNESGetRhs - Gets the vector for solving F(x) = rhs. If rhs is not set
+   it assumes a zero right hand side.
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - the SNES context
+
+   Output Parameter:
+.  rhs - the right hand side vector or PETSC_NULL for a zero right hand side
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, get, function, right hand side
+
+.seealso: SNESSetRhs(), SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian(), SNESSetFunction()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetRhs(SNES snes,Vec *rhs)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(rhs,2);
+  *rhs = snes->afine;
   PetscFunctionReturn(0);
 }
 
@@ -764,13 +793,19 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
   PetscCheckSameComm(snes,1,y,3);
 
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
-  PetscStackPush("SNES user function");
-  ierr = (*snes->computefunction)(snes,x,y,snes->funP);
-  PetscStackPop;
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(pierr);
+  if (snes->computefunction) {
+    PetscStackPush("SNES user function");
+    ierr = (*snes->computefunction)(snes,x,y,snes->funP);
+    PetscStackPop;
+    if (PetscExceptionValue(ierr)) {
+      PetscErrorCode pierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(pierr);
+    }
+    CHKERRQ(ierr);
+  } else if (snes->afine) {
+    ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() before SNESComputeFunction(), likely called from SNESSolve().");
   }
-  CHKERRQ(ierr);
   if (snes->afine) {
     PetscScalar mone = -1.0;
     ierr = VecAXPY(y,mone,snes->afine);CHKERRQ(ierr);
@@ -1016,8 +1051,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
     }
   }
 
-  if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
-  if (!snes->computefunction) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+  if (!snes->vec_func && !snes->afine) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+  }
+  if (!snes->computefunction && !snes->afine) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+  }
   if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetJacobian() first \n or use -snes_mf option");
   if (snes->vec_func == snes->vec_sol) {  
     SETERRQ(PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
@@ -1616,6 +1655,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
 
   if (b) {
     ierr = SNESSetRhs(snes, b); CHKERRQ(ierr);
+    if (!snes->vec_func) {
+      Vec r;
+
+      ierr = VecDuplicate(b, &r); CHKERRQ(ierr);
+      ierr = SNESSetFunction(snes, r, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
+    }
   }
   if (x) {
     PetscValidHeaderSpecific(x,VEC_COOKIE,3);

@@ -40,6 +40,8 @@ package PETSc {
     static bool Finalized();
   }
 
+  enum PetscConstants {PETSC_IGNORE = 0, PETSC_DECIDE = -1, PETSC_DEFAULT = -2};
+
   class PetscViewer implements PetscObject {
   }
 
@@ -368,6 +370,10 @@ package PETSc {
     // Retrieve the linear solver
     PETSc.KSP getKSP();
 
+    // Get the constant part
+    Vec getRhs();
+    // Set the constant part
+    void setRhs(in Vec b);
     // Get the function which calculates the residual F
     void getFunction(out PETSc.Vec f, out function func);
     // Set the function which calculates the residual F
