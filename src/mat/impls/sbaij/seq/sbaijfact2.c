@@ -1407,15 +1407,16 @@ int MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 /* Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ"
-int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
+int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatICCInfo *info,Mat *B) 
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;  
   int         *rip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
-  int         m,realloc = 0,*levtmp;
+  int         m,realloc = 0,*levtmp,levels = info->levels;
   int         *prowl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd,*jl;
   int         incrlev,*lev,shift,prow,nz;
   int         *il,ili,nextprow;
+  PetscReal   f = info->fill; 
   PetscTruth  perm_identity;
 
   PetscFunctionBegin;
@@ -1425,11 +1426,12 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   /* special case that simply copies fill pattern */
   if (!levels && perm_identity && bs==1) { 
     ierr = MatDuplicate_SeqSBAIJ(A,MAT_DO_NOT_COPY_VALUES,B);CHKERRQ(ierr);
-    (*B)->factor = FACTOR_CHOLESKY;
-    b            = (Mat_SeqSBAIJ*)(*B)->data;
-    b            = (Mat_SeqSBAIJ*)(*B)->data;    
-    b->row       = perm;
-    b->icol      = perm;   
+    (*B)->factor    = FACTOR_CHOLESKY;
+    b               = (Mat_SeqSBAIJ*)(*B)->data;  
+    b->row          = perm;
+    b->icol         = perm;   
+    b->lu_damping   = info->damping;
+    b->lu_zeropivot = info->zeropivot;
     ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr         = PetscMalloc(((*B)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
@@ -1607,8 +1609,10 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
   PetscLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(int)+sizeof(MatScalar)));
-  b->s_maxnz = b->s_nz = iu[mbs];
-  
+  b->s_maxnz      = b->s_nz = iu[mbs];
+  b->lu_damping   = info->damping; 
+  b->lu_zeropivot = info->zeropivot; 
+
   (*B)->factor                 = FACTOR_CHOLESKY;
   (*B)->info.factor_mallocs    = realloc;
   (*B)->info.fill_ratio_given  = f;
@@ -1807,7 +1811,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,int levels,Mat *B)
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
         (*B)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;
         (*B)->ops->solves                = MatSolves_SeqSBAIJ_1;
-        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=1\n");
+        PetscLogInfo(A,"MatICCFactorSymbolic_SeqSBAIJl:Using special in-place natural ordering factor and solve BS=1\n");
         break;
       case 2:
         (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;

@@ -9,8 +9,7 @@
 typedef struct {
   Mat             fact;
   MatOrderingType ordering;
-  int             levels;
-  PetscReal       fill;
+  MatICCInfo      info;
   void            *implctx;
 } PC_ICC;
 

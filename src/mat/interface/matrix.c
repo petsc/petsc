@@ -3723,7 +3723,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
 
 .seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatICCFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat *fact)
+int MatICCFactorSymbolic(Mat mat,IS perm,MatICCInfo *info,Mat *fact)
 {
   int ierr;
 
@@ -3734,13 +3734,13 @@ int MatICCFactorSymbolic(Mat mat,IS perm,PetscReal f,int fill,Mat *fact)
   PetscValidPointer(fact);
   PetscValidHeaderSpecific(perm,IS_COOKIE);
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (fill < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Fill negative %d",fill);
-  if (f < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",f);
+  if (info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %d",info->levels);
+  if (info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %g",info->fill);
   if (!mat->ops->iccfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
 
   ierr = PetscLogEventBegin(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->iccfactorsymbolic)(mat,perm,f,fill,fact);CHKERRQ(ierr);
+  ierr = (*mat->ops->iccfactorsymbolic)(mat,perm,info,fact);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4739,7 +4739,7 @@ int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
 
 .seealso: MatICCFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatICCFactor(Mat mat,IS row,PetscReal fill,int level)
+int MatICCFactor(Mat mat,IS row,MatICCInfo* info)
 {
   int ierr;
 
@@ -4751,7 +4751,7 @@ int MatICCFactor(Mat mat,IS row,PetscReal fill,int level)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (!mat->ops->iccfactor) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
-  ierr = (*mat->ops->iccfactor)(mat,row,fill,level);CHKERRQ(ierr);
+  ierr = (*mat->ops->iccfactor)(mat,row,info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

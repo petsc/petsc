@@ -42,9 +42,12 @@ typedef struct {
   int              *a2anew;        /* map used for symm permutation */
   PetscTruth       permute;        /* if true, a non-trivial permutation is used for factorization */
   PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */
+
+  PetscReal        lu_damping;
+  PetscReal        lu_zeropivot;
 } Mat_SeqSBAIJ;
 
-extern int MatICCFactorSymbolic_SeqSBAIJ(Mat,IS,PetscReal,int,Mat *);
+extern int MatICCFactorSymbolic_SeqSBAIJ(Mat,IS,MatICCInfo*,Mat *);
 extern int MatDuplicate_SeqSBAIJ(Mat,MatDuplicateOption,Mat*);
 extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 
