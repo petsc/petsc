@@ -45,10 +45,11 @@ class Configure(config.base.Configure):
         packageObj              = self.framework.require('PETSc.packages.'+packageName, self)
         packageObj.headerPrefix = self.headerPrefix
         setattr(self, packageName.lower(), packageObj)
-    self.framework.require('PETSc.packages.fortranstubs', self.blaslapack)
-    self.framework.require('PETSc.packages.update',       self.compilers)
+    # Put in dependencies
+    self.framework.require('PETSc.packages.fortranstubs',  self.blaslapack)
+    self.framework.require('PETSc.packages.update',        self.compilers)
+    self.framework.require('PETSc.packages.compilerFlags', self.types)
     return
-
 
   def configureHelp(self, help):
     import nargs
@@ -61,16 +62,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-enable-dynamic',             nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
     help.addArgument('PETSc', '-enable-etags',               nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
     help.addArgument('PETSc', '-enable-fortran-kernels',     nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', 'optionsModule=<module name>', nargs.Arg(None, None, 'The Python module used to determine compiler options and versions'))
-    help.addArgument('PETSc', 'C_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
-    help.addArgument('PETSc', 'CFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=g'))
-    help.addArgument('PETSc', 'CFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the C compiler with BOPT=O'))
-    help.addArgument('PETSc', 'CXX_VERSION',                 nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
-    help.addArgument('PETSc', 'CXXFLAGS_g',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler with BOPT=g'))
-    help.addArgument('PETSc', 'CXXFLAGS_O',                  nargs.Arg(None, 'Unknown', 'Flags for the C++ compiler with BOPT=O'))
-    help.addArgument('PETSc', 'F_VERSION',                   nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
-    help.addArgument('PETSc', 'FFLAGS_g',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler with BOPT=g'))
-    help.addArgument('PETSc', 'FFLAGS_O',                    nargs.Arg(None, 'Unknown', 'Flags for the Fortran compiler with BOPT=O'))
     help.addArgument('PETSc', '-with-mpi',                   nargs.ArgBool(None, 1, 'If this is false, MPIUNI will be used as a uniprocessor substitute'))
     help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make',   'Specify make'))
@@ -78,17 +69,11 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-default-language=<c,c++,c++-complex,0(zero for no default)>', nargs.Arg(None, 'c', 'Specifiy default language of libraries'))
     help.addArgument('PETSc', '-with-default-optimization=<g,O,0(zero for no default)>',           nargs.Arg(None, 'g', 'Specifiy default optimization of libraries'))
     help.addArgument('PETSc', '-with-default-arch',          nargs.ArgBool(None, 1, 'Allow using the most recently configured arch without setting PETSC_ARCH'))
-
-    self.framework.argDB['PETSCFLAGS'] = ''
-    self.framework.argDB['COPTFLAGS']  = ''
-    self.framework.argDB['FOPTFLAGS']  = ''
-    self.framework.argDB['BOPT']       = 'O'
     return
 
   def defineAutoconfMacros(self):
     self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
     return
-
 
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_LOG, PETSC_USE_STACK, and PETSC_USE_FORTRAN_KERNELS'''
@@ -100,62 +85,6 @@ class Configure(config.base.Configure):
     self.addDefine('USE_STACK', self.useStack)
     self.useFortranKernels = self.framework.argDB['enable-fortran-kernels']
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
-    return
-
-  def configureCompilerFlags(self):
-    '''Get all compiler flags from the Petsc database'''
-    options = None
-    try:
-      mod     = __import__('PETSc.Options', locals(), globals(), ['Options'])
-      options = mod.Options(self.framework)
-    except ImportError: print 'Failed to load generic options'
-    try:
-      if self.framework.argDB.has_key('optionsModule'):
-        mod     = __import__(self.framework.argDB['optionsModule'], locals(), globals(), ['Options'])
-        options = mod.Options(self.framework)
-    except ImportError: print 'Failed to load custom options'
-    if options:
-      for language, flags in [('C', 'CFLAGS'), ('Cxx', 'CXXFLAGS'), ('F77', 'FFLAGS')]:
-        # Calling getCompiler() will raise an exception if a language is missing
-        self.pushLanguage(language)
-        try:
-          # Check compiler version
-          if language == 'F77':
-            versionName = 'F_VERSION'
-          else:
-            versionName = language.upper()+'_VERSION'
-          if self.framework.argDB[versionName] == 'Unknown':
-            self.framework.argDB[versionName]  = options.getCompilerVersion(language, self.getCompiler())
-          self.addArgumentSubstitution(versionName, versionName)
-          # Check normal compiler flags
-          self.framework.argDB['REJECTED_'+flags] = []
-          for testFlag in options.getCompilerFlags(language, self.getCompiler(), ''):
-            try:
-              self.addCompilerFlag(testFlag)
-            except RuntimeError:
-              self.framework.argDB['REJECTED_'+flags].append(testFlag)
-          # Check special compiler flags
-          for bopt in ['g', 'O']:
-            flagsName = flags+'_'+bopt
-            self.framework.argDB['REJECTED_'+flagsName] = []
-            if self.framework.argDB[flagsName] == 'Unknown':
-              testFlags = []
-              for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
-                if self.checkCompilerFlag(testFlag):
-                  testFlags.append(testFlag)
-                else:
-                  self.framework.argDB['REJECTED_'+flagsName].append(testFlag)
-              self.framework.argDB[flagsName] = ' '.join(testFlags)
-            testFlags = self.framework.argDB[flagsName]
-            if not self.checkCompilerFlag(testFlags):
-              raise RuntimeError('Invalid '+language+' compiler flags for bopt '+bopt+': '+testFlags)
-            self.addArgumentSubstitution(flagsName, flagsName)
-        except RuntimeError: pass
-        self.popLanguage()
-
-    self.framework.addArgumentSubstitution('PETSCFLAGS', 'PETSCFLAGS')
-    self.framework.addArgumentSubstitution('COPTFLAGS',  'COPTFLAGS')
-    self.framework.addArgumentSubstitution('FOPTFLAGS',  'FOPTFLAGS')
     return
 
   def configureFortranPIC(self):
@@ -579,7 +508,6 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.arch+'/variables')
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.arch+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
-    self.executeTest(self.configureCompilerFlags)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.configureFortranPIC)
     else:
