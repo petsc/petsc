@@ -17,9 +17,22 @@ class ArgDict (UserDict.UserDict, logging.Logger):
     self.load(filename)
     atexit.register(self.save)
     self.interactive   = 1
-    self.metadata      = {'help' : {}, 'default' : {}, 'parent' : {}, 'tester' : {}}
+    self.metadata      = {'help' : {}, 'default' : {}, 'parent' : {}, 'tester' : {}, 'dir' : {}}
     self.argRE         = re.compile(r'\$(\w+|\{[^}]*\})')
     self.defaultParent = defaultParent
+
+#  If requested key is a directory try to use Filebrowser to get it
+  def getDirectory(self,key,exist):
+    try:
+      import GUI.FileBrowser
+      import SIDL.Loader
+      db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
+    except:
+      return (0,none)
+    if self.metadata['help'].has_key(key): db.setTitle(self.metadata['help'][key])
+    else:                                  db.setTitle('Select the directory for'+key)
+    db.setMustExist(exist)
+    return (1,db.getDirectory())
 
   def __getitem__(self, key):
     ok = 1
@@ -54,6 +67,10 @@ class ArgDict (UserDict.UserDict, logging.Logger):
 
   def requestItem(self, key):
     if not self.interactive: return (0, None)
+    if self.metadata['dir'].has_key(key): 
+      (ok,value) = self.getDirectory(key,self.metadata['dir'][key])
+      if ok: return (ok,value)
+      
     if self.metadata['help'].has_key(key): print self.metadata['help'][key]
     while 1:
 	try:
@@ -112,6 +129,9 @@ class ArgDict (UserDict.UserDict, logging.Logger):
 
   def setHelp(self, key, docString):
     self.metadata['help'][key] = docString
+
+  def setDir(self, key,exist):
+    self.metadata['dir'][key] = exist
 
   def setTester(self, key, docString):
     self.metadata['tester'][key] = docString

@@ -28,6 +28,7 @@ class PetscMake(bs.BS):
     bs.argDB['PYTHON_INCLUDE'] = getpythoninclude()
     if not os.path.exists(getpythoninclude()+'/Numeric'):
         print "Install requires Numeric Python to be installed"
+        print "Get Numeric Python from numpy.sourceforge.net"
         raise RuntimeError,"Install requires Numeric Python to be installed"
     bs.argDB['PYTHON_LIB'] = getpythonlib()
     
@@ -50,18 +51,18 @@ class PetscMake(bs.BS):
     self.defineTargets()
 
   def install(self):
-    # this is pitiful
+    if not bs.argDB.has_key('install'): return
+    bs.argDB.setDir('installlib',0)
+    bs.argDB.setDir('installh',0)
+    bs.argDB.setDir('installexamples',0)
     try:
       os.makedirs(bs.argDB['installlib'])
+      os.makedirs(bs.argDB['installh'])
+      os.makedirs(bs.argDB['installexamples'])
     except:
       pass
     (status, output) = commands.getstatusoutput('cp -f *.py '+bs.argDB['installlib'])
     (status, output) = commands.getstatusoutput('cp -rf BSTemplates '+bs.argDB['installlib'])
-
-    try:
-      os.makedirs(bs.argDB['installlib'])
-    except:
-      pass
     (status, output) = commands.getstatusoutput('cp -f lib/*.so '+bs.argDB['installlib'])
     
   def defineHelp(self):
@@ -89,8 +90,9 @@ class PetscMake(bs.BS):
 
 if __name__ ==  '__main__':
   try:
-      pm = PetscMake(sys.argv[1:])
-  except:
-     sys.exit(1)
-  pm.main()
-  pm.install()
+    pm = PetscMake(sys.argv[1:])
+    pm.main()
+    pm.install()
+  except Exception, e:
+    print 'ERROR: '+str(e)
+    sys.exit(1)

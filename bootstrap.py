@@ -250,18 +250,21 @@ def checkcxxcompiler():
     if not status == 0:
         print "g++ is not in your path; please make sure that you have a g++"
         print "of at least version 3 installed in your path"
+        print "Get gcc/g++ at http://gcc.gnu.com"
         return 0
     if not re.split('\.',output)[0] == "3":
         print "The g++ in your path is not of version 3 or higher; please install a g++"
         print "of at least version 3 or fix your path"
+        print "Get gcc/g++ at http://gcc.gnu.com"
         (status,output) = commands.getstatusoutput("g++ --version")
         print output
         return 0
     return 1
 
 def checkpython():
-    if float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
+    if not hasattr(sys,"version_info") or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
         print "Requires Python version 2.2 or higher"
+        print "Get Python at python.org"
         return 0
     return 1
 
@@ -322,7 +325,7 @@ def main():
       tmpdir = "/tmp/"
 
     print "Retreiving build system"
-    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/bs.tar.gz",tmpdir+"bs.tar.gz",tmpdir)
+    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/sidl/bs.tar.gz",tmpdir+"bs.tar.gz",tmpdir)
     (status,output) = commands.getstatusoutput("cd "+srcdir+";tar -zxf "+tmpdir+"bs.tar.gz")
     logfile.write(output)
     if not status == 0:
@@ -331,7 +334,7 @@ def main():
         return
     
     print "Initializing the database in the build system"
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;make.py -debugLevel=0 -debugSections=[] -restart=0 -SIDLRUNTIME_DIR="+srcdir+"/SIDLRuntimeANL -JAVA_INCLUDE="+JAVA_INCLUDE+" -JAVA_RUNTIME_LIB="+JAVA_LIB+" -installh="+installdir+"/include -installlib="+installdir+"/lib -installexamples="+installdir+"/examples printTargets")
+    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;./make.py -debugLevel=0 -debugSections=[] -restart=0 -SIDLRUNTIME_DIR="+srcdir+"/SIDLRuntimeANL -JAVA_INCLUDE="+JAVA_INCLUDE+" -JAVA_RUNTIME_LIB="+JAVA_LIB+" -installh="+installdir+"/include -installlib="+installdir+"/lib -installexamples="+installdir+"/examples printTargets")
     logfile.write(output)
     if not status == 0:
         print "Failed to initialize build system database"
@@ -344,7 +347,7 @@ def main():
         os.environ['PYTHONPATH'] = srcdir+"/bs:"+installdir+"/lib"
         
     print "Retreiving runtime system"
-    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/SIDLRuntimeANL.tar.gz",tmpdir+"SIDLRuntimeANL.tar.gz",tmpdir)
+    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/sidl/SIDLRuntimeANL.tar.gz",tmpdir+"SIDLRuntimeANL.tar.gz",tmpdir)
     (status,output) = commands.getstatusoutput("cd "+srcdir+";tar -zxf "+tmpdir+"SIDLRuntimeANL.tar.gz")
     logfile.write(output)
     if not status == 0:
@@ -353,7 +356,7 @@ def main():
         return
     
     print "Compiling runtime system"
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/SIDLRuntimeANL;make.py compile")
+    (status,output) = commands.getstatusoutput("cd "+srcdir+"/SIDLRuntimeANL;./make.py -install=1 compile")
     logfile.write(output)
     if not status == 0:
         print "Failed compiling SIDLRuntimeANL"
@@ -361,7 +364,7 @@ def main():
         return
     
     print "Compiling build system"
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;make.py compile")
+    (status,output) = commands.getstatusoutput("cd "+srcdir+"/bs;./make.py -install=1 compile")
     logfile.write(output)
     if not status == 0:
         print "Failed compiling the build system"
@@ -369,7 +372,7 @@ def main():
         return
     
     print "Retreiving GUI system"
-    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/gui.tar.gz",tmpdir+"gui.tar.gz",tmpdir)
+    x = urlget("ftp://info.mcs.anl.gov/pub/petsc/sidl/gui.tar.gz",tmpdir+"gui.tar.gz",tmpdir)
     (status,output) = commands.getstatusoutput("cd "+srcdir+";tar -zxf "+tmpdir+"gui.tar.gz")
     logfile.write(output)
     if not status == 0:
@@ -378,10 +381,18 @@ def main():
         return
     
     print "Compiling GUI system"
-    (status,output) = commands.getstatusoutput("cd "+srcdir+"/gui;make.py compile")
+    (status,output) = commands.getstatusoutput("cd "+srcdir+"/gui;./make.py -install=1 compile")
     logfile.write(output)
     if not status == 0:
         print "Failed compiling GUI"
+        print output
+        return
+
+    print "Running installer"
+    (status,output) = commands.getstatusoutput(installdir+"/examples/python/installer.py")
+    logfile.write(output)
+    if not status == 0:
+        print "Failed running installer"
         print output
         return
 
