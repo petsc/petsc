@@ -214,7 +214,7 @@ class Configure(config.base.Configure):
       yield ('User specified installation root for MS Windows', self.libraryGuesses(os.path.join(dir,'SDK')),[[os.path.join(dir,'SDK','include')]])
       raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used.\n It could be the MPI located is not working for all the languages, you can try running\n configure again with --with-fc=0 or --with-cxx=0\n')
     # May not need to list anything
-    yield ('Default compiler locations', self.libraryGuesses(dir), [[]])
+    yield ('Default compiler locations', self.libraryGuesses(), [[]])
     # Try configure package directories
     dirExp = re.compile(r'mpi(ch)?(-.*)?')
     for packageDir in self.framework.argDB['package-dirs']:
