@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.5 1999/01/25 21:24:01 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.6 1999/01/25 21:34:35 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -86,8 +86,8 @@ def modifylevel(filename):
       
       # write the modified manpage
       try:
-            fd = open(filename[:-1],'w')
-            #fd = open(filename,'w')
+            #fd = open(filename[:-1],'w')
+            fd = open(filename,'w')
       except:
             print 'Error! Cannot write to file:',filename
             exit()            
