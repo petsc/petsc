@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.13 1995/03/23 05:01:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.14 1995/03/23 22:59:30 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -283,7 +283,7 @@ static int MatEndAssemble_MPIAIJ(Mat mat)
   ierr = MatEndAssembly(aij->A); CHKERR(ierr);
 
   if (!aij->assembled) {
-    ierr = MPIAIJSetUpMultiply(mat); CHKERR(ierr);
+    ierr = MatSetUpMultiply_MPIAIJ(mat); CHKERR(ierr);
   }
   ierr = MatBeginAssembly(aij->B); CHKERR(ierr);
   ierr = MatEndAssembly(aij->B); CHKERR(ierr);
@@ -557,7 +557,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-extern int MatMarkDiag_MPIAIJ(Mat_AIJ  *);
+extern int MatMarkDiag_AIJ(Mat_AIJ  *);
 /*
     This has to provide several versions.
 
@@ -582,7 +582,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,int flag,double shift,
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x -1; /* shift by one for index start of 1 */
   ls--;
-  if (!A->diag) {if ((ierr = MatMarkDiag_MPIAIJ(A))) return ierr;}
+  if (!A->diag) {if ((ierr = MatMarkDiag_AIJ(A))) return ierr;}
   diag = A->diag;
   if (flag == SOR_APPLY_UPPER || flag == SOR_APPLY_LOWER) {
     SETERR(1,"That option not yet support for parallel AIJ matrices");
