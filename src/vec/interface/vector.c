@@ -111,7 +111,7 @@ int VecSetFromOptions(Vec vec)
 
   ierr = PetscOptionsEnd();                                                                               CHKERRQ(ierr);
 
-  ierr = VecViewFromOptions(vec);                                                                         CHKERRQ(ierr);
+  ierr = VecViewFromOptions(vec, vec->name);                                                              CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
