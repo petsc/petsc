@@ -236,3 +236,17 @@ Tips for using complex numbers:
 Lois no at SMU: 214-768-2515
 
 --------------------------------------------------------------------------
+Approving mail to petsc-users
+The easiest way to approve a message is to create a file ~/.majordomo
+that contains the lines:
+
+#list         passwd    site
+petsc-users   passwd    majordomo@mcs.anl.gov
+
+You could have multiple lines if you control multple lists.  Then
+take the message you have and send it through the program "approve".
+For MH based mail, that should be "show|approve".  If using "mail", 
+you'd have to save the message to a file then "cat file|approve".
+For other mailers, you are on your own to determine how to pipe the
+message to a program.  Some can do it, and others are like "mail".
+
