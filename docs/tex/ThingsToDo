@@ -11,6 +11,11 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Fix fortran stub generator so that it uses
+        (MPI_Comm)PetscToPointerComm( *(int*)(comm) )
+    instead of
+        (MPI_Comm)PetscToPointer( *(int*)(comm) )
+
   - Change PLOgEventBegin() and end to no longer use the 
     "tacky" stuff since it should be no longer needed, then 
     fix the logging inside snesmfj.c
