@@ -65,7 +65,7 @@ int    KSPSetUp_GMRES(KSP ksp)
   gmres->ss_origin  = gmres->cc_origin + cc;
 
   if (ksp->calc_sings) {
-    /* Allocate workspace to hold Hessenberg matrix needed by Eispack */
+    /* Allocate workspace to hold Hessenberg matrix needed by lapack */
     size = (max_k + 3)*(max_k + 9)*sizeof(PetscScalar);
     ierr = PetscMalloc(size,&gmres->Rsvd);CHKERRQ(ierr);
     ierr = PetscMalloc(5*(max_k+2)*sizeof(PetscReal),&gmres->Dsvd);CHKERRQ(ierr);
