@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.351 2001/08/06 15:22:34 bsmith Exp balay $ 
+# $Id: makefile,v 1.352 2001/08/22 17:58:22 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -35,12 +35,12 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}"
 	-@if [ -n "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
-	  echo "C Compiler version:" ; ${C_CCV} ; fi
+	  echo "C Compiler version:" ; ${C_CCV} ; fi ; true 
 	-@if [ -n "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ] ; then \
-	  echo "C++ Compiler version:" ; ${CXX_CCV} ; fi
+	  echo "C++ Compiler version:" ; ${CXX_CCV} ; fi; true
 	-@echo "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}"
 	-@if [ -n "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
-	  echo "Fortran Compiler version:" ; ${C_FCV} ; fi
+	  echo "Fortran Compiler version:" ; ${C_FCV} ; fi; true
 	-@echo "-----------------------------------------"
 	-@grep PETSC_VERSION_NUMBER ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
 	-@echo "-----------------------------------------"
@@ -72,12 +72,12 @@ info_h:
 	-@echo  "static char *petsccompilerinfo = \"  " >> MINFO
 	-@echo  "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
 	-@if [  "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
-	  echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1; fi
+	  echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1; fi ; true
 	-@if [  "${CXX_CCV}" -a "${CXX_CCV}" != "unknown" ] ; then \
-	  echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; fi
+	  echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; fi ; true
 	-@echo  "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
 	-@if [  "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
-	  echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; fi
+	  echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; fi ; true
 	-@echo  "-----------------------------------------\"; " >> MINFO
 	-@echo  "static char *petsccompilerflagsinfo = \"  " >> MINFO
 	-@echo  "Using PETSc flags: ${PETSCFLAGS} ${PCONF}" >> MINFO
