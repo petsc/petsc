@@ -265,6 +265,28 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
 EXTERN void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
 
+/*MC
+   PetscExceptionCaught - Indicates if exception zierr was caught.
+
+   Not Collective
+
+   Synopsis:
+     PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr);
+
+  Input Parameters:
+  + xierr - error code returned from PetscExceptionTry1() 
+  - zierr - error code you want it to be
+
+  Level: advanced
+
+   Notes:
+    PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+  Concepts: exceptions, exception hanlding
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
+          CHKERRQ(), PetscExceptionTry1(), PetscExceptionValue()
+M*/
 static inline PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr) {
                            PetscInt i;
                            if (xierr != zierr) return PETSC_FALSE;
@@ -276,7 +298,27 @@ static inline PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCod
                            return PETSC_TRUE;
                          }          
 
+/*MC
+   PetscExceptionValue - Indicates if the error code is one that is currently being tried
 
+   Not Collective
+
+   Synopsis:
+     PetscTruth PetscExceptionValue(PetscErrorCode xierr);
+
+  Input Parameters:
+  . xierr - error code 
+
+  Level: developer
+
+   Notes:
+    PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+  Concepts: exceptions, exception hanlding
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
+          CHKERRQ(), PetscExceptionTry1(), PetscExceptionCaught()
+M*/
 static inline PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
                            PetscInt i;
                            for (i=0; i<PetscExceptionsCount; i++) {
@@ -302,11 +344,14 @@ static inline PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
 
+  Note: In general, the outer most try on an exception is the one that will be caught (that is trys down in 
+        PETSc code will not usually handle an exception that was issued above). See SNESSolve() for an example
+        of how the local try is ignored if a higher (in the stack) one is also in effect.
 
   Concepts: exceptions, exception hanlding
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
-          CHKERRQ()
+          CHKERRQ(), PetscExceptionCaught()
 M*/
 extern PetscErrorCode PetscExceptionTmp;
 #define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTmp)

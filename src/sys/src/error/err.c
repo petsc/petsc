@@ -248,6 +248,21 @@ static PetscTruth PetscErrorIsCatchable(PetscErrorCode err)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorSetCatchable" 
+/*@
+      PetscErrorSetCatchable - Sets if a PetscErrorCode can be caught with a PetscExceptionTry1()
+    PetscExceptionCaught() pair. By default all errors are catchable.
+
+  Input Parameters:
++   err - error code 
+-   flg - PETSC_TRUE means allow to be caught, PETSC_FALSE means do not allow to be caught
+
+  Level: advanced
+
+   Notes:
+    PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+.seealso: PetscExceptionTry1(), PetscExceptionCaught()
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode err,PetscTruth flg)
 {
   PetscFunctionBegin;
