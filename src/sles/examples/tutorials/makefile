@@ -326,10 +326,10 @@ runex10_9:
           for np in 1 2 3; do \
 	 ${MPIRUN} -np $$np ex10 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info \
                     -mat_type mpibaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_irorthog -ksp_rtol \
-                    1.0e-15 -ksp_smonitor >> ex10_9.tmp 2>&1 ; \
+                    1.0e-15 -ksp_smonitor >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP};\
 	 ${MPIRUN} -np $$np ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_irorthog -load_ignore_info \
                     -mat_type mpibaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
-                    1.0e-15 -ksp_smonitor -trans >> ex10_9.tmp 2>&1 ; \
+                    1.0e-15 -ksp_smonitor -trans >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP};\
          done; done; done; 
 	-@if (${DIFF} output/ex10_9.out ex10_9.tmp) then true; \
 	   else echo "Possible problem with ex10_9, diffs above"; fi;
@@ -490,8 +490,8 @@ TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
                    ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
-                   ex10.PETSc runex10_7 runex10_8 runex10_9 \
-                   runex10_5 runex10_6 runex10_8 runex10_10 ex10.rm
+                   runex10_5 runex10_6 runex10_7 runex10_8 runex10_9 \
+                   runex10_10 ex10.rm
 TESTEXAMPLES_BLOCKSOLVE   = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_aij_lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
