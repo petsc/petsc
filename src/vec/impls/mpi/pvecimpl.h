@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.6 1995/10/19 22:16:25 curfman Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.7 1995/11/01 19:08:38 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -10,8 +10,7 @@
 
 /* The first two elements of this structure should remain the same */
 typedef struct {
-    int         n;           /* Length of LOCAL vector */
-    Scalar      *array;
+    VECHEADER
     int         N;           /* length of total vector */
     int         size,rank,*ownership;
     InsertMode  insertmode;
