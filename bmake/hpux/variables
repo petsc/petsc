@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.7 1999/05/12 03:24:58 bsmith Exp balay $ 
+# $Id: base_variables,v 1.8 1999/08/04 20:28:07 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -11,18 +11,18 @@ SHELL            = /bin/sh
 #
 C_CC             = cc -Aa +z -Ae
 C_FC             = f90 +z
-C_CC_SLFLAG      = -L
-C_FC_SLFLAG      = -L
+C_CLINKER_SLFLAG      = -L
+C_FLINKER_SLFLAG      = -L
 C_CLINKER        = cc
 C_FLINKER        = f90
 C_CCV            = unknown
 C_SYS_LIB        = -lV3 -lU77 -lail -lcnx_syscall \
 	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
 
-# ---------------------------- BOPT=g options ----------------------------
+# ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS      = -g 
 G_FOPTFLAGS      = -g
-# ----------------------------- BOPT=O options -----------------------------
+# ----------------------------- BOPT - O options -----------------------------
 O_COPTFLAGS      = -O +Onolimit
 O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
@@ -30,23 +30,23 @@ O_FOPTFLAGS      = -O
 #CXX_CC           = CC -Aa +z -ext +eh 
 CXX_CC           = CC -Aa +z -ext
 CXX_FC           = f90 +z
-CXX_CC_SLFLAG    = -L
-CXX_FC_SLFLAG    = -L
+CXX_CLINKER_SLFLAG    = -L
+CXX_FLINKER_SLFLAG    = -L
 CXX_CLINKER      = CC
 CXX_FLINKER      = f90
 CXX_CCV          = unknown
 CXX_SYS_LIB      = -lV3 -lU77 -lail -lcnx_syscall -lcomplex -lC \
 	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl
-# ------------------------- BOPT=g_c++ options ------------------------------
+# ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g
 GCXX_FOPTFLAGS   = -g
-# ------------------------- BOPT=O_c++ options ------------------------------
+# ------------------------- BOPT - O_c++ options ------------------------------
 OCXX_COPTFLAGS   = -O +Onolimit
 OCXX_FOPTFLAGS   = -O 
-# -------------------------- BOPT=g_complex options ------------------------
+# -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS  = -g 
 GCOMP_FOPTFLAGS  = -g
-# --------------------------- BOPT=O_complex options -------------------------
+# --------------------------- BOPT - O_complex options -------------------------
 OCOMP_COPTFLAGS  = -O +Onolimit
 OCOMP_FOPTFLAGS  = -O
 # ########################### PETSc install options ###########################
