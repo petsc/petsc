@@ -108,7 +108,6 @@ homepage:
 	-/usr/bin/cp onepager.html /mcs/www/petsc
 	-/usr/bin/cp summaries.html /mcs/www/petsc
 	-/usr/bin/cp ../www.html /mcs/www/petsc
-	-/usr/bin/cp ../Readme /mcs/www/petsc
 	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
 	-/usr/bin/cp ../../FAQ /home/ftp/pub/petsc
 	-/usr/bin/cp ../../Performance /home/ftp/pub/petsc
