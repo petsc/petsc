@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.3 1998/07/29 00:34:57 curfman Exp curfman $";
+static char vcid[] = "$Id: cn.c,v 1.4 1998/07/29 00:50:29 curfman Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
@@ -48,17 +48,16 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,double *time)
     ts->A = cn->Aeuler;
     ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update); CHKERRQ(ierr);
     ts->A = Atmp;
-    ierr = VecAXPY(&dt,update,sol); CHKERRQ(ierr);
-    /* ierr = VecAXPBY(&dt,&two,update,sol); CHKERRQ(ierr); */
+    ierr = VecAXPBY(&dt,&two,update,sol); CHKERRQ(ierr);
 
     /* phase 2 - implicit step */
-    /*    ierr = VecCopy(sol,rhs); CHKERRQ(ierr); */
+    ierr = VecCopy(sol,rhs); CHKERRQ(ierr); 
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    /*    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
+    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs); CHKERRQ(ierr);
 
     ierr = SLESSolve(ts->sles,rhs,update,&its); CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
-    ierr = VecCopy(update,sol); CHKERRQ(ierr); */
+    ierr = VecCopy(update,sol); CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol); CHKERRQ(ierr);
   }
@@ -160,6 +159,7 @@ static int TSDestroy_CN(TS ts )
   if (cn->update) {ierr = VecDestroy(cn->update); CHKERRQ(ierr);}
   if (cn->func) {ierr = VecDestroy(cn->func);CHKERRQ(ierr);}
   if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
+  if (cn->Aeuler) {ierr = MatDestroy(cn->Aeuler);CHKERRQ(ierr);}
   if (ts->Ashell) {ierr = MatDestroy(ts->A); CHKERRQ(ierr);}
   PetscFree(cn);
   PetscFunctionReturn(0);
