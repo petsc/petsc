@@ -630,6 +630,7 @@ acfindx:
     if os.path.splitext(os.path.basename(wfe))[0] == 'win32fe':
       self.framework.addSubstitution('PARCH_win32',1)
       self.addDefine('CANNOT_START_DEBUGGER',1)
+      self.addDefine('USE_NT_TIME',1)
     return
     
   def configureMPIUNI(self):
