@@ -10,6 +10,9 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Need to allow repeated matix assembly for repeated linear solves with
+    in-place ILU(0).
+
   - Use MPI topology routines for DA codes.
 
   - Add a searchable index for the man pages (Jeff Scroggs Complaint)
