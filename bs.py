@@ -6,6 +6,7 @@ import logging
 import atexit
 import cPickle
 import commands
+import errno
 import md5
 import os
 import os.path
@@ -199,7 +200,13 @@ class BS (Maker):
       self.debugPrint('Calculating '+source, 3, 'sourceDB')
       (checksum, mtime, timestamp, dependencies) = sourceDB[source]
       newDep = []
-      file   = open(source, 'r')
+      try:
+        file = open(source, 'r')
+      except IOError, e:
+        if e.errno == errno.ENOENT:
+          del sourceDB[source]
+        else:
+          raise e
       comps  = string.split(source, '/')
       for line in file.readlines():
         m = self.includeRE.match(line)
