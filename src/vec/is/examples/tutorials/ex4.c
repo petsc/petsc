@@ -1,14 +1,12 @@
 
-/*      "$Id: ex3.c,v 1.7 1997/04/10 00:00:03 bsmith Exp bsmith $"; */
+/*      "$Id: ex4.c,v 1.1 1997/08/18 21:59:23 bsmith Exp bsmith $"; */
 
-static char help[] = "Demonstrates creating a blocked index set.\n\n";
+static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
 /*T
-    Concepts: Index sets^Manipulating a block index set;
-    Routines: ISCreateBlock(); ISDestroy(); ISView()
-    Routines: ISGetIndices(); ISRestoreIndices(); ISBlockGetSize()
-    Routines: ISBlockGetBlockSize(); ISBlockGetIndices(); ISBlockRestoreIndices()
-    Routines: ISBlock()
+    Concepts: Local to global mappings, global to local mappings
+    Routines: ISLocalToGlobalMappingCreate(); ISLocalToGlobalMappingApply()
+    Routines: ISGlobalToLocalMappingApply(); ISLocalToGlobalMappingDestroy()
 
     Comment:  Creates an index set based on blocks of integers. Views that index set
     and then destroys it.
@@ -18,61 +16,47 @@ T*/
 
 int main(int argc,char **argv)
 {
-  int        i, n = 4, ierr,  inputindices[] = {0,3,9,12}, bs = 3,issize,*indices;
-  IS         set;
-  PetscTruth isblock;
+  int                    i, n = 4, ierr,indices[] = {0,3,9,12}, m = 2, input[] = {0,2};
+  int                    output[2],inglobals[13],outlocals[13];
+  ISLocalToGlobalMapping mapping;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);
-      
-  /*
-    Create a block index set. The index set has 4 blocks each of size 3.
-    The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
-    Note each processor is generating its own index set 
-    (in this case they are all identical)
-  */
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n,inputindices,&set); CHKERRA(ierr);
-  ierr = ISView(set,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   /*
-    Extract indices from set.
+      Create a local to global mapping. Each processor independently
+     creates a mapping  
   */
-  ierr = ISGetSize(set,&issize); CHKERRA(ierr);
-  ierr = ISGetIndices(set,&indices); CHKERRA(ierr);
-  printf("Printing indices directly\n");
-  for (i=0; i<issize; i++) {
-    printf("%d\n",indices[i]);
+  ierr = ISLocalToGlobalMappingCreate(n,indices,&mapping); CHKERRA(ierr);
+
+  /*
+     Map a set of local indices to their global values 
+  */
+  ierr = ISLocalToGlobalMappingApply(mapping,m,input,output); CHKERRA(ierr);
+  ierr = PetscIntView(m,output,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+  
+  /*
+     Map some global indices to local, retaining the ones without a local index by -1
+  */
+  for ( i=0; i<13; i++ ) {
+    inglobals[i] = i;
   }
-  ierr = ISRestoreIndices(set,&indices); CHKERRA(ierr);
+  ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,PETSC_NULL,outlocals);
+         CHKERRA(ierr);
+  ierr = PetscIntView(13,outlocals,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   /*
-    Extract the block indices. This returns one index per block.
+     Map some global indices to local, dropping the ones without a local index.
   */
-  ierr = ISBlockGetIndices(set,&indices); CHKERRA(ierr);
-  printf("Printing block indices directly\n");
-  for (i=0; i<n; i++) {
-    printf("%d\n",indices[i]);
-  }
-  ierr = ISBlockRestoreIndices(set,&indices); CHKERRA(ierr);
+  ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals);
+         CHKERRA(ierr);
+  ierr = PetscIntView(m,outlocals,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
   /*
-    Check if this is really a block index set
+     Free the space used by the local to global mapping
   */
-  ierr = ISBlock(set,&isblock); CHKERRA(ierr);
-  if (isblock != PETSC_TRUE) SETERRA(1,0,"Index set is not blocked!");
+  ierr = ISLocalToGlobalMappingDestroy(mapping); CHKERRA(ierr);
 
-  /*
-    Determine the block size of the index set
-  */
-  ierr = ISBlockGetBlockSize(set,&bs); CHKERRA(ierr);
-  if (bs != 3) SETERRA(1,0,"Block size is not 3!");
 
-  /*
-    Get the number of blocks
-  */
-  ierr = ISBlockGetSize(set,&n); CHKERRA(ierr);
-  if (n != 4) SETERRA(1,0,"Number of blocks not 4!");
-
-  ierr = ISDestroy(set); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }
