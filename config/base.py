@@ -430,8 +430,9 @@ class Configure:
   def preprocess(self, codeStr):
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('ERROR while running preprocessor: '+error)
-        self.framework.log.write('ret = '+str(status)+'\n')
+        self.framework.log.write('Possible ERROR while running preprocessor: '+error)
+        if status: self.framework.log.write('ret = '+str(status)+'\n')
+        if error: self.framework.log.write('error message = {'+error+'}\n')
         self.framework.log.write('Source:\n'+self.getCode(codeStr))
       return
 
@@ -462,8 +463,9 @@ class Configure:
     '''Return the error output from this compile and the return code'''
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('ERROR while running compiler): '+output)
-        self.framework.log.write('ret = '+str(status)+'\n')
+        self.framework.log.write('Possible ERROR while running compiler: '+output)
+        if status: self.framework.log.write('ret = '+str(status)+'\n')
+        if error: self.framework.log.write('error message = {'+error+'}\n')
         self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
       return
 
@@ -520,9 +522,10 @@ class Configure:
 
     def report(command, status, output, error):
       if error or status:
-        self.framework.log.write('ERROR while running linker: '+error)
+        self.framework.log.write('Possible ERROR while running linker: '+error)
         self.framework.log.write(' output: '+output)
-        self.framework.log.write('ret = '+str(status)+'\n')
+        if status: self.framework.log.write('ret = '+str(status)+'\n')
+        if error: self.framework.log.write('error message = {'+error+'}\n')
         self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
         self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
       return

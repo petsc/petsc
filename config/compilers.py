@@ -552,10 +552,12 @@ class Configure(config.base.Configure):
         self.addCompilerFlag(flag, body = '#define dummy \n           dummy\n          PTesting',extraflags = '-DPtesting')
         self.fortranPreprocess = 1
         self.popLanguage()
+        self.framework.log.write('Fortran uses CPP preprocessor')
         return
       except RuntimeError: pass
     self.popLanguage()
     self.fortranPreprocess = 0
+    self.framework.log.write('Fortran does NOT use CPP preprocessor')
     return
 
   def checkFortran90Interface(self):
