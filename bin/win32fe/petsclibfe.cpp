@@ -1,21 +1,26 @@
-/* $Id: petsclibfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp buschelm $ */
+/* $Id: petsclibfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
 #include <fstream>
 #include "petsclibfe.h"
 
 using namespace PETScFE;
-
+  
 void lib::Execute(void) {
   {
-    ifstream LibraryExists(file[0].c_str());
-    string temp = file[0];
-    if (file[0].substr(file[0].rfind("."))==".lib") {
-      if (!LibraryExists) temp = "-out:" + file[0];
+    string temp = *file.begin();
+    ifstream LibraryExists(temp.c_str());
+    if (temp.substr(temp.rfind("."))==".lib") {
+      if (!LibraryExists) temp = "-out:" + *file.begin();
     } else {
-      temp = "-out:" + file[0];
-      if (LibraryExists) temp = temp + " " + file[0];
+      temp = "-out:" + *file.begin();
+      if (LibraryExists) temp = temp + " " + *file.begin();
     }
-    file[0] = temp;
+    file.pop_front();
+    file.push_front(temp);
   }
-  if (!verbose) archivearg[0] = archivearg[0] + " -nologo";
+  if (!verbose) {
+    string thelib = *archivearg.begin();
+    archivearg.pop_front();
+    archivearg.push_front(thelib + " -nologo");
+  }
   archiver::Execute();
 }

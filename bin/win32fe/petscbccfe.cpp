@@ -1,5 +1,6 @@
 /* $Id: petscbccfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
 #include <iostream>
+#include <vector>
 #include <stdlib.h>
 #include <Windows.h>
 #include "petscbccfe.h"
@@ -7,13 +8,18 @@
 using namespace PETScFE;
 
 bcc::bcc() {
-  OutputFlag = 0;
+  OutputFlag = compilearg.end();
 }
 
 void bcc::GetArgs(int argc,char *argv[]) {
   compiler::GetArgs(argc,argv);
-  if (!verbose) compilearg[0] = compilearg[0] + " -q";
-  linkarg[0]="**";
+  if (!verbose) {
+    string temp = *compilearg.begin();
+    compilearg.pop_front();
+    temp += " -q";
+    compilearg.push_front(temp);
+  }
+  linkarg.push_front("**");
 }
 void bcc::Parse(void) {
   compiler::Parse();
@@ -21,125 +27,132 @@ void bcc::Parse(void) {
 }
 
 void bcc::Compile(void) {
-  compiler::Squeeze();
-
-  string compile = compilearg[0];
-  Merge(compile,compilearg,1);
-  /* Execute each compilation one at a time */ 
-  for (int i=0;i<file.size();i++) {
+  LI i = compilearg.begin();
+  string compile = *i++;
+  Merge(compile,compilearg,i);
+  /* Execute each compilation one at a time */
+  i = file.begin();
+  while (i!=file.end()) {
     /* Make default output a .o not a .obj */
     string outfile;
-    if (OutputFlag==0) {
-      outfile = "-o" + file[i];
+    if (OutputFlag==compilearg.end()) {
+      outfile = "-o" + *i;
       int n = outfile.find_last_of(".");
       string filebase = outfile.substr(0,n);
       outfile = filebase + ".o";
     }
-    if (file[i]!="") {
-      string compileeach = compile + " " + outfile + " " + file[i];
-      if (verbose) cout << compileeach << endl;
-      system(compileeach.c_str());
-    }
+    string compileeach = compile + " " + outfile + " " + *i++;
+    if (verbose) cout << compileeach << endl;
+    system(compileeach.c_str());
   }
 }
 
 void bcc::Link(void) {
-  compiler::Squeeze();
-  if (!OutputFlag) {
-    linkarg[0] = "-e"+file[0];
-    linkarg[0].replace(linkarg[0].rfind("."),string::npos,".exe");
+  if (OutputFlag==compilearg.end()) {
+    linkarg.pop_front();
+    string tempstr = "-e" + *file.begin();
+    tempstr.replace(tempstr.rfind("."),string::npos,".exe");
+    linkarg.push_front(tempstr);
   }
 
   /* Copy file.o's to /tmp/file.obj's */ 
-  int i,max_buffsize,pathlength;
+  int i,max_buffsize;
   char path[128];
+  LI f;
   max_buffsize = 128*sizeof(char);
-  pathlength = GetTempPath(max_buffsize,path);  /* Win32 Specific */
+  GetTempPath(max_buffsize,path);  /* Win32 Specific */
   vector<string> ext(file.size(),"");
   vector<string> temp(file.size(),"");
-  for (i=0;i<file.size();i++) {
-    if (file[i]=="") break;
-    int n = file[i].find_last_of(".");
-    ext[i] = file[i].substr(n,string::npos);
+  for (i=0,f=file.begin();f!=file.end();i++,f++) {
+    int n = (*f).find_last_of(".");
+    ext[i] = (*f).substr(n,string::npos);
     if (ext[i] == ".o") {
-      temp[i]=file[i];
-      string outfile = (string)path + file[i].substr(0,n) + ".obj";
-      string copy = "copy " + file[i] + " " + outfile;
+      temp[i]=*f;
+      string outfile = (string)path + (*f).substr(0,n) + ".obj";
+      string copy = "copy " + temp[i] + " " + outfile;
       if (verbose) cout << copy << endl;
-      system(copy.c_str());
-      file[i] = outfile;
+      CopyFile(temp[i].c_str(),outfile.c_str(),FALSE); /* Win32 Specific */
+//        system(copy.c_str());
+      f = file.erase(f);
+      f = file.insert(f,outfile);
     }
   }
 
   /* Link, note linkargs before files */
-  string link = compilearg[0];
-  Merge(link,compilearg,1);
-  Merge(link,linkarg,0);
-  Merge(link,file,0);
+  f = compilearg.begin();
+  string link = *f++;
+  Merge(link,compilearg,f);
+  Merge(link,linkarg,linkarg.begin());
+  Merge(link,file,file.begin());
   if (verbose) cout << link << endl;
   system(link.c_str());
 
   /* Remove /tmp/file.obj's */
-  for (i=0;i<file.size();i++) {
-    if (file[i]=="") break;
+  for (i=0,f=file.begin();f!=file.end();i++,f++) {
     if (ext[i] == ".o") {
-      string del = "del " + file[i];
+      string del = "del " + *f;
       if (verbose) cout << del << endl;
-      system(del.c_str());
-      file[i] = temp[i];
+//        system(del.c_str());
+      DeleteFile((*f).c_str()); /* Win32 Specific */
+      f = file.erase(f);
+      f = file.insert(f,temp[i]);
     }
   }
 }
-void bcc::FoundD(int &loc,string temp) {
-  string::size_type i,j;
-  i = temp.find("\"");
-  if (i!=string::npos) {
-    temp = temp.substr(0,i+1)+"\\\""+temp.substr(i+1,string::npos);
-    j = temp.rfind("\"");
-    if (j!=i+2) {
-      temp = temp.substr(0,j)+"\\\""+temp.substr(j,string::npos);
-    }
+
+void bcc::FoundD(LI &i) {
+  string temp = *i;
+  ProtectQuotes(temp);
+  compilearg.push_back(temp);  
+}
+
+
+void bcc::FoundI(LI &i) {
+  string temp = *i;
+  if (temp[2]!='\"') {
+    temp = i->substr(2,string::npos);
+    temp = "-I\"" + temp + "\"";
   }
-  compilearg[loc]=temp;  
+  ReplaceSlashWithBackslash(temp);
+  compilearg.push_back(temp);
 }
 
-
-void bcc::FoundI(int &loc,string temp) {
-  string str = temp.substr(2,string::npos);
-  str = "\"" + str + "\"";
-  compilearg[loc] = temp.substr(0,2) + str;
-  ReplaceSlashWithBackslash(compilearg[loc]);
+void bcc::FoundL(LI &i) {
+  string temp = *i;
+  if (temp[2]!='\"') {
+    temp = i->substr(2,string::npos);
+    temp = "-I\"" + temp + "\"";
+  }
+  ReplaceSlashWithBackslash(temp);
+  linkarg.push_back(temp);
 }
 
-void bcc::FoundL(int &loc,string temp) {
-  string str = temp.substr(2,string::npos);
-  str = "\"" + str + "\"";
-  linkarg[loc] = temp.substr(0,2) + str;
-  ReplaceSlashWithBackslash(linkarg[loc]);
-  compilearg[loc] = "";
-}
-
-void bcc::Foundl(int &loc,string temp) { 
-  file[loc] = "lib" + temp.substr(2) + ".lib";
-  compilearg[loc] = "";
+void bcc::Foundl(LI &i) {
+  string temp = *i;
+  file.push_back("lib" + temp.substr(2) + ".lib");
 } 
 
-void bcc::Foundo(int &loc,string temp){ 
+void bcc::Foundo(LI &i){ 
+  i++;
+  arg.pop_front();
+  string temp = *i;
+  ReplaceSlashWithBackslash(temp);
   /* Set Flag then fix later based on compilation or link */
-  OutputFlag = loc;
-  compilearg[loc] = "-x" + arg[loc+1];
-  arg[++loc] = "";
+  compilearg.push_back("-x" + temp);
+  OutputFlag = --compilearg.end();
   /* Should perform some error checking ... */
 }   
 
 void bcc::FixOutput(void) {
-  if (OutputFlag!=0) {
-    if (linkarg[0]=="-c") {
-      compilearg[OutputFlag][1]='o';
+  if (OutputFlag!=compilearg.end()) {
+    string temp = *OutputFlag;
+    if (*linkarg.begin()=="-c") {
+      temp[1] = 'o';
     } else {
-      compilearg[OutputFlag][1]='e';
-      linkarg[0]=compilearg[OutputFlag];
-      compilearg[OutputFlag]="";
+      temp[1] = 'e';
+      linkarg.pop_front();
+      linkarg.push_front(temp);
+      compilearg.erase(OutputFlag);
     }
   }
 }
