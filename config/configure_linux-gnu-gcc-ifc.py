@@ -6,7 +6,7 @@ if __name__ == '__main__':
     # build on harley
     configure_options = [
         '--with-cc=gcc',
-	'--with-fc=ifc -w90 -w',
+	'--with-fc=ifc',
 	'--with-cxx=g++',
         '-PETSC_ARCH=linux-gnu-gcc-ifc',
         '-PETSC_DIR=/sandbox/petsc/petsc-test',

@@ -15,9 +15,7 @@ if __name__ == '__main__':
     '--with-mpi-include=/home/petsc/soft/solaris-9/mpich-1.2.5/include',
     '--with-mpi-lib=[/home/petsc/soft/solaris-9/mpich-1.2.5/lib/libmpich.a,libsocket.a,libnsl.a,librt.a,libnsl.a,libaio.a]',
     '-PETSC_ARCH=solaris2.9',
-    '-PETSC_DIR=/sandbox/petsc/petsc-test',
-    '--with-blas=libsunperf.a',
-    '--with-lapack=libsunperf.a'
+    '-PETSC_DIR=/sandbox/petsc/petsc-test'
     ]
 
     configure.petsc_configure(configure_options)
