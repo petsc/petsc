@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 1998/03/19 02:05:57 balay Exp balay $ 
+# $Id: makefile,v 1.20 1998/04/23 22:48:44 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -11,7 +11,8 @@ OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsys
 LOCDIR          = src/sys/examples/tests/
-TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
+TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
+                  ex4.PETSc runex4 ex4.rm ex3.PETSc\
 		  runex3 ex3.rm ex8.PETSc runex8 ex8.rm clean
 TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 TESTEXAMPLES_9  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
@@ -22,7 +23,7 @@ BUILDEXAMPLES_3 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_9 = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex8.c ex9.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex7.c ex8.c ex9.c
 EXAMPLESF       = ex5.F ex6.F ex7f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -97,6 +98,13 @@ runex3:
 	   if (diff output/ex3_1.out ex3_1.tmpz) then true; \
 	   else echo "This is a contrived error to test floating point traps."; fi; \
 	   ${RM} -f ex3_1.tmp ex3_1.tmpz
+
+runex4:
+	-@${MPIRUN} -np 1 ex4 -fp_trap > ex4_1.tmp 2>&1;\
+	   grep -v p0 ex4_1.tmp > ex4_1.tmpz ;	 \
+	   if (diff output/ex4_1.out ex4_1.tmpz) then true; \
+	   else echo "Error in ex4. Problem with PetscStrtok()"; fi; \
+	   ${RM} -f ex4_1.tmp ex4_1.tmpz
 
 runex8:
 	-@${MPIRUN} -np 1 ex8 -trmalloc_nan -fp_trap > ex8_1.tmp 2>&1;\
