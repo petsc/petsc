@@ -81,7 +81,7 @@ void PETSC_STDCALL petscsetfortranbasepointers_(_fcd fnull_character,void *fnull
 }
 #else
 void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
-                                  void *fnull_integer,void *fnull_scalar,void * fnull_double,
+                                  void *fnull_integer,void* fnull,void *fnull_scalar,void * fnull_double,
                                   void *fnull_real,
                                   void (*fnull_function)(void) PETSC_END_LEN(len))
 {

@@ -104,9 +104,8 @@ void PETSC_STDCALL pccompositegetpc_(PC *pc,int *n,PC *subpc,int *ierr)
 
 void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, int *ierr)
 {
-  MPI_Comm *comm = comms;
   CHKFORTRANNULLOBJECT(comms);
-  *ierr = MGSetLevels(*pc,*levels,comm);
+  *ierr = MGSetLevels(*pc,*levels,comms);
 }
 
 void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, int *ierr)

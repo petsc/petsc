@@ -109,23 +109,27 @@ EXTERN_C_END
 
 
 #define CHKFORTRANNULLINTEGER(a)  \
-if (FORTRANNULL(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a)) { \
-  (*PetscErrorPrintf)("PETSC ERROR: Illegal PETSC_NULL used. Use PETSC_NULL_INTEGER or PETSC_NULL_OBJECT"); *ierr = 1; return; } \
-else if (FORTRANNULLINTEGER(a)) { a = PETSC_NULL; }
+  if (FORTRANNULL(a) || FORTRANNULLSCALAR(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a)) { \
+    PetscError(__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,1, \
+    "Use PETSC_NULL_INTEGER or PETSC_NULL_OBJECT"); *ierr = 1; return; } \
+  else if (FORTRANNULLINTEGER(a)) { a = PETSC_NULL; }
 
 #define CHKFORTRANNULLSCALAR(a)  \
   if (FORTRANNULL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLREAL(a)) { \
-    (*PetscErrorPrintf)("PETSC ERROR: Illegal PETSC_NULL used. Use PETSC_NULL_INTEGER"); *ierr = 1; return; } \
+    PetscError(__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,1, \
+    "Use PETSC_NULL_SCALAR"); *ierr = 1; return; } \
   else if (FORTRANNULLSCALAR(a)) { a = PETSC_NULL; }
 
 #define CHKFORTRANNULLDOUBLE(a)  \
   if (FORTRANNULL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a)) { \
-    (*PetscErrorPrintf)("PETSC ERROR: Illegal PETSC_NULL used. Use PETSC_NULL_INTEGER"); *ierr = 1; return; } \
+    PetscError(__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,1, \
+    "Use PETSC_NULL_DOUBLE"); *ierr = 1; return; } \
   else if (FORTRANNULLDOUBLE(a)) { a = PETSC_NULL; }
 
 #define CHKFORTRANNULLREAL(a)  \
   if (FORTRANNULL(a) || FORTRANNULLINTEGER(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a)) { \
-    (*PetscErrorPrintf)("PETSC ERROR: Illegal PETSC_NULL used. Use PETSC_NULL_INTEGER"); *ierr = 1; return; } \
+    PetscError(__LINE__,"fortran_interface_unknown_file",__FILE__,__SDIR__,PETSC_ERR_ARG_WRONG,1, \
+    "Use PETSC_NULL_REAL"); *ierr = 1; return; } \
   else if (FORTRANNULLREAL(a)) { a = PETSC_NULL; }
   
 #define CHKFORTRANNULLOBJECT CHKFORTRANNULLINTEGER
