@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plogmpe.c,v 1.2 1996/02/26 21:41:07 bsmith Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.3 1996/02/26 23:16:34 balay Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -27,8 +27,8 @@ int MPEFlags[] = {      1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,0,
                         1,1,1,1,1,
                         0,0,0,0,0,
-                        1,1,1,1,0,
-                        1,1,1,1,0, /* 75 - 99 */
+                        1,1,1,0,0,
+                        1,1,1,1,1, /* 75 - 99 */
                         1,1,1,1,1,
                         1,1,0,0,0,
                         1,0,0,0,0,

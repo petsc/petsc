@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.78 1996/02/26 21:41:22 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.79 1996/02/26 23:16:51 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -157,7 +157,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "KSPGMRESOrthog  ",
                          " ", " ",
                          "PCSetUp         ",
-                         "PCSetUpBlocks   ",
+                         "PCSetUpOnBlocks ",
                          "PCApply         ",
                          "PCApplySymmLeft ",
                          "PCApplySymmRight",
