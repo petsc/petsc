@@ -251,10 +251,10 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGURG,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGUSR1)
-    signal(SIGUSR1, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    /*    signal(SIGUSR1, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
 #if !defined(PETSC_MISSING_SIGUSR2)
-    signal(SIGUSR2, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    /* signal(SIGUSR2, PETSC_SIGNAL_CAST PetscSignalHandler_Private); */
 #endif
     SignalSet = PETSC_TRUE;
   }
@@ -308,10 +308,10 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
     signal(SIGURG,  0);
 #endif
 #if !defined(PETSC_MISSING_SIGUSR1)
-    signal(SIGUSR1, 0);
+    /*    signal(SIGUSR1, 0); */
 #endif
 #if !defined(PETSC_MISSING_SIGUSR2)
-    signal(SIGUSR2, 0);
+    /* signal(SIGUSR2, 0); */
 #endif
     SignalSet = PETSC_FALSE;
   }
@@ -386,10 +386,10 @@ int PetscPopSignalHandler(void)
     signal(SIGURG,  0);
 #endif
 #if !defined(PETSC_MISSING_SIGUSR1)
-    signal(SIGUSR1, 0);
+    /*    signal(SIGUSR1, 0); */
 #endif
 #if !defined(PETSC_MISSING_SIGUSR2)
-    signal(SIGUSR2, 0);
+    /* signal(SIGUSR2, 0); */
 #endif
     SignalSet = PETSC_FALSE;
   } else {
