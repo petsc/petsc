@@ -15,7 +15,7 @@ DIFF               = diff
 # ######################### C and Fortran compiler ########################
 # LAM installed with sun compilers cc, CC, f90
 LAM_HOME           = /home/petsc/soft/solaris-9-lam/lam-6.5.8
-C_CC		   = ${LAM_HOME}/bin/mpicc -KPIC -dalign -xtarget=native
+C_CC		   = ${LAM_HOME}/bin/mpicc -KPIC -dalign
 C_FC		   = ${LAM_HOME}/bin/mpif77 -xpp=cpp -dalign
 C_CLINKER_SLFLAG   = -R
 C_FLINKER_SLFLAG   = -R
@@ -28,7 +28,7 @@ C_SYS_LIB	   = -lfui -lfai -lfai2 -lfsumai -lfprodai -lfminlai -lfmaxlai -lfminv
 G_COPTFLAGS	   = -g -xs
 G_FOPTFLAGS	   = -g -xs
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O3  -fsimple=2 -xtarget=native
+O_COPTFLAGS	   = -O3  -fsimple=2
 O_FOPTFLAGS	   = -O3
 # ########################## C++ compiler ##################################
 #

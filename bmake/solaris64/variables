@@ -15,7 +15,7 @@ LIB_SUFFIX         = a
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = cc    -KPIC -dalign -xtarget=native -xarch=v9
+C_CC		   = cc    -KPIC -dalign -xarch=v9
 C_FC		   = f90   -xpp=cpp -xarch=v9
 C_CLINKER_SLFLAG   = -R
 C_FLINKER_SLFLAG   = -R

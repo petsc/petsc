@@ -14,7 +14,7 @@ LIB_SUFFIX         = a
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = cc -KPIC -dalign -xtarget=native
+C_CC		   = cc -KPIC -dalign
 C_FC		   = f90 -xpp=cpp -dalign
 C_CLINKER_SLFLAG   = -R
 C_FLINKER_SLFLAG   = -R
@@ -27,7 +27,7 @@ C_SYS_LIB	   = -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl  -lm
 G_COPTFLAGS	   = -g -xs
 G_FOPTFLAGS	   = -g -xs
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -O3  -fsimple=2 -xtarget=native
+O_COPTFLAGS	   = -O3  -fsimple=2
 O_FOPTFLAGS	   = -O3
 # ########################## C++ compiler ##################################
 #
