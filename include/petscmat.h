@@ -732,6 +732,9 @@ M*/
 EXTERN PetscErrorCode MatShellGetContext(Mat,void **);
 
 EXTERN PetscErrorCode MatBDiagGetData(Mat,PetscInt*,PetscInt*,PetscInt*[],PetscInt*[],PetscScalar***);
+
+EXTERN PetscErrorCode MatInodeAdjustForInodes(Mat,IS*,IS*);
+
 EXTERN PetscErrorCode MatSeqAIJSetColumnIndices(Mat,PetscInt[]);
 EXTERN PetscErrorCode MatSeqBAIJSetColumnIndices(Mat,PetscInt[]);
 EXTERN PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);

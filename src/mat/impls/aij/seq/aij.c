@@ -2499,8 +2499,8 @@ PetscErrorCode MatRetrieveValues(Mat mat)
    reusing matrix information to achieve increased efficiency.
 
    Options Database Keys:
-+  -mat_aij_no_inode  - Do not use inodes
-.  -mat_aij_inode_limit <limit> - Sets inode limit (max limit=5)
++  -mat_no_inode  - Do not use inodes
+.  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
 -  -mat_aij_oneindex - Internally use indexing starting at 1
         rather than 0.  Note that when calling MatSetValues(),
         the user still MUST index entries starting at 0!
@@ -2563,8 +2563,8 @@ PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,c
    reusing matrix information to achieve increased efficiency.
 
    Options Database Keys:
-+  -mat_aij_no_inode  - Do not use inodes
-.  -mat_aij_inode_limit <limit> - Sets inode limit (max limit=5)
++  -mat_no_inode  - Do not use inodes
+.  -mat_inode_limit <limit> - Sets inode limit (max limit=5)
 -  -mat_aij_oneindex - Internally use indexing starting at 1
         rather than 0.  Note that when calling MatSetValues(),
         the user still MUST index entries starting at 0!

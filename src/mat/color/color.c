@@ -260,8 +260,6 @@ PetscErrorCode MatColoringRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatAdjustForInodes(Mat,IS *,IS *);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColoring" 
 /*@C

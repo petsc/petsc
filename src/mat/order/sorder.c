@@ -133,8 +133,6 @@ PetscErrorCode MatOrderingRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatAdjustForInodes(Mat,IS *,IS *);
-
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrdering"
@@ -236,7 +234,7 @@ PetscErrorCode MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *c
   ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
   ierr = ISGetLocalSize(*rperm,&mis);CHKERRQ(ierr);
   if (mmat > mis) {  
-    ierr = MatAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);
+    ierr = MatInodeAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
