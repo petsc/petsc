@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.97 1999/02/01 19:22:36 bsmith Exp balay $ 
+# $Id: makefile,v 1.98 1999/02/01 21:24:32 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -22,22 +22,16 @@ BUILDEXAMPLES_4 = ex7.PETSc ex7.rm ex9.PETSc ex9.rm clean
 BUILDEXAMPLES_8 = 
 BUILDEXAMPLES_9 = 
 
-EXAMPLESC       = ex1.c ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c
-EXAMPLESF       = ex12.F ex10.f dficfj.f dsfdfj.f dhhdfj.f dcprfj.f \
-                  dcpffj.f dsfifj.f dfdcfj.f
+EXAMPLESC       = ex4.c ex5.c ex7.c ex9.c ex11.c ex13.c
+EXAMPLESF       = ex12.F ex10.f
 DIRS	        = umin
 
-FOBJ1 = dficfj.o dsfdfj.o dhhdfj.o dcprfj.o dcpffj.o dfdcfj.o dsfifj.o
 #
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
 # they require too many processors
 #
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
-
-ex1: ex1.o ${FOBJ1} chkopts
-	-${CLINKER} -o ex1 ex1.o ${FOBJ1} ${PETSC_SNES_LIB}
-	${RM} ex1.o ${FOBJ1}
 
 ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_SNES_LIB}
@@ -91,22 +85,11 @@ ex14: ex14.o  chkopts
 	-${FLINKER} -o ex14 ex14.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex14.o
 
-runex1:
-	-@${MPIRUN} -np 1 ex1 -p 5 -hp 5 -snes_smonitor > ex1_1.tmp 2>&1;   \
-	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
-	   ${RM} -f ex1_1.tmp
-runex1_2:
-	-@${MPIRUN} -np 1 ex1 -p 5 -hp 5 -snes_type tr -snes_smonitor > ex1_2.tmp 2>&1;   \
-	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
-	   else echo "Possible problem with ex1_2, diffs above"; fi; \
-	   ${RM} -f ex1_2.tmp
 runex2:
 	-@${MPIRUN} -np 1 ex2	 > ex2_1.tmp 2>&1;   \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
-
 runex3:
 	-@${MPIRUN} -np 1 ex3 -nox -snes_smonitor -snes_view \
 		-pc_type jacobi >ex3_1.tmp 2>&1;	\
