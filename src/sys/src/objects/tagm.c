@@ -119,7 +119,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
     Concepts: message tag^getting
     Concepts: MPI message tag^getting
 
-.seealso: PetscObjectGetNewTag()
+.seealso: PetscObjectGetNewTag(), PetscCommDuplicate()
 @*/
 int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 {
@@ -147,23 +147,29 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscCommDuplicate_Private" 
-/*
-  PetscCommDuplicate_Private - Duplicates the communicator only if it is not already a PETSc 
+#define __FUNCT__ "PetscCommDuplicate" 
+/*@C
+  PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc 
                          communicator.
+
+  Collective on MPI_Comm
 
   Input Parameters:
 . comm_in - Input communicator
 
   Output Parameters:
 + comm_out - Output communicator.  May be comm_in.
-- first_tag - First tag available
+- first_tag - Tag available that has not already been used with this communicator (you may
+              pass in PETSC_NULL if you do not need a tag)
 
-  Notes:
-  This routine returns one tag number.
+   PETSc communicators are just regular MPI communicators that keep track of which 
+  tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
+  a PETSc creation routine it will be duplicated for use in the object.
 
-*/
-int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
+.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag()
+
+@*/
+int PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
   int        ierr,*tagvalp,*maxval;
   PetscTruth flg;
@@ -193,7 +199,7 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     tagvalp[0] = *maxval;
     tagvalp[1] = 0;
     ierr       = MPI_Attr_put(*comm_out,Petsc_Tag_keyval,tagvalp);CHKERRQ(ierr);
-    PetscLogInfo(0,"PetscCommDuplicate_Private: Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);
+    PetscLogInfo(0,"PetscCommDuplicate: Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);
   } else {
 #if defined(PETSC_USE_BOPT_g)
     int tag;
@@ -214,17 +220,25 @@ int PetscCommDuplicate_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_ta
     tagvalp[0] = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
 
-  *first_tag = tagvalp[0]--;
-  tagvalp[1]++;
+  if (first_tag) {
+    *first_tag = tagvalp[0]--;
+    tagvalp[1]++;
+  }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscCommDestroy_Private" 
-/*
-  PetscCommDestroy_Private - Frees communicator.  Use in conjunction with PetscCommDuplicate_Private().
-*/
-int PetscCommDestroy_Private(MPI_Comm *comm)
+#define __FUNCT__ "PetscCommDestroy" 
+/*@C
+  PetscCommDestroy - Frees communicator.  Use in conjunction with PetscCommDuplicate().
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.   comm - the communicator to free
+
+@*/
+int PetscCommDestroy(MPI_Comm *comm)
 {
   int        ierr,*tagvalp;
   PetscTruth flg;
@@ -236,7 +250,7 @@ int PetscCommDestroy_Private(MPI_Comm *comm)
   }
   tagvalp[1]--;
   if (!tagvalp[1]) {
-    PetscLogInfo(0,"PetscCommDestroy_Private:Deleting MPI_Comm %ld\n",(long)*comm);
+    PetscLogInfo(0,"PetscCommDestroy:Deleting MPI_Comm %ld\n",(long)*comm);
     ierr = MPI_Comm_free(comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
