@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.49 1995/10/19 22:20:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.50 1995/11/01 23:16:42 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -142,11 +142,11 @@ static int PCView_BJacobi(PetscObject obj,Viewer viewer)
   FILE             *fd;
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   int              rank, ierr;
+
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   if (jac->use_true_local) 
     MPIU_fprintf(pc->comm,fd,
-       "    Block Jacobi: using true local matrix, number of blocks = %d\n",
-       jac->n);
+       "    Block Jacobi: using true local matrix, number of blocks = %d\n",jac->n);
   MPIU_fprintf(pc->comm,fd,"    Block Jacobi: number of blocks = %d\n",jac->n);
   MPI_Comm_rank(pc->comm,&rank);
   if (jac->same_local_solves) {

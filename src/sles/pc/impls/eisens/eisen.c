@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.33 1995/10/01 21:52:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.34 1995/11/01 23:16:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,9 +13,9 @@ static char vcid[] = "$Id: eisen.c,v 1.33 1995/10/01 21:52:18 bsmith Exp bsmith 
 
 typedef struct {
   Mat    shell,A;
-  Vec    b,diag;
+  Vec    b,diag;     /* temporary storage for true right hand side */
   double omega;
-  int    usediag;
+  int    usediag;    /* indicates preconditioner should include diagonal scaling*/
 } PC_Eisenstat;
 
 /*@
@@ -227,6 +227,7 @@ int PCEisenstatSetOmega(PC pc,double omega)
   PC_Eisenstat  *eis;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (pc->type != PCEISENSTAT) return 0;
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,"PCEisenstatSetOmega:Relaxation out of range");
   eis = (PC_Eisenstat *) pc->data;
   eis->omega = omega;
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.46 1995/11/01 23:17:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.47 1995/11/09 22:28:22 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -109,22 +109,22 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
 {
   PC     pc = (PC)obj;
   FILE   *fd;
-  PC_ILU *lu = (PC_ILU *) pc->data;
+  PC_ILU *ilu = (PC_ILU *) pc->data;
   int    ierr;
   char   *order;
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
-  if (lu->levels == 1)
-    MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",lu->levels);
+  if (ilu->levels == 1)
+    MPIU_fprintf(pc->comm,fd,"    ILU: %d level of fill\n",ilu->levels);
   else
-    MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill\n",lu->levels);
-  if (lu->inplace) MPIU_fprintf(pc->comm,fd,"         in-place factorization\n");
+    MPIU_fprintf(pc->comm,fd,"    ILU: %d levels of fill\n",ilu->levels);
+  if (ilu->inplace) MPIU_fprintf(pc->comm,fd,"         in-place factorization\n");
   else MPIU_fprintf(pc->comm,fd,"         out-of-place factorization\n");
-  if (lu->ordering == ORDER_NATURAL)  order = "Natural";
-  else if (lu->ordering == ORDER_ND)  order = "Nested Dissection";
-  else if (lu->ordering == ORDER_1WD) order = "One-way Dissection";
-  else if (lu->ordering == ORDER_RCM) order = "Reverse Cuthill-McGee";
-  else if (lu->ordering == ORDER_QMD) order = "Quotient Minimum Degree";
+  if (ilu->ordering == ORDER_NATURAL)  order = "Natural";
+  else if (ilu->ordering == ORDER_ND)  order = "Nested Dissection";
+  else if (ilu->ordering == ORDER_1WD) order = "One-way Dissection";
+  else if (ilu->ordering == ORDER_RCM) order = "Reverse Cuthill-McGee";
+  else if (ilu->ordering == ORDER_QMD) order = "Quotient Minimum Degree";
   else                                order = "unknown";
   MPIU_fprintf(pc->comm,fd,"         matrix ordering: %s\n",order);
   return 0;

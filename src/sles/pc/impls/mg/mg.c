@@ -1,9 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.36 1995/11/01 19:09:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.37 1995/11/01 23:16:47 bsmith Exp bsmith $";
 #endif
 /*
-     Classical Multigrid V or W Cycle routine    
-
+    Defines the multigrid preconditioner interface.
 */
 #include "mgimpl.h"
 #include "pinclude/pviewer.h"

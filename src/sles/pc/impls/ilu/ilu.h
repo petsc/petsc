@@ -1,5 +1,8 @@
+/* $Id: dvec2.c,v 1.20 1995/11/09 22:26:41 bsmith Exp bsmith $ */
 
-/* Incomplete LU factorization context */
+/* 
+   Private data structure for ILU preconditioner.
+*/
 
 typedef struct {
   Mat         fact;      /* factored matrix */

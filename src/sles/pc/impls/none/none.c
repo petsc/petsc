@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: none.c,v 1.5 1995/07/26 02:26:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: none.c,v 1.6 1995/07/30 14:57:31 bsmith Exp bsmith $";
 #endif
 /*
-
+    Identity preconditioner, simply copies vectory.
 */
 #include "pcimpl.h"
 

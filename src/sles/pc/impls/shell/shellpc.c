@@ -1,11 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: shellpc.c,v 1.16 1995/09/21 20:09:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.17 1995/11/01 23:16:39 bsmith Exp bsmith $";
 #endif
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
-  create a very simple preconditioner class for use with KSP without coding 
-  mush of anything.
+  create their own preconditioner without writing much interface code.
 */
 
 #include "petsc.h"
@@ -13,7 +12,7 @@ static char vcid[] = "$Id: shellpc.c,v 1.16 1995/09/21 20:09:39 bsmith Exp bsmit
 #include "vec/vecimpl.h"  
 
 typedef struct {
-  void *ctx,*ctxrich;
+  void *ctx,*ctxrich;             /* user provided contexts for preconditioner */
   int  (*apply)(void *,Vec,Vec);
   int  (*applyrich)(void *,Vec,Vec,Vec,int);
 } PC_Shell;
@@ -32,9 +31,8 @@ static int PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,int it)
 }
 static int PCDestroy_Shell(PetscObject obj)
 {
-  PC      pc = (PC) obj;
-  PC_Shell *shell;
-  shell = (PC_Shell *) pc->data;
+  PC       pc = (PC) obj;
+  PC_Shell *shell = (PC_Shell *) pc->data;
   PetscFree(shell);
   return 0;
 }
