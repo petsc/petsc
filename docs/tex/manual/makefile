@@ -34,7 +34,7 @@ manual.ps:
 
 manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	-@rm -f www.cit
-	-@cat ../../manualpages/manualpages.cit | sed 's/+man+../+man+manualpages/g' > www.cit 
+	-@cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
 	/home/gropp/bin/solaris/tohtml -headeroffset 1 -cvtmath -quietlatex \
                -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -nonavnames -nobottomnav -mapref ../../manualpages/manualpages.cit
@@ -57,7 +57,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 
 #
 # This is the split version; some users prefer this
-splitmanual: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
+splitmanual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	-@rm -f www.cit latex.err
 	-@cat ../../manualpages/manualpages.cit | sed 's#+man+..#+man+../manualpages#g' > www.cit 
 	/home/gropp/bin/solaris/tohtml -default -numbers -mapman www.cit manual.tex -notopnames \
