@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.119 2001/04/10 19:36:54 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.120 2001/05/15 18:15:07 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -873,7 +873,9 @@ int MatSNESMFSetBase(Mat J,Vec U)
   PetscValidHeaderSpecific(U,VEC_COOKIE);
 
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  ctx->current_u = U;
-  ctx->usesnes   = PETSC_FALSE;
+  if (ctx) {
+    ctx->current_u = U;
+    ctx->usesnes   = PETSC_FALSE;
+  }
   PetscFunctionReturn(0);
 }
