@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.46 1996/01/12 03:54:16 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.47 1996/01/12 17:49:41 balay Exp balay $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -272,7 +272,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
-  int ierr;
+  int ierr, flg;
   KSP ksp;
   PC  pc;
   PETSCVALIDHEADERSPECIFIC(sles,SLES_COOKIE);
@@ -288,9 +288,8 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
   ierr = PCPostSolve(pc,ksp); CHKERRQ(ierr);
   PLogEventEnd(SLES_Solve,sles,b,x,0);
-  if (OptionsHasName(sles->prefix,"-sles_view")) {
-    ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
-  }
+  ierr = OptionsHasName(sles->prefix,"-sles_view", &flg); CHKERRQ(ierr); 
+  if (flg) { ierr = SLESView(sles,STDOUT_VIEWER_WORLD); CHKERRQ(ierr); }
   return 0;
 }
 
