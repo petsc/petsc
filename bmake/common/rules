@@ -142,7 +142,7 @@ clean:
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
 	       ex[0-9].exe ex[0-9][0-9].exe *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__ \
-               .adic* *.dep *.proj
+               .adic* *.dep *.proj ctoatmp
 
 cleanstolen:
 	@-$(RM) -f *.stolen
