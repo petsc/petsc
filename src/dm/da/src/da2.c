@@ -882,6 +882,16 @@ int DARefine(DA da,MPI_Comm comm,DA *daref)
   da2->ops->getmatrix        = da->ops->getmatrix;
   da2->ops->getinterpolation = da->ops->getinterpolation;
   da2->ops->getcoloring      = da->ops->getcoloring;
+  
+  /* copy fill information if given */
+  if (da->dfill) {
+    ierr = PetscMalloc((da->dfill[da->w]+da->w+1)*sizeof(int),&da2->dfill);CHKERRQ(ierr);
+    ierr = PetscMemcpy(da2->dfill,da->dfill,(da->dfill[da->w]+da->w+1)*sizeof(int));CHKERRQ(ierr);
+  }
+  if (da->ofill) {
+    ierr = PetscMalloc((da->ofill[da->w]+da->w+1)*sizeof(int),&da2->ofill);CHKERRQ(ierr);
+    ierr = PetscMemcpy(da2->ofill,da->ofill,(da->ofill[da->w]+da->w+1)*sizeof(int));CHKERRQ(ierr);
+  }
   *daref = da2;
   PetscFunctionReturn(0);
 }
@@ -897,7 +907,10 @@ int DARefine(DA da,MPI_Comm comm,DA *daref)
 
   Level: developer
 
-.seealso: DAGetMatrix()
+   Notes: See DASetBlockFills() that provides a simple way to provide the nonzero structure for 
+       the diagonal and off-diagonal blocks of the matrix
+
+.seealso: DAGetMatrix(), DASetBlockFills()
 @*/
 int DASetGetMatrix(DA da,int (*f)(DA,MatType,Mat*))
 {

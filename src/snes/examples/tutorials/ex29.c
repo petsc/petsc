@@ -134,6 +134,15 @@ int main(int argc,char **argv)
   PetscTruth defaultnonzerostructure = PETSC_FALSE,flg;
   PetscReal  dt_ratio;
 
+  int       dfill[16] = {1,0,1,0,
+                         0,1,0,1,
+                         0,0,1,1,
+                         0,1,1,1};
+  int       ofill[16] = {1,0,0,0,
+                         0,1,0,0,
+                         1,1,1,1,
+                         1,1,1,1};
+
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
 
@@ -159,7 +168,8 @@ int main(int argc,char **argv)
                                &defaultnonzerostructure);
     CHKERRQ(ierr);
     if (!defaultnonzerostructure) {
-      ierr = DASetGetMatrix(da,DAGetMatrix_Specialized);CHKERRQ(ierr);
+      ierr = DASetBlockFills(da,dfill,ofill);CHKERRQ(ierr);
+      // ierr = DASetGetMatrix(da,DAGetMatrix_Specialized);CHKERRQ(ierr); 
     }
 
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
@@ -253,6 +263,7 @@ int main(int argc,char **argv)
     ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);
     CHKERRQ(ierr);
     if (flg && !PreLoading) {
+      tsCtx.ts_monitor = PETSC_TRUE;
       ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,0,PETSC_DECIDE,&tsCtx.socketviewer);CHKERRQ(ierr);
     }
  

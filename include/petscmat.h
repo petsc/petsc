@@ -359,9 +359,40 @@ EXTERN int MatInterpolateAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatInterpolate(Mat,Vec,Vec);
 EXTERN int MatRestrict(Mat,Vec,Vec);
 
-/*
-      These three (or four) macros MUST be used together. The third one closes the open { of the first one
-*/
+
+/*MC
+   MatPreallocInitialize - Begins the block of code that will count the number of nonzeros per
+       row in a matrix providing the data that one can use to correctly preallocate the matrix.
+
+   Synopsis:
+   int MatPreallocateInitialize(MPI_Comm comm, int nrows, int ncols, int *dnz, int *onz)
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the communicator that will share the eventually allocated matrix
+.  nrows - the number of rows in the matrix
+-  ncols - the number of columns in the matrix
+
+   Output Parameters:
++  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+
+   Level: intermediate
+
+   Notes:
+   See the chapter in the users manual on performance for more details
+
+   Do not malloc or free dnz and onz that is handled internally by these routines
+
+   Use MatPreallocateInitializeSymmetric() for symmetric matrices (MPISBAIJ matrices)
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
+          MatPreallocateInitializeSymmetric(), MatPreallocateSymmetricSetLocal()
+M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
   int _4_ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
@@ -370,6 +401,37 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\
   _4_ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __tmp;
 
+/*MC
+   MatPreallocSymmetricInitialize - Begins the block of code that will count the number of nonzeros per
+       row in a matrix providing the data that one can use to correctly preallocate the matrix.
+
+   Synopsis:
+   int MatPreallocateSymmetricInitialize(MPI_Comm comm, int nrows, int ncols, int *dnz, int *onz)
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the communicator that will share the eventually allocated matrix
+.  nrows - the number of rows in the matrix
+-  ncols - the number of columns in the matrix
+
+   Output Parameters:
++  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+
+   Level: intermediate
+
+   Notes:
+   See the chapter in the users manual on performance for more details
+
+   Do not malloc or free dnz and onz that is handled internally by these routines
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal()
+M*/
 #define MatPreallocateSymmetricInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
   int _4_ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__end; \
@@ -378,6 +440,37 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr);\
   _4_ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __tmp;
 
+/*MC
+   MatPreallocateSetLocal - Indicates the locations (rows and columns) in the matrix where nonzeros will be
+       inserted using a local number of the rows and columns
+
+   Synopsis:
+   int MatPreallocateSetLocal(ISLocalToGlobalMappping map,int nrows, int *rows,int ncols, int *cols,int *dnz, int *onz)
+
+   Not Collective
+
+   Input Parameters:
++  map - the mapping between local numbering and global numbering
+.  nrows - the number of rows indicated
+.  rows - the indices of the rows (these will be mapped in the 
+.  ncols - the number of columns in the matrix
+.  cols - the columns indicated
+.  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+
+   Level: intermediate
+
+   Notes:
+   See the chapter in the users manual on performance for more details
+
+   Do not malloc or free dnz and onz that is handled internally by these routines
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal()
+M*/
 #define MatPreallocateSetLocal(map,nrows,rows,ncols,cols,dnz,onz) 0;\
 {\
   int __l;\
@@ -388,6 +481,37 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   }\
 }
     
+/*MC
+   MatPreallocateSymmetricSetLocal - Indicates the locations (rows and columns) in the matrix where nonzeros will be
+       inserted using a local number of the rows and columns
+
+   Synopsis:
+   int MatPreallocateSymmetricSetLocal(ISLocalToGlobalMappping map,int nrows, int *rows,int ncols, int *cols,int *dnz, int *onz)
+
+   Not Collective
+
+   Input Parameters:
++  map - the mapping between local numbering and global numbering
+.  nrows - the number of rows indicated
+.  rows - the indices of the rows (these will be mapped in the 
+.  ncols - the number of columns in the matrix
+.  cols - the columns indicated
+.  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+
+   Level: intermediate
+
+   Notes:
+   See the chapter in the users manual on performance for more details
+
+   Do not malloc or free dnz and onz that is handled internally by these routines
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal(), MatPreallocateSetLocal()
+M*/
 #define MatPreallocateSymmetricSetLocal(map,nrows,rows,ncols,cols,dnz,onz) 0;\
 {\
   int __l;\
@@ -398,6 +522,36 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   }\
 }
 
+/*MC
+   MatPreallocateSet - Indicates the locations (rows and columns) in the matrix where nonzeros will be
+       inserted using a local number of the rows and columns
+
+   Synopsis:
+   int MatPreallocateSet(int nrows, int *rows,int ncols, int *cols,int *dnz, int *onz)
+
+   Not Collective
+
+   Input Parameters:
++  nrows - the number of rows indicated
+.  rows - the indices of the rows (these will be mapped in the 
+.  ncols - the number of columns in the matrix
+.  cols - the columns indicated
+.  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+
+   Level: intermediate
+
+   Notes:
+   See the chapter in the users manual on performance for more details
+
+   Do not malloc or free dnz and onz that is handled internally by these routines
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal(), MatPreallocateSetLocal()
+M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 { int __i; \
   for (__i=0; __i<nc; __i++) {\
@@ -406,6 +560,36 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   dnz[row - __rstart] = nc - onz[row - __rstart];\
 }
 
+/*MC
+   MatPreallocateSymmetricSet - Indicates the locations (rows and columns) in the matrix where nonzeros will be
+       inserted using a local number of the rows and columns
+
+   Synopsis:
+   int MatPreallocateSymmetricSet(int nrows, int *rows,int ncols, int *cols,int *dnz, int *onz)
+
+   Not Collective
+
+   Input Parameters:
++  nrows - the number of rows indicated
+.  rows - the indices of the rows (these will be mapped in the 
+.  ncols - the number of columns in the matrix
+.  cols - the columns indicated
+.  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+
+   Level: intermediate
+
+   Notes:
+   See the chapter in the users manual on performance for more details
+
+   Do not malloc or free dnz and onz that is handled internally by these routines
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
+          MatPreallocateInitialize(), MatPreallocateSymmetricSetLocal(), MatPreallocateSetLocal()
+M*/
 #define MatPreallocateSymmetricSet(row,nc,cols,dnz,onz) 0;\
 { int __i; \
   for (__i=0; __i<nc; __i++) {\
@@ -414,7 +598,35 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   }\
 }
 
+/*MC
+   MatPreallocFinalize - Ends the block of code that will count the number of nonzeros per
+       row in a matrix providing the data that one can use to correctly preallocate the matrix.
+
+   Synopsis:
+   int MatPreallocateFinalize(int *dnz, int *onz)
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+
+   Level: intermediate
+
+   Notes:
+   See the chapter in the users manual on performance for more details
+
+   Do not malloc or free dnz and onz that is handled internally by these routines
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
+          MatPreallocateSymmetricInitialize(), MatPreallocateSymmetricSetLocal()
+M*/
 #define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree(dnz);CHKERRQ(_4_ierr);}
+
+
 
 /* Routines unique to particular data structures */
 EXTERN int MatShellGetContext(Mat,void **);
