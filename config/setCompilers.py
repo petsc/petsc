@@ -543,8 +543,6 @@ class Configure(config.base.Configure):
         os.remove('conf1.a')
         raise RuntimeError('Ranlib is not functional with your archiver.  Try --with-ranlib=true if ranlib is unnecessary.')
       return
-    if not 'LIBS' in self.framework.argDB:
-      self.framework.argDB['LIBS'] = ''
     oldLibs = self.framework.argDB['LIBS']
     self.pushLanguage('C')
     if not self.checkCompile('', 'int foo(int a) {\n  return a+1;\n}\n\n', cleanup = 0, codeBegin = '', codeEnd = ''):
@@ -680,6 +678,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.framework.argDB['LIBS'] = ''
     self.executeTest(self.checkCCompiler)
     self.executeTest(self.checkCPreprocessor)
     self.executeTest(self.checkCxxCompiler)
