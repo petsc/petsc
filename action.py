@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import fileset
 import transform
 
 class Action (transform.Transform):
@@ -16,19 +17,24 @@ class Action (transform.Transform):
     self.flags          = flags
     self.setwiseExecute = setwiseExecute
     self.errorHandler   = errorHandler
+    self.buildProducts  = 1
 
   def fileExecute(self, file):
     self.func(file)
-    self.products.append(file)
+    if self.buildProducts: self.products.append(file)
 
   def setAction(self, set):
     self.func(set)
-    self.products.extend(set)
+    if self.buildProducts:
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products, set]
+      else:
+        self.products.append(set)
 
   def shellAction(self, file):
     command = self.program+' '+self.flags+' '+file
     output  = self.executeShellCommand(command, self.errorHandler)
-    self.products.append(file)
+    if self.buildProducts: self.products.append(file)
     return output
 
   def shellSetAction(self, set):
@@ -37,6 +43,10 @@ class Action (transform.Transform):
     if (not files): return ''
     for file in files:
       command += ' '+file
-    output  =  self.executeShellCommand(command, self.errorHandler)
-    self.products.extend(set)
+    output  = self.executeShellCommand(command, self.errorHandler)
+    if self.buildProducts:
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products, set]
+      else:
+        self.products.append(set)
     return output

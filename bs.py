@@ -48,19 +48,22 @@ class Maker:
     os.chdir(oldDir)
 
   def debugListStr(self, list):
-    if (self.debugLevel > 2) or (len(list) < 4):
+    if (self.debugLevel > 4) or (len(list) < 4):
       return str(list)
     else:
       return '['+str(list[0])+'-<'+str(len(list)-2)+'>-'+str(list[-1])+']'
 
   def debugFileSetStr(self, set):
     if isinstance(set, fileset.FileSet):
-      return self.debugListStr(set.getFiles())
+      if set.tag:
+        return '('+set.tag+')'+self.debugListStr(set.getFiles())
+      else:
+        return self.debugListStr(set.getFiles())
     else:
-      str = '['
+      output = '['
       for fs in set:
-        str += self.debugFileSetStr(fs)
-      return str+']'
+        output += self.debugFileSetStr(fs)
+      return output+']'
 
   def debugPrint(self, msg, level = 1, section = None):
     indentLevel = len(traceback.extract_stack())-4

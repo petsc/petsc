@@ -12,10 +12,17 @@ class Target (transform.Transform):
 
   def executeSingleTransform(self, sources, transform):
     self.debugPrint('Executing transform '+str(transform)+' with sources '+self.debugFileSetStr(sources))
-    if isinstance(sources, fileset.FileSet):
-      transform.sources.extend(sources)
-    elif transform.sources.getFiles():
-      transform.sources = [sources, transform.sources]
+    if len(transform.sources):
+      if isinstance(transform.sources, fileset.FileSet):
+        if isinstance(sources, fileset.FileSet):
+          transform.sources = [transform.sources, sources]
+        else:
+          transform.sources = [transform.sources]+sources
+      else:
+        if isinstance(sources, fileset.FileSet):
+          transform.sources.append(sources)
+        else:
+          transform.sources = transform.sources+sources
     else:
       transform.sources = sources
     products = transform.execute()

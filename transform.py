@@ -76,6 +76,19 @@ class Transform (bs.Maker):
         pass
     return checksum
 
+class FileFilter (Transform):
+  def __init__(self, filter, sources = None, tag = None):
+    Transform.__init__(self, sources)
+    self.filter = filter
+    self.tag    = tag
+
+  def fileExecute(self, source):
+    if self.tag:
+      if (not self.tag == self.currentSet.tag) or (self.filter(source)):
+        Transform.fileExecute(self, source)
+    else:
+      if self.filter(source): Transform.fileExecute(self, source)
+
 class FileChanged (Transform):
   def __init__(self, sources = None):
     Transform.__init__(self, sources)
