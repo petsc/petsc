@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmaij.c,v 1.42 1999/02/17 21:37:55 balay Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.43 1999/04/19 21:47:54 bsmith Exp balay $";
 #endif
 
 
@@ -32,7 +32,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   TableCreate(B->m,&gid1_lid1); 
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
-      int data,gid1 = aj[B->i[i] + shift + j] + 1;
+      int data,gid1 = aj[B->i[i] + shift + j] + 1 + shift;
       ierr = TableFind(gid1_lid1,gid1,&data); CHKERRQ(ierr);
       if (!data) {
         /* one based table */ 
@@ -57,10 +57,10 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   /* compact out the extra columns in B */
   for ( i=0; i<B->m; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
-      int gid1 = aj[B->i[i] + shift + j] + 1;
+      int gid1 = aj[B->i[i] + shift + j] + 1 + shift;
       ierr = TableFind(gid1_lid1,gid1,&lid); CHKERRQ(ierr);
       lid --;
-      aj[B->i[i] + shift + j] = lid;
+      aj[B->i[i] + shift + j]  = lid - shift;
     }
   }
   B->n = aij->B->n = aij->B->N = ec;
