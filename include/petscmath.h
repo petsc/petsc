@@ -231,14 +231,14 @@ M*/
 #define PETSC_MIN_INT            -1000000000
 
 #if defined(PETSC_USE_SINGLE)
-#  define PETSC_MAX                1.e30
-#  define PETSC_MIN                -1.e30
+#  define PETSC_MAX                     1.e30
+#  define PETSC_MIN                    -1.e30
 #  define PETSC_MACHINE_EPSILON         1.e-7
 #  define PETSC_SQRT_MACHINE_EPSILON    3.e-4
 #  define PETSC_SMALL                   1.e-5
 #else
-#  define PETSC_MAX                1.e300
-#  define PETSC_MIN                -1.e300
+#  define PETSC_MAX                     1.e300
+#  define PETSC_MIN                    -1.e300
 #  define PETSC_MACHINE_EPSILON         1.e-14
 #  define PETSC_SQRT_MACHINE_EPSILON    1.e-7
 #  define PETSC_SMALL                   1.e-10

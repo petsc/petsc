@@ -107,20 +107,12 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
     Output Parameter:
 .   h - the newly created object
 */ 
-#define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)                      \
-  { PetscErrorCode _ierr;                                                                          \
-    _ierr = PetscNew(struct tp,&(h));CHKERRQ(_ierr);                                      \
-    _ierr = PetscNew(PetscOps,&((h)->bops));CHKERRQ(_ierr);                               \
-    _ierr = PetscNew(pops,&((h)->ops));CHKERRQ(_ierr);                                    \
-    _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,             \
-                                 (PetscObjectFunction)des,                             \
-                                 (PetscObjectViewerFunction)vie);CHKERRQ(_ierr);       \
-  }
+#define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie) \
+  (PetscNew(struct tp,&(h)) || PetscNew(PetscOps,&((h)->bops)) || PetscNew(pops,&((h)->ops)) || \
+   PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie))
 
-#define PetscHeaderDestroy(h)                                             \
-  { PetscErrorCode _ierr;                                                            \
-    _ierr = PetscHeaderDestroy_Private((PetscObject)(h));CHKERRQ(_ierr);\
-  }                 
+#define PetscHeaderDestroy(h) \
+  (PetscHeaderDestroy_Private((PetscObject)(h)))
 
 /* ---------------------------------------------------------------------------------------*/
 

@@ -274,7 +274,7 @@ extern PetscScalar VecSetValue_Value;
 
 .seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValueLocal()
 M*/
-#define VecSetValue(v,i,va,mode) (VecSetValue_Row = i, VecSetValue_Value = va, VecSetValues(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
+#define VecSetValue(v,i,va,mode) ((VecSetValue_Row = i,VecSetValue_Value = va,0) || VecSetValues(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
 
 /*MC
    VecSetValueLocal - Set a single entry into a vector using the local numbering
@@ -303,7 +303,7 @@ M*/
 
 .seealso: VecSetValues(), VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(), VecSetValue()
 M*/
-#define VecSetValueLocal(v,i,va,mode) (VecSetValue_Row = i,VecSetValue_Value = va,VecSetValuesLocal(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
+#define VecSetValueLocal(v,i,va,mode) ((VecSetValue_Row = i,VecSetValue_Value = va,0) || VecSetValuesLocal(v,1,&VecSetValue_Row,&VecSetValue_Value,mode))
 
 EXTERN PetscErrorCode VecSetBlockSize(Vec,PetscInt);
 EXTERN PetscErrorCode VecGetBlockSize(Vec,PetscInt*);

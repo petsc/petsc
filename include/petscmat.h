@@ -229,15 +229,15 @@ extern PetscScalar MatSetValue_Value;
 .seealso: MatSetValues(), MatSetValueLocal()
 M*/
 #define MatSetValue(v,i,j,va,mode) \
-  (MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va, \
+  ((MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va,0) || \
    MatSetValues(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&MatSetValue_Value,mode))
 
 #define MatGetValue(v,i,j,va) \
-  (MatSetValue_Row = i,MatSetValue_Column = j,\
+  ((MatSetValue_Row = i,MatSetValue_Column = j,0) || \
    MatGetValues(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&va))
 
 #define MatSetValueLocal(v,i,j,va,mode) \
-  (MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va, \
+  ((MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va,0) || \
    MatSetValuesLocal(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&MatSetValue_Value,mode))
 
 /*E
@@ -976,8 +976,9 @@ M*/
 #define MatColoringRegisterDynamic(a,b,c,d) MatColoringRegister(a,b,c,d)
 #endif
 
-EXTERN PetscErrorCode        MatColoringRegisterAll(const char[]);
 extern PetscTruth MatColoringRegisterAllCalled;
+
+EXTERN PetscErrorCode        MatColoringRegisterAll(const char[]);
 EXTERN PetscErrorCode        MatColoringRegisterDestroy(void);
 EXTERN PetscErrorCode        MatColoringPatch(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
 
@@ -1095,9 +1096,10 @@ M*/
 #define MatPartitioningRegisterDynamic(a,b,c,d) MatPartitioningRegister(a,b,c,d)
 #endif
 
-EXTERN PetscErrorCode        MatPartitioningRegisterAll(const char[]);
 extern PetscTruth MatPartitioningRegisterAllCalled;
-EXTERN PetscErrorCode        MatPartitioningRegisterDestroy(void);
+
+EXTERN PetscErrorCode MatPartitioningRegisterAll(const char[]);
+EXTERN PetscErrorCode MatPartitioningRegisterDestroy(void);
 
 EXTERN PetscErrorCode MatPartitioningView(MatPartitioning,PetscViewer);
 EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);

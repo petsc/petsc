@@ -48,7 +48,7 @@ extern PetscInt  _BT_idx;
 #define PetscBTDestroy(array)   PetscFree(array)
 
 #define PetscBTView(m,bt,viewer) 0; {\
-  PetscInt    __i; PetscErrorCode_8_ierr; \
+  PetscInt __i; PetscErrorCode _8_ierr; \
   PetscViewer __viewer = viewer; \
   if (!__viewer) __viewer = PETSC_VIEWER_STDOUT_SELF;\
   for (__i=0; __i<m; __i++) { \
@@ -58,27 +58,30 @@ extern PetscInt  _BT_idx;
 #define PetscBTCreate(m,array)  \
   (PetscMalloc(((m)/PETSC_BITS_PER_BYTE+1)*sizeof(char),&(array)) || PetscBTMemzero(m,array))
 
-#define PetscBTLookupSet(array,index)   (_BT_idx           = (index)/PETSC_BITS_PER_BYTE, \
-                                        _BT_c           = array[_BT_idx], \
-                                        _BT_mask        = (char)1 << ((index)%PETSC_BITS_PER_BYTE), \
-                                        array[_BT_idx]  = _BT_c | _BT_mask, \
-                                        _BT_c & _BT_mask)
+#define PetscBTLookupSet(array,index) \
+  (_BT_idx        = (index)/PETSC_BITS_PER_BYTE, \
+   _BT_c          = array[_BT_idx], \
+   _BT_mask       = (char)1 << ((index)%PETSC_BITS_PER_BYTE), \
+   array[_BT_idx] = _BT_c | _BT_mask, \
+   _BT_c & _BT_mask)
 
-#define PetscBTSet(array,index)         (_BT_idx          = (index)/PETSC_BITS_PER_BYTE, \
-                                        _BT_c           = array[_BT_idx], \
-                                        _BT_mask        = (char)1 << ((index)%PETSC_BITS_PER_BYTE), \
-                                        array[_BT_idx]  = _BT_c | _BT_mask,0)
+#define PetscBTSet(array,index)  \
+  (_BT_idx        = (index)/PETSC_BITS_PER_BYTE, \
+   _BT_c          = array[_BT_idx], \
+   _BT_mask       = (char)1 << ((index)%PETSC_BITS_PER_BYTE), \
+   array[_BT_idx] = _BT_c | _BT_mask,0)
 
+#define PetscBTClear(array,index) \
+  (_BT_idx        = (index)/PETSC_BITS_PER_BYTE, \
+   _BT_c          = array[_BT_idx], \
+   _BT_mask       = (char)1 << ((index)%PETSC_BITS_PER_BYTE), \
+   array[_BT_idx] = _BT_c & (~_BT_mask),0)
 
-#define PetscBTClear(array,index)  (_BT_idx          = (index)/PETSC_BITS_PER_BYTE, \
-                                   _BT_c           = array[_BT_idx], \
-                                   _BT_mask        = (char)1 << ((index)%PETSC_BITS_PER_BYTE), \
-                                   array[_BT_idx]  = _BT_c & (~_BT_mask),0)
-
-#define PetscBTLookup(array,index) (_BT_idx          = (index)/PETSC_BITS_PER_BYTE, \
-                                   _BT_c           = array[_BT_idx], \
-                                   _BT_mask        = (char)1 << ((index)%PETSC_BITS_PER_BYTE), \
-                                   (_BT_c & _BT_mask) != 0)
+#define PetscBTLookup(array,index) \
+  (_BT_idx        = (index)/PETSC_BITS_PER_BYTE, \
+   _BT_c          = array[_BT_idx], \
+   _BT_mask       = (char)1 << ((index)%PETSC_BITS_PER_BYTE), \
+   (_BT_c & _BT_mask) != 0)
 
 PETSC_EXTERN_CXX_END
 #endif
