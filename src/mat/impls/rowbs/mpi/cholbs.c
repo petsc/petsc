@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.29 1996/03/26 04:46:46 bsmith Exp curfman $";
+static char vcid[] = "$Id: cholbs.c,v 1.30 1996/06/08 17:21:48 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -136,7 +136,7 @@ int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     /* Increment the diagonal shift */
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
-    PLogInfo(mat,"BlockSolve: %d failed factors, err=%d, alpha=%g\n",
+    PLogInfo(mat,"BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",
                                        mbs->failures,mbs->ierr,mbs->alpha); 
   }
   mat->factor = FACTOR_LU;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.12 1996/04/26 00:08:23 balay Exp curfman $";
+static char vcid[] = "$Id: iccbs.c,v 1.13 1996/06/08 17:21:36 curfman Exp curfman $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -38,9 +38,13 @@ static int PCDestroy_ICC_MPIRowbs(PetscObject obj)
   return 0;
 }
 
+/* Note:  We only call PCPreSolve_MPIRowbs() if both
+   the linear system matrix and preconditioning matrix
+   are stored in the MATMPIROWBS format */
 int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) pc->pmat->data;
+  Mat_MPIRowbs *bsifa = (Mat_MPIRowbs *) pc->mat->data;
   Vec          rhs, x, v = bsif->xwork;
   Scalar       *xa, *rhsa, *va;
   int          ierr;
@@ -58,13 +62,18 @@ int PCPreSolve_MPIRowbs(PC pc,KSP ksp)
   ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
-  bsif->vecs_permscale = 1;
+  bsif->vecs_permscale  = 1;
+  bsifa->vecs_permscale = 1;
   return 0;
 }
 
+/* Note:  We only call PCPostSolve_MPIRowbs() if both
+   the linear system matrix and preconditioning matrix
+   are stored in the MATMPIROWBS format */
 int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) pc->pmat->data;
+  Mat_MPIRowbs *bsifa = (Mat_MPIRowbs *) pc->mat->data;
   Vec          x, rhs, v = bsif->xwork;
   Scalar       *xa, *va, *rhsa;
   int          ierr;
@@ -82,14 +91,18 @@ int PCPostSolve_MPIRowbs(PC pc,KSP ksp)
   ierr = VecRestoreArray(rhs,&rhsa); CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&xa); CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va); CHKERRQ(ierr);
-  bsif->vecs_permscale = 0;
+  bsif->vecs_permscale  = 0;
+  bsifa->vecs_permscale = 0;
   return 0;
 }
 
 int PCSetUp_ICC_MPIRowbs(PC pc)
 {
-  PC_ICC *icc = (PC_ICC *) pc->data;
-  PCiBS  *iccbs;
+  PC_ICC       *icc = (PC_ICC *) pc->data;
+  PCiBS        *iccbs;
+  MatStructure pflag;
+  Mat          Amat, Pmat;
+  int          ierr;
 
   pc ->destroy        = PCDestroy_ICC_MPIRowbs;
   icc->implctx        = (void *) (iccbs = PetscNew(PCiBS)); CHKPTRQ(iccbs);
@@ -108,8 +121,11 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
     iccbs->max_it     = 0;
     iccbs->rnorm      = 0.0;
     iccbs->guess_zero = 0;
-    pc->presolve      = PCPreSolve_MPIRowbs;
-    pc->postsolve     = PCPostSolve_MPIRowbs;
+    ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+    if (Amat->type == MATMPIROWBS) {
+      pc->presolve    = PCPreSolve_MPIRowbs;
+      pc->postsolve   = PCPostSolve_MPIRowbs;
+    }
   }
   return 0;
 }
