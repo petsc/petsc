@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.10 1995/05/27 20:23:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.11 1995/06/08 03:09:29 bsmith Exp bsmith $";
 #endif
 
 
@@ -74,4 +74,48 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   return 0;
 }
 
+
+/*
+     Takes the local part of an already assembled MPIAIJ matrix
+   and disassembles it. This is to allow new nonzeros into the matrix
+   that require more communication in the matrix vector multiply. 
+   Thus certain data-structures must be rebuilt.
+
+   Kind of slow! But that's what application programmers get when 
+   they are sloppy.
+*/
+int DisAssemble_MPIAIJ(Mat A)
+{
+  Mat_MPIAIJ *aij = (Mat_MPIAIJ *) A->data;
+  Mat        B = aij->B,Bnew;
+  Mat_AIJ    *Baij = (Mat_AIJ*)B->data;
+  int        ierr,i,j,m=Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
+  Scalar     v;
+
+fprintf(stderr,"Warning: you are adding tricky new nonzeros\n");
+
+  /* free stuff related to matrix-vec multiply */
+  ierr = VecDestroy(aij->lvec); CHKERRQ(ierr); aij->lvec = 0;
+  ierr = VecScatterCtxDestroy(aij->Mvctx); CHKERRQ(ierr); aij->Mvctx = 0;
+  PETSCFREE(aij->colmap); aij->colmap = 0;
+
+  /* make sure that B is assembled so we can access its values */
+  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  /* invent new B and copy stuff over */
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,m,n,0,0,&Bnew); CHKERRQ(ierr);
+  for ( i=0; i<m; i++ ) {
+    for ( j=Baij->i[i]-1; j<Baij->i[i+1]-1; j++ ) {
+      col = garray[Baij->j[ct]-1];
+      v = Baij->a[ct++];
+      ierr = MatSetValues(Bnew,1,&i,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
+    }
+  }
+  PETSCFREE(aij->garray); aij->garray = 0;
+  ierr = MatDestroy(B); CHKERRQ(ierr);
+  aij->B = Bnew;
+  aij->assembled = 0;
+  return 0;
+}
 

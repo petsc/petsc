@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.51 1995/06/20 01:47:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.52 1995/06/30 01:03:20 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -16,11 +16,13 @@ static int CreateColmap_Private(Mat mat)
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   Mat_AIJ    *B = (Mat_AIJ*) aij->B->data;
   int        n = B->n,i;
-  aij->colmap = (int *) PETSCMALLOC( aij->N*sizeof(int) ); CHKPTRQ(aij->colmap);
+  aij->colmap = (int *) PETSCMALLOC(aij->N*sizeof(int));CHKPTRQ(aij->colmap);
   PETSCMEMSET(aij->colmap,0,aij->N*sizeof(int));
   for ( i=0; i<n; i++ ) aij->colmap[aij->garray[i]] = i+1;
   return 0;
 }
+
+extern int DisAssemble_MPIAIJ(Mat);
 
 static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
                             int *idxn,Scalar *v,InsertMode addv)
@@ -50,10 +52,8 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
             if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
             col = aij->colmap[idxn[j]] - 1;
             if (col < 0 && !((Mat_AIJ*)(aij->A->data))->nonew) {
-              SETERRQ(1,"Cannot insert new off diagonal block nonzero in\
-                     already\
-                     assembled matrix. Contact petsc-maint@mcs.anl.gov\
-                     if your need this feature");
+              ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
+              col =  idxn[j];              
             }
           }
           else col = idxn[j];
@@ -181,10 +181,9 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   int        ierr;
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-
   MPI_Status  *send_status,recv_status;
   int         imdex,nrecvs = aij->nrecvs, count = nrecvs, i, n;
-  int         row,col;
+  int         row,col,other_disassembled;
   Scalar      *values,val;
   InsertMode  addv = aij->insertmode;
 
@@ -208,10 +207,8 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
           if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
           col = aij->colmap[col] - 1;
           if (col < 0  && !((Mat_AIJ*)(aij->A->data))->nonew) {
-            SETERRQ(1,"Cannot insert new off diagonal block nonzero in\
-                     already\
-                     assembled matrix. Contact petsc-maint@mcs.anl.gov\
-                     if your need this feature");
+            ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
+            col = (int) PETSCREAL(values[3*i+1]);
           }
         }
         MatSetValues(aij->B,1,&row,1,&col,&val,addv);
@@ -233,6 +230,14 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   aij->insertmode = NOTSETVALUES;
   ierr = MatAssemblyBegin(aij->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->A,mode); CHKERRQ(ierr);
+
+  /* determine if any processor has disassembled, if so we must 
+     also disassemble ourselfs, in order that we may reassemble. */
+  MPI_Allreduce((void *) &aij->assembled,(void *) &other_disassembled,1,
+                 MPI_INT,MPI_PROD,mat->comm);
+  if (aij->assembled && !other_disassembled) {
+    ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
+  }
 
   if (!aij->assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat); CHKERRQ(ierr);
