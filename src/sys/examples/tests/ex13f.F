@@ -1,5 +1,5 @@
 !
-! "$Id: ex13f.F,v 1.2 1998/05/29 20:36:24 bsmith Exp balay $";
+! "$Id: ex13f.F,v 1.3 1998/06/22 15:26:48 balay Exp balay $";
 !
 !
 !     Tests PetscSetCommWorld()
@@ -27,7 +27,7 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-      write(6,100),rank
+      write(6,100) rank
   100 format('rank = ',i3)
 
       call PetscFinalize(ierr)
