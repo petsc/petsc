@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.52 1997/11/13 18:38:17 balay Exp bsmith $;
+C  $Id: petsc.h,v 1.53 1997/11/21 16:48:38 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -84,7 +84,7 @@ C
 C
 C     Representation of complex i
 C
-      DoubleComplex PETSC_i
+      double complex PETSC_i
       parameter (PETSC_i = (0,1.0))
 C
 C     Macro for templating between real and complex
@@ -93,7 +93,6 @@ C
 #define PetscReal(a)  real(a)
 #define PetscConj(a)  dconjg(a)
 #define Scalar        double complex
-#define DoubleComplex double complex
 #define MPIU_SCALAR   MPI_DOUBLE_COMPLEX
 #else
 #define PetscReal(a) a
