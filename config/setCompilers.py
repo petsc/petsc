@@ -574,7 +574,6 @@ class Configure(config.base.Configure):
         self.framework.log.write('Possible ERROR while running archiver: '+output)
         if status: self.framework.log.write('ret = '+str(status)+'\n')
         if error: self.framework.log.write('error message = {'+error+'}\n')
-        os.remove('conf1.o')
         raise RuntimeError('Archiver is not functional')
       return
     def checkRanlib(command, status, output, error):
@@ -591,23 +590,26 @@ class Configure(config.base.Configure):
       raise RuntimeError('Compiler is not functional')
     os.rename(self.compilerObj, 'conf1.o')
     for (archiver, flags, ranlib) in self.generateArchiverGuesses():
-      if self.getExecutable(archiver, getFullPath = 1, resultName = 'AR'):
-        if self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB'):
-          (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
-          (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
-          self.framework.argDB['LIBS'] = 'conf1.a'
-          success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
-          os.rename('conf1.a','conf1.lib')
-          if not success:
-            self.framework.argDB['LIBS'] = 'conf1.lib'
-            success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
-            os.remove('conf1.lib')
-            if success: break
-          else:
-            os.remove('conf1.lib')
-            break
+      try:
+        if self.getExecutable(archiver, getFullPath = 1, resultName = 'AR'):
+          if self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB'):
+            (output, error, status) = config.base.Configure.executeShellCommand(self.AR+' '+flags+' conf1.a conf1.o', checkCommand = checkArchive, log = self.framework.log)
+            (output, error, status) = config.base.Configure.executeShellCommand(self.RANLIB+' conf1.a', checkCommand = checkRanlib,log = self.framework.log)
+            self.framework.argDB['LIBS'] = 'conf1.a'
+            success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
+            os.rename('conf1.a','conf1.lib')
+            if not success:
+              self.framework.argDB['LIBS'] = 'conf1.lib'
+              success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
+              os.remove('conf1.lib')
+              if success: break
+            else:
+              os.remove('conf1.lib')
+              break
+      except RuntimeError, e:
+        pass
     else:
-      os.remove('conf1.o')
+      if os.path.isfile('conf1.o'): os.remove('conf1.o')
       self.framework.argDB['LIBS'] = oldLibs
       self.popLanguage()
       raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
@@ -616,7 +618,7 @@ class Configure(config.base.Configure):
     self.framework.argDB['AR_FLAGS']=flags
     self.framework.addArgumentSubstitution('AR_FLAGS','AR_FLAGS')
     self.AR_FLAGS = flags
-    os.remove('conf1.o')
+    if os.path.isfile('conf1.o'): os.remove('conf1.o')
     self.framework.argDB['LIBS'] = oldLibs
     self.popLanguage()
     return
