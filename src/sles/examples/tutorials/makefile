@@ -1,6 +1,6 @@
 # $Id: makefile,v 1.99 2001/09/07 20:11:25 bsmith Exp $ 
 
-CFLAGS	         =
+CFLAGS	         = -Wall -I$(HOME)/include
 FFLAGS	         = 
 CPPFLAGS         =
 FPPFLAGS         =
@@ -151,6 +151,10 @@ ex27: ex27.o  chkopts
 ex28: ex28.o  chkopts
 	-${CLINKER} -o ex28 ex28.o  ${PETSC_SLES_LIB}
 	${RM} ex28.o
+
+ex31: ex31.o  chkopts
+	-${CLINKER} -o $@ $<  ${PETSC_SLES_LIB} -L$(HOME)/lib/Linux-i386 -lmfhdf -ldf -ljpeg -lz -lcyclic_mt
+	${RM} $<
 
 #----------------------------------------------------------------------------
 runex1:
