@@ -122,3 +122,10 @@ class Update (build.transform.Transform):
         self.sourceDB.updateSource(f)
       return self.output
     return build.transform.Transform.handleFile(self, f, set)
+
+  def handleFileSet(self, set):
+    '''Execute the default set handling method, and save source database'''
+    output = build.transform.Transform.handleFileSet(self, set)
+    # I could check here, and only save in the first recursive call
+    self.sourceDB.save()
+    return output

@@ -45,6 +45,7 @@ class SourceDB (dict, base.Base):
     self.filename   = filename
     if self.filename is None:
       self.filename = os.path.join(str(root), 'bsSource.db')
+    self.isDirty    = 0
     return
 
   def __str__(self):
@@ -105,10 +106,12 @@ class SourceDB (dict, base.Base):
 
   def __setitem__(self, key, value):
     '''Converts the key to a relative source file path using the root, and checks the validity of the value'''
+    self.isDirty = 1
     return dict.__setitem__(self, self.getRelativePath(key), self.checkValue(value))
 
   def __delitem__(self, key):
     '''Converts the key to a relative source file path using the root'''
+    self.isDirty = 1
     return dict.__delitem__(self, self.getRelativePath(key))
 
   def __contains__(self, key):
@@ -129,6 +132,7 @@ class SourceDB (dict, base.Base):
 
   def update(self, d):
     '''Update the dictionary with the contents of d'''
+    self.isDirty = 1
     for k in d:
       self[k] = d[k]
     return
@@ -150,6 +154,7 @@ class SourceDB (dict, base.Base):
   getChecksum = staticmethod(getChecksum)
 
   def updateSource(self, source):
+    self.isDirty = 1
     dependencies = ()
     try:
       (checksum, mtime, timestamp, dependencies) = self[source]
@@ -209,14 +214,18 @@ class SourceDB (dict, base.Base):
       self.debugPrint('Could not load source database from '+filename, 1, 'sourceDB')
     return
 
-  def save(self):
+  def save(self, force = 0):
     '''Save the source database to a file. The saved database with have path names relative to the root.'''
+    if not self.isDirty and not force:
+      self.debugPrint('No need to save source database in '+str(self.filename), 2, 'sourceDB')
+      return
     filename = str(self.filename)
     if os.path.exists(os.path.dirname(filename)):
       self.debugPrint('Saving source database in '+filename, 2, 'sourceDB')
       dbFile = file(filename, 'w')
       cPickle.dump(self, dbFile)
       dbFile.close()
+      self.isDirty = 0
     else:
       self.debugPrint('Could not save source database in '+filename, 1, 'sourceDB')
     return

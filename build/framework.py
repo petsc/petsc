@@ -64,7 +64,6 @@ class Framework(base.Base):
     else:
       self.debugPrint('Source database '+str(filename)+' does not exist. Creating a new one', 2, 'sourceDB')
       self.sourceDB = sourceDatabase.SourceDB(root, filename)
-    atexit.register(self.sourceDB.save)
     return
 
   def makeSourceDBPathsAbsolute(self, sourceDB):

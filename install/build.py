@@ -65,6 +65,4 @@ class Builder(install.urlMapping.UrlMapping):
         self.debugPrint('  Installing dependency '+url, 2, 'install')
         self.build(self.getInstallRoot(url), target = ['install'])
       maker.executeTarget('install')
-    # Save source database (since atexit() functions might not be called before another build)
-    maker.sourceDB.save()
     return ret
