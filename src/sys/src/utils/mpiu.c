@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.52 1996/08/05 14:07:43 balay Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.53 1996/08/05 22:59:50 balay Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -274,15 +274,17 @@ static int MPIU_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
 
 /*@
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
-        processors that share the object MUST call this EXACTLY the same
-        number of times. This tag should only be used with the current objects
-        communicator, do not use it with any other MPI communicator.
+    processors that share the object MUST call this routine EXACTLY the same
+    number of times.  This tag should only be used with the current object's
+    communicator; do NOT use it with any other MPI communicator.
 
-  Input Parameter:
-.  obj - the PETSc object
+    Input Parameter:
+.   obj - the PETSc object
 
-  Output Parameter:
-.  tag - the new tag
+    Output Parameter:
+.   tag - the new tag
+
+.keywords: object, get, new, tag
 
 .seealso: PetscObjectRestoreNewTag()
 @*/
@@ -302,15 +304,17 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 }
 
 /*@
-    PetscObjectRestoreNewTag - Restores new tag from a PETSc object. All 
-        processors that share the object MUST call this EXACTLY the same
-        number of times. 
+    PetscObjectRestoreNewTag - Restores a new tag from a PETSc object. All 
+    processors that share the object MUST call this routine EXACTLY the same
+    number of times. 
 
-  Input Parameter:
-.  obj - the PETSc object
+    Input Parameter:
+.   obj - the PETSc object
 
-  Output Parameter:
-.  tag - the new tag
+    Output Parameter:
+.   tag - the new tag
+
+.keywords: object, restore, new, tag
 
 .seealso: PetscObjectGetNewTag()
 @*/
