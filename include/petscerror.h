@@ -288,16 +288,16 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,Pets
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionTry1(), PetscExceptionValue()
 M*/
-static inline PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr) {
-                           PetscInt i;
-                           if (xierr != zierr) return PETSC_FALSE;
-                           for (i=0; i<PetscErrorUncatchableCount; i++) {
-                             if (PetscErrorUncatchable[i] == zierr) {
-                               return PETSC_FALSE;
-                             }
-                           }
-                           return PETSC_TRUE;
-                         }          
+PetscStaticInline PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr) {
+  PetscInt i;
+  if (xierr != zierr) return PETSC_FALSE;
+  for (i=0; i<PetscErrorUncatchableCount; i++) {
+    if (PetscErrorUncatchable[i] == zierr) {
+      return PETSC_FALSE;
+    }
+  }
+  return PETSC_TRUE;
+}          
 
 /*MC
    PetscExceptionValue - Indicates if the error code is one that is currently being tried
@@ -320,15 +320,15 @@ static inline PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCod
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionTry1(), PetscExceptionCaught()
 M*/
-static inline PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
-                           PetscInt i;
-                           for (i=0; i<PetscExceptionsCount; i++) {
-                             if (PetscExceptions[i] == zierr) {
-                               return PETSC_TRUE;
-                             }
-                           }
-                           return PETSC_FALSE;
-                         }
+PetscStaticInline PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
+  PetscInt i;
+  for (i=0; i<PetscExceptionsCount; i++) {
+    if (PetscExceptions[i] == zierr) {
+      return PETSC_TRUE;
+    }
+  }
+  return PETSC_FALSE;
+}
 
 /*MC
    PetscExceptionTry1 - Runs the routine, causing a particular error code to be treated as an exception,
