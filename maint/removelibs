@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: removelibs,v 1.31 1998/05/30 14:18:56 balay Exp balay $ 
+# $Id: removelibs,v 1.32 1998/07/11 20:46:58 balay Exp balay $ 
 
 # 
 #  Removes PETSc libraries on some nightly build machines
@@ -8,7 +8,6 @@ rsh snowy    -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/freebsd*/*"
 rsh violet   -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/IRIX/*"
 rsh alaska   -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/IRIX/*"
 rsh ptera    -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/alpha*/*"
-rsh eagle    -n /bin/rm -f "/tmp/bsmith/petsc/lib/lib*/sun4*/*"
 rsh maverick -n /bin/rm -f "/tmp/petsc/petsc/lib/lib*/sun4*/*"
 rsh fire     -n /bin/rm -f "/sandbox/balay/petsc/lib/lib*/solaris*/*"
 rsh gaea     -n /bin/rm -f "/sandbox/petsc/petsc/lib/lib*/linux/*.so*"
