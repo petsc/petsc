@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.5 1995/06/20 01:18:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.6 1995/06/20 22:36:16 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -459,22 +459,26 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   MPI_Reduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,0,comm);
   avet = (tott)/((double) numtid);
 
-  MPIU_fprintf(comm,fd,"             Max        Min        Avg      Total \n");
-  MPIU_fprintf(comm,fd,"Time:      %5.3e %5.3e   %5.3e\n",maxt,mint,avet);
-  MPIU_fprintf(comm,fd,"Objects:   %5.3e %5.3e   %5.3e\n",maxo,mino,aveo);
-  MPIU_fprintf(comm,fd,"Flops:     %5.3e %5.3e   %5.3e  %5.3e\n",
+  MPIU_fprintf(comm,fd,"\nPerformance Summary:\n");
+
+  MPIU_fprintf(comm,fd,"\n                Max         Min        Avg        Total \n");
+  MPIU_fprintf(comm,fd,"Time:        %5.3e   %5.3e   %5.3e\n",maxt,mint,avet);
+  MPIU_fprintf(comm,fd,"Objects:     %5.3e   %5.3e   %5.3e\n",maxo,mino,aveo);
+  MPIU_fprintf(comm,fd,"Flops:       %5.3e   %5.3e   %5.3e  %5.3e\n",
                                                  maxf,minf,avef,totf);
 
   fmin = minf/mint; fmax = maxf/maxt; ftot = totf/maxt;
-  MPIU_fprintf(comm,fd,"Flop rate: %5.3e %5.3e              %5.3e\n",
+  MPIU_fprintf(comm,fd,"Flops/sec:   %5.3e   %5.3e              %5.3e\n",
                                                fmin,fmax,ftot);
-  MPIU_fprintf(comm,fd,"------------------------------------------\n"); 
+  MPIU_fprintf(comm,fd,
+    "\n------------------------------------------------------------------\
+---------\n"); 
 
   /* loop over operations looking for interesting ones */
-  MPIU_fprintf(comm,fd,"                    Count        Time         Floprate\
-  %%Time\n");
-  MPIU_fprintf(comm,fd,"                               Min    Max    Min   Max\
-  \n");
+  MPIU_fprintf(comm,fd,"\nPhase             Count       Time (sec)          \
+  Flops/sec        %%Time\n");
+  MPIU_fprintf(comm,fd,"                            Min        Max       \
+  Min       Max\n");
   for ( i=0; i<100; i++ ) {
     if (EventsType[i][TIME]) {
       wdou = EventsType[i][FLOPS]/EventsType[i][TIME];
@@ -487,12 +491,11 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
     MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
     MPI_Reduce(&wdou,&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
     if (EventsType[i][COUNT]) {
-      MPIU_fprintf(comm,fd,"%s  %4d  %3.2e  %3.2e  %3.2e %3.2e %3.2f\n",
+    MPIU_fprintf(comm,fd,"%s  %4d    %3.2e  %3.2e    %3.2e  %3.2e   %5.2f\n",
                    name[i],(int)EventsType[i][COUNT],mint,maxt,minf,maxf,
                    100.*totts/tott);
     }
   }
-
   return 0;
 }
 
