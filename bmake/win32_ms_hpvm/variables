@@ -36,7 +36,7 @@ O_COPTFLAGS      = -MT -O2 -W2
 O_FOPTFLAGS      = -threads -optimize:5 -fast
 # ########################## C++ compiler ##################################
 #
-CXX_CC           = ${WIN32FE} cl -TP -GX 
+CXX_CC           = ${WIN32FE} cl -TP -GX -GR
 CXX_FC           = ${WIN32FE} f90 -fpp:-m
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
