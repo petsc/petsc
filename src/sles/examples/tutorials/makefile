@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.54 1998/08/29 14:49:28 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.55 1998/08/29 14:50:15 bsmith Exp balay $ 
 
 ALL: ex1
 
@@ -27,7 +27,7 @@ TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 TESTEXAMPLES_5   = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm clean
 TESTEXAMPLES_5   = ex11.PETSc runex11 ex11.rm clean
 TESTEXAMPLES_6   = ex10.PETSc runex10_2 runex10_3 runex10_4 \
-                   runex10_5 ex10.rm 
+                   runex10_5 runex10_6 ex10.rm 
 TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm clean
 TESTEXAMPLES_8   = 
 TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm clean
@@ -288,31 +288,38 @@ runex10:
 	   ${RM} -f ex10_1.tmp
 
 runex10_2:
-	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg -f0 ../../../mat/examples/matrices/medium > ex10_2.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg \
+	   -f0 ../../../mat/examples/matrices/medium > ex10_2.tmp 2>&1; \
 	   if (diff output/ex10_2.out ex10_2.tmp) then true; \
 	   else echo "Possible problem with ex10_2, diffs above"; fi; \
 	   ${RM} -f ex10_2.tmp
 
 runex10_3:
-	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg -pc_type asm -f0 ../../../mat/examples/matrices/medium \
-           > ex10_3.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ex10 -optionsleft_off -ksp_type bicg -pc_type asm \
+	   -f0 ../../../mat/examples/matrices/medium > ex10_3.tmp 2>&1; \
 	   if (diff output/ex10_3.out ex10_3.tmp) then true; \
 	   else echo "Possible problem with ex10_3, diffs above"; fi; \
 	   ${RM} -f ex10_3.tmp
 
 runex10_4:
-	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg -pc_type lu -f0 ../../../mat/examples/matrices/medium \
-           > ex10_4.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg -pc_type lu \
+	   -f0 ../../../mat/examples/matrices/medium > ex10_4.tmp 2>&1; \
 	   if (diff output/ex10_4.out ex10_4.tmp) then true; \
 	   else echo "Possible problem with ex10_4, diffs above"; fi; \
 	   ${RM} -f ex10_4.tmp
 
 runex10_5:
-	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg -f0 ../../../mat/examples/matrices/medium \
-           > ex10_5.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ex10 -optionsleft_off -ksp_type bicg \
+	   -f0 ../../../mat/examples/matrices/medium > ex10_5.tmp 2>&1; \
 	   if (diff output/ex10_5.out ex10_5.tmp) then true; \
 	   else echo "Possible problem with ex10_5, diffs above"; fi; \
 	   ${RM} -f ex10_5.tmp
+runex10_6:
+	-@${MPIRUN} -np 1 ex10 -pc_ilu_levels 2 -pc_ilu_fill 1.73 -ksp_monitor \
+	   -f0 ../../../mat/examples/matrices/fem1 > ex10_6.tmp 2>&1; \
+	   if (diff output/ex10_6.out ex10_6.tmp) then true; \
+	   else echo "Possible problem with ex10_6, diffs above"; fi; \
+	   ${RM} -f ex10_6.tmp
 
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor > ex11_1.tmp 2>&1; \
