@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.28 1996/03/10 23:21:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.29 1996/03/18 00:42:58 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -147,16 +147,16 @@ static int SNESPrintHelp_UMLS(SNES snes,char *p)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
 
-  MPIU_printf(snes->comm," method umls (unconstrained minimization):\n");
-  MPIU_printf(snes->comm,"   %ssnes_line_search_gamma_f gamma_f (default %g) damping parameter\n",
+  PetscPrintf(snes->comm," method umls (unconstrained minimization):\n");
+  PetscPrintf(snes->comm,"   %ssnes_line_search_gamma_f gamma_f (default %g) damping parameter\n",
     p,ctx->gamma_factor);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_maxf maxf (default %d) max function evals in line search\n",p,ctx->maxfev);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_ftol ftol (default %g) tol for sufficient decrease\n",p,ctx->ftol);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_rtol rtol (default %g) relative tol for acceptable step\n",p,ctx->rtol);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_gtol gtol (default %g) tol for curvature condition\n",p,ctx->gtol);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_stepmin stepmin (default %g) lower bound for step\n",p,ctx->stepmin);
-  MPIU_printf(snes->comm,"   %ssnes_line_search_stepmax stepmax (default %g) upper bound for step\n",p,ctx->stepmax);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_maxf maxf (default %d) max function evals in line search\n",p,ctx->maxfev);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_ftol ftol (default %g) tol for sufficient decrease\n",p,ctx->ftol);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_rtol rtol (default %g) relative tol for acceptable step\n",p,ctx->rtol);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_gtol gtol (default %g) tol for curvature condition\n",p,ctx->gtol);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_stepmin stepmin (default %g) lower bound for step\n",p,ctx->stepmin);
+  PetscPrintf(snes->comm,"   %ssnes_line_search_stepmax stepmax (default %g) upper bound for step\n",p,ctx->stepmax);
   return 0;
 }
 /*------------------------------------------------------------*/
@@ -171,7 +171,7 @@ static int SNESView_UMLS(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    MPIU_fprintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
+    PetscFPrintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
       ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
   }
   return 0;
@@ -201,7 +201,7 @@ $  atol     - absolute function tolerance,
 $             set with SNESSetAbsoluteTolerance()
 $  epsmch   - machine epsilon
 $  fmin     - lower bound on function value,
-$             set with SNESSetMinFunctionTolerance()
+$             set with SNESSetMinimizationFunctionTolerance()
 $  max_func - maximum number of function evaluations,
 $             set with SNESSetMaxFunctionEvaluations()
 $  nfunc    - number of function evaluations
@@ -537,7 +537,7 @@ int SNESCreate_UMLS(SNES snes)
 int SNESGetLineSearchDampingParameter(SNES snes,Scalar *damp)
 {
   SNES_UMLS *neP;
-  PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
   neP = (SNES_UMLS *) snes->data;
   *damp = neP->gamma;
   return 0;
