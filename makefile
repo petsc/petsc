@@ -111,7 +111,8 @@ deletemanpages:
 
 # Deletes man pages (HTML version)
 deletewwwpages:
-	$(RM) -f $(PETSC_DIR)/docs/www/man*/* $(PETSC_DIR)/docs/www/www.cit
+	$(RM) -f $(PETSC_DIR)/docs/www/man*/* $(PETSC_DIR)/docs/www/www.cit \
+	         $(PETSC_DIR)/docs/www/man*.html
 
 # Deletes man pages (LaTeX version)
 deletelatexpages:
@@ -240,6 +241,10 @@ allmanpages: deletemanpages deletewwwpages deletelatexpages
 	-make ACTION=manpages tree
 	-make ACTION=wwwpages tree
 	-make ACTION=latexpages tree
+	-maint/wwwman
+
+allwwwpages: deletewwwpages
+	-make ACTION=wwwpages tree
 	-maint/wwwman
 
 alllatexpages: deletelatexpages

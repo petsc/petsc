@@ -235,8 +235,9 @@ fortranstubs:
 # Builds man pages (xman version)
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	doctext -mpath $(PETSC_DIR)/docs/man/man$(MANSEC) -ext $(MANSEC) -locdir $(LOCDIR) \
-		readme $(SOURCEC) $(SOURCEH);	\
+	doctext -mpath $(PETSC_DIR)/docs/man/man$(MANSEC) -ext $(MANSEC) \
+                -locdir $(LOCDIR) -heading PETSc \
+		readme $(SOURCEC) $(SOURCEH); \
 		chmod g+w $(PETSC_DIR)/docs/man/man$(MANSEC)/*; fi 
 
 # Builds man pages (LaTeX version)
@@ -249,8 +250,8 @@ latexpages:
 # Builds man pages (HTML version)
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	doctext -html -index $(PETSC_DIR)/docs/www/www.cit \
-		-mpath $(PETSC_DIR)/docs/www/man$(MANSEC) -ext $(MANSEC)\
+	doctext -html -index $(PETSC_DIR)/docs/www/www.cit -heading PETSc \
+		-mpath $(PETSC_DIR)/docs/www/man$(MANSEC) -ext $(MANSEC) \
 		-indexdir www/man$(MANSEC) -locdir $(LOCDIR) \
 		 $(SOURCEC) $(SOURCEH); \
 		chmod g+w $(PETSC_DIR)/docs/www/man$(MANSEC)/*; fi 
