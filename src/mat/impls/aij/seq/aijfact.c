@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.94 1998/03/06 00:14:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.95 1998/03/12 23:18:23 bsmith Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -374,9 +374,12 @@ int MatSolve_SeqAIJ(Mat A,Vec bb, Vec xx)
 int MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb, Vec xx)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
-  int        i,  n = a->m, *vi, *ai = a->i, *aj = a->j,nz, *adiag = a->diag;
-  int        ai_i, adiag_i,ierr;
-  Scalar     *x,*b, *aa = a->a, sum, *v;
+  int        n = a->m, *ai = a->i, *aj = a->j, *adiag = a->diag,ierr;
+  Scalar     *x,*b, *aa = a->a, sum;
+#if !defined(USE_FORTRAN_KERNELS)
+  int        adiag_i,i,*vi,nz,ai_i;
+  Scalar     *v;
+#endif
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
