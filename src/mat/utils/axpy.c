@@ -1,4 +1,4 @@
-/*$Id: axpy.c,v 1.45 2000/05/05 22:16:35 balay Exp bsmith $*/
+/*$Id: axpy.c,v 1.46 2000/05/24 22:56:05 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -81,7 +81,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
 
 .keywords: matrix, add, shift
 
-.seealso: MatDiagonalShift()
+.seealso: MatDiagonalSet()
  @*/
 int MatShift(Scalar *a,Mat Y)
 {
@@ -104,17 +104,16 @@ int MatShift(Scalar *a,Mat Y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatDiagonalShift"
+#define __FUNC__ /*<a name="MatDiagonalSet"></a>*/"MatDiagonalSet"
 /*@
-   MatDiagonalShift - Computes Y = Y + D, where D is a diagonal matrix
-   that is represented as a vector.
+   MatDiagonalSet - Computes Y = Y + D, where D is a diagonal matrix
+   that is represented as a vector. Or Y[i,i] = D[i] if InsertMode is
+   INSERT_VALUES.
 
    Input Parameters:
 +  Y - the input matrix
--  D - the diagonal matrix, represented as a vector
-
-   Input Parameters:
-.  Y - the shifted ouput matrix
+.  D - the diagonal matrix, represented as a vector
+-  i - INSERT_VALUES or ADD_VALUES
 
    Collective on Mat and Vec
 
@@ -124,15 +123,15 @@ int MatShift(Scalar *a,Mat Y)
 
 .seealso: MatShift()
 @*/
-int MatDiagonalShift(Mat Y,Vec D)
+int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
   int    i,start,end,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidHeaderSpecific(D,VEC_COOKIE);
-  if (Y->ops->diagonalshift) {
-    ierr = (*Y->ops->diagonalshift)(D,Y);CHKERRQ(ierr);
+  if (Y->ops->diagonalset) {
+    ierr = (*Y->ops->diagonalset)(Y,D,is);CHKERRQ(ierr);
   } else {
     int    vstart,vend;
     Scalar *v;
@@ -141,10 +140,9 @@ int MatDiagonalShift(Mat Y,Vec D)
     if (vstart != start || vend != end) {
       SETERRQ4(PETSC_ERR_ARG_SIZ,0,"Vector ownership range not compatible with matrix: %d %d vec %d %d mat",vstart,vend,start,end);
     }
-
     ierr = VecGetArray(D,&v);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
-      ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,is);CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
