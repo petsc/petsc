@@ -1227,22 +1227,23 @@ PetscErrorCode VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
   PetscTruth     flg1;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(vec1,&n1);CHKERRQ(ierr);
-  ierr = VecGetSize(vec2,&n2);CHKERRQ(ierr);
   if (vec1 == vec2) {
-    flg1 = PETSC_TRUE;
-  } else if (n1 != n2) {
-    flg1 = PETSC_FALSE;
+    *flg = PETSC_TRUE;
   } else {
-    ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
-    ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
-    ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
-    ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
-    ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
+    ierr = VecGetSize(vec1,&n1);CHKERRQ(ierr);
+    ierr = VecGetSize(vec2,&n2);CHKERRQ(ierr);
+    if (n1 != n2) {
+      flg1 = PETSC_FALSE;
+    } else {
+      ierr = VecGetArray(vec1,&v1);CHKERRQ(ierr);
+      ierr = VecGetArray(vec2,&v2);CHKERRQ(ierr);
+      ierr = PetscMemcmp(v1,v2,n1*sizeof(PetscScalar),&flg1);CHKERRQ(ierr);
+      ierr = VecRestoreArray(vec1,&v1);CHKERRQ(ierr);
+      ierr = VecRestoreArray(vec2,&v2);CHKERRQ(ierr);
+    }
+    /* combine results from all processors */
+    ierr = MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,vec1->comm);CHKERRQ(ierr);
   }
-
-  /* combine results from all processors */
-  ierr = MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,vec1->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

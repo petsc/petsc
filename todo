@@ -9,13 +9,14 @@
   Currently the are ignored for all partitioners except parmetis, where they are 
   incorrectly always used.
 
+  If shared libraries is turned on, need configure test that each external package
+  can go into shared library. Trouble on Mac
+
   -------------
   Optimizations
    ------------
   Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
   the are still pointwise. This will improve DAGlobalToLocalBegin/End() some (a few %, more?)
-
-   Handle special cases of VecAXPBY
 
    Check if indices passed into vecscattercreate are sorted (often they will be); if they are then 
    do much faster check to which processor owns them
@@ -25,10 +26,6 @@
 
     Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
    ia and ja data. Then the reoordering codes need to check that flag since Sparsepack corrupts the data.
-
-    Matrix impls should not use MatGetRow() on their own data structures, they should directly address the data structure.
-
-     Add fast block size 8 in Vecscatter
 
      ------------------------------------------------------------
      Missing functionality (for a particular data storage or size)
@@ -55,6 +52,7 @@
 
    (Priority 2) General mechanism for DMGetMatrix() etc ...for composite matrices
 
+   Make Fortran kernels support PetscInt 
 
   ------------
   Cleaner code
@@ -71,9 +69,9 @@
   ---------------------
   Better user interface 
   ---------------------
-  Add support for configure nonsense like --without --disable --enable ...
+  (Priority 0) Add support for configure nonsense like --without --disable --enable ...
 
-  Have make in the root directory stop on error in any compile! Default behavior
+  (Priority 0) Have make in the root directory stop on error in any compile! Default behavior
 
   Allow setting precision of printed numbers in ASCII viewers.
 
@@ -83,7 +81,6 @@
   should have instead self.framework.Box('message','url') that formats the 
   message with ** around it for users to see easily.
 
-  print error message at the end of make if any error detected in compile
 
   Do more error checking on user input arguments for nice error messages like if they
   pass a directory for -with-blas-lapack-dir or the other way around
