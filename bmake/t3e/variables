@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.6 1999/08/19 20:55:21 balay Exp bsmith $ 
+# $Id: base_variables,v 1.7 1999/09/07 19:01:10 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -23,7 +23,7 @@ G_COPTFLAGS	   = -g
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
 O_COPTFLAGS	   = -O3
-O_FOPTFLAGS	   = -O1
+O_FOPTFLAGS	   = -O3
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = CC
