@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.140 2000/09/28 21:12:43 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.141 2001/01/15 21:46:49 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -503,7 +503,7 @@ int PCLUSetUseInPlace(PC pc)
 #define __FUNC__ "PCLUSetMatOrdering"
 /*@
     PCLUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
-    be used it the LU factorization.
+    be used in the LU factorization.
 
     Collective on PC
 
@@ -515,6 +515,8 @@ int PCLUSetUseInPlace(PC pc)
 .   -pc_lu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
     Level: intermediate
+
+    Notes: nested dissection is used by default
 
 .seealso: PCILUSetMatOrdering()
 @*/

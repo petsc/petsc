@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.160 2001/01/15 21:46:55 bsmith Exp balay $*/
+/*$Id: ilu.c,v 1.161 2001/01/19 23:21:16 balay Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -185,12 +185,13 @@ int PCILUSetDamping(PC pc,PetscReal damping)
 
    Input Parameters:
 +  pc - the preconditioner context
-.  dt - the drop tolerance
-.  dtcol - tolerance for column pivot
--  dtcount - the max number of nonzeros allowed in a row
+.  dt - the drop tolerance, try from 1.e-10 to .1
+.  dtcol - tolerance for column pivot, good values [0.1 to 0.01]
+-  maxrowcount - the max number of nonzeros allowed in a row, best value
+                 depends on the number of nonzeros in row of original matrix
 
    Options Database Key:
-.  -pc_ilu_use_drop_tolerance <dt,dtcount> - Sets drop tolerance
+.  -pc_ilu_use_drop_tolerance <dt,dtcol,maxrowcount> - Sets drop tolerance
 
    Level: intermediate
 
@@ -199,7 +200,7 @@ int PCILUSetDamping(PC pc,PetscReal damping)
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
-int PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
+int PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,int maxrowcount)
 {
   int ierr,(*f)(PC,PetscReal,PetscReal,int);
 
@@ -207,7 +208,7 @@ int PCILUSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseDropTolerance_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,dt,dtcol,dtcount);CHKERRQ(ierr);
+    ierr = (*f)(pc,dt,dtcol,maxrowcount);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }  
@@ -257,7 +258,7 @@ int PCILUSetFill(PC pc,PetscReal fill)
 #define __FUNC__ "PCILUSetMatOrdering"
 /*@
     PCILUSetMatOrdering - Sets the ordering routine (to reduce fill) to 
-    be used it the ILU factorization.
+    be used in the ILU factorization.
 
     Collective on PC
 
@@ -269,6 +270,8 @@ int PCILUSetFill(PC pc,PetscReal fill)
 .   -pc_ilu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
     Level: intermediate
+
+    Notes: natural ordering is used by default
 
 .seealso: PCLUSetMatOrdering()
 
