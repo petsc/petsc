@@ -47,64 +47,68 @@ projects</a></font></strong></li>
       <p>&nbsp;</p>
       </td>
       <td width="549" valign="top">
-      <p align="left">&nbsp;</p>
-      <p align="left">&nbsp;&nbsp;&nbsp; These pages are for people
-interested       in developing and contributing to the PETSc libraries.
-It is intended only       for people who are experienced with building,
-using and debugging PETSc.       We <b>cannot provide support</b>
-(debugging, building, etc) for people using the       development copy
-of PETSc. If you cannot use a debugger and EMACS etags then      
-please don't access these pages. </p>
-      <p align="left">&nbsp;&nbsp; To obtain development version of
-PETSc,       download and install <b>BitKeeper</b> from <a
- href="http://bitkeeper.com"> bitkeeper.com</a>. This is a free
+      <p align="left">&nbsp;These pages are for people interested      
+in developing and contributing to the PETSc libraries. It is intended
+only       for people who are experienced with building, using and
+debugging PETSc.       We <b>cannot provide support</b> (debugging,
+building, etc) for people using the       development copy of PETSc. If
+you cannot use a debugger and EMACS etags then please don't
+access these pages.<br>
+      <big><span style="font-weight: bold;"><br>
+Obtaining PETSc:</span></big><br>
+      <br>
+To obtain development version of PETSc,       download and install <b>BitKeeper</b>
+from <a href="http://bitkeeper.com"> bitkeeper.com</a>. This is a free
 download, but registration might be       required. This is a version
 control software similar to <a href="http://www.cvshome.org">CVS</a>.
 Using bitkeeper, invoke the       following command to obtain PETSc.
 (This creates a local directory with       the name petsc-dev)</p>
       <ul>
-        <li>
-          <p align="left">&nbsp;&nbsp; <font color="#800000">bk&nbsp;
-clone&nbsp;         http://petsc.bkbits.net/petsc-dev&nbsp;&nbsp;
-petsc-dev</font> </p>
-        </li>
+        <li><font color="#800000">bk&nbsp; clone&nbsp;        
+http://petsc.bkbits.net/petsc-dev&nbsp;&nbsp; petsc-dev</font></li>
+        <li><font color="#800000">bk -r co -q</font></li>
       </ul>
-      <p align="left"><font color="#800000">&nbsp; </font>The next
-time you         need to update your copy of PETSc with the changes we
-made (since your         last update), you can do the following:</p>
+For additional help         on using BitKeeper you can use<br>
       <ul>
-        <li>
-          <p align="left"> <font color="#800000">cd petsc-dev</font> </p>
-        </li>
-        <li>
-          <p align="left"> <font color="#800000">bk pull</font> </p>
-        </li>
+        <li><font color="#800000">bk helptool</font></li>
       </ul>
-      <p align="left"> <font color="#800000">&nbsp; </font>Do a &nbsp;<span
- style="color: rgb(128, 0, 0);">bk pull </span>a second time to see if
-the previous pull was successful (you should see a <span
- style="color: rgb(51, 102, 255);">Nothing to pull</span> message)</p>
+Also, we recommend creating a new PETSC_ARCH -       for example: <b>&nbsp;linux_local</b>(i.e
+copy files from bmake/linux over to bmake/linux_local)       and make
+edits suitable for your configuration in this copy - this way&nbsp;    
+you don't have to edit sources in BitKeeer.<br>
+      <ul style="color: rgb(128, 0, 0);">
+        <li> cd bmake</li>
+        <li>mkdir linux_local&nbsp;</li>
+        <li>cp linux/* linux_local&nbsp;</li>
+        <li>chmod u+w linux_local/*</li>
+      </ul>
+Note: do not use '<span style="color: rgb(128, 0, 0);">bk cp</span>' or
+'<span style="color: rgb(128, 0, 0);">cp -r'</span> as these would be
+messing with the version control files in the bitkeeper repository.<br>
+      <br>
+      <big style="font-weight: bold;">Updating PETSc:<br>
+      <br>
+      </big>The next time you         need to update your copy of PETSc
+with the changes we made (since your         last update), you can do
+the following:<br>
+      <ul>
+        <li><font color="#800000">cd petsc-dev</font></li>
+        <li><font color="#800000">bk pull</font></li>
+        <li><font color="#800000">bk -r co -q</font></li>
+      </ul>
+Do a &nbsp;<span style="color: rgb(128, 0, 0);">'bk pull' </span>a
+second time to see if the previous pull was successful (you should see
+a <span style="color: rgb(51, 102, 255);">'Nothing to pull'</span>
+message)
       <p align="left">&nbsp; However we         recommend creating a
 new repository (using bk clone) - this way, you         still have the
 old clone/libraries for use in case the latest snapshot         is
-buggy. It is always possible that the current development snapshot is 
-in an unuseable state (with errors when building libraries or examples
- randomly crashing)</p>
-      <p align="left"><font color="#800000">&nbsp; </font>For
-additional help         on using BitKeeper you can use</p>
-      <ul>
-        <li>
-          <p align="left"> <font color="#800000">bk helptool</font> </p>
-        </li>
-      </ul>
-      <p align="left">&nbsp;&nbsp;Also, we recommend creating a new
-PETSC_ARCH -       for example: <b>&nbsp;linux_local </b>(i.e copy
-files from bmake/linux over to bmake/linux_local)       and make edits
-suitable for your configuration in this copy - this way&nbsp;      
-you don't have to edit sources in BitKeeer.<br>
-&nbsp;<br>
-The following additional tools are required       to build the fortran
-interface and PETSc documentation:</p>
+buggy. It is always possible that the current development snapshot is
+in an unuseable state (with errors when building libraries or examples 
+randomly crashing)</p>
+      <p align="left" style="font-weight: bold;"><big>Additional Tools:</big></p>
+      <p align="left"> The following additional tools are required      
+to build the fortran interface and PETSc documentation:</p>
       <ul>
         <li>
           <p align="left"><font size="4"> <a
@@ -122,26 +126,24 @@ documentation.</p>
         <li>
           <p align="left"><a href="http://www.tug.org/teTeX/"><font
  size="4">t</font></a><font size="4"><a href="http://www.tug.org/teTeX/">eTeX</a>:</font>This
-package might already be installed on most systems. It is      
+package might already be installed on most systems. It is
 required to generate the users manual (part of the PETSc documentation)</p>
         </li>
       </ul>
       <p align="left">&nbsp;&nbsp; Once the above tools are available
 in the       PATH, the following commands can be used to build the
-fortran stubs and the documentation (should be invoked in ${PETSC_DIR}):</p>
+fortran stubs and the documentation (should be invoked in ${PETSC_DIR}):<br>
+      </p>
       <ul>
-        <li>
-          <p align="left"><font color="#800000">make allfortranstubs</font>
-: This       builds the fortran stubs in src/fortran/auto dir</p>
-        </li>
-        <li>
-          <p align="left"><font color="#800000">make alldoc allhtml
-LOC=${PETSC_DIR} </font>: This builds all the documentation
-including the man pages, the       user's manual, HTML formatted
-source files.</p>
-        </li>
+        <li><font color="#800000">make allfortranstubs</font> : This    
+builds the fortran stubs in src/fortran/auto dir</li>
+        <li><font color="#800000">make alldoc allhtml LOC=${PETSC_DIR} </font>:
+This builds all the documentation including the man pages, the      
+user's manual, HTML formatted source files.</li>
       </ul>
-      </td>
+      <br>
+      <br>
+&nbsp; </td>
     </tr>
     <tr>
       <td width="771" colspan="2">
