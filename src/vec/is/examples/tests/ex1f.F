@@ -9,7 +9,8 @@
 
 
        PetscErrorCode ierr
-       integer     i,n,indices(1000),rank,size,ii(1)
+       PetscInt i,n,indices(1000),ii(1)
+       PetscMPIInt size,rank
        PetscOffset iis
        IS          is,newis
        PetscTruth  flag
@@ -21,7 +22,8 @@
 
 !     Test IS of size 0 
 
-       call ISCreateGeneral(PETSC_COMM_SELF,0,indices,is,ierr) 
+       n = 0
+       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,is,ierr) 
            CHKERRQ(ierr)
        call ISGetLocalSize(is,n,ierr) 
            CHKERRQ(ierr)

@@ -26,9 +26,11 @@
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-      integer USER_EVENT1,USER_EVENT2,USER_EVENT3,USER_EVENT4
-      integer USER_EVENT8,USER_EVENT9
-      integer USER_EVENT5,USER_EVENT6,USER_EVENT7,imax,ierr
+      PetscEvent USER_EVENT1,USER_EVENT2,USER_EVENT3,USER_EVENT4
+      PetscEvent USER_EVENT8,USER_EVENT9
+      PetscEvent USER_EVENT5,USER_EVENT6,USER_EVENT7
+      integer imax
+      PetscErrorCode ierr
       parameter (imax = 10000)
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

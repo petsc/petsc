@@ -4,7 +4,7 @@
        program main
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscsys.h"
-      integer         ierr
+      PetscErrorCode  ierr
       PetscRandom     r
       PetscScalar     rand
 

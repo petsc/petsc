@@ -200,27 +200,27 @@ EXTERN_C_BEGIN
    
    functions, hence no STDCALL
 */
-void petsctracebackerrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
+void petsctracebackerrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = PetscTraceBackErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-void petscaborterrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
+void petscaborterrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = PetscAbortErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-void petscattachdebuggererrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
+void petscattachdebuggererrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = PetscAttachDebuggerErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-void petscemacsclienterrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
+void petscemacsclienterrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = PetscEmacsClientErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
 
-void petscignoreerrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,int *ierr)
+void petscignoreerrorhandler_(int *line,const char *fun,const char *file,const char *dir,int *n,int *p,const char *mess,void *ctx,PetscErrorCode *ierr)
 {
   *ierr = PetscIgnoreErrorHandler(*line,fun,file,dir,*n,*p,mess,ctx);
 }
@@ -235,37 +235,37 @@ void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,con
   }
 }
 
-void PETSC_STDCALL petscpopsignalhandler_(int *ierr)
+void PETSC_STDCALL petscpopsignalhandler_(PetscErrorCode *ierr)
 {
   *ierr = PetscPopSignalHandler();
 }
 
-void PETSC_STDCALL petscpoperrorhandler_(int *ierr)
+void PETSC_STDCALL petscpoperrorhandler_(PetscErrorCode *ierr)
 {
   *ierr = PetscPopErrorHandler();
 }
 
-void PETSC_STDCALL petscviewerasciisettab_(PetscViewer *viewer,int *tabs,int *ierr)
+void PETSC_STDCALL petscviewerasciisettab_(PetscViewer *viewer,PetscInt *tabs,PetscErrorCode *ierr)
 {
   *ierr = PetscViewerASCIISetTab(*viewer,*tabs);
 }
 
-void PETSC_STDCALL petscviewerasciipushtab_(PetscViewer *viewer,int *ierr)
+void PETSC_STDCALL petscviewerasciipushtab_(PetscViewer *viewer,PetscErrorCode *ierr)
 {
   *ierr = PetscViewerASCIIPushTab(*viewer);
 }
 
-void PETSC_STDCALL petscviewerasciipoptab_(PetscViewer *viewer,int *ierr)
+void PETSC_STDCALL petscviewerasciipoptab_(PetscViewer *viewer,PetscErrorCode *ierr)
 {
   *ierr = PetscViewerASCIIPopTab(*viewer);
 }
 
-void PETSC_STDCALL petscviewerasciiusetabs_(PetscViewer *viewer,PetscTruth *flg,int *ierr)
+void PETSC_STDCALL petscviewerasciiusetabs_(PetscViewer *viewer,PetscTruth *flg,PetscErrorCode *ierr)
 {
   *ierr = PetscViewerASCIIUseTabs(*viewer,*flg);
 }
 
-void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1;
 
@@ -274,7 +274,7 @@ void PETSC_STDCALL petscviewerasciiprintf_(PetscViewer *viewer,CHAR str PETSC_MI
   FREECHAR(str,c1);
 }
 
-void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,CHAR str PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1;
 
@@ -283,29 +283,29 @@ void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,CHAR 
   FREECHAR(str,c1);
 }
 
-void PETSC_STDCALL petsctrspace_(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs, int *ierr)
+void PETSC_STDCALL petsctrspace_(PetscLogDouble *space,PetscLogDouble *fr,PetscLogDouble *maxs, PetscErrorCode *ierr)
 {
   *ierr = PetscTrSpace(space,fr,maxs);
 }
 
-void PETSC_STDCALL petscgetresidentsetsize_(PetscLogDouble *foo, int *ierr)
+void PETSC_STDCALL petscgetresidentsetsize_(PetscLogDouble *foo, PetscErrorCode *ierr)
 {
   *ierr = PetscGetResidentSetSize(foo);
 }
 
-void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,int *shift,int *ierr)
+void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,PetscInt *shift,PetscErrorCode *ierr)
 {
   *ierr = 0;
   *shift = y - x;
 }
 
-void PETSC_STDCALL petscgetcputime_(PetscLogDouble *t, int *ierr)
+void PETSC_STDCALL petscgetcputime_(PetscLogDouble *t, PetscErrorCode *ierr)
 {
   *ierr = PetscGetCPUTime(t);
 }
 
 void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),CHAR fmode PETSC_MIXED_LEN(len2),
-                               FILE **file,int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                               FILE **file,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
 
@@ -316,17 +316,17 @@ void PETSC_STDCALL petscfopen_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),C
   FREECHAR(fmode,c2);
 }
   
-void PETSC_STDCALL petscfclose_(MPI_Comm *comm,FILE **file,int *ierr)
+void PETSC_STDCALL petscfclose_(MPI_Comm *comm,FILE **file,PetscErrorCode *ierr)
 {
   *ierr = PetscFClose((MPI_Comm)PetscToPointerComm(*comm),*file);
 }
 
-void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *ierr)
+void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,PetscErrorCode *ierr)
 {
   *ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm(*comm));
 }
 
-void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1;
 
@@ -335,7 +335,7 @@ void PETSC_STDCALL petscfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIX
   FREECHAR(fname,c1);
 }
 
-void PETSC_STDCALL petscprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+void PETSC_STDCALL petscprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1;
 
@@ -344,7 +344,7 @@ void PETSC_STDCALL petscprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),
   FREECHAR(fname,c1);
 }
 
-void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1;
 
@@ -353,7 +353,7 @@ void PETSC_STDCALL petscsynchronizedfprintf_(MPI_Comm *comm,FILE **file,CHAR fna
   FREECHAR(fname,c1);
 }
 
-void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),int *ierr PETSC_END_LEN(len1))
+void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXED_LEN(len1),PetscErrorCode *ierr PETSC_END_LEN(len1))
 {
   char *c1;
 
@@ -362,40 +362,40 @@ void PETSC_STDCALL petscsynchronizedprintf_(MPI_Comm *comm,CHAR fname PETSC_MIXE
   FREECHAR(fname,c1);
 }
 
-void PETSC_STDCALL petscsetfptrap_(PetscFPTrap *flag,int *ierr)
+void PETSC_STDCALL petscsetfptrap_(PetscFPTrap *flag,PetscErrorCode *ierr)
 {
   *ierr = PetscSetFPTrap(*flag);
 }
 
-void PETSC_STDCALL petscobjectgetnewtag_(PetscObject *obj,int *tag,int *ierr)
+void PETSC_STDCALL petscobjectgetnewtag_(PetscObject *obj,PetscMPIInt *tag,PetscErrorCode *ierr)
 {
   *ierr = PetscObjectGetNewTag(*obj,tag);
 }
 
-void PETSC_STDCALL petsccommgetnewtag_(MPI_Comm *comm,int *tag,int *ierr)
+void PETSC_STDCALL petsccommgetnewtag_(MPI_Comm *comm,PetscMPIInt *tag,PetscErrorCode *ierr)
 {
   *ierr = PetscCommGetNewTag((MPI_Comm)PetscToPointerComm(*comm),tag);
 }
 
-void PETSC_STDCALL petscsplitownershipblock_(MPI_Comm *comm,int *bs,int *n,int *N,int *ierr)
+void PETSC_STDCALL petscsplitownershipblock_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscErrorCode *ierr)
 {
   *ierr = PetscSplitOwnershipBlock((MPI_Comm)PetscToPointerComm(*comm),*bs,n,N);
 }
-void PETSC_STDCALL petscsplitownership_(MPI_Comm *comm,int *n,int *N,int *ierr)
+void PETSC_STDCALL petscsplitownership_(MPI_Comm *comm,PetscInt *n,PetscInt *N,PetscErrorCode *ierr)
 {
   *ierr = PetscSplitOwnership((MPI_Comm)PetscToPointerComm(*comm),n,N);
 }
 
-void PETSC_STDCALL petscbarrier_(PetscObject *obj,int *ierr)
+void PETSC_STDCALL petscbarrier_(PetscObject *obj,PetscErrorCode *ierr)
 {
   *ierr = PetscBarrier(*obj);
 }
 
-void PETSC_STDCALL petscstrncpy_(CHAR s1 PETSC_MIXED_LEN(len1),CHAR s2 PETSC_MIXED_LEN(len2),int *n,
-                                 int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+void PETSC_STDCALL petscstrncpy_(CHAR s1 PETSC_MIXED_LEN(len1),CHAR s2 PETSC_MIXED_LEN(len2),size_t *n,
+                                 PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *t1,*t2;
-  int  m;
+  PetscInt  m;
 
 #if defined(PETSC_USES_CPTOFCD)
   t1 = _fcdtocp(s1); 
@@ -410,9 +410,9 @@ void PETSC_STDCALL petscstrncpy_(CHAR s1 PETSC_MIXED_LEN(len1),CHAR s2 PETSC_MIX
 }
 
 void PETSC_STDCALL petscfixfilename_(CHAR filein PETSC_MIXED_LEN(len1),CHAR fileout PETSC_MIXED_LEN(len2),
-                                     int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
+                                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
-  int  i,n;
+  PetscInt  i,n;
   char *in,*out;
 
 #if defined(PETSC_USES_CPTOFCD)
@@ -432,8 +432,8 @@ void PETSC_STDCALL petscfixfilename_(CHAR filein PETSC_MIXED_LEN(len1),CHAR file
   out[i] = 0;
 }
 
-void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),int *type,int *fd,
-                                    int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),PetscInt *type,int *fd,
+                                    PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -442,47 +442,47 @@ void PETSC_STDCALL petscbinaryopen_(CHAR name PETSC_MIXED_LEN(len),int *type,int
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL petscbinarywrite_(int *fd,void *p,int *n,PetscDataType *type,PetscTruth *istemp,int *ierr)
+void PETSC_STDCALL petscbinarywrite_(int *fd,void *p,PetscInt *n,PetscDataType *type,PetscTruth *istemp,PetscErrorCode *ierr)
 {
   *ierr = PetscBinaryWrite(*fd,p,*n,*type,*istemp);
 }
 
-void PETSC_STDCALL petscbinaryread_(int *fd,void *p,int *n,PetscDataType *type,int *ierr)
+void PETSC_STDCALL petscbinaryread_(int *fd,void *p,PetscInt *n,PetscDataType *type,PetscErrorCode *ierr)
 {
   *ierr = PetscBinaryRead(*fd,p,*n,*type);
 }
 
-void PETSC_STDCALL petscbinaryseek_(int *fd,int *size,PetscBinarySeekType *whence,off_t *offset,int *ierr)
+void PETSC_STDCALL petscbinaryseek_(int *fd,PetscInt *size,PetscBinarySeekType *whence,off_t *offset,PetscErrorCode *ierr)
 {
   *ierr = PetscBinarySeek(*fd,*size,*whence,offset);
 }
 
-void PETSC_STDCALL petscbinaryclose_(int *fd,int *ierr)
+void PETSC_STDCALL petscbinaryclose_(int *fd,PetscErrorCode *ierr)
 {
   *ierr = PetscBinaryClose(*fd);
 }
 
 /* ---------------------------------------------------------------------------------*/
-void PETSC_STDCALL petscmemzero_(void *a,int *n,int *ierr) 
+void PETSC_STDCALL petscmemzero_(void *a,PetscInt *n,PetscErrorCode *ierr) 
 {
   *ierr = PetscMemzero(a,*n);
 }
 
-void PETSC_STDCALL petsctrdump_(int *ierr)
+void PETSC_STDCALL petsctrdump_(PetscErrorCode *ierr)
 {
   *ierr = PetscTrDump(stdout);
 }
-void PETSC_STDCALL petsctrlogdump_(int *ierr)
+void PETSC_STDCALL petsctrlogdump_(PetscErrorCode *ierr)
 {
   *ierr = PetscTrLogDump(stdout);
 }
 
-void PETSC_STDCALL petscmemcpy_(int *out,int *in,int *length,int *ierr)
+void PETSC_STDCALL petscmemcpy_(int *out,int *in,size_t *length,PetscErrorCode *ierr)
 {
   *ierr = PetscMemcpy(out,in,*length);
 }
 
-void PETSC_STDCALL petsctrlog_(int *ierr)
+void PETSC_STDCALL petsctrlog_(PetscErrorCode *ierr)
 {
   *ierr = PetscTrLog();
 }
@@ -530,7 +530,7 @@ static char FIXCHARSTRING[1024];
 
 #endif
 
-void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
@@ -538,19 +538,19 @@ void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),int *
   *ierr = PetscTrValid(*line,"Userfunction",c1," ");
 }
 
-void PETSC_STDCALL petsctrvalid_(int *ierr)
+void PETSC_STDCALL petsctrvalid_(PetscErrorCode *ierr)
 {
   *ierr = PetscTrValid(0,"Unknown Fortran",0,0);
 }
 
-void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,PetscScalar *val,int *ierr)
+void PETSC_STDCALL petscrandomgetvalue_(PetscRandom *r,PetscScalar *val,PetscErrorCode *ierr)
 {
   *ierr = PetscRandomGetValue(*r,val);
 }
 
 
 void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name PETSC_MIXED_LEN(len),
-                                       int *ierr PETSC_END_LEN(len))
+                                       PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *tmp;
   *ierr = PetscObjectGetName(*obj,&tmp);
@@ -565,25 +565,25 @@ void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name PETSC_MIXED_LE
 #endif
 }
 
-void PETSC_STDCALL petscobjectdestroy_(PetscObject *obj,int *ierr)
+void PETSC_STDCALL petscobjectdestroy_(PetscObject *obj,PetscErrorCode *ierr)
 {
   *ierr = PetscObjectDestroy(*obj);
 }
 
-void PETSC_STDCALL petscobjectgetcomm_(PetscObject *obj,int *comm,int *ierr)
+void PETSC_STDCALL petscobjectgetcomm_(PetscObject *obj,int *comm,PetscErrorCode *ierr)
 {
   MPI_Comm c;
   *ierr = PetscObjectGetComm(*obj,&c);
   *(int*)comm = PetscFromPointerComm(c);
 }
 
-void PETSC_STDCALL petscattachdebugger_(int *ierr)
+void PETSC_STDCALL petscattachdebugger_(PetscErrorCode *ierr)
 {
   *ierr = PetscAttachDebugger();
 }
 
 void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name PETSC_MIXED_LEN(len),
-                                       int *ierr PETSC_END_LEN(len))
+                                       PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t1;
 
@@ -593,7 +593,7 @@ void PETSC_STDCALL petscobjectsetname_(PetscObject *obj,CHAR name PETSC_MIXED_LE
 }
 
 void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message PETSC_MIXED_LEN(len),
-                               int *ierr PETSC_END_LEN(len))
+                               PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(message,len,t1);
@@ -601,7 +601,7 @@ void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message PETSC_MIXED_LEN(l
   FREECHAR(message,t1);
 }
 
-void PETSC_STDCALL petscgetflops_(PetscLogDouble *d,int *ierr)
+void PETSC_STDCALL petscgetflops_(PetscLogDouble *d,PetscErrorCode *ierr)
 {
 #if defined(PETSC_USE_LOG)
   *ierr = PetscGetFlops(d);
@@ -611,31 +611,31 @@ void PETSC_STDCALL petscgetflops_(PetscLogDouble *d,int *ierr)
 #endif
 }
 
-void PETSC_STDCALL petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,int *ierr)
+void PETSC_STDCALL petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,PetscErrorCode *ierr)
 {
   *ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm(*comm),*type,r);
 }
 
-void PETSC_STDCALL petscrandomdestroy_(PetscRandom *r,int *ierr)
+void PETSC_STDCALL petscrandomdestroy_(PetscRandom *r,PetscErrorCode *ierr)
 {
   *ierr = PetscRandomDestroy(*r);
 }
 
-void PETSC_STDCALL petscrealview_(int *n,PetscReal *d,int *viwer,int *ierr)
+void PETSC_STDCALL petscrealview_(PetscInt *n,PetscReal *d,int *viwer,PetscErrorCode *ierr)
 {
   *ierr = PetscRealView(*n,d,0);
 }
 
-void PETSC_STDCALL petscintview_(int *n,int *d,int *viwer,int *ierr)
+void PETSC_STDCALL petscintview_(PetscInt *n,PetscInt *d,int *viwer,PetscErrorCode *ierr)
 {
   *ierr = PetscIntView(*n,d,0);
 }
 
-void PETSC_STDCALL petscsequentialphasebegin_(MPI_Comm *comm,int *ng,int *ierr){
+void PETSC_STDCALL petscsequentialphasebegin_(MPI_Comm *comm,PetscInt *ng,PetscErrorCode *ierr){
 *ierr = PetscSequentialPhaseBegin(
 	(MPI_Comm)PetscToPointerComm(*comm),*ng);
 }
-void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng,int *ierr){
+void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,PetscInt *ng,PetscErrorCode *ierr){
 *ierr = PetscSequentialPhaseEnd(
 	(MPI_Comm)PetscToPointerComm(*comm),*ng);
 }
@@ -644,7 +644,7 @@ void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng,int *ierr){
 #if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 
 void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LEN(len),PetscMatlabEngine *e,
-                                            int *ierr PETSC_END_LEN(len))
+                                            PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
 
@@ -653,13 +653,13 @@ void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LE
   FREECHAR(m,ms);
 }
 
-void PETSC_STDCALL petscmatlabenginedestroy_(PetscMatlabEngine *e,int *ierr)
+void PETSC_STDCALL petscmatlabenginedestroy_(PetscMatlabEngine *e,PetscErrorCode *ierr)
 {
   *ierr = PetscMatlabEngineDestroy(*e);
 }
 
 void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_MIXED_LEN(len),
-                                              int *ierr PETSC_END_LEN(len))
+                                              PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
   FIXCHAR(m,len,ms);
@@ -667,18 +667,18 @@ void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m PETSC_
   FREECHAR(m,ms);
 }
 
-void PETSC_STDCALL petscmatlabengineput_(PetscMatlabEngine *e,PetscObject *o,int *ierr)
+void PETSC_STDCALL petscmatlabengineput_(PetscMatlabEngine *e,PetscObject *o,PetscErrorCode *ierr)
 {
   *ierr = PetscMatlabEnginePut(*e,*o);
 }
 
-void PETSC_STDCALL petscmatlabengineget_(PetscMatlabEngine *e,PetscObject *o,int *ierr)
+void PETSC_STDCALL petscmatlabengineget_(PetscMatlabEngine *e,PetscObject *o,PetscErrorCode *ierr)
 {
   *ierr = PetscMatlabEngineGet(*e,*o);
 }
 
-void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,int *m,int *n,PetscScalar *a,
-                                              CHAR s PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
+                                              CHAR s PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
   FIXCHAR(s,len,ms);
@@ -686,8 +686,8 @@ void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,int *m,int *n
   FREECHAR(s,ms);
 }
 
-void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,int *m,int *n,PetscScalar *a,
-                                              CHAR s PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,PetscInt *m,PetscInt *n,PetscScalar *a,
+                                              CHAR s PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *ms;
   FIXCHAR(s,len,ms);

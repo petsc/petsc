@@ -7,7 +7,9 @@
 !  This example demonstrates basic use of the PETSc Fortran interface
 !  to vectors.
 !
-       integer          n,ierr,flg
+       PetscInt  n
+       PetscErrorCode ierr
+       PetscTruth flg
        PetscScalar      one,two,three,dot
        PetscReal        norm,rdot
        Vec              x,y,w

@@ -95,30 +95,30 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL vecloadintovector_(PetscViewer *viewer,Vec *vec,int *ierr)
+void PETSC_STDCALL vecloadintovector_(PetscViewer *viewer,Vec *vec,PetscErrorCode *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = VecLoadIntoVector(v,*vec);
 }
 
-void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
+void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,PetscErrorCode *ierr)
 {
   *ierr = VecSetRandom(*r,*x);
 }
-void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscReal *V,int *ierr)
+void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscReal *V,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLDOUBLE(x);
   CHKFORTRANNULLDOUBLE(y);
   *ierr = PetscDrawTensorContour(*win,*m,*n,x,y,V);
 }
 
-void PETSC_STDCALL vecsetfromoptions_(Vec *x,int *ierr)
+void PETSC_STDCALL vecsetfromoptions_(Vec *x,PetscErrorCode *ierr)
 {
   *ierr = VecSetFromOptions(*x);
 }
 
-void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -127,43 +127,43 @@ void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),int *i
   FREECHAR(type_name,t);
 }
 
-void PETSC_STDCALL vecgetpetscmap_(Vec *x,PetscMap *map,int *ierr)
+void PETSC_STDCALL vecgetpetscmap_(Vec *x,PetscMap *map,PetscErrorCode *ierr)
 {
   *ierr = VecGetPetscMap(*x,map);
 }
 
-void PETSC_STDCALL mapgetlocalsize_(PetscMap *m,int *n,int *ierr)
+void PETSC_STDCALL mapgetlocalsize_(PetscMap *m,PetscInt *n,PetscErrorCode *ierr)
 {
   *ierr = PetscMapGetLocalSize(*m,n);
 }
 
-void PETSC_STDCALL mapgetsize_(PetscMap *m,int *N,int *ierr)
+void PETSC_STDCALL mapgetsize_(PetscMap *m,PetscInt *N,PetscErrorCode *ierr)
 {
   *ierr = PetscMapGetSize(*m,N);
 }
 
-void PETSC_STDCALL mapgetlocalrange_(PetscMap *m,int *rstart,int *rend,int *ierr)
+void PETSC_STDCALL mapgetlocalrange_(PetscMap *m,PetscInt *rstart,PetscInt *rend,PetscErrorCode *ierr)
 {
   *ierr = PetscMapGetLocalRange(*m,rstart,rend);
 }
 
-void PETSC_STDCALL mapgetglobalrange_(PetscMap *m,int **range,int *ierr)
+void PETSC_STDCALL mapgetglobalrange_(PetscMap *m,PetscInt **range,PetscErrorCode *ierr)
 {
   *ierr = PetscMapGetGlobalRange(*m,range);
 }
 
-void PETSC_STDCALL mapdestroy_(PetscMap *m,int *ierr)
+void PETSC_STDCALL mapdestroy_(PetscMap *m,PetscErrorCode *ierr)
 {
   *ierr = PetscMapDestroy(*m);
 }
 
-void PETSC_STDCALL vecsetvalue_(Vec *v,int *i,PetscScalar *va,InsertMode *mode,int *ierr)
+void PETSC_STDCALL vecsetvalue_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
 {
   /* cannot use VecSetValue() here since that usesCHKERRQ() which has a return in it */
   *ierr = VecSetValues(*v,1,i,va,*mode);
 }
 
-void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,int *ierr)
+void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,PetscErrorCode *ierr)
 {
   PetscViewer v;
 
@@ -171,7 +171,7 @@ void PETSC_STDCALL vecview_(Vec *x,PetscViewer *vin,int *ierr)
   *ierr = VecView(*x,v);
 }
 
-void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *tname;
   *ierr = VecGetType(*vv,&tname);
@@ -186,7 +186,7 @@ void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),int *ierr 
   FIXRETURNCHAR(name,len);
 }
 
-void PETSC_STDCALL vecload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len),Vec *newvec,int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL vecload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len),Vec *newvec,PetscErrorCode *ierr PETSC_END_LEN(len))
 { 
   char *t;
   PetscViewer v;
@@ -196,9 +196,9 @@ void PETSC_STDCALL vecload_(PetscViewer *viewer,CHAR outtype PETSC_MIXED_LEN(len
 }
 
 /* Be to keep vec/examples/ex21.F and snes/examples/ex12.F up to date */
-void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,long *ia,int *ierr)
+void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,long *ia,PetscErrorCode *ierr)
 {
-  int    m;
+  PetscInt    m;
   PetscScalar *lx;
 
   *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
@@ -206,76 +206,76 @@ void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,long *ia,int *ierr)
   *ierr = VecRestoreArray(*x,&lx);if (*ierr) return;
 }
 
-void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,long *ia,int *ierr)
+void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,long *ia,PetscErrorCode *ierr)
 {
   PetscScalar *lx;
-  int    m;
+  PetscInt    m;
 
   *ierr = VecGetArray(*x,&lx); if (*ierr) return;
   *ierr = VecGetLocalSize(*x,&m);if (*ierr) return;
   *ierr = PetscScalarAddressToFortran((PetscObject)*x,fa,lx,m,ia);
 }
 
-void PETSC_STDCALL vecscatterdestroy_(VecScatter *ctx,int *ierr)
+void PETSC_STDCALL vecscatterdestroy_(VecScatter *ctx,PetscErrorCode *ierr)
 {
   *ierr = VecScatterDestroy(*ctx);
 }
 
-void PETSC_STDCALL vecdestroy_(Vec *v,int *ierr)
+void PETSC_STDCALL vecdestroy_(Vec *v,PetscErrorCode *ierr)
 {
   *ierr = VecDestroy(*v);
 }
 
-void PETSC_STDCALL vecscattercreate_(Vec *xin,IS *ix,Vec *yin,IS *iy,VecScatter *newctx,int *ierr)
+void PETSC_STDCALL vecscattercreate_(Vec *xin,IS *ix,Vec *yin,IS *iy,VecScatter *newctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ix);
   CHKFORTRANNULLOBJECT(iy);
   *ierr = VecScatterCreate(*xin,*ix,*yin,*iy,newctx);
 }
 
-void PETSC_STDCALL vecscattercopy_(VecScatter *sctx,VecScatter *ctx,int *ierr)
+void PETSC_STDCALL vecscattercopy_(VecScatter *sctx,VecScatter *ctx,PetscErrorCode *ierr)
 {
   *ierr = VecScatterCopy(*sctx,ctx);
 }
 
-void PETSC_STDCALL mapcreatempi_(MPI_Comm *comm,int *n,int *N,PetscMap *vv,int *ierr)
+void PETSC_STDCALL mapcreatempi_(MPI_Comm *comm,PetscInt *n,PetscInt *N,PetscMap *vv,PetscErrorCode *ierr)
 {
   *ierr = PetscMapCreateMPI((MPI_Comm)PetscToPointerComm(*comm),*n,*N,vv);
 }
 
-void PETSC_STDCALL veccreatempi_(MPI_Comm *comm,int *n,int *N,Vec *vv,int *ierr)
+void PETSC_STDCALL veccreatempi_(MPI_Comm *comm,PetscInt *n,PetscInt *N,Vec *vv,PetscErrorCode *ierr)
 {
   *ierr = VecCreateMPI((MPI_Comm)PetscToPointerComm(*comm),*n,*N,vv);
 }
 
-void PETSC_STDCALL veccreateshared_(MPI_Comm *comm,int *n,int *N,Vec *vv,int *ierr)
+void PETSC_STDCALL veccreateshared_(MPI_Comm *comm,PetscInt *n,PetscInt *N,Vec *vv,PetscErrorCode *ierr)
 {
   *ierr = VecCreateShared((MPI_Comm)PetscToPointerComm(*comm),*n,*N,vv);
 }
 
-void PETSC_STDCALL veccreateseq_(MPI_Comm *comm,int *n,Vec *V,int *ierr)
+void PETSC_STDCALL veccreateseq_(MPI_Comm *comm,PetscInt *n,Vec *V,PetscErrorCode *ierr)
 {
   *ierr = VecCreateSeq((MPI_Comm)PetscToPointerComm(*comm),*n,V);
 }
 
-void PETSC_STDCALL veccreateseqwitharray_(MPI_Comm *comm,int *n,PetscScalar *s,Vec *V,int *ierr)
+void PETSC_STDCALL veccreateseqwitharray_(MPI_Comm *comm,PetscInt *n,PetscScalar *s,Vec *V,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(s);
   *ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,s,V);
 }
 
-void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,PetscScalar *s,Vec *V,int *ierr)
+void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,PetscInt *n,PetscInt *N,PetscScalar *s,Vec *V,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(s);
   *ierr = VecCreateMPIWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,s,V);
 }
 
-void PETSC_STDCALL veccreate_(MPI_Comm *comm,Vec *V,int *ierr)
+void PETSC_STDCALL veccreate_(MPI_Comm *comm,Vec *V,PetscErrorCode *ierr)
 {
   *ierr = VecCreate((MPI_Comm)PetscToPointerComm(*comm),V);
 }
 
-void PETSC_STDCALL vecduplicate_(Vec *v,Vec *newv,int *ierr)
+void PETSC_STDCALL vecduplicate_(Vec *v,Vec *newv,PetscErrorCode *ierr)
 {
   *ierr = VecDuplicate(*v,newv);
 }
@@ -285,10 +285,10 @@ void PETSC_STDCALL vecduplicate_(Vec *v,Vec *newv,int *ierr)
     Fortran provides the array to hold the vector objects,while in C that 
     array is allocated by the VecDuplicateVecs()
 */
-void PETSC_STDCALL vecduplicatevecs_(Vec *v,int *m,Vec *newv,int *ierr)
+void PETSC_STDCALL vecduplicatevecs_(Vec *v,PetscInt *m,Vec *newv,PetscErrorCode *ierr)
 {
   Vec *lV;
-  int i;
+  PetscInt i;
   *ierr = VecDuplicateVecs(*v,*m,&lV);
   for (i=0; i<*m; i++) {
     newv[i] = lV[i];
@@ -296,89 +296,89 @@ void PETSC_STDCALL vecduplicatevecs_(Vec *v,int *m,Vec *newv,int *ierr)
   PetscFree(lV); 
 }
 
-void PETSC_STDCALL vecdestroyvecs_(Vec *vecs,int *m,int *ierr)
+void PETSC_STDCALL vecdestroyvecs_(Vec *vecs,PetscInt *m,PetscErrorCode *ierr)
 {
-  int i;
+  PetscInt i;
   for (i=0; i<*m; i++) {
     *ierr = VecDestroy(vecs[i]);if (*ierr) return;
   }
 }
 
-void PETSC_STDCALL vecmtdot_(int *nv,Vec *x,Vec *y,PetscScalar *val,int *ierr)
+void PETSC_STDCALL vecmtdot_(PetscInt *nv,Vec *x,Vec *y,PetscScalar *val,PetscErrorCode *ierr)
 {
   *ierr = VecMTDot(*nv,*x,y,val);
 }
 
-void PETSC_STDCALL vecmdot_(int *nv,Vec *x,Vec *y,PetscScalar *val,int *ierr)
+void PETSC_STDCALL vecmdot_(PetscInt *nv,Vec *x,Vec *y,PetscScalar *val,PetscErrorCode *ierr)
 {
   *ierr = VecMDot(*nv,*x,y,val);
 }
 
-void PETSC_STDCALL vecmaxpy_(int *nv,PetscScalar *alpha,Vec *x,Vec *y,int *ierr)
+void PETSC_STDCALL vecmaxpy_(PetscInt *nv,PetscScalar *alpha,Vec *x,Vec *y,PetscErrorCode *ierr)
 {
   *ierr = VecMAXPY(*nv,alpha,*x,y);
 }
 
-void PETSC_STDCALL vecstridenorm_(Vec *x,int *start,NormType *type,PetscReal *val,int *ierr)
+void PETSC_STDCALL vecstridenorm_(Vec *x,PetscInt *start,NormType *type,PetscReal *val,PetscErrorCode *ierr)
 {
   *ierr = VecStrideNorm(*x,*start,*type,val);
 }
 
 /* ----------------------------------------------------------------------------------------------*/
-void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,
-                              PetscScalar *array,Vec *vv,int *ierr)
+void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscInt *nghost,PetscInt *ghosts,
+                              PetscScalar *array,Vec *vv,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(array);
   *ierr = VecCreateGhostBlockWithArray((MPI_Comm)PetscToPointerComm(*comm),*bs,*n,*N,*nghost,
                                     ghosts,array,vv);
 }
 
-void PETSC_STDCALL veccreateghostblock_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,Vec *vv,
-                          int *ierr)
+void PETSC_STDCALL veccreateghostblock_(MPI_Comm *comm,PetscInt *bs,PetscInt *n,PetscInt *N,PetscInt *nghost,PetscInt *ghosts,Vec *vv,
+                          PetscErrorCode *ierr)
 {
   *ierr = VecCreateGhostBlock((MPI_Comm)PetscToPointerComm(*comm),*bs,*n,*N,*nghost,ghosts,vv);
 }
 
-void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,PetscScalar *array,
-                              Vec *vv,int *ierr)
+void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,PetscInt *n,PetscInt *N,PetscInt *nghost,PetscInt *ghosts,PetscScalar *array,
+                              Vec *vv,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(array);
   *ierr = VecCreateGhostWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,*nghost,
                                     ghosts,array,vv);
 }
 
-void PETSC_STDCALL veccreateghost_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Vec *vv,int *ierr)
+void PETSC_STDCALL veccreateghost_(MPI_Comm *comm,PetscInt *n,PetscInt *N,PetscInt *nghost,PetscInt *ghosts,Vec *vv,PetscErrorCode *ierr)
 {
   *ierr = VecCreateGhost((MPI_Comm)PetscToPointerComm(*comm),*n,*N,*nghost,ghosts,vv);
 }
 
-void PETSC_STDCALL vecghostgetlocalform_(Vec *g,Vec *l,int *ierr)
+void PETSC_STDCALL vecghostgetlocalform_(Vec *g,Vec *l,PetscErrorCode *ierr)
 {
   *ierr = VecGhostGetLocalForm(*g,l);
 }
 
-void PETSC_STDCALL vecghostrestorelocalform_(Vec *g,Vec *l,int *ierr)
+void PETSC_STDCALL vecghostrestorelocalform_(Vec *g,Vec *l,PetscErrorCode *ierr)
 {
   *ierr = VecGhostRestoreLocalForm(*g,l);
 }
 
-void PETSC_STDCALL vecmax_(Vec *x,int *p,PetscReal *val,int *ierr)
+void PETSC_STDCALL vecmax_(Vec *x,PetscInt *p,PetscReal *val,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(p);
   *ierr = VecMax(*x,p,val);
 }
 
-void PETSC_STDCALL vecscattercreatetoall_(Vec *v,VecScatter *ctx,Vec *newv,int *ierr)
+void PETSC_STDCALL vecscattercreatetoall_(Vec *v,VecScatter *ctx,Vec *newv,PetscErrorCode *ierr)
 {
   *ierr = VecScatterCreateToAll(*v,ctx,newv);
 }
 
-void PETSC_STDCALL vecscattercreatetozero_(Vec *v,VecScatter *ctx,Vec *newv,int *ierr)
+void PETSC_STDCALL vecscattercreatetozero_(Vec *v,VecScatter *ctx,Vec *newv,PetscErrorCode *ierr)
 {
   *ierr = VecScatterCreateToZero(*v,ctx,newv);
 }
 
-void PETSC_STDCALL vecgetownershiprange_(Vec *x,int *low,int *high, int *ierr)
+void PETSC_STDCALL vecgetownershiprange_(Vec *x,PetscInt *low,PetscInt *high, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(low);
   CHKFORTRANNULLINTEGER(high);

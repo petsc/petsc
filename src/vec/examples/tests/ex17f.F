@@ -9,8 +9,9 @@
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscsys.h"
 
-      integer      n,ierr
-      integer      size,rank,NN,low,high,iglobal,i
+      PetscErrorCode ierr
+      PetscMPIInt  size,rank
+      PetscInt     n,NN,low,high,iglobal,i,ione,first,stride
       PetscScalar  value,zero
       Vec          x,y
       IS           is1,is2
@@ -34,10 +35,11 @@
 
       call VecSet(zero,x,ierr)
       call VecGetOwnershipRange(y,low,high,ierr)
+      ione = 1
       do 10, i=0,n-1
          iglobal = i + low
          value   = i + 10*rank
-         call VecSetValues(y,1,iglobal,value,INSERT_VALUES,ierr)
+         call VecSetValues(y,ione,iglobal,value,INSERT_VALUES,ierr)
  10   continue
 
       call VecAssemblyBegin(y,ierr)
@@ -52,8 +54,10 @@
 !     parallel vector delivered to only one processor then create a is2 
 !     of length zero on all processors except the one to receive the parallel vector
 
-      call ISCreateStride(PETSC_COMM_SELF,NN,0,1,is1,ierr)
-      call ISCreateStride(PETSC_COMM_SELF,NN,0,1,is2,ierr)
+      first = 0
+      stride = 1
+      call ISCreateStride(PETSC_COMM_SELF,NN,first,stride,is1,ierr)
+      call ISCreateStride(PETSC_COMM_SELF,NN,first,stride,is2,ierr)
       call VecScatterCreate(y,is2,x,is1,ctx,ierr)
       call VecScatterBegin(y,x,ADD_VALUES,SCATTER_FORWARD,ctx,ierr)
       call VecScatterEnd(y,x,ADD_VALUES,SCATTER_FORWARD,ctx,ierr)

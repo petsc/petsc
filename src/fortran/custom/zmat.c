@@ -228,7 +228,7 @@ void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt 
 void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt *n,PetscInt *ia,long *iia,PetscInt *ja,long *jja,
                                     PetscTruth *done,PetscErrorCode *ierr)
 {
-  int *IA = PetscIntAddressFromFortran(ia,*iia),*JA = PetscIntAddressFromFortran(ja,*jja);
+  PetscInt *IA = PetscIntAddressFromFortran(ia,*iia),*JA = PetscIntAddressFromFortran(ja,*jja);
   *ierr = MatRestoreRowIJ(*B,*shift,*sym,n,&IA,&JA,done);
 }
 

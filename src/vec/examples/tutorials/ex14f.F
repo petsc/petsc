@@ -27,8 +27,10 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 
-      integer      rank,nlocal,nghost,ifrom(2),size,ierr,i,rstart,rend
-      integer      flag,bs
+      PetscMPIInt size,rank
+      PetscInt nlocal,nghost,ifrom(2),i,rstart,rend,bs,ione
+      PetscTruth      flag
+      PetscErrorCode ierr
       PetscScalar  value,tarray(20)
       Vec          lx,gx,gxs
 
@@ -42,7 +44,7 @@
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr) 
 
       if (size .ne. 2) then
-       SETERRQ(1,'Must run with two processors')
+       SETERRQ(1,'Must run with two processors',ierr)
       endif
 
 !
@@ -78,7 +80,8 @@
 !     the local vector (lx) and the global vector (gx) share the same 
 !     array for storing vector values.
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-allocate',flag,ierr)
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-allocate',flag,    &
+     &                         ierr)
       if (flag .ne. 0) then
         call VecCreateGhostBlockWithArray(PETSC_COMM_WORLD,bs,nlocal,    &
      &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)
@@ -101,9 +104,10 @@
 
        call VecGetOwnershipRange(gx,rstart,rend,ierr)
 
+       ione = 1
        do 10, i=rstart,rend-1
          value = i
-         call VecSetValues(gx,1,i,value,INSERT_VALUES,ierr) 
+         call VecSetValues(gx,ione,i,value,INSERT_VALUES,ierr) 
  10    continue
 
        call VecAssemblyBegin(gx,ierr) 

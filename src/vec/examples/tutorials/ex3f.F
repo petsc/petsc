@@ -32,7 +32,9 @@
       Vec     x
       PetscViewer  viewer
       PetscScalar  v
-      integer i,istart,iend,n,ierr,flg
+      PetscInt i,istart,iend,n,ione
+      PetscErrorCode ierr
+      PetscTruth flg
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       n = 50
@@ -55,9 +57,10 @@
 !  Set the vector elements.
 !   - Always specify global locations of vector entries.
 !   - Each processor needs to insert only elements that it owns locally.
+      ione = 1
       do 100 i=istart,iend-1
          v = dble(i)
-         call VecSetValues(x,1,i,v,INSERT_VALUES,ierr)
+         call VecSetValues(x,ione,i,v,INSERT_VALUES,ierr)
  100  continue
 
 !  Assemble vector, using the 2-step process:

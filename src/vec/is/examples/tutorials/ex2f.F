@@ -14,7 +14,8 @@
 #include "finclude/petsc.h"
 #include "finclude/petscis.h"
 
-      integer     i,n,ierr,index(1),first,step,val
+      PetscErrorCode ierr
+      PetscInt    i,n,index(1),first,step,val
       IS          set
       PetscOffset iss
 
