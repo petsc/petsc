@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.65 1998/04/24 04:52:27 curfman Exp balay $";
+static char vcid[] = "$Id: snesmfj.c,v 1.66 1998/05/29 22:51:20 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -22,9 +22,9 @@ int SNESMatrixFreeDestroy_Private(Mat mat)
   MFCtx_Private *ctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
-  if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp); CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
   PetscFree(ctx);
   PetscFunctionReturn(0);
 }
@@ -169,6 +169,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
   /* Evaluate function at F(u + ha) */
   ierr = VecWAXPY(&h,a,U,w); CHKERRQ(ierr);
   ierr = eval_fct(snes,w,y); CHKERRQ(ierr);
+
   ierr = VecAXPY(&mone,F,y); CHKERRQ(ierr);
   h = 1.0/h;
   ierr = VecScale(&h,y); CHKERRQ(ierr);
