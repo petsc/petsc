@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.302 1999/03/08 22:38:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.303 1999/03/08 22:40:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -702,7 +702,6 @@ int MatDestroy_SeqAIJ(Mat A)
     ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
   }
   if (a->idiag) PetscFree(a->idiag);
-  if (a->ssor) PetscFree(a->ssor);
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif
@@ -1017,7 +1016,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
   }
   if (flag == SOR_APPLY_LOWER) {
     SETERRQ(PETSC_ERR_SUP,0,"SOR_APPLY_LOWER is not done");
-  } else if (0 && (flag & SOR_EISENSTAT) && omega == 1.0 && shift == 0 && fshift == 0.0) {
+  } else if ((flag & SOR_EISENSTAT) && omega == 1.0 && shift == 0 && fshift == 0.0) {
     /* Let  A = L + U + D; where L is lower trianglar,
     U is upper triangular, E is diagonal; This routine applies
 
@@ -1027,7 +1026,13 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
     the case of SSOR preconditioner, so E is D/omega where omega
     is the relaxation factor; but in this special case omega == 1
     */
-    t = (Scalar *) PetscMalloc( m*sizeof(Scalar) ); CHKPTRQ(t);
+    Scalar *idiag;
+    if (!a->idiag) {
+      a->idiag = (Scalar *) PetscMalloc(2*m*sizeof(Scalar));CHKPTRQ(a->idiag);
+      a->ssor  = a->idiag + m;
+    }
+    t     = a->ssor;
+    idiag = a->idiag;
 
     /*  x = (E + U)^{-1} b */
     for ( i=m-1; i>=0; i-- ) {
@@ -1046,7 +1051,6 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
     for ( i=0; i<m; i++ ) { t[i] = b[i] - (v[*diag++])*x[i]; }
     PLogFlops(2*m);
 
-
     /*  t = (E + L)^{-1}t */
     diag = a->diag;
     for ( i=0; i<m; i++ ) {
@@ -1062,7 +1066,6 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
 
     /*  x = x + t */
     for ( i=0; i<m; i++ ) { x[i] += t[i]; }
-    PetscFree(t);
     ierr = VecRestoreArray(xx,&x); CHKERRQ(ierr);
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
