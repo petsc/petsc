@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.56 2001/01/16 18:18:45 balay Exp balay $*/
+/*$Id: color.c,v 1.57 2001/03/23 23:22:57 balay Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -57,7 +57,7 @@ EXTERN_C_BEGIN
 int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
-  int        ncolors;
+  int        ncolors,i;
   PetscTruth done;
 
   PetscFunctionBegin;
@@ -80,8 +80,9 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
-  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring);CHKERRQ(ierr);
-  ierr = PetscFree(coloring);CHKERRQ(ierr);
+  /* shift coloring numbers to start at zero */
+  for (i=0; i<n; i++) coloring[i]--;
+  ierr = MatColoringPatch(mat,n,ncolors,coloring,iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -96,7 +97,7 @@ EXTERN_C_BEGIN
 int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
-  int        n1, none,ncolors;
+  int        n1, none,ncolors,i;
   PetscTruth done;
 
   PetscFunctionBegin;
@@ -121,8 +122,9 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
-  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring);CHKERRQ(ierr);
-  ierr = PetscFree(coloring);CHKERRQ(ierr);
+  /* shift coloring numbers to start at zero */
+  for (i=0; i<n; i++) coloring[i]--;
+  ierr = MatColoringPatch(mat,n,ncolors,coloring,iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -137,7 +139,7 @@ EXTERN_C_BEGIN
 int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
-  int        ncolors;
+  int        ncolors,i;
   PetscTruth done;
 
   PetscFunctionBegin;
@@ -161,9 +163,9 @@ int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
-  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring);CHKERRQ(ierr);
-
-  ierr = PetscFree(coloring);CHKERRQ(ierr);
+  /* shift coloring numbers to start at zero */
+  for (i=0; i<n; i++) coloring[i]--;
+  ierr = MatColoringPatch(mat,n,ncolors,coloring,iscoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -176,29 +178,18 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatColoring_Natural" 
 int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
 {
-  int      N,start,end,ierr,i,tag;
-  IS       *is;
+  int      start,end,ierr,i,*colors;
   MPI_Comm comm;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(mat,&N,&N);CHKERRQ(ierr);
-  ierr = PetscMalloc(N*sizeof(IS*),&is);CHKERRQ(ierr); 
-  ierr = PetscNew(struct _p_ISColoring,iscoloring);CHKERRQ(ierr);
-    (*iscoloring)->n  = N;
-  (*iscoloring)->is = is;
-  
   ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  for (i=0; i<start; i++) {
-    ierr = ISCreateGeneral(comm,0,PETSC_NULL,is+i);CHKERRQ(ierr);
-  }
+  ierr = PetscMalloc((end-start+1)*sizeof(int),&colors);CHKERRQ(ierr);
   for (i=start; i<end; i++) {
-    ierr = ISCreateGeneral(comm,1,&i,is+i);CHKERRQ(ierr);
+    colors[i-start] = i;
   }
-  for (i=end; i<N; i++) {
-    ierr = ISCreateGeneral(comm,0,PETSC_NULL,is+i);CHKERRQ(ierr);
-  }
-  ierr = PetscCommDuplicate_Private(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,end-start,colors,iscoloring);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -257,7 +248,7 @@ int MatColoringRegister(char *sname,char *path,char *name,int (*function)(Mat,Ma
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatColoringList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatColoringList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -353,7 +344,7 @@ int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
   }
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
-  ierr =  PetscFListFind(mat->comm, MatColoringList, type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(mat->comm, MatColoringList, type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
   ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
