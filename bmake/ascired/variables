@@ -1,11 +1,11 @@
-# $Id: base_variables,v 1.3 1999/03/31 18:38:56 bsmith Exp $ 
+# $Id: base_variables,v 1.1 1999/04/01 22:31:17 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
-AR               = ar
+AR               = xar
 RM               = rm -f
 OMAKE            = make
-RANLIB           = ranlib
+RANLIB           = xranlib
 SHELL            = /bin/sh
 # ######################### C and Fortran compiler ########################
 #
