@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.107 1997/01/21 02:12:16 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.108 1997/01/21 02:27:22 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -455,6 +455,9 @@ int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
    Output Parameter:
 .  nfails - number of unsuccessful steps attempted
 
+   Notes:
+   This counter is reset to zero for each successive call to SNESSolve().
+
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
 @*/
 int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
@@ -462,6 +465,31 @@ int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidIntPointer(nfails);
   *nfails = snes->nfailures;
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SNESGetNumberLinearIterations"
+/*@
+   SNESGetNumberLinearIterations - Gets the total number of linear iterations
+   used by the nonlinear solver.
+
+   Input Parameter:
+.  snes - SNES context
+
+   Output Parameter:
+.  lits - number of linear iterations
+
+   Notes:
+   This counter is reset to zero for each successive call to SNESSolve().
+
+.keywords: SNES, nonlinear, get, number, linear, iterations
+@*/
+int SNESGetNumberLinearIteration(SNES snes,int* lits)
+{
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  PetscValidIntPointer(lits);
+  *lits = snes->linear_its;
   return 0;
 }
 
@@ -1487,7 +1515,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   if (!snes->setup_called) {ierr = SNESSetUp(snes,x); CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}
   PLogEventBegin(SNES_Solve,snes,0,0,0);
-  snes->nfunc = 0; snes->linear_its = 0;
+  snes->nfuncs = 0; snes->linear_its = 0; snes->nfailures = 0;
   ierr = (*(snes)->solve)(snes,its); CHKERRQ(ierr);
   PLogEventEnd(SNES_Solve,snes,0,0,0);
   ierr = OptionsHasName(PETSC_NULL,"-snes_view", &flg); CHKERRQ(ierr);
