@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.60 1996/07/03 13:19:20 curfman Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.61 1996/07/03 14:00:46 curfman Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -34,6 +34,8 @@ static char vcid[] = "$Id: itfunc.c,v 1.60 1996/07/03 13:19:20 curfman Exp curfm
 int KSPComputeExtremeSingularValues(KSP ksp,Scalar *emax,Scalar *emin)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidScalarPointer(emax);
+  PetscValidScalarPointer(emin);
   if (!ksp->calc_sings) {
     SETERRQ(4,"KSPComputeExtremeSingularValues:SingularValues not requested before KSPSetUp");
   }
@@ -96,6 +98,8 @@ int KSPSolve(KSP ksp, int *its)
   int    ierr;
   Scalar zero = 0.0;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidIntPointer(its);
+
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
   if (ksp->guess_zero) { VecSet(&zero,ksp->vec_sol);}
   ierr = (*ksp->solver)(ksp,its); CHKERRQ(ierr);
@@ -202,10 +206,10 @@ int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,
                      int *maxits)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  *atol   = ksp->atol;
-  *rtol   = ksp->rtol;
-  *dtol   = ksp->divtol;
-  *maxits = ksp->max_it;
+  if (atol)   *atol   = ksp->atol;
+  if (rtol)   *rtol   = ksp->rtol;
+  if (dtol)   *dtol   = ksp->divtol;
+  if (maxits) *maxits = ksp->max_it;
   return 0;
 }
 /*@
@@ -357,6 +361,7 @@ int KSPSetCalculateSingularValues(KSP ksp)
 int KSPSetRhs(KSP ksp,Vec b)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);
   ksp->vec_rhs    = (b);
   return 0;
 }
@@ -396,6 +401,7 @@ int KSPGetRhs(KSP ksp,Vec *r)
 int KSPSetSolution(KSP ksp, Vec x)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   ksp->vec_sol    = (x);
   return 0;
 }
@@ -439,6 +445,7 @@ int KSPGetSolution(KSP ksp, Vec *v)
 int KSPSetPC(KSP ksp,PC B)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(B,PC_COOKIE);
   ksp->B = B;
   return 0;
 }
@@ -548,7 +555,9 @@ int KSPGetMonitorContext(KSP ksp, void **ctx)
 int KSPSetResidualHistory(KSP ksp, double *a, int na)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->residual_history = a; ksp->res_hist_size    = na;
+  if (na) PetscValidScalarPointer(a);
+  ksp->residual_history = a;
+  ksp->res_hist_size    = na;
   return 0;
 }
 
@@ -587,8 +596,7 @@ int KSPSetResidualHistory(KSP ksp, double *a, int na)
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-int KSPSetConvergenceTest(KSP ksp, int (*converge)(KSP,int,double,void*), 
-                          void *cctx)
+int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,double,void*),void *cctx)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ksp->converged = converge;	ksp->cnvP = (void*)cctx;
