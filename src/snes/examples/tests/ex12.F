@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.24 1996/01/24 18:05:14 curfman Exp curfman $";
+C    "$Id: ex12.F,v 1.25 1996/01/29 21:46:50 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -26,7 +26,7 @@ C
 
       call PetscInitialize(ierr)
       N = 10
-      call OptionsGetInt(PETSC_NULL,'-n',N,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHAR,'-n',N,flg,ierr)
       h = 1.d0/(N-1.d0)
       ctx(6) = N
 
