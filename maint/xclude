@@ -31,6 +31,7 @@ petsc-dist/src/contrib/lahaye/samg
 petsc-dist/src/contrib/markadams2
 petsc-dist/docs/manualpages/logfile.txt
 petsc-dist/docs/manualpages/manualpages.cit
+petsc-dist/bmake/linux-mcs
 petsc-dist/bmake/prefefined/alpha_uni
 petsc-dist/bmake/predefined/linux_superludist
 petsc-dist/bmake/predefined/solaris_x86
