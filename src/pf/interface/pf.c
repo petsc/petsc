@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.11 2000/05/18 19:01:38 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.12 2000/08/01 20:58:26 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -160,7 +160,7 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
    Collective on PF
 
    Input Parameters:
-+  pf - the preconditioner context
++  pf - the function context
 -  x - input vector (or PETSC_NULL for the vector (0,1, .... N-1)
 
    Output Parameter:
@@ -225,7 +225,7 @@ int PFApplyVec(PF pf,Vec x,Vec y)
    Collective on PF
 
    Input Parameters:
-+  pf - the preconditioner context
++  pf - the function context
 .  n - number of entries in input array
 -  x - input array
 
@@ -377,10 +377,10 @@ int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
    Not Collective
 
    Input Parameter:
-.  pf - the preconditioner context
+.  pf - the function context
 
    Output Parameter:
-.  name - name of preconditioner 
+.  name - name of function 
 
    Level: intermediate
 
@@ -405,7 +405,7 @@ int PFGetType(PF pf,PFType *meth)
    Collective on PF
 
    Input Parameter:
-+  pf - the preconditioner context.
++  pf - the function context.
 .  type - a known method
 -  ctx - optional type dependent context
 
