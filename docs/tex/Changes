@@ -85,6 +85,8 @@ add to it).
 
   DA
 
+  added -da_noao for DACreateXXX() makes them more scalable, but cannot use the natural numbering
+  DA routines with this option.
     
 
   TS
