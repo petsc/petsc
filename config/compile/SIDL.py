@@ -40,11 +40,14 @@ class Compiler(script.Script):
     return
 
   def filterShellOutput(self, output):
-    output = filter(lambda l: not l.startswith('Mapping'), output.split('\n'))
+    output = [l.strip() for l in output.split('\n')]
+    output = filter(lambda l: not l.startswith('Mapping'), output)
     output = filter(lambda l: not l.startswith('Searching'), output)
     output = filter(lambda l: not l.startswith('Creating'), output)
     output = filter(lambda l: not l.startswith('Parsing'), output)
     output = filter(lambda l: not l.startswith('Failed to'), output)
+    output = filter(lambda l: not l.startswith('Failed to'), output)
+    output = filter(lambda l: not l.startswith('scandal:'), output)
     self.logPrint('Got scandal output: '+str(output))
     return ''.join(output)
 
