@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.241 1999/03/05 23:05:57 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.242 1999/03/09 23:13:05 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -244,7 +244,7 @@ extern int DLLibrarySym(MPI_Comm,DLLibraryList *,const char[],const char[],void 
 extern int DLLibraryAppend(MPI_Comm,DLLibraryList *,const char[]);
 extern int DLLibraryPrepend(MPI_Comm,DLLibraryList *,const char[]);
 extern int DLLibraryClose(DLLibraryList);
-extern int DLLibraryPrintPath();
+extern int DLLibraryPrintPath(void);
 extern int DLLibraryGetInfo(void *,char *,char **);
 
 /*
