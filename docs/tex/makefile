@@ -32,8 +32,9 @@ manual.html: manual.tex part1.tex
 
 intro.dvi: intro.tex part1.tex
 	latex intro
+	bibtex intro
 	latex intro
-#	cat intro.tex | sed 's/\*/false/g' > intro_tmp.tex
+	latex intro
 	-@chmod g+w intro.dvi intro.aux intro.bbl intro.blg intro.log
 
 intro.ps: 
