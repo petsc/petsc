@@ -1,4 +1,4 @@
-/*$Id: psleep.c,v 1.25 2000/04/12 04:21:38 bsmith Exp bsmith $*/
+/*$Id: psleep.c,v 1.26 2000/09/22 20:42:32 bsmith Exp balay $*/
 
 #include "petsc.h"                 /*I   "petsc.h"    I*/
 #if defined (PETSC_HAVE_UNISTD_H)
@@ -6,6 +6,9 @@
 #endif
 #if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
+#endif
+#if defined (PETSC_HAVE_DOS_H)   /* borland */
+#include <dos.h>
 #endif
 #include "petscfix.h"
 

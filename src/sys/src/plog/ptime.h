@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.69 2000/05/10 16:44:31 bsmith Exp balay $ */
+/* $Id: ptime.h,v 1.70 2000/06/19 19:49:21 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -154,7 +154,7 @@ EXTERN_C_END
 */
 #elif defined (PETSC_USE_NT_TIME)
 #include <time.h>
-EXTERN PLogDouble nt_time();
+EXTERN PLogDouble nt_time(void);
 #define PetscTime(v)         (v)=nt_time();
 
 #define PetscTimeSubtract(v) (v)-=nt_time();

@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.18 2000/11/28 17:26:31 bsmith Exp bsmith $ 
+# $Id: common_variables,v 1.19 2000/11/30 04:23:34 bsmith Exp balay $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -20,7 +20,7 @@
 #
 LDIR	       = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
 PDIR	       = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}
-LIBNAME	       = ${PDIR}/${LIBBASE}.a
+LIBNAME	       = ${LDIR}/${LIBBASE}.a
 SOURCE	       = ${SOURCEC} ${SOURCEF}
 OBJS	       = ${OBJSC} ${OBJSF}
 PETSC_INCLUDE  = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include \
@@ -66,11 +66,11 @@ PETSC_LIB   = -L${LDIR} -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat 
 PCONF         = ${PETSC_HAVE_MPE}  ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVODE} ${PETSC_HAVE_PARMETIS} \
                 ${PETSC_HAVE_AMS}  ${PETSC_HAVE_SPAI}       ${PETSC_HAVE_X11}   ${PETSC_HAVE_MATLAB} \
                 ${PETSC_HAVE_ADIC} ${PETSC_HAVE_JAVA}       ${PETSC_HAVE_LUSOL} ${PETSC_HAVE_RAMG} \
-                ${PETSC_HAVE_XXT}
-EXTERNAL_LIB  = ${MPE_LIB}        ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
-                ${AMS_LIB}        ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_LIB}   \
+                ${PETSC_HAVE_XXT}  ${PETSC_HAVE_DSCPACK}
+EXTERNAL_LIB  = ${MPE_LIB}         ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
+                ${AMS_LIB}         ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_LIB}   \
                 ${ADIC_LIB}                                ${LUSOL_LIB}        ${RAMG_LIB} \
-                ${XXT_LIB}
+                ${XXT_LIB}         ${DSCPACK_LIB}
 #
 # ----------------------------------------------------------------------------------------
 #

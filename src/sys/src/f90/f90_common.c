@@ -1,6 +1,8 @@
-/*$Id: f90_common.c,v 1.4 2000/09/22 18:38:47 balay Exp bsmith $*/
+/*$Id: f90_common.c,v 1.5 2000/09/28 21:09:38 bsmith Exp balay $*/
 
 #include "petscf90.h"
+
+#if defined PETSC_HAVE_F90_C
 #include PETSC_HAVE_F90_C
 
 /* Check if PETSC_HAVE_F90_H is also specified */
@@ -71,3 +73,5 @@ int F90Array2dGetNextRecord(F90Array2d *ptr,void **next)
   PetscFunctionReturn(0);
 }
 /*-------------------------------------------------------------*/
+
+#endif

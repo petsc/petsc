@@ -1,4 +1,4 @@
-/*$Id: fwd.c,v 1.30 2000/09/22 20:42:19 bsmith Exp bsmith $*/
+/*$Id: fwd.c,v 1.31 2000/10/24 20:24:33 bsmith Exp balay $*/
 /*
       Code for manipulating files.
 */
@@ -56,7 +56,7 @@ int PetscGetWorkingDirectory(char path[],int len)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_GETWD)
   getwd(path);
-#elif defined(PARCH_win32)
+#elif defined(PETSC_HAVE_U_GETCWD)
   _getcwd(path,len);
 #else
   getcwd(path,len);

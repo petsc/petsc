@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.29 2000/05/05 22:13:54 balay Exp bsmith $*/
+/*$Id: ftest.c,v 1.30 2000/10/24 20:24:33 bsmith Exp balay $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -30,7 +30,7 @@
 #endif
 #include "petscfix.h"
 
-#if defined (PARCH_win32)
+#if defined (PETSC_HAVE_U_ACCESS) || defined(PETSC_HAVE_ACCESS)
 #undef __FUNC__  
 #define __FUNC__ /*<a name="PetscTestFile"></a>*/"PetscTestFile"
 /*+
@@ -54,7 +54,11 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
   
   if (mode == 'r') m = 4;
   if (mode == 'w') m = 2;
+#if defined(PETSC_HAVE_U_ACCESS)
   if(!_access(fname,4))  *flg = PETSC_TRUE;
+#else
+  if(!access(fname,4))  *flg = PETSC_TRUE;
+#endif
   PetscFunctionReturn(0);
 }
 #else 
