@@ -354,7 +354,7 @@ chk_fortranstubs:
 
 # Builds Fortran stub files
 allfortranstubs:
-	-@which ${BFORT} > /dev/null 2>1;  \
+	-@which ${BFORT} > /dev/null 2>&1;  \
         if [ "$$?" != "0" ]; then \
           echo "No bfort available, skipping building Fortran stubs";\
         else \
