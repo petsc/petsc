@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.54 1996/07/11 22:37:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.55 1996/07/11 22:37:32 bsmith Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -359,9 +359,9 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
     count--;
     }
     /* wait on sends */
-    if (gen_to->nbelow) {
-      sstatus = (MPI_Status *)PetscMalloc(gen_to->nbelow*sizeof(MPI_Status));CHKPTRQ(sstatus);
-      MPI_Waitall(gen_to->nbelow,swaits,sstatus);
+    if (nsends) {
+      sstatus = (MPI_Status *)PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(sstatus);
+      MPI_Waitall(nsends,swaits,sstatus);
       PetscFree(sstatus);
     }
   }

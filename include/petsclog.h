@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.72 1996/06/12 20:31:11 curfman Exp bsmith $ */
+/* $Id: plog.h,v 1.73 1996/07/02 18:09:25 bsmith Exp balay $ */
 
 /*
     Defines high level logging in PETSc.
@@ -351,6 +351,53 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .keywords: log, event, end
 M*/
+
+#if defined(PETSC_MPI_LOG)
+
+extern int irecv_ct,isend_ct,wait_ct,wait_any_ct,get_count_ct,wait_all_ct,allreduce_ct;
+
+#define MPI_Irecv( buf, count,  datatype, source, tag, comm, request) \
+{ \
+  PMPI_Irecv( buf, count,  datatype, source, tag, comm, request); \
+  irecv_ct++; \
+}
+
+#define MPI_Isend( buf, count,  datatype, dest, tag, comm, request) \
+{ \
+  PMPI_Isend( buf, count,  datatype, dest, tag, comm, request); \
+  isend_ct++; \
+}
+
+#define MPI_Wait(request, status) \
+{ \
+  PMPI_Wait(request, status) ; \
+  wait_ct++; \
+}
+#define MPI_Waitany(a, b, c, d) \
+{ \
+  PMPI_Waitany(a, b, c, d);\
+  wait_any_ct++; \
+}
+
+#define MPI_Get_count(status,  datatype, count) \
+{ \
+  PMPI_Get_count(status,  datatype, count);\
+  get_count_ct++; \
+}
+
+#define MPI_Waitall(count, array_of_requests, array_of_statuses) \
+{ \
+  PMPI_Waitall(count, array_of_requests, array_of_statuses); \
+  wait_all_ct++; \
+}
+
+#define MPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm) \
+{ \
+  PMPI_Allreduce( sendbuf,  recvbuf, count, datatype, op, comm); \
+  allreduce_ct++; \
+}
+
+#endif
 
 #endif
 

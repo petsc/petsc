@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.108 1996/06/26 18:20:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.109 1996/07/08 01:07:11 curfman Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -23,6 +23,12 @@ static char vcid[] = "$Id: plog.c,v 1.108 1996/06/26 18:20:55 bsmith Exp curfman
 #include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
 #include "pinclude/ptime.h"
+
+  
+#if defined(PETSC_MPI_LOG)
+int irecv_ct=0,isend_ct=0,wait_ct=0,wait_any_ct=0,get_count_ct=0,wait_all_ct=0,allreduce_ct=0;
+#endif
+
 
 static int PrintInfo = 0;
 static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -1139,6 +1145,12 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 
   }
   PetscFPrintf(comm,fd,"\n");
+
+#if defined (PETSC_MPI_LOG)
+  PetscFPrintf(comm,fd,"irecv_ct =%d isend_ct = %d wait_ct = %d wait_any_ct = %d \n",irecv_ct,isend_ct,wait_ct,wait_any_ct);
+  PetscFPrintf(comm,fd,"get_count_ct = %d wait_all_ct = %d allreduce_ct = %d \n",get_count_ct,wait_all_ct,allreduce_ct);
+  
+#endif
   return 0;
 }
 
@@ -1405,4 +1417,3 @@ double PetscGetTime()
   PetscTime(t);
   return t;
 }
-  
