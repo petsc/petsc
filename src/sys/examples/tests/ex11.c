@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.1 1997/08/14 17:19:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.2 1999/02/03 04:29:37 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests PetscSynchronizedPrintf() and PetscSynchronizedFPrintf().\n\n";
 
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int rank;

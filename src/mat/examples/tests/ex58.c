@@ -1,11 +1,14 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex58.c,v 1.2 1997/10/28 14:23:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex58.c,v 1.3 1998/12/03 04:01:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n\n";
 
 #include "mat.h"
 
+
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   Mat        A,B;

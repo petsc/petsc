@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.11 1999/02/17 19:14:11 balay Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.12 1999/02/17 19:18:26 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
@@ -10,6 +10,8 @@ This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ ma
 extern int TestMatZeroRows_Basic(Mat,IS, Scalar *);
 extern int TestMatZeroRows_with_no_allocation(Mat,IS, Scalar *);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         A;
@@ -75,6 +77,8 @@ int main(int argc,char **args)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "TestMatZeroRows_Basic"
 int TestMatZeroRows_Basic(Mat A,IS is, Scalar *diag)
 {
   Mat         B;
@@ -89,6 +93,8 @@ int TestMatZeroRows_Basic(Mat A,IS is, Scalar *diag)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "TestMatZeroRows_with_no_allocation"
 int TestMatZeroRows_with_no_allocation(Mat A,IS is, Scalar *diag)
 {
   Mat         B;

@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.1 1999/01/13 04:34:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.2 1999/01/13 21:46:13 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests dynamic loading of viewer.\n\n";
 
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   int     ierr;

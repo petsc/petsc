@@ -1,4 +1,4 @@
-/* "$Id: snesmfj.h,v 1.1 1998/11/05 22:13:51 bsmith Exp bsmith $"; */
+/* "$Id: snesmfj.h,v 1.2 1998/11/20 15:30:39 bsmith Exp bsmith $"; */
 /*
        This file should be included for those programming NEW routines
     to compute the h factor for finite difference based matrix free methods
@@ -14,14 +14,14 @@
     of the h parameter for finite difference based matrix-free computations
 */
 typedef struct {
-  int (*compute)(MatSNESFDMFCtx,Vec,Vec,Scalar *);
-  int (*view)(MatSNESFDMFCtx,Viewer);
-  int (*destroy)(MatSNESFDMFCtx);
-  int (*printhelp)(MatSNESFDMFCtx);
-  int (*setfromoptions)(MatSNESFDMFCtx);
+  int (*compute)(MatSNESMFCtx,Vec,Vec,Scalar *);
+  int (*view)(MatSNESMFCtx,Viewer);
+  int (*destroy)(MatSNESMFCtx);
+  int (*printhelp)(MatSNESMFCtx);
+  int (*setfromoptions)(MatSNESMFCtx);
 } MFOps;
 
-struct _p_MatSNESFDMFCtx {    /* context for default matrix-free SNES */
+struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   MFOps            *ops;
   MPI_Comm         comm;
   SNES             snes;                   
@@ -36,7 +36,7 @@ struct _p_MatSNESFDMFCtx {    /* context for default matrix-free SNES */
   Mat              mat;                    /* back reference to shell matrix that contains this */
 };
 
-extern FList MatSNESFDMFList;
-extern int   MatSNESFDMFRegisterAllCalled;
+extern FList MatSNESMFList;
+extern int   MatSNESMFRegisterAllCalled;
 
 #endif

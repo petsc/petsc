@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.1 1999/02/03 00:32:49 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.2 1999/02/15 21:58:38 balay Exp bsmith $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -82,12 +82,14 @@ typedef struct {
 /* 
    User-defined routines
 */
-int InitialConditions(Vec,AppCtx*);
-int RHSMatrixHeat(TS,double,Mat*,Mat*,MatStructure*,void*);
-int Monitor(TS,int,double,Vec,void*);
-int ExactSolution(double,Vec,AppCtx*);
-int MyBCRoutine(TS,double,Vec,void*);
+extern int InitialConditions(Vec,AppCtx*);
+extern int RHSMatrixHeat(TS,double,Mat*,Mat*,MatStructure*,void*);
+extern int Monitor(TS,int,double,Vec,void*);
+extern int ExactSolution(double,Vec,AppCtx*);
+extern int MyBCRoutine(TS,double,Vec,void*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   AppCtx        appctx;                 /* user-defined application context */
@@ -248,6 +250,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "InitialConditions"
 /*
    InitialConditions - Computes the solution at the initial time. 
 
@@ -299,6 +303,8 @@ int InitialConditions(Vec u,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "ExactSolution"
 /*
    ExactSolution - Computes the exact solution at a given time.
 
@@ -337,6 +343,8 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "Monitor"
 /*
    Monitor - User-provided routine to monitor the solution computed at 
    each timestep.  This example plots the solution and computes the
@@ -409,6 +417,8 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "RHSMatrixHeat"
 /*
    RHSMatrixHeat - User-provided routine to compute the right-hand-side
    matrix for the heat equation.
@@ -503,6 +513,8 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "MYBCRoutine"
 /*
    Input Parameters:
    ts - the TS context

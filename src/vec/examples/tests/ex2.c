@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.40 1997/07/09 20:49:55 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.41 1998/12/03 03:57:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
@@ -8,6 +8,8 @@ static char help[] = "Tests vector scatter-gather operations.  Input arguments a
 #include "vec.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int           n = 5, ierr, idx1[2] = {0,3}, idx2[2] = {1,4},flg;

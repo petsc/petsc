@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.36 1997/09/22 15:18:10 balay Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.37 1998/12/03 03:57:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.\n\
@@ -9,6 +9,8 @@ parallel vector.\n";
 #include "vec.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int           n = 5, ierr, size,rank,i;

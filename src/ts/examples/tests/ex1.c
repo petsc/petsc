@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.24 1998/12/03 04:04:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.25 1998/12/17 22:11:49 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -27,12 +27,12 @@ typedef struct {
   int    nox;                   /* indicates problem is to be run without graphics */ 
 } AppCtx;
 
-int Monitor(TS, int, double , Vec, void *);
-int RHSFunctionHeat(TS,double,Vec,Vec,void*);
-int RHSMatrixFree(Mat,Vec,Vec);
-int Initial(Vec, void*);
-int RHSMatrixHeat(TS,double,Mat *,Mat *, MatStructure *,void *);
-int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+extern int Monitor(TS, int, double , Vec, void *);
+extern int RHSFunctionHeat(TS,double,Vec,Vec,void*);
+extern int RHSMatrixFree(Mat,Vec,Vec);
+extern int Initial(Vec, void*);
+extern int RHSMatrixHeat(TS,double,Mat *,Mat *, MatStructure *,void *);
+extern int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 
 #define linear_no_matrix       0
 #define linear_no_time         1
@@ -40,6 +40,8 @@ int RHSJacobianHeat(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 #define nonlinear_no_jacobian  3
 #define nonlinear              4
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int           ierr,  time_steps = 100, steps, flg, size, m;
@@ -214,7 +216,8 @@ int main(int argc,char **argv)
 }
 
 /* -------------------------------------------------------------------*/
- 
+#undef __FUNC__
+#define __FUNC__ "Initial" 
 int Initial(Vec global, void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
@@ -233,6 +236,8 @@ int Initial(Vec global, void *ctx)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "Solution"
 /*
        Exact solution 
 */
@@ -255,6 +260,8 @@ int Solution(double t,Vec solution, void *ctx)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "Monitor"
 int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 {
   AppCtx   *appctx = (AppCtx*) ctx;
@@ -286,6 +293,8 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 }
 
 /* -----------------------------------------------------------------------*/
+#undef __FUNC__
+#define __FUNC__ "RHSMatrixFree"
 int RHSMatrixFree(Mat mat,Vec x,Vec y)
 {
   int  ierr;
@@ -296,6 +305,8 @@ int RHSMatrixFree(Mat mat,Vec x,Vec y)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "RHSFunctionHeat"
 int RHSFunctionHeat(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
@@ -331,6 +342,8 @@ int RHSFunctionHeat(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
 }
 
 /* ---------------------------------------------------------------------*/
+#undef __FUNC__
+#define __FUNC__ "RHSMatrixHeat"
 int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
   Mat    A = *AA;
@@ -369,6 +382,8 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "RHSJacobianHeat"
 int RHSJacobianHeat(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
   return RHSMatrixHeat(ts,t,AA,BB,str,ctx);

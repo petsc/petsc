@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.16 1999/03/14 02:17:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.17 1999/03/17 23:25:10 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -115,7 +115,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
       /* don't keep any public reference of this DA, is is only available through xlocal */
       ierr = DADestroy(dac);CHKERRQ(ierr);
     } else {
-      /* remove association btween xlocal and da, because below we compose in the opposite
+      /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could 
          never be destroyed */
       ierr = PetscObjectCompose((PetscObject)xlocal,"DA",0); CHKERRQ(ierr);
@@ -220,6 +220,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 
 extern int VecView_MPI_Draw_DA1d(Vec,Viewer);
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "VecView_MPI_DA"
 int VecView_MPI_DA(Vec xin,Viewer viewer)
@@ -252,7 +253,9 @@ int VecView_MPI_DA(Vec xin,Viewer viewer)
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "VecLoadIntoVector_Binary_DA"
 int VecLoadIntoVector_Binary_DA(Viewer viewer,Vec xin)
@@ -266,11 +269,10 @@ int VecLoadIntoVector_Binary_DA(Viewer viewer,Vec xin)
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
-  ierr = VecView(natural,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
   PLogInfo(xin,"VecLoadIntoVector_Binary_DA:Loading vector from natural ordering into DA\n");
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END

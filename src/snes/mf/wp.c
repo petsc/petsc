@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.5 1998/12/17 22:12:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wp.c,v 1.6 1999/03/17 23:24:23 bsmith Exp bsmith $";
 #endif
 /*
       Implements an alternative approach for computing the h
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: wp.c,v 1.5 1998/12/17 22:12:27 bsmith Exp bsmith $";
 */
 
 /*
-    This include file defines the data structure  MatSNESFDMF that 
+    This include file defines the data structure  MatSNESMF that 
    includes information about the computation of h. It is shared by 
    all implementations that people provide
 */
@@ -26,14 +26,14 @@ static char vcid[] = "$Id: wp.c,v 1.5 1998/12/17 22:12:27 bsmith Exp bsmith $";
 typedef struct {
   double     normUfact;                   /* previous sqrt(1.0 + || U ||) */
   PetscTruth computenorma,computenormU;   
-} MatSNESFDMFWP;
+} MatSNESMFWP;
 
 extern int VecNorm_Seq(Vec,NormType,double *);
 
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFCompute_WP"
+#define __FUNC__ "MatSNESMFCompute_WP"
 /*
-     MatSNESFDMFCompute_WP - Standard PETSc code for 
+     MatSNESMFCompute_WP - Standard PETSc code for 
    computing h with matrix-free finite differences.
 
   Input Parameters:
@@ -45,9 +45,9 @@ extern int VecNorm_Seq(Vec,NormType,double *);
 .   h - the scale computed
 
 */
-static int MatSNESFDMFCompute_WP(MatSNESFDMFCtx ctx,Vec U,Vec a,Scalar *h)
+static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 {
-  MatSNESFDMFWP      *hctx = (MatSNESFDMFWP *) ctx->hctx;
+  MatSNESMFWP        *hctx = (MatSNESMFWP *) ctx->hctx;
   MPI_Comm           comm = ctx->comm;
   double             normU, ovalues[2],values[2];
   double             norma = 1.0, normUfact = hctx->normUfact;
@@ -92,9 +92,9 @@ static int MatSNESFDMFCompute_WP(MatSNESFDMFCtx ctx,Vec U,Vec a,Scalar *h)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFView_WP"
+#define __FUNC__ "MatSNESMFView_WP"
 /*
-   MatSNESFDMFView_WP - Prints information about this particular 
+   MatSNESMFView_WP - Prints information about this particular 
      method for computing h. Note that this does not print the general
      information about the matrix free, that is printed by the calling
      routine.
@@ -104,12 +104,12 @@ static int MatSNESFDMFCompute_WP(MatSNESFDMFCtx ctx,Vec U,Vec a,Scalar *h)
 -   viewer - the PETSc viewer
 
 */   
-static int MatSNESFDMFView_WP(MatSNESFDMFCtx ctx,Viewer viewer)
+static int MatSNESMFView_WP(MatSNESMFCtx ctx,Viewer viewer)
 {
-  FILE          *fd;
-  ViewerType    vtype;
-  MatSNESFDMFWP *hctx = (MatSNESFDMFWP *)ctx->hctx;
-  int           ierr;
+  FILE        *fd;
+  ViewerType  vtype;
+  MatSNESMFWP *hctx = (MatSNESMFWP *)ctx->hctx;
+  int         ierr;
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
@@ -126,16 +126,16 @@ static int MatSNESFDMFView_WP(MatSNESFDMFCtx ctx,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFPrintHelp_WP"
+#define __FUNC__ "MatSNESMFPrintHelp_WP"
 /*
-   MatSNESFDMFPrintHelp_WP - Prints a list of all the options 
+   MatSNESMFPrintHelp_WP - Prints a list of all the options 
       this particular method supports.
 
   Input Parameter:
 .  ctx - the matrix free context
 
 */
-static int MatSNESFDMFPrintHelp_WP(MatSNESFDMFCtx ctx)
+static int MatSNESMFPrintHelp_WP(MatSNESMFCtx ctx)
 {
   char*         p;
   int           ierr;
@@ -150,16 +150,16 @@ static int MatSNESFDMFPrintHelp_WP(MatSNESFDMFCtx ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFSetFromOptions_WP"
+#define __FUNC__ "MatSNESMFSetFromOptions_WP"
 /*
-   MatSNESFDMFSetFromOptions_WP - Looks in the options database for 
+   MatSNESMFSetFromOptions_WP - Looks in the options database for 
      any options appropriate for this method
 
   Input Parameter:
 .  ctx - the matrix free context
 
 */
-static int MatSNESFDMFSetFromOptions_WP(MatSNESFDMFCtx ctx)
+static int MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
 {
   int        flag, ierr;
   PetscTruth set;
@@ -169,21 +169,21 @@ static int MatSNESFDMFSetFromOptions_WP(MatSNESFDMFCtx ctx)
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ctx->snes,&p); CHKERRQ(ierr);
   ierr = OptionsGetLogical(p,"-snes_mf_compute_norma",&set,&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = MatSNESFDMFWPSetComputeNormA(ctx->mat,set);CHKERRQ(ierr);
+    ierr = MatSNESMFWPSetComputeNormA(ctx->mat,set);CHKERRQ(ierr);
   }
   ierr = OptionsGetLogical(p,"-snes_mf_compute_normu",&set,&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = MatSNESFDMFWPSetComputeNormU(ctx->mat,set);CHKERRQ(ierr);
+    ierr = MatSNESMFWPSetComputeNormU(ctx->mat,set);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFDestroy_WP"
+#define __FUNC__ "MatSNESMFDestroy_WP"
 /*
-   MatSNESFDMFDestroy_WP - Frees the space allocated by 
-       MatSNESFDMFCreate_WP(). 
+   MatSNESMFDestroy_WP - Frees the space allocated by 
+       MatSNESMFCreate_WP(). 
 
   Input Parameter:
 .  ctx - the matrix free context
@@ -191,7 +191,7 @@ static int MatSNESFDMFSetFromOptions_WP(MatSNESFDMFCtx ctx)
    Notes: does not free the ctx, that is handled by the calling routine
 
 */
-static int MatSNESFDMFDestroy_WP(MatSNESFDMFCtx ctx)
+static int MatSNESMFDestroy_WP(MatSNESMFCtx ctx)
 {
   PetscFunctionBegin;
   PetscFree(ctx->hctx);
@@ -200,19 +200,19 @@ static int MatSNESFDMFDestroy_WP(MatSNESFDMFCtx ctx)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFWPSetComputeNormA_P"
-int MatSNESFDMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
+#define __FUNC__ "MatSNESMFWPSetComputeNormA_P"
+int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 {
-  MatSNESFDMFCtx ctx;
-  MatSNESFDMFWP  *hctx;
-  int            ierr;
+  MatSNESMFCtx ctx;
+  MatSNESMFWP  *hctx;
+  int          ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (!ctx) {
-    SETERRQ(1,1,"MatSNESFDMFWPSetComputeNormA() attached to non-shell matrix");
+    SETERRQ(1,1,"MatSNESMFWPSetComputeNormA() attached to non-shell matrix");
   }
-  hctx               = (MatSNESFDMFWP *) ctx->hctx;
+  hctx               = (MatSNESMFWP *) ctx->hctx;
   hctx->computenorma = flag;
 
  PetscFunctionReturn(0);
@@ -220,32 +220,32 @@ int MatSNESFDMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFWPSetComputeNormA"
+#define __FUNC__ "MatSNESMFWPSetComputeNormA"
 /*@
-    MatSNESFDMFWPSetComputeNormA - Sets whether it computes the ||a|| used by the WP
+    MatSNESMFWPSetComputeNormA - Sets whether it computes the ||a|| used by the WP
              PETSc routine for computing h. With GMRES since the ||a|| is always
              one, you can save communication by setting this to false.
 
   Input Parameters:
-+   A - the matrix created with MatCreateSNESFDMF()
++   A - the matrix created with MatCreateSNESMF()
 -   flag - PETSC_TRUE causes it to compute ||a||, PETSC_FALSE assumes it is 1.
 
   Level: advanced
 
   Notes:
-   See the manual page for MatCreateSNESFDMF() for a complete description of the
+   See the manual page for MatCreateSNESMF() for a complete description of the
    algorithm used to compute h.
 
-.seealso: MatSNESFDMFSetFunctionError(), MatCreateSNESFDMF()
+.seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-int MatSNESFDMFWPSetComputeNormA(Mat A,PetscTruth flag)
+int MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
 {
   int ierr, (*f)(Mat,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESFDMFWPSetComputeNormA_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFWPSetComputeNormA_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,flag);CHKERRQ(ierr);
   }
@@ -254,19 +254,19 @@ int MatSNESFDMFWPSetComputeNormA(Mat A,PetscTruth flag)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFWPSetComputeNormU_P"
-int MatSNESFDMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
+#define __FUNC__ "MatSNESMFWPSetComputeNormU_P"
+int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 {
-  MatSNESFDMFCtx ctx;
-  MatSNESFDMFWP  *hctx;
-  int            ierr;
+  MatSNESMFCtx ctx;
+  MatSNESMFWP  *hctx;
+  int          ierr;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (!ctx) {
-    SETERRQ(1,1,"MatSNESFDMFWPSetComputeNormU() attached to non-shell matrix");
+    SETERRQ(1,1,"MatSNESMFWPSetComputeNormU() attached to non-shell matrix");
   }
-  hctx               = (MatSNESFDMFWP *) ctx->hctx;
+  hctx               = (MatSNESMFWP *) ctx->hctx;
   hctx->computenormU = flag;
 
  PetscFunctionReturn(0);
@@ -274,32 +274,32 @@ int MatSNESFDMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFWPSetComputeNormU"
+#define __FUNC__ "MatSNESMFWPSetComputeNormU"
 /*@
-    MatSNESFDMFWPSetComputeNormU - Sets whether it computes the ||U|| used by the WP
+    MatSNESMFWPSetComputeNormU - Sets whether it computes the ||U|| used by the WP
              PETSc routine for computing h. With any Krylov solver this need only 
              be computed during the first iteration and kept for later.
 
   Input Parameters:
-+   A - the matrix created with MatCreateSNESFDMF()
++   A - the matrix created with MatCreateSNESMF()
 -   flag - PETSC_TRUE causes it to compute ||U||, PETSC_FALSE uses the previous value
 
   Level: advanced
 
   Notes:
-   See the manual page for MatCreateSNESFDMF() for a complete description of the
+   See the manual page for MatCreateSNESMF() for a complete description of the
    algorithm used to compute h.
 
-.seealso: MatSNESFDMFSetFunctionError(), MatCreateSNESFDMF()
+.seealso: MatSNESMFSetFunctionError(), MatCreateSNESMF()
 
 @*/
-int MatSNESFDMFWPSetComputeNormU(Mat A,PetscTruth flag)
+int MatSNESMFWPSetComputeNormU(Mat A,PetscTruth flag)
 {
   int ierr, (*f)(Mat,PetscTruth);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESFDMFWPSetComputeNormU_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFWPSetComputeNormU_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,flag);CHKERRQ(ierr);
   }
@@ -308,41 +308,41 @@ int MatSNESFDMFWPSetComputeNormU(Mat A,PetscTruth flag)
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFCreate_WP"
+#define __FUNC__ "MatSNESMFCreate_WP"
 /*
-     MatSNESFDMFCreate_WP - Standard PETSc code for 
+     MatSNESMFCreate_WP - Standard PETSc code for 
    computing h with matrix-free finite differences.
 
    Input Parameter:
-.  ctx - the matrix free context created by MatSNESFDMFCreate()
+.  ctx - the matrix free context created by MatSNESMFCreate()
 
 */
-int MatSNESFDMFCreate_WP(MatSNESFDMFCtx ctx)
+int MatSNESMFCreate_WP(MatSNESMFCtx ctx)
 {
-  int           ierr;
-  MatSNESFDMFWP *hctx;
+  int         ierr;
+  MatSNESMFWP *hctx;
 
   PetscFunctionBegin;
 
   /* allocate my own private data structure */
-  hctx                     = (MatSNESFDMFWP *)PetscMalloc(sizeof(MatSNESFDMFWP));CHKPTRQ(hctx);
+  hctx                     = (MatSNESMFWP *)PetscMalloc(sizeof(MatSNESMFWP));CHKPTRQ(hctx);
   ctx->hctx                = (void *) hctx;
   hctx->computenormU       = PETSC_TRUE;
   hctx->computenorma       = PETSC_TRUE;
 
   /* set the functions I am providing */
-  ctx->ops->compute        = MatSNESFDMFCompute_WP;
-  ctx->ops->destroy        = MatSNESFDMFDestroy_WP;
-  ctx->ops->view           = MatSNESFDMFView_WP;  
-  ctx->ops->printhelp      = MatSNESFDMFPrintHelp_WP;  
-  ctx->ops->setfromoptions = MatSNESFDMFSetFromOptions_WP;  
+  ctx->ops->compute        = MatSNESMFCompute_WP;
+  ctx->ops->destroy        = MatSNESMFDestroy_WP;
+  ctx->ops->view           = MatSNESMFView_WP;  
+  ctx->ops->printhelp      = MatSNESMFPrintHelp_WP;  
+  ctx->ops->setfromoptions = MatSNESMFSetFromOptions_WP;  
 
-  ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatSNESFDMFWPSetComputeNormA_C",
-                            "MatSNESFDMFWPSetComputeNormA_P",
-                            (void *) MatSNESFDMFWPSetComputeNormA_P);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatSNESFDMFWPSetComputeNormU_C",
-                            "MatSNESFDMFWPSetComputeNormU_P",
-                            (void *) MatSNESFDMFWPSetComputeNormU_P);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormA_C",
+                            "MatSNESMFWPSetComputeNormA_P",
+                            (void *) MatSNESMFWPSetComputeNormA_P);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ctx->mat,"MatSNESMFWPSetComputeNormU_C",
+                            "MatSNESMFWPSetComputeNormU_P",
+                            (void *) MatSNESMFWPSetComputeNormU_P);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

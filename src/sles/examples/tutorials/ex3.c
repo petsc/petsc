@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.11 1998/04/13 17:45:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.12 1999/01/12 23:16:17 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -30,9 +30,11 @@ T*/
 #include "sles.h"
 
 /* Declare user-defined routines */
-int FormElementStiffness(double,Scalar*);
-int FormElementRhs(double,double,double,Scalar*);
+extern int FormElementStiffness(double,Scalar*);
+extern int FormElementRhs(double,double,double,Scalar*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Vec     u, b, ustar; /* approx solution, RHS, exact solution */
@@ -201,6 +203,8 @@ int main(int argc,char **args)
 }
 
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormElementStiffness"
    /* element stiffness for Laplacian */
 int FormElementStiffness(double H,Scalar *Ke)
 {
@@ -211,6 +215,8 @@ int FormElementStiffness(double H,Scalar *Ke)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormElementRhs"
 int FormElementRhs(double x,double y,double H,Scalar *r)
 {
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.65 1999/01/14 17:01:45 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.66 1999/01/27 19:50:01 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -61,12 +61,14 @@ extern int ViewerDestroy(Viewer);
 #define VIEWER_FORMAT_ASCII_INDEX         7
 #define VIEWER_FORMAT_ASCII_DENSE         8
 
-#define VIEWER_FORMAT_BINARY_DEFAULT      0
-#define VIEWER_FORMAT_BINARY_NATIVE       1
+#define VIEWER_FORMAT_BINARY_DEFAULT      9
+#define VIEWER_FORMAT_BINARY_NATIVE       10
 
-#define VIEWER_FORMAT_DRAW_BASIC          0
-#define VIEWER_FORMAT_DRAW_LG             1
-#define VIEWER_FORMAT_DRAW_CONTOUR        2
+#define VIEWER_FORMAT_DRAW_BASIC          11
+#define VIEWER_FORMAT_DRAW_LG             12
+#define VIEWER_FORMAT_DRAW_CONTOUR        13
+
+#define VIEWER_FORMAT_NATIVE              14
 
 extern int    ViewerSetFormat(Viewer,int,char[]);
 extern int    ViewerPushFormat(Viewer,int,char[]);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.3 1998/04/27 19:54:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.4 1999/02/03 04:31:35 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
@@ -51,6 +51,8 @@ EXTERN_C_BEGIN
 extern int PCCreate_Jacobi(PC);
 EXTERN_C_END
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Vec         x, b, u;  /* approx solution, RHS, exact solution */

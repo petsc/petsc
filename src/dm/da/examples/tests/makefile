@@ -1,7 +1,28 @@
-# $Id: makefile,v 1.47 1999/01/31 16:11:37 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.48 1999/03/07 17:30:06 bsmith Exp bsmith $ 
 
 ALL: ex1
 
+TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm clean
+TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc\
+		  runex5 ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc ex7.rm \
+                  ex14.PETSc runex14 ex14.rm ex13.PETSc runex13 ex13.rm clean
+TESTEXAMPLES_3  =
+TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
+		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
+		  ex6.PETSc ex6.rm ex12.PETSc ex12.rm clean
+TESTEXAMPLES_5  =
+BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex4.PETSc ex4.rm clean
+BUILDEXAMPLES_2 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex5.PETSc\
+		  ex5.rm ex6.PETSc ex6.rm ex7.PETSc ex7.rm clean
+BUILDEXAMPLES_3 =
+BUILDEXAMPLES_4 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
+		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
+		  ex6.PETSc ex6.rm ex12.PETSc ex12.rm clean
+BUILDEXAMPLES_5 =
+
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
+                  ex11.c ex12.c ex12.m ex13.c ex14.c
+EXAMPLESF       = 
 CFLAGS	        = 
 FFLAGS	        = 
 CPPFLAGS        =
@@ -79,36 +100,19 @@ runex2:
 	   ${RM} -f ex2_1.tmp
 runex3:
 	-@${MPIRUN} -np 3 ex3 -time 50
-
 runex4:
 	-@${MPIRUN} -np 4 ex4  -nox > ex4_1.tmp 2>&1;	  \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
-
 runex5:
 	-@${MPIRUN} -np 3 ex5 -time 50
-
 runex6:
 	-@${MPIRUN} -np 6 ex6 -test_order
+# ex13 uses the output of ex14
+runex13:
+	-@${MPIRUN} -np 3 ex13
+	-@${RM} -f daoutput daoutput.info 
+runex14:
+	-@${MPIRUN} -np 4 ex14 
 
-TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm clean
-TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc\
-		  runex5 ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc ex7.rm clean
-TESTEXAMPLES_3  =
-TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
-		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
-		  ex6.PETSc ex6.rm ex12.PETSc ex12.rm clean
-TESTEXAMPLES_5  =
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex4.PETSc ex4.rm clean
-BUILDEXAMPLES_2 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex5.PETSc\
-		  ex5.rm ex6.PETSc ex6.rm ex7.PETSc ex7.rm clean
-BUILDEXAMPLES_3 =
-BUILDEXAMPLES_4 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
-		  ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
-		  ex6.PETSc ex6.rm ex12.PETSc ex12.rm clean
-BUILDEXAMPLES_5 =
-
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
-                  ex11.c ex12.c ex12.m ex13.c ex14.c
-EXAMPLESF       = 

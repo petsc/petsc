@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.5 1997/09/22 15:22:48 balay Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.6 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat        C; 
@@ -33,16 +35,13 @@ int main(int argc,char **args)
     if (size>1) {ndiag = 7; diag[5] = 2; diag[6] = -2;}
     ierr = MatCreateMPIBDiag(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,m*n,
            ndiag,bs,diag,PETSC_NULL,&C); CHKERRA(ierr);
-  } 
-  else if (type == MATMPIDENSE || type == MATSEQDENSE) {
+  } else if (type == MATMPIDENSE || type == MATSEQDENSE) {
     ierr = MatCreateMPIDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
            m*n,m*n,PETSC_NULL,&C); CHKERRA(ierr);
-  }
-  else if (type == MATMPIAIJ || type == MATSEQAIJ) {
+  } else if (type == MATMPIAIJ || type == MATSEQAIJ) {
     ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
            m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C); CHKERRA(ierr);
-  }
-  else SETERRA(1,0,"Invalid matrix type for this example.");
+  } else SETERRA(1,0,"Invalid matrix type for this example.");
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   for ( i=0; i<m; i++ ) { 

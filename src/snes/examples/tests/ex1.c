@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.63 1999/03/10 19:27:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.64 1999/03/10 19:29:36 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
@@ -68,10 +68,12 @@ typedef struct {
 /* 
    User-defined routines
 */
-int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int FormFunction(SNES,Vec,Vec,void*);
-int FormInitialGuess(AppCtx*,Vec);
+extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormFunction(SNES,Vec,Vec,void*);
+extern int FormInitialGuess(AppCtx*,Vec);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
   SNES           snes;                 /* nonlinear solver context */
@@ -257,6 +259,8 @@ int main( int argc, char **argv )
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess"
 /* 
    FormInitialGuess - Forms initial approximation.
 
@@ -308,6 +312,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormFunction"
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -370,6 +376,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   return 0; 
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 

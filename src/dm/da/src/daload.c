@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daload.c,v 1.5 1999/03/18 22:23:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daload.c,v 1.6 1999/03/18 23:37:25 bsmith Exp bsmith $";
 #endif
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
@@ -72,6 +72,7 @@ int DALoad(Viewer viewer,int M,int N, int P,DA *da)
   if (flag) {
     DA  dac;
     Vec natural,global;
+    int mlocal;
 
     if (info[0] == 1) {
       ierr = DACreate1d(comm,DA_NONPERIODIC,info[1],1,0,0,&dac);CHKERRQ(ierr);
@@ -84,7 +85,8 @@ int DALoad(Viewer viewer,int M,int N, int P,DA *da)
     }
     ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
     ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
-    ierr = DACreateGlobalVector(dac,&global);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(natural,&mlocal);CHKERRQ(ierr);
+    ierr = VecCreateMPI(comm,mlocal,PETSC_DETERMINE,&global);CHKERRQ(ierr);
     ierr = DANaturalToGlobalBegin(dac,natural,INSERT_VALUES,global);CHKERRQ(ierr);
     ierr = DANaturalToGlobalEnd(dac,natural,INSERT_VALUES,global);CHKERRQ(ierr);
     ierr = VecDestroy(natural);CHKERRQ(ierr); 

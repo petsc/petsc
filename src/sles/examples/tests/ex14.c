@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.12 1998/08/05 17:24:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.13 1998/12/03 04:02:46 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -83,9 +83,11 @@ typedef struct {
 /* 
    User-defined routines
 */
-int ComputeFunction(AppCtx*,Vec,Vec), FormInitialGuess(AppCtx*,Vec);
-int ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
+extern int ComputeFunction(AppCtx*,Vec,Vec), FormInitialGuess(AppCtx*,Vec);
+extern int ComputeJacobian(AppCtx*,Vec,Mat,MatStructure*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
   /* -------------- Data to define application problem ---------------- */
@@ -289,6 +291,8 @@ int main( int argc, char **argv )
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess"
 /* 
    FormInitialGuess - Forms initial approximation.
 
@@ -356,6 +360,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
   return 0;
 } 
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "ComputeFunction"
 /* 
    ComputeFunction - Evaluates nonlinear function, F(x).
 
@@ -430,6 +436,8 @@ int ComputeFunction(AppCtx *user,Vec X,Vec F)
   return 0; 
 } 
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "ComputeJacobian"
 /*
    ComputeJacobian - Evaluates Jacobian matrix.
 

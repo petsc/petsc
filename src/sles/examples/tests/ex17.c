@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.23 1998/12/03 04:02:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.24 1999/01/12 23:16:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -8,8 +8,10 @@ intended to test the complex numbers version of various solvers.\n\n";
 #include "sles.h"
 
 typedef enum {TEST_1, TEST_2, TEST_3, HELMHOLTZ_1, HELMHOLTZ_2} TestType;
-int FormTestMatrix(Mat,int,TestType);
+extern int FormTestMatrix(Mat,int,TestType);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Vec         x, b, u;      /* approx solution, RHS, exact solution */
@@ -86,6 +88,8 @@ int main(int argc,char **args)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "FormTestMatrix"
 int FormTestMatrix(Mat A,int n,TestType type)
 {
 #if !defined(USE_PETSC_COMPLEX)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.38 1997/09/22 15:17:33 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.39 1998/12/03 03:57:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
@@ -8,6 +8,8 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 #include "vec.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int          n = 5, ierr, size,rank,flg;

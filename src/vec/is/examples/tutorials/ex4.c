@@ -1,5 +1,5 @@
 
-/*      "$Id: ex4.c,v 1.2 1998/01/19 19:00:42 balay Exp balay $"; */
+/*      "$Id: ex4.c,v 1.3 1998/01/19 19:07:22 balay Exp bsmith $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
@@ -14,6 +14,8 @@ T*/
 
 #include "is.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int                    i, n = 4, ierr,indices[] = {0,3,9,12}, m = 2, input[] = {0,2};

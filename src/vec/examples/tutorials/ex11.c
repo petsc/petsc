@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.3 1998/12/03 03:57:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.4 1999/01/12 23:13:48 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -21,6 +21,8 @@ T*/
 
 #include "vec.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   Vec      x;               /* vectors */

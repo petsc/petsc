@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.22 1997/07/09 20:58:09 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.23 1998/12/03 04:03:32 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates us of color map\n";
 
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   Draw draw;

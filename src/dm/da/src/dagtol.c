@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dagtol.c,v 1.16 1999/03/07 17:30:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dagtol.c,v 1.17 1999/03/17 23:25:10 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -91,6 +91,46 @@ int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "DAGlobalToNatural_Create"
+/*
+   DAGlobalToNatural_Create - Create the global to natural scatter object
+
+   Collective on DA
+
+   Input Parameter:
+.  da - the distributed array context
+
+   Level: developer
+
+.keywords: distributed array, global to local, begin
+
+.seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
+*/
+int DAGlobalToNatural_Create(DA da)
+{
+  int ierr,m,start;
+  IS  from,to;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  if (!da->natural) {
+    SETERRQ(1,1,"Natural layout vector not yet created; cannot scatter into it");
+  }
+
+  /* create the scatter context */
+  ierr = VecGetLocalSize(da->natural,&m);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(da->natural,&start,PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISCreateStride(da->comm,m,start,1,&to);CHKERRQ(ierr);
+  ierr = AOPetscToApplicationIS(da->ao,to);CHKERRQ(ierr);
+  ierr = ISCreateStride(da->comm,m,start,1,&from);CHKERRQ(ierr);
+  ierr = VecScatterCreate(da->global,from,da->natural,to,&da->gton);CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "DAGlobalToNaturalBegin"
 /*@
    DAGlobalToNaturalBegin - Maps values from the global vector to a global vector
@@ -122,8 +162,7 @@ int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
 @*/
 int DAGlobalToNaturalBegin(DA da,Vec g, InsertMode mode,Vec l)
 {
-  int ierr,m;
-  IS  from,to;
+  int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -131,13 +170,7 @@ int DAGlobalToNaturalBegin(DA da,Vec g, InsertMode mode,Vec l)
   PetscValidHeaderSpecific(g,VEC_COOKIE);
   if (!da->gton) {
     /* create the scatter context */
-    ierr = VecGetLocalSize(l,&m);CHKERRQ(ierr);
-    ierr = ISCreateStride(da->comm,m,0,1,&to);CHKERRQ(ierr);
-    ierr = AOPetscToApplicationIS(da->ao,to);CHKERRQ(ierr);
-    ierr = ISCreateStride(da->comm,m,0,1,&from);CHKERRQ(ierr);
-    ierr = VecScatterCreate(g,from,l,to,&da->gton);CHKERRQ(ierr);
-    ierr = ISDestroy(from);CHKERRQ(ierr);
-    ierr = ISDestroy(to);CHKERRQ(ierr);
+    ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
   ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gton); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -216,8 +249,7 @@ int DAGlobalToNaturalEnd(DA da,Vec g, InsertMode mode,Vec l)
 @*/
 int DANaturalToGlobalBegin(DA da,Vec g, InsertMode mode,Vec l)
 {
-  int ierr,m;
-  IS  from,to;
+  int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -225,13 +257,7 @@ int DANaturalToGlobalBegin(DA da,Vec g, InsertMode mode,Vec l)
   PetscValidHeaderSpecific(g,VEC_COOKIE);
   if (!da->gton) {
     /* create the scatter context */
-    ierr = VecGetLocalSize(l,&m);CHKERRQ(ierr);
-    ierr = ISCreateStride(da->comm,m,0,1,&to);CHKERRQ(ierr);
-    ierr = AOPetscToApplicationIS(da->ao,to);CHKERRQ(ierr);
-    ierr = ISCreateStride(da->comm,m,0,1,&from);CHKERRQ(ierr);
-    ierr = VecScatterCreate(g,from,l,to,&da->gton);CHKERRQ(ierr);
-    ierr = ISDestroy(from);CHKERRQ(ierr);
-    ierr = ISDestroy(to);CHKERRQ(ierr);
+    ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
   ierr = VecScatterBegin(g,l,mode,SCATTER_REVERSE,da->gton); CHKERRQ(ierr);
   PetscFunctionReturn(0);

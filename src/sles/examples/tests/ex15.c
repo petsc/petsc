@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.11 1997/11/28 16:20:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.12 1999/01/12 23:16:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 
 #include "sles.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Vec     x, b, u;      /* approx solution, RHS, exact solution */

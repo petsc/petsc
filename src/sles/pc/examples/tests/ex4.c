@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.33 1997/09/22 15:21:57 balay Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.34 1997/10/19 03:24:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
@@ -7,6 +7,8 @@ the MatRelax() routines.\n\n";
 
 #include "pc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat       mat;

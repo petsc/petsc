@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.19 1999/01/13 21:45:24 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.20 1999/02/15 21:58:41 balay Exp bsmith $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
@@ -67,17 +67,19 @@ typedef struct {
 /* 
    User-defined routines, provided below.
 */
-int InitialConditions(Vec,AppCtx*);
-int RHSFunction(TS,double,Vec,Vec,void*);
-int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
-int Monitor(TS,int,double,Vec,void*);
-int ExactSolution(double,Vec,AppCtx*);
+extern int InitialConditions(Vec,AppCtx*);
+extern int RHSFunction(TS,double,Vec,Vec,void*);
+extern int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int Monitor(TS,int,double,Vec,void*);
+extern int ExactSolution(double,Vec,AppCtx*);
 
 /*
    Utility routine for finite difference Jacobian approximation
 */
 extern int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   AppCtx        appctx;                 /* user-defined application context */
@@ -217,6 +219,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "InitialConditions"
 /*
    InitialConditions - Computes the solution at the initial time. 
 
@@ -275,6 +279,8 @@ int InitialConditions(Vec u,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "ExactSolution"
 /*
    ExactSolution - Computes the exact solution at a given time.
 
@@ -318,6 +324,8 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "Monitor"
 /*
    Monitor - User-provided routine to monitor the solution computed at 
    each timestep.  This example plots the solution and computes the
@@ -397,6 +405,8 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "RHSFunction"
 /*
    RHSFunction - User-provided routine that evalues the right-hand-side
    function of the ODE.  This routine is set in the main program by 
@@ -498,6 +508,8 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "RHSJacobian"
 /*
    RHSJacobian - User-provided routine to compute the Jacobian of
    the nonlinear right-hand-side function of the ODE.

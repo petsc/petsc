@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex29.c,v 1.2 1999/03/17 19:13:16 balay Exp balay $";
+static char vcid[] = "$Id: ex29.c,v 1.3 1999/03/18 23:59:54 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
@@ -8,6 +8,8 @@ where atleast a couple of mallocs will occur in the stash code.\n\n";
 #include "vec.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int          i,j,n = 50,ierr,flg,bs,size;

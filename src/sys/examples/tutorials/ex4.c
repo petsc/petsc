@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.1 1999/01/22 22:23:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.2 1999/02/03 04:29:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Prints loadable objects from dynamic library.\n\n";
@@ -11,6 +11,8 @@ static char help[] = "Prints loadable objects from dynamic library.\n\n";
 T*/
  
 #include "petsc.h"
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int  ierr,flag;

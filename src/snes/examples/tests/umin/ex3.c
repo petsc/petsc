@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.48 1999/02/17 16:19:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.49 1999/03/01 04:57:33 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -31,15 +31,17 @@ The command line options are:\n\
 /* Flag to indicate evaluation of function and/or gradient */
 typedef enum {FunctionEval=1, GradientEval=2} FctGradFlag;
 
-int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int FormMinimizationFunction(SNES,Vec,double*,void*);
-int FormGradient(SNES,Vec,Vec,void*);
-int HessianProduct(void *,Vec,Vec);
-int HessianProductMat(Mat,Vec,Vec);
-int FormInitialGuess(AppCtx*,Vec);
-int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
+extern int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormMinimizationFunction(SNES,Vec,double*,void*);
+extern int FormGradient(SNES,Vec,Vec,void*);
+extern int HessianProduct(void *,Vec,Vec);
+extern int HessianProductMat(Mat,Vec,Vec);
+extern int FormInitialGuess(AppCtx*,Vec);
+extern int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   SNES       snes;                 /* SNES context */
@@ -136,26 +138,30 @@ int main(int argc,char **argv)
   return 0;
 }
 /* -------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormMinimizationFunction"
 /*
     FormMinimizationFunction - Evaluates function f(x).
- */
-
+*/
 int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   return EvalFunctionGradient(snes,x,f,NULL,FunctionEval,user); 
 }
 /* -------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormGradient"
 /*
     FormGradient - Evaluates gradient g(x).
- */
-
+*/
 int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   return EvalFunctionGradient(snes,x,NULL,g,GradientEval,user); 
 }
 /* -------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormHessian"
 /*
    FormHessian - Forms Hessian matrix by computing a column at a time.
  */
@@ -202,6 +208,8 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   return 0;
 }
 /* -------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "MatrixFreeHessian"
 /*
   MatrixFreeHessian
  */
@@ -222,6 +230,8 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 
 /* --------------------  Form initial approximation ----------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess"
 int FormInitialGuess(AppCtx *user,Vec X)
 {
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
@@ -254,6 +264,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
 }
 /* ---------- Evaluate function f(x) and/or gradient g(x) ----------- */
 
+#undef __FUNC__
+#define __FUNC__ "EvalFunctionGradient"
 int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
                          AppCtx *user)
 {
@@ -369,6 +381,8 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "HessianProductMat"
 int HessianProductMat(Mat mat,Vec svec,Vec y)
 {
   void *ptr;
@@ -376,6 +390,8 @@ int HessianProductMat(Mat mat,Vec svec,Vec y)
   HessianProduct(ptr,svec,y);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "HessianProduct"
 /* 
    HessianProduct - Computes the matrix-vector product: y = f''(x)*s
  */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.12 1998/03/23 21:24:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.13 1998/12/03 04:04:13 bsmith Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -50,10 +50,12 @@ typedef struct {
 /* 
    User-defined routines
 */
-int  FormJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),
+extern int  FormJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(TS,double,Vec,Vec,void*),
      FormInitialGuess(Vec,AppCtx*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
   TS     ts;                 /* timestepping context */
@@ -182,6 +184,8 @@ int main( int argc, char **argv )
 
 /* --------------------  Form initial approximation ----------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess"
 int FormInitialGuess(Vec X,AppCtx *user)
 {
   int     i, j, row, mx, my, ierr;
@@ -214,6 +218,8 @@ int FormInitialGuess(Vec X,AppCtx *user)
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormFunction"
 int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
@@ -257,6 +263,8 @@ int FormFunction(TS ts,double t,Vec X,Vec F,void *ptr)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormJacobian"
 int FormJacobian(TS ts,double t,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;

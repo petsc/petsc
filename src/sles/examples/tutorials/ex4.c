@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.37 1997/11/28 16:20:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.38 1999/01/12 23:16:17 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -24,6 +24,8 @@ T*/
 */
 #include "sles.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   SLES        sles;      /* linear solver context */

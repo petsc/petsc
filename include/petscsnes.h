@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.82 1999/03/14 22:14:50 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.83 1999/03/17 23:25:44 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -56,27 +56,27 @@ extern int SNESSetFromOptions(SNES);
 extern int SNESSetTypeFromOptions(SNES);
 extern int SNESAddOptionsChecker(int (*)(SNES));
 
-extern int MatCreateSNESFDMF(SNES,Vec x,Mat*);
-extern int MatSNESFDMFAddNullSpace(Mat,int,int,Vec *);
-extern int MatSNESFDMFSetHHistory(Mat,Scalar *,int);
-extern int MatSNESFDMFResetHHistory(Mat);
-extern int MatSNESFDMFSetFunctionError(Mat,double);
-extern int MatSNESFDMFGetH(Mat,Scalar *);
-extern int MatSNESFDMFKSPMonitor(KSP,int,double,void *);
-extern int MatSNESFDMFSetFromOptions(Mat);
-typedef struct _p_MatSNESFDMFCtx   *MatSNESFDMFCtx;
-extern int MatSNESFDMFSetType(Mat,char*);
-extern int MatSNESFDMFRegister_Private(char *,char *,char *,int (*)(MatSNESFDMFCtx));
+extern int MatCreateSNESMF(SNES,Vec,Mat*);
+extern int MatSNESMFAddNullSpace(Mat,int,int,Vec *);
+extern int MatSNESMFSetHHistory(Mat,Scalar *,int);
+extern int MatSNESMFResetHHistory(Mat);
+extern int MatSNESMFSetFunctionError(Mat,double);
+extern int MatSNESMFGetH(Mat,Scalar *);
+extern int MatSNESMFKSPMonitor(KSP,int,double,void *);
+extern int MatSNESMFSetFromOptions(Mat);
+typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
+extern int MatSNESMFSetType(Mat,char*);
+extern int MatSNESMFRegister_Private(char *,char *,char *,int (*)(MatSNESMFCtx));
 #if defined(USE_DYNAMIC_LIBRARIES)
-#define MatSNESFDMFRegister(a,b,c,d) MatSNESFDMFRegister_Private(a,b,c,0)
+#define MatSNESMFRegister(a,b,c,d) MatSNESMFRegister_Private(a,b,c,0)
 #else
-#define MatSNESFDMFRegister(a,b,c,d) MatSNESFDMFRegister_Private(a,b,c,d)
+#define MatSNESMFRegister(a,b,c,d) MatSNESMFRegister_Private(a,b,c,d)
 #endif
-extern int MatSNESFDMFRegisterAll(char *);
-extern int MatSNESFDMFRegisterDestroy(void);
-extern int MatSNESFDMFDefaultSetUmin(Mat,double);
-extern int MatSNESFDMFWPSetComputeNormA(Mat,PetscTruth);
-extern int MatSNESFDMFWPSetComputeNormU(Mat,PetscTruth);
+extern int MatSNESMFRegisterAll(char *);
+extern int MatSNESMFRegisterDestroy(void);
+extern int MatSNESMFDefaultSetUmin(Mat,double);
+extern int MatSNESMFWPSetComputeNormA(Mat,PetscTruth);
+extern int MatSNESMFWPSetComputeNormU(Mat,PetscTruth);
 
 extern int SNESGetType(SNES,SNESType*);
 extern int SNESDefaultMonitor(SNES,int,double,void *);

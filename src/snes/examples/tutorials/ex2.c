@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.62 1998/12/03 04:05:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.63 1999/01/12 23:17:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
@@ -30,10 +30,10 @@ T*/
 /* 
    User-defined routines
 */
-int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int FormFunction(SNES,Vec,Vec,void*);
-int FormInitialGuess(Vec);
-int Monitor(SNES,int,double,void *);
+extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormFunction(SNES,Vec,Vec,void*);
+extern int FormInitialGuess(Vec);
+extern int Monitor(SNES,int,double,void *);
 
 /*
    User-defined context for monitoring
@@ -42,6 +42,8 @@ typedef struct {
    Viewer viewer;
 } MonitorCtx;
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
   SNES       snes;                   /* SNES context */
@@ -186,6 +188,8 @@ int main( int argc, char **argv )
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess"
 /*
    FormInitialGuess - Computes initial guess.
 
@@ -200,6 +204,8 @@ int FormInitialGuess(Vec x)
    return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormFunction"
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -255,6 +261,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 
@@ -318,6 +326,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "Monitor"
 /*
    Monitor - User-defined monitoring routine that views the
    current iterate with an x-window plot.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.44 1999/03/07 17:20:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.45 1999/03/10 19:32:10 bsmith Exp bsmith $";
 #endif
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
@@ -45,13 +45,15 @@ typedef struct {
       int         my;           /* Discretization in y-direction */
 } AppCtx;
 
-int  FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction1(SNES,Vec,Vec,void*),
-     FormInitialGuess1(AppCtx*,Vec);
-int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
-     FormFunction2(SNES,Vec,Vec,void*),
-     FormInitialGuess2(AppCtx*,Vec);
-
+extern int  FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
+                          FormFunction1(SNES,Vec,Vec,void*),
+                          FormInitialGuess1(AppCtx*,Vec);
+extern int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
+                   FormFunction2(SNES,Vec,Vec,void*),
+                   FormInitialGuess2(AppCtx*,Vec);
+ 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
   SNES     snes;                 /* SNES context */
@@ -127,6 +129,8 @@ int main( int argc, char **argv )
 
 /* --------------------  Form initial approximation ----------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i, j, row, mx, my, ierr;
@@ -161,6 +165,8 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
  
+#undef __FUNC__
+#define __FUNC__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
@@ -203,6 +209,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormJacobian1"
 int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
@@ -250,6 +258,8 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 
 /* --------------------  Form initial approximation ----------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess2(AppCtx *user,Vec X)
 {
   int     ierr, i, j, row, mx, my;
@@ -286,6 +296,8 @@ int FormInitialGuess2(AppCtx *user,Vec X)
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormFunction2"
 int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 {
   AppCtx *user = (AppCtx *) pptr;
@@ -409,6 +421,8 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormJacobian2"
 int FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *pptr)
 {
   AppCtx *user = (AppCtx *) pptr;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.54 1997/09/22 15:21:55 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.55 1998/12/03 03:59:36 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -28,6 +28,8 @@ int  CalculateError(Vec,Vec,Vec,double*);
 int  CalculateSolution(int,Vec*);
 int  amult(Mat,Vec,Vec);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int Argc, char **Args)
 {
   int         x_mesh = 15,levels = 3,cycles = 1, use_jacobi = 0;
@@ -177,6 +179,8 @@ int main(int Argc, char **Args)
 }
 
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "residual"
 int residual(Mat mat,Vec bb,Vec xx,Vec rr)
 {
   int    i, n1, ierr;
@@ -197,6 +201,8 @@ int residual(Mat mat,Vec bb,Vec xx,Vec rr)
   ierr = VecRestoreArray(rr,&r); CHKERRQ(ierr);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "amult"
 int amult(Mat mat,Vec xx,Vec yy)
 {
   int    i, n1, ierr;
@@ -216,6 +222,8 @@ int amult(Mat mat,Vec xx,Vec yy)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "gauss_seidel"
 int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
   int    i, n1, ierr;
@@ -240,6 +248,8 @@ int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,int m)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "jacobi"
 int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
 {
   int      i, n, n1, ierr;
@@ -267,6 +277,8 @@ int jacobi(void *ptr,Vec bb,Vec xx,Vec w,int m)
    We know for this application that yy  and zz are the same
 */
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "interpolate"
 int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
 {
   int    i, n, N, i2, ierr;
@@ -287,6 +299,8 @@ int interpolate(Mat mat,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "restrct"
 int restrct(Mat mat,Vec rr,Vec bb)
 {
   int    i, n, N, i2, ierr;
@@ -306,6 +320,8 @@ int restrct(Mat mat,Vec rr,Vec bb)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "Create2dLaplacian"
 int Create1dLaplacian(int n,Mat *mat)
 {
   Scalar mone = -1.0, two = 2.0;
@@ -326,6 +342,8 @@ int Create1dLaplacian(int n,Mat *mat)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "CalculateRhs"
 int CalculateRhs(Vec u)
 {
   int    i,n, ierr;
@@ -341,6 +359,8 @@ int CalculateRhs(Vec u)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "CalculateSolution"
 int CalculateSolution(int n,Vec *solution)
 {
   int    i, ierr;
@@ -355,6 +375,8 @@ int CalculateSolution(int n,Vec *solution)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "CalculateError"
 int CalculateError(Vec solution,Vec u,Vec r,double *e)
 {
   Scalar mone = -1.0;

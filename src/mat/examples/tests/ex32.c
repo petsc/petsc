@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex32.c,v 1.10 1998/07/27 18:38:34 balay Exp bsmith $";
+static char vcid[] = "$Id: ex32.c,v 1.11 1998/12/03 04:01:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
@@ -9,6 +9,8 @@ them using the PETSc sparse format. Input parameters are:\n\
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat    A;

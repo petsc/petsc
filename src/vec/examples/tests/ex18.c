@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex18.c,v 1.14 1997/07/09 20:49:55 balay Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.15 1998/12/03 03:57:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Compares BLAS dots on different machines. Input\n\
@@ -9,6 +9,8 @@ arguments are\n\
 #include "vec.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int          n = 15, ierr, size,rank,i,flg;

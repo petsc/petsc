@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.7 1997/09/22 15:16:08 balay Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.8 1998/12/03 03:57:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
@@ -20,6 +20,8 @@ T*/
 */
 #include "vec.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int     i, N, ierr, rank, ng,*gindices,rstart,rend,M;

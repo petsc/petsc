@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.8 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.9 1999/01/12 23:15:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   Mat        mat, fact;

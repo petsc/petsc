@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.21 1999/01/12 23:17:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.22 1999/01/31 16:11:37 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -12,6 +12,8 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #include "da.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int       rank, size, M = 14, ierr, time_steps = 20, w=1, s=1, a=1, flg;

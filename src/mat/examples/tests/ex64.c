@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex64.c,v 1.2 1998/10/09 19:23:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex64.c,v 1.3 1998/12/03 04:01:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat     A;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.1 1999/01/08 21:55:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.2 1999/01/12 23:13:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests repeated VecSetType()\n\n";
@@ -7,6 +7,8 @@ static char help[] = "Tests repeated VecSetType()\n\n";
 #include "vec.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int           ierr, n = 5;

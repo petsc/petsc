@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.2 1997/12/04 19:40:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.3 1998/12/03 04:06:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests removing entries from an AOData \n\n";
 
 #include "ao.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int         n,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;

@@ -19,6 +19,8 @@ If this is not clear, I'll try to elaborate.
 */
 #include "vec.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int Argc,char **Args)
 {
   Vec         src_v,tar_v,loc_v;

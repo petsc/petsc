@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.10 1997/07/09 20:52:08 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.11 1997/10/19 03:24:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests catching of floating point exceptions.\n\n";
 
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "CreateError"
 int CreateError(double x)
 {
   x = 1.0/x;
@@ -13,6 +15,8 @@ int CreateError(double x)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int ierr;

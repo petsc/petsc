@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex39.c,v 1.3 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
@@ -9,6 +9,8 @@ test  MatIncreaseOverlap (needed for aditive schwarts preconditioner \n\
 
 #include "sles.h"
 
+#undef __FUNC__
+#define __FUNC__ "FormElementStiffness"
 int FormElementStiffness(double H,Scalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -17,12 +19,16 @@ int FormElementStiffness(double H,Scalar *Ke)
   Ke[12] = -.125*H;  Ke[13] = H/12.0;  Ke[14] = -.125*H;  Ke[15] = H/6.0;
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "FormElementRhs"
 int FormElementRhs(double x, double y, double H,Scalar *r)
 {
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         C; 

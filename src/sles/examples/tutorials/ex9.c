@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.30 1998/06/05 20:37:47 balay Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.31 1999/01/12 23:16:17 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -33,9 +33,11 @@ T*/
 /* 
    Declare user-defined routines
 */
-int CheckError(Vec,Vec,Vec,int,int);
-int MyKSPMonitor(KSP,int,double,void*);
+extern int CheckError(Vec,Vec,Vec,int,int);
+extern int MyKSPMonitor(KSP,int,double,void*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Vec    x1, b1, x2, b2; /* solution and RHS vectors for systems #1 and #2 */
@@ -360,6 +362,8 @@ int main(int argc,char **args)
   PetscFinalize();
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "CheckError"
 /* ------------------------------------------------------------- */
 /*
     CheckError - Checks the error of the solution.
@@ -405,6 +409,8 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   return 0;
 }
 /* ------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "MyKSPMonitor"
 /*
    MyKSPMonitor - This is a user-defined routine for monitoring
    the SLES iterative solvers.

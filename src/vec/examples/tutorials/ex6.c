@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.15 1998/12/03 03:57:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.16 1999/01/12 23:13:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -7,6 +7,8 @@ a file, then forms a vector.\n\n";
 
 #include "vec.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   int     i, ierr, m = 10, flg, fd, size,sz;

@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.313 1999/03/14 22:13:41 curfman Exp bsmith $ 
+% $Id: part2.tex,v 1.314 1999/03/17 23:25:52 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3646,9 +3646,9 @@ be employed. \sindex{matrix-free Jacobians} \findex{PCSHELL}
 The user can create a matrix-free context for use within SNES with 
 the routine
 \begin{verbatim}
-   ierr = MatCreateSNESFDMF(SNES snes,Vec x, Mat *mat);
+   ierr = MatCreateSNESMF(SNES snes,Vec x, Mat *mat);
 \end{verbatim}
-\findex{MatCreateSNESFDMF()}
+\findex{MatCreateSNESMF()}
 This routine creates the data structures needed for the matrix-vector 
 products that arise within Krylov space iterative methods~\cite{brownsaad:90}
 by employing the matrix type {\tt MATSHELL}, \findex{MATSHELL}
@@ -3661,9 +3661,9 @@ option {\tt -snes\_mf\_operator}. \findex{-snes_mf_operator}
 The user can set one parameter to control the Jacobian-vector
 product approximation with the command
 \begin{verbatim}
-   ierr = MatSNESFDMFSetFunctionError(Mat mat,double rerror);
+   ierr = MatSNESMFSetFunctionError(Mat mat,double rerror);
 \end{verbatim}
-\findex{MatSNESFDMFSetFunctionError()}
+\findex{MatSNESMFSetFunctionError()}
 The parameter {\tt rerror} should be set to the square root of the 
 relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $ , 
 which assumes that the functions are evaluated to full double precision accuracy. 
@@ -3674,16 +3674,16 @@ This parameter can also be set from the options database with
 \findex{-snes_mf_err}
 
 SNES provides a way to register new routines to compute the h-differencing parameter;
-see the manual page for MatSNESFDMFSetType() and MatSNESFDMFRegister(). \findex{MatSNESFDMFSetType()}
-\findex{MatSNESFDMFRegister()}. We currently provide two default routines accessible via
+see the manual page for MatSNESMFSetType() and MatSNESMFRegister(). \findex{MatSNESMFSetType()}
+\findex{MatSNESMFRegister()}. We currently provide two default routines accessible via
 \begin{verbatim}
   -snes_mf_type <default or wp>
 \end{verbatim}
 For the default approach there is one ``tuning'' parameter, set with 
 \begin{verbatim}
-   ierr = MatSNESFDMFDefaultSetUmin(Mat mat,double );
+   ierr = MatSNESMFDefaultSetUmin(Mat mat,double );
 \end{verbatim}
-\findex{MatSNESFDMFDefaultSetUmin()}
+\findex{MatSNESMFDefaultSetUmin()}
 This parameter, {\tt umin} (or $u_{min}$), is a bit involved; its default is 
 $ 10^{-6} $ . The Jacobian-vector product is approximated via the formula
 \[
@@ -3710,8 +3710,8 @@ $ ||a|| = 1 $ and (b) for the entire {\bf linear} iterative process $ u $ does n
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the 
 options
 \begin{verbatim}
-   ierr = MatSNESFDMFWPSetComputeNormA(Mat mat,PetscTruth );
-   ierr = MatSNESFDMFWPSetComputeNormU(Mat mat,PetscTruth );
+   ierr = MatSNESMFWPSetComputeNormA(Mat mat,PetscTruth );
+   ierr = MatSNESMFWPSetComputeNormU(Mat mat,PetscTruth );
 \end{verbatim}
 or 
 \begin{verbatim}
@@ -3725,10 +3725,10 @@ application code.
 It is also possible to monitor the differencing parameters h that are computed
 via the routines
 \begin{verbatim}
-   MatSNESFDMFSetHHistory(Mat,Scalar *,int);
-   MatSNESFDMFResetHHistory(Mat,Scalar *,int);
-   MatSNESFDMFGetH(Mat,Scalar *);
-   MatSNESFDMFKSPMonitor(KSP,int,double,void *);
+   MatSNESMFSetHHistory(Mat,Scalar *,int);
+   MatSNESMFResetHHistory(Mat,Scalar *,int);
+   MatSNESMFGetH(Mat,Scalar *);
+   MatSNESMFKSPMonitor(KSP,int,double,void *);
 \end{verbatim}
 and the runtime option  {\tt -snes\_mf\_ksp\_monitor} \findex{snes_mf_ksp_monitor}
 
@@ -3758,7 +3758,7 @@ possible, as demonstrated by the example,
 Jacobian        & Create matrix with MatCreate(). $ ^* $ & Create matrix with MatCreateShell().\\
 (or Hessian)    & Assemble matrix with user-defined     & Use MatShellSetOperation() to set\\
 Matrix          & routine. $ ^\dagger $                         & various matrix actions.\\
-                &                                    & Or use MatCreateSNESFDMF().\\
+                &                                    & Or use MatCreateSNESMF().\\
 & & \\ \hline
 & & \\
 Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetSLES() and SLESGetPC() \\

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.7 1999/02/03 04:31:51 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.8 1999/02/15 21:58:35 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
@@ -87,11 +87,13 @@ typedef struct {
 /* 
    User-defined routines
 */
-int InitialConditions(Vec,AppCtx*);
-int RHSMatrixHeat(TS,double,Mat*,Mat*,MatStructure*,void*);
-int Monitor(TS,int,double,Vec,void*);
-int ExactSolution(double,Vec,AppCtx*);
+extern int InitialConditions(Vec,AppCtx*);
+extern int RHSMatrixHeat(TS,double,Mat*,Mat*,MatStructure*,void*);
+extern int Monitor(TS,int,double,Vec,void*);
+extern int ExactSolution(double,Vec,AppCtx*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   AppCtx        appctx;                 /* user-defined application context */
@@ -265,6 +267,8 @@ int main(int argc,char **argv)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "InitialConditions"
 /*
    InitialConditions - Computes the solution at the initial time. 
 
@@ -322,6 +326,8 @@ int InitialConditions(Vec u,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "ExactSolution"
 /*
    ExactSolution - Computes the exact solution at a given time.
 
@@ -366,6 +372,8 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "Monitor"
 /*
    Monitor - User-provided routine to monitor the solution computed at 
    each timestep.  This example plots the solution and computes the
@@ -442,6 +450,8 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "RHSMatrixHeat"
 /*
    RHSMatrixHeat - User-provided routine to compute the right-hand-side
    matrix for the heat equation.

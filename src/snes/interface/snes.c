@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.176 1999/03/15 02:45:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.177 1999/03/17 23:24:18 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -311,7 +311,7 @@ int SNESSetFromOptions(SNES snes)
   if (flg) {
     KSP ksp;
     ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetMonitor(ksp,MatSNESFDMFKSPMonitor,PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
@@ -1345,7 +1345,7 @@ int SNESSetUp(SNES snes,Vec x)
   */
   if (flg) {
     Mat J;
-    ierr = MatCreateSNESFDMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     PLogObjectParent(snes,J);
     snes->mfshell = J;
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -1357,7 +1357,7 @@ int SNESSetUp(SNES snes,Vec x)
     } else {
       SETERRQ(PETSC_ERR_SUP,0,"Method class doesn't support matrix-free operator option");
     }
-    ierr = MatSNESFDMFSetFromOptions(J);CHKERRQ(ierr);
+    ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
   /*
@@ -1366,7 +1366,7 @@ int SNESSetUp(SNES snes,Vec x)
    */
   if (flg) {
     Mat J;
-    ierr = MatCreateSNESFDMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     PLogObjectParent(snes,J);
     snes->mfshell = J;
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
@@ -1378,12 +1378,12 @@ int SNESSetUp(SNES snes,Vec x)
     } else {
       SETERRQ(PETSC_ERR_SUP,0,"Method class doesn't support matrix-free option");
     }
-    ierr = MatSNESFDMFSetFromOptions(J);CHKERRQ(ierr);
+    ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
   }
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetFunction() first");
     if (!snes->computefunction) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetFunction() first");
-    if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetJacobian() first");
+    if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetJacobian() first \n or use -snes_mf option");
     if (snes->vec_func == snes->vec_sol) {  
       SETERRQ(PETSC_ERR_ARG_IDN,0,"Solution vector cannot be function vector");
     }
@@ -1393,8 +1393,7 @@ int SNESSetUp(SNES snes,Vec x)
       SLES sles; KSP ksp;
       ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
       ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,
-             (void *)snes); CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,(void *)snes); CHKERRQ(ierr);
     }
   } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
     if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetGradient() first");
@@ -1402,7 +1401,7 @@ int SNESSetUp(SNES snes,Vec x)
     if (!snes->computeumfunction) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetMinimizationFunction() first");
     }
-    if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetHessian() first");
+    if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetHessian()");
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.32 1998/10/19 22:20:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.33 1998/12/03 04:06:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -7,6 +7,8 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 #include "da.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int       rank, size, M = 60, ierr,  time_steps = 100,flg;

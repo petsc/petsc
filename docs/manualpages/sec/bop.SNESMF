@@ -1,17 +1,17 @@
 <HTML>
 <HEAD>
-<TITLE>SNES Manual Pages</TITLE>
+<TITLE>SNESMF Manual Pages</TITLE>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> SNES Manual Pages
+<H2> SNESMF Manual Pages
 [<A HREF="../../manual.html#Node46"> Chapter 5 of Users Manual</A>]
 </H2>
 
-Scalable Non-Linear Equations Solvers (SNES)
-component, provides an easy-to-use interface to Newton's method.
-SNES uses A HREF="../SLES/index.html">SLES</A> for the solution of 
-its linear systems.
+The MatSNESMF routines provide a mechanism for solving nonlinear equations
+using <A HREF="../SNES/index.html">SNES</A> and "matrix-free" methods.
+      
+
 
 <P>
 

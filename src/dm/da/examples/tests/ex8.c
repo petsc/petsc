@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.10 1999/03/01 04:58:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.11 1999/03/07 17:30:06 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -8,6 +8,8 @@ static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 #include "sys.h"
 #include "ao.h"
 
+#undef __FUNC__
+#define __FUNC__ "GenerateSliceScatter"
 /*
     Given a DA generates a VecScatter context that will deliver a slice
   of the global vector to each processor. In this example, each processor
@@ -80,6 +82,8 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
 }
 
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int            rank, M = 3, N = 5, P=3, s=1, flg, nloc, l, i, j, k, kk;

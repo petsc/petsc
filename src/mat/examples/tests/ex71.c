@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.28 1997/10/19 03:29:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex71.c,v 1.29 1999/01/12 23:17:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
 #include "sles.h"
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   int     ierr,m = 4,n = 5,i,j,I,J,flg;

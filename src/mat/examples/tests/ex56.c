@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.17 1999/02/16 23:40:18 balay Exp balay $";
+static char vcid[] = "$Id: ex56.c,v 1.18 1999/03/11 21:04:50 balay Exp bsmith $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for \n\
 rectangular MatBAIJ matrix";
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         A;

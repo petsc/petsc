@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex21.c,v 1.4 1997/10/19 03:26:38 bsmith Exp balay $";
+static char vcid[] = "$Id: ex21.c,v 1.5 1998/06/11 15:26:05 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
@@ -8,6 +8,8 @@ for the parallel case.";
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         C, A;

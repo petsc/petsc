@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.1 1997/10/03 15:29:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.2 1999/02/03 04:29:11 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Makes a simple histogram\n";
 
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   Draw     draw;

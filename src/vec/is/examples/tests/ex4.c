@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.2 1998/06/11 19:54:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.3 1998/12/03 03:56:25 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests ISStrideToGeneral()\n\n";
 
 #include "is.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int        i, n, ierr,*ii,start,stride,step = 2;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex32.c,v 1.11 1998/12/03 04:01:49 bsmith Exp $";
+static char vcid[] = "$Id: ex72.c,v 1.1 1999/02/05 22:48:06 balay Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a Symmetric matrix in MatrixMarket format and writes\n\
@@ -10,6 +10,8 @@ output file. Input parameters are:\n\
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat    A;

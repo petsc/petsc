@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex19.c,v 1.7 1998/05/29 22:49:19 balay Exp bsmith $";
+static char vcid[] = "$Id: ex19.c,v 1.8 1999/01/12 23:15:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
@@ -10,6 +10,8 @@ This example uses bilinear elements on the unit square.  Input arguments are:\n\
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "FormElementStiffness"
 int FormElementStiffness(double H,Scalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -19,6 +21,8 @@ int FormElementStiffness(double H,Scalar *Ke)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat    C; 

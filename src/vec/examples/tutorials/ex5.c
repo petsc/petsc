@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.32 1998/12/03 03:57:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.33 1999/01/12 23:13:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -11,6 +11,8 @@ user-defined event logging.\n\n";
   the same program.  This example is intended only to demonstrate
   both input and output. */
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   int     i, m = 10, rank, size, low, high, ldim, iglobal, ierr,flg;

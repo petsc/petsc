@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.11 1998/03/31 17:27:12 balay Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.12 1998/12/03 04:05:44 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -42,9 +42,11 @@ typedef struct {
    DA          da;            /* distributed array data structure */
 } AppCtx;
 
-int FormFunction1(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
-int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormFunction1(SNES,Vec,Vec,void*), FormInitialGuess1(AppCtx*,Vec);
+extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
   SNES          snes;                      /* nonlinear solver */
@@ -123,6 +125,8 @@ int main( int argc, char **argv )
 
   return 0;
 }/* --------------------  Form initial approximation ----------------- */
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int     i, j, row, mx, my, ierr, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
@@ -157,6 +161,8 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   ierr = DALocalToGlobal(user->da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
   return 0;
 } /* --------------------  Evaluate Function F(x) --------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormFunction1"
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;
@@ -200,6 +206,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   PLogFlops(11*ym*xm);
   return 0; 
 } /* --------------------  Evaluate Jacobian F'(x) --------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormJacobian1"
 int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx *) ptr;

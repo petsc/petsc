@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.44 1998/12/09 16:01:21 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.45 1999/01/12 23:17:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -32,24 +32,26 @@ problems from the MINPACK-2 test suite.  The command line options are:\n\
 typedef enum {FunctionEval=1, GradientEval=2} FctGradFlag;
 
 /* General routines */
-int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int FormMinimizationFunction(SNES,Vec,double*,void*);
-int FormGradient(SNES,Vec,Vec,void*);
+extern int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormMinimizationFunction(SNES,Vec,double*,void*);
+extern int FormGradient(SNES,Vec,Vec,void*);
 
 /* For Elastic-Plastic Torsion test problem */
-int HessianProduct1(void *,Vec,Vec);
-int HessianProductMat1(Mat,Vec,Vec);
-int FormInitialGuess1(AppCtx*,Vec);
-int EvalFunctionGradient1(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
+extern int HessianProduct1(void *,Vec,Vec);
+extern int HessianProductMat1(Mat,Vec,Vec);
+extern int FormInitialGuess1(AppCtx*,Vec);
+extern int EvalFunctionGradient1(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 
 /* For Minimal Surface Area test problem */
-int HessianProduct2(void *,Vec,Vec);
-int HessianProductMat2(Mat,Vec,Vec);
-int FormInitialGuess2(AppCtx*,Vec);
-int EvalFunctionGradient2(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
-int BoundaryValues(AppCtx*);
+extern int HessianProduct2(void *,Vec,Vec);
+extern int HessianProductMat2(Mat,Vec,Vec);
+extern int FormInitialGuess2(AppCtx*,Vec);
+extern int EvalFunctionGradient2(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
+extern int BoundaryValues(AppCtx*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   SNES       snes;                 /* SNES context */
@@ -155,10 +157,11 @@ int main(int argc,char **argv)
   return 0;
 }
 /* -------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormMinimzationFunction"
 /*
     FormMinimizationFunction - Evaluates function f(x).
- */
-
+*/
 int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
@@ -174,10 +177,11 @@ int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
   return 0;
 }
 /* -------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormGradient"
 /*
     FormGradient - Evaluates gradient g(x).
- */
-
+*/
 int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
@@ -193,11 +197,12 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
   return 0;
 }
 /* -------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormHessian"
 /*
    FormHessian - Forms Hessian matrix by computing a column at a time.
- */
-int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
-                void *ptr)
+*/
+int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
   int        i, j, ierr, ndim;
@@ -238,6 +243,8 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
   return 0;
 }
 /* -------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "MatrxFreeHessian"
 /*
   MatrixFreeHessian
  */
@@ -257,6 +264,8 @@ int MatrixFreeHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,void 
 
 /* --------------------  Form initial approximation ----------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess1(AppCtx *user,Vec X)
 {
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
@@ -280,6 +289,8 @@ int FormInitialGuess1(AppCtx *user,Vec X)
 }
 /* ---------- Evaluate function f(x) and/or gradient g(x) ----------- */
 
+#undef __FUNC__
+#define __FUNC__ "EvalFunctionGradient1"
 int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
                          AppCtx *user)
 {
@@ -375,6 +386,8 @@ int EvalFunctionGradient1(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "HessianProductMat1"
 int HessianProductMat1(Mat mat,Vec svec,Vec y)
 {
   void *ptr;
@@ -384,6 +397,8 @@ int HessianProductMat1(Mat mat,Vec svec,Vec y)
 }
   
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "HessianProduct1"
 /* 
    HessianProduct - Computes the matrix-vector product: y = f''(x)*s
  */
@@ -473,6 +488,8 @@ int HessianProduct1(void *ptr,Vec svec,Vec y)
 
 /* --------------------  Form initial approximation ----------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess1"
 int FormInitialGuess2(AppCtx *user,Vec X)
 {
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
@@ -504,6 +521,8 @@ int FormInitialGuess2(AppCtx *user,Vec X)
 
 /* ---------- Evaluate function f(x) and/or gradient g(x) ----------- */
 
+#undef __FUNC__
+#define __FUNC__ "EvalFunctionGradient2"
 int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
                          AppCtx *user)
 {
@@ -638,6 +657,8 @@ int EvalFunctionGradient2(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
   return 0;
 }
 /* --------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "HessianProductMat2"
 int HessianProductMat2(Mat mat,Vec svec,Vec y)
 {
   void *ptr;
@@ -646,6 +667,8 @@ int HessianProductMat2(Mat mat,Vec svec,Vec y)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "HessianProduct2"
 /* 
    HessianProduct2 - Computes the matrix-vector product: y = f''(x)*s
  */
@@ -798,6 +821,8 @@ int HessianProduct2(void *ptr,Vec svec,Vec y)
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "BoundaryValues"
 /* 
    BoundaryValues - For Minimal Surface Area problem.  Computes Enneper's 
    boundary conditions (bottom, top, left, right) which are obtained by 

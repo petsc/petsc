@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex59.c,v 1.4 1998/01/28 21:02:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex59.c,v 1.5 1998/04/13 17:41:36 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatGetSubmatrix() in parallel";
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         C, A;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex69.c,v 1.1 1999/01/21 17:26:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.2 1999/01/27 19:48:08 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagonal.\n\n"; 
@@ -7,6 +7,8 @@ static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagon
 #include "mat.h"
 #include "pc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         C,A; 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.14 1998/01/12 17:14:14 balay Exp $";
+static char vcid[] = "$Id: ex57.c,v 1.9 1999/01/31 16:07:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
@@ -13,6 +13,8 @@ Options:\n\
 #include "mat.h"
 #include "vec.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {  
   char       fin[128],fout[128] ="default.mat";
@@ -37,27 +39,27 @@ int main(int argc,char **args)
   ierr = MatLoad(fdin,mtype,&A); CHKERRA(ierr);
   ierr = ViewerDestroy(fdin); CHKERRA(ierr);
   
-  ierr = MatGetSize(A,&size,&size);  CHKERRQ(ierr);
+  ierr = MatGetSize(A,&size,&size);  CHKERRA(ierr);
   size /= 2;
-  ierr = OptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-size", &size,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-start",&start,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-size", &size,&flg); CHKERRA(ierr);
   
-  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow); CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol); CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B); CHKERRQ(ierr);
-  ierr = MatView(B[0],fdout); CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&isrow); CHKERRA(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,size,start,1,&iscol); CHKERRA(ierr);
+  ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&B); CHKERRA(ierr);
+  ierr = MatView(B[0],fdout); CHKERRA(ierr);
 
-  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,size,&b); CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b); CHKERRQ(ierr);
-  ierr = MatView(B[0],fdout); CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_SELF,PETSC_DECIDE,size,&b); CHKERRA(ierr);
+  ierr = VecSetFromOptions(b); CHKERRA(ierr);
+  ierr = MatView(B[0],fdout); CHKERRA(ierr);
   ierr = ViewerDestroy(fdout); CHKERRA(ierr);
 
-  MatDestroy(A); 
-  MatDestroy(B[0]);
-  VecDestroy(b);
+  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = MatDestroy(B[0]);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRA(ierr);
   PetscFree(B);
-  ISDestroy(iscol);
-  ISDestroy(isrow);
+  ierr = ISDestroy(iscol);CHKERRA(ierr);
+  ierr = ISDestroy(isrow);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

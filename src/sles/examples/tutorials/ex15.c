@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.6 1997/11/28 16:20:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.7 1999/01/12 23:16:17 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
@@ -34,10 +34,10 @@ typedef struct {
 } SampleShellPC;
 
 /* Declare routines for user-provided preconditioner */
-int SampleShellPCCreate(SampleShellPC**);
-int SampleShellPCSetUp(SampleShellPC*,Mat,Vec);
-int SampleShellPCApply(void*,Vec x,Vec y);
-int SampleShellPCDestroy(SampleShellPC*);
+extern int SampleShellPCCreate(SampleShellPC**);
+extern int SampleShellPCSetUp(SampleShellPC*,Mat,Vec);
+extern int SampleShellPCApply(void*,Vec x,Vec y);
+extern int SampleShellPCDestroy(SampleShellPC*);
 
 /* 
    User-defined routines.  Note that immediately before each routine below,

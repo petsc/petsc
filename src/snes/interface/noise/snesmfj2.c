@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.12 1999/02/18 22:51:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.13 1999/03/07 17:29:25 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -211,7 +211,7 @@ $   Alternatively, the differencing parameter, h, can be set using
 $   Jorge's nifty new strategy if one specifies the option 
 $          -snes_mf_jorge
 
-   The user can set these parameters via MatSNESFDMFSetFunctionError().
+   The user can set these parameters via MatSNESMFSetFunctionError().
    See the nonlinear solvers chapter of the users manual for details.
 
    The user should call MatDestroy() when finished with the matrix-free
@@ -226,7 +226,7 @@ $  -snes_mf_jorge
 
 .keywords: SNES, default, matrix-free, create, matrix
 
-.seealso: MatDestroy(), MatSNESFDMFSetFunctionError()
+.seealso: MatDestroy(), MatSNESMFSetFunctionError()
 @*/
 int SNESDefaultMatrixFreeCreate2(SNES snes,Vec x, Mat *J)
 {
@@ -316,7 +316,7 @@ $
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: MatCreateSNESFDMF()
+.seealso: MatCreateSNESMF()
 @*/
 int SNESDefaultMatrixFreeSetParameters2(Mat mat,double error,double umin,double h)
 {

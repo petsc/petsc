@@ -1,5 +1,5 @@
 
-/*      "$Id: ex2.c,v 1.6 1997/01/01 03:35:16 bsmith Exp bsmith $"; */
+/*      "$Id: ex2.c,v 1.7 1997/04/10 00:00:03 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
@@ -19,6 +19,8 @@ T*/
 
 #include "is.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int i, n, ierr,  *indices, first, step;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.36 1998/12/17 22:11:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.37 1999/01/12 23:16:17 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -36,6 +36,8 @@ T*/
 */
 #include "sles.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Vec     x, b, u;      /* approx solution, RHS, exact solution */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.9 1998/08/03 16:10:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.10 1998/12/03 04:06:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData \n\n";
@@ -7,6 +7,8 @@ static char help[] = "Tests AOData \n\n";
 #include "ao.h"
 #include "bitarray.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int         n = 2,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;

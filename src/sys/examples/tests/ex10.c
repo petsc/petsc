@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.2 1997/08/14 16:36:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.3 1997/08/14 16:42:17 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: ex10.c,v 1.2 1997/08/14 16:36:19 bsmith Exp bsmith $"
 
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int i, *a,*b;

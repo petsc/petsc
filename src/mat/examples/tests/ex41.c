@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex41.c,v 1.7 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex41.c,v 1.8 1998/12/03 04:01:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
@@ -12,6 +12,8 @@ is similar to ex40.c; here the index sets used are random. Input arguments are:\
 #include "mat.h"
 #include "sles.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   int        ierr, flg, nd = 2, ov=1,i ,j,size, m, n, rank, *idx;

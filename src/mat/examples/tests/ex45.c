@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex45.c,v 1.2 1997/07/09 20:55:45 balay Exp bsmith $";
+static char vcid[] = "$Id: ex45.c,v 1.3 1999/01/31 16:07:27 bsmith Exp bsmith $";
 #endif
 
 #include <stdio.h>
@@ -16,6 +16,8 @@ PETSc files on Paragon/Dec Alpha.
 extern void Store2DArray(int,int,double*,char*,int *);
 extern void Store1DArray(int,double*,char*,int *);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   double a[100],v[10];
@@ -33,6 +35,8 @@ int main(int argc,char **args)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "Store2DArray"
 void Store2DArray(int m, int n, double *a, char *filename,int *fdd)
 {
   int     fd = *fdd;
@@ -71,6 +75,8 @@ void Store2DArray(int m, int n, double *a, char *filename,int *fdd)
 
 }
 
+#undef __FUNC__
+#define __FUNC__ "Store1DArray"
 void Store1DArray(int m, double *a, char *filename,int *fdd)
 {
   int  fd = *fdd;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.3 1998/03/20 22:53:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.4 1998/12/03 04:06:22 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
@@ -7,6 +7,8 @@ static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 #include "mat.h"
 #include "da.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int            i,test_order,M = 3, N = 5, P=3, s=1, w=2, flg;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.5 1998/07/29 20:16:32 balay Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.6 1998/12/03 04:01:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
@@ -7,6 +7,8 @@ MatGetSubMatrices and MatZeroEntries.\n\n";
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   Mat       mat, submat,*submatrices;

@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex28.c,v 1.7 1999/01/12 23:15:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex28.c,v 1.8 1999/03/11 16:19:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc, char **args)
 {
   Mat    A,LU;

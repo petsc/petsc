@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex16.c,v 1.6 1998/06/26 21:01:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex16.c,v 1.7 1999/01/12 23:16:17 bsmith Exp bsmith $";
 #endif
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
@@ -31,6 +31,8 @@ T*/
 */
 #include "sles.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Vec         x, b, u;  /* approx solution, RHS, exact solution */

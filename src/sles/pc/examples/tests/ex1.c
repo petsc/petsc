@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.27 1997/09/22 15:22:00 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.28 1997/10/19 03:24:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the creation of a PC context.\n\n";
 
 #include "pc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   PC  pc;

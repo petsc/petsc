@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.16 1999/03/01 04:58:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.17 1999/03/11 16:23:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -126,6 +126,8 @@ extern int DataPartitionVertices(GridData *);
 extern int DataMoveVertices(GridData *);
 extern int DataDestroy(GridData *);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   int          ierr;
@@ -163,6 +165,8 @@ int main(int argc,char **args)
 }
 
 
+#undef __FUNC__
+#define __FUNC__ "DataRead"
 /*
      Reads in the grid data from a file; each processor is naively 
   assigned a continuous chunk of vertex and element data. Later the data
@@ -397,6 +401,8 @@ int DataRead(GridData *gdata)
 }
 
 
+#undef __FUNC__
+#define __FUNC__ "DataPartitionElements"
 /*
          Given the grid data spread across the processors, determines a
    new partitioning of the CELLS to reduce the number of cut edges between
@@ -447,6 +453,8 @@ int DataPartitionElements(GridData *gdata)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "DataMoveElements"
 /*
       Moves the grid element data to be on the correct processor for the new
    element partitioning.
@@ -544,6 +552,8 @@ int DataMoveElements(GridData *gdata)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "DataPartitionVertice"
 /*
          Given the newly partitioned cells, this routine partitions the 
      vertices.
@@ -659,6 +669,8 @@ int DataPartitionVertices(GridData *gdata)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__
+#define __FUNC__ "DataMoveVertices"
 /*
      Given the partitioning of the vertices; renumbers the element vertex lists for the 
      new vertex numbering and moves the vertex coordinate values to the correct processor
@@ -748,6 +760,8 @@ int DataMoveVertices(GridData *gdata)
 }  
 
 
+#undef __FUNC__
+#define __FUNC__ "DataDestroy"
 int DataDestroy(GridData *gdata)
 {
   PetscFunctionBegin;

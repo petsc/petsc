@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.33 1997/07/09 20:49:55 balay Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.34 1998/12/03 03:57:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
@@ -7,6 +7,8 @@ static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 #include "vec.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int           n = 6, ierr, loc[6] = {0,1,2,3,4,5};

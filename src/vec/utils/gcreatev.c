@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.56 1999/01/27 21:20:24 balay Exp curfman $";
+static char vcid[] = "$Id: gcreatev.c,v 1.57 1999/03/07 14:34:25 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -91,7 +91,7 @@ int VecRegisterDestroy(void)
 
    Sample usage:
 .vb
-   VecRegister("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   VecRegister("my_solver","/home/username/my_lib/lib/libO/solaris/libmine",
                "MyVectorCreate",MyVectorCreate);
 .ve
 

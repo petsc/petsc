@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.7 1999/02/28 23:18:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr1.c,v 1.8 1999/03/17 23:25:10 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -47,6 +47,8 @@ int DACreateUniformCoordinates(DA da,double xmin,double xmax,double ymin,double 
       }
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,1,"Cannot create uniform coordinates for this dimension %d\n",dim);
   }
 
   ierr = DASetCoordinates(da,xcoor);CHKERRQ(ierr);

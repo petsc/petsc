@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.20 1998/10/19 22:16:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.21 1999/01/12 23:13:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
@@ -23,6 +23,8 @@ EXTERN_C_BEGIN
 extern void ex7f_(Vec *,int*);
 EXTERN_C_END
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   int              ierr, m = 10;
@@ -55,7 +57,8 @@ int main(int argc,char **args)
 }
 
 EXTERN_C_BEGIN
-
+#undef __FUNC__
+#define __FUNC__ "ex7c_"
 int ex7c_(Vec *fvec, int *fcomm)
 {
   MPI_Comm comm;
@@ -75,5 +78,4 @@ int ex7c_(Vec *fvec, int *fcomm)
   
   return 0;
 }
- 
 EXTERN_C_END

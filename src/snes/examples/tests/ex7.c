@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.39 1999/02/16 23:00:16 balay Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.40 1999/02/16 23:04:02 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -20,6 +20,8 @@ typedef struct {
   Mat precond;
 } AppCtx;
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
   SNES         snes;                 /* SNES context */
@@ -62,7 +64,7 @@ int main( int argc, char **argv )
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* create matrix free matrix for Jacobian */
-  ierr = MatCreateSNESFDMF(snes,x,&J); CHKERRA(ierr);
+  ierr = MatCreateSNESMF(snes,x,&J); CHKERRA(ierr);
 
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
@@ -109,6 +111,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 }
 /* --------------------  Form initial approximation ----------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess"
 int FormInitialGuess(SNES snes,Vec x)
 {
   int    ierr;
@@ -116,6 +120,8 @@ int FormInitialGuess(SNES snes,Vec x)
   ierr = VecSet(&pfive,x); CHKERRQ(ierr);
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "FormJacobian"
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*  Evaluates a matrix that is used to precondition the matrix-free
     jacobian. In this case, the explict preconditioner matrix is 
@@ -151,8 +157,7 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
     ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
     *flag = SAME_NONZERO_PATTERN;
-  }
-  else { /* reuse preconditioner from last iteration */
+  }  else { /* reuse preconditioner from last iteration */
     printf("iter=%d, using old preconditioning matrix\n",iter+1);
     *flag = SAME_PRECONDITIONER;
   }
@@ -161,6 +166,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 }
 /* --------------------  User-defined monitor ----------------------- */
 
+#undef __FUNC__
+#define __FUNC__ "Monitor"
 int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
   int        ierr;

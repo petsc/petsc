@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5s.c,v 1.5 1998/12/03 04:05:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5s.c,v 1.6 1999/03/07 17:29:42 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -94,6 +94,8 @@ typedef struct {
 extern int FormFunction(SNES,Vec,Vec,void*), FormInitialGuess(AppCtx*,Vec);
 extern int FormFunctionFortran(SNES,Vec,Vec,void*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 /* 
     The main program is written in C while the user provided function
  is given in both Fortran and C. The main program could also be written 
@@ -268,6 +270,8 @@ int main( int argc, char **argv )
 }
 /* ------------------------------------------------------------------- */
 
+#undef __FUNC__
+#define __FUNC__ "FormInitialGuess"
 /* 
    FormInitialGuess - Forms initial approximation.
 
@@ -340,6 +344,8 @@ int FormInitialGuess(AppCtx *user,Vec X)
   return 0;
 } 
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormFunction"
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -427,6 +433,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 #endif
 
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormFunctionFortran"
 /* 
    FormFunctionFortran - Evaluates nonlinear function, F(x) in Fortran.
 

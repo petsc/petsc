@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.14 1998/07/31 20:48:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.15 1998/12/03 04:06:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -7,6 +7,8 @@ static char help[] = "Tests DALocalToLocal().\n\n";
 #include "da.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int            rank,M=8,ierr,dof=1,stencil_width=1,flg=0,i,start,end,P=5;

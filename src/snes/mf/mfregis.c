@@ -1,37 +1,37 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mfregis.c,v 1.2 1998/11/12 03:43:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mfregis.c,v 1.3 1999/03/17 23:24:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
 
 EXTERN_C_BEGIN
-extern int MatSNESFDMFCreate_Default(MatSNESFDMFCtx);
-extern int MatSNESFDMFCreate_WP(MatSNESFDMFCtx);
+extern int MatSNESMFCreate_Default(MatSNESMFCtx);
+extern int MatSNESMFCreate_WP(MatSNESMFCtx);
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "MatSNESFDMFRegisterAll"
+#define __FUNC__ "MatSNESMFRegisterAll"
 /*@C
-  MatSNESFDMFRegisterAll - Registers all of the compute-h in the MatSNESFDMF package.
+  MatSNESMFRegisterAll - Registers all of the compute-h in the MatSNESMF package.
 
   Not Collective
 
   Level: developer
 
-.keywords: MatSNESFDMF, register, all
+.keywords: MatSNESMF, register, all
 
-.seealso:  MatSNESFDMFRegisterDestroy(), MatSNESFDMFRegister(), MatSNESFDMFCreate(), 
-           MatSNESFDMFSetType()
+.seealso:  MatSNESMFRegisterDestroy(), MatSNESMFRegister(), MatSNESMFCreate(), 
+           MatSNESMFSetType()
 @*/
-int MatSNESFDMFRegisterAll(char *path)
+int MatSNESMFRegisterAll(char *path)
 {
   int ierr;
 
   PetscFunctionBegin;
-  MatSNESFDMFRegisterAllCalled = 1;
+  MatSNESMFRegisterAllCalled = 1;
 
-  ierr = MatSNESFDMFRegister("default",path,"MatSNESFDMFCreate_Default",MatSNESFDMFCreate_Default);CHKERRQ(ierr);
-  ierr = MatSNESFDMFRegister("wp",path,"MatSNESFDMFCreate_WP",MatSNESFDMFCreate_WP);CHKERRQ(ierr);
+  ierr = MatSNESMFRegister("default",path,"MatSNESMFCreate_Default",MatSNESMFCreate_Default);CHKERRQ(ierr);
+  ierr = MatSNESMFRegister("wp",path,"MatSNESMFCreate_WP",MatSNESMFCreate_WP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

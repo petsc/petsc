@@ -1,10 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscMalloc.c,v 1.11 1997/10/19 03:30:47 bsmith Exp balay $";
+static char vcid[] = "$Id: PetscMalloc.c,v 1.12 1998/04/21 18:34:13 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv)
 {
   PLogDouble  x, y;

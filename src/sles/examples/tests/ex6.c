@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.52 1998/05/29 20:37:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.53 1998/12/03 04:02:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -11,6 +11,8 @@ Input arguments are:\n\
 #include "sles.h"
 #include "petsclog.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   int        ierr, its, flg;

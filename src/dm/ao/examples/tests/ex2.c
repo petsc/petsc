@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.5 1997/09/26 02:21:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.6 1998/12/03 04:06:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests application ordering\n\n";
@@ -7,6 +7,8 @@ static char help[] = "Tests application ordering\n\n";
 #include "petsc.h"
 #include "ao.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int         n, ierr,flg,rank,size,*ispetsc,*isapp,start,N,i;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.9 1998/07/02 13:17:31 balay Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.10 1998/12/03 04:02:46 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -41,6 +41,8 @@ extern int UserInitializeLinearSolver(int,int,UserCtx *);
 extern int UserFinalizeLinearSolver(UserCtx *);
 extern int UserDoLinearSolver(Scalar *,UserCtx *userctx,Scalar *b,Scalar *x);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   UserCtx userctx;
@@ -143,6 +145,8 @@ int main(int argc,char **args)
 }
 
 /* ------------------------------------------------------------------------*/
+#undef __FUNC__
+#define __FUNC__ "UserInitializedLinearSolve"
 int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
 {
   int N,ierr;
@@ -181,6 +185,8 @@ int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "UserDoLinearSolve"
 /*
    Solves -div ( rho grad psi) = F using finite differences.
    rho is a 2-dimensional array of size m by n, stored in Fortran
@@ -295,6 +301,8 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
 }
 
 /* ------------------------------------------------------------------------*/
+#undef __FUNC__
+#define __FUNC__ "UserFinalizeLinearSolve"
 int UserFinalizeLinearSolver(UserCtx *userctx)
 {
   int ierr;

@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.5 1998/10/07 00:19:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests relaxation for dense matrices.\n\n"; 
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         C; 

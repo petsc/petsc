@@ -1,9 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: MPI_Wtime.c,v 1.7 1997/10/19 03:30:47 bsmith Exp balay $";
+static char vcid[] = "$Id: MPI_Wtime.c,v 1.8 1999/02/22 21:35:57 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv)
 {
   double x, y;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.11 1998/12/03 04:04:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.12 1999/01/12 23:17:05 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -30,6 +30,8 @@ extern double solx(double);
 extern double soly(double);
 extern double solz(double);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int           ierr,  time_steps = 100, steps, flg, size;
@@ -93,6 +95,8 @@ int main(int argc,char **argv)
 }
 
 /* -------------------------------------------------------------------*/
+#undef __FUNC__
+#define __FUNC__ "Initial"
 /* this test problem has initial values (1,1,1).                      */
 int Initial(Vec global, void *ctx)
 {
@@ -115,6 +119,8 @@ int Initial(Vec global, void *ctx)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "Monitor"
 int Monitor(TS ts, int step, double time,Vec global, void *ctx)
 {
   VecScatter scatter;
@@ -152,6 +158,8 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "RHSFunction"
 int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
 {
   Scalar *inptr, *outptr;
@@ -209,6 +217,8 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "RHSJacobian"
 int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
   Mat A = *AA;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.32 1998/03/20 22:53:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.33 1998/12/03 04:06:22 bsmith Exp bsmith $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -7,6 +7,8 @@ static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 #include "da.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int            rank, M = 10, N = 8, m = PETSC_DECIDE, ierr, flg;

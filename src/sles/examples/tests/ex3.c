@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.52 1997/11/28 16:20:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.53 1999/01/12 23:16:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -11,6 +11,8 @@ differently from the way it is assembled.  Input arguments are:\n\
 
 #include "sles.h"
 
+#undef __FUNC__
+#define __FUNC__ "FormElementStiffness"
 int FormElementStiffness(double H,Scalar *Ke)
 {
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
@@ -19,12 +21,16 @@ int FormElementStiffness(double H,Scalar *Ke)
   Ke[12] = -.125*H;  Ke[13] = H/12.0;  Ke[14] = -.125*H;  Ke[15] = H/6.0;
   return 0;
 }
+#undef __FUNC__
+#define __FUNC__ "FormElementRhs"
 int FormElementRhs(double x, double y, double H,Scalar *r)
 {
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         C; 

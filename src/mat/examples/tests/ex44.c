@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex44.c,v 1.5 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex44.c,v 1.6 1999/01/31 16:07:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -7,6 +7,8 @@ static char help[] =
 
 #include "mat.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat     C;

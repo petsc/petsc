@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.28 1999/03/11 16:23:44 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.29 1999/03/17 23:25:09 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -59,8 +59,10 @@ struct _p_DA {
 */
 
 extern int DAView_Binary(DA,Viewer);
-extern int VecLoadIntoVector_Binary_DA(Viewer,Vec);
+EXTERN_C_BEGIN
 extern int VecView_MPI_DA(Vec,Viewer);
+extern int VecLoadIntoVector_Binary_DA(Viewer,Vec);
+EXTERN_C_END
 
 extern int DAGetGlobalToGlobal1_Private(DA,int**);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.24 1997/10/19 03:31:04 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.25 1998/06/05 20:32:55 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
@@ -25,6 +25,8 @@ T*/
 */
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int i, ierr, imax=10000, icount, USER_EVENT;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex61.c,v 1.1 1998/05/12 19:32:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex61.c,v 1.2 1998/05/29 20:37:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatSeq(B)AIJSetColumnIndices()";
@@ -13,6 +13,8 @@ static char help[] = "Tests MatSeq(B)AIJSetColumnIndices()";
          1 2 3
          0 0 3
 */
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         A;

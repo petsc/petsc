@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.5 1997/09/22 15:21:54 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.6 1997/10/19 03:27:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
 
 #include "sles.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat         C; 

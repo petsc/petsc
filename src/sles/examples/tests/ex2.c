@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.8 1997/11/28 16:20:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.9 1999/01/12 23:16:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
@@ -29,8 +29,10 @@ T*/
 */
 #include "sles.h"
 
-int slesex(int,char**);
+extern int slesex(int,char**);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
     MPI_Init( &argc, &argv );
@@ -39,6 +41,8 @@ int main( int argc, char **argv )
     return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "slesex"
 int slesex(int argc,char **args)
 {
   Vec     x, b, u;      /* approx solution, RHS, exact solution */

@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.23 1998/12/03 04:03:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.24 1999/01/12 23:16:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates opening and drawing a window\n";
 
 #include "petsc.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   Draw draw;

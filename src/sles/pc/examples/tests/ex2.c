@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.41 1997/09/22 15:22:40 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.42 1998/03/06 00:14:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -10,6 +10,8 @@ users should employ the SLES interface instead of using PC directly.\n\n";
 #include "petsc.h"
 #include <stdio.h>
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Mat     mat;          /* matrix */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.9 1997/11/28 16:18:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.10 1998/12/03 03:56:29 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
@@ -19,6 +19,8 @@ T*/
 */
 #include "is.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int      ierr,*indices,rank,n;

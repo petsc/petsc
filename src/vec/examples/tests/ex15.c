@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.2 1997/12/12 19:36:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.3 1998/12/03 03:57:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests VecSetValuesBlocked() on Seq vectors\n\n";
@@ -7,6 +7,8 @@ static char help[] = "Tests VecSetValuesBlocked() on Seq vectors\n\n";
 #include "vec.h"
 #include "sys.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main(int argc,char **argv)
 {
   int          n = 9, ierr, size,bs = 3,indices[2],i;

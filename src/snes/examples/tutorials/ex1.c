@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.8 1997/09/22 15:19:54 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.9 1997/10/19 03:30:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -26,9 +26,11 @@ T*/
 /* 
    User-defined routines
 */
-int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int FormFunction(SNES,Vec,Vec,void*);
+extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormFunction(SNES,Vec,Vec,void*);
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv )
 {
   SNES     snes;         /* nonlinear solver context */
@@ -125,6 +127,8 @@ int main( int argc, char **argv )
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormFunction"
 /* 
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -166,6 +170,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormJacobian"
 /*
    FormJacobian - Evaluates Jacobian matrix.
 

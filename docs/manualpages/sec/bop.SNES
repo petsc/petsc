@@ -10,7 +10,7 @@
 
 Scalable Non-Linear Equations Solvers (SNES)
 component, provides an easy-to-use interface to Newton's method.
-SNES uses A HREF="../SLES/index.html">SLES</A> for the solution of 
+SNES uses <A HREF="../SLES/index.html">SLES</A> for the solution of 
 its linear systems.
 
 <P>

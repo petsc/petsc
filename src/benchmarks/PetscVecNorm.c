@@ -1,9 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: PetscVecNorm.c,v 1.4 1997/11/28 16:22:21 bsmith Exp balay $";
+static char vcid[] = "$Id: PetscVecNorm.c,v 1.5 1998/04/21 18:34:13 balay Exp bsmith $";
 #endif
 
 #include "vec.h"
 
+#undef __FUNC__
+#define __FUNC__ "main"
 int main( int argc, char **argv)
 {
   Vec        x;
