@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.35 1996/06/27 14:24:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.36 1996/07/08 22:23:25 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
     ierr = VecGetLocalSize(x,&ldim); CHKERRA(ierr);
     ierr = MatCreateShell(MPI_COMM_WORLD,ldim,user.ndim,user.ndim,user.ndim,
            (void*)&user,&H); CHKERRA(ierr);
-    ierr = MatShellSetOperation(H,MAT_MULT,(void*)HessianProductMat); CHKERRA(ierr);
+    ierr = MatShellSetOperation(H,MATOP_MULT,(void*)HessianProductMat); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,MatrixFreeHessian,(void *)&user); CHKERRA(ierr);
 
     /* Set null preconditioner.  Alternatively, set user-provided 
