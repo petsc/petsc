@@ -1,21 +1,21 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.45 1995/09/22 23:05:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.46 1995/09/30 19:29:59 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/
 
 /*@
-    MatGetFormatFromOptions - Determines from the options database what 
-            matrix format the users wants to use.
+   MatGetFormatFromOptions - Determines from the options database what matrix format
+   the user has specified.
 
-  Input Parameters:
-.  comm - the MPI communicator to share matrix
-
-  Output Parameters:
+   Input Parameter:
+.  comm - the MPI communicator
 .  type - the type of matrix desired, for example MATSEQAIJ
-.  set - flag indicating whether user set matrix format option.
+
+   Output Parameters:
+.  set - flag indicating whether user set matrix type option.
 
 .seealso: MatCreate()
  @*/
@@ -24,10 +24,13 @@ int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
   int numtid;
   MPI_Comm_size(comm,&numtid);
   if (OptionsHasName(0,"-help")) {
-    MPIU_printf(comm,"Matrix format options: -mat_seqaij, -mat_aij, -mat_mpiaij\n");
-    MPIU_printf(comm,"            -mat_row, -mat_seqrow, -mat_mpirow\n");
-    MPIU_printf(comm,"            -mat_mpirowbs, -mat_seqdense\n");
-    MPIU_printf(comm,"            -mat_bdiag, -mat_seqbdiag,-mat_mpibdiag\n"); 
+    MPIU_printf(comm,"Matrix format options: -mat_aij, -mat_seqaij, -mat_mpiaij\n");
+    MPIU_printf(comm,"   -mat_row, -mat_seqrow, -mat_mpirow\n");
+    MPIU_printf(comm,"   -mat_mpirowbs, -mat_seqdense\n");
+    MPIU_printf(comm,"   -mat_bdiag, -mat_seqbdiag,-mat_mpibdiag\n"); 
+    MPIU_printf(comm,"More matrix options: -mat_draw : draw nonzero structure of matrix\n");
+    MPIU_printf(comm,"   at conclusion of MatAssemblyEnd().  Use -pause <sec> to set\n");
+    MPIU_printf(comm,"   seconds of display pause.  Use -display <name> to set alternate display\n");
   }
   if (OptionsHasName(0,"-mat_seqdense")) {
     *type = MATSEQDENSE;

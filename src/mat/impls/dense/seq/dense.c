@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.64 1995/10/12 13:40:47 curfman Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.65 1995/10/13 02:05:06 curfman Exp bsmith $";
 #endif
 
 /*
@@ -337,57 +337,113 @@ static int MatInsert_SeqDense(Mat A,int m,int *indexm,int n,
 /* -----------------------------------------------------------------*/
 static int MatCopyPrivate_SeqDense(Mat A,Mat *newmat)
 {
-  Mat_SeqDense *mat = (Mat_SeqDense *) A->data,*l;
+  Mat_SeqDense *mat = (Mat_SeqDense *) A->data, *l;
   int          ierr;
   Mat          newi;
 
-  ierr = MatCreateSeqDense(A->comm,mat->m,mat->n,&newi);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(A->comm,mat->m,mat->n,&newi); CHKERRQ(ierr);
   l = (Mat_SeqDense *) newi->data;
   PetscMemcpy(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
   *newmat = newi;
   return 0;
 }
-#include "viewer.h"
 
-int MatView_SeqDense(PetscObject obj,Viewer ptr)
+#include "pinclude/pviewer.h"
+#include "sysio.h"
+
+static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
 {
-  Mat           A = (Mat) obj;
-  Mat_SeqDense  *mat = (Mat_SeqDense *) A->data;
-  Scalar        *v;
-  int           i,j,ierr;
-  PetscObject   vobj = (PetscObject) ptr;
+  Mat_SeqDense *a = (Mat_SeqDense *) A->data;
+  int          ierr, i, j, format;
+  FILE         *fd;
+  char         *outputname;
+  Scalar       *v;
 
-  if (ptr == 0) {
-    ptr = STDOUT_VIEWER_SELF; vobj = (PetscObject) ptr;
-  }
-  if (vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
-    return ViewerMatlabPutArray_Private(ptr,mat->m,mat->n,mat->v); 
-  }
+  ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+  ierr = ViewerFileGetOutputname_Private(viewer,&outputname); CHKERRQ(ierr);
+  ierr = ViewerFileGetFormat_Private(viewer,&format);
+  if (format == FILE_FORMAT_INFO) {
+    ;  /* do nothing for now */
+  } 
   else {
-    FILE *fd;
-    int format;
-    ierr = ViewerFileGetPointer_Private(ptr,&fd); CHKERRQ(ierr);
-    ierr = ViewerFileGetFormat_Private(ptr,&format); CHKERRQ(ierr);
-    if (format == FILE_FORMAT_INFO) {
-      /* do nothing for now */
-    }
-    else {
-      for ( i=0; i<mat->m; i++ ) {
-        v = mat->v + i;
-        for ( j=0; j<mat->n; j++ ) {
+    for ( i=0; i<a->m; i++ ) {
+      v = a->v + i;
+      for ( j=0; j<a->n; j++ ) {
 #if defined(PETSC_COMPLEX)
-          fprintf(fd,"%6.4e + %6.4e i ",real(*v),imag(*v)); v += mat->m;
+        fprintf(fd,"%6.4e + %6.4e i ",real(*v),imag(*v)); v += a->m;
 #else
-          fprintf(fd,"%6.4e ",*v); v += mat->m;
+        fprintf(fd,"%6.4e ",*v); v += a->m;
 #endif
-        }
-        fprintf(fd,"\n");
       }
+      fprintf(fd,"\n");
+    }
+  }
+  fflush(fd);
+  return 0;
+}
+
+static int MatView_SeqDense_Binary(Mat A,Viewer viewer)
+{
+  Mat_SeqDense *a = (Mat_SeqDense *) A->data;
+  int          ict, j, n = a->n, m = a->m, i, fd, *col_lens, ierr, nz = m*n;
+  Scalar       *v, *anonz;
+
+  ierr = ViewerFileGetDescriptor_Private(viewer,&fd); CHKERRQ(ierr);
+  col_lens = (int *) PETSCMALLOC( (4+nz)*sizeof(int) ); CHKPTRQ(col_lens);
+  col_lens[0] = MAT_COOKIE;
+  col_lens[1] = m;
+  col_lens[2] = n;
+  col_lens[3] = nz;
+
+  /* store lengths of each row and write (including header) to file */
+  for ( i=0; i<m; i++ ) col_lens[4+i] = n;
+  ierr = SYWrite(fd,col_lens,4+m,SYINT,1); CHKERRQ(ierr);
+
+  /* Possibly should write in smaller increments, not whole matrix at once? */
+ /* store column indices (zero start index) */
+  ict = 0;
+  for ( i=0; i<m; i++ ) {
+    for ( j=0; j<n; j++ ) col_lens[ict++] = j;
+  }
+  ierr = SYWrite(fd,col_lens,nz,SYINT,0); CHKERRQ(ierr);
+  PETSCFREE(col_lens);
+
+  /* store nonzero values */
+  anonz = (Scalar *) PETSCMALLOC((nz)*sizeof(Scalar)); CHKPTRQ(anonz);
+  ict = 0;
+  for ( i=0; i<m; i++ ) {
+    v = a->v + i;
+    for ( j=0; j<n; j++ ) {
+      anonz[ict++] = *v; v += a->m;
+    }
+  }
+  ierr = SYWrite(fd,anonz,nz,SYSCALAR,0); CHKERRQ(ierr);
+  PETSCFREE(anonz);
+  return 0;
+}
+
+static int MatView_SeqDense(PetscObject obj,Viewer viewer)
+{
+  Mat          A = (Mat) obj;
+  Mat_SeqDense *a = (Mat_SeqDense*) A->data;
+  PetscObject  vobj = (PetscObject) viewer;
+
+  if (!viewer) { 
+    viewer = STDOUT_VIEWER_SELF; vobj = (PetscObject) viewer;
+  }
+  if (vobj->cookie == VIEWER_COOKIE) {
+    if (vobj->type == MATLAB_VIEWER) {
+      return ViewerMatlabPutArray_Private(viewer,a->m,a->n,a->v); 
+    }
+    else if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
+      return MatView_SeqDense_ASCII(A,viewer);
+    }
+    else if (vobj->type == BINARY_FILE_VIEWER) {
+      return MatView_SeqDense_Binary(A,viewer);
     }
   }
   return 0;
 }
-
 
 static int MatDestroy_SeqDense(PetscObject obj)
 {
@@ -421,10 +477,10 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
     }
   }
   else { /* out-of-place transpose */
-    int ierr;
-    Mat tmat;
+    int          ierr;
+    Mat          tmat;
     Mat_SeqDense *tmatd;
-    Scalar *v2;
+    Scalar       *v2;
     ierr = MatCreateSeqDense(A->comm,mat->n,mat->m,&tmat); CHKERRQ(ierr);
     tmatd = (Mat_SeqDense *) tmat->data;
     v = mat->v; v2 = tmatd->v;

@@ -1,6 +1,5 @@
-
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.97 1995/10/11 21:35:23 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.98 1995/10/17 14:30:08 curfman Exp curfman $";
 #endif
 
 /*
@@ -150,7 +149,7 @@ $      size and structure (not the matrix entries)
 .seealso: ViewerFileSetFormat(), ViewerFileOpenASCII(), DrawOpenX(), 
           ViewerMatlabOpen(), MatLoad()
 @*/
-intint MatView(Mat mat,Viewer ptr)
+int MatView(Mat mat,Viewer ptr)
 {
   int format, ierr, rows, cols,nz, nzalloc, mem;
   FILE *fd;
@@ -992,6 +991,8 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
   PLogEventEnd(MAT_AssemblyBegin,mat,0,0,0);
   return 0;
 }
+
+#include "draw.h"
 /*@
    MatAssemblyEnd - Completes assembling the matrix.  This routine should
    be called after all calls to MatSetValues() and after MatAssemblyBegin().
@@ -999,6 +1000,12 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
    Input Parameters:
 .  mat - the matrix 
 .  type - type of assembly, either FLUSH_ASSEMBLY or FINAL_ASSEMBLY
+
+   Options Database Keys:
+$  -mat_draw : Draw nonzero structure of matrix at conclusion of MatEndAssembly(),
+               using MatView() and DrawOpenX().
+$  -display <name> : Set display name (default is host)
+$  -pause <sec> : Set number of seconds to pause after display
  
    Note: 
    MatSetValues() generally caches the values.  The matrix is ready to
@@ -1017,8 +1024,16 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
   PLogEventBegin(MAT_AssemblyEnd,mat,0,0,0);
   if (mat->ops.assemblyend) {ierr = (*mat->ops.assemblyend)(mat,type); CHKERRQ(ierr);}
   PLogEventEnd(MAT_AssemblyEnd,mat,0,0,0);
+  if (OptionsHasName(0,"-mat_draw")) {
+    DrawCtx win;
+    ierr = DrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRA(ierr);
+    ierr = MatView(mat,(Viewer)win); CHKERRA(ierr);
+    ierr = DrawSyncFlush(win); CHKERRA(ierr);
+    ierr = DrawDestroy(win); CHKERRA(ierr);
+  }
   return 0;
 }
+
 /*@
    MatCompress - Tries to store the matrix in as little space as 
    possible.  May fail if memory is already fully used, since it

@@ -8,7 +8,7 @@ SOURCEH       =
 OBJSC         =
 OBJSF         =
 LIBBASE       = libpetscmat
-EXAMPLES_1    = ex1  ex3  ex5 ex6  ex8 ex9 ex10 ex11  ex14\
+EXAMPLES_1    = ex1 ex3 ex5 ex6 ex8 ex9 ex10 ex11 ex14\
                 ex15 ex16 ex19 ex20 ex21 ex22
 RUNEXAMPLES_1 = runex1  runex3  runex5 runex6  runex8 runex9\
                 runex10 runex11 runex14 runex15 runex15_2 runex16\
@@ -21,7 +21,7 @@ EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
                 ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c \
                 ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
-                ex34.c
+                ex34.c ex35.c
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB)

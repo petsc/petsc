@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.19 1995/10/17 03:28:55 curfman Exp curfman $";
+static char vcid[] = "$Id: draw.c,v 1.20 1995/10/17 03:31:37 curfman Exp curfman $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -199,14 +199,17 @@ int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 
 /*@
    DrawSetPause - Sets the amount of time that program pauses after 
-   a DrawSyncFlush() is called. Defaults to zero unless the -pause 
-   option is given.
+   a DrawSyncFlush() is called. 
 
    Input Paramters:
 .  ctx - the drawing object
 .  pause - number of seconds to pause, -1 implies until user input
 
-.keywords:  draw, set, pause
+   Note:
+   By default the pause time is zero unless the -draw_pause option is given 
+   during DrawOpenX().
+
+.keywords: draw, set, pause
 
 .seealso: DrawSyncFlush()
 @*/
@@ -281,7 +284,7 @@ int DrawFlush(DrawCtx ctx)
   Input Parameters:
 .  ctx - the drawing context
 
-.keywords:  draw, sync, flush
+.keywords: draw, sync, flush
 
 .seealso: DrawSetPause()
 @*/
@@ -299,7 +302,7 @@ int DrawSyncFlush(DrawCtx ctx)
    Input Parameters:
 .  ctx - the drawing context
 
-.keywords:  draw, clear
+.keywords: draw, clear
 @*/
 int DrawClear(DrawCtx ctx)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.14 1995/10/11 15:20:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.15 1995/10/12 21:35:11 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -23,8 +23,9 @@ extern int MatLoad_MPIBDiag(Viewer,MatType,Mat *);
    with MatView().
 
    Input Parameters:
-.  bview - Binary file viewer, created with ViewerFileOpenBinary()
-.  outtype - Type of matrix desired, for example MATSEQAIJ, MATMPIROWBS,..
+.  bview - binary file viewer, created with ViewerFileOpenBinary()
+.  outtype - type of matrix desired, for example MATSEQAIJ,
+   MATMPIROWBS, etc.  See types in petsc/include/mat.h.
 
    Output Parameters:
 .  newmat - new matrix
@@ -38,17 +39,23 @@ extern int MatLoad_MPIBDiag(Viewer,MatType,Mat *);
    relatively small blocks of data rather than reading the entire
    matrix and then subsetting it.
 
-   The standard binary matrix storage format is
+   Notes for advanced users:
+   Most users should not need to know the details of the binary storage
+   format, since MatLoad() and MatView() completely hide these details.
+   But for anyone who's interested, the standard binary matrix storage
+   format is
 
-    int    MAT_COOKIE
-    int    number rows
-    int    number columns
-    int    total number of nonzeros
-    int    *number nonzeros in each row
-    int    *column indices of all nonzeros (starting index is zero)
-    Scalar *values of all nonzeros
+$    int    MAT_COOKIE
+$    int    number of rows
+$    int    number of columns
+$    int    total number of nonzeros
+$    int    *number nonzeros in each row
+$    int    *column indices of all nonzeros (starting index is zero)
+$    Scalar *values of all nonzeros
 
-.seealso: MatView(), VecLoad() 
+.keywords: matrix, load, binary, input
+
+.seealso: ViewerFileOpenBinary(), MatView(), VecLoad() 
  @*/  
 int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
 {
