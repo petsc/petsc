@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.228 2001/06/21 22:55:30 buschelm Exp buschelm $*/
+/*$Id: baij.c,v 1.229 2001/06/21 23:47:10 buschelm Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -210,6 +210,25 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
     break;
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
+    break;
+  case MAT_USE_SINGLE_PRECISION_SOLVES:
+#if defined(PETSC_USE_MAT_SINGLE)
+    if (a->bs==4) {
+      PetscTruth sse_enabled;
+      int ierr;
+      ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
+      if (sse_enabled) {
+        singleprecisionsolves = PETSC_TRUE;
+      } else {
+        PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
+      }
+    } else {
+      PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
+    }
+#else
+    PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
+#endif
+    break;
   default:
     SETERRQ(PETSC_ERR_SUP,"unknown option");
   }
