@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.25 1998/10/19 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.26 1999/03/01 04:58:59 bsmith Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -18,6 +18,7 @@ static char vcid[] = "$Id: zda.c,v 1.25 1998/10/19 22:15:08 bsmith Exp bsmith $"
 #define daview_                 DAVIEW
 #define dagetinfo_              DAGETINFO
 #define dagetcoloring_          DAGETCOLORING
+#define dagetislocaltoglobalmapping_ DAGETISLOCALTOGLOBALMAPPING
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define dacreateglobalvector_   dacreateglobalvector
 #define dacreatelocalvector_    dacreatelocalvector
@@ -30,9 +31,15 @@ static char vcid[] = "$Id: zda.c,v 1.25 1998/10/19 22:15:08 bsmith Exp bsmith $"
 #define dagetglobalindices_     dagetglobalindices
 #define dagetinfo_              dagetinfo
 #define dagetcoloring_          dagetcoloring
+#define dagetislocaltoglobalmapping_ dagetislocaltoglobalmapping
 #endif
 
 EXTERN_C_BEGIN
+
+void dagetislocaltoglobalmapping_(DA *da,ISLocalToGlobalMapping *map, int *__ierr)
+{
+  *__ierr = DAGetISLocalToGlobalMapping(*da,map);
+}
 
 void dagetcoloring_(DA *da, ISColoring *coloring, Mat *J,int *__ierr)
 {

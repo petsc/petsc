@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.104 1999/03/15 01:55:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.105 1999/03/18 00:28:07 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -405,9 +405,8 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
    Notes:
    Due to grid point reordering with DAs, we must always work
    with the local grid points, and then transform them to the new
-   global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
-   We cannot work directly with the global numbers for the original
-   uniprocessor grid!  
+   global numbering with the local-to-global mapping.  We cannot work
+   directly with the global numbers for the original uniprocessor grid!  
 
    Two methods are available for imposing this transformation
    when setting matrix entries:

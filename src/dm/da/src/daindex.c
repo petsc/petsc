@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.22 1999/01/31 16:11:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.23 1999/03/17 23:25:10 bsmith Exp curfman $";
 #endif
  
 /*
@@ -30,17 +30,21 @@ static char vcid[] = "$Id: daindex.c,v 1.22 1999/01/31 16:11:27 bsmith Exp bsmit
    in the list of local indices (even though those nodes are not updated 
    during calls to DAXXXToXXX().
 
+   Essentially the same data is returned in the form of a local-to-global mapping
+   with the routine DAGetISLocalToGlobalMapping();
+
    Fortran Note:
    This routine is used differently from Fortran
-$    DA          da
-$    integer     da_array(1)
-$    PetscOffset i_da
-$    int         ierr
-$       call DAGetGlobalIndices(da,da_array,i_da,ierr)
-$
-$   Access first local entry in list
-$      value = da_array(i_da + 1)
-$
+.vb
+        DA          da
+        integer     da_array(1)
+        PetscOffset i_da
+        integer     ierr
+        call DAGetGlobalIndices(da,da_array,i_da,ierr)
+
+   C Access first local entry in list
+        value = da_array(i_da + 1)
+.ve
 
    See the Fortran chapter of the users manual for details
 
@@ -48,6 +52,7 @@ $
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlobal()
           DAGlobalToLocal(), DALocalToLocal(), DAGetAO(), DAGetGlobalIndicesF90()
+          DAGetISLocalToGlobalMapping()
 @*/
 int DAGetGlobalIndices(DA da, int *n,int **idx)
 {

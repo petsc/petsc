@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.47 1999/02/15 21:56:55 balay Exp curfman $";
+! "$Id: ex5f.F,v 1.48 1999/03/18 00:27:08 curfman Exp curfman $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -528,8 +528,8 @@
 !  Notes:
 !  Due to grid point reordering with DAs, we must always work
 !  with the local grid points, and then transform them to the new
-!  global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
-!  We cannot work directly with the global numbers for the original
+!  global numbering with the local-to-global mapping.  We
+!  cannot work directly with the global numbers for the original
 !  uniprocessor grid!
 !
 !  Two methods are available for imposing this transformation
