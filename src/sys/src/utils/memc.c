@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.17 1996/04/01 02:54:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.18 1996/10/24 19:28:42 bsmith Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -19,6 +19,8 @@ static char vcid[] = "$Id: memc.c,v 1.17 1996/04/01 02:54:57 curfman Exp bsmith 
 
 
 #if defined(PARCH_rs6000_test)
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscMemcpy"
 void PetscMemcpy(void *a,void *b,int n)
 {
   double *aa, *bb;
@@ -31,6 +33,8 @@ void PetscMemcpy(void *a,void *b,int n)
   }
 }
 #else
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscMemcpy"
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a.
@@ -53,6 +57,8 @@ void PetscMemcpy(void *a,void *b,int n)
 }
 #endif
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscMemzero"
 /*@C
    PetscMemzero - Zeros the specified memory.
 
@@ -72,6 +78,8 @@ void PetscMemzero(void *a,int n)
   memset((char*)(a),0,n);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscMemcmp"
 /*@C
    PetscMemcmp - Compares two byte streams in memory.
 

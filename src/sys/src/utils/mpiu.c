@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.61 1996/12/08 20:50:08 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.62 1996/12/09 20:17:05 balay Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -30,6 +30,8 @@ struct _PrintfQueue {
 static PrintfQueue queue       = 0,queuebase = 0;
 static int         queuelength = 0;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSynchronizedPrintf"
 /*@C
     PetscSynchronizedPrintf - Prints output from several processors that
         is synchronized so that printed by first processor is followed by 
@@ -91,6 +93,8 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
   return 0;
 }
  
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSynchronizedFlush"
 /*@C
     PetscSynchronizedFlush - Flushes to the screen output from all processors 
         involved in previous PetscSynchronizedPrintf() calls.
@@ -145,6 +149,8 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 
 /* ---------------------------------------------------------------------------------------*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscFPrintf"
 /*@C
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
@@ -187,6 +193,8 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscPrintf"
 /*@C
     PetscPrintf - Prints to standard out, only from the first
     processor in the communicator.
@@ -236,6 +244,8 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
 */
 static char PetscDisplay[128]; 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetDisplay"
 int PetscSetDisplay()
 {
   int  size,rank,len,ierr,flag;
@@ -267,6 +277,8 @@ int PetscSetDisplay()
   return 0;  
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscGetDisplay"
 /*
      PetscGetDisplay - Gets the display variable for all processors.
 
@@ -290,6 +302,8 @@ int PetscGetDisplay(char *display,int n)
 */
 static int Petsc_Seq_keyval = MPI_KEYVAL_INVALID;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSequentialPhaseBegin"
 /*@C
    PetscSequentialPhaseBegin - Begins a sequential section of code.  
 
@@ -349,6 +363,8 @@ int PetscSequentialPhaseBegin(MPI_Comm comm,int ng )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSequentialPhaseEnd"
 /*@C
    PetscSequentialPhaseEnd - Ends a sequential section of code.
 
@@ -400,6 +416,8 @@ int PetscSequentialPhaseEnd(MPI_Comm comm,int ng )
 
 static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "Petsc_DelTag"
 /*
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
@@ -413,6 +431,8 @@ static int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_stat
   return MPI_SUCCESS;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectGetNewTag"
 /*@
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
@@ -444,6 +464,8 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectRestoreNewTag"
 /*@
     PetscObjectRestoreNewTag - Restores a new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
@@ -475,6 +497,8 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscCommDup_Private"
 /*
   PetscCommDup_Private - Duplicates the communicator only if it is not already PETSc 
                          communicator.
@@ -540,6 +564,8 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscCommFree_Private"
 /*
   PetscCommFree_Private - Frees communicator.  Use in conjunction with PetscCommDup_Private().
 */

@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: inherit.c,v 1.8 1996/07/08 22:17:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.9 1996/11/07 15:08:22 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectInherit_DefaultCopy"
 /*
     The default copy simply copies the pointer and adds one to the 
   reference counter.
@@ -20,6 +22,8 @@ static int PetscObjectInherit_DefaultCopy(void *in, void **out)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectInherit_DefaultDestroy"
 /*
     The default destroy treats it as a PETSc object and calls 
   its destroy routine.
@@ -33,6 +37,8 @@ static int PetscObjectInherit_DefaultDestroy(void *in)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectReference"
 /*@C
    PetscObjectReference - Indicate to any PetscObject that it is being
        referenced in another PetscObject. This increases the reference
@@ -50,6 +56,8 @@ int PetscObjectReference(PetscObject obj)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectInherit"
 /*@C
    PetscObjectInherit - Associate another object with a given PETSc object. 
                         This is to provide a limited support for inheritence.
@@ -84,6 +92,8 @@ int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscObjectGetChild"
 /*@C
    PetscObjectGetChild - Gets the child of any PetscObject.
 

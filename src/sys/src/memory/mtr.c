@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.62 1996/09/14 03:34:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.63 1996/11/07 15:08:22 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -27,6 +27,8 @@ int  PetscTrFreeDefault( void *, int, char * );
 void *PetscLow = (void *) 0x0  , *PetscHigh = (void *) 0xEEEEEEEE;
 int  TrMallocUsed = 0;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetUseTrMalloc_Private"
 int PetscSetUseTrMalloc_Private()
 {
   int ierr;
@@ -127,6 +129,8 @@ int MPI_Corrupted()
 }
 */
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrValid"
 /*
    PetscTrValid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
@@ -200,6 +204,8 @@ int PetscTrValid(int line,char *file )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrMallocDefault"
 /*
     PetscTrMallocDefault - Malloc with tracing.
 
@@ -270,6 +276,8 @@ void *PetscTrMallocDefault(unsigned int a, int lineno, char *fname )
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrFreeDefault"
 /*
    PetscTrFreeDefault - Free with tracing.
 
@@ -356,6 +364,8 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrSpace"
 /*@
     PetscTrSpace - Returns space statistics.
    
@@ -376,6 +386,8 @@ int PetscTrSpace( double *space, double *fr, double *maxs )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrDump"
 /*@C
    PetscTrDump - Dumps the allocated memory blocks to a file. The information 
    printed is: size of space (in bytes), address of space, id of space, 
@@ -413,6 +425,8 @@ int PetscTrDump( FILE *fp )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrDebugLevel"
 /*
     PetscTrDebugLevel - Set the level of debugging for the space management 
                    routines.
@@ -429,6 +443,8 @@ int  PetscTrDebugLevel(int level )
 
 
 #define TR_MAX_DUMP 100
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrImerge"
 /*
    The following routine attempts to give useful information about the
    memory usage when an "out-of-memory" error is encountered.  The rules are:
@@ -475,6 +491,8 @@ TRSPACE *PetscTrImerge(TRSPACE * l1,TRSPACE * l2 )
   return head;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrIsort"
 /* Sort head with n elements, returning the head */
 TRSPACE *PetscTrIsort( TRSPACE * head,int n )
 {
@@ -495,6 +513,8 @@ TRSPACE *PetscTrIsort( TRSPACE * head,int n )
   return PetscTrImerge( l1, l2 );
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrSortBlocks"
 int PetscTrSortBlocks()
 {
   TRSPACE *head;
@@ -510,6 +530,8 @@ int PetscTrSortBlocks()
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTrDumpGrouped"
 /* Takes sorted input and dumps as an aggregate */
 int PetscTrDumpGrouped(FILE *fp )
 {
