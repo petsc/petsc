@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.91 1996/10/24 17:28:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.92 1996/10/24 21:22:35 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -674,7 +674,7 @@ int VecAssemblyEnd(Vec vec)
   return 0;
 }
 
-/*@
+/*@C
    VecMTDot - Computes indefinite vector multiple dot products. 
    That is, it does NOT use the complex conjugate.
 
@@ -712,7 +712,7 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
   return 0;
 }
 
-/*@
+/*@C
    VecMDot - Computes vector multiple dot products. 
 
    Input Parameters:
@@ -749,7 +749,7 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
   return 0;
 }
 
-/*@
+/*@C
    VecMAXPY - Computes y[j] = alpha[j] x + y[j]. 
 
    Input Parameters:
