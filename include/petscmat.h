@@ -443,6 +443,8 @@ EXTERN int MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,int**);
 EXTERN int MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,int**);
 EXTERN int MatAdicSetLocalFunction(Mat,void (*)(void));
 
+EXTERN int MatSeqDenseSetLDA(Mat,int);
+
 EXTERN int MatStoreValues(Mat);
 EXTERN int MatRetrieveValues(Mat);
 
