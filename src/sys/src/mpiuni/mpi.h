@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.34 1996/10/03 17:42:20 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.35 1996/10/14 14:30:30 balay Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -224,7 +224,8 @@ typedef char*   MPI_Errhandler;
 #define MPI_Iprobe(source, tag, comm, flag, status)  \
                      *(flag)=0,  MPI_SUCCESS)
 #define MPI_Probe(source, tag, comm, status) MPI_SUCCESS
-#define MPI_Cancel(request) MPI_SUCCESS
+#define MPI_Cancel(request) (MPIUNI_TMP = (void *) (request), \
+                     MPI_SUCCESS)
 #define MPI_Test_cancelled(status, flag)  \
                      (*(flag)=0, MPI_SUCCESS)
 #define MPI_Send_init( buf, count,  datatype, dest, tag, comm, request) \
