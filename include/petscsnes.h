@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.39 1996/01/11 20:15:35 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.40 1996/01/12 03:56:30 bsmith Exp balay $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -47,7 +47,11 @@ extern int SNESGetFunction(SNES,Vec*);
 
 extern int SNESPrintHelp(SNES);
 extern int SNESView(SNES,Viewer);
+
 extern int SNESSetOptionsPrefix(SNES,char*);
+extern int SNESAppendOptionsPrefix(SNES,char*);
+extern int SNESGetOptionsPrefix(SNES,char**);
+
 extern int SNESSetFromOptions(SNES);
 extern int SNESGetType(SNES,SNESType*,char**);
 extern int SNESDefaultMonitor(SNES,int,double,void *);

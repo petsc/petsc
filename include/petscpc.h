@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.48 1996/01/09 15:05:40 curfman Exp balay $ */
+/* $Id: pc.h,v 1.49 1996/01/12 17:27:02 balay Exp balay $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -46,6 +46,7 @@ extern int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 extern int PCSetVector(PC,Vec);
 extern int PCPrintHelp(PC);
 extern int PCView(PC,Viewer);
+
 extern int PCSetOptionsPrefix(PC,char*);
 extern int PCAppendOptionsPrefix(PC,char*);
 extern int PCGetOptionsPrefix(PC,char**);

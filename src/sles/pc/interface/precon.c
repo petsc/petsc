@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.61 1996/01/12 03:52:28 bsmith Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.62 1996/01/12 15:10:27 balay Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -473,11 +473,43 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 int PCSetOptionsPrefix(PC pc,char *prefix)
 {
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  pc->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char));
-  CHKPTRQ(pc->prefix);
-  PetscStrcpy(pc->prefix,prefix);
-  return 0;
+  return PetscObjectSetPrefix((PetscObject)pc, prefix);
 }
+/*@C
+   PCAppendOptionsPrefix - Adds to the prefix used for searching for all 
+   PC options in the database.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  prefix - the prefix string to prepend to all PC option requests
+
+.keywords: PC, append, options, prefix, database
+@*/
+
+int PCAppendOptionsAppendPrefix(PC pc,char *prefix)
+{
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  return PetscObjectAppendPrefix((PetscObject)pc, prefix);
+}
+
+/*@C
+   PCGetOptionsPrefix - Sets the prefix used for searching for all 
+   PC options in the database.
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Output Parameters:
+.  prefix - pointer to the prefix string used, is returned
+
+.keywords: PC, get, options, prefix, database
+@*/
+int PCGetOptionsPrefix(PC pc,char **prefix)
+{
+  PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
+  return PetscObjectGetPrefix((PetscObject)pc, prefix);
+}
+
 
 int PCPreSolve(PC pc,KSP ksp)
 {
