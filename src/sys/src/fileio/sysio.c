@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.21 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.22 1997/07/24 21:42:29 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -116,6 +116,8 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
   void *ptmp = p; 
 #endif
 
+  if (!n) return 0;
+
   maxblock = 65536;
 #if defined(HAVE_64BIT_INT)
   if (type == BINARY_INT){
@@ -196,6 +198,8 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscBinaryType type,int istemp)
 #if defined(HAVE_SWAPPED_BYTES) || defined(HAVE_64BIT_INT)
   void *ptmp = p; 
 #endif
+
+  if (!n) return 0;
 
   maxblock = 65536;
 
