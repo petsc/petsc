@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.86 1999/02/09 15:57:29 balay Exp balay $ 
+# $Id: makefile,v 1.87 1999/03/07 03:36:39 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -6,7 +6,7 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cputimef.c cgtypef.c \
         chebyf.c compositef.c cookief.c da2f.c dacornf.c daghostf.c dagtolf.c daltogf.c \
-        daltolf.c dbufff.c dclearf.c dcoorf.c dflushf.c dfvecf.c dgcoorf.c \
+        daltolf.c dbufff.c dclearf.c dcoorf.c dflushf.c dgcoorf.c \
         dgpausef.c dlinef.c dlinegwf.c dlinewf.c dmousef.c dpausef.c dpointf.c \
         dpointsf.c drawf.c drectf.c dscatterf.c dsclearf.c dsetpausef.c \
         dsflushf.c dtextgsf.c dtextsf.c dtrif.c dviewpf.c eigef.c \
@@ -27,7 +27,7 @@ SOURCEF	 =
 SOURCEH	 = 
 OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cputimef.o cgtypef.o \
         chebyf.o compositef.o cookief.o da2f.o dacornf.o daghostf.o dagtolf.o daltogf.o \
-        daltolf.o dbufff.o dclearf.o dcoorf.o dflushf.o dfvecf.o dgcoorf.o \
+        daltolf.o dbufff.o dclearf.o dcoorf.o dflushf.o dgcoorf.o \
         dgpausef.o dlinef.o dlinegwf.o dlinewf.o dmousef.o dpausef.o dpointf.o \
         dpointsf.o drawf.o drectf.o dscatterf.o dsclearf.o dsetpausef.o \
         dsflushf.o dtextgsf.o dtextsf.o dtrif.o dviewpf.o eigef.o \
