@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.70 1997/10/19 03:24:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.71 1997/12/01 01:54:00 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -125,28 +125,28 @@ int MGCheck(PC pc)
 
   for (i=1; i<n; i++) {
     if (!mg[i]->restrct) {
-      PetscErrorPrintf("No restrict set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No restrict set level %d \n",n-i); count++;
     }    
     if (!mg[i]->interpolate) {
-      PetscErrorPrintf("No interpolate set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No interpolate set level %d \n",n-i); count++;
     }
     if (!mg[i]->residual) {
-      PetscErrorPrintf("No residual set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No residual set level %d \n",n-i); count++;
     }
     if (!mg[i]->smoothu) {
-      PetscErrorPrintf("No smoothup set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No smoothup set level %d \n",n-i); count++;
     }  
     if (!mg[i]->smoothd) {
-      PetscErrorPrintf("No smoothdown set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No smoothdown set level %d \n",n-i); count++;
     }
     if (!mg[i]->r) {
-      PetscErrorPrintf("No r set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No r set level %d \n",n-i); count++;
     } 
     if (!mg[i-1]->x) {
-      PetscErrorPrintf("No x set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No x set level %d \n",n-i); count++;
     }
     if (!mg[i-1]->b) {
-      PetscErrorPrintf("No b set level %d \n",n-i); count++;
+      (*PetscErrorPrintf)("No b set level %d \n",n-i); count++;
     }
   }
   PetscFunctionReturn(count);

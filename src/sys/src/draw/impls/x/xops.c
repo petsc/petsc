@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.100 1997/11/28 16:20:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.101 1997/12/01 01:55:47 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -345,8 +345,9 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
                         ((1.0 - ((double) py)/((double) win->h)-draw->port_yl))*
                         (draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
 
-  /* Next line doesn't work, don't know why! */
+  /* Next line doesn't work, don't know why; maybe with the flush it will work now */
   XUndefineCursor(win->disp, win->win);
+  XFlush( win->disp ); XSync(win->disp,False);
   PetscFunctionReturn(0);
 }
 
@@ -508,7 +509,7 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
   if (!display) {
     *width  = 0; 
     *height = 0; 
-    PetscErrorPrintf("Unable to open display on %s\n",name);
+    (*PetscErrorPrintf)("Unable to open display on %s\n",name);
     SETERRQ(PETSC_ERR_LIB,0,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n" );
@@ -712,8 +713,8 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
   MPI_Comm_rank(comm,&rank);
   OptionsHasName(PETSC_NULL,"-nox",&flag);
   if (!flag && !rank) {
-    PetscErrorPrintf("PETSc installed without X windows on this machine\n");
-    PetscErrorPrintf("proceeding without graphics\n");
+    (*PetscErrorPrintf)("PETSc installed without X windows on this machine\n");
+    (*PetscErrorPrintf)("proceeding without graphics\n");
   }
   ierr = DrawOpenNull(comm,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.107 1997/11/03 04:42:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.108 1997/12/01 01:52:45 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -253,6 +253,44 @@ int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "VecSetValuesBlocked_Seq"
+int VecSetValuesBlocked_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
+{
+  Vec_Seq  *x = (Vec_Seq *)xin->data;
+  Scalar   *xx = x->array;
+  int      i,bs = xin->bs,start,j;
+
+  /*
+       For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
+  */
+  PetscFunctionBegin;
+  if (m == INSERT_VALUES) {
+    for ( i=0; i<ni; i++ ) {
+      start = bs*ix[i];
+#if defined(USE_PETSC_BOPT_g)
+      if (start < 0 || start >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+#endif
+      for (j=0; j<bs; j++) {
+        xx[start+j] = y[j];
+      }
+      y += bs;
+    }
+  } else {
+    for ( i=0; i<ni; i++ ) {
+      start = bs*ix[i];
+#if defined(USE_PETSC_BOPT_g)
+      if (start < 0 || start >= x->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+#endif
+      for (j=0; j<bs; j++) {
+        xx[start+j] += y[j];
+      }
+      y += bs;
+    }  
+  }  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "VecDestroy_Seq"
 int VecDestroy_Seq(PetscObject obj )
 {
@@ -277,18 +315,33 @@ int VecDestroy_Seq(PetscObject obj )
 int VecDuplicate_Seq(Vec,Vec*);
 
 static struct _VeOps DvOps = {VecDuplicate_Seq, 
-            VecDuplicateVecs_Default, VecDestroyVecs_Default, 
-            VecDot_Seq, VecMDot_Seq,
-            VecNorm_Seq,  VecTDot_Seq, VecMTDot_Seq,
-            VecScale_Seq, VecCopy_Seq,
-            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXPBY_Seq,
-            VecMAXPY_Seq, VecAYPX_Seq,
-            VecWAXPY_Seq, VecPointwiseMult_Seq,
+            VecDuplicateVecs_Default,
+            VecDestroyVecs_Default, 
+            VecDot_Seq, 
+            VecMDot_Seq,
+            VecNorm_Seq,  
+            VecTDot_Seq, 
+            VecMTDot_Seq,
+            VecScale_Seq, 
+            VecCopy_Seq,
+            VecSet_Seq, 
+            VecSwap_Seq, 
+            VecAXPY_Seq, 
+            VecAXPBY_Seq,
+            VecMAXPY_Seq, 
+            VecAYPX_Seq,
+            VecWAXPY_Seq, 
+            VecPointwiseMult_Seq,
             VecPointwiseDivide_Seq,  
             VecSetValues_Seq,0,0,
-            VecGetArray_Seq, VecGetSize_Seq,VecGetSize_Seq,
-            VecGetOwnershipRange_Seq,0,VecMax_Seq,VecMin_Seq,
-            VecSetRandom_Seq};
+            VecGetArray_Seq, 
+            VecGetSize_Seq,
+            VecGetSize_Seq,
+            VecGetOwnershipRange_Seq,0,
+            VecMax_Seq,
+            VecMin_Seq,
+            VecSetRandom_Seq,0,
+            VecSetValuesBlocked_Seq};
 
 #undef __FUNC__  
 #define __FUNC__ "VecCreateSeqWithArray"
@@ -335,6 +388,8 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   v->n               = n; 
   v->N               = n;
   v->mapping         = 0;
+  v->bmapping        = 0;
+  v->bs              = 0;
   s->array           = array;
   s->array_allocated = 0;
   PetscMemzero(s->array,n*sizeof(Scalar));
@@ -391,6 +446,11 @@ int VecDuplicate_Seq(Vec win,Vec *V)
     (*V)->mapping = win->mapping;
     PetscObjectReference((PetscObject)win->mapping);
   }
+  if (win->bmapping) {
+    (*V)->bmapping = win->bmapping;
+    PetscObjectReference((PetscObject)win->bmapping);
+  }
+  (*V)->bs = win->bs;
   if (win->child) {
     ierr = (*win->childcopy)(win->child,&(*V)->child);CHKERRQ(ierr);
   }

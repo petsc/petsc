@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.4 1997/11/29 15:35:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.5 1997/12/03 14:39:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -219,9 +219,9 @@ void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
   if (!rank) {
     value = (char *) usmalloc((size_t) len, *arena);
     if (!value) {
-      PetscErrorPrintf("PETSC ERROR: Unable to allocate shared memory location\n");
-      PetscErrorPrintf("PETSC ERROR: Run with option -shared_size <size> \n");
-      PetscErrorPrintf("PETSC_ERROR: with size > %d \n",(int)(1.2*(Petsc_Shared_size+len)));
+      (*PetscErrorPrintf)("PETSC ERROR: Unable to allocate shared memory location\n");
+      (*PetscErrorPrintf)("PETSC ERROR: Run with option -shared_size <size> \n");
+      (*PetscErrorPrintf)("PETSC_ERROR: with size > %d \n",(int)(1.2*(Petsc_Shared_size+len)));
       PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,1,1,"Unable to malloc shared memory");
       PetscFunctionReturn(0);
     }

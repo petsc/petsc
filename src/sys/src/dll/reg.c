@@ -1,97 +1,137 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: nreg.c,v 1.23 1997/12/01 01:53:22 bsmith Exp $";
+static char vcid[] = "$Id: reg.c,v 1.1 1997/12/12 04:18:45 bsmith Exp bsmith $";
 #endif
 /*
-         This provides a general mechanism to allow one to register
-    new routines for many of the PETSc operations including KSP and PC.
+         Provides a general mechanism to allow one to register
+    new routines in dynamic libraries for many of the PETSc objects including KSP and PC.
 */
 #include "petsc.h"
-#include "src/sys/nreg.h"  
+
+struct FuncList_struct {
+  int                    id;
+  int                    (*routine)(void *);
+  char                   *name;               
+  char                   *rname;            /* name of create function in link library */
+  struct FuncList_struct *next;
+};
+typedef struct FuncList_struct FuncList;
+
+struct _DLList {
+    FuncList *head, *tail;
+    int      nextid;          /* next id available */
+    int      nextidflag;      /* value passed to DLListRegister() to request id */
+};
+
+extern int    DLCreate(int,DLList *);
+extern int    DLRegister(DLList,int,char*,char*,int*);
+extern int    DLDestroy(DLList);
+extern int    DLFindRoutine(DLList,int,char*,int (**)(void*));
+extern int    DLFindID(DLList,char*,int *);
+extern int    DLFindName(DLList,int,char**);
+extern int    DLDestroyAll();
+extern int    DLPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
+extern int    DLGetTypeFromOptions(char *,char *,DLList,int *,int *);
+
 
 static int    NumberRegisters = 0;
-static NRList **Registers[10];
+static DLList *Registers[10];
 
-/*
-   This file contains a simple system to register functions by 
-   name and number
- */
 
 #undef __FUNC__  
-#define __FUNC__ "NRCreate"
+#define __FUNC__ "DLCreate"
 /*
-  NRCreate - create a name registry
+  DLCreate - create a name registry.
 
-  Note:
-  Use NRRegister to add names to the registry
+  Input Parameter:
+.    preallocated - the number of pre-defined ids for this type object;
+                    for example, KSPNEW.
+
+.seealso: DLRegister(), DLDestroy()
 */
-int NRCreate(NRList **fl )
+int DLCreate(int preallocated,DLList *fl )
 {
-  *fl            = (NRList *) PetscMalloc(sizeof(NRList));  if (!fl) PetscFunctionReturn(0);
-
   PetscFunctionBegin;
-  (*fl)->head    = 0;
-  (*fl)->tail    = 0;
+  *fl                = PetscNew(struct _DLList);CHKPTRQ(*fl);
+  (*fl)->head        = 0;
+  (*fl)->tail        = 0;
+  (*fl)->nextid      = preallocated;
+  (*fl)->nextidflag  = preallocated;
+
   Registers[NumberRegisters++] = fl;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "NRDestroyAll"
+#define __FUNC__ "DLDestroyAll"
 /*
-   NRDestroyAll - Destroys all registers. Should be called only 
+   DLDestroyAll - Destroys all registers. Should be called only 
            when you know none of the methods are needed.
 
 @*/
-int NRDestroyAll()
+int DLDestroyAll()
 {
-  int i;
+  int i,ierr;
 
   PetscFunctionBegin;
   for ( i=0; i<NumberRegisters; i++ ) {
-    NRDestroy(*Registers[i]);
+    ierr = DLDestroy(*Registers[i]);CHKERRQ(ierr);
     *Registers[i] = 0;
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "NRRegister"
+#define __FUNC__ "DLRegister"
 /*
-   NRRegister - Given a routine and two ids (an int and a string), 
+   DLRegister - Given a routine and two ids (an int and a string), 
                 save that routine in the specified registry
  
    Input Parameters:
 .      fl       - pointer registry
 .      id       - integer (or enum) for routine
 .      name     - string for routine
-.      routine  - routine
+.      rname    - routine name in dynamic library
+
+   Output Parameters:
+.      idout    - id assigned to function, same as id for predefined functions
+
 */
-int NRRegister( NRList *fl, int id, char *name, int (*routine)(void*) )
+int DLRegister( DLList fl, int id, char *name, char *rname,int *idout)
 {
   FuncList *entry;
 
   PetscFunctionBegin;
   entry          = (FuncList*) PetscMalloc(sizeof(FuncList));CHKPTRQ(entry);
-  entry->id      = id;
   entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 ); CHKPTRQ(entry->name);
   PetscStrcpy( entry->name, name );
-  entry->routine = routine;
+  entry->rname   = (char *)PetscMalloc( PetscStrlen(rname) + 1 ); CHKPTRQ(entry->rname);
+  PetscStrcpy( entry->rname, rname );
+  entry->routine = 0;
+
   entry->next = 0;
   if (fl->tail) fl->tail->next = entry;
   else          fl->head       = entry;
   fl->tail = entry;
+  
+  if (id == fl->nextidflag) {
+    entry->id  = fl->nextid++;
+  } else {
+    entry->id  = id;
+  }
+  if (idout) *idout = id;
+
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "NRDestroy"
+#define __FUNC__ "DLDestroy"
 /*
-    NRDestroy - Destroy a list of registered routines
+    DLDestroy - Destroy a list of registered routines
 
     Input Parameter:
 .   fl   - pointer to list
 */
-int NRDestroy(NRList * fl )
+int DLDestroy(DLList fl )
 {
   FuncList *entry = fl->head, *next;
 
@@ -99,6 +139,7 @@ int NRDestroy(NRList * fl )
   while (entry) {
     next = entry->next;
     PetscFree( entry->name );
+    PetscFree( entry->rname );
     PetscFree( entry );
     entry = next;
   }
@@ -107,102 +148,86 @@ int NRDestroy(NRList * fl )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "NRFindRoutine"
+#define __FUNC__ "DLFindRoutine"
 /*
-    NRFindRoutine - given an id or name, find the matching routine
+    DLFindRoutine - given an id or name, find the matching routine
 
     Input Parameters:
 .   fl   - pointer to list
 .   id   - id (-1 for ignore)
 .   name - name string.  (Null for ignore)
 
-    Returns:
-    pointer to function.  Null otherwise.
+
 */
-int (*NRFindRoutine(NRList   * fl, int id, char *name ))(void *)
+int DLFindRoutine(DLList fl, int id, char *name, int (**r)(void *))
 {
   FuncList *entry = fl->head;
   
   PetscFunctionBegin;
   while (entry) {
-    if (id >= 0 && entry->id == id) PetscFunctionReturn(entry->routine);
-    if (name && PetscStrcmp(name,entry->name) == 0) PetscFunctionReturn(entry->routine);
+    if ((id >= 0 && entry->id == id) || (name && !PetscStrcmp(name,entry->name))) {
+      if (entry->routine) {*r =entry->routine;  PetscFunctionReturn(0);}
+      ;
+    }
     entry = entry->next;
   }
-  PetscFunctionReturn((int (*)(void*))0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "NRFindID"
+#define __FUNC__ "DLFindID"
 /*
-    NRFindID - Given a name, find the corresponding id
+    DLFindID - Given a name, find the corresponding id
 
     Input Parameters:
 .   fl   - pointer to list
 .   name - name string
 
     Returns:
-    id.  -1 on failure.
+    id - id associate with name, -1 if name not found
+
 */
-int NRFindID( NRList *fl, char *name )
+int DLFindID( DLList fl, char *name, int *id )
 {
   FuncList *entry = fl->head;
 
   PetscFunctionBegin;
   while (entry) {
-    if (name && PetscStrcmp(name,entry->name) == 0) PetscFunctionReturn(entry->id);
+    if (!PetscStrcmp(name,entry->name)) PetscFunctionReturn(entry->id);
     entry = entry->next;
   }
   PetscFunctionReturn(-1);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "NRFindName"
+#define __FUNC__ "DLFindName"
 /*
-    NRFindName - Given an id, find the corresponding name
+    DLFindName - Given an id, find the corresponding name
 
     Input Parameters:
 .   fl   - pointer to list
 .   id   - id 
 
-    Returns:
-    Pointer to name; null on failure.
+    Output Parameter:
+.   name - pointer to name of object type. You should NOT free this.
+
 */
-char *NRFindName( NRList *fl, int id )
+int DLFindName( DLList fl, int id, char **name )
 {
   FuncList *entry = fl->head;
 
   PetscFunctionBegin;
   while (entry) {
-    if (id == entry->id) PetscFunctionReturn(entry->name);
+    if (id == entry->id) {*name = entry->name; PetscFunctionReturn(0);}
     entry = entry->next;
   }
-  PetscFunctionReturn((char *)0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "NRFindFreeId"
+#define __FUNC__ "DLPrintTypes"
 /*
-   Return an unused index.
- */
-int NRFindFreeId( NRList *fl )
-{
-  FuncList *entry = fl->head;
-  int      id;
-
-  PetscFunctionBegin;
-  id = -1;
-  while (entry) {
-    if (id < entry->id) id = entry->id;
-    entry = entry->next;
-  }
-  PetscFunctionReturn(id + 1);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "NRPrintTypes"
-/*
-   NRPrintTypes - Prints the methods available.
+   DLPrintTypes - Prints the methods available.
 
    Input Parameters:
 .  comm   - The communicator (usually MPI_COMM_WORLD)
@@ -210,7 +235,7 @@ int NRFindFreeId( NRList *fl )
 .  list   - list of types
 
 */
-int NRPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,NRList *list)
+int DLPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,DLList list)
 {
   FuncList *entry;
   int      count = 0;
@@ -233,9 +258,9 @@ int NRPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,NRList *list)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "NRGetTypeFromOptions" 
+#define __FUNC__ "DLGetTypeFromOptions" 
 /*
-   NRGetTypeFromOptions
+   DLGetTypeFromOptions
 
    Input Parameter:
 .  prefix - optional database prefix
@@ -250,7 +275,7 @@ int NRPrintTypes(MPI_Comm comm,FILE *fd,char *prefix,char *name,NRList *list)
 
 .seealso: 
 */
-int NRGetTypeFromOptions(char *prefix,char *name,NRList *list,void *type,int *flag)
+int DLGetTypeFromOptions(char *prefix,char *name,DLList list,int *type,int *flag)
 {
   char sbuf[50];
   int  ierr,itype;
@@ -258,7 +283,7 @@ int NRGetTypeFromOptions(char *prefix,char *name,NRList *list,void *type,int *fl
   PetscFunctionBegin;
   ierr = OptionsGetString(prefix,name, sbuf, 50,flag); CHKERRQ(ierr);
   if (*flag) {
-    itype = NRFindID( list, sbuf );
+    ierr = DLFindID( list, sbuf,&itype ); CHKERRQ(ierr);
     if (itype == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid type name given");
     *(int *)type = itype;
   }

@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.15 1997/09/11 20:38:20 bsmith Exp bsmith $ */
+/* $Id: pvecimpl.h,v 1.16 1997/11/23 16:49:07 bsmith Exp bsmith $ */
 /* 
  */
 
@@ -44,6 +44,7 @@ extern int VecView_MPI_Matlab(Vec , Viewer);
 extern int VecView_MPI(PetscObject,Viewer);
 extern int VecGetSize_MPI(Vec,int *);
 extern int VecSetValues_MPI(Vec, int, int *, Scalar*,InsertMode);
+extern int VecSetValuesBlocked_MPI(Vec, int, int *, Scalar*,InsertMode);
 extern int VecAssemblyBegin_MPI(Vec);
 extern int VecAssemblyEnd_MPI(Vec);
 

@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.13 1997/11/28 16:23:01 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.14 1997/12/01 23:12:21 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -55,6 +55,11 @@ extern int AODataKeyGetOwnershipRange(AOData,char *,int *,int*);
 extern int AODataKeyGetNeighbors(AOData,char *,int,int*,IS *);
 extern int AODataKeyGetNeighborsIS(AOData,char *,IS,IS *);
 extern int AODataKeyGetAdjacency(AOData,char *,Mat*);
+
+extern int AODataKeyGetActive(AOData,char*,char*,int,int *,int,IS*);
+extern int AODataKeyGetActiveIS(AOData,char*,char*,IS,int,IS*);
+extern int AODataKeyGetActiveLocal(AOData,char*,char*,int,int *,int,IS*);
+extern int AODataKeyGetActiveLocalIS(AOData,char*,char*,IS,int,IS*);
 
 extern int AODataKeyPartition(AOData,char *);
 

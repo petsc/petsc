@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.17 1997/12/01 01:57:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.18 1997/12/04 19:40:12 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -178,6 +178,147 @@ int AODataSegmentExists(AOData aodata,char *keyname, char *segname,PetscTruth *f
 }
 
 /* ------------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyGetActive" 
+/*@C
+   AODataKeyGetActive - Get a sublist of key indices that have a logical flag on.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  n - the number of key indices provided by this processor
+.  keys - the keys provided by this processor
+.  wl - which logical key in the block (for block size 1 this is always 0)
+
+   Output Parameters:
+.  IS - the list of key indices
+
+   Collective on AOData
+
+.keywords: database transactions
+
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
+@*/
+int AODataKeyGetActive(AOData aodata,char *name,char *segment,int n,int *keys,int wl,IS *is)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops.keygetactive)(aodata,name,segment,n,keys,wl,is); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyGetActiveIS" 
+/*@C
+   AODataKeyGetActiveIS - Get a sublist of key indices that have a logical flag on.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  in - the key indices we are checking
+.  wl - which logical key in the block (for block size 1 this is always 0)
+
+   Output Parameters:
+.  IS - the list of key indices
+
+   Collective on AOData
+
+.keywords: database transactions
+
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
+@*/
+int AODataKeyGetActiveIS(AOData aodata,char *name,char *segname,IS in,int wl,IS *is)
+{
+  int ierr,n,*keys;
+
+  PetscFunctionBegin;
+  ierr = ISGetSize(in,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(in,&keys);CHKERRQ(ierr);
+  ierr = AODataKeyGetActive(aodata,name,segname,n,keys,wl,is);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(in,&keys);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyGetActiveLocal" 
+/*@C
+   AODataKeyGetActiveLocal - Get a sublist of key indices that have a logical flag on.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  n - the number of key indices provided by this processor
+.  keys - the keys provided by this processor
+.  wl - which logical key in the block (for block size 1 this is always 0)
+
+   Output Parameters:
+.  IS - the list of key indices
+
+   Collective on AOData
+
+.keywords: database transactions
+
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
+@*/
+int AODataKeyGetActiveLocal(AOData aodata,char *name,char *segment,int n,int *keys,int wl,IS *is)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  ierr = (*aodata->ops.keygetactivelocal)(aodata,name,segment,n,keys,wl,is); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataKeyGetActiveLocalIS" 
+/*@C
+   AODataKeyGetActiveLocalIS - Get a sublist of key indices that have a logical flag on.
+
+   Input Parameters:
+.  aodata - the database
+.  name - the name of the key
+.  segment - the name of the segment
+.  in - the key indices we are checking
+.  wl - which logical key in the block (for block size 1 this is always 0)
+
+   Output Parameters:
+.  IS - the list of key indices
+
+   Collective on AOData
+
+.keywords: database transactions
+
+.seealso: AODataCreateBasic(), AODataDestroy(), AODataKeyAdd(), AODataSegmentRestore(),
+          AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
+          AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
+@*/
+int AODataKeyGetActiveLocalIS(AOData aodata,char *name,char *segname,IS in,int wl,IS *is)
+{
+  int ierr,n,*keys;
+
+  PetscFunctionBegin;
+  ierr = ISGetSize(in,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(in,&keys);CHKERRQ(ierr);
+  ierr = AODataKeyGetActiveLocal(aodata,name,segname,n,keys,wl,is);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(in,&keys);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ------------------------------------------------------------------------------------*/
+
 #undef __FUNC__  
 #define __FUNC__ "AODataSegmentGet" 
 /*@C
@@ -313,14 +454,15 @@ int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **d
 #undef __FUNC__  
 #define __FUNC__ "AODataSegmentGetLocal" 
 /*@C
-   AODataSegmentGetLocal - Get data from a particular segment of a database.
+   AODataSegmentGetLocal - Get data from a particular segment of a database. Returns the 
+       values in the local numbering; valid only for integer segments.
 
    Input Parameters:
 .  aodata - the database
 .  name - the name of the key
 .  segment - the name of the segment
 .  n - the number of data items needed by this processor
-.  keys - the keys provided by this processor
+.  keys - the keys provided by this processor in local numbering
 
    Output Parameters:
 .  data - the actual data
@@ -377,7 +519,8 @@ int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *
 #undef __FUNC__  
 #define __FUNC__ "AODataSegmentGetLocalIS" 
 /*@C
-   AODataSegmentGetLocalIS - Get data from a particular segment of a database.
+   AODataSegmentGetLocalIS - Get data from a particular segment of a database. Returns the 
+       values in the local numbering; valid only for integer segments.
 
    Input Parameters:
 .  aodata - the database
@@ -527,7 +670,8 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
 #undef __FUNC__  
 #define __FUNC__ "AODataSegmentGetReduced" 
 /*@C
-   AODataSegmentGetReduced - Get data from a particular segment of a database.
+   AODataSegmentGetReduced - Gets the unique list of segment values, by removing 
+           duplicates.
 
    Input Parameters:
 .  aodata - the database
@@ -540,6 +684,11 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
 .  is - the indices retrieved
 
    Collective on AOData and IS
+
+   Example:
+$                      keys    ->      0  1  2  3  4   5  6  7
+$      if the segment contains ->      1  2  1  3  1   4  2  0
+$  and you request keys 0 1 2 5 7 it will return 1 2 4 0
 
 .keywords: database transactions
 
@@ -592,7 +741,8 @@ int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,vo
 #undef __FUNC__  
 #define __FUNC__ "AODataSegmentGetReducedIS" 
 /*@C
-   AODataSegmentGetReducedIS - Get data from a particular segment of a database.
+   AODataSegmentGetReducedIS -  Gets the unique list of segment values, by removing 
+           duplicates.
 
    Input Parameters:
 .  aodata - the database
@@ -602,6 +752,11 @@ int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,vo
 
    Output Parameters:
 .  isout - the indices retreived
+
+   Example:
+$                      keys    ->      0  1  2  3  4   5  6  7
+$      if the segment contains ->      1  2  1  3  1   4  2  0
+$  and you request keys 0 1 2 5 7 it will return 1 2 4 0
 
    Collective on AOData and IS
 

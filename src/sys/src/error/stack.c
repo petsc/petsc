@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.2 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.3 1997/10/28 14:21:45 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -29,14 +29,28 @@ int PetscStackCreate(int stacksize)
 
 int PetscStackView(Viewer viewer)
 {
-  int i;
+  int  i,ierr;
+  FILE *file;
 
-  for ( i=petscstacksize-1; i>=0; i-- ) {
-    fprintf(stdout,"[%d] %s line %d %s%s\n",PetscGlobalRank,
-                                            petscstack[i].function,
-                                            petscstack[i].line,
-                                            petscstack[i].directory,
-                                            petscstack[i].file);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
+
+  if (file == stderr) {
+    for ( i=petscstacksize-1; i>=0; i-- ) {
+      (*PetscErrorPrintf)("[%d] %s line %d %s%s\n",PetscGlobalRank,
+                                                petscstack[i].function,
+                                                petscstack[i].line,
+                                                petscstack[i].directory,
+                                                petscstack[i].file);
+    }
+  } else {
+    for ( i=petscstacksize-1; i>=0; i-- ) {
+      fprintf(stdout,"[%d] %s line %d %s%s\n",PetscGlobalRank,
+                                              petscstack[i].function,
+                                              petscstack[i].line,
+                                              petscstack[i].directory,
+                                              petscstack[i].file);
+    }
   }
   return 0;
 }

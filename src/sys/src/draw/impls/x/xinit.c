@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.37 1997/12/01 01:55:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.38 1997/12/03 04:52:51 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -36,7 +36,7 @@ int XiOpenDisplay(Draw_X* XiWin,char *display_name )
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay( display_name );
   if (!XiWin->disp) {
-    PetscErrorPrintf("Unable to open display on %s\n",display_name);
+    (*PetscErrorPrintf)("Unable to open display on %s\n",display_name);
     PetscFunctionReturn(1);
   }
   XiWin->screen = DefaultScreen( XiWin->disp );
@@ -240,7 +240,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
 
   PetscFunctionBegin;
   if (XiOpenDisplay( w, host )) {
-    PetscErrorPrintf("Trying to open display: %s\n",host);
+    (*PetscErrorPrintf)("Trying to open display: %s\n",host);
     SETERRQ(PETSC_ERR_LIB,0,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n" );

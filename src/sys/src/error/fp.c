@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.42 1997/10/28 14:21:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.43 1997/12/01 01:53:22 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -51,9 +51,9 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp,c
   }
 
   if ( err_ind >= 0 ) {
-    PetscErrorPrintf("*** %s occurred at pc=%X ***\n",error_codes[err_ind].name, SIGPC(scp));
+    (*PetscErrorPrintf)("*** %s occurred at pc=%X ***\n",error_codes[err_ind].name, SIGPC(scp));
   } else {
-    PetscErrorPrintf("*** floating point error 0x%x occurred at pc=%X ***\n",code, SIGPC(scp));
+    (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code, SIGPC(scp));
   }
   ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
@@ -93,11 +93,11 @@ int PetscSetFPTrap(int flag)
   (void) ieee_flags( "clear", "exception", "all", &out );
   if (flag == PETSC_FP_TRAP_ON) {
     if (ieee_handler("set","common",PetscDefaultFPTrap)) {
-      PetscErrorPrintf( "Can't set floatingpoint handler\n");
+      (*PetscErrorPrintf)( "Can't set floatingpoint handler\n");
     }
   } else {
     if (ieee_handler("clear","common",PetscDefaultFPTrap)) {
-      PetscErrorPrintf("Can't clear floatingpoint handler\n");
+      (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
     }
   }
   PetscFunctionReturn(0);
@@ -133,9 +133,9 @@ void PetscDefaultFPTrap(int sig, siginfo_t *scp,ucontext_t *uap)
   }
 
   if ( err_ind >= 0 ) {
-    PetscErrorPrintf( "*** %s occurred at pc=%X ***\n",error_codes[err_ind].name, SIGPC(scp));
+    (*PetscErrorPrintf)( "*** %s occurred at pc=%X ***\n",error_codes[err_ind].name, SIGPC(scp));
   } else {
-    PetscErrorPrintf("*** floating point error 0x%x occurred at pc=%X ***\n",code, SIGPC(scp));
+    (*PetscErrorPrintf)("*** floating point error 0x%x occurred at pc=%X ***\n",code, SIGPC(scp));
   }
   ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
@@ -149,7 +149,7 @@ int PetscSetFPTrap(int flag)
   (void) ieee_flags( "clear", "exception", "all", &out );
   if (flag == PETSC_FP_TRAP_ON) {
     if (ieee_handler("set","common",(sigfpe_handler_type)PetscDefaultFPTrap)) {
-      PetscErrorPrintf( "Can't set floating point handler\n");
+      (*PetscErrorPrintf)( "Can't set floating point handler\n");
     }
   
     /*
@@ -161,7 +161,7 @@ int PetscSetFPTrap(int flag)
     */
   } else {
     if (ieee_handler("clear","common",(sigfpe_handler_type)PetscDefaultFPTrap)) {
-     PetscErrorPrintf("Can't clear floatingpoint handler\n");
+     (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
     }
   }
   PetscFunctionReturn(0);
@@ -203,9 +203,9 @@ void PetscDefaultFPTrap( unsigned exception[],int val[] )
     if ( error_codes[j].code_no == code ) err_ind = j ;
   }
   if ( err_ind >= 0 ){
-    PetscErrorPrintf( "*** %s occurred ***\n",error_codes[err_ind].name );
+    (*PetscErrorPrintf)( "*** %s occurred ***\n",error_codes[err_ind].name );
   } else{
-    PetscErrorPrintf("*** floating point error 0x%x occurred ***\n",code);  
+    (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n",code);  
   }
   ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
@@ -262,11 +262,11 @@ int PetscSetFPTrap(int on)
   if (on == PETSC_FP_TRAP_ON) {
     fpsetmask( FP_X_OFL | FP_X_DZ | FP_X_INV );
     flag = (int) 	signal(SIGFPE,PetscDefaultFPTrap);
-    if (flag == -1) PetscErrorPrintf( "Can't set floatingpoint handler\n");
+    if (flag == -1) (*PetscErrorPrintf)( "Can't set floatingpoint handler\n");
   } else {
     fpsetmask(0);
     flag = (int)  signal(SIGFPE,PetscDefaultFPTrap);
-    if (flag == -1) PetscErrorPrintf("Can't clear floatingpoint handler\n");
+    if (flag == -1) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
   }
   PetscFunctionReturn(0);
 }
@@ -316,9 +316,9 @@ void PetscDefaultFPTrap(int sig,int code,struct sigcontext *scp )
   }
 
   if ( err_ind >= 0 ){
-    PetscErrorPrintf( "*** %s occurred ***\n",error_codes[err_ind].name );
+    (*PetscErrorPrintf)( "*** %s occurred ***\n",error_codes[err_ind].name );
   } else{
-    PetscErrorPrintf("*** floating point error 0x%x occurred ***\n", flt_context.trap );
+    (*PetscErrorPrintf)("*** floating point error 0x%x occurred ***\n", flt_context.trap );
   }
   ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
@@ -364,7 +364,7 @@ void PetscDefaultFPTrap(int sig)
   int ierr;
 
   PetscFunctionBegin;
-  PetscErrorPrintf( "*** floating point error occurred ***\n" );
+  (*PetscErrorPrintf)( "*** floating point error occurred ***\n" );
   ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
@@ -377,10 +377,10 @@ int PetscSetFPTrap(int on)
   PetscFunctionBegin;
   if (on == PETSC_FP_TRAP_ON) {
     flag = (int) signal(SIGFPE,PetscDefaultFPTrap);
-    if (flag == -1) PetscErrorPrintf( "Can't set floatingpoint handler\n");
+    if (flag == -1) (*PetscErrorPrintf)( "Can't set floatingpoint handler\n");
   } else {
     flag = (int) signal(SIGFPE,SIG_DFL);
-    if (flag == -1) PetscErrorPrintf("Can't clear floatingpoint handler\n");
+    if (flag == -1) (*PetscErrorPrintf)("Can't clear floatingpoint handler\n");
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.84 1997/11/28 16:18:23 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.85 1997/12/01 01:52:47 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -508,6 +508,94 @@ int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
         x->stash.array[x->stash.n] = y[i];
         x->stash.idx[x->stash.n++] = row;
       }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecSetValuesBlocked_MPI"
+int VecSetValuesBlocked_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
+{
+  Vec_MPI  *x = (Vec_MPI *)xin->data;
+  int      rank = x->rank, *owners = x->ownership, start = owners[rank];
+  int      end = owners[rank+1], i, row,bs = xin->bs,j;
+  Scalar   *xx = x->array;
+
+  PetscFunctionBegin;
+#if defined(USE_PETSC_BOPT_g)
+  if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { 
+   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already inserted values; you cannot now add");
+  }
+  else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { 
+   SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"You have already added values; you cannot now insert");
+  }
+#endif
+  x->insertmode = addv;
+
+  if (addv == INSERT_VALUES) {
+    for ( i=0; i<ni; i++ ) {
+      if ( (row = bs*ix[i]) >= start && row < end) {
+        for ( j=0; j<bs; j++ ) {
+          xx[row-start+j] = y[j];
+        }
+      }
+      else if (!x->stash.donotstash) {
+#if defined(USE_PETSC_BOPT_g)
+        if (ix[i] < 0 || ix[i] >= x->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+#endif
+        if (x->stash.n == x->stash.nmax) { /* cache is full */
+          int    *idx, nmax = x->stash.nmax;
+          Scalar *ta;
+          ta = (Scalar *) PetscMalloc((nmax+200)*sizeof(Scalar)+(nmax+200)*sizeof(int));CHKPTRQ(ta);
+          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
+          idx = (int *) (ta + nmax + 200);
+          PetscMemcpy(ta,x->stash.array,nmax*sizeof(Scalar));
+          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
+          if (x->stash.array) PetscFree(x->stash.array);
+          x->stash.array = ta;
+          x->stash.idx   = idx;
+          x->stash.nmax += 200;
+        }
+        for ( j=0; j<bs; j++ ) {
+          x->stash.array[x->stash.n + j] = y[j];
+          x->stash.idx[x->stash.n + j]   = row + j;
+        }
+        x->stash.n += bs;
+      }
+      y += bs;
+    }
+  } else {
+    for ( i=0; i<ni; i++ ) {
+      if ( (row = bs*ix[i]) >= start && row < end) {
+        for ( j=0; j<bs; j++ ) {
+          xx[row-start+j] += y[j];
+        }
+      }
+      else if (!x->stash.donotstash) {
+#if defined(USE_PETSC_BOPT_g)
+        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range");
+#endif
+        if (x->stash.n == x->stash.nmax) { /* cache is full */
+          int    *idx, nmax = x->stash.nmax;
+          Scalar *ta;
+          ta = (Scalar *) PetscMalloc((nmax+200)*sizeof(Scalar)+(nmax+200)*sizeof(int));CHKPTRQ(ta);
+          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
+          idx = (int *) (ta + nmax + 200);
+          PetscMemcpy(ta,x->stash.array,nmax*sizeof(Scalar));
+          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
+          if (x->stash.array) PetscFree(x->stash.array);
+          x->stash.array = ta;
+          x->stash.idx   = idx;
+          x->stash.nmax += 200;
+        }
+        for ( j=0; j<bs; j++ ) {
+          x->stash.array[x->stash.n + j] = y[j];
+          x->stash.idx[x->stash.n + j]   = row + j;
+        }
+        x->stash.n += bs;
+      }
+      y += bs;
     }
   }
   PetscFunctionReturn(0);

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.4 1997/12/04 19:33:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.5 1997/12/07 16:42:14 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -325,9 +325,9 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscErrorPrintf" 
+#define __FUNC__ "PetscErrorPrintfDefault" 
 /*@C
-    PetscErrorPrintf - Prints error messages.
+    PetscErrorPrintfDefault - Prints error messages.
 
    Input Parameters:
 .  format - the usual printf() format string 
@@ -339,7 +339,7 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
 
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf()
 @*/
-int PetscErrorPrintf(char *format,...)
+int PetscErrorPrintfDefault(char *format,...)
 {
   va_list     Argp;
   static  int PetscErrorPrintfCalled = 0;

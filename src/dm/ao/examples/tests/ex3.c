@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.6 1997/11/28 16:22:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.7 1997/12/04 05:24:50 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData \n\n";
@@ -71,11 +71,12 @@ int main(int argc,char **argv)
       Allocate data for first key and third segment 
   */
   bs   = 1;
-  BTCreate(n,ld);
+  ierr = BTCreate(n,ld);CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
     if (i % 2) BTSet(ld,i);
   }
   ierr = AODataSegmentAdd(aodata,"key1","seg3",bs,n,keys,ld,PETSC_LOGICAL);CHKERRA(ierr); 
+  BTDestroy(ld);
 
   /*
        Use same data for second key and first segment 

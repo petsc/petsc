@@ -1,4 +1,4 @@
-/* $Id: bitarray.h,v 1.7 1997/10/06 15:34:04 balay Exp bsmith $ */
+/* $Id: bitarray.h,v 1.8 1997/12/04 19:32:12 bsmith Exp bsmith $ */
 
 /*    
 
@@ -24,8 +24,8 @@
 
 typedef char*  BT;
 
-static char _mask, _BT_c;
-static int  _BT_idx;
+extern char _mask, _BT_c;
+extern int  _BT_idx;
 
 #define BTView(m,bt) {\
   int __i; \

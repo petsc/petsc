@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.49 1997/10/28 14:21:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.50 1997/12/06 05:39:41 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -107,9 +107,9 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
     PetscStackPop;  /* remove stack frames for error handlers */
     PetscStackPop;
     PetscStrcat(buf,"PETSC ERROR: likely location of problem given above in stack\n");
-    PetscErrorPrintf("--------------- Stack Frames ---------------\n");
+    (*PetscErrorPrintf)("--------------- Stack Frames ---------------\n");
     PetscStackView(VIEWER_STDERR_WORLD);
-    PetscErrorPrintf("--------------------------------------------\n");
+    (*PetscErrorPrintf)("--------------------------------------------\n");
   }
 #endif
   ierr =  PetscError(0,"unknownfunction","unknown file"," ",PETSC_ERR_SIG,0,buf);

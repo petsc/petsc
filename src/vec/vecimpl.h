@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.40 1997/07/09 03:10:46 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.41 1997/07/10 03:42:59 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -41,7 +41,8 @@ struct _VeOps {
        (*max)(Vec,int*,double*),         /* z = max(x); idx=index of max(x) */
        (*min)(Vec,int*,double*),         /* z = min(x); idx=index of min(x) */
        (*setrandom)(PetscRandom,Vec),    /* set y[j] = random numbers */
-       (*setoption)(Vec,VecOption);
+       (*setoption)(Vec,VecOption),
+       (*setvaluesblocked)(Vec,int,int*,Scalar*,InsertMode);
 };
 
 struct _p_Vec {
@@ -49,6 +50,7 @@ struct _p_Vec {
   struct _VeOps          ops;       /* vector operations */
   void                   *data;     /* implementation-specific data */
   int                    N, n;      /* global, local vector size */
+  int                    bs;
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
 };

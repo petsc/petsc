@@ -1,12 +1,40 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.122 1997/11/28 16:18:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.123 1997/12/01 01:52:42 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
 */
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
+
+#undef __FUNC__  
+#define __FUNC__ "VecSetBlockSize"
+/*@
+   VecSetBlockSize - Sets the blocksize for future calls to VecSetValuesBlocked()
+      and VecSetValuesBlockedLocal().
+
+   Input Parameter:
+.  v - the vector
+.  bs - the blocksize
+
+   Notes:
+     All vectors obtained by VecDuplicate() inherit the same blocksize
+
+.seealso: VecSetValuesBlocked(); VecSetLocalToGlobalMappingBlocked()
+
+.keywords: block size, vectors
+@*/
+int VecSetBlockSize(Vec v,int bs)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE); 
+  if (v->N % bs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Vector length not divisible by blocksize");
+  if (v->n % bs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Local vector length not divisible by blocksize");
+  
+  v->bs = bs;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "VecValid"
@@ -703,7 +731,7 @@ int VecDestroyVecs(Vec *vv,int m)
 .keywords: vector, set, values
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
-           VecSetValue()
+           VecSetValue(), VecSetValuesBlocked()
 @*/
 int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
@@ -715,6 +743,51 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   PetscValidScalarPointer(y);
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   ierr = (*x->ops.setvalues)( x, ni,ix, y,iora ); CHKERRQ(ierr);
+  PLogEventEnd(VEC_SetValues,x,0,0,0);  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecSetValuesBlocked"
+/*@
+   VecSetValuesBlocked - Inserts or adds blocks of values into certain locations of a vector. 
+
+   Input Parameters:
+.  x - vector to insert in
+.  ni - number of blocks to add
+.  ix - indices where to add in block count, rather than element count
+.  y - array of values
+.  iora - either INSERT_VALUES or ADD_VALUES
+
+   Notes: 
+   x[ix[bs*i]+j] = y[bs*i+j], for j=0,...,bs, for i=0,...,ni-1. where bs was set with 
+   VecSetBlockSize()
+
+   Notes:
+   Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
+   options cannot be mixed without intervening calls to the assembly
+   routines.
+
+   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
+   MUST be called after all calls to VecSetValues() have been completed.
+
+   VecSetValues() uses 0-based indices in Fortran as well as in C.
+
+.keywords: vector, set, values
+
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
+           VecSetValue()
+@*/
+int VecSetValuesBlocked(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidIntPointer(ix);
+  PetscValidScalarPointer(y);
+  PLogEventBegin(VEC_SetValues,x,0,0,0);
+  ierr = (*x->ops.setvaluesblocked)( x, ni,ix, y,iora ); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   PetscFunctionReturn(0);
 }
@@ -753,7 +826,8 @@ M*/
 
 .keywords: vector, set, values, local ordering
 
-.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal()
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
+           VecSetLocalToGlobalMappingBlocked(), VecSetValuesBlockedLocal()
 @*/
 int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
 {
@@ -766,6 +840,39 @@ int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
   }
 
   x->mapping = mapping;
+  PetscObjectReference((PetscObject)mapping);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecSetLocalToGlobalMappingBlocked"
+/*@
+   VecSetLocalToGlobalMappingBlocked - Sets a local numbering to global numbering used
+   by the routine VecSetValuesBlockedLocal() to allow users to insert vector entries
+   using a local (per-processor) numbering.
+
+   Input Parameters:
+.  x - vector
+.  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
+
+   Notes: 
+   All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
+
+.keywords: vector, set, values, local ordering
+
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal(),
+           VecSetLocalToGlobalMapping(), VecSetValuesBlockedLocal()
+@*/
+int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
+
+  if (x->bmapping) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Mapping already set for vector");
+  }
+  x->bmapping = mapping;
   PetscObjectReference((PetscObject)mapping);
   PetscFunctionReturn(0);
 }
@@ -798,7 +905,8 @@ int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
 
 .keywords: vector, set, values, local ordering
 
-.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetLocalToGlobalMapping()
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetLocalToGlobalMapping(),
+           VecSetValuesBlockedLocal()
 @*/
 int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
@@ -818,6 +926,63 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   PLogEventBegin(VEC_SetValues,x,0,0,0);
   ierr = ISLocalToGlobalMappingApply(x->mapping,ni,ix,lix); CHKERRQ(ierr);
   ierr = (*x->ops.setvalues)( x,ni,lix, y,iora ); CHKERRQ(ierr);
+  PLogEventEnd(VEC_SetValues,x,0,0,0);  
+  if (ni > 128) {
+    PetscFree(lix);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "VecSetValuesBlockedLocal"
+/*@
+   VecSetValuesBlockedLocal - Inserts or adds values into certain locations of a vector,
+   using a local ordering of the nodes. 
+
+   Input Parameters:
+.  x - vector to insert in
+.  ni - number of blocks to add
+.  ix - indices where to add in block count, not element count
+.  y - array of values
+.  iora - either INSERT_VALUES or ADD_VALUES
+
+   Notes: 
+   x[bs*ix[i]+j] = y[bs*i+j], for j=0,..bs-1, for i=0,...,ni-1.
+   Where bs is set with VecSetBlockSize()
+
+   Notes:
+   Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
+   options cannot be mixed without intervening calls to the assembly
+   routines.
+
+   These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
+   MUST be called after all calls to VecSetValuesLocal() have been completed.
+
+   VecSetValuesLocal() uses 0-based indices in Fortran as well as in C.
+
+.keywords: vector, set, values, local ordering
+
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetLocalToGlobalMapping(),
+           VecSetLocalToGlobalMappingBlocked()
+@*/
+int VecSetValuesBlockedLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
+{
+  int ierr,lixp[128],*lix = lixp;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidIntPointer(ix);
+  PetscValidScalarPointer(y);
+  if (!x->bmapping) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMappingBlocked()");
+  }
+  if (ni > 128) {
+    lix = (int *) PetscMalloc( ni*sizeof(int) );CHKPTRQ(lix);
+  }
+
+  PLogEventBegin(VEC_SetValues,x,0,0,0);
+  ierr = ISLocalToGlobalMappingApply(x->mapping,ni,ix,lix); CHKERRQ(ierr);
+  ierr = (*x->ops.setvaluesblocked)( x,ni,lix, y,iora ); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   if (ni > 128) {
     PetscFree(lix);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.41 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.42 1997/12/04 19:33:53 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -92,8 +92,8 @@ int PetscBitMemcpy(void *a,int ai,void *b,int bi,int bs,PetscDataType dtype)
   if (dtype != PETSC_LOGICAL) {
     ierr = PetscDataTypeGetSize(dtype,&dsize);CHKERRQ(ierr);
     ierr = PetscMemcpy(aa+ai*dsize,bb+bi*dsize,bs*dsize);CHKERRQ(ierr);
-  } else if (ai == 0 && bi == 0 && bs % 8) {
-    ierr = PetscMemcpy(a,b,BTLength(bs)*sizeof(char));CHKERRQ(ierr);
+    /*  } else if (ai == 0 && bi == 0 && bs % 8) {
+    ierr = PetscMemcpy(a,b,BTLength(bs)*sizeof(char));CHKERRQ(ierr); */
   } else {
     BT  at = (BT) a, bt = (BT) b;
     int i;

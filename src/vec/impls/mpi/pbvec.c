@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.90 1997/11/23 16:48:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.91 1997/12/01 01:52:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -73,21 +73,35 @@ int VecSetOption_MPI(Vec v,VecOption op)
 int VecDuplicate_MPI(Vec,Vec *);
 
 static struct _VeOps DvOps = { VecDuplicate_MPI, 
-            VecDuplicateVecs_Default, VecDestroyVecs_Default, VecDot_MPI, 
+            VecDuplicateVecs_Default, 
+            VecDestroyVecs_Default, 
+            VecDot_MPI, 
             VecMDot_MPI,
-            VecNorm_MPI, VecTDot_MPI, 
+            VecNorm_MPI, 
+            VecTDot_MPI, 
             VecMTDot_MPI,
-            VecScale_Seq, VecCopy_Seq,
-            VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXPBY_Seq,
-            VecMAXPY_Seq, VecAYPX_Seq,
-            VecWAXPY_Seq, VecPointwiseMult_Seq,
+            VecScale_Seq,
+            VecCopy_Seq,
+            VecSet_Seq, 
+            VecSwap_Seq, 
+            VecAXPY_Seq, 
+            VecAXPBY_Seq,
+            VecMAXPY_Seq, 
+            VecAYPX_Seq,
+            VecWAXPY_Seq, 
+            VecPointwiseMult_Seq,
             VecPointwiseDivide_Seq, 
             VecSetValues_MPI,
-            VecAssemblyBegin_MPI,VecAssemblyEnd_MPI,
-            VecGetArray_Seq,VecGetSize_MPI,VecGetSize_Seq,
-            VecGetOwnershipRange_MPI,0,VecMax_MPI,VecMin_MPI,
+            VecAssemblyBegin_MPI,
+            VecAssemblyEnd_MPI,
+            VecGetArray_Seq,
+            VecGetSize_MPI,
+            VecGetSize_Seq,
+            VecGetOwnershipRange_MPI,0,
+            VecMax_MPI,VecMin_MPI,
             VecSetRandom_Seq,
-            VecSetOption_MPI};
+            VecSetOption_MPI,
+            VecSetValuesBlocked_MPI};
 
 #undef __FUNC__  
 #define __FUNC__ "VecCreateMPI_Private"
@@ -119,6 +133,8 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   v->n           = n;
   v->N           = N;
   v->mapping     = 0;
+  v->bmapping    = 0;
+  v->bs          = 1;
   s->size        = size;
   s->rank        = rank;
   if (array) {
@@ -532,6 +548,11 @@ int VecDuplicate_MPI( Vec win, Vec *v)
     (*v)->mapping = win->mapping;
     PetscObjectReference((PetscObject)win->mapping);
   }
+  if (win->bmapping) {
+    (*v)->bmapping = win->bmapping;
+    PetscObjectReference((PetscObject)win->bmapping);
+  }
+  (*v)->bs = win->bs;
   if (win->child) {
     ierr = (*win->childcopy)(win->child,&(*v)->child);CHKERRQ(ierr);
   }
