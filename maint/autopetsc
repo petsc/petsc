@@ -44,6 +44,11 @@
                                    scan $expect_out(buffer) "%s blinks\r\n" swho
                                    puts "who: $swho"
                                    send "say Welcome back,  $swho\r"
+                 } "* arrives from the hallway.\r\n" { 
+                                   puts $expect_out(buffer)
+                                   scan $expect_out(buffer) "%s arrives from the hallway.\r\n" swho
+                                   puts "who: $swho"
+                                   send "\`$swho Welcome to PETSc Plaza\r"
                  } "*\r\n" { 
                                    puts "Irrelevant message"
                  }
