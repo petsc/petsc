@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.2 1995/09/02 20:19:23 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.3 1995/09/03 22:32:33 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -289,8 +289,6 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 
   cdiv3 = user->param/three;
 
-  ierr = VecView(X,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
-
   /* Get ghost points */
   ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX); CHKERRQ(ierr);
@@ -440,7 +438,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   for (j=ysm; j<ye; j++) {  /*  for (j=-1; j<ny; j++) */
     for (i=xsm; i<xe; i++) {  /*   for (i=-1; i<nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
-      kglob = j+nx + i;
+      kglob = j*nx + i;
       v = zero;
       vr = zero;
       vt = zero;
@@ -466,7 +464,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   for (j=ys; j<yep; j++) { /*  for (j=0; j<=ny; j++) */
     for (i=xs; i<xep; i++) {  /*   for (i=0; i<=nx; i++) */
       k = (j-Ys)*Xm + i-Xs;
-      kglob = j+nx + i;
+      kglob = j*nx + i;
       v = zero;
       vl = zero;
       vb = zero;
