@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.133 1996/01/08 17:41:34 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.134 1996/01/12 21:36:32 balay Exp bsmith $";
 #endif
 
 /*
@@ -629,7 +629,7 @@ int MatMarkDiag_SeqAIJ(Mat A)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
   int        i,j, *diag, m = a->m,shift = a->indexshift;
 
-  if (!a->assembled) SETERRQ(1,"MatMarkDiag_SeqAIJ:unassembled matrix");
+  if (!a->assembled) SETERRQ(1,"MatMarkDiag_SeqAIJ:Not for unassembled matrix");
   diag = (int *) PetscMalloc( (m+1)*sizeof(int)); CHKPTRQ(diag);
   PLogObjectMemory(A,(m+1)*sizeof(int));
   for ( i=0; i<a->m; i++ ) {
@@ -966,16 +966,16 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
   return 0;
 }
 
-static int MatScale_SeqAIJ(Mat A,Vec ll,Vec rr)
+static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *l,*r,x,*v;
   int        i,j,m = a->m, n = a->n, M, nz = a->nz, *jj,shift = a->indexshift;
 
-  if (!a->assembled) SETERRQ(1,"MatScale_SeqAIJ:Not for unassembled matrix");
+  if (!a->assembled) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Not for unassembled matrix");
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
-    if (m != a->m) SETERRQ(1,"MatScale_SeqAIJ:Left scaling vector wrong length");
+    if (m != a->m) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Left scaling vector wrong length");
     v = a->a;
     for ( i=0; i<m; i++ ) {
       x = l[i];
@@ -985,7 +985,7 @@ static int MatScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
-    if (n != a->n) SETERRQ(1,"MatScale_SeqAIJ:Right scaling vector wrong length");
+    if (n != a->n) SETERRQ(1,"MatDiagonalScale_SeqAIJ:Right scaling vector wrong length");
     v = a->a; jj = a->j;
     for ( i=0; i<nz; i++ ) {
       (*v++) *= r[*jj++ + shift]; 
@@ -1142,6 +1142,17 @@ static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
   return 0;
 }
 
+#include "pinclude/plapack.h"
+static int MatScale_SeqAIJ(Scalar *alpha,Mat inA)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
+  int        one = 1;
+  if (!a->assembled) SETERRQ(1,"MatScale_SeqAIJ:Not for unassembled matrix");
+  BLscal_( &a->nz, alpha, a->a, &one );
+  PLogFlops(a->nz);
+  return 0;
+}
+
 static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
                                     Mat **B)
 {
@@ -1195,7 +1206,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatRelax_SeqAIJ,
        MatTranspose_SeqAIJ,
        MatGetInfo_SeqAIJ,0,
-       MatGetDiagonal_SeqAIJ,MatScale_SeqAIJ,MatNorm_SeqAIJ,
+       MatGetDiagonal_SeqAIJ,MatDiagonalScale_SeqAIJ,MatNorm_SeqAIJ,
        0,MatAssemblyEnd_SeqAIJ,
        MatCompress_SeqAIJ,
        MatSetOption_SeqAIJ,MatZeroEntries_SeqAIJ,MatZeroRows_SeqAIJ,
@@ -1209,7 +1220,8 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatILUFactor_SeqAIJ,0,0,
        MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ,0,
-       MatPrintHelp_SeqAIJ};
+       MatPrintHelp_SeqAIJ,
+       MatScale_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);
@@ -1343,7 +1355,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   int        i,len, m = a->m,shift = a->indexshift;
 
   *B = 0;
-  if (!a->assembled) SETERRQ(1,"MatConvertSameType_SeqAIJ:Cannot copy unassembled matrix");
+  if (!a->assembled) SETERRQ(1,"MatConvertSameType_SeqAIJ:Not for unassembled matrix");
   PetscHeaderCreate(C,_Mat,MAT_COOKIE,MATSEQAIJ,A->comm);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);
