@@ -1,4 +1,4 @@
-/*$Id: matmatmult.c,v 1.5 2001/09/01 05:16:27 buschelm Exp buschelm $*/
+/*$Id: matmatmult.c,v 1.6 2001/09/05 00:16:48 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -9,10 +9,11 @@
 
 typedef struct _p_space *_p_ptr_space;
 typedef struct _p_space {
-  int        *space;
+  int          *head;
+  int          *space;
   _p_ptr_space morespace;
-  int        used;
-  int        remaining;
+  int          used;
+  int          remaining;
 } _p_free_space;  
 
 static int logkey_symbolic=0;
@@ -59,6 +60,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
 
   ierr = PetscMalloc(sizeof(_p_free_space),&free_space);
   ierr = PetscMalloc((free_space_size+1)*sizeof(int),&(free_space->space));CHKERRQ(ierr);
+  free_space->head      = free_space->space;
   free_space->remaining = free_space_size;
   free_space->used      = 0;
   free_space->morespace = NULL;
@@ -93,6 +95,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
       ierr = PetscMalloc(sizeof(_p_free_space),&(current_space->morespace));CHKERRQ(ierr);
       current_space = current_space->morespace;
       ierr = PetscMalloc((free_space_size+1)*sizeof(int),&(current_space->space));CHKERRQ(ierr);
+      current_space->head      = current_space->space;
       current_space->remaining = free_space_size;
       current_space->used      = 0;
       current_space->morespace = NULL;
@@ -100,6 +103,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
 
     /* Copy data into free space, and zero out densefill */
     ierr = PetscMemcpy(current_space->space,sparsefill,cnzi*sizeof(int));CHKERRQ(ierr);
+    current_space->space     += cnzi;
     current_space->used      += cnzi;
     current_space->remaining -= cnzi;
     for (j=0;j<cnzi;j++) {
@@ -113,17 +117,17 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[an]+1)*sizeof(int),&cj);CHKERRQ(ierr);
   current_space = free_space;
-  ierr = PetscMemcpy(cj,current_space->space,(current_space->used)*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(cj,current_space->head,(current_space->used)*sizeof(int));CHKERRQ(ierr);
   cj2  = cj;
   while (current_space->morespace != NULL) {
     cj2 += current_space->used;
-    ierr = PetscFree(current_space->space);CHKERRQ(ierr);
+    ierr = PetscFree(current_space->head);CHKERRQ(ierr);
     current_space = current_space->morespace;
-    ierr = PetscMemcpy(cj2,current_space->space,(current_space->used)*sizeof(int));CHKERRQ(ierr);
     ierr = PetscFree(free_space);CHKERRQ(ierr);
     free_space = current_space;
+    ierr = PetscMemcpy(cj2,current_space->head,(current_space->used)*sizeof(int));CHKERRQ(ierr);
   }
-  ierr = PetscFree(free_space->space);CHKERRQ(ierr);
+  ierr = PetscFree(free_space->head);CHKERRQ(ierr);
   ierr = PetscFree(free_space);CHKERRQ(ierr);
   ierr = PetscFree(densefill);CHKERRQ(ierr);
 
