@@ -690,7 +690,7 @@ PetscErrorCode AODataSegmentRestoreLocalIS(AOData aodata,const char name[],const
 PetscErrorCode AODataKeyGetNeighbors(AOData aodata,const char name[],int n,int *keys,IS *is)
 {
   PetscErrorCode ierr;
-  IS  reduced,input;
+  IS  reduced;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
@@ -698,9 +698,8 @@ PetscErrorCode AODataKeyGetNeighbors(AOData aodata,const char name[],int n,int *
   /* get the list of neighbors */
   ierr = AODataSegmentGetReduced(aodata,name,name,n,keys,&reduced);CHKERRQ(ierr);
 
-  ierr = ISCreateGeneral(aodata->comm,n,keys,&input);CHKERRQ(ierr);
-  ierr = ISSum(input,reduced,is);CHKERRQ(ierr);
-  ierr = ISDestroy(input);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(aodata->comm,n,keys,is);CHKERRQ(ierr);
+  ierr = ISSum(is,reduced);CHKERRQ(ierr);
   ierr = ISDestroy(reduced);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -742,8 +741,9 @@ PetscErrorCode AODataKeyGetNeighborsIS(AOData aodata,const char name[],IS keys,I
  
   /* get the list of neighbors */
   ierr = AODataSegmentGetReducedIS(aodata,name,name,keys,&reduced);CHKERRQ(ierr);
-  ierr = ISSum(keys,reduced,is);CHKERRQ(ierr);
-  ierr = ISDestroy(reduced);CHKERRQ(ierr);
+  /* combine keys and reduced is */
+  ierr = ISSum(&reduced,keys);CHKERRQ(ierr);
+  *is = reduced;
 
   PetscFunctionReturn(0);
 }

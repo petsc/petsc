@@ -25,6 +25,7 @@ typedef struct _p_IS* IS;
 */
 typedef enum {IS_GENERAL=0,IS_STRIDE=1,IS_BLOCK = 2} ISType;
 EXTERN PetscErrorCode   ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],IS *);
+EXTERN PetscErrorCode   ISCreateGeneralWithArray(MPI_Comm,PetscInt,PetscInt[],IS *);
 EXTERN PetscErrorCode   ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],IS *);
 EXTERN PetscErrorCode   ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
 
@@ -45,8 +46,7 @@ EXTERN PetscErrorCode   ISEqual(IS,IS,PetscTruth *);
 EXTERN PetscErrorCode   ISSort(IS);
 EXTERN PetscErrorCode   ISSorted(IS,PetscTruth *);
 EXTERN PetscErrorCode   ISDifference(IS,IS,IS*);
-EXTERN PetscErrorCode   ISSum(IS,IS,IS*);
-EXTERN PetscErrorCode   ISExtend(IS*,IS);
+EXTERN PetscErrorCode   ISSum(IS*,IS);
 
 EXTERN PetscErrorCode   ISBlock(IS,PetscTruth*);
 EXTERN PetscErrorCode   ISBlockGetIndices(IS,PetscInt *[]);
