@@ -1,4 +1,4 @@
-/*$Id: flush.c,v 1.20 1999/03/31 04:10:29 bsmith Exp bsmith $*/
+/*$Id: flush.c,v 1.22 1999/10/24 14:01:08 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
 
@@ -17,7 +17,8 @@
 
 .keywords: Viewer, flush
 
-.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen()
+.seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen(), ViewerCreate(), ViewerDestroy(),
+          ViewerSetType()
 @*/
 int ViewerFlush(Viewer viewer)
 {

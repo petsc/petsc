@@ -1,4 +1,4 @@
-/* $Id: filev.c,v 1.101 1999/11/24 21:52:41 bsmith Exp bsmith $ */
+/* $Id: filev.c,v 1.102 2000/01/11 20:58:57 bsmith Exp bsmith $ */
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
@@ -104,7 +104,8 @@ int ViewerFlush_ASCII(Viewer viewer)
 
 .keywords: Viewer, file, get, pointer
 
-.seealso: ViewerASCIIOpen()
+.seealso: ViewerASCIIOpen(), ViewerDestroy(), ViewerSetType(), ViewerCreate(), ViewerASCIIPrintf(),
+          ViewerASCIISynchronizedPrintf(), ViewerFlush()
 @*/
 int ViewerASCIIGetPointer(Viewer viewer,FILE **fd)
 {
@@ -140,7 +141,8 @@ extern FILE *petsc_history;
 .keywords: parallel, fprintf
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
-          ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf()
+          ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf(), ViewerASCIIOpen(),
+          ViewerCreate(), ViewerDestroy(), ViewerSetType(), ViewerASCIIGetPointer()
 @*/
 int ViewerASCIIPushTab(Viewer viewer)
 {
@@ -176,7 +178,8 @@ int ViewerASCIIPushTab(Viewer viewer)
 .keywords: parallel, fprintf
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
-          ViewerASCIIPushTab(), ViewerASCIISynchronizedPrintf()
+          ViewerASCIIPushTab(), ViewerASCIISynchronizedPrintf(), ViewerASCIIOpen(),
+          ViewerCreate(), ViewerDestroy(), ViewerSetType(), ViewerASCIIGetPointer()
 @*/
 int ViewerASCIIPopTab(Viewer viewer)
 {
@@ -213,7 +216,8 @@ int ViewerASCIIPopTab(Viewer viewer)
 .keywords: parallel, fprintf
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
-          ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf(), ViewerASCIIPushTab()
+          ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf(), ViewerASCIIPushTab(), ViewerASCIIOpen(),
+          ViewerCreate(), ViewerDestroy(), ViewerSetType(), ViewerASCIIGetPointer()
 @*/
 int ViewerASCIIUseTabs(Viewer viewer,PetscTruth flg)
 {
@@ -269,7 +273,8 @@ extern FILE        *queuefile;
 .keywords: parallel, fprintf
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIOpen(),
-          ViewerASCIIPushTab(), ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf()
+          ViewerASCIIPushTab(), ViewerASCIIPopTab(), ViewerASCIISynchronizedPrintf(),
+          ViewerCreate(), ViewerDestroy(), ViewerSetType(), ViewerASCIIGetPointer()
 @*/
 int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 {
@@ -346,7 +351,8 @@ int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
 
     Level: advanced
 
-.seealso: ViewerCreate(), ViewerSetType(), ViewerASCIIOpen(), ViewerBinaryOpen()
+.seealso: ViewerCreate(), ViewerSetType(), ViewerASCIIOpen(), ViewerBinaryOpen(), ViewerDestroy(),
+          ViewerASCIIGetPointer(), ViewerASCIIPrintf(), ViewerASCIISynchronizedPrintf()
 
 @*/
 int ViewerSetFilename(Viewer viewer,const char name[])
@@ -563,7 +569,8 @@ EXTERN_C_END
     Level: intermediate
 
 .seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
-          PetscFOpen(), ViewerFlush()
+          PetscFOpen(), ViewerFlush(), ViewerASCIIGetPointer(), ViewerDestroy(), ViewerASCIIOpen(),
+          ViewerASCIIPrintf()
 
 @*/
 int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
@@ -620,6 +627,7 @@ int ViewerASCIISynchronizedPrintf(Viewer viewer,const char format[],...)
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
     if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 256 bytes");
   }
-    
   PetscFunctionReturn(0);
 }
+
+
