@@ -49,6 +49,9 @@
 #if !defined(PETSC_TEMPLATE)
 #define PETSC_TEMPLATE
 #endif
+#if !defined(PETSC_DLLEXPORT)
+#define PETSC_DLLEXPORT
+#endif
 #if !defined(PETSCVEC_DLLEXPORT)
 #define PETSCVEC_DLLEXPORT
 #endif
