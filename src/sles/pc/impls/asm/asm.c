@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.127 2001/03/23 23:23:15 balay Exp bsmith $*/
+/*$Id: asm.c,v 1.128 2001/04/10 19:36:16 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -337,7 +337,7 @@ static int PCDestroy_ASM(PC pc)
     ierr = VecDestroy(osm->x[i]);CHKERRQ(ierr);
     ierr = VecDestroy(osm->y[i]);CHKERRQ(ierr);
   }
-  if (osm->n_local_true > 0 && !osm->inplace) {
+  if (osm->n_local_true > 0 && !osm->inplace && osm->pmat) {
     ierr = MatDestroyMatrices(osm->n_local_true,&osm->pmat);CHKERRQ(ierr);
   }
   for (i=0; i<osm->n_local_true; i++) {
