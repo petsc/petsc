@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.57 2001/03/23 23:22:57 balay Exp bsmith $*/
+/*$Id: color.c,v 1.58 2001/04/03 15:19:54 bsmith Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -310,7 +310,7 @@ $    -mat_coloring_view
 
    Notes:
      These compute the graph coloring of the graph of A^{T}A. The coloring used 
-   for efficient (parallel or thread based) triangular solves etc is not yet 
+   for efficient (parallel or thread based) triangular solves etc is NOT yet 
    available. 
 
    The user can define additional colorings; see MatColoringRegisterDynamic().
