@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.29 1997/12/01 01:57:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.30 1998/01/26 20:06:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -186,9 +186,9 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   for ( i=0; i<N; i++ ) {
     ip = allpetsc[i]; ia = allapp[i];
     /* check there are no duplicates */
-    if (aodebug->app[ip]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in PETSc ordering");
+    if (aodebug->app[ip]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in Application ordering");
     aodebug->app[ip] = ia + 1;
-    if (aodebug->petsc[ia]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in Application ordering");
+    if (aodebug->petsc[ia]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in PETSc ordering");
     aodebug->petsc[ia] = ip + 1;
   }
   if (!mypetsc) PetscFree(petsc);
