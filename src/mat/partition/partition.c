@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.25 1999/04/02 15:09:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.26 1999/04/02 17:22:27 bsmith Exp balay $";
 #endif
  
 #include "petsc.h"
@@ -145,8 +145,6 @@ int MatPartitioningRegisterDestroy(void)
 @*/
 int MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *type)
 {
-  int ierr;
-
   PetscFunctionBegin;
   *type = partitioning->type_name;
   PetscFunctionReturn(0);
@@ -285,7 +283,6 @@ int MatPartitioningDestroy(MatPartitioning part)
 int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 {
   MatPartitioning     part;
-  int                 ierr;
 
   PetscFunctionBegin;
   *newp          = 0;
