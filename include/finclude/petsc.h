@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.56 1998/03/12 23:25:45 bsmith Exp balay $;
+!  $Id: petsc.h,v 1.57 1998/03/23 23:46:47 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -90,8 +90,10 @@
 !
 #if defined(HAVE_64BITS)
 #define PetscOffset integer*8
+#define PETScAddr   integer*8
 #else
 #define PetscOffset integer
+#define PETScAddr   integer
 #endif
 
 !
