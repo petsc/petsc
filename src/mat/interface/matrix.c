@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.179 1996/07/10 01:49:52 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.180 1996/07/11 04:10:26 balay Exp bsmith $";
 #endif
 
 /*
@@ -100,6 +100,7 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 {
   int   ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidIntPointer(ncols);
   if (!mat->assembled) SETERRQ(1,"MatGetRow:Not for unassembled matrix");
   PLogEventBegin(MAT_GetRow,mat,0,0,0);
   ierr = (*mat->ops.getrow)(mat,row,ncols,cols,vals); CHKERRQ(ierr);
@@ -123,6 +124,7 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidIntPointer(ncols);
   if (!mat->assembled) SETERRQ(1,"MatRestoreRow:Not for unassembled matrix");
   if (!mat->ops.restorerow) return 0;
   return (*mat->ops.restorerow)(mat,row,ncols,cols,vals);
@@ -234,6 +236,7 @@ $     PETSC_FALSE otherwise.
 @*/
 int MatValid(Mat m,PetscTruth *flg)
 {
+  PetscValidIntPointer(flg);
   if (!m)                           *flg = PETSC_FALSE;
   else if (m->cookie != MAT_COOKIE) *flg = PETSC_FALSE;
   else                              *flg = PETSC_TRUE;
@@ -266,11 +269,15 @@ $     INSERT_VALUES - replaces existing entries with new values
 
 .seealso: MatSetOptions(), MatAssemblyBegin(), MatAssemblyEnd()
 @*/
-int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,
-                                                        InsertMode addv)
+int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (!m || !n) return 0; /* no values to insert */
+  PetscValidIntPointer(idxm);
+  PetscValidIntPointer(idxn);
+  PetscValidScalarPointer(v);
+
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
     mat->assembled     = PETSC_FALSE;
@@ -304,6 +311,9 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   int ierr;
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidIntPointer(idxm);
+  PetscValidIntPointer(idxn);
+  PetscValidScalarPointer(v);
   if (!mat->assembled) SETERRQ(1,"MatGetValues:Not for unassembled matrix");
 
   PLogEventBegin(MAT_GetValues,mat,0,0,0);
@@ -1182,6 +1192,7 @@ int MatTranspose(Mat mat,Mat *B)
 int MatEqual(Mat A,Mat B,PetscTruth *flg)
 {
   PetscValidHeaderSpecific(A,MAT_COOKIE); PetscValidHeaderSpecific(B,MAT_COOKIE);
+  PetscValidIntPointer(flg);
   if (!A->assembled) SETERRQ(1,"MatEqual:Not for unassembled matrix");
   if (!B->assembled) SETERRQ(1,"MatEqual:Not for unassembled matrix");
   if (A->M != B->M || A->N != B->N) SETERRQ(PETSC_ERR_SIZ,"MatCopy:Mat A,Mat B: global dim");
@@ -1241,6 +1252,7 @@ int MatScale(Scalar *a,Mat mat)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidScalarPointer(a);
   if (!mat->ops.scale) SETERRQ(PETSC_ERR_SUP,"MatScale");
   if (!mat->assembled) SETERRQ(1,"MatScale:Not for unassembled matrix");
 
@@ -1265,6 +1277,7 @@ int MatScale(Scalar *a,Mat mat)
 int MatNorm(Mat mat,NormType type,double *norm)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidScalarPointer(norm);
 
   if (!norm) SETERRQ(1,"MatNorm:bad addess for value");
   if (!mat->assembled) SETERRQ(1,"MatNorm:Not for unassembled matrix");
@@ -1529,7 +1542,8 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
 int MatGetSize(Mat mat,int *m,int* n)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!m || !n) SETERRQ(1,"MatGetSize:Bad address for result");
+  PetscValidIntPointer(m);
+  PetscValidIntPointer(n);
   return (*mat->ops.getsize)(mat,m,n);
 }
 
@@ -1552,7 +1566,8 @@ int MatGetSize(Mat mat,int *m,int* n)
 int MatGetLocalSize(Mat mat,int *m,int* n)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!m || !n) SETERRQ(1,"MatGetLocalSize:Bad address for result");
+  PetscValidIntPointer(m);
+  PetscValidIntPointer(n);
   return (*mat->ops.getlocalsize)(mat,m,n);
 }
 
@@ -1574,7 +1589,8 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
 int MatGetOwnershipRange(Mat mat,int *m,int* n)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!m || !n) SETERRQ(1,"MatGetOwnershipRange:Bad address for result");
+  PetscValidIntPointer(m);
+  PetscValidIntPointer(n);
   if (mat->ops.getownershiprange) return (*mat->ops.getownershiprange)(mat,m,n);
   SETERRQ(PETSC_ERR_SUP,"MatGetOwnershipRange");
 }
@@ -1882,6 +1898,7 @@ int MatPrintHelp(Mat mat)
 int MatGetBlockSize(Mat mat,int *bs)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidIntPointer(bs);
   if (!mat->ops.getblocksize) SETERRQ(PETSC_ERR_SUP,"MatGetBlockSize");
   return (*mat->ops.getblocksize)(mat,bs);
 }
