@@ -108,10 +108,7 @@ EXTERN_C_END
         if (a->nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col); \
  \
         /* malloc new storage space */ \
-        len   = new_nz*(sizeof(PetscInt)+bs2*sizeof(MatScalar))+(a->mbs+1)*sizeof(PetscInt); \
-        ierr  = PetscMalloc(len,&new_a);CHKERRQ(ierr); \
-        new_j = (PetscInt*)(new_a + bs2*new_nz); \
-        new_i = new_j + new_nz; \
+        ierr = PetscMalloc3(bs2*new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,a->mbs+1,PetscInt,&new_i);CHKERRQ(ierr);\
  \
         /* copy over old data into new slots */ \
         for (ii=0; ii<brow+1; ii++) {new_i[ii] = ai[ii];} \
@@ -121,14 +118,15 @@ EXTERN_C_END
         ierr = PetscMemcpy(new_j+ai[brow]+nrow+CHUNKSIZE,aj+ai[brow]+nrow,len*sizeof(PetscInt));CHKERRQ(ierr); \
         ierr = PetscMemcpy(new_a,aa,(ai[brow]+nrow)*bs2*sizeof(MatScalar));CHKERRQ(ierr); \
         ierr = PetscMemzero(new_a+bs2*(ai[brow]+nrow),bs2*CHUNKSIZE*sizeof(PetscScalar));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a+bs2*(ai[brow]+nrow+CHUNKSIZE), \
-                    aa+bs2*(ai[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);  \
+        ierr = PetscMemcpy(new_a+bs2*(ai[brow]+nrow+CHUNKSIZE), aa+bs2*(ai[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
-        ierr = PetscFree(a->a);CHKERRQ(ierr);  \
-        if (!a->singlemalloc) { \
-          ierr = PetscFree(a->i);CHKERRQ(ierr); \
+       if (!a->singlemalloc) {\
+          ierr = PetscFree(a->a);CHKERRQ(ierr);\
+          ierr = PetscFree(a->i);CHKERRQ(ierr);\
           ierr = PetscFree(a->j);CHKERRQ(ierr);\
-        } \
+        } else {\
+          ierr = PetscFree3(a->a,a->i,a->j);CHKERRQ(ierr);\
+        }\
         aa = a->a = new_a; ai = a->i = new_i; aj = a->j = new_j;  \
         a->singlemalloc = PETSC_TRUE; \
  \
@@ -184,10 +182,7 @@ EXTERN_C_END
         if (b->nonew == -2) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) in the matrix", row, col); \
  \
         /* malloc new storage space */ \
-        len   = new_nz*(sizeof(PetscInt)+bs2*sizeof(MatScalar))+(b->mbs+1)*sizeof(PetscInt); \
-        ierr  = PetscMalloc(len,&new_a);CHKERRQ(ierr); \
-        new_j = (PetscInt*)(new_a + bs2*new_nz); \
-        new_i = new_j + new_nz; \
+        ierr = PetscMalloc3(bs2*new_nz,PetscScalar,&new_a,new_nz,PetscInt,&new_j,b->mbs+1,PetscInt,&new_i);CHKERRQ(ierr);\
  \
         /* copy over old data into new slots */ \
         for (ii=0; ii<brow+1; ii++) {new_i[ii] = bi[ii];} \
@@ -197,14 +192,15 @@ EXTERN_C_END
         ierr = PetscMemcpy(new_j+bi[brow]+nrow+CHUNKSIZE,bj+bi[brow]+nrow,len*sizeof(PetscInt));CHKERRQ(ierr); \
         ierr = PetscMemcpy(new_a,ba,(bi[brow]+nrow)*bs2*sizeof(MatScalar));CHKERRQ(ierr); \
         ierr = PetscMemzero(new_a+bs2*(bi[brow]+nrow),bs2*CHUNKSIZE*sizeof(MatScalar));CHKERRQ(ierr); \
-        ierr = PetscMemcpy(new_a+bs2*(bi[brow]+nrow+CHUNKSIZE), \
-                    ba+bs2*(bi[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);  \
+        ierr = PetscMemcpy(new_a+bs2*(bi[brow]+nrow+CHUNKSIZE),ba+bs2*(bi[brow]+nrow),bs2*len*sizeof(MatScalar));CHKERRQ(ierr);  \
         /* free up old matrix storage */ \
-        ierr = PetscFree(b->a);CHKERRQ(ierr);  \
-        if (!b->singlemalloc) { \
-          ierr = PetscFree(b->i);CHKERRQ(ierr); \
-          ierr = PetscFree(b->j);CHKERRQ(ierr); \
-        } \
+       if (!b->singlemalloc) {\
+          ierr = PetscFree(b->a);CHKERRQ(ierr);\
+          ierr = PetscFree(b->i);CHKERRQ(ierr);\
+          ierr = PetscFree(b->j);CHKERRQ(ierr);\
+        } else {\
+          ierr = PetscFree3(b->a,b->i,b->j);CHKERRQ(ierr);\
+        }\
         ba = b->a = new_a; bi = b->i = new_i; bj = b->j = new_j;  \
         b->singlemalloc = PETSC_TRUE; \
  \
