@@ -7,7 +7,7 @@ set DATAFILESPATH=/Users/petsc/datafiles
 set TMP=/Users/petsc/petsc-test
 set MACH=playstation
 set CONFIGURE='yes'
-set ARCH=darwin6.6
+set ARCH=darwin6.8
 set TEST=testexamples_
 #
 set day=`date | cut -f1 -d" "`
