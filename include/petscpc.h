@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.83 1998/09/19 02:39:02 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.84 1998/10/16 03:19:44 bsmith Exp balay $ */
 
 /*
       Preconditioner module. 
@@ -142,8 +142,8 @@ extern int PCASMSetTotalSubdomains(PC, int, IS *);
 extern int PCASMSetOverlap(PC, int);
 typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0} PCASMType;
 extern int PCASMSetType(PC,PCASMType);
-
 extern int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
+extern int PCASMSetUseInPlace(PC);
 
 typedef enum {PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE} PCCompositeType;
 extern int PCCompositeSetType(PC,PCCompositeType);
