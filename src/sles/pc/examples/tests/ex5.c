@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.37 1996/01/23 00:18:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.38 1996/01/26 01:41:46 curfman Exp curfman $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -103,7 +103,7 @@ int main(int Argc, char **Args)
     ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
     ierr = PCShellSetName(pc,"user_precond"); CHKERRA(ierr);
     ierr = PCShellGetName(pc,&shellname); CHKERRA(ierr);
-    MPIU_printf(MPI_COMM_SELF,"level=%d, PCShell name is %s\n",i,shellname);
+    MPIU_printf(MPI_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);
 
     /* this is a dummy! */
     ierr = SLESSetOperators(sles[i],mat[i],mat[i],
