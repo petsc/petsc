@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: icc.c,v 1.33 1996/03/04 05:15:38 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.34 1996/03/19 21:25:24 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -16,13 +16,13 @@ static int (*setups[])(PC) = {0,
                               0,
                               0,
                               0,
-                              0,
-                              0,
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
                               PCSetUp_ICC_MPIRowbs,
 #else
                               0,
 #endif
+                              0,
+                              0,
                               0,   
                               0,
                               0,0,0,0,0};

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.64 1996/03/24 16:05:19 curfman Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.65 1996/03/24 16:05:41 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -15,13 +15,13 @@ static int (*setups[])(PC) = {0,
                               0,
                               0,
                               0,
-                              0,
-                              0,
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
                               PCSetUp_ILU_MPIRowbs,
 #else
                               0,
 #endif
+                              0,
+                              0,
                               0,   
                               0,
                               0,0,0,0,0};

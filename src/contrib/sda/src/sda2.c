@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2.c,v 1.1 1996/02/04 21:06:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2.c,v 1.2 1996/03/23 18:35:40 bsmith Exp bsmith $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -285,3 +285,52 @@ int SDALocalToLocalEnd(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
   return 0;
 }
  
+/*@
+   SDAGetCorners - Returns the global (x,y,z) indices of the lower left
+   corner of the local region, excluding ghost points.
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameters:
+.  x,y,z - the corner indices
+$    y and z are optional (used for 2D and 3D problems)
+.  m,n,p - widths in the corresponding directions
+$    n and p are optional (used for 2D and 3D problems)
+
+   Note:
+   Any of y, z, n, and p should be set to PETSC_NULL if not needed.
+
+.keywords: distributed array, get, corners, nodes, local indices
+
+.seealso: SDAGetGhostCorners()
+@*/
+int SDAGetCorners(SDA da,int *x,int *y,int *z,int *m, int *n, int *p)
+{
+  return DAGetCorners(da->da,x,y,z,m,n,p);
+}
+
+/*@
+    SDAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
+    corner of the local region, including ghost points.
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameters:
+.  x,y,z - the corner indices
+$    y and z are optional (used for 2D and 3D problems)
+.  m,n,p - widths in the corresponding directions
+$    n and p are optional (used for 2D and 3D problems)
+
+   Note:
+   Any of y, z, n, and p should be set to PETSC_NULL if not needed.
+
+.keywords: distributed array, get, ghost, corners, nodes, local indices
+
+.seealso: SDAGetCorners()
+@*/
+int SDAGetGhostCorners(SDA da,int *x,int *y,int *z,int *m, int *n, int *p)
+{
+  return DAGetGhostCorners(da->da,x,y,z,m,n,p);
+}

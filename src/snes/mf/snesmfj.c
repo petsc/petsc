@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.27 1996/03/20 06:05:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.28 1996/03/26 04:47:51 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -121,8 +121,10 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   ierr = PetscObjectGetComm((PetscObject)x,&comm); CHKERRQ(ierr);
   ierr = VecGetSize(x,&n); CHKERRQ(ierr);
   ierr = MatCreateShell(comm,n,n,(void*)mfctx,J); CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MAT_MULT,SNESMatrixFreeMult_Private); CHKERRQ(ierr);
-  ierr = MatShellSetOperation(*J,MAT_DESTROY,SNESMatrixFreeDestroy_Private);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MAT_MULT,(void*)SNESMatrixFreeMult_Private);
+         CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MAT_DESTROY,(void *)SNESMatrixFreeDestroy_Private);
+         CHKERRQ(ierr);
   PLogObjectParent(*J,mfctx->w);
   PLogObjectParent(snes,*J);
   return 0;

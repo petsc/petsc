@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.63 1996/03/24 15:07:53 curfman Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.64 1996/03/24 16:04:29 curfman Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: itcl.c,v 1.63 1996/03/24 15:07:53 curfman Exp curfman
 #include "sys.h"
 
 extern int KSPGetTypeFromOptions_Private(KSP,KSPType *);
+extern int KSPMonitor_MPIRowbs(KSP,int,double,void *);
 
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
@@ -51,6 +52,12 @@ int KSPSetFromOptions(KSP ksp)
       KSPSetMonitor(ksp,KSPDefaultMonitor,(void *)0);
     }
   }
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
+  ierr = OptionsHasName(ksp->prefix,"-ksp_bsmonitor", &flg);  CHKERRQ(ierr);
+  if (flg) {
+    KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)0);
+  }
+#endif
   ierr = OptionsHasName(ksp->prefix,"-ksp_smonitor", &flg); CHKERRQ(ierr); 
   if (flg){
     int rank = 0;

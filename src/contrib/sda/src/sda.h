@@ -1,5 +1,5 @@
 
-/* $Id: sda.h,v 1.1 1996/02/04 22:27:58 bsmith Exp bsmith $ */
+/* $Id: sda.h,v 1.2 1996/03/23 18:35:40 bsmith Exp bsmith $ */
 /*
     Defines the interface object for the simplified distributed array
     */
@@ -19,5 +19,8 @@ extern int SDACreate1d(MPI_Comm,DAPeriodicType,int,int,int,SDA *);
 extern int SDADestroy(SDA);
 extern int SDALocalToLocalBegin(SDA,Scalar*,InsertMode,Scalar*);
 extern int SDALocalToLocalEnd(SDA,Scalar*,InsertMode,Scalar*);
+
+extern int SDAGetCorners(SDA,int*,int*,int*,int*,int*,int*);
+extern int SDAGetGhostCorners(SDA,int*,int*,int*,int*,int*,int*);
 
 #endif

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.74 1996/03/21 23:12:20 curfman Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.75 1996/03/26 19:53:20 balay Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -339,7 +339,6 @@ int VecAYPX(Scalar *alpha,Vec x,Vec y)
 {
   int ierr;
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PetscCheckSameType(x,y);
   PLogEventBegin(VEC_AYPX,x,y,0,0);
   ierr =  (*x->ops.aypx)(alpha,x,y); CHKERRQ(ierr);
   PLogEventEnd(VEC_AYPX,x,y,0,0);

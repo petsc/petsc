@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.28 1996/03/28 22:00:13 curfman Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.29 1996/03/28 22:51:51 curfman Exp bsmith $";
 #endif
 
 /*
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: shell.c,v 1.28 1996/03/28 22:00:13 curfman Exp curfma
 
 typedef struct {
   int  m, n;                       /* rows, columns */
-  int  (*destroy)(void*);
+  int  (*destroy)(Mat);
   void *ctx;
 } Mat_Shell;      
 
@@ -57,8 +57,10 @@ static int MatDestroy_Shell(PetscObject obj)
   Mat_Shell *shell;
 
   shell = (Mat_Shell *) mat->data;
-  if (shell->destroy) {ierr = (*shell->destroy)(obj);CHKERRQ(ierr);}
+  if (shell->destroy) {ierr = (*shell->destroy)(mat);CHKERRQ(ierr);}
   PetscFree(shell); 
+  PLogObjectDestroy(mat);
+  PetscHeaderDestroy(mat);
   return 0;
 }
   
@@ -105,7 +107,7 @@ $   MatDestroy(mat);
 
 .keywords: matrix, shell, create
 
-.seealso: MatSetOperation(), MatHasOperation(), MatShellGetContext()
+.seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext()
 @*/
 int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 {
@@ -130,7 +132,8 @@ int MatCreateShell(MPI_Comm comm,int m,int n,void *ctx,Mat *mat)
 }
 
 /*@
-    MatShellSetOperation - Allows user to set a matrix operation for a shell matrix.
+    MatShellSetOperation - Allows user to set a matrix operation for
+                           a shell matrix.
 
     Input Parameters:
 .   mat - the shell matrix
@@ -169,7 +172,7 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
   if (op == MAT_DESTROY) {
     if (mat->type == MATSHELL) {
        Mat_Shell *shell = (Mat_Shell *) mat->data;
-       shell->destroy                                 = (int (*)(void*)) f;
+       shell->destroy                                 = (int (*)(Mat)) f;
     } 
     else mat->destroy                                 = (int (*)(PetscObject)) f;
   } 
@@ -178,4 +181,9 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
 
   return 0;
 }
+
+
+
+
+
 

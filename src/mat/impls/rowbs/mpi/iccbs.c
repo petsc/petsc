@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.8 1996/03/10 17:28:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.9 1996/03/19 21:26:17 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve interface.
@@ -107,17 +107,22 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
 
    Question: Should this routine really be here? 
  */
-int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,Mat mat)
+int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
 {
-  Mat_MPIRowbs *bsif = (Mat_MPIRowbs *) mat->data;
+  Mat_MPIRowbs *bsif;
   int          ierr;
   Vec          resid;
   double       scnorm;
+  PC           pc;
+  Mat          mat;
 
+  ierr = KSPGetPC(ksp,&pc); CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&mat,0,0); CHKERRQ(ierr);
+  bsif = (Mat_MPIRowbs *) mat->data;
   ierr = KSPBuildResidual(ksp,0,bsif->xwork,&resid); CHKERRQ(ierr);
-  ierr = VecPointwiseMult(resid,bsif->diag,resid); CHKERRQ(ierr);
+  ierr = VecPointwiseDivide(resid,bsif->diag,resid); CHKERRQ(ierr); 
   ierr = VecNorm(resid,NORM_2,&scnorm); CHKERRQ(ierr);
-  PetscPrintf(ksp->comm,"%d %14.12e \n",n,scnorm); 
+  PetscPrintf(ksp->comm,"%d Preconditioned %14.12e True %14.12e\n",n,rnorm,scnorm); 
   return 0;
 }
   

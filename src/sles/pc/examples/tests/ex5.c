@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.41 1996/03/19 21:25:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.42 1996/03/26 04:46:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -91,8 +91,8 @@ int main(int Argc, char **Args)
   for ( i=0; i<levels-1; i++ ) {
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0); CHKERRA(ierr);
     ierr = MatCreateShell(MPI_COMM_WORLD,N[i],N[i+1],(void *)0,&mat[i]);CHKERRA(ierr);
-    ierr = MatShellSetOperation(mat[i],MAT_MULT,restrct); CHKERRA(ierr);
-    ierr = MatShellSetOperation(mat[i],MAT_MULT_TRANS_ADD,interpolate);CHKERRA(ierr);
+    ierr = MatShellSetOperation(mat[i],MAT_MULT,(void*)restrct);CHKERRA(ierr);
+    ierr = MatShellSetOperation(mat[i],MAT_MULT_TRANS_ADD,(void*)interpolate);CHKERRA(ierr);
     ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
     ierr = MGSetRestriction(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
     ierr = MGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles); CHKERRA(ierr);
@@ -138,7 +138,7 @@ int main(int Argc, char **Args)
 
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
-  ierr = MatShellSetOperation(fmat,MAT_MULT,amult); CHKERRA(ierr);
+  ierr = MatShellSetOperation(fmat,MAT_MULT,(void*)amult); CHKERRA(ierr);
   ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN); 
   CHKERRA(ierr);
 
