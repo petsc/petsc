@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.6 1996/02/20 18:52:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: dgedi.c,v 1.2 1996/03/04 05:16:18 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -16,31 +16,31 @@ static char vcid[] = "$Id: baijfact.c,v 1.6 1996/02/20 18:52:30 curfman Exp bsmi
 
 int Linpack_DGEDI(Scalar *a,int n,int *ipvt,Scalar *work)
 {
-    int     a_offset, i__2,kb, kp1, nm1,i, j, k, l, ll;
+    int     i__2,kb, kp1, nm1,i, j, k, l, ll,kn,knp1,jn;
     Scalar  t, *aa,*ax,*ay,tmp;
 
     --work;
     --ipvt;
-    a_offset = n + 1;
-    a       -= a_offset;
+    a       -= n + 1;
 
    /*     compute inverse(u) */
 
     for (k = 1; k <= n; ++k) {
-	a[k + k * n] = 1. / a[k + k * n];
-	t = -a[k + k * n];
-	i__2 = k - 1;
-	/* dscal_(&i__2, &t, &a[k * n + 1], &c__1); */
-        aa = &a[k * n + 1]; 
+        kn           = k*n;
+        knp1         = kn + k;
+	a[knp1]      = 1.0 / a[knp1];
+	t            = -a[knp1];
+	i__2         = k - 1;
+        aa           = &a[1 + kn]; 
         for ( ll=0; ll<i__2; ll++ ) aa[ll] *= t;
 	kp1 = k + 1;
 	if (n < kp1) continue;
         ax = aa;
         for (j = kp1; j <= n; ++j) {
-	    t = a[k + j * n];
-	    a[k + j * n] = 0.;
-	    /* daxpy_(&k, &t, &a[k * n + 1], &c__1, &a[j * n + 1], &c__1);*/
-            ay = &a[j * n + 1];
+            jn = j*n;
+	    t = a[k + jn];
+	    a[k + jn] = 0.;
+            ay = &a[1 + jn];
             for ( ll=0; ll<k; ll++ ) {
               ay[ll] += t*ax[ll];
             }
@@ -55,25 +55,24 @@ int Linpack_DGEDI(Scalar *a,int n,int *ipvt,Scalar *work)
     }
     for (kb = 1; kb <= nm1; ++kb) {
 	k   = n - kb;
+        kn  = k*n;
 	kp1 = k + 1;
-        aa  = a + k * n;
+        aa  = a + kn;
 	for (i = kp1; i <= n; ++i) {
 	    work[i] = aa[i];
 	    aa[i]   = 0.;
 	}
 	for (j = kp1; j <= n; ++j) {
 	    t = work[j];
-	    /* daxpy_(n, &t, &a[j * n + 1], &c__1, &a[k * n + 1], &c__1);*/
             ax = &a[j * n + 1];
-            ay = &a[k * n + 1];
+            ay = &a[kn + 1];
             for ( ll=0; ll<n; ll++ ) {
               ay[ll] += t*ax[ll];
             }
 	}
 	l = ipvt[k];
 	if (l != k) {
-	    /* dswap_(n, &a[k * n + 1], &c__1, &a[l * n + 1], &c__1); */
-            ax = &a[k * n + 1]; 
+            ax = &a[kn + 1]; 
             ay = &a[l * n + 1];
             for ( ll=0; ll<n; ll++ ) {
               tmp    = ax[ll];

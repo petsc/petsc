@@ -8,7 +8,7 @@
 
 int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
 {
-    int     a_offset, i__1, i__2, i__3, kp1, nm1, j, k, l,ll;
+    int     i__2, i__3, kp1, nm1, j, k, l,ll,kn,knp1,jn;
     Scalar  t,*aa,*ax,*ay;
     double  tmp,max;
 
@@ -16,23 +16,19 @@ int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
 
     /* Parameter adjustments */
     --ipvt;
-    a_offset = n + 1;
-    a       -= a_offset;
+    a       -= n + 1;
 
     /* Function Body */
     nm1 = n - 1;
-    if (nm1 < 1) {
-	goto L70;
-    }
-    i__1 = nm1;
-    for (k = 1; k <= i__1; ++k) {
-	kp1 = k + 1;
+    for (k = 1; k <= nm1; ++k) {
+	kp1  = k + 1;
+        kn   = k*n;
+        knp1 = k*n + k;
 
 /*        find l = pivot index */
 
 	i__2 = n - k + 1;
-	/* l = idamax_(&i__2, &a[k + k * n], &c__1) + k - 1; */
-        aa = &a[k + k * n];
+        aa = &a[knp1];
         max = PetscAbsScalar(aa[0]);
         l = 1;
         for ( ll=1; ll<i__2; ll++ ) {
@@ -42,51 +38,45 @@ int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
         l += k - 1;
 	ipvt[k] = l;
 
-/*        zero pivot implies this column already triangularized */
-
-	if (a[l + k * n] == 0.) {
+	if (a[l + kn] == 0.) {
 	  SETERRQ(k,"Linpack_DGEFA:Zero pivot");
 	}
 
 /*           interchange if necessary */
 
 	if (l != k) {
-	  t = a[l + k * n];
-	  a[l + k * n] = a[k + k * n];
-	  a[k + k * n] = t;
+	  t = a[l + kn];
+	  a[l + kn] = a[knp1];
+	  a[knp1] = t;
         }
 
 /*           compute multipliers */
 
-	t = -1. / a[k + k * n];
+	t = -1. / a[knp1];
 	i__2 = n - k;
-	/* dscal_(&i__2, &t, &a[k + 1 + k * n], &c__1); */
-        aa = &a[k + 1 + k * n]; 
+        aa = &a[1 + knp1]; 
         for ( ll=0; ll<i__2; ll++ ) {
           aa[ll] *= t;
         }
 
-
 /*           row elimination with column indexing */
 
-	ax = &a[k+1+k*n]; 
+	ax = aa;
         for (j = kp1; j <= n; ++j) {
-	    t = a[l + j * n];
+            jn = j*n;
+	    t = a[l + jn];
 	    if (l != k) {
-	      a[l + j * n] = a[k + j * n];
-	      a[k + j * n] = t;
+	      a[l + jn] = a[k + jn];
+	      a[k + jn] = t;
             }
 
 	    i__3 = n - k;
-	    /* daxpy_(&i__3, &t, &a[k + 1 + k * n], &c__1, &a[k + 1 + j * 
-		    n], &c__1); */
-            ay = &a[k+1+j*n];
+            ay = &a[1+k+jn];
             for ( ll=0; ll<i__3; ll++ ) {
               ay[ll] += t*ax[ll];
             }
 	}
     }
-L70:
     ipvt[n] = n;
     if (a[n + n * n] == 0.) {
 	SETERRQ(n,"Linpack_DGEFA:Zero pivot,final row");

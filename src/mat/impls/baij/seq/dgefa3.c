@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dgefa3.c,v 1.2 1996/04/28 02:24:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgefa3.c,v 1.3 1996/04/28 02:44:31 bsmith Exp bsmith $";
 #endif
 /*
     Inverts 3 by 3 matrix using partial pivoting.
@@ -8,15 +8,14 @@ static char vcid[] = "$Id: dgefa3.c,v 1.2 1996/04/28 02:24:51 bsmith Exp bsmith 
 
 int Kernel_A_gets_inverse_A_3(Scalar *a)
 {
-    int     i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[3],*ipvt = ipvt_l,kb,k3;
+    int     i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[3],*ipvt = ipvt_l-1,kb,k3;
     int     k4,j3;
-    Scalar  t,*aa,*ax,*ay,work_l[9],*work = work_l,stmp;
+    Scalar  *aa,*ax,*ay,work_l[9],*work = work_l-1,stmp;
     double  tmp,max;
 
 /*     gaussian elimination with partial pivoting */
 
     /* Parameter adjustments */
-    --ipvt;
     a       -= 4;
 
     for (k = 1; k <= 2; ++k) {
@@ -33,7 +32,7 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
           tmp = PetscAbsScalar(aa[ll]);
           if (tmp > max) { max = tmp; l = ll+1;}
         }
-        l += k - 1;
+        l       += k - 1;
 	ipvt[k] = l;
 
 	if (a[l + k3] == 0.) {
@@ -43,35 +42,35 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
 /*           interchange if necessary */
 
 	if (l != k) {
-	  t          = a[l + k3];
+	  stmp      = a[l + k3];
 	  a[l + k3] = a[k4];
-	  a[k4]     = t;
+	  a[k4]     = stmp;
         }
 
 /*           compute multipliers */
 
-	t = -1. / a[k4];
+	stmp = -1. / a[k4];
 	i__2 = 3 - k;
         aa = &a[1 + k4]; 
         for ( ll=0; ll<i__2; ll++ ) {
-          aa[ll] *= t;
+          aa[ll] *= stmp;
         }
 
 /*           row elimination with column indexing */
 
 	ax = &a[k4+1]; 
         for (j = kp1; j <= 3; ++j) {
-            j3 = 3*j;
-	    t = a[l + j3];
+            j3   = 3*j;
+	    stmp = a[l + j3];
 	    if (l != k) {
 	      a[l + j3] = a[k + j3];
-	      a[k + j3] = t;
+	      a[k + j3] = stmp;
             }
 
 	    i__3 = 3 - k;
-            ay = &a[k+1+j3];
+            ay = &a[1+k+j3];
             for ( ll=0; ll<i__3; ll++ ) {
-              ay[ll] += t*ax[ll];
+              ay[ll] += stmp*ax[ll];
             }
 	}
     }
@@ -84,28 +83,26 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
          Now form the inverse 
     */
 
-    --work;
-
    /*     compute inverse(u) */
 
     for (k = 1; k <= 3; ++k) {
-        k3 = 3*k;
-        k4 = k3 + k;
+        k3    = 3*k;
+        k4    = k3 + k;
 	a[k4] = 1.0 / a[k4];
-	t = -a[k4];
-	i__2 = k - 1;
-        aa = &a[k3 + 1]; 
-        for ( ll=0; ll<i__2; ll++ ) aa[ll] *= t;
+	stmp  = -a[k4];
+	i__2  = k - 1;
+        aa    = &a[k3 + 1]; 
+        for ( ll=0; ll<i__2; ll++ ) aa[ll] *= stmp;
 	kp1 = k + 1;
 	if (3 < kp1) continue;
         ax = aa;
         for (j = kp1; j <= 3; ++j) {
-            j3 = 3*j;
-	    t = a[k + j3];
-	    a[k + j3] = 0.;
-            ay = &a[j3 + 1];
+            j3        = 3*j;
+	    stmp      = a[k + j3];
+	    a[k + j3] = 0.0;
+            ay        = &a[j3 + 1];
             for ( ll=0; ll<k; ll++ ) {
-              ay[ll] += t*ax[ll];
+              ay[ll] += stmp*ax[ll];
             }
 	}
     }
@@ -122,12 +119,12 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
 	    aa[i]   = 0.0;
 	}
 	for (j = kp1; j <= 3; ++j) {
-	    t = work[j];
-            ax = &a[3*j + 1];
-            ay = &a[k3 + 1];
-            ay[0] += t*ax[0];
-            ay[1] += t*ax[1];
-            ay[2] += t*ax[2];
+	    stmp  = work[j];
+            ax    = &a[3*j + 1];
+            ay    = &a[k3 + 1];
+            ay[0] += stmp*ax[0];
+            ay[1] += stmp*ax[1];
+            ay[2] += stmp*ax[2];
 	}
 	l = ipvt[k];
 	if (l != k) {
