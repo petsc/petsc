@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.52 1998/10/19 22:17:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.53 1999/03/17 23:21:27 bsmith Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -364,8 +364,6 @@ struct { int code_no; char *name; } error_codes[] = {
 #define __FUNC__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig)
 {
-  int ierr;
-
   PetscFunctionBegin;
   (*PetscErrorPrintf)( "*** floating point error occurred ***\n" );
   ierr = PetscError(PETSC_ERR_FP,"unknownfunction","Unknown file",0,1,0,"floating point error");
