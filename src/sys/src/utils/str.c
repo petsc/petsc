@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.22 1998/08/26 22:01:52 balay Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.23 1998/12/17 22:09:29 bsmith Exp balay $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -124,7 +124,7 @@ int PetscStrcasecmp(const char a[],const char b[])
   PetscFunctionBegin;
   if (!a && !b) c = 0;
   else if (!a || !b) c = 1;
-#if defined (PARCH_nt)
+#if defined (PARCH_win32)
   else c = stricmp(a,b);
 #else
   else c = strcasecmp(a,b);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.16 1998/12/03 03:57:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.17 1998/12/17 22:08:48 bsmith Exp balay $";
 #endif
 
 /*
@@ -121,16 +121,16 @@ int VecCreateShared(MPI_Comm comm,int n,int N,Vec *vv)
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
 #include <sys/param.h>
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
 #endif
-#if defined (PARCH_nt_gnu)
+#if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
 #include <fcntl.h>

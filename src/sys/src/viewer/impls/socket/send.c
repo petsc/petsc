@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.78 1998/12/03 04:04:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.79 1998/12/17 22:12:07 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -25,7 +25,7 @@ typedef unsigned long   u_long;
 #if defined(PARCH_alpha)
 #include <machine/endian.h>
 #endif
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <netinet/in.h>
@@ -135,7 +135,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
        if ( errno == EADDRINUSE ) {
         fprintf(stderr,"SEND: address is in use\n");
       }
-#if !defined(PARCH_nt_gnu)
+#if !defined(PARCH_win32_gnu)
        else if ( errno == EALREADY ) {
         fprintf(stderr,"SEND: socket is non-blocking \n");
       }
@@ -275,7 +275,7 @@ int ViewerDestroyMatlab_Private(void)
   }
   PetscFunctionReturn(0);
 }
-#else /* defined (PARCH_nt) */
+#else /* defined (PARCH_win32) */
  
 #include "viewer.h"
 Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
