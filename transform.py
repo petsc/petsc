@@ -107,3 +107,28 @@ class FileChanged (Transform):
   def execute(self):
     self.debugPrint('Checking for changes to sources '+self.debugFileSetStr(self.sources), 2)
     return Transform.execute(self)
+
+class GenericTag (FileChanged):
+  def __init__(self, tag, ext, sources = None, extraExt = ''):
+    FileChanged.__init__(self, sources)
+    self.ext           = '.'+ext
+    self.extraExt      = '.'+extraExt
+    self.changed.tag   = tag
+    self.unchanged.tag = 'old '+tag
+    self.products      = [self.changed, self.unchanged]
+
+  def fileExecute(self, source):
+    (base, ext) = os.path.splitext(source)
+    if ext == self.ext:
+      FileChanged.fileExecute(self, source)
+    elif ext == self.extraExt:
+      self.updateSourceDB(source)
+    else:
+      self.currentSet.append(source)
+
+  def setExecute(self, set):
+    self.currentSet = fileset.FileSet(tag = set.tag)
+    for file in set.getFiles():
+      self.fileExecute(file)
+    if len(self.currentSet): self.products.append(self.currentSet)
+    return self.products

@@ -44,31 +44,6 @@ class CompileSIDL (action.Action):
         self.products = [self.products]
       self.products.append(set)
 
-class TagForCompile (transform.FileChanged):
-  def __init__(self, tag, ext, sources = None, extraExt = ''):
-    transform.FileChanged.__init__(self, sources)
-    self.ext           = '.'+ext
-    self.extraExt      = '.'+extraExt
-    self.changed.tag   = tag
-    self.unchanged.tag = 'old '+tag
-    self.products      = [self.changed, self.unchanged]
-
-  def fileExecute(self, source):
-    (base, ext) = os.path.splitext(source)
-    if ext == self.ext:
-      transform.FileChanged.fileExecute(self, source)
-    elif ext == self.extraExt:
-      self.updateSourceDB(source)
-    else:
-      self.currentSet.append(source)
-
-  def setExecute(self, set):
-    self.currentSet = fileset.FileSet(tag = set.tag)
-    for file in set.getFiles():
-      self.fileExecute(file)
-    if len(self.currentSet): self.products.append(self.currentSet)
-    return self.products
-
 class Compile (action.Action):
   def __init__(self, library, sources, tag, compiler, compilerFlags, archiver, archiverFlags):
     action.Action.__init__(self, self.compile, sources, compilerFlags, 0)
@@ -119,18 +94,18 @@ class Compile (action.Action):
       self.rebuildAll = 1
     return action.Action.execute(self)
 
-class TagC (TagForCompile):
+class TagC (transform.GenericTag):
   def __init__(self, tag = 'c', ext = 'c', sources = None, extraExt = 'h'):
-    TagForCompile.__init__(self, tag, ext, sources, extraExt)
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
 
 class CompileC (Compile):
   def __init__(self, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-c -g -Wall', archiver = 'ar', archiverFlags = 'crv'):
     Compile.__init__(self, library, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
     self.includeDirs.append('.')
 
-class TagCxx (TagForCompile):
+class TagCxx (transform.GenericTag):
   def __init__(self, tag = 'cxx', ext = 'cc', sources = None, extraExt = 'hh'):
-    TagForCompile.__init__(self, tag, ext, sources, extraExt)
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
 
 class CompileCxx (Compile):
   def __init__(self, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-c -g -Wall', archiver = 'ar', archiverFlags = 'crv'):
