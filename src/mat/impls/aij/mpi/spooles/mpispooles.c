@@ -689,7 +689,7 @@ int MatCreate_MPIAIJSpooles(Mat A) {
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJSPOOLES);CHKERRQ(ierr);
   ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   A_diag = ((Mat_MPIAIJ *)A->data)->A;
-  ierr   = MatConvert(A_diag,MATSEQAIJSPOOLES,&A_diag);CHKERRQ(ierr);
+  ierr   = MatConvert_SeqAIJ_SeqAIJSpooles(A_diag,MATSEQAIJSPOOLES,&A_diag);CHKERRQ(ierr);
   ierr   = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -194,7 +194,7 @@ int MatCreate_MPISBAIJSpooles(Mat A) {
   ierr   = PetscObjectChangeTypeName((PetscObject)A,MATMPISBAIJSPOOLES);CHKERRQ(ierr);
   ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   A_diag = ((Mat_MPISBAIJ *)A->data)->A;
-  ierr   = MatConvert(A_diag,MATSEQSBAIJSPOOLES,&A_diag);CHKERRQ(ierr);
+  ierr   = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A_diag,MATSEQSBAIJSPOOLES,&A_diag);CHKERRQ(ierr);
   ierr   = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

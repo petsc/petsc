@@ -87,5 +87,7 @@ EXTERN int MatDuplicate_MPISBAIJSpooles(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN_C_BEGIN
 EXTERN int MatConvert_Spooles_Base(Mat,const MatType,Mat*);
+EXTERN int MatConvert_SeqAIJ_SeqAIJSpooles(Mat,const MatType,Mat*);
+EXTERN int MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat,const MatType,Mat*);
 EXTERN_C_END
 #endif

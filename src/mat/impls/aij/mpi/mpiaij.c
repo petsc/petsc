@@ -1711,11 +1711,8 @@ int MatMPIAIJSetPreallocation_MPIAIJ(Mat B,int d_nz,const int d_nnz[],int o_nz,c
     }
   }
   b = (Mat_MPIAIJ*)B->data;
-
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->n,d_nz,d_nnz,&b->A);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->A);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,B->m,B->N,o_nz,o_nnz,&b->B);CHKERRQ(ierr);
-  PetscLogObjectParent(B,b->B);
+  ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1797,6 +1794,13 @@ int MatCreate_MPIAIJ(Mat B)
   b->rowindices   = 0;
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
+
+  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->n,PETSC_DETERMINE,PETSC_DETERMINE,&b->A);CHKERRQ(ierr);
+  ierr = MatSetType(b->A,MATSEQAIJ);CHKERRQ(ierr);
+  PetscLogObjectParent(B,b->A);
+  ierr = MatCreate(PETSC_COMM_SELF,B->m,B->N,PETSC_DETERMINE,PETSC_DETERMINE,&b->B);CHKERRQ(ierr);
+  ierr = MatSetType(b->B,MATSEQAIJ);CHKERRQ(ierr);
+  PetscLogObjectParent(B,b->B);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",
