@@ -171,6 +171,9 @@ class Configure:
   def checkCCompilerSetup(self):
     if not self.framework.argDB.has_key('CC'):
       raise RuntimeError('Could not find a C compiler. Please set with the option --with-cc or -CC and load the compilers module.')
+    return
+
+  def checkCPreprocessorSetup(self):
     if not self.framework.argDB.has_key('CPP'):
       raise RuntimeError('Could not find a C preprocessor. Please set with the option --with-cpp or -CPP and load the compilers module.')
     return
@@ -178,13 +181,16 @@ class Configure:
   def checkCxxCompilerSetup(self):
     if not self.framework.argDB.has_key('CXX'):
       raise RuntimeError('Could not find a C++ compiler. Please set with the option --with-cxx or -CXX and load the compilers module.')
-    if not self.framework.argDB.has_key('CXXCPP'):
-      raise RuntimeError('Could not find a C++ preprocessor. Make sure the compiler module is loaded.')
     return
 
-  def checkF77CompilerSetup(self):
+  def checkCxxPreprocessorSetup(self):
+    if not self.framework.argDB.has_key('CXXCPP'):
+      raise RuntimeError('Could not find a C++ preprocessor. Please set with the option --with-cxxcpp or -CXXCPP and load the compilers module.')
+    return
+
+  def checkFortranCompilerSetup(self):
     if not self.framework.argDB.has_key('FC'):
-      raise RuntimeError('Could not find a Fortran 77 compiler. Please set with the option --with-fc or -FC and load the compilers module.')
+      raise RuntimeError('Could not find a Fortran compiler. Please set with the option --with-fc or -FC and load the compilers module.')
     return
 
   def getCompiler(self):
@@ -202,7 +208,7 @@ class Configure:
       self.compilerObj    = 'conftest.o'
       self.compilerFlags  = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
     elif language == 'F77':
-      self.checkF77CompilerSetup()
+      self.checkFortranCompilerSetup()
       self.compilerName   = 'FC'
       self.compilerSource = 'conftest'+self.sourceExtension
       self.compilerObj    = 'conftest.o'
@@ -241,7 +247,7 @@ class Configure:
       self.linkerSource  = 'conftest.o'
       self.linkerObj     = 'conftest'
     elif language == 'F77':
-      self.checkF77CompilerSetup()
+      self.checkFortranCompilerSetup()
       if 'FC_LD' in self.framework.argDB:
         self.linkerName  = 'FC_LD'
         self.linkerFlags = self.framework.argDB['LDFLAGS']
@@ -262,14 +268,17 @@ class Configure:
     language = self.language[-1]
     self.getCompiler()
     if language == 'C':
+      self.checkCPreprocessorSetup()
       self.cpp      = self.framework.argDB['CPP']
       self.cppFlags = self.framework.argDB['CPPFLAGS']
       self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
     elif language in ['C++', 'Cxx']:
+      self.checkCxxPreprocessorSetup()
       self.cpp      = self.framework.argDB['CXXCPP']
       self.cppFlags = self.framework.argDB['CPPFLAGS']
       self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
     elif language == 'F77':
+      self.checkCPreprocessorSetup()
       self.cpp      = self.framework.argDB['CPP']
       self.cppFlags = self.framework.argDB['CPPFLAGS']
       self.cppCmd   = self.cpp+' '+self.cppFlags+' '+self.compilerSource
@@ -515,7 +524,7 @@ class Configure:
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (output, status)
 
-  def checkRun(self, includes, body, cleanup = 1):
+  def checkRun(self, includes = '', body = '', cleanup = 1):
     (output, returnCode) = self.outputRun(includes, body, cleanup)
     return not returnCode
 
