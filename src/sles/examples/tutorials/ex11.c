@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.5 1996/09/28 14:11:42 curfman Exp curfman $";
+static char vcid[] = "$Id: ex11.c,v 1.6 1996/10/02 19:42:27 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -53,6 +53,7 @@ int main(int argc,char **args)
   Scalar      v, none = -1.0, sigma2, pfive = 0.5;
   PetscRandom rctx;
   double      h2, sigma1 = 100.0;
+  Scalar      p_imag(0.0,1.0);
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetDouble(PETSC_NULL,"-sigma1",&sigma1,&flg); CHKERRA(ierr);
@@ -92,9 +93,11 @@ int main(int argc,char **args)
   if (use_random) {
     ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT_IMAGINARY,&rctx); CHKERRA(ierr);
   } else {
-    sigma2 = 10.0*PETSC_i;
+    sigma2 = 10.0*p_imag;
+    /*    sigma2 = 10.0*PETSC_i;  This doesn't work!! */
   }
   h2 = 1.0/((n+1)*(n+1));
+  printf("real(PETSC_i)=%g, imag(petsc_i)=%g, real(p_imag)=%g, imag(p_imag)=%g, real(sigma2)=%g, imag(sigma2) = %g\n",real(PETSC_i),imag(PETSC_i), real(p_imag),imag(p_imag), real(sigma2), imag(sigma2));
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
     if ( i>0 ) {
