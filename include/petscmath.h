@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.8 1998/06/01 19:33:02 balay Exp balay $ */
+/* $Id: petscmath.h,v 1.9 1998/06/01 21:33:42 balay Exp balay $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -9,7 +9,6 @@
 
 #if !defined(__PETSCMATH_PACKAGE)
 #define __PETSCMATH_PACKAGE
-#include "petsc.h"
 #include <math.h>
 
 /*
