@@ -91,7 +91,7 @@ class Configure(script.Script):
   def addMakeRule(self, name, dependencies, rule = []):
     '''Designate that "name" should be rule in the makefile header (bmake file)'''
     self.framework.log.write('Defined make rule '+name+' with dependencies '+str(dependencies)+' and code '+str(rule)+str(self.__module__)+'\n')
-    if not isinstance(rule,list): rule = []
+    if not isinstance(rule,list): rule = [rule]
     self.makeRules[name] = [dependencies,rule]
     return
 
