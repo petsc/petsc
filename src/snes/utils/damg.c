@@ -346,8 +346,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 	ierr = MGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
 	ierr = MGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 
       }
-      ierr = MGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
-      ierr = MGSetResidual(pc,i,MGDefaultResidual,dmmg[i]->J);CHKERRQ(ierr);
+      if (i > 0) {
+        ierr = MGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
+        ierr = MGSetResidual(pc,i,MGDefaultResidual,dmmg[i]->J);CHKERRQ(ierr);
+      }
       if (monitor) {
         ierr = PetscObjectGetComm((PetscObject)lksp,&comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);

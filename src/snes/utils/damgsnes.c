@@ -711,7 +711,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fas",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscInt newton_its;
-      ierr = PetscOptionsHasName(0,"-fas_view",&flg);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(0,"-dmmg_fas_view",&flg);CHKERRQ(ierr);
       for (i=0; i<nlevels; i++) {
 	ierr = NLFCreate_DAAD(&dmmg[i]->nlf);CHKERRQ(ierr);
 	ierr = NLFDAADSetDA_DAAD(dmmg[i]->nlf,(DA)dmmg[i]->dm);CHKERRQ(ierr);
