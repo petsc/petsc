@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.94 1998/05/11 21:50:26 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.95 1998/05/11 21:59:03 bsmith Exp curfman $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -104,7 +104,7 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
     values = (Scalar *) PetscMalloc( (len+1)*sizeof(Scalar) ); CHKPTRQ(values);
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
     /*
-        Matlab format and ASCI format are very similar except 
+        Matlab format and ASCII format are very similar except 
         Matlab uses %18.16e format while ASCII uses %g
     */
     if (format == VIEWER_FORMAT_ASCII_MATLAB) {
@@ -142,6 +142,28 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
         }
       }          
       fprintf(fd,"];\n");
+
+    } else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
+      for (i=0; i<x->n; i++ ) {
+#if defined(USE_PETSC_COMPLEX)
+        fprintf(fd,"%18.16e %18.16e\n",real(x->array[i]),imag(x->array[i]));
+#else
+        fprintf(fd,"%18.16\n",x->array[i]);
+#endif
+      }
+      /* receive and print messages */
+      for ( j=1; j<size; j++ ) {
+        ierr = MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Get_count(&status,MPIU_SCALAR,&n); CHKERRQ(ierr);         
+        for ( i=0; i<n; i++ ) {
+#if defined(USE_PETSC_COMPLEX)
+          fprintf(fd,"%18.16e %18.16e\n",real(values[i]),imag(values[i]));
+#else
+          fprintf(fd,"%18.16e\n",values[i]);
+#endif
+        }
+      }          
+
     } else {
       if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d]\n",rank);
       cnt = 0;

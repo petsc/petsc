@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.136 1998/05/18 22:28:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.137 1998/05/19 01:42:09 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1429,6 +1429,19 @@ int VecRestoreArray(Vec x,Scalar **a)
          specified file; corresponding input uses VecLoad()
 .    ViewerDrawOpenX() - Outputs vector to an X window display
 -    ViewerMatlabOpen() - Outputs vector to Matlab viewer
+
+   The user can call ViewerSetFormat() to specify the output
+   format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
+   VIEWER_STDOUT_WORLD and ViewerFileOpenASCII).  Available formats include
++    VIEWER_FORMAT_ASCII_DEFAULT - default, prints vector contents
+.    VIEWER_FORMAT_ASCII_MATLAB - prints vector contents in Matlab format
+.    VIEWER_FORMAT_ASCII_INDEX - prints vector contents, including indices of vector elements
+.    VIEWER_FORMAT_ASCII_COMMON - prints vector contents, using a 
+         format common among all vector types
+.    VIEWER_FORMAT_ASCII_INFO - prints basic information about the matrix
+         size and structure (not the matrix entries)
+-    VIEWER_FORMAT_ASCII_INFO_LONG - prints more detailed information about
+         the matrix structure
 
 .keywords: Vec, view, visualize, output, print, write, draw
 

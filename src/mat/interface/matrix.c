@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.290 1998/04/27 14:06:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.291 1998/04/29 03:33:35 bsmith Exp curfman $";
 #endif
 
 /*
@@ -150,7 +150,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
         data to the first processor to print. 
 -     VIEWER_DRAWX_WORLD - graphical display of nonzero structure
 
-   The user can open alternative vistualization contexts with
+   The user can open alternative visualization contexts with
 +    ViewerFileOpenASCII() - Outputs matrix to a specified file
 .    ViewerFileOpenBinary() - Outputs matrix in binary to a
          specified file; corresponding input uses MatLoad()
@@ -164,12 +164,15 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
    format of ASCII printed objects (when using VIEWER_STDOUT_SELF,
    VIEWER_STDOUT_WORLD and ViewerFileOpenASCII).  Available formats include
 +    VIEWER_FORMAT_ASCII_DEFAULT - default, prints matrix contents
-.    VIEWER_FORMAT_ASCII_MATLAB - Matlab format
-.    VIEWER_FORMAT_ASCII_IMPL - implementation-specific format
-        (which is in many cases the same as the default)
-.    VIEWER_FORMAT_ASCII_INFO - basic information about the matrix
-        size and structure (not the matrix entries)
--    VIEWER_FORMAT_ASCII_INFO_LONG - more detailed information about the matrix structure
+.    VIEWER_FORMAT_ASCII_MATLAB - prints matrix contents in Matlab format
+.    VIEWER_FORMAT_ASCII_COMMON - prints matrix contents, using a sparse 
+         format common among all matrix types
+.    VIEWER_FORMAT_ASCII_IMPL - prints matrix contents, using an implementation-specific 
+         format (which is in many cases the same as the default)
+.    VIEWER_FORMAT_ASCII_INFO - prints basic information about the matrix
+         size and structure (not the matrix entries)
+-    VIEWER_FORMAT_ASCII_INFO_LONG - prints more detailed information about
+         the matrix structure
 
 .keywords: matrix, view, visualize, output, print, write, draw
 
