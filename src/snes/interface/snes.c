@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.67 1996/03/23 20:19:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.68 1996/03/23 20:43:51 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -131,27 +131,19 @@ int SNESSetFromOptions(SNES snes)
   if (flg) { SNESSetTolerances(snes,PETSC_DEFAULT,tmp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); }
   ierr = OptionsGetInt(snes->prefix,"-snes_max_it",&snes->max_its, &flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(snes->prefix,"-snes_max_funcs",&snes->max_funcs, &flg);CHKERRQ(ierr);
-
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp, &flg);  CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_trtol",&tmp, &flg); CHKERRQ(ierr);
   if (flg) { SNESSetTrustRegionTolerance(snes,tmp); }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg);  CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_fmin",&tmp, &flg); CHKERRQ(ierr);
   if (flg) { SNESSetMinimizationFunctionTolerance(snes,tmp); }
-  ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv", &flg);  CHKERRQ(ierr);
+  ierr = OptionsHasName(snes->prefix,"-snes_ksp_ew_conv", &flg); CHKERRQ(ierr);
   if (flg) { snes->ksp_ewconv = 1; }
-  ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version, \
-                       &flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtol0",&rtol_0, \
-                          &flg); CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtolmax",&rtol_max, \
-                          &flg);  CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_gamma",&gamma2, \
-                          &flg);  CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha, \
-                          &flg);  CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2, \
-                          &flg);  CHKERRQ(ierr);
-  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold, \
-                          &flg);  CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_ksp_ew_version",&version,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtol0",&rtol_0,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_rtolmax",&rtol_max,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_gamma",&gamma2,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha",&alpha,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_alpha2",&alpha2,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_ksp_ew_threshold",&threshold,&flg);  CHKERRQ(ierr);
   ierr = SNES_KSP_SetParametersEW(snes,version,rtol_0,rtol_max,gamma2,alpha,
                                   alpha2,threshold); CHKERRQ(ierr);
   ierr = OptionsHasName(snes->prefix,"-snes_monitor", &flg);  CHKERRQ(ierr);
@@ -219,43 +211,41 @@ int SNESPrintHelp(SNES snes)
   SNESPrintTypes_Private(snes->comm,p,"snes_type");
   PetscPrintf(snes->comm," %ssnes_monitor: use default SNES monitor\n",p);
   PetscPrintf(snes->comm," %ssnes_view: view SNES info after each nonlinear solve\n",p);
-  PetscPrintf(snes->comm," %ssnes_max_it its (default %d)\n",p,snes->max_its);
-  PetscPrintf(snes->comm," %ssnes_stol tol (default %g)\n",p,snes->xtol);
-  PetscPrintf(snes->comm," %ssnes_atol tol (default %g)\n",p,snes->atol);
-  PetscPrintf(snes->comm," %ssnes_rtol tol (default %g)\n",p,snes->rtol);
-  PetscPrintf(snes->comm," %ssnes_ttol tol (default %g)\n",p,snes->trunctol);
-  PetscPrintf(snes->comm,
-   " options for solving systems of nonlinear equations only:\n");
-  PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
-  PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
-  PetscPrintf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
-  PetscPrintf(snes->comm,
-   "     %ssnes_ksp_ew_version version (1 or 2, default is %d)\n",
-   p,kctx->version);
-  PetscPrintf(snes->comm,
-   "     %ssnes_ksp_ew_rtol0 rtol0 (0 <= rtol0 < 1, default %g)\n",
-   p,kctx->rtol_0);
-  PetscPrintf(snes->comm,
-   "     %ssnes_ksp_ew_rtolmax rtolmax (0 <= rtolmax < 1, default %g)\n",
-   p,kctx->rtol_max);
-  PetscPrintf(snes->comm,
-   "     %ssnes_ksp_ew_gamma gamma (0 <= gamma <= 1, default %g)\n",
-   p,kctx->gamma);
-  PetscPrintf(snes->comm,
-   "     %ssnes_ksp_ew_alpha alpha (1 < alpha <= 2, default %g)\n",
-   p,kctx->alpha);
-  PetscPrintf(snes->comm,
-   "     %ssnes_ksp_ew_alpha2 alpha2 (default %g)\n",
-   p,kctx->alpha2);
-  PetscPrintf(snes->comm,
-   "     %ssnes_ksp_ew_threshold threshold (0 < threshold < 1, default %g)\n",
-   p,kctx->threshold);
-  PetscPrintf(snes->comm,
-   " options for solving unconstrained minimization problems only:\n");
-  PetscPrintf(snes->comm,"   %ssnes_fmin tol (default %g)\n",p,snes->fmin);
+  PetscPrintf(snes->comm," %ssnes_max_it <its>: max iterations (default %d)\n",p,snes->max_its);
+  PetscPrintf(snes->comm," %ssnes_max_funcs <maxf>: max function evals (default %d)\n",p,snes->max_funcs);
+  PetscPrintf(snes->comm," %ssnes_stol <stol>: successive step tolerance (default %g)\n",p,snes->xtol);
+  PetscPrintf(snes->comm," %ssnes_atol <atol>: absolute tolerance (default %g)\n",p,snes->atol);
+  PetscPrintf(snes->comm," %ssnes_rtol <rtol>: relative tolerance (default %g)\n",p,snes->rtol);
+  PetscPrintf(snes->comm," %ssnes_trtol <trtol>: trust region parameter tolerance (default %g)\n",p,snes->deltatol);
+  if (snes->type == SNES_NONLINEAR_EQUATIONS) {
+    PetscPrintf(snes->comm,
+     " options for solving systems of nonlinear equations only:\n");
+    PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Jacobian\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Jacobian\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_ksp_ew_conv: use Eisenstat-Walker computation of KSP rtol. Params are:\n",p);
+    PetscPrintf(snes->comm,
+     "     %ssnes_ksp_ew_version <version> (1 or 2, default is %d)\n",p,kctx->version);
+    PetscPrintf(snes->comm,
+     "     %ssnes_ksp_ew_rtol0 <rtol0> (0 <= rtol0 < 1, default %g)\n",p,kctx->rtol_0);
+    PetscPrintf(snes->comm,
+     "     %ssnes_ksp_ew_rtolmax <rtolmax> (0 <= rtolmax < 1, default %g)\n",p,kctx->rtol_max);
+    PetscPrintf(snes->comm,
+     "     %ssnes_ksp_ew_gamma <gamma> (0 <= gamma <= 1, default %g)\n",p,kctx->gamma);
+    PetscPrintf(snes->comm,
+     "     %ssnes_ksp_ew_alpha <alpha> (1 < alpha <= 2, default %g)\n",p,kctx->alpha);
+    PetscPrintf(snes->comm,
+     "     %ssnes_ksp_ew_alpha2 <alpha2> (default %g)\n",p,kctx->alpha2);
+    PetscPrintf(snes->comm,
+     "     %ssnes_ksp_ew_threshold <threshold> (0 < threshold < 1, default %g)\n",p,kctx->threshold);
+  }
+  else if (snes->type == SNES_UNCONSTRAINED_MINIMIZATION) {
+    PetscPrintf(snes->comm,
+     " options for solving unconstrained minimization problems only:\n");
+    PetscPrintf(snes->comm,"   %ssnes_fmin <ftol>: minimum function tolerance (default %g)\n",p,snes->fmin);
+    PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
+    PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
+  }
   PetscPrintf(snes->comm," Run program with %ssnes_type method -help for help on ",p);
-  PetscPrintf(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
-  PetscPrintf(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
   PetscPrintf(snes->comm,"a particular method\n");
   if (snes->printhelp) (*snes->printhelp)(snes,p);
   return 0;
@@ -446,7 +436,8 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->max_funcs	  = 1000;
   snes->norm		  = 0.0;
   if (type == SNES_UNCONSTRAINED_MINIMIZATION) {
-    snes->rtol		  = 1.e-08;
+    snes->rtol		  = 1.e-8;
+    snes->ttol            = 0.0;
     snes->atol		  = 1.e-10;
   }
   else {
@@ -455,7 +446,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
     snes->atol		  = 1.e-50;
   }
   snes->xtol		  = 1.e-8;
-  snes->trunctol	  = 1.e-12;
+  snes->trunctol	  = 1.e-12; /* no longer used */
   snes->nfuncs            = 0;
   snes->nfailures         = 0;
   snes->monitor           = 0;
@@ -1049,7 +1040,7 @@ int SNESDestroy(SNES snes)
 
    Options Database Key: 
 $    -snes_atol <atol> - absolute convergence tolerance
-$    -snes_rtol <rtol>  - relative convergence tolerance
+$    -snes_rtol <rtol> - relative convergence tolerance
 $    -snes_stol <stol> - convergence tolerance in terms of 
 $          the norm of the change in the solution between steps
 $    -snes_max_it <maxit> - maximum number of iterations
