@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.36 1998/08/26 16:36:51 balay Exp bsmith $ 
+# $Id: base.site,v 1.37 1998/08/26 20:17:00 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -64,12 +64,7 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH}/libBS95.a
 #
 # Optional Matlab location
 #
-#MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
-#MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
-#CMEX           = /usr/local/bin/cmex 
-#MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
-MATLAB_INCLUDE  = -I/software/solaris-2/com/packages/matlab-5.2/extern/include
-CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/cmex
+CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/mex
 MCC             = cc
 #
 # Option location where adiC is installed
