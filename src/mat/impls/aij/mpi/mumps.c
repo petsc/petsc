@@ -14,6 +14,7 @@ EXTERN_C_END
 #define JOB_END -2
 /* macro s.t. indices match MUMPS documentation */
 #define ICNTL(I) icntl[(I)-1] 
+#define CNTL(I) cntl[(I)-1] 
 #define INFOG(I) infog[(I)-1]
 #define RINFOG(I) rinfog[(I)-1]
 
@@ -137,7 +138,7 @@ int MatSolve_MPIAIJ_MUMPS(Mat A,Vec b,Vec x)
   int              ierr;
 
   PetscFunctionBegin; 
-  PetscPrintf(A->comm," ... Solve_\n");
+  /* PetscPrintf(A->comm," ... Solve_\n"); */
   if (lu->size > 1){
     if (!lu->myid){
       ierr = VecCreateSeq(PETSC_COMM_SELF,A->N,&x_seq);CHKERRQ(ierr);
@@ -193,7 +194,7 @@ int MatLUFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
   PetscTruth       valOnly;
 
   PetscFunctionBegin; 	
-  PetscPrintf(A->comm," ... Numeric_, par: %d, ICNTL(18): %d, ICNTL(7): %d\n", lu->id.par,lu->id.ICNTL(18),lu->id.ICNTL(7));
+  /* PetscPrintf(A->comm," ... Numeric_, par: %d, ICNTL(18): %d, ICNTL(7): %d\n", lu->id.par,lu->id.ICNTL(18),lu->id.ICNTL(7)); */
   /* define matrix A */
   switch (lu->id.ICNTL(18)){
   case 0:  /* centralized assembled matrix input (size=1) */
@@ -335,6 +336,10 @@ int MatLUFactorSymbolic_MPIAIJ_MUMPS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   ierr = PetscOptionsInt("-mat_mumps_icntl_13","ICNTL(13): efficiency control","None",lu->id.ICNTL(13),&lu->id.ICNTL(13),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): efficiency control","None",lu->id.ICNTL(14),&lu->id.ICNTL(14),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_15","ICNTL(15): efficiency control","None",lu->id.ICNTL(15),&lu->id.ICNTL(15),PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",lu->id.CNTL(1),&lu->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",lu->id.CNTL(2),&lu->id.CNTL(2),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mat_mumps_cntl_3","CNTL(3): absolute pivoting threshold","None",lu->id.CNTL(3),&lu->id.CNTL(3),PETSC_NULL);CHKERRQ(ierr);
   PetscOptionsEnd();
 
   lu->matstruc = DIFFERENT_NONZERO_PATTERN; 
@@ -379,7 +384,15 @@ int MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
     ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(10),RINFOG(11)(condition numbers): %g, %g\n",lu->id.RINFOG(10),lu->id.RINFOG(11));CHKERRQ(ierr);
   
   }
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(12) (efficiency control):     %d \n",lu->id.ICNTL(12));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(13) (efficiency control):     %d \n",lu->id.ICNTL(13));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (efficiency control):     %d \n",lu->id.ICNTL(14));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(15) (efficiency control):     %d \n",lu->id.ICNTL(15));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):       %d \n",lu->id.ICNTL(18));CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",lu->id.CNTL(1));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",lu->id.CNTL(2));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(3) (absolute pivoting threshold):      %g \n",lu->id.CNTL(3));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
