@@ -1,11 +1,11 @@
-/* $Id: petscengine.h,v 1.4 2001/08/06 21:19:20 bsmith Exp $ */
+/* $Id: petscmatlab.h,v 1.4 2001/08/06 21:19:20 bsmith Exp $ */
 
 /*
     Defines an interface to the Matlab Engine from PETSc
 */
 
-#if !defined(__PETSCENGINE_H)
-#define __PETSCENGINE_H
+#if !defined(__PETSCMATLAB_H)
+#define __PETSCMATLAB_H
 PETSC_EXTERN_CXX_BEGIN
 
 #define MATLABENGINE_COOKIE PETSC_COOKIE+12

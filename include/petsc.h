@@ -714,7 +714,7 @@ EXTERN int PetscScalarView(int,PetscScalar[],PetscViewer);
 /*
     Allows accessing Matlab Engine
 */
-#include "petscengine.h"
+#include "petscmatlab.h"
 
 /*
     C code optimization is often enhanced by telling the compiler 

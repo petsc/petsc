@@ -69,8 +69,8 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 #
 #
-#MATLAB_ENGINE_INCLUDE    = -I/home/petsc/software/matlab/include
-#MATLAB_ENGINE_LIB        = -L/software/irix-6/com/packages/matlab-r11.1/extern/lib/sgi -leng -lmx -lmat -lmi -lut
+#MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
+#MATLAB_LIB        = -L/software/irix-6/com/packages/matlab-r11.1/extern/lib/sgi -leng -lmx -lmat -lmi -lut
 
 #
 #

@@ -2,7 +2,7 @@
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
-#include "petscengine.h"
+#include "petscmatlab.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscgetcputime_           PETSCGETCPUTIME

@@ -133,7 +133,7 @@ PCONF         = ${PETSC_HAVE_MPE}         ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_
                 ${PETSC_HAVE_MATHEMATICA} ${PETSC_HAVE_TRIANGLE}   ${PETSC_HAVE_PLAPACK} ${PETSC_HAVE_SAMG} \
                 ${PETSC_HAVE_PNETCDF}     ${PETSC_HAVE_HDF4}
 EXTERNAL_LIB  = ${MPE_LIB}                ${BLOCKSOLVE_LIB}        ${PVODE_LIB}          ${PARMETIS_LIB} \
-                ${AMS_LIB}                ${SPAI_LIB}              ${X11_LIB}            ${MATLAB_ENGINE_LIB}   \
+                ${AMS_LIB}                ${SPAI_LIB}              ${X11_LIB}            ${MATLAB_LIB}   \
                                                                    ${LUSOL_LIB}          ${DSCPACK_LIB} \
                 ${RAMG_LIB}               ${TAU_LIB}                                     ${ADIFOR_LIB} \
                 ${SUPERLU_DIST_LIB}        ${SUPERLU_LIB}           ${SPOOLES_LIB}        ${UMFPACK_LIB}\

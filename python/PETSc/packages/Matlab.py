@@ -35,16 +35,16 @@ class Configure(config.base.Configure):
       self.addSubstitution('MATLAB_COMMAND', os.path.join(matlab,'bin','matlab'))
       self.addSubstitution('MATLAB_DIR', os.path.join(matlab))
       if matlab_arch == 'mac':
-        self.addSubstitution('MATLAB_ENGINE_DL', '-L'+os.path.join(matlab,'sys','os','mac')+' -ldl')
+        self.addSubstitution('MATLAB_DL', '-L'+os.path.join(matlab,'sys','os','mac')+' -ldl')
       else:
-        self.addSubstitution('MATLAB_ENGINE_DL', '')
+        self.addSubstitution('MATLAB_DL', '')
       self.addSubstitution('MATLAB_ARCH', matlab_arch)
     else:
       self.addSubstitution('MATLAB_MEX', '')
       self.addSubstitution('MATLAB_CC', '')
       self.addSubstitution('MATLAB_COMMAND', '')
       self.addSubstitution('MATLAB_DIR', '')
-      self.addSubstitution('MATLAB_ENGINE_DL', '')
+      self.addSubstitution('MATLAB_DL', '')
       self.addSubstitution('MATLAB_ARCH', '')
     return
 

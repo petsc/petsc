@@ -66,8 +66,8 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 # and moving the #include <stddef.h> and #include <stdlib.h> outside the extern "C" {}
 # in matrix.h (sigh)
 #
-#MATLAB_ENGINE_INCLUDE    = -I/home/petsc/software/matlab/include
-#MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lut
+#MATLAB_INCLUDE    = -I/home/petsc/software/matlab/include
+#MATLAB_LIB        = ${CLINKER_SLFLAG}${MATLAB_ROOT}/extern/lib/sol2 -L${MATLAB_ROOT}/extern/lib/sol2 -leng -lmx -lmat -lut
 #
 # Location where adiC is installed
 #

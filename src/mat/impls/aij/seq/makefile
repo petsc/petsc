@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = ${MATLAB_ENGINE_INCLUDE}
+CFLAGS   = ${MATLAB_INCLUDE}
 FFLAGS   =
 SOURCEC  = aij.c aijfact.c ij.c aijnode.c fdaij.c unary.c ilut.c aijmatlab.c \
 	   matmatmult.c symtranspose.c matptap.c matpapt.c

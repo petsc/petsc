@@ -5,12 +5,12 @@
 
 ALL: lib 
 
-CFLAGS    = ${MATLAB_ENGINE_INCLUDE}
+CFLAGS    = ${MATLAB_INCLUDE}
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC	  = matlab.c
 SOURCEF	  =
-SOURCEH	  = ../../../../include/petscengine.h
+SOURCEH	  = ../../../../include/petscmatlab.h
 OBJSC	  = matlab.o
 OBJSF	  =
 MANSEC	  = Sys

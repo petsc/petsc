@@ -49,8 +49,8 @@ PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
 # and moving the #include <stddef.h> and #include <stdlib.h> outside the extern "C" {}
 # in matrix.h (sigh)
 #
-MATLAB_ENGINE_INCLUDE    = -I/software/linux-2/com/packages/matlab-r13.1/extern/include -DV5_COMPAT
-MATLAB_ENGINE_LIB        = ${CLINKER_SLFLAG}/software/linux-2/com/packages/matlab-r13.1/extern/lib/glnx86:/software/linux-2/com/packages/matlab-r13.1/sys/os/glnx86 -L/software/linux-2/com/packages/matlab-r13.1/extern/lib/glnx86 -L/software/linux-2/com/packages/matlab-r13.1/extern/lib/glnx86  -leng -lmx -lmat -lut
+MATLAB_INCLUDE    = -I/software/linux-2/com/packages/matlab-r13.1/extern/include -DV5_COMPAT
+MATLAB_LIB        = ${CLINKER_SLFLAG}/software/linux-2/com/packages/matlab-r13.1/extern/lib/glnx86:/software/linux-2/com/packages/matlab-r13.1/sys/os/glnx86 -L/software/linux-2/com/packages/matlab-r13.1/extern/lib/glnx86 -L/software/linux-2/com/packages/matlab-r13.1/extern/lib/glnx86  -leng -lmx -lmat -lut
 #
 # Location where adiC is installed
 #

@@ -28,7 +28,7 @@ struct  _p_PetscMatlabEngine {
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar(), PetscMatlabEngine
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
 int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *mengine)
 {
@@ -70,7 +70,7 @@ int PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *mengi
 
 .seealso: PetscMatlabEnginCreate(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar(), PetscMatlabEngine
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
 int PetscMatlabEngineDestroy(PetscMatlabEngine v)
 {
@@ -97,7 +97,7 @@ int PetscMatlabEngineDestroy(PetscMatlabEngine v)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineCreate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar(), PetscMatlabEngine
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
 int PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,char *string,...)
 {
@@ -167,7 +167,7 @@ int PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,char *string,...)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineCreate(), PetscMatlabEnginePrintOutput(),
-          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar(), PetscMatlabEngine
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
 int PetscMatlabEngineGetOutput(PetscMatlabEngine mengine,char **string)
 {
@@ -190,7 +190,7 @@ int PetscMatlabEngineGetOutput(PetscMatlabEngine mengine,char **string)
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEngineCreate(),
-          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutScalar(), PetscMatlabEngine
+          PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
 int PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine,FILE *fd)
 {
@@ -298,7 +298,7 @@ $      PetscMatlabEngineYYY(XXX object,PETSC_MATLAB_ENGINE_(comm));
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
-          PetscMatlabEngineCreate(), PetscMatlabEnginePutScalar(), PetscMatlabEngine,
+          PetscMatlabEngineCreate(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine,
           PETSC_MATLAB_ENGINE_WORLD, PETSC_MATLAB_ENGINE_SELF
  
 @*/
