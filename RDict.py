@@ -85,8 +85,6 @@ Arg class, which wraps the usual value.'''
     '''Remove any parent socket object, the XDR translators, and the log file from the dictionary before pickling'''
     self.writeLogLine('Pickling RDict')
     d = self.__dict__.copy()
-    print 'RDict dictionary:'
-    print d
     if 'parent' in d: del d['parent']
     del d['packer']
     del d['unpacker']
