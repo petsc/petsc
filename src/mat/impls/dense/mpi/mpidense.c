@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.54 1996/11/20 19:59:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.55 1996/11/27 22:52:57 bsmith Exp curfman $";
 #endif
 
 /*
@@ -624,12 +624,14 @@ static int MatSetOption_MPIDense(Mat A,MatOption op)
 
   if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
       op == MAT_YES_NEW_NONZERO_LOCATIONS ||
-      op == MAT_COLUMNS_SORTED) {
+      op == MAT_COLUMNS_SORTED ||
+      op == MAT_COLUMNS_UNSORTED) {
         MatSetOption(a->A,op);
   } else if (op == MAT_ROW_ORIENTED) {
         a->roworiented = 1;
         MatSetOption(a->A,op);
   } else if (op == MAT_ROWS_SORTED || 
+             op == MAT_ROWS_UNSORTED ||
              op == MAT_SYMMETRIC ||
              op == MAT_STRUCTURALLY_SYMMETRIC ||
              op == MAT_YES_NEW_DIAGONALS)

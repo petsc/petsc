@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.195 1996/11/19 16:30:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.196 1996/11/27 22:53:02 bsmith Exp curfman $";
 #endif
 
 /*
@@ -594,9 +594,11 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
   if      (op == MAT_ROW_ORIENTED)              a->roworiented = 1;
   else if (op == MAT_COLUMN_ORIENTED)           a->roworiented = 0;
   else if (op == MAT_COLUMNS_SORTED)            a->sorted      = 1;
+  else if (op == MAT_COLUMNS_UNSORTED)          a->sorted      = 0;
   else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
   else if (op == MAT_YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
   else if (op == MAT_ROWS_SORTED || 
+           op == MAT_ROWS_UNSORTED ||
            op == MAT_SYMMETRIC ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_YES_NEW_DIAGONALS ||

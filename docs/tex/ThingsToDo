@@ -10,6 +10,11 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Consider adding a utility routine that determines the d_nnz, and o_nnz
+    for preallocating matrix space for parallel matrices.  Create an empty
+    matrix; pass once through a series of MatSetValues() calls; instead of
+    adding elements, just get nonzero info.  Then allocate space.
+
   - Try using Isaac's trick for VecGetArray(), ISGetIndices(), etc:
       common /xxx/ v(1),i(1)
 
@@ -18,7 +23,7 @@ Additional Capabilities that PETSc Needs:
   - Features wanted by Isaac: Add option to set multiple values at once to different
     matrices.
 
-  - Add the following to MatSetOption():  MAT_ROWS_UNSORTED, MAT_COLUMNS_UNSORTED
+  X Add the following to MatSetOption():  MAT_ROWS_UNSORTED, MAT_COLUMNS_UNSORTED
     to enable switching among sorted/unsorted input.
 
   - Write preprocessor that zips through all of PETSc finding SETERRQ()

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.72 1996/11/26 16:23:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.73 1996/11/26 20:18:04 curfman Exp curfman $";
 #endif
 
 /*
@@ -610,9 +610,9 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
     PLogObjectMemory(A,-(m+1)*sizeof(int));
     a->diag = 0;
   } 
-  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Unneed storage space %d used %d, rows %d, block size %d\n", 
-           fshift*bs2,a->nz*bs2,m,a->bs);
-  PLogInfo(A,"MatAssemblyEnd_SeqBAIJ:Number of mallocs during MatSetValues %d\n",
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Matrix size: %d X %d, block size %d; storage space: %d unneeded, %d used\n",
+           m,a->n,a->bs,fshift*bs2,a->nz*bs2);
+  PLogInfo(A,"MatAssemblyEnd_SeqAIJ:Number of mallocs during MatSetValues is %d\n",
            a->reallocs);
   A->info.nz_unneeded  = (double)fshift*bs2;
 
@@ -657,9 +657,11 @@ static int MatSetOption_SeqBAIJ(Mat A,MatOption op)
   if      (op == MAT_ROW_ORIENTED)              a->roworiented = 1;
   else if (op == MAT_COLUMN_ORIENTED)           a->roworiented = 0;
   else if (op == MAT_COLUMNS_SORTED)            a->sorted      = 1;
+  else if (op == MAT_COLUMNS_UNSORTED)          a->sorted      = 0;
   else if (op == MAT_NO_NEW_NONZERO_LOCATIONS)  a->nonew       = 1;
   else if (op == MAT_YES_NEW_NONZERO_LOCATIONS) a->nonew       = 0;
   else if (op == MAT_ROWS_SORTED || 
+           op == MAT_ROWS_UNSORTED ||
            op == MAT_SYMMETRIC ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_YES_NEW_DIAGONALS ||

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.98 1996/11/20 19:50:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.99 1996/11/27 22:53:37 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -658,7 +658,9 @@ static int MatSetOption_MPIBDiag(Mat A,MatOption op)
     MatSetOption(mbd->A,op);
   }
   else if (op == MAT_ROWS_SORTED || 
+           op == MAT_ROWS_UNSORTED || 
            op == MAT_COLUMNS_SORTED || 
+           op == MAT_COLUMNS_UNSORTED || 
            op == MAT_SYMMETRIC ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_YES_NEW_DIAGONALS)

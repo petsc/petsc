@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.113 1996/11/07 15:09:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.114 1996/11/19 16:30:47 bsmith Exp curfman $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -787,7 +787,9 @@ static int MatSetOption_SeqDense(Mat A,MatOption op)
   if (op == MAT_ROW_ORIENTED)            aij->roworiented = 1;
   else if (op == MAT_COLUMN_ORIENTED)    aij->roworiented = 0;
   else if (op == MAT_ROWS_SORTED || 
+           op == MAT_ROWS_UNSORTED ||
            op == MAT_COLUMNS_SORTED ||
+           op == MAT_COLUMNS_UNSORTED ||
            op == MAT_SYMMETRIC ||
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_NO_NEW_NONZERO_LOCATIONS ||
