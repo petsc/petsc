@@ -1,4 +1,4 @@
-/* $Id: clfe.h,v 1.8 2001/04/17 20:52:49 buschelm Exp buschelm $ */
+/* $Id: petscclfe.h,v 1.9 2001/04/17 21:09:36 buschelm Exp $ */
 #ifndef PETScClFE_h
 #define PETScClFE_h
 
@@ -21,8 +21,6 @@ namespace PETScFE {
     virtual void Foundl(LI &);
     virtual void Foundo(LI &);
     virtual void FixFx(void);
-
-    LI OutputFlag;
   };
 
   class df : public cl {

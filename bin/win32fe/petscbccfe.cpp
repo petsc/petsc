@@ -1,4 +1,4 @@
-/* $Id: bccfe.cpp,v 1.11 2001/04/17 20:51:59 buschelm Exp buschelm $ */
+/* $Id: petscbccfe.cpp,v 1.12 2001/04/17 21:17:47 buschelm Exp $ */
 #include <vector>
 #include <stdlib.h>
 #include <Windows.h>
@@ -26,24 +26,8 @@ void bcc::Parse(void) {
 }
 
 void bcc::Compile(void) {
-  LI i = compilearg.begin();
-  string compile = *i++;
-  Merge(compile,compilearg,i);
-  /* Execute each compilation one at a time */
-  i = file.begin();
-  while (i!=file.end()) {
-    /* Make default output a .o not a .obj */
-    string outfile;
-    if (OutputFlag==compilearg.end()) {
-      outfile = "-o" + *i;
-      int n = outfile.find_last_of(".");
-      string filebase = outfile.substr(0,n);
-      outfile = filebase + ".o";
-    }
-    string compileeach = compile + " " + outfile + " " + *i++;
-    if (verbose) cout << compileeach << endl;
-    system(compileeach.c_str());
-  }
+  compileoutflag = "-o";
+  compiler::Compile();
 }
 
 void bcc::Link(void) {
@@ -100,12 +84,13 @@ void bcc::Link(void) {
 }
 
 void bcc::Help(void) {
-  tool::Help();
+  compiler::Help();
+  cout << "bcc32 specific help:" << endl;
   cout << "  Note: The bcc32 option -l conflicts with the win32fe use of -l." << endl;
   cout << "        The following additional options are enabled for bcc32." << endl << endl;
   cout << "  -l:<flag>    enables <flag> for the linker, ilink32.exe" << endl;
   cout << "  -l:-<flag>   disables <flag> for the linker, ilink32.exe" << endl << endl;
-  cout << "  =======================================================================" << endl << endl;
+  cout << "=========================================================================" << endl << endl;
   string help = compilearg.front();
   system(help.c_str());
 }

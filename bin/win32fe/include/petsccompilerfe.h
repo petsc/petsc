@@ -1,4 +1,4 @@
-/* $Id: compilerfe.h,v 1.2 2001/04/17 20:52:49 buschelm Exp buschelm $ */
+/* $Id: petsccompilerfe.h,v 1.3 2001/04/17 21:09:13 buschelm Exp $ */
 #ifndef PETScCompilerFE_h_
 #define PETScCompilerFE_h_
 
@@ -29,10 +29,12 @@ namespace PETScFE {
     virtual void FoundUnknown(LI &);
 
     string OptionTags;
-
     list<string> compilearg;
     list<string> file;
     list<string> linkarg;
+
+    string compileoutflag;
+    LI OutputFlag;
   private:
     typedef void (PETScFE::compiler::*ptm)(LI &);
     map<char,ptm> Options;

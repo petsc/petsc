@@ -1,4 +1,4 @@
-/* $Id: tlibfe.cpp,v 1.7 2001/04/17 20:51:59 buschelm Exp buschelm $ */
+/* $Id: petsctlibfe.cpp,v 1.8 2001/04/17 21:15:54 buschelm Exp $ */
 #include <fstream>
 #include "Windows.h"
 #include "petsctlibfe.h"
@@ -25,10 +25,11 @@ void tlib::Execute() {
 }
 
 void tlib::Help(void) {
-  tool::Help();
+  archiver::Help();
+  cout << "tlib specific help:" << endl;
   cout << "  Note: tlib operators +, -+, *, etc. are not supported by win32fe." << endl;
   cout << "        Instead, use the flags -a, -u, -e, etc. accordingly." << endl << endl;
-  cout << "  =======================================================================" << endl << endl;
+  cout << "=========================================================================" << endl << endl;
   string help = archivearg.front();
   system(help.c_str());
 }

@@ -1,4 +1,4 @@
-/* $Id: clfe.cpp,v 1.11 2001/04/17 20:51:59 buschelm Exp buschelm $ */
+/* $Id: petscclfe.cpp,v 1.12 2001/04/17 21:17:31 buschelm Exp $ */
 #include <stdlib.h>
 #include "petscclfe.h"
 #include "Windows.h"
@@ -27,31 +27,15 @@ void cl::Parse(void) {
 }
 
 void cl::Help(void) {
-  tool::Help();
+  compiler::Help();
   string help = compilearg.front();
   help += " -? 2>&1";
   system(help.c_str());
 }
 
 void cl::Compile(void) {
-  LI i = compilearg.begin();
-  string compile = *i++;
-  Merge(compile,compilearg,i);
-  /* Execute each compilation one at a time */ 
-  i = file.begin();
-  while (i != file.end()) {
-    /* Make default output a .o not a .obj */
-    string outfile;
-    if (OutputFlag==compilearg.end()) {
-      outfile = "-Fo" + *i;
-      int n = outfile.find_last_of(".");
-      string filebase = outfile.substr(0,n);
-      outfile = filebase + ".o";
-    }
-    string compileeach = compile + " " + *i++ + " " + outfile;
-    if (verbose) cout << compileeach << endl;
-    system(compileeach.c_str());
-  }
+  compileoutflag = "-Fo";
+  compiler::Compile();
 }
 
 void cl::FoundD(LI &i) {

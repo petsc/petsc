@@ -1,4 +1,4 @@
-/* $Id: bccfe.h,v 1.6 2001/04/17 20:52:49 buschelm Exp buschelm $ */
+/* $Id: petscbccfe.h,v 1.7 2001/04/17 21:09:54 buschelm Exp $ */
 #ifndef PETScBccFE_h
 #define PETScBccFE_h
 
@@ -21,7 +21,6 @@ namespace PETScFE {
     virtual void Foundl(LI &);
     virtual void Foundo(LI &);
     virtual void FixOutput(void);
-    LI OutputFlag;
   };
 
 }

@@ -1,4 +1,4 @@
-/* $Id: petscarchiverfe.cpp,v 1.10 2001/04/18 01:00:36 buschelm Exp $ */
+/* $Id: petscarchiverfe.cpp,v 1.11 2001/04/18 15:37:30 buschelm Exp $ */
 #include <stdlib.h>
 #include <process.h>
 #include "petscarchiverfe.h"
@@ -51,9 +51,12 @@ void archiver::Execute(void) {
 
 void archiver::Help(void) {
   tool::Help();
-  string help = archivearg.front();
-  help += " -help";
-  system(help.c_str());
+  cout << "For archivers:" << endl;
+  cout << "  The first file specified will be the archive name." << endl;
+  cout << "  All subsequent files will be inserted into the archive." << endl << endl;
+  cout << "Ex: win32fe tlib -u libfoo.lib foo.o bar.o" << endl << endl;
+  cout << "=========================================================================" << endl << endl;
+  
 }
 
 void archiver::FoundFile(LI &i) {

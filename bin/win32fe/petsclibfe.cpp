@@ -1,4 +1,4 @@
-/* $Id: libfe.cpp,v 1.6 2001/04/17 20:51:59 buschelm Exp buschelm $ */
+/* $Id: petsclibfe.cpp,v 1.7 2001/04/17 21:16:12 buschelm Exp $ */
 #include <fstream>
 #include "petsclibfe.h"
 
@@ -37,11 +37,12 @@ void lib::Execute(void) {
 }
 
 void lib::Help(void) {
-  tool::Help();
+  archiver::Help();
+  cout << "lib specific help:" << endl;
   cout << "  Note: win32fe will check to see if the library exists, and will modify" << endl;
   cout << "        the arguments to lib accordingly.  As a result, specifying" << endl;
   cout << "        -out:<libname> is unnecessary and may lead to unexpected results." << endl << endl;
-  cout << "  =======================================================================" << endl << endl;
+  cout << "=========================================================================" << endl << endl;
   
   string help = archivearg.front();
   help += " -? 2>&1"; 

@@ -1,4 +1,4 @@
-/* $Id: toolfe.cpp,v 1.8 2001/04/17 20:51:59 buschelm Exp buschelm $ */
+/* $Id: petsctoolfe.cpp,v 1.9 2001/04/17 21:18:03 buschelm Exp $ */
 #include "Windows.h"
 #include "petsctoolfe.h"
 
@@ -39,7 +39,7 @@ void tool::Execute(void) {
 }
 
 void tool::Help(void) {
-  cout << "\tPETSc Front End v1.0" << endl << endl;  
+  cout << endl << "PETSc's Win32 Tool Front End v1.0" << endl << endl;  
   cout << "Usage: win32fe <tool> --<win32fe options> -<tool options> <files>" << endl;
   cout << "  <tool> must follow win32fe" << endl << endl;
   cout << "<tool>: {cl,df,f90,bcc32,lib,tlib}" << endl;
@@ -55,20 +55,6 @@ void tool::Help(void) {
   cout << "  --use <arg>: <arg> Specifies the variant of <tool> to use" << endl;
   cout << "  --verbose:   Echo to stdout the translated commandline" << endl;
   cout << "  --help:      Output this help message and help for <tool>" << endl << endl;
-  cout << "For compilers:" << endl;
-  cout << "  win32fe will map the following <tool options> to their native options:" << endl;
-  cout << "    -c:          Compile Only, generates an object file with .o extension" << endl;
-  cout << "    -l<library>: Link the file lib<library>.lib" << endl;
-  cout << "    -o <file>:   Output=<file> context dependent" << endl;
-  cout << "    -D<macro>:   Define <macro>" << endl;
-  cout << "    -I<path>:    Add <path> to the include path" << endl;
-  cout << "    -L<path>:    Add <path> to the link path" << endl;
-  cout << "    -help:       <tool> specific help for win32fe" << endl << endl;
-  cout << "Ex: win32fe cl -Zi -c foo.c --verbose -Iinclude" << endl << endl;
-  cout << "For archivers:" << endl;
-  cout << "  The first file specified will be the archive name." << endl;
-  cout << "  All subsequent files will be inserted into the archive." << endl << endl;
-  cout << "Ex: win32fe tlib -u libfoo.lib foo.o bar.o" << endl << endl;
   cout << "=========================================================================" << endl << endl;
 }
 
@@ -125,13 +111,15 @@ void tool::ProtectQuotes(string &name) {
     }
   }
 }
-void tool::GetShortPath(string &name) {
+
+int tool::GetShortPath(string &name) {
   if (name[0]=='\''||name[0]=='\"')
     name=name.substr(1,name.length()-2);
   char shortpath[256];
   int length=256*sizeof(char);
-  GetShortPathName(name.c_str(),shortpath,length);
+  int size = GetShortPathName(name.c_str(),shortpath,length);
   name=(string)shortpath;
+  return(size);
 }
 
 void tool::PrintListString(list<string> &liststr) {
