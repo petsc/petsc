@@ -1,6 +1,6 @@
 
 command:
-       mpirun ex10 -f0 ~/matrices/medium -f1 ~/matrices/arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -log_summary  -mat_seqbaij -matload_block_size 3 
+       mpirun ex10 -f0 ~/matrices/medium -f1 ~/matrices/arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -mat_seqbaij -matload_block_size 3 -log_summary 
 
 PETSc Verison: 1.0.14+
 
