@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.69 1998/04/24 22:10:36 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.70 1998/04/25 11:55:30 curfman Exp curfman $";
 #endif
 
 /*
@@ -218,13 +218,9 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 
    Notes:
    KSPDefaultConverged() reaches convergence when
-.vb
-        rnorm < MAX ( rtol * rnorm_0, atol );
-.ve
+$      rnorm < MAX ( rtol * rnorm_0, atol );
    Divergence is detected if
-.vb
-        rnorm > dtol * rnorm_0,
-.ve
+$      rnorm > dtol * rnorm_0,
 
    where 
 +     rtol = relative tolerance,
