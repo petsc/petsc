@@ -142,7 +142,7 @@ class StaticLinker(SharedLinker):
   def getOutputFlag(self):
     if hasattr(self, 'configCompilers'):
       return self.configCompilers.AR_FLAGS
-    return = self.argDB['AR_FLAGS']
+    return self.argDB['AR_FLAGS']
 
   def getRanlib(self):
     '''Returns the processor executable'''
