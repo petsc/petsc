@@ -5,6 +5,11 @@
 #
 PARCH    = nt_gnu
 CC       = gcc -D__USE_FIXED_PROTOTYPES__ -DPARCH_nt_gnu
+#
+#  Indicates the version of the compiler you are using; if you do not know
+#  how to get the version number then use: unknown
+#
+CCV      = $(CC) --version
 FC       = g77
 AR       = ar
 RM       = rm -f
