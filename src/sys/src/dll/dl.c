@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.39 1999/01/25 19:02:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.40 1999/01/27 19:46:18 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -246,6 +246,7 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
      symbols required can be contained in other libraries also opened
      with dlopen()
   */
+  PLogInfo(0,"DLLibraryOpen:Opening %s\n",libname);
 #if defined(HAVE_RTLD_GLOBAL)
   *handle = dlopen(par2,RTLD_LAZY  |  RTLD_GLOBAL); 
 #else
