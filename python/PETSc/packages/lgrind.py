@@ -17,17 +17,22 @@ class Configure(PETSc.package.Package):
     installDir = os.path.join(lgrindDir, self.arch.arch)
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    try:
-      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(lgrindDir,'source')+';make', timeout=2500, log = self.framework.log)[0]
-    except RuntimeError, e:
-      raise RuntimeError('Error running make on lgrind: '+str(e))
-    try:
-      lgrindexe = os.path.join(lgrindDir,'source','lgrind')
-      if os.path.exists(lgrindexe+'.exe'):
-        lgrindexe = lgrindexe+'.exe'
-      output  = config.base.Configure.executeShellCommand('cp '+lgrindexe+' '+installDir, timeout=2500, log = self.framework.log)[0]
-    except RuntimeError, e:
-      raise RuntimeError('Error copying lgrind executable: '+str(e))
+    if os.path.isfile(os.path.join(installDir,'lgrind')) or os.path.isfile(os.path.join(installDir,'lgrind.exe')):
+      self.framework.log.write('Found Lgrind executable; skipping compile\n')
+      lgrindexe = os.path.join(installDir,'source','lgrind')
+      if os.path.exists(lgrindexe+'.exe'): lgrindexe = lgrindexe+'.exe'
+    else:
+      self.framework.log.write('Did not find Lgrind executable; compiling lgrind\n')
+      try:
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(lgrindDir,'source')+';make', timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on lgrind: '+str(e))
+      try:
+        lgrindexe = os.path.join(lgrindDir,'source','lgrind')
+        if os.path.exists(lgrindexe+'.exe'): lgrindexe = lgrindexe+'.exe'
+        output  = config.base.Configure.executeShellCommand('cp '+lgrindexe+' '+installDir, timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error copying lgrind executable: '+str(e))
     self.framework.actions.addArgument('lgrind', 'Install', 'Installed lgrind into '+installDir)
     self.lgrind = lgrindexe
     self.addMakeMacro('LGRIND',self.lgrind)
