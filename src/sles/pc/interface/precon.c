@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.144 1998/04/15 22:45:33 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.145 1998/04/21 23:48:00 curfman Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -1034,7 +1034,7 @@ int PCView(PC pc,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-/*M
+/*MC
    PCRegister - Adds a method to the preconditioner package.
 
    Synopsis:

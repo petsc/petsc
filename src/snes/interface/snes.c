@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.145 1998/04/21 19:38:21 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.146 1998/04/21 23:48:23 curfman Exp balay $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -2123,7 +2123,7 @@ int SNESPrintHelp(SNES snes)
   PetscFunctionReturn(0);
 }
 
-/*M
+/*MC
    SNESRegister - Adds a method to the nonlinear solver package.
 
    Synopsis:

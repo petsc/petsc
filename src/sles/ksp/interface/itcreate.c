@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.118 1998/04/13 17:28:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.119 1998/04/22 00:10:44 curfman Exp balay $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -491,7 +491,7 @@ int KSPSetFromOptions(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-/*M
+/*MC
    KSPRegister - Adds a method to the Krylov subspace solver package.
 
    Synopsis:
