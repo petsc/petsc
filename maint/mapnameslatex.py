@@ -68,7 +68,7 @@ t_MOD              = r'%'
 t_OR               = r'\|'
 t_AND              = r'&'
 t_NOT              = r'~'
-t_XOR              = r'^'
+t_XOR              = r'\^'
 t_LSHIFT           = r'<<'
 t_RSHIFT           = r'>>'
 t_LOR              = r'\|\|'
@@ -126,10 +126,8 @@ t_SEMI             = r';'
 t_COLON            = r':'
 t_ELLIPSIS         = r'\.\.\.'
 
-def t_SPACE(t):
-    r' \s+'
-    return t
-
+t_SPACE            = r'\ +'
+t_NEWLINE          = r'\n'
 
 # Identifiers and reserved words
 
@@ -192,7 +190,7 @@ if __name__ == "__main__":
     while 1:
         token = lex.token()       # Get a token
         if not token: break        # No more tokens
-	if token.value[0] == '\n':
+	if token.type == 'NEWLINE':
 	    print text
 	    text = ''
 	else:
