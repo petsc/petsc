@@ -9,9 +9,6 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  - Change VecNorm_Seq() and _MPI() so that they use compiled code on
-    the IBM instead of call the blas; which is very slow due to their
-    careful stability stuff.
 
   - Add ISGlobalToLocal() that does
     1) replace off processor with -1 and
@@ -848,3 +845,7 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
 
  X Change flop rate per processorin -log_summary to 3 digits instead
    of 2. Also add another digit to max time per processor
+
+ X Change VecNorm_MPI() so that they use compiled code on
+   the IBM instead of call the blas; which is very slow due to their
+   XScareful stability stuff.

@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.23 1997/06/18 12:49:48 bsmith Exp balay $ */
+/* $Id: pvec2.c,v 1.24 1997/06/19 22:34:50 balay Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -52,7 +52,6 @@ int VecMTDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
   return 0;
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "VecNorm_MPI"
 int VecNorm_MPI(  Vec xin,NormType type, double *z )
@@ -69,7 +68,36 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
       work += real(conj(xx[i])*xx[i]);
     }
 #else
-    SQR(work,xx,n);
+    /* int i; for ( i=0; i<n; i++ ) work += xx[i]*xx[i];   */
+    switch (n & 0x3) {
+      case 3: work += xx[0]*xx[0]; xx++;
+      case 2: work += xx[0]*xx[0]; xx++;
+      case 1: work += xx[0]*xx[0]; xx++; n -= 4;
+    }
+    while (n>0) {
+      work += xx[0]*xx[0]+xx[1]*xx[1]+xx[2]*xx[2]+xx[3]*xx[3];
+      xx += 4; n -= 4;
+    } 
+    /*
+         On the IBM Power2 Super with four memory cards unrolling to 4
+         worked better then to 8
+    */
+    /*
+    switch (n & 0x7) {
+      case 7: work += xx[0]*xx[0]; xx++;
+      case 6: work += xx[0]*xx[0]; xx++;
+      case 5: work += xx[0]*xx[0]; xx++;
+      case 4: work += xx[0]*xx[0]; xx++;
+      case 3: work += xx[0]*xx[0]; xx++;
+      case 2: work += xx[0]*xx[0]; xx++;
+      case 1: work += xx[0]*xx[0]; xx++; n -= 8;
+    }
+    while (n>0) {
+      work += xx[0]*xx[0]+xx[1]*xx[1]+xx[2]*xx[2]+xx[3]*xx[3]+
+              xx[4]*xx[4]+xx[5]*xx[5]+xx[6]*xx[6]+xx[7]*xx[7];
+      xx += 8; n -= 8;
+    } 
+    */
 #endif
     MPI_Allreduce( &work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
     *z = sqrt( sum );
