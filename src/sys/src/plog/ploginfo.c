@@ -141,7 +141,7 @@ extern FILE *petsc_history;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogInfo"
-/*@M
+/*@C
     PetscLogInfo - Logs informative data, which is printed to standard output
     or a file when the option -log_info <file> is specified.
 
