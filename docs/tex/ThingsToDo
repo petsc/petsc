@@ -111,6 +111,15 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
+   - Examine the SPEC benchmarks to verify that we're using the appropriate
+     compiler options for optimized code.  For info:  http://www.specbench.org
+
+   - Aim for more exhaustive PETSc testing.  From /home/MPI/mpich/examples/test/rlist.srt:
+        # This is a list of MPI usages in the test programs, generated with 
+        # strings */*.c | grep MPI | tr -cs 'A-Za-z_' '\012' | grep MPI | sort | uniq
+        # This can be used, in comparison with the routine index, to find routines
+        # still needing tests.
+
    - When one is using a MatShell it would be nice if PC knew to use no
      preconditioning when no special preconditioner is applied. This would 
      prevent the annouying error message about MatGetDiagonal() when it 
