@@ -60,7 +60,7 @@ int main(int argc,char **args)
      /* node numbers for the four corners of element */
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-     ierr = MatSetValues(C,4,idx,4,idx,Ke,AddValues); CHKERRA(ierr);
+     ierr = MatSetValues(C,4,idx,4,idx,Ke,ADDVALUES); CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -82,7 +82,7 @@ int main(int argc,char **args)
      idx[0] = (m+1)*(i/m) + ( i % m);
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      ierr = FormElementRhs(x,y,h*h,r); CHKERRA(ierr);
-     ierr = VecSetValues(b,4,idx,r,AddValues); CHKERRA(ierr);
+     ierr = VecSetValues(b,4,idx,r,ADDVALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(b); CHKERRA(ierr);
   ierr = VecAssemblyEnd(b); CHKERRA(ierr);

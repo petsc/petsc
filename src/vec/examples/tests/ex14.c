@@ -38,8 +38,8 @@ int main(int argc,char **argv)
   VecSet(&zero,y);
 
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
-  ierr = VecScatterBegin(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERRA(ierr);
-  ierr = VecScatterEnd(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERRA(ierr);
+  ierr = VecScatterBegin(x,is1,y,is2,ADDVALUES,SCATTERALL,ctx); CHKERRA(ierr);
+  ierr = VecScatterEnd(x,is1,y,is2,ADDVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   VecScatterCtxDestroy(ctx);
   
   VecView(y,SYNC_STDOUT_VIEWER);

@@ -54,14 +54,14 @@ extern int VecDestroy(Vec);
 extern int VecGetVecs(Vec, int,Vec **);         
 extern int VecFreeVecs(Vec*,int); 
 
-typedef enum {NOTSETVALUES, INSERTVALUES, AddValues} InsertMode;
+typedef enum {NOTSETVALUES, INSERTVALUES, ADDVALUES} InsertMode;
 
 extern int VecSetValues(Vec, int, int *,Scalar*,InsertMode);
 extern int VecAssemblyBegin(Vec);
 extern int VecAssemblyEnd(Vec);
 
-typedef enum {ScatterReverse=1,ScatterDown=2,ScatterUp=4,ScatterAll=8,
-              ScatterAllReverse=9} ScatterMode;
+typedef enum {SCATTERREVERSE=1,SCATTERDOWN=2,SCATTERUP=4,SCATTERALL=8,
+              SCATTERALLREVERSE=9} ScatterMode;
 
 extern int VecScatterBegin(Vec,IS,Vec,IS,InsertMode,ScatterMode,VecScatterCtx);
 extern int VecScatterEnd(Vec,IS,Vec,IS,InsertMode,ScatterMode,VecScatterCtx); 
@@ -69,7 +69,7 @@ extern int VecScatterCtxCreate(Vec,IS,Vec,IS,VecScatterCtx *);
 extern int VecScatterCtxDestroy(VecScatterCtx);
 extern int VecScatterCtxCopy(VecScatterCtx,VecScatterCtx *);
 
-typedef enum {PipelineDown=0,PipelineUp=1} PipelineMode;
+typedef enum {PIPELINEDOWN=0,PIPELINEUP=1} PipelineMode;
 
 extern int VecPipelineBegin(Vec,IS,Vec,IS,InsertMode,PipelineMode,VecScatterCtx);
 extern int VecPipelineEnd(Vec,IS,Vec,IS,InsertMode,PipelineMode,VecScatterCtx); 

@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   ierr = VecSet(&one,x);CHKERRA(ierr);
 
   for ( i=0; i<N-mytid; i++ ) {
-    ierr = VecSetValues(x,1,&i,&one,AddValues); CHKERRA(ierr);  
+    ierr = VecSetValues(x,1,&i,&one,ADDVALUES); CHKERRA(ierr);  
   }
   ierr = VecAssemblyBegin(x); CHKERRA(ierr);
   ierr = VecAssemblyEnd(x); CHKERRA(ierr);

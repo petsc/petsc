@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.29 1995/05/02 17:58:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.30 1995/05/02 23:37:16 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -474,12 +474,12 @@ int VecFreeVecs(Vec *vv,int m)
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
-.  iora - either INSERTVALUES or AddValues
+.  iora - either INSERTVALUES or ADDVALUES
 
    Notes: 
    x[ix[i]] = y[i], for i=0,...,ni-1.
 
-   Calls to VecSetValues() with the INSERTVALUES and AddValues 
+   Calls to VecSetValues() with the INSERTVALUES and ADDVALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
 

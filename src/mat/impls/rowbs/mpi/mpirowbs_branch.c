@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.16 1995/05/03 00:06:45 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.17 1995/05/03 01:04:18 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -118,7 +118,7 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
       for ( i=a; i<b; i++ ) {
         if (rp[i] > col) break;
         if (rp[i] == col) {
-          if (addv == AddValues) ap[i] += value;
+          if (addv == ADDVALUES) ap[i] += value;
           else                   ap[i] = value;
           goto noinsert;
         }
@@ -244,7 +244,7 @@ static int StashValues(Stash3 *stash,int row,int n, int *idxn,
     for ( j=0; j<N; j++ ) {
       if ( stash->idx[j] == row && stash->idy[j] == idxn[i]) {
         /* found a match */
-        if (addv == AddValues) stash->array[j] += val;
+        if (addv == ADDVALUES) stash->array[j] += val;
         else stash->array[j] = val;
         found = 1;
         break;
@@ -338,7 +338,7 @@ static int MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce((void *) &mrow->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
-  if (addv == (AddValues|INSERTVALUES)) {
+  if (addv == (ADDVALUES|INSERTVALUES)) {
     SETERR(1,"Some processors have inserted while others have added");
   }
   mrow->insertmode = addv; /* in case this processor had no cache */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.5 1995/05/01 03:03:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.6 1995/05/02 23:37:51 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: fp.c,v 1.5 1995/05/01 03:03:50 bsmith Exp bsmith $";
 /*----------------IEEE error handler for Sun SparcStations.--------------*/
 #if defined(PARCH_sun4) 
 #include <floatingpoint.h>
-int ieee_flags(char*,char*,char*,char*);
+int ieee_flags(char*,char*,char*,char**);
 int ieee_handler(char *,char *,
                  sigfpe_handler_type(int,int,struct sigcontext*,char *));
 struct { int code_no; char *name; } error_codes[] = {

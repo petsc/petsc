@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.6 1995/04/29 18:17:07 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.7 1995/05/02 16:34:40 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -37,7 +37,7 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 	    else
 	      loc = row;
 	    if ((valpt = &((dmat->diagv[k])[loc]))) {
-	      if (addv == AddValues) *valpt += v[j];
+	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERR(1,
                "Does not support allocation of additional memory." );
@@ -67,7 +67,7 @@ static int MatSetValues_BDiag(Mat matin,int m,int *idxm,int n,
 	    if ((valpt = &((dmat->diagv[k])[loc + (idxn[j]%nb)*nb ]))) {
               printf("row=%d, col=%d, bdiag=%d, loc=%d, idx=%d, val=%g\n",
                  row,idxn[j],ldiag, loc, loc + (idxn[j]%nb)*nb, v[j] );             
-	      if (addv == AddValues) *valpt += v[j];
+	      if (addv == ADDVALUES) *valpt += v[j];
 	      else                   *valpt = v[j];
             } else SETERR(1,
                 "Does not support allocation of additional memory." );
@@ -221,7 +221,8 @@ static int MatMultTransAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
   return MatMultTrans_BDiag_base(matin,xx,yy);
 }
 
-static int MatGetInfo_BDiag(Mat matin,int flag,int *nz,int *nzalloc,int *mem)
+static int MatGetInfo_BDiag(Mat matin,MatInfoType flag,int *nz,int *nzalloc,
+                                                                     int *mem)
 {
   Mat_BDiag *mat = (Mat_BDiag *) matin->data;
   *nz      = mat->nz;
@@ -362,6 +363,7 @@ static int MatRestoreRow_BDiag(Mat matin,int row,int *ncols,int **cols,
 }
 /* ----------------------------------------------------------------*/
 #include "draw.h"
+#include "pviewer.h"
 
 int MatView_BDiag(PetscObject obj,Viewer ptr)
 {
@@ -400,7 +402,8 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
     ierr = MatRestoreRow(matin,i,&nz,&col,0); CHKERR(ierr);
     }
     return 0;
-  } else {
+  }
+  else {
     FILE *fd = ViewerFileGetPointer_Private(ptr);
     char *outputname = (char *)ViewerFileGetOutputname_Private(ptr);
     int format = ViewerFileGetFormat_Private(ptr);
@@ -515,7 +518,7 @@ static int MatDestroy_BDiag(PetscObject obj)
   return 0;
 }
 
-static int MatEndAssembly_BDiag(Mat matin,int mode)
+static int MatAssemblyEnd_BDiag(Mat matin,MatAssemblyType mode)
 {
   Mat_BDiag *mat = (Mat_BDiag *) matin->data;
   if (mode == FLUSH_ASSEMBLY) return 0;
@@ -570,9 +573,9 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        MatMultTrans_BDiag, MatMultTransAdd_BDiag, 
        0, 0, 0, 0,
        0, 0, 0, 0,
-       MatGetInfo_BDiag, 0, MatCopy_BDiag,
+       MatGetInfo_BDiag, 0,
        MatGetDiagonal_BDiag, 0, 0,
-       0,MatEndAssembly_BDiag,
+       0,MatAssemblyEnd_BDiag,
        0, 0, MatZero_BDiag,MatZeroRows_BDiag,0,
        0, 0, 0, 0,
        MatGetSize_BDiag,MatGetSize_BDiag,0,

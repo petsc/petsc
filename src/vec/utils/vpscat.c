@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.13 1995/05/02 21:20:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.14 1995/05/02 23:37:13 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -74,10 +74,10 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
   int           *rstarts,*sstarts;
   int           *rprocs, *sprocs;
 
-  if (mode & ScatterReverse ){
+  if (mode & SCATTERREVERSE ){
     gen_to   = (VecScatterMPI *) ctx->fromdata;
     gen_from = (VecScatterMPI *) ctx->todata;
-    mode -= ScatterReverse;
+    mode -= SCATTERREVERSE;
   }
   else {
     gen_to   = (VecScatterMPI *) ctx->todata;
@@ -95,7 +95,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
   rprocs   = gen_from->procs;
   sprocs   = gen_to->procs;
 
-  if (mode == ScatterAll) {
+  if (mode == SCATTERALL) {
     /* post receives:   */
     for ( i=0; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -112,8 +112,8 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
                  MPI_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
   }
-  else if (mode == ScatterUp) {
-    if (gen_to->nself || gen_from->nself) SETERR(1,"No scatterup to self");
+  else if (mode == SCATTERUP) {
+    if (gen_to->nself || gen_from->nself) SETERR(1,"No SCATTERUP to self");
     /* post receives:   */
     for ( i=gen_from->nbelow; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -131,7 +131,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
     }
   }
   else { 
-    if (gen_to->nself || gen_from->nself) SETERR(1,"No scatterdown to self");
+    if (gen_to->nself || gen_from->nself) SETERR(1,"No SCATTERDOWN to self");
     /* post receives:   */
     for ( i=0; i<gen_from->nbelow; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -167,10 +167,10 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
   int           *rstarts;
 
 
-  if (mode & ScatterReverse ){
+  if (mode & SCATTERREVERSE ){
     gen_to   = (VecScatterMPI *) ctx->fromdata;
     gen_from = (VecScatterMPI *) ctx->todata;
-    mode    -= ScatterReverse;
+    mode    -= SCATTERREVERSE;
   }
   else {
     gen_to   = (VecScatterMPI *) ctx->todata;
@@ -184,7 +184,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
   indices  = gen_from->indices;
   rstarts  = gen_from->starts;
 
-  if (mode == ScatterAll) {
+  if (mode == SCATTERALL) {
     /*  wait on receives */
     count = nrecvs;
     while (count) {
@@ -215,8 +215,8 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       FREE(sstatus);
     }
   }
-  else if (mode == ScatterUp) {
-    if (gen_to->nself || gen_from->nself) SETERR(1,"No scatterup to self");
+  else if (mode == SCATTERUP) {
+    if (gen_to->nself || gen_from->nself) SETERR(1,"No SCATTERUP to self");
     /*  wait on receives */
     count = nrecvs - gen_from->nbelow ;
     while (count) {
@@ -248,7 +248,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
     }
   }
   else { 
-    if (gen_to->nself || gen_from->nself) SETERR(1,"No scatterdown to self");
+    if (gen_to->nself || gen_from->nself) SETERR(1,"No SCATTERDOWN to self");
     /*  wait on receives */
     count = gen_from->nbelow;
     while (count) {
@@ -356,7 +356,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
 
   if (gen_to->nself || gen_from->nself) SETERR(1,"No pipeline to self");
 
-  if (mode == PipelineDown) {
+  if (mode == PIPELINEDOWN) {
     /* post receives:   */
     for ( i=0; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
@@ -429,7 +429,7 @@ static int PtoPPipelineend(Vec xin,Vec yin,VecScatterCtx ctx,
   int           *sprocs = gen_to->procs;
   Scalar        *xv = x->array,*val;
 
-  if (mode == PipelineDown) {
+  if (mode == PIPELINEDOWN) {
     /* do sends:  */
     indices += sstarts[gen_to->nbelow]; /* shift indices to match first i */
     for ( i=gen_to->nbelow; i<nsends; i++ ) {
