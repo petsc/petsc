@@ -15,7 +15,7 @@ include ${PETSC_DIR}/bmake/common/test
 # all: builds the c, fortran, and f90 libraries
 all: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir
-	-@${MAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
+	-@${OMAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
 all_build: chk_petsc_dir chk_default_bopt info info_h chklib_dir deletelibs chk_fortranstubs blaslapack mpich build shared
 #
 # Prints information about the system and version of PETSc being compiled

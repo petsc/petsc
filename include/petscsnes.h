@@ -41,10 +41,10 @@ EXTERN PetscErrorCode SNESInitializePackage(const char[]);
 EXTERN PetscErrorCode SNESCreate(MPI_Comm,SNES*);
 EXTERN PetscErrorCode SNESDestroy(SNES);
 EXTERN PetscErrorCode SNESSetType(SNES,const SNESType);
-EXTERN PetscErrorCode SNESSetMonitor(SNES,PetscErrorCode(*)(SNES,int,PetscReal,void*),void *,PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode SNESSetMonitor(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode SNESClearMonitor(SNES);
-EXTERN PetscErrorCode SNESSetConvergenceHistory(SNES,PetscReal[],int[],int,PetscTruth);
-EXTERN PetscErrorCode SNESGetConvergenceHistory(SNES,PetscReal*[],int *[],int *);
+EXTERN PetscErrorCode SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscTruth);
+EXTERN PetscErrorCode SNESGetConvergenceHistory(SNES,PetscReal*[],PetscInt *[],PetscInt *);
 EXTERN PetscErrorCode SNESSetUp(SNES,Vec);
 EXTERN PetscErrorCode SNESSolve(SNES,Vec);
 
@@ -54,8 +54,8 @@ EXTERN PetscErrorCode SNESSetRhsBC(SNES, PetscErrorCode (*)(SNES, Vec, void *));
 EXTERN PetscErrorCode SNESDefaultRhsBC(SNES, Vec, void *);
 EXTERN PetscErrorCode SNESSetSolutionBC(SNES, PetscErrorCode (*)(SNES, Vec, void *));
 EXTERN PetscErrorCode SNESDefaultSolutionBC(SNES, Vec, void *);
-EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, int));
-EXTERN PetscErrorCode SNESDefaultUpdate(SNES, int);
+EXTERN PetscErrorCode SNESSetUpdate(SNES, PetscErrorCode (*)(SNES, PetscInt));
+EXTERN PetscErrorCode SNESDefaultUpdate(SNES, PetscInt);
 
 extern PetscFList SNESList;
 EXTERN PetscErrorCode SNESRegisterDestroy(void);
@@ -67,7 +67,7 @@ EXTERN PetscErrorCode SNESRegister(const char[],const char[],const char[],PetscE
    SNESRegisterDynamic - Adds a method to the nonlinear solver package.
 
    Synopsis:
-   int SNESRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(SNES))
+   PetscErrorCode SNESRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(SNES))
 
    Not collective
 
@@ -128,15 +128,15 @@ EXTERN PetscErrorCode MatCreateMF(Vec,Mat*);
 EXTERN PetscErrorCode MatSNESMFSetBase(Mat,Vec);
 EXTERN PetscErrorCode MatSNESMFComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN PetscErrorCode MatSNESMFSetFunction(Mat,Vec,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
-EXTERN PetscErrorCode MatSNESMFSetFunctioni(Mat,PetscErrorCode (*)(int,Vec,PetscScalar*,void*));
+EXTERN PetscErrorCode MatSNESMFSetFunctioni(Mat,PetscErrorCode (*)(PetscInt,Vec,PetscScalar*,void*));
 EXTERN PetscErrorCode MatSNESMFSetFunctioniBase(Mat,PetscErrorCode (*)(Vec,void*));
 EXTERN PetscErrorCode MatSNESMFAddNullSpace(Mat,MatNullSpace);
-EXTERN PetscErrorCode MatSNESMFSetHHistory(Mat,PetscScalar[],int);
+EXTERN PetscErrorCode MatSNESMFSetHHistory(Mat,PetscScalar[],PetscInt);
 EXTERN PetscErrorCode MatSNESMFResetHHistory(Mat);
 EXTERN PetscErrorCode MatSNESMFSetFunctionError(Mat,PetscReal);
-EXTERN PetscErrorCode MatSNESMFSetPeriod(Mat,int);
+EXTERN PetscErrorCode MatSNESMFSetPeriod(Mat,PetscInt);
 EXTERN PetscErrorCode MatSNESMFGetH(Mat,PetscScalar *);
-EXTERN PetscErrorCode MatSNESMFKSPMonitor(KSP,int,PetscReal,void *);
+EXTERN PetscErrorCode MatSNESMFKSPMonitor(KSP,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode MatSNESMFSetFromOptions(Mat);
 EXTERN PetscErrorCode MatSNESMFCheckPositivity(Vec,Vec,PetscScalar*,void*);
 EXTERN PetscErrorCode MatSNESMFSetCheckh(Mat,PetscErrorCode (*)(Vec,Vec,PetscScalar*,void*),void*);
@@ -153,7 +153,7 @@ EXTERN PetscErrorCode MatSNESMFRegister(const char[],const char[],const char[],P
    MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.
 
    Synopsis:
-   int MatSNESMFRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(MatSNESMF))
+   PetscErrorCode MatSNESMFRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(MatSNESMF))
 
    Not Collective
 
@@ -201,30 +201,30 @@ EXTERN PetscErrorCode MatSNESMFWPSetComputeNormU(Mat,PetscTruth);
 EXTERN PetscErrorCode MatDAADSetSNES(Mat,SNES);
 
 EXTERN PetscErrorCode SNESGetType(SNES,SNESType*);
-EXTERN PetscErrorCode SNESDefaultMonitor(SNES,int,PetscReal,void *);
-EXTERN PetscErrorCode SNESRatioMonitor(SNES,int,PetscReal,void *);
+EXTERN PetscErrorCode SNESDefaultMonitor(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode SNESRatioMonitor(SNES,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode SNESSetRatioMonitor(SNES);
-EXTERN PetscErrorCode SNESVecViewMonitor(SNES,int,PetscReal,void *);
-EXTERN PetscErrorCode SNESVecViewResidualMonitor(SNES,int,PetscReal,void *);
-EXTERN PetscErrorCode SNESVecViewUpdateMonitor(SNES,int,PetscReal,void *);
-EXTERN PetscErrorCode SNESDefaultSMonitor(SNES,int,PetscReal,void *);
-EXTERN PetscErrorCode SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,int,int);
-EXTERN PetscErrorCode SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,int*,int*);
+EXTERN PetscErrorCode SNESVecViewMonitor(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode SNESVecViewResidualMonitor(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode SNESVecViewUpdateMonitor(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode SNESDefaultSMonitor(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt);
+EXTERN PetscErrorCode SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode SNESSetTrustRegionTolerance(SNES,PetscReal);
-EXTERN PetscErrorCode SNESGetIterationNumber(SNES,int*);
+EXTERN PetscErrorCode SNESGetIterationNumber(SNES,PetscInt*);
 EXTERN PetscErrorCode SNESGetFunctionNorm(SNES,PetscScalar*);
-EXTERN PetscErrorCode SNESGetNumberUnsuccessfulSteps(SNES,int*);
-EXTERN PetscErrorCode SNESSetMaximumUnsuccessfulSteps(SNES,int);
-EXTERN PetscErrorCode SNESGetMaximumUnsuccessfulSteps(SNES,int*);
-EXTERN PetscErrorCode SNESGetNumberLinearIterations(SNES,int*);
-EXTERN PetscErrorCode SNES_KSP_SetParametersEW(SNES,int,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
+EXTERN PetscErrorCode SNESGetNumberUnsuccessfulSteps(SNES,PetscInt*);
+EXTERN PetscErrorCode SNESSetMaximumUnsuccessfulSteps(SNES,PetscInt);
+EXTERN PetscErrorCode SNESGetMaximumUnsuccessfulSteps(SNES,PetscInt*);
+EXTERN PetscErrorCode SNESGetNumberLinearIterations(SNES,PetscInt*);
+EXTERN PetscErrorCode SNES_KSP_SetParametersEW(SNES,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 EXTERN PetscErrorCode SNES_KSP_SetConvergenceTestEW(SNES);
 
 /*
      Reuse the default KSP monitor routines for SNES
 */
 EXTERN PetscErrorCode SNESLGMonitorCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode SNESLGMonitor(SNES,int,PetscReal,void*);
+EXTERN PetscErrorCode SNESLGMonitor(SNES,PetscInt,PetscReal,void*);
 EXTERN PetscErrorCode SNESLGMonitorDestroy(PetscDrawLG);
 
 EXTERN PetscErrorCode SNESSetApplicationContext(SNES,void *);
@@ -275,11 +275,11 @@ EXTERN PetscErrorCode SNESGetJacobian(SNES,Mat*,Mat*,void **,PetscErrorCode(**)(
 EXTERN PetscErrorCode SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN PetscErrorCode SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN PetscErrorCode SNESSetRhs(SNES,Vec);
-EXTERN PetscErrorCode SNESSetLineSearch(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*),void*);
-EXTERN PetscErrorCode SNESNoLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*);
-EXTERN PetscErrorCode SNESNoLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*);
-EXTERN PetscErrorCode SNESCubicLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*);
-EXTERN PetscErrorCode SNESQuadraticLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,int*);
+EXTERN PetscErrorCode SNESSetLineSearch(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscInt*),void*);
+EXTERN PetscErrorCode SNESNoLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscInt*);
+EXTERN PetscErrorCode SNESNoLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscInt*);
+EXTERN PetscErrorCode SNESCubicLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscInt*);
+EXTERN PetscErrorCode SNESQuadraticLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscInt*);
 
 EXTERN PetscErrorCode SNESSetLineSearchCheck(SNES,PetscErrorCode(*)(SNES,void*,Vec,PetscTruth*),void*);
 EXTERN PetscErrorCode SNESSetLineSearchParams(SNES,PetscReal,PetscReal,PetscReal);

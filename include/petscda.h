@@ -70,6 +70,22 @@ typedef enum { DA_Q0, DA_Q1 } DAInterpolationType;
 
 EXTERN PetscErrorCode DASetInterpolationType(DA,DAInterpolationType);
 
+/*E
+    DAElementType - Defines the type of elements that will be returned by 
+       DAGetElements.
+
+   Level: beginner
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DAGetInterpolation(), DASetInterpolationType(), 
+          DASetElementType(), DAGetElements(), DARestoreElements()
+E*/
+typedef enum { DA_ELEMENT_P1, DA_ELEMENT_Q1 } DAElementType;
+
+EXTERN PetscErrorCode DASetElementType(DA,DAElementType);
+EXTERN PetscErrorCode DAGetElements(DA,PetscInt *,const PetscInt*[]);
+EXTERN PetscErrorCode DARestoreElements(DA,PetscInt *,const PetscInt*[]);
+
+
 #define DAXPeriodic(pt) ((pt)==DA_XPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_XYZPERIODIC)
 #define DAYPeriodic(pt) ((pt)==DA_YPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
 #define DAZPeriodic(pt) ((pt)==DA_ZPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_YZPERIODIC||(pt)==DA_XYZPERIODIC)
@@ -294,7 +310,7 @@ EXTERN PetscErrorCode DASetLocalAdicFunction_Private(DA,DALocalFunction1);
    Collective on DA
 
    Synopsis:
-   int DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
+   PetscErrorCode DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
    
    Input Parameter:
 +  da - initial distributed array
@@ -757,6 +773,24 @@ M*/
 
 M*/
 #define DMMGGetLevels(ctx)         (ctx)[0]->nlevels
+
+/*MC
+   DMMGGetDMMG - Returns the DMMG struct for the finest level
+
+   Synopsis:
+   DMMG DMMGGetDMMG(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetB()
+
+M*/
+#define DMMGGetDMMG(ctx)              (ctx)[(ctx)[0]->nlevels-1]
 
 PETSC_EXTERN_CXX_END
 #endif

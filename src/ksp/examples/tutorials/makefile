@@ -160,7 +160,7 @@ ex30: ex30.o  chkopts
 	${RM} ex30.o
 
 ex31: ex31.o  chkopts
-	-${CLINKER} -o $@ $<  ${PETSC_KSP_LIB}
+	-${CLINKER} -o $@ $<  ${PETSC_SNES_LIB}
 	${RM} $<
 
 #----------------------------------------------------------------------------

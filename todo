@@ -41,7 +41,6 @@ Vectors
 
    Handle special cases of VecAXPBY
 
-   Add vector orthogonalization and move over use from GMRES and MatNullSpace see Jose petsc-maint 9785
 
 Error handling
    Add troubleshooting entries and error messages with web address for common errors.
@@ -69,6 +68,9 @@ PC/Mat
 
 DMMG
 
+DA
+
+   Add DAVecGetArrayf90() Hmmm, thought I did this a long time ago?
 
 Testing
 

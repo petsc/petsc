@@ -674,7 +674,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
    Not Collective
 
    Synopsis:
-   int PetscStrfree(char *s)
+   PetscErrorCode PetscStrfree(char *s)
 
    Input Parameter:
 .  s - pointer to string

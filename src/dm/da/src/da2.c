@@ -2,8 +2,64 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "DAGetElements"
+/*@C
+      DAGetElements - Gets an array containing the indices (in local coordinates) 
+                 of all the local elements
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DA object
+
+   Output Parameters:
++     n - number of local elements
+-     e - the indices of the elements vertices
+
+   Level: intermediate
+
+.seealso: DAElementType, DASetElementType(), DARestoreElements()
+@*/
+PetscErrorCode DAGetElements(DA da,PetscInt *n,const PetscInt *e[])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  ierr = (da->ops->getelements)(da,n,e);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DARestoreElements"
+/*@C
+      DARestoreElements - Returns an array containing the indices (in local coordinates) 
+                 of all the local elements obtained with DAGetElements()
+
+    Not Collective
+
+   Input Parameter:
++     da - the DA object
+.     n - number of local elements
+-     e - the indices of the elements vertices
+
+   Level: intermediate
+
+.seealso: DAElementType, DASetElementType(), DAGetElements()
+@*/
+PetscErrorCode DARestoreElements(DA da,PetscInt *n,const PetscInt *e[])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  if (da->ops->restoreelements) {
+    ierr = (da->ops->restoreelements)(da,n,e);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DAGetOwnershipRange"
-PetscErrorCode DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
+PetscErrorCode DAGetOwnershipRange(DA da,PetscInt **lx,PetscInt **ly,PetscInt **lz)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -18,8 +74,8 @@ PetscErrorCode DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
 PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  int        rank;
-  PetscTruth iascii,isdraw;
+  PetscMPIInt    rank;
+  PetscTruth     iascii,isdraw;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
@@ -36,7 +92,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
     double     ymin = -1*da->s-1,ymax = da->N+da->s;
     double     xmin = -1*da->s-1,xmax = da->M+da->s;
     double     x,y;
-    int        base,*idx;
+    PetscInt        base,*idx;
     char       node[10];
     PetscTruth isnull;
  
@@ -110,6 +166,38 @@ PetscErrorCode DAPublish_Petsc(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetElements_2d_P1"
+PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j,cnt,xs,xe = da->xe,ys,ye = da->ye,Xs = da->Xs, Xe = da->Xe, Ys = da->Ys;
+
+  PetscFunctionBegin;
+  if (!da->e) {
+    if (da->xs == Xs) xs = da->xs; else xs = da->xs - 1;
+    if (da->ys == Ys) ys = da->ys; else ys = da->ys - 1;
+    da->ne = 2*(xe - xs - 1)*(ye - ys - 1);
+    ierr   = PetscMalloc((1 + 3*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
+    cnt    = 0;
+    for (j=ys; j<ye-1; j++) {
+      for (i=xs; i<xe-1; i++) {
+        da->e[cnt]   = i - Xs + (j - Ys)*(Xe - Xs);
+        da->e[cnt+1] = i - Xs + 1 + (j - Ys)*(Xe - Xs);
+        da->e[cnt+2] = i - Xs + (j - Ys + 1)*(Xe - Xs);
+
+        da->e[cnt+3] = i - Xs + 1 + (j - Ys + 1)*(Xe - Xs);
+        da->e[cnt+4] = i - Xs + (j - Ys + 1)*(Xe - Xs);
+        da->e[cnt+5] = i - Xs + 1 + (j - Ys)*(Xe - Xs);
+        cnt += 6;
+      }
+    }
+  }
+  *n = da->ne;
+  *e = da->e;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate2d"
@@ -167,20 +255,21 @@ PetscErrorCode DAPublish_Petsc(PetscObject obj)
 
 @*/
 PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                int M,int N,int m,int n,int dof,int s,int *lx,int *ly,DA *inra)
+                          PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,DA *inra)
 {
   PetscErrorCode ierr;
-  int           rank,size,xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end;
-  int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
-  int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
-  int           s_x,s_y; /* s proportionalized to w */
-  int           *flx = 0,*fly = 0;
-  int           sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0,refine_x = 2, refine_y = 2,tM = M,tN = N;
-  PetscTruth    flg1,flg2;
-  DA            da;
-  Vec           local,global;
-  VecScatter    ltog,gtol;
-  IS            to,from;
+  PetscMPIInt    rank,size;
+  PetscInt       xs,xe,ys,ye,x,y,Xs,Xe,Ys,Ye,start,end;
+  PetscInt       up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
+  PetscInt       xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count;
+  PetscInt       s_x,s_y; /* s proportionalized to w */
+  PetscInt       *flx = 0,*fly = 0;
+  PetscInt       sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0,refine_x = 2, refine_y = 2,tM = M,tN = N;
+  PetscTruth     flg1,flg2;
+  DA             da;
+  Vec            local,global;
+  VecScatter     ltog,gtol;
+  IS             to,from;
 
   PetscFunctionBegin;
   PetscValidPointer(inra,12);
@@ -217,6 +306,9 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
   da->ops->getinjection       = DAGetInjection;
+  da->ops->getelements        = DAGetElements_2d_P1;
+  da->elementtype             = DA_ELEMENT_P1;
+
   PetscLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim        = 2;
   da->interptype = DA_Q1;
@@ -240,14 +332,14 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     /* try for squarish distribution */
     /* This should use MPI_Dims_create instead */
-    m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
+    m = (PetscInt)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
     if (!m) m = 1;
     while (m > 0) {
       n = size/m;
       if (m*n == size) break;
       m--;
     }
-    if (M > N && m < n) {int _m = m; m = n; n = _m;}
+    if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
     if (m*n != size) SETERRQ(PETSC_ERR_PLIB,"Internally Created Bad Partition");
   } else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
 
@@ -289,7 +381,7 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
     if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
     else                      { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
-    ierr = PetscMalloc(m*sizeof(int),&lx);CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
     flx = lx;
     for (i=0; i<m; i++) {
       lx[i] = M/m + ((M % m) > i);
@@ -324,7 +416,7 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
     if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);
     if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
     else                    { ys = (N % n)*(y+1) + ((rank/m)-(N % n))*y; }
-    ierr = PetscMalloc(n*sizeof(int),&ly);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
     fly  = ly;
     for (i=0; i<n; i++) {
       ly[i] = N/n + ((N % n) > i);
@@ -363,10 +455,10 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   s_y = s;
 
   /* determine starting point of each processor */
-  nn = x*y;
-  ierr = PetscMalloc((2*size+1)*sizeof(int),&bases);CHKERRQ(ierr);
-  ldims = (int*)(bases+size+1);
-  ierr = MPI_Allgather(&nn,1,MPI_INT,ldims,1,MPI_INT,comm);CHKERRQ(ierr);
+  nn    = x*y;
+  ierr  = PetscMalloc((2*size+1)*sizeof(PetscInt),&bases);CHKERRQ(ierr);
+  ldims = bases+size+1;
+  ierr  = MPI_Allgather(&nn,1,MPIU_INT,ldims,1,MPIU_INT,comm);CHKERRQ(ierr);
   bases[0] = 0;
   for (i=1; i<=size; i++) {
     bases[i] = ldims[i-1];
@@ -390,7 +482,7 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
   ierr = ISCreateStride(comm,x*y,start,1,&to);CHKERRQ(ierr);
 
   left  = xs - Xs; down  = ys - Ys; up    = down + y;
-  ierr = PetscMalloc(x*(up - down)*sizeof(int),&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc(x*(up - down)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   count = 0;
   for (i=down; i<up; i++) {
     for (j=0; j<x; j++) {
@@ -424,7 +516,7 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
     /* bottom */
     left  = xs - Xs; down = ys - Ys; up    = down + y;
     count = down*(xe-xs) + (up-down)*(Xe-Xs) + (Ye-Ys-up)*(xe-xs);
-    ierr  = PetscMalloc(count*sizeof(int),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
     count = 0;
     for (i=0; i<down; i++) {
       for (j=0; j<xe-xs; j++) {
@@ -522,8 +614,8 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
     n0 = n2 = n6 = n8 = -1;
   }
 
-  ierr = PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(int),&idx);CHKERRQ(ierr);
-  PetscLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(int));
+  ierr = PetscMalloc((x+2*s_x)*(y+2*s_y)*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+  PetscLogObjectMemory(da,(x+2*s_x)*(y+2*s_y)*sizeof(PetscInt));
   nn = 0;
 
   xbase = bases[rank];
@@ -698,12 +790,12 @@ PetscErrorCode DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stenci
 
 
   if (!flx) {
-    ierr = PetscMalloc(m*sizeof(int),&flx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(flx,lx,m*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
+    ierr = PetscMemcpy(flx,lx,m*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (!fly) {
-    ierr = PetscMalloc(n*sizeof(int),&fly);CHKERRQ(ierr);
-    ierr = PetscMemcpy(fly,ly,n*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
+    ierr = PetscMemcpy(fly,ly,n*sizeof(PetscInt));CHKERRQ(ierr);
   }
   da->lx = flx;
   da->ly = fly;
@@ -740,7 +832,7 @@ PetscErrorCode DAPrintHelp(DA da)
 {
   static PetscTruth called = PETSC_FALSE;
   MPI_Comm          comm;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -784,8 +876,8 @@ PetscErrorCode DAPrintHelp(DA da)
 PetscErrorCode DARefine(DA da,MPI_Comm comm,DA *daref)
 {
   PetscErrorCode ierr;
-  int M,N,P;
-  DA  da2;
+  PetscInt       M,N,P;
+  DA             da2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -820,12 +912,12 @@ PetscErrorCode DARefine(DA da,MPI_Comm comm,DA *daref)
   
   /* copy fill information if given */
   if (da->dfill) {
-    ierr = PetscMalloc((da->dfill[da->w]+da->w+1)*sizeof(int),&da2->dfill);CHKERRQ(ierr);
-    ierr = PetscMemcpy(da2->dfill,da->dfill,(da->dfill[da->w]+da->w+1)*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc((da->dfill[da->w]+da->w+1)*sizeof(PetscInt),&da2->dfill);CHKERRQ(ierr);
+    ierr = PetscMemcpy(da2->dfill,da->dfill,(da->dfill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   if (da->ofill) {
-    ierr = PetscMalloc((da->ofill[da->w]+da->w+1)*sizeof(int),&da2->ofill);CHKERRQ(ierr);
-    ierr = PetscMemcpy(da2->ofill,da->ofill,(da->ofill[da->w]+da->w+1)*sizeof(int));CHKERRQ(ierr);
+    ierr = PetscMalloc((da->ofill[da->w]+da->w+1)*sizeof(PetscInt),&da2->ofill);CHKERRQ(ierr);
+    ierr = PetscMemcpy(da2->ofill,da->ofill,(da->ofill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
   }
   /* copy the refine information */
   da2->refine_x = da->refine_x;
@@ -857,7 +949,7 @@ PetscErrorCode DARefine(DA da,MPI_Comm comm,DA *daref)
 
 .seealso: DARefine(), DAGetRefinementFactor()
 @*/
-PetscErrorCode DASetRefinementFactor(DA da, int refine_x, int refine_y,int refine_z)
+PetscErrorCode DASetRefinementFactor(DA da, PetscInt refine_x, PetscInt refine_y,PetscInt refine_z)
 {
   PetscFunctionBegin;
   if (refine_x > 0) da->refine_x = refine_x;
@@ -885,7 +977,7 @@ PetscErrorCode DASetRefinementFactor(DA da, int refine_x, int refine_y,int refin
 
 .seealso: DARefine(), DASetRefinementFactor()
 @*/
-PetscErrorCode DAGetRefinementFactor(DA da, int *refine_x, int *refine_y,int *refine_z)
+PetscErrorCode DAGetRefinementFactor(DA da, PetscInt *refine_x, PetscInt *refine_y,PetscInt *refine_z)
 {
   PetscFunctionBegin;
   if (refine_x) *refine_x = da->refine_x;
@@ -924,7 +1016,7 @@ PetscErrorCode DASetGetMatrix(DA da,PetscErrorCode (*f)(DA,const MatType,Mat*))
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DASplitComm2d"
-PetscErrorCode DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
+PetscErrorCode DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,MPI_Comm *outcomm)
 {
   PetscErrorCode ierr;
   PetscInt       m,n = 0,x = 0,y = 0;
@@ -939,24 +1031,24 @@ PetscErrorCode DASplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
     if (csize % 4) SETERRQ4(PETSC_ERR_ARG_INCOMP,"Cannot split communicator of size %d tried %d %D %D",size,csize,x,y);
     csize   = csize/4;
   
-    m = (int)(0.5 + sqrt(((double)M)*((double)csize)/((double)N)));
+    m = (PetscInt)(0.5 + sqrt(((double)M)*((double)csize)/((double)N)));
     if (!m) m = 1;
     while (m > 0) {
       n = csize/m;
       if (m*n == csize) break;
       m--;
     }
-    if (M > N && m < n) {int _m = m; m = n; n = _m;}
+    if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
 
     x = M/m + ((M % m) > ((csize-1) % m));
     y = (N + (csize-1)/m)/n;
   } while ((x < 4 || y < 4) && csize > 1);
   if (size != csize) {
-    MPI_Group entire_group,sub_group;
-    int       i,*groupies;
+    MPI_Group    entire_group,sub_group;
+    PetscMPIInt  i,*groupies;
 
     ierr     = MPI_Comm_group(comm,&entire_group);CHKERRQ(ierr);
-    ierr = PetscMalloc(csize*sizeof(int),&groupies);CHKERRQ(ierr);
+    ierr = PetscMalloc(csize*sizeof(PetscInt),&groupies);CHKERRQ(ierr);
     for (i=0; i<csize; i++) {
       groupies[i] = (rank/csize)*csize + i;
     }
@@ -1041,7 +1133,7 @@ PetscErrorCode DASetLocalAdicFunction_Private(DA da,DALocalFunction1 ad_lf)
    Collective on DA
 
    Synopsis:
-   int int DASetLocalAdicFunctioni(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
+   PetscErrorCode DASetLocalAdicFunctioni(DA da,PetscInt (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
    Input Parameter:
 +  da - initial distributed array
@@ -1071,7 +1163,7 @@ PetscErrorCode DASetLocalAdicFunctioni_Private(DA da,PetscErrorCode (*ad_lfi)(DA
    Collective on DA
 
    Synopsis:
-   int int DASetLocalAdicFunctioni(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
+   PetscErrorCode  DASetLocalAdicFunctioni(DA da,int (ad_lf*)(DALocalInfo*,MatStencil*,void*,void*,void*)
    
    Input Parameter:
 +  da - initial distributed array
@@ -1101,7 +1193,7 @@ PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,PetscErrorCode (*admf_lfi
    Collective on DA
 
    Synopsis:
-   int int DASetLocalAdicMFFunction(DA da,DALocalFunction1 ad_lf)
+   PetscErrorCode DASetLocalAdicMFFunction(DA da,DALocalFunction1 ad_lf)
    
    Input Parameter:
 +  da - initial distributed array
@@ -1202,8 +1294,8 @@ PetscErrorCode DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 PetscErrorCode DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
 {
   PetscErrorCode ierr;
-  void        *u,*fu;
-  DALocalInfo info;
+  void           *u,*fu;
+  DALocalInfo    info;
   
   PetscFunctionBegin;
 
@@ -1222,12 +1314,12 @@ PetscErrorCode DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
 #define __FUNCT__ "DAFormFunctioniTest1"
 PetscErrorCode DAFormFunctioniTest1(DA da,void *w)
 {
-  Vec         vu,fu,fui;
+  Vec            vu,fu,fui;
   PetscErrorCode ierr;
-  int i,n;
-  PetscScalar *ui,mone = -1.0;
-  PetscRandom rnd;
-  PetscReal   norm;
+  PetscInt       i,n;
+  PetscScalar    *ui,mone = -1.0;
+  PetscRandom    rnd;
+  PetscReal      norm;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(da,&vu);CHKERRQ(ierr);
@@ -1278,12 +1370,12 @@ PetscErrorCode DAFormFunctioniTest1(DA da,void *w)
 .seealso: DAComputeJacobian1WithAdic()
 
 @*/
-PetscErrorCode DAFormFunctioni1(DA da,int i,Vec vu,PetscScalar *vfu,void *w)
+PetscErrorCode DAFormFunctioni1(DA da,PetscInt i,Vec vu,PetscScalar *vfu,void *w)
 {
   PetscErrorCode ierr;
-  void        *u;
-  DALocalInfo info;
-  MatStencil  stencil;
+  void           *u;
+  DALocalInfo    info;
+  MatStencil     stencil;
   
   PetscFunctionBegin;
 
@@ -1316,12 +1408,12 @@ PetscErrorCode DAFormFunctioni1(DA da,int i,Vec vu,PetscScalar *vfu,void *w)
 */
 PetscErrorCode DAGetDiagonal_MFFD(DA da,Vec U,Vec a)
 {
-  PetscScalar  h,*aa,*ww,v;
-  PetscReal    epsilon = PETSC_SQRT_MACHINE_EPSILON,umin = 100.0*PETSC_SQRT_MACHINE_EPSILON;
+  PetscScalar    h,*aa,*ww,v;
+  PetscReal      epsilon = PETSC_SQRT_MACHINE_EPSILON,umin = 100.0*PETSC_SQRT_MACHINE_EPSILON;
   PetscErrorCode ierr;
-  int gI,nI;
-  MatStencil   stencil;
-  DALocalInfo  info;
+  PetscInt       gI,nI;
+  MatStencil     stencil;
+  DALocalInfo    info;
  
   PetscFunctionBegin;
   ierr = (*ctx->func)(0,U,a,ctx->funcctx);CHKERRQ(ierr);
@@ -1381,11 +1473,11 @@ EXTERN_C_END
 PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 {
   PetscErrorCode ierr;
-  int gtdof,tdof;
-  PetscScalar *ustart;
-  DALocalInfo info;
-  void        *ad_u,*ad_f,*ad_ustart,*ad_fstart;
-  ISColoring  iscoloring;
+  PetscInt       gtdof,tdof;
+  PetscScalar    *ustart;
+  DALocalInfo    info;
+  void           *ad_u,*ad_f,*ad_ustart,*ad_fstart;
+  ISColoring     iscoloring;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -1442,10 +1534,10 @@ PetscErrorCode DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 {
   PetscErrorCode ierr;
-  int i,gtdof,tdof;
-  PetscScalar *avu,*av,*af,*ad_vustart,*ad_fstart;
-  DALocalInfo info;
-  void        *ad_vu,*ad_f;
+  PetscInt       i,gtdof,tdof;
+  PetscScalar    *avu,*av,*af,*ad_vustart,*ad_fstart;
+  DALocalInfo    info;
+  void           *ad_vu,*ad_f;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -1526,8 +1618,8 @@ PetscErrorCode DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 PetscErrorCode DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
 {
   PetscErrorCode ierr;
-  void        *u;
-  DALocalInfo info;
+  void           *u;
+  DALocalInfo    info;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
@@ -1557,14 +1649,14 @@ PetscErrorCode DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
 */
 PetscErrorCode DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 {
-  PetscErrorCode ierr;
-  int             i,Nc,N;
+  PetscErrorCode  ierr;
+  PetscInt        i,Nc,N;
   ISColoringValue *color;
   DALocalInfo     info;
   PetscScalar     *u,*g_u,*g_f,*f,*p_u;
   ISColoring      iscoloring;
-  void            (*lf)(int*,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,PetscErrorCode*) = 
-                  (void (*)(int*,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,PetscErrorCode*))*da->adifor_lf;
+  void            (*lf)(PetscInt*,DALocalInfo*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,void*,PetscErrorCode*) = 
+                  (void (*)(PetscInt*,DALocalInfo*,PetscScalar*,PetscScalar*,PetscInt*,PetscScalar*,PetscScalar*,PetscInt*,void*,PetscErrorCode*))*da->adifor_lf;
 
   PetscFunctionBegin;
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
@@ -1669,11 +1761,11 @@ PetscErrorCode DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
 PetscErrorCode DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
 {
   PetscErrorCode ierr;
-  PetscScalar *au,*av,*af,*awork;
-  Vec         work;
-  DALocalInfo info;
-  void        (*lf)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*) = 
-              (void (*)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))*da->adiformf_lf;
+  PetscScalar    *au,*av,*af,*awork;
+  Vec            work;
+  DALocalInfo    info;
+  void           (*lf)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*) = 
+                 (void (*)(DALocalInfo*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))*da->adiformf_lf;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);

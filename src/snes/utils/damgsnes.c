@@ -721,44 +721,6 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMMGSetInitialGuess"
-/*@C
-    DMMGSetInitialGuess - Sets the function that computes an initial guess.
-
-    Collective on DMMG and SNES
-
-    Input Parameter:
-+   dmmg - the context
--   guess - the function
-
-    Notes: For nonlinear problems, if this is not set, then the current value in the 
-             solution vector (obtained with DMMGGetX()) is used. Thus is if you doing 'time
-             stepping' it will use your current solution as the guess for the next timestep.
-           If grid sequencing is used (via -dmmg_grid_sequence) then the "guess" function
-             is used only on the coarsest grid.
-           For linear problems, if this is not set, then 0 is used as an initial guess.
-             If you would like the linear solver to also (like the nonlinear solver) use
-             the current solution vector as the initial guess then provide a dummy guess
-             function that does nothing.
-
-    Level: intermediate
-
-
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP()
-
-@*/
-PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(SNES,Vec,void*))
-{
-  PetscInt i,nlevels = dmmg[0]->nlevels;
-
-  PetscFunctionBegin;
-  for (i=0; i<nlevels; i++) {
-    dmmg[i]->initialguess = guess;
-  }
-  PetscFunctionReturn(0);
-}
-
 /*M
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
     that will use the grid hierarchy and (optionally) its derivative.
@@ -766,7 +728,7 @@ PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(SNES,Vec,v
     Collective on DMMG
 
    Synopsis:
-   int DMMGSetSNESLocal(DMMG *dmmg,DALocalFunction1 function, DALocalFunction1 jacobian,
+   PetscErrorCode DMMGSetSNESLocal(DMMG *dmmg,DALocalFunction1 function, DALocalFunction1 jacobian,
                         DALocalFunction1 ad_function, DALocalFunction1 admf_function);
 
     Input Parameter:

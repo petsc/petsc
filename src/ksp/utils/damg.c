@@ -242,7 +242,7 @@ PetscErrorCode DMMGSolve(DMMG *dmmg)
   if (gridseq) {
     if (dmmg[0]->initialguess) {
       ierr = (*dmmg[0]->initialguess)(dmmg[0]->snes,dmmg[0]->x,dmmg[0]);CHKERRQ(ierr);
-      if (dmmg[0]->ksp) {
+      if (dmmg[0]->ksp && !dmmg[0]->snes) {
         ierr = KSPSetInitialGuessNonzero(dmmg[0]->ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
@@ -252,7 +252,7 @@ PetscErrorCode DMMGSolve(DMMG *dmmg)
         ierr = VecView(dmmg[i]->x,PETSC_VIEWER_DRAW_(dmmg[i]->comm));CHKERRQ(ierr);
       }
       ierr = MatInterpolate(dmmg[i+1]->R,dmmg[i]->x,dmmg[i+1]->x);CHKERRQ(ierr);
-      if (dmmg[i+1]->ksp) {
+      if (dmmg[i+1]->ksp && !dmmg[i+1]->ksp) {
         ierr = KSPSetInitialGuessNonzero(dmmg[i+1]->ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
@@ -582,6 +582,44 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
 }
 
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetInitialGuess"
+/*@C
+    DMMGSetInitialGuess - Sets the function that computes an initial guess.
+
+    Collective on DMMG and SNES
+
+    Input Parameter:
++   dmmg - the context
+-   guess - the function
+
+    Notes: For nonlinear problems, if this is not set, then the current value in the 
+             solution vector (obtained with DMMGGetX()) is used. Thus is if you doing 'time
+             stepping' it will use your current solution as the guess for the next timestep.
+           If grid sequencing is used (via -dmmg_grid_sequence) then the "guess" function
+             is used only on the coarsest grid.
+           For linear problems, if this is not set, then 0 is used as an initial guess.
+             If you would like the linear solver to also (like the nonlinear solver) use
+             the current solution vector as the initial guess then provide a dummy guess
+             function that does nothing.
+
+    Level: intermediate
+
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP()
+
+@*/
+PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(SNES,Vec,void*))
+{
+  PetscInt i,nlevels = dmmg[0]->nlevels;
+
+  PetscFunctionBegin;
+  for (i=0; i<nlevels; i++) {
+    dmmg[i]->initialguess = guess;
+  }
+  PetscFunctionReturn(0);
+}
 
 
 

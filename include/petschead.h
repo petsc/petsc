@@ -286,7 +286,7 @@ EXTERN PetscInt globalcurrentstate,globalmaxstate;
    PetscObjectSetIntComposedData - attach integer data to a PetscObject
 
    Synopsis:
-   PetscObjectSetIntComposedData(PetscObject obj,int id,int data)
+   PetscErrorCode PetscObjectSetIntComposedData(PetscObject obj,int id,int data)
 
    Not collective
 
@@ -314,7 +314,7 @@ M*/
    PetscObjectGetIntComposedData - retrieve integer data attached to an object
 
    Synopsis:
-   PetscObjectGetIntComposedData(PetscObject obj,int id,int *data,PetscTruth *flag)
+   PetscErrorCode PetscObjectGetIntComposedData(PetscObject obj,int id,int *data,PetscTruth *flag)
 
    Not collective
 
@@ -351,7 +351,7 @@ M*/
    PetscObjectSetIntstarComposedData - attach integer array data to a PetscObject
 
    Synopsis:
-   PetscObjectSetIntstarComposedData(PetscObject obj,int id,int *data)
+   PetscErrorCode PetscObjectSetIntstarComposedData(PetscObject obj,int id,int *data)
 
    Not collective
 
@@ -380,7 +380,7 @@ M*/
    attached to an object
 
    Synopsis:
-   PetscObjectGetIntstarComposedData(PetscObject obj,int id,int **data,PetscTruth *flag)
+   PetscErrorCode PetscObjectGetIntstarComposedData(PetscObject obj,int id,int **data,PetscTruth *flag)
 
    Not collective
 
@@ -417,7 +417,7 @@ M*/
    PetscObjectSetRealComposedData - attach real data to a PetscObject
 
    Synopsis:
-   PetscObjectSetRealComposedData(PetscObject obj,int id,PetscReal data)
+   PetscErrorCode PetscObjectSetRealComposedData(PetscObject obj,int id,PetscReal data)
 
    Not collective
 
@@ -445,7 +445,7 @@ M*/
    PetscObjectGetRealComposedData - retrieve real data attached to an object
 
    Synopsis:
-   PetscObjectGetRealComposedData(PetscObject obj,int id,PetscReal *data,PetscTruth *flag)
+   PetscErrorCode PetscObjectGetRealComposedData(PetscObject obj,int id,PetscReal *data,PetscTruth *flag)
 
    Not collective
 
@@ -484,7 +484,7 @@ M*/
    PetscObjectSetRealstarComposedData - attach real array data to a PetscObject
 
    Synopsis:
-   PetscObjectSetRealstarComposedData(PetscObject obj,int id,PetscReal *data)
+   PetscErrorCode PetscObjectSetRealstarComposedData(PetscObject obj,int id,PetscReal *data)
 
    Not collective
 
@@ -513,7 +513,7 @@ M*/
    attached to an object
 
    Synopsis:
-   PetscObjectGetRealstarComposedData(PetscObject obj,int id,PetscReal **data,PetscTruth *flag)
+   PetscErrorCode PetscObjectGetRealstarComposedData(PetscObject obj,int id,PetscReal **data,PetscTruth *flag)
 
    Not collective
 
@@ -552,7 +552,7 @@ M*/
    PetscObjectSetScalarComposedData - attach scalar data to a PetscObject 
 
    Synopsis:
-   PetscObjectSetScalarComposedData(PetscObject obj,int id,PetscScalar data)
+   PetscErrorCode PetscObjectSetScalarComposedData(PetscObject obj,int id,PetscScalar data)
 
    Not collective
 
@@ -585,7 +585,7 @@ M*/
    PetscObjectGetScalarComposedData - retrieve scalar data attached to an object
 
    Synopsis:
-   PetscObjectGetScalarComposedData(PetscObject obj,int id,PetscScalar *data,PetscTruth *flag)
+   PetscErrorCode PetscObjectGetScalarComposedData(PetscObject obj,int id,PetscScalar *data,PetscTruth *flag)
 
    Not collective
 
@@ -627,7 +627,7 @@ M*/
    PetscObjectSetScalarstarComposedData - attach scalar array data to a PetscObject 
 
    Synopsis:
-   PetscObjectSetScalarstarComposedData(PetscObject obj,int id,PetscScalar *data)
+   PetscErrorCode PetscObjectSetScalarstarComposedData(PetscObject obj,int id,PetscScalar *data)
 
    Not collective
 
@@ -661,7 +661,7 @@ M*/
    attached to an object
 
    Synopsis:
-   PetscObjectGetScalarstarComposedData(PetscObject obj,int id,PetscScalar **data,PetscTruth *flag)
+   PetscErrorCode PetscObjectGetScalarstarComposedData(PetscObject obj,int id,PetscScalar **data,PetscTruth *flag)
 
    Not collective
 

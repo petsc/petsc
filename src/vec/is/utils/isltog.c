@@ -347,7 +347,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS i
 .  out - indices in global numbering
 
    Synopsis:
-   int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
+   PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
 
    Notes: 
    The in and out array parameters may be identical.
