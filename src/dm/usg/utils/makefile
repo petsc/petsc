@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 2000/01/27 16:35:23 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.8 2000/08/17 04:53:25 bsmith Exp bsmith $ 
 
 ALL: lib
 
@@ -26,7 +26,6 @@ SOURCEC        = inpututils.c
 SOURCEF        =
 SOURCEH        = 
 OBJSC          = inpututils.o
-DOCS           = readme
 EXAMPLESC      = input.c triconvert.c
 
 input: chkopts input.o

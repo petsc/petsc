@@ -1,6 +1,14 @@
-# $Id: makefile,v 1.14 1999/03/01 04:59:16 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.15 2000/08/17 04:53:45 bsmith Exp bsmith $ 
+
+# This directory contains some computational kernels written in
+# Fortran77.  These are mainly intended to provide high performance for
+# COMPLEX arithmetic (since most C++ compilers do not do a good job
+# optimizing complex number calculations), but can also be used to
+# compare against C versions of the same kernels.
 
 ALL: lib
+SPECIALFASTLIB = yes
+specialfastlib: lib
 
 CFLAGS   =
 FFLAGS   =
@@ -11,7 +19,6 @@ SOURCEH  =
 OBJSC    = 
 OBJSF    = fmaxpy.o fmdot.o fnorm.o fmult.o fmultadd.o fsolve.o fsolvebaij.o \
            sgemv.o
-DOCS     = readme
 LIBBASE  = libpetsc
 MANSEC   = Sys
 LOCDIR   = src/fortran/kernels/

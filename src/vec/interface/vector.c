@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.224 2001/02/15 23:02:38 balay Exp balay $*/
+/*$Id: vector.c,v 1.225 2001/03/09 18:55:27 balay Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1819,12 +1819,8 @@ int VecRestoreArray(Vec x,Scalar *a[])
 +    PETSC_VIEWER_ASCII_DEFAULT - default, prints vector contents
 .    PETSC_VIEWER_ASCII_MATLAB - prints vector contents in Matlab format
 .    PETSC_VIEWER_ASCII_INDEX - prints vector contents, including indices of vector elements
-.    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a 
+-    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a 
          format common among all vector types
-.    PETSC_VIEWER_ASCII_INFO - prints basic information about the matrix
-         size and structure (not the matrix entries)
--    PETSC_VIEWER_ASCII_INFO_LONG - prints more detailed information about
-         the matrix structure
 
    Level: beginner
 
@@ -2572,7 +2568,7 @@ int VecGetArray2d(Vec x,int m,int n,int mstart,int nstart,Scalar **a[])
   ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
 
   ierr = PetscMalloc(m*sizeof(Scalar*),a);CHKERRQ(ierr);
-  for (i=0; i<m; i++) (*a)[i] = aa + i*n -nstart;
+  for (i=0; i<m; i++) (*a)[i] = aa + i*n - nstart;
   *a -= mstart;
   PetscFunctionReturn(0);
 }

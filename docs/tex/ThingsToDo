@@ -14,7 +14,7 @@ Meta priorities:
 
   Remove references to  -mat_order and -mat_ordering_type from manual
 
-  Remove reference to PETSC_VIEWER_ASCII_INFO_LONG, PETSC_VIEWER_ASCII_INFO from VecView?
+X  Remove reference to PETSC_VIEWER_ASCII_INFO_LONG, PETSC_VIEWER_ASCII_INFO from VecView?
 
   Reorganize blaslapack.h to support the following (win32):
   -  When using intel-MKL or Atlas to support blas/lapack, also be
@@ -49,8 +49,6 @@ Meta priorities:
 
   add a "element overlap" AS preconditioner to complement our "node overlap" ASP
 
-  improve snes/examples/tutorials/ex8.c to use macros U(i,j) instead of U(row) etc
-
   add MatPermute_MPIAIJ() and use it to have DAGetColoring() overload the 
   MatView() to view it in its sequential ordering much like the VecView_MPI_DA
   does vectors.
@@ -60,9 +58,6 @@ Meta priorities:
   Add new MatSetValuesBlocked for BAIJ matrices for repeated same assembly.
   Keep addresses from each call to MatSetValues()
 
-  VecGetArray3d(), 4d(), DAVecGet/RestoreArray() for 3d and 4d
-
-  Change SETERRQ() to SETERR0() and SETERRQn() to SETERRn()
 Lois,
 
    The other day you asked me what functionality I would

@@ -6,7 +6,7 @@
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see $(PETSC_DIR)/readme.html for information on retrieving a subset.
 #
 # If your machine has the file /usr/lang/SC3.0.1/lib/libsunperf.a then
 # you can use -lsunperf or /usr/lang/SC3.0.1/lib/libsunperf.a below as the 
