@@ -50,12 +50,12 @@
 #define PETSC_HAVE__SLEEP
 #define PETSC_HAVE__SLEEP_MILISEC
 
-#define PETSC_HAVE_IARG_COUNT_PROGNAME
-
 #ifdef PETSC_USE_MAT_SINGLE
 #  define PETSC_MEMALIGN 16
 #  define PETSC_HAVE_SSE "iclsse.h"
 #endif
+
 #define PETSC_HAVE_CXX_NAMESPACE
+#define MPIUNI_INTPTR __int64
 
 #endif
