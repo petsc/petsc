@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.44 1995/07/21 23:39:45 curfman Exp curfman $ */
+/* $Id: petsc.h,v 1.45 1995/07/25 02:44:01 curfman Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -45,6 +45,9 @@ extern int  TrGetMaximumAllocated(double*);
 #define PETSCMEMSET(a,b,n)   memset((char*)(a),(int)(b),n)
 #include <memory.h>
 
+#define PETSCMIN(a,b)      ( ((a)<(b)) ? (a) : (b) )
+#define PETSCMAX(a,b)      ( ((a)<(b)) ? (b) : (a) )
+
 /*  Macros for error checking */
 #if !defined(__DIR__)
 #define __DIR__ 0
@@ -56,8 +59,8 @@ extern int  TrGetMaximumAllocated(double*);
                  MPI_Abort(MPI_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
-#define CHKPTRQ(p)       if (!p) SETERRQ(1,"No memory");
-#define CHKPTRA(p)      if (!p) SETERRA(1,"No memory");
+#define CHKPTRQ(p)       if (!p) SETERRQ(1,"PETSC ERROR: No memory");
+#define CHKPTRA(p)      if (!p) SETERRA(1,"PETSC ERROR: No memory");
 #else
 #define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,s,n);}
 #define SETERRA(n,s)    \
@@ -65,8 +68,8 @@ extern int  TrGetMaximumAllocated(double*);
                  MPI_Abort(MPI_COMM_WORLD,_ierr);}
 #define CHKERRQ(n)       {if (n) SETERRQ(n,(char *)0);}
 #define CHKERRA(n)      {if (n) SETERRA(n,(char *)0);}
-#define CHKPTRQ(p)       if (!p) SETERRQ(1,"No memory");
-#define CHKPTRA(p)      if (!p) SETERRA(1,"No memory");
+#define CHKPTRQ(p)       if (!p) SETERRQ(1,"PETSC ERROR: No memory");
+#define CHKPTRA(p)      if (!p) SETERRA(1,"PETSC ERROR: No memory");
 #endif
 
 typedef struct _PetscObject* PetscObject;
