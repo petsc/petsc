@@ -577,14 +577,14 @@ runex41:
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
 	   ${RM} -f ex41_1.tmp ex41_12.tmp
 runex42:
-	-@${MPIRUN} -np 3 ex42 -f ${DATAFILESPATH}/matrices/arco1 -mat_aij_oneindex -options_left no \
+	-@${MPIRUN} -np 3 ex42 -f ${DATAFILESPATH}/matrices/arco1 -options_left no \
 	   -nd 5 -ov 2  > ex42_1.tmp 2>&1; \
 	   grep -v "flg =1" ex42_1.tmp > ex42_12.tmp; \
 	   if (${DIFF} output/ex42_1.out ex42_12.tmp) then true; \
 	   else echo "Possible problem with ex42_1, diffs above"; fi; \
 	   ${RM} -f ex42_1.tmp ex42_12.tmp
 runex42_2:
-	-@${MPIRUN} -np 1  ex42 -f ${DATAFILESPATH}/matrices/arco1 -mat_aij_oneindex  \
+	-@${MPIRUN} -np 1  ex42 -f ${DATAFILESPATH}/matrices/arco1 \
 	   -nd 5 -ov 2  -n > ex42_2.tmp 2>&1; \
 	   if (${DIFF} output/ex42_2.out ex42_2.tmp) then true; \
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \

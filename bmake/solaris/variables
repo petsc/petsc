@@ -27,8 +27,8 @@ C_SYS_LIB	   = -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl  -lm
 G_COPTFLAGS	   = -g -xs
 G_FOPTFLAGS	   = -g -xs
 # ----------------------------- BOPT - O options -----------------------------
-O_COPTFLAGS	   = -fast -xO4  -fsimple=2 -xtarget=native
-O_FOPTFLAGS	   = -fast
+O_COPTFLAGS	   = -O3  -fsimple=2 -xtarget=native
+O_FOPTFLAGS	   = -O3
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = CC -w -features=anachronisms -instances=static -KPIC
@@ -44,14 +44,14 @@ CXX_SYS_LIB	   = -lF77 -lM77 -lfsu -lsunmath -lnsl -lsocket -lgen -ldl -lm
 GCXX_COPTFLAGS	   = -g  -xs
 GCXX_FOPTFLAGS	   = -g  -xs
 # ------------------------- BOPT - O_c++ options ------------------------------
-OCXX_COPTFLAGS	   = -O4  -fast -fsimple=2
-OCXX_FOPTFLAGS	   = -fast
+OCXX_COPTFLAGS	   = -O3 -fsimple=2
+OCXX_FOPTFLAGS	   = -O3
 # -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS	   = -g -xs
 GCOMP_FOPTFLAGS	   = -g -xs
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -fast -O2 -fsimple=2
-OCOMP_FOPTFLAGS	   = -fast
+OCOMP_COPTFLAGS	   = -O3 -fsimple=2
+OCOMP_FOPTFLAGS	   = -O3
 # ########################### PETSc install options ###########################
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
                      -DPETSC_USE_STACK 

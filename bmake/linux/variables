@@ -23,9 +23,8 @@ C_CLINKER	   = gcc
 C_FLINKER	   = g77
 C_CCV		   = ${C_CC} --version
 C_FCV              = g77 --version | head -1
-C_SYS_LIB	   = -ldl -lg2c -lc -lm
+C_SYS_LIB	   = -ldl -lfrtbegin -lg2c -lc -lm
 #C_SYS_LIB	   = -ldl -lc -lf2c -lm
-#C_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm  #Use /usr/lib/libf2c.a if that's what your f77 uses.
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
@@ -41,9 +40,7 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = g++
 CXX_CCV		   = ${CXX_CC} --version
-#CXX_SYS_LIB	   = -ldl -lc -lf2c -lm
-CXX_SYS_LIB	   = -ldl -lstdc++  -lg2c -lc  -lm
-#CXX_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm
+CXX_SYS_LIB	   = -ldl -lstdc++ -lfrtbegin -lg2c -lc  -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g

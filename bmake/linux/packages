@@ -20,7 +20,8 @@ BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/soft/linux-rh73/mkl-52/lib/32 -L/h
 # Location of MPI (Message Passing Interface) software
 #
 MPI_HOME       = /home/petsc/soft/linux-rh73/mpich-1.2.4
-MPI_LIB        = ${CLINKER_SLFLAG}${MPI_HOME}/lib/shared -L${MPI_HOME}/lib/shared -lmpich -lpmpich
+MPI_LIB        = ${CLINKER_SLFLAG}${MPI_HOME}/lib/shared -L${MPI_HOME}/lib/shared -lmpich -lpmpich  ${MPI_HOME}/lib/libfmpich.a
+
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun
 #
