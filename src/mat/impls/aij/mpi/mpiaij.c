@@ -2191,7 +2191,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   for (i=0; i<m; i++) {
     ii   = i + rstart;
     nnz  = I[i+1]- I[i];
-    ierr = MatSetValues_MPIAIJ(B,1,&ii,nnz,J+I[i],values+I[i],INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues_MPIAIJ(B,1,&ii,nnz,J+I[i],values+(v ? I[i] : 0),INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
