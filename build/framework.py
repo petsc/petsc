@@ -393,7 +393,10 @@ class Framework(base.Base):
     '''Run bk push on all the projects'''
     for p in self.argDB['installedprojects']:
       print 'Running bk push on '+p.getRoot()
-      self.executeShellCommand('cd '+p.getRoot()+'; bk push')
+      try:
+        self.executeShellCommand('cd '+p.getRoot()+'; bk push')
+      except:
+        pass
 
   def t_pull(self):
     '''Run bk pull on all the projects'''
