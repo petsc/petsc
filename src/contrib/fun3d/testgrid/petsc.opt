@@ -1,0 +1,20 @@
+-cfl_ini 150.0
+-cfl_max 1.0e+10
+-ksp_rtol 1.0e-08
+-ksp_max_it 10
+-ksp_gmres_unmodifiedgramschmidt
+-snes_max_it 1
+-snes_no_convergence_test 
+-max_st 5 
+-matrix_free 
+-pc_type bjacobi
+-sub_pc_type ilu 
+-sub_pc_ilu_levels 0 
+-sub_pc_ilu_in_place
+-log_summary
+-get_resident_set_size
+-optionsleft
+-print
+-snes_monitor
+-ksp_monitor
+
