@@ -3,7 +3,7 @@
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
-set TMP=/sandbox/balay/petsc
+set TMP=/sandbox/petsc/petsc-test
 set MACH=fire
 set ARCH=solaris
 set TEST=testexamples_

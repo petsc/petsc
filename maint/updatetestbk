@@ -1,0 +1,18 @@
+#!/bin/sh
+
+#
+# This script updates the petsc-bk repository in terra:/sandbox/petsc/petsc-test
+# This repository is used for nightly builds using rsync command
+# rsync -C -r terra:/sandbox/petsc/petsc-test /sandbox/petsc
+#
+
+export PETSC_ARCH=linux
+export PETSC_DIR=/sandbox/petsc/petsc-test 
+cd /sandbox/petsc/petsc-test
+echo "*************************************************************************************"
+bk pull
+echo "*************************************************************************************"
+bk -r co -q
+echo "*************************************************************************************"
+make allfortranstubs
+echo "*************************************************************************************"
