@@ -2,12 +2,12 @@
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = -DF_NEEDS_UNDSC -DDBL_R_NUM
 FFLAGS   =
-SOURCEC	 = mpibaij.c mmbaij.c baijov.c
+SOURCEC	 = mpibaij.c mmbaij.c baijov.c dscpack.c
 SOURCEF	 =
 SOURCEH	 = mpibaij.h
-OBJSC	 = mpibaij.o mmbaij.o baijov.o
+OBJSC	 = mpibaij.o mmbaij.o baijov.o dscpack.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 = 
