@@ -101,7 +101,7 @@ class Configure(config.base.Configure):
         break
     for inclstr, incl in self.generateIncludeGuesses():
       if not isinstance(incl, list): incl = [incl]
-      selfPr.framework.log.write('Checking for headers '+inclstr+': '+str(incl)+'\n')
+      self.framework.log.write('Checking for headers '+inclstr+': '+str(incl)+'\n')
       foundHeader = self.executeTest(self.checkInclude, [incl, 'superlu_ddefs.h'])
       if foundHeader:
         self.include = incl
