@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.28 1999/05/12 03:27:21 bsmith Exp balay $";
+static char vcid[] = "$Id: str.c,v 1.29 1999/08/11 19:55:40 balay Exp balay $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -198,7 +198,7 @@ int PetscStrtok(const char a[],const char b[],char **result)
     } else {
       ptr = init;
     }
-    ierr = PetscStrncpy(ptr,a,1024);CHKERRQ(ierr);
+    ierr = PetscStrncpy(ptr,a,len);CHKERRQ(ierr);
   }
   *result = strtok(ptr,b);
   PetscFunctionReturn(0);
