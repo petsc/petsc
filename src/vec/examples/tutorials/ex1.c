@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.47 1998/04/16 02:51:06 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.48 1998/04/16 04:15:28 curfman Exp balay $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -92,9 +92,9 @@ int main(int argc,char **argv)
      (when using real numbers) it is undefined.
   */
 #if defined(USE_PETSC_COMPLEX)
-  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n", int (real(dot)));
-  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)real(dots[0]),
-                             (int)real(dots[1]),(int)real(dots[2]));
+  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n", int (PetscReal(dot)));
+  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)PetscReal(dots[0]),
+                             (int)PetscReal(dots[1]),(int)PetscReal(dots[2]));
 #else
   PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n",(int) dot);
   PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)dots[0],
