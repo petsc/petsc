@@ -13,6 +13,8 @@
 # 
 BLASLAPACK_LIB         = -lessl
 PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_ESSL_ONLY
+PETSC_HAVE_ESSL        = -DPETSC_HAVE_ESSL
+
 #
 # Location of MPI (Message Passing Interface) software
 #

@@ -31,42 +31,8 @@ X11_INCLUDE    =
 X11_LIB        = -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
-# ESSL: IBM math library - 
-# The library location should be given in BLASLAPACK_LIB above
+# mpe
 #
-#PETSC_HAVE_ESSL = -DPETSC_HAVE_ESSL
-#
-# Location of BlockSolve (MPI version), if you do not have
-# BlockSolve, then remove -DPETSC_HAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there.
-#
-#BLOCKSOLVE_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BLOCKSOLVE_LIB     = -L/home/petsc/BlockSolve95/lib/libO/rs6000_p4 -lBS95
-#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
-#
-# MPE Libraries
-# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
-#
-#MPE_INCLUDE  = -I/home/petsc/mpich-1.1.1/mpe
-#MPE_LIB      = -lmpe -lpmpich
 MPE_INCLUDE   = 
 MPE_LIB       =  -lmpe -lpmpich
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
-#
-# Matlab location, remove if not needed.
-#
-#MATLAB_MEX            = 
-#MATLAB_CC            = 
-#MATLAB_COMMAND  = matlab
-#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
-#
-# Location of the LUSOL sparse LU factorization code (part of MINOS)
-# developed by Michael Saunders, saunders@stanford.edu at the
-# Systems Optimization Laboratory, Stanford University.
-#  http://www.sbsi-sol-optimize.com/
-# Uses the two files mi25bfac.f and mi15blas.f (or LUSOL.f LUSOL_BLAS.f
-# depending on how they are named)
-#
-#PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
-#LUSOL_LIB = 
-
