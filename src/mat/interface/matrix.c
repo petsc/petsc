@@ -58,7 +58,7 @@ PetscScalar MatSetValue_Value = 0.0;
    must use MatSetValues().
 
    You can only have one call to MatGetRow() outstanding for a particular
-   matrix at a time, per processor. MatGetRow() can only obtained rows
+   matrix at a time, per processor. MatGetRow() can only obtain rows
    associated with the given processor, it cannot get rows from the 
    other processors; for that we suggest using MatGetSubMatrices(), then
    MatGetRow() on the submatrix. The row indix passed to MatGetRows() 
