@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.210 1999/03/19 13:56:03 curfman Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.211 1999/03/23 16:22:08 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "ts.h"      /* This include is to define all the PETSc cookies */
-#include "ec.h"
 #if defined(HAVE_MPE)
 #include "mpe.h"
 #endif
