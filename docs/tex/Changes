@@ -48,6 +48,9 @@ add to it).
     
     added an additional argument to KSPSetResidualHistory() see manual page. Suggested
     by PETSc user Maria Murillo.
+
+    Added -ksp_vecmonitor and KSPVecViewMonitor() to allow graphically monitoring the 
+    solution
     
   PC
 
@@ -138,6 +141,9 @@ to do what you need.
       option -snes_mf_ksp_monitr
     Added support for an alternative way to compute h using the Walker-Pernice
       strategy accessible via -snes_mf_type wp
+
+    Added -snes_vecmonitor and SNESVecViewMonitor() to allow graphically monitoring the 
+    solution
 
   DA
 
