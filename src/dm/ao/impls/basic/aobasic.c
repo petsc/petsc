@@ -55,8 +55,6 @@ int AODestroy_Basic(AO ao)
   PetscFunctionBegin;
   ierr = PetscFree(aodebug->app);CHKERRQ(ierr);
   PetscFree(ao->data); 
-  PetscLogObjectDestroy(ao);
-  PetscHeaderDestroy(ao);
   PetscFunctionReturn(0);
 }
 
