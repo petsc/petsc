@@ -1,4 +1,4 @@
-/*$Id: jacobi.c,v 1.69 2000/10/25 16:35:51 bsmith Exp bsmith $*/
+/*$Id: jacobi.c,v 1.70 2000/10/26 14:21:18 bsmith Exp bsmith $*/
 
 /*  -------------------------------------------------------------------- 
 
@@ -66,7 +66,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCJacobiSetUseRowMax_Jacobi"
-int PCJacobiSetRowMax_Jacobi(PC pc)
+int PCJacobiSetUseRowMax_Jacobi(PC pc)
 {
   PC_Jacobi *j;
 
