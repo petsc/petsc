@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.270 2000/04/27 04:17:52 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.271 2000/05/04 16:27:19 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -204,7 +204,7 @@ extern int PetscObjectComposeFunction(PetscObject,const char[],const char[],void
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,0)
 #else
-#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,d)
+#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(void*)d)
 #endif
 extern int PetscObjectQueryFunction(PetscObject,const char[],void **);
 extern int PetscObjectSetOptionsPrefix(PetscObject,const char[]);

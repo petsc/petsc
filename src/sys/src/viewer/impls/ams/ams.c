@@ -1,4 +1,4 @@
-/*$Id: ams.c,v 1.33 2000/04/12 04:20:55 bsmith Exp bsmith $*/
+/*$Id: ams.c,v 1.34 2000/05/04 16:24:25 bsmith Exp balay $*/
 
 #include "sys.h"
 #include "src/sys/src/viewer/viewerimpl.h"
@@ -263,10 +263,10 @@ int ViewerCreate_AMS(Viewer v)
   vams->ams_comm  = -1;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerAMSSetCommName_C",
                                     "ViewerAMSSetCommName_AMS",
-                                     (void*)ViewerAMSSetCommName_AMS);CHKERRQ(ierr);
+                                     ViewerAMSSetCommName_AMS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"ViewerAMSGetAMSComm_C",
                                     "ViewerAMSGetAMSComm_AMS",
-                                     (void*)ViewerAMSGetAMSComm_AMS);CHKERRQ(ierr);
+                                     ViewerAMSGetAMSComm_AMS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
