@@ -11,11 +11,6 @@ Meta priorities:
 
   - make DrawOpenPostscript()
 
-  - Remove unnneded MPI factorization stuff ofr AIJ and BAIJ matrices
-    oonce new SeqAIJ code for one processor has been tested.
-   Fix MPI factorization for one processor on aij and baij; currently they
-    return a seq factored matrix should return a mpi factored matrix.
-
   - add indenting to PLogInfo?
 
   - Make VecCreateMPIWithArray
@@ -873,3 +868,8 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
   X add documentation on -ksp_smonitor and -snes_smonitor
 
   X Make src/sys/src/cputime.c compile and run correctly on all machines.
+
+  X Remove unnneded MPI factorization stuff ofr AIJ and BAIJ matrices
+    oonce new SeqAIJ code for one processor has been tested.
+   Fix MPI factorization for one processor on aij and baij; currently they
+    return a seq factored matrix should return a mpi factored matrix.
