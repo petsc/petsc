@@ -1,4 +1,4 @@
-/* $Id: sseenabled.c,v 1.8 2001/06/21 18:29:04 curfman Exp buschelm $ */
+/* $Id: sseenabled.c,v 1.9 2001/07/10 22:51:42 buschelm Exp buschelm $ */
 #include "petsc.h"
 
 #ifdef PETSC_HAVE_SSE
@@ -9,15 +9,15 @@
 #include <string.h>
 int PetscSSEHardwareTest(PetscTruth *flag) {
   char *vendor="************";
-
+  char Gen[13]="GenuineIntel";
   *flag = PETSC_FALSE;
   CPUID_GET_VENDOR(vendor);
-  if (!strcmp(vendor,"GenuineIntel")) { 
+  if (!strcmp(vendor,Gen)) { 
     /* If Genuine Intel ... */
-    unsigned long eax,ebx,ecx,edx;
-    CPUID(CPUID_FEATURES,&eax,&ebx,&ecx,&edx);
+    unsigned long myeax,myebx,myecx,myedx;
+    CPUID(CPUID_FEATURES,&myeax,&myebx,&myecx,&myedx);
     /* SSE Feature is indicated by Bit 25 of the EDX register */
-    if (edx & SSE_FEATURE_FLAG) {
+    if (myedx & SSE_FEATURE_FLAG) {
       *flag = PETSC_TRUE;
     }
   }

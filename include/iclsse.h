@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id: iclsse.h,v 1.1 2001/06/20 20:42:11 buschelm Exp buschelm $ */
 
 #ifndef __ICL_SSE_H_
 #define __ICL_SSE_H_
@@ -202,12 +202,12 @@
   *_eax=_tmp_eax; *_ebx=_tmp_ebx; *_ecx=_tmp_ecx; *_edx=_tmp_edx; \
 }
 
-#define CPUID_GET_VENDOR(result) { char _gv_vendor[13]="************"; int _gv_i; \
+#define CPUID_GET_VENDOR(result) { char *_gv_vendor=result; int _gv_i; \
   unsigned long _gv_eax=0;unsigned long _gv_ebx=0;unsigned long _gv_ecx=0;unsigned long _gv_edx=0;\
   CPUID(CPUID_VENDOR,&_gv_eax,&_gv_ebx,&_gv_ecx,&_gv_edx); \
-  for (_gv_i=0;_gv_i<4;_gv_i++) vendor_string[_gv_i+0]=*(((char *)(&_gv_ebx))+_gv_i); \
-  for (_gv_i=0;_gv_i<4;_gv_i++) vendor_string[_gv_i+4]=*(((char *)(&_gv_edx))+_gv_i); \
-  for (_gv_i=0;_gv_i<4;_gv_i++) vendor_string[_gv_i+8]=*(((char *)(&_gv_ecx))+_gv_i); \
+  for (_gv_i=0;_gv_i<4;_gv_i++) _gv_vendor[_gv_i+0]=*(((char *)(&_gv_ebx))+_gv_i); \
+  for (_gv_i=0;_gv_i<4;_gv_i++) _gv_vendor[_gv_i+4]=*(((char *)(&_gv_edx))+_gv_i); \
+  for (_gv_i=0;_gv_i<4;_gv_i++) _gv_vendor[_gv_i+8]=*(((char *)(&_gv_ecx))+_gv_i); \
 }
 
 /* ================================================================================================ */
