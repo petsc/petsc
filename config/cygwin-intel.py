@@ -10,7 +10,7 @@ if __name__ == '__main__':
     '--with-mpi-dir=/software/MPI/mpich-nt.1.2.5/SDK',
     '--with-mpi-compilers=0',
     # Using Intel's MKL available from http://www.intel.com
-    '--with-blas-lapack=/software/BLAS/MKL/ia32/lib/mkl_c_dll.lib',
+    '--with-blas-lapack-dir=/software/BLAS/MKL',
     '--with-vendor-compilers=intel'
     ]
 
