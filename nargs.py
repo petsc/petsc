@@ -38,7 +38,11 @@ def parseArgument(arg, ignoreDouble = 0):
 
 def findArgument(arg, argList):
   if not isinstance(argList, list): return None
-  for a in argList:
+  # Reverse the list so that we preserve the semantics which state that the last
+  #   argument with a given key takes effect
+  l = argList[:]
+  l.reverse()
+  for a in l:
     (key, value) = parseArgument(a)
     if key == arg:
       return value
