@@ -566,6 +566,8 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   for (i=1; i<n; i++) {
     v   = aa + ai[i] + shift;
     vi  = aj + ai[i] + shift;
+    nz  = a->diag[i] - ai[i];
+    sum = b[*r++];
     SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
     tmp[i] = sum;
   }

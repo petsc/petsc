@@ -60,6 +60,7 @@ int PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FILE **fp)
       ierr = PetscFixFilename(tname,fname);CHKERRQ(ierr);
       PetscLogInfo(0,"Opening file %s\n",fname);
       fd   = fopen(fname,mode);
+      if (!fd) SETERRQ1(1,"Unable to open file %s\n",fname);
     }
   } else fd = 0;
   *fp = fd;

@@ -2815,6 +2815,9 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
   Mat          B;
   int          i,nz,ierr,fd,header[4],size,*rowlengths = 0,M,N,shift;
   MPI_Comm     comm;
+#if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLUDIST) || defined(PETSC_HAVE_UMFPACK) 
+  PetscTruth   flag;
+#endif
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -2860,6 +2863,22 @@ int MatLoad_SeqAIJ(PetscViewer viewer,MatType type,Mat *A)
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SPOOLES)
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSpooles_SeqAIJ(B);CHKERRQ(ierr); }
+#endif  
+#if defined(PETSC_HAVE_SUPERLU)
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_superlu",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSuperLU_SeqAIJ(B);CHKERRQ(ierr); }
+#endif 
+#if defined(PETSC_HAVE_SUPERLUDIST)
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(B);CHKERRQ(ierr); }
+#endif 
+#if defined(PETSC_HAVE_UMFPACK)
+  ierr = PetscOptionsHasName(B->prefix,"-mat_aij_umfpack",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseUMFPACK_SeqAIJ(B);CHKERRQ(ierr); }
+#endif 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

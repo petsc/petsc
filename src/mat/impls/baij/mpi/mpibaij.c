@@ -2410,6 +2410,9 @@ int MatLoad_MPIBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   int          tag = ((PetscObject)viewer)->tag,bs=1,Mbs,mbs,extra_rows;
   int          *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   int          dcount,kmax,k,nzcount,tmp;
+#if defined(PETSC_HAVE_DSCPACK)
+  PetscTruth   flag;
+#endif
  
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -2621,6 +2624,10 @@ int MatLoad_MPIBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   ierr = PetscFree(mask);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_DSCPACK)
+  ierr = PetscOptionsHasName(A->prefix,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(A);CHKERRQ(ierr); }
+#endif
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
