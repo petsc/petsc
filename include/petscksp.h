@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.83 1999/11/10 03:22:47 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.84 1999/11/24 21:55:57 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -136,6 +136,16 @@ extern int KSPAppendOptionsPrefix(KSP,char*);
 extern int KSPGetOptionsPrefix(KSP,char**);
 
 extern int KSPView(KSP,Viewer);
+
+typedef enum {/* converged */
+              KSP_CONVERGED_RTOL         =  2,
+              KSP_CONVERGED_ATOL         =  3, 
+              /* diverged */
+              KSP_DIVERGED_ITS           = -3,
+              KSP_DIVERGED_DTOL          = -4,
+              KSP_DIVERGED_BREAKDOWN     = -5,
+ 
+              KSP_CONVERGED_ITERATING    =  0} KSPConvergedReason;
 
 extern int KSPComputeExplicitOperator(KSP,Mat *);
 
