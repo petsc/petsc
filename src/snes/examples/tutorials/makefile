@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.86 2000/09/22 20:46:14 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.87 2000/10/24 20:27:14 bsmith Exp bsmith $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -13,7 +13,7 @@ EXAMPLESCH	 = ex8and9.h
 EXAMPLESFH       = ex5f.h
 DOCS		 = readme ex5m.m
 DIRS		 = ex10d
-TUTORIALS        = ex5.c ex5f.F ex5f90.F ex18.c ex19.c
+TUTORIALS        = ex5.c ex5f.F ex5f90.F ex12.c ex18.c ex19.c
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
