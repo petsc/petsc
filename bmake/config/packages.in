@@ -5,13 +5,6 @@
 #     XXX_LIB - location of library XXX
 #     XXX_INCLUDE - directory for include files needed for library XXX
 #
-# FCLIB contains the libraries for a CLINKER to use for code containing
-# FORTRAN code (such as I/O or special Fortran runtimes).  
-# The extra -lm is needed to force the C version of libm.a to 
-# be searched before the Fortran 77 version.
-#
-FC_LIB         = @FC_LIB@
-#
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 #
