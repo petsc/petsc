@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.6 2000/09/22 20:46:14 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.7 2000/09/28 14:41:23 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -64,13 +64,11 @@ extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  DAMG          *damg;
+  DMMG          *dmmg;
   SNES          snes;                      
   AppCtx        user;
   int           nlevels,ierr,its,lits,mx,my,ratio;
-  PetscTruth    flag;
   double	litspit;
-  DA            cda;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -97,17 +95,17 @@ int main(int argc,char **argv)
   /*
       Create the multilevel DA data structure 
   */
-  ierr = DAMGCreate(PETSC_COMM_WORLD,nlevels,&user,&damg);CHKERRQ(ierr);
+  ierr = DMMGCreate(PETSC_COMM_WORLD,nlevels,&user,&dmmg);CHKERRQ(ierr);
 
   /*
       Set the DA (grid structure) for the grids.
   */
-  ierr = DAMGSetGrid(damg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,1,1);CHKERRQ(ierr);
+  ierr = DMMGSetGrid(dmmg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,1,1);CHKERRQ(ierr);
 
   /*
-     Create the nonlinear solver, and tell the DAMG structure to use it
+     Create the nonlinear solver, and tell the DMMG structure to use it
   */
-  ierr = DAMGSetSNES(damg,FormFunction,FormJacobian);CHKERRQ(ierr);
+  ierr = DMMGSetSNES(dmmg,FormFunction,FormJacobian);CHKERRQ(ierr);
 
 
   /*
@@ -118,10 +116,10 @@ int main(int argc,char **argv)
      executable into memory from disk (paging in).
   */
   PreLoadBegin(PETSC_TRUE,"Solve");
-    ierr = DAMGSetInitialGuess(damg,FormInitialGuess);CHKERRQ(ierr);
-    ierr = DAMGSolve(damg);CHKERRQ(ierr);
+    ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
+    ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
-  snes = DAMGGetSNES(damg);
+  snes = DMMGGetSNES(dmmg);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRA(ierr);
   ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRA(ierr);
   litspit = ((double)lits)/((double)its);
@@ -129,7 +127,7 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %d\n",lits);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRA(ierr);
 
-  ierr = DAMGDestroy(damg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PetscFinalize();
 
 
@@ -140,18 +138,19 @@ int main(int argc,char **argv)
 #define __FUNC__ "FormInitialGuess"
 int FormInitialGuess(SNES snes,Vec X,void *ptr)
 {
-  DAMG    damg = (DAMG)ptr;
-  AppCtx  *user = (AppCtx*)damg->user;
+  DMMG    dmmg = (DMMG)ptr;
+  AppCtx  *user = (AppCtx*)dmmg->user;
   int     i,j,row,ierr,xs,ys,xm,ym,Xm,Ym,Xs,Ys;
   double  tleft = user->tleft;
   Scalar  *x;
-  Vec     localX = damg->localX;
+  Vec     localX;
 
   PetscFunctionBegin;
+  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
 
   /* Get ghost points */
-  ierr = DAGetCorners(damg->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(damg->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners((DA)dmmg->dm,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /* Compute initial guess */
@@ -164,7 +163,8 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(damg->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DALocalToGlobal((DA)dmmg->dm,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -172,28 +172,30 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
 #define __FUNC__ "FormFunction"
 int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 {
-  DAMG    damg = (DAMG)ptr;
-  AppCtx  *user = (AppCtx*)damg->user;
+  DMMG    dmmg = (DMMG)ptr;
+  AppCtx  *user = (AppCtx*)dmmg->user;
   int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
   double  zero = 0.0,one = 1.0;
   double  hx,hy,hxdhy,hydhx;
   double  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
   double  tleft,tright,beta;
   Scalar  *x,*f;
-  Vec     localX = damg->localX,localF = damg->localF; 
+  Vec     localX,localF;
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(damg->da,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DAGetLocalVector((DA)dmmg->dm,&localF);CHKERRQ(ierr);
+  ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
   tleft = user->tleft;      tright = user->tright;
   beta = user->beta;
  
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(damg->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(damg->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGetCorners(damg->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(damg->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners((DA)dmmg->dm,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
   ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
 
@@ -340,7 +342,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
   ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(damg->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DALocalToGlobal((DA)dmmg->dm,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector((DA)dmmg->dm,&localF);CHKERRQ(ierr);
   ierr = PLogFlops((22 + 4*POWFLOP)*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
@@ -349,30 +353,31 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 #define __FUNC__ "FormJacobian"
 int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 {
-  DAMG    damg = (DAMG)ptr;
-  AppCtx  *user = (AppCtx*)damg->user;
+  DMMG    dmmg = (DMMG)ptr;
+  AppCtx  *user = (AppCtx*)dmmg->user;
   Mat     jac = *J;
   int     ierr,i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5],nloc,*ltog,grow;
   double  one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw; 
   double  dn,ds,de,dw,an,as,ae,aw,bn,bs,be,bw,gn,gs,ge,gw;
   double  tleft,tright,beta,bm1,coef;
   Scalar  v[5],*x;
-  Vec     localX = damg->localX;
+  Vec     localX;
 
   PetscFunctionBegin;
+  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
   *flg = SAME_NONZERO_PATTERN;
-  ierr = DAGetInfo(damg->da,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
   hxdhy = hx/hy;            hydhx = hy/hx;
   tleft = user->tleft;      tright = user->tright;
   beta = user->beta;	    bm1 = user->bm1;		coef = user->coef;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(damg->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(damg->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGetCorners(damg->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(damg->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(damg->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd((DA)dmmg->dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGetCorners((DA)dmmg->dm,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners((DA)dmmg->dm,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices((DA)dmmg->dm,&nloc,&ltog);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
@@ -661,6 +666,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
 
   ierr = PLogFlops((41 + 8*POWFLOP)*xm*ym);CHKERRQ(ierr);
   PetscFunctionReturn(0);
