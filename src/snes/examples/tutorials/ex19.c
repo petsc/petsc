@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.9 2001/01/17 22:26:26 bsmith Exp balay $*/
+/*$Id: ex19.c,v 1.10 2001/01/23 20:57:12 balay Exp bsmith $*/
 
 static char help[] = "Solves nonlinear driven cavity with multigrid.\n\
   \n\
@@ -93,6 +93,7 @@ int main(int argc,char **argv)
   int      ierr,nlevels = 2;
   MPI_Comm comm;
   SNES     snes;
+  DA       da;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -120,8 +121,9 @@ int main(int argc,char **argv)
      Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
      for principal unknowns (x) and governing residuals (f)
   */
+  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
 
-  ierr = DMMGSetDA(dmmg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,4,1);CHKERRQ(ierr);
   ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
   ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
   ierr = DASetFieldName(DMMGGetDA(dmmg),2,"Omega");CHKERRQ(ierr);
