@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Add MatSetValuesLocal() modeled on VecSetValuesLocal().
+
   - Write preprocessor that zips through all of PETSc finding SETERRQ()
     setting unique error code number and save to big file: error code,
     file, line number and error message.
