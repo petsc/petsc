@@ -3,7 +3,7 @@
 /*
    Support for the parallel SBAIJ matrix vector multiply
 */
-#include "src/mat/impls/baij/mpi/mpibaij.h"
+#include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 #include "src/vec/vecimpl.h"
 extern int MatSetValues_SeqSBAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
 
@@ -11,7 +11,7 @@ extern int MatSetValues_SeqSBAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
 #define __FUNCT__ "MatSetUpMultiply_MPISBAIJ"
 int MatSetUpMultiply_MPISBAIJ(Mat mat)
 {
-  Mat_MPIBAIJ        *baij = (Mat_MPIBAIJ*)mat->data;
+  Mat_MPISBAIJ       *baij = (Mat_MPISBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
   int                Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
   int                col,bs = baij->bs,*stmp;
@@ -171,7 +171,7 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
 #define __FUNCT__ "DisAssemble_MPISBAIJ"
 int DisAssemble_MPISBAIJ(Mat A)
 {
-  Mat_MPIBAIJ   *baij = (Mat_MPIBAIJ*)A->data;
+  Mat_MPISBAIJ   *baij = (Mat_MPISBAIJ*)A->data;
   Mat           B = baij->B,Bnew;
   Mat_SeqBAIJ   *Bbaij = (Mat_SeqBAIJ*)B->data;
   int           ierr,i,j,mbs=Bbaij->mbs,n = A->N,col,*garray=baij->garray;
