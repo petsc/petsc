@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.61 1997/01/01 03:37:33 bsmith Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.62 1997/01/06 20:24:18 balay Exp bsmith $";
 #endif
 
 /*
@@ -556,10 +556,10 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
       Mat_SeqDense *Amdn = (Mat_SeqDense*) mdn->A->data;
 
       if (!rank) {
-        ierr = MatCreateMPIDense(mat->comm,M,M,N,N,PETSC_NULL,&A); CHKERRQ(ierr);
+        ierr = MatCreateMPIDense(mat->comm,M,N,M,N,PETSC_NULL,&A); CHKERRQ(ierr);
       }
       else {
-        ierr = MatCreateMPIDense(mat->comm,0,M,N,N,PETSC_NULL,&A); CHKERRQ(ierr);
+        ierr = MatCreateMPIDense(mat->comm,0,N,M,N,PETSC_NULL,&A); CHKERRQ(ierr);
       }
       PLogObjectParent(mat,A);
 

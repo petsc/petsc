@@ -1,90 +1,61 @@
 #ifndef lint
-static char vcid[] = "$Id: ex15.c,v 1.1 1996/12/10 13:57:45 bsmith Exp $";
+static char vcid[] = "$Id: ex16.c,v 1.1 1997/01/16 21:31:21 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
+static char help[] = "Tests MatGetArray().\n\n";
 
 #include "mat.h"
 #include <stdio.h>
 
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i, j, m = 3, n = 3, I, J, ierr, flg;
-  Scalar      v, mone = -1.0, one = 1.0, alpha = 2.0;
-  IS          perm, iperm;
-  Vec         x, u, b, y;
-  double      norm;
+  Mat         A; 
+  int         i, j, m = 3, n = 2, ierr,rstart,rend;
+  Scalar      v,*array;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-symmetric",&flg); CHKERRA(ierr);
-  if (flg) {  /* Treat matrix as symmetric only if we set this flag */
-    ierr = MatSetOption(C,MAT_SYMMETRIC); CHKERRA(ierr);
-  }
+  /*
+      Create a parallel dense matrix shared by all processors 
+  */
+  ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,&A);
+         CHKERRA(ierr);
 
-  /* Create the matrix for the five point stencil, YET AGAIN */
+  /*
+     Set values into the matrix 
+  */
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
-      v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);
+      v = 1.0/(i+j+1); MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatGetReordering(C,ORDER_RCM,&perm,&iperm); CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  ierr = ISView(perm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,m*n,&u); CHKERRA(ierr);
-  ierr = VecSet(&one,u); CHKERRA(ierr);
-  ierr = VecDuplicate(u,&x); CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b); CHKERRA(ierr);
-  ierr = VecDuplicate(u,&y); CHKERRA(ierr);
-  ierr = MatMult(C,u,b); CHKERRA(ierr);
-  ierr = VecCopy(b,y); CHKERRA(ierr);
-  ierr = VecScale(&alpha,y); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = MatNorm(C,NORM_FROBENIUS,&norm); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"Frobenius norm of matrix %g\n",norm);
-  ierr = MatNorm(C,NORM_1,&norm); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"One  norm of matrix %g\n",norm);
-  ierr = MatNorm(C,NORM_INFINITY,&norm); CHKERRA(ierr);
-  PetscPrintf(MPI_COMM_SELF,"Infinity norm of matrix %g\n",norm);
+  /*
+       Print the matrix to the screen 
+  */
+  ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
-  ierr = MatLUFactor(C,perm,iperm,1.0); CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
-  /* Test MatSolve */
-  ierr = MatSolve(C,b,x); CHKERRA(ierr);
-  ierr = VecView(b,VIEWER_STDOUT_SELF);  CHKERRA(ierr);
-  ierr = VecView(x,VIEWER_STDOUT_SELF); CHKERRA(ierr);
-  ierr = VecAXPY(&mone,u,x); CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
-  if (norm < 1.e-12) PetscPrintf(MPI_COMM_SELF,"Norm of error < 1.e-12\n");
-  else  PetscPrintf(MPI_COMM_SELF,"Norm of error %g\n",norm);
+  /*
+      Print the local portion of the matrix to the screen
+  */
+  ierr = MatGetArray(A,&array); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRA(ierr);
+  for ( i=rstart; i<rend; i++ ) {
+    for ( j=0; j<n; j++ ) {
+      PetscSynchronizedPrintf(MPI_COMM_WORLD,"%6.4e ",PetscReal(array[j*(rend-rstart)+i-rstart]));
+    }
+    PetscSynchronizedPrintf(MPI_COMM_WORLD,"\n");
+  }
+  PetscSynchronizedFlush(MPI_COMM_WORLD);
+  ierr = MatRestoreArray(A,&array); CHKERRA(ierr);
 
-  /* Test MatSolveAdd */
-  ierr = MatSolveAdd(C,b,y,x); CHKERRA(ierr);
-
-  ierr = VecAXPY(&mone,y,x); CHKERRA(ierr);
-  ierr = VecAXPY(&mone,u,x); CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
-
-  if (norm < 1.e-12) PetscPrintf(MPI_COMM_SELF,"Norm of error < 1.e-12\n");
-  else   PetscPrintf(MPI_COMM_SELF,"Norm of error %g\n",norm);
-
-  ierr = ISDestroy(perm); CHKERRA(ierr);
-  ierr = ISDestroy(iperm); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);
-  ierr = VecDestroy(y); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);
-  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = MatDestroy(C); CHKERRA(ierr);
+  /*
+      Free the space used by the matrix
+  */
+  ierr = MatDestroy(A); CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

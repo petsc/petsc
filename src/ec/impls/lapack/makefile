@@ -6,7 +6,7 @@ CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
 SOURCEC  = elapack.c
 SOURCEH  = 
 SOURCEF  = 
-OBJSC    = elapack.c
+OBJSC    = elapack.o
 OBJSF    = 
 LIBBASE  = libpetscec
 MANSEC   = 5

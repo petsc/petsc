@@ -1,80 +1,93 @@
+C
+C      "$Id: ex3f90.F,v 1.1 1997/01/16 03:32:22 bsmith Exp bsmith $"; */
+C
+C
+C/*T
+C    Concepts: Index sets^Manipulating a block index set;
+C    Routines: ISCreateBlock(); ISDestroy(); ISView()
+C    Routines: ISGetIndicesF90(); ISRestoreIndicesF90(); ISBlockGetSize()
+C    Routines: ISBlockGetBlockSize(); ISBlockGetIndicesF90(); ISBlockRestoreIndicesF90()
+C    Routines: ISBlock()
+C
+C    Comment:  Creates an index set based on blocks of integers. Views that index set
+C    and then destroys it.
+CT*/
+C
+C
+C  Include is.h so we can use PETSc IS objects. 
+C  Include is.h90 so we can use Fortran 90 features of IS objects
+C
+      implicit none
 
-/*      "$Id: ex3.c,v 1.6 1997/01/01 03:35:16 bsmith Exp $"; */
+#include "FINCLUDE/petsc.h"
+#include "FINCLUDE/is.h"
+#include "FINCLUDE/is.h90"
 
-static char help[] = "Demonstrates creating a blocked index set.\n\n";
+      integer n, ierr,bs,issize,inputindices(4)
+      integer, pointer :: indices(:)
+      IS       set
+      PetscTruth isablock;
 
-/*T
-    Concepts: Index sets^Manipulating a block index set;
-    Routines: ISCreateBlock(); ISDestroy(); ISView()
-    Routines: ISGetIndices(); ISRestoreIndices(); ISBlockGetSize()
-    Routines: ISBlockGetBlockSize(); ISBlockGetIndices(); ISBlockRestoreIndices()
-    Routines: ISBlock()
-
-    Comment:  Creates an index set based on blocks of integers. Views that index set
-    and then destroys it.
-T*/
-
-#include "is.h"
-
-int main(int argc,char **argv)
-{
-  int        i, n = 4, ierr,  inputindices[] = {0,3,9,12}, bs = 3,issize,*indices;
-  IS         set;
-  PetscTruth isblock;
-
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);
+      n               = 4
+      bs              = 3
+      inputindices(1) = 0
+      inputindices(2) = 3
+      inputindices(3) = 9
+      inputindices(4) = 12
+    
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       
-  /*
-    Create a block index set. The index set has 4 blocks each of size 3.
-    The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
-    Note each processor is generating its own index set 
-    (in this case they are all identical)
-  */
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,n,inputindices,&set); CHKERRA(ierr);
-  ierr = ISView(set,VIEWER_STDOUT_SELF); CHKERRA(ierr);
+C
+C    Create a block index set. The index set has 4 blocks each of size 3.
+C    The indices are {0,1,2,3,4,5,9,10,11,12,13,14}
+C    Note each processor is generating its own index set 
+C    (in this case they are all identical)
+C
+      call ISCreateBlock(MPI_COMM_SELF,bs,n,inputindices,set,ierr) 
+      call ISView(set,VIEWER_STDOUT_SELF,ierr) 
 
-  /*
-    Extract indices from set.
-  */
-  ierr = ISGetSize(set,&issize); CHKERRA(ierr);
-  ierr = ISGetIndices(set,&indices); CHKERRA(ierr);
-  printf("Printing indices directly\n");
-  for (i=0; i<issize; i++) {
-    printf("%d\n",indices[i]);
-  }
-  ierr = ISRestoreIndices(set,&indices); CHKERRA(ierr);
+C
+C    Extract indices from set.
+C
+      call ISGetSize(set,issize,ierr) 
+      call ISGetIndicesF90(set,indices,ierr) 
+      print*,indices
+      call ISRestoreIndicesF90(set,indices,ierr) 
 
-  /*
-    Extract the block indices. This returns one index per block.
-  */
-  ierr = ISBlockGetIndices(set,&indices); CHKERRA(ierr);
-  printf("Printing block indices directly\n");
-  for (i=0; i<n; i++) {
-    printf("%d\n",indices[i]);
-  }
-  ierr = ISBlockRestoreIndices(set,&indices); CHKERRA(ierr);
+C
+C    Extract the block indices. This returns one index per block.
+C
+      call ISBlockGetIndicesF90(set,indices,ierr) 
+      print*, indices
+      call ISBlockRestoreIndicesF90(set,indices,ierr) 
 
-  /*
-    Check if this is really a block index set
-  */
-  ierr = ISBlock(set,&isblock); CHKERRA(ierr);
-  if (isblock != PETSC_TRUE) SETERRA(1,0,"Index set is not blocked!");
+C
+C    Check if this is really a block index set
+C
+      call ISBlock(set,isablock,ierr) 
+      if (isablock .ne. PETSC_TRUE) then
+        print*,'Index set is not blocked!'
+      endif
 
-  /*
-    Determine the block size of the index set
-  */
-  ierr = ISBlockGetBlockSize(set,&bs); CHKERRA(ierr);
-  if (bs != 3) SETERRA(1,0,"Block size is not 3!");
+C
+C    Determine the block size of the index set
+C
+      call ISBlockGetBlockSize(set,bs,ierr) 
+      if (bs .ne. 3) then
+        print*,'Blocksize != 3'
+      endif
 
-  /*
-    Get the number of blocks
-  */
-  ierr = ISBlockGetSize(set,&n); CHKERRA(ierr);
-  if (n != 4) SETERRA(1,0,"Number of blocks not 4!");
+C
+C    Get the number of blocks
+C
+      call ISBlockGetSize(set,n,ierr) 
+      if (n .ne. 4) then
+        print*,'Number of blocks != 4'
+      endif
 
-  ierr = ISDestroy(set); CHKERRA(ierr);
-  PetscFinalize();
-  return 0;
-}
+      call ISDestroy(set,ierr) 
+      call PetscFinalize(ierr)
+      stop 
+      end
 
 

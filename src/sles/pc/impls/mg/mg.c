@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.62 1997/01/03 17:15:20 bsmith Exp balay $";
+static char vcid[] = "$Id: mg.c,v 1.63 1997/01/06 20:23:46 balay Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -150,7 +150,7 @@ int MGCheck(PC pc)
 #define __FUNC__ "MGSetNumberSmoothDown"
 /*@
    MGSetNumberSmoothDown - Sets the number of pre-smoothing steps to
-   use on all levels. Use MGSetSmootherDown() to set different 
+   use on all levels. Use MGGetSmootherDown() to set different 
    pre-smoothing steps on different levels.
 
    Input Parameters:
@@ -185,7 +185,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
 #define __FUNC__ "MGSetNumberSmoothUp"
 /*@
    MGSetNumberSmoothUp - Sets the number of post-smoothing steps to use 
-   on all levels. Use MGSetSmootherUp() to set different numbers of 
+   on all levels. Use MGGetSmootherUp() to set different numbers of 
    post-smoothing steps on different levels.
 
    Input Parameters:

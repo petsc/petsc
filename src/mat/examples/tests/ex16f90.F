@@ -1,60 +1,79 @@
-#ifndef lint
-static char vcid[] = "$Id: ex16.c,v 1.1 1997/01/16 21:31:21 bsmith Exp bsmith $";
-#endif
 
-static char help[] = "Tests MatGetArray().\n\n";
+C  "$Id: ex16f90.F,v 1.1 1997/01/16 22:41:02 bsmith Exp bsmith $";
 
-#include "mat.h"
-#include <stdio.h>
+C
+C  Tests MatGetArray() on a dense matrix
+C
 
-int main(int argc,char **args)
-{
-  Mat         A; 
-  int         i, j, m = 3, n = 2, ierr,rstart,rend;
-  Scalar      v,*array;
-
-  PetscInitialize(&argc,&args,(char *)0,help);
-
-  /*
-      Create a parallel dense matrix shared by all processors 
-  */
-  ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,&A);
-         CHKERRA(ierr);
-
-  /*
-     Set values into the matrix 
-  */
-  for ( i=0; i<m; i++ ) {
-    for ( j=0; j<n; j++ ) {
-      v = 1.0/(i+j+1); MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);
-    }
-  }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-
-  /*
-       Print the matrix to the screen 
-  */
-  ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+      program ex16f90
+      implicit none
 
 
-  /*
-      Print the local portion of the matrix to the screen
-  */
-  ierr = MatGetArray(A,&array); CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) {
-    for ( j=0; j<n; j++ ) {
-      PetscSynchronizedPrintf(MPI_COMM_WORLD,"%6.4e ",PetscReal(array[j*(rend-rstart)+i-rstart]));
-    }
-    PetscSynchronizedPrintf(MPI_COMM_WORLD,"\n");
-  }
-  PetscSynchronizedFlush(MPI_COMM_WORLD);
-   
-  /*
-      Free the space used by the matrix
-  */
-  ierr = MatDestroy(A); CHKERRA(ierr);
-  PetscFinalize();
-  return 0;
-}
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C                    Include files
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C
+C  The following include statements are required for Fortran programs
+C  that use PETSc vectors:
+C     petsc.h  - base PETSc routines
+C     vec.h - defines (INSERT_VALUES)
+C     mat.h    - matrices
+C     mat.h90  - to allow access to Fortran 90 features of PETSc
+
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/mat.h90"
+
+      Mat A
+      integer i,j,m,n,ierr
+      Scalar  v
+      Scalar, pointer :: array(:,:)
+
+
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+
+      m = 3
+      n = 2
+C
+C      Create a parallel dense matrix shared by all processors 
+C
+      call MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,
+     &                        PETSC_DECIDE,m,n,PETSC_NULL,A,ierr)
+         
+
+C
+C     Set values into the matrix. All processors set all values.
+C
+      do 10, i=0,m-1
+        do 20, j=0,n-1
+          v = 1.d0/(i+j+1)
+          call MatSetValues(A,1,i,1,j,v,INSERT_VALUES,ierr)
+ 20     continue
+ 10   continue
+
+      call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr) 
+      call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr) 
+
+C
+C       Print the matrix to the screen 
+C
+      call MatView(A,VIEWER_STDOUT_WORLD,ierr) 
+
+
+C
+C      Print the local portion of the matrix to the screen
+C
+      call MatGetArrayF90(A,array,ierr) 
+      call PetscSequentialPhaseBegin(MPI_COMM_WORLD,1,ierr)
+      print*, array
+      call PetscSequentialPhaseEnd(MPI_COMM_WORLD,1,ierr)
+
+      call MatRestoreArrayF90(A,array,ierr)   
+C
+C      Free the space used by the matrix
+C
+      call MatDestroy(A,ierr) 
+      call PetscFinalize(ierr)
+      end
+

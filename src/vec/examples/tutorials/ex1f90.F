@@ -1,18 +1,18 @@
 
-C    "$Id: ex1f.F,v 1.4 1997/01/01 03:35:47 bsmith Exp $"
+C    "$Id: ex1f90.F,v 1.1 1997/01/17 03:00:20 bsmith Exp bsmith $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
 C   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); VecDot();
 C   Routines: VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); VecAYPX();
 C   Routines: VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); VecSwap();
-C   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecs();
+C   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecsF90();VecDuplicateVecsF90();
 C   Processors: n
 CT*/
 C
 C -----------------------------------------------------------------------
 
-      program ex1f
+      program ex1f90
       implicit none
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,6 +23,8 @@ C  The following include statements are required for Fortran programs
 C  that use PETSc vectors:
 C     petsc.h  - base PETSc routines
 C     vec.h    - vectors
+C     vec.h90  - to allow access to Fortran 90 features of PETSc
+C
 C  Additional include statements may be needed if using additional
 C  PETSc routines in a Fortran program, e.g.,
 C     viewer.h - viewers
@@ -30,6 +32,7 @@ C     is.h     - index sets
 C
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/vec.h90"
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                   Variable declarations
@@ -42,7 +45,8 @@ C
 C  Note:  "Double" -> "double precision" except for machines such
 C          as the Cray T3d, where "Double" -> "real"
 
-      Vec     x, y, w, z(5)
+      Vec     x, y, w
+      Vec, pointer :: z(:)
       Double  norm, v, v1, v2
       integer n, ierr, flg, rank
       Scalar  one, two, three, dots(3), dot
@@ -82,7 +86,7 @@ C  partitioning as the initial vector).  Here we duplicate
 C  an array of vectors, which is often more convenient than
 C  duplicating individual ones.
 
-      call VecDuplicateVecs(x,3,z,ierr)
+      call VecDuplicateVecsF90(x,3,z,ierr)
 
 C  Set the vectors to entries to a constant value.
 
@@ -213,7 +217,7 @@ C  are no longer needed.
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)
       call VecDestroy(w,ierr)
-      call VecDestroyVecs(z,3,ierr)
+      call VecDestroyVecsF90(z,3,ierr)
       call PetscFinalize(ierr)
 
       end

@@ -8,8 +8,8 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    =
 OBJSF    =
-LIBBASE  = libpetscsles
-DIRS     = jacobi none sor lu shell bjacobi mg eisens ilu icc asm
-LOCDIR   = src/pc/impls/
+LIBBASE  = libpetscec
+DIRS     = lapack
+LOCDIR   = src/ec/impls/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

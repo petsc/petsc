@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.33 1996/11/19 16:29:23 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.34 1997/01/12 04:32:38 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -59,7 +59,7 @@ struct _Vec {
 #define VECHEADER                         \
   int    n;                               \
   Scalar *array;                          \
-  Scalar *array_allocate;            
+  Scalar *array_allocated;            
 
 typedef struct {
   VECHEADER

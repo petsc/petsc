@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.51 1997/01/01 03:40:36 bsmith Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.52 1997/01/06 20:29:31 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -245,7 +245,7 @@ int ViewerPushFormat(Viewer v,int format,char *name)
     v->outputnames[v->iformat++] = v->outputname;
     v->format                    = format;
     v->outputname                = name;
-  } else if (v->type == BINARY_FILE_VIEWER) {
+  } else {
     v->formats[v->iformat++]     = v->format;
     v->format                    = format;
   }

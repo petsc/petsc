@@ -38,8 +38,8 @@ MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint
 #
 #  Note: you cannot use BlockSolve with complex
 #
- BS_INCLUDE = -I/home/petsc/BlockSolve95/include
- BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/sun4/libBS95.a
 #
 # Optional Matlab location, remove if not needed.
 #
@@ -51,7 +51,7 @@ CMEX           = /usr/local/bin/cmex
 #  Make sure that -DHAVE_BLOCKSOLVE is not listed below unless you have
 #  installed it.
 #
-PCONF         = -DHAVE_BLOCKSOLVE -DHAVE_MPE
+PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE
 #
 #
 

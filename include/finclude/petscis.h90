@@ -1,26 +1,8 @@
 C
-C  $Id: petsc.h90,v 1.1 1997/01/15 18:38:55 bsmith Exp bsmith $;
+C  $Id: is.h90,v 1.1 1997/01/16 02:18:45 bsmith Exp bsmith $;
 C
-C  Additional include file for use of PETSc with Fortran 90/HPF
+C  Additional IS include file for use of PETSc with Fortran 90/HPF
 C
-
-      Interface 
-        Subroutine VecGetArrayF90(v,array,ierr)
-          Scalar, pointer :: array(:)
-          integer ierr
-          Vec     v
-        End Subroutine
-      End Interface
-
-
-      Interface 
-        Subroutine VecRestoreArrayF90(v,array,ierr)
-          Scalar, pointer :: array(:)
-          integer ierr
-          Vec     v
-        End Subroutine
-      End Interface
-
       Interface 
         Subroutine ISGetIndicesF90(v,array,ierr)
           integer, pointer :: array(:)
@@ -38,6 +20,25 @@ C
         End Subroutine
       End Interface
 
+C ------------------------------------------------------
+
+      Interface 
+        Subroutine ISBlockGetIndicesF90(v,array,ierr)
+          integer, pointer :: array(:)
+          integer  ierr
+          IS       v
+        End Subroutine
+      End Interface
+
+
+      Interface 
+        Subroutine ISBlockRestoreIndicesF90(v,array,ierr)
+          integer, pointer :: array(:)
+          integer ierr
+          IS      v
+        End Subroutine
+      End Interface
+
 C
-C     End of  Fortran 90 include file for the PETSc package
+C     End of IS Fortran 90 include file for the PETSc package
 C

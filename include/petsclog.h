@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.96 1996/12/31 23:46:59 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.97 1997/01/12 04:36:13 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -104,6 +104,9 @@
 #define TS_PseudoComputeTimeStep                91
 
 #define Petsc_Barrier                           100
+
+#define EC_SetUp                                105
+#define EC_Solve                                106
 
 #define DFVec_RefineVector                      110
 #define DFVec_AssembleFullVector                111

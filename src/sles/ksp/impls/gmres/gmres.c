@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.74 1997/01/01 03:36:08 bsmith Exp balay $";
+static char vcid[] = "$Id: gmres.c,v 1.75 1997/01/06 20:22:36 balay Exp bsmith $";
 #endif
 
 /*
@@ -221,8 +221,8 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     rtol      = ksp->rtol * res_norm;
     ksp->ttol = (ksp->atol > rtol) ? ksp->atol : rtol;
   }
-  rtol= ksp->ttol;
-  gmres->it = (it-1);  /* For converged */
+  rtol      = ksp->ttol;
+  gmres->it = (it - 1);
   while (!(*converged = cerr = (*ksp->converged)(ksp,it+itsSoFar,res,ksp->cnvP))
            && it < max_k && it + itsSoFar < max_it) {
     if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
@@ -259,10 +259,8 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     gmres->it = (it-1);  /* For converged */
   }
   if (nres && hist_len > it + itsSoFar) nres[it + itsSoFar]   = res; 
-  if (nres) 
-    ksp->res_act_size = (hist_len < it + itsSoFar) ? hist_len : it+itsSoFar+1;
-  gmres->it = it - 1;
-  KSPMonitor( ksp,  it + itsSoFar, res );
+  if (nres) ksp->res_act_size = (hist_len < it + itsSoFar) ? hist_len : it+itsSoFar+1;
+  KSPMonitor( ksp,  it + itsSoFar, res ); 
   if (itcount) *itcount    = it;
 
   /*
@@ -306,17 +304,17 @@ static int KSPSolve_GMRES(KSP ksp,int *outits )
     ierr = VecCopy( VEC_BINVF, VEC_VV(0) ); CHKERRQ(ierr);
   }
     
-  ierr = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
+  ierr    = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
+  itcount += its;
   while (!converged) {
     restart  = 1;
-    itcount += its;
     ierr = GMRESResidual(  ksp, restart); CHKERRQ(ierr);
-    if (itcount > ksp->max_it) break;
+    if (itcount >= ksp->max_it) break;
     /* need another check to make sure that gmres breaks out 
        at precisely the number of iterations chosen */
     ierr = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
+    itcount += its;  
   }
-  itcount += its;      /* add in last call to GMREScycle */
   *outits = itcount;  return 0;
 }
 

@@ -15,7 +15,8 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc \
 		  runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10 ex10.rm\
 		  ex11.PETSc runex11 runex11_2 ex11.rm ex14.PETSc runex14 ex14.rm \
 		  ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \
-		  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm clean
+		  ex20.rm ex21.PETSc runex21 ex21.rm ex22.PETSc runex22 ex22.rm \
+                  ex16.PETSc runex16 ex16.rm clean
 TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
 		  runex7 ex7.rm ex12.PETSc runex12 runex12_2 ex12.rm  ex13.PETSc runex13 \
 		  ex13.rm ex17.PETSc ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc \
@@ -63,13 +64,13 @@ BUILDEXAMPLES_6 = ex40.PETSc ex40.rm ex42.PETSc ex42.rm \
 BUILDEXAMPLES_7 = ex46.PETSc ex46.rm clean
 
 EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
-		 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c \
+		 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
 		 ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
 		 ex27.c ex28.c ex30.c ex31.c ex32.c ex33.c \
 		 ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
 		 ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c \
 		 ex53.c
-EXAMPLESF      = ex36.F
+EXAMPLESF      = ex36.F ex16f90.F
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB) 
@@ -134,6 +135,10 @@ ex15: ex15.o chkopts
 ex16: ex16.o chkopts
 	-$(CLINKER) -o ex16 ex16.o $(PETSC_LIB)
 	$(RM) ex16.o
+
+ex16f90: ex16f90.o chkopts
+	-$(CLINKER) -o ex16f90 ex16f90.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex16f90.o
 
 ex17: ex17.o chkopts
 	-$(CLINKER) -o ex17 ex17.o $(PETSC_LIB)
@@ -406,6 +411,11 @@ runex15:
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   $(RM) -f ex15_1.tmp
+runex16:
+	-@$(MPIRUN) -np 2 ex16  > ex16_1.tmp 2>&1;	\
+	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
+	   else echo "Possible problem with ex16_1, diffs above"; fi; \
+	   $(RM) -f ex16_1.tmp
 runex17:
 	-@$(MPIRUN)  ex17 > ex17_1.tmp 2>&1;   \
 	   if (diff output/ex17_1.out ex17_1.tmp) then true; \

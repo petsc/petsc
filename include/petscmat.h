@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.121 1997/01/03 18:43:01 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.122 1997/01/12 04:36:13 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -103,6 +103,7 @@ extern int MatGetInfo(Mat,MatInfoType,MatInfo*);
 extern int MatValid(Mat,PetscTruth*);
 extern int MatGetDiagonal(Mat,Vec);
 extern int MatTranspose(Mat,Mat*);
+extern int MatPermute(Mat,IS,IS,Mat *);
 extern int MatDiagonalScale(Mat,Vec,Vec);
 extern int MatDiagonalShift(Mat,Vec);
 extern int MatEqual(Mat,Mat, PetscTruth*);
@@ -131,7 +132,7 @@ extern int MatSetLocalToGlobalMapping(Mat, int,int *);
 extern int MatZeroRowsLocal(Mat,IS,Scalar*);
 extern int MatSetValuesLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
-extern int MatComputeExplicitOperator(Mat,Mat*);
+
 
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);

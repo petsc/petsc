@@ -3,15 +3,13 @@
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
-SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
-           xmon.c
+SOURCEC  = ec.c ecall.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = itcl.o itfunc.o iguess.o itcreate.o iterativ.o itres.o itregis.o \
-           xmon.o
-LIBBASE  = libpetscksp
+OBJSC    = ec.o ecall.o
+LIBBASE  = libpetscec
 DIRS     =
-MANSEC   = 5
-LOCDIR   = src/ksp/interface/
+MANSEC   = e
+LOCDIR   = src/ec/interface/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

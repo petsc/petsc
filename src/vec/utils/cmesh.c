@@ -1,9 +1,30 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.32 1996/12/16 22:41:15 balay Exp balay $";
+static char vcid[] = "$Id: cmesh.c,v 1.33 1997/01/06 20:21:47 balay Exp bsmith $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
 #include "vec.h"        /*I "vec.h" I*/
+
+#undef __FUNC__  
+#define __FUNC__ "DrawScalePopup"
+int DrawScalePopup(Draw popup,double min,double max)
+{
+  double xl = 0.0, yl = 0.0, xr = 1.0, yr = 1.0;
+  int    i,c = 32;
+  char   string[32];
+
+  for ( i=0; i<10; i++ ) {
+    DrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);
+    yl += .1; yr += .1; c = (int) ((double) c + (200.-32.)/9.);
+  }
+  for ( i=0; i<10; i++ ) {
+    sprintf(string,"%g",-min + i*(max-min)/9.0);
+    DrawText(popup,.2,.02 + i/10.0,DRAW_BLACK,string);
+  }
+  DrawSetTitle(popup,"Contour Scale");
+  DrawFlush(popup);
+  return 0;
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DrawTensorContour"
@@ -70,8 +91,6 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
   if (rank == 0) {
 #if !defined(PETSC_COMPLEX)
     double  xl = 0.0, yl = 0.0, xr = 1.0, yr = .1;
-    int     c = 32;
-    char    string[16];
 
     ierr = VecGetArray(W,&v); CHKERRQ(ierr);
 
@@ -82,16 +101,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
     ierr = VecScale(&scale,W); CHKERRQ(ierr);
 
     /* Draw the scale window */
-    for ( i=0; i<10; i++ ) {
-      DrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);
-      yl += .1; yr += .1; c = (int) ((double) c + (200.-32.)/9.);
-    }
-    for ( i=0; i<10; i++ ) {
-      sprintf(string,"%g",-min + i*(max-min)/9.0);
-      DrawText(popup,.2,.02 + i/10.0,DRAW_BLACK,string);
-    }
-    DrawSetTitle(popup,"Contour Scale");
-    DrawFlush(popup);
+    ierr = DrawScalePopup(popup,min,max); CHKERRQ(ierr);
 
     ierr = OptionsHasName(PETSC_NULL,"-draw_contour_grid",&showgrid);CHKERRQ(ierr);
 

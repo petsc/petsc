@@ -1,37 +1,26 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.29 1997/01/06 20:23:25 balay Exp $";
+static char vcid[] = "$Id: ecall.c,v 1.1 1997/01/08 03:29:06 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-#include "src/pc/pcimpl.h"          /*I   "pc.h"   I*/
+#include "src/ec/ecimpl.h"          /*I   "ec.h"   I*/
 
-extern int PCCreate_Jacobi(PC);
-extern int PCCreate_BJacobi(PC);
-extern int PCCreate_None(PC);
-extern int PCCreate_LU(PC);
-extern int PCCreate_SOR(PC);
-extern int PCCreate_Shell(PC);
-extern int PCCreate_MG(PC);
-extern int PCCreate_Eisenstat(PC);
-extern int PCCreate_ILU(PC);
-extern int PCCreate_ICC(PC);
-extern int PCCreate_ASM(PC);
-extern int PCCreate_BGS(PC);
+extern int ECCreate_Lapack(EC);
 
 #undef __FUNC__  
-#define __FUNC__ "PCRegisterAll"
+#define __FUNC__ "ECRegisterAll"
 /*@C
-  PCRegisterAll - Registers all of the preconditioners in the PC package.
+  ECRegisterAll - Registers all of the preconditioners in the EC package.
 
   Adding new methods:
   To add a new method to the registry
 $   1.  Copy this routine and modify it to incorporate
-$       a call to PCRegister() for the new method.  
-$   2.  Modify the file "PETSCDIR/include/pc.h"
+$       a call to ECRegister() for the new method.  
+$   2.  Modify the file "PETSCDIR/include/ec.h"
 $       by appending the method's identifier as an
-$       enumerator of the PCType enumeration.
+$       enumerator of the ECType enumeration.
 $       As long as the enumerator is appended to
-$       the existing list, only the PCRegisterAll()
+$       the existing list, only the ECRegisterAll()
 $       routine requires recompilation.
 
   Restricting the choices:
@@ -40,25 +29,16 @@ $       routine requires recompilation.
   those methods you desire.  Make sure that the replacement routine 
   is linked before libpetscsles.a.
 
-.keywords: PC, register, all
+.keywords: EC, register, all
 
-.seealso: PCRegister(), PCRegisterDestroy()
+.seealso: ECRegister(), ECRegisterDestroy()
 @*/
-int PCRegisterAll()
+int ECRegisterAll()
 {
-  PCRegister(PCNONE         , "none",       PCCreate_None);
-  PCRegister(PCJACOBI       , "jacobi",     PCCreate_Jacobi);
-  PCRegister(PCBJACOBI      , "bjacobi",    PCCreate_BJacobi);
-  PCRegister(PCSOR          , "sor",        PCCreate_SOR);
-  PCRegister(PCLU           , "lu",         PCCreate_LU);
-  PCRegister(PCSHELL        , "shell",      PCCreate_Shell);
-  PCRegister(PCMG           , "mg",         PCCreate_MG);
-  PCRegister(PCEISENSTAT    , "eisenstat",  PCCreate_Eisenstat);
-  PCRegister(PCILU          , "ilu",        PCCreate_ILU);
-  PCRegister(PCICC          , "icc",        PCCreate_ICC);
-  PCRegister(PCASM          , "asm",        PCCreate_ASM);
-  PCRegister(PCBGS          , "bgs",        PCCreate_BGS);
+  ECRegister(EC_LAPACK         , "lapack",       ECCreate_Lapack);
   return 0;
 }
+
+
 
 

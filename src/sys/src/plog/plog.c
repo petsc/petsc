@@ -1,12 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.143 1997/01/06 20:31:09 balay Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.144 1997/01/10 21:21:49 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
-#include "snes.h"      /* This include is to define all the PETSc cookies */
+#include "ts.h"      /* This include is to define all the PETSc cookies */
+#include "ec.h"
 #if defined(HAVE_MPE)
 #include "mpe.h"
 #endif
@@ -24,6 +25,12 @@ static char vcid[] = "$Id: plog.c,v 1.143 1997/01/06 20:31:09 balay Exp curfman 
 #include "pinclude/petscfix.h"
 #include "pinclude/ptime.h"
 
+/*
+    The next two variables determine which, if any, PLogInfo() calls are used.
+  If PlogPrintInfo is zero, no info messages are printed. 
+  If PLogInfoFlags[OBJECT_COOKIE - PETSC_COOKIE] is zero, no messages related
+  to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
+*/
 int PLogPrintInfo = 0;
 static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                               1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -48,8 +55,6 @@ int PLogInfoAllow(PetscTruth flag)
   PLogPrintInfo = (int) flag;
   return 0;
 }
-
-extern FILE *petsc_history;
 
 #undef __FUNC__  
 #define __FUNC__ "PLogInfoDeactivateClass"
@@ -92,6 +97,13 @@ int PLogInfoActivateClass(int objclass)
   }
   return 0;
 }
+
+/*
+   If the option -log_history was used, then all printed PLogInfo() 
+  messages are also printed to the history file, called by default
+  .petschistory in ones home directory.
+*/
+extern FILE *petsc_history;
 
 #undef __FUNC__  
 #define __FUNC__ "PLogInfo"
@@ -165,7 +177,7 @@ static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
      1 - activated for PETSc logging
      0 - not activated for PETSc logging
  */
-int PLogEventFlags[] = {      1,1,1,1,1,  /* 0 - 24*/
+int PLogEventFlags[] = {1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,1,
                         1,1,1,1,1,
                         1,1,1,1,1,
@@ -217,7 +229,7 @@ static char *(oname[]) = {"Viewer           ",
                           "Krylov Solver    ",
                           "Preconditioner   ",
                           "SLES             ",  /* 10 */
-                          "                 ",
+                          "EC               ",  /* 11 */
                           "                 ",
                           "SNES             ",
                           "Distributed array",
@@ -358,9 +370,16 @@ char *(PLogEventName[]) = {"MatMult         ",
                          " ",
                          " ",
                          " ",
-                         "PetscBarrier    ",
-                         " "," "," "," ",
-                         " "," "," "," "," ",
+                         "PetscBarrier    ", /* 100 */
+                         " ",
+                         " ",
+                         " ",
+                         " ",
+                         "ECSetUp         ",
+                         "ECSolve         ",
+                         " ",
+                         " ",
+                         " ",
                          "DFVecRefineVecto",
                          "DFVec_AssembleFu",
                          "DFVec_GetCompone",
@@ -1167,6 +1186,7 @@ int PLogEventDeactivate(int event)
   PLogEventFlags[event] = 0;
   return 0;
 }
+
 #undef __FUNC__  
 #define __FUNC__ "PLogEventActivate"
 /*@

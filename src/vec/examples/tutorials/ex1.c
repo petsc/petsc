@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.36 1996/11/19 16:29:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.37 1997/01/01 03:35:47 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates various vector routines\n\n";
@@ -9,7 +9,7 @@ static char help[] = "Demonstrates various vector routines\n\n";
    Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); VecDot();
    Routines: VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); VecAYPX();
    Routines: VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); VecSwap();
-   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecs();
+   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecs();VecDuplicateVecs()
    Processors: n
 T*/
 

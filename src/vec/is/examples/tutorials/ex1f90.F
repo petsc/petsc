@@ -1,23 +1,26 @@
 
-C  "$Id: ex1f.F,v 1.8 1996/11/08 21:12:53 balay Exp $";
+C  "$Id: ex1f90.F,v 1.1 1997/01/16 02:14:54 bsmith Exp bsmith $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a general index set;
 C    Routines: ISCreateGeneral(); ISDestroy(); ISView(); ISGetSize()
-C    Routines: ISGetIndices(); ISRestoreIndices()
+C    Routines: ISGetIndicesF90(); ISRestoreIndicesF90()
 CT*/
 C    
 C    Comment: Creates an index set based on a set of integers. Views that index set
 C    and then destroys it.
 C
 C  Include is.h so we can use PETSc IS objects. 
+C  Include is.h90 so we can use Fortran 90 features of IS objects
 C
       implicit none
 
 #include "FINCLUDE/petsc.h"
 #include "FINCLUDE/is.h"
+#include "FINCLUDE/is.h90"
 
-      integer ierr, indices(5),rank,n,ix
+      integer ierr, indices(5),rank,n
+      integer, pointer :: idx(:)
       IS      is
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -43,18 +46,20 @@ C  Get the number of indices in the set
 
 C   Get the indices in the index set
 
-      call ISGetIndices(is,indices,ix,ierr)
+      call ISGetIndicesF90(is,idx,ierr)
 
 C   Now any code that needs access to the list of integers
 C   has access to it here
 
-      write(6,100) rank,indices(ix+1),indices(ix+5)
+      print*, idx
+
+      write(6,100) rank,idx(1),idx(5)
  100  format('[',i5,'] First index = ',i5,' fifth index = ',i5)
       
 C   Once we no longer need access to the indices they should 
 C   returned to the system 
 
-      call ISRestoreIndices(is,indices,ix,ierr)
+      call ISRestoreIndicesF90(is,idx,ierr)
   
 C   All PETSc objects should be destroyed once they are 
 C   no longer needed

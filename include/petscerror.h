@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.5 1997/01/01 13:54:22 bsmith Exp balay $ */
+/* $Id: petscerror.h,v 1.6 1997/01/06 20:31:55 balay Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -86,5 +86,7 @@ extern int PetscPopSignalHandler();
 #define PETSC_FP_TRAP_OFF    0
 #define PETSC_FP_TRAP_ON     1
 extern int PetscSetFPTrap(int);
+extern int PetscInitializeNans(Scalar*,int);
+extern int PetscInitializeLargeInts(int *,int);
 
 #endif

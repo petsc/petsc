@@ -34,12 +34,12 @@ MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint
 #
 # Optional location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there.
+# below if it is there and comment out the BS_INCLUDE and BS_LIB lines.
 #
 #  Note: you cannot use BlockSolve with complex
 #
- BS_INCLUDE = -I/home/petsc/BlockSolve95/include
- BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Optional Matlab location, remove if not needed.
 #

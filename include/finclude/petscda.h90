@@ -1,45 +1,8 @@
 C
-C  $Id: is.h90,v 1.1 1997/01/16 02:18:45 bsmith Exp bsmith $;
+C  $Id: da.h90,v 1.1 1997/01/17 03:14:53 bsmith Exp bsmith $;
 C
-C  Additional IS include file for use of PETSc with Fortran 90/HPF
+C  Additional DA include file for use of PETSc with Fortran 90/HPF
 C
-      Interface 
-        Subroutine ISGetIndicesF90(v,array,ierr)
-          integer, pointer :: array(:)
-          integer  ierr
-          IS       v
-        End Subroutine
-      End Interface
-
-
-      Interface 
-        Subroutine ISRestoreIndicesF90(v,array,ierr)
-          integer, pointer :: array(:)
-          integer ierr
-          IS      v
-        End Subroutine
-      End Interface
-
-C ------------------------------------------------------
-
-      Interface 
-        Subroutine ISBlockGetIndicesF90(v,array,ierr)
-          integer, pointer :: array(:)
-          integer  ierr
-          IS       v
-        End Subroutine
-      End Interface
-
-
-      Interface 
-        Subroutine ISBlockRestoreIndicesF90(v,array,ierr)
-          integer, pointer :: array(:)
-          integer ierr
-          IS      v
-        End Subroutine
-      End Interface
-
-C ------------------------------------------------------
 
       Interface 
         Subroutine DAGetGlobalIndicesF90(v,n,array,ierr)
@@ -50,5 +13,5 @@ C ------------------------------------------------------
       End Interface
 
 C
-C     End of IS Fortran 90 include file for the PETSc package
+C     End of DA Fortran 90 include file for the PETSc package
 C

@@ -8,8 +8,8 @@ SOURCEF	        =
 SOURCEH	        =
 OBJSC	        =
 OBJSF	        = 
-LIBBASE	        = libpetscsles
-LOCDIR          = src/pc/examples/
+LIBBASE	        = libpetscec
+LOCDIR          = src/ec/examples/
 DIRS            = tests tutorials
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

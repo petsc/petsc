@@ -31,7 +31,7 @@ BUILDEXAMPLES_4 = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_9 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c
-EXAMPLESF       = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F
+EXAMPLESF       = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex4f90.F ex1f90.F
 
 ex1: ex1.o  chkopts 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
@@ -40,6 +40,10 @@ ex1: ex1.o  chkopts
 ex1f: ex1f.o  chkopts
 	-$(FLINKER) -o ex1f ex1f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
 	$(RM) -f ex1f.o
+
+ex1f90: ex1f90.o  chkopts
+	-$(FLINKER) -o ex1f90 ex1f90.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	$(RM) -f ex1f90.o
 
 ex2: ex2.o  chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
@@ -64,6 +68,10 @@ ex4: ex4.o  chkopts
 ex4f: ex4f.o  chkopts
 	-$(FLINKER) -o ex4f ex4f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
 	$(RM) -f ex4f.o
+
+ex4f90: ex4f90.o  chkopts
+	-$(FLINKER) -o ex4f90 ex4f90.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	$(RM) -f ex4f90.o
 
 ex5: ex5.o  chkopts
 	-$(CLINKER) -o ex5 ex5.o  $(SLES_LIB)

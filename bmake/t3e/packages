@@ -36,8 +36,9 @@ MPIRUN         = /opt/ctl/mpt/1.1.0.0/bin/mpirun
 # complex finds the /usr/include/complex.h not /usr/include/mpp/complex.h
 # which appears to be for C NOT c++.
 #
-#
-#  Note that you cannot use BlockSolve with C++ or complex
+# If you are not using Blocksolve then remove the -DHAVE_BLOCKSOLVE below 
+# and comment out or remove the next two lines below.
+#  Note that you cannot use BlockSolve with complex
 #
 BS_INCLUDE = 
 BS_LIB     =

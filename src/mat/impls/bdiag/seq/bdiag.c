@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.122 1997/01/01 03:38:01 bsmith Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.123 1997/01/06 20:24:51 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1856,6 +1856,7 @@ static int MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
   int          i, j, n, len, ibase, bs = a->bs, iloc;
   Scalar       *x, *dd, zero = 0.0;
 
+  if (A->factor) SETERRQ(1,0,"Not for factored matrix");  
   VecSet(&zero,v);
   VecGetArray_Fast(v,x); VecGetLocalSize_Fast(v,n);
   if (n != a->m) SETERRQ(1,0,"Nonconforming mat and vec");

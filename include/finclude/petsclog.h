@@ -1,5 +1,5 @@
 C
-C  $Id: plog.h,v 1.3 1996/08/19 23:02:39 curfman Exp bsmith $;
+C  $Id: petsclog.h,v 1.4 1996/09/27 21:56:34 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Plog package in PETSc
 C
@@ -164,6 +164,12 @@ C
        parameter (TS_PseudoComputeTimeStep = 91)
        integer    Petsc_Barrier
        parameter (Petsc_Barrier = 100)
+
+       integer    EC_SetUp
+       parameter (EC_SetUp = 105)
+       integer    EC_Solve
+       parameter (EC_Solve = 106)
+
        integer    DFVec_RefineVector
        parameter (DFVec_RefineVector = 110)
        integer    DFVec_AssembleFullVector

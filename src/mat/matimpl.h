@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.65 1996/11/19 16:30:41 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.66 1997/01/03 18:42:54 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -73,7 +73,8 @@ struct _MatOps {
             (*restorecolumnij)(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *),
             (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring),
             (*coloringpatch)(Mat,int,int *,ISColoring*),
-            (*setunfactored)(Mat);
+            (*setunfactored)(Mat),
+            (*permute)(Mat,IS,IS,Mat*);
 };
 
 #define FACTOR_LU       1

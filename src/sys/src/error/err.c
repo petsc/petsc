@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.53 1997/01/01 13:48:51 bsmith Exp balay $";
+static char vcid[] = "$Id: err.c,v 1.54 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -130,8 +130,8 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int numbe
   }
   else if (number == PETSC_ERR_SUP) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-    fprintf(stderr,"[%d]PETSC ERROR:   %s: No support for this operation\n",rank,message);
-    fprintf(stderr,"[%d]PETSC ERROR:   for this object type!\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,message);
     number = 1;
   }
   else if (number == PETSC_ERR_SIG) {
@@ -208,8 +208,8 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int number,int
   }
   else if (number == PETSC_ERR_SUP) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-    fprintf(stderr,"[%d]PETSC ERROR:   %s: No support for this operation\n",rank,message);
-    fprintf(stderr,"[%d]PETSC ERROR:   for this object type!\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
+    fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,message);
     number = 1;
   }
   else if (number == PETSC_ERR_SIG) {

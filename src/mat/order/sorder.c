@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.35 1997/01/01 03:38:11 bsmith Exp balay $";
+static char vcid[] = "$Id: sorder.c,v 1.36 1997/01/06 20:25:07 balay Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -251,7 +251,7 @@ $    -mat_order rcm, -mat_order qmd
 @*/
 int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
 {
-  int         ierr;
+  int         ierr,flg;
   int         (*r)(Mat,MatReordering,IS*,IS*);
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -300,6 +300,23 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
   }
 
   PLogEventEnd(MAT_GetReordering,mat,0,0,0);
+
+  ierr = OptionsHasName(0,"-mat_view_reordering_draw",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Mat tmat;
+    ierr = OptionsHasName(0,"-mat_view_contour",&flg); CHKERRQ(ierr);
+    if (flg) {
+      ViewerPushFormat(VIEWER_DRAWX_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
+    }
+    ierr = MatPermute(mat,*rperm,*cperm,&tmat); CHKERRQ(ierr);
+    ierr = MatView(tmat,VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+    ierr = ViewerFlush(VIEWER_DRAWX_(mat->comm)); CHKERRQ(ierr);
+    if (flg) {
+      ViewerPopFormat(VIEWER_DRAWX_(mat->comm));CHKERRQ(ierr);
+    }
+    ierr = MatDestroy(tmat);  CHKERRQ(ierr);
+  }
+
   return 0;
 }
 

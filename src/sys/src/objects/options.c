@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.116 1997/01/01 03:36:26 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.117 1997/01/06 20:22:55 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -528,7 +528,7 @@ extern "C" {
 #endif
 
 extern int PLogInfoAllow(PetscTruth);
-extern int PetscSetUseTrMalloc_Private();
+extern int PetscSetUseTrMalloc_Private(int);
 
 #include "snes.h" /* so that cookies are defined */
 
@@ -538,17 +538,18 @@ int OptionsCheckInitial_Private()
 {
   char     string[64],mname[256];
   MPI_Comm comm = PETSC_COMM_WORLD;
-  int      flg1,flg2,flg3, ierr,*nodes,flag,i,rank;
+  int      flg1,flg2,flg3,flg4,ierr,*nodes,flag,i,rank;
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
+  ierr = OptionsHasName(PETSC_NULL,"-trmalloc_nan",&flg4);CHKERRQ(ierr);
 #if defined(PETSC_BOPT_g)
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1); CHKERRQ(ierr);
-  if (!flg1) { ierr = PetscSetUseTrMalloc_Private(); CHKERRQ(ierr); }
+  if (!flg1) { ierr = PetscSetUseTrMalloc_Private(flg4); CHKERRQ(ierr); }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg2); CHKERRQ(ierr);
-  if (flg1 || flg2) { ierr = PetscSetUseTrMalloc_Private();CHKERRQ(ierr); }
+  if (flg1 || flg2 || flg4) {ierr = PetscSetUseTrMalloc_Private(flg4);CHKERRQ(ierr);}
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-trdebug",&flg1); CHKERRQ(ierr);
   if (flg1) { 
@@ -741,6 +742,7 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm," -trdump: dump list of unfreed memory at conclusion\n");
     PetscPrintf(comm," -trmalloc: use our error checking malloc\n");
     PetscPrintf(comm," -trmalloc_off: don't use error checking malloc\n");
+    PetscPrintf(comm," -trmalloc_nan: initialize memory locations with NaNs\n");
     PetscPrintf(comm," -trinfo: prints total memory usage\n");
     PetscPrintf(comm," -trdebug: enables extended checking for memory corruption\n");
     PetscPrintf(comm," -optionstable: dump list of options inputted\n");

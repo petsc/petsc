@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.37 1996/11/07 15:12:51 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.38 1997/01/06 20:44:46 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -29,12 +29,13 @@ extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
 #define VIEWER_FORMAT_ASCII_MATLAB        1
 #define VIEWER_FORMAT_ASCII_IMPL          2
 #define VIEWER_FORMAT_ASCII_INFO          3
-#define VIEWER_FORMAT_ASCII_INFO_LONG 4
+#define VIEWER_FORMAT_ASCII_INFO_LONG     4
 #define VIEWER_FORMAT_ASCII_COMMON        5
 #define VIEWER_FORMAT_BINARY_DEFAULT      0
 #define VIEWER_FORMAT_BINARY_NATIVE       1
-#define VIEWER_FORMAT_DRAW_BASIC   0
-#define VIEWER_FORMAT_DRAW_LG      1
+#define VIEWER_FORMAT_DRAW_BASIC          0
+#define VIEWER_FORMAT_DRAW_LG             1
+#define VIEWER_FORMAT_DRAW_CONTOUR        2
 
 extern int    ViewerSetFormat(Viewer,int,char *);
 extern int    ViewerPushFormat(Viewer,int,char *);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dscatter.c,v 1.3 1996/12/16 22:15:53 balay Exp balay $";
+static char vcid[] = "$Id: dscatter.c,v 1.4 1997/01/06 20:27:51 balay Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -258,13 +258,13 @@ int DrawSPDraw(DrawSP sp)
   if (sp && sp->cookie == DRAW_COOKIE && sp->type == DRAW_NULLWINDOW) {return 0;}
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
 
-  if (nopts < 2) return 0;
+  if (nopts < 1) return 0;
   if (xmin > xmax || ymin > ymax) return 0;
   DrawClear(win);
   DrawAxisSetLimits(sp->axis, xmin, xmax, ymin, ymax);
   DrawAxisDraw(sp->axis);
   for ( i=0; i<dim; i++ ) {
-    for ( j=1; j<nopts; j++ ) {
+    for ( j=0; j<nopts; j++ ) {
       DrawText(win,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");
     }
   }

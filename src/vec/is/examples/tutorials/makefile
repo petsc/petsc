@@ -22,7 +22,7 @@ BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm clean
 BUILDEXAMPLES_9 = 
 BUILDEXAMPLES_4 = 
 EXAMPLESC       = ex1.c ex2.c ex3.c
-EXAMPLESF       = ex1f.F ex2f.F
+EXAMPLESF       = ex1f.F ex2f.F ex1f90.F ex3f90.F
 
 ex1: ex1.o chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(SLES_LIB)
@@ -31,6 +31,10 @@ ex1: ex1.o chkopts
 ex1f: ex1f.o chkopts
 	-$(FLINKER) -o ex1f ex1f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
 	$(RM) -f ex1f.o
+
+ex1f90: ex1f90.o chkopts
+	-$(FLINKER) -o ex1f90 ex1f90.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	$(RM) -f ex1f90.o
 
 ex2: ex2.o chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
@@ -43,6 +47,10 @@ ex2f: ex2f.o chkopts
 ex3: ex3.o  chkopts
 	-$(CLINKER) -o ex3 ex3.o  $(SLES_LIB)
 	$(RM) -f ex3.o
+
+ex3f90: ex3f90.o chkopts
+	-$(FLINKER) -o ex3f90 ex3f90.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	$(RM) -f ex3f90.o
 
 runex1:
 	-@$(MPIRUN)  ex1  > ex1.tmp 2>&1;\

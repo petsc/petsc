@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.9 1996/09/30 20:52:45 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.10 1996/09/30 20:58:00 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -49,6 +49,7 @@ extern int TSPseudoSetVerifyTimeStep(TS,int(*)(TS,Vec,void*,double*,int*),void*)
 extern int TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,double*,int*);
 extern int TSPseudoVerifyTimeStep(TS,Vec,double*,int*);
 extern int TSPseudoSetTimeStepIncrement(TS,double);
+extern int TSPseudoIncrementDtFromInitialDt(TS);
 
 extern int TSComputeRHSFunction(TS,double,Vec,Vec);
 

@@ -1,3 +1,4 @@
+
 #
 #
 #  If you are not using the Gnu C compiler then replace the compiler name 
@@ -18,7 +19,7 @@ FLINKER  = f90 -f77 $(FOPTFLAGS)
 CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
            -DHAVE_MALLOC_H -DHAVE_X11 -DHAVE_FORTRAN_UNDERSCORE \
            -DHAVE_DRAND48 -DHAVE_GETDOMAINNAME  -DHAVE_UNISTD_H \
-           -DHAVE_SYS_TIME_H -DHAVE_UNAME
+           -DHAVE_SYS_TIME_H -DHAVE_UNAME -DHAVE_NAGF90
 
 include $(PETSC_DIR)/bmake/common
 
@@ -43,6 +44,7 @@ libf: $(LIBNAME)($(OBJSF))
 	-cpp $(CFLAGS) $< | grep -v '^ *#' > $*.f
 	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
 	-$(RM) $*.f
+
 .F.a:
 	-$(RM) $*.f
 	-cpp $(CFLAGS)  $< | grep -v '^ *#' > $*.f

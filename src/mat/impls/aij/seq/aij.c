@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.202 1997/01/01 03:37:37 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.203 1997/01/06 20:24:23 balay Exp bsmith $";
 #endif
 
 /*
@@ -393,70 +393,24 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
   int         ierr, i,j, m = a->m, shift = a->indexshift,pause,color;
-  double      xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r;
+  int         format;
+  double      xl,yl,xr,yr,w,h,xc,yc,scale = 1.0,x_l,x_r,y_l,y_r,maxv;
   Draw        draw;
   DrawButton  button;
   PetscTruth  isnull;
 
-  ViewerDrawGetDraw(viewer,&draw);
+  ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
+  ierr = DrawClear(draw); CHKERRQ(ierr);
+  ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) return 0;
 
   xr  = a->n; yr = a->m; h = yr/10.0; w = xr/10.0; 
   xr += w;    yr += h;  xl = -w;     yl = -h;
   ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
   /* loop over matrix elements drawing boxes */
-  color = DRAW_BLUE;
-  for ( i=0; i<m; i++ ) {
-    y_l = m - i - 1.0; y_r = y_l + 1.0;
-    for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-      x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(PETSC_COMPLEX)
-      if (real(a->a[j]) >=  0.) continue;
-#else
-      if (a->a[j] >=  0.) continue;
-#endif
-      DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
-    } 
-  }
-  color = DRAW_CYAN;
-  for ( i=0; i<m; i++ ) {
-    y_l = m - i - 1.0; y_r = y_l + 1.0;
-    for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-      x_l = a->j[j] + shift; x_r = x_l + 1.0;
-      if (a->a[j] !=  0.) continue;
-      DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
-    } 
-  }
-  color = DRAW_RED;
-  for ( i=0; i<m; i++ ) {
-    y_l = m - i - 1.0; y_r = y_l + 1.0;
-    for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-      x_l = a->j[j] + shift; x_r = x_l + 1.0;
-#if defined(PETSC_COMPLEX)
-      if (real(a->a[j]) <=  0.) continue;
-#else
-      if (a->a[j] <=  0.) continue;
-#endif
-      DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
-    } 
-  }
-  DrawFlush(draw); 
-  DrawGetPause(draw,&pause);
-  if (pause >= 0) { PetscSleep(pause); return 0;}
 
-  /* allow the matrix to zoom or shrink */
-  ierr = DrawCheckResizedWindow(draw);
-  ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
-  while (button != BUTTON_RIGHT) {
-    DrawClear(draw);
-    if (button == BUTTON_LEFT) scale = .5;
-    else if (button == BUTTON_CENTER) scale = 2.;
-    xl = scale*(xl + w - xc) + xc - w*scale;
-    xr = scale*(xr - w - xc) + xc + w*scale;
-    yl = scale*(yl + h - yc) + yc - h*scale;
-    yr = scale*(yr - h - yc) + yc + h*scale;
-    w *= scale; h *= scale;
-    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+  if (format != VIEWER_FORMAT_DRAW_CONTOUR) {
+    /* Blue for negative, Cyan for zero and  Red for positive */
     color = DRAW_BLUE;
     for ( i=0; i<m; i++ ) {
       y_l = m - i - 1.0; y_r = y_l + 1.0;
@@ -492,6 +446,97 @@ static int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
         DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
       } 
     }
+  } else {
+    /* use contour shading to indicate magnitude of values */
+    /* first determine max of all nonzero values */
+    int    nz = a->nz,count;
+    Draw   popup;
+
+    maxv = 0.0;
+    for ( i=0; i<nz; i++ ) {
+      if (PetscAbsScalar(a->a[i]) > maxv) maxv = PetscAbsScalar(a->a[i]);
+    }
+    ierr = DrawCreatePopUp(draw,&popup); CHKERRQ(ierr);
+    ierr = DrawScalePopup(popup,0.0,maxv); CHKERRQ(ierr);
+    count = 0;
+    for ( i=0; i<m; i++ ) {
+      y_l = m - i - 1.0; y_r = y_l + 1.0;
+      for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+        x_l = a->j[j] + shift; x_r = x_l + 1.0;
+        color = 32 + (int) ((200.0 - 32.0)*PetscAbsScalar(a->a[count])/maxv);
+        DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+        count++;
+      } 
+    }
+  }
+  DrawFlush(draw); 
+  DrawGetPause(draw,&pause);
+  if (pause >= 0) { PetscSleep(pause); return 0;}
+
+  /* allow the matrix to zoom or shrink */
+  ierr = DrawCheckResizedWindow(draw);
+  ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
+  while (button != BUTTON_RIGHT) {
+    DrawClear(draw);
+    if (button == BUTTON_LEFT) scale = .5;
+    else if (button == BUTTON_CENTER) scale = 2.;
+    xl = scale*(xl + w - xc) + xc - w*scale;
+    xr = scale*(xr - w - xc) + xc + w*scale;
+    yl = scale*(yl + h - yc) + yc - h*scale;
+    yr = scale*(yr - h - yc) + yc + h*scale;
+    w *= scale; h *= scale;
+    ierr = DrawSetCoordinates(draw,xl,yl,xr,yr); CHKERRQ(ierr);
+    if (format != VIEWER_FORMAT_DRAW_CONTOUR) {
+      /* Blue for negative, Cyan for zero and  Red for positive */
+      color = DRAW_BLUE;
+      for ( i=0; i<m; i++ ) {
+        y_l = m - i - 1.0; y_r = y_l + 1.0;
+        for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+          x_l = a->j[j] + shift; x_r = x_l + 1.0;
+#if defined(PETSC_COMPLEX)
+          if (real(a->a[j]) >=  0.) continue;
+#else
+          if (a->a[j] >=  0.) continue;
+#endif
+          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+        } 
+      }
+      color = DRAW_CYAN;
+      for ( i=0; i<m; i++ ) {
+        y_l = m - i - 1.0; y_r = y_l + 1.0;
+        for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+          x_l = a->j[j] + shift; x_r = x_l + 1.0;
+          if (a->a[j] !=  0.) continue;
+          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+        } 
+      }
+      color = DRAW_RED;
+      for ( i=0; i<m; i++ ) {
+        y_l = m - i - 1.0; y_r = y_l + 1.0;
+        for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+          x_l = a->j[j] + shift; x_r = x_l + 1.0;
+#if defined(PETSC_COMPLEX)
+          if (real(a->a[j]) <=  0.) continue;
+#else
+          if (a->a[j] <=  0.) continue;
+#endif
+          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+        } 
+      }
+    } else {
+      /* use contour shading to indicate magnitude of values */
+      int count = 0;
+      for ( i=0; i<m; i++ ) {
+        y_l = m - i - 1.0; y_r = y_l + 1.0;
+        for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+          x_l = a->j[j] + shift; x_r = x_l + 1.0;
+          color = 32 + (int) ((200.0 - 32.0)*PetscAbsScalar(a->a[count])/maxv);
+          DrawRectangle(draw,x_l,y_l,x_r,y_r,color,color,color,color);
+          count++;
+        } 
+      }
+    }
+
     ierr = DrawCheckResizedWindow(draw);
     ierr = DrawGetMouseButton(draw,&button,&xc,&yc,0,0); 
   }
@@ -1443,6 +1488,42 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   return 0;
 }
 
+/* -------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "MatPermute_SeqAIJ"
+int MatPermute_SeqAIJ(Mat A, IS rowp, IS colp, Mat *B)
+{ 
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  Scalar     *vwork;
+  int        i, ierr, nz, m = a->m, n = a->n, *cwork;
+  int        *row,*col,*cnew,j,*lens;
+
+  ierr = ISGetIndices(rowp,&row); CHKERRQ(ierr);
+  ierr = ISGetIndices(colp,&col); CHKERRQ(ierr);
+  
+  /* determine lengths of permuted rows */
+  lens = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(lens);
+  for (i=0; i<m; i++ ) {
+    lens[row[i]] = a->i[i+1] - a->i[i];
+  }
+  ierr = MatCreateSeqAIJ(A->comm,m,n,0,lens,B);CHKERRQ(ierr);
+  PetscFree(lens);
+
+  cnew = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(cnew);
+  for (i=0; i<m; i++) {
+    ierr = MatGetRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+    for (j=0; j<nz; j++ ) { cnew[j] = col[cwork[j]];}
+    ierr = MatSetValues(*B,1,&row[i],nz,cnew,vwork,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+  }
+  PetscFree(cnew);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(rowp,&row); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(colp,&col); CHKERRQ(ierr);
+  return 0;
+}
+
 #undef __FUNC__  
 #define __FUNC__ "MatPrintHelp_SeqAIJ"
 int MatPrintHelp_SeqAIJ(Mat A)
@@ -1497,7 +1578,9 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetColumnIJ_SeqAIJ,
        MatRestoreColumnIJ_SeqAIJ,
        MatFDColoringCreate_SeqAIJ,
-       MatColoringPatch_SeqAIJ};
+       MatColoringPatch_SeqAIJ,
+       0,
+       MatPermute_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);

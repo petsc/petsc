@@ -32,7 +32,7 @@ MPIRUN         = /c2/poplar/fa/bsmith/mpich/bin/mpirun.solaris
 #
 # Optional location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there.
+# below if it is there and comment out or remove the next two lines below.
 #
 BS_INCLUDE = 
 BS_LIB     = 

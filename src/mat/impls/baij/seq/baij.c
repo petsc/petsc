@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.81 1997/01/01 03:38:19 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.82 1997/01/06 20:25:20 balay Exp bsmith $";
 #endif
 
 /*
@@ -1473,6 +1473,7 @@ static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   int         i,j,k,n,row,bs,*ai,*aj,ambs,bs2;
   Scalar      *x, zero = 0.0,*aa,*aa_j;
 
+  if (A->factor) SETERRQ(1,0,"Not for factored matrix");  
   bs   = a->bs;
   aa   = a->a;
   ai   = a->i;
@@ -1809,6 +1810,11 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
    Output Parameter:
 .  A - the matrix 
 
+   Options Database Keys:
+$    -mat_no_unroll - uses code that does not unroll the loops in the 
+$                     block calculations (much solver)
+$    -mat_block_size - size of the blocks to use
+
    Notes:
    The block AIJ format is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
@@ -1829,6 +1835,8 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
+
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);
 
   if (mbs*bs!=m || nbs*bs!=n) 
     SETERRQ(1,0,"Number rows, cols must be divisible by blocksize");

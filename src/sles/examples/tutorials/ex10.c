@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.13 1996/09/28 14:11:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.14 1997/01/01 03:39:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -47,7 +47,7 @@ int main(int argc,char **args)
   char       file[2][128];     /* input file name */
   char       stagename[6][16]; /* names of profiling stages */
   PetscTruth table = PETSC_FALSE;
-  int        ierr, its, set, flg, i;
+  int        ierr, its, set, flg, i,loops  = 2;
   double     norm, tsetup, tsolve;
   Scalar     zero = 0.0, none = -1.0;
 
@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
   ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f1 option");
+  if (!flg) {loops = 1;} /* don't bother with second system */
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop
@@ -81,7 +81,7 @@ int main(int argc,char **args)
         -log_summary) can be done with the larger one (that actually
         is the system of interest). 
   */
-  for ( i=0; i<2; i++ ) {
+  for ( i=0; i<loops; i++ ) {
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Load system i

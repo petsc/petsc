@@ -31,7 +31,7 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
 BUILDEXAMPLES_8 = ex5f.PETSc ex5f.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
-EXAMPLESF       = ex1f.F ex4f.F ex5f.F
+EXAMPLESF       = ex1f.F ex4f.F ex5f.F ex5f90.F
 DIRS	        = 
 
 ex1: ex1.o  chkopts
@@ -65,6 +65,10 @@ ex5: ex5.o  chkopts
 ex5f: ex5f.o  chkopts
 	-$(FLINKER) -o ex5f ex5f.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex5f.o
+
+ex5f90: ex5f90.o  chkopts
+	-$(FLINKER) -o ex5f90 ex5f90.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex5f90.o
 
 ex6: ex6.o  chkopts
 	-$(CLINKER) -o ex6 ex6.o $(PETSC_LIB)

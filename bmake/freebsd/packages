@@ -30,7 +30,8 @@ MPI_INCLUDE    = -I/usr/local/mpi/include
 MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile $(PETSC_DIR)/maint/hosts.freebsd
 #
 # Optional location of BlockSolve, if you do not have BlockSolve, then
-# remove -DHAVE_BLOCKSOLVE from the PCONF definition below if it is there.
+# remove -DHAVE_BLOCKSOLVE from the PCONF definition below if it is there
+# and comment out or remove the next two lines.
 #
 BS_INCLUDE     = 
 BS_LIB         = 

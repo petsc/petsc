@@ -35,7 +35,8 @@ MPIRUN         = /usr/local/mpich/bin/mpirun
 #MPIRUN         = /home/curfman/mpich/bin/mpirun
 #
 # Optional location of BlockSolve, if you do not have BlockSolve, then
-# remove -DHAVE_BLOCKSOLVE from the PCONF definition below if it is there.
+# remove -DHAVE_BLOCKSOLVE from the PCONF definition below if it is there
+# and comment out or remove the next two lines below.
 #
 BS_INCLUDE     = -I/home/curfman//BlockSolve95/include
 BS_LIB         =  /home/curfman/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
