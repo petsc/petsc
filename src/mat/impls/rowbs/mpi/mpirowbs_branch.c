@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.25 1995/05/25 02:30:24 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.26 1995/05/25 04:12:46 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -52,7 +52,7 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
   }
 
   /* Allocate BlockSolve matrix context */
-  bsif->A = bsmat = NEW(BSspmat); CHKPTR(bsmat);
+  bsif->A = bsmat = PNEW(BSspmat); CHKPTR(bsmat);
   len = m*(sizeof(BSsprow *) + sizeof(BSsprow));
   bsmat->rows = (BSsprow **) PETSCMALLOC( len ); CHKPTR(bsmat->rows);
   bsmat->num_rows = m;
@@ -704,30 +704,21 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
 #endif
   PFREE(mrow->rowners); 
 
-    /* already freed elsewhere
     if (mrow->bsmap) {
-      PETSCFREE(mrow->bsmap->vlocal2global);
-      PETSCFREE(mrow->bsmap->vglobal2local);
-      PETSCFREE(mrow->bsmap->vglobal2proc);
-      PETSCFREE(mrow->bsmap);
-    } */
+      if (mrow->bsmap->vlocal2global) PETSCFREE(mrow->bsmap->vlocal2global);
+      if (mrow->bsmap->vglobal2local) PETSCFREE(mrow->bsmap->vglobal2local);
+      if (mrow->bsmap->vglobal2proc)  PETSCFREE(mrow->bsmap->vglobal2proc);
+      PFREE(mrow->bsmap);
+    } 
 
     if (A) {
       for (i=0; i<mrow->m; i++) {
         vs = A->rows[i];
         ierr = MatFreeRowbs_Private(mat,vs->length,vs->col,vs->nz); CHKERR(ierr);
       }
-      if (A->map) {
-        if (A->map->free_l2g)
-           {(*A->map->free_l2g)(A->map->vlocal2global); CHKERRBS(0);}
-        if (A->map->free_g2l) 
-           {(*A->map->free_g2l)(A->map->vglobal2local); CHKERRBS(0);}
-        if (A->map->free_g2p)
-           {(*A->map->free_g2p)(A->map->vglobal2proc); CHKERRBS(0);}
-        PETSCFREE(A->map);
-      }
+      /* Note: A->map = mrow->bsmap is freed above */
       PETSCFREE(A->rows);
-      PETSCFREE(A);
+      PFREE(A);
     }
     if (mrow->procinfo) {BSfree_ctx(mrow->procinfo); CHKERRBS(0);}
     if (mrow->diag)     {ierr = VecDestroy(mrow->diag); CHKERR(ierr);}
@@ -872,7 +863,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROW_BS,comm);
   PLogObjectCreate(mat);
-  mat->data	= (void *) (mrow = NEW(Mat_MPIRowbs)); CHKPTR(mrow);
+  mat->data	= (void *) (mrow = PNEW(Mat_MPIRowbs)); CHKPTR(mrow);
   mat->ops	= &MatOps;
   mat->destroy	= MatDestroy_MPIRowbs;
   mat->view	= MatView_MPIRowbs;
@@ -946,7 +937,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   ierr = MatGetOwnershipRange(mat,&low,&high); CHKERR(ierr);
   offset = &low;
 
-  if (!mrow->bsmap) {mrow->bsmap = (void *) NEW(BSmapping); 
+  if (!mrow->bsmap) {mrow->bsmap = (void *) PNEW(BSmapping); 
                      CHKPTR(mrow->bsmap);}
   bsmap = mrow->bsmap;
   bsmap->vlocal2global	= (int *) PETSCMALLOC(sizeof(int)); 
@@ -954,7 +945,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
 	*((int *)bsmap->vlocal2global) = (*offset);
   bsmap->flocal2global	= BSloc2glob;
   bsmap->free_l2g	= 0;
-  bsmap->vglobal2local	= (int *)PETSCMALLOC(sizeof(int)); 
+  bsmap->vglobal2local	= (int *) PETSCMALLOC(sizeof(int)); 
 	CHKPTR(bsmap->vglobal2local);
 	*((int *)bsmap->vglobal2local) = (*offset);
   bsmap->fglobal2local	= BSglob2loc;
