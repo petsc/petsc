@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.29 1996/07/08 22:16:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.30 1996/08/04 23:10:43 bsmith Exp bsmith $";
 #endif
 /*  
-   Defines the abstract operations on index sets 
+   Defines the abstract operations on index sets, i.e. the public interface. 
 */
 #include "isimpl.h"      /*I "is.h" I*/
 
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: index.c,v 1.29 1996/07/08 22:16:03 bsmith Exp bsmith 
 .  is - the index set
 
    Output Parameters:
-.  ident - PETSC_TRUE if an identity
+.  ident - PETSC_TRUE if an identity, else PETSC_FALSE
 
 .keywords: IS, index set, identity
 
@@ -44,7 +44,6 @@ int ISSetIdentity(IS is)
   return 0;
 }
 
-
 /*@
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on if the 
       index set has been declared to be a permutation.
@@ -53,7 +52,7 @@ int ISSetIdentity(IS is)
 .  is - the index set
 
    Output Parameters:
-.  perm - PETSC_TRUE if a permutation
+.  perm - PETSC_TRUE if a permutation, else PETSC_FALSE
 
 .keywords: IS, index set, permutation
 
@@ -115,7 +114,7 @@ int ISDestroy(IS is)
 int ISInvertPermutation(IS is,IS *isout)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
-  if (!is->isperm) SETERRQ(1,"ISInvertPermutation:not permutation");
+  if (!is->isperm) SETERRQ(1,"ISInvertPermutation:not a permutation");
   return (*is->ops.invertpermutation)(is,isout);
 }
 
@@ -149,9 +148,6 @@ int ISGetSize(IS is,int *size)
    Output Parameter:
 .  ptr - the location to put the pointer to the indices
 
-   Notes:
-   In a parallel enviroment this probably points to only the indices that 
-   are local to a particular processor.
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -165,12 +161,13 @@ int ISGetSize(IS is,int *size)
 int ISGetIndices(IS is,int **ptr)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidPointer(ptr);
   return (*is->ops.getindices)(is,ptr);
 } 
 
 /*@C
    ISRestoreIndices - Restores an index set to a usable state after a call 
-   to ISGetIndices().
+                      to ISGetIndices().
 
    Input Parameters:
 .  is - the index set
@@ -187,6 +184,7 @@ int ISGetIndices(IS is,int **ptr)
 int ISRestoreIndices(IS is,int **ptr)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidPointer(ptr);
   if (is->ops.restoreindices) return (*is->ops.restoreindices)(is,ptr);
   else return 0;
 }
@@ -198,7 +196,7 @@ int ISRestoreIndices(IS is,int **ptr)
 .  is - the index set
 .  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
-.keywords: IS, index set, restore, indices
+.keywords: IS, index set, indices
 
 .seealso: ViewerFileOpenASCII()
 @*/
@@ -234,8 +232,8 @@ int ISSort(IS is)
 
    Output Parameters:
 .  flg - output flag, either
-$     1 if the index set is sorted;
-$     0 otherwise.
+$     PETSC_TRUE if the index set is sorted;
+$     PETSC_FALSE otherwise.
 
 .keywords: IS, index set, sort, indices
 

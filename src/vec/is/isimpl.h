@@ -1,11 +1,11 @@
-/* $Id: isimpl.h,v 1.8 1996/02/16 19:31:01 balay Exp bsmith $ */
+/* $Id: isimpl.h,v 1.9 1996/03/19 21:22:32 bsmith Exp bsmith $ */
 
 /*
     Index sets for scatter-gather type operations in vectors
 and matrices. 
 
-   Eventually ther may be operations like union, difference etc.
-for now we define only the shell and what we absolutely need.
+   Eventually there may be operations like union, difference etc.
+for now we define only what we absolutely need.
 */
 
 #if !defined(_INDEX)
