@@ -247,7 +247,7 @@ struct _StageLog {
 
 #define PetscLogEventEnd(e,o1,o2,o3,o4) 0; \
 {\
-  if (_PetscLogPLE && _stageLog->stageLog[_stageLog->curStage].eventLog->eventInfo[e].active) {\
+  if (_PetscLogPLE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) {\
     (*_PetscLogPLE)((e),0,(PetscObject)(o1),(PetscObject)(o2),(PetscObject)(o3),(PetscObject)(o4));\
   }\
   PETSC_LOG_EVENT_MPE_END(e); \

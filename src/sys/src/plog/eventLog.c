@@ -56,9 +56,13 @@ int EventRegLogCreate(EventRegLog *eventLog) {
 .seealso: EventRegLogCreate()
 */
 int EventRegLogDestroy(EventRegLog eventLog) {
+  int e;
   int ierr;
 
   PetscFunctionBegin;
+  for(e = 0; e < eventLog->numEvents; e++) {
+    ierr = PetscFree(eventLog->eventInfo[e].name);                                                        CHKERRQ(ierr);
+  }
   ierr = PetscFree(eventLog->eventInfo);                                                                  CHKERRQ(ierr);
   ierr = PetscFree(eventLog);                                                                             CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -113,6 +117,37 @@ int EventPerfLogDestroy(EventPerfLog eventLog) {
   PetscFunctionBegin;
   ierr = PetscFree(eventLog->eventInfo);                                                                  CHKERRQ(ierr);
   ierr = PetscFree(eventLog);                                                                             CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "EventPerfLogEnsureSize"
+/*
+  EventPerfLogEnsureSize - This ensures that a EventPerfLog is at least of a certain size.
+
+  Not collective
+
+  Input Paramters:
++ eventLog - The EventPerfLog
+- size     - The size
+
+  Level: intermediate
+
+.keywords: log, event, size, ensure
+.seealso: EventPerfLogCreate()
+*/
+int EventPerfLogEnsureSize(EventPerfLog eventLog, int size) {
+  PerfInfo *eventInfo;
+  int       ierr;
+
+  PetscFunctionBegin;
+  while(size > eventLog->maxEvents) {
+    ierr = PetscMalloc(eventLog->maxEvents*2 * sizeof(PerfInfo), &eventInfo);                             CHKERRQ(ierr);
+    ierr = PetscMemcpy(eventInfo, eventLog->eventInfo, eventLog->maxEvents * sizeof(PerfInfo));           CHKERRQ(ierr);
+    ierr = PetscFree(eventLog->eventInfo);                                                                CHKERRQ(ierr);
+    eventLog->eventInfo  = eventInfo;
+    eventLog->maxEvents *= 2;
+  }
   PetscFunctionReturn(0);
 }
 

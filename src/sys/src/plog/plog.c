@@ -309,6 +309,7 @@ int PetscLogStageRegister(int *stage, const char sname[])
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogRegister(stageLog, sname, stage);                                                        CHKERRQ(ierr);
+  ierr = EventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents);     CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -528,12 +529,16 @@ int PetscLogStageGetId(const char name[], int *stage)
 @*/
 int PetscLogEventRegister(int *event, const char name[],int cookie) {
   StageLog stageLog;
+  int      stage;
   int      ierr;
 
   PetscFunctionBegin;
   *event = PETSC_DECIDE;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = EventRegLogRegister(stageLog->eventLog, name, cookie, event);                                    CHKERRQ(ierr);
+  for(stage = 0; stage < stageLog->numStages; stage++) {
+    ierr = EventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents);    CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
