@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.81 1997/10/19 03:22:42 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.82 1997/11/03 04:42:59 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -35,15 +35,15 @@ int VecDestroy_MPI(PetscObject obj )
 #endif  
   if (x->stash.array) PetscFree(x->stash.array);
   if (x->array_allocated) PetscFree(x->array_allocated);
-  PetscFree(v->data);
   if (v->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(v->mapping); CHKERRQ(ierr);
   }
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {
     ierr = VecDestroy(x->localrep); CHKERRQ(ierr);
-    ierr = VecScatterDestroy(x->localupdate);
+    ierr = VecScatterDestroy(x->localupdate);CHKERRQ(ierr);
   }
+  PetscFree(v->data);
   PLogObjectDestroy(v);
   PetscHeaderDestroy(v);
   PetscFunctionReturn(0);
