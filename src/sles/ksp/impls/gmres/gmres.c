@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.106 1998/07/29 19:36:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.107 1998/08/18 20:57:35 bsmith Exp balay $";
 #endif
 
 /*
@@ -184,7 +184,7 @@ static int GMRESResidual(  KSP ksp,int restart )
 int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
-  double    res_norm, res, rtol;
+  double    res_norm, res;
   double    hapbnd,*nres = ksp->residual_history,tt;
   Scalar    tmp;
   int       hist_len = ksp->res_hist_size,  ierr, it;
@@ -242,7 +242,6 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   if (!restart) {
     ksp->ttol = PetscMax(ksp->rtol*res_norm,ksp->atol);
   }
-  rtol      = ksp->ttol;
   gmres->it = (it - 1);
   while (!(*converged = (*ksp->converged)(ksp,ksp->its,res,ksp->cnvP))
            && it < max_k && ksp->its < max_it) {
