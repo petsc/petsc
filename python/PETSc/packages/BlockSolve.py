@@ -29,21 +29,21 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for BlockSolve95'))
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing BlockSolve95'))
-    help.addArgument('BLOCKSOLVE95','-with-blocksolve95-include=<lib>',nargs.ArgDir(None,None,'Indicate the header files for BlockSolve95'))
+    help.addArgument('BLOCKSOLVE95','-with-blocksolve95-include=<lib>',nargs.ArgDir(None,None,'Indicate the directory for BlockSolve95 header files'))
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root of the BlockSolve95 installation'))
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95-bopt=<bopt>',nargs.Arg(None,None,'Indicate the BlockSolve95 bopt to use'))
     help.addArgument('BLOCKSOLVE95','-with-blocksolve95-arch=<arch>',nargs.Arg(None,None,'Indicate the BlockSolve95 arch to use'))
     return
 
   def generateIncludeGuesses(self):
-    if 'with-blocksolve95' in self.framework.argDB:
-      if 'with-blocksolve95-include' in self.framework.argDB:
-        yield('User specified BLOCKSOLVE95 header location',self.framework.argDB['with-blocksolve95-include'])
-      bsroot = self.lib[0]
-      # We have /home/user/BlockSolve95/lib/libO/bsarch/libBS95.a so remove the last 4 elements from the path
-      for i in 1,2,3,4:
-        (bsroot,dummy) = os.path.split(bsroot)
-      yield('based on found library location',os.path.join(bsroot,'include'))
+    if 'with-blocksolve95-include' in self.framework.argDB:
+      yield('User specified BLOCKSOLVE95 header location',self.framework.argDB['with-blocksolve95-include'])
+    bsroot = self.lib[0]
+    # We have /home/user/BlockSolve95/lib/libO/bsarch/libBS95.a so remove the last 4 elements from the path
+    for i in 1,2,3,4:
+      (bsroot,dummy) = os.path.split(bsroot)
+    yield('based on found library location',os.path.join(bsroot,'include'))
+    return
 
   def checkInclude(self,bs95incl):
     '''Check that BSsparse.h is present'''
@@ -61,16 +61,23 @@ class Configure(config.base.Configure):
     return found
 
   def generateLibGuesses(self):
-    if 'with-blocksolve95' in self.framework.argDB:
-      if 'with-blocksolve95-lib' in self.framework.argDB:
-        yield ('User specified BLOCKSOLVE95 library',self.framework.argDB['with-blocksolve95-lib'])
-      if 'with-blocksolve95-dir' in self.framework.argDB and 'with-blocksolve95-bopt' in self.framework.argDB and 'with-blocksolve95-arch' in self.framework.argDB:
+    if 'with-blocksolve95-lib' in self.framework.argDB:
+      yield ('User specified BLOCKSOLVE95 library',self.framework.argDB['with-blocksolve95-lib'])
+    elif 'with-blocksolve95-dir' in self.framework.argDB:
+      if not 'with-blocksolve95-bopt' in self.framework.argDB:
+        self.framework.log.write('Missing BOPT for specified BlockSolve root directory\n')
+      elif not 'with-blocksolve95-arch' in self.framework.argDB:
+        self.framework.log.write('Missing ARCH for specified BlockSolve root directory\n')
+      else:
         dir    = self.framework.argDB['with-blocksolve95-dir']
         bopt   = self.framework.argDB['with-blocksolve95-bopt']
         bsarch = self.framework.argDB['with-blocksolve95-arch']
         yield('User specified BLOCKSOLVE95 installation',os.path.join(dir,'lib','lib'+bopt,bsarch,'libBS95.a'))
         yield('User specified BLOCKSOLVE95 installation',os.path.join(dir,'lib','lib'+bopt,bsarch,'libBS95.lib'))
+    else:
+      self.framework.log.write('Must specify either a library or installation root directory for BlockSolve\n')
       # Perhaps we could also check all possible blocksolve95 installations based on just with-blocksolve95-dir trying all bopt and bsarch available....
+    return
 
   def checkLib(self,bs95lib):
     if not isinstance(bs95lib,list): bs95lib = [bs95lib]
