@@ -66,6 +66,7 @@ int PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   h->view        = PETSC_NULL;
   h->destroy     = PETSC_NULL;
   h->win         = draw;
+  ierr = PetscObjectReference((PetscObject) draw);                                                        CHKERRQ(ierr);
   h->color       = PETSC_DRAW_GREEN;
   h->xmin        = PETSC_MAX;
   h->xmax        = PETSC_MIN;
@@ -284,7 +285,7 @@ int PetscDrawHGDraw(PetscDrawHG hist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);
   ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);                                  CHKERRQ(ierr);
-  if (isnull == PETSC_FALSE) PetscFunctionReturn(0);
+  if (isnull == PETSC_TRUE) PetscFunctionReturn(0);
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
