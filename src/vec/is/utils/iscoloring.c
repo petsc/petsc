@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.64 2000/10/24 20:24:56 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.65 2001/01/15 21:44:35 bsmith Exp balay $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
@@ -253,12 +253,11 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
 int ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm comm;
-  int      i,ierr,rank,size,*indices,np,n,*starts,*sums,*lsizes,*newi;
+  int      i,ierr,size,*indices,np,n,*starts,*sums,*lsizes,*newi;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* count the number of partitions, make sure <= size */
   ierr = ISGetLocalSize(part,&n);CHKERRQ(ierr);

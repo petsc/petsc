@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.16 2001/01/04 21:56:58 balay Exp balay $ 
+# $Id: base_variables,v 1.17 2001/03/05 22:10:25 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -14,7 +14,7 @@ MKDIR              = mkdir -p
 LIB_SUFFIX         = a
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = cc -64 -woff 1164 -woff 1048
+C_CC		   = cc -64 -woff 1164
 C_FC		   = f90 -cpp -64 -DPETSC_HAVE_IRIXF90 -DPETSC_MISSING_DREAL
 C_CLINKER_SLFLAG   = -rpath
 C_FLINKER_SLFLAG   = -rpath
@@ -31,7 +31,7 @@ O_COPTFLAGS	   = -OPT:Olimit=6500 -O3
 O_FOPTFLAGS	   = -O3
 # ########################## C++ compiler ##################################
 #
-CXX_CC		   = CC -64 -woff 1164 -woff 1048
+CXX_CC		   = CC -64 -woff 1164
 CXX_FC		   = f90 -cpp -64 -DPETSC_HAVE_IRIXF90 -DPETSC_MISSING_DREAL
 CXX_CLINKER_SLFLAG = -rpath
 CXX_FLINKER_SLFLAG = -rpath
