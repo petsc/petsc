@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.46 1998/06/11 15:27:29 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.47 1998/12/03 04:05:51 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -129,8 +129,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(g); CHKERRA(ierr);
   ierr = DADestroy(user.da); CHKERRA(ierr);
-  ierr = MatDestroy(H); CHKERRA(ierr);
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = MatDestroy(H); CHKERRA(ierr); 
+  ierr = SNESDestroy(snes); CHKERRA(ierr); 
 
   PetscFinalize();
   return 0;
