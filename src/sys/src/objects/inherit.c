@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.45 1998/12/17 22:09:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.46 1999/02/08 17:38:00 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -170,9 +170,16 @@ int PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 #define __FUNC__ "PetscObjectCompose_Petsc"
 int PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 {
-  int ierr;
+  int  ierr;
+  char *tname;
 
   PetscFunctionBegin;
+  if (ptr) {
+    ierr = OListReverseFind(ptr->olist,obj,&tname);CHKERRQ(ierr);
+    if (tname){
+      SETERRQ(1,1,"An object cannot be composed with an object that was compose with it");
+    }
+  }
   ierr = OListAdd(&obj->olist,name,ptr); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
