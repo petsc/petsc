@@ -1,4 +1,4 @@
-/*$Id: destroy.c,v 1.47 2000/01/11 20:59:32 bsmith Exp bsmith $*/
+/*$Id: destroy.c,v 1.48 2000/02/02 20:08:20 bsmith Exp curfman $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
@@ -13,7 +13,7 @@
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
-         Thus must be cast with a (PetscObject), for example, 
+         This must be cast with a (PetscObject), for example, 
          PetscObjectDestroy((PetscObject)mat);
 
    Level: intermediate
@@ -44,7 +44,7 @@ int PetscObjectDestroy(PetscObject obj)
 
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
-         Thus must be cast with a (PetscObject), for example, 
+         This must be cast with a (PetscObject), for example, 
          PetscObjectView((PetscObject)mat,viewer);
 -  viewer - any PETSc viewer
 
@@ -72,18 +72,18 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ "PetscTypeCompare"
 /*@C
-   PetscTypeCompare - Determines if a PETSc object is of a particular type.
+   PetscTypeCompare - Determines whether a PETSc object is of a particular type.
 
    Not Collective
 
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
-         Thus must be cast with a (PetscObject), for example, 
+         This must be cast with a (PetscObject), for example, 
          PetscObjectDestroy((PetscObject)mat);
 -  type_name - string containing a type name
 
    Output Parameter:
-.   same - PETSC_TRUE if they are the same, else PETSC_FALSE
+.  same - PETSC_TRUE if they are the same, else PETSC_FALSE
   
    Level: intermediate
 
