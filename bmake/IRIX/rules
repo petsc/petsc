@@ -1,4 +1,4 @@
-# $Id: base,v 1.8 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base,v 1.9 1998/03/26 19:54:41 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -n32 -woff 1048 -DPARCH_IRIX
@@ -68,7 +68,7 @@ shared: chkopts_basic
 	  else \
 	      flag="true"; \
 	  fi; \
-          if [ "$$flag" != "" ]; then \
+	  if [ "$$flag" != "" ]; then \
 	    echo "building $$LIBNAME.${SLSUFFIX}"; \
 	    ${LD} -elf -no_library_replacement -shared -rdata_shared \
 	      -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
