@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.29 2001/07/08 16:12:44 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.30 2001/07/09 03:15:58 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -1013,6 +1013,28 @@ int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nma
   PetscFunctionReturn(0);
 }
 
+/*MC
+     PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
+            See, for example, KSPSetFromOptions_GMRES().
+
+   Synopsis: int PetscOptionsTail(void)
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+          Must be preceded by a call to PetscOptionsHead() in the same function.
+
+   Concepts: options database^subheading
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+M*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsHead"
 /*@C
@@ -1026,6 +1048,8 @@ int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nma
 
    
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+          Must be followed by a call to PetscOptionsTail() in the same function.
 
    Concepts: options database^subheading
 
