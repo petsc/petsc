@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.2 1995/05/14 16:32:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.3 1995/05/14 16:50:19 curfman Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -46,12 +46,12 @@ extern int ViewerInitialize_Private(),
    Input Parameters:
 .  argc - count of number of command line arguments
 .  args - the command line arguments
-.  file - [optional] Petsc database file, defaults to ~username/.petscrc
-.  env  - [optional] Petsc database environmental variable, defaults to 
+.  file - [optional] PETSc database file, defaults to ~username/.petscrc
+.  env  - [optional] PETSc database environmental variable, defaults to 
           PETSC_OPTIONS
 
    Notes:
-   If for some reason you must call MPI_Init() separately, call 
+   If for some reason you must call MPI_Init() separately, call
    it before PetscInitialize().
 
 .keywords: initialize, options, database, startup
@@ -75,9 +75,20 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
    PetscFinalize - Checks for options to be called at the conclusion
    of the program and calls MPI_Finalize().
 
+   Options Database Keys:
+$  -optionstable : Calls OptionsPrint()
+$  -optionsleft : Prints unused options that remain in 
+$     the database
+$  -no_signal_handler : Turns off the signal handler
+$  - trdump : Calls Trdump()
+$  -logall : Prints log information (for code compiled
+$      with PETSC_LOG)
+$  -log : Prints log information (for code compiled 
+$      with PETSC_LOG)
+
 .keywords: finalize, exit, end
 
-.seealso: PetscInitialize()
+.seealso: PetscInitialize(), OptionsPrint(), Trdump()
 @*/
 int PetscFinalize()
 {
