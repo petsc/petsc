@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.42 1996/03/19 21:27:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.43 1996/07/08 22:20:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -11,7 +11,7 @@ int main(int argc,char **args)
 {
   Vec     x, b, u;      /* approx solution, RHS, exact solution */
   Mat     A;            /* linear system matrix */
-  SLES    sles;         /* SLES context */
+  SLES    sles;         /* linear solver context */
   int     ierr, i, n = 10, col[3], its,flg;
   Scalar  none = -1.0, one = 1.0, value[3];
   double  norm;
@@ -40,10 +40,12 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
-  /* Create SLES context; set operators and options; solve linear system */
+  /* Create linear solver context; set operators and options */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+
+  /* Solve linear system */
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
