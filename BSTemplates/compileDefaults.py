@@ -478,3 +478,71 @@ class UsingJava (UsingCompiler):
     compileJava.includeDirs.extend(self.getSIDLRuntimeLibraries())
     compileJava.archiverRoot = os.path.dirname(sources[0])
     return [compile.TagJava(self.usingSIDL.sourceDB), compileJava]
+  
+#------------------------------------------------------------------------------------------------------
+class UsingMatlab(UsingCompiler):
+  '''This class handles all interaction specific to the Matlab language'''
+  def __init__(self, usingSIDL):
+    UsingCompiler.__init__(self, usingSIDL)
+    bs.argDB.setType('MATLAB_INCLUDE', nargs.ArgDir(1,'The directory containing mex.h'))
+    #TODO: bs.argDB.setType('MATLAB_LIB', nargs.ArgLibrary(1, 'The libraries marix, mx, and ut))
+    self.setupIncludeDirectories()
+    self.setupExtraLibraries()
+    return
+
+  def setupIncludeDirectories(self):
+    includeDir = bs.argDB['MATLAB_INCLUDE']
+    if isinstance(includeDir, list):
+      self.includeDirs[self.getLanguage()].extend(includeDir)
+    else:
+      self.includeDirs[self.getLanguage()].append(includeDir)
+    return self.includeDirs
+
+  def setupExtraLibraries(self):
+    for package in self.usingSIDL.getPackages():
+      self.extraLibraries[package].append(bs.argDB['MATLAB_LIB'])
+    return self.extraLibraries
+
+  def getLanguage(self):
+    '''The language name'''
+    return 'Matlab'
+
+  def getCompileSuffixes(self):
+    '''The suffix for Matlab files'''
+    return ['.mexglx', '.cc', '.hh']
+
+  def getTagger(self, rootDir):
+    return compile.TagCxx(self.usingSIDL.sourceDB, root = rootDir)
+
+  def getCompiler(self, library):
+    return compile.CompileCxx(self.usingSIDL.sourceDB, library)
+
+  def getServerCompileTarget(self, project, package):
+    rootDir = self.usingSIDL.getServerRootDir(self.getLanguage(), package)
+    stubDir = self.usingSIDL.getStubDir(self.getLanguage(), package)
+    library = self.getServerLibrary(project, self.getLanguage(), package)
+    # IOR Filter
+    iorFilter = transform.FileFilter(self.usingSIDL.compilerDefaults.isIOR, tags = ['c', 'old c'])
+    # IOR compiler
+    compileC = compile.CompileC(self.usingSIDL.sourceDB, library)
+    compileC.defines.extend(self.getDefines())
+    compileC.includeDirs.append(rootDir)
+    compileC.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    # Server Filter
+    serverFilter = transform.FileFilter(lambda source: self.usingSIDL.compilerDefaults.isServer(source, rootDir), tags = ['cxx', 'old cxx'])
+    # Server compiler
+    compileCxx = compile.CompileCxx(self.usingSIDL.sourceDB, library)
+    compileCxx.defines.extend(self.getDefines())
+    compileCxx.includeDirs.append(rootDir)
+    compileCxx.includeDirs.extend(self.usingSIDL.includeDirs[self.getLanguage()])
+    compileCxx.includeDirs.append(stubDir)
+    compileCxx.includeDirs.extend(self.includeDirs[package])
+    compileCxx.includeDirs.extend(self.includeDirs[self.getLanguage()])
+    for dir in self.usingSIDL.repositoryDirs:
+      includeDir = self.usingSIDL.getClientRootDir(self.getLanguage(), root = dir)
+      if os.path.isdir(includeDir):
+        compileCxx.includeDirs.append(includeDir)
+    targets = [compile.TagC(self.usingSIDL.sourceDB, root = rootDir), iorFilter, compileC,
+               compile.TagCxx(self.usingSIDL.sourceDB, root = rootDir), serverFilter, compileCxx]
+    return targets
+
