@@ -385,13 +385,9 @@ void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*
   }
 }
 
-void PETSC_STDCALL kspsetnormtype_(KSP *ksp,CHAR type PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL kspsetnormtype_(KSP *ksp,KSPNormType *type,int *ierr)
 {
-  char *t;
-
-  FIXCHAR(type,len,t);
-  *ierr = KSPSetNormType(*ksp,t);
-  FREECHAR(type,t);
+  *ierr = KSPSetNormType(*ksp,*type);
 }
 
 EXTERN_C_END
