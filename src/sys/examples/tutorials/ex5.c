@@ -19,6 +19,7 @@ typedef struct {
 
 typedef struct {
   PetscBag    bag;
+  char        filename[PETSC_MAX_PATH_LEN];
   PetscReal   rho;
   PetscScalar W;
   PetscInt    I;
@@ -53,6 +54,7 @@ int main(int argc,char **argv)
 
   /* register variables, defaults, names, help strings */
   ierr  = PetscBagSetName(bag,"ParameterBag","contains parameters for simulations of top-secret, dangerous physics");CHKERRQ(ierr);
+  ierr  = PetscBagRegisterString(bag,&params->filename,PETSC_MAX_PATH_LEN,"myfile","filename","Name of secret file");CHKERRQ(ierr);
   ierr  = PetscBagRegisterReal  (bag,&params->rho,3.0,"rho","Density, kg/m^3");CHKERRQ(ierr);
   ierr  = PetscBagRegisterScalar(bag,&params->W,  5.0,"W","Vertical velocity, m/sec");CHKERRQ(ierr);
   ierr  = PetscBagRegisterInt   (bag,&params->I,  2,"modes_x","Number of modes in x-direction");CHKERRQ(ierr);

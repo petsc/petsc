@@ -9,7 +9,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_BAG_FILE_COOKIE 1211219
 
 typedef struct _p_PetscBagItem *PetscBagItem;
-struct _p_PetscBagItem {PetscDataType dtype;PetscInt offset;char name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH];PetscBagItem next;};
+struct _p_PetscBagItem {PetscDataType dtype;PetscInt offset;size_t msize;char name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH];PetscBagItem next;};
 /*S
      PetscBag - PETSc object that manages a collection of user data including parameters.
            A bag is essentially a C struct with serialization (you can save it and load it from files).
@@ -111,6 +111,7 @@ M*/
 #define PetscBagGetName(A,B) (*(B) = A->bagname,0)
 
 extern PetscErrorCode PetscBagRegisterReal(PetscBag*,void*,PetscReal, const char*, const char*);
+extern PetscErrorCode PetscBagRegisterString(PetscBag*,void*,size_t,const char*, const char*, const char*);
 extern PetscErrorCode PetscBagRegisterScalar(PetscBag*,void*,PetscScalar,const  char*,const  char*);
 extern PetscErrorCode PetscBagRegisterInt(PetscBag*,void*,PetscInt,const  char*,const  char*);
 extern PetscErrorCode PetscBagRegisterTruth(PetscBag*,void*,PetscTruth,const  char*,const  char*);
