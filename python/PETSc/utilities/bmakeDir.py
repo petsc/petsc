@@ -9,7 +9,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.arch          = self.framework.require('PETSc.utilities.arch', self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     return
 
   def __str__(self):
@@ -21,7 +21,7 @@ class Configure(config.base.Configure):
 
   def configureBmakeDir(self):
     '''Makes bmake/$PETSC_ARCH if it does not exist'''
-    self.bmakeDir = os.path.join('bmake', self.framework.argDB['PETSC_ARCH'])
+    self.bmakeDir = os.path.join('bmake', self.arch.arch)
     if not os.path.exists(self.bmakeDir):
       os.makedirs(self.bmakeDir)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created '+self.bmakeDir+' for configuration data')

@@ -15,6 +15,7 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers',self)
     self.setcompilers = self.framework.require('config.setCompilers',self)    
     self.libraries    = self.framework.require('config.libraries',self)
+    self.arch         = self.framework.require('PETSc.utilities.arch',self)
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
     self.found        = 0
@@ -104,7 +105,7 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('BLACS', 'Download', 'Downloaded blacs into '+self.getDirBLACS())
 
     blacsDir  = self.getDirBLACS()
-    installDir = os.path.join(blacsDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(blacsDir, self.arch.arch)
     g = open(os.path.join(blacsDir,'Bmake.Inc'),'w')
     g.write('SHELL = /bin/sh\n')
     g.write('COMMLIB = MPI\n')
@@ -206,7 +207,7 @@ framework.log)[0]
       self.framework.actions.addArgument('SCALAPACK', 'Download', 'Downloaded scalapack into '+self.getDirSCALAPACK())
 
     scalapackDir  = self.getDirSCALAPACK()
-    installDir = os.path.join(scalapackDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(scalapackDir, self.arch.arch)
     g = open(os.path.join(scalapackDir,'SLmake.inc'),'w')
     g.write('SHELL = /bin/sh\n')
     g.write('home = '+self.getDirSCALAPACK()+'\n')    
@@ -216,7 +217,7 @@ framework.log)[0]
     g.write('BLACSDBGLVL = -DBlacsDebugLvl=1\n')
     g.write('BLACSLIB = '+' '.join(map(self.libraries.getLibArgument, self.blacslib))+'\n')
     g.write('SMPLIB='+' '.join(map(self.libraries.getLibArgument, self.mpi.lib))+'\n')
-    g.write('SCALAPACKLIB  = '+os.path.join('$(home)',self.framework.argDB['PETSC_ARCH'],'libscalapack.a')+' \n')
+    g.write('SCALAPACKLIB  = '+os.path.join('$(home)',self.arch.arch,'libscalapack.a')+' \n')
     g.write('CBLACSLIB     = $(BLACSCINIT) $(BLACSLIB) $(BLACSCINIT)\n')
     g.write('FBLACSLIB     = $(BLACSFINIT) $(BLACSLIB) $(BLACSFINIT)\n')
     if self.compilers.fortranManglingDoubleUnderscore:
@@ -286,10 +287,10 @@ framework.log)[0]
   def checkInclude(self,incl,hfile):
     if not isinstance(incl,list): incl = [incl]
     incl.extend(self.mpi.include)
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl])
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl])
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     if found:
       self.framework.log.write('Found header file ' +hfile+ ' in '+incl[0]+'\n')
     return found

@@ -50,10 +50,10 @@ class Configure(config.base.Configure):
 
   def checkInclude(self,bs95incl):
     '''Check that BSsparse.h is present'''
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include+bs95incl])
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include+bs95incl])
     found = self.checkPreprocess('#include <BSsparse.h>\n')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     return found
 
   def generateLibGuesses(self):

@@ -11,6 +11,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = 'PETSC'
     self.argDB        = framework.argDB
     self.compilers    = self.framework.require('config.compilers', self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     return
 
   def getDir(self):
@@ -51,7 +52,7 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('C2HTML', 'Download', 'Downloaded c2html into '+self.getDir())
     # Get the C2HTML directories
     c2htmlDir  = self.getDir()
-    installDir = os.path.join(c2htmlDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(c2htmlDir, self.arch.arch)
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build c2html
@@ -83,7 +84,7 @@ class Configure(config.base.Configure):
 
   def configureC2html(self):
     '''Determine whether the C2html exist or not'''
-    if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
+    if os.path.exists(os.path.join(self.arch.dir, 'BitKeeper')):
       self.framework.log.write('BitKeeper clone of PETSc, checking for C2html\n')
       self.framework.getExecutable('c2html', getFullPath = 1)
       if hasattr(self.framework, 'c2html'):

@@ -51,10 +51,10 @@ class Configure(config.base.Configure):
 
   def checkInclude(self, includeDir):
     '''Check that parmetis.h is present'''
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir+self.mpi.include])
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir+self.mpi.include])
     found = self.checkPreprocess('#include <parmetis.h>\n')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     return found
 
   def includeGuesses(self, path):
@@ -134,15 +134,7 @@ class Configure(config.base.Configure):
       if os.path.isdir(dir):
         yield ('Frequent user install location (~/parmetis*)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try PETSc location
-    PETSC_DIR  = None
-    PETSC_ARCH = None
-    if 'PETSC_DIR' in self.framework.argDB and 'PETSC_ARCH' in self.framework.argDB:
-      PETSC_DIR  = self.framework.argDB['PETSC_DIR']
-      PETSC_ARCH = self.framework.argDB['PETSC_ARCH']
-    elif os.getenv('PETSC_DIR') and os.getenv('PETSC_ARCH'):
-      PETSC_DIR  = os.getenv('PETSC_DIR')
-      PETSC_ARCH = os.getenv('PETSC_ARCH')
-    if PETSC_ARCH and PETSC_DIR:
+    if self.arch.dir and self.arch.arch:
       pass
     # If necessary, download ParMetis
     if not self.found and self.framework.argDB['download-parmetis'] == 2:
@@ -196,7 +188,7 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('ParMetis', 'Download', 'Downloaded ParMetis into '+self.getDir())
     # Get the ParMetis directories
     parmetisDir = self.getDir()
-    installDir = os.path.join(parmetisDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(parmetisDir, self.arch.arch)
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build ParMetis

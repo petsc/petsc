@@ -52,10 +52,10 @@ class Configure(config.base.Configure):
 
   def checkInclude(self,incl,hfile):
     if not isinstance(incl,list): incl = [incl]
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl])
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl])
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     if found:
       self.framework.log.write('Found header file ' +hfile+ ' in '+incl[0]+'\n')
     return found

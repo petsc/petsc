@@ -28,7 +28,7 @@ class Configure(PETSc.package.Package):
   def generateIncludeGuesses(self):
     if self.framework.argDB['download-'+self.package] == 1 or self.framework.argDB['download-'+self.package] == 2:
       dir = self.downLoadhypre()
-      yield('based on downloaded directory',os.path.join(dir,self.framework.argDB['PETSC_ARCH'],'include'))      
+      yield('based on downloaded directory',os.path.join(dir,self.arch.arch,'include'))      
       raise RuntimeError('Downloaded hypre could not be used (missing include directory). Please check install in '+dir+'\n')
     if 'with-'+self.package in self.framework.argDB:
       if 'with-'+self.package+'-dir' in self.framework.argDB:
@@ -38,10 +38,10 @@ class Configure(PETSc.package.Package):
 
   def checkInclude(self,incl,hfile):
     incl.extend(self.mpi.include)
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl])
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in incl])
     found = self.checkPreprocess('#include <' +hfile+ '>\n')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     if found:
       self.framework.log.write('Found header file ' +hfile+ ' in '+incl[0]+'\n')
     return found
@@ -78,7 +78,7 @@ class Configure(PETSc.package.Package):
           
   def generateLibGuesses(self):
     if self.framework.argDB['download-'+self.package] == 1:
-      dir = os.path.join(self.downLoadhypre(),self.framework.argDB['PETSC_ARCH'])
+      dir = os.path.join(self.downLoadhypre(),self.arch.arch)
       alllibs = self.generateLibList(dir)
       yield('Download '+self.PACKAGE, alllibs)
       raise RuntimeError('Downloaded hypre could not be used. Please check install in '+dir+'\n')
@@ -90,7 +90,7 @@ class Configure(PETSc.package.Package):
       else:
         self.framework.log.write('Must specify an installation root directory for '+self.PACKAGE+'\n')
     if self.framework.argDB['download-hypre'] == 2:
-      dir = os.path.join(self.downLoadhypre(),self.framework.argDB['PETSC_ARCH'])
+      dir = os.path.join(self.downLoadhypre(),self.arch.arch)
       alllibs = self.generateLibList(dir)
       yield('Download '+self.PACKAGE, alllibs)
       raise RuntimeError('Downloaded hypre could not be used. Please check install in '+dir+'\n')
@@ -161,7 +161,7 @@ class Configure(PETSc.package.Package):
       self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.package+' into '+self.getDir())
     # Get the HYPRE directories
     hypreDir = self.getDir()
-    installDir = os.path.join(hypreDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(hypreDir, self.arch.arch)
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build HYPRE

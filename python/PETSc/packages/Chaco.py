@@ -125,7 +125,7 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('Chaco', 'Download', 'Downloaded Chaco into '+self.getDir())
     # Get the Chaco directories
     chacoDir = self.getDir()  #~Chaco-2.2
-    installDir = os.path.join(chacoDir, self.framework.argDB['PETSC_ARCH']) 
+    installDir = os.path.join(chacoDir, self.arch.arch) 
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build Chaco

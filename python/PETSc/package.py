@@ -9,6 +9,7 @@ class Package(config.base.Configure):
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
     self.functions    = self.framework.require('config.functions',         self)

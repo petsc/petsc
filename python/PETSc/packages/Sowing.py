@@ -10,6 +10,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = 'PETSC'
     self.argDB        = framework.argDB
     self.compilers    = self.framework.require('config.compilers', self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     return
 
   def getDir(self):
@@ -53,7 +54,7 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('Sowing', 'Download', 'Downloaded Sowing into '+self.getDir())
     # Get the SOWING directories
     sowingDir = self.getDir()
-    installDir = os.path.join(sowingDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(sowingDir, self.arch.arch)
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build sowing
@@ -99,7 +100,7 @@ class Configure(config.base.Configure):
 
   def configureSowing(self):
     '''Determine whether the Sowing exist or not'''
-    if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
+    if os.path.exists(os.path.join(self.arch.dir, 'BitKeeper')):
       self.framework.log.write('BitKeeper clone of PETSc, checking for Sowing\n')
       self.getExecutable('pdflatex', getFullPath = 1)
       self.getExecutable('bfort', getFullPath = 1)

@@ -11,6 +11,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = 'PETSC'
     self.argDB        = framework.argDB
     self.compilers    = self.framework.require('config.compilers', self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     return
 
   def getDir(self):
@@ -55,7 +56,7 @@ class Configure(config.base.Configure):
       
     # Get the LGRIND directories
     lgrindDir  = self.getDir()
-    installDir = os.path.join(lgrindDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(lgrindDir, self.arch.arch)
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     try:
@@ -76,7 +77,7 @@ class Configure(config.base.Configure):
 
   def configureLgrind(self):
     '''Determine whether the Lgrind exist or not'''
-    if os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'BitKeeper')):
+    if os.path.exists(os.path.join(self.arch.dir, 'BitKeeper')):
       self.framework.log.write('BitKeeper clone of PETSc, checking for Lgrind\n')
       self.downLoadLgrind()
         

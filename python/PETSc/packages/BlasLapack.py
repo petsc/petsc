@@ -14,6 +14,7 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     self.setcompilers = self.framework.require('config.setCompilers', self)    
     self.libraries    = self.framework.require('config.libraries', self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.programs     = self.framework.require('PETSc.utilities.programs', self)
     self.framework.require('PETSc.packages.Sowing', self)
     self.name         = 'BlasLapack'
@@ -213,21 +214,12 @@ class Configure(config.base.Configure):
       MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
     yield ('Microsoft Windows, Intel MKL61 library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'))
     # Try PETSc location
-    PETSC_DIR  = None
-    PETSC_ARCH = None
-    if 'PETSC_DIR' in self.framework.argDB and 'PETSC_ARCH' in self.framework.argDB:
-      PETSC_DIR  = self.framework.argDB['PETSC_DIR']
-      PETSC_ARCH = self.framework.argDB['PETSC_ARCH']
-    elif os.getenv('PETSC_DIR') and os.getenv('PETSC_ARCH'):
-      PETSC_DIR  = os.getenv('PETSC_DIR')
-      PETSC_ARCH = os.getenv('PETSC_ARCH')
-
-    if PETSC_ARCH and PETSC_DIR:
-      dir1 = os.path.abspath(os.path.join(PETSC_DIR, '..', 'blaslapack', 'lib'))
+    if self.arch.dir and aelf.arch.arch:
+      dir1 = os.path.abspath(os.path.join(self.arch.dir, '..', 'blaslapack', 'lib'))
       yield ('PETSc location 1', os.path.join(dir1, 'libblas.a'), os.path.join(dir1, 'liblapack.a'))
-      dir2 = os.path.join(dir1, 'libg_c++', PETSC_ARCH)
+      dir2 = os.path.join(dir1, 'libg_c++', self.arch.arch)
       yield ('PETSc location 2', os.path.join(dir2, 'libblas.a'), os.path.join(dir2, 'liblapack.a'))
-      dir3 = os.path.join(dir1, 'libO_c++', PETSC_ARCH)
+      dir3 = os.path.join(dir1, 'libO_c++', self.arch.arch)
       yield ('PETSc location 3', os.path.join(dir3, 'libblas.a'), os.path.join(dir3, 'liblapack.a'))
     if self.framework.argDB['download-f-blas-lapack'] == 2:
       if not 'FC' in self.framework.argDB:
@@ -243,7 +235,7 @@ class Configure(config.base.Configure):
       os.mkdir(packages)
     if f2c == 'f2c':
       self.f2c = 1
-    libdir = os.path.join(packages,f2c+'blaslapack',self.framework.argDB['PETSC_ARCH'])
+    libdir = os.path.join(packages,f2c+'blaslapack',self.arch.arch)
     if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
@@ -313,11 +305,11 @@ class Configure(config.base.Configure):
     except RuntimeError, e:
       raise RuntimeError('Error running make on fblaslapack: '+str(e))
     try:
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f libfblas.'+self.libraries.suffix+' libflapack.'+self.libraries.suffix+' '+self.framework.argDB['PETSC_ARCH'], timeout=30, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f libfblas.'+self.libraries.suffix+' libflapack.'+self.libraries.suffix+' '+self.arch.arch, timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error moving fblaslapack libraries: '+str(e))
     try:
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f tmpmakefile '+self.framework.argDB['PETSC_ARCH'], timeout=30, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f tmpmakefile '+self.arch.arch, timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:
       pass
     return libdir

@@ -45,7 +45,7 @@ class Configure(config.base.Configure):
         # make sure we can access the rss field
         if not l[1].isdigit():
           raise RuntimeError("/proc stat file has wrong format rss not integer:"+l[1])
-        self.framework.log.write("Using /proc for PetscGetResidentSetSize()")
+        self.framework.logPrint("Using /proc for PetscGetResidentSetSize()")
         return
       except:
         pass
@@ -84,10 +84,10 @@ class Configure(config.base.Configure):
           }
           return 4;''')      
       if status == 0:
-        self.framework.log.write("Using task_info() for PetscGetResidentSetSize() \n")
+        self.framework.logPrint("Using task_info() for PetscGetResidentSetSize()")
         return
       self.delDefine('HAVE_TASK_INFO')
-      self.framework.log.write("task_info() does not work \n"+output)
+      self.framework.logPrint("task_info() does not work\n"+output)
       
     # getrusage() is still used on BSD systems
     if self.functions.haveFunction('getrusage') and self.framework.argDB['can-execute']:
@@ -138,12 +138,12 @@ class Configure(config.base.Configure):
             self.addDefine('USE_KBYTES_FOR_SIZE',1)
         elif status == 0:
           self.delDefine('HAVE_GETRUSAGE')
-          self.framework.log.write("getrusage() does not work (returns 0)\n")
+          self.framework.logPrint("getrusage() does not work (returns 0)")
         else:
           self.delDefine('HAVE_GETRUSAGE')
-          self.framework.log.write("Unable to determine how to use getrusage() memory information\n")
-        self.framework.log.write("output from getrusage() \n")
-        self.framework.log.write(output)
+          self.framework.logPrint("Unable to determine how to use getrusage() memory information")
+        self.framework.logPrint("output from getrusage()")
+        self.framework.logPrint(output)
         return
       
       # do not provide a way to get resident set size

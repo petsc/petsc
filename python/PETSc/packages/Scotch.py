@@ -47,10 +47,10 @@ class Configure(config.base.Configure):
 
   def checkInclude(self, includeDir):
     '''Check that scotch.h is present'''
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir+self.mpi.include])
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir+self.mpi.include])
     found = self.checkPreprocess('#include <scotch.h>\n')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     return found
 
   def includeGuesses(self, path):

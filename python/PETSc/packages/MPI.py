@@ -63,34 +63,34 @@ class Configure(config.base.Configure):
 
   def checkInclude(self, includeDir):
     '''Check that mpi.h is present'''
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir])
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in includeDir])
     # Should we also look for mpif.h?
     found = self.checkPreprocess('#include <mpi.h>\n')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     return found
 
   def checkMPILink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None):
     '''Analogous to checkLink(), but the MPI includes and libraries are automatically provided'''
     success  = 0
-    oldFlags = self.framework.argDB['CPPFLAGS']
+    oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.framework.argDB['LIBS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
     self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
     if self.checkLink(includes, body, cleanup, codeBegin, codeEnd):
       success = 1
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     self.framework.argDB['LIBS']     = oldLibs
     return success
 
   def outputMPIRun(self, includes, body, cleanup = 1, defaultOutputArg = ''):
     '''Analogous to outputRun(), but the MPI includes and libraries are automatically provided'''
-    oldFlags = self.framework.argDB['CPPFLAGS']
+    oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.framework.argDB['LIBS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
     self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
     output, status = self.outputRun(includes, body, cleanup, defaultOutputArg)
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     self.framework.argDB['LIBS']     = oldLibs
     return (output, status)
 
@@ -317,7 +317,7 @@ class Configure(config.base.Configure):
       self.framework.actions.addArgument('MPI', 'Download', 'Downloaded MPICH into '+self.getDir())
     # Get the MPICH directories
     mpichDir = self.getDir()
-    installDir = os.path.join(mpichDir, self.framework.argDB['PETSC_ARCH'])
+    installDir = os.path.join(mpichDir, self.arch.arch)
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
       
@@ -387,7 +387,7 @@ class Configure(config.base.Configure):
 
   def fixSolaris(self):
     '''I hate this. MPI should report this somehow.'''
-    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
+    if self.arch.archBase.startswith('solaris'):
       self.executeTest(self.libraries.check, [['rt', 'nsl', 'aio'], 'exit'])
     return
 
@@ -451,18 +451,18 @@ class Configure(config.base.Configure):
 
   def configureTypes(self):
     '''Checking for MPI types'''
-    oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include])
     self.types.checkSizeof('MPI_Comm', 'mpi.h')
     if 'HAVE_MPI_FINT' in self.defines:
       self.types.checkSizeof('MPI_Fint', 'mpi.h')
-    self.framework.argDB['CPPFLAGS'] = oldFlags
+    self.compilers.CPPFLAGS = oldFlags
     return
 
   def configureMPIRUN(self):
     '''Checking for mpirun'''
     if self.isPOE:
-      self.mpirun = os.path.join(self.framework.argDB['PETSC_DIR'], 'bin', 'mpirun.poe')
+      self.mpirun = os.path.join(self.arch.dir, 'bin', 'mpirun.poe')
       return
     if 'with-mpirun' in self.framework.argDB:
       self.framework.argDB['with-mpirun'] = os.path.expanduser(self.framework.argDB['with-mpirun'])

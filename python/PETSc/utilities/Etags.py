@@ -9,7 +9,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.arch          = self.framework.require('PETSc.utilities.arch', self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     return
 
   def __str__(self):
@@ -22,11 +22,11 @@ class Configure(config.base.Configure):
 
   def configureETags(self):
     '''Determine if etags files exist and try to create otherwise'''
-    if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'], 'TAGS')):
+    if not os.path.exists(os.path.join(self.arch.dir, 'TAGS')):
       self.framework.log.write('WARNING: ETags files have not been created\n')
       self.framework.getExecutable('etags', getFullPath = 1)
       if hasattr(self.framework, 'etags'):
-        pd = self.framework.argDB['PETSC_DIR']
+        pd = self.arch.dir
         if pd[-1]=='/': pd = pd[:-1] # etags chokes if there's a trailing /
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         try:

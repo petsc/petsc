@@ -8,7 +8,8 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.compilers    = self.framework.require('config.compilers',       self)
+    self.compilers    = self.framework.require('config.compilers',     self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.useShared    = 0
     return
 
@@ -21,10 +22,10 @@ class Configure(config.base.Configure):
     return
 
   def configureSharedLibraries(self):
-    if not self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') and not self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin'):
+    if not self.arch.archBase.startswith('aix') and not self.arch.archBase.startswith('darwin'):
       self.useShared = self.framework.argDB['with-shared']
     if self.useShared:
-      self.addMakeRule('shared_arch','shared_'+self.framework.argDB['PETSC_ARCH_BASE'])
+      self.addMakeRule('shared_arch','shared_'+self.arch.archBase)
     else:
       self.addMakeRule('shared','')
 

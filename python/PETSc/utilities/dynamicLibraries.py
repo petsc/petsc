@@ -11,6 +11,7 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     self.headers      = self.framework.require('config.headers', self)
     self.libraries    = self.framework.require('config.libraries', self)
+    self.arch         = self.framework.require('PETSc.utilities.arch', self)
     self.shared       = self.framework.require('PETSc.utilities.sharedLibraries', self)
     self.useDynamic   = 0
     return
@@ -31,7 +32,7 @@ class Configure(config.base.Configure):
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
     self.useDynamic = 0
-    if not self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') and not self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin'):
+    if not self.arch.archBase.startswith('aix') and not self.arch.archBase.startswith('darwin'):
       self.useDynamic = self.shared.useShared and self.framework.argDB['with-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
       if self.useDynamic:
         self.addDefine('USE_DYNAMIC_LIBRARIES', 1)
