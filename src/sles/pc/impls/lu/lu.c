@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.13 1995/04/13 02:28:15 curfman Exp curfman $";
+static char vcid[] = "$Id: direct.c,v 1.14 1995/04/13 04:55:21 curfman Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -31,7 +31,11 @@ $      ORDER_QMD - Quotient Minimum Degree
 $  -ilu_ordering <name>, where <name> is one of the following:
 $      natural, nd, 1wd, rcm, qmd
 
-   Keywords:  ordering, reordering, factorization, direct, LU, Cholesky, fill
+.keywords: PC, set, ordering, factorization, direct, LU, Cholesky, fill
+.keywords: natural, Nested Dissection, One-way Dissection
+.keywords: Reverse Cuthill-McGee, Quotient Minimum Degree
+
+.seealso: PCSetDirectUseInplace()
 @*/
 int PCDirectSetOrdering(PC pc,int ordering)
 {
@@ -59,7 +63,9 @@ $  -direct_in_place
    matrix multiplication, which is not possible here because the matrix has 
    been factored in-place, replacing the original matrix.
 
-   Keywords:  factorization, direct, in-place, LU, Cholesky
+.keywords: PC, set, factorization, direct, inplace, in-place, LU, Cholesky
+
+.seealso: PCDirectSetOrdering()
 @*/
 int PCDirectSetUseInplace(PC pc)
 {

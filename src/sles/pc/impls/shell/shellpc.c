@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.8 1995/03/25 01:26:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.9 1995/04/15 03:27:34 bsmith Exp curfman $";
 #endif
 
 /*
@@ -71,14 +71,16 @@ int PCCreate_Shell(PC pc)
 }
 
 /*@
-   PCShellSetApply - sets routine to use as preconditioner.
+   PCShellSetApply - Sets routine to use as preconditioner.
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
-.  mult - the application routine.
+.  mult - the application routine
 .  ptr - pointer to data needed by application multiply routine
 
-  Keywords: preconditioner, user-provided
+.keywords: PC, shell, set, apply, user-provided
+
+.seealso: PCShellSetApplyRichardson()
 @*/
 int PCShellSetApply(PC pc, int (*mult)(void*,Vec,Vec),void *ptr)
 {
@@ -91,15 +93,17 @@ int PCShellSetApply(PC pc, int (*mult)(void*,Vec,Vec),void *ptr)
 }
 
 /*@
-   PCShellSetApplyRichardson - sets routine to use as preconditioner
-               in Richardson iteration.
+   PCShellSetApplyRichardson - Sets routine to use as preconditioner
+   in Richardson iteration.
 
   Input Parameters:
 .  pc - the preconditioner context
-.  mult - the application routine.
+.  mult - the application routine
 .  ptr - pointer to data needed by application multiply routine
 
-  Keywords: preconditioner, user-provided
+.keywords: PC, shell, set, apply, Richardson, user-provided
+
+.seealso: PCShellSetApply()
 @*/
 int PCShellSetApplyRichardson(PC pc, int (*mult)(void*,Vec,Vec,Vec,int),
                               void *ptr)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.16 1995/04/13 20:14:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.17 1995/04/15 03:28:32 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"
@@ -11,8 +11,9 @@ static char vcid[] = "$Id: sles.c,v 1.16 1995/04/13 20:14:19 curfman Exp bsmith 
    Input Parameter:
 .  sles - the SLES context
 
-   Notes:
-   Keywords:  SLES, help
+.keywords: SLES, help
+
+.seealso: SLESSetFromOptions()
 @*/
 int SLESPrintHelp(SLES sles)
 {
@@ -31,8 +32,7 @@ int SLESPrintHelp(SLES sles)
 .  sles - the SLES context
 .  prefix - the prefix to prepend to all option names
 
-   Notes:
-   Keywords:  SLES, options, prefix, database
+.keywords: SLES, set, options, prefix, database
 @*/
 int SLESSetOptionsPrefix(SLES sles,char *prefix)
 {
@@ -49,8 +49,9 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
    Input Parameter:
 .  sles - the SLES context
 
-   Notes:
-   Keywords:  SLES, options, database
+.keywords: SLES, set, options, database
+
+.seealso: SLESPrintHelp()
 @*/
 int SLESSetFromOptions(SLES sles)
 {
@@ -68,8 +69,9 @@ int SLESSetFromOptions(SLES sles)
    Output Parameter:
 .  sles - the newly created SLES context
 
-   Notes:
-   Keywords:  SLES, create, context
+.keywords: SLES, create, context
+
+.seealso: SLESSolve(), SLESDestroy()
 @*/
 int SLESCreate(MPI_Comm comm,SLES *outsles)
 {
@@ -93,8 +95,9 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
    Input Parameters:
 .  sles - the SLES context
 
-   Notes:
-   Keywords:  SLES, destroy, context
+.keywords: SLES, destroy, context
+
+.seealso: SLESCreate(), SLESSolve()
 @*/
 int SLESDestroy(SLES sles)
 {
@@ -118,8 +121,9 @@ extern int PCPreSolve(PC,KSP),PCPostSolve(PC,KSP);
 .  x - the approximate solution
 .  its - the number of iterations used
 
-   Notes:
-   Keywords:  SLES, solve, linear system
+.keywords: SLES, solve, linear system
+
+.seealso: SLESCreate(), SLESDestroy()
 @*/
 int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 {
@@ -156,7 +160,9 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
    The user can then directly manipulate the KSP context to set various 
    options, etc.
    
-   Keywords:  SLES, KSP, context
+.keywords: SLES, get, KSP, context
+
+.seealso: SLESGetPC()
 @*/
 int SLESGetKSP(SLES sles,KSP *ksp)
 {
@@ -177,7 +183,9 @@ int SLESGetKSP(SLES sles,KSP *ksp)
    The user can then directly manipulate the PC context to set various 
    options, etc.
 
-   Keywords:  SLES, PC, context
+.keywords: SLES, get, PC, context
+
+.seealso: SLESGetKSP()
 @*/
 int SLESGetPC(SLES sles,PC *pc)
 {
@@ -205,7 +213,9 @@ int SLESGetPC(SLES sles,PC *pc)
    indicate that the preconditioning matrix has the same nonzero pattern 
    during successive linear solves.
 
-   Keywords:  SLES, operators, matrix, preconditioner
+.keywords: SLES, set, operators, matrix, preconditioner, linear system
+
+.seealso: SLESSolve()
 @*/
 int SLESSetOperators(SLES sles,Mat mat,Mat pmat,int flag)
 {

@@ -1,22 +1,20 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.6 1995/04/13 14:48:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.7 1995/04/15 03:27:38 bsmith Exp curfman $";
 #endif
 
 #include "mgimpl.h"
 
 
 /*@
-      MGGetCoarseSolve - Gets the solver contex to be used on the 
-                         coarse grid.
+   MGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
-  Input Parameters:
-.   mg - the multigrid context 
+   Input Parameter:
+.  pc - the multigrid context 
 
-  Output Parameters:
-.   sles - the coarse grid solver context 
+   Output Parameter:
+.  sles - the coarse grid solver context 
 
-   Keywords:  multigrid, coarse grid
-
+.keywords: MG, multigrid, get, coarse grid
 @*/ 
 int MGGetCoarseSolve(PC pc,SLES *sles)  
 { 
@@ -26,17 +24,19 @@ int MGGetCoarseSolve(PC pc,SLES *sles)
 }
 
 /*@
-     MGDefaultResidual - Default routine to calculate the residual.
+   MGDefaultResidual - Default routine to calculate the residual.
 
-  Input Parameters:
+   Input Parameters:
 .  mat - the matrix
-.  b - the right hand side
-.  x - the approximate solution
+.  b   - the right-hand-side
+.  x   - the approximate solution
  
-  Output Parameters:
+   Output Parameter:
 .  r - location to store the residual
 
-   Keywords:  multigrid, residual
+.keywords: MG, default, multigrid, residual
+
+.seealso: MGSetResidual()
 @*/
 int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 {
@@ -48,16 +48,18 @@ int MGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 }
 
 /*@
-      MGSetResidual - Sets the function to be used to calculate the 
-                      residual on the lth level. 
+   MGSetResidual - Sets the function to be used to calculate the residual 
+   on the lth level. 
 
-  Input Paramters:
-.  mg - the multigrid context
-.  l - the level to supply
-.  mat - matrix associated with residual
+   Input Paramters:
+.  pc       - the multigrid context
+.  l        - the level to supply
 .  residual - function used to form residual (usually MGDefaultResidual)
+.  mat      - matrix associated with residual
 
-   Keywords:  multigrid, residual
+.keywords:  MG, set, multigrid, residual, level
+
+.seealso: MGDefaultResidual()
 @*/
 int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat) 
 {
@@ -68,15 +70,17 @@ int MGSetResidual(PC pc,int l,int (*residual)(Mat,Vec,Vec,Vec),Mat mat)
 }
 
 /*@
-      MGSetInterpolate - Sets the function to be used to calculate the 
-                      interpolation on the lth level. 
+   MGSetInterpolate - Sets the function to be used to calculate the 
+   interpolation on the lth level. 
 
-  Input Parameters:
-.   mg - the multigrid context
-.   mat - the interpolation operator
-.  l - the level to supply
+   Input Parameters:
+.  pc  - the multigrid context
+.  mat - the interpolation operator
+.  l   - the level to supply
 
-   Keywords:  multigrid, interpolation
+.keywords:  multigrid, set, interpolate, level
+
+.seealso: MGSetRestriction()
 @*/
 int MGSetInterpolate(PC pc,int l,Mat mat)
 { 
@@ -85,17 +89,18 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
   return 0;
 }
 
-
 /*@
-      MGSetRestriction - Sets the function to be used to restrict vector
-                        from lth level to l-1. 
+    MGSetRestriction - Sets the function to be used to restrict vector
+    from level l to l-1. 
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   mat - the restriction matrix
+   Input Parameters:
+.  pc - the multigrid context 
+.  mat - the restriction matrix
 .  l - the level to supply
 
-   Keywords:  multigrid, restriction
+.keywords: MG, set, multigrid, restriction, level
+
+.seealso: MGSetInterpolate()
 @*/
 int MGSetRestriction(PC pc,int l,Mat mat)  
 {
@@ -105,19 +110,21 @@ int MGSetRestriction(PC pc,int l,Mat mat)
 }
 
 /*@
-      MGGetSmoother - Gets the SLES context to be used as smoother for 
-                      both pre and post smoothing. If you want a different
-                      function for each call both MGGetSmootherUp() and 
-                      MGGetSmootherDown().
+   MGGetSmoother - Gets the SLES context to be used as smoother for 
+   both pre- and post-smoothing.  Call both MGGetSmootherUp() and 
+   MGGetSmootherDown() to use different functions for pre- and 
+   post-smoothing.
 
-  Input Parameters:
-.   mg - the multigrid context 
+   Input Parameters:
+.  pc - the multigrid context 
 .  l - the level to supply
 
-  Ouput Parameters:
-.   sles - the smoother
+   Ouput Parameters:
+.  sles - the smoother
 
-   Keywords:  multigrid, smoother
+.keywords: MG, get, multigrid, level, smoother, pre-smoother, post-smoother
+
+.seealso: MGGetSmootherUp(), MGGetSmootherDown()
 @*/
 int MGGetSmoother(PC pc,int l,SLES *sles)
 {
@@ -127,17 +134,19 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 }
 
 /*@
-      MGGetSmootherUp - Gets the SLES context to be used as smoother after 
-                        coarse grid correction (post-smoother). 
+   MGGetSmootherUp - Gets the SLES context to be used as smoother after 
+   coarse grid correction (post-smoother). 
 
-  Input Parameters:
-.   mg - the multigrid context 
-.  l - the level to supply
+   Input Parameters:
+.  pc - the multigrid context 
+.  l  - the level to supply
 
-  Ouput Parameters:
-.   sles - the smoother
+   Ouput Parameters:
+.  sles - the smoother
 
-   Keywords:  multigrid, smoother
+.keywords: MG, multigrid, get, smoother, up, post-smoother, level
+
+.seealso: MGGetSmootherUp(), MGGetSmootherDown()
 @*/
 int MGGetSmootherUp(PC pc,int l,SLES *sles)
 {
@@ -147,17 +156,19 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
 }
 
 /*@
-      MGGetSmootherDown - Gets the SLES context to be used as smoother before 
-                        coarse grid correction (pre-smoother). 
+   MGGetSmootherDown - Gets the SLES context to be used as smoother before 
+   coarse grid correction (pre-smoother). 
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   l - the level to supply
+   Input Parameters:
+.  pc - the multigrid context 
+.  l  - the level to supply
 
-  Ouput Parameters:
-.   sles - the smoother
+   Ouput Parameters:
+.  sles - the smoother
 
-   Keywords:  multigrid, smoother
+.keywords: MG, multigrid, get, smoother, down, pre-smoother, level
+
+.seealso: MGGetSmootherUp(), MGGetSmoother()
 @*/
 int MGGetSmootherDown(PC pc,int l,SLES *sles)
 {
@@ -176,14 +187,16 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
 }
 
 /*@
-      MGSetCyclesOnLevel - Sets the number of cycles to run on this level. 
+   MGSetCyclesOnLevel - Sets the number of cycles to run on this level. 
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   l - the level this is to be used for
-.   n - the number of cycles
+   Input Parameters:
+.  pc - the multigrid context 
+.  l  - the level this is to be used for
+.  n  - the number of cycles
 
-   Keywords:  multigrid, cycle, V-cycle, W-cycle
+.keywords: MG, multigrid, set, cycles, V-cycle, W-cycle, level
+
+.seealso: MGSetCycles()
 @*/
 int MGSetCyclesOnLevel(PC pc,int l,int c) 
 {
@@ -193,16 +206,18 @@ int MGSetCyclesOnLevel(PC pc,int l,int c)
 }
 
 /*@
-      MGSetRhs - Sets the vector space to be used to store right hand 
-                 side on a particular level. User should free this 
-                 space at conclusion of multigrid use. 
+   MGSetRhs - Sets the vector space to be used to store the right-hand-side
+   on a particular level.  The user should free this space at the conclusion 
+   of multigrid use. 
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   l - the level this is to be used for
-.   c - the space
+   Input Parameters:
+.  pc - the multigrid context 
+.  l  - the level this is to be used for
+.  c  - the space
 
-   Keywords:  multigrid, right hand side, rhs
+.keywords: MG, multigrid, set, right-hand-side, rhs, level
+
+.seealso: MGSetX(), MGSetR()
 @*/
 int MGSetRhs(PC pc,int l,Vec c)  
 { 
@@ -212,16 +227,18 @@ int MGSetRhs(PC pc,int l,Vec c)
 }
 
 /*@
-      MGSetX - Sets the vector space to be used to store solution 
-                 on a particular level.User should free this 
-                 space at conclusion of multigrid use.
+   MGSetX - Sets the vector space to be used to store the solution on a 
+   particular level.  The user should free this space at the conclusion 
+   of multigrid use.
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   l - the level this is to be used for
-.   c - the space
+   Input Parameters:
+.  pc - the multigrid context 
+.  l - the level this is to be used for
+.  c - the space
 
-   Keywords:  multigrid, solution
+.keywords: MG, multigrid, set, solution, level
+
+.seealso: MGSetRhs(), MGSetR()
 @*/
 int MGSetX(PC pc,int l,Vec c)  
 { 
@@ -231,16 +248,16 @@ int MGSetX(PC pc,int l,Vec c)
 }
 
 /*@
-      MGSetR - Sets the vector space to be used to store residual 
-                 on a particular level. User should free this 
-                 space at conclusion of multigrid use.
+   MGSetR - Sets the vector space to be used to store the residual on a
+   particular level.  The user should free this space at the conclusion of
+   multigrid use.
 
-  Input Parameters:
-.   mg - the multigrid context 
-.   l - the level this is to be used for
-.   c - the space
+   Input Parameters:
+.  pc - the multigrid context 
+.  l - the level this is to be used for
+.  c - the space
 
-   Keywords:  multigrid, residual
+.keywords: MG, multigrid, set, residual, level
 @*/
 int MGSetR(PC pc,int l,Vec c)
 { 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.23 1995/04/15 03:26:48 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.24 1995/04/16 00:50:21 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -41,7 +41,7 @@ static NRList *__ITList = 0;
    KSPCreate - Creates the default KSP context.
 
    Output Parameter:
-.  ksp - location to put the Krylov Space context.
+.  ksp - location to put the KSP context
 .  comm - MPI communicator
 
    Notes:
@@ -109,8 +109,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 }
 
 /*@
-   KSPSetMethod - Builds KSP for a particular solver. Itmethod is,
-   for instance, KSPCG or KSPGMRES.  
+   KSPSetMethod - Builds KSP for a particular solver. 
 
    Input Parameter:
 .  ctx      - the Krylov space context
@@ -121,7 +120,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
    or KSPGMRES).
 
 .keywords: KSP, set, method
- @*/
+@*/
 int KSPSetMethod(KSP ctx,KSPMETHOD itmethod)
 {
   int (*r)(KSP);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.6 1995/03/06 03:49:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.7 1995/04/12 20:39:13 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -16,9 +16,14 @@ static NRList *__PCList = 0;
 
   Input Parameter:
 .  pc - the preconditioner context.
-.  method   - One of the known methods.  See "pc.h" for
-    available methods (for instance PCJACOBI).
- @*/
+.  method - a known method
+
+  Notes:
+  See "petsc/include/pc.h" for available methods (for instance 
+  PCJACOBI or PCBDD).
+
+.keywords: PC, set, method
+@*/
 int PCSetMethod(PC ctx,PCMETHOD method)
 {
   int (*r)(PC);
@@ -58,8 +63,12 @@ int  PCRegister(PCMETHOD name,char *sname,int (*create)(PC))
 }
 
 /*@
-   PCRegisterDestroy - Frees the list of preconditioners
+   PCRegisterDestroy - Frees the list of preconditioners that were
    registered by PCRegister().
+
+.keywords: PC, register, destroy
+
+.seealso: PCRegisterAll(), PCRegisterAll()
 @*/
 int PCRegisterDestroy()
 {
@@ -72,7 +81,7 @@ int PCRegisterDestroy()
 
 /*@C
   PCGetMethodFromOptions - Sets the selected PC method from the options 
-                           database.
+  database.
 
   Input Parameter:
 . pc - the preconditioner context
@@ -85,6 +94,10 @@ int PCRegisterDestroy()
 
   Options Database Key:
 $ -pcmethod  method
+
+.keywords: PC, options, database, get, method
+
+.seealso: PCGetMethodName()
 @*/
 int PCGetMethodFromOptions(PC pc,PCMETHOD *method )
 {
@@ -99,13 +112,17 @@ int PCGetMethodFromOptions(PC pc,PCMETHOD *method )
 
 /*@C
    PCGetMethodName - Gets the PC method name (as a string) from the 
-                     method type.
+   method type.
 
    Input Parameter:
 .  meth - preconditioner method
 
    Output Parameter:
 .  name - name of preconditioner
+
+.keywords: PC, get, method, name
+
+.seealso: PCGetMethodFromOptions()
 @*/
 int PCGetMethodName(PCMETHOD meth,char **name)
 {
@@ -116,15 +133,16 @@ int PCGetMethodName(PCMETHOD meth,char **name)
 
 #include <stdio.h>
 /*@C
-    PCPrintMethods - Prints the preconditioner methods available 
-                     from the options database.
+   PCPrintMethods - Prints the PC methods available from the options 
+   database.
 
    Input Parameters:
 .  prefix - prefix (usually "-")
 .  name - the options database name (by default "pcmethod") 
 
-   Notes:
-   This routine is called from PCPrintHelp().
+.keywords: PC, print, methods, options, database
+
+.seealso: PCPrintHelp()
 @*/
 int PCPrintMethods(char *prefix,char *name)
 {
@@ -140,16 +158,16 @@ int PCPrintMethods(char *prefix,char *name)
   return 0;
 }
 /*@
-   PCSetFromOptions - Sets PC options from the command line.
-                      This must be called before PCSetUp()
-                      if the user is to be allowed to set the 
-                      preconditioner method. 
+   PCSetFromOptions - Sets PC options from the options database.
+   This routine must be called before PCSetUp() if the user is to be
+   allowed to set the preconditioner method. 
 
    Input Parameters:
 .  pc - the preconditioner context
 
-   Note:
-   See PCPrintHelp() for a list of available PC options.   
+.keywords: KSP, set, from, options, database
+
+.seealso: PCPrintHelp()
 @*/
 int PCSetFromOptions(PC pc)
 {

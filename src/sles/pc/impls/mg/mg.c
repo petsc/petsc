@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.10 1995/04/13 05:10:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.11 1995/04/15 03:27:38 bsmith Exp curfman $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -109,13 +109,13 @@ static int MGDestroy(PetscObject obj)
 
 #include <stdio.h>
 /*@C
-   MGCheck - Checks that all components of MG structure have 
-   been set, use before MGCycle().
+   MGCheck - Checks that all components of the MG structure have 
+   been set; use before MGCycle().
 
    Iput Parameters:
 .  mg - the MG structure
 
-   Keywords:  check, set, multigrid
+.keywords: MG, check, set, multigrid
 @*/
 int MGCheck(PC pc)
 {
@@ -177,7 +177,9 @@ int MGCheck(PC pc)
    Options Database Key:
 $  -mgsmoothdown  n
 
-   Keywords:  smooth, down, pre-smoothing, steps, multigrid
+.keywords: MG, smooth, down, pre-smoothing, steps, multigrid
+
+.seealso: MGSetNumberSmoothUp()
 @*/
 int MGSetNumberSmoothDown(PC pc,int n)
 { 
@@ -203,7 +205,9 @@ int MGSetNumberSmoothDown(PC pc,int n)
    Options Database Key:
 $  -mgsmoothup  n
 
-   Keywords:  smooth, up, post-smoothing, steps, multigrid
+.keywords: MG, smooth, up, post-smoothing, steps, multigrid
+
+.seealso: MGSetNumberSmoothDown()
 @*/
 int  MGSetNumberSmoothUp(PC pc,int n)
 { 
@@ -229,7 +233,9 @@ int  MGSetNumberSmoothUp(PC pc,int n)
    Options Database Key:
 $  -mgcycles n
 
-   Keywords:  cycles, V-cycle, W-cycle, cycling, multigrid
+.keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
+
+.seealso: MGSetCyclesOnLevel()
 @*/
 int MGSetCycles(PC pc,int n)
 { 
@@ -337,14 +343,16 @@ int PCCreate_MG(PC pc)
 }
 
 /*@
-    MGSetLevels - Sets the number of levels to use with MG.
-                  Must be called before any other MG routine.
+   MGSetLevels - Sets the number of levels to use with MG.
+   Must be called before any other MG routine.
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
 .  levels - the number of levels
 
-   Keywords:  levels, multigrid
+.keywords: MG, set, levels, multigrid
+
+.seealso: MGSetMethod()
 @*/
 int MGSetLevels(PC pc,int levels)
 {
@@ -371,7 +379,9 @@ $      Multiplicative, Additive, FullMultigrid, Kaskade
 $  -mgmethod <flag>, where <flag> is one of the following:
 $      multiplicative, additive, fullmultigrid, kaskade   
 
-   Keywords:  multiplicative, additive, full, Kaskade, multigrid
+.keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
+
+.seealso: MGSetLevels()
 @*/
 int MGSetMethod(PC pc,int flag)
 {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.10 1995/04/13 01:51:35 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.11 1995/04/13 04:49:55 curfman Exp curfman $";
 #endif
 
 /*
@@ -111,11 +111,14 @@ $  -sor_local_forward
 $  -sor_local_symmetric
 $  -sor_local_backward
 
-   Note: 
+   Notes: 
    To use the Eisenstat trick with SSOR, employ the PCESOR preconditioner,
-   which can be chosen with the database option -pcmethod eisenstat.
+   which can be chosen with the database option 
+$     -pcmethod eisenstat
 
-   Keywords: SOR, SSOR, relaxation, sweep, forward, backward, symmetric
+.keywords: PC, SOR, SSOR, set, relaxation, sweep, forward, backward, symmetric
+
+.seealso: PCEisenstatSetOmega(), PCSORSetOmega(), PCSORSetIterations()
 @*/
 int PCSORSetSymmetric(PC pc, int flag)
 {
@@ -126,7 +129,7 @@ int PCSORSetSymmetric(PC pc, int flag)
 }
 /*@
    PCSORSetOmega - Sets the SOR relaxation coefficient, omega
-                   (where omega = 1.0 by default).
+   (where omega = 1.0 by default).
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -135,7 +138,9 @@ int PCSORSetSymmetric(PC pc, int flag)
    Options Database Key:
 $  -sor_omega  omega
 
-   Keywords:  SOR, SSOR, relaxation
+.keywords: PC, SOR, SSOR, set, relaxation, omega
+
+.seealso: PCSORSetSymmetric(), PCSORSetIterations(), PCEisenstatSetOmega()
 @*/
 int PCSORSetOmega(PC pc, double omega)
 {
@@ -156,7 +161,9 @@ int PCSORSetOmega(PC pc, double omega)
    Options Database Key:
 $  -sor_its  its
 
-   Keywords:  SOR, SSOR, iterations
+.keywords: PC, SOR, SSOR, set, iterations
+
+.seealso: PCSORSetOmega(), PCSORSetSymmetric()
 @*/
 int PCSORSetIterations(PC pc, int its)
 {
