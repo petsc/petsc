@@ -1,4 +1,4 @@
-/*$Id: itres.c,v 1.51 2001/02/05 21:18:45 bsmith Exp balay $*/
+/*$Id: itres.c,v 1.52 2001/03/23 23:23:29 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
@@ -48,24 +48,12 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec
     SETERRQ(PETSC_ERR_SUP,"Only right and left preconditioning are currently supported");
   }
   if (!ksp->guess_zero) {
-    if (ksp->pc_side == PC_RIGHT) {
-      ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);
-      ierr = PCDiagonalScaleLeft(ksp->B,vt1,vt1);CHKERRQ(ierr);
-    } else {
-      /* skip right scaling since current guess already has it */
-      if (!ksp->transpose_solve) {
-        ierr = MatMult(Amat,vsoln,vt2);CHKERRQ(ierr);
-        ierr = PCApply(ksp->B,vt2,vt1);CHKERRQ(ierr);
-        ierr = PCDiagonalScaleLeft(ksp->B,vt1,vt1);CHKERRQ(ierr);
-      } else {
-        ierr = MatMultTranspose(Amat,vsoln,vt2);CHKERRQ(ierr);
-        ierr = PCApplyTranspose(ksp->B,vt2,vt1);CHKERRQ(ierr);
-        ierr = PCDiagonalScaleLeft(ksp->B,vt1,vt1);CHKERRQ(ierr);
-      }
-    }
-    /* This is an extra copy for the right-inverse case */
-    ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
-    ierr = VecAXPY(&mone,vt1,vres);CHKERRQ(ierr);
+    /* skip right scaling since current guess already has it */
+    ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);
+    ierr = VecCopy(vb,vt2);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,vt1,vt2);CHKERRQ(ierr);
+    ierr = (ksp->pc_side == PC_RIGHT)?(VecCopy(vt2,vres)):(KSP_PCApply(ksp,ksp->B,vt2,vres));CHKERRQ(ierr);
+    ierr = PCDiagonalScaleLeft(ksp->B,vres,vres);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
   }
