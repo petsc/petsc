@@ -15,8 +15,8 @@ FC_LIB         =  /usr/lib/libf2c.a -lm
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 #
-BLAS_LIB       = /home/curfman/lapack.src/blas.a $(FC_LIB)
-LAPACK_LIB     = /home/curfman/lapack.src/lapack.a
+BLAS_LIB       = -L/home/curfman/lapack.src -lblas $(FC_LIB)
+LAPACK_LIB     = -L/home/curfman/lapack.src -llapack
 #
 # Location of X-windows software
 #
@@ -41,3 +41,4 @@ BS_LIB         =  /home/curfman/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS9
 #    Make sure that -DHAVE_BLOCKSOLVE is not listed below
 PCONF          =   -DHAVE_BLOCKSOLVE -DHAVE_MPE
 #
+DYLIBPATH     = /home/curfman/lapack.src
