@@ -126,8 +126,6 @@ tree: $(ACTION)
         PARCH=$(PARCH) COMPLEX=$(COMPLEX) ) ;fi; \
         done ; fi
 
-buildandrunexamples: 
-	-$(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) examples
-	-$(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) runexamples
-	-$(OMAKE) -f makefile clean
+
+
 
