@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.11 1998/06/17 16:26:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.12 1998/07/23 22:46:55 bsmith Exp balay $";
 #endif
 /*
 
@@ -75,7 +75,7 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
     PetscGetArchType(arch,10);
     MPI_Comm_size(PETSC_COMM_WORLD,&size);
     if (!filename) {
-      ierr = PetscGetHomeDirectory(240,pfile); CHKERRQ(ierr);
+      ierr = PetscGetHomeDirectory(pfile,240); CHKERRQ(ierr);
       PetscStrcat(pfile,"/.petschistory");
       filename = pfile;
     }
@@ -378,13 +378,15 @@ int OptionsCheckInitial_Alice(void)
       Setup debugger information
   */
 #if defined(USE_DBX_DEBUGGER)
-  ierr = PetscSetDebugger("dbx",1,0); CHKERRQ(ierr);
+  ierr = PetscSetDebugger("dbx",1); CHKERRQ(ierr);
 #elif defined(USE_XDB_DEBUGGER) 
-  ierr = PetscSetDebugger("xdb",1,0); CHKERRQ(ierr);
+  ierr = PetscSetDebugger("xdb",1); CHKERRQ(ierr);
+#else  /* Default is gdb */
+  ierr = PetscSetDebugger("gdb",1); CHKERRQ(ierr);
 #endif
   ierr = OptionsGetString(PETSC_NULL,"-on_error_attach_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
-    char *debugger = 0, *display = 0;
+    char *debugger = 0;
     int  xterm     = 1;
     if (PetscStrstr(string,"noxterm")) xterm = 0;
 
@@ -394,14 +396,12 @@ int OptionsCheckInitial_Alice(void)
     if (PetscStrstr(string,"gdb"))     debugger = "gdb";
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (PetscStrstr(string,"ups"))     debugger = "ups";
-    display = (char *) malloc(128*sizeof(char)); CHKPTRQ(display);
-    PetscGetDisplay(display,128);
-    PetscSetDebugger(debugger,xterm,display);
+    PetscSetDebugger(debugger,xterm);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
   ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
   if (flg1) {
-    char           *debugger = 0, *display = 0;
+    char           *debugger = 0;
     int            xterm     = 1,size;
     MPI_Errhandler abort_handler;
     /*
@@ -438,9 +438,8 @@ int OptionsCheckInitial_Alice(void)
       if (PetscStrstr(string,"gdb"))     debugger = "gdb";
       if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
       if (PetscStrstr(string,"ups"))     debugger = "ups";
-      display = (char *) malloc( 128*sizeof(char) ); CHKPTRQ(display);
-      ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
-      ierr = PetscSetDebugger(debugger,xterm,display);CHKERRQ(ierr);
+
+      ierr = PetscSetDebugger(debugger,xterm);CHKERRQ(ierr);
       ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
       ierr = PetscAttachDebugger();CHKERRQ(ierr);
       ierr = MPI_Errhandler_create((MPI_Handler_function*)Petsc_MPI_Abort_Function,&abort_handler);CHKERRQ(ierr);
