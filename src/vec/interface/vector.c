@@ -2224,7 +2224,7 @@ PetscErrorCode  VecMAXPY(PetscInt nv,const PetscScalar *alpha,Vec y,Vec *x)
    when you no longer need access to the array.
 
    Synopsis:
-   PetscErrorCode VecGetArray(Vec x,PetscScalar *a)
+   PetscErrorCode VecGetArray(Vec x,PetscScalar *a[])
 
    Not Collective
 
@@ -2365,7 +2365,7 @@ PetscErrorCode VecRestoreArrays(const Vec x[],PetscInt n,PetscScalar **a[])
    Not Collective
 
    Synopsis:
-   PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a)
+   PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
 
    Input Parameters:
 +  x - the vector
