@@ -1,4 +1,4 @@
-/*$Id: mpimesg.c,v 1.99 2001/01/15 21:44:00 bsmith Exp $*/
+/*$Id: mpimesg.c,v 1.1 2001/02/08 19:46:28 balay Exp balay $*/
 
 #include "petsc.h"        /*I  "petsc.h"  I*/
 
@@ -25,7 +25,7 @@
 */
 #undef __FUNC__  
 #define __FUNC__ "PetscGatherMessageLengths"
-int PetscGatherMessageLengths(MPI_Comm comm,int *ilengths, int *nrecvs, int *onodes, int *olengths)
+int PetscGatherMessageLengths(MPI_Comm comm,int *ilengths,int *nrecvs,int **onodes,int **olengths)
 {
   int *tmp,size,rank,i,j,nsends,tag,ierr;
   MPI_Request *s_waits,*r_waits;
@@ -44,10 +44,10 @@ int PetscGatherMessageLengths(MPI_Comm comm,int *ilengths, int *nrecvs, int *ono
   *nrecvs = tmp[rank];
   
   /* Now post the Irecv to get the message length-info */
-  ierr = PetscMalloc((*nrecvs+1)*sizeof(int),&olengths);CHKERRQ(ierr);
+  ierr = PetscMalloc((*nrecvs+1)*sizeof(int),olengths);CHKERRQ(ierr);
   ierr = PetscMalloc((*nrecvs+1)*sizeof(MPI_Request),&r_waits);CHKERRQ(ierr);
   for (i=0; i<*nrecvs; i++) {
-    ierr = MPI_Irecv(olengths+i,1,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(*olengths+i,1,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRQ(ierr);
   }
 
   /* Now post the Isends with the message lenght-info */
@@ -68,9 +68,9 @@ int PetscGatherMessageLengths(MPI_Comm comm,int *ilengths, int *nrecvs, int *ono
   ierr = MPI_Waitall(nsends,s_waits,s_status);CHKERRQ(ierr);
   
   /* Now pack up the received data */
-  ierr = PetscMalloc((*nrecvs+1)*sizeof(int),&onodes);CHKERRQ(ierr);
+  ierr = PetscMalloc((*nrecvs+1)*sizeof(int),onodes);CHKERRQ(ierr);
   for (i=0; i<*nrecvs; ++i) {
-    onodes[i] = r_status[i].MPI_SOURCE;
+    *onodes[i] = r_status[i].MPI_SOURCE;
   }
 
   ierr = PetscFree(tmp);CHKERRQ(ierr);
@@ -78,8 +78,6 @@ int PetscGatherMessageLengths(MPI_Comm comm,int *ilengths, int *nrecvs, int *ono
   ierr = PetscFree(s_waits);CHKERRQ(ierr);
   ierr = PetscFree(r_status);CHKERRQ(ierr);
   ierr = PetscFree(s_status);CHKERRQ(ierr);
-
-
   
   PetscFunctionReturn(0);
 }
