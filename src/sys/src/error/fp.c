@@ -295,6 +295,7 @@ int PetscSetFPTrap(PetscFPTrap on)
 struct { int code_no; const char *name; } error_codes[] = {
 	   { 0		,"unknown error" } 
 } ;
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDefaultFPTrap"
 void PetscDefaultFPTrap(int sig)
@@ -304,6 +305,7 @@ void PetscDefaultFPTrap(int sig)
   PetscError(0,"User provided function","Unknown file","Unknown directory",PETSC_ERR_FP,1,"floating point error");
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
+EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetFPTrap"
 int PetscSetFPTrap(PetscFPTrap on)
