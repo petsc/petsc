@@ -3,12 +3,12 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/software/mkl-52/lib/32 -L/home/petsc/software/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide
+BLASLAPACK_LIB = /home/petsc/software/mkl-52/lib/32/libmkl_lapack.a /home/petsc/software/mkl-52/lib/32/libmkl_def.a -lguide
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /soft/apps/packages/mpich-gm-1.2.1..7
-MPI_LIB        = -L${MPI_HOME}/lib -lmpich -L/soft/apps/packages/gm-1.5pre3b/binary/lib/ -L/soft/apps/packages/gm-1.5pre3b/lib/ -lgm -lpthread
+MPI_HOME       = /soft/apps/packages/mpich-gm-1.2.4..8a-gm-1.5.2.1-gcc
+MPI_LIB        = -L${MPI_HOME}/lib -lmpich -L/kernelsoft/gm-1.5.2.1/binary/lib -lgm
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${PETSC_DIR}/bin/mpirun.chiba
 
@@ -16,16 +16,8 @@ MPIRUN         =  ${PETSC_DIR}/bin/mpirun.chiba
 #  Locations of OPTIONAL packages. Comment out those you do not have.
 # ----------------------------------------------------------------------------------------  
 #
+#
 # Location of X-windows software
 #
 X11_INCLUDE    =
 X11_LIB        = -L/usr/X11R6/lib -lX11
-PETSC_HAVE_X11 = -DPETSC_HAVE_X11
-#
-# SuperLU-DIST
-# Note: compiler superlu_dist with the option -DPRNTlevel=0 to prevent it from 
-# printing information about factorization to the screen
-#
-SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
-SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux_gm.a
-PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
