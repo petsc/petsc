@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.222 1999/10/24 14:01:36 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.223 1999/11/24 21:53:12 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1403,9 +1403,9 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   PLogDouble ptotts,ptotff,ptotts_stime,ptotff_sflops,rat1,rat2,rat3;
   PLogDouble minm,maxm,avem,totm,minr,maxr,maxml,minml,totml,aveml,totr;
   PLogDouble rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
-  PLogDouble pstime,psflops1,psflops,flopr,mict,mact,rct;
+  PLogDouble pstime,psflops1,psflops,flopr,mict,mact,rct,x,y;
   int        size,rank,i,j,ierr,lEventsStageMax;
-  char       arch[10],hostname[64],username[16],pname[256],fname[256],date[64];
+  char       arch[10],hostname[64],username[16],pname[256],date[64];
   FILE       *fd = stdout;
 
   PetscFunctionBegin;
@@ -1417,10 +1417,8 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* Open the summary file */
-  if (filename && !rank) {
-    ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
-    fd = fopen(fname,"w"); 
-    if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,0,"cannot open file: %s",fname);
+  if (filename) {
+    ierr = PetscFOpen(comm,filename,"w",&fd);CHKERRQ(ierr);
   }
 
   ierr = PetscFPrintf(comm,fd,"************************************************************************************************************************\n");CHKERRQ(ierr);
@@ -1441,6 +1439,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
                  pname,arch,hostname,size,username,date);CHKERRQ(ierr);
   }
   ierr = PetscFPrintf(comm,fd,"Using %s\n",PETSC_VERSION_NUMBER);CHKERRQ(ierr);
+
 
   wdou = _TotalFlops; 
   ierr = MPI_Allreduce(&wdou,&minf,1,MPIU_PLOGDOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
@@ -1578,7 +1577,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   ierr = PetscFPrintf(comm,fd,"      #   The code for various complex numbers numerical       #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      #   kernels uses C++, which generally is not well        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      #   optimized.  For performance that is about 4-5 times  #\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,fd,"      #   faster, specify the flag -DUSE_FORTRAN_KERNELS in    #\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"      #   faster, specify the flag -DPETSC_USE_FORTRAN_KERNELS in    #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      #   base_variables and recompile the PETSc libraries.    #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
@@ -1676,8 +1675,38 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
       }
     }
   }
+
+  ierr = PetscFPrintf(comm,fd,"===========================================================\n");CHKERRQ(ierr);
+  PetscTime(y); 
+  PetscTime(x);
+  PetscTime(y); 
+  PetscTime(y);
+  PetscTime(y);
+  PetscTime(y);
+  PetscTime(y);
+  PetscTime(y); 
+  PetscTime(y);
+  PetscTime(y);
+  PetscTime(y);
+  PetscTime(y);
+  ierr = PetscFPrintf(comm,fd,"Average time to get PetscTime(): %g\n",(y-x)/10.0);CHKERRQ(ierr);
+#if defined(PETSC_USE_FORTRAN_KERNELS)
+  ierr = PetscFPrintf(comm,fd,"Compiled without FORTRAN kernels\n");CHKERRQ(ierr);
+#else
+  ierr = PetscFPrintf(comm,fd,"Compiled without FORTRAN kernels\n");CHKERRQ(ierr);
+#endif
+#if defined(PETSC_USE_MAT_SINGLE)
+  ierr = PetscFPrintf(comm,fd,"Compiled with single precision matrices\n");CHKERRQ(ierr);
+#else
+  ierr = PetscFPrintf(comm,fd,"Compiled with double precision matrices (default)\n");CHKERRQ(ierr);
+#endif
+  ierr = PetscFPrintf(comm,fd,"%s",petscmachineinfo);CHKERRQ(ierr);
+
+
   ierr = PetscFPrintf(comm,fd,"\n");CHKERRQ(ierr);
-  if (filename && !rank) fclose(fd);
+  if (filename) {
+    ierr = PetscFClose(comm,fd);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
