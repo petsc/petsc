@@ -260,3 +260,47 @@ int AppCtxViewMatlab(AppCtx* appctx)
 }
 
 
+/*--------------------------------------------------------------------------*/
+#undef __FUNC__
+#define __FUNC__ "AppCxtGraphics"
+int AppCtxGraphics(AppCtx *appctx)
+{
+  int    ierr;
+  double maxs[2],mins[2],xmin,xmax,ymin,ymax,hx,hy;
+
+  /*---------------------------------------------------------------------
+     Setup  the graphics windows
+     ------------------------------------------------------------------------*/
+
+  /* moved to AppCtxCreate -- H
+  ierr = OptionsHasName(PETSC_NULL,"-show_grid",&appctx->view.show_grid);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&appctx->view.show_griddata);CHKERRQ(ierr);
+  printf("in AppCtxGraphics, appctx->view.show_griddata= %d\n", appctx->view.show_griddata);
+  */
+
+  if ((appctx)->view.show_grid) {
+    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,400,400,
+                     &appctx->view.drawglobal); CHKERRQ(ierr);
+    ierr = DrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
+    ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,400,400,
+                     &appctx->view.drawlocal);CHKERRQ(ierr);
+    ierr = DrawSetFromOptions(appctx->view.drawlocal);CHKERRA(ierr);
+    ierr = DrawSplitViewPort((appctx)->view.drawlocal);CHKERRQ(ierr);
+
+    /*
+       Set the window coordinates based on the values in vertices
+    */
+    ierr = AODataSegmentGetExtrema((appctx)->aodata,"vertex","values",maxs,mins);CHKERRQ(ierr);
+    hx = maxs[0] - mins[0]; xmin = mins[0] - .1*hx; xmax = maxs[0] + .1*hx;
+    hy = maxs[1] - mins[1]; ymin = mins[1] - .1*hy; ymax = maxs[1] + .1*hy;
+    ierr = DrawSetCoordinates((appctx)->view.drawglobal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = DrawSetCoordinates((appctx)->view.drawlocal,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    /*
+       Visualize the grid 
+    */
+    ierr = DrawZoom((appctx)->view.drawglobal,AppCtxView,appctx); CHKERRA(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-matlab_graphics",&(appctx)->view.matlabgraphics); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
