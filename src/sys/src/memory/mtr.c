@@ -575,8 +575,8 @@ int PetscTrLogDump(FILE *fp)
   } else {
     ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d OS cannot compute size of entire process\n",rank,(int)TRMaxMem);CHKERRQ(ierr);
   }
-  shortlength      = (int*)malloc(PetscLogMalloc*sizeof(int));if (!shortlength) SETERRQ(1,"Out of memory");
-  shortfunction    = (const char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(1,"Out of memory");
+  shortlength      = (int*)malloc(PetscLogMalloc*sizeof(int));if (!shortlength) SETERRQ(PETSC_ERR_MEM,"Out of memory");
+  shortfunction    = (const char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   shortfunction[0] = PetscLogMallocFunction[0];
   shortlength[0]   = PetscLogMallocLength[0]; 
   n = 1;
@@ -594,7 +594,7 @@ int PetscTrLogDump(FILE *fp)
     foundit:;
   }
 
-  perm = (int*)malloc(n*sizeof(int));if (!perm) SETERRQ(1,"Out of memory");
+  perm = (int*)malloc(n*sizeof(int));if (!perm) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   for (i=0; i<n; i++) perm[i] = i;
   ierr = PetscSortStrWithPermutation(n,(const char **)shortfunction,perm);CHKERRQ(ierr);
 

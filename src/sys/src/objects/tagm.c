@@ -87,11 +87,10 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
     PetscLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+      SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
     tagvalp[0] = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
-
   *tag = tagvalp[0]--;
   PetscFunctionReturn(0);
 }
@@ -136,7 +135,7 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
     PetscLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+      SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
     tagvalp[0] = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
@@ -195,7 +194,7 @@ int PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+      SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
     ierr = PetscMalloc(2*sizeof(int),&tagvalp);CHKERRQ(ierr);
     tagvalp[0] = *maxval;
@@ -217,7 +216,7 @@ int PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     PetscLogInfo(0,"Out of tags for object, starting to recycle. Number tags issued %d",tagvalp[1]);
     ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(int*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      SETERRQ(1,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
+      SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
     tagvalp[0] = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }

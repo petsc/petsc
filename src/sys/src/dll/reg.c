@@ -391,7 +391,7 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)(void
   PetscTruth   flg,f1,f2,f3;
  
   PetscFunctionBegin;
-  if (!name) SETERRQ(1,"Trying to find routine with null name");
+  if (!name) SETERRQ(PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
 
   *r = 0;
   ierr = PetscFListGetPathAndFunction(name,&path,&function);CHKERRQ(ierr);
@@ -468,14 +468,6 @@ int PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)(void
     ierr = PetscFListAdd(&fl,name,name,*r);CHKERRQ(ierr);
   }
 #endif
-
-  /*
-       Do not generate error, just end
-  PetscErrorPrintf("Function name: %s\n",function);
-  ierr = PetscDLLibraryPrintPath();CHKERRQ(ierr);
-  SETERRQ(1,"Unable to find function: either it is mis-spelled or dynamic library is not in path");
-  */
-
   ierr = PetscFree(function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -506,7 +498,7 @@ int PetscFListView(PetscFList list,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  if (!iascii) SETERRQ(1,"Only ASCII viewer supported");
+  if (!iascii) SETERRQ(PETSC_ERR_SUP,"Only ASCII viewer supported");
 
   while (list) {
     if (list->path) {

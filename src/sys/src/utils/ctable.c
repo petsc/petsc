@@ -21,16 +21,15 @@ int PetscTableCreate(const int n,PetscTable *rta)
   int        ierr;
 
   PetscFunctionBegin;
-  if(n < 0) SETERRQ(1,"PetscTable error: n < 0"); 
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"n < 0"); 
   ierr          = PetscNew(struct _p_PetscTable,&ta);CHKERRQ(ierr);
   ta->tablesize = (3*n)/2 + 17;
-  if(ta->tablesize < n) ta->tablesize = INT_MAX/4; /* overflow */
+  if (ta->tablesize < n) ta->tablesize = INT_MAX/4; /* overflow */
   ierr          = PetscMalloc(sizeof(int)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr          = PetscMemzero(ta->keytable,sizeof(int)*ta->tablesize);CHKERRQ(ierr);
   ierr          = PetscMalloc(sizeof(int)*ta->tablesize,&ta->table);CHKERRQ(ierr);
   ta->head      = 0;
   ta->count     = 0;
-  
   *rta          = ta;
   PetscFunctionReturn(0);
 }
@@ -56,12 +55,11 @@ int PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
     ta->keytable[i] = intable->keytable[i]; 
     ta->table[i]    = intable->table[i];
 #if defined(PETSC_USE_BOPT_g)    
-    if(ta->keytable[i] < 0) SETERRQ(1,"TABLE error: ta->keytable[i] < 0"); 
+    if (ta->keytable[i] < 0) SETERRQ(PETSC_ERR_COR,"ta->keytable[i] < 0"); 
 #endif  
  }
   ta->head  = 0;
   ta->count = intable->count;
-  
   *rta      = ta;
   PetscFunctionReturn(0);
 }
@@ -115,8 +113,8 @@ int PetscTableAdd(PetscTable ta,const int key,const int data)
   const int tsize = ta->tablesize,tcount = ta->count; 
   
   PetscFunctionBegin;
-  if (key <= 0) SETERRQ(1,"PetscTable error: key <= 0");
-  if (!data) SETERRQ(1,"PetscTable error: Table zero data");
+  if (key <= 0) SETERRQ(PETSC_ERR_COR,"key <= 0");
+  if (!data) SETERRQ(PETSC_ERR_COR,"Null data");
   
   if (ta->count < 5*(ta->tablesize/6) - 1) {
     while (ii++ < ta->tablesize){
@@ -130,12 +128,12 @@ int PetscTableAdd(PetscTable ta,const int key,const int data)
       }
       hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
     }  
-    SETERRQ(1,"PetscTable error: full table");
+    SETERRQ(PETSC_ERR_COR,"Full table");
   } else {
     int *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
     /* alloc new (bigger) table */
-    if(ta->tablesize == INT_MAX/4) SETERRQ(1,"PetscTable error: ta->tablesize < 0");
+    if (ta->tablesize == INT_MAX/4) SETERRQ(PETSC_ERR_COR,"ta->tablesize < 0");
     ta->tablesize = 2*tsize; 
     if (ta->tablesize <= tsize) ta->tablesize = INT_MAX/4;
 
@@ -155,7 +153,7 @@ int PetscTableAdd(PetscTable ta,const int key,const int data)
 	ierr  = PetscTableAdd(ta,newk,ndata);CHKERRQ(ierr); 
       }
     }
-    if (ta->count != tcount + 1) SETERRQ(1,"PetscTable error");
+    if (ta->count != tcount + 1) SETERRQ(PETSC_ERR_COR,"corrupted ta->count");
     
     ierr = PetscFree(oldtab);CHKERRQ(ierr);
     ierr = PetscFree(oldkt);CHKERRQ(ierr);
@@ -179,7 +177,6 @@ int PetscTableRemoveAll(PetscTable ta)
     ta->count = 0;
     ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(int));CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -195,8 +192,8 @@ int PetscTableFind(PetscTable ta,const int key,int *data)
   int hash,ii = 0;
 
   PetscFunctionBegin;
-  if(!key) SETERRQ(1,"PetscTable error: PetscTable zero key");
-  hash = HASHT(ta,key);
+  if (!key) SETERRQ(PETSC_ERR_COR,"Null key");
+  hash  = HASHT(ta,key);
   *data = 0;
   while (ii++ < ta->tablesize) {
     if (!ta->keytable[hash]) break;
@@ -229,8 +226,7 @@ int PetscTableGetHeadPosition(PetscTable ta,PetscTablePosition *ppos)
       break;
     }
   } while (i++ < ta->tablesize);
-  if (!*ppos) SETERRQ(1,"TABLE error: No head");
-
+  if (!*ppos) SETERRQ(PETSC_ERR_COR,"No head");
   PetscFunctionReturn(0);
 }
 
@@ -248,12 +244,12 @@ int PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,int *pkey,int 
 
   PetscFunctionBegin;
   pos = *rPosition;
-  if (!pos) SETERRQ(1,"PetscTable error: PetscTable null position"); 
+  if (!pos) SETERRQ(PETSC_ERR_COR,"Null position"); 
   *data = *pos; 
-  if (!*data) SETERRQ(1,"PetscTable error"); 
+  if (!*data) SETERRQ(PETSC_ERR_COR,"Null data"); 
   idex = pos - ta->table;
   *pkey = ta->keytable[idex]; 
-  if (!*pkey) SETERRQ(1,"PetscTable error");  
+  if (!*pkey) SETERRQ(PETSC_ERR_COR,"Null key");  
 
   /* get next */
   do {
@@ -266,9 +262,7 @@ int PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,int *pkey,int 
       break;
     }
   } while (idex < ta->tablesize);
-
   *rPosition = pos;
-
   PetscFunctionReturn(0);
 }
 

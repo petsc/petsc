@@ -141,7 +141,9 @@ int PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
   }
 
   /* Get the function pointers for the graphics method requested */
-  if (!PetscDrawList) SETERRQ(1,"No draw implementations ierr");
+  if (!PetscDrawList) {
+    ierr = PetscDrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  }
 
   ierr =  PetscFListFind(draw->comm,PetscDrawList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
@@ -255,7 +257,10 @@ int PetscDrawSetFromOptions(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
 
-  if (!PetscDrawList) SETERRQ(1,"No draw implementations registered");
+  if (!PetscDrawList) {
+    ierr = PetscDrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  }
+
   if (draw->type_name) {
     def = draw->type_name;
   } else {

@@ -266,7 +266,7 @@ int PetscGetArgs(int *argc,char ***args)
 {
   PetscFunctionBegin;
   if (!PetscGlobalArgs) {
-    SETERRQ(1,"You must call after PetscInitialize() but before PetscFinalize()");
+    SETERRQ(PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
   }
   *argc = PetscGlobalArgc;
   *args = PetscGlobalArgs;

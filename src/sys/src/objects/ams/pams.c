@@ -43,8 +43,7 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
   int        ierr;
 
   PetscFunctionBegin;
-
-  if (amem < 0) SETERRQ(1,"Called without a call to PetscObjectPublishBaseBegin()");
+  if (amem < 0) SETERRQ(PETSC_ERR_ORDER,"Called without a call to PetscObjectPublishBaseBegin()");
   ierr = AMS_Memory_publish(amem);CHKERRQ(ierr);
   ierr = AMS_Memory_grant_access(amem);CHKERRQ(ierr);
   PetscFunctionReturn(0);

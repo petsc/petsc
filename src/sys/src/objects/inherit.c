@@ -60,7 +60,7 @@ int PetscHeaderDestroy_Private(PetscObject h)
 
   PetscFunctionBegin;
   if (h->amem != -1) {
-    SETERRQ(1,"PETSc object destroyed before its AMS publication was destroyed");
+    SETERRQ(PETSC_ERR_ORDER,"PETSc object destroyed before its AMS publication was destroyed");
   }
 
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
@@ -209,7 +209,7 @@ int PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
   if (ptr) {
     ierr = PetscOListReverseFind(ptr->olist,obj,&tname);CHKERRQ(ierr);
     if (tname){
-      SETERRQ(1,"An object cannot be composed with an object that was compose with it");
+      SETERRQ(PETSC_ERR_ARG_INCOMP,"An object cannot be composed with an object that was compose with it");
     }
   }
   ierr = PetscOListAdd(&obj->olist,name,ptr);CHKERRQ(ierr);
@@ -235,7 +235,7 @@ int PetscObjectComposeLanguage_Petsc(PetscObject obj,PetscLanguage lang,void *vo
   if (lang == PETSC_LANGUAGE_CPP) {
     obj->cpp = vob;
   } else {
-    SETERRQ(1,"No support for this language yet");
+    SETERRQ(PETSC_ERR_SUP,"No support for this language yet");
   }
   PetscFunctionReturn(0);
 }
@@ -251,10 +251,10 @@ int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob
     if (obj->cpp) {
       *vob = obj->cpp;
     } else {
-      SETERRQ(1,"No C++ wrapper generated");
+      SETERRQ(PETSC_ERR_SUP,"No C++ wrapper generated");
     }
   } else {
-    SETERRQ(1,"No support for this language yet");
+    SETERRQ(PETSC_ERR_SUP,"No support for this language yet");
   }
   PetscFunctionReturn(0);
 }
