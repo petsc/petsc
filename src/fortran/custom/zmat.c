@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.53 1998/08/05 12:57:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.54 1998/08/05 13:03:53 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -40,8 +40,8 @@ static char vcid[] = "$Id: zmat.c,v 1.53 1998/08/05 12:57:51 bsmith Exp bsmith $
 #define matfdcoloringdestroy_            MATFDCOLORINGDESTROY
 #define matfdcoloringsetfunction_        MATFDCOLORINGSETFUNCTION
 #define matcopy_                         MATCOPY
+#define matgetsubmatrices_               MATGETSUBMATRICES
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define matcopy_                         matcopy
 #define matsetvalue_                     matsetvalue
 #define matgetrow_                       matgetrow
 #define matrestorerow_                   matrestorerow
@@ -73,6 +73,8 @@ static char vcid[] = "$Id: zmat.c,v 1.53 1998/08/05 12:57:51 bsmith Exp bsmith $
 #define matfdcoloringcreate_             matfdcoloringcreate
 #define matfdcoloringdestroy_            matfdcoloringdestroy
 #define matfdcoloringsetfunction_        matfdcoloringsetfunction
+#define matcopy_                         matcopy
+#define matgetsubmatrices_               matgetsubmatrices
 #endif
 
 #if defined(__cplusplus)
@@ -424,6 +426,23 @@ void matfdcoloringsetfunction_(MatFDColoring *fd,void (*f)(PetscFortranAddr*,dou
   *__ierr = MatFDColoringSetFunction(*fd,(int (*)(void))ourmatfdcoloringfunctionts,ctx);
 }
 
+/*
+    MatGetSubmatrices() is slightly different from C since the 
+    Fortran provides the array to hold the submatrix objects, while in C that 
+    array is allocated by the MatGetSubmatrices()
+*/
+void matgetsubmatrices_(Mat *mat, int *n, IS *isrow, IS *iscol,MatGetSubMatrixCall *scall,
+                        Mat *smat, int *__ierr)
+{
+  Mat *lsmat;
+  int i;
+  *__ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&lsmat);
+  for (i=0; i<*n; i++) {
+    smat[i] = lsmat[i];
+  }
+  PetscFree(lsmat); 
+}
+  
 #if defined(__cplusplus)
 }
 #endif
