@@ -90,6 +90,7 @@ extern int  PetscInitialize(int*,char***,char*,char*);
 extern int  PetscFinalize();
 
 extern int  PetscDestroy(PetscObject);
+extern int  PetscObjectGetComm(PetscObject,MPI_Comm *comm);
 extern int  PetscObjectSetName(PetscObject,char*);
 extern int  PetscObjectGetName(PetscObject,char**);
 

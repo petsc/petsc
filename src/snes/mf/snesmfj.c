@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.1 1995/05/04 03:17:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.2 1995/05/05 03:51:29 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -61,16 +61,18 @@ int SNESDefaultMatrixFreeComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,
                                          int *flag,void *ctx)
 {
   int         n,ierr;
-  MPI_Comm    comm;
-  PetscObject obj = (PetscObject) *J;
+  MatType     type;
+
   VecGetSize(x1,&n);
-  comm = ((PetscObject)x1)->comm;
-  if (!*J || obj->type != MATSHELL) {
+  if (*J) MatGetType(*J,&type);
+  if (!*J || type != MATSHELL) {
+    MPI_Comm    comm;
     MFCtx_Private *mfctx;
     /* first time in, therefore build datastructures */
     mfctx = NEW(MFCtx_Private); CHKPTR(mfctx);
     mfctx->snes = snes;
     ierr = VecDuplicate(x1,&mfctx->w); CHKERR(ierr);
+    PetscObjectGetComm((PetscObject)x1,&comm);
     ierr = MatShellCreate(comm,n,n,(void*)mfctx,J); CHKERR(ierr);
     MatShellSetMult(*J,SNESMatrixFreeMult_Private);
     *B = *J;
