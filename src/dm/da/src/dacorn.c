@@ -103,22 +103,45 @@ int DAGetCoordinates(DA da,Vec *c)
 @*/
 int DAGetCoordinateDA(DA da,DA *cda)
 {
-  int ierr;
+  DAStencilType  st;
+  int            size,ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
   if (da->dim == 1) {
     if (da->w == 1) {
       da->da_coordinates = da;
     } else {
-      int            s,m,*lc,l,size;
+      int            s,m,*lc,l;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(int),&lc);CHKERRQ(ierr);
       ierr = MPI_Allgather(&l,1,MPI_INT,lc,1,MPI_INT,da->comm);CHKERRQ(ierr);
       ierr = DACreate1d(da->comm,pt,m,1,s,lc,&da->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
+    }
+  } else if (da->dim == 2) {
+    ierr = DAGetInfo(da,0,0,0,0,0,0,0,0,0,0,&st);CHKERRQ(ierr);
+    if (da->w == 2 && st == DA_STENCIL_BOX) {
+      da->da_coordinates = da;
+    } else {
+      int            i,s,m,*lc,*ld,l,k,n,M,N;
+      DAPeriodicType pt;
+      ierr = DAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
+      ierr = DAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(int),&lc);CHKERRQ(ierr);
+      ierr = PetscMalloc(size*sizeof(int),&ld);CHKERRQ(ierr);
+      /* only first M values in lc matter */
+      ierr = MPI_Allgather(&l,1,MPI_INT,lc,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      /* every Mth value in ld matters */
+      ierr = MPI_Allgather(&k,1,MPI_INT,ld,1,MPI_INT,da->comm);CHKERRQ(ierr);
+      for ( i=0; i<N; i++) {
+        ld[i] = ld[M*i];
+      }
+      ierr = DACreate2d(da->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = PetscFree(lc);CHKERRQ(ierr);
+      ierr = PetscFree(ld);CHKERRQ(ierr);
     }
   }
   *cda = da->da_coordinates;
