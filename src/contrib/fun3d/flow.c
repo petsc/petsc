@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.12 2000/01/22 20:52:58 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.13 2000/01/23 17:29:07 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -1078,7 +1078,7 @@ int GetLocalOrdering(GRID *grid)
   for (i=0; i<6; i++)
    printf("%d %d %d\n", i, tmp[i], eperm[i]);
   */
-  PetscMemcpy(tmp,grid->eptr,2*nedgeLoc*sizeof(int));
+  ierr = PetscMemcpy(tmp,grid->eptr,2*nedgeLoc*sizeof(int));CHKERRQ(ierr);
   ierr = OptionsHasName(0,"-no_edge_reordering",&flg);CHKERRQ(ierr);
   if (!flg) {
    ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
@@ -1135,8 +1135,9 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
   while (remEdges > 0) {
    readEdges = PetscMin(remEdges,nedgeLocEst); 
-   if (!rank) 
+   if (!rank) {
     ierr = PetscBinaryRead(fdes, ftmp, readEdges, PETSC_SCALAR);CHKERRQ(ierr);
+   }
    ierr = MPI_Bcast(ftmp, readEdges, MPI_DOUBLE, 0, MPI_COMM_WORLD);CHKERRQ(ierr);
    for (j = 0; j < readEdges; j++) {
      if (edge_bit[k] == (i+j)) {
