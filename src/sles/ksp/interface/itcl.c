@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.47 1996/01/05 16:13:43 curfman Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.48 1996/01/09 03:32:01 curfman Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -79,13 +79,13 @@ int KSPSetFromOptions(KSP ctx)
     KSPSetUsePreconditionedResidual(ctx);
   }
   if (OptionsHasName(ctx->prefix,"-ksp_left_pc")) {
-    KSPSetPreconditionerSide(ctx,KSP_LEFT_PC);
+    KSPSetPreconditionerSide(ctx,PC_LEFT);
   }
   if (OptionsHasName(ctx->prefix,"-ksp_right_pc")) {
-    KSPSetPreconditionerSide(ctx,KSP_RIGHT_PC);
+    KSPSetPreconditionerSide(ctx,PC_RIGHT);
   }
   if (OptionsHasName(ctx->prefix,"-ksp_symmetric_pc")) {
-    KSPSetPreconditionerSide(ctx,KSP_SYMMETRIC_PC);
+    KSPSetPreconditionerSide(ctx,PC_SYMMETRIC);
   }
   if (OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart)) {
     KSPGMRESSetRestart(ctx,restart);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.40 1996/01/01 01:01:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.41 1996/01/09 03:30:02 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -90,9 +90,9 @@ int KSPDestroy(KSP itP)
     Output Parameter:
 .   side - the preconditioning side, where side is one of
 $
-$      KSP_LEFT_PC - left preconditioning (default)
-$      KSP_RIGHT_PC - right preconditioning
-$      KSP_SYMMETRIC_PC - symmetric preconditioning
+$      PC_LEFT - left preconditioning (default)
+$      PC_RIGHT - right preconditioning
+$      PC_SYMMETRIC - symmetric preconditioning
 
    Options Database Keys:
 $  -ksp_left_pc, -ksp_right_pc, -ksp_symmetric_pc,
@@ -108,7 +108,7 @@ $  -ksp_left_pc, -ksp_right_pc, -ksp_symmetric_pc,
 .seealso: KSPGetPreconditionerSide()
 @*/
 
-int KSPSetPreconditionerSide(KSP itP,KSPPrecondSide side)
+int KSPSetPreconditionerSide(KSP itP,PCSide side)
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   (itP)->pc_side = side;
@@ -124,15 +124,15 @@ int KSPSetPreconditionerSide(KSP itP,KSPPrecondSide side)
     Output Parameter:
 .   side - the preconditioning side, where side is one of
 $
-$      KSP_LEFT_PC - left preconditioning (default)
-$      KSP_RIGHT_PC - right preconditioning
-$      KSP_SYMMETRIC_PC - symmetric preconditioning
+$      PC_LEFT - left preconditioning (default)
+$      PC_RIGHT - right preconditioning
+$      PC_SYMMETRIC - symmetric preconditioning
 
 .keywords: KSP, get, right, left, symmetric, side, preconditioner, flag
 
 .seealso: KSPSetPreconditionerSide()
 @*/
-int KSPGetPreconditionerSide(KSP itP, KSPPrecondSide *side) 
+int KSPGetPreconditionerSide(KSP itP, PCSide *side) 
 {
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   *side = (itP)->pc_side;

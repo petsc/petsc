@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.13 1995/11/04 23:22:09 bsmith Exp curfman $ */
+/* $Id: kspimpl.h,v 1.14 1996/01/09 03:31:52 curfman Exp curfman $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -15,8 +15,8 @@ struct _KSP {
       calc_eigs,                   /* calculate extreme eigenvalues */
       calc_res,                    /* calculate residuals at each iteration*/
       use_pres;                    /* use preconditioned residual */
-  KSPPrecondSide pc_side;          /* flag for left, right, or symmetric preconditioning */
-
+  PCSide pc_side;                  /* flag for left, right, or symmetric 
+                                      preconditioning */
   double rtol,                     /* relative tolerance */
          atol,                     /* absolute tolerance */
          ttol,                     /* (not set by user)  */

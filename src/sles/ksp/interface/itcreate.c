@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.69 1996/01/03 16:11:18 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.70 1996/01/09 03:30:52 curfman Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -54,8 +54,9 @@ int KSPView(KSP ksp,Viewer viewer)
     MPIU_fprintf(ksp->comm,fd,
       "  tolerances:  relative=%g, absolute=%g, divergence=%g\n",
       ksp->rtol, ksp->atol, ksp->divtol);
-    if (ksp->pc_side == KSP_RIGHT_PC) MPIU_fprintf(ksp->comm,fd,"  right preconditioning\n");
-    else if (ksp->pc_side == KSP_SYMMETRIC_PC) MPIU_fprintf(ksp->comm,fd,"  symmetric preconditioning\n");
+    if (ksp->pc_side == PC_RIGHT) MPIU_fprintf(ksp->comm,fd,"  right preconditioning\n");
+    else if (ksp->pc_side == PC_SYMMETRIC) 
+      MPIU_fprintf(ksp->comm,fd,"  symmetric preconditioning\n");
     else MPIU_fprintf(ksp->comm,fd,"  left preconditioning\n");
   }
   return 0;
@@ -89,7 +90,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
 
   ctx->type          = (KSPType) -1;
   ctx->max_it        = 10000;
-  ctx->pc_side       = KSP_LEFT_PC;
+  ctx->pc_side       = PC_LEFT;
   ctx->use_pres      = 0;
   ctx->rtol          = 1.e-5;
   ctx->atol          = 1.e-50;

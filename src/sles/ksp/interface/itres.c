@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.15 1995/11/04 23:28:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.16 1996/01/09 03:13:28 curfman Exp curfman $";
 #endif
 
 #include "kspimpl.h"   /*I "ksp.h" I*/
@@ -32,34 +32,35 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
-  if (itP->pc_side == KSP_SYMMETRIC_PC)
-    SETERRQ(1,"KSPResidual: KSP_SYMMETRIC_PC not yet supported.");
-  if (itP->pc_side == KSP_RIGHT_PC) {
+  if (itP->pc_side == PC_RIGHT) {
     if (vbinvf) {ierr = VecCopy(vb,vbinvf); CHKERRQ(ierr);}
     vbinvf = vb;
   }
-  else {
+  else if (itP->pc_side == PC_LEFT) {
     ierr = PCApply(itP->B,vb,vbinvf); CHKERRQ(ierr);
+  }
+  else {
+    SETERRQ(1,"KSPResidual: Only right and left preconditioning are currently supported.");
   }
   if (!itP->guess_zero) {
     /* compute initial residual: f - M*x */
     /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
-    if (itP->pc_side == KSP_RIGHT_PC) {
+    if (itP->pc_side == PC_RIGHT) {
       /* we want a * binv * b * x, or just a * x for the first step */
       /* a*x into temp */
       ierr = MatMult(Amat,vsoln,vt1); CHKERRQ(ierr);
     }
     else {
       /* else we do binv * a * x */
-      ierr = PCApplyBAorAB(itP->B,itP->pc_side, vsoln, vt1, vt2 ); CHKERRQ(ierr);
+      ierr = PCApplyBAorAB(itP->B,itP->pc_side,vsoln,vt1,vt2); CHKERRQ(ierr);
     }
     /* This is an extra copy for the right-inverse case */
-    ierr = VecCopy( vbinvf, vres ); CHKERRQ(ierr);
-    ierr = VecAXPY(&one, vt1, vres ); CHKERRQ(ierr);
+    ierr = VecCopy(vbinvf,vres); CHKERRQ(ierr);
+    ierr = VecAXPY(&one,vt1,vres); CHKERRQ(ierr);
           /* inv(b)(f - a*x) into dest */
   }
   else {
-    ierr = VecCopy( vbinvf, vres ); CHKERRQ(ierr);
+    ierr = VecCopy(vbinvf,vres); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -88,11 +89,11 @@ int KSPUnwindPre(KSP itP,Vec vsoln,Vec vt1)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->pc_side == KSP_RIGHT_PC) {
+  if (itP->pc_side == PC_RIGHT) {
     ierr = PCApply(itP->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }
-  else if (itP->pc_side == KSP_SYMMETRIC_PC) {
+  else if (itP->pc_side == PC_SYMMETRIC) {
     ierr = PCApplySymmRight(itP->B,vsoln,vt1); CHKERRQ(ierr);
     ierr = VecCopy(vt1,vsoln); CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.35 1996/01/01 01:01:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.36 1996/01/09 03:30:49 curfman Exp curfman $";
 #endif
 
 /*
@@ -147,7 +147,7 @@ int KSPDefaultConverged(KSP itP,int n,double rnorm,void *dummy)
 int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
 {
   int ierr;
-  if (itP->pc_side == KSP_RIGHT_PC) {
+  if (itP->pc_side == PC_RIGHT) {
     if (itP->B) {
       if (v) {ierr = PCApply(itP->B,itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
       else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with right preconditioner");}
@@ -157,7 +157,7 @@ int KSPDefaultBuildSolution(KSP itP,Vec v,Vec *V)
       else { *V = itP->vec_sol;}
     }
   }
-  else if (itP->pc_side == KSP_SYMMETRIC_PC) {
+  else if (itP->pc_side == PC_SYMMETRIC) {
     if (itP->B) {
       if (v) {ierr = PCApplySymmRight(itP->B,itP->vec_sol,v); CHKERRQ(ierr); *V = v;}
       else {SETERRQ(1,"KSPDefaultBuildSolution:Not working with symmetric preconditioner");}
