@@ -7,6 +7,7 @@ petsc/bmake/sun4_local
 petsc/bmake/freebsd_local
 petsc/bmake/sun4_lam
 petsc/bmake/sun4_uni
+petsc/bmake/IRIX_uni
 petsc/bmake/freebsd_nolog
 petsc/bmake/alpha_nolog
 petsc/include/finclude/generateincludes
