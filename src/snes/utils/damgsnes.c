@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.39 2001/05/22 03:01:46 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.40 2001/05/22 03:34:19 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -94,6 +94,7 @@ int DMMGComputeJacobian_User(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,vo
 
       /* scale to "natural" scaling for that grid */
       ierr = VecPointwiseMult(dmmg[i]->Rscale,X,X);CHKERRQ(ierr);
+      ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
 
       /* form Jacobian on coarse grid */
       ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,flag,dmmg[i-1]);CHKERRQ(ierr);
@@ -140,6 +141,7 @@ int DMMGComputeJacobian_FD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 
       /* scale to "natural" scaling for that grid */
       ierr = VecPointwiseMult(dmmg[i]->Rscale,X,X);CHKERRQ(ierr);
+      ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
 
       /* form Jacobian on coarse grid */
       ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,flag,dmmg[i-1]->fdcoloring);CHKERRQ(ierr);
@@ -257,7 +259,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
       ierr = MatFDColoringSetFromOptions(dmmg[i]->fdcoloring);CHKERRQ(ierr);
       dmmg[i]->computejacobian = SNESDefaultComputeJacobianColor;
     }
-#if defined(PETSC_HAVE_ADIC)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
   } else if (jacobian == DMMGComputeJacobianWithAdic) {
     for (i=0; i<nlevels; i++) {
       ISColoring iscoloring;
@@ -593,7 +595,7 @@ int DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunctio
   int ierr,i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_ADIC)
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
   ierr = DMMGSetSNES(dmmg,DMMGFormFunction,DMMGComputeJacobianWithAdic);CHKERRQ(ierr);
 #else 
   ierr = DMMGSetSNES(dmmg,DMMGFormFunction,0);CHKERRQ(ierr);
