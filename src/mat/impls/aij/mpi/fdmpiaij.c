@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.10 1997/07/09 20:54:04 balay Exp bsmith $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.11 1997/08/13 22:24:06 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -12,7 +12,7 @@ extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*
 extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringCreate_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringCreate_MPIAIJ"
 int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;

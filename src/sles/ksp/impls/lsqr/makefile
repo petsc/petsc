@@ -1,7 +1,5 @@
 ALL: lib 
 
-#PETSC_DIR = ../../../..
-
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
 SOURCEC  = lsqr.c
 SOURCEF  =

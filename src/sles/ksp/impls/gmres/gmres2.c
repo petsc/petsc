@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.3 1997/02/22 02:23:08 bsmith Exp balay $";
+static char vcid[] = "$Id: gmres2.c,v 1.4 1997/07/09 20:50:40 balay Exp bsmith $";
 #endif
 #include <math.h>
 #include <stdio.h>
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetRestart" /* ADIC Ignore */
+#define __FUNC__ "KSPGMRESSetRestart" 
 /*@
     KSPGMRESSetRestart - Sets the number of search directions 
     for GMRES before restart.
@@ -36,7 +36,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGMRESSetOrthogonalization" /* ADIC Ignore */
+#define __FUNC__ "KSPGMRESSetOrthogonalization" 
 /*@C
   KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
 

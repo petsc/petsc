@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fuser.c,v 1.9 1997/03/03 23:11:01 balay Exp balay $";
+static char vcid[] = "$Id: fuser.c,v 1.10 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: fuser.c,v 1.9 1997/03/03 23:11:01 balay Exp balay $";
 
 #if defined (PARCH_nt) || defined(PARCH_nt_gnu)
 #undef __FUNC__  
-#define __FUNC__ "PetscGetUserName" /* ADIC Ignore */
+#define __FUNC__ "PetscGetUserName"
 int PetscGetUserName( char *name, int nlen )
 {
   GetUserName((LPTSTR)name,(LPDWORD)(&nlen));
@@ -16,7 +16,7 @@ int PetscGetUserName( char *name, int nlen )
 }
 #elif defined(HAVE_PWD_H)
 #undef __FUNC__  
-#define __FUNC__ "PetscGetUserName" /* ADIC Ignore */
+#define __FUNC__ "PetscGetUserName"
 /*@C
     PetscGetUserName - Returns the name of the user.
 
@@ -42,7 +42,7 @@ int PetscGetUserName( char *name, int nlen )
 
 #else
 #undef __FUNC__  
-#define __FUNC__ "PetscGetUserName" /* ADIC Ignore */
+#define __FUNC__ "PetscGetUserName"
 int PetscGetUserName( char *name, int nlen )
 {
   PetscStrncpy( name, "Unknown", nlen );

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dascatter.c,v 1.9 1997/02/22 02:29:24 bsmith Exp balay $";
+static char vcid[] = "$Id: dascatter.c,v 1.10 1997/07/09 21:00:44 balay Exp bsmith $";
 #endif
  
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dascatter.c,v 1.9 1997/02/22 02:29:24 bsmith Exp bala
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetScatter" /* ADIC Ignore */
+#define __FUNC__ "DAGetScatter"
 /*@C
    DAGetScatter - Gets the local-to-global, local-to-global, and 
    local-to-local vector scatter contexts for a distributed array.

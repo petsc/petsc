@@ -1,4 +1,4 @@
-#PETSC_DIR = ../../../..
+
 ALL: ex1
 
 # Note that we need FCONF to pick up the Fortran format info

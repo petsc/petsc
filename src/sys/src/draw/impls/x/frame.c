@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: frame.c,v 1.12 1997/07/09 20:58:00 balay Exp bsmith $";
+static char vcid[] = "$Id: frame.c,v 1.13 1997/07/29 14:10:43 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -27,7 +27,7 @@ static PixVal HiPix=0, LoPix=0;
    Set the colors for the highlights by name 
  */
 #undef __FUNC__  
-#define __FUNC__ "XiFrameColors" /* ADIC Ignore */
+#define __FUNC__ "XiFrameColors" 
 int XiFrameColors( Draw_X* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
 {
   Rgn->Hi = XiGetColor( XiWin, Hi, 1 );
@@ -37,7 +37,7 @@ int XiFrameColors( Draw_X* XiWin, XiDecoration *Rgn, char *Hi, char *Lo )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiDrawFrame" /* ADIC Ignore */
+#define __FUNC__ "XiDrawFrame" 
 int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
 {
   int    xl = Rgn->Box.x, yl = Rgn->Box.y, xh = Rgn->Box.xh, yh = Rgn->Box.yh,
@@ -108,7 +108,7 @@ int XiDrawFrame(Draw_X *XiWin, XiDecoration *Rgn )
    Set the colors for the highlights by name 
  */
 #undef __FUNC__  
-#define __FUNC__ "XiFrameColorsByName" /* ADIC Ignore */
+#define __FUNC__ "XiFrameColorsByName" 
 int XiFrameColorsByName(Draw_X* XiWin, char *Hi, char *Lo )
 {
   if (XiWin->numcolors > 2) {

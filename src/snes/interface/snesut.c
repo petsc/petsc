@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.30 1997/07/09 20:59:37 balay Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.31 1997/07/18 19:10:14 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "SNESDefaultMonitor" /* ADIC Ignore */
+#define __FUNC__ "SNESDefaultMonitor"
 /*@C
    SNESDefaultMonitor - Monitoring progress of the SNES solvers (default).
 
@@ -39,7 +39,7 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
 }
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "SNESDefaultSMonitor" /* ADIC Ignore */
+#define __FUNC__ "SNESDefaultSMonitor"
 /*
      Default (short) SNES Monitor, same as SNESDefaultMonitor() except
   it prints fewer digits of the residual as the residual gets smaller.

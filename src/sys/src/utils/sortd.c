@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortd.c,v 1.10 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: sortd.c,v 1.11 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 
 /*
@@ -18,7 +18,7 @@ static char vcid[] = "$Id: sortd.c,v 1.10 1997/02/22 02:23:29 bsmith Exp balay $
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
    
 #undef __FUNC__  
-#define __FUNC__ "PetsciDqsort" /* ADIC Ignore */
+#define __FUNC__ "PetsciDqsort"
 /* A simple version of quicksort; taken from Kernighan and Ritchie, page 87 */
 static int PetsciDqsort(double *v,int right)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wmap.c,v 1.14 1997/07/09 20:58:00 balay Exp bsmith $";
+static char vcid[] = "$Id: wmap.c,v 1.15 1997/07/29 14:10:43 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: wmap.c,v 1.14 1997/07/09 20:58:00 balay Exp bsmith $"
     Returns 0 if window is mapped; 1 if window is destroyed.
  */
 #undef __FUNC__  
-#define __FUNC__ "Xi_wait_map" /* ADIC Ignore */
+#define __FUNC__ "Xi_wait_map" 
 int Xi_wait_map( Draw_X *XiWin)
 {
   XEvent  event;

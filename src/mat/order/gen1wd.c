@@ -27,7 +27,7 @@
 /*       FN1WD, REVRSE, ROOTLS.*/
 /****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "gen1wd" /* ADIC Ignore */
+#define __FUNC__ "gen1wd" 
 int gen1wd(int *neqns, int *xadj, int *adjncy, 
 	int *mask, int *nblks, int *xblk, int *perm, int *
 	xls, int *ls)

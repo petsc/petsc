@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.29 1997/05/23 18:35:03 balay Exp balay $";
+static char vcid[] = "$Id: random.c,v 1.30 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 
 /*
@@ -46,6 +46,8 @@ struct _p_PetscRandom {
 int PetscRandomDestroy(PetscRandom r)
 {
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
+  if (--r->refct > 0) return 0;
+
   PLogObjectDestroy((PetscObject)r);
   PetscHeaderDestroy((PetscObject)r);
   return 0;
@@ -149,7 +151,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL 
                              && type != RANDOM_DEFAULT_IMAGINARY)
     SETERRQ(PETSC_ERR_SUP,0,"Not for this random number type");
-  PetscHeaderCreate(rr,_p_PetscRandom,PETSCRANDOM_COOKIE,type,comm);
+  PetscHeaderCreate(rr,_p_PetscRandom,PETSCRANDOM_COOKIE,type,comm,PetscRandomDestroy,0);
   PLogObjectCreate(rr);
   rr->low   = 0.0;
   rr->width = 1.0;
@@ -224,7 +226,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 
   *r = 0;
   if (type != RANDOM_DEFAULT) SETERRQ(PETSC_ERR_SUP,0,"Not for this random number type");
-  PetscHeaderCreate(rr,_p_PetscRandom,PETSCRANDOM_COOKIE,type,comm);
+  PetscHeaderCreate(rr,_p_PetscRandom,PETSCRANDOM_COOKIE,type,comm,PetscRandomDestroy,0);
   PLogObjectCreate(rr);
   *r = rr;
   PetscGetArchType(arch,10);

@@ -41,7 +41,7 @@
 /*                                                                */
 /*                                                                */
 #undef __FUNC__  
-#define __FUNC__ "genqmd" /* ADIC Ignore */
+#define __FUNC__ "genqmd" 
 int genqmd(int *neqns, int *xadj, int *adjncy, 
 	int *perm, int *invp, int *deg, int *marker, int *
 	rchset, int *nbrhd, int *qsize, int *qlink, int *nofsub)

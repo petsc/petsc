@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.18 1997/04/02 21:01:46 bsmith Exp balay $";
+static char vcid[] = "$Id: drawv.c,v 1.19 1997/07/09 20:57:34 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "src/draw/drawimpl.h" /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_Draw" /* ADIC Ignore */
+#define __FUNC__ "ViewerDestroy_Draw" 
 int ViewerDestroy_Draw(PetscObject obj)
 {
   int    ierr;
@@ -20,14 +20,14 @@ int ViewerDestroy_Draw(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerFlush_Draw" /* ADIC Ignore */
+#define __FUNC__ "ViewerFlush_Draw" 
 int ViewerFlush_Draw(Viewer v)
 {
   return DrawSyncFlush(v->draw);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDrawGetDraw" /* ADIC Ignore */
+#define __FUNC__ "ViewerDrawGetDraw" 
 /*@C
     ViewerDrawGetDraw - Returns Draw object from Viewer object.
     This Draw object may then be used to perform graphics using 
@@ -54,7 +54,7 @@ int ViewerDrawGetDraw(Viewer v, Draw *draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDrawGetDrawLG" /* ADIC Ignore */
+#define __FUNC__ "ViewerDrawGetDrawLG" 
 /*@C
     ViewerDrawGetDrawLG - Returns DrawLG object from Viewer object.
     This DrawLG object may then be used to perform graphics using 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaijpc.c,v 1.30 1997/07/09 20:54:04 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.31 1997/08/07 14:39:24 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the SeqAIJ/MPIAIJ format.
@@ -18,7 +18,7 @@ typedef struct {
 } PC_BJacobi_MPIAIJ;
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_BJacobi_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "PCDestroy_BJacobi_MPIAIJ"
 int PCDestroy_BJacobi_MPIAIJ(PetscObject obj)
 {
   PC                pc = (PC) obj;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dmouse.c,v 1.9 1997/07/09 20:57:34 balay Exp bsmith $";
+static char vcid[] = "$Id: dmouse.c,v 1.10 1997/08/13 22:24:59 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dmouse.c,v 1.9 1997/07/09 20:57:34 balay Exp bsmith $
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawGetMouseButton" /* ADIC Ignore */
+#define __FUNC__ "DrawGetMouseButton" 
 /*@
        DrawGetMouseButton - Returns location of mouse and which button was
             pressed. Waits for button to be pressed.

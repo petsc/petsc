@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.136 1997/08/04 17:26:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.137 1997/08/13 22:23:12 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -60,7 +60,7 @@ Scalar PETSC_i = 0.0;
 FILE *petsc_history = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "PLogOpenHistoryFile" /* ADIC Ignore */
+#define __FUNC__ "PLogOpenHistoryFile"
 int PLogOpenHistoryFile(char *filename,FILE **fd)
 {
   int  ierr,rank,size;
@@ -89,7 +89,7 @@ int PLogOpenHistoryFile(char *filename,FILE **fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PLogCloseHistoryFile" /* ADIC Ignore */
+#define __FUNC__ "PLogCloseHistoryFile"
 static int PLogCloseHistoryFile(FILE **fd)
 {
   int  rank;
@@ -114,7 +114,7 @@ int    PetscCompare          = 0;
 double PetscCompareTolerance = 1.e-10;
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCompareInt" /* ADIC Ignore */
+#define __FUNC__ "PetscCompareInt"
 /*@C
    PetscCompareInt - Compares integers while running with PETSc's incremental
    debugger.
@@ -203,7 +203,7 @@ int PetscCompareScalar(Scalar d)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscCompareInitialize" /* ADIC Ignore */
+#define __FUNC__ "PetscCompareInitialize"
 /*
     PetscCompareInitialize - If there is a command line option -compare then
     this routine calls MPI_Init() and sets up two PETSC_COMM_WORLD, one for 
@@ -259,7 +259,7 @@ int PetscCompareInitialize(double tol)
 }
 /* ------------------------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "PetscInitializeOptions" /* ADIC Ignore */
+#define __FUNC__ "PetscInitializeOptions"
 int PetscInitializeOptions()
 {
   options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
@@ -269,7 +269,7 @@ int PetscInitializeOptions()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsSetProgramName" /* ADIC Ignore */
+#define __FUNC__ "OptionsSetProgramName"
 int OptionsSetProgramName(char *name)
 { 
   options->namegiven = 1;
@@ -278,7 +278,7 @@ int OptionsSetProgramName(char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscInitialize" /* ADIC Ignore */
+#define __FUNC__ "PetscInitialize"
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize calls MPI_Init() if that has yet to be called,
@@ -403,7 +403,7 @@ int PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 int PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 
 #undef __FUNC__  
-#define __FUNC__ "PetscFinalize" /* ADIC Ignore */
+#define __FUNC__ "PetscFinalize"
 /*@C 
    PetscFinalize - Checks for options to be called at the conclusion
    of the program and calls MPI_Finalize().
@@ -578,7 +578,7 @@ int PetscFinalize()
 */
 
 #undef __FUNC__  
-#define __FUNC__ "abort_function" /* ADIC Ignore */
+#define __FUNC__ "abort_function"
 void abort_function(MPI_Comm *comm,int *flag) 
 {
   fprintf(stderr,"MPI error %d\n",*flag);
@@ -599,7 +599,7 @@ extern int PetscSetUseTrMalloc_Private(int);
 #include "snes.h" /* so that cookies are defined */
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsCheckInitial_Private" /* ADIC Ignore */
+#define __FUNC__ "OptionsCheckInitial_Private"
 int OptionsCheckInitial_Private()
 {
   char     string[64],mname[256];
@@ -852,7 +852,7 @@ int OptionsCheckInitial_Private()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetProgramName" /* ADIC Ignore */
+#define __FUNC__ "OptionsGetProgramName"
 char *OptionsGetProgramName()
 {
   if (!options) return (char *) 0;
@@ -862,7 +862,7 @@ char *OptionsGetProgramName()
 
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsInsertFile_Private" /* ADIC Ignore */
+#define __FUNC__ "OptionsInsertFile_Private"
 /*
     Reads options from a file and adds to options database
 */
@@ -909,7 +909,7 @@ static int OptionsInsertFile_Private(char *file)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsCreate_Private" /* ADIC Ignore */
+#define __FUNC__ "OptionsCreate_Private"
 /*
    OptionsCreate_Private - Creates a database of options.
 
@@ -1004,7 +1004,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsPrint" /* ADIC Ignore */
+#define __FUNC__ "OptionsPrint"
 /*@C
    OptionsPrint - Prints the options that have been loaded. This is
         useful for debugging purposes.
@@ -1037,7 +1037,7 @@ int OptionsPrint(FILE *fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsDestroy_Private" /* ADIC Ignore */
+#define __FUNC__ "OptionsDestroy_Private"
 /*
     OptionsDestroy_Private - Destroys the option database. 
 
@@ -1067,7 +1067,7 @@ static int OptionsDestroy_Private()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsSetValue" /* ADIC Ignore */
+#define __FUNC__ "OptionsSetValue"
 /*@C
    OptionsSetValue - Sets an option name-value pair in the options 
    database, overriding whatever is already present.
@@ -1149,7 +1149,7 @@ int OptionsSetValue(char *name,char *value)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsSetAlias_Private" /* ADIC Ignore */
+#define __FUNC__ "OptionsSetAlias_Private"
 int OptionsSetAlias_Private(char *newname,char *oldname)
 {
   int len,n = options->Naliases;
@@ -1170,7 +1170,7 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsFindPair_Private" /* ADIC Ignore */
+#define __FUNC__ "OptionsFindPair_Private"
 static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
 {
   int  i, N,ierr,len;
@@ -1233,7 +1233,7 @@ int OptionsReject(char* name,char *mess)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsHasName" /* ADIC Ignore */
+#define __FUNC__ "OptionsHasName"
 /*@C
    OptionsHasName - Determines whether a certain option is given in the database.
 
@@ -1257,7 +1257,7 @@ int OptionsHasName(char* pre,char *name,int *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetInt" /* ADIC Ignore */
+#define __FUNC__ "OptionsGetInt"
 /*@C
    OptionsGetInt - Gets the integer value for a particular option in the 
                    database.
@@ -1399,7 +1399,7 @@ int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax,int *fl
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetIntArray" /* ADIC Ignore */
+#define __FUNC__ "OptionsGetIntArray"
 /*@C
    OptionsGetIntArray - Gets an array of integer values for a particular 
    option in the database.  The values must be separated with commas with 
@@ -1448,7 +1448,7 @@ int OptionsGetIntArray(char* pre,char *name,int *dvalue,int *nmax,int *flg)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsGetString" /* ADIC Ignore */
+#define __FUNC__ "OptionsGetString"
 /*@C
    OptionsGetString - Gets the string value for a particular option in
    the database.
@@ -1480,7 +1480,7 @@ int OptionsGetString(char *pre,char *name,char *string,int len, int *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "OptionsAllUsed" /* ADIC Ignore */
+#define __FUNC__ "OptionsAllUsed"
 /*@C
    OptionsAllUsed - Returns a count of the number of options in the 
    database that have never been selected.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dsetpause.c,v 1.9 1997/02/22 02:27:05 bsmith Exp balay $";
+static char vcid[] = "$Id: dsetpause.c,v 1.10 1997/07/09 20:57:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dsetpause.c,v 1.9 1997/02/22 02:27:05 bsmith Exp bala
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetPause" /* ADIC Ignore */
+#define __FUNC__ "DrawSetPause" 
 /*@
    DrawSetPause - Sets the amount of time that program pauses after 
    a DrawPause() is called. 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.10 1997/07/02 03:37:00 bsmith Exp balay $";
+static char vcid[] = "$Id: ao.c,v 1.11 1997/07/09 21:01:57 balay Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: ao.c,v 1.10 1997/07/02 03:37:00 bsmith Exp balay $";
 #include "src/ao/aoimpl.h"      /*I "ao.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "AOView" /* ADIC Ignore */
+#define __FUNC__ "AOView" 
 /*@
    AOView - Displays an application ordering.
 
@@ -26,7 +26,7 @@ int AOView(AO ao, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AODestroy" /* ADIC Ignore */
+#define __FUNC__ "AODestroy" 
 /*@
    AODestroy - Destroys an application ordering set.
 
@@ -41,13 +41,14 @@ int AODestroy(AO ao)
 {
   if (!ao) return 0;
   PetscValidHeaderSpecific(ao,AO_COOKIE);
+  if (--ao->refct > 0) return 0;
   return (*ao->destroy)((PetscObject)ao);
 }
 
 
 /* ---------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "AOPetscToApplicationIS" /* ADIC Ignore */
+#define __FUNC__ "AOPetscToApplicationIS" 
 /*@
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to 
    the application-defined ordering.
@@ -78,7 +79,7 @@ int AOPetscToApplicationIS(AO ao,IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetscIS" /* ADIC Ignore */
+#define __FUNC__ "AOApplicationToPetscIS" 
 /*@
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
@@ -109,7 +110,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOPetscToApplication" /* ADIC Ignore */
+#define __FUNC__ "AOPetscToApplication" 
 /*@
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to 
    the application-defined ordering.
@@ -136,7 +137,7 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetsc" /* ADIC Ignore */
+#define __FUNC__ "AOApplicationToPetsc" 
 /*@
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.

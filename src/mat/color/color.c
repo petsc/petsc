@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.20 1997/07/09 20:55:35 balay Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.21 1997/08/13 22:24:29 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: color.c,v 1.20 1997/07/09 20:55:35 balay Exp bsmith $
       computes the degree sequence required by MINPACK coloring routines.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringDegreeSequence_Minpack" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringDegreeSequence_Minpack" 
 int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int *ria, int **seq)
 {
   int *work;
@@ -36,7 +36,7 @@ int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int 
 
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringMinimumNumberofColors_Private" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringMinimumNumberofColors_Private" 
 int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
 {
   int i,c = 0;
@@ -53,7 +53,7 @@ int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
     MatFDColoringSL_Minpack - Uses the smallest-last (SL) coloring of minpack
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringSL_Minpack" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringSL_Minpack" 
 int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -89,7 +89,7 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
     MatFDColoringLF_Minpack - 
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringLF_Minpack" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringLF_Minpack" 
 int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 {
   int        *list,*work,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -127,7 +127,7 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
     MatFDColoringID_Minpack - 
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringID_Minpack" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringID_Minpack" 
 int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
 {
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
@@ -164,7 +164,7 @@ int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
    Simplest coloring, each column of the matrix gets its own unique color.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatColoring_Natural" /* ADIC Ignore */
+#define __FUNC__ "MatColoring_Natural" 
 int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
 {
   int      N,start,end,ierr,i,tag;
@@ -201,7 +201,7 @@ static NRList *__MatColoringList = 0;
 int MatColoringRegisterAllCalled = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringRegister" /* ADIC Ignore */
+#define __FUNC__ "MatColoringRegister" 
 /*@C
    MatColoringRegister - Adds a new sparse matrix coloring to the 
    matrix package. 
@@ -234,7 +234,7 @@ int MatColoringRegister(MatColoring name,MatColoring *oname,char *sname,int (*co
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringRegisterDestroy" /* ADIC Ignore */
+#define __FUNC__ "MatColoringRegisterDestroy" 
 /*@C
    MatColoringRegisterDestroy - Frees the list of coloringing routines.
 
@@ -253,7 +253,7 @@ int MatColoringRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetColoringTypeFromOptions" /* ADIC Ignore */
+#define __FUNC__ "MatGetColoringTypeFromOptions" 
 /*@C
    MatGetColoringTypeFromOptions - Gets matrix coloring method from the
    options database.
@@ -288,7 +288,7 @@ int MatGetColoringTypeFromOptions(char *prefix,MatColoring *type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringGetName" /* ADIC Ignore */
+#define __FUNC__ "MatColoringGetName" 
 /*@C
    MatColoringGetName - Gets the name associated with a coloring.
 
@@ -312,7 +312,7 @@ int MatColoringGetName(MatColoring meth,char **name)
 extern int MatAdjustForInodes(Mat,IS *,IS *);
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetColoring" /* ADIC Ignore */
+#define __FUNC__ "MatGetColoring" 
 /*@C
    MatGetColoring - Gets a coloring for a matrix to reduce fill or to
    improve numerical stability of LU factorization.

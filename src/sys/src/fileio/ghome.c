@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ghome.c,v 1.10 1997/03/06 19:46:24 balay Exp balay $";
+static char vcid[] = "$Id: ghome.c,v 1.11 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: ghome.c,v 1.10 1997/03/06 19:46:24 balay Exp balay $"
 #include "src/sys/src/files.h"
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetHomeDirectory" /* ADIC Ignore */
+#define __FUNC__ "PetscGetHomeDirectory"
 /*@C
    PetscGetHomeDirectory - Returns user's home directory name.
 

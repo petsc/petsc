@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.22 1997/07/24 21:42:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.23 1997/07/27 22:59:46 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: sysio.c,v 1.22 1997/07/24 21:42:29 bsmith Exp bsmith 
 #endif
 #if defined(HAVE_SWAPPED_BYTES)
 #undef __FUNC__  
-#define __FUNC__ "PetscByteSwapInt" /* ADIC Ignore */
+#define __FUNC__ "PetscByteSwapInt"
 /*
   PetscByteSwapInt - Swap bytes in an integer
 */
@@ -40,7 +40,7 @@ void PetscByteSwapInt(int *buff,int n)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "PetscByteSwapShort" /* ADIC Ignore */
+#define __FUNC__ "PetscByteSwapShort"
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
@@ -60,7 +60,7 @@ void PetscByteSwapShort(short *buff,int n)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "PetscByteSwapScalar" /* ADIC Ignore */
+#define __FUNC__ "PetscByteSwapScalar"
 /*
   PetscByteSwapScalar - Swap bytes in a double
   Complex is dealt with as if array of double twice as long.
@@ -85,7 +85,7 @@ void PetscByteSwapScalar(Scalar *buff,int n)
 #endif
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "PetscBinaryRead" /* ADIC Ignore */
+#define __FUNC__ "PetscBinaryRead"
 /*@C
    PetscBinaryRead - Reads from a binary file.
 
@@ -171,7 +171,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 }
 /* --------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "PetscBinaryWrite" /* ADIC Ignore */
+#define __FUNC__ "PetscBinaryWrite"
 /*@C
    PetscBinaryWrite - Writes to a binary file.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: beuler.c,v 1.24 1997/06/05 12:56:19 bsmith Exp balay $";
+static char vcid[] = "$Id: beuler.c,v 1.25 1997/07/09 20:58:28 balay Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -134,7 +134,7 @@ static int TSStep_BEuler_Nonlinear(TS ts,int *steps,double *time)
 
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "TSDestroy_BEuler" /* ADIC Ignore */
+#define __FUNC__ "TSDestroy_BEuler"
 static int TSDestroy_BEuler(PetscObject obj )
 {
   TS        ts = (TS) obj;
@@ -329,7 +329,7 @@ static int TSSetFromOptions_BEuler_Nonlinear(TS ts)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSPrintHelp_BEuler" /* ADIC Ignore */
+#define __FUNC__ "TSPrintHelp_BEuler"
 static int TSPrintHelp_BEuler(TS ts,char *p)
 {
 
@@ -337,7 +337,7 @@ static int TSPrintHelp_BEuler(TS ts,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSView_BEuler" /* ADIC Ignore */
+#define __FUNC__ "TSView_BEuler"
 static int TSView_BEuler(PetscObject obj,Viewer viewer)
 {
   return 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.100 1997/05/23 18:27:18 balay Exp balay $";
+static char vcid[] = "$Id: itcreate.c,v 1.101 1997/07/09 20:50:16 balay Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -15,7 +15,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.100 1997/05/23 18:27:18 balay Exp bala
 int KSPRegisterAllCalled = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "KSPView" /* ADIC Ignore */
+#define __FUNC__ "KSPView"
 /*@ 
    KSPView - Prints the KSP data structure.
 
@@ -94,7 +94,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   KSP ctx;
 
   *ksp = 0;
-  PetscHeaderCreate(ctx,_p_KSP,KSP_COOKIE,KSPGMRES,comm);
+  PetscHeaderCreate(ctx,_p_KSP,KSP_COOKIE,KSPGMRES,comm,KSPDestroy,KSPView);
   PLogObjectCreate(ctx);
   *ksp               = ctx;
   ctx->view          = 0;
@@ -194,7 +194,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPRegister" /* ADIC Ignore */
+#define __FUNC__ "KSPRegister"
 /*@C
    KSPRegister - Adds the iterative method to the KSP package,  given
    an iterative name (KSPType) and a function pointer.
@@ -231,7 +231,7 @@ int  KSPRegister(KSPType name, KSPType *oname,char *sname, int  (*create)(KSP))
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPRegisterDestroy" /* ADIC Ignore */
+#define __FUNC__ "KSPRegisterDestroy"
 /*@C
    KSPRegisterDestroy - Frees the list of KSP methods that were
    registered by KSPRegister().
@@ -251,7 +251,7 @@ int KSPRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetTypeFromOptions_Private" /* ADIC Ignore */
+#define __FUNC__ "KSPGetTypeFromOptions_Private"
 /*
    KSPGetTypeFromOptions_Private - Sets the selected KSP type from 
    the options database.
@@ -280,7 +280,7 @@ int KSPGetTypeFromOptions_Private(KSP ksp,KSPType *itmethod)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetType" /* ADIC Ignore */
+#define __FUNC__ "KSPGetType"
 /*@C
    KSPGetType - Gets the KSP type and method name (as a string) from 
    the method type.
@@ -305,7 +305,7 @@ int KSPGetType(KSP ksp,KSPType *type,char **name)
 
 #include <stdio.h>
 #undef __FUNC__  
-#define __FUNC__ "KSPPrintTypes_Private" /* ADIC Ignore */
+#define __FUNC__ "KSPPrintTypes_Private"
 /*
    KSPPrintTypes_Private - Prints the KSP methods available from the options 
    database.

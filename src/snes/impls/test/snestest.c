@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snestest.c,v 1.34 1997/05/03 15:31:38 bsmith Exp balay $";
+static char vcid[] = "$Id: snestest.c,v 1.35 1997/07/09 20:59:56 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -63,14 +63,14 @@ int SNESSolve_Test(SNES snes,int *its)
 }
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ "SNESDestroy_Test" /* ADIC Ignore */
+#define __FUNC__ "SNESDestroy_Test"
 int SNESDestroy_Test(PetscObject obj)
 {
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp_Test" /* ADIC Ignore */
+#define __FUNC__ "SNESPrintHelp_Test"
 static int SNESPrintHelp_Test(SNES snes,char *p)
 {
   PetscPrintf(snes->comm,"Test code to compute Jacobian\n");
@@ -79,7 +79,7 @@ static int SNESPrintHelp_Test(SNES snes,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetFromOptions_Test" /* ADIC Ignore */
+#define __FUNC__ "SNESSetFromOptions_Test"
 static int SNESSetFromOptions_Test(SNES snes)
 {
   SNES_Test *ls = (SNES_Test *)snes->data;
@@ -94,7 +94,7 @@ static int SNESSetFromOptions_Test(SNES snes)
 
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ "SNESCreate_Test" /* ADIC Ignore */
+#define __FUNC__ "SNESCreate_Test"
 int SNESCreate_Test(SNES  snes )
 {
   SNES_Test *neP;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dalocal.c,v 1.7 1997/02/22 02:29:24 bsmith Exp balay $";
+static char vcid[] = "$Id: dalocal.c,v 1.8 1997/07/09 21:00:44 balay Exp bsmith $";
 #endif
  
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dalocal.c,v 1.7 1997/02/22 02:29:24 bsmith Exp balay 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetLocalVector" /* ADIC Ignore */
+#define __FUNC__ "DAGetLocalVector"
 /*@C
    DAGetLocalVector - Gets a local vector (including ghost points) for a 
    distributed array.  Additional vectors of the same type can be created 

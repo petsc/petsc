@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stash.c,v 1.15 1997/02/22 02:26:37 bsmith Exp balay $";
+static char vcid[] = "$Id: stash.c,v 1.16 1997/07/09 20:56:43 balay Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -15,7 +15,7 @@ static char vcid[] = "$Id: stash.c,v 1.15 1997/02/22 02:26:37 bsmith Exp balay $
 */
 
 #undef __FUNC__  
-#define __FUNC__ "StashInitialize_Private" /* ADIC Ignore */
+#define __FUNC__ "StashInitialize_Private"
 int StashInitialize_Private(Stash *stash)
 {
   stash->nmax  = 0;
@@ -27,7 +27,7 @@ int StashInitialize_Private(Stash *stash)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "StashBuild_Private" /* ADIC Ignore */
+#define __FUNC__ "StashBuild_Private"
 int StashBuild_Private(Stash *stash)
 {
   stash->nmax  = CHUNCKSIZE; /* completely arbitrary number */
@@ -40,7 +40,7 @@ int StashBuild_Private(Stash *stash)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "StashDestroy_Private" /* ADIC Ignore */
+#define __FUNC__ "StashDestroy_Private"
 int StashDestroy_Private(Stash *stash)
 {
   stash->nmax = stash->n = 0;
@@ -49,7 +49,7 @@ int StashDestroy_Private(Stash *stash)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "StashInfo_Private" /* ADIC Ignore */
+#define __FUNC__ "StashInfo_Private"
 int StashInfo_Private(Stash *stash)
 {
   PLogInfo(0,"Stash size %d\n",stash->n);

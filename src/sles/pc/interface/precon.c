@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.129 1997/07/22 04:24:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.130 1997/08/08 16:10:20 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: precon.c,v 1.129 1997/07/22 04:24:06 bsmith Exp bsmit
 extern int PCPrintTypes_Private(MPI_Comm,char*,char*);
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp" /* ADIC Ignore */
+#define __FUNC__ "PCPrintHelp"
 /*@
    PCPrintHelp - Prints all the options for the PC component.
 
@@ -40,7 +40,7 @@ int PCPrintHelp(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy" /* ADIC Ignore */
+#define __FUNC__ "PCDestroy"
 /*@C
    PCDestroy - Destroys PC context that was created with PCCreate().
 
@@ -55,6 +55,8 @@ int PCDestroy(PC pc)
 {
   int ierr = 0;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (--pc->refct > 0) return 0;
+
   if (pc->destroy) ierr =  (*pc->destroy)((PetscObject)pc);
   else {if (pc->data) PetscFree(pc->data);}
   PLogObjectDestroy(pc);
@@ -92,7 +94,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   if (size == 1) initialtype = PCILU;
   else           initialtype = PCBJACOBI;
 
-  PetscHeaderCreate(pc,_p_PC,PC_COOKIE,initialtype,comm);
+  PetscHeaderCreate(pc,_p_PC,PC_COOKIE,initialtype,comm,PCDestroy,PCView);
   PLogObjectCreate(pc);
   pc->type               = -1;
   pc->vec                = 0;
@@ -294,7 +296,10 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
     ierr = VecCopy(y,work); CHKERRQ(ierr);
     return PCApplySymmetricLeft(pc,work,y);
   }
-  return 0;  /* note: actually will never get here */
+  SETERRQ(1,0,"Invalid preconditioner side");
+#if !defined(PETSC_DEBUG)
+  return 0;   /* so we get no warning message about no return code */
+#endif
 }
 
 #undef __FUNC__  
@@ -654,7 +659,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetOperators" /* ADIC Ignore */
+#define __FUNC__ "PCGetOperators"
 /*@C
    PCGetOperators - Gets the matrix associated with the linear system and
    possibly a different one associated with the preconditioner.
@@ -683,7 +688,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetVector" /* ADIC Ignore */
+#define __FUNC__ "PCSetVector"
 /*@
    PCSetVector - Sets a vector associated with the preconditioner.
 
@@ -706,7 +711,7 @@ int PCSetVector(PC pc,Vec vec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetFactoredMatrix" /* ADIC Ignore */
+#define __FUNC__ "PCGetFactoredMatrix"
 /*@C 
    PCGetFactoredMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 
@@ -728,7 +733,7 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "PCSetOptionsPrefix"
 /*@C
    PCSetOptionsPrefix - Sets the prefix used for searching for all 
    PC options in the database.
@@ -753,7 +758,7 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCAppendOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "PCAppendOptionsPrefix"
 /*@C
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
    PC options in the database.
@@ -778,7 +783,7 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "PCGetOptionsPrefix"
 /*@
    PCGetOptionsPrefix - Gets the prefix used for searching for all 
    PC options in the database.
@@ -857,7 +862,7 @@ int PCPostSolve(PC pc,KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView" /* ADIC Ignore */
+#define __FUNC__ "PCView"
 /*@ 
    PCView - Prints the PC data structure.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tone.c,v 1.13 1997/07/09 20:58:00 balay Exp bsmith $";
+static char vcid[] = "$Id: tone.c,v 1.14 1997/07/29 14:10:43 bsmith Exp bsmith $";
 #endif
 /*
     Code for drawing color interpolated triangles using X-windows.
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: tone.c,v 1.13 1997/07/09 20:58:00 balay Exp bsmith $"
 #define SHIFT_VAL 6
 
 #undef __FUNC__  
-#define __FUNC__ "XiDrawInterpolatedTriangle" /* ADIC Ignore */
+#define __FUNC__ "XiDrawInterpolatedTriangle"
 int XiDrawInterpolatedTriangle(Draw_X* win, int x1, int y1, int t1, 
                                 int x2,int y2,int t2,int x3,int y3,int t3)
 {

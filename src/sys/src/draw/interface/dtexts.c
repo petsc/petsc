@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtexts.c,v 1.12 1997/05/07 01:46:30 balay Exp balay $";
+static char vcid[] = "$Id: dtexts.c,v 1.13 1997/07/09 20:57:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dtexts.c,v 1.12 1997/05/07 01:46:30 balay Exp balay $
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringSetSize" /* ADIC Ignore */
+#define __FUNC__ "DrawStringSetSize" 
 /*@
    DrawStringSetSize - Sets the size for charactor text.  The width is
    relative to the user coordinates of the window; 0.0 denotes the natural

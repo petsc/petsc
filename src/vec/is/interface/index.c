@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.47 1997/07/09 20:49:05 balay Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.48 1997/08/14 23:17:22 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -107,6 +107,7 @@ int ISSetPermutation(IS is)
 int ISDestroy(IS is)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
+  if (--is->refct > 0) return 0;
   return (*is->destroy)((PetscObject) is);
 }
 

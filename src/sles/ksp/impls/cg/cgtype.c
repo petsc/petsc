@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgtype.c,v 1.3 1997/02/22 02:23:03 bsmith Exp balay $";
+static char vcid[] = "$Id: cgtype.c,v 1.4 1997/07/09 20:50:32 balay Exp bsmith $";
 #endif
 
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPCGSetType" /* ADIC Ignore */
+#define __FUNC__ "KSPCGSetType" 
 /*@
     KSPCGSetType - Sets the variant of the conjugate gradient method to
     use for solving a linear system with a complex coefficient matrix.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: nt_time.c,v 1.8 1997/03/26 01:35:07 bsmith Exp balay $";
+static char vcid[] = "$Id: nt_time.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 
 #include <petsc.h>
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: nt_time.c,v 1.8 1997/03/26 01:35:07 bsmith Exp balay 
 #define FACTOR   4294967296.0
 
 #undef __FUNC__  
-#define __FUNC__ "nt_time" /* ADIC Ignore */
+#define __FUNC__ "nt_time"
 double nt_time() 
 {
   static int    flag = 1;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.108 1997/07/21 02:29:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.109 1997/07/28 16:19:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -69,7 +69,7 @@ static int MatGetRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRowIJ_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatRestoreRowIJ_SeqBAIJ" 
 static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn,int **ia,int **ja,
                                 PetscTruth *done)
 {
@@ -90,7 +90,7 @@ static int MatRestoreRowIJ_SeqBAIJ(Mat A,int oshift,PetscTruth symmetric,int *nn
 
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBAIJ_Binary" /* ADIC Ignore */
+#define __FUNC__ "MatView_SeqBAIJ_Binary"
 static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -148,7 +148,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBAIJ_ASCII" /* ADIC Ignore */
+#define __FUNC__ "MatView_SeqBAIJ_ASCII"
 static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -222,7 +222,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBAIJ_Draw" /* ADIC Ignore */
+#define __FUNC__ "MatView_SeqBAIJ_Draw"
 static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ  *a=(Mat_SeqBAIJ *) A->data;
@@ -349,7 +349,7 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatView_SeqBAIJ"
 int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
@@ -627,7 +627,7 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetSize_SeqBAIJ"
 int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -636,7 +636,7 @@ int MatGetSize_SeqBAIJ(Mat A,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetOwnershipRange_SeqBAIJ"
 int MatGetOwnershipRange_SeqBAIJ(Mat A,int *m,int *n)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -692,7 +692,7 @@ int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatRestoreRow_SeqBAIJ"
 int MatRestoreRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
 {
   if (idx) {if (*idx) PetscFree(*idx);}
@@ -818,7 +818,7 @@ int MatZeroEntries_SeqBAIJ(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatDestroy_SeqBAIJ"
 int MatDestroy_SeqBAIJ(PetscObject obj)
 {
   Mat         A  = (Mat) obj;
@@ -841,7 +841,7 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetOption_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatSetOption_SeqBAIJ"
 int MatSetOption_SeqBAIJ(Mat A,MatOption op)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -1643,7 +1643,7 @@ int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetInfo_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetInfo_SeqBAIJ"
 int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
@@ -1931,7 +1931,7 @@ int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetBlockSize_SeqBAIJ"
 int MatGetBlockSize_SeqBAIJ(Mat mat, int *bs)
 {
   Mat_SeqBAIJ *baij = (Mat_SeqBAIJ *) mat->data;
@@ -2004,7 +2004,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPrintHelp_SeqBAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatPrintHelp_SeqBAIJ"
 int MatPrintHelp_SeqBAIJ(Mat A)
 {
   static int called = 0; 
@@ -2099,7 +2099,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
     SETERRQ(1,0,"Number rows, cols must be divisible by blocksize");
 
   *A = 0;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQBAIJ,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQBAIJ,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data = (void *) (b = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBAIJ));
@@ -2219,7 +2219,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   if (a->i[mbs] != nz) SETERRQ(1,0,"Corrupt matrix");
 
   *B = 0;
-  PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQBAIJ,A->comm);
+  PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQBAIJ,A->comm,MatDestroy,MatView);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(c);
   PetscMemcpy(&C->ops,&A->ops,sizeof(struct _MatOps));

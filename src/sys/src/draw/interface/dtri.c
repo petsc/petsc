@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.14 1997/07/24 23:34:51 balay Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.15 1997/07/25 04:05:31 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dtri.c,v 1.14 1997/07/24 23:34:51 balay Exp bsmith $"
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTriangle" /* ADIC Ignore */
+#define __FUNC__ "DrawTriangle" 
 /*@
    DrawTriangle - Draws a triangle  onto a drawable.
 
@@ -28,7 +28,7 @@ int DrawTriangle(Draw draw,double x1,double y1,double x2,double y2,
 
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTensorContourPatch" /* ADIC Ignore */
+#define __FUNC__ "DrawTensorContourPatch" 
 /*@
    DrawTensorContourPatch - Draws a rectangular patch of a contour plot 
       for a two-dimensional array.

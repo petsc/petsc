@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.139 1997/07/25 14:08:51 gropp Exp bsmith $ */
+/* $Id: mat.h,v 1.140 1997/08/13 22:27:41 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -148,8 +148,8 @@ extern int MatCompress(Mat);
 extern int MatScale(Scalar *,Mat);
 extern int MatShift(Scalar *,Mat);
 
-extern int MatSetLocalToGlobalMapping(Mat, int,int *);
-extern int MatSetLocalToGlobalMappingBlocked(Mat, int,int *);
+extern int MatSetLocalToGlobalMapping(Mat, ISLocalToGlobalMapping);
+extern int MatSetLocalToGlobalMappingBlocked(Mat, ISLocalToGlobalMapping);
 extern int MatZeroRowsLocal(Mat,IS,Scalar*);
 extern int MatSetValuesLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 extern int MatSetValuesBlockedLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
@@ -305,6 +305,7 @@ typedef enum { MATOP_SET_VALUES=0,
              } MatOperation;
 extern int MatHasOperation(Mat,MatOperation,PetscTruth*);
 extern int MatShellSetOperation(Mat,MatOperation,void *);
+extern int MatShellGetOperation(Mat,MatOperation,void **);
 
 /*
    Codes for matrices stored on disk. By default they are

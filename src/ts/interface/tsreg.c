@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.20 1997/05/28 23:21:37 bsmith Exp balay $";
+static char vcid[] = "$Id: tsreg.c,v 1.21 1997/07/09 20:58:21 balay Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -11,7 +11,7 @@ static NRList *__TSList = 0;
 int TSRegisterAllCalled = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "TSSetType" /* ADIC Ignore */
+#define __FUNC__ "TSSetType"
 /*@
    TSSetType - Sets the method for the timestepping solver.  
 
@@ -60,7 +60,7 @@ int TSSetType(TS ts,TSType method)
 
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "TSRegister" /* ADIC Ignore */
+#define __FUNC__ "TSRegister"
 /*@C
    TSRegister - Adds the method to the timestepping package, given 
    a function pointer and a solver name of the type TSType.
@@ -98,7 +98,7 @@ int TSRegister(TSType name,TSType *oname, char *sname, int (*create)(TS))
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "TSRegisterDestroy" /* ADIC Ignore */
+#define __FUNC__ "TSRegisterDestroy"
 /*@C
    TSRegisterDestroy - Frees the list of timesteppers that were
    registered by TSRegister().
@@ -118,7 +118,7 @@ int TSRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "TSGetType" /* ADIC Ignore */
+#define __FUNC__ "TSGetType"
 /*@C
    TSGetType - Gets the TS method type and name (as a string).
 
@@ -142,7 +142,7 @@ int TSGetType(TS ts, TSType *method,char **name)
 
 #include <stdio.h>
 #undef __FUNC__  
-#define __FUNC__ "TSPrintTypes_Private" /* ADIC Ignore */
+#define __FUNC__ "TSPrintTypes_Private"
 /*
    TSPrintTypes_Private - Prints the TS methods available from the 
    options database.
@@ -168,7 +168,7 @@ int TSPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 
 
 #undef __FUNC__  
-#define __FUNC__ "TSGetTypeFromOptions_Private" /* ADIC Ignore */
+#define __FUNC__ "TSGetTypeFromOptions_Private"
 /*
    TSGetTypeFromOptions_Private - Sets the selected method from the 
    options database.

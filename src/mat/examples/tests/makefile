@@ -1,4 +1,4 @@
-#PETSC_DIR = ../../../..
+
 ALL: ex1
 
 CFLAGS 	        =	  $(CPPFLAGS)  -D__SDIR__='"$(LOCDIR)"'
@@ -304,6 +304,10 @@ ex56: ex56.o chkopts
 ex57: ex57.o chkopts
 	-$(CLINKER) -o ex57 ex57.o $(PETSC_LIB)
 	$(RM) ex57.o
+
+ex58: ex58.o chkopts
+	-$(CLINKER) -o ex58 ex58.o $(PETSC_LIB)
+	$(RM) ex58.o
 
 ex58f: ex58f.o chkopts
 	-$(FLINKER) -o ex58f ex58f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)

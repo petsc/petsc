@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.8 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: mpitr.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 
 /*
@@ -13,7 +13,7 @@ static char vcid[] = "$Id: mpitr.c,v 1.8 1997/02/22 02:23:29 bsmith Exp balay $"
 #if defined(PETSC_LOG) && !defined(PETSC_USING_MPIUNI)
 
 #undef __FUNC__  
-#define __FUNC__ "PetscMPIDump" /* ADIC Ignore */
+#define __FUNC__ "PetscMPIDump"
 /*@C
    PetscMPIDump - Dumps a listing of incomplete MPI operations, such as sends that
    have never been received, etc.
@@ -60,7 +60,7 @@ int PetscMPIDump(FILE *fd)
 #else
 
 #undef __FUNC__  
-#define __FUNC__ "PetscMPIDump" /* ADIC Ignore */
+#define __FUNC__ "PetscMPIDump"
 int PetscMPIDump(FILE *fd)
 {
   return 0;

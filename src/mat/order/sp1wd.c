@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sp1wd.c,v 1.20 1997/04/10 00:03:16 bsmith Exp balay $";
+static char vcid[] = "$Id: sp1wd.c,v 1.21 1997/07/09 20:54:49 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: sp1wd.c,v 1.20 1997/04/10 00:03:16 bsmith Exp balay $
     MatOrder_1WD - Find the 1-way dissection ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_1WD" /* ADIC Ignore */
+#define __FUNC__ "MatOrder_1WD"
 int MatOrder_1WD( Mat mat, MatReordering type, IS *row, IS *col)
 {
   int i,   *mask, *xls, nblks, *xblk, *ls, nrow, *perm, ierr,*ia,*ja;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesregi.c,v 1.18 1997/02/22 02:28:38 bsmith Exp balay $";
+static char vcid[] = "$Id: snesregi.c,v 1.19 1997/07/09 20:59:37 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"     /*I  "snes.h"  I*/
@@ -10,7 +10,7 @@ extern int SNESCreate_UM_LS(SNES);
 extern int SNESCreate_Test(SNES);
 
 #undef __FUNC__  
-#define __FUNC__ "SNESRegisterAll" /* ADIC Ignore */
+#define __FUNC__ "SNESRegisterAll"
 /*@C
   SNESRegisterAll - Registers all of the nonlinear solvers in the SNES 
   package. 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.36 1997/05/29 17:47:28 bsmith Exp balay $";
+static char vcid[] = "$Id: fp.c,v 1.37 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -43,7 +43,7 @@ struct { int code_no; char *name; } error_codes[] = {
 #define SIGPC(scp) (scp->sc_pc)
 
 #undef __FUNC__  
-#define __FUNC__ "SYsample_handler" /* ADIC Ignore */
+#define __FUNC__ "SYsample_handler" 
 sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
                                      char *addr)
 {
@@ -67,7 +67,7 @@ sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetFPTrap" /* ADIC Ignore */
+#define __FUNC__ "PetscSetFPTrap"
 /*@
    PetscSetFPTrap - Enables traps/exceptions on common floating point errors.
                     This option may not work on certain machines.
@@ -124,7 +124,7 @@ struct { int code_no; char *name; } error_codes[] = {
 #define SIGPC(scp) (scp->si_addr)
 
 #undef __FUNC__  
-#define __FUNC__ "SYsample_handler" /* ADIC Ignore */
+#define __FUNC__ "SYsample_handler"
 void SYsample_handler(int sig, siginfo_t *scp,ucontext_t *uap)
 {
   int err_ind, j,ierr;
@@ -173,7 +173,7 @@ int PetscSetFPTrap(int flag)
 */
 #elif defined(PARCH_IRIX64)
 #undef __FUNC__  
-#define __FUNC__ "PetscSetFPTrap" /* ADIC Ignore */
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
 {
   return 0;
@@ -190,7 +190,7 @@ struct { int code_no; char *name; } error_codes[] = {
        { 0          , "unknown error" }
 } ;
 #undef __FUNC__  
-#define __FUNC__ "SYsample_handler" /* ADIC Ignore */
+#define __FUNC__ "SYsample_handler" 
 void SYsample_handler( unsigned exception[],int val[] )
 {
     int err_ind, j, code,ierr;
@@ -210,7 +210,7 @@ void SYsample_handler( unsigned exception[],int val[] )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetFPTrap" /* ADIC Ignore */
+#define __FUNC__ "PetscSetFPTrap" 
 int PetscSetFPTrap(int flag)
 {
   if (flag == PETSC_FP_TRAP_ON) {
@@ -243,7 +243,7 @@ struct { int code_no; char *name; } error_codes[] = {
 } ;
 
 #undef __FUNC__  
-#define __FUNC__ "SYsample_handler" /* ADIC Ignore */
+#define __FUNC__ "SYsample_handler"
 void SYsample_handler(int sig)
 {
   int ierr;
@@ -251,7 +251,7 @@ void SYsample_handler(int sig)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetFPTrap" /* ADIC Ignore */
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int on)
 {
   int flag;
@@ -298,7 +298,7 @@ struct { int code_no; char *name; } error_codes[] = {
  */
 
 #undef __FUNC__  
-#define __FUNC__ "SYsample_handler" /* ADIC Ignore */
+#define __FUNC__ "SYsample_handler"
 void SYsample_handler(int sig,int code,struct sigcontext *scp )
 {
   int ierr,err_ind, j;
@@ -328,7 +328,7 @@ void SYsample_handler(int sig,int code,struct sigcontext *scp )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetFPTrap" /* ADIC Ignore */
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int on)
 {
   int flag;
@@ -360,7 +360,7 @@ struct { int code_no; char *name; } error_codes[] = {
 	   { 0		, "unknown error" } 
 } ;
 #undef __FUNC__  
-#define __FUNC__ "SYsample_handler" /* ADIC Ignore */
+#define __FUNC__ "SYsample_handler"
 /*ARGSUSED*/
 void SYsample_handler(int sig)
 {
@@ -370,7 +370,7 @@ void SYsample_handler(int sig)
   MPI_Abort(PETSC_COMM_WORLD,0);
 }
 #undef __FUNC__  
-#define __FUNC__ "PetscSetFPTrap" /* ADIC Ignore */
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int on)
 {
   int flag;
@@ -398,7 +398,7 @@ int PetscSetFPTrap(int on)
  ***************************************************************************/
 #if defined(PARCH_paragon)
 #undef __FUNC__  
-#define __FUNC__ "PetscSetBenignUnderflows" /* ADIC Ignore */
+#define __FUNC__ "PetscSetBenignUnderflows"
 int PetscSetBenignUnderflows()
 {
   /* This needs the following assembly-language program:
@@ -417,7 +417,7 @@ int PetscSetBenignUnderflows()
 }
 #elif defined(PARCH_rs6000)
 #undef __FUNC__  
-#define __FUNC__ "PetscSetBenignUnderflows" /* ADIC Ignore */
+#define __FUNC__ "PetscSetBenignUnderflows"
 int PetscSetBenignUnderflows()
 {
   /* abrupt_underflow seems to have disappeared! */
@@ -426,7 +426,7 @@ int PetscSetBenignUnderflows()
 }
 #else
 #undef __FUNC__  
-#define __FUNC__ "PetscSetBenignUnderflows" /* ADIC Ignore */
+#define __FUNC__ "PetscSetBenignUnderflows"
 int PetscSetBenignUnderflows()
 {
   return 0;
@@ -436,7 +436,7 @@ int PetscSetBenignUnderflows()
 #else
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetFPTrap" /* ADIC Ignore */
+#define __FUNC__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
 {
   return 0;

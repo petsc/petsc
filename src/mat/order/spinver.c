@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spinver.c,v 1.10 1997/02/22 02:25:40 bsmith Exp balay $";
+static char vcid[] = "$Id: spinver.c,v 1.11 1997/07/09 20:54:49 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: spinver.c,v 1.10 1997/02/22 02:25:40 bsmith Exp balay
   MatInvertPermutation_Private - Compute the inverse ordering of a permutation
  */
 #undef __FUNC__  
-#define __FUNC__ "MatInvertPermutation_Private" /* ADIC Ignore */
+#define __FUNC__ "MatInvertPermutation_Private"
 void MatInvertPermutation_Private( int n, int *perm, int *iperm )
 {
   int i;

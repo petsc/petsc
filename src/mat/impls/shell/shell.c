@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.48 1997/06/05 12:54:00 bsmith Exp balay $";
+static char vcid[] = "$Id: shell.c,v 1.49 1997/07/09 20:54:17 balay Exp bsmith $";
 #endif
 
 /*
@@ -20,7 +20,7 @@ typedef struct {
 } Mat_Shell;      
 
 #undef __FUNC__  
-#define __FUNC__ "MatShellGetContext" /* ADIC Ignore */
+#define __FUNC__ "MatShellGetContext"
 /*@
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
@@ -47,7 +47,7 @@ int MatShellGetContext(Mat mat,void **ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize_Shell" /* ADIC Ignore */
+#define __FUNC__ "MatGetSize_Shell"
 int MatGetSize_Shell(Mat mat,int *M,int *N)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
@@ -56,7 +56,7 @@ int MatGetSize_Shell(Mat mat,int *M,int *N)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetLocalSize_Shell" /* ADIC Ignore */
+#define __FUNC__ "MatGetLocalSize_Shell"
 int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
 {
   Mat_Shell *shell = (Mat_Shell *) mat->data;
@@ -65,7 +65,7 @@ int MatGetLocalSize_Shell(Mat mat,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_Shell" /* ADIC Ignore */
+#define __FUNC__ "MatDestroy_Shell"
 int MatDestroy_Shell(PetscObject obj)
 {
   int       ierr;
@@ -130,7 +130,7 @@ static struct _MatOps MatOps = {0,
        0 };
 
 #undef __FUNC__  
-#define __FUNC__ "MatCreateShell" /* ADIC Ignore */
+#define __FUNC__ "MatCreateShell"
 /*@C
    MatCreateShell - Creates a new matrix class for use with a user-defined
    private data storage format. 
@@ -190,7 +190,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   Mat       B;
   Mat_Shell *b;
 
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSHELL,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSHELL,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->factor    = 0;
   B->destroy   = MatDestroy_Shell;
@@ -211,7 +211,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatShellSetOperation" /* ADIC Ignore */
+#define __FUNC__ "MatShellSetOperation"
 /*@C
     MatShellSetOperation - Allows user to set a matrix operation for
                            a shell matrix.
@@ -244,7 +244,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .keywords: matrix, shell, set, operation
 
-.seealso: MatCreateShell(), MatShellGetContext()
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
 @*/
 int MatShellSetOperation(Mat mat,MatOperation op, void *f)
 {
@@ -264,4 +264,53 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
 }
 
 
+
+#undef __FUNC__  
+#define __FUNC__ "MatShellGetOperation"
+/*@C
+    MatShellGetOperation - Gets a matrix function for a shell matrix.
+
+    Input Parameters:
+.   mat - the shell matrix
+.   op - the name of the operation
+
+    Output Parameter:
+.   f - the function that provides the operation.
+
+    Notes:
+    See the file petsc/include/mat.h for a complete list of matrix
+    operations, which all have the form MATOP_<OPERATION>, where
+    <OPERATION> is the name (in all capital letters) of the
+    user interface routine (e.g., MatMult() -> MATOP_MULT).
+
+    All user-provided functions have the same calling
+    sequence as the usual matrix interface routines, since they
+    are intended to be accessed via the usual matrix interface
+    routines, e.g., 
+$       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
+
+    Within each user-defined routine, the user should call
+    MatShellGetContext() to obtain the user-defined context that was
+    set by MatCreateShell().
+
+.keywords: matrix, shell, set, operation
+
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation()
+@*/
+int MatShellGetOperation(Mat mat,MatOperation op, void **f)
+{
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+
+  if (op == MATOP_DESTROY) {
+    if (mat->type == MATSHELL) {
+       Mat_Shell *shell = (Mat_Shell *) mat->data;
+       *f = (void *) shell->destroy;
+    } 
+    else *f = (void *) mat->destroy;
+  } 
+  else if (op == MATOP_VIEW) *f = (void *) mat->view;
+  else      *f = (((void**)&mat->ops)[op]);
+
+  return 0;
+}
 

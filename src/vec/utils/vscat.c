@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.95 1997/07/09 20:49:32 balay Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.96 1997/08/13 22:22:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -98,7 +98,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterDestroy_MPI_ToAll" /* ADIC Ignore */
+#define __FUNC__ "VecScatterDestroy_MPI_ToAll"
 int VecScatterDestroy_MPI_ToAll(PetscObject obj)
 {
   VecScatter           ctx = (VecScatter) obj;
@@ -436,7 +436,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   if (size > 1) comm = yin->comm; 
 
   /* generate the Scatter context */
-  PetscHeaderCreate(ctx,_p_VecScatter,VEC_SCATTER_COOKIE,0,comm);
+  PetscHeaderCreate(ctx,_p_VecScatter,VEC_SCATTER_COOKIE,0,comm,VecScatterDestroy,VecScatterView);
   PLogObjectCreate(ctx);
   PLogObjectMemory(ctx,sizeof(struct _p_VecScatter));
   ctx->inuse = 0;
@@ -963,6 +963,8 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode, VecScatter ctx)
 int VecScatterDestroy( VecScatter ctx )
 {
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
+  if (--ctx->refct > 0) return 0;
+
   return (*ctx->destroy)((PetscObject)ctx);
 }
 
@@ -986,7 +988,7 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
   PetscValidHeaderSpecific(sctx,VEC_SCATTER_COOKIE);
   PetscValidPointer(ctx);
   if (!sctx->copy) SETERRQ(PETSC_ERR_SUP,0,"Cannot copy this type");
-  PetscHeaderCreate(*ctx,_p_VecScatter,VEC_SCATTER_COOKIE,0,sctx->comm);
+  PetscHeaderCreate(*ctx,_p_VecScatter,VEC_SCATTER_COOKIE,0,sctx->comm,VecScatterDestroy,VecScatterView);
   PLogObjectCreate(*ctx);
   PLogObjectMemory(*ctx,sizeof(struct _p_VecScatter));
   (*ctx)->to_n   = sctx->to_n;
@@ -997,7 +999,7 @@ int VecScatterCopy( VecScatter sctx,VecScatter *ctx )
 
 /* ------------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "VecScatterView" /* ADIC Ignore */
+#define __FUNC__ "VecScatterView"
 /*@
    VecScatterView - Views a vector scatter context.
 
@@ -1017,7 +1019,7 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecScatterRemap" /* ADIC Ignore */
+#define __FUNC__ "VecScatterRemap"
 /*@
    VecScatterRemap - Remaps the "from" and "to" indices in a 
    vector scatter context. FOR EXPERTS ONLY!

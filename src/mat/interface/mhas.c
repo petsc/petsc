@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mhas.c,v 1.9 1997/02/22 02:24:34 bsmith Exp balay $";
+static char vcid[] = "$Id: mhas.c,v 1.10 1997/07/09 20:53:23 balay Exp bsmith $";
 #endif
 
 
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: mhas.c,v 1.9 1997/02/22 02:24:34 bsmith Exp balay $";
 #include "src/mat/matimpl.h"        /*I "mat.h" I*/
        
 #undef __FUNC__  
-#define __FUNC__ "MatHasOperation" /* ADIC Ignore */
+#define __FUNC__ "MatHasOperation"
 /*@
     MatHasOperation - Determines if the given matrix supports the particular
     operation.

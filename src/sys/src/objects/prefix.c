@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: prefix.c,v 1.11 1997/04/12 19:23:42 balay Exp balay $";
+static char vcid[] = "$Id: prefix.c,v 1.12 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: prefix.c,v 1.11 1997/04/12 19:23:42 balay Exp balay $
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectSetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectSetOptionsPrefix"
 /*
    PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. 
@@ -36,7 +36,7 @@ int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectAppendOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectAppendOptionsPrefix"
 /*
    PetscObjectAppendOptionsPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database. 
@@ -68,7 +68,7 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectGetOptionsPrefix"
 /*
    PetscObjectGetOptionsPrefix - Gets the prefix of the PetscObject.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itregis.c,v 1.21 1997/03/26 01:34:39 bsmith Exp balay $";
+static char vcid[] = "$Id: itregis.c,v 1.22 1997/07/09 20:50:16 balay Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -19,7 +19,7 @@ extern int KSPCreate_CR(KSP);
 extern int KSPCreate_QCG(KSP);
 
 #undef __FUNC__  
-#define __FUNC__ "KSPRegisterAll" /* ADIC Ignore */
+#define __FUNC__ "KSPRegisterAll"
 /*@C
   KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
 

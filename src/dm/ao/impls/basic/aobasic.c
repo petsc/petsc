@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodebug.c,v 1.20 1997/07/02 03:33:10 bsmith Exp balay $";
+static char vcid[] = "$Id: aodebug.c,v 1.21 1997/07/09 21:02:01 balay Exp bsmith $";
 #endif
 
 /*
@@ -116,7 +116,7 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   int       *allpetsc,*allapp,*disp,ip,ia;
 
   *aoout = 0;
-  PetscHeaderCreate(ao, _p_AO,AO_COOKIE,AO_DEBUG,comm); 
+  PetscHeaderCreate(ao, _p_AO,AO_COOKIE,AO_DEBUG,comm,AODestroy,AOView); 
   PLogObjectCreate(ao);
   aodebug            = PetscNew(AO_Debug);
   PLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Debug));

@@ -33,7 +33,7 @@
 /*       FNROOT, RCM.*/
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "genrcm" /* ADIC Ignore */
+#define __FUNC__ "genrcm" 
 int genrcm(int *neqns, int *xadj, int *adjncy, 
 	int *perm, int *mask, int *xls)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.114 1997/07/25 23:12:14 balay Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.115 1997/07/25 23:29:08 balay Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: vector.c,v 1.114 1997/07/25 23:12:14 balay Exp balay 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecValid" /* ADIC Ignore */
+#define __FUNC__ "VecValid"
 /*@
    VecValid - Checks whether a vector object is valid.
 
@@ -125,6 +125,8 @@ int VecNorm(Vec x,NormType type,double *val)
 .  val - the maximum component
 .  p - the location of val
 
+   Notes: Returns the value PETSC_MIN and p = -1 if the vector is of length 0.
+
 .keywords: vector, maximum
 
 .seealso: VecNorm(), VecMin()
@@ -151,6 +153,8 @@ int VecMax(Vec x,int *p,double *val)
    Output Parameter:
 .  val - the minimum component
 .  p - the location of val
+
+   Notes: Returns the value PETSC_MAX and p = -1 if the vector is of length 0.
 
 .keywords: vector, minimum
 
@@ -552,6 +556,8 @@ int VecDuplicate(Vec v,Vec *newv)
 int VecDestroy(Vec v)
 {
   PetscValidHeaderSpecific(v,VEC_COOKIE);
+  if (--v->refct > 0) return 0;
+
   return (*v->destroy)((PetscObject )v);
 }
 
@@ -588,7 +594,7 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroyVecs" /* ADIC Ignore */
+#define __FUNC__ "VecDestroyVecs"
 /*@C
    VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
 
@@ -673,7 +679,7 @@ several or many values simultaneously.
 M*/
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetLocalToGlobalMapping" /* ADIC Ignore */
+#define __FUNC__ "VecSetLocalToGlobalMapping"
 /*@
    VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
    by the routine VecSetValuesLocal() to allow users to insert vector entries
@@ -681,8 +687,7 @@ M*/
 
    Input Parameters:
 .  x - vector
-.  n - number of local indices
-.  indices - global index for each local index
+.  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
 
    Notes: 
    All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
@@ -691,17 +696,17 @@ M*/
 
 .seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesLocal()
 @*/
-int VecSetLocalToGlobalMapping(Vec x, int n,int *indices)
+int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
 {
-  int ierr;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidIntPointer(indices);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
 
   if (x->mapping) {
     SETERRQ(1,0,"Mapping already set for vector");
   }
 
-  ierr = ISLocalToGlobalMappingCreate(n,indices,&x->mapping);CHKERRQ(ierr);
+  x->mapping = mapping;
+  PetscObjectReference((PetscObject)mapping);
   return 0;
 }
 
@@ -749,7 +754,7 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
-  ISLocalToGlobalMappingApply(x->mapping,ni,ix,lix); 
+  ierr = ISLocalToGlobalMappingApply(x->mapping,ni,ix,lix); CHKERRQ(ierr);
   ierr = (*x->ops.setvalues)( x,ni,lix, y,iora ); CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   if (ni > 128) {
@@ -1068,7 +1073,7 @@ int VecRestoreArray(Vec x,Scalar **a)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView" /* ADIC Ignore */
+#define __FUNC__ "VecView"
 /*@C
    VecView - Views a vector object. 
 
@@ -1106,7 +1111,7 @@ int VecView(Vec v,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetSize" /* ADIC Ignore */
+#define __FUNC__ "VecGetSize"
 /*@
    VecGetSize - Returns the global number of elements of the vector.
 
@@ -1128,7 +1133,7 @@ int VecGetSize(Vec x,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetLocalSize" /* ADIC Ignore */
+#define __FUNC__ "VecGetLocalSize"
 /*@
    VecGetLocalSize - Returns the number of elements of the vector stored 
    in local memory. This routine may be implementation dependent, so use 
@@ -1152,7 +1157,7 @@ int VecGetLocalSize(Vec x,int *size)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetOwnershipRange" /* ADIC Ignore */
+#define __FUNC__ "VecGetOwnershipRange"
 /*@
    VecGetOwnershipRange - Returns the range of indices owned by 
    this processor, assuming that the vectors are laid out with the
@@ -1180,7 +1185,7 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetOption" /* ADIC Ignore */
+#define __FUNC__ "VecSetOption"
 /*@
    VecSetOption - Allows one to set options for a vectors behavior.
 
@@ -1206,7 +1211,7 @@ int VecSetOption(Vec x,VecOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDuplicateVecs_Default" /* ADIC Ignore */
+#define __FUNC__ "VecDuplicateVecs_Default"
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
 int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
@@ -1222,7 +1227,7 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroyVecs_Default" /* ADIC Ignore */
+#define __FUNC__ "VecDestroyVecs_Default"
 int VecDestroyVecs_Default( Vec *v, int m )
 {
   int i,ierr;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dviewp.c,v 1.11 1997/02/22 02:27:05 bsmith Exp balay $";
+static char vcid[] = "$Id: dviewp.c,v 1.12 1997/07/09 20:57:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dviewp.c,v 1.11 1997/02/22 02:27:05 bsmith Exp balay 
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetViewPort" /* ADIC Ignore */
+#define __FUNC__ "DrawSetViewPort" 
 /*@
    DrawSetViewPort - Sets the portion of the window (page) to which draw
    routines will write.

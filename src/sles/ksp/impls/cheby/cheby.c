@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.48 1997/03/13 03:42:08 curfman Exp balay $";
+static char vcid[] = "$Id: cheby.c,v 1.49 1997/07/09 20:50:47 balay Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -148,7 +148,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPView_Chebychev" /* ADIC Ignore */
+#define __FUNC__ "KSPView_Chebychev" 
 int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 {
   KSP           ksp = (KSP)obj;

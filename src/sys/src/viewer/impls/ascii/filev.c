@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.58 1997/05/23 18:34:20 balay Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.59 1997/07/09 20:59:17 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -20,7 +20,7 @@ Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD, VIEWER_STDER
    default PETSc viewers.
 */
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitialize_Private" /* ADIC Ignore */
+#define __FUNC__ "ViewerInitialize_Private"
 int ViewerInitialize_Private()
 {
   ViewerFileOpenASCII(PETSC_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);
@@ -35,7 +35,7 @@ int ViewerInitialize_Private()
    traces of the default viewers.
 */
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_Private" /* ADIC Ignore */
+#define __FUNC__ "ViewerDestroy_Private"
 int ViewerDestroy_Private()
 {
   ViewerDestroy(VIEWER_STDERR_SELF);
@@ -46,7 +46,7 @@ int ViewerDestroy_Private()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_File" /* ADIC Ignore */
+#define __FUNC__ "ViewerDestroy_File"
 int ViewerDestroy_File(PetscObject obj)
 {
   Viewer v = (Viewer) obj;
@@ -59,7 +59,7 @@ int ViewerDestroy_File(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerFlush_File" /* ADIC Ignore */
+#define __FUNC__ "ViewerFlush_File"
 int ViewerFlush_File(Viewer v)
 {
   int rank;
@@ -70,7 +70,7 @@ int ViewerFlush_File(Viewer v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerASCIIGetPointer" /* ADIC Ignore */
+#define __FUNC__ "ViewerASCIIGetPointer"
 /*@C
     ViewerASCIIGetPointer - Extracts the file pointer from an ASCII viewer.
 
@@ -91,7 +91,7 @@ int ViewerASCIIGetPointer(Viewer viewer, FILE **fd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerFileGetOutputname_Private" /* ADIC Ignore */
+#define __FUNC__ "ViewerFileGetOutputname_Private"
 int ViewerFileGetOutputname_Private(Viewer viewer, char **name)
 {
   *name = viewer->outputname;
@@ -99,7 +99,7 @@ int ViewerFileGetOutputname_Private(Viewer viewer, char **name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetFormat" /* ADIC Ignore */
+#define __FUNC__ "ViewerGetFormat"
 int ViewerGetFormat(Viewer viewer,int *format)
 {
   *format =  viewer->format;
@@ -107,7 +107,7 @@ int ViewerGetFormat(Viewer viewer,int *format)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerFileOpenASCII" /* ADIC Ignore */
+#define __FUNC__ "ViewerFileOpenASCII"
 /*@C
    ViewerFileOpenASCII - Opens an ASCII file as a viewer.
 
@@ -143,9 +143,9 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 {
   Viewer v;
   if (comm == PETSC_COMM_SELF) {
-    PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,ASCII_FILE_VIEWER,comm);
+    PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,ASCII_FILE_VIEWER,comm,ViewerDestroy,0);
   } else {
-    PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,ASCII_FILES_VIEWER,comm);
+    PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,ASCII_FILES_VIEWER,comm,ViewerDestroy,0);
   }
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_File;
@@ -168,7 +168,7 @@ int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSetFormat" /* ADIC Ignore */
+#define __FUNC__ "ViewerSetFormat"
 /*@C
    ViewerSetFormat - Sets the format for viewers.
 
@@ -216,7 +216,7 @@ int ViewerSetFormat(Viewer v,int format,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerPushFormat" /* ADIC Ignore */
+#define __FUNC__ "ViewerPushFormat"
 /*@C
    ViewerPushFormat - Sets the format for file viewers.
 
@@ -266,7 +266,7 @@ int ViewerPushFormat(Viewer v,int format,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerPopFormat" /* ADIC Ignore */
+#define __FUNC__ "ViewerPopFormat"
 /*@C
    ViewerPopFormat - Resets the format for file viewers.
 

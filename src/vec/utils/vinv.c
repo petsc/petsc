@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.33 1997/04/23 20:15:49 curfman Exp balay $";
+static char vcid[] = "$Id: vinv.c,v 1.34 1997/07/09 20:49:32 balay Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -122,7 +122,7 @@ int VecAbs(Vec v)
 
 #include "src/vec/impls/dvecimpl.h"
 #undef __FUNC__  
-#define __FUNC__ "VecPlaceArray" /* ADIC Ignore */
+#define __FUNC__ "VecPlaceArray"
 /*@
    VecPlaceArray - Allows one to replace the array in a vector with 
    a user-provided one. This is useful to avoid copying an array

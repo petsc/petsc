@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.253 1997/07/26 18:03:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.254 1997/07/29 14:09:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -75,7 +75,7 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRow" /* ADIC Ignore */
+#define __FUNC__ "MatRestoreRow"
 /*@C  
    MatRestoreRow - Frees any temporary space allocated by MatGetRow().
 
@@ -113,7 +113,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView" /* ADIC Ignore */
+#define __FUNC__ "MatView"
 /*@C
    MatView - Visualizes a matrix object.
 
@@ -195,7 +195,7 @@ int MatView(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy" /* ADIC Ignore */
+#define __FUNC__ "MatDestroy"
 /*@C
    MatDestroy - Frees space taken by a matrix.
   
@@ -208,6 +208,8 @@ int MatDestroy(Mat mat)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (--mat->refct > 0) return 0;
+
   if (mat->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
   }
@@ -219,7 +221,7 @@ int MatDestroy(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatValid" /* ADIC Ignore */
+#define __FUNC__ "MatValid"
 /*@
    MatValid - Checks whether a matrix object is valid.
 
@@ -433,7 +435,7 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetLocalToGlobalMapping" /* ADIC Ignore */
+#define __FUNC__ "MatSetLocalToGlobalMapping"
 /*@
    MatSetLocalToGlobalMapping - Sets a local numbering to global numbering used
    by the routine MatSetValuesLocal() to allow users to insert matrices entries
@@ -441,29 +443,28 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 
    Input Parameters:
 .  x - the matrix
-.  n - number of local indices
-.  indices - global index for each local index
+.  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
 
 .keywords: matrix, set, values, local ordering
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal()
 @*/
-int MatSetLocalToGlobalMapping(Mat x, int n,int *indices)
+int MatSetLocalToGlobalMapping(Mat x, ISLocalToGlobalMapping mapping)
 {
-  int ierr;
   PetscValidHeaderSpecific(x,MAT_COOKIE);
-  PetscValidIntPointer(indices);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
 
   if (x->mapping) {
     SETERRQ(1,0,"Mapping already set for matrix");
   }
 
-  ierr = ISLocalToGlobalMappingCreate(n,indices,&x->mapping);CHKERRQ(ierr);
+  x->mapping = mapping;
+  PetscObjectReference((PetscObject)mapping);
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetLocalToGlobalMappingBlocked" /* ADIC Ignore */
+#define __FUNC__ "MatSetLocalToGlobalMappingBlocked"
 /*@
    MatSetLocalToGlobalMappingBlocked - Sets a local numbering to global numbering used
    by the routine MatSetValuesBlockedLocal() to allow users to insert matrices entries
@@ -471,25 +472,23 @@ int MatSetLocalToGlobalMapping(Mat x, int n,int *indices)
 
    Input Parameters:
 .  x - the matrix
-.  n - number of local indices
-.  indices - global index for each local block index
+.  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
 
 .keywords: matrix, set, values, local ordering
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal(),
            MatSetValuesBlocked(), MatSetValuesLocal()
 @*/
-int MatSetLocalToGlobalMappingBlocked(Mat x, int n,int *indices)
+int MatSetLocalToGlobalMappingBlocked(Mat x, ISLocalToGlobalMapping mapping)
 {
-  int ierr;
   PetscValidHeaderSpecific(x,MAT_COOKIE);
-  PetscValidIntPointer(indices);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
 
   if (x->bmapping) {
     SETERRQ(1,0,"Mapping already set for matrix");
   }
-
-  ierr = ISLocalToGlobalMappingCreate(n,indices,&x->bmapping);CHKERRQ(ierr);
+ 
+  x->mapping = mapping;
   return 0;
 }
 
@@ -549,8 +548,8 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
     mat->assembled     = PETSC_FALSE;
   }
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
-  ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm); 
-  ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm); 
+  ierr = ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm); CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm);CHKERRQ(ierr); 
   ierr = (*mat->ops.setvalues)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   return 0;
@@ -614,8 +613,8 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scal
     mat->assembled     = PETSC_FALSE;
   }
   PLogEventBegin(MAT_SetValues,mat,0,0,0);
-  ISLocalToGlobalMappingApply(mat->bmapping,nrow,irow,irowm); 
-  ISLocalToGlobalMappingApply(mat->bmapping,ncol,icol,icolm); 
+  ierr = ISLocalToGlobalMappingApply(mat->bmapping,nrow,irow,irowm); CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(mat->bmapping,ncol,icol,icolm); CHKERRQ(ierr);
   ierr = (*mat->ops.setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   return 0;
@@ -777,7 +776,7 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
 }
 /* ------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "MatGetInfo"  /* ADIC Ignore */
+#define __FUNC__ "MatGetInfo"
 /*@C
    MatGetInfo - Returns information about matrix storage (number of
    nonzeros, memory, etc.).
@@ -1545,7 +1544,7 @@ static int (*MatConverters[MAX_MATRIX_TYPES][MAX_MATRIX_TYPES])(Mat,MatType,Mat*
             {0,0,0,0,0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0,0,0,0,0}};
 
 #undef __FUNC__  
-#define __FUNC__ "MatConvertRegister" /* ADIC Ignore */
+#define __FUNC__ "MatConvertRegister"
 /*@C
     MatConvertRegister - Allows one to register a routine that converts between
         two matrix types.
@@ -1621,7 +1620,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetDiagonal" /* ADIC Ignore */
+#define __FUNC__ "MatGetDiagonal"
 /*@ 
    MatGetDiagonal - Gets the diagonal of a matrix.
 
@@ -2009,7 +2008,7 @@ int MatCompress(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetOption" /* ADIC Ignore */
+#define __FUNC__ "MatSetOption"
 /*@
    MatSetOption - Sets a parameter option for a matrix. Some options
    may be specific to certain storage formats.  Some options
@@ -2210,7 +2209,7 @@ int MatZeroRowsLocal(Mat mat,IS is, Scalar *diag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize" /* ADIC Ignore */
+#define __FUNC__ "MatGetSize"
 /*@
    MatGetSize - Returns the numbers of rows and columns in a matrix.
 
@@ -2234,7 +2233,7 @@ int MatGetSize(Mat mat,int *m,int* n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetLocalSize" /* ADIC Ignore */
+#define __FUNC__ "MatGetLocalSize"
 /*@
    MatGetLocalSize - Returns the number of rows and columns in a matrix
    stored locally.  This information may be implementation dependent, so
@@ -2260,7 +2259,7 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange" /* ADIC Ignore */
+#define __FUNC__ "MatGetOwnershipRange"
 /*@
    MatGetOwnershipRange - Returns the range of matrix rows owned by
    this processor, assuming that the matrix is laid out with the first
@@ -2370,7 +2369,7 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetArray" /* ADIC Ignore */
+#define __FUNC__ "MatGetArray"
 /*@C
    MatGetArray - Returns a pointer to the element values in the matrix.
    This routine  is implementation dependent, and may not even work for 
@@ -2401,7 +2400,7 @@ int MatGetArray(Mat mat,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreArray" /* ADIC Ignore */
+#define __FUNC__ "MatRestoreArray"
 /*@C
    MatRestoreArray - Restores the matrix after MatGetArray has been called.
 
@@ -2472,7 +2471,7 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroyMatrices" /* ADIC Ignore */
+#define __FUNC__ "MatDestroyMatrices"
 /*@C
    MatDestroyMatrices - Destroys a set of matrices obtained with MatGetSubMatrices().
 
@@ -2530,7 +2529,7 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is,int ov)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatPrintHelp" /* ADIC Ignore */
+#define __FUNC__ "MatPrintHelp"
 /*@
    MatPrintHelp - Prints all the options for the matrix.
 
@@ -2565,7 +2564,7 @@ int MatPrintHelp(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize" /* ADIC Ignore */
+#define __FUNC__ "MatGetBlockSize"
 /*@
    MatGetBlockSize - Returns the matrix block size; useful especially for the
    block row and block diagonal formats.
@@ -2626,7 +2625,7 @@ int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetColumnIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetColumnIJ"
 /*@C
       MatGetColumnIJ - Returns the compress Column storage i and j indices for sequential matrices.
                  EXPERTS ONLY.
@@ -2660,7 +2659,7 @@ int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** 
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRowIJ" /* ADIC Ignore */
+#define __FUNC__ "MatRestoreRowIJ"
 /*@C
       MatRestoreRowIJ - Call after you are completed with the ia,ja indices obtained with
                      MatGetRowIJ(). EXPERTS ONLY.
@@ -2694,7 +2693,7 @@ int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int**
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreColumnIJ" /* ADIC Ignore */
+#define __FUNC__ "MatRestoreColumnIJ"
 /*@C
       MatRestoreColumnIJ - Call after you are completed with the ia,ja indices obtained with
                      MatGetColumnIJ(). EXPERTS ONLY.
@@ -2798,7 +2797,7 @@ int MatSetUnfactored(Mat mat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetType" /* ADIC Ignore */
+#define __FUNC__ "MatGetType"
 /*@C
    MatGetType - Gets the matrix type and name (as a string) from the matrix.
 

@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.75 1997/06/05 12:51:17 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.76 1997/08/07 14:37:55 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -10,7 +10,7 @@
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetOwnershipRange_MPI" /* ADIC Ignore */
+#define __FUNC__ "VecGetOwnershipRange_MPI"
 int VecGetOwnershipRange_MPI(Vec v,int *low,int* high) 
 {
   Vec_MPI *x = (Vec_MPI *) v->data;
@@ -20,7 +20,7 @@ int VecGetOwnershipRange_MPI(Vec v,int *low,int* high)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroy_MPI" /* ADIC Ignore */
+#define __FUNC__ "VecDestroy_MPI"
 int VecDestroy_MPI(PetscObject obj )
 {
   Vec     v = (Vec ) obj;
@@ -42,7 +42,7 @@ int VecDestroy_MPI(PetscObject obj )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_File" /* ADIC Ignore */
+#define __FUNC__ "VecView_MPI_File"
 int VecView_MPI_File(Vec xin, Viewer ptr )
 {
   Vec_MPI *x = (Vec_MPI *) xin->data;
@@ -75,7 +75,7 @@ int VecView_MPI_File(Vec xin, Viewer ptr )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Files" /* ADIC Ignore */
+#define __FUNC__ "VecView_MPI_Files"
 int VecView_MPI_Files(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
@@ -182,7 +182,7 @@ int VecView_MPI_Files(Vec xin, Viewer viewer )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Binary" /* ADIC Ignore */
+#define __FUNC__ "VecView_MPI_Binary"
 int VecView_MPI_Binary(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
@@ -220,7 +220,7 @@ int VecView_MPI_Binary(Vec xin, Viewer viewer )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw_LG" /* ADIC Ignore */
+#define __FUNC__ "VecView_MPI_Draw_LG"
 int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
@@ -282,7 +282,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Draw" /* ADIC Ignore */
+#define __FUNC__ "VecView_MPI_Draw"
 int VecView_MPI_Draw(Vec xin, Viewer v )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
@@ -361,7 +361,7 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI_Matlab" /* ADIC Ignore */
+#define __FUNC__ "VecView_MPI_Matlab"
 int VecView_MPI_Matlab(Vec xin, Viewer viewer )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
@@ -392,7 +392,7 @@ int VecView_MPI_Matlab(Vec xin, Viewer viewer )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_MPI" /* ADIC Ignore */
+#define __FUNC__ "VecView_MPI"
 int VecView_MPI(PetscObject obj,Viewer viewer)
 {
   Vec         xin = (Vec) obj;

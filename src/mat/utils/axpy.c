@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.25 1997/04/04 23:54:05 balay Exp balay $";
+static char vcid[] = "$Id: axpy.c,v 1.26 1997/07/09 20:56:43 balay Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -13,34 +13,45 @@ static char vcid[] = "$Id: axpy.c,v 1.25 1997/04/04 23:54:05 balay Exp balay $";
 .  X,Y - the matrices
 .  a - the scalar multiplier
 
+   Contributed by: Mathew Knepley
+
 .keywords: matrix, add
+
  @*/
 int MatAXPY(Scalar *a,Mat X,Mat Y)
 {
   int    m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;
   Scalar *val,*vals;
 
-  PetscValidHeaderSpecific(X,MAT_COOKIE);  PetscValidHeaderSpecific(Y,MAT_COOKIE);
+  PetscValidHeaderSpecific(X,MAT_COOKIE); 
+  PetscValidHeaderSpecific(Y,MAT_COOKIE);
   PetscValidScalarPointer(a);
 
-  MatGetSize(X,&m1,&n1);  MatGetSize(X,&m2,&n2);
+  MatGetSize(X,&m1,&n1);  MatGetSize(Y,&m2,&n2);
   if (m1 != m2 || n1 != n2) SETERRQ(1,0,"Non conforming matrix add");
 
   if (X->ops.axpy) {
     ierr = (*X->ops.axpy)(a,X,Y); CHKERRQ(ierr);
-  }
-  else {
-    vals = (Scalar *) PetscMalloc( (n1+1)*sizeof(Scalar) ); CHKPTRQ(vals);
+  } else {
     ierr = MatGetOwnershipRange(X,&start,&end); CHKERRQ(ierr);
-    for ( i=start; i<end; i++ ) {
-      ierr = MatGetRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
-      for ( j=0; j<ncols; j++ ) {
-        vals[j] = (*a)*val[j];
+    if (*a == 1.0) {
+      for (i = start; i < end; i++) {
+        ierr = MatGetRow(X, i, &ncols, &row, &vals);                 CHKERRQ(ierr);
+        ierr = MatSetValues(Y, 1, &i, ncols, row, vals, ADD_VALUES); CHKERRQ(ierr);
+        ierr = MatRestoreRow(X, i, &ncols, &row, &vals);             CHKERRQ(ierr);
       }
-      ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES); CHKERRQ(ierr);
-      ierr = MatRestoreRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
+    } else {
+      vals = (Scalar *) PetscMalloc( (n1+1)*sizeof(Scalar) ); CHKPTRQ(vals);
+      for ( i=start; i<end; i++ ) {
+        ierr = MatGetRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
+        for ( j=0; j<ncols; j++ ) {
+          vals[j] = (*a)*val[j];
+        }
+        ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES); CHKERRQ(ierr);
+        ierr = MatRestoreRow(X,i,&ncols,&row,&val); CHKERRQ(ierr);
+      }
+      PetscFree(vals);
     }
-    PetscFree(vals);
     ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
@@ -71,7 +82,7 @@ int MatShift(Scalar *a,Mat Y)
     ierr = (*Y->ops.shift)(a,Y); CHKERRQ(ierr);
   }
   else {
-    MatGetOwnershipRange(Y,&start,&end);
+    ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
     for ( i=start; i<end; i++ ) {
       ierr = MatSetValues(Y,1,&i,1,&i,a,ADD_VALUES); CHKERRQ(ierr);
     }
@@ -112,8 +123,9 @@ int MatDiagonalShift(Mat Y,Vec D)
     Scalar *v;
     ierr = VecGetOwnershipRange(D,&vstart,&vend); CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
-    if (vstart != start || vend != end) 
-      SETERRQ(1,0,"Vector shift not compatible with matrix");
+    if (vstart != start || vend != end) {
+      SETERRQ(1,0,"Vector ownership range not compatible with matrix");
+    }
 
     ierr = VecGetArray(D,&v); CHKERRQ(ierr);
     for ( i=start; i<end; i++ ) {
@@ -123,4 +135,36 @@ int MatDiagonalShift(Mat Y,Vec D)
     ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   }
   return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatAYPX"
+/*@
+   MatAYPX - Computes Y = X + a*Y.
+
+   Input Parameters:
+.  X,Y - the matrices
+.  a - the scalar multiplier
+
+   Contributed by: Mathew Knepley
+
+.keywords: matrix, add
+
+ @*/
+int MatAYPX(Scalar *a,Mat X,Mat Y)
+{
+  Scalar one = 1.0;
+  int    mX, mY,nX, nY,ierr;
+
+  PetscValidHeaderSpecific(X, MAT_COOKIE);
+  PetscValidHeaderSpecific(Y, MAT_COOKIE);
+  PetscValidScalarPointer(a);
+
+  MatGetSize(X, &mX, &nX);
+  MatGetSize(X, &mY, &nY);
+  if (mX != mY || nX != nY) SETERRQ(1,0,"Non conforming matrices");
+
+  ierr = MatScale(a, Y);      CHKERRQ(ierr);
+  ierr = MatAXPY(&one, X, Y); CHKERRQ(ierr);
+  return(0);
 }

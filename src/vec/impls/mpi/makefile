@@ -1,8 +1,4 @@
 #
-#   I'd like to add the dependancies pvec.c depends on pdvec.c ...
-#  but can't figure out how.
-#
-#PETSC_DIR = ../../../..
 
 ALL: lib
 

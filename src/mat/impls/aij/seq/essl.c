@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: essl.c,v 1.20 1997/03/13 16:33:49 curfman Exp balay $";
+static char vcid[] = "$Id: essl.c,v 1.21 1997/07/09 20:53:48 balay Exp bsmith $";
 #endif
 
 /* 
@@ -30,7 +30,7 @@ typedef struct {
 extern int MatDestroy_SeqAIJ(PetscObject);
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_SeqAIJ_Essl" /* ADIC Ignore */
+#define __FUNC__ "MatDestroy_SeqAIJ_Essl"
 extern int MatDestroy_SeqAIJ_Essl(PetscObject obj)
 {
   Mat             A = (Mat) obj;
@@ -131,7 +131,7 @@ extern int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatUseEssl_SeqAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
   PetscValidHeaderSpecific(A,MAT_COOKIE);  
@@ -146,7 +146,7 @@ int MatUseEssl_SeqAIJ(Mat A)
 #else
 
 #undef __FUNC__  
-#define __FUNC__ "MatUseEssl_SeqAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatUseEssl_SeqAIJ"
 int MatUseEssl_SeqAIJ(Mat A)
 {
   return 0;

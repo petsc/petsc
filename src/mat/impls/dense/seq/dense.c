@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.128 1997/05/23 18:37:16 balay Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.129 1997/07/09 20:53:35 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1145,7 +1145,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
 
   *A            = 0;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQDENSE,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQDENSE,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   b             = (Mat_SeqDense *) PetscMalloc(sizeof(Mat_SeqDense)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqDense));

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.58 1997/07/09 20:50:32 balay Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.59 1997/07/24 03:40:14 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -153,7 +153,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPDestroy_CG" /* ADIC Ignore */
+#define __FUNC__ "KSPDestroy_CG" 
 int KSPDestroy_CG(PetscObject obj)
 {
   KSP    ksp = (KSP) obj;
@@ -173,7 +173,7 @@ int KSPDestroy_CG(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPView_CG" /* ADIC Ignore */
+#define __FUNC__ "KSPView_CG" 
 int KSPView_CG(PetscObject obj,Viewer viewer)
 {
 #if defined(PETSC_COMPLEX)

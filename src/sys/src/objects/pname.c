@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: pname.c,v 1.8 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectSetName" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectSetName"
 /*@C 
    PetscObjectSetName - Sets a string name associated with a PETSc object.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.12 1997/07/09 20:51:14 balay Exp balay $";
+static char vcid[] = "$Id: str.c,v 1.13 1997/07/13 19:02:00 balay Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: str.c,v 1.12 1997/07/09 20:51:14 balay Exp balay $";
 #include "pinclude/petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrlen" /* ADIC Ignore */
+#define __FUNC__ "PetscStrlen"
 int PetscStrlen(char *s)
 {
   if (!s) return 0;
@@ -25,35 +25,35 @@ int PetscStrlen(char *s)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrcpy" /* ADIC Ignore */
+#define __FUNC__ "PetscStrcpy"
 void PetscStrcpy(char *s,char *t)
 {
   strcpy(s,t);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrncpy" /* ADIC Ignore */
+#define __FUNC__ "PetscStrncpy"
 void PetscStrncpy(char *s,char *t,int n)
 {
   strncpy(s,t,n);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrcat" /* ADIC Ignore */
+#define __FUNC__ "PetscStrcat"
 void PetscStrcat(char *s,char *t)
 {
   strcat(s,t);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrncat" /* ADIC Ignore */
+#define __FUNC__ "PetscStrncat"
 void PetscStrncat(char *s,char *t,int n)
 {
   strncat(s,t,n);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrcmp" /* ADIC Ignore */
+#define __FUNC__ "PetscStrcmp"
 int PetscStrcmp(char *a,char *b)
 {
   if (!a && !b) return 0;
@@ -62,7 +62,7 @@ int PetscStrcmp(char *a,char *b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrcasecmp" /* ADIC Ignore */
+#define __FUNC__ "PetscStrcasecmp"
 int PetscStrcasecmp(char *a,char *b)
 {
   if (!a && !b) return 0;
@@ -75,14 +75,14 @@ int PetscStrcasecmp(char *a,char *b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrncmp" /* ADIC Ignore */
+#define __FUNC__ "PetscStrncmp"
 int PetscStrncmp(char *a,char *b,int n)
 {
   return strncmp(a,b,n);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrchr" /* ADIC Ignore */
+#define __FUNC__ "PetscStrchr"
 char *PetscStrchr(char *a,char b)
 {
   return strchr(a,b);
@@ -94,7 +94,7 @@ char *PetscStrchr(char *a,char b)
    if it does not find it then it returns the entire string.
 */
 #undef __FUNC__  
-#define __FUNC__ "PetscStrrchr" /* ADIC Ignore */
+#define __FUNC__ "PetscStrrchr"
 char *PetscStrrchr(char *a,char b)
 {
   char *tmp = strrchr(a,b);
@@ -103,14 +103,14 @@ char *PetscStrrchr(char *a,char b)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrtok" /* ADIC Ignore */
+#define __FUNC__ "PetscStrtok"
 char *PetscStrtok(char *a,char *b)
 {
   return strtok(a,b);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStrstr" /* ADIC Ignore */
+#define __FUNC__ "PetscStrstr"
 char *PetscStrstr(char*a,char *b)
 {
   return strstr(a,b);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.43 1997/04/10 00:03:16 bsmith Exp balay $";
+static char vcid[] = "$Id: sorder.c,v 1.44 1997/07/09 20:54:49 balay Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -15,7 +15,7 @@ int  MatReorderingRegisterAllCalled = 0;
 extern int MatOrder_Flow_SeqAIJ(Mat,MatReordering,IS *,IS *);
 
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_Flow" /* ADIC Ignore */
+#define __FUNC__ "MatOrder_Flow"
 int MatOrder_Flow(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
   if (mat->type == MATSEQAIJ) {
@@ -25,7 +25,7 @@ int MatOrder_Flow(Mat mat,MatReordering type,IS *irow,IS *icol)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_Natural" /* ADIC Ignore */
+#define __FUNC__ "MatOrder_Natural"
 int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
   int        n, size,ierr,i,*ii;
@@ -79,7 +79,7 @@ int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
    matrix with symmetric non-zero structure.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_RowLength" /* ADIC Ignore */
+#define __FUNC__ "MatOrder_RowLength"
 int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
 {
   int        ierr,n,*ia,*ja,*permr,*lens,i;
@@ -105,7 +105,7 @@ int MatOrder_RowLength(Mat mat,MatReordering type,IS *irow,IS *icol)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatReorderingRegister" /* ADIC Ignore */
+#define __FUNC__ "MatReorderingRegister"
 /*@C
    MatReorderingRegister - Adds a new sparse matrix reordering to the 
    matrix package. 
@@ -140,7 +140,7 @@ int  MatReorderingRegister(MatReordering name,MatReordering *out,char *sname,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatReorderingRegisterDestroy" /* ADIC Ignore */
+#define __FUNC__ "MatReorderingRegisterDestroy"
 /*@C
    MatReorderingRegisterDestroy - Frees the list of ordering routines.
 
@@ -159,7 +159,7 @@ int MatReorderingRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetReorderingTypeFromOptions" /* ADIC Ignore */
+#define __FUNC__ "MatGetReorderingTypeFromOptions"
 /*@C
    MatGetReorderingTypeFromOptions - Gets matrix reordering method from the
    options database.
@@ -197,7 +197,7 @@ int MatGetReorderingTypeFromOptions(char *prefix,MatReordering *type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatReorderingGetName" /* ADIC Ignore */
+#define __FUNC__ "MatReorderingGetName"
 /*@C
    MatReorderingGetName - Gets the name associated with a reordering.
 
@@ -221,7 +221,7 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #undef __FUNC__  
-#define __FUNC__ "MatGetReordering" /* ADIC Ignore */
+#define __FUNC__ "MatGetReordering"
 /*@C
    MatGetReordering - Gets a reordering for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
@@ -256,7 +256,7 @@ $    -mat_order rcm, -mat_order qmd
 @*/
 int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
 {
-  int         ierr,flg;
+  int         ierr,flg,mmat,nmat,mis;
   int         (*r)(Mat,MatReordering,IS*,IS*);
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -294,14 +294,14 @@ int MatGetReordering(Mat mat,MatReordering type,IS *rperm,IS *cperm)
   ierr = ISSetPermutation(*rperm); CHKERRQ(ierr);
   ierr = ISSetPermutation(*cperm); CHKERRQ(ierr);
 
-  ierr = MatAdjustForInodes(mat,rperm,cperm); CHKERRQ(ierr);
-  {
-    int size;
-    MPI_Comm_size(mat->comm,&size);
-    if (mat->type == MATMPIAIJ && size == 1) {
-      Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *) mat->data;
-      ierr = MatAdjustForInodes(mpiaij->A,rperm,cperm); CHKERRQ(ierr);
-    }
+  /*
+      Adjust for inode (reduced matrix ordering) only if row permutation
+    is smaller then matrix size
+  */
+  ierr = MatGetLocalSize(mat,&mmat,&nmat); CHKERRQ(ierr);
+  ierr = ISGetSize(*rperm,&mis); CHKERRQ(ierr);
+  if (mmat > mis) {  
+    ierr = MatAdjustForInodes(mat,rperm,cperm); CHKERRQ(ierr);
   }
 
   PLogEventEnd(MAT_GetReordering,mat,0,0,0);

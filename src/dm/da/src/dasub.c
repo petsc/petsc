@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dasub.c,v 1.12 1997/02/22 02:29:24 bsmith Exp balay $";
+static char vcid[] = "$Id: dasub.c,v 1.13 1997/07/09 21:00:44 balay Exp bsmith $";
 #endif
  
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dasub.c,v 1.12 1997/02/22 02:29:24 bsmith Exp balay $
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetProcessorSubset" /* ADIC Ignore */
+#define __FUNC__ "DAGetProcessorSubset"
 /*@C
    DAGetProcessorSubset - Returns a communicator consisting only of the
    processors in a DA that own a particular global x, y, or z grid point

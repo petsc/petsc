@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.15 1997/04/03 18:59:46 curfman Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.16 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -24,7 +24,7 @@ extern int getpagesize();
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetResidentSetSize" /* ADIC Ignore */
+#define __FUNC__ "PetscGetResidentSetSize"
 /*@
    PetscGetResidentSetSize - Returns the maximum resident set size (memory used)
    for the program.

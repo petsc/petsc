@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.39 1997/05/23 16:41:48 balay Exp balay $";
+static char vcid[] = "$Id: axis.c,v 1.40 1997/07/09 20:58:15 balay Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -30,7 +30,7 @@ static double PetscAGetNice(double,double,int );
 static int    PetscAGetBase(double,double,int,double*,int*);
 
 #undef __FUNC__  
-#define __FUNC__ "PetscRint" /* ADIC Ignore */
+#define __FUNC__ "PetscRint"
 static double PetscRint(double x )
 {
   if (x > 0) return floor( x + 0.5 );
@@ -38,7 +38,7 @@ static double PetscRint(double x )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisCreate" /* ADIC Ignore */
+#define __FUNC__ "DrawAxisCreate"
 /*@C
    DrawAxisCreate - Generate the axis data structure.
 
@@ -56,7 +56,7 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == DRAW_NULLWINDOW) {
      return DrawOpenNull(vobj->comm,(Draw*)ctx);
   }
-  PetscHeaderCreate(ad,_p_DrawAxis,DRAWAXIS_COOKIE,0,vobj->comm);
+  PetscHeaderCreate(ad,_p_DrawAxis,DRAWAXIS_COOKIE,0,vobj->comm,DrawAxisDestroy,0);
   PLogObjectCreate(ad);
   PLogObjectParent(win,ad);
   ad->xticks    = PetscADefTicks;
@@ -76,7 +76,7 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisDestroy" /* ADIC Ignore */
+#define __FUNC__ "DrawAxisDestroy"
 /*@C
       DrawAxisDestroy - Frees the space used by an axis structure.
 
@@ -86,13 +86,15 @@ int DrawAxisCreate(Draw win,DrawAxis *ctx)
 int DrawAxisDestroy(DrawAxis ad)
 {
   if (!ad) return 0;
+  if (--ad->refct > 0) return 0;
+
   PLogObjectDestroy(ad);
   PetscHeaderDestroy(ad);
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisSetColors" /* ADIC Ignore */
+#define __FUNC__ "DrawAxisSetColors"
 /*@
     DrawAxisSetColors -  Sets the colors to be used for the axis,       
                          tickmarks, and text.
@@ -111,7 +113,7 @@ int DrawAxisSetColors(DrawAxis ad,int ac,int tc,int cc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisSetLabels" /* ADIC Ignore */
+#define __FUNC__ "DrawAxisSetLabels"
 /*@C
     DrawAxisSetLabels -  Sets the x and y axis labels.
 
@@ -131,7 +133,7 @@ int DrawAxisSetLabels(DrawAxis ad,char* top,char *xlabel,char *ylabel)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisSetLimits" /* ADIC Ignore */
+#define __FUNC__ "DrawAxisSetLimits"
 /*@
     DrawAxisSetLimits -  Sets the limits (in user coords) of the axis
     
@@ -151,7 +153,7 @@ int DrawAxisSetLimits(DrawAxis ad,double xmin,double xmax,double ymin,double yma
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawAxisDraw" /* ADIC Ignore */
+#define __FUNC__ "DrawAxisDraw"
 /*@
     DrawAxisDraw - Draws an axis.
 
@@ -250,7 +252,7 @@ int DrawAxisDraw(DrawAxis ad)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripAllZeros" /* ADIC Ignore */
+#define __FUNC__ "PetscStripAllZeros"
 /*
     Removes all zeros but one from .0000 
 */
@@ -267,7 +269,7 @@ static int PetscStripAllZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripTrailingZeros" /* ADIC Ignore */
+#define __FUNC__ "PetscStripTrailingZeros"
 /*
     Removes trailing zeros
 */
@@ -290,7 +292,7 @@ static int PetscStripTrailingZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripInitialZero" /* ADIC Ignore */
+#define __FUNC__ "PetscStripInitialZero"
 /*
     Removes leading 0 from 0.22 or -0.22
 */
@@ -310,7 +312,7 @@ static int PetscStripInitialZero(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripZeros" /* ADIC Ignore */
+#define __FUNC__ "PetscStripZeros"
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
@@ -329,7 +331,7 @@ static int PetscStripZeros(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStripZerosPlus" /* ADIC Ignore */
+#define __FUNC__ "PetscStripZerosPlus"
 /*
       Removes the plus in something like 1.1e+2
 */
@@ -358,7 +360,7 @@ static int PetscStripZerosPlus(char *buf)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscADefLabel" /* ADIC Ignore */
+#define __FUNC__ "PetscADefLabel"
 /*
    val is the label value.  sep is the separation to the next (or previous)
    label; this is useful in determining how many significant figures to   
@@ -424,7 +426,7 @@ static char *PetscADefLabel(double val,double sep )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscADefTicks" /* ADIC Ignore */
+#define __FUNC__ "PetscADefTicks"
 /* Finds "nice" locations for the ticks */
 static int PetscADefTicks( double low, double high, int num, int *ntick,
                            double * tickloc,int  maxtick )
@@ -488,7 +490,7 @@ static double PetscCopysign(double a,double b )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscAGetNice" /* ADIC Ignore */
+#define __FUNC__ "PetscAGetNice"
 /*
     Given a value "in" and a "base", return a nice value.
     based on "sgn", extend up (+1) or down (-1)
@@ -504,7 +506,7 @@ static double PetscAGetNice(double in,double base,int sgn )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscAGetBase" /* ADIC Ignore */
+#define __FUNC__ "PetscAGetBase"
 static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
 {
   double  base, ftemp;

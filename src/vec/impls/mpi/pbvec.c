@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.84 1997/08/07 14:37:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.85 1997/08/13 22:22:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -54,7 +54,7 @@ int VecTDot_MPI( Vec xin, Vec yin, Scalar *z )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecSetOption_MPI" /* ADIC Ignore */
+#define __FUNC__ "VecSetOption_MPI"
 int VecSetOption_MPI(Vec v,VecOption op)
 {
   Vec_MPI *w = (Vec_MPI *) v->data;
@@ -98,7 +98,7 @@ static int VecCreateMPI_Private(MPI_Comm comm,int n,int nghost,int N,int size,in
   *vv = 0;
 
   mem           = sizeof(Vec_MPI)+(size+1)*sizeof(int);
-  PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECMPI,comm);
+  PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECMPI,comm,VecDestroy,VecView);
   PLogObjectCreate(v);
   PLogObjectMemory(v,mem + sizeof(struct _p_Vec) + (nghost+1)*sizeof(Scalar));
   s              = (Vec_MPI *) PetscMalloc(mem); CHKPTRQ(s);
@@ -241,7 +241,7 @@ int VecDuplicate_MPI( Vec win, Vec *v)
   (*v)->childdestroy = win->childdestroy;
   if (win->mapping) {
     (*v)->mapping = win->mapping;
-    ISLocalToGlobalMappingReference(win->mapping);
+    PetscObjectReference((PetscObject)win->mapping);
   }
   if (win->child) return (*win->childcopy)(win->child,&(*v)->child);
   return 0;

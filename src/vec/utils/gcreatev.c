@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.34 1997/02/22 02:22:21 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreatev.c,v 1.35 1997/07/09 20:49:32 balay Exp bsmith $";
 #endif
 
 
@@ -49,7 +49,7 @@ int VecCreate(MPI_Comm comm,int n,Vec *V)
 
 #include "src/vec/vecimpl.h"
 #undef __FUNC__  
-#define __FUNC__ "VecGetType" /* ADIC Ignore */
+#define __FUNC__ "VecGetType"
 /*@C
    VecGetType - Gets the vector type and name (as a string) from the vector.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcregis.c,v 1.33 1997/02/22 02:23:59 bsmith Exp balay $";
+static char vcid[] = "$Id: pcregis.c,v 1.34 1997/07/09 20:52:24 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -19,7 +19,7 @@ extern int PCCreate_ASM(PC);
 extern int PCCreate_BGS(PC);
 
 #undef __FUNC__  
-#define __FUNC__ "PCRegisterAll" /* ADIC Ignore */
+#define __FUNC__ "PCRegisterAll"
 /*@C
   PCRegisterAll - Registers all of the preconditioners in the PC package.
 

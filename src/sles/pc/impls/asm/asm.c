@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.63 1997/07/09 20:53:07 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.64 1997/07/21 02:21:13 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -29,7 +29,7 @@ typedef struct {
 } PC_ASM;
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_ASM" /* ADIC Ignore */
+#define __FUNC__ "PCView_ASM"
 static int PCView_ASM(PetscObject obj,Viewer viewer)
 {
   PC           pc = (PC)obj;
@@ -254,7 +254,7 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_ASM" /* ADIC Ignore */
+#define __FUNC__ "PCDestroy_ASM"
 static int PCDestroy_ASM(PetscObject obj)
 {
   PC     pc = (PC) obj;
@@ -284,7 +284,7 @@ static int PCDestroy_ASM(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_ASM" /* ADIC Ignore */
+#define __FUNC__ "PCPrintHelp_ASM"
 static int PCPrintHelp_ASM(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCASM preconditioner:\n");
@@ -351,7 +351,7 @@ int PCCreate_ASM(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCASMSetLocalSubdomains" /* ADIC Ignore */
+#define __FUNC__ "PCASMSetLocalSubdomains"
 /*@
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner.  Either all or no
@@ -389,7 +389,7 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCASMSetTotalSubdomains" /* ADIC Ignore */
+#define __FUNC__ "PCASMSetTotalSubdomains"
 /*@
     PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -444,7 +444,7 @@ set specific index sets\n they cannot be set globally yet.");
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCASMSetOverlap" /* ADIC Ignore */
+#define __FUNC__ "PCASMSetOverlap"
 /*@
     PCASMSetOverlap - Sets the overlap between a pair of subdomains for the
     additive Schwarz preconditioner.  Either all or no processors in the
@@ -493,7 +493,7 @@ int PCASMSetOverlap(PC pc, int ovl)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCASMSetType" /* ADIC Ignore */
+#define __FUNC__ "PCASMSetType"
 /*@
     PCASMSetType - Sets the type of restriction and interpolation used
     for local problems in the additive Schwarz method.
@@ -526,7 +526,7 @@ int PCASMSetType(PC pc,PCASMType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCASMCreateSubdomains2D" /* ADIC Ignore */
+#define __FUNC__ "PCASMCreateSubdomains2D"
 /*@
    PCASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz 
    preconditioner for a two-dimensional problem on a regular grid.
@@ -598,7 +598,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCASMGetSubSLES" /* ADIC Ignore */
+#define __FUNC__ "PCASMGetSubSLES"
 /*@C
    PCASMGetSubSLES - Gets the local SLES contexts for all blocks on
    this processor.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.4 1997/04/04 21:26:48 curfman Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.5 1997/07/09 20:50:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
@@ -60,7 +60,12 @@ int main(int argc,char **argv)
   /* map the first and last point as periodic */
   if (gindices[0]    == -1) gindices[0]    = M - 1;
   if (gindices[ng-1] == M)  gindices[ng-1] = 0;
-  ierr = VecSetLocalToGlobalMapping(x,ng,gindices); CHKERRA(ierr);
+  {
+    ISLocalToGlobalMapping ltog;
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog); CHKERRQ(ierr);
+    ierr = VecSetLocalToGlobalMapping(x,ltog); CHKERRA(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(ltog); CHKERRA(ierr);
+  }
   PetscFree(gindices);
 
   /*

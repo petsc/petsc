@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.80 1997/05/01 18:42:34 curfman Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.81 1997/07/09 21:00:30 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -188,7 +188,12 @@ int main( int argc, char **argv )
        entries via MatSetValuesLocal().
     */
     ierr = DAGetGlobalIndices(user.da,&nloc,&ltog); CHKERRA(ierr);
-    ierr = MatSetLocalToGlobalMapping(J,nloc,ltog); CHKERRA(ierr);
+    {
+      ISLocalToGlobalMapping isltog;
+      ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,ltog,&isltog); CHKERRA(ierr);
+      ierr = MatSetLocalToGlobalMapping(J,isltog); CHKERRA(ierr);
+      ierr = ISLocalToGlobalMappingDestroy(isltog); CHKERRA(ierr);
+    }
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

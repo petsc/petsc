@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.34 1997/05/23 18:39:08 balay Exp bsmith $ */
+/* $Id: is.h,v 1.35 1997/07/02 22:28:35 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -45,31 +45,28 @@ extern int   ISBlockGetBlockSize(IS,int *);
 extern int   ISStride(IS,PetscTruth*);
 extern int   ISStrideGetInfo(IS,int *,int*);
 
+extern int   ISDuplicate(IS, IS *);
 /* --------------------------------------------------------------------------*/
 
 /*
    ISLocalToGlobalMappings are mappings from an arbitrary
   local ordering from 0 to n-1 to a global PETSc ordering 
-  used by a vector or matrix
+  used by a vector or matrix.
+
+   Note: mapping from Local to Global is scalable; but Global
+  to local may not be if the range of global values represented locally
+  is very large.
 */
-struct _p_ISLocalToGlobalMapping{
-  int n;
-  int *indices;
-  int refcnt;
-};
+#define IS_LTOGM_COOKIE PETSC_COOKIE+12
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 
-extern int ISLocalToGlobalMappingCreate(int, int*, ISLocalToGlobalMapping*);
+extern int ISLocalToGlobalMappingCreate(MPI_Comm,int, int*, ISLocalToGlobalMapping*);
 extern int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
-#define ISLocalToGlobalMappingApply(mp,N,in,out) \
-  {\
-   int _i,*_idx = mp->indices; \
-   for ( _i=0; _i<N; _i++ ) { \
-     out[_i] = _idx[in[_i]]; \
-   }\
-  }
-#define ISLocalToGlobalMappingReference(mp) mp->refcnt++;
+extern int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,int,int*,int *);
 extern int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
+typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
+extern int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,
+                                       int,int *,int*,int *);
 
 /* --------------------------------------------------------------------------*/
 

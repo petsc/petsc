@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.212 1997/08/07 14:39:24 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.213 1997/08/08 18:44:38 balay Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -13,7 +13,7 @@ storage of the matrix.  This is done in a non scable way since the
 length of colmap equals the global matrix length. 
 */
 #undef __FUNC__  
-#define __FUNC__ "CreateColmap_MPIAIJ_Private" /* ADIC Ignore */
+#define __FUNC__ "CreateColmap_MPIAIJ_Private"
 int CreateColmap_MPIAIJ_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -710,7 +710,7 @@ int MatScale_MPIAIJ(Scalar *aa,Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatDestroy_MPIAIJ"
 int MatDestroy_MPIAIJ(PetscObject obj)
 {
   Mat        mat = (Mat) obj;
@@ -739,7 +739,7 @@ int MatDestroy_MPIAIJ(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIAIJ_Binary" /* ADIC Ignore */
+#define __FUNC__ "MatView_MPIAIJ_Binary"
 extern int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
@@ -753,7 +753,7 @@ extern int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIAIJ_ASCIIorDraworMatlab" /* ADIC Ignore */
+#define __FUNC__ "MatView_MPIAIJ_ASCIIorDraworMatlab"
 extern int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
@@ -867,7 +867,7 @@ extern int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatView_MPIAIJ"
 int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         mat = (Mat) obj;
@@ -1003,7 +1003,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
 } 
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetInfo_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetInfo_MPIAIJ"
 int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
@@ -1051,7 +1051,7 @@ int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetOption_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatSetOption_MPIAIJ"
 int MatSetOption_MPIAIJ(Mat A,MatOption op)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
@@ -1088,7 +1088,7 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetSize_MPIAIJ"
 int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
@@ -1097,7 +1097,7 @@ int MatGetSize_MPIAIJ(Mat matin,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetLocalSize_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetLocalSize_MPIAIJ"
 int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
@@ -1106,7 +1106,7 @@ int MatGetLocalSize_MPIAIJ(Mat matin,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetOwnershipRange_MPIAIJ"
 int MatGetOwnershipRange_MPIAIJ(Mat matin,int *m,int *n)
 {
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
@@ -1199,7 +1199,7 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatRestoreRow_MPIAIJ"
 int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -1298,10 +1298,11 @@ int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   int        M = a->M, N = a->N,m,*ai,*aj,row,*cols,i,*ct;
   Scalar     *array;
 
-  if (matout == PETSC_NULL && M != N) 
+  if (matout == PETSC_NULL && M != N) {
     SETERRQ(1,0,"Square matrix only for in-place");
-  ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,0,PETSC_NULL,0,
-         PETSC_NULL,&B); CHKERRQ(ierr);
+  }
+
+  ierr = MatCreateMPIAIJ(A->comm,a->n,a->m,N,M,0,PETSC_NULL,0,PETSC_NULL,&B);CHKERRQ(ierr);
 
   /* copy over the A part */
   Aloc = (Mat_SeqAIJ*) a->A->data;
@@ -1382,7 +1383,7 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
 
 extern int MatPrintHelp_SeqAIJ(Mat);
 #undef __FUNC__  
-#define __FUNC__ "MatPrintHelp_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatPrintHelp_MPIAIJ"
 int MatPrintHelp_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *a   = (Mat_MPIAIJ*) A->data;
@@ -1392,20 +1393,41 @@ int MatPrintHelp_MPIAIJ(Mat A)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatGetBlockSize_MPIAIJ"
 int MatGetBlockSize_MPIAIJ(Mat A,int *bs)
 {
   *bs = 1;
   return 0;
 }
 #undef __FUNC__  
-#define __FUNC__ "MatSetUnfactored_MPIAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatSetUnfactored_MPIAIJ"
 int MatSetUnfactored_MPIAIJ(Mat A)
 {
   Mat_MPIAIJ *a   = (Mat_MPIAIJ*) A->data;
   int        ierr;
   ierr = MatSetUnfactored(a->A); CHKERRQ(ierr);
   return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatEqual_MPIAIJ"
+int MatEqual_MPIAIJ(Mat A, Mat B, PetscTruth *flag)
+{
+  Mat_MPIAIJ *matB = (Mat_MPIAIJ *) B->data,*matA = (Mat_MPIAIJ *) A->data;
+  Mat        a, b, c, d;
+  PetscTruth flg;
+  int        ierr;
+
+  if (B->type != MATMPIAIJ) SETERRQ(1,0,"Matrices must be same type");
+  a = matA->A; b = matA->B;
+  c = matB->A; d = matB->B;
+
+  ierr = MatEqual(a, c, &flg); CHKERRQ(ierr);
+  if (flg == PETSC_TRUE) {
+    ierr = MatEqual(b, d, &flg); CHKERRQ(ierr);
+  }
+  MPI_Allreduce(&flg, flag, 1, MPI_INT, MPI_LAND, A->comm);
+  return(0);
 }
 
 extern int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
@@ -1422,7 +1444,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        0,0,
        MatRelax_MPIAIJ,
        MatTranspose_MPIAIJ,
-       MatGetInfo_MPIAIJ,0,
+       MatGetInfo_MPIAIJ,MatEqual_MPIAIJ,
        MatGetDiagonal_MPIAIJ,MatDiagonalScale_MPIAIJ,MatNorm_MPIAIJ,
        MatAssemblyBegin_MPIAIJ,MatAssemblyEnd_MPIAIJ,
        0,
@@ -1549,7 +1571,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   }
 
   *A = 0;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIAIJ,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIAIJ,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data       = (void *) (b = PetscNew(Mat_MPIAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAIJ));
@@ -1635,7 +1657,7 @@ int MatConvertSameType_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
   int        ierr, len=0, flg;
 
   *newmat       = 0;
-  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIAIJ,matin->comm);
+  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIAIJ,matin->comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIAIJ)); CHKPTRQ(a);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));

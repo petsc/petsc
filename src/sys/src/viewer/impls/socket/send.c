@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.56 1997/05/23 18:34:14 balay Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.57 1997/07/09 20:59:12 balay Exp bsmith $";
 #endif
 
 /* 
@@ -101,7 +101,7 @@ extern int close(int);
 
 typedef struct { int onoff; int time; } Linger;
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_Matlab" /* ADIC Ignore */
+#define __FUNC__ "ViewerDestroy_Matlab"
 static int ViewerDestroy_Matlab(PetscObject obj)
 {
   Linger locallinger;
@@ -119,7 +119,7 @@ static int ViewerDestroy_Matlab(PetscObject obj)
 
 /*--------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "SOCKCall_Private" /* ADIC Ignore */
+#define __FUNC__ "SOCKCall_Private"
 int SOCKCall_Private(char *hostname,int portnum)
 {
   struct sockaddr_in sa;
@@ -166,7 +166,7 @@ int SOCKCall_Private(char *hostname,int portnum)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMatlabOpen" /* ADIC Ignore */
+#define __FUNC__ "ViewerMatlabOpen"
 /*@C
    ViewerMatlabOpen - Opens a connection to a Matlab server.
 
@@ -205,7 +205,7 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
   int    t,rank;
 
   if (port <= 0) port = DEFAULTPORT;
-  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,comm);
+  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,MATLAB_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
@@ -221,7 +221,7 @@ int ViewerMatlabOpen(MPI_Comm comm,char *machine,int port,Viewer *lab)
 Viewer VIEWER_MATLAB_WORLD_PRIVATE = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeMatlabWorld_Private" /* ADIC Ignore */
+#define __FUNC__ "ViewerInitializeMatlabWorld_Private"
 int ViewerInitializeMatlabWorld_Private()
 {
   int  ierr,port = 5005,flag;
@@ -238,7 +238,7 @@ int ViewerInitializeMatlabWorld_Private()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroyMatlab_Private" /* ADIC Ignore */
+#define __FUNC__ "ViewerDestroyMatlab_Private"
 int ViewerDestroyMatlab_Private()
 {
   int ierr;

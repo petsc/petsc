@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: senddense.c,v 1.19 1997/02/22 02:28:23 bsmith Exp balay $";
+static char vcid[] = "$Id: senddense.c,v 1.20 1997/07/09 20:59:12 balay Exp bsmith $";
 #endif
 /*
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: senddense.c,v 1.19 1997/02/22 02:28:23 bsmith Exp bal
 #include "src/viewer/impls/matlab/matlab.h"
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMatlabPutArray_Private" /* ADIC Ignore */
+#define __FUNC__ "ViewerMatlabPutArray_Private"
 /*
    ViewerMatlabPutArray_Private - Passes an array to a Matlab viewer.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.138 1997/06/08 02:36:45 curfman Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.139 1997/07/09 20:54:32 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1117,7 +1117,7 @@ int MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_SeqBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatGetOwnershipRange_SeqBDiag" 
 int MatGetOwnershipRange_SeqBDiag(Mat A,int *m,int *n)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
@@ -2173,7 +2173,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,
   if ((n%bs) || (m%bs)) SETERRQ(1,0,"Invalid block size");
   if (!nd) nda = nd + 1;
   else     nda = nd;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQBDIAG,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQBDIAG,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data    = (void *) (b = PetscNew(Mat_SeqBDiag)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBDiag));

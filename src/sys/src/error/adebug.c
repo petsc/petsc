@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.63 1997/07/28 21:55:35 balay Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.64 1997/08/13 22:23:12 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -19,7 +19,7 @@ static char  *Debugger = "gdb", *Display = 0;
 static int   Xterm     = 1;
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetDebugger" /* ADIC Ignore */
+#define __FUNC__ "PetscSetDebugger"
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
@@ -58,7 +58,7 @@ extern char *OptionsGetProgramName();
  
 
 #undef __FUNC__  
-#define __FUNC__ "PetscAttachDebugger" /* ADIC Ignore */
+#define __FUNC__ "PetscAttachDebugger"
 /*@C
    PetscAttachDebugger - Attaches the debugger to the running process.
 
@@ -269,7 +269,7 @@ int PetscAttachDebugger()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscAttachDebuggerErrorHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscAttachDebuggerErrorHandler"
 /*@C
    PetscAttachDebuggerErrorHandler - Error handler that attaches
    a debugger to a running process when an error is detected.

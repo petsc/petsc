@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.11 1997/08/11 21:03:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.12 1997/08/13 22:26:44 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -83,7 +83,12 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
   ierr = MatCreateMPIAIJ(comm,nc*nx*ny,nc*nx*ny,PETSC_DECIDE,PETSC_DECIDE,9*nc,0,0,0,J);CHKERRQ(ierr);  
 
   ierr = DAGetGlobalIndices(da,&ng,&gindices);
-  ierr = MatSetLocalToGlobalMapping(*J,ng,gindices); CHKERRQ(ierr);
+  {
+    ISLocalToGlobalMapping ltog;
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(ltog); CHKERRQ(ierr);
+  }
 
   /*
       For each node in the grid: we get the neighbors in the local (on processor ordering

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.10 1997/06/05 12:56:08 bsmith Exp balay $";
+static char vcid[] = "$Id: dscatter.c,v 1.11 1997/07/09 20:58:15 balay Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -21,7 +21,7 @@ struct _p_DrawSP {
 #define CHUNCKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPCreate" /* ADIC Ignore */
+#define __FUNC__ "DrawSPCreate"
 /*@C
     DrawSPCreate - Creates a scatter plot data structure.
 
@@ -47,7 +47,7 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
     (*outctx)->win = win;
     return 0;
   }
-  PetscHeaderCreate(sp,_p_DrawSP,DRAWSP_COOKIE,0,vobj->comm);
+  PetscHeaderCreate(sp,_p_DrawSP,DRAWSP_COOKIE,0,vobj->comm,DrawSPDestroy,0);
   sp->view    = 0;
   sp->destroy = 0;
   sp->nopts   = 0;
@@ -69,7 +69,7 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPSetDimension" /* ADIC Ignore */
+#define __FUNC__ "DrawSPSetDimension"
 /*@
    DrawSPSetDimension - Change the number of sets of points  that are to be drawn.
 
@@ -95,7 +95,7 @@ int DrawSPSetDimension(DrawSP sp,int dim)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPReset" /* ADIC Ignore */
+#define __FUNC__ "DrawSPReset"
 /*@
    DrawSPReset - Clears line graph to allow for reuse with new data.
 
@@ -118,7 +118,7 @@ int DrawSPReset(DrawSP sp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPDestroy" /* ADIC Ignore */
+#define __FUNC__ "DrawSPDestroy"
 /*@C
    DrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
@@ -131,10 +131,14 @@ int DrawSPReset(DrawSP sp)
 @*/
 int DrawSPDestroy(DrawSP sp)
 {
+  if (!sp || !(sp->cookie == DRAW_COOKIE && sp->type == DRAW_NULLWINDOW)) {
+    PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
+  }
+
+  if (--sp->refct > 0) return 0;
   if (sp && sp->cookie == DRAW_COOKIE && sp->type == DRAW_NULLWINDOW) {
     return PetscObjectDestroy((PetscObject) sp);
   }
-  PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   DrawAxisDestroy(sp->axis);
   PetscFree(sp->x);
   PLogObjectDestroy(sp);
@@ -143,7 +147,7 @@ int DrawSPDestroy(DrawSP sp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPAddPoint" /* ADIC Ignore */
+#define __FUNC__ "DrawSPAddPoint"
 /*@
    DrawSPAddPoint - Adds another point to each of the scatter plots.
 
@@ -188,7 +192,7 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
 
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPAddPoints" /* ADIC Ignore */
+#define __FUNC__ "DrawSPAddPoints"
 /*@C
    DrawSPAddPoints - Adds several points to each of the scatter plots.
 
@@ -243,7 +247,7 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPDraw" /* ADIC Ignore */
+#define __FUNC__ "DrawSPDraw"
 /*@
    DrawSPDraw - Redraws a scatter plot.
 
@@ -276,7 +280,7 @@ int DrawSPDraw(DrawSP sp)
 } 
  
 #undef __FUNC__  
-#define __FUNC__ "DrawSPSetLimits" /* ADIC Ignore */
+#define __FUNC__ "DrawSPSetLimits"
 /*@
    DrawSPSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -301,7 +305,7 @@ int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,
 }
  
 #undef __FUNC__  
-#define __FUNC__ "DrawSPGetAxis" /* ADIC Ignore */
+#define __FUNC__ "DrawSPGetAxis"
 /*@C
    DrawSPGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -328,7 +332,7 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSPGetDraw" /* ADIC Ignore */
+#define __FUNC__ "DrawSPGetDraw"
 /*@C
     DrawSPGetDraw - Gets the draw context associated with a line graph.
 

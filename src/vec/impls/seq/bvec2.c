@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.99 1997/07/09 20:49:43 balay Exp balay $";
+static char vcid[] = "$Id: bvec2.c,v 1.100 1997/07/25 00:46:23 balay Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -53,7 +53,7 @@ int VecNorm_Seq(Vec xin,NormType type,double* z )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecGetOwnershipRange_Seq" /* ADIC Ignore */
+#define __FUNC__ "VecGetOwnershipRange_Seq"
 int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 {
   Vec_Seq *x = (Vec_Seq *) xin->data;
@@ -64,7 +64,7 @@ int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 #include "sys.h"
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq_File" /* ADIC Ignore */
+#define __FUNC__ "VecView_Seq_File"
 int VecView_Seq_File(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -112,7 +112,7 @@ int VecView_Seq_File(Vec xin,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq_Draw_LG" /* ADIC Ignore */
+#define __FUNC__ "VecView_Seq_Draw_LG"
 static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -150,7 +150,7 @@ static int VecView_Seq_Draw_LG(Vec xin,Viewer v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq_Draw" /* ADIC Ignore */
+#define __FUNC__ "VecView_Seq_Draw"
 static int VecView_Seq_Draw(Vec xin,Viewer v)
 {
   int        ierr;
@@ -176,7 +176,7 @@ static int VecView_Seq_Draw(Vec xin,Viewer v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq_Binary" /* ADIC Ignore */
+#define __FUNC__ "VecView_Seq_Binary"
 static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -195,7 +195,7 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 
 
 #undef __FUNC__  
-#define __FUNC__ "VecView_Seq" /* ADIC Ignore */
+#define __FUNC__ "VecView_Seq"
 int VecView_Seq(PetscObject obj,Viewer viewer)
 {
   Vec         xin = (Vec) obj;
@@ -247,7 +247,7 @@ int VecSetValues_Seq(Vec xin, int ni, int *ix,Scalar* y,InsertMode m)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDestroy_Seq" /* ADIC Ignore */
+#define __FUNC__ "VecDestroy_Seq"
 int VecDestroy_Seq(PetscObject obj )
 {
   Vec      v  = (Vec ) obj;
@@ -321,7 +321,7 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
   if (flag == MPI_UNEQUAL) SETERRQ(1,0,"Must call with MPI_COMM_SELF or PETSC_COMM_SELF");
-  PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECSEQ,comm);
+  PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECSEQ,comm,VecDestroy,VecView);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _p_Vec)+n*sizeof(Scalar));
   v->destroy         = VecDestroy_Seq;
@@ -368,7 +368,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   *V             = 0;
   MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
   if (flag == MPI_UNEQUAL) SETERRQ(1,0,"Must call with MPI_COMM_SELF or PETSC_COMM_SELF");
-  PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECSEQ,comm);
+  PetscHeaderCreate(v,_p_Vec,VEC_COOKIE,VECSEQ,comm,VecDestroy,VecView);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _p_Vec)+n*sizeof(Scalar));
   v->destroy     = VecDestroy_Seq;
@@ -387,7 +387,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecDuplicate_Seq" /* ADIC Ignore */
+#define __FUNC__ "VecDuplicate_Seq"
 int VecDuplicate_Seq(Vec win,Vec *V)
 {
   int     ierr;
@@ -397,7 +397,7 @@ int VecDuplicate_Seq(Vec win,Vec *V)
   (*V)->childdestroy = win->childdestroy;
   if (win->mapping) {
     (*V)->mapping = win->mapping;
-    ISLocalToGlobalMappingReference(win->mapping);
+    PetscObjectReference((PetscObject)win->mapping);
   }
   if (win->child) return (*win->childcopy)(win->child,&(*V)->child);
   return 0;

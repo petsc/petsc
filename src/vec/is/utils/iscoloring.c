@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.9 1997/06/25 01:37:22 curfman Exp balay $";
+static char vcid[] = "$Id: iscoloring.c,v 1.10 1997/07/09 20:49:26 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "ISColoringDestroy" /* ADIC Ignore */
+#define __FUNC__ "ISColoringDestroy"
 /*@
      ISColoringDestroy - Destroy's a coloring context.
 
@@ -39,7 +39,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISColoringView" /* ADIC Ignore */
+#define __FUNC__ "ISColoringView"
 /*@
      ISColoringView - View's a coloring context.
 
@@ -61,7 +61,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ISColoringCreate" /* ADIC Ignore */
+#define __FUNC__ "ISColoringCreate"
 /*@C
     ISColoringCreate - From lists (provided by each processor) of
     colors for each node, generate a ISColoring

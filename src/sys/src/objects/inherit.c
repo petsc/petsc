@@ -1,13 +1,55 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.14 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: inherit.c,v 1.15 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
+
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectInherit_DefaultCopy" /* ADIC Ignore */
+#define __FUNC__ "PetscHeaderCreate_Private"
+/*
+    Creates a base PETSc object header and fills in the default values.
+   Called by the macro PetscHeaderCreate()
+*/
+int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,int (*des)(PetscObject),
+                              int (*vie)(PetscObject,Viewer))
+{
+  h->cookie        = cookie;
+  h->type          = type;
+  h->prefix        = 0;
+  h->refct         = 1;
+  h->destroypublic = des;
+  h->viewpublic    = vie;
+  PetscCommDup_Private(comm,&h->comm,&h->tag);
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscHeaderDestroy_Private"
+/*
+    Destroys a base PETSc object header. Called by macro PetscHeaderDestroy.
+*/
+int PetscHeaderDestroy_Private(PetscObject h)
+{
+  int ierr;
+
+  PetscCommFree_Private(&h->comm);
+  h->cookie = PETSCFREEDHEADER;
+  if (h->prefix) PetscFree(h->prefix);
+  if (h->child) {
+    ierr = (*h->childdestroy)(h->child); CHKERRQ(ierr);
+  }
+  if (h->fortran_func_pointers) {
+    PetscFree(h->fortran_func_pointers);
+  }
+  PetscFree(h);
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectInherit_DefaultCopy"
 /*
     The default copy simply copies the pointer and adds one to the 
   reference counter.
@@ -23,7 +65,7 @@ static int PetscObjectInherit_DefaultCopy(void *in, void **out)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectInherit_DefaultDestroy" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectInherit_DefaultDestroy"
 /*
     The default destroy treats it as a PETSc object and calls 
   its destroy routine.
@@ -33,12 +75,12 @@ static int PetscObjectInherit_DefaultDestroy(void *in)
   int         ierr;
   PetscObject obj = (PetscObject) in;
 
-  ierr = (*obj->destroy)(obj); CHKERRQ(ierr);
+  ierr = (*obj->destroypublic)(obj); CHKERRQ(ierr);
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectReference" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectReference"
 /*@C
    PetscObjectReference - Indicate to any PetscObject that it is being
        referenced in another PetscObject. This increases the reference
@@ -57,7 +99,7 @@ int PetscObjectReference(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectInherit" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectInherit"
 /*@C
    PetscObjectInherit - Associate another object with a given PETSc object. 
                         This is to provide a limited support for inheritence.
@@ -67,18 +109,24 @@ int PetscObjectReference(PetscObject obj)
 .  ptr - the other object to associate with the PETSc object
 .  copy - a function used to copy the other object when the PETSc object 
           is copied, or PETSC_NULL to indicate the pointer is copied.
+.  destroy - a function to call to destroy the object or PETSC_NULL to 
+             call the standard destroy on the PETSc object.
 
    Notes:
-   PetscObjectInherit() can be used with any PETSc object, such at
-   Mat, Vec, KSP, SNES, etc. Current limitation: each object can have
-   only one child - we may extend this eventually.
+   When ptr is a PetscObject one should almost always use PETSC_NULL as the 
+   third and fourth argument.
+   
+   PetscObjectInherit() can be used with any PETSc object such at
+   Mat, Vec, KSP, SNES, etc, or any user provided object. 
+
+   Current limitation: 
+    Each object can have only one child - we may extend this eventually.
 
 .keywords: object, inherit
 
 .seealso: PetscObjectGetChild()
 @*/
-int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),
-                       int (*destroy)(void*))
+int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),int (*destroy)(void*))
 {
 /*
   if (obj->child) 
@@ -93,7 +141,7 @@ int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetChild" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectGetChild"
 /*@C
    PetscObjectGetChild - Gets the child of any PetscObject.
 
@@ -109,7 +157,8 @@ int PetscObjectInherit(PetscObject obj,void *ptr, int (*copy)(void *,void **),
 @*/
 int PetscObjectGetChild(PetscObject obj,void **child)
 {
-  if (!obj) SETERRQ(1,0,"Null object");
+  PetscValidHeader(obj);
+
   *child = obj->child;
   return 0;
 }

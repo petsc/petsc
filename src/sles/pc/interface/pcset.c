@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.55 1997/04/22 19:14:25 balay Exp balay $";
+static char vcid[] = "$Id: pcset.c,v 1.56 1997/07/09 20:52:24 balay Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -15,7 +15,7 @@ static NRList *__PCList = 0;
 
 int  PCRegisterAllCalled = 0;
 #undef __FUNC__  
-#define __FUNC__ "PCSetType" /* ADIC Ignore */
+#define __FUNC__ "PCSetType"
 /*@
    PCSetType - Builds PC for a particular preconditioner.
 
@@ -86,7 +86,7 @@ int PCSetType(PC ctx,PCType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCRegister" /* ADIC Ignore */
+#define __FUNC__ "PCRegister"
 /*@C
    PCRegister - Adds the preconditioner to the preconditioner
    package,  given a preconditioner name (PCType) and a function pointer.
@@ -123,7 +123,7 @@ int  PCRegister(PCType name,PCType *oname,char *sname,int (*create)(PC))
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCRegisterDestroy" /* ADIC Ignore */
+#define __FUNC__ "PCRegisterDestroy"
 /*@C
    PCRegisterDestroy - Frees the list of preconditioners that were
    registered by PCRegister().
@@ -143,7 +143,7 @@ int PCRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetTypeFromOptions_Private" /* ADIC Ignore */
+#define __FUNC__ "PCGetTypeFromOptions_Private"
 /* 
   PCGetTypeFromOptions_Private - Sets the selected PC type from the 
   options database.
@@ -175,7 +175,7 @@ int PCGetTypeFromOptions_Private(PC pc,PCType *method )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCGetType" /* ADIC Ignore */
+#define __FUNC__ "PCGetType"
 /*@C
    PCGetType - Gets the PC method type and name (as a string) from the PC
    context.
@@ -199,7 +199,7 @@ int PCGetType(PC pc,PCType *meth,char **name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintTypes_Private" /* ADIC Ignore */
+#define __FUNC__ "PCPrintTypes_Private"
 /*
    PCPrintTypes_Private - Prints the PC methods available from the options 
    database.

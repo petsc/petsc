@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.15 1997/07/29 14:13:39 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.16 1997/08/07 14:43:40 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -15,11 +15,15 @@ typedef enum { TS_LINEAR, TS_NONLINEAR} TSProblemType;
 
 extern int TSCreate(MPI_Comm,TSProblemType,TS*);
 extern int TSSetType(TS,TSType);
+extern int TSGetProblemType(TS,TSProblemType*);
 extern int TSDestroy(TS);
 
 extern int TSSetMonitor(TS,int(*)(TS,int,double,Vec,void*),void *);
 extern int TSGetType(TS,TSType*,char**);
 
+extern int TSSetOptionsPrefix(TS, char *);
+extern int TSAppendOptionsPrefix(TS, char *);
+extern int TSGetOptionsPrefix(TS, char **);
 extern int TSSetFromOptions(TS);
 extern int TSSetUp(TS);
 
@@ -34,12 +38,16 @@ extern int TSStep(TS,int *,double*);
 
 extern int TSSetInitialTimeStep(TS,double,double);
 extern int TSGetTimeStep(TS,double*);
+extern int TSGetTime(TS,double*);
 extern int TSGetTimeStepNumber(TS,int*);
 extern int TSSetTimeStep(TS,double);
 
 extern int TSSetRHSFunction(TS,int (*)(TS,double,Vec,Vec,void*),void*);
 extern int TSSetRHSMatrix(TS,Mat,Mat,int (*)(TS,double,Mat*,Mat*,MatStructure*,void*),void*);
 extern int TSSetRHSJacobian(TS,Mat,Mat,int(*)(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),void*);
+
+extern int TSGetRHSMatrix(TS,Mat*,Mat*,void**);
+extern int TSGetRHSJacobian(TS,Mat*,Mat*,void**);
 
 extern int TSPseudoSetTimeStep(TS,int(*)(TS,double*,void*),void*);
 extern int TSPseudoDefaultTimeStep(TS,double*,void* );

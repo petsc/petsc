@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.18 1997/05/23 18:35:27 balay Exp balay $";
+static char vcid[] = "$Id: view.c,v 1.19 1997/07/09 20:59:29 balay Exp bsmith $";
 #endif
 
 #include "petsc.h" /*I "petsc.h" I*/
@@ -10,7 +10,7 @@ struct _p_Viewer {
 };
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy" /* ADIC Ignore */
+#define __FUNC__ "ViewerDestroy"
 /*@C
    ViewerDestroy - Destroys a viewer.
 
@@ -25,11 +25,12 @@ int ViewerDestroy(Viewer v)
 {
   PetscObject o = (PetscObject) v;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
+  if (--v->refct > 0) return 0;
   return (*o->destroy)(o);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerGetType" /* ADIC Ignore */
+#define __FUNC__ "ViewerGetType"
 /*@
    ViewerGetType - Returns the type of a viewer.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.16 1997/03/04 21:32:23 curfman Exp balay $";
+static char vcid[] = "$Id: daview.c,v 1.17 1997/07/09 21:00:44 balay Exp bsmith $";
 #endif
  
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: daview.c,v 1.16 1997/03/04 21:32:23 curfman Exp balay
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAView" /* ADIC Ignore */
+#define __FUNC__ "DAView"
 /*@C
    DAView - Visualizes a distributed array object.
 
@@ -68,7 +68,7 @@ int DAView(DA da, Viewer v)
 }  
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetInfo" /* ADIC Ignore */
+#define __FUNC__ "DAGetInfo"
 /*@C
    DAGetInfo - Gets information about a given distributed array.
 

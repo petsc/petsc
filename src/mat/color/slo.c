@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: slo.c,v 1.5 1997/02/22 02:26:05 bsmith Exp balay $";
+static char vcid[] = "$Id: slo.c,v 1.6 1997/07/09 20:55:35 balay Exp bsmith $";
 #endif
 
 /* slo.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: slo.c,v 1.5 1997/02/22 02:26:05 bsmith Exp balay $";
 #include "src/mat/impls/color/color.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MINPACKslo" /* ADIC Ignore */
+#define __FUNC__ "MINPACKslo" 
 int MINPACKslo(int *n,int * indrow,int * jpntr,int * indcol, int *ipntr, int *ndeg,int * list,
          int * maxclq,	 int *iwa1,int * iwa2,int * iwa3,int * iwa4)
 {

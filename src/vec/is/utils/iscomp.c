@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscomp.c,v 1.10 1997/02/22 02:22:18 bsmith Exp balay $";
+static char vcid[] = "$Id: iscomp.c,v 1.11 1997/07/09 20:49:26 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "ISEqual" /* ADIC Ignore */
+#define __FUNC__ "ISEqual"
 /*@C
   ISEqual  - Compares if two index sets have the same set of indices.
 

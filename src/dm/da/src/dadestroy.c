@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.10 1997/02/22 02:29:24 bsmith Exp balay $";
+static char vcid[] = "$Id: dadestroy.c,v 1.11 1997/07/09 21:00:44 balay Exp bsmith $";
 #endif
  
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: dadestroy.c,v 1.10 1997/02/22 02:29:24 bsmith Exp bal
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DADestroy" /* ADIC Ignore */
+#define __FUNC__ "DADestroy"
 /*@C
    DADestroy - Destroys a distributed array.
 
@@ -19,12 +19,13 @@ static char vcid[] = "$Id: dadestroy.c,v 1.10 1997/02/22 02:29:24 bsmith Exp bal
 .keywords: distributed array, destroy
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d()
-@*/
-int DADestroy(DA da)
+@*/int DADestroy(DA da)
 {
   int ierr;
 
   PetscValidHeaderSpecific(da,DA_COOKIE);
+  if (--da->refct > 0) return 0;
+
   PLogObjectDestroy(da);
   PetscFree(da->idx);
   ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);

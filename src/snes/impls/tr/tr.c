@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.75 1997/07/09 20:59:53 balay Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.76 1997/08/03 16:36:36 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -197,7 +197,7 @@ static int SNESSetUp_EQ_TR( SNES snes )
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "SNESDestroy_EQ_TR" /* ADIC Ignore */
+#define __FUNC__ "SNESDestroy_EQ_TR"
 static int SNESDestroy_EQ_TR(PetscObject obj )
 {
   SNES snes = (SNES) obj;
@@ -237,7 +237,7 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp_EQ_TR" /* ADIC Ignore */
+#define __FUNC__ "SNESPrintHelp_EQ_TR"
 static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
@@ -254,7 +254,7 @@ static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESView_EQ_TR" /* ADIC Ignore */
+#define __FUNC__ "SNESView_EQ_TR"
 static int SNESView_EQ_TR(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;

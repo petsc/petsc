@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.82 1997/07/09 21:00:44 balay Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.83 1997/07/25 23:12:08 balay Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: da2.c,v 1.82 1997/07/09 21:00:44 balay Exp balay $";
 #include <math.h>
 
 #undef __FUNC__  
-#define __FUNC__ "DAView_2d" /* ADIC Ignore */
+#define __FUNC__ "DAView_2d"
 int DAView_2d(PetscObject dain,Viewer viewer)
 {
   DA          da = (DA) dain;
@@ -103,7 +103,7 @@ int DAView_2d(PetscObject dain,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DACreate2d" /* ADIC Ignore */
+#define __FUNC__ "DACreate2d"
 /*@C
     DACreate2d - Creates a two-dimensional regular array that is
     distributed across some processors.
@@ -158,7 +158,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
   if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
 
-  PetscHeaderCreate(da,_p_DA,DA_COOKIE,0,comm);
+  PetscHeaderCreate(da,_p_DA,DA_COOKIE,0,comm,DADestroy,DAView);
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _p_DA));
   da->dim = 2;
@@ -631,7 +631,12 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  ierr = VecSetLocalToGlobalMapping(da->global,nn,idx); CHKERRQ(ierr);
+  {
+    ISLocalToGlobalMapping isltog;
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nn,idx,&isltog); CHKERRQ(ierr);
+    ierr = VecSetLocalToGlobalMapping(da->global,isltog); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(isltog); CHKERRQ(ierr);
+  }
 
   *inra = da;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.44 1997/07/10 03:44:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.45 1997/07/29 14:10:22 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -16,7 +16,7 @@ static int MatLoadersSet = 0,(*MatLoaders[MAX_MATRIX_TYPES])(Viewer,MatType,Mat*
            {0,0,0,0,0,0,0,0,0,0,0,0};
 
 #undef __FUNC__  
-#define __FUNC__ "MatLoadRegister" /* ADIC Ignore */
+#define __FUNC__ "MatLoadRegister"
 /*@C
     MatLoadRegister - Allows one to register a routine that reads matrices
         from a binary file for a particular matrix type.
@@ -38,7 +38,7 @@ int MatLoadRegister(MatType type,int (*loader)(Viewer,MatType,Mat*))
 extern int MatLoadGetInfo_Private(Viewer);
 
 #undef __FUNC__  
-#define __FUNC__ "MatLoadPrintHelp_Private" /* ADIC Ignore */
+#define __FUNC__ "MatLoadPrintHelp_Private"
 static int MatLoadPrintHelp_Private(Mat A)
 {
   static int called = 0; 
@@ -178,7 +178,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatLoadGetInfo_Private" /* ADIC Ignore */
+#define __FUNC__ "MatLoadGetInfo_Private"
 
 /*
     MatLoadGetInfo_Private - Loads the matrix options from the name.info file

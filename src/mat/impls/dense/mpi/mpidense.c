@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.71 1997/05/23 18:37:22 balay Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.72 1997/07/09 20:53:40 balay Exp bsmith $";
 #endif
 
 /*
@@ -919,7 +919,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
    allocates the local dense storage space.  We should add error checking. */
 
   *A = 0;
-  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIDENSE,comm);
+  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIDENSE,comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));
@@ -991,7 +991,7 @@ static int MatConvertSameType_MPIDense(Mat A,Mat *newmat,int cpvalues)
   FactorCtx    *factor;
 
   *newmat       = 0;
-  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIDENSE,A->comm);
+  PetscHeaderCreate(mat,_p_Mat,MAT_COOKIE,MATMPIDENSE,A->comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data      = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
   PetscMemcpy(&mat->ops,&MatOps,sizeof(struct _MatOps));

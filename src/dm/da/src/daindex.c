@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.13 1997/05/01 17:53:05 bsmith Exp balay $";
+static char vcid[] = "$Id: daindex.c,v 1.14 1997/07/09 21:00:44 balay Exp bsmith $";
 #endif
  
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: daindex.c,v 1.13 1997/05/01 17:53:05 bsmith Exp balay
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetGlobalIndices" /* ADIC Ignore */
+#define __FUNC__ "DAGetGlobalIndices"
 /*@C
    DAGetGlobalIndices - Returns the global node number of all local nodes,
    including ghost nodes.
@@ -45,7 +45,7 @@ int DAGetGlobalIndices(DA da, int *n,int **idx)
 
 
 #undef __FUNC__  
-#define __FUNC__ "DAGetAO" /* ADIC Ignore */
+#define __FUNC__ "DAGetAO"
 /*@C
    DAGetAO - Gets the application ordering context for a distributed array.
 

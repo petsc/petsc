@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.165 1997/07/12 17:57:19 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.166 1997/08/13 22:27:41 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -61,6 +61,9 @@ extern  Scalar            PETSC_i;
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
 #define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
 #define PetscAbsDouble(a)  ( ((a)<0)   ? -(a) : (a) )
+
+#define PETSC_MAX 1.e300
+#define PETSC_MIN -1.e300
 
 /*
     PLogDouble variables are used to contain double precision numbers
@@ -161,6 +164,7 @@ extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),int (*
 extern int PetscObjectReference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
+extern int PetscObjectView(PetscObject,Viewer);
 
 #include "petscerror.h"
 #include "petschead.h"
@@ -212,6 +216,7 @@ extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscPrintf(MPI_Comm,char *,...);
 
 extern int  PetscSynchronizedPrintf(MPI_Comm,char *,...);
+extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
 
 /*

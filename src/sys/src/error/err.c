@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.63 1997/06/26 19:15:28 curfman Exp balay $";
+static char vcid[] = "$Id: err.c,v 1.64 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -22,7 +22,7 @@ struct EH {
 static struct EH* eh = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "PetscAbortErrorHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscAbortErrorHandler"
 /*@C
    PetscAbortErrorHandler - Error handler that calls abort on error. 
    This routine is very useful when running in the debugger, because the 
@@ -69,7 +69,7 @@ int PetscAbortErrorHandler(int line,char *func,char *file,char* dir,int n,int p,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTraceBackErrorHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscTraceBackErrorHandler"
 /*@C
    PetscTraceBackErrorHandler - Default error handler routine that generates
    a traceback on error detection.
@@ -156,7 +156,7 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscStopErrorHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscStopErrorHandler"
 /*@C
    PetscStopErrorHandler - Calls MPI_abort() and exists.
 
@@ -233,7 +233,7 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscPushErrorHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscPushErrorHandler"
 /*@C
    PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
@@ -268,7 +268,7 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscPopErrorHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscPopErrorHandler"
 /*@C
    PetscPopErrorHandler - Removes the latest error handler that was 
    pushed with PetscPushErrorHandler().
@@ -292,7 +292,7 @@ int PetscPopErrorHandler()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscError" /* ADIC Ignore */
+#define __FUNC__ "PetscError"
 /*@C
    PetscError - Routine that is called when an error has been detected, 
    usually called through the macro SETERRQ().
@@ -325,7 +325,7 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscIntView" /* ADIC Ignore */
+#define __FUNC__ "PetscIntView"
 /*@C
     PetscIntView - Prints an array of integers; useful for debugging.
 
@@ -370,7 +370,7 @@ int PetscIntView(int N,int* idx,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscDoubleView" /* ADIC Ignore */
+#define __FUNC__ "PetscDoubleView"
 /*@C
     PetscDoubleView - Prints an array of doubles; useful for debugging.
 

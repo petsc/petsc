@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.11 1997/03/03 18:38:24 balay Exp balay $";
+static char vcid[] = "$Id: fpath.c,v 1.12 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: fpath.c,v 1.11 1997/03/03 18:38:24 balay Exp balay $"
 #if defined(HAVE_PWD_H)
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetFullPath" /* ADIC Ignore */
+#define __FUNC__ "PetscGetFullPath"
 /*@C
    PetscGetFullPath - Given a filename, returns the fully qualified file name.
 
@@ -84,7 +84,7 @@ int PetscGetFullPath( char *path, char *fullpath, int flen )
 }
 #elif defined (PARCH_nt)
 #undef __FUNC__  
-#define __FUNC__ "PetscGetFullPath" /* ADIC Ignore */
+#define __FUNC__ "PetscGetFullPath"
 int PetscGetFullPath( char *path, char *fullpath, int flen )
 {
   _fullpath(fullpath,path,flen);
@@ -92,7 +92,7 @@ int PetscGetFullPath( char *path, char *fullpath, int flen )
 }
 #else
 #undef __FUNC__  
-#define __FUNC__ "PetscGetFullPath" /* ADIC Ignore */
+#define __FUNC__ "PetscGetFullPath"
 int PetscGetFullPath( char *path, char *fullpath, int flen )
 {
   PetscStrcpy( fullpath, path );

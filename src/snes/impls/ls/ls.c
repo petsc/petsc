@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.93 1997/08/03 16:27:57 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.94 1997/08/03 16:36:19 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -118,7 +118,7 @@ int SNESSetUp_EQ_LS(SNES snes )
 }
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ "SNESDestroy_EQ_LS" /* ADIC Ignore */
+#define __FUNC__ "SNESDestroy_EQ_LS"
 int SNESDestroy_EQ_LS(PetscObject obj)
 {
   SNES snes = (SNES) obj;
@@ -526,7 +526,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 }
 /* ------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ "SNESSetLineSearch" /* ADIC Ignore */
+#define __FUNC__ "SNESSetLineSearch"
 /*@C
    SNESSetLineSearch - Sets the line search routine to be used
    by the method SNES_EQ_LS.
@@ -579,7 +579,7 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
 }
 /* ------------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp_EQ_LS" /* ADIC Ignore */
+#define __FUNC__ "SNESPrintHelp_EQ_LS"
 static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;
@@ -593,7 +593,7 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 }
 /* ------------------------------------------------------------------ */
 #undef __FUNC__  
-#define __FUNC__ "SNESView_EQ_LS" /* ADIC Ignore */
+#define __FUNC__ "SNESView_EQ_LS"
 static int SNESView_EQ_LS(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;

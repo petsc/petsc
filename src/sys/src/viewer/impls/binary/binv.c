@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.35 1997/07/09 20:59:19 balay Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.36 1997/07/29 14:11:33 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -19,7 +19,7 @@ struct _p_Viewer {
 };
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerBinaryGetDescriptor" /* ADIC Ignore */
+#define __FUNC__ "ViewerBinaryGetDescriptor"
 /*@C
     ViewerBinaryGetDescriptor - Extracts the file descriptor from a viewer.
 
@@ -40,7 +40,7 @@ int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerBinaryGetInfoPointer" /* ADIC Ignore */
+#define __FUNC__ "ViewerBinaryGetInfoPointer"
 /*@C
     ViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
           info file associated with a binary file.
@@ -62,7 +62,7 @@ int ViewerBinaryGetInfoPointer(Viewer viewer,FILE **file)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_BinaryFile" /* ADIC Ignore */
+#define __FUNC__ "ViewerDestroy_BinaryFile"
 int ViewerDestroy_BinaryFile(PetscObject obj)
 {
   int    rank;
@@ -76,7 +76,7 @@ int ViewerDestroy_BinaryFile(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerFileOpenBinary" /* ADIC Ignore */
+#define __FUNC__ "ViewerFileOpenBinary"
 /*@C
    ViewerFileOpenBinary - Opens a file for binary input/output.
 
@@ -104,7 +104,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
   int    rank;
   Viewer v;
 
-  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm);
+  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,BINARY_FILE_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   v->destroy = ViewerDestroy_BinaryFile;
   v->flush   = 0;

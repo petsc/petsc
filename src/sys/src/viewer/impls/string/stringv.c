@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.14 1997/05/23 18:34:10 balay Exp balay $";
+static char vcid[] = "$Id: stringv.c,v 1.15 1997/07/09 20:59:21 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -26,7 +26,7 @@ static int ViewerDestroy_String(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerStringSPrintf" /* ADIC Ignore */
+#define __FUNC__ "ViewerStringSPrintf"
 /*@C
     ViewerStringSPrintf - Prints information to a viewer string.
 
@@ -70,7 +70,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerStringOpen" /* ADIC Ignore */
+#define __FUNC__ "ViewerStringOpen"
 /*@C
     ViewerStringOpen - Opens a string as a viewer. This is a very 
     simple viewer; information on the object is simply stored into 
@@ -93,7 +93,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 int ViewerStringOpen(MPI_Comm comm,char *string,int len, Viewer *lab)
 {
   Viewer v;
-  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,STRING_VIEWER,comm);
+  PetscHeaderCreate(v,_p_Viewer,VIEWER_COOKIE,STRING_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   v->destroy     = ViewerDestroy_String;
 

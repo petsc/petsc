@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.60 1997/07/09 20:49:09 balay Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.61 1997/08/14 23:16:30 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -164,7 +164,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
   if (n) {PetscValidIntPointer(idx);}
 
   *is = 0;
-  PetscHeaderCreate(Nindex, _p_IS,IS_COOKIE,IS_GENERAL,comm); 
+  PetscHeaderCreate(Nindex, _p_IS,IS_COOKIE,IS_GENERAL,comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
   sub            = PetscNew(IS_General); CHKPTRQ(sub);
   PLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(int)+sizeof(struct _p_IS));

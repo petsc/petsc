@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.49 1997/07/29 14:13:39 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.50 1997/08/15 19:15:34 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -14,8 +14,7 @@ extern int PetscCommFree_Private(MPI_Comm*);
 extern int PetscRegisterCookie(int *);
 
 /*
-   All Major PETSc Data structures have a common core; this 
-   is defined below by PETSCHEADER. 
+   All Major PETSc Data structures have a common core; this is defined below by PETSCHEADER. 
 
    PetscHeaderCreate() should be used whenever you create a PETSc structure.
 
@@ -23,6 +22,13 @@ extern int PetscRegisterCookie(int *);
                       for example, for matrices it is MatDestroy().
       destroy() is the private routine that is specific for a particular 
                 subclass; for example, MatDestroy_SeqAIJ();
+
+      viewpublic() is the view routine for the entire PETSc object;
+                      for example, for matrices it is MatView().
+      view() is the private routine that is specific for a particular 
+                subclass; for example, MatView_SeqAIJ();
+
+      
 */
 
 #define PETSCHEADER                                    \
@@ -32,10 +38,9 @@ extern int PetscRegisterCookie(int *);
   int         id;                                      \
   int         refct;                                   \
   int         tag;                                     \
-  int         (*destroy)(PetscObject);                 \
   int         (*destroypublic)(PetscObject);           \
   int         (*copypublic)(PetscObject,PetscObject*); \
-  int         (*view)(PetscObject,Viewer);             \
+  int         (*viewpublic)(PetscObject,Viewer);       \
   MPI_Comm    comm;                                    \
   PetscObject parent;                                  \
   char*       name;                                    \
@@ -43,27 +48,32 @@ extern int PetscRegisterCookie(int *);
   void*       child;                                   \
   int         (*childcopy)(void *,void**);             \
   int         (*childdestroy)(void *);                 \
+  int         (*destroy)(PetscObject);                 \
+  int         (*view)(PetscObject,Viewer);             \
   void**      fortran_func_pointers;
   /*  ... */                               
 
 #define  PETSCFREEDHEADER -1
 
-#define PetscHeaderCreate(h,tp,cook,t,com,des)                                    \
-      {h = (struct tp *) PetscNew(struct tp);CHKPTRQ((h));                        \
-       PetscMemzero(h,sizeof(struct tp));                                         \
-       (h)->cookie = cook;                                                        \
-       (h)->type   = t;                                                           \
-       (h)->prefix = 0;                                                           \
-       (h)->refct  = 0;                                                           \
-       (h)->destroypublic  = (int (*)(PetscObject)) des;                          \
-       PetscCommDup_Private(com,&(h)->comm,&(h)->tag);}
-#define PetscHeaderDestroy(h)                                                     \
-       {PetscCommFree_Private(&(h)->comm);                                        \
-        (h)->cookie = PETSCFREEDHEADER;                                           \
-        if ((h)->prefix) PetscFree((h)->prefix);                                  \
-        if ((h)->child) (*(h)->childdestroy)((h)->child);                         \
-        if ((h)->fortran_func_pointers) PetscFree((h)->fortran_func_pointers);    \
-        PetscFree(h);          }
+extern int PetscHeaderCreate_Private(PetscObject,int,int,MPI_Comm,int (*)(PetscObject),
+                                     int (*)(PetscObject,Viewer));
+extern int PetscHeaderDestroy_Private(PetscObject);
+
+#define PetscHeaderCreate(h,tp,cook,t,com,des,vie)                                          \
+  { int _ierr;                                                                              \
+    h = (struct tp *) PetscNew(struct tp);CHKPTRQ((h));                                     \
+    PetscMemzero(h,sizeof(struct tp));                                                      \
+    _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,com,                            \
+                                       (int (*)(PetscObject))des,                           \
+                                       (int (*)(PetscObject,Viewer))vie); CHKERRQ(_ierr);   \
+  }
+
+#define PetscHeaderDestroy(h)                                             \
+  { int _ierr;                                                            \
+    _ierr = PetscHeaderDestroy_Private((PetscObject) (h)); CHKERRQ(_ierr);\
+  }                 
+
+/* ---------------------------------------------------------------------------------------*/
 
 /* 
   PetscLow and PetscHigh are a way of checking if an address is 

@@ -1,4 +1,4 @@
-#PETSC_DIR = ../../../..
+
 ALL: ex1
 
 CFLAGS	        =	 $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"'
@@ -51,6 +51,10 @@ ex3: ex3.o  chkopts
 ex3f90: ex3f90.o chkopts
 	-$(FLINKER) -o ex3f90 ex3f90.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
 	$(RM) -f ex3f90.o
+
+ex4: ex4.o  chkopts
+	-$(CLINKER) -o ex4 ex4.o  $(SLES_LIB)
+	$(RM) -f ex4.o
 
 runex1:
 	-@$(MPIRUN) -np 1  ex1  > ex1.tmp 2>&1;\

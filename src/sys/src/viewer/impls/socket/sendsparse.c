@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sendsparse.c,v 1.17 1997/02/22 02:28:23 bsmith Exp balay $";
+static char vcid[] = "$Id: sendsparse.c,v 1.18 1997/07/09 20:59:12 balay Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a sparse matrix to Matlab.
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: sendsparse.c,v 1.17 1997/02/22 02:28:23 bsmith Exp ba
 
 /*--------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "ViewerMatlabPutSparse_Private" /* ADIC Ignore */
+#define __FUNC__ "ViewerMatlabPutSparse_Private"
 /*
    ViewerMatlabPutSparse_Private - Passes a sparse matrix in AIJ format
              to a Matlab viewer. 

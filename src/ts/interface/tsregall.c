@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsregall.c,v 1.9 1997/08/07 14:41:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsregall.c,v 1.10 1997/08/07 20:59:40 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"     /*I  "ts.h"  I*/
@@ -9,7 +9,7 @@ extern int TSCreate_Pseudo(TS);
 extern int TSCreate_PVode(TS);
 
 #undef __FUNC__  
-#define __FUNC__ "TSRegisterAll" /* ADIC Ignore */
+#define __FUNC__ "TSRegisterAll"
 /*@C
   TSRegisterAll - Registers all of the timesteppers in the TS 
   package. 

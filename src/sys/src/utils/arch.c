@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: arch.c,v 1.21 1997/02/27 16:10:30 balay Exp balay $";
+static char vcid[] = "$Id: arch.c,v 1.22 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetArchType" /* ADIC Ignore */
+#define __FUNC__ "PetscGetArchType"
 /*@C
      PetscGetArchType - Returns a standardized architecture type for the machine
      that is executing this routine. 

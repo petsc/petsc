@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.86 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.87 1997/07/28 22:15:17 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -28,7 +28,7 @@ static int TrMallocUsed = 0;
 static int TrUseNan;   /* unitialize Scalar arrays with Nans */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSetUseTrMalloc_Private" /* ADIC Ignore */
+#define __FUNC__ "PetscSetUseTrMalloc_Private"
 int PetscSetUseTrMalloc_Private(int usenan)
 {
   int ierr;
@@ -137,7 +137,7 @@ int MPI_Corrupted()
 */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrValid" /* ADIC Ignore */
+#define __FUNC__ "PetscTrValid"
 /*
    PetscTrValid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
@@ -207,7 +207,7 @@ static char **PetscLogMallocDirectory, **PetscLogMallocFile,**PetscLogMallocFunc
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrMallocDefault" /* ADIC Ignore */
+#define __FUNC__ "PetscTrMallocDefault"
 /*
     PetscTrMallocDefault - Malloc with tracing.
 
@@ -320,7 +320,7 @@ void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filena
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrFreeDefault" /* ADIC Ignore */
+#define __FUNC__ "PetscTrFreeDefault"
 /*
    PetscTrFreeDefault - Free with tracing.
 
@@ -418,7 +418,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrSpace" /* ADIC Ignore */
+#define __FUNC__ "PetscTrSpace"
 /*@
     PetscTrSpace - Returns space statistics.
    
@@ -440,7 +440,7 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrDump" /* ADIC Ignore */
+#define __FUNC__ "PetscTrDump"
 /*@C
    PetscTrDump - Dumps the allocated memory blocks to a file. The information 
    printed is: size of space (in bytes), address of space, id of space, 
@@ -481,7 +481,7 @@ int PetscTrDump( FILE *fp )
 /* ---------------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrLog" /* ADIC Ignore */
+#define __FUNC__ "PetscTrLog"
 /*@C
     PetscTrLog - Activates logging of all calls to malloc.
 
@@ -497,7 +497,7 @@ int PetscTrLog()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrLogDump" /* ADIC Ignore */
+#define __FUNC__ "PetscTrLogDump"
 /*@C
     PetscTrLogDump - Dumps the log of all calls to malloc; also calls 
     PetscGetResidentSetSize().
@@ -575,7 +575,7 @@ int PetscTrLogDump(FILE *fp)
 /* ---------------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ "PetscTrDebugLevel" /* ADIC Ignore */
+#define __FUNC__ "PetscTrDebugLevel"
 /*
     PetscTrDebugLevel - Set the level of debugging for the space management 
                    routines.
@@ -605,7 +605,7 @@ typedef union { long l[2]; double d; } NANDouble;
 
 #include <math.h>
 #undef __FUNC__  
-#define __FUNC__ "PetscInitializeNans" /* ADIC Ignore */
+#define __FUNC__ "PetscInitializeNans"
 /*@
    PetscInitializeNans - Intialize certain memory locations with NANs.
 
@@ -650,7 +650,7 @@ int PetscInitializeNans(Scalar *p,int n )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscInitializeLargeInts" /* ADIC Ignore */
+#define __FUNC__ "PetscInitializeLargeInts"
 /*@
    PetscInitializeLargeInts - Intializes an array of integers
    with very large values.

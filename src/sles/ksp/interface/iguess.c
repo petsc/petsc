@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iguess.c,v 1.19 1997/02/22 02:22:53 bsmith Exp balay $";
+static char vcid[] = "$Id: iguess.c,v 1.20 1997/07/09 20:50:16 balay Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"  /*I "ksp.h" I*/
@@ -17,7 +17,7 @@ typedef struct {
 } KSPIGUESS;
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGuessCreate" /* ADIC Ignore */
+#define __FUNC__ "KSPGuessCreate" 
 int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 {
   KSPIGUESS *itg;
@@ -38,7 +38,7 @@ int KSPGuessCreate(KSP itctx,int  maxl,void **ITG )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGuessDestroy" /* ADIC Ignore */
+#define __FUNC__ "KSPGuessDestroy" 
 int KSPGuessDestroy( KSP itctx, KSPIGUESS *itg )
 {
   PetscValidHeaderSpecific(itctx,KSP_COOKIE);

@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.87 1997/07/22 04:24:20 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.88 1997/07/25 23:11:51 balay Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  
-#define __FUNC__ "SLESView" /* ADIC Ignore */
+#define __FUNC__ "SLESView"
 /*@ 
    SLESView - Prints the SLES data structure.
 
@@ -48,7 +48,7 @@ int SLESView(SLES sles,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESPrintHelp" /* ADIC Ignore */
+#define __FUNC__ "SLESPrintHelp"
 /*@
    SLESPrintHelp - Prints SLES options.
 
@@ -72,7 +72,7 @@ int SLESPrintHelp(SLES sles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESSetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "SLESSetOptionsPrefix"
 /*@C
    SLESSetOptionsPrefix - Sets the prefix used for searching for all 
    SLES options in the database.
@@ -105,7 +105,7 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESAppendOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "SLESAppendOptionsPrefix"
 /*@C
    SLESAppendOptionsPrefix - Appends to the prefix used for searching for all 
    SLES options in the database.
@@ -138,7 +138,7 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESGetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "SLESGetOptionsPrefix"
 /*@
    SLESGetOptionsPrefix - Gets the prefix used for searching for all 
    SLES options in the database.
@@ -208,7 +208,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   int ierr;
   SLES sles;
   *outsles = 0;
-  PetscHeaderCreate(sles,_p_SLES,SLES_COOKIE,0,comm);
+  PetscHeaderCreate(sles,_p_SLES,SLES_COOKIE,0,comm,SLESDestroy,SLESView);
   PLogObjectCreate(sles);
   ierr = KSPCreate(comm,&sles->ksp); CHKERRQ(ierr);
   ierr = PCCreate(comm,&sles->pc); CHKERRQ(ierr);
@@ -220,7 +220,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESDestroy" /* ADIC Ignore */
+#define __FUNC__ "SLESDestroy"
 /*@C
    SLESDestroy - Destroys the SLES context.
 
@@ -235,6 +235,8 @@ int SLESDestroy(SLES sles)
 {
   int ierr;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  if (--sles->refct > 0) return 0;
+
   ierr = KSPDestroy(sles->ksp); CHKERRQ(ierr);
   ierr = PCDestroy(sles->pc); CHKERRQ(ierr);
   PLogObjectDestroy(sles);
@@ -373,7 +375,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESGetKSP" /* ADIC Ignore */
+#define __FUNC__ "SLESGetKSP"
 /*@C
    SLESGetKSP - Returns the KSP context for a SLES solver.
 
@@ -399,7 +401,7 @@ int SLESGetKSP(SLES sles,KSP *ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SLESGetPC" /* ADIC Ignore */
+#define __FUNC__ "SLESGetPC"
 /*@C
    SLESGetPC - Returns the preconditioner (PC) context for a SLES solver.
 

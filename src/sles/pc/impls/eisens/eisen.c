@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.60 1997/06/05 12:53:08 bsmith Exp balay $";
+static char vcid[] = "$Id: eisen.c,v 1.61 1997/07/09 20:53:01 balay Exp bsmith $";
 #endif
 
 /*
@@ -19,7 +19,7 @@ typedef struct {
 } PC_Eisenstat;
 
 #undef __FUNC__  
-#define __FUNC__ "PCEisenstatUseDiagonalScaling" /* ADIC Ignore */
+#define __FUNC__ "PCEisenstatUseDiagonalScaling"
 /*@
    PCEisenstatUseDiagonalScaling - Causes the Eisenstat preconditioner
    to do an additional diagonal preconditioning. For matrices with very 
@@ -125,7 +125,7 @@ static int PCPost_Eisenstat(PC pc,KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_Eisenstat" /* ADIC Ignore */
+#define __FUNC__ "PCDestroy_Eisenstat"
 static int PCDestroy_Eisenstat(PetscObject obj)
 {
   PC           pc = (PC) obj;
@@ -156,7 +156,7 @@ static int PCSetFromOptions_Eisenstat(PC pc)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCPrintHelp_Eisenstat" /* ADIC Ignore */
+#define __FUNC__ "PCPrintHelp_Eisenstat"
 static int PCPrintHelp_Eisenstat(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCEisenstat preconditioner:\n");
@@ -166,7 +166,7 @@ static int PCPrintHelp_Eisenstat(PC pc,char *p)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCView_Eisenstat" /* ADIC Ignore */
+#define __FUNC__ "PCView_Eisenstat"
 static int PCView_Eisenstat(PetscObject obj,Viewer viewer)
 {
   PC            pc = (PC)obj;

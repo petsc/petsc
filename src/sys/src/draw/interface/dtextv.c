@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtextv.c,v 1.10 1997/05/07 01:46:26 balay Exp balay $";
+static char vcid[] = "$Id: dtextv.c,v 1.11 1997/07/09 20:57:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dtextv.c,v 1.10 1997/05/07 01:46:26 balay Exp balay $
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringVertical" /* ADIC Ignore */
+#define __FUNC__ "DrawStringVertical" 
 /*@C
    DrawStringVertical - Draws text onto a drawable.
 

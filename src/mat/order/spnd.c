@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spnd.c,v 1.20 1997/04/10 00:03:16 bsmith Exp balay $";
+static char vcid[] = "$Id: spnd.c,v 1.21 1997/07/09 20:54:49 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: spnd.c,v 1.20 1997/04/10 00:03:16 bsmith Exp balay $"
     MatOrder_ND - Find the nested dissection ordering of a given matrix.
 */    
 #undef __FUNC__  
-#define __FUNC__ "MatOrder_ND" /* ADIC Ignore */
+#define __FUNC__ "MatOrder_ND"
 int MatOrder_ND( Mat mat, MatReordering type, IS *row, IS *col)
 {
   int        ierr, i,  *mask, *xls, *ls, nrow,*ia,*ja,*perm;

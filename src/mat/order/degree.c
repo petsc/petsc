@@ -25,7 +25,7 @@
 /*              COMPONENT LEVEL BY LEVEL.*/
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "degree" /* ADIC Ignore */
+#define __FUNC__ "degree" 
 int degree(int *root, int *xadj, int *adjncy, 
 	int *mask, int *deg, int *ccsize, int *ls)
 {

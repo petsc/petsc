@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.90 1997/08/07 18:55:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.91 1997/08/13 22:25:08 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: xops.c,v 1.90 1997/08/07 18:55:34 bsmith Exp bsmith $
                                        ((win)->coor_yr - (win)->coor_yl))))
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLine_X" /* ADIC Ignore */
+#define __FUNC__ "DrawLine_X" 
 int DrawLine_X(Draw Win, double xl, double yl, double xr, double yr,int cl)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -37,7 +37,7 @@ int DrawLine_X(Draw Win, double xl, double yl, double xr, double yr,int cl)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawPoint_X" /* ADIC Ignore */
+#define __FUNC__ "DrawPoint_X" 
 static int DrawPoint_X(Draw Win,double x,double  y,int c)
 {
   int     xx,yy;
@@ -50,7 +50,7 @@ static int DrawPoint_X(Draw Win,double x,double  y,int c)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawRectangle_X" /* ADIC Ignore */
+#define __FUNC__ "DrawRectangle_X" 
 static int DrawRectangle_X(Draw Win, double xl, double yl, double xr, double yr,
                            int c1, int c2,int c3,int c4)
 {
@@ -68,7 +68,7 @@ static int DrawRectangle_X(Draw Win, double xl, double yl, double xr, double yr,
 extern int XiDrawInterpolatedTriangle(Draw_X*,int,int,int,int,int,int,int,int,int);
 
 #undef __FUNC__  
-#define __FUNC__ "DrawTriangle_X" /* ADIC Ignore */
+#define __FUNC__ "DrawTriangle_X" 
 static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2, 
                           double Y2,double X3,double Y3, int c1, int c2,int c3)
 {
@@ -100,7 +100,7 @@ static int DrawTriangle_X(Draw Win, double X1, double Y1, double X2,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawString_X" /* ADIC Ignore */
+#define __FUNC__ "DrawString_X" 
 static int DrawString_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int     xx,yy;
@@ -116,7 +116,7 @@ static int DrawString_X(Draw Win,double x,double  y,int c,char *chrs )
 int XiFontFixed( Draw_X*,int, int,XiFont **);
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringSetSize_X" /* ADIC Ignore */
+#define __FUNC__ "DrawStringSetSize_X" 
 static int DrawStringSetSize_X(Draw Win,double x,double  y)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -129,7 +129,7 @@ static int DrawStringSetSize_X(Draw Win,double x,double  y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringGetSize_X" /* ADIC Ignore */
+#define __FUNC__ "DrawStringGetSize_X" 
 int DrawStringGetSize_X(Draw Win,double *x,double  *y)
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -142,7 +142,7 @@ int DrawStringGetSize_X(Draw Win,double *x,double  *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawStringVertical_X" /* ADIC Ignore */
+#define __FUNC__ "DrawStringVertical_X" 
 int DrawStringVertical_X(Draw Win,double x,double  y,int c,char *chrs )
 {
   int     xx,yy,n = PetscStrlen(chrs),i;
@@ -164,7 +164,7 @@ int DrawStringVertical_X(Draw Win,double x,double  y,int c,char *chrs )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawFlush_X" /* ADIC Ignore */
+#define __FUNC__ "DrawFlush_X" 
 static int DrawFlush_X(Draw Win )
 {
   Draw_X* XiWin = (Draw_X*) Win->data;
@@ -176,7 +176,7 @@ static int DrawFlush_X(Draw Win )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSyncFlush_X" /* ADIC Ignore */
+#define __FUNC__ "DrawSyncFlush_X" 
 static int DrawSyncFlush_X(Draw Win )
 {
   int     rank;
@@ -203,7 +203,7 @@ static int DrawSyncFlush_X(Draw Win )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetViewport_X" /* ADIC Ignore */
+#define __FUNC__ "DrawSetViewport_X" 
 static int DrawSetViewport_X(Draw Win,double xl,double yl,double xr,double yr)
 {
   Draw_X*    XiWin = (Draw_X*) Win->data;
@@ -216,7 +216,7 @@ static int DrawSetViewport_X(Draw Win,double xl,double yl,double xr,double yr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawClear_X" /* ADIC Ignore */
+#define __FUNC__ "DrawClear_X" 
 static int DrawClear_X(Draw Win)
 {
   Draw_X*  XiWin = (Draw_X*) Win->data;
@@ -232,7 +232,7 @@ static int DrawClear_X(Draw Win)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSyncClear_X" /* ADIC Ignore */
+#define __FUNC__ "DrawSyncClear_X" 
 static int DrawSyncClear_X(Draw Win)
 {
   int     rank;
@@ -251,7 +251,7 @@ static int DrawSyncClear_X(Draw Win)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetDoubleBuffer_X" /* ADIC Ignore */
+#define __FUNC__ "DrawSetDoubleBuffer_X" 
 static int DrawSetDoubleBuffer_X(Draw Win)
 {
   Draw_X*  win = (Draw_X*) Win->data;
@@ -271,7 +271,7 @@ static int DrawSetDoubleBuffer_X(Draw Win)
 #include <X11/cursorfont.h>
 
 #undef __FUNC__  
-#define __FUNC__ "DrawGetMouseButton_X" /* ADIC Ignore */
+#define __FUNC__ "DrawGetMouseButton_X" 
 static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
                                 double *y_user,double *x_phys,double *y_phys)
 {
@@ -321,7 +321,7 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawPause_X" /* ADIC Ignore */
+#define __FUNC__ "DrawPause_X" 
 static int DrawPause_X(Draw draw)
 {
   int ierr;
@@ -340,7 +340,7 @@ static int DrawPause_X(Draw draw)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawCreatePopUp_X" /* ADIC Ignore */
+#define __FUNC__ "DrawCreatePopUp_X" 
 static int DrawCreatePopUp_X(Draw draw,Draw *popup)
 {
   int     ierr;
@@ -353,7 +353,7 @@ static int DrawCreatePopUp_X(Draw draw,Draw *popup)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawSetTitle_X" /* ADIC Ignore */
+#define __FUNC__ "DrawSetTitle_X" 
 static int DrawSetTitle_X(Draw draw,char *title)
 {
   Draw_X        *win = (Draw_X *) draw->data;
@@ -442,7 +442,7 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawResizeWindow_X };
 
 #undef __FUNC__  
-#define __FUNC__ "DrawDestroy_X" /* ADIC Ignore */
+#define __FUNC__ "DrawDestroy_X" 
 int DrawDestroy_X(PetscObject obj)
 {
   Draw   ctx = (Draw) obj;
@@ -462,7 +462,7 @@ extern int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int,int);
 extern int XiQuickWindowFromWindow(Draw_X*,char*,Window,int);
 
 #undef __FUNC__  
-#define __FUNC__ "DrawXGetDisplaySize_Private" /* ADIC Ignore */
+#define __FUNC__ "DrawXGetDisplaySize_Private" 
 int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
 {
   Display *display;
@@ -484,7 +484,7 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawOpenX" /* ADIC Ignore */
+#define __FUNC__ "DrawOpenX" 
 /*@C
    DrawOpenX - Opens an X-window for use with the Draw routines.
 
@@ -591,7 +591,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   }
 
   *inctx = 0;
-  PetscHeaderCreate(ctx,_p_Draw,DRAW_COOKIE,DRAW_XWINDOW,comm);
+  PetscHeaderCreate(ctx,_p_Draw,DRAW_COOKIE,DRAW_XWINDOW,comm,DrawDestroy,0);
   PLogObjectCreate(ctx);
   PetscMemcpy(&ctx->ops,&DvOps,sizeof(DvOps));
   ctx->destroy = DrawDestroy_X;
@@ -653,7 +653,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 #else
 
 #undef __FUNC__  
-#define __FUNC__ "DrawOpenX" /* ADIC Ignore */
+#define __FUNC__ "DrawOpenX" 
 int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* ctx)
 {
   int rank,flag;
@@ -670,7 +670,7 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
 
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDrawOpenX" /* ADIC Ignore */
+#define __FUNC__ "ViewerDrawOpenX" 
 /*@C
    ViewerDrawOpenX - Opens an X window for use as a viewer. If you want to 
    do graphics in this window, you must call ViewerDrawGetDraw() and
@@ -716,7 +716,7 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
   Viewer ctx;
 
   *viewer = 0;
-  PetscHeaderCreate(ctx,_p_Viewer,VIEWER_COOKIE,DRAW_VIEWER,comm);
+  PetscHeaderCreate(ctx,_p_Viewer,VIEWER_COOKIE,DRAW_VIEWER,comm,ViewerDestroy,0);
   PLogObjectCreate(ctx);
   ierr = DrawOpenX(comm,display,title,x,y,w,h,&ctx->draw);CHKERRQ(ierr);
   PLogObjectParent(ctx,ctx->draw);
@@ -743,7 +743,7 @@ Viewer VIEWER_DRAWX_SELF_PRIVATE = 0, VIEWER_DRAWX_WORLD_PRIVATE_0 = 0,
        VIEWER_DRAWX_WORLD_PRIVATE_1 = 0, VIEWER_DRAWX_WORLD_PRIVATE_2 = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeDrawXSelf_Private" /* ADIC Ignore */
+#define __FUNC__ "ViewerInitializeDrawXSelf_Private" 
 int ViewerInitializeDrawXSelf_Private()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -757,7 +757,7 @@ int ViewerInitializeDrawXSelf_Private()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeDrawXWorld_Private_0" /* ADIC Ignore */
+#define __FUNC__ "ViewerInitializeDrawXWorld_Private_0" 
 int ViewerInitializeDrawXWorld_Private_0()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -771,7 +771,7 @@ int ViewerInitializeDrawXWorld_Private_0()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeDrawXWorld_Private_1" /* ADIC Ignore */
+#define __FUNC__ "ViewerInitializeDrawXWorld_Private_1" 
 int ViewerInitializeDrawXWorld_Private_1()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -785,7 +785,7 @@ int ViewerInitializeDrawXWorld_Private_1()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeDrawXWorld_Private_2" /* ADIC Ignore */
+#define __FUNC__ "ViewerInitializeDrawXWorld_Private_2" 
 int ViewerInitializeDrawXWorld_Private_2()
 {
   int ierr,xywh[4],size = 4,flg;
@@ -800,7 +800,7 @@ int ViewerInitializeDrawXWorld_Private_2()
 
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroyDrawX_Private" /* ADIC Ignore */
+#define __FUNC__ "ViewerDestroyDrawX_Private" 
 int ViewerDestroyDrawX_Private()
 {
   int ierr;
@@ -835,7 +835,7 @@ int ViewerDestroyDrawX_Private()
 static int Petsc_Viewer_Drawx_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNC__  
-#define __FUNC__ "VIEWER_DRAWX_" /* ADIC Ignore */
+#define __FUNC__ "VIEWER_DRAWX_" 
 /*@C
      VIEWER_DRAWX_ - Creates a window viewer shared by all processors 
                      in a communicator.

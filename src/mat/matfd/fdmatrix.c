@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.11 1997/07/09 20:53:23 balay Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.12 1997/08/13 22:23:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -13,13 +13,13 @@ static char vcid[] = "$Id: fdmatrix.c,v 1.11 1997/07/09 20:53:23 balay Exp bsmit
 #include "pinclude/pviewer.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringView_Draw" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringView_Draw"
 static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 {
   int         ierr,i,j,pause;
   PetscTruth  isnull;
   Draw        draw;
-  double      xr,yr,xl,yl,h,w,x,y,xc,yc,scale;
+  double      xr,yr,xl,yl,h,w,x,y,xc,yc,scale = 0.0;
   DrawButton  button;
 
   ierr = ViewerDrawGetDraw(viewer,&draw); CHKERRQ(ierr);
@@ -71,7 +71,7 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringView" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringView"
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
@@ -192,7 +192,7 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void *,Vec,Vec,void *)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringSetFromOptions" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringSetFromOptions"
 /*@
    MatFDColoringSetFromOptions - Set coloring finite difference parameters from 
          the options database.
@@ -232,7 +232,7 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringPrintHelp" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringPrintHelp"
 /*@
     MatFDColoringPrintHelp - Prints help message for matrix finite difference calculations 
          using coloring.
@@ -304,7 +304,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
 
   PetscObjectGetComm((PetscObject)mat,&comm);
-  PetscHeaderCreate(c,_p_MatFDColoring,MAT_FDCOLORING_COOKIE,0,comm);
+  PetscHeaderCreate(c,_p_MatFDColoring,MAT_FDCOLORING_COOKIE,0,comm,MatFDColoringDestroy,MatFDColoringView);
   PLogObjectCreate(c);
 
   if (mat->ops.fdcoloringcreate) {
@@ -325,7 +325,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringDestroy" /* ADIC Ignore */
+#define __FUNC__ "MatFDColoringDestroy"
 /*@C
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
          via MatFDColoringCreate().
@@ -338,6 +338,8 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 int MatFDColoringDestroy(MatFDColoring c)
 {
   int i,ierr,flag;
+
+  if (--c->refct > 0) return 0;
 
   ierr = OptionsHasName(PETSC_NULL,"-matfdcoloring_view",&flag);
   if (flag) {
@@ -405,6 +407,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   int           (*f)(void *,Vec,Vec,void *) = coloring->f,freq = coloring->freq;
   void          *fctx = coloring->fctx;
 
+  /*
   ierr = SNESGetIterationNumber((SNES)sctx,&it); CHKERRQ(ierr);
   if ((freq > 1) && ((it % freq) != 1)) {
     PLogInfo(coloring,"MatFDColoringApply:Skipping Jacobian, iteration %d, freq %d\n",it,freq);
@@ -413,7 +416,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   } else {
     PLogInfo(coloring,"MatFDColoringApply:Computing Jacobian, iteration %d, freq %d\n",it,freq);
     *flag = SAME_NONZERO_PATTERN;
-  }
+  }*/
 
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rpath.c,v 1.8 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: rpath.c,v 1.9 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: rpath.c,v 1.8 1997/02/22 02:23:29 bsmith Exp balay $"
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetRelativePath" /* ADIC Ignore */
+#define __FUNC__ "PetscGetRelativePath"
 /*@C
    PetscGetRelativePath - Given a filename, returns the relative path (removes
    all directory specifiers).

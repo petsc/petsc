@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcookie.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: gcookie.c,v 1.8 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: gcookie.c,v 1.7 1997/02/22 02:23:29 bsmith Exp balay 
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectGetCookie" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectGetCookie"
 /*@C
    PetscObjectGetCookie - Gets the cookie for any PetscObject, 
 
@@ -27,7 +27,7 @@ int PetscObjectGetCookie(PetscObject obj,int *cookie)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscObjectExists" /* ADIC Ignore */
+#define __FUNC__ "PetscObjectExists"
 /*@
    PetscObjectExists - Determines whether a PETSc object has been destroyed.
 

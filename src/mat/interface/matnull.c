@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.10 1997/05/23 18:33:26 balay Exp balay $";
+static char vcid[] = "$Id: pcnull.c,v 1.11 1997/07/09 20:52:24 balay Exp bsmith $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -35,7 +35,7 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
 {
   PCNullSpace sp;
 
-  PetscHeaderCreate(sp,_p_PCNullSpace,PCNULLSPACE_COOKIE,0,comm);
+  PetscHeaderCreate(sp,_p_PCNullSpace,PCNULLSPACE_COOKIE,0,comm,PCNullSpaceDestroy,0);
   PLogObjectCreate(sp);
   PLogObjectMemory(sp,sizeof(struct _p_PCNullSpace));
 
@@ -48,7 +48,7 @@ int PCNullSpaceCreate(MPI_Comm comm, int has_cnst, int n, Vec *vecs,PCNullSpace 
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCNullSpaceDestroy" /* ADIC Ignore */
+#define __FUNC__ "PCNullSpaceDestroy"
 /*@
   PCNullSpaceDestroy - Destroys a data-structure used to project vectors 
        out of null spaces.

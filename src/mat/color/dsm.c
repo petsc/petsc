@@ -6,7 +6,7 @@
 static int c_n1 = -1;
 
 #undef __FUNC__  
-#define __FUNC__ "MINPACKdsm" /* ADIC Ignore */
+#define __FUNC__ "MINPACKdsm" 
 int MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *maxgrp,
                int *mingrp,int *info,int *ipntr,int *jpntr,int *iwa,int *liwa)
 {

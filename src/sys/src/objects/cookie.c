@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cookie.c,v 1.11 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: cookie.c,v 1.12 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"  /*I "petsc.h" I*/
 int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;
 
 #undef __FUNC__  
-#define __FUNC__ "PetscRegisterCookie" /* ADIC Ignore */
+#define __FUNC__ "PetscRegisterCookie"
 /*@
     PetscRegisterCookie - Registers a new cookie for use with a
     newly created PETSc object class.  The user should pass in

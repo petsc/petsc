@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.41 1997/06/19 22:35:24 balay Exp curfman $ */
+/* $Id: dvec2.c,v 1.42 1997/08/08 15:09:02 curfman Exp bsmith $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -416,15 +416,25 @@ int VecMax_Seq(Vec xin,int* idx,double * z )
 { 
   Vec_Seq         *x = (Vec_Seq *) xin->data;
   register int    i, j=0, n = x->n;
-  register double max = -1.e40, tmp;
+  register double max, tmp;
   Scalar          *xx = x->array;
 
-  for (i=0; i<n; i++) {
+  if (!n) {
+    max = PETSC_MIN;
+    j   = -1;
+  } else {
 #if defined(PETSC_COMPLEX)
-    if ((tmp = real(*xx++)) > max) { j = i; max = tmp;}
+      max = real(*xx++); j = 0;
 #else
-    if ((tmp = *xx++) > max) { j = i; max = tmp; } 
+      max = *xx++; j = 0;
 #endif
+    for (i=1; i<n; i++) {
+#if defined(PETSC_COMPLEX)
+      if ((tmp = real(*xx++)) > max) { j = i; max = tmp;}
+#else
+      if ((tmp = *xx++) > max) { j = i; max = tmp; } 
+#endif
+    }
   }
   *z   = max;
   if (idx) *idx = j;
@@ -437,15 +447,25 @@ int VecMin_Seq(Vec xin,int* idx,double * z )
 {
   Vec_Seq         *x = (Vec_Seq *) xin->data;
   register int    i, j=0, n = x->n;
-  register double min = 1.e40, tmp;
+  register double min, tmp;
   Scalar          *xx = x->array;
 
-  for ( i=0; i<n; i++ ) {
+  if (!n) {
+    min = PETSC_MAX;
+    j   = -1;
+  } else {
 #if defined(PETSC_COMPLEX)
-    if ((tmp = real(*xx++)) < min) { j = i; min = tmp;}
+     min = real(*xx++); j = 0;
 #else
-    if ((tmp = *xx++) < min) { j = i; min = tmp; } 
+     min = *xx++; j = 0;
 #endif
+     for ( i=1; i<n; i++ ) {
+#if defined(PETSC_COMPLEX)
+      if ((tmp = real(*xx++)) < min) { j = i; min = tmp;}
+#else
+      if ((tmp = *xx++) < min) { j = i; min = tmp; } 
+#endif
+    }
   }
   *z   = min;
   if (idx) *idx = j;

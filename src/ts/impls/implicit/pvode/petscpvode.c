@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petsccvode.c,v 1.3 1997/07/23 16:50:20 lixu Exp lixu $";
+static char vcid[] = "$Id: petscpvode.c,v 1.1 1997/08/06 21:09:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: petsccvode.c,v 1.3 1997/07/23 16:50:20 lixu Exp lixu 
 
 #if defined(HAVE_PVODE)  && !defined(__cplusplus)
 
-#include "src/ts/impls/implicit/pvode/petscpvode.h"      
+#include "src/ts/impls/implicit/pvode/petscpvode.h"  /*I "ts.h" I*/    
 
 /*
       TSPrecond_PVode is the function that we provide to PVODE to

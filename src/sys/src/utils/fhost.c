@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.16 1997/03/03 23:01:49 balay Exp balay $";
+static char vcid[] = "$Id: fhost.c,v 1.17 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "src/sys/src/files.h"   /*I  "sys.h"   I*/
 #undef __FUNC__  
-#define __FUNC__ "PetscGetHostName" /* ADIC Ignore */
+#define __FUNC__ "PetscGetHostName"
 /*@C
     PetscGetHostName - Returns the name of the host. This attempts to
     return the entire Internet name. It may not return the same name

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dpoints.c,v 1.13 1997/02/22 02:27:05 bsmith Exp balay $";
+static char vcid[] = "$Id: dpoints.c,v 1.14 1997/07/09 20:57:34 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: dpoints.c,v 1.13 1997/02/22 02:27:05 bsmith Exp balay
 #include "src/draw/drawimpl.h"  /*I "draw.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "DrawPointSetSize" /* ADIC Ignore */
+#define __FUNC__ "DrawPointSetSize" 
 /*@
    DrawPointSetSize - Sets the point size for future draws.  The size is
    relative to the user coordinates of the window; 0.0 denotes the natural

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.126 1997/07/29 14:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.127 1997/08/13 22:26:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -13,7 +13,7 @@ extern int SNESPrintTypes_Private(MPI_Comm,char*,char*);
 int SNESRegisterAllCalled = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "SNESView" /* ADIC Ignore */
+#define __FUNC__ "SNESView"
 /*@ 
    SNESView - Prints the SNES data structure.
 
@@ -102,7 +102,7 @@ static int numberofsetfromoptions;
 static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 
 #undef __FUNC__  
-#define __FUNC__ "SNESAddOptionsChecker" /* ADIC Ignore */
+#define __FUNC__ "SNESAddOptionsChecker"
 /*@
     SNESAddOptionsChecker - Adds an additional function to check for SNES options.
 
@@ -243,7 +243,7 @@ int SNESSetFromOptions(SNES snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp" /* ADIC Ignore */
+#define __FUNC__ "SNESPrintHelp"
 /*@
    SNESPrintHelp - Prints all options for the SNES component.
 
@@ -323,7 +323,7 @@ int SNESPrintHelp(SNES snes)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetApplicationContext" /* ADIC Ignore */
+#define __FUNC__ "SNESSetApplicationContext"
 /*@
    SNESSetApplicationContext - Sets the optional user-defined context for 
    the nonlinear solvers.  
@@ -344,7 +344,7 @@ int SNESSetApplicationContext(SNES snes,void *usrP)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetApplicationContext" /* ADIC Ignore */
+#define __FUNC__ "SNESGetApplicationContext"
 /*@C
    SNESGetApplicationContext - Gets the user-defined context for the 
    nonlinear solvers.  
@@ -367,7 +367,7 @@ int SNESGetApplicationContext( SNES snes,  void **usrP )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetIterationNumber" /* ADIC Ignore */
+#define __FUNC__ "SNESGetIterationNumber"
 /*@
    SNESGetIterationNumber - Gets the current iteration number of the
    nonlinear solver.
@@ -453,7 +453,7 @@ int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetNumberUnsuccessfulSteps" /* ADIC Ignore */
+#define __FUNC__ "SNESGetNumberUnsuccessfulSteps"
 /*@
    SNESGetNumberUnsuccessfulSteps - Gets the number of unsuccessful steps
    attempted by the nonlinear solver.
@@ -478,7 +478,7 @@ int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetNumberLinearIterations" /* ADIC Ignore */
+#define __FUNC__ "SNESGetNumberLinearIterations"
 /*@
    SNESGetNumberLinearIterations - Gets the total number of linear iterations
    used by the nonlinear solver.
@@ -503,7 +503,7 @@ int SNESGetNumberLinearIterations(SNES snes,int* lits)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetSLES" /* ADIC Ignore */
+#define __FUNC__ "SNESGetSLES"
 /*@C
    SNESGetSLES - Returns the SLES context for a SNES solver.
 
@@ -566,7 +566,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   *outsnes = 0;
   if (type != SNES_UNCONSTRAINED_MINIMIZATION && type != SNES_NONLINEAR_EQUATIONS)
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"incorrect method type"); 
-  PetscHeaderCreate(snes,_p_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
+  PetscHeaderCreate(snes,_p_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm,SNESDestroy,SNESView);
   PLogObjectCreate(snes);
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
@@ -631,7 +631,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 
 /* --------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "SNESSetFunction" /* ADIC Ignore */
+#define __FUNC__ "SNESSetFunction"
 /*@C
    SNESSetFunction - Sets the function evaluation routine and function 
    vector for use by the SNES routines in solving systems of nonlinear
@@ -700,8 +700,9 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
 {
   int    ierr;
 
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
     SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+  }
   PLogEventBegin(SNES_FunctionEval,snes,x,y,0);
   ierr = (*snes->computefunction)(snes,x,y,snes->funP); CHKERRQ(ierr);
   snes->nfuncs++;
@@ -710,7 +711,7 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetMinimizationFunction" /* ADIC Ignore */
+#define __FUNC__ "SNESSetMinimizationFunction"
 /*@C
    SNESSetMinimizationFunction - Sets the function evaluation routine for 
    unconstrained minimization.
@@ -783,7 +784,7 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetGradient" /* ADIC Ignore */
+#define __FUNC__ "SNESSetGradient"
 /*@C
    SNESSetGradient - Sets the gradient evaluation routine and gradient
    vector for use by the SNES routines.
@@ -950,7 +951,7 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetJacobian" /* ADIC Ignore */
+#define __FUNC__ "SNESSetJacobian"
 /*@C
    SNESSetJacobian - Sets the function to compute Jacobian as well as the
    location to store the matrix.
@@ -991,8 +992,7 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
                     MatStructure*,void*),void *ctx)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS)
-    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   snes->computejacobian = func;
   snes->jacP            = ctx;
   snes->jacobian        = A;
@@ -1001,7 +1001,7 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetJacobian" /* ADIC Ignore */
+#define __FUNC__ "SNESGetJacobian"
 /*@
    SNESGetJacobian - Returns the Jacobian matrix and optionally the user 
    provided context for evaluating the Jacobian.
@@ -1027,7 +1027,7 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetHessian" /* ADIC Ignore */
+#define __FUNC__ "SNESSetHessian"
 /*@C
    SNESSetHessian - Sets the function to compute Hessian as well as the
    location to store the matrix.
@@ -1068,8 +1068,9 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
                     MatStructure*,void*),void *ctx)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) 
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
     SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+  }
   snes->computejacobian = func;
   snes->jacP            = ctx;
   snes->jacobian        = A;
@@ -1078,7 +1079,7 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetHessian" /* ADIC Ignore */
+#define __FUNC__ "SNESGetHessian"
 /*@
    SNESGetHessian - Returns the Hessian matrix and optionally the user 
    provided context for evaluating the Hessian.
@@ -1150,7 +1151,9 @@ int SNESSetUp(SNES snes,Vec x)
     else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       snes->jacobian = J;
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free operator Hessian routines\n");
-    } else SETERRQ(1,0,"Method class doesn't support matrix-free operator option");
+    } else {
+      SETERRQ(1,0,"Method class doesn't support matrix-free operator option");
+    }
   }
   ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
   /*
@@ -1169,7 +1172,9 @@ int SNESSetUp(SNES snes,Vec x)
     else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       ierr = SNESSetHessian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free Hessian routines\n");
-    } else SETERRQ(1,0,"Method class doesn't support matrix-free option");
+    } else {
+      SETERRQ(1,0,"Method class doesn't support matrix-free option");
+    }
   }
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     if (!snes->vec_func) SETERRQ(1,0,"Must call SNESSetFunction() first");
@@ -1188,17 +1193,18 @@ int SNESSetUp(SNES snes,Vec x)
   } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
     if (!snes->vec_func) SETERRQ(1,0,"Must call SNESSetGradient() first");
     if (!snes->computefunction) SETERRQ(1,0,"Must call SNESSetGradient() first");
-    if (!snes->computeumfunction) 
-      SETERRQ(1,0,"Must call SNESSetMinimizationFunction() first");
+    if (!snes->computeumfunction) SETERRQ(1,0,"Must call SNESSetMinimizationFunction() first");
     if (!snes->jacobian) SETERRQ(1,0,"Must call SNESSetHessian() first");
-  } else SETERRQ(1,0,"Unknown method class");
+  } else {
+    SETERRQ(1,0,"Unknown method class");
+  }
   if (snes->setup) {ierr = (*snes->setup)(snes); CHKERRQ(ierr);}
   snes->setup_called = 1;
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESDestroy" /* ADIC Ignore */
+#define __FUNC__ "SNESDestroy"
 /*@C
    SNESDestroy - Destroys the nonlinear solver context that was created
    with SNESCreate().
@@ -1214,6 +1220,8 @@ int SNESDestroy(SNES snes)
 {
   int ierr;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  if (--snes->refct > 0) return 0;
+
   if (snes->destroy) {ierr = (*(snes)->destroy)((PetscObject)snes); CHKERRQ(ierr);}
   if (snes->kspconvctx) PetscFree(snes->kspconvctx);
   if (snes->mfshell) MatDestroy(snes->mfshell);
@@ -1353,7 +1361,7 @@ int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
 /* ------------ Routines to set performance monitoring options ----------- */
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetMonitor" /* ADIC Ignore */
+#define __FUNC__ "SNESSetMonitor"
 /*@C
    SNESSetMonitor - Sets the function that is to be used at every
    iteration of the nonlinear solver to display the iteration's 
@@ -1414,7 +1422,7 @@ int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetConvergenceTest" /* ADIC Ignore */
+#define __FUNC__ "SNESSetConvergenceTest"
 /*@C
    SNESSetConvergenceTest - Sets the function that is to be used 
    to test for convergence of the nonlinear iterative solution.   
@@ -1454,7 +1462,7 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,double,double,double,void*
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetConvergenceHistory" /* ADIC Ignore */
+#define __FUNC__ "SNESSetConvergenceHistory"
 /*@
    SNESSetConvergenceHistory - Sets the array used to hold the convergence history.
 
@@ -1625,7 +1633,7 @@ int SNESSetType(SNES snes,SNESType method)
 
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "SNESRegister" /* ADIC Ignore */
+#define __FUNC__ "SNESRegister"
 /*@C
    SNESRegister - Adds the method to the nonlinear solver package, given 
    a function pointer and a nonlinear solver name of the type SNESType.
@@ -1664,7 +1672,7 @@ int SNESRegister(SNESType name,SNESType *oname, char *sname, int (*create)(SNES)
 
 /* --------------------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "SNESRegisterDestroy" /* ADIC Ignore */
+#define __FUNC__ "SNESRegisterDestroy"
 /*@C
    SNESRegisterDestroy - Frees the list of nonlinear solvers that were
    registered by SNESRegister().
@@ -1684,7 +1692,7 @@ int SNESRegisterDestroy()
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetTypeFromOptions_Private" /* ADIC Ignore */
+#define __FUNC__ "SNESGetTypeFromOptions_Private"
 /*
    SNESGetTypeFromOptions_Private - Sets the selected method from the 
    options database.
@@ -1715,7 +1723,7 @@ int SNESGetTypeFromOptions_Private(SNES ctx,SNESType *method,int *flg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetType" /* ADIC Ignore */
+#define __FUNC__ "SNESGetType"
 /*@C
    SNESGetType - Gets the SNES method type and name (as a string).
 
@@ -1739,7 +1747,7 @@ int SNESGetType(SNES snes, SNESType *method,char **name)
 
 #include <stdio.h>
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintTypes_Private" /* ADIC Ignore */
+#define __FUNC__ "SNESPrintTypes_Private"
 /*
    SNESPrintTypes_Private - Prints the SNES methods available from the 
    options database.
@@ -1764,7 +1772,7 @@ int SNESPrintTypes_Private(MPI_Comm comm,char* prefix,char *name)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetSolution" /* ADIC Ignore */
+#define __FUNC__ "SNESGetSolution"
 /*@C
    SNESGetSolution - Returns the vector where the approximate solution is
    stored.
@@ -1787,7 +1795,7 @@ int SNESGetSolution(SNES snes,Vec *x)
 }  
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetSolutionUpdate" /* ADIC Ignore */
+#define __FUNC__ "SNESGetSolutionUpdate"
 /*@C
    SNESGetSolutionUpdate - Returns the vector where the solution update is
    stored. 
@@ -1813,7 +1821,7 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetFunction" /* ADIC Ignore */
+#define __FUNC__ "SNESGetFunction"
 /*@C
    SNESGetFunction - Returns the vector where the function is stored.
 
@@ -1843,7 +1851,7 @@ int SNESGetFunction(SNES snes,Vec *r)
 }  
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetGradient" /* ADIC Ignore */
+#define __FUNC__ "SNESGetGradient"
 /*@C
    SNESGetGradient - Returns the vector where the gradient is stored.
 
@@ -1872,7 +1880,7 @@ int SNESGetGradient(SNES snes,Vec *r)
 }  
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetMinimizationFunction" /* ADIC Ignore */
+#define __FUNC__ "SNESGetMinimizationFunction"
 /*@
    SNESGetMinimizationFunction - Returns the scalar function value for 
    unconstrained minimization problems.
@@ -1903,7 +1911,7 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
 }  
 
 #undef __FUNC__  
-#define __FUNC__ "SNESSetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "SNESSetOptionsPrefix"
 /*@C
    SNESSetOptionsPrefix - Sets the prefix used for searching for all 
    SNES options in the database.
@@ -1932,7 +1940,7 @@ int SNESSetOptionsPrefix(SNES snes,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESAppendOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "SNESAppendOptionsPrefix"
 /*@C
    SNESAppendOptionsPrefix - Appends to the prefix used for searching for all 
    SNES options in the database.
@@ -1961,7 +1969,7 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESGetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "SNESGetOptionsPrefix"
 /*@
    SNESGetOptionsPrefix - Sets the prefix used for searching for all 
    SNES options in the database.

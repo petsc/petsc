@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.119 1997/07/09 20:54:42 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.120 1997/07/29 14:09:50 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -250,7 +250,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetBlockSize_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatGetBlockSize_MPIBDiag"
 int MatGetBlockSize_MPIBDiag(Mat mat,int *bs)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -459,7 +459,7 @@ int MatMultTransAdd_MPIBDiag(Mat A,Vec xx,Vec yy,Vec zz)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetInfo_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatGetInfo_MPIBDiag"
 int MatGetInfo_MPIBDiag(Mat matin,MatInfoType flag,MatInfo *info)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
@@ -508,7 +508,7 @@ int MatGetDiagonal_MPIBDiag(Mat mat,Vec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatDestroy_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatDestroy_MPIBDiag"
 int MatDestroy_MPIBDiag(PetscObject obj)
 {
   Mat          mat = (Mat) obj;
@@ -537,7 +537,7 @@ int MatDestroy_MPIBDiag(PetscObject obj)
 
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIBDiag_Binary" /* ADIC Ignore */
+#define __FUNC__ "MatView_MPIBDiag_Binary"
 static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -551,7 +551,7 @@ static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIBDiag_ASCIIorDraw" /* ADIC Ignore */
+#define __FUNC__ "MatView_MPIBDiag_ASCIIorDraw"
 static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -650,7 +650,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatView_MPIBDiag"
 int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 {
   Mat          mat = (Mat) obj;
@@ -669,7 +669,7 @@ int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatSetOption_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatSetOption_MPIBDiag"
 int MatSetOption_MPIBDiag(Mat A,MatOption op)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
@@ -704,7 +704,7 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetSize_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatGetSize_MPIBDiag"
 int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -713,7 +713,7 @@ int MatGetSize_MPIBDiag(Mat mat,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetLocalSize_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatGetLocalSize_MPIBDiag"
 int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
@@ -722,7 +722,7 @@ int MatGetLocalSize_MPIBDiag(Mat mat,int *m,int *n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetOwnershipRange_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatGetOwnershipRange_MPIBDiag"
 int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
 {
   Mat_MPIBDiag *mat = (Mat_MPIBDiag *) matin->data;
@@ -743,7 +743,7 @@ int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatRestoreRow_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatRestoreRow_MPIBDiag"
 int MatRestoreRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,
                                   Scalar **v)
 {
@@ -803,7 +803,7 @@ int MatNorm_MPIBDiag(Mat A,NormType type,double *norm)
 
 extern int MatPrintHelp_SeqBDiag(Mat);
 #undef __FUNC__  
-#define __FUNC__ "MatPrintHelp_MPIBDiag" /* ADIC Ignore */
+#define __FUNC__ "MatPrintHelp_MPIBDiag"
 int MatPrintHelp_MPIBDiag(Mat A)
 {
   Mat_MPIBDiag *a = (Mat_MPIBDiag*) A->data;
@@ -914,7 +914,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
 
   if (bs <= 0) SETERRQ(1,0,"Blocksize must be positive");
   if ((N%bs)) SETERRQ(1,0,"Invalid block size - bad column number");
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIBDIAG,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIBDIAG,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data	= (void *) (b = PetscNew(Mat_MPIBDiag)); CHKPTRQ(b);
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));

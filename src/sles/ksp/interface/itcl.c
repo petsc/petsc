@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.97 1997/07/18 18:52:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.98 1997/07/18 19:10:02 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -20,7 +20,7 @@ static int numberofsetfromoptions;
 static int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 
 #undef __FUNC__  
-#define __FUNC__ "KSPAddOptionsChecker" /* ADIC Ignore */
+#define __FUNC__ "KSPAddOptionsChecker"
 /*@
     KSPAddOptionsChecker - Adds an additional function to check for KSP options.
 
@@ -40,7 +40,7 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetFromOptions" /* ADIC Ignore */
+#define __FUNC__ "KSPSetFromOptions"
 /*@
    KSPSetFromOptions - Sets KSP options from the options database.
    This routine must be called before KSPSetUp() if the user is to be 
@@ -208,7 +208,7 @@ int KSPSetFromOptions(KSP ksp)
 extern int KSPPrintTypes_Private(MPI_Comm,char *,char *);
 
 #undef __FUNC__  
-#define __FUNC__ "KSPPrintHelp" /* ADIC Ignore */
+#define __FUNC__ "KSPPrintHelp"
 /*@ 
    KSPPrintHelp - Prints all options for the KSP component.
 
@@ -279,7 +279,7 @@ int KSPPrintHelp(KSP ksp)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPSetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "KSPSetOptionsPrefix"
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
    KSP options in the database.
@@ -313,7 +313,7 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 }
  
 #undef __FUNC__  
-#define __FUNC__ "KSPAppendOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "KSPAppendOptionsPrefix"
 /*@C
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
    KSP options in the database.
@@ -338,7 +338,7 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "KSPGetOptionsPrefix" /* ADIC Ignore */
+#define __FUNC__ "KSPGetOptionsPrefix"
 /*@
    KSPGetOptionsPrefix - Gets the prefix used for searching for all 
    KSP options in the database.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.25 1997/07/09 20:58:00 balay Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.26 1997/07/29 14:10:43 bsmith Exp bsmith $";
 #endif
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -25,7 +25,7 @@ Colormap XiCreateColormap(Draw_X*,Display*,int,Visual *);
 #include <X11/Xatom.h>
 
 #undef __FUNC__  
-#define __FUNC__ "XiInitColors" /* ADIC Ignore */
+#define __FUNC__ "XiInitColors" 
 int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 {
   PixVal   white_pixel, black_pixel;
@@ -67,7 +67,7 @@ static int cmap_base = 0;
     Set the initial color map
  */
 #undef __FUNC__  
-#define __FUNC__ "XiInitCmap" /* ADIC Ignore */
+#define __FUNC__ "XiInitCmap"
 int XiInitCmap(Draw_X* XiWin )
 {
   XColor   colordef;
@@ -106,7 +106,7 @@ int XiInitCmap(Draw_X* XiWin )
  * X colors are 16 bits, not 8, so we have to shift the input by 8.
  */
 #undef __FUNC__  
-#define __FUNC__ "XiCmap" /* ADIC Ignore */
+#define __FUNC__ "XiCmap" 
 int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue, 
             int mapsize, Draw_X *XiWin )
 {
@@ -182,7 +182,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
 	StaticGray
  */
 #undef __FUNC__  
-#define __FUNC__ "XiSetVisualClass" /* ADIC Ignore */
+#define __FUNC__ "XiSetVisualClass" 
 int XiSetVisualClass(Draw_X* XiWin )
 {
   XVisualInfo vinfo;
@@ -204,7 +204,7 @@ int XiSetVisualClass(Draw_X* XiWin )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiGetVisualClass" /* ADIC Ignore */
+#define __FUNC__ "XiGetVisualClass"
 int XiGetVisualClass(Draw_X* XiWin )
 {
 #if defined(__cplusplus)
@@ -215,7 +215,7 @@ int XiGetVisualClass(Draw_X* XiWin )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiCreateColormap" /* ADIC Ignore */
+#define __FUNC__ "XiCreateColormap" 
 Colormap XiCreateColormap(Draw_X* XiWin, Display* display,int screen,Visual *visual )
 {
   Colormap Cmap;
@@ -229,7 +229,7 @@ Colormap XiCreateColormap(Draw_X* XiWin, Display* display,int screen,Visual *vis
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiSetColormap" /* ADIC Ignore */
+#define __FUNC__ "XiSetColormap" 
 int XiSetColormap(Draw_X* XiWin )
 {
   XSetWindowColormap( XiWin->disp, XiWin->win, XiWin->cmap );
@@ -237,7 +237,7 @@ int XiSetColormap(Draw_X* XiWin )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiGetBaseColor" /* ADIC Ignore */
+#define __FUNC__ "XiGetBaseColor" 
 int XiGetBaseColor(Draw_X* XiWin,PixVal* white_pix,PixVal* black_pix )
 {
   *white_pix  = XiWin->cmapping[DRAW_WHITE];
@@ -259,7 +259,7 @@ static double Gamma = 2.0;
 #include <math.h>
 
 #undef __FUNC__  
-#define __FUNC__ "XiSetGamma" /* ADIC Ignore */
+#define __FUNC__ "XiSetGamma" 
 int XiSetGamma( double g )
 {
   Gamma = g;
@@ -267,7 +267,7 @@ int XiSetGamma( double g )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiSetCmapHue" /* ADIC Ignore */
+#define __FUNC__ "XiSetCmapHue" 
 int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,
               int mapsize )
 {
@@ -300,7 +300,7 @@ int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,
  *      r       g      b
  */
 #undef __FUNC__  
-#define __FUNC__ "XiHlsHelper" /* ADIC Ignore */
+#define __FUNC__ "XiHlsHelper" 
 int XiHlsHelper(int h,int n1,int n2 )
 {
   while (h > 360) h = h - 360;
@@ -312,7 +312,7 @@ int XiHlsHelper(int h,int n1,int n2 )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "XiHlsToRgb" /* ADIC Ignore */
+#define __FUNC__ "XiHlsToRgb" 
 int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,
            unsigned char *b )
 {
@@ -340,7 +340,7 @@ int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,
     Returns 0 on failure, <>0 otherwise.
  */
 #undef __FUNC__  
-#define __FUNC__ "XiFindColor" /* ADIC Ignore */
+#define __FUNC__ "XiFindColor" 
 int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
 {
   XColor   colordef;
@@ -363,7 +363,7 @@ int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
     the "background" or "foreground" colors will be chosen
  */
 #undef __FUNC__  
-#define __FUNC__ "XiGetColor" /* ADIC Ignore */
+#define __FUNC__ "XiGetColor" 
 PixVal XiGetColor(Draw_X* XiWin, char *name, int is_fore )
 {
   PixVal pixval;
@@ -378,7 +378,7 @@ PixVal XiGetColor(Draw_X* XiWin, char *name, int is_fore )
    lighter or darker
  */
 #undef __FUNC__  
-#define __FUNC__ "XiSimColor" /* ADIC Ignore */
+#define __FUNC__ "XiSimColor" 
 PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
 {
   XColor   colordef, colorsdef;
@@ -419,7 +419,7 @@ PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
   structure; this is used by routines such as the Xi contour plotter.
 */  
 #undef __FUNC__  
-#define __FUNC__ "XiUniformHues" /* ADIC Ignore */
+#define __FUNC__ "XiUniformHues" 
 int XiUniformHues( Draw_X *Xiwin, int ncolors )
 {
   unsigned char *red, *green, *blue;
@@ -439,7 +439,7 @@ int XiUniformHues( Draw_X *Xiwin, int ncolors )
   The initial color is (red[0],green[0],blue[0]).
 */
 #undef __FUNC__  
-#define __FUNC__ "XiSetCmapLight" /* ADIC Ignore */
+#define __FUNC__ "XiSetCmapLight" 
 int XiSetCmapLight(unsigned char *red, unsigned char *green,
                     unsigned char *blue, int mapsize )
 {

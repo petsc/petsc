@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.54 1997/07/09 20:59:37 balay Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.55 1997/08/13 22:26:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -15,7 +15,7 @@ typedef struct {  /* default context for matrix-free SNES */
 } MFCtx_Private;
 
 #undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeDestroy_Private" /* ADIC Ignore */
+#define __FUNC__ "SNESMatrixFreeDestroy_Private"
 int SNESMatrixFreeDestroy_Private(PetscObject obj)
 {
   int           ierr;
@@ -30,7 +30,7 @@ int SNESMatrixFreeDestroy_Private(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "SNESMatrixFreeView_Private" /* ADIC Ignore */
+#define __FUNC__ "SNESMatrixFreeView_Private"
 /*
    SNESMatrixFreeView_Private - Views matrix-free parameters.
  */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.9 1997/02/27 00:39:29 balay Exp balay $";
+static char vcid[] = "$Id: ffpath.c,v 1.10 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -11,7 +11,7 @@ extern int PetscTestFile(char *,char,uid_t,gid_t);
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "PetscGetFileFromPath" /* ADIC Ignore */
+#define __FUNC__ "PetscGetFileFromPath"
 /*@C
    PetscGetFileFromPath - Finds a file from a name and a path string.  A 
    default can be provided.

@@ -1,15 +1,13 @@
-/* $Id: isimpl.h,v 1.11 1997/05/23 18:40:01 balay Exp bsmith $ */
+/* $Id: isimpl.h,v 1.12 1997/08/14 23:16:39 bsmith Exp bsmith $ */
 
 /*
     Index sets for scatter-gather type operations in vectors
 and matrices. 
 
-   Eventually there may be operations like union, difference etc.
-for now we define only what we absolutely need.
 */
 
-#if !defined(_INDEX)
-#define _INDEX
+#if !defined(_IS_H)
+#define _IS_H
 #include "is.h"
 
 struct _ISOps {
@@ -30,6 +28,15 @@ struct _p_IS {
   int          max,min;         /* range of possible values */
   void         *data;
   int          isidentity;
+};
+
+struct _p_ISLocalToGlobalMapping{
+  PETSCHEADER
+  int n;                  /* number of local indices */
+  int *indices;           /* global index of each local index */
+  int globalstart;        /* first global referenced in indices */
+  int globalend;          /* last + 1 global referenced in indices */
+  int *globals;           /* local index for each global index between start and end */
 };
 
 #endif

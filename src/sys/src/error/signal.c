@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.40 1997/06/15 14:16:33 bsmith Exp balay $";
+static char vcid[] = "$Id: signal.c,v 1.41 1997/07/09 20:51:14 balay Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -30,7 +30,7 @@ static char *SIGNAME[] = { "unknown", "HUP",  "INT",  "QUIT", "ILL",
                            "CHLD" }; 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscSignalHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscSignalHandler"
 /*
     This is the signal handler called by the system. This calls 
   your signal handler.
@@ -53,7 +53,7 @@ static void PetscSignalHandler( int sig )
 
 
 #undef __FUNC__  
-#define __FUNC__ "PetscDefaultSignalHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscDefaultSignalHandler"
 /*@
    PetscDefaultSignalHandler - Default signal handler.
 
@@ -81,7 +81,7 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscPushSignalHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscPushSignalHandler"
 /*@C
    PetscPushSignalHandler - Catches the usual fatal errors and 
    calls a user-provided routine.
@@ -165,7 +165,7 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscPopSignalHandler" /* ADIC Ignore */
+#define __FUNC__ "PetscPopSignalHandler"
 int PetscPopSignalHandler()
 {
   struct SH *tmp;

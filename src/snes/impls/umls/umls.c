@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.57 1997/02/22 02:28:56 bsmith Exp balay $";
+static char vcid[] = "$Id: umls.c,v 1.58 1997/07/09 21:00:00 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -136,7 +136,7 @@ static int SNESSetUp_UM_LS(SNES snes)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "SNESDestroy_UM_LS" /* ADIC Ignore */
+#define __FUNC__ "SNESDestroy_UM_LS"
 static int SNESDestroy_UM_LS(PetscObject obj )
 {
   SNES snes = (SNES) obj;
@@ -175,7 +175,7 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp_UM_LS" /* ADIC Ignore */
+#define __FUNC__ "SNESPrintHelp_UM_LS"
 static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
@@ -194,7 +194,7 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 }
 /*------------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "SNESView_UM_LS" /* ADIC Ignore */
+#define __FUNC__ "SNESView_UM_LS"
 static int SNESView_UM_LS(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;

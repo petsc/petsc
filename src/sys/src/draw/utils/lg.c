@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.44 1997/06/05 12:56:08 bsmith Exp balay $";
+static char vcid[] = "$Id: lg.c,v 1.45 1997/07/09 20:58:15 balay Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -23,7 +23,7 @@ struct _p_DrawLG {
 #define CHUNCKSIZE 100
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGCreate" /* ADIC Ignore */
+#define __FUNC__ "DrawLGCreate"
 /*@C
     DrawLGCreate - Creates a line graph data structure.
 
@@ -49,7 +49,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
     (*outctx)->win = win;
     return 0;
   }
-  PetscHeaderCreate(lg,_p_DrawLG,DRAWLG_COOKIE,0,vobj->comm);
+  PetscHeaderCreate(lg,_p_DrawLG,DRAWLG_COOKIE,0,vobj->comm,DrawLGDestroy,0);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;
@@ -72,7 +72,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGSetDimension" /* ADIC Ignore */
+#define __FUNC__ "DrawLGSetDimension"
 /*@
    DrawLGSetDimension - Change the number of lines that are to be drawn.
 
@@ -98,7 +98,7 @@ int DrawLGSetDimension(DrawLG lg,int dim)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGReset" /* ADIC Ignore */
+#define __FUNC__ "DrawLGReset"
 /*@
    DrawLGReset - Clears line graph to allow for reuse with new data.
 
@@ -121,7 +121,7 @@ int DrawLGReset(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGDestroy" /* ADIC Ignore */
+#define __FUNC__ "DrawLGDestroy"
 /*@C
    DrawLGDestroy - Frees all space taken up by line graph data structure.
 
@@ -134,10 +134,14 @@ int DrawLGReset(DrawLG lg)
 @*/
 int DrawLGDestroy(DrawLG lg)
 {
+  if (!lg || !(lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW)) {
+    PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
+  }
+
+  if (--lg->refct > 0) return 0;
   if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {
     return PetscObjectDestroy((PetscObject) lg);
   }
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   DrawAxisDestroy(lg->axis);
   PetscFree(lg->x);
   PLogObjectDestroy(lg);
@@ -146,7 +150,7 @@ int DrawLGDestroy(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGAddPoint" /* ADIC Ignore */
+#define __FUNC__ "DrawLGAddPoint"
 /*@
    DrawLGAddPoint - Adds another point to each of the line graphs. 
    The new point must have an X coordinate larger than the old points.
@@ -191,7 +195,7 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGIndicateDataPoints" /* ADIC Ignore */
+#define __FUNC__ "DrawLGIndicateDataPoints"
 /*@
    DrawLGIndicateDataPoints - Causes LG to draw a big dot for each data-point.
 
@@ -209,7 +213,7 @@ int DrawLGIndicateDataPoints(DrawLG lg)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGAddPoints" /* ADIC Ignore */
+#define __FUNC__ "DrawLGAddPoints"
 /*@C
    DrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
@@ -264,7 +268,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGDraw" /* ADIC Ignore */
+#define __FUNC__ "DrawLGDraw"
 /*@
    DrawLGDraw - Redraws a line graph.
 
@@ -301,7 +305,7 @@ int DrawLGDraw(DrawLG lg)
 } 
  
 #undef __FUNC__  
-#define __FUNC__ "DrawLGSetLimits" /* ADIC Ignore */
+#define __FUNC__ "DrawLGSetLimits"
 /*@
    DrawLGSetLimits - Sets the axis limits for a line graph. If more
    points are added after this call, the limits will be adjusted to
@@ -326,7 +330,7 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
 }
  
 #undef __FUNC__  
-#define __FUNC__ "DrawLGGetAxis" /* ADIC Ignore */
+#define __FUNC__ "DrawLGGetAxis"
 /*@C
    DrawLGGetAxis - Gets the axis context associated with a line graph.
    This is useful if one wants to change some axis property, such as
@@ -353,7 +357,7 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "DrawLGGetDraw" /* ADIC Ignore */
+#define __FUNC__ "DrawLGGetDraw"
 /*@C
     DrawLGGetDraw - Gets the draw context associated with a line graph.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.32 1997/07/09 20:52:32 balay Exp balay $";
+static char vcid[] = "$Id: jacobi.c,v 1.33 1997/08/07 23:52:04 balay Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -67,7 +67,7 @@ static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCDestroy_Jacobi" /* ADIC Ignore */
+#define __FUNC__ "PCDestroy_Jacobi"
 static int PCDestroy_Jacobi(PetscObject obj)
 {
   PC pc = (PC) obj;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.29 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.30 1997/08/13 22:23:12 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -25,7 +25,7 @@ static char vcid[] = "$Id: memc.c,v 1.29 1997/07/09 20:51:14 balay Exp bsmith $"
 #include "pinclude/petscfix.h"
 
 #undef __FUNC__  
-#define __FUNC__ "PetscMemcpy" /* ADIC Ignore */
+#define __FUNC__ "PetscMemcpy"
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a. The two memory regions CANNOT overlap, use
@@ -52,7 +52,7 @@ void PetscMemcpy(void *a,void *b,int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscMemzero" /* ADIC Ignore */
+#define __FUNC__ "PetscMemzero"
 /*@C
    PetscMemzero - Zeros the specified memory.
 
@@ -74,7 +74,7 @@ void PetscMemzero(void *a,int n)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PetscMemcmp" /* ADIC Ignore */
+#define __FUNC__ "PetscMemcmp"
 /*@C
    PetscMemcmp - Compares two byte streams in memory.
 

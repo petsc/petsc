@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.231 1997/07/24 19:35:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.232 1997/08/04 16:28:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -602,7 +602,7 @@ extern int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatView_SeqAIJ" /* ADIC Ignore */
+#define __FUNC__ "MatView_SeqAIJ"
 int MatView_SeqAIJ(PetscObject obj,Viewer viewer)
 {
   Mat         A = (Mat) obj;
@@ -1713,7 +1713,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
 
   *A                  = 0;
-  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQAIJ,comm);
+  PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQAIJ,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_SeqAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqAIJ));
@@ -1809,7 +1809,7 @@ int MatConvertSameType_SeqAIJ(Mat A,Mat *B,int cpvalues)
   int        i,len, m = a->m,shift = a->indexshift;
 
   *B = 0;
-  PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQAIJ,A->comm);
+  PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQAIJ,A->comm,MatDestroy,MatView);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);
   PetscMemcpy(&C->ops,&A->ops,sizeof(struct _MatOps));
