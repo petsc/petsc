@@ -393,8 +393,8 @@ class Configure(config.base.Configure):
         if os.path.basename(self.framework.argDB['FC']) in ['mpif90', 'mpif77']:
          self.framework.log.write(' MPI installation '+self.compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.\n')
         self.popLanguage()
-        self.framework.argDB['FC'] = None
-    if 'FC' in self.framework.argDB and not self.framework.argDB['FC'] is None:
+        del self.framework.argDB['FC']
+    if 'FC' in self.framework.argDB:
       self.addArgumentSubstitution('FC', 'FC')
       self.addArgumentSubstitution('FFLAGS', 'FFLAGS')
     else:
