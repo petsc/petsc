@@ -187,6 +187,7 @@ class Configure(config.base.Configure):
       yield self.framework.argDB['with-cpp']
     else:
       yield self.framework.argDB['CC']+' -E'
+      yield self.framework.argDB['CC']+' --use cpp32'
     return
 
   def checkCPreprocessor(self):
@@ -320,6 +321,7 @@ class Configure(config.base.Configure):
       yield self.framework.argDB['with-cxxcpp']
     else:
       yield self.framework.argDB['CXX']+' -E'
+      yield self.framework.argDB['CXX']+' --use cpp32'
     return
 
   def checkCxxPreprocessor(self):
