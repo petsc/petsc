@@ -109,7 +109,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr = VecAYPX(&bi,ART,AP);CHKERRQ(ierr);            /*   AP <- ART + Bi AP  */
     i++;
   } while (i<ksp->max_it);
-  if (i == ksp->max_it) {
+  if (i >= ksp->max_it) {
     ksp->reason =  KSP_DIVERGED_ITS;
   }
   PetscFunctionReturn(0);
