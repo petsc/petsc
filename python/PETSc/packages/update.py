@@ -88,9 +88,6 @@ class Configure(config.base.Configure):
 
   def configureOptimization(self):
     '''Allow a default optimization level and language'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('CC_SHARED_OPT', '')
-
     # if BOPT is not set determines what libraries to use
     bopt = self.framework.argDB['with-default-optimization']
     if self.framework.argDB['with-default-language'] == '0' or self.framework.argDB['with-default-optimization'] == '0':
@@ -105,7 +102,7 @@ class Configure(config.base.Configure):
       elif self.framework.argDB['with-default-language'].find('complex') >= 0: bopt += '_complex'
       else:
         raise RuntimeError('Unknown option given with --with-default-language='+self.framework.argDB['with-default-language'])
-      fd = open(os.path.join('bmake', 'common', 'bopt_'), 'w')
+      fd = file(os.path.join('bmake', 'common', 'bopt_'), 'w')
       fd.write('BOPT='+bopt+'\n')
       fd.write('include ${PETSC_DIR}/bmake/common/bopt_'+bopt+'\n')
       fd.close()

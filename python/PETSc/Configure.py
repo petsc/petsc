@@ -91,17 +91,24 @@ class Configure(config.base.Configure):
     self.addDefine('USE_FORTRAN_KERNELS', self.useFortranKernels)
     return
 
-  def configureFortranPIC(self):
-    '''Determine the PIC option for the Fortran compiler'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.compilers.pushLanguage('F77')
-    option = ''
-    for opt in ['-PIC', '-fPIC', '-KPIC']:
-      if self.compilers.checkCompilerFlag(opt):
-        option = opt
-        break
-    self.framework.addSubstitution('FC_SHARED_OPT', option)
-    self.compilers.popLanguage()
+  def configurePIC(self):
+    '''Determine the PIC option for each compiler
+       - There needs to be a test that checks that the functionality is actually working'''
+    langauges = ['C']
+    if 'CXX' in self.framework.argDB:
+      languages.append('C++')
+    if 'FC' in self.framework.argDB:
+      languages.append('F77')
+    for language in languages:
+      self.compilers.pushLanguage(language)
+      for testFlag in ['-PIC', '-fPIC', '-KPIC']:
+        try:
+          self.framework.log.write('Trying '+language+' compiler flag '+testFlag+'\n')
+          self.addCompilerFlag(testFlag)
+          break
+        except RuntimeError:
+          self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
+      self.compilers.popLanguage()
     return
 
   def configureFortranCPP(self):
@@ -510,10 +517,7 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
-    if 'FC' in self.framework.argDB:
-      self.executeTest(self.configureFortranPIC)
-    else:
-      self.framework.addSubstitution('FC_SHARED_OPT', '')
+    self.executeTest(self.configurePIC)
     self.executeTest(self.configureFortranCPP)
     self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)

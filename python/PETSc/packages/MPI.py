@@ -75,14 +75,14 @@ class Configure(config.base.Configure):
     self.framework.argDB['LIBS']     = oldLibs
     return success
 
-  def outputMPIRun(self, includes, body, cleanup = 1):
+  def outputMPIRun(self, includes, body, cleanup = 1, defaultOutputArg = ''):
     '''Analogous to outputRun(), but the MPI includes and libraries are automatically provided'''
     oldFlags = self.framework.argDB['CPPFLAGS']
     oldLibs  = self.framework.argDB['LIBS']
     for inc in self.include:
       self.framework.argDB['CPPFLAGS'] += ' -I'+inc
     self.framework.argDB['LIBS'] = ' '.join([self.libraries.getLibArgument(lib) for lib in self.lib]+[self.compilers.flibs])+' '+self.framework.argDB['LIBS']
-    output, status = self.outputRun(includes, body, cleanup)
+    output, status = self.outputRun(includes, body, cleanup, defaultOutputArg)
     self.framework.argDB['CPPFLAGS'] = oldFlags
     self.framework.argDB['LIBS']     = oldLibs
     return (output, status)
@@ -123,12 +123,13 @@ class Configure(config.base.Configure):
 
   def configureVersion(self):
     '''Determine the MPI version'''
-    output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
-    if not status:
-      # need to strip out information from batch system
-      f = re.match('([0-9]*.[0-9]*)',output)
-      if not f: return 'Unknown'
-      return f.group()
+    if self.framework.argDB['can-execute']:
+      output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
+      if not status:
+        # need to strip out information from batch system
+        f = re.match('([0-9]*.[0-9]*)',output)
+        if not f: return 'Unknown'
+        return f.group()
     return 'Unknown'
 
   def includeGuesses(self, path):
@@ -313,7 +314,7 @@ class Configure(config.base.Configure):
     args.append('-rsh=ssh')
     args = ' '.join(args)
     try:
-      fd = open(os.path.join(installDir,'config.args'),'r')
+      fd      = file(os.path.join(installDir,'config.args'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -327,7 +328,7 @@ class Configure(config.base.Configure):
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))
-      fd = open(os.path.join(installDir,'config.args'),'w')
+      fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
     
