@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.15 1995/11/01 19:11:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.16 1995/11/07 19:44:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -26,6 +26,10 @@ int main(int argc,char **args)
   Viewer     fd;
 
   PetscInitialize(&argc,&args,0,0,help);
+
+#if defined(PETSC_COMPLEX)
+  SETERRA(1,"This example does not work with complex numbers");
+#else
 
   /* Read matrix and RHS */
   OptionsGetString(0,"-f",file,127);
@@ -69,5 +73,6 @@ int main(int argc,char **args)
 
   PetscFinalize();
   return 0;
+#endif
 }
 
