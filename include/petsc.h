@@ -432,6 +432,7 @@ EXTERN int PetscObjectCompose(PetscObject,const char[],PetscObject);
 EXTERN int PetscObjectQuery(PetscObject,const char[],PetscObject *);
 EXTERN int PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
 
+typedef void (*FCNVOID)(void); /* cast in next macro should never be extern C */
 /*MC
    PetscObjectComposeFunctionDynamic - Associates a function with a given PETSc object. 
                        
@@ -468,7 +469,7 @@ M*/
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,0)
 #else
-#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(void (*)(void))(d))
+#define PetscObjectComposeFunctionDynamic(a,b,c,d) PetscObjectComposeFunction(a,b,c,(FCNVOID)(d))
 #endif
 
 EXTERN int PetscObjectQueryFunction(PetscObject,const char[],void (**)(void));
