@@ -28,19 +28,18 @@ manual.html: manual.tex
 	-mv *.html ..
 	rm -f *.gif *.xbm latex.err findex.tex sindex.tex
 
-petsc.ps: petsc.tex
-	latex petsc
-	dvips petsc
-	rm -r petsc.dvi petsc.aux petsc.log
-	-@chmod g+w petsc.ps
-	-mv petsc.ps ..
+onepager.ps: onepager.tex
+	latex onepager
+	dvips onepager
+	rm -r onepager.dvi onepager.aux onepager.log
+	-@chmod g+w onepager.ps
+	-mv onepager.ps ..
 
-petsc.html: petsc.tex
-	tohtml petsc.tex -notopnames -nocontents -nonavnames 
-	tohtml petsc.tex -notopnames -nocontents -nonavnames 
+onepager.html: onepager.tex
+	tohtml onepager.tex -notopnames -nocontents -nonavnames 
+	tohtml onepager.tex -notopnames -nocontents -nonavnames 
 	rm -f *.gif *.xbm latex.err
-	-@chmod g+w petsc.html
-	-mv petsc.html ..
+	-@chmod g+w onepager.html
 
 clean:
 	rm -f routines.ps *.dvi *.aux *.toc *.log *.bbl *.blg *.hux *.err \
