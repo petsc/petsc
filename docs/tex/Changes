@@ -38,6 +38,19 @@ add to it).
 
   General
 
+   Added support for PETSc programs to use Matlab functions and scripts on each processor
+   for sequential calculations; for example for the local evaluation of the parallel nonlinear
+   function required for SNES; see src/snes/examples/tutorials/ex5m.c. This functionality
+   is accessed via the commands PetscMatlabEngineCreate(),Put(),Get(),Evaluate() and Destroy()
+   It even imports the Matlab flop counts correctly. Obviously you need enough Matlab licenses
+   for each node. Note: Matlab itself is not directly doing any parallel computing.
+
+   In addition, augmented the SeqAIJ matrices to support -mat_aij_matlab that causes the 
+   matrices to use the Matlab engine for sparse LU, and ILUDT factorization and solves. 
+   Which have pivoting and thus are more robust than PETSc's default.
+
+   I, of course, could do more, any suggestions.
+
    All include files like mat.h vec.h sles.h snes.h ts.h etc are now changed to petscmat.h petscvec.h
    petscsles.h petscsnes.h petscts.h
 
