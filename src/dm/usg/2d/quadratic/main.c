@@ -218,14 +218,14 @@ int AppCtxCreateRhs(AppCtx* appctx)
 #define __FUNC__ "AppCxtSetRhs"
 int AppCtxSetRhs(AppCtx* appctx)
 {
-  AppGrid    *grid = &appctx->grid;            /* grid context */
-  AppAlgebra *algebra = &appctx->algebra;      /* algebra context */
-  Vec        b = algebra->b;                   /* right-hand-side vector */
-  Scalar     *values;                          /* right-hand-side values for an element */
-  double     *coors;                           /* coordinates for an element */
-  int        ncell = 6;                        /* number of nodes per cell */
-  int        cell_n = grid->cell_n;            /* number of cells on this proc */
-  int        *cell_vertex = grid->cell_vertex; /* vertices of the cells (local ordering) */
+  AppGrid    *grid = &appctx->grid;                     /* grid context */
+  AppAlgebra *algebra = &appctx->algebra;               /* algebra context */
+  Vec        b = algebra->b;                            /* right-hand-side vector */
+  Scalar     *values;                                   /* right-hand-side values for an element */
+  double     *coors,*vertex_value = grid->vertex_value; /* coordinates for an element */
+  int        ncell = 6;                                 /* number of nodes per cell */
+  int        cell_n = grid->cell_n;                     /* number of cells on this proc */
+  int        *cell_vertex = grid->cell_vertex;          /* vertices of the cells (local ordering) */
   int        *vertices, j, ierr, i;
 
   /*
@@ -247,8 +247,8 @@ int AppCtxSetRhs(AppCtx* appctx)
        Load the cell vertex coordinates 
     */
     for ( j=0; j<ncell; j++) {
-      coors[2*j]   = cell_vertex[vertices[j]];
-      coors[2*j+1] = cell_vertex[vertices[j]+1];
+      coors[2*j]   = vertex_value[2*vertices[j]];
+      coors[2*j+1] = vertex_value[2*vertices[j]+1];
     }
     /*
       Here is where you would call the routine to compute the 
@@ -477,7 +477,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   Mat        A = algebra->A;                          /* matrix */
   IS         vertex_boundary = grid->vertex_boundary; /* vertices on boundary 
                                                          (including ghosts) */
-  double     *coors;                                  /* coordinates for an element */
+  double     *coors,*vertex_value = grid->vertex_value;/* coordinates for an element */
   int        vertex_n = grid->vertex_n;               /* number of unique local vertices */
   int        ncell = 6;                               /* number of nodes per cell */
   int        cell_n = grid->cell_n;                   /* number of cells on this proc */
@@ -502,15 +502,15 @@ int AppCtxSetMatrix(AppCtx* appctx)
   for ( i=0; i<cell_n; i++ ) {
     vertices = cell_vertex + ncell*i;   
     for ( j=0; j<ncell; j++) {
-      coors[2*j]   = cell_vertex[vertices[j]];
-      coors[2*j+1] = cell_vertex[vertices[j]+1];
+      coors[2*j]   = vertex_value[2*vertices[j]];
+      coors[2*j+1] = vertex_value[2*vertices[j]+1];
     }
     /* 
         Here one would call the routine that computes the element stiffness
     */
     for ( j=0; j<ncell*ncell; j++) values[j] = 1.0;
 
-    ierr     = MatSetValuesLocal(A,ncell,vertices,ncell,vertices,values,ADD_VALUES); CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(A,ncell,vertices,ncell,vertices,values,ADD_VALUES);CHKERRQ(ierr);
   }
 
   /* 
