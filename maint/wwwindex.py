@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.24 1999/08/31 21:10:57 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.25 1999/10/12 18:39:11 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -111,20 +111,23 @@ def printsingleindex(outfilename,alphabet_dict):
       alphabet_index = alphabet_dict.keys()
       alphabet_index.sort()
 
-      # Print the HTML index for each alphabet
-      fd.write('\n<P>\n')
-      fd.write('<H1>Index</H1>\n')
-
-      fd.write('<H3> <CENTER> | ')
-      for key in alphabet_index:
-            fd.write('<A HREF="singleindex.html#' + key + '"> ' + upper(key) + ' </A> | \n')
-      fd.write('</CENTER></H3> \n')
-      fd.write('\n<P>\n')
-
       # Now print each section, begining with a title
       for key in alphabet_index:
-            fd.write('<H3><A NAME="' + key + '">' + upper(key) + '</A></H3>\n' )
-            fd.write('\n<P>\n')
+
+            # Print the HTML tag for this section
+            fd.write('<A NAME="' + key + '"></A>\n' )
+
+            # Print the HTML index at the begining of each section
+            fd.write('<H3> <CENTER> | ')
+            for key_tmp in alphabet_index:
+                  if key == key_tmp:
+                        fd.write( '<FONT COLOR="#CC3333">' + upper(key_tmp) + '</FONT> | \n' )
+                  else:
+                        fd.write('<A HREF="singleindex.html#' + key_tmp + '"> ' + \
+                                 upper(key_tmp) + ' </A> | \n')
+            fd.write('</CENTER></H3> \n')
+
+            # Now write the table entries
             fd.write('<TABLE>\n')
             fd.write('</TR><TD WIDTH=250 COLSPAN="3">')
             fd.write('</TD></TR>\n')
