@@ -186,9 +186,13 @@ class Configure(config.base.Configure):
       name, self.blasLibrary, self.lapackLibrary = self.functionalBlasLapack[0]
       if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
       if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
+      
       #ugly stuff to decide if BLAS/LAPACK are dynamic or static
-      if ' '.join(self.blasLibrary).find('blas.a') >= 0: self.framework.sharedBlasLapack = 0
-      else:                                              self.framework.sharedBlasLapack = 1
+      self.framework.sharedBlasLapack = 1
+      if len(self.blasLibrary) > 0 and self.blasLibrary[0]:
+        if ' '.join(self.blasLibrary).find('blas.a') >= 0: self.framework.sharedBlasLapack = 0
+      if len(self.lapackLibrary) > 0 and self.lapackLibrary[0]:
+        if ' '.join(self.lapackLibrary).find('lapack.a') >= 0: self.framework.sharedBlasLapack = 0
 
     else:
       if not self.foundBlas:
