@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.119 1998/05/24 20:24:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.120 1998/06/11 19:53:03 bsmith Exp balay $";
 #endif
 
 /*
@@ -545,7 +545,7 @@ int VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
   out->destroy       = in->destroy;
   out->view          = in->view;
 
-  out_to                         = PetscMalloc(in_to->n*sizeof(int)+sizeof(VecScatter_Seq_General));CHKPTRQ(out_to);
+  out_to                         = (VecScatter_Seq_General *)PetscMalloc(in_to->n*sizeof(int)+sizeof(VecScatter_Seq_General));CHKPTRQ(out_to);
   out_to->n                      = in_to->n; 
   out_to->type                   = in_to->type;
   out_to->nonmatching_computed   = 0;
@@ -554,7 +554,7 @@ int VecScatterCopy_SGToSG(VecScatter in,VecScatter out)
   out_to->slots                  = (int *) (out_to + 1);
   PetscMemcpy(out_to->slots,in_to->slots,(out_to->n)*sizeof(int));
 
-  out_from                       = PetscMalloc(in_from->n*sizeof(int)+sizeof(VecScatter_Seq_General));CHKPTRQ(out_from);
+  out_from                       = (VecScatter_Seq_General *) PetscMalloc(in_from->n*sizeof(int)+sizeof(VecScatter_Seq_General));CHKPTRQ(out_from);
   out_from->n                    = in_from->n; 
   out_from->type                 = in_from->type;
   out_from->nonmatching_computed = 0;
@@ -603,7 +603,7 @@ int VecScatterCopy_SGToStride(VecScatter in,VecScatter out)
   out_to->step    = in_to->step;
   out_to->type    = in_to->type;
 
-  out_from                       = PetscMalloc(in_from->n*sizeof(int)+sizeof(VecScatter_Seq_General));CHKPTRQ(out_from);
+  out_from                       = (VecScatter_Seq_General *)PetscMalloc(in_from->n*sizeof(int)+sizeof(VecScatter_Seq_General));CHKPTRQ(out_from);
   out_from->n                    = in_from->n; 
   out_from->type                 = in_from->type;
   out_from->nonmatching_computed = 0;
