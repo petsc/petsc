@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddistlite,v 1.1 2001/04/06 04:41:59 balay Exp balay $ 
+# $Id: builddistlite,v 1.2 2001/04/06 04:42:38 balay Exp balay $ 
 
 # 
 #  takes a full distribution tar file, and creates a 'lite' distribution
@@ -12,20 +12,25 @@ else
    exit 0
 endif
 
-set tmpdir=/mcs/tmp
+set tmpdir=/sandbox/petsc/tmp
 /bin/rm -rf $tmpdir/petsc-lite
 mkdir -p $tmpdir/petsc-lite
 cd $tmpdir/petsc-lite
 
 gunzip -c $fulldistfile | tar -xf -
 
-/bin/rm -rf $tmpdir/petsc*/docs
+/bin/rm -rf $tmpdir/petsc-lite/petsc*/docs
 
 # remove all the .html files
 find $tmpdir/petsc-lite -type f -name "*.html" -exec rm {} \;
 
 # Tar up the remaning files to create the 'lite' distribution
-
-/bin/tar -cf  $tmpdir/petsc-lite.tar $tmpdir/petsc-lite/petsc*
+cd $tmpdir/petsc-lite
+/bin/tar -cf  $tmpdir/petsc-lite.tar petsc*
 gzip -f $tmpdir/petsc-lite.tar
 /bin/cp  $tmpdir/petsc-lite.tar.gz ~/
+
+
+# Clean up
+/bin/rm -rf $tmpdir/petsc-lite
+
