@@ -1,27 +1,4 @@
-# $Id: base,v 1.39 1998/06/18 14:43:08 balay Exp balay $ 
-
-#
-#
-#  If you are not using the Gnu C compiler then replace the compiler name 
-# gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__ and the -fPIC.
-#
-PARCH    = sun4
-CC       = gcc -D__USE_FIXED_PROTOTYPES__ -fPIC
-#
-#  Indicates the version of the compiler you are using; if you do not know
-#  how to get the version number then use: unknown
-#
-CCV      = ${CC} --version
-#
-FC       = f77 -PIC -u
-AR       = ar
-RM       = rm -f
-OMAKE    = make
-RANLIB   = ranlib
-SHELL    = /bin/sh
-CLINKER  = gcc ${COPTFLAGS}
-FLINKER  = f77 ${FOPTFLAGS}
-
+# $Id: base,v 1.40 1998/07/15 15:42:19 balay Exp balay $ 
 
 include ${PETSC_DIR}/bmake/common
 
