@@ -217,7 +217,7 @@ int checkInit(void) {
     while path:
       dir = os.path.join(path, 'include')
       if os.path.isdir(dir):
-        yield dir
+        yield [dir]
       path = os.path.dirname(path)
     return
 
@@ -243,10 +243,10 @@ int checkInit(void) {
       libs = self.framework.argDB['with-mpi-lib']
       if not isinstance(libs, list): libs = [libs]
       if 'with-mpi-include' in self.framework.argDB:
-        includes = [self.framework.argDB['with-mpi-include']]
+        includes = [[self.framework.argDB['with-mpi-include']]]
       else:
         includes = self.includeGuesses(map(lambda inc: os.path.dirname(os.path.dirname(inc)), libs))
-      yield ('User specified library and includes', libs, includes)
+      yield ('User specified library and includes', [libs], includes)
     # Try specified installation root
     if 'with-mpi-dir' in self.framework.argDB:
       dir = self.framework.argDB['with-mpi-dir']
@@ -258,7 +258,7 @@ int checkInit(void) {
     yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try /usr/local
     dir = os.path.abspath(os.path.join('/usr', 'local'))
-    yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [os.path.join(dir, 'include')])
+    yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None
