@@ -144,12 +144,8 @@ class BS (maker.Maker):
     try:
       self.debugPrint('Updating source database of fileset '+setName, 1, 'sourceDB')
       for file in self.filesets[setName]:
-        if sourceDB.has_key(file):
-          self.debugPrint('Updating '+file, 3, 'sourceDB')
-          sourceDB.updateSource(file)
-        else:
-          self.debugPrint('Updating '+file, 3, 'sourceDB')
-          sourceDB.stickinSource(file)
+        self.debugPrint('Updating '+file, 3, 'sourceDB')
+        sourceDB.updateSource(file)
     except KeyError:
       try:
         self.debugPrint('Updating '+setName, 3, 'sourceDB')

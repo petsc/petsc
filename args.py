@@ -39,8 +39,9 @@ class ArgDict (dict, logging.Logger):
       elif not isinstance(parent, ArgDict):
         parent = None
     return parent
-#  If requested key is a directory try to use Filebrowser to get it
-  def getDirectory(self,key,exist):
+
+  def getDirectory(self, key, exist):
+    '''If requested key is a directory try to use Filebrowser to get it'''
     try:
       import GUI.FileBrowser
       import SIDL.Loader
@@ -52,15 +53,14 @@ class ArgDict (dict, logging.Logger):
     db.setMustExist(exist)
     return (1,db.getDirectory())
 
-  def __setitem__(self,key,value):
+  def __setitem__(self, key, item):
     if self.metadata['saveinparent'].has_key(key):
-      p = self.getParent(key)
-      p.data[key] = value
+      dict.__setitem__.(self.getParent(key), key, item)
     else:
-      self.data[key] = value
+      dict.__setitem__.(self, key, item)
     
   def __getitem__(self, key):
-    if dict.has_key(self, key): return self.data[key]
+    if dict.has_key(self, key): return dict.__getitem__(self, key)
     (ok, item) = self.getMissingItem(key)
     if ok:
       dict.__setitem__.(self, key, item)
@@ -171,10 +171,7 @@ class ArgDict (dict, logging.Logger):
     return
 
   def getParent(self, key):
-    isdefault = 0
     if self.metadata['parent'].has_key(key):
-
-
       return self.metadata['parent'][key]
     elif self.defaultParent:
       return self.defaultParent

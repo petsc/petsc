@@ -9,7 +9,6 @@ import string
 import sys
 import time
 
-
 class SourceDB (dict, logging.Logger):
   includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
 
@@ -42,11 +41,6 @@ class SourceDB (dict, logging.Logger):
       buf = f.read(size)
     f.close()
     return m.hexdigest()
-
-  def stickinSource(self, source):
-    dependencies = ()
-    self.debugPrint('Sticking '+source+' in source database', 3, 'sourceDB')
-    self[source] = (self.getChecksum(source), os.path.getmtime(source), time.time(), dependencies, 1)
 
   def updateSource(self, source):
     dependencies = ()
@@ -81,8 +75,7 @@ class SourceDB (dict, logging.Logger):
         else:
           raise e
       comps  = string.split(source, '/')
-      line = file.readline()
-      while line:
+      for line in file.xreadlines():
         m = self.includeRE.match(line)
         if m:
           filename  = m.group('includeFile')
@@ -100,7 +93,6 @@ class SourceDB (dict, logging.Logger):
                 matchName = s
                 matchNum  = i
           newDep.append(matchName)
-          line = file.readline()
       # Grep for #include, then put these files in a tuple, we can be recursive later in a fixpoint algorithm
       self[source] = (checksum, mtime, timestamp, tuple(newDep), updated)
 
@@ -134,12 +126,10 @@ class DependencyAnalyzer (logging.Logger):
   def getNeighbors(self, source):
     file = open(source, 'r')
     adj  = []
-    line = file.readline()
-    while line:
+    for line in file.xreadlines():
       match = self.includeRE.match(line)
       if match:
         adj.append(self.resolveDependency(source, m.group('includeFile')))
-      line = file.readline()
     return adj
 
   def calculateDependencies(self):

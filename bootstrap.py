@@ -311,11 +311,7 @@ class Bootstrap:
             print "Unable to access list of packages; are you sure you are on the network?"
             raise RuntimeError,"Unable to access list of packages; are you sure you are on the network?"
           fd            = open("packages")
-          line = fd.readline()
-          packages = []
-          while line:
-            packages.append(line)
-            line = fd.readline()
+          packages = fd.readlines()
           fd.close()
           os.unlink("packages")
           return packages
