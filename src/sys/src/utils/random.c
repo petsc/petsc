@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rndm.c,v 1.1 1994/03/18 00:21:49 gropp Exp $";
+static char vcid[] = "$Id: options.c,v 1.65 1996/01/13 13:42:38 balay Exp bsmith $";
 #endif
 
 /*
@@ -15,51 +15,80 @@ static char vcid[] = "$Id: rndm.c,v 1.1 1994/03/18 00:21:49 gropp Exp $";
     one to reinitialize and set the seed.
  */
 
-#include "tools.h"
+#include "petsc.h"
+#include "sys.h"
+#include "stdlib.h"
+
+#define SYRANDOM_COOKIE PETSC_COOKIE+19
 
 /* Private data */
-typedef struct {
-    unsigned long seed;
-    /* array for shuffling ??? */
-    } SYRndm;
+struct _SYRandom {
+  PETSCHEADER                         /* general PETSc header */
+  unsigned long seed;
+  /* array for shuffling ??? */
+};
 
-#if defined(sun4) || defined(rs6000)
+#if defined(PARCH_sun4)
+#if defined(__cplusplus)
+extern "C" {
 extern double drand48();
-void *SYCreateRndm()
+extern void   srand48();
+}
+#else
+extern double drand48();
+extern void   srand48();
+#endif
+
+int SYRandomCreate(SYRandomType type,SYRandom *r)
 {
-srand48(0x12345678);
-return 0;
+  SYRandom rr;
+  *r = 0;
+  PetscHeaderCreate(rr,_SYRandom,SYRANDOM_COOKIE,type,MPI_COMM_SELF);
+  srand48(0x12345678);
+  *r = rr;
+  return 0;
 }
 
-void SYFreeRndm( r )
-SYRndm *r;
+int SYRandomDestroy(SYRandom r)
 {
-FREE( r );
+  PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
+  PetscFree(r);
+  return 0;
 }
 
-double SYDRndm( r )
-SYRndm *r;
+int SYRandomGetValue(SYRandom r,Scalar *val)
 {
-return drand48();
+  PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
+  *val = drand48();
+  /* what should we do for complex numbers? */
+  return 0;
 }
 
-/* Question:  should there be a routine for a random vector */	
 #else
 /* Should put a simple, portable random number generator here */
-void *SYCreateRndm()
+
+extern double drand48();
+int SYRandomCreate(SYRandomType type,SYRandom *r)
 {
-return 0;
+  SYRandom rr;
+  *r = 0;
+  PetscHeaderCreate(rr,_SYRandom,SYRANDOM_COOKIE,type,MPI_COMM_SELF);
+  *r = rr;
+  return 0;
 }
 
-void SYFreeRndm( r )
-SYRndm *r;
+int SYRandomDestroy(SYRandom r)
 {
-FREE( r );
+  PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
+  PetscFree(r);
+  return 0;
 }
 
-double SYDRndm( r )
-SYRndm *r;
+int SYRandomGetValue(SYRandom r,Scalar *val)
 {
-return 0.5;
+  PETSCVALIDHEADERSPECIFIC(r,SYRANDOM_COOKIE);
+  /* what should we do for complex numbers? */
+  *val = 0.5;
+  return 0;
 }
 #endif
