@@ -70,7 +70,7 @@ int PetscMemcpy(void *a,const void *b,int n)
               or make sure your copy regions and lengths are correct");
     }
 #endif
-#if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY)
+#if defined(PETSC_PREFER_DCOPY_FOR_MEMCPY) && !defined(PETSC_USE_COMPLEX)
 #  if defined(HAVE_DOUBLE_ALIGN)
     if (!(((long) a) % 8) && !(n % 8)) {
 #  else

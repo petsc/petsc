@@ -5,10 +5,10 @@
 
 #include "esi/petsc/indexspace.h"
 
-PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm comm, int n, int N)
+PETSC_TEMPLATE esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm icomm, int n, int N)
 {
   int ierr;
-  ierr = PetscMapCreateMPI(comm,n,N,&this->map);if (ierr) return;
+  ierr = PetscMapCreateMPI(icomm,n,N,&this->map);if (ierr) return;
   this->pobject = (PetscObject)this->map;
   ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);if (ierr) return;
 }
