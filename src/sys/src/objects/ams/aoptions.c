@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.16 2000/08/24 22:41:09 bsmith Exp balay $*/
+/*$Id: aoptions.c,v 1.17 2000/08/25 16:45:23 balay Exp balay $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -509,7 +509,7 @@ int OptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTruth *f
 #endif
   ierr = OptionsGetLogical(amspub.prefix,opt,flg,set);CHKERRQ(ierr);
   if (amspub.printhelp) {
-    char *v = (deflt ? "true" : "false");
+    const char *v = (deflt ? "true" : "false");
     ierr = (*PetscHelpPrintf)(amspub.comm,"    %s%s: <%s> %s (%s)\n",amspub.prefix?amspub.prefix:"",opt,v,text,man);CHKERRQ(ierr);
   }
 

@@ -1,4 +1,4 @@
-/*$Id: viewreg.c,v 1.26 2000/08/17 04:50:26 bsmith Exp bsmith $*/
+/*$Id: viewreg.c,v 1.27 2000/08/24 22:40:53 bsmith Exp balay $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -197,7 +197,7 @@ int ViewerRegister(char *sname,char *path,char *name,int (*function)(Viewer))
 int ViewerSetFromOptions(Viewer viewer)
 {
   int        ierr;
-  char       vtype[256];
+  char       vtype[256], *x;
   PetscTruth flg;
 
   PetscFunctionBegin;
@@ -205,7 +205,7 @@ int ViewerSetFromOptions(Viewer viewer)
 
   if (!ViewerList) SETERRQ(1,1,"No viewer implementations registered");
   ierr = OptionsBegin(viewer->comm,viewer->prefix,"Viewer options");CHKERRQ(ierr);
-    ierr = OptionsList("-viewer_type","Type of viewer","None",ViewerList,viewer->type_name?viewer->type_name:ASCII_VIEWER,vtype,256,&flg);CHKERRQ(ierr);
+    ierr = OptionsList("-viewer_type","Type of viewer","None",ViewerList,(char *)(viewer->type_name?viewer->type_name:ASCII_VIEWER),vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = ViewerSetType(viewer,vtype);CHKERRQ(ierr);
     }
