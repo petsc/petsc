@@ -16,7 +16,7 @@ int main(int argc,char **args)
   const MatType  type[9]; 
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
-  PetscTruth     equal,flg_loadmat;
+  PetscTruth     equal,flg_loadmat,flg;
   PetscScalar    value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -24,9 +24,19 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN-1,&flg_loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  type[0] = MATAIJ;
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-testseqaij",&flg);CHKERRQ(ierr);
+  if (flg){
+    if (size == 1){
+      type[0] = MATSEQAIJ;
+    } else {
+      type[0] = MATMPIAIJ;
+    }
+  } else {
+    type[0] = MATAIJ;
+  }
   if (size == 1){ 
-    ntypes = 3;
+    ntypes = 3; 
     type[1] = MATSEQBAIJ;
     type[2] = MATSEQSBAIJ;
   } else {
@@ -116,6 +126,13 @@ int main(int argc,char **args)
       ierr = MatDestroy(B);CHKERRQ(ierr);
       ierr = MatDestroy(D);CHKERRQ(ierr); 
     }
+    /* Test in-place convert */
+    if (size == 1){ /* size > 1 is not working yet! */
+    j = (i+1)%ntypes;
+    /* printf("[%d] i: %d, j: %d\n",rank,i,j); */
+    ierr = MatConvert(A,type[j],&A);CHKERRQ(ierr);
+    }
+
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   ierr = MatDestroy(C);CHKERRQ(ierr);
