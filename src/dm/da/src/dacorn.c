@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.21 1999/03/16 17:13:40 balay Exp curfman $";
+static char vcid[] = "$Id: dacorn.c,v 1.22 1999/04/05 00:15:05 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -74,7 +74,7 @@ int DAGetCoordinates(DA da,Vec *c)
 
 #undef __FUNC__  
 #define __FUNC__ "DASetFieldName"
-/*@
+/*@C
    DASetFieldName - Sets the names of individual field components in multicomponent
    vectors associated with a DA.
 

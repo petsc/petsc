@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.26 1999/03/01 04:58:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: zda.c,v 1.27 1999/03/18 00:36:01 curfman Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -19,7 +19,10 @@ static char vcid[] = "$Id: zda.c,v 1.26 1999/03/01 04:58:59 bsmith Exp curfman $
 #define dagetinfo_              DAGETINFO
 #define dagetcoloring_          DAGETCOLORING
 #define dagetislocaltoglobalmapping_ DAGETISLOCALTOGLOBALMAPPING
+#define daload_                      DALOAD
+#define dasetfieldname_              DASETFIELDNAME
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define daload_                 daload
 #define dacreateglobalvector_   dacreateglobalvector
 #define dacreatelocalvector_    dacreatelocalvector
 #define daview_                 daview
@@ -32,9 +35,23 @@ static char vcid[] = "$Id: zda.c,v 1.26 1999/03/01 04:58:59 bsmith Exp curfman $
 #define dagetinfo_              dagetinfo
 #define dagetcoloring_          dagetcoloring
 #define dagetislocaltoglobalmapping_ dagetislocaltoglobalmapping
+#define dasetfieldname_              dasetfieldname
 #endif
 
 EXTERN_C_BEGIN
+
+void dasetfieldname_(DA *da,int *nf, CHAR name, int *__ierr,int len )
+{
+  char *t;
+  FIXCHAR(name,len,t);
+  *__ierr = DASetFieldName(*da,*nf,t);
+  FREECHAR(name,t);
+}
+
+void daload_(Viewer *viewer,int *M,int *N,int *P,DA *da, int *__ierr )
+{
+  *__ierr = DALoad(*viewer,*M,*N,*P,da);
+}
 
 void dagetislocaltoglobalmapping_(DA *da,ISLocalToGlobalMapping *map, int *__ierr)
 {
