@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.94 1998/12/01 17:14:30 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.95 1998/12/05 20:17:27 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1582,7 +1582,8 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 
 /*@C
    MatSeqAIJGetInodeSizes - Returns the inode information of the SeqAIJ matrix.
-   Not Collective
+
+   Collective on Mat
 
    Input Parameter:
 .  A - the SeqAIJ matrix.
@@ -1593,7 +1594,7 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 -  limit      - the max size used to generate the inodes.
 
    Notes: This routine returns some internal storage information
-   of the matrix, an is intended to be used by advanced users.
+   of the matrix, it is intended to be used by advanced users.
    It should be called after the matrix is assembled.
    The contents of the sizes[] array should not be changed.
 
@@ -1611,5 +1612,6 @@ int MatSeqAIJGetInodeSizes(Mat A,int *node_count, int *sizes[], int *limit)
   a           = (Mat_SeqAIJ *) A->data; 
   *node_count = a->inode.node_count;
   *sizes      = a->inode.size;
+  *limit      = a->inode.limit;
   PetscFunctionReturn(0);
 }
