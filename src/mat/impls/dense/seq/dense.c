@@ -11,11 +11,17 @@
 int MatAXPY_SeqDense(PetscScalar *alpha,Mat X,Mat Y,MatStructure str)
 {
   Mat_SeqDense *x = (Mat_SeqDense*)X->data,*y = (Mat_SeqDense*)Y->data;
-  int          N = X->m*X->n,one = 1;
+  int          N = X->m*X->n,m=X->m,ldax=x->lda,lday=y->lda, j,one = 1;
 
   PetscFunctionBegin;
-  if (x->lda>X->m || y->lda>Y->m) SETERRQ(1,"Can not handle LDA");
-  BLaxpy_(&N,alpha,x->v,&one,y->v,&one);
+  if (X->m != Y->m || X->n != Y->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
+  if (ldax>m || lday>m) {
+    for (j=0; j<X->n; j++) {
+      BLaxpy_(&m,alpha,x->v+j*ldax,&one,y->v+j*lday,&one);
+    }
+  } else {
+    BLaxpy_(&N,alpha,x->v,&one,y->v,&one);
+  }
   PetscLogFlops(2*N-1);
   PetscFunctionReturn(0);
 }
@@ -54,12 +60,18 @@ int MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 int MatScale_SeqDense(PetscScalar *alpha,Mat A)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
-  int          one = 1,nz;
+  int          one = 1,lda = a->lda,j,nz;
 
   PetscFunctionBegin;
-  if (a->lda>A->m) SETERRQ(1,"Can not handle LDA");
-  nz = A->m*A->n;
-  BLscal_(&nz,alpha,a->v,&one);
+  if (lda>A->m) {
+    nz = A->m;
+    for (j=0; j<A->n; j++) {
+      BLscal_(&nz,alpha,a->v+j*lda,&one);
+    }
+  } else {
+    nz = A->m*A->n;
+    BLscal_(&nz,alpha,a->v,&one);
+  }
   PetscLogFlops(nz);
   PetscFunctionReturn(0);
 }
@@ -97,15 +109,21 @@ int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
 int MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data,*l;
-  int          ierr;
+  int          lda = mat->lda,j,m,ierr;
   Mat          newi;
 
   PetscFunctionBegin;
-  if (mat->lda>A->m) SETERRQ(1,"Can not handle LDA");
   ierr = MatCreateSeqDense(A->comm,A->m,A->n,PETSC_NULL,&newi);CHKERRQ(ierr);
-  l = (Mat_SeqDense*)newi->data;
   if (cpvalues == MAT_COPY_VALUES) {
-    ierr = PetscMemcpy(l->v,mat->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    l = (Mat_SeqDense*)newi->data;
+    if (lda>A->m) {
+      m = A->m;
+      for (j=0; j<A->n; j++) {
+	ierr = PetscMemcpy(l->v+j*m,mat->v+j*lda,m*sizeof(PetscScalar));CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscMemcpy(l->v,mat->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    }
   }
   newi->assembled = PETSC_TRUE;
   *newmat = newi;
@@ -1004,17 +1022,8 @@ int MatTranspose_SeqDense(Mat A,Mat *matout)
   PetscFunctionBegin;
   v = mat->v; m = A->m; M = mat->lda; n = A->n;
   if (!matout) { /* in place transpose */
-    if (m != n) { /* malloc temp to hold transpose */
-      PetscScalar *w;
-      if (mat->lda>A->m) SETERRQ(1,"Can not handle LDA");
-      ierr = PetscMalloc((m+1)*(n+1)*sizeof(PetscScalar),&w);CHKERRQ(ierr);
-      for (j=0; j<m; j++) {
-        for (k=0; k<n; k++) {
-          w[k + j*n] = v[j + k*M];
-        }
-      }
-      ierr = PetscMemcpy(v,w,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = PetscFree(w);CHKERRQ(ierr);
+    if (m != n) {
+      SETERRQ(1,"Can not transpose non-square matrix in place");
     } else {
       for (j=0; j<m; j++) {
         for (k=0; k<j; k++) {
@@ -1132,17 +1141,29 @@ int MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   PetscScalar  *v = mat->v;
   PetscReal    sum = 0.0;
-  int          i,j;
+  int          lda=mat->lda,m=A->m,i,j;
 
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
-    if (mat->lda>A->m) SETERRQ(1,"Can not handle LDA");
-    for (i=0; i<A->n*A->m; i++) {
+    if (lda>m) {
+      for (j=0; j<A->n; j++) {
+	v = mat->v+j*lda;
+	for (i=0; i<m; i++) {
 #if defined(PETSC_USE_COMPLEX)
-      sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
+	  sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
 #else
-      sum += (*v)*(*v); v++;
+	  sum += (*v)*(*v); v++;
 #endif
+	}
+      }
+    } else {
+      for (i=0; i<A->n*A->m; i++) {
+#if defined(PETSC_USE_COMPLEX)
+	sum += PetscRealPart(PetscConj(*v)*(*v)); v++;
+#else
+	sum += (*v)*(*v); v++;
+#endif
+      }
     }
     *nrm = sqrt(sum);
     PetscLogFlops(2*A->n*A->m);
@@ -1212,11 +1233,16 @@ int MatSetOption_SeqDense(Mat A,MatOption op)
 int MatZeroEntries_SeqDense(Mat A)
 {
   Mat_SeqDense *l = (Mat_SeqDense*)A->data;
-  int          ierr;
+  int          lda=l->lda,m=A->m,j, ierr;
 
   PetscFunctionBegin;
-  if (l->lda>A->m) SETERRQ(1,"Can not handle LDA");
-  ierr = PetscMemzero(l->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  if (lda>m) {
+    for (j=0; j<A->n; j++) {
+      ierr = PetscMemzero(l->v+j*lda,m*sizeof(PetscScalar)); CHKERRQ(ierr);
+    }
+  } else {
+    ierr = PetscMemzero(l->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1343,7 +1369,7 @@ int MatGetSubMatrices_SeqDense(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat 
 int MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data,*b = (Mat_SeqDense *)B->data;
-  int          ierr;
+  int          lda1=a->lda,lda2=b->lda, m=A->m,n=A->n, j,ierr;
   PetscTruth   flag;
 
   PetscFunctionBegin;
@@ -1353,8 +1379,13 @@ int MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
     PetscFunctionReturn(0);
   }
   if (A->m != B->m || A->n != B->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
-  if (a->lda>A->m || b->lda>B->m) SETERRQ(1,"Can not handle LDA");
-  ierr = PetscMemcpy(b->v,a->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  if (lda1>m || lda2>m) {
+    for (j=0; j<A->n; j++) {
+      ierr = PetscMemcpy(b->v+j*lda2,a->v+j*lda1,m*sizeof(PetscScalar));CHKERRQ(ierr);
+    }
+  } else {
+    ierr = PetscMemcpy(b->v,a->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
