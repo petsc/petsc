@@ -13,8 +13,8 @@
    Collective on PetscDraw
 
    Input Parameters:
-+  draw - the drawing object
--  pause - number of seconds to pause, -1 implies until user input
++  draw   - the drawing object
+-  lpause - number of seconds to pause, -1 implies until user input
 
    Level: intermediate
 
@@ -26,10 +26,10 @@
 
 .seealso: PetscDrawGetPause(), PetscDrawPause()
 @*/
-int PetscDrawSetPause(PetscDraw draw,int pause)
+int PetscDrawSetPause(PetscDraw draw,int lpause)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
-  draw->pause = pause;
+  draw->pause = lpause;
   PetscFunctionReturn(0);
 }
