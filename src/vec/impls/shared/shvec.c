@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.19 1999/01/12 23:13:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.20 1999/03/01 04:51:45 bsmith Exp curfman $";
 #endif
 
 /*
@@ -267,6 +267,8 @@ EXTERN_C_END
 
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
+
+   Level: advanced
 
 .keywords: vector, create, shared
 

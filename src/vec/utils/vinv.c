@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.45 1999/02/21 16:09:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.46 1999/02/24 20:00:00 bsmith Exp curfman $";
 #endif
 /*
      Some useful vector utility functions.
@@ -11,7 +11,7 @@ static char vcid[] = "$Id: vinv.c,v 1.45 1999/02/21 16:09:13 bsmith Exp bsmith $
 #define __FUNC__ "VecStrideNorm"
 /*@C
    VecStrideNorm - Computes the norm of subvector of a vector defined 
-       by a starting point and a stride
+   by a starting point and a stride.
 
    Collective on Vec
 
@@ -24,20 +24,22 @@ static char vcid[] = "$Id: vinv.c,v 1.45 1999/02/21 16:09:13 bsmith Exp bsmith $
 .  norm - the norm
 
    Notes:
-     One must call VecSetBlockSize() before this routine to set the stride 
-     information.
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information.
 
-     If x is the array representing the vector x then this computes the norm 
-     of the array (x[start],x[start+stride],x[start+2*stride], ....)
+   If x is the array representing the vector x then this computes the norm 
+   of the array (x[start],x[start+stride],x[start+2*stride], ....)
 
-     This is useful for computing, say the norm of the pressure variable when
-     the pressure is stored (interlaced) with other variables, say density etc.
+   This is useful for computing, say the norm of the pressure variable when
+   the pressure is stored (interlaced) with other variables, say density etc.
 
-     This will only work if the desire subvector is a stride subvector
+   This will only work if the desire subvector is a stride subvector
+
+   Level: advanced
 
 .keywords: vector, subvector norm, norm
 
-.seealso: VecNorm(), VecStrideGather(), VecStrideScatter()
+.seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
 int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
 {
@@ -95,7 +97,7 @@ int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
 #define __FUNC__ "VecStrideMax"
 /*@C
    VecStrideMax - Computes the maximum of subvector of a vector defined 
-       by a starting point and a stride and optionally its location.
+   by a starting point and a stride and optionally its location.
 
    Collective on Vec
 
@@ -108,21 +110,21 @@ int VecStrideNorm(Vec v,int start,NormType ntype,double *norm)
 -  norm - the max
 
    Notes:
-     One must call VecSetBlockSize() before this routine to set the stride 
-     information; or use a vector associated with a DA.
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information; or use a vector associated with a DA.
 
-     If x is the array representing the vector x then this computes the max
-     of the array (x[start],x[start+stride],x[start+2*stride], ....)
+   If xa is the array representing the vector x, then this computes the max
+   of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
 
-     This is useful for computing, say the max of the pressure variable when
-     the pressure is stored (interlaced) with other variables, say density etc.
+   This is useful for computing, say the maximum of the pressure variable when
+   the pressure is stored (interlaced) with other variables, e.g., density, etc.
+   This will only work if the desire subvector is a stride subvector.
 
-     This will only work if the desire subvector is a stride subvector
+   Level: advanced
 
-.keywords: vector, subvector norm, norm
+.keywords: vector, subvector maximum, maximum
 
-.seealso: VecNorm(), VecMax(), VecMin(), VecStrideNorm(), VecStrideGather(),
-          VecStrideScatter(), VecStrideMin()
+.seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
 int VecStrideMax(Vec v,int start,int *index,double *norm)
 {
@@ -173,7 +175,7 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
 #define __FUNC__ "VecStrideMin"
 /*@C
    VecStrideMin - Computes the minimum of subvector of a vector defined 
-       by a starting point and a stride and optionally its location.
+   by a starting point and a stride and optionally its location.
 
    Collective on Vec
 
@@ -186,21 +188,19 @@ int VecStrideMax(Vec v,int start,int *index,double *norm)
 -  norm - the min
 
    Notes:
-     One must call VecSetBlockSize() before this routine to set the stride 
-     information; or use a vector associated with a DA.
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information; or use a vector associated with a DA.
 
-     If x is the array representing the vector x then this computes the min
-     of the array (x[start],x[start+stride],x[start+2*stride], ....)
+   If xa is the array representing the vector x, then this computes the min
+   of the array (xa[start],xa[start+stride],xa[start+2*stride], ....)
 
-     This is useful for computing, say the min of the pressure variable when
-     the pressure is stored (interlaced) with other variables, say density etc.
+   This is useful for computing, say the minimum of the pressure variable when
+   the pressure is stored (interlaced) with other variables, e.g., density, etc.
+   This will only work if the desire subvector is a stride subvector.
 
-     This will only work if the desire subvector is a stride subvector
+.keywords: vector, subvector minimum, minimum
 
-.keywords: vector, subvector norm, norm
-
-.seealso: VecNorm(), VecMin(), VecMin(), VecStrideNorm(), VecStrideGather(),
-          VecStrideScatter(), VecStrideMin()
+.seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
 int VecStrideMin(Vec v,int start,int *index,double *norm)
 {
@@ -251,7 +251,7 @@ int VecStrideMin(Vec v,int start,int *index,double *norm)
 #define __FUNC__ "VecStrideGather"
 /*@
    VecStrideGather - Gathers a single component from a multi-component vector into
-       another vector.
+   another vector.
 
    Collective on Vec
 
@@ -264,18 +264,20 @@ int VecStrideMin(Vec v,int start,int *index,double *norm)
 .  s - the location where the subvector is stored
 
    Notes:
-     One must call VecSetBlockSize() before this routine to set the stride 
-     information.
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information.
 
-     If x is the array representing the vector x then this gathers
-     the array (x[start],x[start+stride],x[start+2*stride], ....)
+   If x is the array representing the vector x then this gathers
+   the array (x[start],x[start+stride],x[start+2*stride], ....)
 
-     The parallel layout of the vector and the subvector must be the same;
-     i.e. nlocal of v = stride*(nlocal of s) 
+   The parallel layout of the vector and the subvector must be the same;
+   i.e., nlocal of v = stride*(nlocal of s) 
 
-.keywords: vector, subvector,
+   Level: advanced
 
-.seealso: VecStrideNorm(), VecStrideScatter()
+.keywords: vector, subvector
+
+.seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
 int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 {
@@ -340,15 +342,17 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
 .  v - the location where the subvector is scattered (the multi-component vector)
 
    Notes:
-     One must call VecSetBlockSize() on the multi-component vector before this
-     routine to set the stride  information.
+   One must call VecSetBlockSize() on the multi-component vector before this
+   routine to set the stride  information.
 
-     The parallel layout of the vector and the subvector must be the same;
-     i.e. nlocal of v = stride*(nlocal of s) 
+   The parallel layout of the vector and the subvector must be the same;
+   i.e., nlocal of v = stride*(nlocal of s) 
 
-.keywords: vector, subvector,
+   Level: advanced
 
-.seealso: VecStrideNorm(), VecStrideGather()
+.keywords: vector, subvector
+
+.seealso: VecStrideNorm(), VecStrideGather(), VecStrideMin(), VecStrideMax()
 @*/
 int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 {
