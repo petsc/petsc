@@ -221,6 +221,8 @@ Lois - Add table of all preconditioners and options to PETSc manual.
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Upgrade SNES to address petsc-maint #2530 from John Nagle
+
   - Upgrade interface for object creation, seee petsc-maint #2659 from Matt.
 
   - Upgrade sles/examples/tutorials/ex8.c to use a more intersting test problem
