@@ -144,15 +144,14 @@ int MatFactorNumeric_SeqAIJSpooles(Mat A,Mat *F)
   ChvManager         *chvmanager ;
   Chv                *rootchv ;
   IVL                *adjIVL;
-  int                ierr,nz,nrow=A->m,irow,nedges,neqns=A->n,
-                     *ai,*aj,i,j,*diag;
+  int                ierr,nz,nrow=A->m,irow,nedges,neqns=A->n,*ai,*aj,i,*diag;
   PetscScalar        *av;
   double             cputotal,facops;
 #if defined(PETSC_USE_COMPLEX)
   int                nz_row,*aj_tmp;
   PetscScalar        *av_tmp;
 #else
-  int                *ivec1, *ivec2;
+  int                *ivec1,*ivec2,j;
   double             *dvec;
 #endif
   PetscTruth         isAIJ;
