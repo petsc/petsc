@@ -25,6 +25,8 @@ typedef struct {
   int (*destroy)(HYPRE_Solver);
   int (*solve)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
   int (*setup)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
+  
+  MPI_Comm          comm_hypre;
 
   /* options for pilut and BoomerAMG*/
   int                maxiter;
@@ -146,6 +148,7 @@ static int PCDestroy_HYPRE(PC pc)
   ierr = HYPRE_IJMatrixDestroy(jac->ij);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorDestroy(jac->b);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorDestroy(jac->x);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = (*jac->destroy)(jac->hsolver);CHKERRQ(ierr);
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -617,7 +620,7 @@ static int PCHYPRESetType_HYPRE(PC pc,char *name)
 
   ierr = PetscStrcmp("pilut",name,&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr                    = HYPRE_ParCSRPilutCreate(pc->comm,&jac->hsolver);
+    ierr                    = HYPRE_ParCSRPilutCreate(jac->comm_hypre,&jac->hsolver);
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_Pilut;
     pc->ops->view           = PCView_HYPRE_Pilut;
     jac->destroy            = HYPRE_ParCSRPilutDestroy;
@@ -628,7 +631,7 @@ static int PCHYPRESetType_HYPRE(PC pc,char *name)
   }
   ierr = PetscStrcmp("parasails",name,&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr                    = HYPRE_ParaSailsCreate(pc->comm,&jac->hsolver);
+    ierr                    = HYPRE_ParaSailsCreate(jac->comm_hypre,&jac->hsolver);
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_ParaSails;
     pc->ops->view           = PCView_HYPRE_ParaSails;
     jac->destroy            = HYPRE_ParaSailsDestroy;
@@ -638,7 +641,7 @@ static int PCHYPRESetType_HYPRE(PC pc,char *name)
   }
   ierr = PetscStrcmp("euclid",name,&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr                    = HYPRE_EuclidCreate(pc->comm,&jac->hsolver);
+    ierr                    = HYPRE_EuclidCreate(jac->comm_hypre,&jac->hsolver);
     pc->ops->setfromoptions = PCSetFromOptions_HYPRE_Euclid;
     pc->ops->view           = PCView_HYPRE_Euclid;
     jac->destroy            = HYPRE_EuclidDestroy;
@@ -756,6 +759,8 @@ int PCCreate_HYPRE(PC pc)
   ierr                     = PetscMemzero(jac,sizeof(PC_HYPRE));CHKERRQ(ierr);
   pc->data                 = jac;
   pc->ops->setfromoptions  = PCSetFromOptions_HYPRE;
+  /* Com_dup for hypre */
+  ierr = MPI_Comm_dup(pc->comm,&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPRESetType_C",
                                     "PCHYPRESetType_HYPRE",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
