@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.48 1995/08/02 04:19:29 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.49 1995/08/15 20:29:32 bsmith Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -96,6 +96,9 @@ extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
 extern int MatConvert(Mat,MatType,Mat*);
 extern int MatView(Mat,Viewer);
+extern int MatViewBinary(Mat,int);
+extern int MatLoadBinary(MPI_Comm,int,MatType,IS,Mat*,void*);
+
 #include <stdio.h>
 
 typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
