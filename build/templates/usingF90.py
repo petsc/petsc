@@ -96,8 +96,8 @@ class UsingF90 (base.Base):
   def getServerCompileTarget(self, package):
     '''A Cxx compiler is necessary for the skeleton, and anF90 compiler for the implementation.'''
     inputTag      = ['server '+package]
-    if len(self.usingSIDL.staticPackages):
-      inputTag.append('client')
+#    if len(self.usingSIDL.staticPackages):
+#      inputTag.append('client')
     (target,    compilers)    = self.getGenericCompileTarget(inputTag)
     (iorTarget, iorCompilers) = self.getIORCompileTarget('server '+package)
     for c in compilers: c.includeDirs.append(project.ProjectPath(self.usingSIDL.getServerRootDir(self.language, package), self.project.getUrl()))
@@ -125,8 +125,8 @@ class UsingF90 (base.Base):
 
   def getClientCompileTarget(self):
     '''An F90 compiler is necessary for the stubs, and a Cxx compiler for the cartilage.'''
-    if len(self.usingSIDL.staticPackages):
-      return build.buildGraph.BuildGraph()
+#    if len(self.usingSIDL.staticPackages):
+#      return build.buildGraph.BuildGraph()
     (target, compilers) = self.getGenericCompileTarget(['client'])
     inputTags    = [c.output.tag for c in compilers]
     sharedTag    = self.language.lower()+' client shared library'

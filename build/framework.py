@@ -374,6 +374,7 @@ class Framework(base.Base):
             print 'File '+f+' not found for purge'
       else:
         print 'FileSet '+setName+' not found for purge'
+      self.sourceDB.save()
     return
 
   def t_update(self):
@@ -390,6 +391,7 @@ class Framework(base.Base):
             print 'File '+f+' not found in source database'
       else:
         print 'FileSet '+setName+' not found for update'
+      self.sourceDB.save()
     return
 
   def setupProject(self):
