@@ -41,7 +41,7 @@ Runtime options include:\n\
   -snes_mf_err <err>         : Choose differencing parameter for SNES matrix-free method\n\
   -use_jratio                : Use ratio of fnorm decrease for detecting when to form Jacobian\n\
   -jratio                    : Set ratio of fnorm decrease for detecting when to form Jacobian\n\
-  -epsilon <eps>             : Choose differencing parameter for FD Jacobian approx\n\
+  -eps_jac <eps>             : Choose differencing parameter for FD Jacobian approx\n\
   -post                      : Print post-processing info (currently uniproc version only)\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
   -jfreq <it>                : frequency of forming Jacobian (once every <it> iterations)\n\
@@ -95,6 +95,7 @@ int main(int argc,char **argv)
   MPI_Comm comm;                  /* communicator */
   SNES     snes;                  /* SNES context */
   SLES     sles;                  /* SLES context */
+  PC       pc;                    /* PC context */
   Euler    *app;                  /* user-defined context */
   Viewer   view;                  /* viewer for printing vectors */
   char     stagename[2][16];      /* names of profiling stages */
@@ -143,10 +144,6 @@ int main(int argc,char **argv)
   */
 
   ierr = OptionsHasName(PETSC_NULL,"-log_summary",&logging); CHKERRA(ierr);
-
-  /* 
-      temporarily deactivate user-defined events and multiple logging stages
-  */
   if (logging) total_stages = 2;
   ierr = PLogEventRegister(&init1,"DA, Scatter Init","Red:"); CHKERRA(ierr);
   ierr = PLogEventRegister(&init2,"Mesh Setup      ","Red:"); CHKERRA(ierr);
@@ -289,6 +286,12 @@ int main(int argc,char **argv)
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,rtol,
                                 1.e-13,1000,100000); CHKERRA(ierr);
 
+  /* If using ILU(0) preconditioner and matrix-free version, then use in-place factorization */
+  if (app->matrix_free) {
+    ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+    ierr = PCILUSetUseInPlace(pc); CHKERRA(ierr);
+  }
+
   /* Either use my own adaptive method for choosing KSP relative convergence tolerance, or
      use the Eisenstat-Walker method */
   ierr = OptionsHasName(PETSC_NULL,"-adaptive_ksp_rtol",&app->adaptive_ksp_rtol); CHKERRA(ierr);
@@ -358,12 +361,10 @@ int main(int argc,char **argv)
 
   /* Calculate physical quantities of interest */
   ierr = OptionsHasName(PETSC_NULL,"-post",&post_process); CHKERRA(ierr);
-  if (post_process && app->size == 1) {
-    SETERRA(1,1,"Pvar post processing is temporarily disabled.\n");
-    /* ierr = pvar_(app->xx,app->p,
+  if (post_process) {
+    ierr = pvar_(app->xx,app->p,
        app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-       app->aiz,app->ajz,app->akz,app->x,app->y,app->z); CHKERRA(ierr);
-       */
+       app->aiz,app->ajz,app->akz,app->xc,app->yc,app->zc); CHKERRA(ierr);
   }
 
   /* Dump field variables for viewing with TECPLOT */
@@ -384,7 +385,7 @@ int main(int argc,char **argv)
     }
   }
   if (app->rank == 0) {
-    fprintf(app->fp," ];\n");
+    fprintf(app->fp," ];\nTotal SLES iterations = %d, Total time = %g sec\n",app->sles_tot,app->ftime[its]);
     fclose(app->fp);
   }
 
@@ -479,7 +480,7 @@ int UserSetJacobian(SNES snes,Euler *app)
      of nonzero matrix entries */
 
   ierr = nzmat_(&mtype,&nc,&nc_block,&istart,&iend,app->is1,app->ltog,&app->nloc,
-                &wkdim,nnz_d,nnz_o); CHKERRQ(ierr);
+                &wkdim,nnz_d,nnz_o,&app->fort_ao); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                   Form Jacobian matrix data structure
@@ -655,6 +656,10 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 
   ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
 
+  /* We want to verify that our preallocation was 100% correct by not allowing
+     any additional nonzeros into the matrix. */
+  ierr = MatSetOption(*pjac,MAT_NEW_NONZERO_ALLOCATION_ERROR); CHKERRQ(ierr);
+
   /* For better efficiency, we hold the Jacobian matrix fixed over several
      nonlinear iterations.  The flag SAME_PRECONDITIONER indicates that in
      this case the current preconditioner should be retained. */
@@ -731,7 +736,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	   app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
 	   app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
 	   app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-	   app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
+	   app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, &app->fort_ao); CHKERRQ(ierr);
 
 	   /*      ierr = jformdt2_(&app->eps_jac,&app->eps_jac_inv,app->ltog,&app->nloc,&fortmat,app->is1,
 	      app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,app->diag,
@@ -764,7 +769,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	     app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
 	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2,
 	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); CHKERRQ(ierr);
+	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, &app->fort_ao); CHKERRQ(ierr);
    /*      ierr = jformdt_(&app->eps_jac,&app->eps_jac_inv,
 	     app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,
 	     app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,
@@ -827,7 +832,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
     ierr = buildmat_(&fortmat,&app->sctype,app->is1,&iter,
 	 app->b1,app->b2,app->b3,app->b4,app->b5,app->b6,app->diag,
 	 app->dt,app->ltog,&app->nloc,
-	 app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp); CHKERRQ(ierr);
+	 app->b1bc,app->b2bc,app->b3bc,app->b2bc_tmp,&app->fort_ao); CHKERRQ(ierr);
   } 
 
   /* Finish the matrix assembly process.  For the Euler code, the matrix
@@ -857,12 +862,12 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
   	ierr = MatViewSeqBAIJ_Long(*pjac,view); CHKERRQ(ierr);
         }
         */
-      /*
-      if (mtype == MATMPIAIJ) {ierr = MatViewDFVec_MPIAIJ(*pjac,X,view); CHKERRQ(ierr);}
-      else                    {ierr = MatView(*pjac,view); CHKERRQ(ierr);}
-      */
+
+      if (mtype == MATMPIAIJ)       {ierr = MatViewDFVec_MPIAIJ(*pjac,X,view); CHKERRQ(ierr);}
+      else if (mtype == MATMPIBAIJ) {ierr = MatViewDFVec_MPIBAIJ(*pjac,X,view); CHKERRQ(ierr);}
+      else                          {ierr = MatView(*pjac,view); CHKERRQ(ierr);}
       ierr = ViewerDestroy(view); CHKERRQ(ierr);
-      /*    PetscFinalize(); exit(0); */
+      PetscFinalize(); exit(0);
     }
   
     /* Dump Jacobian and residual in binary format to file euler.dat 
@@ -1290,6 +1295,7 @@ int DACreate3d_Lois(MPI_Comm,DAPeriodicType,DAStencilType,
 int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler **newapp)
 {
   Euler *app;
+  AO    ao;              /* application ordering context */
   int   ni1;    	 /* x-direction grid dimension */
   int   nj1;	         /* y-direction grid dimension */
   int   nk1;	         /* z-direction grid dimension */
@@ -1363,6 +1369,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   }
 
   /* Set various defaults */
+  app->sles_tot              = 0;
   app->cfl                   = 0;        /* Initial CFL is set within Julianne code */
   app->cfl_init              = 0;        /* Initial CFL is set within Julianne code */
   app->cfl_max               = 100000.0; /* maximum CFL value */
@@ -1399,14 +1406,15 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->last_its              = 0;
 
   /* Override default with runtime options */
+  ierr = OptionsGetDouble(PETSC_NULL,"-ksp_rtol_max",&app->ksp_rtol_max,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_incr",&app->cfl_max_incr,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_decr",&app->cfl_max_decr,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-cfl_snes_it",&app->cfl_snes_it,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance",&flg); CHKERRQ(ierr);
   if (flg) {
     app->cfl_advance = ADVANCE;
-    PetscPrintf(comm,"Begin CFL advancement at iteration 12, Cfl_snes_it=%d, CFL_max_incr=%g, CFL_max_decr=%g\n",
-    app->cfl_snes_it,app->cfl_max_incr,app->cfl_max_decr);
+    PetscPrintf(comm,"Begin CFL advancement at iteration 12, Cfl_snes_it=%d, CFL_max_incr=%g, CFL_max_decr=%g, ksp_rtol_max=%g\n",
+    app->cfl_snes_it,app->cfl_max_incr,app->cfl_max_decr,app->ksp_rtol_max);
   }
   else PetscPrintf(comm,"CFL remains constant\n");
 
@@ -1555,8 +1563,10 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   if (Nx*Ny*Nz != app->size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE && Nz != PETSC_DECIDE))
     SETERRQ(1,1,"Incompatible number of processors:  Nx * Ny * Nz != size");
   app->Nx = Nx; app->Ny = Ny; app->Nz = Nz;
-  ierr = DACreate3d_Lois(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
-         app->Nx,app->Ny,app->Nz,nc,2,&app->da); CHKERRQ(ierr);
+  ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
+         app->Nx,app->Ny,app->Nz,nc,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da); CHKERRQ(ierr);
+  ierr = DAGetAO(app->da,&ao); CHKERRQ(ierr);
+  app->fort_ao = PetscFromPointer(ao);
 
   /* Get global and local vectors */
   ierr = DAGetDistributedVector(app->da,&app->X); CHKERRQ(ierr);
@@ -1594,8 +1604,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   }
 
   /* Create pressure work vector, used for explicit boundary conditions */
-  ierr = DACreate3d_Lois(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
-         app->Nx,app->Ny,app->Nz,1,2,&app->da1); CHKERRQ(ierr);
+  ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,app->mx,app->my,app->mz,
+         app->Nx,app->Ny,app->Nz,1,2,PETSC_NULL,PETSC_NULL,PETSC_NULL,&app->da1); CHKERRQ(ierr);
   ierr = DAGetDistributedVector(app->da1,&app->P); CHKERRQ(ierr);
   ierr = VecDuplicate(app->P,&app->Pbc); CHKERRQ(ierr);
   ierr = DAGetLocalVector(app->da1,&app->localP); CHKERRQ(ierr);
