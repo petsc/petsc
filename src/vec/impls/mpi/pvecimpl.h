@@ -1,4 +1,4 @@
-/* $Id: pvecimpl.h,v 1.12 1997/03/09 17:57:02 bsmith Exp balay $ */
+/* $Id: pvecimpl.h,v 1.13 1997/06/19 22:35:50 balay Exp bsmith $ */
 /* 
  */
 
@@ -10,15 +10,18 @@
 
 typedef struct {
     VECHEADER
-    int         N;                  /* length of total vector */
+    int         N;                         /* length of total vector */
     int         size,rank,*ownership;
     InsertMode  insertmode;
+
     struct      {int donotstash, nmax, n, *idx; Scalar *array;} stash;
-    MPI_Request *send_waits,*recv_waits;
+
+    MPI_Request *send_waits,*recv_waits;  /* for communication during VecAssembly() */
     int         nsends,nrecvs;
     Scalar      *svalues,*rvalues;
     int         rmax;
-    int         nghost;             /* length of local portion including ghost padding */
+
+    int         nghost;                   /* length of local portion including ghost padding */
 } Vec_MPI;
 
 extern int VecNorm_Seq(Vec, NormType, double *work );
