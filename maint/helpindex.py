@@ -248,7 +248,7 @@ def main():
       dict = {}
 
       # open and read in the input files
-      fd1 = open( PETSC_DIR + '/docs/exampleconcepts','r')
+      fd1 = open( LOC + '/docs/exampleconcepts','r')
 #      fd2 = open( PETSC_DIR + '/docs/manconcepts','r')
 
       for line in fd1.readlines():
