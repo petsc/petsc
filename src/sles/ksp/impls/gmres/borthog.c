@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.19 1996/04/04 22:03:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: borthog.c,v 1.20 1996/04/06 15:38:02 curfman Exp curfman $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -152,6 +152,8 @@ double d_sign(double *x,double *y)
   if (*y >= 0.0) return *x;
   return -*x;
 }
+#elif defined(PARCH_solaris)
+#define d_sign __dsign
 #endif
 
 int KSPhqr_Private(int *nm, int *n, int *low, int *igh, double *h, 

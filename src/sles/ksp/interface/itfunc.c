@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.48 1996/03/23 18:32:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.49 1996/04/04 22:02:51 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -10,21 +10,25 @@ static char vcid[] = "$Id: itfunc.c,v 1.48 1996/03/23 18:32:49 bsmith Exp bsmith
 
 /*@
    KSPComputeExtremeSingularvalues - Computes the extreme Singularvalues for 
-      the preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
+   the preconditioned operator. Called after or during KSPSolve() (SLESSolve()).
 
    Input Parameter:
-.  ksp   - iterative context obtained from KSPCreate()
+.  ksp - iterative context obtained from KSPCreate()
 
    Output Parameters:
 .  emin, emax - extreme Singularvalues
 
-    Notes:
-    One must call KSPSetCalculateSingularvalues() before calling KSPSetUp() 
-    in order for this routine to work correctly.  
+   Notes:
+   One must call KSPSetCalculateSingularvalues() before calling KSPSetUp() 
+   (or use the option -ksp_eigen) in order for this routine to work correctly.  
 
-.keywords: KSP, setup
+   Many users may just want to use the monitoring routine
+   KSPSingularvalueMonitor() (which can be set with the option -ksp_singmonitor)
+   to print the Singularvalues at each iteration of the linear solve.
 
-.seealso: KSPCreate(), KSPSolve(), KSPDestroy()
+.keywords: KSP, compute, extreme, singular, values
+
+.seealso: KSPSetCalculateSingularvalues(), KSPSingularvalueMonitor()
 @*/
 int KSPComputeExtremeSingularvalues(KSP ksp,Scalar *emax,Scalar *emin)
 {
@@ -316,7 +320,13 @@ $  -ksp_eigen
    Notes:
    Currently this option is not valid for all iterative methods.
 
-.keywords: KSP, set, Singularvalues, calculate, flag
+   Many users may just want to use the monitoring routine
+   KSPSingularvalueMonitor() (which can be set with the option -ksp_singmonitor)
+   to print the Singularvalues at each iteration of the linear solve.
+
+.keywords: KSP, set, Singularvalues, calculate
+
+.seealso: KSPComputeExtremeSingularvalues(), KSPSingularvalueMonitor()
 @*/
 int KSPSetCalculateSingularvalues(KSP ksp)
 {

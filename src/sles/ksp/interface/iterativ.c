@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.41 1996/04/04 22:02:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.42 1996/04/05 05:57:48 bsmith Exp curfman $";
 #endif
 
 /*
@@ -25,15 +25,22 @@ int KSPDefaultFreeWork( KSP ksp )
 }
 
 /*@C
-    KSPSingularvalueMonitor - Default iterative monitor routine for CG;
-    it prints the two norm of the true residual and estimation from
-    the Lanczos method of the extreme eigenvalues of the preconditioned 
-    problem at each iteration.
+    KSPSingularvalueMonitor - Iterative monitor routine that prints the
+    two norm of the true residual and estimation of the extreme eigenvalues
+    of the preconditioned problem at each iteration.
  
     Input Parameters:
 .   ksp - the iterative context
 .   n  - the iteration
 .   rnorm - the two norm of the residual
+
+    Options Database Key:
+$   -ksp_singmonitor
+
+    Notes:
+    The CG solver uses the Lanczos technique for eigenvalue computation, 
+    while GMRES uses the Arnoldi technique; other iterative methods do
+    not currently compute singular values.
 
 .keywords: KSP, CG, default, monitor, extreme, eigenvalues, Lanczos
 
