@@ -12,8 +12,8 @@ EXTERN_C_BEGIN
 
 void PetscADSetValueAndColor(DERIV_TYPE *vars,int n,ISColoringValue *colors,double *values)
 {
-  int         i,j;
-  PetscScalar *d;
+  int       i,j;
+  PetscReal *d;
 
   for (i=0; i<n; i++) {
     DERIV_val(vars[i]) = values[i];
