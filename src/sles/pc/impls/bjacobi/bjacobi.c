@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.8 1995/03/21 23:18:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.9 1995/03/25 01:26:27 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -52,13 +52,22 @@ static int PCSetFromOptions_BJacobi(PC pc)
 }
 
 /*@
-      PCBJacobiSetUseTrueLocal - If the preconditioner is different from 
-         the matrix, then if the block problem is solved iteratively
-         this determines if the block problem is the block from the matrix
-         or from the preconditioner.
+   PCBJacobiSetUseTrueLocal - Sets a flag to indicate that the block 
+   problem is associated with the linear system matrix instead of the
+   default (where it is associated with the preconditioning matrix).
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
+
+   Options Database Key:
+$  -bjacobi_truelocal
+
+   Note:
+   For the common case in which the preconditioning and linear 
+   system matrices are identical, this routine is unnecessary.
+
+   Keywords:
+   Jacobi, local
 @*/
 int PCBJacobiSetUseTrueLocal(PC pc)
 {
@@ -74,10 +83,11 @@ int PCPrintHelp_BJacobi(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,"%sbjacobi_blocks blks: number of blocks in preconditioner\n",
-                 p);
-  fprintf(stderr,"%sbjacobi_truelocal: use local blocks in local it. solve\n",
-                 p);
+  fprintf(stderr,
+    " %sbjacobi_blocks blks: number of blocks in preconditioner\n",p);
+  fprintf(stderr, " %sbjacobi_truelocal: use blocks from the local linear"); 
+  fprintf(stderr, 
+    " system matrix \n      instead of the preconditioning matrix\n",p);
   return 0;
 }
 
@@ -96,12 +106,14 @@ int PCCreate_BJacobi(PC pc)
   return 0;
 }
 /*@
-     PCBJacobiSetBlocks - Sets the number of blocks for block Jacobi.
+   PCBJacobiSetBlocks - Sets the number of blocks for block Jacobi.
 
+   Input Parameters:
+.  pc - the preconditioner context
+.  blocks - the number of blocks
 
-  Input Parameters:
-.   pc - the preconditioner context
-.   blocks - the number of blocks
+   Options Database Key:
+$  -bjacobi_blocks  blocks
 @*/
 int PCBJacobiSetBlocks(PC pc, int blocks)
 {
