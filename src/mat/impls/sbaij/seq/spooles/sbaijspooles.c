@@ -131,10 +131,13 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_SeqSBAIJSpooles"
 int MatDuplicate_SeqSBAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
-  int ierr;
+  int         ierr;
+  Mat_Spooles *lu=(Mat_Spooles *)A->spptr;
+
   PetscFunctionBegin;
-  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(*M,MATSEQSBAIJSPOOLES,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

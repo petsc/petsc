@@ -527,9 +527,12 @@ EXTERN_C_END
 #define __FUNCT__ "MatDuplicate_SeqAIJSpooles"
 int MatDuplicate_SeqAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
   int ierr;
+  Mat_Spooles *lu=(Mat_Spooles *)A->spptr;
+
   PetscFunctionBegin;
-  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SeqAIJSpooles(*M,MATSEQAIJSPOOLES,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -37,6 +37,7 @@ typedef struct {
 } Mat_DSC;
 
 EXTERN int MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
+EXTERN int MatConvert_Base_DSCPACK(Mat,MatType,Mat *);
 /* DSC function */
 #undef __FUNCT__  
 #define __FUNCT__ "isort2"
@@ -617,13 +618,23 @@ int MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "MatView_DSCPACK"
 int MatView_DSCPACK(Mat A,PetscViewer viewer) {
-  int               ierr;
+  int               ierr,size;
   PetscTruth        isascii;
   PetscViewerFormat format;
   Mat_DSC           *lu=(Mat_DSC*)A->spptr;
 
   PetscFunctionBegin;
-  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
+  /* This convertion ugliness is because MatView for BAIJ types calls MatConvert to AIJ */ 
+  size = lu->size;
+  if (size==1) {
+    ierr = MatConvert(A,MATSEQBAIJ,&A);CHKERRQ(ierr);
+  } else {
+    ierr = MatConvert(A,MATMPIBAIJ,&A);CHKERRQ(ierr);
+  }    
+
+  ierr = MatView(A,viewer);CHKERRQ(ierr);
+
+  ierr = MatConvert(A,MATDSCPACK,&A);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
@@ -655,6 +666,7 @@ int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscNew(Mat_DSC,&lu);CHKERRQ(ierr);
 
+  lu->MatDuplicate               = A->ops->duplicate;
   lu->MatView                    = A->ops->view;
   lu->MatAssemblyEnd             = A->ops->assemblyend;
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
@@ -689,10 +701,13 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_DSCPACK"
 int MatDuplicate_DSCPACK(Mat A, MatDuplicateOption op, Mat *M) {
-  int ierr;
+  int     ierr;
+  Mat_DSC *lu=(Mat_DSC *)A->spptr;
+
   PetscFunctionBegin;
-  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_Base_DSCPACK(*M,MATDSCPACK,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_DSC));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

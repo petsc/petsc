@@ -644,9 +644,11 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_AIJMUMPS"
 int MatDuplicate_AIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
-  int ierr;
+  int       ierr;
+  Mat_MUMPS *lu=(Mat_MUMPS *)A->spptr;
+
   PetscFunctionBegin;
-  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_AIJ_AIJMUMPS(*M,MATAIJMUMPS,M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -786,10 +788,13 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_SBAIJMUMPS"
 int MatDuplicate_SBAIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
-  int ierr;
+  int       ierr;
+  Mat_MUMPS *lu=(Mat_MUMPS *)A->spptr;
+
   PetscFunctionBegin;
-  ierr = (*A->ops->duplicate)(A,op,M);CHKERRQ(ierr);
+  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_SBAIJ_SBAIJMUMPS(*M,MATSBAIJMUMPS,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_MUMPS));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
