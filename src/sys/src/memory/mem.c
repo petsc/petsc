@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.17 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mem.c,v 1.18 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -54,8 +54,8 @@ int PetscGetResidentSetSize(PLogDouble *foo)
 
   PetscFunctionBegin;
   getrusage(RUSAGE_SELF,&temp);
-#if defined(PARCH_rs6000)
-  /* RS6000 always reports sizes in k instead of pages */
+#if defined(PARCH_rs6000) || defined(PARCH_IRIX) || defined(PARCH_IRIX64) || \
+    defined(PARCH_IRIX5)
   *foo = 1024.0 * ((double) temp.ru_maxrss);
 #else
   *foo = ( (double) getpagesize())*( (double) temp.ru_maxrss );
