@@ -29,13 +29,19 @@ include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(PETSC_VERSION)
 # Checks that PETSC_DIR variable is set
 #
 chkpetsc_dir:
-	@-if [ Holder = Holder$(PETSC_DIR) ] ; then \
+	@if [ Holder = Holder$(PETSC_DIR) ] ; then \
           echo "You must set the variable PETSC_DIR to the petsc directory.1";\
+          false ;\
           elif [ ! -d $(PETSC_DIR)/ ] ; then \
           echo "You must set the variable PETSC_DIR to the petsc directory.2";\
+          false ;\
           fi
 
-examples: 
+chkbopt:
+	@if [ Holder = Holder$(BOPT) ] ; then \
+          echo "You must set the variable BOPT [g,O, or Opg]" ; false; fi
+
+examples: chkbopt
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
           (for ex in $(EXAMPLES) foo ; do \
           $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
