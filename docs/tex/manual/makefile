@@ -4,9 +4,9 @@ NOADIC    = true
 # Build the entire manual as well as the intro part
 manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex part2.tex
 # First build the manual
-	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
+	latex manual_tex 
 	-bibtex manual_tex
-	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
+	latex manual_tex 
 	/nfs/local-sun4/tex3.14/bin/makeindex manual_tex
 	echo  \\\\begin\{theindex\} > findex.tex
 	echo \\indexspace >> findex.tex
@@ -14,13 +14,13 @@ manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex part2.te
              sed 's/_/\\_/g' >> findex.tex
 	echo \\end\{theindex\} >> findex.tex
 	grep -v FUNCTION manual_tex.ind | sed 's/_/\\_/g' > sindex.tex
-	latex manual_tex | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
+	latex manual_tex 
 	cp manual_tex.bbl manual.bbl
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg *.ilg *.ind \
                     *.idx *.ler findex.tex sindex.tex
 # Now make the intro part ... note that this depends on latexing the manual
 	cp manual_tex.aux intro.aux
-	latex intro | grep -v Overfull 2>&1 | grep -v Underfull 2>&1 | grep -v "\[\]" 2>&1 | tr -s '\n' '\n' 2>&1
+	latex intro 
 	-@chmod g+w intro.dvi intro.aux intro.log
 
 manual.ps: 
