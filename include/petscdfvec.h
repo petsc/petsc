@@ -1,5 +1,5 @@
 
-/* $Id: dfvec.h,v 1.12 1996/04/15 03:06:33 curfman Exp curfman $ */
+/* $Id: dfvec.h,v 1.14 1996/04/16 04:28:03 curfman Exp curfman $ */
 
 /* This file declares some utility routines for manipulating discrete functions,
    or vectors that are associated with grids, possibly with multiple degrees of
@@ -23,17 +23,17 @@ extern int DF_COOKIE;
 typedef struct _DF* DF;
 #define DFVec Vec
 
-extern int DFCreateDA(MPI_Comm,char**,DA,DF*);
-extern int DFCreateGeneral(MPI_Comm,DFType,int,int,DFComponentOrdering,char**,int,int,int,DF*);
-extern int DFGetInfo(DF,DFType*,int*,int*,DFComponentOrdering*,int*,int*,int*);
-extern int DFDuplicate(DF,DF*);
-extern int DFDestroy(DF);
-extern int DFSetCoordinates(DF,int,int,int,double*,double*,double*);
-extern int DFGetCoordinates(DF,int*,int*,int*,double**,double**,double**);
+extern int DFShellCreateDA(MPI_Comm,char**,DA,DF*);
+extern int DFShellCreateGeneral(MPI_Comm,DFType,int,int,DFComponentOrdering,char**,int,int,int,DF*);
+extern int DFShellGetInfo(DF,DFType*,int*,int*,DFComponentOrdering*,int*,int*,int*);
+extern int DFShellDuplicate(DF,DF*);
+extern int DFShellDestroy(DF);
+extern int DFShellSetCoordinates(DF,int,int,int,double*,double*,double*);
+extern int DFShellGetCoordinates(DF,int*,int*,int*,double**,double**,double**);
+extern int DFShellGetLocalDFShell(DF,DF*);
 
-extern int DFVecAssociate(DF,Vec);
-extern int DFVecGetDFContext(Vec,DF*);
-extern int DFGetLocalDF(DF,DF*);
+extern int DFVecShellAssociate(DF,Vec);
+extern int DFVecGetDFShell(Vec,DF*);
 extern int DFVecGetComponentVectors(DFVec,int*,DFVec**);
 extern int DFVecAssembleFullVector(Vec*,DFVec);
 extern int DFVecView(DFVec,Viewer);
