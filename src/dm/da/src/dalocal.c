@@ -79,6 +79,7 @@ int DACreateLocalVector(DA da,Vec* g)
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE);
   ierr = VecCreateSeq(PETSC_COMM_SELF,da->nlocal,g);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*g,da->w);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   if (da->w == 1  && da->dim == 2) {
