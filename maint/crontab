@@ -19,6 +19,7 @@
 30  2 * * * /home/bsmith/petsc/maint/buildtest 6
 30  2 * * * /home/bsmith/petsc/maint/buildtest 8
 30  2 * * * /home/bsmith/petsc/maint/buildtest 9
+30  2 * * * /home/bsmith/petsc/maint/buildtest 10
 #
 # This build is a second build on maverick and so is 
 # started a bit late...

@@ -10,7 +10,7 @@ proc CheckNightlyBuilds { } {
 
     cd /home/bsmith/petsc/maint/nightlylogs
     set files [ glob examples_*]
-    set machines {snake violet elvis maverick quad tiamat ptera}
+    set machines {snake violet elvis maverick quad tiamat ptera yukon}
     foreach machine $machines {
         if { [ string first $machine $files ] < 0 } { #file dos'nt exist
             set mesg "No build on: $machine"
