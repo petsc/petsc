@@ -1,3 +1,4 @@
+/*$Id: pcregis.c,v 1.65 2001/06/21 21:17:38 bsmith Exp $*/
 
 #include "ramgfunc.h"
 #include "petscfunc.h"
@@ -193,11 +194,11 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    ..*/ 
    ncyc   = 1030; 
 
-   PetscPrintf(MPI_COMM_WORLD,"\n\n"); 
-   PetscPrintf(MPI_COMM_WORLD,"******************************************\n");
-   PetscPrintf(MPI_COMM_WORLD,"*** Start Setup                        ***\n");
-   PetscPrintf(MPI_COMM_WORLD,"******************************************\n");
-   PetscPrintf(MPI_COMM_WORLD,"\n\n"); 
+   ierr = PetscPrintf(MPI_COMM_WORLD,"\n\n"); CHKERRQ(ierr);
+   ierr = PetscPrintf(MPI_COMM_WORLD,"******************************************\n");CHKERRQ(ierr);
+   ierr = PetscPrintf(MPI_COMM_WORLD,"*** Start Setup                        ***\n");CHKERRQ(ierr);
+   ierr = PetscPrintf(MPI_COMM_WORLD,"******************************************\n");CHKERRQ(ierr);
+   ierr = PetscPrintf(MPI_COMM_WORLD,"\n\n");CHKERRQ(ierr);
 
    /*..Call RAMG..*/  
    amg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
@@ -205,11 +206,11 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
               &ecg2, &ewt2, &nwt, &ntr, &ierr); 
 
-   PetscPrintf(MPI_COMM_WORLD,"\n\n");  
-   PetscPrintf(MPI_COMM_WORLD,"******************************************\n");
-   PetscPrintf(MPI_COMM_WORLD,"*** End Setup                          ***\n");
-   PetscPrintf(MPI_COMM_WORLD,"******************************************\n");
-   PetscPrintf(MPI_COMM_WORLD,"\n\n"); 
+   ierr = PetscPrintf(MPI_COMM_WORLD,"\n\n");CHKERRQ(ierr);  
+   ierr = PetscPrintf(MPI_COMM_WORLD,"******************************************\n");CHKERRQ(ierr);
+   ierr = PetscPrintf(MPI_COMM_WORLD,"*** End Setup                          ***\n");CHKERRQ(ierr);
+   ierr = PetscPrintf(MPI_COMM_WORLD,"******************************************\n");CHKERRQ(ierr);
+   ierr = PetscPrintf(MPI_COMM_WORLD,"\n\n");CHKERRQ(ierr); 
  
    /*..Store RAMG output in PETSc context..*/ 
    shell->A        = Asky; 
@@ -355,7 +356,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    /*..Restore PETSc rhs vector..*/
    ierr = VecRestoreArray(r, &vals_getarray); CHKERRQ(ierr);
 
-   PetscFree(cols); 
+   ierr = PetscFree(cols);CHKERRQ(ierr);
    
    return 0; 
 }
@@ -371,16 +372,17 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
 
 int RamgShellPCDestroy(RamgShellPC *shell)
 {
+  int ierr;
 
   /*..Free PCShell context..*/
-  PetscFree(shell->A); 
-  PetscFree(shell->IA);
-  PetscFree(shell->JA);
-  PetscFree(shell->U_APPROX);
-  PetscFree(shell->RHS);
-  PetscFree(shell->IG);   
-  PetscFree(shell->PARAM);
-  PetscFree(shell);
+  ierr = PetscFree(shell->A);CHKERRQ(ierr);
+  ierr = PetscFree(shell->IA);CHKERRQ(ierr);
+  ierr = PetscFree(shell->JA);CHKERRQ(ierr);
+  ierr = PetscFree(shell->U_APPROX);CHKERRQ(ierr);
+  ierr = PetscFree(shell->RHS);CHKERRQ(ierr);
+  ierr = PetscFree(shell->IG);CHKERRQ(ierr);   
+  ierr = PetscFree(shell->PARAM);CHKERRQ(ierr);
+  ierr = PetscFree(shell);CHKERRQ(ierr);
 
   return 0;
 }

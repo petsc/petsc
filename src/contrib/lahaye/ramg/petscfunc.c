@@ -1,3 +1,5 @@
+/*$Id: pcregis.c,v 1.65 2001/06/21 21:17:38 bsmith Exp $*/
+
 #include "petscfunc.h"
 #include "ramgfunc.h"
 #include "petscsles.h"
