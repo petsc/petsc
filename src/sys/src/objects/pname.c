@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.21 1999/03/17 23:21:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.22 1999/03/31 03:08:24 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -44,7 +44,7 @@ int PetscObjectSetName(PetscObject obj,const char name[])
    Collective on PetscObject
 
    Input Parameters:
-+  obj - the Petsc variable
+.  obj - the Petsc variable
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectSetName((PetscObject) mat,name);
 
