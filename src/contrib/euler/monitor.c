@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.44 1997/10/16 18:27:56 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.45 1997/10/16 18:59:54 curfman Exp curfman $";
 #endif
 
 /*
@@ -328,21 +328,19 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
   Scalar sfluid, ssound, smach, r, gm1, gamma1, xv, yv;
   Scalar *xc = app->xc, *yc = app->yc, *zc = app->zc;
   FILE   *fp2;
-  Scalar *mach;
   char   filename[64];
 
   if (app->mmtype != MMEULER) SETERRQ(1,0,"Unsupported model type");
   if (app->size != 1) SETERRQ(1,0,"Currently uniprocessor only!");
 
-  istart = 1;
+  istart = 0;
   iend   = ni;
-  jstart = 1;
+  jstart = 0;
   jend   = nj;
 
   gamma1 = 1.4;
   gm1    = gamma1 - 1.0;
   k      = 1;
-  ierr = VecGetArray(app->Xvis,&mach); CHKERRQ(ierr);
 
 #define xcoord(i,j) xc[(k)*nj*ni + (j)*ni + (i)]
 #define ycoord(i,j) yc[(k)*nj*ni + (j)*ni + (i)]
@@ -350,22 +348,25 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
 #define den(i,j) x[5*((k)*nj1*ni1 + (j)*ni1 + (i))]
 #define ru(i,j) x[5*((k)*nj1*ni1 + (j)*ni1 + (i)) + 1]
 #define rv(i,j) x[5*((k)*nj1*ni1 + (j)*ni1 + (i)) + 2]
-#define smach(i,j) mach[(k)*nj1*ni1 + (j)*ni1 + (i)]
-
 
   foo = 1;
   if (foo) {
+
+    /* potential and mach data are associated with different physical points */
     if (iter != -1) {
-      sprintf(filename,"duct_fp_%d.m",iter);
+      sprintf(filename,"duct_euler_%d.m",iter);
       fp2 = fopen(filename,"w");
     } else {
-      fp2 = fopen("duct_fp.m","w");
+      fp2 = fopen("duct_euler.m","w");
     }
     if (!fp2) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open output file");
+
+    /* Grid and potential data */
+
     fprintf(fp2,"X = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ", xcoord(i-1,j-1));
+        fprintf(fp2,"%8.4f ", xcoord(i,j));
       }
       fprintf(fp2,"\n");
     }
@@ -373,7 +374,7 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
     fprintf(fp2,"Y = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ", ycoord(i-1,j-1));
+        fprintf(fp2,"%8.4f ", ycoord(i,j));
       }
       fprintf(fp2,"\n");
     }
@@ -383,12 +384,21 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
       kj = k*nj*ni + j*ni;
       for (i=istart; i<iend; i++) {
         ijk = kj + i;
-        fprintf(fp2,"%8.4f ",zcoord(i-1,j-1));
+        fprintf(fp2,"%8.4f ",zcoord(i,j));
+      }
+      fprintf(fp2,"\n");
+    }
+    fprintf(fp2,"];\n\n");
+    fprintf(fp2,"density = [\n");
+    for (j=jstart; j<jend; j++) {
+      for (i=istart; i<iend; i++) {
+        fprintf(fp2,"%8.4f ",0.25 * (den(i,j) + den(i+1,j) + den(i,j+1) + den(i+1,j+1)));
       }
       fprintf(fp2,"\n");
     }
     fprintf(fp2,"];\n\n");
 
+    fprintf(fp2,"mach = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
         r  = den(i,j);
@@ -396,23 +406,7 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
         yv = rv(i,j);
         sfluid = sqrt(xv*xv + yv*yv) / r;
         ssound = sqrt(pow(r,gm1));
-        mach[(k)*nj1*ni1 + (j)*ni1 + (i)] = sfluid/ssound;
-      }
-    }
-
-    fprintf(fp2,"mach = [\n");
-    for (j=jstart; j<jend; j++) {
-      for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ",0.25 * (smach(i,j) + smach(i-1,j) + smach(i,j-1) + smach(i-1,j-1)));
-      }
-      fprintf(fp2,"\n");
-    }
-
-    fprintf(fp2,"];\n\n");
-    fprintf(fp2,"density = [\n");
-    for (j=jstart; j<jend; j++) {
-      for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ",0.25 * (den(i,j) + den(i-1,j) + den(i,j-1) + den(i-1,j-1)));
+        fprintf(fp2,"%8.4f ",sfluid/ssound);
       }
       fprintf(fp2,"\n");
     }
@@ -420,7 +414,6 @@ int VisualizeEuler_Matlab(int iter,Euler *app,Scalar *x)
     fclose(fp2);
   }
 
-  ierr = VecRestoreArray(app->Xvis,&mach); CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------- */
@@ -440,22 +433,20 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
   int    ierr, kj, ijk, jstart, jend, istart, iend;
   Scalar sfluid, ssound, smach, r, gm1, gamma1, xv, yv;
   Scalar *xc = app->xc, *yc = app->yc, *zc = app->zc;
-  Scalar *mach;
   FILE   *fp2;
   char   filename[64];
 
   if (app->mmtype != MMFP) SETERRQ(1,0,"Unsupported model type");
   if (app->size != 1) SETERRQ(1,0,"Currently uniprocessor only!");
 
-  istart = 1;
-  iend   = ni1;
-  jstart = 1;
-  jend   = nj1;
+  istart = 0;
+  iend   = ni;
+  jstart = 0;
+  jend   = nj;
 
   gamma1 = 1.4;
   gm1    = gamma1 - 1.0;
   k      = 1;
-  ierr = VecGetArray(app->Xvis,&mach); CHKERRQ(ierr);
 
 #define xcoord(i,j) xc[(k)*nj*ni + (j)*ni + (i)]
 #define ycoord(i,j) yc[(k)*nj*ni + (j)*ni + (i)]
@@ -480,7 +471,7 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
     fprintf(fp2,"X = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ", xcoord(i-1,j-1));
+        fprintf(fp2,"%8.4f ", xcoord(i,j));
       }
       fprintf(fp2,"\n");
     }
@@ -488,7 +479,7 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
     fprintf(fp2,"Y = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ", ycoord(i-1,j-1));
+        fprintf(fp2,"%8.4f ", ycoord(i,j));
       }
       fprintf(fp2,"\n");
     }
@@ -498,7 +489,7 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
       kj = k*nj*ni + j*ni;
       for (i=istart; i<iend; i++) {
         ijk = kj + i;
-        fprintf(fp2,"%8.4f ",zcoord(i-1,j-1));
+        fprintf(fp2,"%8.4f ",zcoord(i,j));
       }
       fprintf(fp2,"\n");
     }
@@ -506,16 +497,11 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
     fprintf(fp2,"potential = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ",0.25 * (pot(i,j) + pot(i-1,j) + pot(i,j-1) + pot(i-1,j-1)));
+        fprintf(fp2,"%8.4f ",0.25 * (pot(i,j) + pot(i+1,j) + pot(i,j+1) + pot(i+1,j+1)));
       }
       fprintf(fp2,"\n");
     }
     fprintf(fp2,"];\n\n");
-
-    istart = 0;
-    iend   = ni;
-    jstart = 0;
-    jend   = nj;
 
     fprintf(fp2,"mach = [\n");
     for (j=jstart; j<jend; j++) {
@@ -534,7 +520,6 @@ int VisualizeFP_Matlab(int iter,Euler *app,Scalar *x)
     fclose(fp2);
   }
 
-  ierr = VecRestoreArray(app->Xvis,&mach); CHKERRQ(ierr);
   return 0;
 }
 /* --------------------------------------------------------------- */
