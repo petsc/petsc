@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.29 1996/03/10 23:36:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.30 1996/03/19 21:29:28 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -44,15 +44,15 @@ int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 
 int main(int argc,char **argv)
 {
-  SNES       snes;                  /* SNES context */
-  SNESType   method = SNES_UM_NTR;  /* nonlinear solution method */
-  Vec        x, g;                  /* solution, gradient vectors */
-  Mat        H;                     /* Hessian matrix */
-  AppCtx     user;                  /* application context */
-  int        mx=10;                 /* discretization in x-direction */
-  int        my=10;                 /* discretization in y-direction */
-  int        Nx=PETSC_DECIDE;       /* processors in x-direction */
-  int        Ny=PETSC_DECIDE;       /* processors in y-direction */
+  SNES       snes;                 /* SNES context */
+  SNESType   method = SNES_UM_TR;  /* nonlinear solution method */
+  Vec        x, g;                 /* solution, gradient vectors */
+  Mat        H;                    /* Hessian matrix */
+  AppCtx     user;                 /* application context */
+  int        mx=10;                /* discretization in x-direction */
+  int        my=10;                /* discretization in y-direction */
+  int        Nx=PETSC_DECIDE;      /* processors in x-direction */
+  int        Ny=PETSC_DECIDE;      /* processors in y-direction */
   int        ierr, its, nfails, size,flg;
   double     one = 1.0;
   SLES       sles;
@@ -202,7 +202,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 
   /* Modify diagonal if necessary */
   ierr = SNESGetType(snes,&method,PETSC_NULL); CHKERRQ(ierr);
-  if (method == SNES_UM_NLS) {
+  if (method == SNES_UM_LS) {
     ierr = SNESGetLineSearchDampingParameter(snes,&gamma1); CHKERRQ(ierr);
 #if !defined(PETSC_COMPLEX)
     PetscPrintf(MPI_COMM_WORLD,"  gamma1 = %g\n",gamma1);

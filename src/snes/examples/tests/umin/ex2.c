@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.28 1996/03/20 05:14:18 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.29 1996/03/20 06:04:51 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -53,17 +53,17 @@ int BoundaryValues(AppCtx*);
 
 int main(int argc,char **argv)
 {
-  SNES       snes;                  /* SNES context */
-  SNESType   method = SNES_UM_NTR;  /* nonlinear solution method */
-  Vec        x, g;                  /* solution, gradient vectors */
-  Mat        H;                     /* Hessian matrix */
-  AppCtx     user;                  /* application context */
-  int        ierr, its, nfails,flg;
+  SNES       snes;                 /* SNES context */
+  SNESType   method = SNES_UM_TR;  /* nonlinear solution method */
+  Vec        x, g;                 /* solution, gradient vectors */
+  Mat        H;                    /* Hessian matrix */
+  SLES       sles;                 /* linear solver */
+  PC         pc;                   /* preconditioner */
+  AppCtx     user;                 /* application context */
   int        mx=10;   /* discretization of problem in x-direction */
   int        my=10;   /* discretization of problem in y-direction */
   double     one = 1.0;
-  SLES       sles;
-  PC         pc;
+  int        ierr, its, nfails,flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -232,7 +232,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 
   /* Modify diagonal if necessary */
   ierr = SNESGetType(snes,&method,PETSC_NULL); CHKERRQ(ierr);
-  if (method == SNES_UM_NLS) {
+  if (method == SNES_UM_LS) {
     SNESGetLineSearchDampingParameter(snes,&gamma1);
 #if !defined(PETSC_COMPLEX)
     PetscPrintf(MPI_COMM_SELF,"  gamma1 = %g\n",gamma1);
