@@ -1,4 +1,4 @@
-/*$Id: gcreate.c,v 1.126 2001/01/15 21:46:25 bsmith Exp balay $*/
+/*$Id: gcreate.c,v 1.127 2001/03/23 23:22:45 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
@@ -109,7 +109,7 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
    MatSetFromOptions - Creates a matrix where the type is determined
    from the options database. Generates a parallel MPI matrix if the
    communicator has more than one processor.  The default matrix type is
-   AIJ, using the routines MatSetFromOptionsSeqAIJ() and MatSetFromOptionsMPIAIJ(). 
+   AIJ, using the routines MatCreateSeqAIJ() and MatCreateMPIAIJ(). 
 
    Collective on Mat
 
