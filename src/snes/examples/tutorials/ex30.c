@@ -137,7 +137,7 @@ extern PetscScalar   PInterp(Field **x, int i, int j);
 extern PetscScalar   TInterp(Field **x, int i, int j);
 
 /* Post-processing & misc */
-extern int ViscosityField(DMMG*);
+extern int ViscosityField(DMMG,Vec,Vec);
 extern int StressField(DMMG *dmmg);
 extern int SNESConverged_Interactive(SNES, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 extern int InteractiveHandler(int, void *);
@@ -256,30 +256,37 @@ int main(int argc,char **argv)
 #define __FUNCT__ "UpdateSolution"
 /*  manages solve: adaptive continuation method  */
 int UpdateSolution(DMMG *dmmg, AppCtx *user, int *nits)
-/*---------------------------------------------------------------------*/
 {
-  Parameter     *param=user->param;
-  int           ierr, its, tmpIVisc;
-  PetscTruth    q = param->quiet;
-  SNES          snes; PC pc; KSP ksp;
+  SNES                snes;
+  KSP                 ksp;
+  PC                  pc;
   SNESConvergedReason reason;
-  snes = DMMGGetSNES(dmmg); SNESGetKSP(snes,&ksp); KSPGetPC(ksp, &pc); 
-  ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
+  Parameter          *param = user->param;
+  PetscInt            its, tmpIVisc;
+  PetscErrorCode      ierr;
 
-   *nits=0;
+  PetscFunctionBegin;
+  snes = DMMGGetSNES(dmmg);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
+  ierr = KSPSetComputeSingularValues(ksp, PETSC_TRUE);CHKERRQ(ierr);
 
-  if (param->ivisc>=VISC_CONST && !param->stop_solve) { /* isoviscous solve */
-    if (!q) PetscPrintf(PETSC_COMM_WORLD,"Computing Constant Viscosity Solution \n");
-    tmpIVisc = param->ivisc; param->ivisc=VISC_CONST;
+  *nits=0;
+
+  /* Isoviscous solve */
+  if (param->ivisc >= VISC_CONST && !param->stop_solve) {
+    tmpIVisc     = param->ivisc;
+    param->ivisc = VISC_CONST;
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
     ierr = VecCopy(DMMGGetx(dmmg),user->Xguess);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr); (*nits)+=its;
-    if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %D\n", *nits);
+    ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
+    *nits +=its;
     if (param->stop_solve) goto done;
     param->ivisc = tmpIVisc; 
   }
 
-  if ( param->ivisc>=VISC_DIFN && !param->stop_solve) { /* olivine diffusion creep */
+  /* Olivine diffusion creep */
+  if (param->ivisc >= VISC_DIFN && !param->stop_solve) {
     if (!q) PetscPrintf(PETSC_COMM_WORLD,"Computing Variable Viscosity Solution\n");
 
     /* continuation method on viscosity cutoff */
@@ -290,7 +297,8 @@ int UpdateSolution(DMMG *dmmg, AppCtx *user, int *nits)
       ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
       ierr = VecCopy(DMMGGetx(dmmg),user->Xguess);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
-      ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr); (*nits)+=its;
+      ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+      *nits += its;
       if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %D, Cumulative: %D\n", its, *nits);
       if (param->stop_solve || reason<0 || param->continuation==1.0) goto done;
 
@@ -307,10 +315,9 @@ int UpdateSolution(DMMG *dmmg, AppCtx *user, int *nits)
       param->continuation = PetscMin(param->continuation,1.0);
     }
   }
-  
- done:
+  done:
   if (param->stop_solve && !q) PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: stopping solve.\n");
-  return 0;
+  PetscFunctionReturn(0);
 }   
 
 /* ------------------------------------------------------------------- */
@@ -1146,7 +1153,7 @@ int DoOutput(DMMG *dmmg, int its)
 
   /* compute final residual and final viscosity/strain rate fields */
   ierr = SNESGetFunction(DMMGGetSNES(dmmg), &res, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = ViscosityField(dmmg);CHKERRQ(ierr); 
+  ierr = ViscosityField(DMMGGetDMMG(dmmg), DMMGGetx(dmmg), ((AppCtx *)dmmg[0]->user)->Xguess);CHKERRQ(ierr); 
 
   /* get the communicator and the rank of the processor */
   ierr = PetscObjectGetComm((PetscObject)DMMGGetSNES(dmmg), &comm);CHKERRQ(ierr);
@@ -1212,61 +1219,56 @@ int DoOutput(DMMG *dmmg, int its)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "ViscosityField"
-/* post-processing: compute viscosity everywhere */
-int ViscosityField(DMMG *dmmg)
+/* Compute both the second invariant of the strain rate tensor and the viscosity, at both cell centers and cell corners */
+int ViscosityField(DMMG dmmg, Vec X, Vec V)
 /* ------------------------------------------------------------------- */
 {
-  AppCtx      *user = (AppCtx*)dmmg[0]->user;
-  Parameter   *param = user->param;
-  GridInfo    *grid  = user->grid;
-  int         i,j,ierr,is,js,im,jm,ilim,jlim,ivt=param->ivisc;
-  PassiveReal eps, dx, dz, T, epsC, TC;
-  DA          da;
-  Vec         locVec;
-  Field       **x, **y;
+  DA             da    = (DA) dmmg->dm;
+  AppCtx        *user  = (AppCtx *) dmmg->user;
+  Parameter     *param = user->param;
+  GridInfo      *grid  = user->grid;
+  Vec            localX;
+  Field        **v, **x;
+  PassiveReal    eps, dx, dz, T, epsC, TC;
+  PetscInt       i,j,is,js,im,jm,ilim,jlim,ivt;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
+  ivt          = param->ivisc;
   param->ivisc = param->output_ivisc;
-  
-  /* Get the fine grid of Xguess and X */
-  da = (DA)(dmmg[0]->dm); 
-  ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
 
-  ierr = DACreateLocalVector(da, &locVec);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da, DMMGGetx(dmmg), INSERT_VALUES, locVec);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,locVec,(void**)&y);CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da, &localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da, X, INSERT_VALUES, localX);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,V,(void**)&v);CHKERRQ(ierr);
 
   /* Parameters */
   dx   = grid->dx;   dz   = grid->dz;
   ilim = grid->ni-1; jlim = grid->nj-1;
 
   /* Compute real temperature, strain rate and viscosity */
+  ierr = DAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
-      
-      T  = param->potentialT * y[j][i].T * exp( (j-0.5)*dz*param->z_scale );
-      if (i<ilim && j<jlim)
-	TC = param->potentialT * TInterp(y,i,j) * exp( j*dz*param->z_scale );
-      else 
+      T  = param->potentialT * x[j][i].T * exp( (j-0.5)*dz*param->z_scale );
+      if (i<ilim && j<jlim) {
+	TC = param->potentialT * TInterp(x,i,j) * exp( j*dz*param->z_scale );
+      } else {
 	TC = T;
-
-      eps  = CalcSecInv(y,i,j,CELL_CENTER,user);
-      epsC = CalcSecInv(y,i,j,CELL_CORNER,user);
-      x[j][i].u = eps;
-      x[j][i].w = epsC;
-
-      x[j][i].p = Viscosity(T,eps,dz*(j-0.5),param);
-      x[j][i].T = Viscosity(TC,epsC,dz*j,param);
+      }
+      eps  = CalcSecInv(x,i,j,CELL_CENTER,user);
+      epsC = CalcSecInv(x,i,j,CELL_CORNER,user);
+      v[j][i].u = eps;
+      v[j][i].w = epsC;
+      v[j][i].p = Viscosity(T,eps,dz*(j-0.5),param);
+      v[j][i].T = Viscosity(TC,epsC,dz*j,param);
     }
   }
-
-  /* Restore the fine grid of Xguess and X */
-  ierr = DAVecRestoreArray(da,((AppCtx*)dmmg[0]->user)->Xguess,(void**)&x);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,locVec,(void**)&y);CHKERRQ(ierr);
-  param->ivisc=ivt;
-
-  return 0;
+  ierr = DAVecRestoreArray(da,V,(void**)&v);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
+  param->ivisc = ivt;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -1467,30 +1469,31 @@ PetscTruth OptionsHasName(const char pre[],const char name[])
 int SNESConverged_Interactive(SNES snes, PetscReal xnorm, PetscReal pnorm, PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
 /* ------------------------------------------------------------------- */
 {
-  AppCtx    *user = (AppCtx *) ctx;
-  Parameter *param = user->param;
-  KSP       ksp;
+  AppCtx        *user = (AppCtx *) ctx;
+  Parameter     *param = user->param;
+  KSP            ksp;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   if (param->interrupted) {
     param->interrupted = PETSC_FALSE;
     PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: exiting SNES solve. \n");
     *reason = SNES_CONVERGED_FNORM_ABS;
-    return 0;
+    PetscFunctionReturn(0);
   } else if (param->toggle_kspmon) {
     param->toggle_kspmon = PETSC_FALSE;
-    SNESGetKSP(snes, &ksp);
+    ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     if (param->kspmon) {
-      KSPClearMonitor(ksp);
+      ierr = KSPClearMonitor(ksp);CHKERRQ(ierr);
       param->kspmon = PETSC_FALSE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: deactivating ksp singular value monitor. \n");
     } else {
-      KSPSetMonitor(ksp,KSPSingularValueMonitor,PETSC_NULL,PETSC_NULL);
+      ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       param->kspmon = PETSC_TRUE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");
     }
-    return 0;
   }
-  return SNESConverged_LS(snes, xnorm, pnorm, fnorm, reason, ctx);
+  PetscFunctionReturn(SNESConverged_LS(snes, xnorm, pnorm, fnorm, reason, ctx);
 }
 
 /* ------------------------------------------------------------------- */
