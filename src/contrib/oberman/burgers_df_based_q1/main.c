@@ -23,7 +23,6 @@ int main( int argc, char **argv )
 
   /*      Initialize graphics  */
   ierr = AppCtxGraphics(appctx); CHKERRA(ierr); 
-  printf("in main, appctx->view.show_griddata= %d\n", appctx->view.show_griddata); 
 
   /*   Setup the system and solve it*/
   ierr = AppCtxSolve(appctx);CHKERRQ(ierr);

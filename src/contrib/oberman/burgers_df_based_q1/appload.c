@@ -19,7 +19,8 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
 
   (*appctx) = (AppCtx *) PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
   (*appctx)->comm = comm;
-
+  view    = &(*appctx)->view; /*added by H. */
+  element = &(*appctx)->element; /*added by H. */
 /*  ---------------
       Setup the functions
 -------------------*/
@@ -34,11 +35,9 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   ierr = AODataLoadBasic(binary,&(*appctx)->aodata); CHKERRQ(ierr);
   ierr = ViewerDestroy(binary); CHKERRQ(ierr);
 
-  /* moved from AppCtxGraphics -- H */
-  /* ierr = OptionsHasName(PETSC_NULL,"-show_grid",&appctx->view.show_grid);CHKERRQ(ierr);
-   */ 
-  ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&appctx->view.show_griddata);CHKERRQ(ierr);
-  printf("in AppCtxCreate, appctx->view.show_griddata= %d\n", appctx->view.show_griddata);
+  /* moved from AppCtxGraphics by H */
+  ierr = OptionsHasName(PETSC_NULL,"-show_grid",&view->show_grid);CHKERRQ(ierr); 
+  ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&view->show_griddata);CHKERRQ(ierr);
 
   /*------------------------------------------------------------------------
       Setup the local data structures 
@@ -87,9 +86,10 @@ int AppCtxSetLocal(AppCtx *appctx)
 
   MPI_Comm_rank(appctx->comm,&rank);
 
-  printf("in AppCtxSetLocal, appctx->view.show_griddata= %d\n", appctx->view.show_griddata);
   if (appctx->view.show_griddata) {
-    AODataView(ao, VIEWER_STDOUT_SELF);  
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The Application Ordering Database (AO)\n:");CHKERRQ(ierr);
+    AODataView(ao, VIEWER_STDOUT_SELF);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n-------- end of AO -------\n");CHKERRQ(ierr);  
   }
 
   /*   Generate the list of on processor cells   */
@@ -105,13 +105,14 @@ int AppCtxSetLocal(AppCtx *appctx)
  /*       Get the list of Degrees of Freedom associated with those cells  (global numbering) */
  ierr = AODataSegmentGetReducedIS(ao,"cell","df",grid->cell_global,&grid->df_global);CHKERRQ(ierr);
  if(appctx->view.show_griddata){  
-   printf("df_global \n");  ISView(grid->df_global, VIEWER_STDOUT_WORLD);
+   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n df_global \n");CHKERRQ(ierr);  
+   ISView(grid->df_global, VIEWER_STDOUT_WORLD);
  }
 
  /*    Get the coords corresponding to each cell */
  ierr = AODataSegmentGetIS(ao, "cell", "coords", grid->cell_global , (void **)&grid->cell_coords);CHKERRQ(ierr);
    if(appctx->view.show_griddata ){  
-     printf("cell_coords\n");   
+     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n cell_coords\n");CHKERRQ(ierr);   
      PetscDoubleView(grid->cell_n*8, grid->cell_coords, VIEWER_STDOUT_SELF);
    }
   /*      Make local to global mapping of cells and vertices  */
@@ -119,7 +120,10 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = ISLocalToGlobalMappingCreateIS(grid->cell_global,&ltogcell);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(grid->vertex_global,&grid->ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(grid->df_global,&grid->dfltog);CHKERRQ(ierr);
-if(0){ printf("the local to global mapping \n");  ierr = ISLocalToGlobalMappingView(grid->dfltog, VIEWER_STDOUT_SELF);}
+  if(appctx->view.show_griddata){ 
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\n grid->dfltog, the local to global mapping \n");CHKERRQ(ierr);  
+    ierr = ISLocalToGlobalMappingView(grid->dfltog, VIEWER_STDOUT_SELF);
+  }
 
   /* Attach the ltog to the database */
   ierr = AODataKeySetLocalToGlobalMapping(ao,"cell",ltogcell);CHKERRQ(ierr);
@@ -139,7 +143,10 @@ if(0){ printf("the local to global mapping \n");  ierr = ISLocalToGlobalMappingV
   ierr = ISGetSize(grid->df_global, &grid->df_count); CHKERRQ(ierr);
   if(1){ printf("the number of cells on processor %d: %d\n ", rank, grid->cell_n);}
 
- if( 1 ){  printf("grid cell_df\n");   PetscIntView(grid->cell_n*8, grid->cell_df, VIEWER_STDOUT_SELF);}
+ if(appctx->view.show_griddata ){  
+   ierr = PetscPrintf(PETSC_COMM_WORLD,"\n grid->cell_df\n");CHKERRQ(ierr);   
+   PetscIntView(grid->cell_n*8, grid->cell_df, VIEWER_STDOUT_SELF);
+ }
   /*       Get the numerical values/coords of all vertices for local vertices  */
   ierr = AODataSegmentGetIS(ao,"vertex","values",grid->vertex_global,(void **)&grid->vertex_value);CHKERRQ(ierr);
   /* Get Df's corresponding to the vertices */
