@@ -3253,10 +3253,13 @@ int MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
   int i,*AJ=a->j,nz=a->nz;
+  PetscFunctionBegin;
   /* Undo Column scaling */
 /*    while (nz--) { */
 /*      AJ[i] = AJ[i]/4; */
 /*    } */
+  /* This should really invoke a push/pop logic, but we don't have that yet. */
+  A->ops->setunfactored = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -3267,9 +3270,12 @@ int MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
   int i,*AJ=a->j,nz=a->nz;
   unsigned short *aj=(unsigned short *)AJ;
+  PetscFunctionBegin;
   while (nz--) {
     AJ[i] = (int)((unsigned int)aj[i]); /* First extend, then convert to signed. */
   }
+  /* This should really invoke a push/pop logic, but we don't have that yet. */
+  A->ops->setunfactored = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
