@@ -622,10 +622,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatIsSymmetric_MPIAIJ"
 int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
 {
+  MPI_Comm comm;
   Mat_MPIAIJ *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
   Mat        Adia = Aij->A, Bdia, Aoff,Boff,*Aoffs,*Boffs;
   IS         Me,Notme;
-  int        M,N,first,last,*notme,i, ierr;
+  int        M,N,first,last,*notme,ntids,i, ierr;
 
   PetscFunctionBegin;
 
@@ -633,6 +634,9 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
   Bij = (Mat_MPIAIJ *) Bmat->data; Bdia = Bij->A;
   ierr = MatIsSymmetric(Adia,Bdia,f); CHKERRQ(ierr);
   if (!*f) PetscFunctionReturn(0);
+  ierr = PetscObjectGetComm((PetscObject)Amat,&comm); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&ntids); CHKERRQ(ierr);
+  if (ntids==1) PetscFunctionReturn(0);
 
   /* Hard test: off-diagonal block. This takes a MatGetSubMatrix. */
   ierr = MatGetSize(Amat,&M,&N); CHKERRQ(ierr);
