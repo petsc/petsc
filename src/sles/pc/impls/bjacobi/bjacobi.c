@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.60 1996/01/02 20:17:48 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.61 1996/01/02 21:36:32 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -69,10 +69,10 @@ static int PCSetFromOptions_BGS(PC pc)
     PCBGSSetUseTrueLocal(pc);
   }
   if (OptionsHasName(pc->prefix,"-pc_bgs_backward")) {
-    PCBGSSetSymmetric(pc,SOR_BACKWARD_SWEEP);
+    PCBGSSetSymmetric(pc,BGS_BACKWARD_SWEEP);
   }
   if (OptionsHasName(pc->prefix,"-pc_bgs_symmetric")) {
-    PCBGSSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
+    PCBGSSetSymmetric(pc,BGS_SYMMETRIC_SWEEP);
   }
   return 0;
 }
@@ -101,7 +101,7 @@ int PCBGSSetSymmetric(PC pc, PCBGSType flag)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if (pc->type != PCSOR) return 0;
+  if (pc->type != PCBGS) return 0;
   jac->gstype = flag;
   return 0;
 }
@@ -132,7 +132,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 {
   PC_BJacobi   *jac;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if (pc->type != PCBJACOBI) return 0;
+  if (pc->type != PCBJACOBI && pc->type != PCBGS ) return 0;
   jac = (PC_BJacobi *) pc->data;
   jac->use_true_local = 1;
   return 0;
@@ -190,7 +190,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 {
   PC_BJacobi   *jac;
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
-  if (pc->type != PCBJACOBI) return 0;
+  if (pc->type != PCBJACOBI && pc->type != PCBGS) return 0;
   if (!pc->setupcalled) SETERRQ(1,"PCBJacobiGetSubSLES:Must call SLESSetUp first");
   jac = (PC_BJacobi *) pc->data;
   *n_local = jac->n_local;
@@ -225,7 +225,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 @*/
 int PCBGSGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 {  
-  return PCBGSGetSubSLES(pc, n_local, first_local, sles);
+  return PCBJacobiGetSubSLES(pc, n_local, first_local, sles);
 }
 
 static int PCPrintHelp_BJacobi(PC pc)
@@ -334,8 +334,10 @@ int PCCreate_BGS(PC pc)
   ierr          = PCCreate_BJacobi(pc); CHKERRQ(ierr);
   jac           = (PC_BJacobi*) pc->data;
   jac->gs       = PETSC_TRUE;
+  jac->gstype   = BGS_FORWARD_SWEEP;
   pc->setfrom   = PCSetFromOptions_BGS;
   pc->printhelp = PCPrintHelp_BGS;
+  pc->type      = PCBGS;
   return 0;
 }
   
@@ -367,7 +369,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
 
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (blocks <= 0) SETERRQ(1,"PCBJacobiSetTotalBlocks:Must have positive blocks");
-  if (pc->type != PCBJACOBI) return 0;
+  if (pc->type != PCBJACOBI && pc->type != PCBGS) return 0;
 
   jac->n = blocks;
   if (!lens) {
@@ -438,7 +440,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 
   PETSCVALIDHEADERSPECIFIC(pc,PC_COOKIE);
   if (blocks < 0) SETERRQ(1,"PCBJacobiSetLocalBlocks:Must have nonegative blocks");
-  if (pc->type != PCBJACOBI) return 0;
+  if (pc->type != PCBJACOBI && pc->type != PCBGS ) return 0;
 
   jac->n_local = blocks;
   if (!lens) {
@@ -482,3 +484,5 @@ int PCBGSSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 {
   return PCBJacobiSetLocalBlocks(pc, blocks, lens, true1);
 }
+
+
