@@ -1248,7 +1248,7 @@ int MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
   PetscTruth   flag;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQBAIJ,&flag);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQSBAIJ,&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_ERR_ARG_INCOMP,"Matrices must be same type");
 
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
@@ -1270,8 +1270,8 @@ int MatEqual_SeqSBAIJ(Mat A,Mat B,PetscTruth* flg)
   }  
   /* if a->a are the same */
   ierr = PetscMemcmp(a->a,b->a,(a->s_nz)*(a->bs)*(a->bs)*sizeof(PetscScalar),flg);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
   
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
