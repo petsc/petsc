@@ -16,6 +16,7 @@ int main(int argc,char **args)
   IS          is1,is2;
   PetscReal   s1norm,s2norm,rnorm,tol = 1.e-10;
   PetscTruth  flg;
+  MatLUInfo   info;
   
   PetscInitialize(&argc,&args,(char *)0,help);
   
@@ -175,9 +176,14 @@ int main(int argc,char **args)
   ierr = PetscFree(idx);CHKERRQ(ierr);
   ierr = ISSetPermutation(is1);CHKERRQ(ierr);
   ierr = ISSetPermutation(is2);CHKERRQ(ierr);
-  ierr = MatLUFactor(B,is1,is2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatLUFactor(A,is1,is2,PETSC_NULL);CHKERRQ(ierr);
-  
+
+  info.fill = 2.0;
+  info.dtcol = 0.0; 
+  info.damping = 0.0; 
+  info.zeropivot = 1.e-14; 
+  info.pivotinblocks = 1.0; 
+  ierr = MatLUFactor(B,is1,is2,&info);CHKERRQ(ierr);
+  ierr = MatLUFactor(A,is1,is2,&info);CHKERRQ(ierr);
   
   /* Test MatSolveAdd() */
   for (i=0; i<40; i++) {

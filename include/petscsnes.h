@@ -94,6 +94,9 @@ EXTERN int MatSNESMFSetPeriod(Mat,int);
 EXTERN int MatSNESMFGetH(Mat,PetscScalar *);
 EXTERN int MatSNESMFKSPMonitor(KSP,int,PetscReal,void *);
 EXTERN int MatSNESMFSetFromOptions(Mat);
+EXTERN int MatSNESMFCheckPositivity(Vec,Vec,PetscScalar*,void*);
+EXTERN int MatSNESMFSetCheckh(Mat,int (*)(Vec,Vec,PetscScalar*,void*),void*);
+
 typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
 
 #define MATSNESMF_DEFAULT "default"

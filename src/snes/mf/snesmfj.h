@@ -39,6 +39,8 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   Mat              mat;                    /* back reference to shell matrix that contains this */
   int              recomputeperiod;        /* how often the h is recomputed; default to 1 */
   int              count;                  /* used by recomputeperiod */
+  void             *checkhctx;             /* optional context used by MatSNESMFSetCheckh() */
+  int              (*checkh)(Vec,Vec,PetscScalar*,void*);
   /*
         The next three are used only if user called MatSNESMFSetFunction()
   */

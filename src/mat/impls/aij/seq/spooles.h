@@ -55,11 +55,11 @@ EXTERN int MatFactorInfo_Spooles(Mat,PetscViewer);
 
 EXTERN int MatDestroy_SeqAIJ_Spooles(Mat);
 EXTERN int MatSolve_SeqAIJ_Spooles(Mat,Vec,Vec);
-EXTERN int MatFactorNumeric_SeqAIJ_Spooles(Mat,Mat *); 
+EXTERN int MatFactorNumeric_SeqAIJ_Spooles(Mat,Mat*); 
 
 EXTERN int MatDestroy_MPIAIJ_Spooles(Mat);
 EXTERN int MatSolve_MPIAIJ_Spooles(Mat,Vec,Vec);
-EXTERN int MatFactorNumeric_MPIAIJ_Spooles(Mat,Mat *); 
+EXTERN int MatFactorNumeric_MPIAIJ_Spooles(Mat,Mat*); 
 
-EXTERN int MatGetInertia_SeqSBAIJ_Spooles(Mat,int *,int *,int *);
+EXTERN int MatGetInertia_SeqSBAIJ_Spooles(Mat,Mat*,int*,int*,int*);
 #endif

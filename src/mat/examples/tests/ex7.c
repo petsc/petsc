@@ -17,6 +17,7 @@ int main(int argc,char **args)
   IS          perm,iperm;
   Vec         x,u,b;
   PetscReal   norm;
+  MatLUInfo   luinfo;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -39,7 +40,12 @@ int main(int argc,char **args)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = MatLUFactorSymbolic(C,perm,iperm,PETSC_NULL,&LU);CHKERRQ(ierr);
+  luinfo.fill = 2.0;
+  luinfo.dtcol = 0.0; 
+  luinfo.damping = 0.0; 
+  luinfo.zeropivot = 1.e-14; 
+  luinfo.pivotinblocks = 1.0; 
+  ierr = MatLUFactorSymbolic(C,perm,iperm,&luinfo,&LU);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(C,&LU);CHKERRQ(ierr);
   ierr = MatView(LU,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

@@ -1,4 +1,6 @@
-#! /usr/local/bin/perl5
+#!/usr/bin/env perl
+# 
+# Requires perl5
 #
 # Extract the examples from PETSc, including the description/help
 # data and the concepts list, and forms a table

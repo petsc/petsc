@@ -17,7 +17,6 @@
 #define snesdacomputejacobian_           SNESDACOMPUTEJACOBIAN
 #define snesdacomputejacobianwithadifor_ SNESDACOMPUTEJACOBIANWITHADIFOR
 #define snesdaformfunction_              SNESDAFORMFUNCTION          
-#define matsnesmfsetbase_                MATSNESMFSETBASE
 #define snesconverged_tr_                SNESCONVERGED_TR
 #define snesconverged_ls_                SNESCONVERGED_LS
 #define snesgetconvergedreason_          SNESGETCONVERGEDREASON
@@ -67,7 +66,6 @@
 #define snesdacomputejacobian_           snesdacomputejacobian
 #define snesdacomputejacobianwithadifor_ snesdacomputejacobianwithadifor
 #define snesdaformfunction_              snesdaformfunction
-#define matsnesmfsetbase_                matsnesmfsetbase
 #define snescubiclinesearch_             snescubiclinesearch     
 #define snesquadraticlinesearch_         snesquadraticlinesearch    
 #define snesnolinesearch_                snesnolinesearch    
@@ -228,11 +226,6 @@ void PETSC_STDCALL snesappendoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_L
   FIXCHAR(prefix,len,t);
   *ierr = SNESAppendOptionsPrefix(*snes,t);
   FREECHAR(prefix,t);
-}
-
-void PETSC_STDCALL matsnesmfsetbase_(Mat *m,Vec *x,int *ierr)
-{
-  *ierr = MatSNESMFSetBase(*m,*x);
 }
 
 void PETSC_STDCALL matcreatesnesmf_(SNES *snes,Vec *x,Mat *J,int *ierr)
