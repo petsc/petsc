@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.52 1995/10/24 22:45:58 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.53 1995/10/25 22:43:27 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -528,7 +528,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     else {
       /* assemble the entire matrix onto first processor. */
       Mat       A;
-      int       M = mbd->M, N = mbd->N,m,row,i, nz, *cols;
+      int       M = mbd->M, N = mbd->N, m, row, nz, *cols;
       Scalar    *vals;
       Mat_SeqBDiag *Ambd = (Mat_SeqBDiag*) mbd->A->data;
 
@@ -657,8 +657,8 @@ static int MatNorm_MPIBDiag(Mat A,MatNormType type,double *norm)
 {
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) A->data;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) mbd->A->data;
-  double       sum = 0.0, *tmp;
-  int          ierr, d, i, j, nd = a->nd, nb = a->nb, diag, len;
+  double       sum = 0.0;
+  int          ierr, d, i, nd = a->nd, nb = a->nb, len;
   Scalar       *dv;
 
   if (!a->assembled) SETERRQ(1,"MatNorm_MPIBDiag:Must assemble mat");

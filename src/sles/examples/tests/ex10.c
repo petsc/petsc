@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.42 1995/10/19 22:26:52 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.43 1995/10/24 22:22:52 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -97,10 +97,11 @@ int main(int argc,char **args)
 int GetElasticityMatrix(int m,Mat *newmat)
 {
   int     i,j,k,i1,i2,j1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
-  int     ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr;
+  int     ict, nz, base, r1, r2, N, *rowkeep, nstart, ierr, set;
   IS      iskeep;
   double  **K, norm;
   Mat     mat, submat = 0;
+  MatType type;
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
@@ -169,18 +170,9 @@ int GetElasticityMatrix(int m,Mat *newmat)
   /* Convert storage formats -- just to demonstrate conversion to various
      formats (in particular, block diagonal storage).  This is NOT the
      recommended means to solve such a problem.  */
-  { MatType type = MATSEQBDIAG;
-  if (OptionsHasName(0,"-mat_seqrow"))   type = MATSEQROW; 
-  if (OptionsHasName(0,"-mat_seqaij"))   type = MATSAME;
-  if (OptionsHasName(0,"-mat_seqdense")) type = MATSEQDENSE;
-  if (OptionsHasName(0,"-mat_mpiaij"))   type = MATMPIAIJ;
-  if (OptionsHasName(0,"-mat_mpirow"))   type = MATMPIROW;
-  if (OptionsHasName(0,"-mat_mpirowbs")) type = MATMPIROWBS;
-  if (OptionsHasName(0,"-mat_mpibdiag")) type = MATMPIBDIAG;
-
+  ierr = MatGetFormatFromOptions(MPI_COMM_WORLD,0,&type,&set); CHKERRQ(ierr);
   ierr = MatConvert(submat,type,newmat); CHKERRQ(ierr);
   ierr = MatDestroy(submat); CHKERRQ(ierr);
-  }
 
   ierr = ViewerFileSetFormat(STDOUT_VIEWER_WORLD,FILE_FORMAT_INFO,0); CHKERRQ(ierr);
   ierr = MatView(*newmat,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
