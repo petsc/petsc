@@ -349,26 +349,13 @@ int MatSetOption_SeqBAIJ(Mat A,MatOption op)
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
   case MAT_USE_SINGLE_PRECISION_SOLVES:
     if (a->bs==4) {
-      PetscTruth sse_enabled_local,sse_enabled_global;
       int        ierr;
-
-      sse_enabled_local  = PETSC_FALSE;
-      sse_enabled_global = PETSC_FALSE;
-
-      ierr = PetscSSEIsEnabled(A->comm,&sse_enabled_local,&sse_enabled_global);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SSE)
-      if (sse_enabled_local) {
-          a->single_precision_solves = PETSC_TRUE;
-          A->ops->solve              = MatSolve_SeqBAIJ_Update;
-          A->ops->solvetranspose     = MatSolveTranspose_SeqBAIJ_Update;
-          PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES set\n");
-          break;
-      } else {
-        PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
-      }
-#else
+      a->single_precision_solves = PETSC_TRUE;
+      A->ops->solve              = MatSolve_SeqBAIJ_Update;
+      A->ops->solvetranspose     = MatSolveTranspose_SeqBAIJ_Update;
+      PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES set\n");
+    } else {
       PetscLogInfo(A,"MatSetOption_SeqBAIJ:Option MAT_USE_SINGLE_PRECISION_SOLVES ignored\n");
-#endif
     }
     break;
   default:

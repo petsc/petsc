@@ -1748,6 +1748,101 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   PetscLogFlops(2*16*(a->nz) - 4*A->n);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_4_Demotion"
+int MatSolve_SeqBAIJ_4_Demotion(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
+  IS              iscol=a->col,isrow=a->row;
+  int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
+  int             *diag = a->diag;
+  MatScalar       *aa=a->a,*v,s1,s2,s3,s4,x1,x2,x3,x4,*t;
+  PetscScalar     *x,*b;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  t  = (MatScalar *)a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
+
+  /* forward solve the lower triangular */
+  idx    = 4*(*r++); 
+  t[0] = (MatScalar)b[idx];
+  t[1] = (MatScalar)b[1+idx]; 
+  t[2] = (MatScalar)b[2+idx];
+  t[3] = (MatScalar)b[3+idx];
+  for (i=1; i<n; i++) {
+    v     = aa + 16*ai[i];
+    vi    = aj + ai[i];
+    nz    = diag[i] - ai[i];
+    idx   = 4*(*r++); 
+    s1 = (MatScalar)b[idx];
+    s2 = (MatScalar)b[1+idx];
+    s3 = (MatScalar)b[2+idx];
+    s4 = (MatScalar)b[3+idx];
+    while (nz--) {
+      idx   = 4*(*vi++);
+      x1  = t[idx];
+      x2  = t[1+idx];
+      x3  = t[2+idx];
+      x4  = t[3+idx];
+      s1 -= v[0]*x1 + v[4]*x2 + v[8]*x3  + v[12]*x4;
+      s2 -= v[1]*x1 + v[5]*x2 + v[9]*x3  + v[13]*x4;
+      s3 -= v[2]*x1 + v[6]*x2 + v[10]*x3 + v[14]*x4;
+      s4 -= v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
+      v    += 16;
+    }
+    idx        = 4*i;
+    t[idx]   = s1;
+    t[1+idx] = s2;
+    t[2+idx] = s3;
+    t[3+idx] = s4;
+  }
+  /* backward solve the upper triangular */
+  for (i=n-1; i>=0; i--){
+    v    = aa + 16*diag[i] + 16;
+    vi   = aj + diag[i] + 1;
+    nz   = ai[i+1] - diag[i] - 1;
+    idt  = 4*i;
+    s1 = t[idt];
+    s2 = t[1+idt]; 
+    s3 = t[2+idt];
+    s4 = t[3+idt];
+    while (nz--) {
+      idx   = 4*(*vi++);
+      x1  = t[idx];
+      x2  = t[1+idx];
+      x3  = t[2+idx];
+      x4  = t[3+idx];
+      s1 -= v[0]*x1 + v[4]*x2 + v[8]*x3   + v[12]*x4;
+      s2 -= v[1]*x1 + v[5]*x2 + v[9]*x3   + v[13]*x4; 
+      s3 -= v[2]*x1 + v[6]*x2 + v[10]*x3  + v[14]*x4;
+      s4 -= v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
+      v += 16;
+    }
+    idc      = 4*(*c--);
+    v        = aa + 16*diag[i];
+    t[idt]   = v[0]*s1+v[4]*s2+v[8]*s3+v[12]*s4;
+    t[1+idt] = v[1]*s1+v[5]*s2+v[9]*s3+v[13]*s4;
+    t[2+idt] = v[2]*s1+v[6]*s2+v[10]*s3+v[14]*s4;
+    t[3+idt] = v[3]*s1+v[7]*s2+v[11]*s3+v[15]*s4;
+    x[idc]   = (PetscScalar)t[idt];
+    x[1+idc] = (PetscScalar)t[1+idt];
+    x[2+idc] = (PetscScalar)t[2+idt];
+    x[3+idc] = (PetscScalar)t[3+idt];
+ }
+
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  PetscLogFlops(2*16*(a->nz) - 4*A->n);
+  PetscFunctionReturn(0);
+}
+
 #if defined (PETSC_HAVE_SSE)
 
 #include PETSC_HAVE_SSE
@@ -2057,6 +2152,95 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
   }
 #endif
+
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  PetscLogFlops(2*16*(a->nz) - 4*A->n);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion"
+int MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
+  int             n=a->mbs,*ai=a->i,*aj=a->j;
+  int             ierr,*diag = a->diag;
+  MatScalar       *aa=a->a;
+  PetscScalar     *x,*b;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+
+  {
+    MatScalar  s1,s2,s3,s4,x1,x2,x3,x4;
+    MatScalar  *v,*t=(MatScalar *)x;
+    int        jdx,idt,idx,nz,*vi,i,ai16;
+
+    /* forward solve the lower triangular */
+    idx  = 0;
+    t[0] = (MatScalar)b[0];
+    t[1] = (MatScalar)b[1];
+    t[2] = (MatScalar)b[2];
+    t[3] = (MatScalar)b[3];
+    for (i=1; i<n; i++) {
+      v     =  aa      + 16*ai[i];
+      vi    =  aj      + ai[i];
+      nz    =  diag[i] - ai[i];
+      idx   +=  4;
+      s1 = (MatScalar)b[idx];
+      s2 = (MatScalar)b[1+idx];
+      s3 = (MatScalar)b[2+idx];
+      s4 = (MatScalar)b[3+idx];
+      while (nz--) {
+        jdx = 4*(*vi++);
+        x1  = t[jdx];
+        x2  = t[1+jdx];
+        x3  = t[2+jdx];
+        x4  = t[3+jdx];
+        s1 -= v[0]*x1 + v[4]*x2 + v[8]*x3  + v[12]*x4;
+        s2 -= v[1]*x1 + v[5]*x2 + v[9]*x3  + v[13]*x4;
+        s3 -= v[2]*x1 + v[6]*x2 + v[10]*x3 + v[14]*x4;
+        s4 -= v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
+        v    += 16;
+      }
+      t[idx]   = s1;
+      t[1+idx] = s2;
+      t[2+idx] = s3;
+      t[3+idx] = s4;
+    }
+    /* backward solve the upper triangular */
+    idt = 4*(n-1);
+    for (i=n-1; i>=0; i--){
+      ai16 = 16*diag[i];
+      v    = aa + ai16 + 16;
+      vi   = aj + diag[i] + 1;
+      nz   = ai[i+1] - diag[i] - 1;
+      s1   = t[idt];
+      s2   = t[1+idt]; 
+      s3   = t[2+idt];
+      s4   = t[3+idt];
+      while (nz--) {
+        idx = 4*(*vi++);
+        x1  = (MatScalar)x[idx];
+        x2  = (MatScalar)x[1+idx];
+        x3  = (MatScalar)x[2+idx];
+        x4  = (MatScalar)x[3+idx];
+        s1 -= v[0]*x1 + v[4]*x2 + v[8]*x3  + v[12]*x4;
+        s2 -= v[1]*x1 + v[5]*x2 + v[9]*x3  + v[13]*x4; 
+        s3 -= v[2]*x1 + v[6]*x2 + v[10]*x3 + v[14]*x4;
+        s4 -= v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
+        v    += 16;
+      }
+      v        = aa + ai16;
+      x[idt]   = (PetscScalar)(v[0]*s1 + v[4]*s2 + v[8]*s3  + v[12]*s4);
+      x[1+idt] = (PetscScalar)(v[1]*s1 + v[5]*s2 + v[9]*s3  + v[13]*s4);
+      x[2+idt] = (PetscScalar)(v[2]*s1 + v[6]*s2 + v[10]*s3 + v[14]*s4);
+      x[3+idt] = (PetscScalar)(v[3]*s1 + v[7]*s2 + v[11]*s3 + v[15]*s4);
+      idt -= 4;
+    }
+  }
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
@@ -2941,7 +3125,6 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
   Mat_SeqBAIJ *a  = (Mat_SeqBAIJ *)A->data;
   IS          row = a->row, col = a->col;
   PetscTruth  row_identity, col_identity;
-  PetscTruth  sse_enabled_local, sse_enabled_global;
   PetscTruth  use_single, use_natural;
   int         ierr;
 
@@ -2992,11 +3175,13 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
       A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_3;
     }
     break; 
-  case 4:
-    ierr = PetscSSEIsEnabled(A->comm,&sse_enabled_local,&sse_enabled_global);CHKERRQ(ierr);
-    if (sse_enabled_local) {
-      PetscTruth single_prec,flg;
+  case 4: 
+    {
+      PetscTruth sse_enabled_local, sse_enabled_global;
+      PetscTruth single_prec, flg;
       single_prec = flg = PETSC_FALSE;
+      
+      ierr = PetscSSEIsEnabled(A->comm,&sse_enabled_local,&sse_enabled_global);CHKERRQ(ierr);
       ierr = PetscOptionsGetLogical(PETSC_NULL,"-mat_single_precision_solves",&single_prec,&flg);CHKERRQ(ierr);
       if (flg) {
         a->single_precision_solves = single_prec;
@@ -3004,37 +3189,45 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
       if (a->single_precision_solves) {
         use_single = PETSC_TRUE;
       }
-    } else {
-      use_single = PETSC_FALSE;
-    }
-    if (use_natural) {
-      if (use_single) {
+      if (use_natural) {
+        if (use_single) {
+          if (sse_enabled_local) { /* Natural + Single + SSE */ 
 #if defined(PETSC_HAVE_SSE)
-        A->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
-        PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place natural ordering solve BS=4\n");
+            A->ops->solve         = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
+            PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place natural ordering solve BS=4\n");
 #else
-      /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
-      SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
+            /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
+            SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
 #endif
-      } else {
-        A->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
-        PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
-      }
-      A->ops->solvetranspose    = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
-      PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
-    } else {
-      if (use_single) {
+          } else { /* Natural + Single */
+            A->ops->solve         = MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion;
+            PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, in-place natural ordering solve BS=4\n");
+          }
+        } else { /* Natural */
+          A->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
+          PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
+        } /* Only one version of SolveTranspose for Natural Ordering */ 
+        A->ops->solvetranspose    = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
+        PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
+      } else { /* Arbitrary ordering */
+        if (use_single) {
+          if (sse_enabled_local) { /* Arbitrary + Single + SSE */
 #if defined(PETSC_HAVE_SSE)
-        A->ops->solve           = MatSolve_SeqBAIJ_4_SSE_Demotion;
-        PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE solve BS=4\n");
+            A->ops->solve         = MatSolve_SeqBAIJ_4_SSE_Demotion;
+            PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE solve BS=4\n");
 #else
-      /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
-      SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
+            /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
+            SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
 #endif
-      } else {
-        A->ops->solve           = MatSolve_SeqBAIJ_4;
+          } else { /* Arbitrary + Single */
+            A->ops->solve         = MatSolve_SeqBAIJ_4_Demotion;
+            PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision solve BS=4\n");
+          }
+        } else { /* Arbitrary */ 
+          A->ops->solve           = MatSolve_SeqBAIJ_4;
+        } /* Only one version of SolveTranspose for Natural Ordering */ 
+        A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4;
       }
-      A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4;
     }
     break;
   case 5:
